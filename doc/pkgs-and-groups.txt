@@ -1,0 +1,139 @@
+
+pkg
+Packages and Groups
+
+  It would be nice to have a package FMRI, which would be something like
+
+  pkg://repo/pkg_name@version
+
+  This namespace might be populated with "manifest" and other metadata
+  endpoints, as well as the SHA-1 names of the package's included files.
+
+  Packages need a limited set of operations on individual files to
+  manipulate the configuration.
+
+Appendix A.  Current class actions on Solaris NV.
+
+$ grep -v none /tmp/summary | egrep 1\ \[ef\]\  | cut -d \  -f 3 | sort | uniq -c | sort -nr
+ 152 manifest
+ 129 preserve
+  45 renamenew
+  32 rbac
+  30 initd
+  30 fontsdir
+  17 fontsalias
+  16 appservenv
+  10 ttmapsdir
+  10 encodingsdir
+   8 renameold
+   6 build
+   5 tiservices
+   5 master
+   5 asenv
+   4 smfyes
+   4 services
+   4 immodules
+   4 fontsupr
+   4 fontsscale
+   4 fontenc
+   3 OWconfig
+   2 smfno
+   2 smf
+   2 sendmail
+   2 sed
+   2 owfontpath
+   2 fonttmap
+   2 devlink
+   2 append
+   1 ypnicknames
+   1 vfstab
+   1 ttysrch
+   1 ttydefs
+   1 ttmapkoi8
+   1 ttmap13
+   1 syslogconf
+   1 svmpreserve
+   1 sshdconfig
+   1 sock2path
+   1 shadow
+   1 sdconf
+   1 scsivhciconf
+   1 scsa2usbconf
+   1 sampleslist
+   1 rOWconfig
+   1 qlc
+   1 publickey
+   1 powerconf
+   1 policyconf
+   1 pkcs11confbase
+   1 passwd
+   1 papersize
+   1 pamconf
+   1 opensslcnf
+   1 nsswitch
+   1 nscd
+   1 nfssecconf
+   1 netconfig
+   1 ncalogd
+   1 ncakmod
+   1 nametomajor
+   1 minorperm
+   1 mailxrc
+   1 mach
+   1 logindevperm
+   1 logadmconf
+   1 localprofile
+   1 locallogin
+   1 krbconf
+   1 keytable
+   1 kclasses
+   1 kcfconfbase
+   1 iuap
+   1 iscsiconf
+   1 ipsecalgsbase
+   1 initupdate
+   1 inittab
+   1 init
+   1 inetdconf
+   1 ibnexconf
+   1 hosts
+   1 group
+   1 ftpusers
+   1 ftpaccess
+   1 fstypes
+   1 fpconf
+   1 fonttmap9
+   1 fonttmap7
+   1 fonttmap5
+   1 fonttmap4
+   1 fonttmap2
+   1 fonttmap15
+   1 fontenc9
+   1 fontenc7
+   1 fontenc5
+   1 fontenc4
+   1 fontenc13
+   1 etcsystem
+   1 etcrpc
+   1 etcremote
+   1 etcprofile
+   1 EtcDefLu
+   1 drvalias
+   1 dialers
+   1 dhcpinittab
+   1 devpolicy
+   1 devlinktab
+   1 defsu
+   1 defrpcnisd
+   1 defpasswd
+   1 defnfs
+   1 deflogin
+   1 definit
+   1 cronroot
+   1 configmapconf
+   1 bootenvrc
+   1 automaster
+   1 ataconf
+   1 adpconf
+   1 AddNoUpdate
+

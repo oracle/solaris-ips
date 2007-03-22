@@ -1,0 +1,11 @@
+
+pkg
+Expressing versions
+
+  A package is a labelled time series of collections of objects.
+
+  Each transition is constrained by the local client's decision to "stay
+  on branch" or "move to a newer branch".  XXX Should we allow
+  regression to a previous branch, or just same-branch regression?
+
+  
