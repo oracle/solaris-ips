@@ -8,9 +8,32 @@ Packages and Groups
 
   This namespace might be populated with "manifest" and other metadata
   endpoints, as well as the SHA-1 names of the package's included files.
+  It also seems like pkg_name could then be split into a category and a
+  basename.
 
   Packages need a limited set of operations on individual files to
-  manipulate the configuration.
+  manipulate the configuration.  The current class actions are given in
+  Appendix A.  It appears that if "manifest" and "rbac" were supported,
+  along with some management of editable files (preserve, renamenew,
+  initd, renameold), then the remaining operations could be deferred to
+  image instantiation.
+
+  "Groups" are really just packages that include other packages, in
+  addition to files.  However, and similar to smf(5), groups are named
+  with a particular convention:  "base/minimal", "base/user",
+  "base/developer", "base/server" are a potential set of interesting
+  package groups that would be suitable for installation images.  A
+  second set of groups are the smaller sets of related software, like
+  "stack/developer/java-me" or "stack/server/php-mysql".  (It may be
+  more appropriate to label these as "feature/", although I had hoped to
+  keep the feature/ space for future work in smf(5).)
+
+  A package inclusion looks like
+
+  pkg FMRI [freeze|branch|any]
+
+  where the key to the behaviour is how the version is specified, and
+  any keywords that modify version interpretation.
 
 Appendix A.  Current class actions on Solaris NV.
 

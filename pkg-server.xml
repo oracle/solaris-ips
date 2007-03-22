@@ -1,0 +1,76 @@
+<?xml version="1.0"?>
+<!--
+	Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+	Use is subject to license terms.
+
+	ident	"$Hg$ SMI"
+
+	NOTE:  This service manifest is not editable; its contents will
+	be overwritten by package or patch operations, including
+	operating system upgrade.  Make customizations in a different
+	file.
+-->
+
+<!DOCTYPE service_bundle SYSTEM "/usr/share/lib/xml/dtd/service_bundle.dtd.1">
+
+<service_bundle type='manifest' name=':pkg-server'>
+
+<service
+	name='application/pkg/server'
+	type='service'
+	version='1'>
+
+	<create_default_instance enabled='true' />
+
+	<single_instance/>
+
+	<dependency
+		name='fs'
+		grouping='require_all'
+		restart_on='none'
+		type='service'>
+		<service_fmri value='svc:/system/filesystem/local' />
+	</dependency>
+
+	<dependency
+		name='network'
+		grouping='require_all'
+		restart_on='none'
+		type='service'>
+		<service_fmri value='svc:/milestone/network' />
+	</dependency>
+
+	<exec_method
+		type='method'
+		name='start'
+		exec='/usr/bin/python %{pkg/inst_root}/server.py'
+		timeout_seconds='0' />
+
+	<exec_method
+		type='method'
+		name='stop'
+		exec=':kill'
+		timeout_seconds='30' />
+
+	<property_group name='startd' type='framework'>
+		<propval name='duration' type='astring' value='child' />
+	</property_group>
+
+	<property_group name='pkg' type='application'>
+		<propval name='port' type='count' value='10000' />
+		<propval name='inst_root' type='astring'
+			value='/home/sch/play/pkg' />
+	</property_group>
+
+	<stability value='Unstable' />
+
+	<template>
+		<common_name>
+			<loctext xml:lang='C'>
+Packaging repository prototype
+			</loctext>
+		</common_name>
+	</template>
+</service>
+
+</service_bundle>

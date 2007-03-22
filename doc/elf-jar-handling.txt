@@ -1,0 +1,17 @@
+
+pkg
+ELF (AND MAYBE JAR) DEPENDENCY HANDLING
+
+ELF files give us ISA information, required libraries with versions, and
+potentially provided interface versions.  This latter information is
+missing from a large set of libraries on OpenSolaris, built without
+versioned interfaces.
+
+It seems that an ELF file, on upload, can be tested for its ELF
+dependencies, and that these files in turn can be tested for presence.
+If any of the latter file's revisions provide versions, then these can
+be tested and translated into a minimum package requirement for the
+package containing the introduced ELF file.
+
+XXX Can we do something similar for JAR files?
+
