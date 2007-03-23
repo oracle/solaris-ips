@@ -7,10 +7,6 @@ import sha
 import shutil
 import time
 
-class SvrConfig(object):
-        def __init__(self, repo_root):
-                self.repo_root = repo_root
-
 def catalog(scfg, request):
         request.send_response(200)
         request.send_header('Content-type:', 'text/plain')

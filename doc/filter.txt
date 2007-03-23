@@ -1,0 +1,10 @@
+
+pkg
+FILTERING
+
+Client presents a filter construct.  Platform, ISA (optional), Diskless
+(optional).  (Diskless might be better as a restricted path list.)
+
+Server interprets filter.  May offer challenges to assist in determining
+specific version.  Version offerings are constrained by virtue of
+inability to change certain paths.

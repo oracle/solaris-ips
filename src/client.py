@@ -36,6 +36,8 @@ import sys
 import urllib2
 import urlparse
 
+import pkg.config
+
 def usage():
         print """\
 Usage:
@@ -64,17 +66,6 @@ Environment:
         PKG_IMAGE
 """
         sys.exit(2)
-
-class ParentRepo(object):
-        """Install repo URI (optional)
-             Repository upon which we commit transactions.
-           URL list of repos, in order of preference.
-
-           XXX Need a local filter policy.  One filter example would be to only
-           install 32-bit binaries."""
-        def __init__(self, install_uri, repo_uris):
-                self.install_uri = install_uri
-                self.repo_uris = repo_uris
 
 def catalog(config, args):
         """XXX will need to show available content series for each package"""
