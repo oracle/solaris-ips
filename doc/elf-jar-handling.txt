@@ -13,5 +13,15 @@ If any of the latter file's revisions provide versions, then these can
 be tested and translated into a minimum package requirement for the
 package containing the introduced ELF file.
 
+We always want the latest version surface, so we don't want to send a
+new header file without the corresponding ELF objects its changes caused
+to be generated.
+
+It seems that ELF differences are only useful for determining whether an
+incoming transaction is significant.  For instance, RE delivers a group
+of change that actually contains no change to the non-ELF files, and the
+change to the ELF files is non-ELF significant.  In this case, perhaps
+the delivery should fail/warn.
+
 XXX Can we do something similar for JAR files?
 
