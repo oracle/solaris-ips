@@ -1,0 +1,7 @@
+
+pkg
+USE OF XML
+
+It might be helpful, for tools development, to offer an XML description
+of package transactions and manifests.
+
