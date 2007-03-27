@@ -26,3 +26,8 @@ Envisioned types are "raw" and "elf".  Potentially also "jar".
 Envisioned platforms are "i86pc", "sun4".  ISA distinctions are handled
 by the filter options available on "elf" type files.
 
+The leading column is called the *action*.  If we do a driver action, it
+would be multi-file (since the .conf file is associated).  Drivers may
+have to be expressed as a non-action.  Actions are always reversible in
+some fashion.
+
