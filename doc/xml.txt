@@ -5,3 +5,7 @@ USE OF XML
 It might be helpful, for tools development, to offer an XML description
 of package transactions and manifests.
 
+That is, if we're backing into a full fledged package dialect, beyond
+something single line-based, then we should consider whether an XML
+document is a suitable choice.  Usual pro-XML, con-XML position follows.
+
