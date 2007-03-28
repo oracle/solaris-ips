@@ -25,3 +25,10 @@ the delivery should fail/warn.
 
 XXX Can we do something similar for JAR files?
 
+XXX Can we do something similar for Perl or Python (or any language with
+internal versioning statements)?
+
+XXX There's really no way to tie the kernel to libc in the current
+system, or in pkg(1M).  Should we be adding a simple signature, or
+reusing library versioning, or must it be left to a human (expressing it
+via pkg(1M) dependencies)?
