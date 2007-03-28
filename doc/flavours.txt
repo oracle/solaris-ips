@@ -1,0 +1,10 @@
+
+pkg
+FILE FLAVOURS IN A PACKAGE
+
+platform
+ISA (particularly need to know i386 on i86pc vs amd64 on i86pc)
+debug/non-debug
+compatibility
+	(for shipping non-bleeding edge .so.x.y.z copies, perhaps)
+

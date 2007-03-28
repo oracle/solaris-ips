@@ -1,0 +1,17 @@
+
+pkg
+PACKAGE TRANSACTION ORDER
+
+
+- [zfs snapshot]
+- pull bits to same filesystem
+- test transaction
+- begin operations
+- cp old to SHA-old
+- mv SHA-new to new
+- perform actions
+- complete
+
+- when are old versions discarded
+- when is snapshot discarded
+	- snapshot namespace for pkg(1M)

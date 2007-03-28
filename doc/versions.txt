@@ -73,6 +73,28 @@ Expressing versions
   pkg delete on groups removes leaf packages in the group (included via
   "pkg" statements) but leaves package dependencies untouched.
 
-  
-  
+
+Co-requisite packages
+
+  We need to support a@1 <-> b@2.  This is handled as two transactions,
+  so we need to allow unresolved dependencies to exist in the
+  repository, _but_ the R = (a@1, ...) repository cannot offer a@1 until
+  it also has b@2.  And also G (a@1, b@2) group package cannot be
+  submitted.
+
+  This requirement becomes a hint for our order of operations:
+  individual package transactions, group (base and stack) transactions.
+
+
+When to increment the branch number?
+
+  On incompatible change to a private interface.
+
+  On addition of new private interfaces.
+
+  On addition of new public interfaces where the release version is
+  constrained.
+
+  Potentially on the addition of a newly delivered flavour?
+
 
