@@ -1,0 +1,10 @@
+
+Design
+- need a discussion of catalogs, comparisons between, and operations on
+- need a discussion of client-side cache/state
+
+Code
+- need to outline ELF inspection module
+- need to start constructing placeholder classes/methods for various
+pieces
+	- list of pieces
