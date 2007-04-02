@@ -1,0 +1,31 @@
+
+pkg
+SUPPORTED ACTIONS
+
+  We need to support an extensible set of "actions", which we define as
+  reversible operations that a package can request to enable its later
+  function on the target image.
+
+  From the legacy packaging system, we can inspect the class action
+  scripts and the postinstall scripts to identify the set of common
+  actions.
+
+  [null]	For non editable files
+  preserve	Keep edited file, install latest version of file in
+  		documented location
+  displace	Install file, move edited file to documented location
+  service	Package contains service description
+  			Inventoried services will be temporarily
+			disabled during operations on live images.
+  driver	Package contains device driver
+  			Module loading will be disabled during
+			operations on live images.
+  credential	Package requires user, group, or other package-reference
+  		managed resource.
+
+  XXX Is this enough to boot?
+
+  XXX Do we have a hard-reboot, reconfigure-reboot, and/or soft-reboot
+  action?  Otherwise we are going to build path knowledge somewhere else
+  in the packaging system.
+

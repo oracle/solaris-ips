@@ -32,6 +32,31 @@
 		<service_fmri value='svc:/system/filesystem/local' />
 	</dependency>
 
+	<!--
+	    If we're homed on an autofs mount point, then we should
+	    delay until our path becomes available.
+	-->
+	<dependency
+		name='autofs'
+		grouping='optional_all'
+		restart_on='none'
+		type='service'>
+		<service_fmri value='svc:/system/filesystem/autofs' />
+	</dependency>
+
+	<!--
+	    To ensure that the sequence IDs between two repositories are
+	    sensible, we should delay startup until we can issue correct
+	    timestamps.
+	-->
+	<dependency
+		name='ntp'
+		grouping='optional_all'
+		restart_on='none'
+		type='service'>
+		<service_fmri value='svc:/network/ntp' />
+	</dependency>
+
 	<dependency
 		name='network'
 		grouping='require_all'
