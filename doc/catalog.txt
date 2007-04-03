@@ -1,0 +1,67 @@
+
+pkg
+CATALOGUE OPERATIONS
+
+Premise 1:  From the client's perspective, the catalog is just another package.
+(It's only special in that its contents drive automatic package
+operations.)
+
+Premise 2:  From the server perspective, the catalog is a package whose
+contents are updated as a result of the set of packaging operations that
+have occurred within the server's repository.  (No direct operation ever
+hits the catalog directly--except a hypothetical release-notes/
+directory, I suppose.)
+
+1.  Server catalog
+
+The primary content of the catalog are the relationships between
+packages.  We've already said that there are packages that depend on
+other packages and packages that "incorporate" or "include" other
+packages.  These latter packages, the base- and stack-style packages,
+are really packages that, in addition to listing a set of packages, also
+freeze those packages, such that it takes a relaxation of the base/stack
+package for the client to modify the incorporated packages.
+
+The detailed manifest for each package contains the dependencies,
+contents, and actions.  So an outgoing catalog is really just a dataset
+that contains the list of package versions available in the repository.
+
+It's reasonably clear that the package repository needs to have
+observations of package popularity, so that the most aged packages can
+be purged, once unneeded.
+
+2.  Client catalog
+
+The client catalog is a compilation of package sourcing information from
+a collection of repositories.  Its purpose is to advertise what package
+versions are "available", which means that it is the union of the
+repositories it sources, plus the locally installed package versions.
+
+(But it does not contain the contents data of any of these sources.)
+
+If a package is available from two or more repositories, we have a
+choice:  we can prefer a repository (as we would for a request for a
+first installation of a package), or we can store both catalogue
+entries.
+
+So we might have
+
+/var/pkg/catalog/repository_authority/category/package/versions
+
+with example
+
+/var/pkg/catalog/pkg.opensolaris.org/application/which/2.16
+/var/pkg/catalog/blueslugs.com/application/which/2.16
+
+and
+
+/var/pkg/catalog/site/application/which/2.16
+
+if the which-2.16 software is installed.
+
+XXX Investigate efficiency of encoding versions as entries in
+a file versus encoding as separate files
+
+XXX Are FMRI-level categories actually a help, or is a linear namespace
+going to get in the way?
+
