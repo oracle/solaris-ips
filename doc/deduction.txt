@@ -1,0 +1,19 @@
+
+pkg
+CLIENT DEDUCTION AND SELF-REPAIR
+
+  In the case of a partially installed system, a system installed by a
+  previous packaging regime, or a system that has been somehow damaged,
+  it is possible for the pkg system to identify the current system's
+  state via a deductive process.
+
+  That is, the client can examine an image's contents and determine, by
+  interrogation, the precise version of each package installed in the
+  image.  If a specific file is missing, then the client can move the
+  package from (INSTALLED, .) to (INSTALLED, damaged) and record the
+  operation it would take to restore the package's state (via restoring
+  the contents).
+
+  XXX Most efficient algorithm for the minimum set of queries to
+  identify the specific version of a package an image contains?
+

@@ -79,6 +79,11 @@ PACKAGE STATES
         catalog or on the incomplete list.  Its contents, if they were
         in the repository, should be removed from the repository.
 
+    XXX ARCHIVED might be a special state connected to PUBLISHED, or
+    merely a substate.  An archived package has its manifest and
+    contents in the repository, but cannot be installed on a client.
+    The point of including ARCHIVED packages is to allow client
+    deduction on a system not installed by the pkg system.
 
 2.  Client states
 
