@@ -85,12 +85,12 @@ class IllegalVersion(exceptions.Exception):
                 self.args = args
 
 class Version(object):
-        """Version format is release,branch.sequence, which we decompose
+        """Version format is release,branch:sequence, which we decompose
         into a DotSequence and branch and sequence values."""
 
         def __init__(self, version_string):
                 # XXX If illegally formatted, raise exception.
-                m = re.match("([\.\d]*),(\d*)\.(\d*)", version_string)
+                m = re.match("([\.\d]*),(\d*)\:(\d*)", version_string)
                 if m != None:
                         self.release = DotSequence(m.group(1))
                         self.branch = int(m.group(2))
@@ -116,7 +116,7 @@ class Version(object):
                 raise IllegalVersion
 
         def __str__(self):
-                return "%s,%s.%s" % (self.release, self.branch, self.sequence)
+                return "%s,%s:%s" % (self.release, self.branch, self.sequence)
 
         def __ne__(self, other):
                 if self.release == other.release and \
@@ -163,8 +163,8 @@ if __name__ == "__main__":
         d2 = DotSequence("1.1.3")
         assert d1 == d2
 
-        v1 = Version("5.5.1,10.6")
-        v2 = Version("5.5.1,10.8")
+        v1 = Version("5.5.1,10:6")
+        v2 = Version("5.5.1,10:8")
         v3 = Version("5.5.1,10")
         v4 = Version("5.5.1,6")
         v5 = Version("5.6,1")

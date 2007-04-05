@@ -7,7 +7,20 @@ import sha
 import shutil
 import time
 
+import pkg.version as version
+import pkg.fmri as fmri
+import pkg.catalog as catalog
+import pkg.config as config
+
 def catalog(scfg, request):
+        """The marshalled form of the catalog is
+
+        pkg_name (release (branch (sequence ...) ...) ...)
+
+        since we know that the server is only to report packages for which it
+        can offer a record.
+        """
+
         request.send_response(200)
         request.send_header('Content-type:', 'text/plain')
         request.end_headers()
@@ -23,13 +36,16 @@ def trans_open(scfg, request):
                 pass
         opening_time = time.time()
         m = re.match("^/open/(.*)", request.path)
-        pkg = m.group(1)
+        pkg_name = m.group(1)
 
         # XXX opaquify using hash
-        trans_basename = "%d_%s" % (opening_time, pkg)
+        trans_basename = "%d_%s" % (opening_time, pkg_name)
         os.makedirs("%s/%s" % (trans_root, trans_basename))
 
         # record transaction metadata:  opening_time, package, user
+        # lookup package by name
+        # if not found, create package
+        # set package state to TRANSACTING
 
         request.send_response(200)
         request.send_header('Content-type:', 'text/plain')
@@ -43,6 +59,12 @@ def trans_close(scfg, request):
 
         trans_root = "%s/trans" % scfg.repo_root
         # XXX refine try/except
+        #
+        # set package state to SUBMITTED
+        # attempt to reconcile dependencies
+        # if reconciled, set state to PUBLISHED
+        #   call back to check incomplete list
+        # else set state to INCOMPLETE
         try:
                 shutil.rmtree("%s/%s" % (trans_root, trans_id))
                 request.send_response(200)

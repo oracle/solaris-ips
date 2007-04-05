@@ -152,3 +152,9 @@ PACKAGE STATES
     operation) get represented in the state?  Is there an image state
     machine model as well?
 
+    XXX Need a substate of INSTALLED for damaged packages.
+
+    XXX Need a substate of INSTALLED for packages where the global zone
+    portion is available, but local installation has not finished.  Can
+    we generalize this state for all diskless installs?
+

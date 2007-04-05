@@ -28,6 +28,15 @@
 # We use urllib2 for GET and POST operations, but httplib for PUT and DELETE
 # operations.
 
+# The client is going to maintain an on-disk cache of its state, so that startup
+# assembly of the graph is reduced.
+
+# Client graph is of the entire local catalog.  As operations progress, package
+# states will change.
+
+# Deduction operation allows the compilation of the local component of the
+# catalog, only if an authoritative repository can identify critical files.
+
 import getopt
 import httplib
 import os
@@ -36,7 +45,12 @@ import sys
 import urllib2
 import urlparse
 
+import pkg.catalog
 import pkg.config
+import pkg.dependency
+import pkg.fmri
+import pkg.package
+import pkg.version
 
 def usage():
         print """\
@@ -45,17 +59,10 @@ Usage:
 
 Install subcommands:
         pkg catalog
-        pkg install pkg_name
-        pkg uninstall pkg_name
-
-Packager subcommands:
-        pkg open [-e] pkg_name
-        pkg add file|link|device path file
-        pkg delete path
-        pkg meta add require|exclude pkg_name
-        pkg meta delete pkg_name
-        pkg summary
-        pkg close
+        pkg install pkg_fmri
+        pkg uninstall pkg_fmri
+        pkg freeze [--version version_spec] [--release] [--branch] pkg_fmri
+        pkg unfreeze pkg_fmri
 
 Options:
         --repo, -s
@@ -81,80 +88,24 @@ def catalog(config, args):
 
                 # compare headers
 
-def trans_open(config, args):
-        opts = None
-        pargs = None
-        try:
-                opts, pargs = getopt.getopt(args, "e")
-        except:
-                print "pkg: illegal open option(s)"
-                usage()
-
-        eval_form = False
-        for opt, arg in opts:
-                if opt == "-e":
-                        eval_form = True
-
-        if len(pargs) != 1:
-                print "pkg: open requires one package name"
-                usage()
-
-        # POST /open/pkg_name
-        repo = config.install_uri
-        uri = urlparse.urljoin(repo, "open/%s" % pargs[0])
-
-        c = urllib2.urlopen(uri)
-
-        lines = c.readlines()
-        for line in lines:
-                if re.match("^Transaction-ID:", line):
-                        m = re.match("^Transaction-ID: (.*)", line)
-                        if eval_form:
-                                print "export PKG_TRANS_ID=%s" % m.group(1)
-                        else:
-                                print m.group(1)
-
+def install(config, args):
+        """Attempt to take package specified to INSTALLED state."""
         return
 
-def trans_close(config, args):
-        # XXX alternately args contains -t trans
-        trans_id = os.environ["PKG_TRANS_ID"]
-        repo = config.install_uri
-        uri = urlparse.urljoin(repo, "close/%s" % trans_id)
-        try:
-                c = urllib2.urlopen(uri)
-        except urllib2.HTTPError:
-                print "pkg: transaction close failed"
-                sys.exit(1)
+def uninstall(config, args):
+        """Attempt to take package specified to DELETED state."""
+        return
 
-def trans_add(config, args):
-        """POST the file contents to the transaction.  Default is to post to the
-        currently open content series.  -s option selects a different series."""
+def freeze(config, args):
+        """Attempt to take package specified to FROZEN state, with given
+        restrictions."""
+        return
 
-        if not args[0] in ["file", "link", "package"]:
-                print "pkg: unknown add object '%s'" % args[0]
-                usage()
+def unfreeze(config, args):
+        """Attempt to return package specified to INSTALLED state from FROZEN state."""
+        return
 
-        trans_id = os.environ["PKG_TRANS_ID"]
-        repo = config.install_uri
-        uri_exp = urlparse.urlparse(repo)
-        host, port = re.split(":", uri_exp[1])
-        selector = "/add/%s/%s" % (trans_id, args[0])
-
-        if args[0] == "file":
-                # XXX Need to handle larger files than available swap.
-                file = open(args[2])
-                data = file.read()
-        else:
-                sys.exit(99)
-
-        headers = {}
-        headers["Path"] = args[1]
-
-        c = httplib.HTTPConnection(host, port)
-        c.connect()
-        c.request("POST", selector, data, headers)
-
+# XXX need an Image configuration by default
 
 pcfg = ParentRepo("http://localhost:10000", ["http://localhost:10000"])
 
@@ -176,12 +127,14 @@ if __name__ == "__main__":
 
         if subcommand == "catalog":
                 catalog(pcfg, pargs)
-        elif subcommand == "open":
-                trans_open(pcfg, pargs)
-        elif subcommand == "close":
-                trans_close(pcfg, pargs)
-        elif subcommand == "add":
-                trans_add(pcfg, pargs)
+        elif subcommand == "install":
+                install(pcfg, pargs)
+        elif subcommand == "uninstall":
+                uninstall(pcfg, pargs)
+        elif subcommand == "freeze":
+                freeze(pcfg, pargs)
+        elif subcommand == "unfreeze":
+                unfreeze(pcfg, pargs)
         else:
                 print "pkg: unknown subcommand '%s'" % pargs[0]
                 usage()
