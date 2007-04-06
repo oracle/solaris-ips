@@ -23,8 +23,25 @@ Expressing versions
 		V
   pkg:///sunos/coreutils@5.12:[hex-timestamp-5]
 
+  In this sequence, we've assumed that the client's requirement to
+  remain with binaries associated with a particular build is implicit
+  with the client.  As discussed in the flavours note, we need to handle
+  the distinction between a package built on one release and the same
+  package's binaries built on another release.
+
+  XXX Need a full example with the build_version in place.
+
   Each transition is constrained by the local client's decision to "stay
   on branch", "move to a newer branch", "move to a newer release".
+  Both the release, the required build, and the branch can be
+  "dot-separated vectors".  The timestamp is not.  That is, a full
+  version is
+
+  version -> dot_vector(,dot_vector)?-dot_vector:timestamp
+
+  dot_vector -> digit+ ( "." digit+ )*
+
+  timestamp -> hexdigit+
 
   Rollback is expected to be handled by image management.  Rollback is
   expected to be made convenient through use of ZFS.

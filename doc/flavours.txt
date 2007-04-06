@@ -1,10 +1,62 @@
 
 pkg
-FILE FLAVOURS IN A PACKAGE
+FLAVOURS IN PACKAGES
+
+1.  Kinds of flavour
+
+    Little flavours:  flavours that affect individual files within a
+    package.
+
+    Big flavours:  flavours that affect an entire package.  Introduction
+    of a big flavour can cause a conflict with the versioning algebra,
+    so we attempt to avoid them.
+
+2.  Little flavours
 
 platform
+
 ISA (particularly need to know i386 on i86pc vs amd64 on i86pc)
+
 debug/non-debug
+
 compatibility
 	(for shipping non-bleeding edge .so.x.y.z copies, perhaps)
+
+3.  Big flavours
+
+built-on release
+
+    One problem we may run into is packages that have been built on a
+    release newer than that on the image.  These packages should be
+    evaluated as unsuitable for the image, and not offered in the graph.
+    There are a few ways to handle this case:
+
+    1.  Separate repository.  All packages offered by a repository were
+	built on a known system configuration.  This change requires
+	negotiation between client and server for a built-on match
+	condition.  It also means that multiple repositories are needed
+	for a long lifecycle distribution.
+
+    2.  Big flavours.  Each package comes in a built-on flavour.  This
+	means that clients move from flavour to flavour triggered by
+	conditions set by the base package on the client.  Another
+	drawback is that it becomes impossible to request a specific
+	package by an FMRI, without additional knowledge.
+
+    3.  Additional version specifier.  We could extend
+	release,branch:timestamp to release,built,branch:timestamp--or
+	fold the built and branch version together.  Since the built
+	portion must reserve major.minor.micro, that means we move to a
+	package FMRI that looks like
+
+	coreutils@6.7,5.11.0.1:timestamp
+
+	This choice looks awkward.  We could instead treat the built
+	portion as having a default value on a particular client.  Then
+	the common specifier would be
+
+	name@release[,build]-branch:timestamp
+
+        build would be the highest available valid release for the
+	image.
 
