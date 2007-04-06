@@ -21,6 +21,13 @@ The user image is defined by an image configuration specifying its type,
 its root directory, and its parent image (for satisfying non-relocatable
 packages).
 
+Question for ES folks: does "the system" need to (or want to) know about
+non-root installs in order to be able to patch / upgrade them along with
+normal installs (or send out reminders to do so), or will non-root installs
+be completely up to the user to manage?  I can see a site policy that
+requires security patches even for non-root installs; this would require
+such installations to register with the system so they can be found.
+
 Not sure how to proceed on the Windows requirement.  Most of the current
 design is portable across POSIX/ELF systems.
 
