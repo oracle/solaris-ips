@@ -1,0 +1,23 @@
+
+pkg
+IMAGES
+
+Each collection of installed package instances is some kind of image.
+We envision three kinds:
+
+- entire images
+	An entire image contains (and can contain) all appropriate
+	packages from a repository.  It has a machine type and release.
+
+- partial images
+	A partial image contains (and can contain) all appropriate
+	packages from a repository.  An partial image is tied to an
+	entire image and has an identified list of non-writeable
+	directory paths.  It inherits its machine type and release.
+
+- user images
+	A user image consists entirely of relocatable packages.  It is
+	tied to an entire image for dependency satisfaction of
+	non-relocatable packages.  It inherits its machine type and
+	release.
+
