@@ -136,14 +136,13 @@ def trans_add(config, args):
         c.request("POST", selector, data, headers)
 
 
-pcfg = ParentRepo("http://localhost:10000", ["http://localhost:10000"])
+pcfg = pkg.config.ParentRepo("http://localhost:10000", ["http://localhost:10000"])
 
 if __name__ == "__main__":
         opts = None
         pargs = None
         try:
-                if len(sys.argv) > 1:
-                        opts, pargs = getopt.getopt(sys.argv[1:], "s:R:")
+		opts, pargs = getopt.getopt(sys.argv[1:], "s:R:")
         except:
                 print "pkgsend: illegal global option(s)"
                 usage()
@@ -152,14 +151,13 @@ if __name__ == "__main__":
                 usage()
 
         subcommand = pargs[0]
-        del pargs[0]
 
-        elif subcommand == "open":
-                trans_open(pcfg, pargs)
+        if subcommand == "open":
+                trans_open(pcfg, pargs[1:])
         elif subcommand == "close":
-                trans_close(pcfg, pargs)
+                trans_close(pcfg, pargs[1:])
         elif subcommand == "add":
-                trans_add(pcfg, pargs)
+                trans_add(pcfg, pargs[1:])
         else:
-                print "pkgsend: unknown subcommand '%s'" % pargs[0]
+                print "pkgsend: unknown subcommand '%s'" % subcommand
                 usage()

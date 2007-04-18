@@ -118,9 +118,9 @@ def trans_add(scfg, request):
         print >>tfile, "%s %s" % (path, fname)
 
 if "PKG_REPO" in os.environ:
-	scfg = SvrConfig(os.environ["PKG_REPO"])
-else
-	scfg = SvrConfig("/var/pkg/repo")
+	scfg = config.SvrConfig(os.environ["PKG_REPO"])
+else:
+	scfg = config.SvrConfig("/var/pkg/repo")
 
 class pkgHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
