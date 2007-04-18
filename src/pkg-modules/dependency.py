@@ -20,10 +20,10 @@
 # CDDL HEADER END
 #
 
+#
 # Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
-#ident	"%Z%%M%	%I%	%E% SMI"
 
 REQUIRE = 0
 INCORPORATE = 1
@@ -38,7 +38,7 @@ class Dependency(object):
                 self.host_pkg_fmri = host_pkg_fmri
                 self.req_pkg_fmri = req_pkg_fmri
 
-                assert type == REQUIRE || type == INCORPORATE
+                assert type == REQUIRE or type == INCORPORATE
                 self.type = type
 
         def satisfied(self, pkg_fmri):
@@ -46,3 +46,10 @@ class Dependency(object):
                 # compare versions
                 return False
 
+	def __repr__(self):
+		if self.type == REQUIRE:
+			return "%s -> %s" % \
+				(self.host_pkg_fmri, self.req_pkg_fmri)
+		elif self.type == INCORPORATE:
+			return "%s > %s" % \
+				(self.host_pkg_fmri, self.req_pkg_fmri)

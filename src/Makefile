@@ -48,12 +48,22 @@ ROOTPROGS = \
 	$(ROOT)/usr/lib/pkg.depotd
 
 PYMODS = \
+	pkg-modules/__init__.py \
+	pkg-modules/catalog.py \
 	pkg-modules/config.py \
+	pkg-modules/content.py \
+	pkg-modules/dependency.py \
 	pkg-modules/fmri.py \
+	pkg-modules/image.py \
+	pkg-modules/package.py \
+	pkg-modules/sysvpkg.py \
 	pkg-modules/version.py
 ROOTPYMODS = $(PYMODS:pkg-modules/%=$(ROOTPYTHONPKG)/%)
 
 all: $(PROGS)
+
+clean:
+	rm -f $(PROGS)
 
 install: $(ROOTDIRS) $(ROOTPROGS) $(ROOTPYMODS)
 
@@ -64,13 +74,13 @@ $(ROOT) $(ROOTUSRBIN) $(ROOTUSRLIB) $(ROOTPYTHONPKG):
 	mkdir -p $(ROOTPYTHONPKG)
 
 $(ROOTUSRBIN)/%: %
-	install -f $(ROOTUSRBIN) -m 0555 $<
+	rm -f $@; install -f $(ROOTUSRBIN) -m 0555 $<
 
 $(ROOTUSRLIB)/%: %
-	install -f $(ROOT)/usr/lib -m 0555 $<
+	rm -f $@; install -f $(ROOT)/usr/lib -m 0555 $<
 
 $(ROOTPYTHONPKG)/%: pkg-modules/%
-	install -f $(ROOTPYTHONPKG) -m 0444 $<
+	rm -f $@; install -f $(ROOTPYTHONPKG) -m 0444 $<
 
 pkg: client.py
 	cp client.py pkg

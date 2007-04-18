@@ -20,13 +20,13 @@
 # CDDL HEADER END
 #
 
+#
 # Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
-#ident	"%Z%%M%	%I%	%E% SMI"
 
 class Package(object):
-        """A Package is the node in the package graph.  It consists of the
+        """A Package is a node in the package graph.  It consists of the
         versioning data and authority required to construct a legitimate FMRI,
         its dependencies and incorporations of other package FMRIs, and the
         contents metadata used to request and install its extended content.
@@ -46,9 +46,11 @@ class Package(object):
                 # early.
 
         def add_content(self, content):
+                self.contents += content
                 return
 
         def add_dependency(self, dependency):
+                self.dependencies += dependency
                 return
 
 # XXX PackageHistory or PackageSequence class?  Or is it sufficient to have a
