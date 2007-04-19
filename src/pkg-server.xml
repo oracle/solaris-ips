@@ -68,7 +68,7 @@
 	<exec_method
 		type='method'
 		name='start'
-		exec='/usr/bin/python %{pkg/inst_root}/server.py'
+		exec='/usr/lib/pkg.depotd'
 		timeout_seconds='0' />
 
 	<exec_method

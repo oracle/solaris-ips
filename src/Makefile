@@ -58,6 +58,7 @@ PYMODS = \
 	pkg-modules/package.py \
 	pkg-modules/sysvpkg.py \
 	pkg-modules/version.py
+
 ROOTPYMODS = $(PYMODS:pkg-modules/%=$(ROOTPYTHONPKG)/%)
 
 all: $(PROGS)
@@ -66,6 +67,15 @@ clean:
 	rm -f $(PROGS)
 
 install: $(ROOTDIRS) $(ROOTPROGS) $(ROOTPYMODS)
+
+# XXX link is a developer target to connect the local machine to the current
+# repository's working copy's versions of the commands and modules.
+PWD:sh = pwd
+link:
+	ln -s $(PWD)/client.py /usr/bin/pkg
+	ln -s $(PWD)/publish.py /usr/bin/pkgsend
+	ln -s $(PWD)/depot.py /usr/lib/pkg.depotd
+	ln -s $(PWD)/pkg-modules /usr/lib/python2.4/vendor-packages/pkg
 
 $(ROOT) $(ROOTUSRBIN) $(ROOTUSRLIB) $(ROOTPYTHONPKG):
 	mkdir -p $(ROOT)
@@ -90,4 +100,3 @@ pkgsend: publish.py
 
 pkg.depotd: depot.py
 	cp depot.py pkg.depotd
-

@@ -6,5 +6,20 @@ Design
 Code
 - need to outline ELF inspection module
 - need to start constructing placeholder classes/methods for various
-pieces
+  pieces
 	- list of pieces
+- naming convention to split objects into common, client-only, and
+  server-only
+
+Data
+- version and patch history of S9 and S10 (S8?)
+- version history of something complicated, like
+  Firefox/Thunderbird/Sunbird
+
+Demos
+- encoded package sequences for Firefox/Thunderbird/Sunbird
+- encoded package sequence for OpenOffice (may not be possible,
+  depending on installer function)
+- whole root zone
+- distro (install to Xen)
+

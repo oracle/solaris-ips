@@ -33,13 +33,21 @@ class PkgFmri(object):
         """The authority is a short form for fetching packages from off the
         default repository search path."""
 
-        def __init__(self, fmri):
+        def __init__(self, fmri, build_release):
                 """XXX pkg:/?pkg_name@version not presently supported."""
                 m = re.match("pkg://([^/]*)/([^@]*)@([\d\,\.]*)", fmri)
                 if m != None:
                         self.authority = m.group(1)
                         self.pkg_name = m.group(2)
-                        self.version = Version(m.group(3))
+                        self.version = Version(m.group(3), build_release)
+
+                        return
+
+                m = re.match("pkg://([^/]*)/([^@]*)", fmri)
+                if m != None:
+                        self.authority = m.group(1)
+                        self.pkg_name = m.group(2)
+                        self.version = None
 
                         return
 
@@ -47,7 +55,7 @@ class PkgFmri(object):
                 if m != None:
                         self.authority = "localhost"
                         self.pkg_name = m.group(1)
-                        self.version = Version(m.group(2))
+                        self.version = Version(m.group(2), build_release)
 
                         return
 
@@ -60,11 +68,17 @@ class PkgFmri(object):
                         return
 
         def __str__(self):
+                if self.version == None:
+                        return "pkg://%s/%s" % (self.authority, self.pkg_name)
                 return "pkg://%s/%s@%s" % (self.authority, self.pkg_name,
                                 self.version)
 
 if __name__ == "__main__":
-        n1 = PkgFmri("pkg://pion/sunos/coreutils")
-        n2 = PkgFmri("sunos/coreutils")
-        n3 = PkgFmri("sunos/coreutils@5.10")
+        n1 = PkgFmri("pkg://pion/sunos/coreutils", "5.9")
+        n2 = PkgFmri("sunos/coreutils", "5.10")
+        n3 = PkgFmri("sunos/coreutils@5.10", "5.10")
+
+        print n1
+        print n2
+        print n3
 

@@ -25,6 +25,8 @@
 # Use is subject to license terms.
 #
 
+# pkg - package system client utility
+#
 # We use urllib2 for GET and POST operations, but httplib for PUT and DELETE
 # operations.
 
@@ -36,6 +38,12 @@
 
 # Deduction operation allows the compilation of the local component of the
 # catalog, only if an authoritative repository can identify critical files.
+#
+# Environment variables
+#
+# PKG_IMAGE - root path of target image
+# PKG_IMAGE_TYPE [entire, partial, user] - type of image
+#       XXX or is this in the Image configuration?
 
 import getopt
 import httplib
@@ -45,12 +53,14 @@ import sys
 import urllib2
 import urlparse
 
-import pkg.catalog
-import pkg.config
-import pkg.dependency
-import pkg.fmri
-import pkg.package
-import pkg.version
+import pkg.catalog as catalog
+import pkg.config as config
+import pkg.content as content
+import pkg.dependency as dependency
+import pkg.fmri as fmri
+import pkg.image as image
+import pkg.package as package
+import pkg.version as version
 
 def usage():
         print """\
@@ -65,13 +75,12 @@ Install subcommands:
         pkg unfreeze pkg_fmri
 
 Options:
-        --repo, -s
+        --server, -s
         --image, -R
 
 Environment:
-        PKG_REPO
-        PKG_IMAGE
-"""
+        PKG_SERVER
+        PKG_IMAGE"""
         sys.exit(2)
 
 def catalog(config, args):
@@ -106,8 +115,8 @@ def unfreeze(config, args):
         return
 
 # XXX need an Image configuration by default
-
-pcfg = ParentRepo("http://localhost:10000", ["http://localhost:10000"])
+icfg = image.Image(image.IMG_ENTIRE, "/")
+pcfg = config.ParentRepo("http://localhost:10000", ["http://localhost:10000"])
 
 if __name__ == "__main__":
         opts = None
@@ -119,7 +128,7 @@ if __name__ == "__main__":
                 print "pkg: illegal global option(s)"
                 usage()
 
-        if len(pargs) == 0:
+        if pargs == None or len(pargs) == 0:
                 usage()
 
         subcommand = pargs[0]
@@ -136,5 +145,5 @@ if __name__ == "__main__":
         elif subcommand == "unfreeze":
                 unfreeze(pcfg, pargs)
         else:
-                print "pkg: unknown subcommand '%s'" % pargs[0]
+                print "pkg: unknown subcommand '%s'" % subcommand
                 usage()

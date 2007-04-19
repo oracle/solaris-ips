@@ -85,40 +85,67 @@ class IllegalVersion(exceptions.Exception):
                 self.args = args
 
 class Version(object):
-        """Version format is release,branch:sequence, which we decompose
-        into a DotSequence and branch and sequence values."""
+        """Version format is release[,build_release]-branch:sequence, which we
+        decompose into three DotSequences and the sequence timestamp.  The
+        release and branch DotSequences are interpreted normally, where v1 < v2
+        implies that v2 is a later release or branch.  The build_release
+        DotSequence records the system on which the package binaries were
+        constructed.  Interpretation of the build_release by the client is that,
+        in the case b1 < b2, a b1 package can be run on either b1 or b2
+        systems,while a b2 package can only be run on a b2 system."""
 
-        def __init__(self, version_string):
+        def __init__(self, version_string, build_string):
                 # XXX If illegally formatted, raise exception.
-                m = re.match("([\.\d]*),(\d*)\:(\d*)", version_string)
+                m = re.match("(\d[\.\d]*),(\d[\.\d]*)-(\d[\.\d]*)\:(\d*)",
+                    version_string)
                 if m != None:
                         self.release = DotSequence(m.group(1))
-                        self.branch = int(m.group(2))
+                        self.build_release = DotSequence(m.group(2))
+                        self.branch = DotSequence(m.group(3))
+                        self.sequence = m.group(4)
+
+                m = re.match("(\d[\.\d]*)-(\d[\.\d]*)\:(\d*)", version_string)
+                if m != None:
+                        self.release = DotSequence(m.group(1))
+                        self.build_release = DotSequence(build_string)
+                        self.branch = DotSequence(m.group(2))
                         self.sequence = int(m.group(3))
                         return
 
                 # Sequence omitted?
-                m = re.match("([\.\d]*),(\d*)", version_string)
+                m = re.match("(\d[\.\d]*)-(\d[\.\d]*)", version_string)
                 if m != None:
                         self.release = DotSequence(m.group(1))
-                        self.branch = int(m.group(2))
+                        self.build_release = DotSequence(build_string)
+                        self.branch = DotSequence(m.group(2))
                         self.sequence = 0
                         return
 
                 # Branch omitted?
-                m = re.match("([\.\d]*)", version_string)
+                m = re.match("(\d[\.\d]*)", version_string)
                 if m != None:
                         self.release = DotSequence(m.group(1))
-                        self.branch = 0
+                        self.build_release = DotSequence(build_string)
+                        self.branch = DotSequence("0")
                         self.sequence = 0
                         return
 
                 raise IllegalVersion
 
+        def compatible_with_build(self, target):
+                """target is a DotSequence for the target system."""
+                if self.build_release < target:
+                        return True
+                return False
+
         def __str__(self):
-                return "%s,%s:%s" % (self.release, self.branch, self.sequence)
+                return "%s,%s-%s:%s" % (self.release, self.build_release,
+                    self.branch, self.sequence)
 
         def __ne__(self, other):
+                if other == None:
+                        return True
+
                 if self.release == other.release and \
                     self.branch == other.branch and \
                     self.sequence == other.sequence:
@@ -126,6 +153,9 @@ class Version(object):
                 return True
 
         def __eq__(self, other):
+                if other == None:
+                        return False
+
                 if self.release == other.release and \
                     self.branch == other.branch and \
                     self.sequence == other.sequence:
@@ -163,15 +193,18 @@ if __name__ == "__main__":
         d2 = DotSequence("1.1.3")
         assert d1 == d2
 
-        v1 = Version("5.5.1,10:6")
-        v2 = Version("5.5.1,10:8")
-        v3 = Version("5.5.1,10")
-        v4 = Version("5.5.1,6")
-        v5 = Version("5.6,1")
-        v6 = Version("5.7")
-        v7 = Version("5.10")
-        v8 = Version("5.10.1")
-        v9 = Version("5.11")
+        v1 = Version("5.5.1-10:6", "5.5.1")
+        v2 = Version("5.5.1-10:8", "5.5.1")
+        v3 = Version("5.5.1-10", "5.5")
+        v4 = Version("5.5.1-6", "5.4")
+        v5 = Version("5.6,1", "5.4")
+        v6 = Version("5.7", "5.4")
+        v7 = Version("5.10", "5.5.1")
+        v8 = Version("5.10.1", "5.5.1")
+        v9 = Version("5.11", "5.5.1")
+
+        d3 = DotSequence("5.4")
+        d4 = DotSequence("5.6")
 
         assert v1 < v2
         assert v4 < v3
@@ -181,3 +214,6 @@ if __name__ == "__main__":
         assert v9 > v8
         assert not v9 == v8
         assert v9 != v8
+
+        assert not v9.compatible_with_build(d3)
+        assert v9.compatible_with_build(d4)

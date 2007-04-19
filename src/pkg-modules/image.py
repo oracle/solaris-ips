@@ -52,10 +52,13 @@ class Image(object):
         XXX Root path probably can't be absolute, so that we can combine or
         multiply-use Image contents."""
 
-        def __init__(self, type, name, resource):
+        def __init__(self, type, root):
                 self.type = type
-                self.name = name
-                self.resource = version
+                self.root = root
+                if self.type == IMG_USER:
+                        self.metadata_root = self.root + "/.SUNW,pkg"
+                else:
+                        self.metadata_root = self.root + "/var/pkg"
 
         def set_resource(self, resource):
                 return

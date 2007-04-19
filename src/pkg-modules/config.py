@@ -25,6 +25,8 @@
 # Use is subject to license terms.
 #
 
+import os
+
 # Client configuration
 
 class ParentRepo(object):
@@ -44,4 +46,16 @@ class SvrConfig(object):
         """Server configuration object.  Repository location."""
         def __init__(self, repo_root):
                 self.repo_root = repo_root
+                self.trans_root = "%s/trans" % self.repo_root
+                self.file_root = "%s/file" % self.repo_root
+                self.pkg_root = "%s/pkg" % self.repo_root
+
+        def init_dirs(self):
+                # XXX refine try/except
+                try:
+                        os.makedirs(self.trans_root)
+                        os.makedirs(self.file_root)
+                        os.makedirs(self.pkg_root)
+                except OSError:
+                        pass
 

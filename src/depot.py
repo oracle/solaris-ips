@@ -19,12 +19,11 @@
 #
 # CDDL HEADER END
 #
-
-#
 # Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
+# pkg.depotd - package repository daemon
 
 import BaseHTTPServer
 import os
@@ -32,11 +31,20 @@ import re
 import sha
 import shutil
 import time
+import urllib
 
-import pkg.version as version
-import pkg.fmri as fmri
 import pkg.catalog as catalog
 import pkg.config as config
+import pkg.content as content
+import pkg.dependency as dependency
+import pkg.fmri as fmri
+import pkg.image as image
+import pkg.package as package
+import pkg.transaction as trans
+import pkg.version as version
+
+# in_flight_trans needs to be rebuilt on restart
+in_flight_trans = {}
 
 def catalog(scfg, request):
         """The marshalled form of the catalog is
@@ -53,74 +61,55 @@ def catalog(scfg, request):
         request.wfile.write('''GET URI %s ; headers %s''' % (request.path, request.headers))
 
 def trans_open(scfg, request):
-        # mkdir repo_root + "/trans/" + trans_id
-        trans_root = "%s/trans" % scfg.repo_root
-        # XXX refine try/except
-        try:
-                os.makedirs(trans_root)
-        except OSError:
-                pass
-        opening_time = time.time()
-        m = re.match("^/open/(.*)", request.path)
-        pkg_name = m.group(1)
+        # XXX Authentication will be handled by virtue of possessing a signed
+        # certificate (or a more elaborate system).
+        t = trans.Transaction()
 
-        # XXX opaquify using hash
-        trans_basename = "%d_%s" % (opening_time, pkg_name)
-        os.makedirs("%s/%s" % (trans_root, trans_basename))
+        ret = t.open(scfg, request)
+        if ret == 200:
+                in_flight_trans[t.get_basename()] = t
 
-        # record transaction metadata:  opening_time, package, user
-        # lookup package by name
-        # if not found, create package
-        # set package state to TRANSACTING
+                request.send_response(200)
+                request.send_header('Content-type', 'text/plain')
+                request.send_header('Transaction-ID', t.get_basename())
+                request.end_headers()
+        elif ret == 400:
+                request.send_response(400)
+        else:
+                request.send_response(500)
 
-        request.send_response(200)
-        request.send_header('Content-type:', 'text/plain')
-        request.end_headers()
-        request.wfile.write('Transaction-ID: %s' % trans_basename)
 
 def trans_close(scfg, request):
         # Pull transaction ID from headers.
         m = re.match("^/close/(.*)", request.path)
         trans_id = m.group(1)
 
-        trans_root = "%s/trans" % scfg.repo_root
-        # XXX refine try/except
-        #
-        # set package state to SUBMITTED
-        # attempt to reconcile dependencies
-        # if reconciled, set state to PUBLISHED
-        #   call back to check incomplete list
-        # else set state to INCOMPLETE
-        try:
-                shutil.rmtree("%s/%s" % (trans_root, trans_id))
-                request.send_response(200)
-        except:
-                request.send_response(404)
+        # XXX KeyError?
+        t = in_flight_trans[trans_id]
+        t.close(request)
+        del in_flight_trans[trans_id]
+
+def trans_abandon(scfg, request):
+        # Pull transaction ID from headers.
+        m = re.match("^/abandon/(.*)", request.path)
+        trans_id = m.group(1)
+
+        t = in_flight_trans[trans_id]
+        t.abandon(request)
+        del in_flight_trans[trans_id]
 
 def trans_add(scfg, request):
         m = re.match("^/add/([^/]*)/(.*)", request.path)
         trans_id = m.group(1)
         type = m.group(2)
 
-        trans_root = "%s/trans" % scfg.repo_root
-        # XXX refine try/except
-        hdrs = request.headers
-        path = hdrs.getheader("Path")
-
-        data = request.rfile.read()
-        hash = sha.new(data)
-        fname = hash.hexdigest()
-
-        ofile = file("%s/%s/%s" % (trans_root, trans_id, fname), "wb")
-        ofile.write(data)
-
-        tfile = file("%s/%s/manifest" % (trans_root, trans_id), "a")
-        print >>tfile, "%s %s" % (path, fname)
+        t = in_flight_trans[trans_id]
+        t.add_content(request, type)
 
 if "PKG_REPO" in os.environ:
-	scfg = config.SvrConfig(os.environ["PKG_REPO"])
+        scfg = config.SvrConfig(os.environ["PKG_REPO"])
 else:
-	scfg = config.SvrConfig("/var/pkg/repo")
+        scfg = config.SvrConfig("/var/pkg/repo")
 
 class pkgHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
@@ -131,10 +120,21 @@ class pkgHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                         trans_open(scfg, self)
                 elif re.match("^/close/(.*)$", self.path):
                         trans_close(scfg, self)
+                elif re.match("^/abandon/(.*)$", self.path):
+                        trans_abandon(scfg, self)
                 elif re.match("^/add/(.*)$", self.path):
                         trans_add(scfg, self)
+                elif re.match("^/$", self.path) or re.match("^/index.html", self.path):
+                        self.send_response(200)
+                        self.send_header('Content-type', 'text/html')
+                        self.end_headers()
+                        self.wfile.write("""<html><body><h1><code>pkg</code> server ok</h1>\n""")
+                        self.wfile.write("""</body></html>""")
                 else:
                         self.send_response(404)
+                        self.send_header('Content-type', 'text/plain')
+                        self.end_headers()
+                        self.wfile.write('''404 GET URI %s ; headers %s''' % (self.path, self.headers))
 
 
         def do_PUT(self):
@@ -155,5 +155,7 @@ class pkgHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write('''URI %s ; headers %s''' % (self.path, self.headers))
 
-server = BaseHTTPServer.HTTPServer(('', 10000), pkgHandler)
-server.serve_forever()
+if __name__ == "__main__":
+        scfg.init_dirs()
+        server = BaseHTTPServer.HTTPServer(('', 10000), pkgHandler)
+        server.serve_forever()

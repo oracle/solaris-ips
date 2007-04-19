@@ -1,0 +1,7 @@
+# Ignore compiled byte code and the entire proto area.
+\.pyc
+^proto
+# Specific build products
+^src/pkg$
+^src/pkgsend$
+^src/pkg.depotd$
