@@ -39,7 +39,7 @@ ROOTPYTHON = $(ROOTUSRLIB)/python2.4
 ROOTPYTHONVENDOR = $(ROOTPYTHON)/vendor-packages
 ROOTPYTHONPKG = $(ROOTPYTHONVENDOR)/pkg
 
-ROOTDIRS = $(ROOT) $(ROOTUSRBIN) $(ROOTUSRLIB) $(ROOTPYTHONPKG)
+ROOTDIRS = $(ROOT) $(ROOTUSRBIN) $(ROOTUSRLIB) $(ROOTPYTHONPKG)/server
 
 PROGS = pkg pkgsend pkg.depotd
 ROOTPROGS = \
@@ -59,14 +59,21 @@ PYMODS = \
 	pkg-modules/sysvpkg.py \
 	pkg-modules/version.py
 
+PYSERVERMODS = \
+	pkg-modules/server/catalog.py \
+	pkg-modules/server/package.py \
+	pkg-modules/server/transaction.py
+
 ROOTPYMODS = $(PYMODS:pkg-modules/%=$(ROOTPYTHONPKG)/%)
+ROOTPYSERVERMODS = \
+	$(PYSERVERMODS:pkg-modules/server/%=$(ROOTPYTHONPKG)/server/%)
 
 all: $(PROGS)
 
 clean:
 	rm -f $(PROGS)
 
-install: $(ROOTDIRS) $(ROOTPROGS) $(ROOTPYMODS)
+install: $(ROOTDIRS) $(ROOTPROGS) $(ROOTPYMODS) $(ROOTPYSERVERMODS)
 
 # XXX link is a developer target to connect the local machine to the current
 # repository's working copy's versions of the commands and modules.
@@ -77,17 +84,20 @@ link:
 	ln -s $(PWD)/depot.py /usr/lib/pkg.depotd
 	ln -s $(PWD)/pkg-modules /usr/lib/python2.4/vendor-packages/pkg
 
-$(ROOT) $(ROOTUSRBIN) $(ROOTUSRLIB) $(ROOTPYTHONPKG):
+$(ROOT) $(ROOTUSRBIN) $(ROOTUSRLIB) $(ROOTPYTHONPKG) $(ROOTPYTHONPKG)/server:
 	mkdir -p $(ROOT)
 	mkdir -p $(ROOTUSRBIN)
 	mkdir -p $(ROOTUSRLIB)
-	mkdir -p $(ROOTPYTHONPKG)
+	mkdir -p $(ROOTPYTHONPKG)/server
 
 $(ROOTUSRBIN)/%: %
 	rm -f $@; install -f $(ROOTUSRBIN) -m 0555 $<
 
 $(ROOTUSRLIB)/%: %
 	rm -f $@; install -f $(ROOT)/usr/lib -m 0555 $<
+
+$(ROOTPYTHONPKG)/server/%: pkg-modules/server/%
+	rm -f $@; install -f $(ROOTPYTHONPKG)/server -m 0444 $<
 
 $(ROOTPYTHONPKG)/%: pkg-modules/%
 	rm -f $@; install -f $(ROOTPYTHONPKG) -m 0444 $<

@@ -73,6 +73,9 @@ class PkgFmri(object):
                 return "pkg://%s/%s@%s" % (self.authority, self.pkg_name,
                                 self.version)
 
+        def tuple(self):
+                return self.authority, self.pkg_name, self.version
+
 if __name__ == "__main__":
         n1 = PkgFmri("pkg://pion/sunos/coreutils", "5.9")
         n2 = PkgFmri("sunos/coreutils", "5.10")

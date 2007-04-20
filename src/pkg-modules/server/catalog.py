@@ -30,15 +30,28 @@ import time
 import urllib
 
 import pkg.fmri as fmri
-import pkg.server.catalog as catalog
 
 class SCatalog(object):
-        """An SCatalog is the server's representation of the available package catalog in this repository."""
+        """An SCatalog is the server's representation of the available package
+        catalog in this repository.
+
+        XXX Does the catalog contain the incorporated relationships?  Maybe the
+        catalolog is the inventory and the statements of incorporations."""
 
         def __init__(self):
                 self.pkgs = {}
+                self.relns = {}
                 return
 
-
-        def update_entry(pkg):
+        def update_entry(self, pkg):
                 return
+
+        def __str__(self):
+                s = ""
+                for p in pkgs:
+                        s = s + "%s" % p
+                for r in self.relns:
+                        s = s + "%s" % r
+                return s
+
+

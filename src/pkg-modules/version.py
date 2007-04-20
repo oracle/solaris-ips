@@ -191,6 +191,17 @@ class Version(object):
                         return True
                 return False
 
+        def __cmp__(self, other):
+                if self < other:
+                        return -1
+                if self > other:
+                        return 1
+                if self.build_release < other.build_release:
+                        return -1
+                if self.build_release > other.build_release:
+                        return 1
+                return 0
+
 if __name__ == "__main__":
         d1 = DotSequence("1.1.3")
         d2 = DotSequence("1.1.3")

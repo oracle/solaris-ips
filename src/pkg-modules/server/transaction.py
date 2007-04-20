@@ -22,6 +22,7 @@
 # Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
+import gzip
 import os
 import re
 import sha
@@ -30,6 +31,7 @@ import time
 import urllib
 
 import pkg.fmri as fmri
+import pkg.server.package as package
 
 class Transaction(object):
         """A Transaction is a server-side object used to represent the set of
@@ -43,14 +45,17 @@ class Transaction(object):
                 self.pkg_name = ""
                 self.esc_pkg_name = ""
                 self.cfg = None
+                self.client_release = ""
+                self.fmri = None
+                self.dir = ""
                 return
 
         def open(self, cfg, request):
                 self.cfg = cfg
 
                 hdrs = request.headers
-                client_release = hdrs.getheader("Client-Release", None)
-                if client_release == None:
+                self.client_release = hdrs.getheader("Client-Release", None)
+                if self.client_release == None:
                         return 400
                 # If client_release is not defined, then this request is
                 # invalid.
@@ -60,9 +65,16 @@ class Transaction(object):
                 self.pkg_name = urllib.unquote(self.esc_pkg_name)
                 self.open_time = time.time()
                 trans_basename = self.get_basename()
-                os.makedirs("%s/%s" % (self.cfg.trans_root, trans_basename))
+                self.dir = "%s/%s" % (self.cfg.trans_root, trans_basename)
+                os.makedirs(self.dir)
 
                 # record transaction metadata:  opening_time, package, user
+
+                # attempt to construct an FMRI object
+                self.fmri = fmri.PkgFmri(self.pkg_name, self.client_release)
+
+                # lookup package by name
+                p = package.SPackage(self.cfg, self.fmri)
 
                 # validate that this version can be opened
                 #   if we specified no release, fail
@@ -73,10 +85,6 @@ class Transaction(object):
                 #   as specified
                 # we should disallow new package creation, if so flagged
 
-                # attempt to construct an FMRI object
-                p = fmri.PkgFmri(self.pkg_name, client_release)
-
-                # lookup package by name
                 # if not found, create package
                 # set package state to TRANSACTING
 
@@ -113,10 +121,8 @@ class Transaction(object):
                         # XXX Build a response from our lists of unsatisfied
                         # dependencies.
 
-                # mkdir pkg name
-                # mv each file to file_root
-                # mv manifest to pkg_name / version
-                # add entry to catalog
+                p = package.SPackage(self.cfg, self.fmri)
+                p.update(self)
 
                 try:
                         shutil.rmtree("%s/%s" % (self.trans_root, trans_id))
@@ -152,11 +158,16 @@ class Transaction(object):
                 hash = sha.new(data)
                 fname = hash.hexdigest()
 
-                ofile = file("%s/%s/%s" % (self.cfg.trans_root, trans_id, fname), "wb")
+                # XXX following is for file, preserve, displace.
+                # Separate case for link.
+                ofile = gzip.GzipFile("%s/%s/%s" %
+                    (self.cfg.trans_root, trans_id, fname), "wb")
                 ofile.write(data)
 
-                tfile = file("%s/%s/manifest" % (self.cfg.trans_root, trans_id), "a")
-                print >>tfile, "%s %s" % (path, fname)
+                tfile = file("%s/%s/manifest" %
+                    (self.cfg.trans_root, trans_id), "a")
+                print >>tfile, "%s %s %s %s %s %s" % (type, mode, user, group, path, fname)
+
                 return
 
         def add_meta(self):

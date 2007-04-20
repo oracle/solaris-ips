@@ -30,28 +30,74 @@ import time
 import urllib
 
 import pkg.fmri as fmri
+import pkg.version as version
 import pkg.server.catalog as catalog
 
 class SPackage(object):
         """An SPackage is the server's representation of a versioned package
         sequence."""
 
-        def __init__(self, cfg):
-                self.name = ""
+        def __init__(self, cfg, fmri):
+                self.fmri = fmri
                 self.cfg = cfg
                 self.versions = ()
-                return
 
-        def set_name(self, fmri):
-                """Set the name member based on the non-versioned portion of the
-                FMRI."""
+                authority, pkg_name, version = self.fmri.tuple()
+
+                self.dir = "%s/%s" % (self.cfg.pkg_root,
+                    urllib.quote(pkg_name, ""))
+
+                # Bulk state represents whether the server knows of any version
+                # of this package.  It is false for a new package.
+                self.bulk_state = True
+                try:
+                        os.stat(self.dir)
+                except:
+                        self.bulk_state = False
+
                 return
 
         def load(self):
-                """Iterate through directory and build version list."""
+                """Iterate through directory and build version list.  Each entry
+                is a separate version of the package."""
+                if not self.bulk_state:
+                        return
+
+                for e in os.listdir(self.dir):
+                        v = version.Version(e)
+                        self.versions.append(v)
+
+                self.versions.sort()
                 return
 
+        def can_open_version(self, version):
+                # validate that this version can be opened
+                #   if we specified no release, fail
+                #   if we specified a release without branch, open next branch
+                #   if we specified a release with branch major, open same
+                #     branch minor
+                #   if we specified a release with branch major and minor, use
+                #   as specified
+                # we should disallow new package creation, if so flagged
+
+                return True
+
         def update(self, trans):
+                if not self.bulk_state:
+                        os.makedirs(self.dir)
+
+                (authority, name, version) = self.fmri.tuple()
+
+                # mv manifest to pkg_name / version
+                os.rename("%s/manifest" % trans.dir, "%s/%s" % (self.dir, version))
+
+                # mv each file to file_root
+                for f in os.listdir(trans.dir):
+                        os.rename("%s/%s" % (trans.dir, f),
+                            "%s/%s" % (self.cfg.file_root, f))
+
+                # add entry to catalog
+
                 return
 
         def get_state(self, version):
