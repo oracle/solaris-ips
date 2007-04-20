@@ -33,15 +33,16 @@ import shutil
 import time
 import urllib
 
-import pkg.catalog as catalog
 import pkg.config as config
 import pkg.content as content
 import pkg.dependency as dependency
 import pkg.fmri as fmri
 import pkg.image as image
-import pkg.package as package
-import pkg.transaction as trans
 import pkg.version as version
+
+import pkg.server.catalog as catalog
+import pkg.server.package as package
+import pkg.server.transaction as trans
 
 # in_flight_trans needs to be rebuilt on restart
 in_flight_trans = {}

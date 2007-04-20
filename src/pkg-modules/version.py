@@ -142,6 +142,9 @@ class Version(object):
                 return "%s,%s-%s:%s" % (self.release, self.build_release,
                     self.branch, self.sequence)
 
+        def get_short_version(self):
+                return "%s-%s" % (self.release, self.branch)
+
         def __ne__(self, other):
                 if other == None:
                         return True

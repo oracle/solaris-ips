@@ -19,11 +19,8 @@
 #
 # CDDL HEADER END
 #
-
 # Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
-#
-#ident	"%Z%%M%	%I%	%E% SMI"
 
 import os
 import re
@@ -36,7 +33,9 @@ import pkg.fmri as fmri
 
 class Transaction(object):
         """A Transaction is a server-side object used to represent the set of
-        incoming changes to a Package."""
+        incoming changes to a Package.  Manipulation of Transaction objects in
+        the repository server is generally initiated by a package publisher,
+        such as pkgsend(1M)."""
 
         def __init__(self):
                 # XXX Need to use an FMRI object.
@@ -70,8 +69,8 @@ class Transaction(object):
                 #   if we specified a release without branch, open next branch
                 #   if we specified a release with branch major, open same
                 #     branch minor
-                #   if we specified a release with branch major and minor, use as
-                #     specified
+                #   if we specified a release with branch major and minor, use
+                #   as specified
                 # we should disallow new package creation, if so flagged
 
                 # attempt to construct an FMRI object
