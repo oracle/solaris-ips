@@ -125,13 +125,13 @@ class Transaction(object):
                 p.update(self)
 
                 try:
-                        shutil.rmtree("%s/%s" % (self.trans_root, trans_id))
+                        shutil.rmtree("%s/%s" % (self.cfg.trans_root, trans_id))
                 except:
                         print "pkg.depotd: couldn't remove transaction %s" % trans_id
 
                 request.send_response(200)
-                request.send_header('Package-FMRI:', pkg_fmri)
-                request.send_header('State:', pkg_state)
+                request.send_header('Package-FMRI', pkg_fmri)
+                request.send_header('State', pkg_state)
                 return
 
         def abandon(self, request):

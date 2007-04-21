@@ -171,14 +171,9 @@ def trans_close(config, args):
         if abandon:
                 return
 
-        lines = c.readlines()
-        for line in lines:
-                if re.match("^Package-FMRI:", line):
-                        m = re.match("^Package-FMRI: (.*)", line)
-                        print m.group(1)
-                elif re.match("^State:", line):
-                        m = re.match("^State: (.*)", line)
-                        print m.group(1)
+        hdrs = c.info()
+        print hdrs["State"]
+        print hdrs["Package-FMRI"]
 
         return
 

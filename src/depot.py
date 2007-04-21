@@ -57,7 +57,7 @@ def catalog(scfg, request):
         """
 
         request.send_response(200)
-        request.send_header('Content-type:', 'text/plain')
+        request.send_header('Content-type', 'text/plain')
         request.end_headers()
         request.wfile.write('''GET URI %s ; headers %s''' % (request.path, request.headers))
 
@@ -140,7 +140,7 @@ class pkgHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
         def do_PUT(self):
                 self.send_response(200)
-                self.send_header('Content-type:', 'text/plain')
+                self.send_header('Content-type', 'text/plain')
                 self.end_headers()
                 self.wfile.write('''PUT URI %s ; headers %s''' % (self.path, self.headers))
 
@@ -152,7 +152,7 @@ class pkgHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
         def do_DELETE(self):
                 self.send_response(200)
-                self.send_header('Content-type:', 'text/plain')
+                self.send_header('Content-type', 'text/plain')
                 self.end_headers()
                 self.wfile.write('''URI %s ; headers %s''' % (self.path, self.headers))
 
