@@ -20,22 +20,8 @@
 # CDDL HEADER END
 #
 
-#
 # Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
-import os
-
-# Shared client configuration
-
-class ParentRepo(object):
-        """Client configuration object.  Install repo URI (optional) Repository
-           upon which we commit transactions.  URL list of repos, in order of
-           preference.
-
-           XXX Need a local filter policy.  One filter example would be to only
-           install 32-bit binaries."""
-        def __init__(self, install_uri, repo_uris):
-                self.install_uri = install_uri
-                self.repo_uris = repo_uris
+__all__ = ["catalog", "image"]

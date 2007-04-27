@@ -35,23 +35,43 @@ class SCatalog(object):
         """An SCatalog is the server's representation of the available package
         catalog in this repository.
 
-        XXX Does the catalog contain the incorporated relationships?  Maybe the
-        catalolog is the inventory and the statements of incorporations."""
+        The serialized structure of the repository is an unordered list of
+        available package versions, followed by an unordered list of
+        incorporation relationships between packages.  This latter section
+        allows the graph to be topologically sorted by the client.
+
+        V fmri
+        V fmri
+        ...
+        I fmri fmri
+        I fmri fmri
+        ...
+
+        XXX It would be nice to include available flavours and their respective
+        sizes, although this could also be calculated from the set of manifests.
+        """
 
         def __init__(self):
-                self.pkgs = {}
+                self.pkgs = []
                 self.relns = {}
                 return
 
-        def update_entry(self, pkg):
+        def add_pkg(self, pkg):
+                if not pkg in self.pkgs:
+                        self.pkgs.append(pkg)
+
+                # for each version in the package,
+                #   for each incorporation in the version,
+                #     add to the version's list of incorporations
+
                 return
 
         def __str__(self):
                 s = ""
-                for p in pkgs:
-                        s = s + "%s" % p
+                for p in self.pkgs:
+                        s = s + p.get_catalog()
                 for r in self.relns:
-                        s = s + "%s" % r
+                        s = s + "I %s\n" % r
                 return s
 
 

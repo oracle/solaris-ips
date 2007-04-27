@@ -84,8 +84,8 @@ Expressing versions
   pkg:  sunos/coreutils frozen at 5.11,1 by site/workstation-cfg@5.11,1.12
 
   The administrator can then pkg delete site/workstation-cfg (or pull
-  down an updated version lacking the "require coreutils@5.11,1 freeze"
-  statement).
+  down an updated version lacking the "incorporate coreutils@5.11,1"
+  statement, with its implied freeze).
 
   pkg delete on groups removes leaf packages in the group (included via
   "pkg" statements) but leaves package dependencies untouched.
@@ -132,5 +132,16 @@ Using the (hex) timestamp as the sequence ID
   release and branch version components, then the timestamp approach
   allows us to allow a system to move back and forth between multiple
   repositories.
+
+
+On-build release freezes
+
+  We may need an expression format that allows us to pin the on-build
+  portion of the version space, in addition to specifying the release
+  and/or branch portion of the FMRI as frozen.  Otherwise, we could jump
+  from a binary compiled from one environment to that from a completely
+  different compilation environment, based on only a timestamp change.
+
+
 
 

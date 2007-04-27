@@ -25,9 +25,14 @@
 #
 #ident	"%Z%%M%	%I%	%E% SMI"
 
+import os
+
 IMG_ENTIRE = 0
 IMG_PARTIAL = 1
 IMG_USER = 2
+
+img_user_prefix = ".org.opensolaris,pkg"
+img_root_prefix = "/var/pkg"
 
 class Image(object):
         """An Image object is a directory tree containing the laid-down contents
@@ -44,19 +49,55 @@ class Image(object):
         partial Image must be an entire Image.
 
         An Image of type IMG_USER stores its external state at self.root +
-        ".SUNW,pkg".
+        ".org.opensolaris,pkg".
 
         An Image of type IMG_ENTIRE or IMG_PARTIAL stores its external state at
         self.root + "/var/pkg".
 
-        XXX Root path probably can't be absolute, so that we can combine or
-        multiply-use Image contents."""
+        An Image needs to be able to have a different repository set than the
+        system's root Image.
 
-        def __init__(self, type, root):
+        XXX Root path probably can't be absolute, so that we can combine or
+        multiply use Image contents.
+
+        XXX Image file format?  Image file manipulation API?"""
+
+        def __init__(self):
+                self.type = None
+                self.root = None
+                self.repo_uris = []
+                self.filter_tags = {}
+
+        def find_parent(self):
+                # Ascend from current working directory to find first
+                # encountered image.
+                while True:
+                        d = os.getcwd()
+
+                        if os.path.isdir("%s/%s" % (d, img_user_prefix)):
+                                # XXX Look at image file to determine filter
+                                # tags and repo URIs.
+                                self.type = IMG_USER
+                                self.root = d
+                                return
+                        elif os.path.isdir("%s/%s" % (d, img_root_prefix)):
+                                # XXX Look at image file to determine filter
+                                # tags and repo URIs.
+                                # XXX Look at image file to determine if this
+                                # image is a partial image.
+                                self.type = IMG_ENTIRE
+                                self.root = d
+                                return
+
+                        assert d != "/"
+
+                        os.chdir("..")
+
+        def set_attrs(type, root):
                 self.type = type
                 self.root = root
                 if self.type == IMG_USER:
-                        self.metadata_root = self.root + "/.SUNW,pkg"
+                        self.metadata_root = self.root + "/.org.opensolaris,pkg"
                 else:
                         self.metadata_root = self.root + "/var/pkg"
 

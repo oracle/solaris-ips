@@ -40,7 +40,7 @@ class SPackage(object):
         def __init__(self, cfg, fmri):
                 self.fmri = fmri
                 self.cfg = cfg
-                self.versions = ()
+                self.versions = []
 
                 authority, pkg_name, version = self.fmri.tuple()
 
@@ -64,7 +64,8 @@ class SPackage(object):
                         return
 
                 for e in os.listdir(self.dir):
-                        v = version.Version(e)
+                        print e
+                        v = version.Version(e, None)
                         self.versions.append(v)
 
                 self.versions.sort()
@@ -105,3 +106,9 @@ class SPackage(object):
 
         def get_manifest(self, version):
                 return
+
+        def get_catalog(self):
+                ret = ""
+                for v in self.versions:
+                        ret = ret + "V %s/%s\n" % (self.fmri, v)
+                return ret

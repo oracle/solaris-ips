@@ -64,14 +64,15 @@ class Transaction(object):
                 self.esc_pkg_name = m.group(1)
                 self.pkg_name = urllib.unquote(self.esc_pkg_name)
                 self.open_time = time.time()
-                trans_basename = self.get_basename()
-                self.dir = "%s/%s" % (self.cfg.trans_root, trans_basename)
-                os.makedirs(self.dir)
 
                 # record transaction metadata:  opening_time, package, user
 
                 # attempt to construct an FMRI object
                 self.fmri = fmri.PkgFmri(self.pkg_name, self.client_release)
+
+                trans_basename = self.get_basename()
+                self.dir = "%s/%s" % (self.cfg.trans_root, trans_basename)
+                os.makedirs(self.dir)
 
                 # lookup package by name
                 p = package.SPackage(self.cfg, self.fmri)
@@ -89,6 +90,22 @@ class Transaction(object):
                 # set package state to TRANSACTING
 
                 return 200
+
+        def reopen(self, cfg, trans_dir):
+                """The reopen() method is invoked on server restart, to
+                reestablish the status of inflight transactions."""
+
+                self.cfg = cfg
+                self.open_time, self.esc_pkg_name = re.split("_",
+                    os.path.basename(trans_dir))
+                self.open_time = int(self.open_time)
+                self.pkg_name = urllib.unquote(self.esc_pkg_name)
+
+                # This conversion should always work, because we encoded the
+                # client release on the initial open of the transaction.
+                self.fmri = fmri.PkgFmri(self.pkg_name, None)
+
+                self.dir = ("%s/%s", self.cfg.trans_root, self.get_basename())
 
         def close(self, request):
                 def split_trans_id(id):
@@ -193,5 +210,6 @@ class Transaction(object):
                 return
 
         def get_basename(self):
-                return "%d_%s" % (self.open_time, urllib.quote(self.pkg_name, ""))
+                return "%d_%s" % (self.open_time,
+                    urllib.quote("%s" % self.fmri, ""))
 

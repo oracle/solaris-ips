@@ -26,6 +26,7 @@
 # pkg.depotd - package repository daemon
 
 import BaseHTTPServer
+import getopt
 import os
 import re
 import sha
@@ -33,7 +34,6 @@ import shutil
 import time
 import urllib
 
-import pkg.config as config
 import pkg.content as content
 import pkg.dependency as dependency
 import pkg.fmri as fmri
@@ -41,11 +41,14 @@ import pkg.image as image
 import pkg.version as version
 
 import pkg.server.catalog as catalog
+import pkg.server.config as config
 import pkg.server.package as package
 import pkg.server.transaction as trans
 
-# in_flight_trans needs to be rebuilt on restart
-in_flight_trans = {}
+def usage():
+        print """\
+Usage: /usr/lib/pkg.depotd [-n]
+"""
 
 def catalog(scfg, request):
         """The marshalled form of the catalog is
@@ -59,7 +62,9 @@ def catalog(scfg, request):
         request.send_response(200)
         request.send_header('Content-type', 'text/plain')
         request.end_headers()
-        request.wfile.write('''GET URI %s ; headers %s''' % (request.path, request.headers))
+        request.wfile.write("%s" % scfg.catalog)
+
+        scfg.inc_catalog()
 
 def trans_open(scfg, request):
         # XXX Authentication will be handled by virtue of possessing a signed
@@ -68,7 +73,7 @@ def trans_open(scfg, request):
 
         ret = t.open(scfg, request)
         if ret == 200:
-                in_flight_trans[t.get_basename()] = t
+                scfg.in_flight_trans[t.get_basename()] = t
 
                 request.send_response(200)
                 request.send_header('Content-type', 'text/plain')
@@ -86,25 +91,25 @@ def trans_close(scfg, request):
         trans_id = m.group(1)
 
         # XXX KeyError?
-        t = in_flight_trans[trans_id]
+        t = scfg.in_flight_trans[trans_id]
         t.close(request)
-        del in_flight_trans[trans_id]
+        del scfg.in_flight_trans[trans_id]
 
 def trans_abandon(scfg, request):
         # Pull transaction ID from headers.
         m = re.match("^/abandon/(.*)", request.path)
         trans_id = m.group(1)
 
-        t = in_flight_trans[trans_id]
+        t = scfg.in_flight_trans[trans_id]
         t.abandon(request)
-        del in_flight_trans[trans_id]
+        del scfg.in_flight_trans[trans_id]
 
 def trans_add(scfg, request):
         m = re.match("^/add/([^/]*)/(.*)", request.path)
         trans_id = m.group(1)
         type = m.group(2)
 
-        t = in_flight_trans[trans_id]
+        t = scfg.in_flight_trans[trans_id]
         t.add_content(request, type)
 
 if "PKG_REPO" in os.environ:
@@ -115,8 +120,13 @@ else:
 class pkgHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
         def do_GET(self):
+                # Client APIs
                 if re.match("^/catalog$", self.path):
                         catalog(scfg, self)
+                elif re.match("^/manifest/.*$", self.path):
+                        manifest(scfg, self)
+
+                # Publisher APIs
                 elif re.match("^/open/(.*)$", self.path):
                         trans_open(scfg, self)
                 elif re.match("^/close/(.*)$", self.path):
@@ -125,12 +135,24 @@ class pkgHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                         trans_abandon(scfg, self)
                 elif re.match("^/add/(.*)$", self.path):
                         trans_add(scfg, self)
-                elif re.match("^/$", self.path) or re.match("^/index.html", self.path):
+
+                # Informational APIs
+                elif re.match("^/$", self.path) or re.match("^/index.html",
+                    self.path):
                         self.send_response(200)
                         self.send_header('Content-type', 'text/html')
                         self.end_headers()
-                        self.wfile.write("""<html><body><h1><code>pkg</code> server ok</h1>\n""")
-                        self.wfile.write("""</body></html>""")
+                        self.wfile.write("""\
+<html>
+<body>
+<h1><code>pkg</code> server ok</h1>
+<pre>
+""")
+                        self.wfile.write(scfg.get_status())
+                        self.wfile.write("""\
+</pre>
+</body>
+</html>""")
                 else:
                         self.send_response(404)
                         self.send_header('Content-type', 'text/plain')
@@ -158,5 +180,17 @@ class pkgHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
 if __name__ == "__main__":
         scfg.init_dirs()
+        scfg.acquire_in_flight()
+        scfg.acquire_catalog()
+
+        try:
+                opts, pargs = getopt.getopt(sys.argv[1:], "n")
+                for opt, arg in opts:
+                        if opt == "-n":
+                                sys.exit(0)
+        except:
+                print "pkg.depotd: unknown option"
+                usage()
+
         server = BaseHTTPServer.HTTPServer(('', 10000), pkgHandler)
         server.serve_forever()

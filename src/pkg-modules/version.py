@@ -96,18 +96,21 @@ class Version(object):
 
         def __init__(self, version_string, build_string):
                 # XXX If illegally formatted, raise exception.
-                m = re.match("(\d[\.\d]*),(\d[\.\d]*)-(\d[\.\d]*)\:(\d*)",
+                m = re.match("(\d+[\.\d]*),(\d+[\.\d]*)-(\d+[\.\d]*)\:(\d+)",
                     version_string)
                 if m != None:
                         self.release = DotSequence(m.group(1))
                         self.build_release = DotSequence(m.group(2))
                         self.branch = DotSequence(m.group(3))
                         self.sequence = m.group(4)
+                        return
 
-                m = re.match("(\d[\.\d]*)-(\d[\.\d]*)\:(\d*)", version_string)
+                assert build_string != None
+                self.build_release = DotSequence(build_string)
+
+                m = re.match("(\d+[\.\d]*)-(\d+[\.\d]*)\:(\d+)", version_string)
                 if m != None:
                         self.release = DotSequence(m.group(1))
-                        self.build_release = DotSequence(build_string)
                         self.branch = DotSequence(m.group(2))
                         self.sequence = int(m.group(3))
                         return
@@ -116,7 +119,6 @@ class Version(object):
                 m = re.match("(\d[\.\d]*)-(\d[\.\d]*)", version_string)
                 if m != None:
                         self.release = DotSequence(m.group(1))
-                        self.build_release = DotSequence(build_string)
                         self.branch = DotSequence(m.group(2))
                         self.sequence = 0
                         return
@@ -125,7 +127,6 @@ class Version(object):
                 m = re.match("(\d[\.\d]*)", version_string)
                 if m != None:
                         self.release = DotSequence(m.group(1))
-                        self.build_release = DotSequence(build_string)
                         self.branch = DotSequence("0")
                         self.sequence = 0
                         return

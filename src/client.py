@@ -53,14 +53,15 @@ import sys
 import urllib2
 import urlparse
 
-import pkg.catalog as catalog
 import pkg.config as config
 import pkg.content as content
 import pkg.dependency as dependency
 import pkg.fmri as fmri
-import pkg.image as image
 import pkg.package as package
 import pkg.version as version
+
+import pkg.client.catalog as catalog
+import pkg.client.image as image
 
 def usage():
         print """\
@@ -73,6 +74,9 @@ Install subcommands:
         pkg uninstall pkg_fmri
         pkg freeze [--version version_spec] [--release] [--branch] pkg_fmri
         pkg unfreeze pkg_fmri
+
+        pkg set name value
+        pkg unset name
 
 Options:
         --server, -s
@@ -115,7 +119,8 @@ def unfreeze(config, args):
         return
 
 # XXX need an Image configuration by default
-icfg = image.Image(image.IMG_ENTIRE, "/")
+icfg = image.Image()
+icfg.find_parent()
 pcfg = config.ParentRepo("http://localhost:10000", ["http://localhost:10000"])
 
 if __name__ == "__main__":
