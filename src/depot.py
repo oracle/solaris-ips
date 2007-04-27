@@ -37,7 +37,6 @@ import urllib
 import pkg.content as content
 import pkg.dependency as dependency
 import pkg.fmri as fmri
-import pkg.image as image
 import pkg.version as version
 
 import pkg.server.catalog as catalog

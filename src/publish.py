@@ -51,12 +51,10 @@ import urllib
 import urllib2
 import urlparse
 
-import pkg.catalog as catalog
 import pkg.config as config
 import pkg.content as content
 import pkg.dependency as dependency
 import pkg.fmri as fmri
-import pkg.image as image
 import pkg.package as package
 import pkg.version as version
 

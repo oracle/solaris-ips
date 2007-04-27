@@ -87,12 +87,17 @@ Environment:
         PKG_IMAGE"""
         sys.exit(2)
 
-def catalog(config, args):
+def catalog(config, image, args):
         """XXX will need to show available content series for each package"""
+        croot = image.get_root()
 
         if len(args) != 0:
                 print "pkg: catalog subcommand takes no arguments"
                 usage()
+
+        # Ensure Image directory structure is valid.
+        if not os.path.isdir("%s/catalog" % croot):
+                image.mkdirs()
 
         # GET /catalog
         for repo in pcfg.repo_uris:
@@ -100,6 +105,12 @@ def catalog(config, args):
                 c = urllib2.urlopen(uri)
 
                 # compare headers
+                data = c.read()
+                fname = urlparse.quote(c.geturl(), "")
+
+                cfile = file("%s/catalog/%s" % (croot(), fname), "w")
+                print >>cfile, data
+
 
 def install(config, args):
         """Attempt to take package specified to INSTALLED state."""
@@ -139,16 +150,18 @@ if __name__ == "__main__":
         subcommand = pargs[0]
         del pargs[0]
 
+        # Handle PKG_IMAGE and PKG_SERVER environment variables.
+
         if subcommand == "catalog":
-                catalog(pcfg, pargs)
+                catalog(pcfg, icfg, pargs)
         elif subcommand == "install":
-                install(pcfg, pargs)
+                install(pcfg, icfg, pargs)
         elif subcommand == "uninstall":
-                uninstall(pcfg, pargs)
+                uninstall(pcfg, icfg, pargs)
         elif subcommand == "freeze":
-                freeze(pcfg, pargs)
+                freeze(pcfg, icfg, pargs)
         elif subcommand == "unfreeze":
-                unfreeze(pcfg, pargs)
+                unfreeze(pcfg, icfg, pargs)
         else:
                 print "pkg: unknown subcommand '%s'" % subcommand
                 usage()

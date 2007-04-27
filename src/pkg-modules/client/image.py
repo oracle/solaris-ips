@@ -57,6 +57,12 @@ class Image(object):
         An Image needs to be able to have a different repository set than the
         system's root Image.
 
+        Directory layout
+
+          $IROOT/catalog
+               Directory containing catalogs for URIs of interest.  Filename is
+               the escaped URI of the catalog.
+
         XXX Root path probably can't be absolute, so that we can combine or
         multiply use Image contents.
 
@@ -93,13 +99,21 @@ class Image(object):
 
                         os.chdir("..")
 
-        def set_attrs(type, root):
+        def mkdirs(self):
+                os.makedirs(self.root + "/catalog")
+                os.makedirs(self.root + "/file")
+                os.makedirs(self.root + "/pkg")
+
+        def set_attrs(self, type, root):
                 self.type = type
                 self.root = root
                 if self.type == IMG_USER:
                         self.metadata_root = self.root + "/.org.opensolaris,pkg"
                 else:
                         self.metadata_root = self.root + "/var/pkg"
+
+        def get_root(self):
+                return self.root
 
         def set_resource(self, resource):
                 return

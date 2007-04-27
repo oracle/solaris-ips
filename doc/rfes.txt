@@ -1,0 +1,10 @@
+
+1.  Put size in manifest so that we can do GET with offset to speed
+    retrieval.  Example:  reget on Windows.
+
+2.  ACLs and extended attributes.  Are these both new action types?
+
+3.  Do we need other forms of signing, beyond publisher and depot SSL
+    certificates?  Is it best to enforce a CA-based model, or should web
+    of trust also be allowed?
+
