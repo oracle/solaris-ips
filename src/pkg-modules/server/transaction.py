@@ -171,7 +171,7 @@ class Transaction(object):
 
                 trans_id = self.get_basename()
 
-                data = request.rfile.read()
+                data = request.rfile.read(int(hdrs.getheader("Content-Length")))
                 hash = sha.new(data)
                 fname = hash.hexdigest()
 
@@ -184,6 +184,8 @@ class Transaction(object):
                 tfile = file("%s/%s/manifest" %
                     (self.cfg.trans_root, trans_id), "a")
                 print >>tfile, "%s %s %s %s %s %s" % (type, mode, user, group, path, fname)
+
+                request.send_response(200)
 
                 return
 
