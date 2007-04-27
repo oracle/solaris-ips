@@ -60,6 +60,8 @@ import pkg.image as image
 import pkg.package as package
 import pkg.version as version
 
+import pkg.publish.transaction as trans
+
 def usage():
         print """\
 Usage:
@@ -104,24 +106,14 @@ def trans_open(config, args):
                 print "pkgsend: open requires one package name"
                 usage()
 
-        # POST /open/pkg_name
-        repo = config.install_uri
+        t = trans.Transaction()
 
-        # get client release
-        # populate Client-Release header
-        repo = config.install_uri
-        uri_exp = urlparse.urlparse(repo)
-        host, port = re.split(":", uri_exp[1])
+        status, id = t.open(config, pargs[0])
 
-        c = httplib.HTTPConnection(host, port)
-        c.connect()
-        c.putrequest("GET", "/open/%s" % urllib.quote(pargs[0], ""))
-        c.putheader("Client-Release", os.uname()[2])
-        c.endheaders()
+        if status / 100 == 4 or status / 100 == 5:
+                print "pkgsend: server failed (status %s)" % status
+                sys.exit(1)
 
-        r = c.getresponse()
-
-        id = r.getheader("Transaction-ID", None)
         if id == None:
                 print "pkgsend: no transaction ID provided in response"
                 sys.exit(1)
@@ -153,126 +145,58 @@ def trans_close(config, args):
                 usage()
 
         if trans_id == None:
-                # XXX try/except -> no transaction specified
-                trans_id = os.environ["PKG_TRANS_ID"]
+                try:
+                        trans_id = os.environ["PKG_TRANS_ID"]
+                except KeyError:
+                        print "No transaction ID specified"
+                        sys.exit(1)
 
-        repo = config.install_uri
-        op = "close"
-        if abandon:
-                op = "abandon"
-
-        uri = urlparse.urljoin(repo, "%s/%s" % (op, trans_id))
-        try:
-                c = urllib2.urlopen(uri)
-        except urllib2.HTTPError:
-                print "pkgsend: transaction close failed"
-                sys.exit(1)
+        t = trans.Transaction()
+        ret, hdrs = t.close(config, trans_id, abandon)
 
         if abandon:
                 return
 
-        hdrs = c.info()
         print hdrs["State"]
         print hdrs["Package-FMRI"]
 
         return
 
 def trans_add(config, args):
-        """POST the file contents to the transaction.  Default is to post to the
-        currently open content series.  -s option selects a different series.
+        try:
+                trans_id = os.environ["PKG_TRANS_ID"]
+        except KeyError:
+                print "No transaction ID specified in $PKG_TRANS_ID"
+                sys.exit(1)
 
-        dir mode owner group path [n=v ...]
-        file mode owner group path [n=v ...]
-        displace mode owner group path [n=v ...]
-        preserve mode owner group path [n=v ...]
+        # Specifies the ordering of the commandline arguments for each file type
+        # XXX this needs to be modularized.  Or does it -- should it just
+        # pass the args into Transaction.add() by order, and have that sort
+        # it out?  If this is to be modularized here, then pkgsend will
+        # have to know how to load the extension (perhaps another API
+        # call), but if it passes args by order, then the transaction API
+        # won't be by keyword, which I think is less clean (ordering is
+        # *such* a commandline thing).
+        attrs = {
+                "dir": ("mode", "owner", "group", "path"),
+                "displace": ("mode", "owner", "group", "path", "file"),
+                "file": ("mode", "owner", "group", "path", "file"),
+                "preserve": ("mode", "owner", "group", "path", "file"),
+                "service": ("manifest", ),
+        }
 
-        link path_from path_to [n=v ...]
-                This action is exclusively for symbolic links.
+        try:
+                kw = dict((attrs[args[0]][i], args[i + 1])
+                        for i in range(len(attrs[args[0]])))
+        except KeyError, e:
+                print 'pkgsend: action "%s" not defined' % e[0]
+                sys.exit(1)
+        except IndexError, e:
+                print 'pkgsend: not enough arguments for "%s" action' % args[0]
+                sys.exit(1)
 
-        service manifest_path [n=v ...]
-                0444 root sys
-        driver class  [n=v ...] (a whole slew of specifiers)
-                0755 root sys binaries; 0644 root sys conf file
-
-        restart fmri [n=v ...]
-                [no file, illegal in user image]
-
-        XXX do we need hardlinks?
-
-        XXX driver action could follow the upload of two or three files.  In
-        this case, the action can either cause the transaction to fail (since
-        modes and ownership may be inconsistent) or correct the transaction to
-        follow convention (with a warning).
-
-        XXX driver action must be flavour dependent, as a driver may exist only
-        on a single platform kind.
-
-        XXX Setting a driver from the command line, rather than via a batched
-        file, seems error prone.
-
-        XXX File types needs to be made a modular API, and not be hard-coded."""
-
-        if not args[0] in [
-            "dir",
-            "displace",
-            "driver",
-            "file",
-            "link",
-            "preserve",
-            "restart",
-            "service"
-        ]:
-                print "pkgsend: unknown add object '%s'" % args[0]
-                usage()
-
-        trans_id = os.environ["PKG_TRANS_ID"]
-        repo = config.install_uri
-        uri_exp = urlparse.urlparse(repo)
-        host, port = re.split(":", uri_exp[1])
-        selector = "/add/%s/%s" % (trans_id, args[0])
-
-        headers = {}
-
-        if args[0] == "file" or args[0] == "displace" or args[0] == "preserve":
-                # XXX Need to handle larger files than available swap.
-                headers["Mode"] = args[1]
-                headers["Owner"] = args[2]
-                headers["Group"] = args[3]
-                headers["Path"] = args[4]
-                file = open(args[5])
-                data = file.read()
-                # XXX name-value handling
-                # vars_to_headers(headers, args[6:]
-        elif args[0] == "dir":
-                headers["Mode"] = args[1]
-                headers["Owner"] = args[2]
-                headers["Group"] = args[3]
-                headers["Path"] = args[4]
-                data = ""
-                # XXX name-value handling
-                # vars_to_headers(headers, args[2:]
-        elif args[0] == "service":
-                headers["Manifest"] = args[1]
-                file = open(args[2])
-                data = file.read()
-                # XXX name-value handling
-                # vars_to_headers(headers, args[3:]
-        elif args[0] == "restart":
-                print "pkgsend: restart action not defined"
-                sys.exit(99)
-        elif args[0] == "link":
-                print "pkgsend: link action not defined"
-                sys.exit(99)
-        elif args[0] == "driver":
-                print "pkgsend: driver action not defined"
-                sys.exit(99)
-        else:
-                print "pkgsend: unknown action '%s'" % args[0]
-                sys.exit(99)
-
-        c = httplib.HTTPConnection(host, port)
-        c.connect()
-        c.request("POST", selector, data, headers)
+        t = trans.Transaction()
+        t.add(config, trans_id, args[0], **kw)
 
 def trans_delete(config, args):
         return
@@ -285,29 +209,10 @@ def trans_meta(config, args):
                 usage()
 
         trans_id = os.environ["PKG_TRANS_ID"]
-        repo = config.install_uri
-        uri_exp = urlparse.urlparse(repo)
-        host, port = re.split(":", uri_exp[1])
-        selector = "/meta/%s/%s" % (trans_id, args[0])
 
-        # subcommand handling
-        # /meta/trans_id/set/property_name
-        #       Payload is value.
-        # /meta/trans_id/unset/property_name
-        #       No payload.
-        # /meta/trans_id/include
-        # /meta/trans_id/require
-        # /meta/trans_id/exclude
-        #       Payload is fmri.
-        # /meta/trans_id/disclaim
-        #       Payload is fmri.
+        t = trans.Transaction()
+        t.meta(config, trans_id, args)
 
-        headers = {}
-        headers["Path"] = args[1]
-
-        c = httplib.HTTPConnection(host, port)
-        c.connect()
-        c.request("POST", selector, data, headers)
         return
 
 def trans_summary(config, args):
