@@ -1,5 +1,9 @@
-# Ignore compiled byte code and the entire proto area.
+# Ignore compiled byte code, lint output, object files, shared objects,
+# and the entire proto area.
 \.pyc
+\.ln
+\.o
+\.so
 ^proto
 # Specific build products
 ^src/pkg$
