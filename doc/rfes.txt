@@ -1,10 +1,20 @@
 
-1.  Put size in manifest so that we can do GET with offset to speed
+1.  [sch] Put size in manifest so that we can do GET with offset to speed
     retrieval.  Example:  reget on Windows.
 
-2.  ACLs and extended attributes.  Are these both new action types?
+2.  [billm] ACLs and extended attributes.  Are these both new action types?
 
-3.  Do we need other forms of signing, beyond publisher and depot SSL
+3.  [sch] Do we need other forms of signing, beyond publisher and depot SSL
     certificates?  Is it best to enforce a CA-based model, or should web
     of trust also be allowed?
+
+4.  [dp] Package deletion should include a "subsumed-by" or "replaced-by".  A
+    good example is when we stopped including Mozilla, its final
+    version--expressing the deletion--should have stated subsumption by
+    Firefox and Thunderbird.
+
+5.  [barts] Minimization boundaries based on setuid binaries.
+
+6.  [barts] Feature tagging.  This should be offered via leaf packages
+    and grouping packages.
 

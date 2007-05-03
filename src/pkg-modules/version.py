@@ -29,6 +29,18 @@ import exceptions
 import re
 import string
 
+CONSTRAINT_NONE = 0
+
+CONSTRAINT_RELEASE = 100
+CONSTRAINT_RELEASE_MAJOR = 101
+CONSTRAINT_RELEASE_MINOR = 102
+
+CONSTRAINT_BRANCH = 200
+CONSTRAINT_BRANCH_MAJOR = 101
+CONSTRAINT_BRANCH_MINOR = 102
+
+CONSTRAINT_SEQUENCE = 300
+
 class IllegalDotSequence(exceptions.Exception):
         def __init__(self, args=None):
                 self.args = args
@@ -66,6 +78,20 @@ class DotSequence(object):
                 if self.sequence > other.sequence:
                         return True
                 return False
+
+        def is_subsequence(self, other):
+                """Return true if self is a "subsequence" of other, meaning that
+                other and self have identical components, up to the length of
+                self's sequence."""
+
+                if len(self.sequence) > len(other.sequence):
+                        return False
+
+                for n in xrange(len(self.sequence) - 1):
+                        if self.sequence[n] != other.sequence[n]:
+                                return False
+
+                return True
 
         def is_same_major(self, other):
                 if self.sequence[0] == other.sequence[0]:
@@ -203,6 +229,51 @@ class Version(object):
                         return 1
                 return 0
 
+        def is_successor(self, other, constraint):
+                """Evaluate true if self is a successor version to other.
+
+                The loosest constraint is CONSTRAINT_NONE (None is treated
+                equivalently, which is a simple test for self > other.  As we
+                proceed through the policies we get stricter, depending on the
+                selected constraint.
+
+                For CONSTRAINT_RELEASE, self is a successor to other if all of
+                the components of other's release match, and there are later
+                components of self's version.  The branch and sequence
+                components are ignored.
+
+                For CONSTRAINT_RELEASE_MAJOR and CONSTRAINT_RELEASE_MINOR, other
+                is effectively truncated to [other[0]] and [other[0], other[1]]
+                prior to being treated as for CONSTRAINT_RELEASE.
+
+                Similarly for CONSTRAINT_BRANCH, the release fields of other and
+                self are expected to be identical, and then the branches are
+                compared as releases were for the CONSTRAINT_RELEASE* policies.
+                """
+
+                if constraint == None or constraint == CONSTRAINT_NONE:
+                        return self > other
+
+                if constraint == CONSTRAINT_RELEASE:
+                        return other.release.is_subsequence(self.release)
+
+                if constraint == CONSTRAINT_RELEASE_MAJOR:
+                        return other.release.is_same_major(self.release)
+
+                if constraint == CONSTRAINT_RELEASE_MINOR:
+                        return other.release.is_same_minor(self.release)
+
+                if constraint == CONSTRAINT_BRANCH:
+                        return other.branch.is_subsequence(self.branch)
+
+                if constraint == CONSTRAINT_BRANCH_MAJOR:
+                        return other.branch.is_same_major(self.branch)
+
+                if constraint == CONSTRAINT_BRANCH_MINOR:
+                        return other.branch.is_same_minor(self.branch)
+
+                raise ValueError, "constraint has unknown value"
+
 if __name__ == "__main__":
         d1 = DotSequence("1.1.3")
         d2 = DotSequence("1.1.3")
@@ -232,3 +303,9 @@ if __name__ == "__main__":
 
         assert not v9.compatible_with_build(d3)
         assert v9.compatible_with_build(d4)
+
+        assert v2.is_successor(v1, CONSTRAINT_BRANCH)
+        assert v4.is_successor(v2, CONSTRAINT_RELEASE)
+        assert v6.is_successor(v5, CONSTRAINT_RELEASE_MAJOR)
+        assert v8.is_successor(v7, CONSTRAINT_RELEASE_MAJOR)
+

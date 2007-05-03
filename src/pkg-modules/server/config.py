@@ -119,6 +119,6 @@ Number of files served: %d
         def inc_manifest(self):
                 self.manifest_requests += 1
 
-        def inc_files(self):
+        def inc_file(self):
                 self.file_requests += 1
 

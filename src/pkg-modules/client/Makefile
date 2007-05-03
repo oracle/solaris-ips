@@ -1,4 +1,3 @@
-#!/usr/bin/python
 #
 # CDDL HEADER START
 #
@@ -22,6 +21,25 @@
 
 # Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
-#
 
-__all__ = ["arch", "catalog", "image"]
+MODULE = arch.so
+
+SRCS = arch.c
+OBJS = $(SRCS:%.c=%.o)
+
+PYTHONINC = /usr/include/python2.4
+
+CFLAGS += -I$(PYTHONINC)
+
+all: $(MODULE)
+
+lint:
+	$(LINT) -c $(CFLAGS) $(SRCS)
+
+$(MODULE): $(OBJS)
+	$(CC) -G $(OBJS) -o $@
+
+%.o : %.c
+	$(CC) -c -Kpic $(CFLAGS) $<
+
+

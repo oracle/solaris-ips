@@ -45,8 +45,6 @@ pkgsend add file 0444 root bin \
 pkgsend add file 0444 root bin \
 	/usr/lib/python2.4/vendor-packages/pkg/client/catalog.py proto/root_$MACH/usr/lib/python2.4/vendor-packages/pkg/client/catalog.py
 pkgsend add file 0444 root bin \
-	/usr/lib/python2.4/vendor-packages/pkg/server proto/root_$MACH/usr/lib/python2.4/vendor-packages/pkg/server
-pkgsend add file 0444 root bin \
 	/usr/lib/python2.4/vendor-packages/pkg/server/transaction.py proto/root_$MACH/usr/lib/python2.4/vendor-packages/pkg/server/transaction.py
 pkgsend add file 0444 root bin \
 	/usr/lib/python2.4/vendor-packages/pkg/server/catalog.py proto/root_$MACH/usr/lib/python2.4/vendor-packages/pkg/server/catalog.py

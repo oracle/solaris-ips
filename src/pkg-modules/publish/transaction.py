@@ -89,8 +89,9 @@ class Transaction(object):
                 return c.code, dict((h, c.info()[h]) for h in ret_hdrs)
 
         def add(self, config, trans_id, type="file", **keywords):
-                """POST the file contents to the transaction.  Default is to post to the
-                currently open content series.  -s option selects a different series.
+                """POST the file contents to the transaction.  Default is to
+                post to the currently open content series.  -s option selects a
+                different series.
 
                 dir mode owner group path [n=v ...]
                 file mode owner group path [n=v ...]
@@ -110,24 +111,26 @@ class Transaction(object):
 
                 XXX do we need hardlinks?
 
-                XXX driver action could follow the upload of two or three files.  In
-                this case, the action can either cause the transaction to fail (since
-                modes and ownership may be inconsistent) or correct the transaction to
-                follow convention (with a warning).
+                XXX driver action could follow the upload of two or three files.
+                In this case, the action can either cause the transaction to
+                fail (since modes and ownership may be inconsistent) or correct
+                the transaction to follow convention (with a warning).
 
-                XXX driver action must be flavour dependent, as a driver may exist only
-                on a single platform kind.
+                XXX driver action must be architecture tag-dependent, as a
+                driver may exist only on a single platform kind.
 
-                XXX Setting a driver from the command line, rather than via a batched
-                file, seems error prone.
+                XXX Setting a driver from the command line, rather than via a
+                batched file, seems error prone.
 
-                XXX File types needs to be made a modular API, and not be hard-coded."""
+                XXX File types needs to be made a modular API, and not be
+                hard-coded."""
 
                 if not type in (
                         "dir",
                         "displace",
                         # "driver",
                         "file",
+                        # "hardlink",
                         # "link",
                         "preserve",
                         # "restart",

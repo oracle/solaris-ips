@@ -1,17 +1,19 @@
 
 pkg
-FLAVOURS IN PACKAGES
+TAGS AND ATTRIBUTES
 
-1.  Kinds of flavour
+1.  Definitions
 
-    Little flavours:  flavours that affect individual files within a
-    package.
+    Tags are the settings that affect individual files within a package.
+    Tags may eventually have values, depending on how many tags are
+    required to handle the SPARC-based platform binaries.
 
-    Big flavours:  flavours that affect an entire package.  Introduction
-    of a big flavour can cause a conflict with the versioning algebra,
-    so we attempt to avoid them.
+    Attributes:  settings that apply to an entire package.  Introduction
+    of an attribute that causes different deliveries by the client could
+    cause a conflict with the versioning algebra, so we attempt to avoid
+    them.
 
-2.  Little flavours
+2.  Tags
 
 platform
 
@@ -22,7 +24,14 @@ debug/non-debug
 compatibility
 	(for shipping non-bleeding edge .so.x.y.z copies, perhaps)
 
-3.  Big flavours
+
+3.  Attributes
+
+3.1.  Useful attributes
+
+    Package aliases?
+
+3.2.  Attributes best avoided
 
 built-on release
 
@@ -37,11 +46,11 @@ built-on release
 	condition.  It also means that multiple repositories are needed
 	for a long lifecycle distribution.
 
-    2.  Big flavours.  Each package comes in a built-on flavour.  This
-	means that clients move from flavour to flavour triggered by
-	conditions set by the base package on the client.  Another
-	drawback is that it becomes impossible to request a specific
-	package by an FMRI, without additional knowledge.
+    2.  Attributes.  Each package comes with a built-on attribute.  This
+	means that clients move from one built-on release to another
+	triggered by conditions set by the base package on the client.
+	Another drawback is that it becomes impossible to request a
+	specific package by an FMRI, without additional knowledge.
 
     3.  Additional version specifier.  We could extend
 	release,branch:timestamp to release,built,branch:timestamp--or
@@ -59,4 +68,8 @@ built-on release
 
         build would be the highest available valid release for the
 	image.
+
+    The meaning of the built-on version could be controversial.  A
+    simple approach would be to base it on base/minimal's release,
+    rather than uname(1) output.
 

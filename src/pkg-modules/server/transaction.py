@@ -166,7 +166,7 @@ class Transaction(object):
                 hdrs = request.headers
                 path = hdrs.getheader("Path")
                 mode = hdrs.getheader("Mode")
-                user = hdrs.getheader("User")
+                owner = hdrs.getheader("Owner")
                 group = hdrs.getheader("Group")
 
                 trans_id = self.get_basename()
@@ -183,7 +183,7 @@ class Transaction(object):
 
                 tfile = file("%s/%s/manifest" %
                     (self.cfg.trans_root, trans_id), "a")
-                print >>tfile, "%s %s %s %s %s %s" % (type, mode, user, group, path, fname)
+                print >>tfile, "%s %s %s %s %s %s" % (type, mode, owner, group, path, fname)
 
                 request.send_response(200)
 

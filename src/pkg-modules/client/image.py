@@ -32,7 +32,7 @@ IMG_PARTIAL = 1
 IMG_USER = 2
 
 img_user_prefix = ".org.opensolaris,pkg"
-img_root_prefix = "/var/pkg"
+img_root_prefix = "var/pkg"
 
 class Image(object):
         """An Image object is a directory tree containing the laid-down contents
@@ -63,14 +63,21 @@ class Image(object):
                Directory containing catalogs for URIs of interest.  Filename is
                the escaped URI of the catalog.
 
+          $IROOT/file
+               Directory containing file hashes of installed packages.
+
+          $IROOT/pkg
+               Directory containing manifests and states of installed packages.
+
         XXX Root path probably can't be absolute, so that we can combine or
-        multiply use Image contents.
+        reuse Image contents.
 
         XXX Image file format?  Image file manipulation API?"""
 
         def __init__(self):
                 self.type = None
                 self.root = None
+                self.imgdir = None
                 self.repo_uris = []
                 self.filter_tags = {}
 
@@ -85,6 +92,7 @@ class Image(object):
                                 # tags and repo URIs.
                                 self.type = IMG_USER
                                 self.root = d
+                                self.imgdir = "%s/%s" % (d, img_user_prefix)
                                 return
                         elif os.path.isdir("%s/%s" % (d, img_root_prefix)):
                                 # XXX Look at image file to determine filter
@@ -93,6 +101,7 @@ class Image(object):
                                 # image is a partial image.
                                 self.type = IMG_ENTIRE
                                 self.root = d
+                                self.imgdir = "%s/%s" % (d, img_root_prefix)
                                 return
 
                         assert d != "/"
@@ -100,17 +109,20 @@ class Image(object):
                         os.chdir("..")
 
         def mkdirs(self):
-                os.makedirs(self.root + "/catalog")
-                os.makedirs(self.root + "/file")
-                os.makedirs(self.root + "/pkg")
+                if not os.path.isdir(self.imgdir + "/catalog"):
+                        os.makedirs(self.imgdir + "/catalog")
+                if not os.path.isdir(self.imgdir + "/file"):
+                        os.makedirs(self.imgdir + "/file")
+                if not os.path.isdir(self.imgdir + "/pkg"):
+                        os.makedirs(self.imgdir + "/pkg")
 
         def set_attrs(self, type, root):
                 self.type = type
                 self.root = root
                 if self.type == IMG_USER:
-                        self.metadata_root = self.root + "/.org.opensolaris,pkg"
+                        self.imgdir = self.root + "/" + img_user_prefix
                 else:
-                        self.metadata_root = self.root + "/var/pkg"
+                        self.imgdir = self.root + "/" + img_root_prefix
 
         def get_root(self):
                 return self.root

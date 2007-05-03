@@ -50,20 +50,72 @@ Usage: /usr/lib/pkg.depotd [-n]
 """
 
 def catalog(scfg, request):
-        """The marshalled form of the catalog is
-
-        pkg_name (release (branch (sequence ...) ...) ...)
-
-        since we know that the server is only to report packages for which it
-        can offer a record.
-        """
+        scfg.inc_catalog()
 
         request.send_response(200)
         request.send_header('Content-type', 'text/plain')
         request.end_headers()
         request.wfile.write("%s" % scfg.catalog)
 
-        scfg.inc_catalog()
+def manifest(scfg, request):
+        """The request is an encoded pkg FMRI.  If the version is specified
+        incompletely, we return the latest matching manifest.  The matched
+        version is returned in the headers.  If an incomplete FMRI is received,
+        the client is expected to have provided a build release in the request
+        headers.
+
+        Legitimate requests are
+
+        /manifest/[URL]
+        /manifest/branch/[URL]
+        /manifest/release/[URL]
+
+        allowing the request of the next matching version, based on client
+        constraints."""
+
+        scfg.inc_manifest()
+
+        constraint = None
+
+        # Parse request into FMRI component and decode.
+        m = re.match("^/manifest/(.*)", request.path)
+        pfmri = urllib.unquote(m.group(1))
+
+        # Match package stem.
+        f = fmri.PkgFmri(pfmri, None)
+
+        # Determine closest version.
+        vs = scfg.catalog.matching_pkgs(f, constraint)
+
+        msg = "Request for %s: " % pfmri
+        for v in vs:
+                msg = msg + "%s " % v
+
+        request.log_message(msg)
+
+        # Open manifest and send.
+        # file = open("%s/%s/%s", scfg.pkg_root, pkgname, pkgversion)
+        # data = file.read()
+
+        request.send_response(200)
+        request.send_header('Content-type', 'text/plain')
+        request.end_headers()
+        # request.wfile.write(data)
+
+def get_file(scfg, request):
+        """The request is the SHA-1 hash name for the file."""
+        scfg.inc_file()
+
+        m = re.match("^/file/(.*)", request.path)
+        fhash = m.group(1)
+
+        file = open(scfg.file_root + "/" + fhash)
+        data = file.read()
+
+        request.send_response(200)
+        request.send_header("Content-type", "application/data")
+        request.end_headers()
+        request.wfile.write(data)
 
 def trans_open(scfg, request):
         # XXX Authentication will be handled by virtue of possessing a signed
@@ -124,6 +176,8 @@ class pkgHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                         catalog(scfg, self)
                 elif re.match("^/manifest/.*$", self.path):
                         manifest(scfg, self)
+                elif re.match("^/file/.*$", self.path):
+                        get_file(scfg, self)
 
                 # Publisher APIs
                 elif re.match("^/open/(.*)$", self.path):
@@ -156,14 +210,16 @@ class pkgHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                         self.send_response(404)
                         self.send_header('Content-type', 'text/plain')
                         self.end_headers()
-                        self.wfile.write('''404 GET URI %s ; headers %s''' % (self.path, self.headers))
+                        self.wfile.write('''404 GET URI %s ; headers %s''' %
+                            (self.path, self.headers))
 
 
         def do_PUT(self):
                 self.send_response(200)
                 self.send_header('Content-type', 'text/plain')
                 self.end_headers()
-                self.wfile.write('''PUT URI %s ; headers %s''' % (self.path, self.headers))
+                self.wfile.write('''PUT URI %s ; headers %s''' %
+                    (self.path, self.headers))
 
         def do_POST(self):
                 if re.match("^/add/(.*)$", self.path):
@@ -175,7 +231,8 @@ class pkgHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                 self.send_response(200)
                 self.send_header('Content-type', 'text/plain')
                 self.end_headers()
-                self.wfile.write('''URI %s ; headers %s''' % (self.path, self.headers))
+                self.wfile.write('''URI %s ; headers %s''' %
+                    (self.path, self.headers))
 
 if __name__ == "__main__":
         scfg.init_dirs()

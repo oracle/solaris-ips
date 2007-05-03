@@ -50,6 +50,7 @@ import httplib
 import os
 import re
 import sys
+import urllib
 import urllib2
 import urlparse
 
@@ -60,6 +61,7 @@ import pkg.fmri as fmri
 import pkg.package as package
 import pkg.version as version
 
+import pkg.client.arch as arch
 import pkg.client.catalog as catalog
 import pkg.client.image as image
 
@@ -75,6 +77,9 @@ Install subcommands:
         pkg freeze [--version version_spec] [--release] [--branch] pkg_fmri
         pkg unfreeze pkg_fmri
 
+        pkg image [--full|--partial|--user] dir
+        pkg image [-FPU] dir
+
         pkg set name value
         pkg unset name
 
@@ -89,7 +94,7 @@ Environment:
 
 def catalog(config, image, args):
         """XXX will need to show available content series for each package"""
-        croot = image.get_root()
+        croot = image.imgdir
 
         if len(args) != 0:
                 print "pkg: catalog subcommand takes no arguments"
@@ -101,19 +106,40 @@ def catalog(config, image, args):
 
         # GET /catalog
         for repo in pcfg.repo_uris:
+                # Ignore http_proxy for localhost case, by overriding default
+                # proxy behaviour of urlopen().
+                proxy_uri = None
+                netloc = urlparse.urlparse(repo)[1]
+                if urllib.splitport(netloc)[0] == "localhost":
+                        proxy_uri = {}
+
                 uri = urlparse.urljoin(repo, "catalog")
-                c = urllib2.urlopen(uri)
+
+                c = urllib.urlopen(uri, proxies=proxy_uri)
 
                 # compare headers
                 data = c.read()
-                fname = urlparse.quote(c.geturl(), "")
+                fname = urllib.quote(c.geturl(), "")
 
-                cfile = file("%s/catalog/%s" % (croot(), fname), "w")
+                # Filename should be reduced to host\:port
+                cfile = file("%s/catalog/%s" % (croot, fname), "w")
                 print >>cfile, data
 
 
 def install(config, args):
         """Attempt to take package specified to INSTALLED state."""
+
+        # check catalogs
+        # pick appropriate version, based on request and freezes
+        #   warn on dependencies; exit if --strict
+        # do we have this manifest?
+        #   get it if not
+        # request manifest
+        # examine manifest for files
+        # request files
+
+        # perform update transaction
+
         return
 
 def uninstall(config, args):
@@ -126,7 +152,35 @@ def freeze(config, args):
         return
 
 def unfreeze(config, args):
-        """Attempt to return package specified to INSTALLED state from FROZEN state."""
+        """Attempt to return package specified to INSTALLED state from FROZEN
+        state."""
+
+        return
+
+def create_image(config, args):
+        """Create an image of the requested kind, at the given path."""
+
+        type = image.IMG_USER
+        filter_tags = misc.get_arch_tags()
+
+        opts = None
+        pargs = None
+        if len(args) > 0:
+                opts, pargs = getopt.getopt(args, "FPU")
+
+        i = image.Image()
+
+        for opt, arg in opts:
+                if opt == "-F":
+                        self.type = image.IMG_ENTIRE
+                if opt == "-P":
+                        self.type = image.IMG_PARTIAL
+                if opt == "-U":
+                        self.type = image.IMG_USER
+
+        i.set_attrs(type, pargs[0])
+        i.mkdirs()
+
         return
 
 # XXX need an Image configuration by default
@@ -135,6 +189,8 @@ icfg.find_parent()
 pcfg = config.ParentRepo("http://localhost:10000", ["http://localhost:10000"])
 
 if __name__ == "__main__":
+
+
         opts = None
         pargs = None
         try:
@@ -162,6 +218,8 @@ if __name__ == "__main__":
                 freeze(pcfg, icfg, pargs)
         elif subcommand == "unfreeze":
                 unfreeze(pcfg, icfg, pargs)
+        elif subcommand == "image":
+                create_image(pcfg, pargs)
         else:
                 print "pkg: unknown subcommand '%s'" % subcommand
                 usage()

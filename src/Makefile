@@ -30,12 +30,16 @@
 
 MACH:sh = uname -p
 
+PYTHON = /usr/bin/python
+
 ROOT = ../proto/root_${MACH}
 ROOTUSRBIN = $(ROOT)/usr/bin
 ROOTUSRLIB = $(ROOT)/usr/lib
 ROOTPYTHON = $(ROOTUSRLIB)/python2.4
 ROOTPYTHONVENDOR = $(ROOTPYTHON)/vendor-packages
 ROOTPYTHONPKG = $(ROOTPYTHONVENDOR)/pkg
+
+LINKPYTHONPKG = /usr/lib/python2.4/vendor-packages/pkg
 
 ROOTDIRS = \
 	$(ROOT) \
@@ -69,6 +73,7 @@ PYSERVERMODS = \
 	pkg-modules/server/transaction.py
 
 PYCLIENTMODS = \
+	pkg-modules/client/arch.so \
 	pkg-modules/client/__init__.py \
 	pkg-modules/client/catalog.py \
 	pkg-modules/client/image.py
@@ -85,12 +90,18 @@ ROOTPYPUBLISHMODS = \
 ROOTPYCLIENTMODS = \
 	$(PYCLIENTMODS:pkg-modules/client/%=$(ROOTPYTHONPKG)/client/%)
 
-all: $(PROGS)
+all := TARGET = all
+
+all: $(PROGS) client-mods
 
 clean:
 	rm -f $(PROGS)
 
-install: $(ROOTDIRS) $(ROOTPROGS) $(ROOTPYMODS) $(ROOTPYSERVERMODS) $(ROOTPYPUBLISHMODS) $(ROOTPYCLIENTMODS)
+install: $(ROOTDIRS) $(ROOTPROGS) $(ROOTPYMODS) $(ROOTPYSERVERMODS) \
+	$(ROOTPYPUBLISHMODS) $(ROOTPYCLIENTMODS)
+
+client-mods:
+	@cd pkg-modules/client; pwd; $(MAKE) $(TARGET)
 
 # XXX link is a developer target to connect the local machine to the current
 # repository's working copy's versions of the commands and modules.
@@ -100,6 +111,11 @@ link:
 	ln -s $(PWD)/publish.py /usr/bin/pkgsend
 	ln -s $(PWD)/depot.py /usr/lib/pkg.depotd
 	ln -s $(PWD)/pkg-modules /usr/lib/python2.4/vendor-packages/pkg
+
+# Invoke all known modules with tests.
+test:
+	$(PYTHON) $(LINKPYTHONPKG)/version.py
+	$(PYTHON) $(LINKPYTHONPKG)/fmri.py
 
 $(ROOT) $(ROOTUSRBIN) $(ROOTUSRLIB):
 	mkdir -p $(ROOT)
@@ -126,6 +142,9 @@ $(ROOTPYTHONPKG)/server/%: pkg-modules/server/%
 
 $(ROOTPYTHONPKG)/publish/%: pkg-modules/publish/%
 	rm -f $@; install -f $(ROOTPYTHONPKG)/publish -m 0444 $<
+
+$(ROOTPYTHONPKG)/client/%.so: pkg-modules/client/%.so
+	rm -f $@; install -f $(ROOTPYTHONPKG)/client -m 0555 $<
 
 $(ROOTPYTHONPKG)/client/%: pkg-modules/client/%
 	rm -f $@; install -f $(ROOTPYTHONPKG)/client -m 0444 $<

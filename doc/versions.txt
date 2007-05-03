@@ -25,9 +25,9 @@ Expressing versions
 
   In this sequence, we've assumed that the client's requirement to
   remain with binaries associated with a particular build is implicit
-  with the client.  As discussed in the flavours note, we need to handle
-  the distinction between a package built on one release and the same
-  package's binaries built on another release.
+  with the client.  As discussed in the tags and attributes note, we
+  need to handle the distinction between a package built on one release
+  and the same package's binaries built on another release.
 
   XXX Need a full example with the build_version in place.
 
@@ -116,7 +116,7 @@ When to increment the branch number?
   On addition of new public interfaces where the release version is
   constrained.
 
-  Potentially on the addition of a newly delivered flavour?
+  Potentially on the addition of a newly delivered platform or ISA?
 
 
 Using the (hex) timestamp as the sequence ID

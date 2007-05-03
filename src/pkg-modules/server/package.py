@@ -76,9 +76,9 @@ class SPackage(object):
                 #   if we specified no release, fail
                 #   if we specified a release without branch, open next branch
                 #   if we specified a release with branch major, open same
-                #     branch minor
+                #     branch, next minor
                 #   if we specified a release with branch major and minor, use
-                #   as specified
+                #   as specified, new timestamp
                 # we should disallow new package creation, if so flagged
 
                 return True
@@ -90,7 +90,8 @@ class SPackage(object):
                 (authority, name, version) = self.fmri.tuple()
 
                 # mv manifest to pkg_name / version
-                os.rename("%s/manifest" % trans.dir, "%s/%s" % (self.dir, version))
+                os.rename("%s/manifest" % trans.dir, "%s/%s" %
+                    (self.dir, version))
 
                 # mv each file to file_root
                 for f in os.listdir(trans.dir):
@@ -98,8 +99,20 @@ class SPackage(object):
                             "%s/%s" % (self.cfg.file_root, f))
 
                 # add entry to catalog
+                p = SPackage(self.cfg, self.fmri)
+                self.cfg.catalog.add_pkg(p)
 
                 return
+
+        def matching_versions(self, pfmri, constraint):
+                ret = []
+
+                for v in self.versions:
+                        f = fmri.PkgFmri("%s@%s" % (self.fmri, v), None)
+                        if pfmri.is_successor(f):
+                                ret.append(f)
+
+                return ret
 
         def get_state(self, version):
                 return 0;
@@ -110,5 +123,6 @@ class SPackage(object):
         def get_catalog(self):
                 ret = ""
                 for v in self.versions:
-                        ret = ret + "V %s/%s\n" % (self.fmri, v)
+                        ret = ret + "V %s@%s\n" % (self.fmri, v)
                 return ret
+

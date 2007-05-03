@@ -47,8 +47,8 @@ class SCatalog(object):
         I fmri fmri
         ...
 
-        XXX It would be nice to include available flavours and their respective
-        sizes, although this could also be calculated from the set of manifests.
+        XXX It would be nice to include available tags and package sizes,
+        although this could also be calculated from the set of manifests.
         """
 
         def __init__(self):
@@ -65,6 +65,14 @@ class SCatalog(object):
                 #     add to the version's list of incorporations
 
                 return
+
+        def matching_pkgs(self, pfmri, constraint):
+                # iterate through pkgs, looking for an fmri match
+                for pkg in self.pkgs:
+                        if pkg.fmri.is_similar(pfmri):
+                                return pkg.matching_versions(pfmri, constraint)
+
+                raise KeyError, "%s not found in catalog" % pfmri
 
         def __str__(self):
                 s = ""
