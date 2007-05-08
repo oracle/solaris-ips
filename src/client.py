@@ -125,12 +125,12 @@ def catalog(config, image, args):
                 cfile = file("%s/catalog/%s" % (croot, fname), "w")
                 print >>cfile, data
 
+def pattern_install(config, image, pattern, strict):
+        # check catalogs for this pattern
+        matches = image.get_matching_pkgs(pattern)
 
-def install(config, args):
-        """Attempt to take package specified to INSTALLED state."""
-
-        # check catalogs
         # pick appropriate version, based on request and freezes
+        #   XXX can we do this with the is_successor()/version() and a map?
         #   warn on dependencies; exit if --strict
         # do we have this manifest?
         #   get it if not
@@ -138,7 +138,28 @@ def install(config, args):
         # examine manifest for files
         # request files
 
-        # perform update transaction
+        return # a client operation
+
+
+
+def install(config, image, args):
+        """Attempt to take package specified to INSTALLED state."""
+        strict = False
+        oplist = []
+
+        opts = None
+        pargs = None
+        if len(args) > 0:
+                opts, pargs = getopt.getopt(args, "S")
+
+        for opt, arg in opts:
+                if opt == "-S":
+                        strict = True
+
+        for ppat in pargs:
+                oplist.append(pattern_install(config, image, ppat, strict))
+
+        # perform update transaction as given in oplist
 
         return
 

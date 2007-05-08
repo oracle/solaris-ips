@@ -81,6 +81,8 @@ class Image(object):
                 self.repo_uris = []
                 self.filter_tags = {}
 
+                self.catalogs = {}
+
         def find_parent(self):
                 # Ascend from current working directory to find first
                 # encountered image.
@@ -129,4 +131,13 @@ class Image(object):
 
         def set_resource(self, resource):
                 return
+
+        def reload_catalogs(self):
+                cdir = "%s/%s" % (self.imgdir, "catalog")
+                for c in os.listdirs(self.imgdir + "/catalog"):
+                        # XXX XXX
+
+        def get_matching_pkgs(self, pattern):
+                # XXX XXX
+
 

@@ -28,8 +28,11 @@ import re
 from version import Version, DotSequence
 
 class PkgFmri(object):
-        """The authority is a short form for fetching packages from off the
-        default repository search path.
+        """The authority is the anchor of a package namespace.  Clients can
+        choose to take packages from multiple authorities, and specify a default
+        search path.  In general, package names may also be prefixed by a domain
+        name, reverse domain name, or a stock symbol to avoid conflict.  The
+        unprefixed namespace is expected to be managed by architectural review.
 
         The primary equivalence relationship assumes that packages of the same
         package name are forwards compatible across all versions of that
@@ -56,6 +59,7 @@ class PkgFmri(object):
 
                 m = re.match("([^@]*)@([\d\,\.\-\:]*)", fmri)
                 if m != None:
+                        # XXX Replace with server's default authority.
                         self.authority = "localhost"
                         self.pkg_name = m.group(1)
                         self.version = Version(m.group(2), build_release)
@@ -64,6 +68,7 @@ class PkgFmri(object):
 
                 m = re.match("([^@]*)", fmri)
                 if m != None:
+                        # XXX Replace with server's default authority.
                         self.authority = "localhost"
                         self.pkg_name = m.group(1)
                         self.version = None
@@ -98,6 +103,12 @@ class PkgFmri(object):
                         return False
 
                 return True
+
+        def set_timestamp(self, new_ts):
+                self.version.set_timestamp(new_ts)
+
+        def get_timestamp(self, new_ts):
+                return self.version.get_timestamp()
 
 if __name__ == "__main__":
         n1 = PkgFmri("pkg://pion/sunos/coreutils", "5.9")

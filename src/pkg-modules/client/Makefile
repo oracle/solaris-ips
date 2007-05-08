@@ -22,22 +22,31 @@
 # Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
-MODULE = arch.so
+ARCHMODULE = arch.so
 
-SRCS = arch.c
-OBJS = $(SRCS:%.c=%.o)
+ARCHSRCS = arch.c
+ARCHOBJS = $(ARCHSRCS:%.c=%.o)
+
+ELFMODULE = elf.so
+
+ELFSRCS = elf.c
+ELFOBJS = $(ELFSRCS:%.c=%.o)
 
 PYTHONINC = /usr/include/python2.4
 
 CFLAGS += -I$(PYTHONINC)
 
-all: $(MODULE)
+all: $(ARCHMODULE) $(ELFMODULE)
 
 lint:
-	$(LINT) -c $(CFLAGS) $(SRCS)
+	$(LINT) -c $(CFLAGS) $(ARCHSRCS)
+	$(LINT) -c $(CFLAGS) $(ELFSRCS)
 
-$(MODULE): $(OBJS)
-	$(CC) -G $(OBJS) -o $@
+$(ARCHMODULE): $(ARCHOBJS)
+	$(CC) -G $(ARCHOBJS) -o $@
+
+$(ELFMODULE): $(ELFOBJS)
+	$(CC) -G $(ELFOBJS) -o $@
 
 %.o : %.c
 	$(CC) -c -Kpic $(CFLAGS) $<

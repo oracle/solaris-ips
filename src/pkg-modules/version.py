@@ -111,8 +111,8 @@ class IllegalVersion(exceptions.Exception):
                 self.args = args
 
 class Version(object):
-        """Version format is release[,build_release]-branch:sequence, which we
-        decompose into three DotSequences and the sequence timestamp.  The
+        """Version format is release[,build_release]-branch:timestamp, which we
+        decompose into three DotSequences and the timestamp.  The
         release and branch DotSequences are interpreted normally, where v1 < v2
         implies that v2 is a later release or branch.  The build_release
         DotSequence records the system on which the package binaries were
@@ -128,7 +128,7 @@ class Version(object):
                         self.release = DotSequence(m.group(1))
                         self.build_release = DotSequence(m.group(2))
                         self.branch = DotSequence(m.group(3))
-                        self.sequence = m.group(4)
+                        self.timestamp = m.group(4)
                         return
 
                 assert build_string != None
@@ -138,7 +138,7 @@ class Version(object):
                 if m != None:
                         self.release = DotSequence(m.group(1))
                         self.branch = DotSequence(m.group(2))
-                        self.sequence = int(m.group(3))
+                        self.timestamp = int(m.group(3))
                         return
 
                 # Sequence omitted?
@@ -146,7 +146,7 @@ class Version(object):
                 if m != None:
                         self.release = DotSequence(m.group(1))
                         self.branch = DotSequence(m.group(2))
-                        self.sequence = 0
+                        self.timestamp = 0
                         return
 
                 # Branch omitted?
@@ -154,7 +154,7 @@ class Version(object):
                 if m != None:
                         self.release = DotSequence(m.group(1))
                         self.branch = DotSequence("0")
-                        self.sequence = 0
+                        self.timestamp = 0
                         return
 
                 raise IllegalVersion
@@ -167,10 +167,17 @@ class Version(object):
 
         def __str__(self):
                 return "%s,%s-%s:%s" % (self.release, self.build_release,
-                    self.branch, self.sequence)
+                    self.branch, self.timestamp)
 
         def get_short_version(self):
                 return "%s-%s" % (self.release, self.branch)
+
+        def set_timestamp(self, new_ts):
+                assert new_ts > self.timestamp
+                self.timestamp = new_ts
+
+        def get_timestamp(self):
+                return self.timestamp
 
         def __ne__(self, other):
                 if other == None:
@@ -178,7 +185,7 @@ class Version(object):
 
                 if self.release == other.release and \
                     self.branch == other.branch and \
-                    self.sequence == other.sequence:
+                    self.timestamp == other.timestamp:
                         return False
                 return True
 
@@ -188,7 +195,7 @@ class Version(object):
 
                 if self.release == other.release and \
                     self.branch == other.branch and \
-                    self.sequence == other.sequence:
+                    self.timestamp == other.timestamp:
                         return True
                 return False
 
@@ -201,7 +208,7 @@ class Version(object):
                         return True
                 if self.branch != other.branch:
                         return False
-                if self.sequence < other.sequence:
+                if self.timestamp < other.timestamp:
                         return True
                 return False
 
@@ -214,7 +221,7 @@ class Version(object):
                         return True
                 if self.branch != other.branch:
                         return False
-                if self.sequence > other.sequence:
+                if self.timestamp > other.timestamp:
                         return True
                 return False
 
@@ -239,7 +246,7 @@ class Version(object):
 
                 For CONSTRAINT_RELEASE, self is a successor to other if all of
                 the components of other's release match, and there are later
-                components of self's version.  The branch and sequence
+                components of self's version.  The branch and timestamp
                 components are ignored.
 
                 For CONSTRAINT_RELEASE_MAJOR and CONSTRAINT_RELEASE_MINOR, other
@@ -255,7 +262,7 @@ class Version(object):
                         return self > other
 
                 if constraint == CONSTRAINT_RELEASE:
-                        return other.release.is_subsequence(self.release)
+                        return other.release.is_subtimestamp(self.release)
 
                 if constraint == CONSTRAINT_RELEASE_MAJOR:
                         return other.release.is_same_major(self.release)

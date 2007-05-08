@@ -69,6 +69,7 @@ class Transaction(object):
 
                 # attempt to construct an FMRI object
                 self.fmri = fmri.PkgFmri(self.pkg_name, self.client_release)
+                self.fmri.set_timestamp(self.open_time)
 
                 trans_basename = self.get_basename()
                 self.dir = "%s/%s" % (self.cfg.trans_root, trans_basename)
