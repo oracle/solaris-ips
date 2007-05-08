@@ -24,4 +24,4 @@
 # Use is subject to license terms.
 #
 
-__all__ = ["arch", "catalog", "image"]
+__all__ = ["arch", "catalog", "elf", "image"]

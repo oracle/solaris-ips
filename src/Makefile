@@ -56,52 +56,56 @@ ROOTPROGS = \
 	$(ROOT)/usr/lib/pkg.depotd
 
 PYMODS = \
-	pkg-modules/__init__.py \
-	pkg-modules/config.py \
-	pkg-modules/content.py \
-	pkg-modules/dependency.py \
-	pkg-modules/fmri.py \
-	pkg-modules/package.py \
-	pkg-modules/sysvpkg.py \
-	pkg-modules/version.py
+	modules/__init__.py \
+	modules/arch.so \
+	modules/config.py \
+	modules/content.py \
+	modules/dependency.py \
+	modules/elf.so \
+	modules/fmri.py \
+	modules/package.py \
+	modules/sysvpkg.py \
+	modules/version.py
 
 PYSERVERMODS = \
-	pkg-modules/server/__init__.py \
-	pkg-modules/server/catalog.py \
-	pkg-modules/server/config.py \
-	pkg-modules/server/package.py \
-	pkg-modules/server/transaction.py
+	modules/server/__init__.py \
+	modules/server/catalog.py \
+	modules/server/config.py \
+	modules/server/package.py \
+	modules/server/transaction.py
 
 PYCLIENTMODS = \
-	pkg-modules/client/arch.so \
-	pkg-modules/client/__init__.py \
-	pkg-modules/client/catalog.py \
-	pkg-modules/client/image.py
+	modules/client/__init__.py \
+	modules/client/catalog.py \
+	modules/client/image.py
 
 PYPUBLISHMODS = \
-	pkg-modules/publish/__init__.py \
-	pkg-modules/server/transaction.py
+	modules/publish/__init__.py \
+	modules/server/transaction.py
 
-ROOTPYMODS = $(PYMODS:pkg-modules/%=$(ROOTPYTHONPKG)/%)
+ROOTPYMODS = $(PYMODS:modules/%=$(ROOTPYTHONPKG)/%)
 ROOTPYSERVERMODS = \
-	$(PYSERVERMODS:pkg-modules/server/%=$(ROOTPYTHONPKG)/server/%)
+	$(PYSERVERMODS:modules/server/%=$(ROOTPYTHONPKG)/server/%)
 ROOTPYPUBLISHMODS = \
-	$(PYPUBLISHMODS:pkg-modules/publish/%=$(ROOTPYTHONPKG)/publish/%)
+	$(PYPUBLISHMODS:modules/publish/%=$(ROOTPYTHONPKG)/publish/%)
 ROOTPYCLIENTMODS = \
-	$(PYCLIENTMODS:pkg-modules/client/%=$(ROOTPYTHONPKG)/client/%)
+	$(PYCLIENTMODS:modules/client/%=$(ROOTPYTHONPKG)/client/%)
 
 all := TARGET = all
 
-all: $(PROGS) client-mods
+all: $(PROGS) binary-modules
 
 clean:
 	rm -f $(PROGS)
 
+clobber: clean
+	rm -fr $(ROOT)
+
 install: $(ROOTDIRS) $(ROOTPROGS) $(ROOTPYMODS) $(ROOTPYSERVERMODS) \
 	$(ROOTPYPUBLISHMODS) $(ROOTPYCLIENTMODS)
 
-client-mods:
-	@cd pkg-modules/client; pwd; $(MAKE) $(TARGET)
+binary-modules:
+	@cd modules; pwd; $(MAKE) $(TARGET)
 
 # XXX link is a developer target to connect the local machine to the current
 # repository's working copy's versions of the commands and modules.
@@ -110,7 +114,7 @@ link:
 	ln -s $(PWD)/client.py /usr/bin/pkg
 	ln -s $(PWD)/publish.py /usr/bin/pkgsend
 	ln -s $(PWD)/depot.py /usr/lib/pkg.depotd
-	ln -s $(PWD)/pkg-modules /usr/lib/python2.4/vendor-packages/pkg
+	ln -s $(PWD)/modules /usr/lib/python2.4/vendor-packages/pkg
 
 # Invoke all known modules with tests.
 test:
@@ -137,19 +141,19 @@ $(ROOTUSRBIN)/%: %
 $(ROOTUSRLIB)/%: %
 	rm -f $@; install -f $(ROOT)/usr/lib -m 0555 $<
 
-$(ROOTPYTHONPKG)/server/%: pkg-modules/server/%
+$(ROOTPYTHONPKG)/server/%: modules/server/%
 	rm -f $@; install -f $(ROOTPYTHONPKG)/server -m 0444 $<
 
-$(ROOTPYTHONPKG)/publish/%: pkg-modules/publish/%
+$(ROOTPYTHONPKG)/publish/%: modules/publish/%
 	rm -f $@; install -f $(ROOTPYTHONPKG)/publish -m 0444 $<
 
-$(ROOTPYTHONPKG)/client/%.so: pkg-modules/client/%.so
-	rm -f $@; install -f $(ROOTPYTHONPKG)/client -m 0555 $<
-
-$(ROOTPYTHONPKG)/client/%: pkg-modules/client/%
+$(ROOTPYTHONPKG)/client/%: modules/client/%
 	rm -f $@; install -f $(ROOTPYTHONPKG)/client -m 0444 $<
 
-$(ROOTPYTHONPKG)/%: pkg-modules/%
+$(ROOTPYTHONPKG)/%.so: modules/%.so
+	rm -f $@; install -f $(ROOTPYTHONPKG) -m 0555 $<
+
+$(ROOTPYTHONPKG)/%: modules/%
 	rm -f $@; install -f $(ROOTPYTHONPKG) -m 0444 $<
 
 pkg: client.py

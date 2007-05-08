@@ -23,7 +23,9 @@ of change that actually contains no change to the non-ELF files, and the
 change to the ELF files is non-ELF significant.  In this case, perhaps
 the delivery should fail/warn.
 
-XXX Can we do something similar for JAR files?
+XXX Can we do something similar for JAR files?  Tasting JAR files is
+outlined in $SRC/cmd/file/file.c:zipfile(), since a JAR file is a zip
+file with extra header information. [1]
 
 XXX Can we do something similar for Perl or Python (or any language with
 internal versioning statements)?
@@ -32,3 +34,6 @@ XXX There's really no way to tie the kernel to libc in the current
 system, or in pkg(1M).  Should we be adding a simple signature, or
 reusing library versioning, or must it be left to a human (expressing it
 via pkg(1M) dependencies)?
+
+[1] Sun Microsystems, Inc., JAR File Specification,
+    http://java.sun.com/j2se/1.4.2/docs/guide/jar/jar.html

@@ -50,5 +50,3 @@ $(ELFMODULE): $(ELFOBJS)
 
 %.o : %.c
 	$(CC) -c -Kpic $(CFLAGS) $<
-
-
