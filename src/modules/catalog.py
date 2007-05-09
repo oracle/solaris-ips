@@ -31,9 +31,10 @@ import urllib
 
 import pkg.fmri as fmri
 
-class SCatalog(object):
-        """An SCatalog is the server's representation of the available package
-        catalog in this repository.
+class Catalog(object):
+        """A Catalog is the representation of the package FMRIs available to
+        this client or repository.  Both purposes utilize the same storage
+        format.
 
         The serialized structure of the repository is an unordered list of
         available package versions, followed by an unordered list of
@@ -52,8 +53,27 @@ class SCatalog(object):
         """
 
         def __init__(self):
+                self.authority = None
+                self.catalog_root = ""
+
                 self.pkgs = []
                 self.relns = {}
+                return
+
+        def set_authority(self, authority):
+                self.authority = authority
+
+        def set_catalog_root(self, croot):
+                self.catalog_root = croot
+
+        def load(self):
+                # open file
+                # get lines
+                # each V line is an fmri
+                #   split into a package and a version
+                #   add package to pkgs
+                #     add version to pkg
+                # stop at end of file
                 return
 
         def add_pkg(self, pkg):
@@ -64,6 +84,12 @@ class SCatalog(object):
                 #   for each incorporation in the version,
                 #     add to the version's list of incorporations
 
+                return
+
+        def add_package_fmri(self, pkg_fmri):
+                return
+
+        def delete_package_fmri(self, pkg_fmri):
                 return
 
         def matching_pkgs(self, pfmri, constraint):
@@ -82,4 +108,9 @@ class SCatalog(object):
                         s = s + "I %s\n" % r
                 return s
 
-
+        def difference(self, catalog):
+                """Return a pair of lists, the first list being those package
+                FMRIs present in the current object but not in the presented
+                catalog, the second being those present in the presented catalog
+                but not in the current catalog."""
+                return

@@ -9,60 +9,46 @@ fi
 
 echo $PKG_TRANS_ID
 pkgsend add file 0555 root bin \
-	/usr/bin/pkg proto/root_$MACH/usr/bin/pkg
+	/usr/bin/pkg ../proto/root_$MACH/usr/bin/pkg
 pkgsend add file 0555 root bin \
-	/usr/bin/pkgsend proto/root_$MACH/usr/bin/pkgsend
+	/usr/bin/pkgsend ../proto/root_$MACH/usr/bin/pkgsend
 pkgsend add file 0555 root bin \
-	/usr/lib/pkg.depotd proto/root_$MACH/usr/lib/pkg.depotd
+	/usr/lib/pkg.depotd ../proto/root_$MACH/usr/lib/pkg.depotd
 pkgsend add file 0444 root bin \
-	/usr/lib/python2.4/vendor-packages/pkg/__init__.py proto/root_$MACH/usr/lib/python2.4/vendor-packages/pkg/__init__.py
+	/usr/lib/python2.4/vendor-packages/pkg/__init__.py ../proto/root_$MACH/usr/lib/python2.4/vendor-packages/pkg/__init__.py
+pkgsend add file 0555 root bin \
+	/usr/lib/python2.4/vendor-packages/pkg/arch.so ../proto/root_$MACH/usr/lib/python2.4/vendor-packages/pkg/arch.so
 pkgsend add file 0444 root bin \
-	/usr/lib/python2.4/vendor-packages/pkg/config.py proto/root_$MACH/usr/lib/python2.4/vendor-packages/pkg/config.py
+	/usr/lib/python2.4/vendor-packages/pkg/catalog.py ../proto/root_$MACH/usr/lib/python2.4/vendor-packages/pkg/catalog.py
 pkgsend add file 0444 root bin \
-	/usr/lib/python2.4/vendor-packages/pkg/content.py proto/root_$MACH/usr/lib/python2.4/vendor-packages/pkg/content.py
+	/usr/lib/python2.4/vendor-packages/pkg/config.py ../proto/root_$MACH/usr/lib/python2.4/vendor-packages/pkg/config.py
 pkgsend add file 0444 root bin \
-	/usr/lib/python2.4/vendor-packages/pkg/dependency.py proto/root_$MACH/usr/lib/python2.4/vendor-packages/pkg/dependency.py
+	/usr/lib/python2.4/vendor-packages/pkg/content.py ../proto/root_$MACH/usr/lib/python2.4/vendor-packages/pkg/content.py
 pkgsend add file 0444 root bin \
-	/usr/lib/python2.4/vendor-packages/pkg/fmri.py proto/root_$MACH/usr/lib/python2.4/vendor-packages/pkg/fmri.py
+	/usr/lib/python2.4/vendor-packages/pkg/dependency.py ../proto/root_$MACH/usr/lib/python2.4/vendor-packages/pkg/dependency.py
+pkgsend add file 0555 root bin \
+	/usr/lib/python2.4/vendor-packages/pkg/elf.so ../proto/root_$MACH/usr/lib/python2.4/vendor-packages/pkg/elf.so
 pkgsend add file 0444 root bin \
-	/usr/lib/python2.4/vendor-packages/pkg/package.py proto/root_$MACH/usr/lib/python2.4/vendor-packages/pkg/package.py
+	/usr/lib/python2.4/vendor-packages/pkg/fmri.py ../proto/root_$MACH/usr/lib/python2.4/vendor-packages/pkg/fmri.py
 pkgsend add file 0444 root bin \
-	/usr/lib/python2.4/vendor-packages/pkg/version.py proto/root_$MACH/usr/lib/python2.4/vendor-packages/pkg/version.py
+	/usr/lib/python2.4/vendor-packages/pkg/package.py ../proto/root_$MACH/usr/lib/python2.4/vendor-packages/pkg/package.py
 pkgsend add file 0444 root bin \
-	/usr/lib/python2.4/vendor-packages/pkg/dependency.py proto/root_$MACH/usr/lib/python2.4/vendor-packages/pkg/dependency.py
+	/usr/lib/python2.4/vendor-packages/pkg/sysvpkg.py ../proto/root_$MACH/usr/lib/python2.4/vendor-packages/pkg/sysvpkg.py
 pkgsend add file 0444 root bin \
-	/usr/lib/python2.4/vendor-packages/pkg/version.py proto/root_$MACH/usr/lib/python2.4/vendor-packages/pkg/version.py
+	/usr/lib/python2.4/vendor-packages/pkg/version.py ../proto/root_$MACH/usr/lib/python2.4/vendor-packages/pkg/version.py
 pkgsend add file 0444 root bin \
-	/usr/lib/python2.4/vendor-packages/pkg/content.py proto/root_$MACH/usr/lib/python2.4/vendor-packages/pkg/content.py
+	/usr/lib/python2.4/vendor-packages/pkg/client/__init__.py ../proto/root_$MACH/usr/lib/python2.4/vendor-packages/pkg/client/__init__.py
 pkgsend add file 0444 root bin \
-	/usr/lib/python2.4/vendor-packages/pkg/package.py proto/root_$MACH/usr/lib/python2.4/vendor-packages/pkg/package.py
+	/usr/lib/python2.4/vendor-packages/pkg/client/image.py ../proto/root_$MACH/usr/lib/python2.4/vendor-packages/pkg/client/image.py
 pkgsend add file 0444 root bin \
-	/usr/lib/python2.4/vendor-packages/pkg/fmri.py proto/root_$MACH/usr/lib/python2.4/vendor-packages/pkg/fmri.py
+	/usr/lib/python2.4/vendor-packages/pkg/server/__init__.py ../proto/root_$MACH/usr/lib/python2.4/vendor-packages/pkg/server/__init__.py
 pkgsend add file 0444 root bin \
-	/usr/lib/python2.4/vendor-packages/pkg/client/__init__.py proto/root_$MACH/usr/lib/python2.4/vendor-packages/pkg/client/__init__.py
+	/usr/lib/python2.4/vendor-packages/pkg/server/config.py ../proto/root_$MACH/usr/lib/python2.4/vendor-packages/pkg/server/config.py
 pkgsend add file 0444 root bin \
-	/usr/lib/python2.4/vendor-packages/pkg/client/image.py proto/root_$MACH/usr/lib/python2.4/vendor-packages/pkg/client/image.py
-pkgsend add file 0444 root bin \
-	/usr/lib/python2.4/vendor-packages/pkg/client/catalog.py proto/root_$MACH/usr/lib/python2.4/vendor-packages/pkg/client/catalog.py
-pkgsend add file 0444 root bin \
-	/usr/lib/python2.4/vendor-packages/pkg/server/transaction.py proto/root_$MACH/usr/lib/python2.4/vendor-packages/pkg/server/transaction.py
-pkgsend add file 0444 root bin \
-	/usr/lib/python2.4/vendor-packages/pkg/server/catalog.py proto/root_$MACH/usr/lib/python2.4/vendor-packages/pkg/server/catalog.py
-pkgsend add file 0444 root bin \
-	/usr/lib/python2.4/vendor-packages/pkg/server/config.py proto/root_$MACH/usr/lib/python2.4/vendor-packages/pkg/server/config.py
-pkgsend add file 0444 root bin \
-	/usr/lib/python2.4/vendor-packages/pkg/server/__init__.py proto/root_$MACH/usr/lib/python2.4/vendor-packages/pkg/server/__init__.py
-pkgsend add file 0444 root bin \
-	/usr/lib/python2.4/vendor-packages/pkg/server/package.py proto/root_$MACH/usr/lib/python2.4/vendor-packages/pkg/server/package.py
-pkgsend add file 0444 root bin \
-	/usr/lib/python2.4/vendor-packages/pkg/sysvpkg.py proto/root_$MACH/usr/lib/python2.4/vendor-packages/pkg/sysvpkg.py
-pkgsend add file 0444 root bin \
-	/usr/lib/python2.4/vendor-packages/pkg/__init__.py proto/root_$MACH/usr/lib/python2.4/vendor-packages/pkg/__init__.py
-pkgsend add file 0444 root bin \
-	/usr/lib/python2.4/vendor-packages/pkg/config.py proto/root_$MACH/usr/lib/python2.4/vendor-packages/pkg/config.py
+	/usr/lib/python2.4/vendor-packages/pkg/server/transaction.py ../proto/root_$MACH/usr/lib/python2.4/vendor-packages/pkg/server/transaction.py
 # XXX replace with service action
 #pkgsend add file 0444 root bin \
-#	/var/svc/manifest/application/pkg-server.xml proto/root_$MACH/var/svc/manifest/application/pkg-server.xml
+#	/var/svc/manifest/application/pkg-server.xml ../proto/root_$MACH/var/svc/manifest/application/pkg-server.xml
 # we depend on 2.4 being present on the system in the standard location
 # XXXrequire pkg:/application/python@2.4
 # some people might split this into three packages:  common/pkg,

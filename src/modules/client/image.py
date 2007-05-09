@@ -22,10 +22,11 @@
 
 # Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
-#
-#ident	"%Z%%M%	%I%	%E% SMI"
 
 import os
+import re
+
+import pkg.catalog as catalog
 
 IMG_ENTIRE = 0
 IMG_PARTIAL = 1
@@ -134,10 +135,22 @@ class Image(object):
 
         def reload_catalogs(self):
                 cdir = "%s/%s" % (self.imgdir, "catalog")
-                for c in os.listdirs(self.imgdir + "/catalog"):
+                for cf in os.listdirs(self.imgdir + "/catalog"):
                         # XXX XXX
+                        c = catalog.Catalog(cf)
+                        c.load()
+
+                        self.catalogs[basename(cf)] = c
 
         def get_matching_pkgs(self, pattern):
-                # XXX XXX
+                """The pattern is a glob pattern, which we translate to an RE
+                pattern."""
+
+                m = []
+                for c in self.catalogs.values():
+                        m.append(c.get_matching_pkgs(pattern))
+
+                return m
+
 
 

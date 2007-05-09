@@ -28,26 +28,29 @@
 import os
 import urllib
 
+import pkg.catalog as catalog
 import pkg.fmri as fmri
+import pkg.package as package
 
-import pkg.server.catalog as catalog
-import pkg.server.package as package
 import pkg.server.transaction as trans
 
 # depot Server Configuration
 
 class SvrConfig(object):
-        """Server configuration and state object.  Repository locations are the
-        primary derived configuration.  State is the current set of transactions
-        and packages stored by the repository."""
+        """Server configuration and state object.  The authority is the default
+        authority under which packages will be stored.  Repository locations are
+        the primary derived configuration.  State is the current set of
+        transactions and packages stored by the repository."""
 
-        def __init__(self, repo_root):
+        def __init__(self, repo_root, authority):
                 self.repo_root = repo_root
                 self.trans_root = "%s/trans" % self.repo_root
                 self.file_root = "%s/file" % self.repo_root
                 self.pkg_root = "%s/pkg" % self.repo_root
 
-                self.catalog = catalog.SCatalog()
+                self.authority = authority
+
+                self.catalog = catalog.Catalog()
                 self.in_flight_trans = {}
 
                 self.catalog_requests = 0
@@ -93,7 +96,7 @@ class SvrConfig(object):
                         # XXX
                         f = fmri.PkgFmri(urllib.unquote(
                             os.path.basename(pkg[0])), None)
-                        p = package.SPackage(self, f)
+                        p = package.Package(self, f)
                         p.load()
 
                         self.catalog.add_pkg(p)

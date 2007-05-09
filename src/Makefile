@@ -58,6 +58,7 @@ ROOTPROGS = \
 PYMODS = \
 	modules/__init__.py \
 	modules/arch.so \
+	modules/catalog.py \
 	modules/config.py \
 	modules/content.py \
 	modules/dependency.py \
@@ -69,19 +70,16 @@ PYMODS = \
 
 PYSERVERMODS = \
 	modules/server/__init__.py \
-	modules/server/catalog.py \
 	modules/server/config.py \
-	modules/server/package.py \
 	modules/server/transaction.py
 
 PYCLIENTMODS = \
 	modules/client/__init__.py \
-	modules/client/catalog.py \
 	modules/client/image.py
 
 PYPUBLISHMODS = \
 	modules/publish/__init__.py \
-	modules/server/transaction.py
+	modules/publish/transaction.py
 
 ROOTPYMODS = $(PYMODS:modules/%=$(ROOTPYTHONPKG)/%)
 ROOTPYSERVERMODS = \

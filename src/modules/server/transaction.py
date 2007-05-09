@@ -31,7 +31,7 @@ import time
 import urllib
 
 import pkg.fmri as fmri
-import pkg.server.package as package
+import pkg.package as package
 
 class Transaction(object):
         """A Transaction is a server-side object used to represent the set of
@@ -76,7 +76,7 @@ class Transaction(object):
                 os.makedirs(self.dir)
 
                 # lookup package by name
-                p = package.SPackage(self.cfg, self.fmri)
+                p = package.Package(self.cfg, self.fmri)
 
                 # validate that this version can be opened
                 #   if we specified no release, fail
@@ -139,7 +139,7 @@ class Transaction(object):
                         # XXX Build a response from our lists of unsatisfied
                         # dependencies.
 
-                p = package.SPackage(self.cfg, self.fmri)
+                p = package.Package(self.cfg, self.fmri)
                 p.update(self)
 
                 try:

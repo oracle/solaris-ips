@@ -34,14 +34,14 @@ import shutil
 import time
 import urllib
 
+import pkg.catalog as catalog
 import pkg.content as content
 import pkg.dependency as dependency
 import pkg.fmri as fmri
+import pkg.package as package
 import pkg.version as version
 
-import pkg.server.catalog as catalog
 import pkg.server.config as config
-import pkg.server.package as package
 import pkg.server.transaction as trans
 
 def usage():
@@ -164,9 +164,9 @@ def trans_add(scfg, request):
         t.add_content(request, type)
 
 if "PKG_REPO" in os.environ:
-        scfg = config.SvrConfig(os.environ["PKG_REPO"])
+        scfg = config.SvrConfig(os.environ["PKG_REPO"], "pkg.sun.com")
 else:
-        scfg = config.SvrConfig("/var/pkg/repo")
+        scfg = config.SvrConfig("/var/pkg/repo", "pkg.sun.com")
 
 class pkgHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 

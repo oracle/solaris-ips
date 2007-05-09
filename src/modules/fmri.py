@@ -60,7 +60,7 @@ class PkgFmri(object):
                 m = re.match("([^@]*)@([\d\,\.\-\:]*)", fmri)
                 if m != None:
                         # XXX Replace with server's default authority.
-                        self.authority = "localhost"
+                        self.authority = None
                         self.pkg_name = m.group(1)
                         self.version = Version(m.group(2), build_release)
 
@@ -69,15 +69,28 @@ class PkgFmri(object):
                 m = re.match("([^@]*)", fmri)
                 if m != None:
                         # XXX Replace with server's default authority.
-                        self.authority = "localhost"
+                        self.authority = None
                         self.pkg_name = m.group(1)
                         self.version = None
 
                         return
 
+        def get_authority(self):
+                return self.authority
+
+        def set_authority(self, authority):
+                self.authority = authority
+
         def __str__(self):
+                if self.authority == None:
+                        if self.version == None:
+                                return "pkg:/%s" % self.pkg_name
+
+                        return "pkg:/%s@%s" % (self.pkg_name, self.version)
+
                 if self.version == None:
                         return "pkg://%s/%s" % (self.authority, self.pkg_name)
+
                 return "pkg://%s/%s@%s" % (self.authority, self.pkg_name,
                                 self.version)
 
