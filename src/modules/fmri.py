@@ -57,6 +57,23 @@ class PkgFmri(object):
 
                         return
 
+                m = re.match("pkg:/([^/][^@]*)@([\d\,\.\-\:]*)", fmri)
+                if m != None:
+                        # XXX Replace with server's default authority.
+                        self.authority = None
+                        self.pkg_name = m.group(1)
+                        self.version = Version(m.group(2), build_release)
+
+                        return
+
+                m = re.match("pkg:/([^/][^@]*)", fmri)
+                if m != None:
+                        # XXX Replace with server's default authority.
+                        self.authority = None
+                        self.pkg_name = m.group(1)
+                        self.version = None
+
+                        return
                 m = re.match("([^@]*)@([\d\,\.\-\:]*)", fmri)
                 if m != None:
                         # XXX Replace with server's default authority.
@@ -82,6 +99,7 @@ class PkgFmri(object):
                 self.authority = authority
 
         def __str__(self):
+                """Return as specific an FMRI representation as possible."""
                 if self.authority == None:
                         if self.version == None:
                                 return "pkg:/%s" % self.pkg_name
@@ -94,10 +112,20 @@ class PkgFmri(object):
                 return "pkg://%s/%s@%s" % (self.authority, self.pkg_name,
                                 self.version)
 
+        def get_pkg_stem(self):
+                """Return a string representation of the FMRI without a specific
+                version."""
+                if self.authority == None:
+                        return "pkg:/%s" % self.pkg_name
+
+                return "pkg://%s/%s" % (self.authority, self.pkg_name)
+
         def tuple(self):
                 return self.authority, self.pkg_name, self.version
 
         def is_similar(self, fmri):
+                """True if package names match exactly.  Not a pattern-based
+                query."""
                 return self.pkg_name == fmri.pkg_name
 
         def is_successor(self, fmri):
@@ -129,6 +157,7 @@ if __name__ == "__main__":
         n3 = PkgFmri("sunos/coreutils@5.10", "5.10")
         n4 = PkgFmri("sunos/coreutils@6.7,5.10-2:786868787", "5.10")
         n5 = PkgFmri("sunos/coreutils@6.6,5.10-2:786868787", "5.10")
+        n6 = PkgFmri("coreutils", None)
 
         print n1
         print n2
@@ -137,3 +166,8 @@ if __name__ == "__main__":
         assert not n1.is_successor(n2)
         assert n4.is_successor(n3)
         assert not n5.is_successor(n4)
+
+        assert n4.is_similar(n2)
+        assert n1.is_similar(n2)
+        assert not n1.is_similar(n6)
+

@@ -135,12 +135,11 @@ class Image(object):
 
         def reload_catalogs(self):
                 cdir = "%s/%s" % (self.imgdir, "catalog")
-                for cf in os.listdirs(self.imgdir + "/catalog"):
-                        # XXX XXX
-                        c = catalog.Catalog(cf)
-                        c.load()
+                for cf in os.listdir(self.imgdir + "/catalog"):
+                        c = catalog.Catalog()
+                        c.load(self.imgdir + "/catalog/" + cf)
 
-                        self.catalogs[basename(cf)] = c
+                        self.catalogs[cf] = c
 
         def get_matching_pkgs(self, pattern):
                 """The pattern is a glob pattern, which we translate to an RE
@@ -148,7 +147,7 @@ class Image(object):
 
                 m = []
                 for c in self.catalogs.values():
-                        m.append(c.get_matching_pkgs(pattern))
+                        m.extend(c.get_matching_pkgs(pattern, None))
 
                 return m
 

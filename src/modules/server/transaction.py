@@ -76,7 +76,7 @@ class Transaction(object):
                 os.makedirs(self.dir)
 
                 # lookup package by name
-                p = package.Package(self.cfg, self.fmri)
+                p = package.Package(self.fmri)
 
                 # validate that this version can be opened
                 #   if we specified no release, fail
@@ -114,7 +114,6 @@ class Transaction(object):
                         return m.group(1), urllib.unquote(m.group(2))
 
                 trans_id = self.get_basename()
-                # XXX XXX
                 timestamp, pkg_fmri = split_trans_id(trans_id)
 
                 # set package state to SUBMITTED
@@ -133,14 +132,18 @@ class Transaction(object):
                         # XXX If we are going to publish, then we should augment
                         # our response with any other packages that moved to
                         # PUBLISHED due to the package's arrival.
+                        p = package.Package(self.fmri)
+                        p.set_dir(self.cfg)
+                        p.update(self.cfg, self)
+
+                        # add entry to catalog
+                        self.cfg.catalog.add_pkg(p)
                 else:
                         pkg_fmri = self.accept_incomplete()
                         pkg_state = "INCOMPLETE"
                         # XXX Build a response from our lists of unsatisfied
                         # dependencies.
 
-                p = package.Package(self.cfg, self.fmri)
-                p.update(self)
 
                 try:
                         shutil.rmtree("%s/%s" % (self.cfg.trans_root, trans_id))
@@ -205,7 +208,7 @@ class Transaction(object):
         def accept_publish(self):
                 """Transaction meets consistency criteria, and can be published.
                 Make appropriate catalog entries."""
-                return
+                return "%s" % self.fmri
 
         def accept_incomplete(self):
                 """Transaction fails consistency criteria, and can be published.

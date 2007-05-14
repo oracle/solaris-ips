@@ -34,19 +34,33 @@ ELFOBJS = $(ELFSRCS:%.c=%.o)
 
 PYTHONINC = /usr/include/python2.4
 
-CFLAGS += -I$(PYTHONINC)
+INC = -I$(PYTHONINC)
+CFLAGS = -Kpic $(INC)
+LDFLAGS = -G
+
+gcc := CC = gcc
+gcc := CFLAGS = -fpic $(INC)
+gcc := LDFLAGS = --shared
 
 all: $(ARCHMODULE) $(ELFMODULE)
+
+gcc: all
 
 lint:
 	$(LINT) -c $(CFLAGS) $(ARCHSRCS)
 	$(LINT) -c $(CFLAGS) $(ELFSRCS)
 
+clean:
+	rm -f $(ARCHOBJS) $(ELFOBJS)
+
+clobber: clean
+	rm -f $(ARCHMODULE) $(ELFMODULE)
+
 $(ARCHMODULE): $(ARCHOBJS)
-	$(CC) -G $(ARCHOBJS) -o $@
+	$(CC) $(LDFLAGS) $(ARCHOBJS) -o $@
 
 $(ELFMODULE): $(ELFOBJS)
-	$(CC) -G $(ELFOBJS) -o $@
+	$(CC) $(LDFLAGS) $(ELFOBJS) -o $@
 
 %.o : %.c
-	$(CC) -c -Kpic $(CFLAGS) $<
+	$(CC) -c $(CFLAGS) $<

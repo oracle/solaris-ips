@@ -93,11 +93,10 @@ class SvrConfig(object):
                         if pkg[0] == self.pkg_root:
                                 continue
 
-                        # XXX
                         f = fmri.PkgFmri(urllib.unquote(
                             os.path.basename(pkg[0])), None)
-                        p = package.Package(self, f)
-                        p.load()
+                        p = package.Package(f)
+                        p.load(self)
 
                         self.catalog.add_pkg(p)
 

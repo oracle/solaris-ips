@@ -34,7 +34,6 @@ import urllib
 
 import pkg.fmri as fmri
 import pkg.version as version
-import pkg.catalog as catalog
 
 # XXX Is a PkgVersion more than a wrapper around a hypothetical Manifest object?
 #
@@ -85,14 +84,16 @@ class Package(object):
         """A Package is a named list of PkgVersions in the package graph.
         Packages have a package FMRI without a specific version."""
 
-        def __init__(self, cfg, fmri):
+        def __init__(self, fmri):
                 self.fmri = fmri
-                self.cfg = cfg
                 self.pversions = []
 
-                authority, pkg_name, version = self.fmri.tuple()
+                self.dir = ""
+                self.bulk_state = None
 
-                self.dir = "%s/%s" % (self.cfg.pkg_root,
+        def set_dir(self, cfg):
+                authority, pkg_name, version = self.fmri.tuple()
+                self.dir = "%s/%s" % (cfg.pkg_root,
                     urllib.quote(pkg_name, ""))
 
                 # Bulk state represents whether the server knows of any version
@@ -103,11 +104,12 @@ class Package(object):
                 except:
                         self.bulk_state = False
 
-                return
-
-        def load(self):
+        def load(self, cfg):
                 """Iterate through directory and build version list.  Each entry
                 is a separate version of the package."""
+                if self.bulk_state == None:
+                        self.set_dir(cfg)
+
                 if not self.bulk_state:
                         return
 
@@ -132,7 +134,12 @@ class Package(object):
 
                 return True
 
-        def update(self, trans):
+        def update(self, cfg, trans):
+                """Moves the files associated with the transaction into the
+                appropriate position in the server repository, returning a
+                Package object on success.  Registration of the new package
+                version with the catalog is the caller's responsibility."""
+
                 if not self.bulk_state:
                         os.makedirs(self.dir)
 
@@ -145,21 +152,31 @@ class Package(object):
                 # mv each file to file_root
                 for f in os.listdir(trans.dir):
                         os.rename("%s/%s" % (trans.dir, f),
-                            "%s/%s" % (self.cfg.file_root, f))
+                            "%s/%s" % (cfg.file_root, f))
 
-                # add entry to catalog
-                p = Package(self.cfg, self.fmri)
-                self.cfg.catalog.add_pkg(p)
+                return Package(self.fmri)
 
-                return
+        def add_version(self, fmri):
+                v = fmri.version
+
+                for pv in self.pversions:
+                        if v == pv.version:
+                                # XXX Should we be asserting here?
+                                return
+
+                pv = PkgVersion(self, v)
+                self.pversions.append(pv)
+
+                # XXX sort?
 
         def matching_versions(self, pfmri, constraint):
                 ret = []
+                pf = fmri.PkgFmri(pfmri, None)
 
                 for pv in self.pversions:
                         f = fmri.PkgFmri("%s@%s" % (self.fmri, pv.version),
                             None)
-                        if pfmri.is_successor(f):
+                        if pf.is_successor(f):
                                 ret.append(f)
 
                 return ret
@@ -170,7 +187,7 @@ class Package(object):
         def get_manifest(self, version):
                 return
 
-        def get_catalog(self):
+        def get_catalog_entry(self):
                 ret = ""
                 for pv in self.pversions:
                         ret = ret + "V %s@%s\n" % (self.fmri, pv.version)

@@ -30,6 +30,7 @@ import time
 import urllib
 
 import pkg.fmri as fmri
+import pkg.package as package
 
 class Catalog(object):
         """A Catalog is the representation of the package FMRIs available to
@@ -66,17 +67,39 @@ class Catalog(object):
         def set_catalog_root(self, croot):
                 self.catalog_root = croot
 
-        def load(self):
-                # open file
-                # get lines
-                # each V line is an fmri
-                #   split into a package and a version
-                #   add package to pkgs
-                #     add version to pkg
-                # stop at end of file
+        def load(self, path):
+                self.path = path
+                cfile = file(path, "r")
+                centries = cfile.readlines()
+
+                for entry in centries:
+                        # each V line is an fmri
+                        m = re.match("^V (pkg:[^ ]*)", entry)
+                        if m == None:
+                                continue
+
+                        pname = m.group(1)
+                        self.add_fmri(fmri.PkgFmri(pname, None))
+
                 return
 
+        def add_fmri(self, pkgfmri):
+                name = pkgfmri.get_pkg_stem()
+                pfmri = fmri.PkgFmri(name, None)
+
+                for pkg in self.pkgs:
+                        if pfmri == pkg.fmri:
+                                pkg.add_version(pkgfmri)
+                                return
+
+                pkg = package.Package(pfmri)
+                pkg.add_version(pkgfmri)
+                self.pkgs.append(pkg)
+
         def add_pkg(self, pkg):
+                for opkg in self.pkgs:
+                        # XXX XXX
+                        if pkg.fmri == opkg.fmri:
                 if not pkg in self.pkgs:
                         self.pkgs.append(pkg)
 
@@ -92,10 +115,15 @@ class Catalog(object):
         def delete_package_fmri(self, pkg_fmri):
                 return
 
-        def matching_pkgs(self, pfmri, constraint):
-                # iterate through pkgs, looking for an fmri match
+        def get_matching_pkgs(self, pfmri, constraint):
+                """Iterate through the catalog's, looking for an fmri match."""
+
+                # XXX FMRI-based implementation doesn't do pattern matching, but
+                # exact matches only.
+                pf = fmri.PkgFmri(pfmri, None)
+
                 for pkg in self.pkgs:
-                        if pkg.fmri.is_similar(pfmri):
+                        if pkg.fmri.is_similar(pf):
                                 return pkg.matching_versions(pfmri, constraint)
 
                 raise KeyError, "%s not found in catalog" % pfmri
@@ -103,7 +131,7 @@ class Catalog(object):
         def __str__(self):
                 s = ""
                 for p in self.pkgs:
-                        s = s + p.get_catalog()
+                        s = s + p.get_catalog_entry()
                 for r in self.relns:
                         s = s + "I %s\n" % r
                 return s

@@ -262,7 +262,7 @@ class Version(object):
                         return self > other
 
                 if constraint == CONSTRAINT_RELEASE:
-                        return other.release.is_subtimestamp(self.release)
+                        return other.release.is_subsequence(self.release)
 
                 if constraint == CONSTRAINT_RELEASE_MAJOR:
                         return other.release.is_same_major(self.release)

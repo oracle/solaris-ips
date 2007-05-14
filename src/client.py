@@ -54,6 +54,8 @@ import urllib
 import urllib2
 import urlparse
 
+import pkg.arch as arch
+import pkg.catalog as catalog
 import pkg.config as config
 import pkg.content as content
 import pkg.dependency as dependency
@@ -61,8 +63,6 @@ import pkg.fmri as fmri
 import pkg.package as package
 import pkg.version as version
 
-import pkg.client.arch as arch
-import pkg.client.catalog as catalog
 import pkg.client.image as image
 
 def usage():
@@ -126,8 +126,12 @@ def catalog(config, image, args):
                 print >>cfile, data
 
 def pattern_install(config, image, pattern, strict):
-        # check catalogs for this pattern
+        # check catalogs for this pattern; None is the representation of the
+        # freezes
         matches = image.get_matching_pkgs(pattern)
+
+        for p in matches:
+                print p
 
         # pick appropriate version, based on request and freezes
         #   XXX can we do this with the is_successor()/version() and a map?
@@ -156,6 +160,8 @@ def install(config, image, args):
                 if opt == "-S":
                         strict = True
 
+        image.reload_catalogs()
+
         for ppat in pargs:
                 oplist.append(pattern_install(config, image, ppat, strict))
 
@@ -182,7 +188,7 @@ def create_image(config, args):
         """Create an image of the requested kind, at the given path."""
 
         type = image.IMG_USER
-        filter_tags = misc.get_arch_tags()
+        filter_tags = arch.get_isainfo()
 
         opts = None
         pargs = None
@@ -193,11 +199,11 @@ def create_image(config, args):
 
         for opt, arg in opts:
                 if opt == "-F":
-                        self.type = image.IMG_ENTIRE
+                        type = image.IMG_ENTIRE
                 if opt == "-P":
-                        self.type = image.IMG_PARTIAL
+                        type = image.IMG_PARTIAL
                 if opt == "-U":
-                        self.type = image.IMG_USER
+                        type = image.IMG_USER
 
         i.set_attrs(type, pargs[0])
         i.mkdirs()
