@@ -54,7 +54,7 @@ class PkgVersion(object):
         def __init__(self, pkg, version):
                 self.pkg = pkg
                 self.version = version
-                self.contents = {}
+                self.contents = []
                 self.dependencies = []
 
         def __cmp__(self, other):

@@ -38,24 +38,18 @@
 # A failed transaction can be cleared using
 #
 #       pkgsend close -A
-#
-# We use urllib2 for GET and POST operations, but httplib for PUT and DELETE
-# operations.
 
 import getopt
-import httplib
 import os
-import re
 import sys
-import urllib
-import urllib2
-import urlparse
 
+import pkg.bundle
 import pkg.config as config
 import pkg.content as content
 import pkg.dependency as dependency
 import pkg.fmri as fmri
 import pkg.package as package
+from pkg.sysvpkg import SolarisPackage
 import pkg.version as version
 
 import pkg.publish.transaction as trans
@@ -219,8 +213,21 @@ def trans_summary(config, args):
 def batch(config, args):
         return
 
-pcfg = config.ParentRepo("http://localhost:10000", ["http://localhost:10000"])
+def send_bundle(config, args):
+        filename = args[0]
 
+        bundle = pkg.bundle.make_bundle(filename)
+
+        t = trans.Transaction()
+        status, id = t.open(config, bundle.pkgname + "@0-1")
+
+        for file in bundle:
+                t.add(config, id, file.type, **file.attrs)
+
+        t.close(config, id)
+
+
+pcfg = config.ParentRepo("http://localhost:10000", ["http://localhost:10000"])
 
 if __name__ == "__main__":
         opts = None
@@ -243,6 +250,10 @@ if __name__ == "__main__":
                 trans_close(pcfg, pargs)
         elif subcommand == "add":
                 trans_add(pcfg, pargs)
+        elif subcommand == "send":
+                send_bundle(pcfg, pargs)
         else:
                 print "pkgsend: unknown subcommand '%s'" % subcommand
                 usage()
+
+        sys.exit(0)

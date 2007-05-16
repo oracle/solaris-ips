@@ -70,26 +70,31 @@ class PkgMapLine(object):
 		else:
 			raise ValueError("Invalid file type: " + self.type)
 
-# XXX I think this becomes a derived class of PkgVersion now, or maybe both
-# Package and PkgVersion need to be involved.  It also needs to have a
-# constructor that takes a pkg: FMRI (the new name of the package). - sch
-class SolarisPackage(Package):
+# XXX This needs to have a constructor that takes a pkg: FMRI (the new name of
+# the package). - sch
+class SolarisPackage(object):
 	"""A SolarisPackage represents a System V package for Solaris.
 	"""
 
 	def __init__(self, path):
 		self.pkgpath = path
-		# self.pkginfo = PkgInfo(path + "/pkginfo")
 		self.pkginfo = self.readPkginfoFile()
-		deps = self.readDependFile()
-
-		Package.__init__(self, self.pkginfo['VENDOR'],
-			self.pkginfo['PKG'], self.pkginfo['VERSION'], deps, [])
-
-		# XXX Change this to add Contents objects.
-		# XXX Are Contents objects by reference, or do they actually
-		#     contain the bits in a package?
+		self.deps = self.readDependFile()
 		self.manifest = self.readPkgmapFile()
+
+        def makePkgVersion(self):
+                """A factory method to spit out a PkgVersion object.
+                """
+                # XXX need a better version here, and the package should be a
+                # pkg: FMRI.
+                pv = PkgVersion(self.pkginfo["PKG"], self.pkginfo["VERSION"])
+
+                # XXX this should create Contents objects, but those aren't
+                # useful at the moment.  For now, any list will do.
+                pv.set_contents(self.manifest)
+                pv.set_dependencies(self.deps)
+
+                return pv
 
 	def readDependFile(self):
 		try:

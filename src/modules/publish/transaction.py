@@ -25,6 +25,9 @@
 # Use is subject to license terms.
 #
 
+# We use urllib2 for GET and POST operations, but httplib for PUT and DELETE
+# operations.
+
 import httplib
 import os
 import urllib
@@ -125,31 +128,25 @@ class Transaction(object):
                 XXX File types needs to be made a modular API, and not be
                 hard-coded."""
 
-                if not type in (
-                        "dir",
-                        "displace",
-                        # "driver",
-                        "file",
-                        # "hardlink",
-                        # "link",
-                        "preserve",
-                        # "restart",
-                        "service"
-                ):
-                        raise BadTypeException
-
-                repo = config.install_uri
-                uri_exp = urlparse.urlparse(repo)
-                host, port = uri_exp[1].split(":")
-                selector = "/add/%s/%s" % (trans_id, type)
-
                 attributes = {
                         "dir": ("mode", "owner", "group", "path"),
                         "displace": ("mode", "owner", "group", "path"),
                         "file": ("mode", "owner", "group", "path"),
                         "preserve": ("mode", "owner", "group", "path"),
                         "service": ("manifest", ),
+                        # "driver"
+                        # "hardlink"
+                        # "link"
+                        # "restart"
                 }
+
+                if not type in attributes.keys():
+                        raise TypeError("unknown file type '%s'" % type)
+
+                repo = config.install_uri
+                uri_exp = urlparse.urlparse(repo)
+                host, port = uri_exp[1].split(":")
+                selector = "/add/%s/%s" % (trans_id, type)
 
                 headers = dict((k.capitalize(), keywords[k])
                         for k in keywords if k in attributes[type])
@@ -158,7 +155,9 @@ class Transaction(object):
                         # XXX Need to handle larger files than available swap.
                         file = open(keywords["file"])
                         data = file.read()
+                        headers["Content-Length"] = len(data)
                 elif type == "dir":
+                        headers["Content-Length"] = "0"
                         data = ""
 
                 c = httplib.HTTPConnection(host, port)
