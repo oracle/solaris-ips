@@ -199,9 +199,16 @@ class pkgHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 <html>
 <body>
 <h1><code>pkg</code> server ok</h1>
+<h2>Statistics</h2>
 <pre>
 """)
                         self.wfile.write(scfg.get_status())
+                        self.wfile.write("""\
+</pre>
+<h2>Catalog</h2>
+<pre>
+""")
+                        self.wfile.write("%s" % scfg.catalog)
                         self.wfile.write("""\
 </pre>
 </body>

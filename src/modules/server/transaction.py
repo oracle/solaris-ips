@@ -127,17 +127,7 @@ class Transaction(object):
 
                 # if reconciled, set state to PUBLISHED
                 if declarations_good and implicit_good:
-                        pkg_fmri = self.accept_publish()
-                        pkg_state = "PUBLISHED"
-                        # XXX If we are going to publish, then we should augment
-                        # our response with any other packages that moved to
-                        # PUBLISHED due to the package's arrival.
-                        p = package.Package(self.fmri)
-                        p.set_dir(self.cfg)
-                        p.update(self.cfg, self)
-
-                        # add entry to catalog
-                        self.cfg.catalog.add_pkg(p)
+                        pkg_fmri, pkg_state = self.accept_publish()
                 else:
                         pkg_fmri = self.accept_incomplete()
                         pkg_state = "INCOMPLETE"
@@ -207,8 +197,19 @@ class Transaction(object):
 
         def accept_publish(self):
                 """Transaction meets consistency criteria, and can be published.
-                Make appropriate catalog entries."""
-                return "%s" % self.fmri
+                Publish, making appropriate catalog entries."""
+
+                # XXX If we are going to publish, then we should augment
+                # our response with any other packages that moved to
+                # PUBLISHED due to the package's arrival.
+                p = package.Package(self.fmri)
+                p.set_dir(self.cfg)
+                p.update(self.cfg, self)
+
+                # add entry to catalog
+                self.cfg.catalog.add_pkg(p)
+
+                return ("%s" % self.fmri, "PUBLISHED")
 
         def accept_incomplete(self):
                 """Transaction fails consistency criteria, and can be published.

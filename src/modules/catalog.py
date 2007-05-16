@@ -42,6 +42,9 @@ class Catalog(object):
         incorporation relationships between packages.  This latter section
         allows the graph to be topologically sorted by the client.
 
+        XXX A authority mirror-uri ...
+        XXX ...
+
         V fmri
         V fmri
         ...
@@ -49,8 +52,15 @@ class Catalog(object):
         I fmri fmri
         ...
 
+        XXX Mirroring records also need to be allowed from client configuration,
+        and not just catalogs.
+
         XXX It would be nice to include available tags and package sizes,
         although this could also be calculated from the set of manifests.
+
+        XXX self.pkgs should be a dictionary, accessed by fmri string (or
+        package name).  Current code is O(N_packages) O(M_versions), should be
+        O(1) O(M_versions), and possibly O(1) O(1).
         """
 
         def __init__(self):
@@ -98,14 +108,16 @@ class Catalog(object):
 
         def add_pkg(self, pkg):
                 for opkg in self.pkgs:
-                        # XXX XXX
                         if pkg.fmri == opkg.fmri:
-                if not pkg in self.pkgs:
-                        self.pkgs.append(pkg)
+                                #
+                                # XXX This package is already in the catalog
+                                # with some version set.  Are we updating the
+                                # version set or merging the two?
+                                #
+                                opkg = pkg
+                                return
 
-                # for each version in the package,
-                #   for each incorporation in the version,
-                #     add to the version's list of incorporations
+                self.pkgs.append(pkg)
 
                 return
 
