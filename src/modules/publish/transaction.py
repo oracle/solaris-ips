@@ -141,7 +141,12 @@ class Transaction(object):
                 }
 
                 if not type in attributes.keys():
-                        raise TypeError("unknown file type '%s'" % type)
+                        if "path" in keywords:
+                                path = keywords["path"]
+                        else:
+                                path = "<unknown path>"
+                        raise TypeError("%s: unknown file type '%s'" %
+                                (path, type))
 
                 repo = config.install_uri
                 uri_exp = urlparse.urlparse(repo)

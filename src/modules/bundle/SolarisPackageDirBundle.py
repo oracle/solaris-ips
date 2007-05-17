@@ -37,7 +37,10 @@ class SolarisPackageDirBundle(object):
 
         def __iter__(self):
                 for p in self.pkg.manifest:
-                        yield SolarisPackageDirBundleFile(p, self.filename)
+                        # These are the only valid file types in SysV packages
+                        if p.type in "ifevbcdxpls":
+                                yield SolarisPackageDirBundleFile(p,
+                                        self.filename)
 
 def test(filename):
         if os.path.isfile(os.path.join(filename, "pkginfo")) and \
@@ -59,7 +62,7 @@ class SolarisPackageDirBundleFile(object):
                                 "group": thing.group,
                                 "path": thing.pathname,
                         }
-                elif thing.type in ("f", "e", "v"):
+                elif thing.type in "fev":
                         self.type = "file"
                         self.attrs = {
                                 "mode": thing.mode,
@@ -67,4 +70,9 @@ class SolarisPackageDirBundleFile(object):
                                 "group": thing.group,
                                 "path": thing.pathname,
                                 "file": os.path.join(pkgpath, "reloc", thing.pathname)
+                        }
+                else:
+                        self.type = "unknown"
+                        self.attrs = {
+                                "path": thing.pathname
                         }

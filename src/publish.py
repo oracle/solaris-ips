@@ -222,7 +222,10 @@ def send_bundle(config, args):
         status, id = t.open(config, bundle.pkgname + "@0-1")
 
         for file in bundle:
-                t.add(config, id, file.type, **file.attrs)
+                try:
+                        t.add(config, id, file.type, **file.attrs)
+                except TypeError, e:
+                        print "warning:", e
 
         t.close(config, id)
 
