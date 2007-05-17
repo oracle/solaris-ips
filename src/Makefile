@@ -118,6 +118,7 @@ link:
 test:
 	$(PYTHON) $(LINKPYTHONPKG)/version.py
 	$(PYTHON) $(LINKPYTHONPKG)/fmri.py
+	$(PYTHON) $(LINKPYTHONPKG)/manifest.py
 
 $(ROOT) $(ROOTUSRBIN) $(ROOTUSRLIB):
 	mkdir -p $(ROOT)

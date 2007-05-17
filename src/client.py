@@ -60,6 +60,7 @@ import pkg.config as config
 import pkg.content as content
 import pkg.dependency as dependency
 import pkg.fmri as fmri
+import pkg.manifest as manifest
 import pkg.package as package
 import pkg.version as version
 
@@ -130,12 +131,27 @@ def pattern_install(config, image, pattern, strict):
         # freezes
         matches = image.get_matching_pkgs(pattern)
 
+        matches.sort()
+
+        # If there is more than one package in the list, then we've got an
+        # ambiguous outcome, and need to exit.
+
+        l = matches[0]
         for p in matches:
-                print p
+                if p.is_same_pkg(l):
+                        l = p
+                        continue
+
+                raise KeyError, "pattern %s led to multiple packages" % pattern
+
 
         # pick appropriate version, based on request and freezes
+        p = max(matches)
         #   XXX can we do this with the is_successor()/version() and a map?
         #   warn on dependencies; exit if --strict
+
+        image.retrieve_manifest(p)
+
         # do we have this manifest?
         #   get it if not
         # request manifest
@@ -163,7 +179,14 @@ def install(config, image, args):
         image.reload_catalogs()
 
         for ppat in pargs:
-                oplist.append(pattern_install(config, image, ppat, strict))
+                try:
+                        ops = pattern_install(config, image, ppat, strict)
+                except KeyError:
+                        # okay skip this argument
+                        pass
+
+                oplist.append(ops)
+
 
         # perform update transaction as given in oplist
 

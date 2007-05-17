@@ -151,5 +151,9 @@ class Image(object):
 
                 return m
 
+        def retrieve_manifest(self, fmri):
+                # Turn FMRI to Image's path to manifest.  If present, return.
+                # If not present, calculate URI and retrieve.
+                # XXX XXX
 
 

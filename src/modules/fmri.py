@@ -121,11 +121,18 @@ class PkgFmri(object):
                 return "pkg://%s/%s" % (self.authority, self.pkg_name)
 
         def is_same_pkg(self, other):
+                """Return true if these packages are the same (although
+                potentially of different versions.
+
+                XXX Authority versus package name.
+                """
                 if self.authority != other.authority:
                         return False
 
-                # XXX XXX
-                return
+                if self.pkg_name == other.pkg_name:
+                        return True
+
+                return False
 
         def tuple(self):
                 return self.authority, self.pkg_name, self.version

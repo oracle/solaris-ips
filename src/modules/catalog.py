@@ -98,7 +98,7 @@ class Catalog(object):
                 pfmri = fmri.PkgFmri(name, None)
 
                 for pkg in self.pkgs:
-                        if pfmri == pkg.fmri:
+                        if pkg.fmri.is_same_pkg(pfmri):
                                 pkg.add_version(pkgfmri)
                                 return
 
