@@ -158,8 +158,11 @@ class Transaction(object):
 
                 if type in ("file", "displace", "preserve", "service"):
                         # XXX Need to handle larger files than available swap.
-                        file = open(keywords["file"])
-                        data = file.read()
+                        if "file" in keywords:
+                                file = open(keywords["file"])
+                                data = file.read()
+                        elif "filestream" in keywords:
+                                data = keywords["filestream"].read()
                         headers["Content-Length"] = len(data)
                 elif type == "dir":
                         headers["Content-Length"] = "0"

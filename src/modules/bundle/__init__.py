@@ -25,7 +25,7 @@
 # Use is subject to license terms.
 #
 
-__all__ = [ "SolarisPackageDirBundle", "TarBundle" ]
+__all__ = [ "SolarisPackageDatastreamBundle", "SolarisPackageDirBundle", "TarBundle" ]
 
 import os
 import sys

@@ -27,6 +27,7 @@
 
 import os
 from pkg.sysvpkg import SolarisPackage
+from pkg.cpiofile import CpioFile
 
 class SolarisPackageDirBundle(object):
 
@@ -36,23 +37,44 @@ class SolarisPackageDirBundle(object):
                 self.filename = filename
 
         def __iter__(self):
+                faspac = []
+                if "faspac" in self.pkg.pkginfo:
+                        faspac = self.pkg.pkginfo["faspac"]
+
+                # Want to access the manifest as a dict.
+                pkgmap = {}
                 for p in self.pkg.manifest:
+                        pkgmap[p.pathname] = p
+
+                for klass in faspac:
+                        cf = CpioFile.open(os.path.join(
+                            self.filename, "archive", klass + ".bz2"))
+                        for ci in cf:
+                                yield \
+                                    SolarisPackageDirBundleFile(pkgmap[ci.name],
+                                        "", stream=ci.extractfile())
+
+                for p in self.pkg.manifest:
+                        # Just do the files that remain.  Only regular file
+                        # types end up compressed; so skip them and only them.
+                        if p.type in "fev" and p.klass in faspac:
+                                continue
+
                         # These are the only valid file types in SysV packages
                         if p.type in "ifevbcdxpls":
                                 yield SolarisPackageDirBundleFile(p,
-                                        self.filename)
+                                    self.filename)
 
 def test(filename):
         if os.path.isfile(os.path.join(filename, "pkginfo")) and \
-                os.path.isfile(os.path.join(filename, "pkgmap")) and \
-                os.path.isdir(os.path.join(filename, "reloc")):
+            os.path.isfile(os.path.join(filename, "pkgmap")):
                 return True
 
         return False
 
 class SolarisPackageDirBundleFile(object):
 
-        def __init__(self, thing, pkgpath):
+        def __init__(self, thing, pkgpath, stream=None):
                 self.attrs = {}
                 if thing.type == "d":
                         self.type = "dir"
@@ -69,8 +91,12 @@ class SolarisPackageDirBundleFile(object):
                                 "owner": thing.owner,
                                 "group": thing.group,
                                 "path": thing.pathname,
-                                "file": os.path.join(pkgpath, "reloc", thing.pathname)
                         }
+                        if stream is None:
+                                self.attrs["file"] = \
+                                        os.path.join(pkgpath, "reloc", thing.pathname)
+                        else:
+                                self.attrs["filestream"] = stream
                 else:
                         self.type = "unknown"
                         self.attrs = {

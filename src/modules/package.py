@@ -146,8 +146,10 @@ class Package(object):
                 (authority, name, version) = self.fmri.tuple()
 
                 # mv manifest to pkg_name / version
-                os.rename("%s/manifest" % trans.dir, "%s/%s" %
-                    (self.dir, version))
+                # A package may have no files, so there needn't be a manifest.
+                if os.path.exists("%s/manifest" % trans.dir):
+                        os.rename("%s/manifest" % trans.dir, "%s/%s" %
+                            (self.dir, version))
 
                 # mv each file to file_root
                 for f in os.listdir(trans.dir):

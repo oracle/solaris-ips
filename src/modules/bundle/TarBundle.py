@@ -26,6 +26,7 @@
 #
 
 import os
+import stat
 import tarfile
 import tempfile
 
@@ -69,7 +70,7 @@ class TarBundleFile(object):
                         self.type = "file"
                         self.attrs = {
                                 # Get rid of the S_IFXXX bits
-                                "mode": oct(tarinfo.mode & 077777),
+                                "mode": oct(stat.S_IMODE(tarinfo.mode)),
                                 "owner": tarinfo.uname,
                                 "group": tarinfo.gname,
                                 "path": tarinfo.name,
@@ -80,7 +81,7 @@ class TarBundleFile(object):
                         self.type = "dir"
                         self.attrs = {
                                 # Get rid of the S_IFXXX bits
-                                "mode": oct(tarinfo.mode & 077777),
+                                "mode": oct(stat.S_IMODE(tarinfo.mode)),
                                 "owner": tarinfo.uname,
                                 "group": tarinfo.gname,
                                 "path": tarinfo.name,
