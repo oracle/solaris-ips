@@ -49,7 +49,6 @@ import pkg.content as content
 import pkg.dependency as dependency
 import pkg.fmri as fmri
 import pkg.package as package
-from pkg.sysvpkg import SolarisPackage
 import pkg.version as version
 
 import pkg.publish.transaction as trans

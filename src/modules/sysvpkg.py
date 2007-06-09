@@ -44,7 +44,6 @@ import string
 import sys
 
 from pkg.cpiofile import CpioFile
-from pkg.package import Package
 from pkg.dependency import Dependency
 
 __all__ = [ 'SolarisPackage' ]
@@ -236,9 +235,7 @@ class SolarisPackage(object):
                                 if line.startswith("#FASPACD="):
                                         pkginfo["faspac"] = \
                                             line.lstrip("#FASPACD=").split()
-                                        continue
-                                else:
-                                        continue
+                                continue
 
 			(key, val) = line.split('=', 1)
 			pkginfo[key] = val.strip('"')

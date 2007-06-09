@@ -94,7 +94,8 @@ class SolarisPackageDirBundleFile(object):
                         }
                         if stream is None:
                                 self.attrs["file"] = \
-                                        os.path.join(pkgpath, "reloc", thing.pathname)
+                                    os.path.join(pkgpath, "reloc",
+                                        thing.pathname)
                         else:
                                 self.attrs["filestream"] = stream
                 else:
