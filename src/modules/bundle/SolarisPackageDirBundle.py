@@ -98,6 +98,18 @@ class SolarisPackageDirBundleFile(object):
                                         thing.pathname)
                         else:
                                 self.attrs["filestream"] = stream
+                elif thing.type in "s":
+                        self.type = "link"
+                        self.attrs = {
+                            "path": thing.pathname,
+                            "target": thing.target
+                        }
+                elif thing.type in "l":
+                        self.type = "hardlink"
+                        self.attrs = {
+                            "path": thing.pathname,
+                            "target": thing.target
+                        }
                 else:
                         self.type = "unknown"
                         self.attrs = {

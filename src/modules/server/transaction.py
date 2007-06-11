@@ -159,9 +159,6 @@ class Transaction(object):
         def add_content(self, request, type):
                 hdrs = request.headers
                 path = hdrs.getheader("Path")
-                mode = hdrs.getheader("Mode")
-                owner = hdrs.getheader("Owner")
-                group = hdrs.getheader("Group")
 
                 trans_id = self.get_basename()
 
@@ -169,15 +166,22 @@ class Transaction(object):
                 hash = sha.new(data)
                 fname = hash.hexdigest()
 
-                # XXX following is for file, preserve, displace.
-                # Separate case for link.
-                ofile = gzip.GzipFile("%s/%s/%s" %
-                    (self.cfg.trans_root, trans_id, fname), "wb")
-                ofile.write(data)
+                if type in ("link", "hardlink"):
+                        target = hdrs.getheader("Target")
+                        tfile = file("%s/%s/manifest" %
+                            (self.cfg.trans_root, trans_id), "a")
+                        print >>tfile, "%s %s %s" % (type, path, target)
+                else:
+                        ofile = gzip.GzipFile("%s/%s/%s" %
+                            (self.cfg.trans_root, trans_id, fname), "wb")
+                        ofile.write(data)
 
-                tfile = file("%s/%s/manifest" %
-                    (self.cfg.trans_root, trans_id), "a")
-                print >>tfile, "%s %s %s %s %s %s" % (type, mode, owner, group, path, fname)
+                        mode = hdrs.getheader("Mode")
+                        owner = hdrs.getheader("Owner")
+                        group = hdrs.getheader("Group")
+                        tfile = file("%s/%s/manifest" %
+                            (self.cfg.trans_root, trans_id), "a")
+                        print >>tfile, "%s %s %s %s %s %s" % (type, mode, owner, group, path, fname)
 
                 request.send_response(200)
 

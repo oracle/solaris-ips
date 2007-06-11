@@ -134,9 +134,9 @@ class Transaction(object):
                         "file": ("mode", "owner", "group", "path"),
                         "preserve": ("mode", "owner", "group", "path"),
                         "service": ("manifest", ),
+                        "link": ("path", "target"),
+                        "hardlink": ("path", "target"),
                         # "driver"
-                        # "hardlink"
-                        # "link"
                         # "restart"
                 }
 
@@ -164,7 +164,7 @@ class Transaction(object):
                         elif "filestream" in keywords:
                                 data = keywords["filestream"].read()
                         headers["Content-Length"] = len(data)
-                elif type == "dir":
+                elif type in ("dir", "link", "hardlink"):
                         headers["Content-Length"] = "0"
                         data = ""
 

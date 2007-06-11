@@ -174,6 +174,8 @@ def trans_add(config, args):
                 "file": ("mode", "owner", "group", "path", "file"),
                 "preserve": ("mode", "owner", "group", "path", "file"),
                 "service": ("manifest", ),
+                "link": ("path", "target"),
+                "hardlink": ("path", "target"),
         }
 
         try:
