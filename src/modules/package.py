@@ -114,6 +114,7 @@ class Package(object):
                         return
 
                 for e in os.listdir(self.dir):
+                        e = urllib.unquote(e)
                         print e
                         v = version.Version(e, None)
                         pn = PkgVersion(self, v)
@@ -149,12 +150,23 @@ class Package(object):
                 # A package may have no files, so there needn't be a manifest.
                 if os.path.exists("%s/manifest" % trans.dir):
                         os.rename("%s/manifest" % trans.dir, "%s/%s" %
-                            (self.dir, version))
+                            (self.dir, urllib.quote(version.__str__(), "")))
 
                 # mv each file to file_root
+
                 for f in os.listdir(trans.dir):
-                        os.rename("%s/%s" % (trans.dir, f),
-                            "%s/%s" % (cfg.file_root, f))
+                        l1prefix = f[0:8]
+                        l2prefix = f[8:16]
+                        try:
+                                os.rename("%s/%s" % (trans.dir, f),
+                                    "%s/%s/%s/%s" % (cfg.file_root,
+                                    l1prefix, l2prefix, f))
+                        except OSError, e:
+                                os.makedirs("%s/%s/%s" % (cfg.file_root,
+                                        l1prefix, l2prefix))
+                                os.rename("%s/%s" % (trans.dir, f),
+                                    "%s/%s/%s/%s" % (cfg.file_root,
+                                    l1prefix, l2prefix, f))
 
                 return Package(self.fmri)
 
@@ -178,7 +190,7 @@ class Package(object):
                 for pv in self.pversions:
                         f = fmri.PkgFmri("%s@%s" % (self.fmri, pv.version),
                             None)
-                        if pf.is_successor(f):
+                        if f.is_successor(pf):
                                 ret.append(f)
 
                 return ret

@@ -25,6 +25,8 @@
 
 import exceptions
 import re
+import urllib
+
 from version import Version, DotSequence
 
 class PkgFmri(object):
@@ -74,6 +76,7 @@ class PkgFmri(object):
                         self.version = None
 
                         return
+
                 m = re.match("([^@]*)@([\d\,\.\-\:]*)", fmri)
                 if m != None:
                         # XXX Replace with server's default authority.
@@ -120,6 +123,22 @@ class PkgFmri(object):
 
                 return "pkg://%s/%s" % (self.authority, self.pkg_name)
 
+        def get_dir_path(self):
+                """Return the escaped directory path fragment for this FMRI.
+                Requires a version to be defined."""
+                assert self.version != None
+
+                return "%s/%s" % (urllib.quote(self.pkg_name, ""),
+                    urllib.quote(self.version.__str__(), ""))
+
+        def get_url_path(self):
+                """Return the escaped URL path fragment for this FMRI.
+                Requires a version to be defined."""
+                assert self.version != None
+
+                return "%s@%s" % (urllib.quote(self.pkg_name, ""),
+                    urllib.quote(self.version.__str__(), ""))
+
         def is_same_pkg(self, other):
                 """Return true if these packages are the same (although
                 potentially of different versions.
@@ -136,6 +155,12 @@ class PkgFmri(object):
 
         def tuple(self):
                 return self.authority, self.pkg_name, self.version
+
+        def is_name_match(self, fmristr):
+                """True if the regular expression given in fmristr matches the
+                stem of this pkg: FMRI."""
+                m = re.match(fmristr, self.pkg_name)
+                return m != None
 
         def is_similar(self, fmri):
                 """True if package names match exactly.  Not a pattern-based

@@ -25,6 +25,7 @@
 
 import os
 import re
+import urllib
 
 import pkg.catalog as catalog
 
@@ -83,6 +84,7 @@ class Image(object):
                 self.filter_tags = {}
 
                 self.catalogs = {}
+                self.authorities = {}
 
         def find_parent(self):
                 # Ascend from current working directory to find first
@@ -135,15 +137,24 @@ class Image(object):
 
         def reload_catalogs(self):
                 cdir = "%s/%s" % (self.imgdir, "catalog")
-                for cf in os.listdir(self.imgdir + "/catalog"):
+                for cf in os.listdir(cdir):
                         c = catalog.Catalog()
-                        c.load(self.imgdir + "/catalog/" + cf)
+                        c.load("%s/%s" % (cdir, cf))
 
                         self.catalogs[cf] = c
 
+                        # XXX XXX
+                        # build up authorities
+
+        def display_catalogs(self):
+                for c in self.catalogs.values():
+                        c.display()
+
         def get_matching_pkgs(self, pattern):
                 """The pattern is a glob pattern, which we translate to an RE
-                pattern."""
+                pattern.
+
+                XXX This is going to need to return (catalog, fmri) pairs."""
 
                 m = []
                 for c in self.catalogs.values():
@@ -151,9 +162,44 @@ class Image(object):
 
                 return m
 
-        def retrieve_manifest(self, fmri):
-                # Turn FMRI to Image's path to manifest.  If present, return.
-                # If not present, calculate URI and retrieve.
-                # XXX XXX
+        def retrieve_manifest(self, catalog, fmri):
+                """Turn FMRI to Image's path to manifest.  If present, return.
+                If not present, calculate URI and retrieve.
+
+                XXX Which catalog did we fetch this fmri from?"""
+
+                authority, pkg_name, version = fmri.tuple()
+
+                mpath = fmri.get_dir_path()
+
+                local_mpath = "%s/pkg/%s/manifest" % (self.imgdir, mpath)
+
+                if (os.path.exists(local_mpath)):
+                        print "short circuit retrieve"
+                        return local_mpath # or return object?
+
+                # XXX convert authority reference to server
+                if authority == None:
+                        authority = "localhost:10000"
+                url_mpath = "http://%s/manifest/%s" % (authority,
+                                fmri.get_url_path())
+
+                print url_mpath
+                try:
+                        m = urllib.urlopen(url_mpath)
+                except:
+                        raise NameError, "could not open %s" % url_mpath
+
+                data = m.read()
+                print local_mpath
+                try:
+                        mfile = file(local_mpath, "w")
+                        print >>mfile, data
+                except IOError, e:
+                        os.makedirs(os.path.dirname(local_mpath))
+                        mfile = file(local_mpath, "w")
+                        print >>mfile, data
+
+                return local_mpath
 
 

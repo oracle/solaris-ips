@@ -21,3 +21,10 @@
 7.  [dp] Present timestamp as UTC YYYYMMDDHHMMSS, as opposed to Unix
     seconds.
 
+8.  [lianep]  Be able to preserve specific files, even though the
+    package no longer provides them.  This one's tricky:  if you state,
+    "release file" in version 2, then an upgrade from v 1 to v 3 would
+    miss it (as v 2's manifest is not consulted).  These kind of actions
+    could be treated as choking, or we could always examine intermediate
+    manifests.
+

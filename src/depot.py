@@ -81,26 +81,46 @@ def manifest(scfg, request):
         m = re.match("^/manifest/(.*)", request.path)
         pfmri = urllib.unquote(m.group(1))
 
-        # Match package stem.
-        f = fmri.PkgFmri(pfmri, None)
+        # Look for exact match.
+        # XXX XXX
 
         # Determine closest version.
-        vs = scfg.catalog.matching_pkgs(f, constraint)
+        try:
+                vs = scfg.catalog.get_matching_pkgs(pfmri, constraint)
+        except KeyError, e:
+                msg = "manifest request failed: '%s'" % pfmri
+                request.log_message(msg)
 
-        msg = "Request for %s: " % pfmri
+                request.send_response(500)
+                request.send_header('Content-type', 'text/plain')
+                request.end_headers()
+
+                return
+
+        msg = "manifest request '%s': " % pfmri
         for v in vs:
                 msg = msg + "%s " % v
-
         request.log_message(msg)
 
+#       XXX XXX
+#        if len(vs) > 1:
+#                request.log_message("multiple manifest result ambiguous")
+#                request.send_response(400)
+#                request.send_header('Content-type', 'text/plain')
+#                request.end_headers()
+#
+#                return
+
+        p = vs[0]
+
         # Open manifest and send.
-        # file = open("%s/%s/%s", scfg.pkg_root, pkgname, pkgversion)
-        # data = file.read()
+        file = open("%s/%s" % (scfg.pkg_root, p.get_dir_path()), "r")
+        data = file.read()
 
         request.send_response(200)
         request.send_header('Content-type', 'text/plain')
         request.end_headers()
-        # request.wfile.write(data)
+        request.wfile.write(data)
 
 def get_file(scfg, request):
         """The request is the SHA-1 hash name for the file."""

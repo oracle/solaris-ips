@@ -19,12 +19,9 @@
 #
 # CDDL HEADER END
 #
-
-#
 # Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
-
 # pkg - package system client utility
 #
 # We use urllib2 for GET and POST operations, but httplib for PUT and DELETE
@@ -72,7 +69,8 @@ Usage:
         pkg [options] command [cmd_options] [operands]
 
 Install subcommands:
-        pkg catalog
+        pkg refresh
+        pkg catalog [--verbose] pkg_fmri_pattern
         pkg install pkg_fmri
         pkg uninstall pkg_fmri
         pkg freeze [--version version_spec] [--release] [--branch] pkg_fmri
@@ -93,7 +91,7 @@ Environment:
         PKG_IMAGE"""
         sys.exit(2)
 
-def catalog(config, image, args):
+def catalog_refresh(config, image, args):
         """XXX will need to show available content series for each package"""
         croot = image.imgdir
 
@@ -126,10 +124,18 @@ def catalog(config, image, args):
                 cfile = file("%s/catalog/%s" % (croot, fname), "w")
                 print >>cfile, data
 
+def catalog_display(config, image, args):
+        image.reload_catalogs()
+        image.display_catalogs()
+
 def pattern_install(config, image, pattern, strict):
         # check catalogs for this pattern; None is the representation of the
         # freezes
         matches = image.get_matching_pkgs(pattern)
+
+        if len(matches) == 0:
+                raise NameError, "pattern '%s' has no matching packages" % \
+                    pattern
 
         matches.sort()
 
@@ -150,7 +156,7 @@ def pattern_install(config, image, pattern, strict):
         #   XXX can we do this with the is_successor()/version() and a map?
         #   warn on dependencies; exit if --strict
 
-        image.retrieve_manifest(p)
+        image.retrieve_manifest(None, p)
 
         # do we have this manifest?
         #   get it if not
@@ -179,13 +185,18 @@ def install(config, image, args):
         image.reload_catalogs()
 
         for ppat in pargs:
+                ops = None
+
                 try:
                         ops = pattern_install(config, image, ppat, strict)
                 except KeyError:
                         # okay skip this argument
-                        pass
+                        print "pkg: ambiguous package pattern '%s'" % ppat
+                except NameError:
+                        print "pkg: unknown package pattern '%s'" % ppat
 
-                oplist.append(ops)
+                if ops != None:
+                        oplist.append(ops)
 
 
         # perform update transaction as given in oplist
@@ -258,8 +269,10 @@ if __name__ == "__main__":
 
         # Handle PKG_IMAGE and PKG_SERVER environment variables.
 
-        if subcommand == "catalog":
-                catalog(pcfg, icfg, pargs)
+        if subcommand == "refresh":
+                catalog_refresh(pcfg, icfg, pargs)
+        elif subcommand == "catalog":
+                catalog_display(pcfg, icfg, pargs)
         elif subcommand == "install":
                 install(pcfg, icfg, pargs)
         elif subcommand == "uninstall":

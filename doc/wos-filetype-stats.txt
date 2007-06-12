@@ -1,0 +1,57 @@
+From danek.duvall@sun.com  Fri Jun  8 13:37:41 2007
+Received: from sfbaymail2sca.sfbay.sun.com (sfbaymail2sca.SFBay.Sun.COM [129.145.155.42])
+	by zion.eng.sun.com (8.13.7+Sun/8.13.7) with ESMTP id l58KbeOv016939
+	for <sch@zion.eng.Sun.COM>; Fri, 8 Jun 2007 13:37:40 -0700 (PDT)
+Received: from zruty.sfbay.sun.com (zruty.SFBay.Sun.COM [129.146.168.40])
+	by sfbaymail2sca.sfbay.sun.com (8.13.6+Sun/8.12.10/ENSMAIL,v2.2) with ESMTP id l58Kbd8p023821;
+	Fri, 8 Jun 2007 13:37:39 -0700 (PDT)
+Received: from zruty.sfbay.sun.com (localhost [127.0.0.1])
+	by zruty.sfbay.sun.com (8.14.0+Sun/8.14.0) with ESMTP id l58Kb7qa007119;
+	Fri, 8 Jun 2007 13:37:07 -0700 (PDT)
+Received: (from dduvall@localhost)
+	by zruty.sfbay.sun.com (8.14.0+Sun/8.14.0/Submit) id l58Kb7oo007118;
+	Fri, 8 Jun 2007 13:37:07 -0700 (PDT)
+Date: Fri, 8 Jun 2007 13:37:07 -0700
+From: Danek Duvall <danek.duvall@sun.com>
+To: Stephen Hahn <stephen.hahn@sun.com>
+Subject: simple WOS filetype stats
+Message-ID: <20070608203707.GI25472@zruty.sfbay.sun.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: mutt-ng/devel-r535 (SunOS)
+Status: RO
+Content-Length: 625
+Lines: 30
+
+264423 package objects (including type "i")
+
+Breakdown by type:
+
+    f   193967
+    d    37374
+    s    22533
+    i     7015
+    l     2399
+    v      673
+    e      462
+
+We're publishing files of type "[fevd]", which means we're publishing
+232475 files, or 91%.  Symlinks and hardlinks are all that's left from that
+perspective.
+
+Breakdown by class:
+
+    none        256435 (97%)
+    preserve       245
+    manifest       167
+    j.link         134
+    initd           77
+    renamenew       45
+    rbac            33
+    renameold       10
+
+as well as a bunch of others which are either unimportant or in the noise.
+
+Danek
+

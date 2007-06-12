@@ -157,6 +157,16 @@ class Transaction(object):
                         request.send_response(404)
 
         def add_content(self, request, type):
+                """XXX Current implementation is only for file, preserve, and
+                displace.
+
+                XXX We're currently taking the file from the HTTP request
+                directly onto the heap, to make the hash computation convenient.
+                We then do the compression as a sequence of buffers.  To handle
+                large files, we'll need to process the incoming data as a
+                sequence of buffers as well, with intermediate storage to
+                disk."""
+
                 hdrs = request.headers
                 path = hdrs.getheader("Path")
 
@@ -174,11 +184,25 @@ class Transaction(object):
                 else:
                         ofile = gzip.GzipFile("%s/%s/%s" %
                             (self.cfg.trans_root, trans_id, fname), "wb")
-                        ofile.write(data)
+                        
+                   
+	                size = len(data)
+        	        bufsz = 64 * 1024
+	
+        	        nbuf = size / bufsz
+	
+        	        for n in range(0, nbuf):
+                	        l = n * bufsz
+                        	h = (n + 1) * bufsz - 1
+                        	ofile.write(data[l:h])
 
-                        mode = hdrs.getheader("Mode")
+                	m = nbuf * bufsz
+                	ofile.write(data[m:])
+
+			mode = hdrs.getheader("Mode")
                         owner = hdrs.getheader("Owner")
                         group = hdrs.getheader("Group")
+
                         tfile = file("%s/%s/manifest" %
                             (self.cfg.trans_root, trans_id), "a")
                         print >>tfile, "%s %s %s %s %s %s" % (type, mode, owner, group, path, fname)

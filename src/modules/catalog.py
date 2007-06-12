@@ -64,15 +64,17 @@ class Catalog(object):
         """
 
         def __init__(self):
-                self.authority = None
                 self.catalog_root = ""
 
+                self.authorities = {}
                 self.pkgs = []
                 self.relns = {}
-                return
 
-        def set_authority(self, authority):
-                self.authority = authority
+        def add_authority(self, authority, urls):
+                self.authorities[authority] = urls
+
+        def delete_authority(self, authority):
+                del(self.authorities[authority])
 
         def set_catalog_root(self, croot):
                 self.catalog_root = croot
@@ -90,8 +92,6 @@ class Catalog(object):
 
                         pname = m.group(1)
                         self.add_fmri(fmri.PkgFmri(pname, None))
-
-                return
 
         def add_fmri(self, pkgfmri):
                 name = pkgfmri.get_pkg_stem()
@@ -118,8 +118,6 @@ class Catalog(object):
                                 return
 
                 self.pkgs.append(pkg)
-
-                return
 
         def add_package_fmri(self, pkg_fmri):
                 return
@@ -148,9 +146,43 @@ class Catalog(object):
                         s = s + "I %s\n" % r
                 return s
 
+        def display(self):
+                for p in self.pkgs:
+                        print "%-50s" % p.fmri
+                        for v in p.pversions:
+                                print "          %20s" % v.version
+
         def difference(self, catalog):
                 """Return a pair of lists, the first list being those package
                 FMRIs present in the current object but not in the presented
                 catalog, the second being those present in the presented catalog
                 but not in the current catalog."""
                 return
+
+if __name__ == "__main__":
+        c = Catalog()
+
+        for f in [
+            fmri.PkgFmri("pkg:/test@1.0,5.11-1:100", None),
+            fmri.PkgFmri("pkg:/test@1.0,5.11-1:110", None),
+            fmri.PkgFmri("pkg:/test@1.0,5.11-1.1:120", None),
+            fmri.PkgFmri("pkg:/test@1.0,5.11-1.2:130", None),
+            fmri.PkgFmri("pkg:/test@1.0,5.11-2:140", None),
+            fmri.PkgFmri("pkg:/test@1.1,5.11-1:140", None)
+            ]:
+                c.add_fmri(f)
+
+        print c
+
+        tps = [
+            "pkg:/test@1.0,5.10-1:105",
+            "pkg:/test@1.0,5.11-1:50",
+            "pkg:/test@1.0,5.11-2",
+            "pkg:/test@1.0,5.11-3"
+            ]
+
+        for tp in tps:
+                print "matches for %s:" % tp
+
+                for p in c.get_matching_pkgs(tp, None):
+                        print "  ", p

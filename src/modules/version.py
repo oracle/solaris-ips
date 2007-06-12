@@ -128,7 +128,25 @@ class Version(object):
                         self.release = DotSequence(m.group(1))
                         self.build_release = DotSequence(m.group(2))
                         self.branch = DotSequence(m.group(3))
-                        self.timestamp = m.group(4)
+                        self.timestamp = int(m.group(4))
+                        return
+
+                m = re.match("(\d+[\.\d]*),(\d+[\.\d]*)-(\d+[\.\d]*)",
+                    version_string)
+                if m != None:
+                        self.release = DotSequence(m.group(1))
+                        self.build_release = DotSequence(m.group(2))
+                        self.branch = DotSequence(m.group(3))
+                        self.timestamp = 0
+                        return
+
+                m = re.match("(\d+[\.\d]*),(\d+[\.\d]*)",
+                    version_string)
+                if m != None:
+                        self.release = DotSequence(m.group(1))
+                        self.build_release = DotSequence(m.group(2))
+                        self.branch = DotSequence("0")
+                        self.timestamp = 0
                         return
 
                 assert build_string != None
@@ -174,7 +192,7 @@ class Version(object):
 
         def set_timestamp(self, new_ts):
                 assert new_ts > self.timestamp
-                self.timestamp = new_ts
+                self.timestamp = int(new_ts)
 
         def get_timestamp(self):
                 return self.timestamp
