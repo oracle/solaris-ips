@@ -31,6 +31,8 @@ pkgsend add file 0555 root bin \
 pkgsend add file 0444 root bin \
 	/usr/lib/python2.4/vendor-packages/pkg/fmri.py ../proto/root_$MACH/usr/lib/python2.4/vendor-packages/pkg/fmri.py
 pkgsend add file 0444 root bin \
+	/usr/lib/python2.4/vendor-packages/pkg/misc.py ../proto/root_$MACH/usr/lib/python2.4/vendor-packages/pkg/misc.py
+pkgsend add file 0444 root bin \
 	/usr/lib/python2.4/vendor-packages/pkg/package.py ../proto/root_$MACH/usr/lib/python2.4/vendor-packages/pkg/package.py
 pkgsend add file 0444 root bin \
 	/usr/lib/python2.4/vendor-packages/pkg/sysvpkg.py ../proto/root_$MACH/usr/lib/python2.4/vendor-packages/pkg/sysvpkg.py

@@ -145,6 +145,41 @@ class Manifest(object):
 
                 return r
 
+        def display_differences(self, other):
+                """Output expects that self is newer than other."""
+                sset = set()
+                oset = set()
+
+                for acs in self.actions:
+                        sset.add(acs)
+
+                for aco in other.actions:
+                        oset.add(aco)
+
+                dset = sset.symmetric_difference(oset)
+
+                for act in dset:
+                        if act in sset:
+                                print "+ %s" % act
+                        else:
+                                print "- %s" % act
+
+                sset = set()
+                oset = set()
+
+                for ats in self.attributes.keys():
+                        sset.add("%s=%s" % (ats, self.attributes[ats]))
+                for ato in other.attributes.keys():
+                        oset.add("%s=%s" % (ato, other.attributes[ato]))
+
+                dset = sset.symmetric_difference(oset)
+
+                for att in dset:
+                        if att in sset:
+                                print "+ %s" % att
+                        else:
+                                print "- %s" % att
+
         def set_fmri(self, fmri):
                 self.fmri = fmri
 
@@ -211,12 +246,27 @@ class Manifest(object):
                 return
 
 if __name__ == "__main__":
-        m = Manifest()
+        m1 = Manifest()
 
         x = """\
 set com.sun,test = true
 file 0555 sch staff /usr/bin/i386/sort fff555fff isa=i386
 """
-        m.set_content(x)
+        m1.set_content(x)
 
-        print m
+        print m1
+
+        m2 = Manifest()
+
+        y = """\
+set com.sun,test = true
+set com.sun,data = true
+file 0555 sch staff /usr/bin/i386/sort fff555ff9 isa=i386
+file 0555 sch staff /usr/bin/amd64/sort eeeaaaeee isa=amd64
+"""
+
+        m2.set_content(y)
+
+        print m2
+
+        m2.display_differences(m1)

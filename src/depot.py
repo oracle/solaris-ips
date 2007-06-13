@@ -38,6 +38,7 @@ import pkg.catalog as catalog
 import pkg.content as content
 import pkg.dependency as dependency
 import pkg.fmri as fmri
+import pkg.misc as misc
 import pkg.package as package
 import pkg.version as version
 
@@ -129,7 +130,7 @@ def get_file(scfg, request):
         m = re.match("^/file/(.*)", request.path)
         fhash = m.group(1)
 
-        file = open(scfg.file_root + "/" + fhash)
+        file = open(scfg.file_root + "/" + misc.hash_file_name(fhash))
         data = file.read()
 
         request.send_response(200)

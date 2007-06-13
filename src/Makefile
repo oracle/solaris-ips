@@ -64,6 +64,7 @@ PYMODS = \
 	modules/dependency.py \
 	modules/elf.so \
 	modules/fmri.py \
+	modules/misc.py \
 	modules/package.py \
 	modules/sysvpkg.py \
 	modules/version.py
@@ -116,6 +117,7 @@ link:
 
 # Invoke all known modules with tests.
 test:
+	$(PYTHON) $(LINKPYTHONPKG)/misc.py
 	$(PYTHON) $(LINKPYTHONPKG)/version.py
 	$(PYTHON) $(LINKPYTHONPKG)/fmri.py
 	$(PYTHON) $(LINKPYTHONPKG)/catalog.py

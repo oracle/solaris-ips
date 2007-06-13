@@ -33,6 +33,7 @@ import time
 import urllib
 
 import pkg.fmri as fmri
+import pkg.misc as misc
 import pkg.version as version
 
 # XXX Is a PkgVersion more than a wrapper around a hypothetical Manifest object?
@@ -152,21 +153,18 @@ class Package(object):
                         os.rename("%s/manifest" % trans.dir, "%s/%s" %
                             (self.dir, urllib.quote(version.__str__(), "")))
 
-                # mv each file to file_root
-
+                # Move each file to file_root, with appropriate directory
+                # structure.
                 for f in os.listdir(trans.dir):
-                        l1prefix = f[0:8]
-                        l2prefix = f[8:16]
+                        path = misc.hash_file_name(f)
                         try:
                                 os.rename("%s/%s" % (trans.dir, f),
-                                    "%s/%s/%s/%s" % (cfg.file_root,
-                                    l1prefix, l2prefix, f))
+                                    "%s/%s" % (cfg.file_root, path))
                         except OSError, e:
-                                os.makedirs("%s/%s/%s" % (cfg.file_root,
-                                        l1prefix, l2prefix))
+                                os.makedirs("%s/%s" % (cfg.file_root,
+                                        os.path.dirname(path)))
                                 os.rename("%s/%s" % (trans.dir, f),
-                                    "%s/%s/%s/%s" % (cfg.file_root,
-                                    l1prefix, l2prefix, f))
+                                    "%s/%s" % (cfg.file_root, path))
 
                 return Package(self.fmri)
 

@@ -22,6 +22,15 @@
 
 # Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
+#
+#ident	"%Z%%M%	%I%	%E% SMI"
 
-__all__ = ["catalog", "config", "content", "dependency", "fmri", "manifest",
-    "misc", "package", "version"]
+hash_prefix_length = 4
+def hash_file_name(f):
+        """Return the two-level path fragment for the given filename, which is
+        assumed to be a content hash of at least 8 distinct characters."""
+        return "%s/%s/%s" % (f[0:hash_prefix_length],
+            f[hash_prefix_length:2 * hash_prefix_length], f)
+
+if __name__ == "__main__":
+        print hash_file_name("abcdefghijklmnopqrstuvwxyz")
