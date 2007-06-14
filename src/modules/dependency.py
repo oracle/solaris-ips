@@ -26,7 +26,8 @@
 #
 
 REQUIRE = 0
-INCORPORATE = 1
+OPTIONAL = 1
+INCORPORATE = 10
 
 class Dependency(object):
         """A Dependency object is a relationship between one Package and
@@ -38,7 +39,10 @@ class Dependency(object):
                 self.host_pkg_fmri = host_pkg_fmri
                 self.req_pkg_fmri = req_pkg_fmri
 
-                assert type == REQUIRE or type == INCORPORATE
+                assert type == REQUIRE \
+                    or type == INCORPORATE \
+                    or type == OPTIONAL
+
                 self.type = type
 
         def satisfied(self, pkg_fmri):
@@ -48,8 +52,11 @@ class Dependency(object):
 
 	def __repr__(self):
 		if self.type == REQUIRE:
-			return "%s -> %s" % \
+			return "%s => %s" % \
+				(self.host_pkg_fmri, self.req_pkg_fmri)
+		elif self.type == OPTIONAL:
+			return "%s o> %s" % \
 				(self.host_pkg_fmri, self.req_pkg_fmri)
 		elif self.type == INCORPORATE:
-			return "%s > %s" % \
+			return "%s >> %s" % \
 				(self.host_pkg_fmri, self.req_pkg_fmri)

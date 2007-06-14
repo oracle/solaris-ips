@@ -161,7 +161,20 @@ def pattern_install(config, image, pattern, strict):
         # do we have this manifest?
         #   get it if not
         # request manifest
+        # examine manifest for dependencies
+        #   if satisfied by inventory, continue
+        #   if satisfied by pending transaction, continue
+        #   if unsatisfied, then
+        #     if optional, then evaluate client's optional policy to either
+        #     treat-as-required, treat-as-required-unless-pinned, ignore
+        #     skip if ignoring
+        #     if pinned
+        #       ignore if treat-as-required-unless-pinned
+        #     else
+        #       **evaluation of incorporations**
+        #     pursue installation of this package
         # examine manifest for files
+        #
         # request files
 
         return # a client operation

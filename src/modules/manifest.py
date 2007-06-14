@@ -43,6 +43,16 @@ ACTION_USER = 200
 ACTION_GROUP = 210
 ACTION_SERVICE = 300
 ACTION_RESTART = 310
+ACTION_DEPEND = 400
+
+DEPEND_REQUIRE = 0
+DEPEND_OPTIONAL = 1
+DEPEND_INCORPORATE =10
+
+depend_str = { DEPEND_REQUIRE : "require",
+                DEPEND_OPTIONAL : "optional",
+                DEPEND_INCORPORATE : "incorporate"
+}
 
 class ManifestAction(object):
         def __init__(self):
@@ -85,6 +95,26 @@ class LinkManifestAction(ManifestAction):
                 self.type = ACTION_LINK
                 self.mandatory_attrs = [ "path", "target" ]
 
+class DependencyManifestAction(ManifestAction):
+        def __init__(self):
+                ManifestAction.__init__(self)
+
+                self.type = ACTION_DEPEND
+                self.mandatory_attrs = [ "fmri", "dtype" ]
+
+        def __str__(self):
+                # XXX generalize to superclass?
+                r = "%s %s" % (depend_str[self.attrs["dtype"]],
+                    self.attrs["fmri"])
+
+                for k in self.attrs.keys():
+                        if k in self.mandatory_attrs:
+                                continue
+                        r = r + " %s=%s" % (k, self.attrs[k])
+
+                return r
+
+
 class Manifest(object):
         """A Manifest is the representation of the actions composing a specific
         package version on both the client and the repository.  Both purposes
@@ -119,6 +149,12 @@ class Manifest(object):
         as an indicator that a specific package version is supported by the
         vendor, example.com.
 
+        manifest.null is provided as the null manifest.  Differences against the
+        null manifest result in the complete set of attributes and actions of
+        the non-null manifest, meaning that all operations can be viewed as
+        tranitions between the manifest being installed and the manifest already
+        present in the image (which may be the null manifest).
+
         XXX Need one or more differences methods, so that we can build a list of
         the actions we must take and the actions that are no longer relevant,
         which would include deletions.
@@ -146,29 +182,23 @@ class Manifest(object):
                 return r
 
         def display_differences(self, other):
-                """Output expects that self is newer than other."""
+                """Output expects that self is newer than other.  Use of sets
+                requires that we convert the action objects into some marshalled
+                form, otherwise set member identities are derived from the
+                object pointers, rather than the contents."""
+
                 sset = set()
                 oset = set()
 
                 for acs in self.actions:
-                        sset.add(acs)
+                        sset.add("%s" % acs)
 
                 for aco in other.actions:
-                        oset.add(aco)
-
-                dset = sset.symmetric_difference(oset)
-
-                for act in dset:
-                        if act in sset:
-                                print "+ %s" % act
-                        else:
-                                print "- %s" % act
-
-                sset = set()
-                oset = set()
+                        oset.add("%s" % aco)
 
                 for ats in self.attributes.keys():
                         sset.add("%s=%s" % (ats, self.attributes[ats]))
+
                 for ato in other.attributes.keys():
                         oset.add("%s=%s" % (ato, other.attributes[ato]))
 
@@ -232,6 +262,46 @@ class Manifest(object):
                 else:
                         bisect.insort(self.actions, a)
 
+        def add_dependency_action_line(self, str):
+                """A dependency action line is one or more of
+
+                require fmri n=v
+                incorporate fmri n=v
+                optional fmri n=v
+
+                """
+
+                m = re.match("^(require|incorporate|optional) ([^\s]+)\s?(.*)", str)
+                if m == None:
+                        raise SyntaxError, "invalid dependency action '%s'" % str
+
+                a = DependencyManifestAction()
+                for k in depend_str.keys():
+                        if depend_str[k] == m.group(1):
+                                a.attrs["dtype"] = k
+                                break
+
+                if a.attrs["dtype"] == None:
+                        raise KeyError, "unknown dependency type '%s'" % m.group(1)
+
+                a.attrs["fmri"] = m.group(2)
+
+                # if any name value settings, add to action's tags
+                if m.group(3) != "":
+                        nvs = re.split("\s+", m.group(6))
+
+                        for nv in nvs:
+                                # XXX what if v is empty?  syntax error?
+                                n, v = re.split("=", nv, 1)
+                                n.strip()
+                                v.strip()
+                                a.attrs[n] = v
+
+                if len(self.actions) == 0:
+                        self.actions.append(a)
+                else:
+                        bisect.insort(self.actions, a)
+
         def set_content(self, str):
                 """str is the text representation of the manifest"""
 
@@ -240,16 +310,21 @@ class Manifest(object):
                                 self.add_attribute_line(l)
                         elif re.match("^file ", l):
                                 self.add_file_action_line(l)
+                        elif re.match("^(require|optional|incorporate) ", l):
+                                self.add_dependency_action_line(l)
                         else:
                                 raise SyntaxError, "unknown action '%s'" % l
 
                 return
+
+null = Manifest()
 
 if __name__ == "__main__":
         m1 = Manifest()
 
         x = """\
 set com.sun,test = true
+require pkg:/library/libc
 file 0555 sch staff /usr/bin/i386/sort fff555fff isa=i386
 """
         m1.set_content(x)
@@ -261,6 +336,7 @@ file 0555 sch staff /usr/bin/i386/sort fff555fff isa=i386
         y = """\
 set com.sun,test = true
 set com.sun,data = true
+require pkg:/library/libc
 file 0555 sch staff /usr/bin/i386/sort fff555ff9 isa=i386
 file 0555 sch staff /usr/bin/amd64/sort eeeaaaeee isa=amd64
 """
@@ -270,3 +346,7 @@ file 0555 sch staff /usr/bin/amd64/sort eeeaaaeee isa=amd64
         print m2
 
         m2.display_differences(m1)
+
+        print null
+
+        m2.display_differences(null)
