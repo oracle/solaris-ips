@@ -866,6 +866,7 @@ class CpioFile(object):
                 this routine is called).
                 """
 
+                bytes = 0
                 if self.fileobj.tell() % padding != 0:
                         bytes = padding - self.fileobj.tell() % padding
                 self.fileobj.seek(self.fileobj.tell() + bytes)

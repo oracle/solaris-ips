@@ -161,26 +161,28 @@ def trans_add(config, args):
                 sys.exit(1)
 
         # Specifies the ordering of the commandline arguments for each file type
-        # XXX this needs to be modularized.  Or does it -- should it just
-        # pass the args into Transaction.add() by order, and have that sort
-        # it out?  If this is to be modularized here, then pkgsend will
-        # have to know how to load the extension (perhaps another API
-        # call), but if it passes args by order, then the transaction API
-        # won't be by keyword, which I think is less clean (ordering is
-        # *such* a commandline thing).
+        # XXX We might want to check that the list of attributes here is a
+        # superset of the required attributes for each type.  Unfortunately,
+        # only here can we specify commandline ordering.
         attrs = {
                 "dir": ("mode", "owner", "group", "path"),
-                "displace": ("mode", "owner", "group", "path", "file"),
-                "file": ("mode", "owner", "group", "path", "file"),
-                "preserve": ("mode", "owner", "group", "path", "file"),
+                "displace": ("mode", "owner", "group", "path"),
+                "file": ("mode", "owner", "group", "path"),
+                "preserve": ("mode", "owner", "group", "path"),
                 "service": ("manifest", ),
                 "link": ("path", "target"),
                 "hardlink": ("path", "target"),
         }
 
+        actions = pkg.actions.types
+
         try:
                 kw = dict((attrs[args[0]][i], args[i + 1])
                         for i in range(len(attrs[args[0]])))
+                if args[0] == "file":
+                        action = actions[args[0]](args[5], **kw)
+                else:
+                        action = actions[args[0]](**kw)
         except KeyError, e:
                 print 'pkgsend: action "%s" not defined' % e[0]
                 sys.exit(1)
@@ -189,7 +191,10 @@ def trans_add(config, args):
                 sys.exit(1)
 
         t = trans.Transaction()
-        t.add(config, trans_id, args[0], **kw)
+        try:
+                t.add(config, trans_id, action)
+        except TypeError, e:
+                print "warning:", e
 
 def trans_delete(config, args):
         return
@@ -222,9 +227,9 @@ def send_bundle(config, args):
         t = trans.Transaction()
         status, id = t.open(config, bundle.pkgname + "@0-1")
 
-        for file in bundle:
+        for action in bundle:
                 try:
-                        t.add(config, id, file.type, **file.attrs)
+                        t.add(config, id, action)
                 except TypeError, e:
                         print "warning:", e
 

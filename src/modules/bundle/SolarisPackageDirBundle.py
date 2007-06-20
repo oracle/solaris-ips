@@ -28,6 +28,7 @@
 import os
 from pkg.sysvpkg import SolarisPackage
 from pkg.cpiofile import CpioFile
+from pkg.actions import *
 
 class SolarisPackageDirBundle(object):
 
@@ -50,9 +51,8 @@ class SolarisPackageDirBundle(object):
                         cf = CpioFile.open(os.path.join(
                             self.filename, "archive", klass + ".bz2"))
                         for ci in cf:
-                                yield \
-                                    SolarisPackageDirBundleFile(pkgmap[ci.name],
-                                        "", stream=ci.extractfile())
+                                yield self.action(pkgmap[ci.name],
+                                    ci.extractfile())
 
                 for p in self.pkg.manifest:
                         # Just do the files that remain.  Only regular file
@@ -62,8 +62,26 @@ class SolarisPackageDirBundle(object):
 
                         # These are the only valid file types in SysV packages
                         if p.type in "ifevbcdxpls":
-                                yield SolarisPackageDirBundleFile(p,
-                                    self.filename)
+                                yield self.action(p, os.path.join(self.filename,
+                                    "reloc", p.pathname))
+
+        def action(self, mapline, data):
+                if mapline.type in "fev":
+                        return file.FileAction(data, mode=mapline.mode,
+                            owner=mapline.owner, group=mapline.group,
+                            path=mapline.pathname)
+                elif mapline.type in "dx":
+                        return directory.DirectoryAction(mode=mapline.mode,
+                            owner=mapline.owner, group=mapline.group,
+                            path=mapline.pathname)
+                elif mapline.type == "s":
+                        return link.LinkAction(path=mapline.pathname,
+                            target=mapline.target)
+                elif mapline.type == "l":
+                        return hardlink.HardLinkAction(path=mapline.pathname,
+                            target=mapline.target)
+                else:
+                        return unknown.UnknownAction(path=mapline.pathname)
 
 def test(filename):
         if os.path.isfile(os.path.join(filename, "pkginfo")) and \
@@ -71,47 +89,3 @@ def test(filename):
                 return True
 
         return False
-
-class SolarisPackageDirBundleFile(object):
-
-        def __init__(self, thing, pkgpath, stream=None):
-                self.attrs = {}
-                if thing.type == "d":
-                        self.type = "dir"
-                        self.attrs = {
-                                "mode": thing.mode,
-                                "owner": thing.owner,
-                                "group": thing.group,
-                                "path": thing.pathname,
-                        }
-                elif thing.type in "fev":
-                        self.type = "file"
-                        self.attrs = {
-                                "mode": thing.mode,
-                                "owner": thing.owner,
-                                "group": thing.group,
-                                "path": thing.pathname,
-                        }
-                        if stream is None:
-                                self.attrs["file"] = \
-                                    os.path.join(pkgpath, "reloc",
-                                        thing.pathname)
-                        else:
-                                self.attrs["filestream"] = stream
-                elif thing.type in "s":
-                        self.type = "link"
-                        self.attrs = {
-                            "path": thing.pathname,
-                            "target": thing.target
-                        }
-                elif thing.type in "l":
-                        self.type = "hardlink"
-                        self.attrs = {
-                            "path": thing.pathname,
-                            "target": thing.target
-                        }
-                else:
-                        self.type = "unknown"
-                        self.attrs = {
-                                "path": thing.pathname
-                        }

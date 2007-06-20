@@ -58,7 +58,7 @@ class PkgMapLine(object):
 	"""
 
 	def __init__(self, line):
-		array = line.split(' ')
+		array = line.split()
 		try:
 			self.part = int(array[0])
 		except ValueError:
@@ -149,8 +149,7 @@ class SolarisPackage(object):
                         # and pkgmap files starts on the next 512-byte boundary
                         # after the header, so seek to that point.
                         fo.seek(fo.tell() + 512 - fo.tell() % 512)
-                        self.datastream = cpiofile.CpioFile.open(mode="r|",
-                                fileobj=fo)
+                        self.datastream = CpioFile.open(mode="r|", fileobj=fo)
 
                         # We're going to need to extract and cache the contents
                         # of the pkginfo and pkgmap files because we're not

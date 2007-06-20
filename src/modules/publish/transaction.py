@@ -34,6 +34,8 @@ import urllib
 import urllib2
 import urlparse
 
+import pkg.actions
+
 class Transaction(object):
 
         def __init__(self):
@@ -91,7 +93,7 @@ class Transaction(object):
                 ret_hdrs = ["State", "Package-FMRI"]
                 return c.code, dict((h, c.info()[h]) for h in ret_hdrs)
 
-        def add(self, config, trans_id, type="file", **keywords):
+        def add(self, config, trans_id, action):
                 """POST the file contents to the transaction.  Default is to
                 post to the currently open content series.  -s option selects a
                 different series.
@@ -124,25 +126,15 @@ class Transaction(object):
 
                 XXX Setting a driver from the command line, rather than via a
                 batched file, seems error prone.
+                """
 
-                XXX File types needs to be made a modular API, and not be
-                hard-coded."""
+                type = action.name()
+                attrs = action.attrs
+                openers = action.data
 
-                attributes = {
-                        "dir": ("mode", "owner", "group", "path"),
-                        "displace": ("mode", "owner", "group", "path"),
-                        "file": ("mode", "owner", "group", "path"),
-                        "preserve": ("mode", "owner", "group", "path"),
-                        "service": ("manifest", ),
-                        "link": ("path", "target"),
-                        "hardlink": ("path", "target"),
-                        # "driver"
-                        # "restart"
-                }
-
-                if not type in attributes.keys():
-                        if "path" in keywords:
-                                path = keywords["path"]
+                if not type in pkg.actions.types.keys():
+                        if "path" in attrs:
+                                path = attrs["path"]
                         else:
                                 path = "<unknown path>"
                         raise TypeError("%s: unknown file type '%s'" %
@@ -153,20 +145,17 @@ class Transaction(object):
                 host, port = uri_exp[1].split(":")
                 selector = "/add/%s/%s" % (trans_id, type)
 
-                headers = dict((k.capitalize(), keywords[k])
-                        for k in keywords if k in attributes[type])
+                headers = dict((k.capitalize(), attrs[k])
+                    for k in attrs
+                    if k in pkg.actions.types[type].attributes())
 
-                if type in ("file", "displace", "preserve", "service"):
-                        # XXX Need to handle larger files than available swap.
-                        if "file" in keywords:
-                                file = open(keywords["file"])
-                                data = file.read()
-                        elif "filestream" in keywords:
-                                data = keywords["filestream"].read()
-                        headers["Content-Length"] = len(data)
-                elif type in ("dir", "link", "hardlink"):
-                        headers["Content-Length"] = "0"
-                        data = ""
+                # XXX Need to handle large files
+                # XXX Need to handle multiple datastreams
+                data = ""
+                for opener in openers.values():
+                        datastream = opener()
+                        data = datastream.read()
+                headers["Content-Length"] = len(data)
 
                 c = httplib.HTTPConnection(host, port)
                 c.connect()

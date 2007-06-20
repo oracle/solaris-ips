@@ -30,6 +30,8 @@ import stat
 import tarfile
 import tempfile
 
+from pkg.actions import *
+
 class TarBundle(object):
 
         def __init__(self, filename):
@@ -42,51 +44,22 @@ class TarBundle(object):
 
         def __iter__(self):
                 for f in self.tf:
-                        yield TarBundleFile(self.tf, f)
+                        yield self.action(self.tf, f)
+
+        def action(self, tarfile, tarinfo):
+                if tarinfo.isreg():
+                        return file.FileAction(tarfile.extractfile(tarinfo),
+                            mode = oct(stat.S_IMODE(tarinfo.mode)),
+                            owner = tarinfo.uname, group = tarinfo.gname,
+                            path = tarinfo.name)
+                elif tarinfo.isdir():
+                        return directory.DirectoryAction(
+                            mode = oct(stat.S_IMODE(tarinfo.mode)),
+                            owner = tarinfo.uname, group = tarinfo.gname,
+                            path = tarinfo.name)
 
 def test(filename):
         try:
                 return tarfile.is_tarfile(filename)
         except:
                 return False
-
-# XXX Make this a private class to TarBundle?
-class TarBundleFile(object):
-
-        def __init__(self, tarfile, tarinfo):
-
-                if tarinfo.isreg():
-                        (inf, self.tmpfile) = tempfile.mkstemp("", "pkg-tar.")
-
-                        f = tarfile.extractfile(tarinfo)
-                        while True:
-                                buf = f.read(8192)
-                                if not buf:
-                                        break
-                                os.write(inf, buf)
-
-                        os.close(inf)
-
-                        self.type = "file"
-                        self.attrs = {
-                                # Get rid of the S_IFXXX bits
-                                "mode": oct(stat.S_IMODE(tarinfo.mode)),
-                                "owner": tarinfo.uname,
-                                "group": tarinfo.gname,
-                                "path": tarinfo.name,
-                                "file": self.tmpfile
-                        }
-
-                elif tarinfo.isdir():
-                        self.type = "dir"
-                        self.attrs = {
-                                # Get rid of the S_IFXXX bits
-                                "mode": oct(stat.S_IMODE(tarinfo.mode)),
-                                "owner": tarinfo.uname,
-                                "group": tarinfo.gname,
-                                "path": tarinfo.name,
-                        }
-
-        def __del__(self):
-                if "tmpfile" in dir(self):
-                        os.remove(self.tmpfile)

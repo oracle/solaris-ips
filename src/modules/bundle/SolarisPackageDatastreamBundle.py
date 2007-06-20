@@ -30,6 +30,7 @@ import os
 import stat
 
 from pkg.sysvpkg import SolarisPackage
+from pkg.actions import *
 
 typemap = {
         stat.S_IFBLK: "block-special",
@@ -81,9 +82,7 @@ class SolarisPackageDatastreamBundle(object):
                    package map.
                 """
                 for p in self.pkg.datastream:
-                        # XXX Skip other types for now.
-                        if typemap[stat.S_IFMT(p.mode)] in ("directory", "file"):
-                                yield SolarisPackageDatastreamBundleFile(p, self)
+                        yield self.action(self.pkgmap, p, p.name)
 
                 # for some reason, some packages may have directories specified
                 # in the pkgmap that don't exist in the archive.  They need to
@@ -99,14 +98,32 @@ class SolarisPackageDatastreamBundle(object):
                                 dir = "reloc/"
                         if p.type == "d" and \
                             dir + p.pathname not in self.pkg.datastream:
-                                o = PseudoCI(dir + p.pathname)
-                                yield SolarisPackageDatastreamBundleFile(o, self)
+                                yield self.action(self.pkgmap, None,
+                                    dir + p.pathname)
 
-class PseudoCI(object):
-        """A trivial class to pretend for a moment it's a CpioInfo object."""
+        def action(self, pkgmap, ci, path):
+                try:
+                        mapline = pkgmap[path]
+                except KeyError:
+                        # XXX Return an unknown instead of a missing, for now.
+                        return unknown.UnknownAction(path = path)
 
-        def __init__(self, name):
-                self.name = name
+                if mapline.type in "fev":
+                        return file.FileAction(ci.extractfile(),
+                            mode = mapline.mode, owner = mapline.owner,
+                            group = mapline.group, path = mapline.pathname)
+                elif mapline.type in "dx":
+                        return directory.DirectoryAction(mode = mapline.mode,
+                            owner = mapline.owner, group = mapline.group,
+                            path = mapline.pathname)
+                elif mapline.type == "s":
+                        return link.LinkAction(path = mapline.pathname,
+                            target = mapline.target)
+                elif mapline.type == "l":
+                        return hardlink.HardLinkAction(path = mapline.pathname,
+                            target = mapline.target)
+                else:
+                        return unknown.UnknownAction(path = mapline.pathname)
 
 def test(filename):
         if not os.path.isfile(filename):
@@ -117,40 +134,3 @@ def test(filename):
                 return True
         except:
                 return False
-
-class SolarisPackageDatastreamBundleFile(object):
-
-        def __init__(self, ci, bundle):
-                self.attrs = {}
-
-                try:
-                        thing = bundle.pkgmap[ci.name]
-                except KeyError:
-                        self.type = "missing"
-                        self.attrs = {
-                                "path": ci.name
-                        }
-                        return
-
-                if thing.type == "d":
-                        self.type = "dir"
-                        self.attrs = {
-                                "mode": thing.mode,
-                                "owner": thing.owner,
-                                "group": thing.group,
-                                "path": thing.pathname,
-                        }
-                elif thing.type in "fev":
-                        self.type = "file"
-                        self.attrs = {
-                                "mode": thing.mode,
-                                "owner": thing.owner,
-                                "group": thing.group,
-                                "path": thing.pathname,
-                                "filestream": ci.extractfile()
-                        }
-                else:
-                        self.type = "unknown"
-                        self.attrs = {
-                                "path": thing.pathname
-                        }

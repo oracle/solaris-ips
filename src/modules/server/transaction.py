@@ -33,6 +33,8 @@ import urllib
 import pkg.fmri as fmri
 import pkg.package as package
 
+import pkg.actions
+
 class Transaction(object):
         """A Transaction is a server-side object used to represent the set of
         incoming changes to a Package.  Manipulation of Transaction objects in
@@ -167,45 +169,53 @@ class Transaction(object):
                 sequence of buffers as well, with intermediate storage to
                 disk."""
 
-                hdrs = request.headers
-                path = hdrs.getheader("Path")
-
                 trans_id = self.get_basename()
 
-                data = request.rfile.read(int(hdrs.getheader("Content-Length")))
-                hash = sha.new(data)
-                fname = hash.hexdigest()
+                hdrs = request.headers
 
-                if type in ("link", "hardlink"):
-                        target = hdrs.getheader("Target")
-                        tfile = file("%s/%s/manifest" %
-                            (self.cfg.trans_root, trans_id), "a")
-                        print >>tfile, "%s %s %s" % (type, path, target)
-                else:
+                attrs = dict((hdr.lower(), hdrs[hdr])
+                    for hdr in hdrs
+                    if hdr in pkg.actions.types[type].attributes())
+
+                # The request object always has a readable rfile, even if it'll
+                # return no data.  We check ahead of time to see if we'll get
+                # any data, and only create the object with data if there will
+                # be any.
+                rfile = None
+                if "Content-Length" in hdrs and \
+                    int(hdrs.getheader("Content-Length")) != 0:
+                        rfile = request.rfile
+                action = pkg.actions.types[type](rfile, **attrs)
+
+                # XXX Need to handle multiple streams
+                fnames = ()
+                for opener in action.data.values():
+                        size = int(hdrs.getheader("Content-Length"))
+
+                        data = opener().read(size)
+                        hash = sha.new(data)
+                        fname = hash.hexdigest()
+                        fnames += (fname,)
+
                         ofile = gzip.GzipFile("%s/%s/%s" %
                             (self.cfg.trans_root, trans_id, fname), "wb")
-                        
-                   
-	                size = len(data)
-        	        bufsz = 64 * 1024
-	
-        	        nbuf = size / bufsz
-	
-        	        for n in range(0, nbuf):
-                	        l = n * bufsz
-                        	h = (n + 1) * bufsz - 1
-                        	ofile.write(data[l:h])
 
-                	m = nbuf * bufsz
-                	ofile.write(data[m:])
+                        bufsz = 64 * 1024
 
-			mode = hdrs.getheader("Mode")
-                        owner = hdrs.getheader("Owner")
-                        group = hdrs.getheader("Group")
+                        nbuf = size / bufsz
 
-                        tfile = file("%s/%s/manifest" %
-                            (self.cfg.trans_root, trans_id), "a")
-                        print >>tfile, "%s %s %s %s %s %s" % (type, mode, owner, group, path, fname)
+                        for n in range(0, nbuf):
+                                l = n * bufsz
+                                h = (n + 1) * bufsz - 1
+                                ofile.write(data[l:h])
+
+                        m = nbuf * bufsz
+                        ofile.write(data[m:])
+
+                tfile = file("%s/%s/manifest" %
+                    (self.cfg.trans_root, trans_id), "a")
+                print >>tfile, ("%s" + " %s" * (len(action.attrs) + len(action.data))) % \
+                    ((type,) + tuple(action.attrs[k] for k in action.attributes()) + fnames)
 
                 request.send_response(200)
 
