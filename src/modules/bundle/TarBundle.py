@@ -36,7 +36,8 @@ class TarBundle(object):
 
         def __init__(self, filename):
                 self.tf = tarfile.open(filename)
-                # XXX This could be more intelligent.  Or get user input.
+                # XXX This could be more intelligent.  Or get user input.  Or
+                # extend API to take FMRI.
                 self.pkgname = os.path.basename(filename)
 
         def __del__(self):

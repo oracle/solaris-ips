@@ -306,6 +306,8 @@ class Manifest(object):
                 """str is the text representation of the manifest"""
 
                 for l in str.splitlines():
+                        if re.match("^\s*$", l):
+                                continue
                         if re.match("^set ", l):
                                 self.add_attribute_line(l)
                         elif re.match("^file ", l):

@@ -116,7 +116,10 @@ link:
 	ln -s $(PWD)/modules /usr/lib/python2.4/vendor-packages/pkg
 
 # Invoke all known modules with tests.
+# XXX Invoke the bundle tests.
 test:
+	# $(PYTHON) $(LINKPYTHONPKG)/bundle/__init__.py a_sysv_pkg
+	# $(PYTHON) $(LINKPYTHONPKG)/bundle/__init__.py a_tarball
 	$(PYTHON) $(LINKPYTHONPKG)/misc.py
 	$(PYTHON) $(LINKPYTHONPKG)/version.py
 	$(PYTHON) $(LINKPYTHONPKG)/fmri.py

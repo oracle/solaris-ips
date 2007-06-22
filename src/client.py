@@ -62,6 +62,7 @@ import pkg.package as package
 import pkg.version as version
 
 import pkg.client.image as image
+import pkg.client.imageplan as imageplan
 
 def usage():
         print """\
@@ -128,66 +129,16 @@ def catalog_display(config, image, args):
         image.reload_catalogs()
         image.display_catalogs()
 
-def pattern_install(config, image, pattern, strict):
-        # check catalogs for this pattern; None is the representation of the
-        # freezes
-        matches = image.get_matching_pkgs(pattern)
-
-        if len(matches) == 0:
-                raise NameError, "pattern '%s' has no matching packages" % \
-                    pattern
-
-        matches.sort()
-
-        # If there is more than one package in the list, then we've got an
-        # ambiguous outcome, and need to exit.
-
-        l = matches[0]
-        for p in matches:
-                if p.is_same_pkg(l):
-                        l = p
-                        continue
-
-                raise KeyError, "pattern %s led to multiple packages" % pattern
-
-
-        # pick appropriate version, based on request and freezes
-        p = max(matches)
-        #   XXX can we do this with the is_successor()/version() and a map?
-        #   warn on dependencies; exit if --strict
-
-        image.retrieve_manifest(None, p)
-
-        # do we have this manifest?
-        #   get it if not
-        # request manifest
-        # examine manifest for dependencies
-        #   if satisfied by inventory, continue
-        #   if satisfied by pending transaction, continue
-        #   if unsatisfied, then
-        #     if optional, then evaluate client's optional policy to either
-        #     treat-as-required, treat-as-required-unless-pinned, ignore
-        #     skip if ignoring
-        #     if pinned
-        #       ignore if treat-as-required-unless-pinned
-        #     else
-        #       **evaluation of incorporations**
-        #     pursue installation of this package
-        # examine manifest for files
-        #
-        # request files
-
-        return # a client operation
-
-
 
 def install(config, image, args):
-        """Attempt to take package specified to INSTALLED state."""
-        strict = False
-        oplist = []
+        """Attempt to take package specified to INSTALLED state.  The operands
+        are interpreted as glob patterns.
 
+        XXX Authority-catalog issues."""
         opts = None
         pargs = None
+        error = 0
+
         if len(args) > 0:
                 opts, pargs = getopt.getopt(args, "S")
 
@@ -197,22 +148,38 @@ def install(config, image, args):
 
         image.reload_catalogs()
 
+        ip = imageplan.ImagePlan(image)
+
         for ppat in pargs:
-                ops = None
+                rpat = re.sub("\*", ".*", ppat)
+                rpat = re.sub("\?", ".", rpat)
 
                 try:
-                        ops = pattern_install(config, image, ppat, strict)
+                        matches = image.get_regex_matching_fmris(rpat)
                 except KeyError:
-                        # okay skip this argument
-                        print "pkg: ambiguous package pattern '%s'" % ppat
-                except NameError:
-                        print "pkg: unknown package pattern '%s'" % ppat
+                        print """\
+pkg: no package matching '%s' could be found in current catalog
+     suggest relaxing pattern, refreshing and/or examining catalogs""" % ppat
+                        error = 1
+                        continue
 
-                if ops != None:
-                        oplist.append(ops)
+                pnames = {}
+                for m in matches:
+                        pnames[m[1].get_pkg_stem()] = 1
 
+                if len(pnames.keys()) > 1:
+                        print "pkg: '%s' matches multiple packages" % ppat
+                        for k in pnames.keys():
+                                print "\t%s" % k
+                        continue
 
-        # perform update transaction as given in oplist
+                ip.propose_fmri(m[1])
+
+        if error != 0:
+                sys.exit(error)
+
+        ip.evaluate()
+        ip.execute()
 
         return
 
@@ -259,12 +226,9 @@ def create_image(config, args):
 
 # XXX need an Image configuration by default
 icfg = image.Image()
-icfg.find_parent()
 pcfg = config.ParentRepo("http://localhost:10000", ["http://localhost:10000"])
 
 if __name__ == "__main__":
-
-
         opts = None
         pargs = None
         try:
@@ -282,6 +246,12 @@ if __name__ == "__main__":
 
         # Handle PKG_IMAGE and PKG_SERVER environment variables.
 
+        if subcommand == "image":
+                create_image(pcfg, pargs)
+                sys.exit(0)
+
+        icfg.find_parent()
+
         if subcommand == "refresh":
                 catalog_refresh(pcfg, icfg, pargs)
         elif subcommand == "catalog":
@@ -294,8 +264,6 @@ if __name__ == "__main__":
                 freeze(pcfg, icfg, pargs)
         elif subcommand == "unfreeze":
                 unfreeze(pcfg, icfg, pargs)
-        elif subcommand == "image":
-                create_image(pcfg, pargs)
         else:
                 print "pkg: unknown subcommand '%s'" % subcommand
                 usage()

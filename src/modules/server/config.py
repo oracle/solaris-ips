@@ -53,6 +53,10 @@ class SvrConfig(object):
                 self.catalog = catalog.Catalog()
                 self.in_flight_trans = {}
 
+                # XXX naive:  change to
+                # catalog_requests = [ (IP-addr, time), ... ]
+                # manifest_requests = { fmri : (IP-addr, time), ... }
+                # file requests = [ (IP-addr, time), ... ]
                 self.catalog_requests = 0
                 self.manifest_requests = 0
                 self.file_requests = 0

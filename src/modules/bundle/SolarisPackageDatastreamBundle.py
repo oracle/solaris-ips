@@ -43,6 +43,7 @@ typemap = {
 }
 
 class SolarisPackageDatastreamBundle(object):
+        """XXX Need a class comment."""
 
         def __init__(self, filename):
                 self.pkg = SolarisPackage(filename)

@@ -5,6 +5,10 @@ Design
 
 Code
 - need to outline ELF inspection module
+	- ali has constructed a simple C example for extracting run
+	paths
+	http://blogs.sun.com/ali/entry/changing_elf_runpaths
+
 - need to start constructing placeholder classes/methods for various
   pieces
 	- list of pieces

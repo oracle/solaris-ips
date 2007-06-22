@@ -25,6 +25,22 @@
 
 # pkg.depotd - package repository daemon
 
+# XXX The prototype pkg.depotd combines both the version management server that
+# answers to pkgsend(1) sessions and the HTTP file server that answers to the
+# various GET operations that a pkg(1) client makes.  This split is expected to
+# be made more explicit, by constraining the pkg(1) operations such that they
+# can be served as a typical HTTP/HTTPS session.  Thus, pkg.depotd will reduce
+# to a special purpose HTTP/HTTPS server explicitly for the version management
+# operations, and must manipulate the various state files--catalogs, in
+# particular--such that the pkg(1) pull client can operately accurately with
+# only a basic HTTP/HTTPS server in place.
+
+# XXX We should support simple "last-modified" operations via HEAD queries.
+
+# XXX Although we pushed the evaluation of next-version, etc. to the pull
+# client, we should probably provide a query API to do same on the server, for
+# dumb clients (like a notification service).
+
 import BaseHTTPServer
 import getopt
 import os
@@ -50,7 +66,7 @@ def usage():
 Usage: /usr/lib/pkg.depotd [-n]
 """
 
-def catalog(scfg, request):
+def catalog_get(scfg, request):
         scfg.inc_catalog()
 
         request.send_response(200)
@@ -58,64 +74,22 @@ def catalog(scfg, request):
         request.end_headers()
         request.wfile.write("%s" % scfg.catalog)
 
-def manifest(scfg, request):
+def manifest_get(scfg, request):
         """The request is an encoded pkg FMRI.  If the version is specified
-        incompletely, we return the latest matching manifest.  The matched
-        version is returned in the headers.  If an incomplete FMRI is received,
-        the client is expected to have provided a build release in the request
-        headers.
-
-        Legitimate requests are
-
-        /manifest/[URL]
-        /manifest/branch/[URL]
-        /manifest/release/[URL]
-
-        allowing the request of the next matching version, based on client
-        constraints."""
+        incompletely, we return an error, as the client is expected to form
+        correct requests, based on its interpretation of the catalog and its
+        image policies."""
 
         scfg.inc_manifest()
-
-        constraint = None
 
         # Parse request into FMRI component and decode.
         m = re.match("^/manifest/(.*)", request.path)
         pfmri = urllib.unquote(m.group(1))
 
-        # Look for exact match.
-        # XXX XXX
-
-        # Determine closest version.
-        try:
-                vs = scfg.catalog.get_matching_pkgs(pfmri, constraint)
-        except KeyError, e:
-                msg = "manifest request failed: '%s'" % pfmri
-                request.log_message(msg)
-
-                request.send_response(500)
-                request.send_header('Content-type', 'text/plain')
-                request.end_headers()
-
-                return
-
-        msg = "manifest request '%s': " % pfmri
-        for v in vs:
-                msg = msg + "%s " % v
-        request.log_message(msg)
-
-#       XXX XXX
-#        if len(vs) > 1:
-#                request.log_message("multiple manifest result ambiguous")
-#                request.send_response(400)
-#                request.send_header('Content-type', 'text/plain')
-#                request.end_headers()
-#
-#                return
-
-        p = vs[0]
+        f = fmri.PkgFmri(pfmri, None)
 
         # Open manifest and send.
-        file = open("%s/%s" % (scfg.pkg_root, p.get_dir_path()), "r")
+        file = open("%s/%s" % (scfg.pkg_root, f.get_dir_path()), "r")
         data = file.read()
 
         request.send_response(200)
@@ -123,7 +97,7 @@ def manifest(scfg, request):
         request.end_headers()
         request.wfile.write(data)
 
-def get_file(scfg, request):
+def file_get_single(scfg, request):
         """The request is the SHA-1 hash name for the file."""
         scfg.inc_file()
 
@@ -194,11 +168,11 @@ class pkgHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         def do_GET(self):
                 # Client APIs
                 if re.match("^/catalog$", self.path):
-                        catalog(scfg, self)
+                        catalog_get(scfg, self)
                 elif re.match("^/manifest/.*$", self.path):
-                        manifest(scfg, self)
+                        manifest_get(scfg, self)
                 elif re.match("^/file/.*$", self.path):
-                        get_file(scfg, self)
+                        file_get_single(scfg, self)
 
                 # Publisher APIs
                 elif re.match("^/open/(.*)$", self.path):

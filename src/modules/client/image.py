@@ -28,6 +28,7 @@ import re
 import urllib
 
 import pkg.catalog as catalog
+import pkg.manifest as manifest
 
 IMG_ENTIRE = 0
 IMG_PARTIAL = 1
@@ -85,6 +86,11 @@ class Image(object):
 
                 self.catalogs = {}
                 self.authorities = {}
+
+                self.attrs = {}
+
+                self.attrs["Policy-Require-Optional"] = False
+                self.attrs["Policy-Pursue-Latest"] = True
 
         def find_parent(self):
                 # Ascend from current working directory to find first
@@ -150,56 +156,54 @@ class Image(object):
                 for c in self.catalogs.values():
                         c.display()
 
-        def get_matching_pkgs(self, pattern):
-                """The pattern is a glob pattern, which we translate to an RE
-                pattern.
-
-                XXX This is going to need to return (catalog, fmri) pairs."""
+        def get_matching_pkgs(self, pfmri):
+                """Exact matches to the given FMRI.  Returns a list of (catalog,
+                pkg) pairs."""
 
                 m = []
                 for c in self.catalogs.values():
-                        m.extend(c.get_matching_pkgs(pattern, None))
+                        m.extend([(c, p) \
+                            for p in c.get_matching_pkgs(pfmri, None)])
 
                 return m
 
-        def retrieve_manifest(self, catalog, fmri):
-                """Turn FMRI to Image's path to manifest.  If present, return.
-                If not present, calculate URI and retrieve.
+        def get_regex_matching_fmris(self, regex):
+                """FMRIs matching the given regular expression.  Returns of a
+                list of (catalog, PkgFmri) pairs."""
 
-                XXX Which catalog did we fetch this fmri from?"""
+                m = []
+                for c in self.catalogs.values():
+                        m.extend([(c, p) \
+                            for p in c.get_regex_matching_fmris(regex)])
 
-                authority, pkg_name, version = fmri.tuple()
+                return m
 
+        def has_manifest(self, fmri):
                 mpath = fmri.get_dir_path()
 
                 local_mpath = "%s/pkg/%s/manifest" % (self.imgdir, mpath)
 
                 if (os.path.exists(local_mpath)):
-                        print "short circuit retrieve"
-                        return local_mpath # or return object?
+                        return True
 
-                # XXX convert authority reference to server
-                if authority == None:
-                        authority = "localhost:10000"
-                url_mpath = "http://%s/manifest/%s" % (authority,
-                                fmri.get_url_path())
+                return False
 
-                print url_mpath
-                try:
-                        m = urllib.urlopen(url_mpath)
-                except:
-                        raise NameError, "could not open %s" % url_mpath
+        def get_manifest(self, fmri):
+                m = manifest.Manifest()
+                mcontent = file("%s/pkg/%s/manifest" % 
+                    (self.imgdir, fmri.get_dir_path())).read()
+                m.set_content(mcontent)
+                return m
 
-                data = m.read()
-                print local_mpath
-                try:
-                        mfile = file(local_mpath, "w")
-                        print >>mfile, data
-                except IOError, e:
-                        os.makedirs(os.path.dirname(local_mpath))
-                        mfile = file(local_mpath, "w")
-                        print >>mfile, data
+        def get_version_installed(self, fmri):
+                istate = "%s/pkg/%s/installed" % (self.imgdir, fmri.get_dir_path(True))
+                if not os.path.exists(istate):
+                        raise LookupError, "no installed version of '%s'" % fmri
 
-                return local_mpath
+                vs = os.readlink(istate)
 
+                return fmri.PkgFmri("%s/%s" % (fmri, vs))
 
+if __name__ == "__main__":
+        # XXX Need to construct a trivial image and catalog.
+        pass

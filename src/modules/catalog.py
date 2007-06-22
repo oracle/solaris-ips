@@ -42,11 +42,16 @@ class Catalog(object):
         incorporation relationships between packages.  This latter section
         allows the graph to be topologically sorted by the client.
 
+        S Last-Modified: [timespec]
+
         XXX A authority mirror-uri ...
         XXX ...
 
         V fmri
         V fmri
+        ...
+        C fmri
+        C fmri
         ...
         I fmri fmri
         I fmri fmri
@@ -60,14 +65,24 @@ class Catalog(object):
 
         XXX self.pkgs should be a dictionary, accessed by fmri string (or
         package name).  Current code is O(N_packages) O(M_versions), should be
-        O(1) O(M_versions), and possibly O(1) O(1).
+        O(1) O(M_versions), and possibly O(1) O(1).  Likely a similar need for
+        critical_pkgs.
+
+        XXX Initial estimates suggest that the Catalog could be composed of 1e5
+        - 1e7 lines.  Catalogs across these magnitudes will need to be spread
+        out into chunks, and may require a delta-oriented update interface.
         """
 
         def __init__(self):
                 self.catalog_root = ""
 
+                self.attrs = {}
+                self.attrs["Last-Modified"] = time.time()
+
                 self.authorities = {}
                 self.pkgs = []
+                self.critical_pkgs = []
+
                 self.relns = {}
 
         def add_authority(self, authority, urls):
@@ -87,11 +102,19 @@ class Catalog(object):
                 for entry in centries:
                         # each V line is an fmri
                         m = re.match("^V (pkg:[^ ]*)", entry)
-                        if m == None:
-                                continue
+                        if m != None:
+                                pname = m.group(1)
+                                self.add_fmri(fmri.PkgFmri(pname, None))
 
-                        pname = m.group(1)
-                        self.add_fmri(fmri.PkgFmri(pname, None))
+                        m = re.match("^S ([^:]*): (.*)", entry)
+                        if m != None:
+                                self.attrs[m.group(1)] = m.group(2)
+
+                        m = re.match("^C (pkg:[^ ]*)", entry)
+                        if m != None:
+                                pname = m.group(1)
+                                self.critical_pkgs.append(fmri.PkgFmri(pname,
+                                    None))
 
         def add_fmri(self, pkgfmri):
                 name = pkgfmri.get_pkg_stem()
@@ -106,7 +129,7 @@ class Catalog(object):
                 pkg.add_version(pkgfmri)
                 self.pkgs.append(pkg)
 
-        def add_pkg(self, pkg):
+        def add_pkg(self, pkg, critical = False):
                 for opkg in self.pkgs:
                         if pkg.fmri == opkg.fmri:
                                 #
@@ -118,30 +141,47 @@ class Catalog(object):
                                 return
 
                 self.pkgs.append(pkg)
-
-        def add_package_fmri(self, pkg_fmri):
-                return
-
-        def delete_package_fmri(self, pkg_fmri):
-                return
+                if critical:
+                        self.critical_pkgs.append(pkg)
 
         def get_matching_pkgs(self, pfmri, constraint):
-                """Iterate through the catalog's, looking for an fmri match."""
+                """Iterate through the catalogs, looking for an exact fmri
+                match.  XXX Returns a list of Package objects."""
 
-                # XXX FMRI-based implementation doesn't do pattern matching, but
-                # exact matches only.
                 pf = fmri.PkgFmri(pfmri, None)
-
                 for pkg in self.pkgs:
                         if pkg.fmri.is_similar(pf):
                                 return pkg.matching_versions(pfmri, constraint)
 
-                raise KeyError, "%s not found in catalog" % pfmri
+                raise KeyError, "FMRI '%s' not found in catalog" % pfmri
+
+        def get_regex_matching_fmris(self, regex):
+                """Iterate through the catalogs, looking for a regular
+                expression match.  Returns an unsorted list of PkgFmri
+                objects."""
+
+                ret = []
+
+                for p in self.pkgs:
+                        for pv in p.pversions:
+                                fn = "%s@%s" % (p.fmri, pv.version)
+                                if re.search(regex, fn):
+                                        ret.append(fmri.PkgFmri(fn, None))
+
+                if ret == []:
+                        raise KeyError, "pattern '%s' not found in catalog" \
+                            % regex
+
+                return ret
 
         def __str__(self):
                 s = ""
+                for a in self.attrs.keys():
+                        s = s + "S %s: %s\n" % (a, self.attrs[a])
                 for p in self.pkgs:
                         s = s + p.get_catalog_entry()
+                for c in self.critical_pkgs:
+                        s = s + "C %s\n" % p
                 for r in self.relns:
                         s = s + "I %s\n" % r
                 return s
@@ -186,3 +226,11 @@ if __name__ == "__main__":
 
                 for p in c.get_matching_pkgs(tp, None):
                         print "  ", p
+
+        for p in c.get_regex_matching_fmris("test"):
+                print p
+
+        try:
+            l = c.get_regex_matching_fmris("flob")
+        except KeyError:
+            print "correctly determined no match for 'flob'"

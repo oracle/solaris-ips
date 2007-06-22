@@ -28,3 +28,9 @@
     could be treated as choking, or we could always examine intermediate
     manifests.
 
+9.  [psa]  Take a snapshot [of each affected filesystem] between every
+    package update operation in a larger image transaction, as opposed
+    to at the image transaction boundaries only.
+
+10.  [sch]  Examine use of alternative, HTTP 1.1-friendly URL loading
+     modules.  (Example:  Duke's urlgrabber.)

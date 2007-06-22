@@ -53,7 +53,8 @@ PKG_HDR_END = "# end of header"
 
 class PkgMapLine(object):
 	"""A class that represents a single line of a SysV package's pkgmap.
-	This class should probably disappear once pkg.Content is a bit more
+
+	XXX This class should probably disappear once pkg.Content is a bit more
 	fleshed out.
 	"""
 
@@ -162,7 +163,7 @@ class SolarisPackage(object):
                                 elif ci.name.endswith("/pkgmap"):
                                         self._pkgmap = self.datastream.extractfile(ci).readlines()
 
-                        # Here we allow for only one package.  :(
+                        # XXX Here we allow for only one package.  :(
                         self.datastream = self.datastream.get_next_archive()
 
                 else:

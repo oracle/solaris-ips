@@ -1,9 +1,10 @@
 # Ignore compiled byte code, lint output, object files, shared objects,
-# and the entire proto area.
+# VIM swap files, and the entire proto area.
 \.pyc
 \.ln
 \.o
 \.so
+\.sw.
 ^proto
 # Specific build products
 ^src/pkg$

@@ -95,12 +95,6 @@ class PkgFmri(object):
 
                         return
 
-        def get_authority(self):
-                return self.authority
-
-        def set_authority(self, authority):
-                self.authority = authority
-
         def __str__(self):
                 """Return as specific an FMRI representation as possible."""
                 if self.authority == None:
@@ -115,6 +109,18 @@ class PkgFmri(object):
                 return "pkg://%s/%s@%s" % (self.authority, self.pkg_name,
                                 self.version)
 
+        def get_authority(self):
+                return self.authority
+
+        def set_authority(self, authority):
+                self.authority = authority
+
+        def set_timestamp(self, new_ts):
+                self.version.set_timestamp(new_ts)
+
+        def get_timestamp(self, new_ts):
+                return self.version.get_timestamp()
+
         def get_pkg_stem(self):
                 """Return a string representation of the FMRI without a specific
                 version."""
@@ -123,9 +129,12 @@ class PkgFmri(object):
 
                 return "pkg://%s/%s" % (self.authority, self.pkg_name)
 
-        def get_dir_path(self):
-                """Return the escaped directory path fragment for this FMRI.
-                Requires a version to be defined."""
+        def get_dir_path(self, stemonly = False):
+                """Return the escaped directory path fragment for this FMRI."""
+
+                if stemonly:
+                        return "%s" % (urllib.quote(self.pkg_name, ""))
+
                 assert self.version != None
 
                 return "%s/%s" % (urllib.quote(self.pkg_name, ""),
@@ -183,12 +192,6 @@ class PkgFmri(object):
                         return False
 
                 return True
-
-        def set_timestamp(self, new_ts):
-                self.version.set_timestamp(new_ts)
-
-        def get_timestamp(self, new_ts):
-                return self.version.get_timestamp()
 
 if __name__ == "__main__":
         n1 = PkgFmri("pkg://pion/sunos/coreutils", "5.9")

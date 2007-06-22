@@ -46,11 +46,16 @@ class Transaction(object):
                 self.open_time = -1
                 self.pkg_name = ""
                 self.esc_pkg_name = ""
+                self.critical = False
                 self.cfg = None
                 self.client_release = ""
                 self.fmri = None
                 self.dir = ""
                 return
+
+        def get_basename(self):
+                return "%d_%s" % (self.open_time,
+                    urllib.quote("%s" % self.fmri, ""))
 
         def open(self, cfg, request):
                 self.cfg = cfg
@@ -136,7 +141,6 @@ class Transaction(object):
                         # XXX Build a response from our lists of unsatisfied
                         # dependencies.
 
-
                 try:
                         shutil.rmtree("%s/%s" % (self.cfg.trans_root, trans_id))
                 except:
@@ -187,6 +191,10 @@ class Transaction(object):
                         rfile = request.rfile
                 action = pkg.actions.types[type](rfile, **attrs)
 
+                # XXX Once actions are labelled with critical nature.
+                # if type in critical_actions:
+                #         self.critical = True
+
                 # XXX Need to handle multiple streams
                 fnames = ()
                 for opener in action.data.values():
@@ -214,8 +222,10 @@ class Transaction(object):
 
                 tfile = file("%s/%s/manifest" %
                     (self.cfg.trans_root, trans_id), "a")
-                print >>tfile, ("%s" + " %s" * (len(action.attrs) + len(action.data))) % \
-                    ((type,) + tuple(action.attrs[k] for k in action.attributes()) + fnames)
+                print >>tfile, \
+                    ("%s" + " %s" * (len(action.attrs) + len(action.data))) % \
+                    ((type,) + tuple(action.attrs[k]
+                            for k in action.attributes()) + fnames)
 
                 request.send_response(200)
 
@@ -245,7 +255,9 @@ class Transaction(object):
                 p.update(self.cfg, self)
 
                 # add entry to catalog
-                self.cfg.catalog.add_pkg(p)
+                # XXX Is self.cfg.catalog a copy or a reference??
+                # XXX Could just write new catalog file...
+                self.cfg.catalog.add_pkg(p, self.critical)
 
                 return ("%s" % self.fmri, "PUBLISHED")
 
@@ -253,8 +265,4 @@ class Transaction(object):
                 """Transaction fails consistency criteria, and can be published.
                 Make appropriate catalog entries."""
                 return
-
-        def get_basename(self):
-                return "%d_%s" % (self.open_time,
-                    urllib.quote("%s" % self.fmri, ""))
 
