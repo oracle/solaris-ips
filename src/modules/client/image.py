@@ -192,6 +192,7 @@ class Image(object):
                 m = manifest.Manifest()
                 mcontent = file("%s/pkg/%s/manifest" % 
                     (self.imgdir, fmri.get_dir_path())).read()
+                m.set_fmri(fmri)
                 m.set_content(mcontent)
                 return m
 

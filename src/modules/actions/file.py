@@ -30,32 +30,55 @@
 This module contains the FileAction class, which represents a file-type
 packaging object."""
 
+import os
+import grp
+import pwd
+import errno
+
 import generic
 
 class FileAction(generic.Action):
         """Class representing a file-type packaging object."""
 
+        name = "file"
+        attributes = ("mode", "owner", "group", "path")
+
         def __init__(self, data=None, **attrs):
                 generic.Action.__init__(self, data, **attrs)
+                self.hash = "NOHASH"
 
-        def preinstall(self):
+        def preinstall(self, image):
                 """Client-side method that performs pre-install actions."""
                 pass
 
-        def install(self):
+        def install(self, image):
                 """Client-side method that installs a file."""
-                pass
+                path = self.attrs["path"]
+                mode = int(self.attrs["mode"], 8)
+                owner = pwd.getpwnam(self.attrs["owner"]).pw_uid
+                group = grp.getgrnam(self.attrs["group"]).gr_gid
+
+                temp = os.path.join(image.get_root(), path + "." + self.hash)
+                path = os.path.join(image.get_root(), path)
+
+                stream = self.data()
+                tfile = file(temp, "wb")
+                shasum = generic.gunzip_from_stream(stream, tfile)
+
+                tfile.close()
+                stream.close()
+
+                # XXX Should throw an exception if shasum doesn't match self.hash
+
+                os.chmod(temp, mode)
+                try:
+                        os.chown(temp, owner, group)
+                except OSError, e:
+                        if e.errno != errno.EPERM:
+                                raise
+
+                os.rename(temp, path)
 
         def postinstall(self):
                 """Client-side method that performs post-install actions."""
                 pass
-
-        @staticmethod
-        def attributes():
-                """Returns the tuple of attributes required for files."""
-                return ("mode", "owner", "group", "path")
-
-        @staticmethod
-        def name():
-                """Returns the name of the action."""
-                return "file"

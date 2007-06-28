@@ -93,6 +93,8 @@ class PkgPlan(object):
 
         def preexecute(self):
                 # retrieval step
+                for a in self.actions:
+                        a.preinstall(self.image)
                 return
 
         def execute(self):
@@ -100,9 +102,11 @@ class PkgPlan(object):
                 # mv step
                 # XXX
                 for a in self.actions:
-                        print a
+                        a.install(self.image)
                 return
 
         def postexecute(self):
                 # record that package states are consistent
+                for a in self.actions:
+                        a.postinstall()
                 return

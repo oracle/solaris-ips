@@ -30,8 +30,10 @@ import shutil
 import time
 import urllib
 
+import pkg.actions as actions
 import pkg.fmri as fmri
 import pkg.package as package
+import pkg.client.retrieve as retrieve
 
 # The type member is used for the ordering of actions.
 ACTION_DIR = 10
@@ -59,41 +61,6 @@ class ManifestAction(object):
                 self.type = None
                 self.attrs = {}
                 self.mandatory_attrs = []
-
-        def is_complete(self):
-                for a in self.mandatory_attrs:
-                        if not self.attrs.has_key(a):
-                                return False
-
-                return True
-
-class FileManifestAction(ManifestAction):
-        def __init__(self):
-                ManifestAction.__init__(self)
-
-                self.type = ACTION_FILE
-                self.mandatory_attrs = [ "owner", "mode", "hash", "group",
-                    "path" ]
-
-        def __str__(self):
-                # XXX generalize to superclass?
-                r = "file %s %s %s %s %s" % (self.attrs["mode"],
-                    self.attrs["owner"], self.attrs["group"],
-                    self.attrs["path"], self.attrs["hash"])
-
-                for k in self.attrs.keys():
-                        if k in self.mandatory_attrs:
-                                continue
-                        r = r + " %s=%s" % (k, self.attrs[k])
-
-                return r
-
-class LinkManifestAction(ManifestAction):
-        def __init__(self):
-                ManifestAction.__init__(self)
-
-                self.type = ACTION_LINK
-                self.mandatory_attrs = [ "path", "target" ]
 
 class DependencyManifestAction(ManifestAction):
         def __init__(self):
@@ -213,55 +180,6 @@ class Manifest(object):
         def set_fmri(self, fmri):
                 self.fmri = fmri
 
-        def add_attribute_line(self, str):
-                """An attribute line is 
-
-                set attribute = str
-
-                where str becomes the value of the attribute.
-
-                XXX For now, the value is left as a simple string.  We could in
-                principle parse into specific types."""
-
-                m = re.match("^set ([a-z,.-_]*)\s*=\s*(.*)$", str)
-                self.attributes[m.group(1)] = m.group(2)
-
-                return
-
-        def add_file_action_line(self, str):
-                """A file action line is
-
-                file mode owner group path hash n=v
-
-                """
-
-                m = re.match("^file (\d+) ([^\s]+) ([^\s]+) ([^\s]+) ([^\s]+)\s?(.*)", str)
-                if m == None:
-                        raise SyntaxError, "invalid file action '%s'" % str
-
-                a = FileManifestAction()
-                a.attrs["mode"] = m.group(1)
-                a.attrs["owner"] = m.group(2)
-                a.attrs["group"] = m.group(3)
-                a.attrs["path"] = m.group(4)
-                a.attrs["hash"] = m.group(5)
-
-                # if any name value settings, add to action's tags
-                if m.group(6) != "":
-                        nvs = re.split("\s+", m.group(6))
-
-                        for nv in nvs:
-                                # XXX what if v is empty?  syntax error?
-                                n, v = re.split("=", nv, 1)
-                                n.strip()
-                                v.strip()
-                                a.attrs[n] = v
-
-                if len(self.actions) == 0:
-                        self.actions.append(a)
-                else:
-                        bisect.insort(self.actions, a)
-
         def add_dependency_action_line(self, str):
                 """A dependency action line is one or more of
 
@@ -302,20 +220,33 @@ class Manifest(object):
                 else:
                         bisect.insort(self.actions, a)
 
+        @staticmethod
+        def make_opener(fmri, action):
+                def opener():
+                        return retrieve.get_datastream(fmri, action.hash)
+                return opener
+
         def set_content(self, str):
                 """str is the text representation of the manifest"""
 
                 for l in str.splitlines():
-                        if re.match("^\s*$", l):
+                        if re.match("^\s*(#.*)?$", l):
                                 continue
-                        if re.match("^set ", l):
-                                self.add_attribute_line(l)
-                        elif re.match("^file ", l):
-                                self.add_file_action_line(l)
-                        elif re.match("^(require|optional|incorporate) ", l):
-                                self.add_dependency_action_line(l)
+
+                        try:
+                                action = actions.fromstr(l)
+                        except KeyError:
+                                raise SyntaxError, \
+                                    "unknown action '%s'" % l.split()[0]
+
+                        if hasattr(action, "hash"):
+                                action.data = \
+                                    self.make_opener(self.fmri, action)
+
+                        if len(self.actions) == 0:
+                                self.actions.append(action)
                         else:
-                                raise SyntaxError, "unknown action '%s'" % l
+                                bisect.insort(self.actions, action)
 
                 return
 
@@ -325,9 +256,9 @@ if __name__ == "__main__":
         m1 = Manifest()
 
         x = """\
-set com.sun,test = true
-require pkg:/library/libc
-file 0555 sch staff /usr/bin/i386/sort fff555fff isa=i386
+set com.sun,test=true
+# require pkg:/library/libc
+file fff555fff mode=0555 owner=sch group=staff path=/usr/bin/i386/sort isa=i386
 """
         m1.set_content(x)
 
@@ -336,11 +267,15 @@ file 0555 sch staff /usr/bin/i386/sort fff555fff isa=i386
         m2 = Manifest()
 
         y = """\
-set com.sun,test = true
-set com.sun,data = true
-require pkg:/library/libc
-file 0555 sch staff /usr/bin/i386/sort fff555ff9 isa=i386
-file 0555 sch staff /usr/bin/amd64/sort eeeaaaeee isa=amd64
+set com.sun,test=true
+set com.sun,data=true
+# require pkg:/library/libc
+file fff555ff9 mode=0555 owner=sch group=staff path=/usr/bin/i386/sort isa=i386
+file eeeaaaeee mode=0555 owner=sch group=staff path=/usr/bin/amd64/sort isa=amd64
+
+file ff555fff mode=0555 owner=root group=bin path=/kernel/drv/foo isa=i386
+file ff555ffe mode=0555 owner=root group=bin path=/kernel/drv/amd64/foo isa=amd64
+file ff555ffd mode=0644 owner=root group=bin path=/kernel/drv/foo.conf
 """
 
         m2.set_content(y)

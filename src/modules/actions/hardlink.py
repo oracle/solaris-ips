@@ -35,10 +35,7 @@ import link
 class HardLinkAction(link.LinkAction):
         """Class representing a hardlink-type packaging object."""
 
+        name = "hardlink"
+
         def __init__(self, data=None, **attrs):
                 link.LinkAction.__init__(self, data, **attrs)
-
-        @classmethod
-        def name(cls):
-                """Returns the name of the action."""
-                return "hardlink"

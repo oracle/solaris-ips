@@ -179,7 +179,7 @@ class Transaction(object):
 
                 attrs = dict((hdr.lower(), hdrs[hdr])
                     for hdr in hdrs
-                    if hdr in pkg.actions.types[type].attributes())
+                    if hdr in pkg.actions.types[type].attributes)
 
                 # The request object always has a readable rfile, even if it'll
                 # return no data.  We check ahead of time to see if we'll get
@@ -195,15 +195,13 @@ class Transaction(object):
                 # if type in critical_actions:
                 #         self.critical = True
 
-                # XXX Need to handle multiple streams
-                fnames = ()
-                for opener in action.data.values():
-                        size = int(hdrs.getheader("Content-Length"))
+                size = int(hdrs.getheader("Content-Length"))
 
-                        data = opener().read(size)
+                if action.data != None:
+                        data = action.data().read(size)
                         hash = sha.new(data)
                         fname = hash.hexdigest()
-                        fnames += (fname,)
+                        action.hash = fname
 
                         ofile = gzip.GzipFile("%s/%s/%s" %
                             (self.cfg.trans_root, trans_id, fname), "wb")
@@ -222,10 +220,7 @@ class Transaction(object):
 
                 tfile = file("%s/%s/manifest" %
                     (self.cfg.trans_root, trans_id), "a")
-                print >>tfile, \
-                    ("%s" + " %s" * (len(action.attrs) + len(action.data))) % \
-                    ((type,) + tuple(action.attrs[k]
-                            for k in action.attributes()) + fnames)
+                print >>tfile, action
 
                 request.send_response(200)
 

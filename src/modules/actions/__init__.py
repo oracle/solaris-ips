@@ -33,8 +33,11 @@ actions are dynamically discovered, so that new modules can be placed in this
 package directory and they'll just be picked up.  The current package contents
 can be seen in the section "PACKAGE CONTENTS", below.
 
-This package also has one data member: "types".  This is a dictionary which maps
-the action names to the classes that represent them.
+This package has one data member: "types".  This is a dictionary which maps the
+action names to the classes that represent them.
+
+This package also has one function: "fromstr", which creates an action instance
+based on a str() representation of an action.
 """
 
 import inspect
@@ -65,7 +68,32 @@ for modname in __all__:
                     if '.'.join(c[1].__module__.split('.')[:-1]) == __name__
         ]
         for cls in classes:
-                types[cls.name()] = cls
+                types[cls.name] = cls
 
 # Clean up after ourselves
 del f, modname, module, nvlist, classes, c, cls
+
+def fromstr(str):
+        """Create an action instance based on a str() representation of an action.
+        """
+        list = str.split(' ')
+
+        type = list[0]
+
+        if type not in types:
+                raise KeyError, "Action '%s'" % type
+
+        # That is, if the first attribute is a hash
+        if "=" not in list[1]:
+                start = 2
+                hash = list[1]
+        else:
+                start = 1
+
+        attrs = dict(kv.split("=", 1) for kv in list[start:])
+
+        action = types[type](**attrs)
+        if "hash" in locals():
+                action.hash = hash
+
+        return action

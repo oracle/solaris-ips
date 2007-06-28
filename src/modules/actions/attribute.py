@@ -25,20 +25,19 @@
 # Use is subject to license terms.
 #
 
-"""module describing a unknown packaging object
+"""module describing a package attribute
 
-This module contains the UnknownAction class, which represents a unknown type
-of packaging object.  This is used when the client side of the package
-publishing transaction is not given enough information to determine what type of
-object it is.  No datastreams or attributes aside from a path are stored."""
+This module contains the AttributeAction class, which represents a single
+attribute of a package (package metadata).  Attributes are typed, and the
+possible types are: XXX."""
 
 import generic
 
-class UnknownAction(generic.Action):
-        """Class representing a unknown type of packaging object."""
+class AttributeAction(generic.Action):
+        """Class representing a package attribute."""
 
-        name = "unknown"
-        attributes = ("path",)
+        name = "set"
+        attributes = ("type",)
 
         def __init__(self, data=None, **attrs):
                 generic.Action.__init__(self, data, **attrs)

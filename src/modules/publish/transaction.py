@@ -128,9 +128,8 @@ class Transaction(object):
                 batched file, seems error prone.
                 """
 
-                type = action.name()
+                type = action.name
                 attrs = action.attrs
-                openers = action.data
 
                 if not type in pkg.actions.types.keys():
                         if "path" in attrs:
@@ -147,21 +146,25 @@ class Transaction(object):
 
                 headers = dict((k.capitalize(), attrs[k])
                     for k in attrs
-                    if k in pkg.actions.types[type].attributes())
+                    if k in pkg.actions.types[type].attributes)
 
                 # XXX Need to handle large files
-                # XXX Need to handle multiple datastreams
-                data = ""
-                for opener in openers.values():
-                        datastream = opener()
+                if action.data != None:
+                        datastream = action.data()
                         data = datastream.read()
+                else:
+                        data = ""
                 headers["Content-Length"] = len(data)
 
                 c = httplib.HTTPConnection(host, port)
                 c.connect()
                 c.request("POST", selector, data, headers)
 
-                r = c.getresponse()
+                try:
+                        r = c.getresponse()
+                except httplib.BadStatusLine:
+                        print "Server-side exception for:", action
+                        return 500
 
                 return r.status
 

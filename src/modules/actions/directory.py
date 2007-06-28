@@ -30,32 +30,42 @@
 This module contains the DirectoryAction class, which represents a
 directory-type packaging object."""
 
+import os
+import grp
+import pwd
+import errno
+
 import generic
 
 class DirectoryAction(generic.Action):
         """Class representing a directory-type packaging object."""
 
+        name = "dir"
+        attributes = ("mode", "owner", "group", "path")
+
         def __init__(self, data=None, **attrs):
                 generic.Action.__init__(self, data, **attrs)
 
-        def preinstall(self):
+        def preinstall(self, image):
                 """Client-side method that performs pre-install actions."""
                 pass
 
-        def install(self):
+        def install(self, image):
                 """Client-side method that installs a directory."""
-                pass
+                path = self.attrs["path"]
+                mode = int(self.attrs["mode"], 8)
+                owner = pwd.getpwnam(self.attrs["owner"]).pw_uid
+                group = grp.getgrnam(self.attrs["group"]).gr_gid
+
+                path = os.path.join(image.get_root(), path)
+                os.mkdir(path, mode)
+
+                try:
+                        os.chown(path, owner, group)
+                except OSError, e:
+                        if e.errno != errno.EPERM:
+                                raise
 
         def postinstall(self):
                 """Client-side method that performs post-install actions."""
                 pass
-
-        @classmethod
-        def attributes(cls):
-                """Returns the tuple of attributes valid for directory."""
-                return ("mode", "owner", "group", "path")
-
-        @classmethod
-        def name(cls):
-                """Returns the name of the action."""
-                return "dir"

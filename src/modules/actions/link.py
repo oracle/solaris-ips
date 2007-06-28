@@ -30,32 +30,31 @@
 This module contains the LinkAction class, which represents a link-type
 packaging object."""
 
+import os
+
 import generic
 
 class LinkAction(generic.Action):
         """Class representing a link-type packaging object."""
 
+        name = "link"
+        attributes = ("path", "target")
+
         def __init__(self, data=None, **attrs):
                 generic.Action.__init__(self, data, **attrs)
 
-        def preinstall(self):
+        def preinstall(self, link):
                 """Client-side method that performs pre-install actions."""
                 pass
 
-        def install(self):
+        def install(self, image):
                 """Client-side method that installs a link."""
-                pass
+                path = self.attrs["path"]
+                target = self.attrs["target"]
+
+                path = os.path.join(image.get_root(), path)
+                os.symlink(target, path)
 
         def postinstall(self):
                 """Client-side method that performs post-install actions."""
                 pass
-
-        @classmethod
-        def attributes(cls):
-                """Returns the tuple of attributes valid for links."""
-                return ("path", "target")
-
-        @classmethod
-        def name(cls):
-                """Returns the name of the action."""
-                return "link"

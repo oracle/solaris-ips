@@ -28,7 +28,78 @@
 """module describing a generic packaging object
 
 This module contains the Action class, which represents a generic packaging
-object."""
+object.  It also contains a helper function, gunzip_from_stream(), which actions
+may use to decompress their data payloads."""
+
+import sha
+import zlib
+
+import pkg.actions
+
+def gunzip_from_stream(gz, outfile):
+        """Decompress a gzipped input stream into an output stream.
+
+        The argument 'gz' is an input stream of a gzipped file (XXX make it do
+        either a gzipped file or raw zlib compressed data), and 'outfile' is is
+        an output stream.  gunzip_from_stream() decompresses data from 'gz' and
+        writes it to 'outfile', and returns the hexadecimal SHA-1 sum of that
+        data.
+        """
+
+        FHCRC = 2
+        FEXTRA = 4
+        FNAME = 8
+        FCOMMENT = 16
+
+        # Read the header
+        magic = gz.read(2)
+        if magic != "\037\213":
+                raise IOError, "Not a gzipped file"
+        method = ord(gz.read(1))
+        if method != 8:
+                raise IOError, "Unknown compression method"
+        flag = ord(gz.read(1))
+        gz.read(6) # Discard modtime, extraflag, os
+
+        # Discard an extra field
+        if flag & FEXTRA:
+                xlen = ord(gz.read(1))
+                xlen = xlen + 256 * ord(gz.read(1))
+                gz.read(xlen)
+
+        # Discard a null-terminated filename
+        if flag & FNAME:
+                while True:
+                        s = gz.read(1)
+                        if not s or s == "\000":
+                                break
+
+        # Discard a null-terminated comment
+        if flag & FCOMMENT:
+                while True:
+                        s = gz.read(1)
+                        if not s or s == "\000":
+                                break
+
+        # Discard a 16-bit CRC
+        if flag & FHCRC:
+                gz.read(2)
+
+        shasum = sha.new()
+        dcobj = zlib.decompressobj(-zlib.MAX_WBITS)
+
+        while True:
+                buf = gz.read(64 * 1024)
+                if buf == "":
+                        ubuf = dcobj.flush()
+                        shasum.update(ubuf)
+                        outfile.write(ubuf)
+                        break
+                ubuf = dcobj.decompress(buf)
+                shasum.update(ubuf)
+                outfile.write(ubuf)
+
+        return shasum.hexdigest()
 
 class Action(object):
         """Class representing a generic packaging object.
@@ -39,14 +110,13 @@ class Action(object):
         files.
         """
 
+        name = "generic"
+        attributes = ()
+
         def __init__(self, data=None, **attrs):
                 """Action constructor.
 
-                The optional 'data' argument can be a string or a dictionary of
-                named objects.  If it is a string, it will be put into a
-                dictionary, mapped to the name 'data'.
-                
-                Each of these objects may be either a string, a file-like
+                The optional 'data' argument may be either a string, a file-like
                 object, or a callable.  If it is a string, then it will be
                 substituted with a callable that will return an open handle to
                 the file represented by the string.  Otherwise, if it is not
@@ -58,44 +128,61 @@ class Action(object):
                 """
                 self.attrs = attrs
 
-                if data == None:
-                        self.data = {}
-                elif isinstance(data, dict):
-                        self.data = data
+                if isinstance(data, str):
+                        def file_opener():
+                                return open(data)
+                        self.data = file_opener
+                elif not callable(data) and data != None:
+                        def data_opener():
+                                return data
+                        self.data = data_opener
                 else:
-                        self.data = {"data": data}
+                        self.data = data
 
-                for name in self.data:
-                        if isinstance(self.data[name], str):
-                                def file_opener():
-                                        return open(oldobj)
-                                oldobj = self.data[name]
-                                self.data[name] = file_opener
-                        elif not callable(self.data[name]):
-                                def data_opener():
-                                        return oldobj
-                                oldobj = self.data[name]
-                                self.data[name] = data_opener
+        def __str__(self):
+                """Serialize the action into manifest form.
 
+                The form is the name, followed by the hash, if it exists,
+                followed by attributes in the form 'key=value'.  All fields are
+                space-separated, which for now means that no tokens may have
+                spaces (though they may have '=' signs).
 
-        def preinstall(self):
+                Note that an object with a datastream may have been created in
+                such a way that the hash field is not populated, or not
+                populated with real data.  The action classes do not guarantee
+                that at the time that __str__() is called, the hash is properly
+                computed.  This may need to be done externally.
+                """
+                str = self.name
+                if hasattr(self, "hash"):
+                        str += " " + self.hash
+                for attr in self.attrs:
+                        str += " %s=%s" % (attr, self.attrs[attr])
+                return str
+
+        def __cmp__(self, other):
+                types = pkg.actions.types
+
+                # Sort directories by path
+                if type(self) == types["dir"] == type(other):
+                        return cmp(self.attrs["path"], other.attrs["path"])
+                # Directories come before anything else
+                elif type(self) == types["dir"] != type(other):
+                        return -1
+                elif type(self) != types["dir"] == type(other):
+                        return 1
+                # Resort to the default comparison
+                else:
+                        return cmp(id(self), id(other))
+
+        def preinstall(self, image):
                 """Client-side method that performs pre-install actions."""
                 pass
 
-        def install(self):
+        def install(self, image):
                 """Client-side method that installs the object."""
                 pass
 
         def postinstall(self):
                 """Client-side method that performs post-install actions."""
                 pass
-
-        @staticmethod
-        def attributes():
-                """Returns the tuple of required attributes."""
-                return ()
-
-        @staticmethod
-        def name():
-                """Returns the name of the action."""
-                return "generic"

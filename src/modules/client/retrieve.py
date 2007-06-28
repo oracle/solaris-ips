@@ -68,6 +68,23 @@ def url_catalog(config, image, args):
                 cfile = file("%s/catalog/%s" % (croot, fname), "w")
                 print >>cfile, data
 
+def get_datastream(fmri, hash):
+        """Retrieve a file handle based on a package fmri and a file hash."""
+
+        authority, pkg_name, version = fmri.tuple()
+
+        if authority == None:
+                authority = "localhost:10000"
+
+        url_fpath = "http://%s/file/%s" % (authority, hash)
+
+        try:
+                f = urllib.urlopen(url_fpath)
+        except:
+                raise NameError, "could not open %s" % url_fpath
+
+        return f
+
 def get_manifest(image, fmri):
         """Calculate URI and retrieve.
         XXX Authority-catalog issues."""
@@ -96,6 +113,3 @@ def get_manifest(image, fmri):
                 os.makedirs(os.path.dirname(local_mpath))
                 mfile = file(local_mpath, "w")
                 print >>mfile, data
-
-def url_file(uri, dest):
-        return
