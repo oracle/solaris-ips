@@ -47,6 +47,7 @@ import os
 import re
 import sha
 import shutil
+import sys
 import time
 import urllib
 
@@ -246,8 +247,8 @@ if __name__ == "__main__":
                 for opt, arg in opts:
                         if opt == "-n":
                                 sys.exit(0)
-        except:
-                print "pkg.depotd: unknown option"
+        except getopt.GetoptError, e:
+                print "pkg.depotd: unknown option '%s'" % e.opt
                 usage()
 
         server = BaseHTTPServer.HTTPServer(('', 10000), pkgHandler)

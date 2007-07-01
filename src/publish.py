@@ -82,8 +82,8 @@ def trans_open(config, args):
         pargs = None
         try:
                 opts, pargs = getopt.getopt(args, "e")
-        except:
-                print "pkgsend: illegal open option(s)"
+        except getopt.GetoptError, e:
+                print "pkgsend: illegal open option '%s'" % e.opt
                 usage()
 
         eval_form = True
@@ -131,8 +131,8 @@ def trans_close(config, args):
                                         abandon = True
                                 if opt == "-t":
                                         trans_id = arg
-        except:
-                print "pkgsend: illegal option(s) to close"
+        except getopt.GetoptError, e:
+                print "pkgsend: illegal option to close '%s'" % e.opt
                 usage()
 
         if trans_id == None:
@@ -243,8 +243,8 @@ if __name__ == "__main__":
         pargs = None
         try:
                 opts, pargs = getopt.getopt(sys.argv[1:], "s:R:")
-        except:
-                print "pkgsend: illegal global option(s)"
+        except getopt.GetoptError, e:
+                print "pkgsend: illegal global option '%s'" % e.opt
                 usage()
 
         if pargs == None or len(pargs) == 0:

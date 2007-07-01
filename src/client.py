@@ -234,8 +234,8 @@ if __name__ == "__main__":
         try:
                 if len(sys.argv) > 1:
                         opts, pargs = getopt.getopt(sys.argv[1:], "s:R:")
-        except:
-                print "pkg: illegal global option(s)"
+        except getopt.GetoptError, e:
+                print "pkg: illegal global option '%s'" % e.opt
                 usage()
 
         if pargs == None or len(pargs) == 0:
