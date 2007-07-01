@@ -52,7 +52,8 @@ class LinkAction(generic.Action):
                 path = self.attrs["path"]
                 target = self.attrs["target"]
 
-                path = os.path.join(image.get_root(), path)
+                path = os.path.normpath(os.path.sep.join(
+                    (image.get_root(), path)))
                 os.symlink(target, path)
 
         def postinstall(self):

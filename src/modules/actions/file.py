@@ -58,8 +58,10 @@ class FileAction(generic.Action):
                 owner = pwd.getpwnam(self.attrs["owner"]).pw_uid
                 group = grp.getgrnam(self.attrs["group"]).gr_gid
 
-                temp = os.path.join(image.get_root(), path + "." + self.hash)
-                path = os.path.join(image.get_root(), path)
+                temp = os.path.normpath(os.path.sep.join(
+                    (image.get_root(), path + "." + self.hash)))
+                path = os.path.normpath(os.path.sep.join(
+                    (image.get_root(), path)))
 
                 stream = self.data()
                 tfile = file(temp, "wb")

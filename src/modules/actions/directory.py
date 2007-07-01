@@ -57,7 +57,8 @@ class DirectoryAction(generic.Action):
                 owner = pwd.getpwnam(self.attrs["owner"]).pw_uid
                 group = grp.getgrnam(self.attrs["group"]).gr_gid
 
-                path = os.path.join(image.get_root(), path)
+                path = os.path.normpath(os.path.sep.join(
+                    (image.get_root(), path)))
                 os.mkdir(path, mode)
 
                 try:
