@@ -42,6 +42,7 @@
 # dumb clients (like a notification service).
 
 import BaseHTTPServer
+import errno
 import getopt
 import os
 import re
@@ -105,7 +106,15 @@ def file_get_single(scfg, request):
         m = re.match("^/file/(.*)", request.path)
         fhash = m.group(1)
 
-        file = open(scfg.file_root + "/" + misc.hash_file_name(fhash))
+        try:
+                file = open(scfg.file_root + "/" + misc.hash_file_name(fhash))
+        except IOError, e:
+                if e.errno == errno.ENOENT:
+                        request.send_response(404)
+                else:
+                        request.send_response(500)
+                return
+
         data = file.read()
 
         request.send_response(200)
