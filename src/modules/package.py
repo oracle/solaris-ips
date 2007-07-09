@@ -157,14 +157,28 @@ class Package(object):
                 # structure.
                 for f in os.listdir(trans.dir):
                         path = misc.hash_file_name(f)
+                        src_path = "%s/%s" % (trans.dir, f)
+                        dst_path = "%s/%s" % (cfg.file_root, path)
                         try:
-                                os.rename("%s/%s" % (trans.dir, f),
-                                    "%s/%s" % (cfg.file_root, path))
+                                os.rename(src_path, dst_path)
                         except OSError, e:
-                                os.makedirs("%s/%s" % (cfg.file_root,
-                                        os.path.dirname(path)))
-                                os.rename("%s/%s" % (trans.dir, f),
-                                    "%s/%s" % (cfg.file_root, path))
+                                # XXX We might want to be more careful with this
+                                # exception, and only try makedirs() if rename()
+                                # failed because the directory didn't exist.
+                                #
+                                # I'm not sure it matters too much, except that
+                                # if makedirs() fails, we'll see that exception,
+                                # rather than the original one from rename().
+                                #
+                                # Interestingly, rename() failing due to missing
+                                # path component fails with ENOENT, not ENOTDIR
+                                # like rename(2) suggests (6578404).
+                                try:
+                                        os.makedirs(os.path.dirname(dst_path))
+                                except OSError, e:
+                                        if e.errno != errno.EEXIST:
+                                                raise
+                                os.rename(src_path, dst_path)
 
                 return Package(self.fmri)
 

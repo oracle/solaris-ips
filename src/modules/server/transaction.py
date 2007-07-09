@@ -22,11 +22,13 @@
 # Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
+import errno
 import gzip
 import os
 import re
 import sha
 import shutil
+import socket
 import time
 import urllib
 
@@ -222,7 +224,14 @@ class Transaction(object):
                     (self.cfg.trans_root, trans_id), "a")
                 print >>tfile, action
 
-                request.send_response(200)
+                try:
+                        request.send_response(200)
+                except socket.error, e:
+                        # If the client breaks the connection here, that's
+                        # probably okay.  Everything's consistent on our end,
+                        # at least.
+                        if e.args[0] != errno.EPIPE:
+                                raise
 
                 return
 

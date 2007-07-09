@@ -42,6 +42,7 @@
 # dumb clients (like a notification service).
 
 import BaseHTTPServer
+import SocketServer
 import errno
 import getopt
 import os
@@ -246,6 +247,10 @@ class pkgHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                 self.wfile.write('''URI %s ; headers %s''' %
                     (self.path, self.headers))
 
+class ThreadingHTTPServer(SocketServer.ThreadingMixIn,
+    BaseHTTPServer.HTTPServer):
+        pass
+
 if __name__ == "__main__":
         scfg.init_dirs()
         scfg.acquire_in_flight()
@@ -260,5 +265,5 @@ if __name__ == "__main__":
                 print "pkg.depotd: unknown option '%s'" % e.opt
                 usage()
 
-        server = BaseHTTPServer.HTTPServer(('', 10000), pkgHandler)
+        server = ThreadingHTTPServer(('', 10000), pkgHandler)
         server.serve_forever()
