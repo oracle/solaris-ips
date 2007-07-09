@@ -63,7 +63,10 @@ class Transaction(object):
                 c.putheader("Client-Release", os.uname()[2])
                 c.endheaders()
 
-                r = c.getresponse()
+                try:
+                        r = c.getresponse()
+                except httplib.BadStatusLine:
+                        return 500, None
 
                 id = r.getheader("Transaction-ID", None)
 
@@ -83,6 +86,8 @@ class Transaction(object):
                 try:
                         c = urllib2.urlopen(uri)
                 except urllib2.HTTPError:
+                        return 0, None
+                except httplib.BadStatusLine:
                         return 0, None
 
                 if abandon:
