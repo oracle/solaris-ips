@@ -42,6 +42,7 @@
 import getopt
 import os
 import sys
+import traceback
 
 import pkg.bundle
 import pkg.config as config
@@ -52,6 +53,9 @@ import pkg.package as package
 import pkg.version as version
 
 import pkg.publish.transaction as trans
+
+import pkg.Queue25 as Queue25
+import threading
 
 def usage():
         print """\
@@ -256,9 +260,63 @@ def trans_summary(config, args):
 def batch(config, args):
         return
 
-def send_bundle(config, args):
-        filename = args[0]
+# Subclass the Python 2.5 Queue class to allow us to interrupt joins.
+#
+# The join here is enhanced with the addition of a timeout parameter.
+# Rather than timing out the join itself, though: it merely times out
+# the waits inside the join.  It's cheap, but gets the job done, and
+# allows the interpreter to wake up and smell the ^C.
+class q25_plus(Queue25.Queue):
 
+        def join(self, timeout = None):
+                self.all_tasks_done.acquire()
+                try:
+                    while self.unfinished_tasks:
+                        self.all_tasks_done.wait(timeout)
+                finally:
+                    self.all_tasks_done.release()
+
+def send_bundles(config, args):
+        try:
+                max_threads = int(os.environ["PKG_THREAD_MAX"])
+        except (KeyError, ValueError):
+                max_threads = 16
+
+        if max_threads < 2:
+                for filename in args:
+                        send_bundle(config, filename)
+                return
+
+        nthreads = min(len(args), max_threads)
+
+        q = q25_plus(nthreads)
+
+        for i in xrange(nthreads):
+                thr = threading.Thread(
+                    target = send_bundles_forever,
+                    args = (config, q))
+                thr.setDaemon(True)
+                thr.start()
+
+        # It'd be nice to put the big ones in first.
+        for filename in args:
+                q.put(filename)
+
+        q.join(timeout = 1)
+
+def send_bundles_forever(config, queue):
+        while True:
+                filename = queue.get()
+                # We have to catch all exceptions here, or the thread will hang
+                # around forever.  Just print out the stack trace and keep on
+                # going.
+                try:
+                        send_bundle(config, filename)
+                except:
+                        traceback.print_exc()
+                queue.task_done()
+
+def send_bundle(config, filename):
         bundle = pkg.bundle.make_bundle(filename)
 
         t = trans.Transaction()
@@ -297,7 +355,7 @@ if __name__ == "__main__":
         elif subcommand == "add":
                 trans_add(pcfg, pargs)
         elif subcommand == "send":
-                send_bundle(pcfg, pargs)
+                send_bundles(pcfg, pargs)
         else:
                 print "pkgsend: unknown subcommand '%s'" % subcommand
                 usage()
