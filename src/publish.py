@@ -148,10 +148,39 @@ def trans_close(config, args):
         if abandon:
                 return
 
-        print hdrs["State"]
-        print hdrs["Package-FMRI"]
+        if hdrs:
+                print hdrs["State"]
+                print hdrs["Package-FMRI"]
+        else:
+                print "Failed with", ret
 
         return
+
+def add_driver(config, args):
+        opts, nargs = getopt.getopt(args, "i:c:m:p:P:")
+
+        if nargs == None or len(nargs) == 0:
+                raise getopt.GetoptError("missing name")
+
+        cmdline_mapping = {
+            "-i": "alias",
+            "-c": "class",
+            "-m": "perms",
+            "-p": "policy",
+            "-P": "privs"
+        }
+
+        # For any flag that appears multiple times, accumulate the args into a
+        # list, and map the expanded name to that list.
+        optset = set(zip(*opts)[0])
+        argslist = [[j[1] for j in opts if j[0] == i] for i in optset]
+        kw = dict((cmdline_mapping[o], a) for o, a in zip(optset, argslist))
+
+        kw["name"] = nargs[0]
+
+        action = pkg.actions.types["driver"](**kw)
+
+        return action
 
 def trans_add(config, args):
         try:
@@ -184,8 +213,16 @@ def trans_add(config, args):
                 else:
                         action = actions[args[0]](**kw)
         except KeyError, e:
-                print 'pkgsend: action "%s" not defined' % e[0]
-                sys.exit(1)
+                if "add_" + e[0] in globals():
+                        method = globals()["add_" + e[0]]
+                        try:
+                                action = method(config, args[1:])
+                        except getopt.GetoptError, e2:
+                                print "add_%s: %s" % (e[0], e2)
+                                sys.exit(1)
+                else:
+                        print 'pkgsend: action "%s" not defined' % e[0]
+                        sys.exit(1)
         except IndexError, e:
                 print 'pkgsend: not enough arguments for "%s" action' % args[0]
                 sys.exit(1)

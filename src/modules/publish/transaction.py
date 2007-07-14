@@ -86,9 +86,9 @@ class Transaction(object):
                 try:
                         c = urllib2.urlopen(uri)
                 except urllib2.HTTPError:
-                        return 0, None
+                        return 500, None
                 except httplib.BadStatusLine:
-                        return 0, None
+                        return 500, None
 
                 if abandon:
                         return c.code, None

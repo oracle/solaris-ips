@@ -76,21 +76,60 @@ del f, modname, module, nvlist, classes, c, cls
 def fromstr(str):
         """Create an action instance based on a str() representation of an action.
         """
-        list = str.split(' ')
-
-        type = list[0]
+        type, str = str.split(" ", 1)
 
         if type not in types:
                 raise KeyError, "Action '%s'" % type
 
         # That is, if the first attribute is a hash
-        if "=" not in list[1]:
-                start = 2
-                hash = list[1]
-        else:
-                start = 1
+        if str.find(" ") < str.find("="):
+                hash, str = str.split(" ", 1)
 
-        attrs = dict(kv.split("=", 1) for kv in list[start:])
+        # Split the string on spaces, then reconstruct and dequote quoted
+        # values.
+        list = str.split(" ")
+
+        # Simple state machine to reconnect the elements that shouldn't have
+        # been split.  Put the results into a new list since we can't modify the
+        # list we're iterating over.
+        state = 0
+        count = 0
+        nlist = []
+        for i in list:
+                if '="' in i:
+                        start = count
+                        n = i.replace('="', '=')
+                        state = 1
+                elif i.endswith('"'):
+                        n += " " + i[:-1]
+                        nlist += [ n ]
+                        state = 0
+                elif state == 1:
+                        n += " " + i
+                else:
+                        nlist += [ i ]
+
+                count += 1
+
+        list = nlist
+
+        # Create a list of key/value lists
+        nlist = [kv.split("=", 1) for kv in nlist]
+        # Remove attribute duplication
+        attrset = set(zip(*nlist)[0])
+        # Put values belonging to the same attribute into individual lists
+        vallist = [[j[1] for j in nlist if j[0] == i] for i in attrset]
+        # Create a dict from the two lists
+        attrs = dict((o, a) for o, a in zip(attrset, vallist))
+
+        # Convert any single-valued attributes to simple strings.
+        # attrs = dict(
+        #     [ (k, v) for k, v in attrs.iteritems() if len(v) > 1 ] +
+        #     [ (k, v[0]) for k, v in attrs.iteritems() if len(v) == 1 ]
+        # )
+        for a in attrs:
+                if len(attrs[a]) == 1:
+                        attrs[a] = attrs[a][0]
 
         action = types[type](**attrs)
         if "hash" in locals():

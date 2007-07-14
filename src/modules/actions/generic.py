@@ -156,9 +156,29 @@ class Action(object):
                 str = self.name
                 if hasattr(self, "hash"):
                         str += " " + self.hash
-                for attr in self.attrs:
-                        str += " %s=%s" % (attr, self.attrs[attr])
-                return str
+
+                def q(s):
+                        if " " in s:
+                                return '"%s"' % s
+                        else:
+                                return s
+
+                stringattrs = [
+                    "%s=%s" % (k, q(self.attrs[k]))
+                    for k in self.attrs
+                    if not isinstance(self.attrs[k], list)
+                ]
+
+                listattrs = [
+                    " ".join([
+                        "%s=%s" % (k, q(lmt))
+                        for lmt in self.attrs[k]
+                    ])
+                    for k in self.attrs
+                    if isinstance(self.attrs[k], list)
+                ]
+
+                return " ".join([str] + stringattrs + listattrs)
 
         def __cmp__(self, other):
                 types = pkg.actions.types

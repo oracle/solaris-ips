@@ -183,6 +183,11 @@ class Transaction(object):
                     for hdr in hdrs
                     if hdr in pkg.actions.types[type].attributes)
 
+                # If any attributes appear to be lists, make them lists.
+                for a in attrs:
+                        if attrs[a].startswith("[") and attrs[a].endswith("]"):
+                                attrs[a] = eval(attrs[a])
+
                 # The request object always has a readable rfile, even if it'll
                 # return no data.  We check ahead of time to see if we'll get
                 # any data, and only create the object with data if there will
