@@ -23,11 +23,13 @@
 # Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
+import getopt
 import os
 import re
 import urllib
 
 import pkg.catalog as catalog
+import pkg.fmri as fmri
 import pkg.manifest as manifest
 
 IMG_ENTIRE = 0
@@ -104,6 +106,7 @@ class Image(object):
                                 self.type = IMG_USER
                                 self.root = d
                                 self.imgdir = "%s/%s" % (d, img_user_prefix)
+                                self.attrs["Build-Release"] = "5.11"
                                 return
                         elif os.path.isdir("%s/%s" % (d, img_root_prefix)):
                                 # XXX Look at image file to determine filter
@@ -113,6 +116,7 @@ class Image(object):
                                 self.type = IMG_ENTIRE
                                 self.root = d
                                 self.imgdir = "%s/%s" % (d, img_root_prefix)
+                                self.attrs["Build-Release"] = "5.11"
                                 return
 
                         assert d != "/"
@@ -140,21 +144,6 @@ class Image(object):
 
         def set_resource(self, resource):
                 return
-
-        def reload_catalogs(self):
-                cdir = "%s/%s" % (self.imgdir, "catalog")
-                for cf in os.listdir(cdir):
-                        c = catalog.Catalog()
-                        c.load("%s/%s" % (cdir, cf))
-
-                        self.catalogs[cf] = c
-
-                        # XXX XXX
-                        # build up authorities
-
-        def display_catalogs(self):
-                for c in self.catalogs.values():
-                        c.display()
 
         def get_matching_pkgs(self, pfmri):
                 """Exact matches to the given FMRI.  Returns a list of (catalog,
@@ -196,14 +185,109 @@ class Image(object):
                 m.set_content(mcontent)
                 return m
 
-        def get_version_installed(self, fmri):
-                istate = "%s/pkg/%s/installed" % (self.imgdir, fmri.get_dir_path(True))
-                if not os.path.exists(istate):
-                        raise LookupError, "no installed version of '%s'" % fmri
+        def get_version_installed(self, pfmri):
+                pd = pfmri.get_pkg_stem()
+                pdir = "%s/pkg/%s" % (self.imgdir,
+                    pfmri.get_dir_path(stemonly = True))
 
-                vs = os.readlink(istate)
+                try:
+                        pkgs_inst = [ urllib.unquote("%s@%s" % (pd, vd))
+                            for vd in os.listdir(pdir)
+                            if os.path.exists("%s/%s/installed" % (pdir, vd)) ]
+                except OSError:
+                        raise LookupError, "no packages ever installed"
 
-                return fmri.PkgFmri("%s/%s" % (fmri, vs))
+                if len(pkgs_inst) == 0:
+                        raise LookupError, "no packages installed"
+
+                assert len(pkgs_inst) <= 1
+
+                return fmri.PkgFmri(pkgs_inst[0], None)
+
+        def is_installed(self, fmri):
+                """Check that the version given in the FMRI or a successor is
+                installed in the current image."""
+
+                try:
+                        v = self.get_version_installed(fmri)
+                except LookupError:
+                        return False
+
+                if v.is_successor(fmri):
+                        return True
+
+                return False
+
+        def reload_catalogs(self):
+                cdir = "%s/%s" % (self.imgdir, "catalog")
+                for cf in os.listdir(cdir):
+                        c = catalog.Catalog()
+                        c.load("%s/%s" % (cdir, cf))
+
+                        self.catalogs[cf] = c
+
+                        # XXX XXX
+                        # build up authorities
+
+        def display_catalogs(self):
+                for c in self.catalogs.values():
+                        c.display()
+
+        def display_inventory(self, args):
+                """XXX Reimplement if we carve out the inventory as a has-a
+                object from image."""
+
+                opts = []
+                pargs = []
+
+                verbose = False
+                upgradable_only = False
+
+                if len(args) > 0:
+                         opts, pargs = getopt.getopt(args, "uv")
+
+                for opt, arg in opts:
+                        if opt == "-u":
+                                upgradable_only = True
+                        if opt == "-v":
+                                verbose = True
+
+                fmt_str = "%-50s %-10s %c%c%c%c"
+
+                proot = "%s/pkg" % self.imgdir
+
+                pkgs_inst = [ urllib.unquote("%s@%s" % (pd, vd))
+                    for pd in os.listdir(proot)
+                    for vd in os.listdir("%s/%s" % (proot, pd))
+                    if os.path.exists("%s/%s/%s/installed" % (proot, pd, vd)) ]
+
+                if len(pkgs_inst) == 0:
+                        print "pkg: no packages installed"
+                        return
+
+                print fmt_str % ("FMRI", "STATE", "U", "F", "I", "X")
+
+                for p in pkgs_inst:
+                        f = fmri.PkgFmri(p, None)
+
+                        upgradable = "-"
+                        frozen = "-"
+                        incorporated = "-"
+                        excludes = "-"
+
+                        if len(self.get_matching_pkgs(f)) > 1:
+                                upgradable = "u"
+                        elif upgradable_only:
+                                continue
+
+                        if not verbose:
+                                pf = f.get_short_fmri()
+                        else:
+                                pf = str(f)
+
+                        print fmt_str % (pf, "installed", upgradable, frozen,
+                            incorporated, excludes)
+
 
 if __name__ == "__main__":
         # XXX Need to construct a trivial image and catalog.

@@ -82,11 +82,24 @@ class ImagePlan(object):
         def set_goal_pkg_fmris(self, pflist):
                 self.goal_pkg_fmris = pflist
 
+        def is_proposed_fmri(self, fmri):
+                for pf in self.target_fmris:
+                        if fmri.is_same_pkg(pf):
+                                if not fmri.is_successor(pf):
+                                        return True
+                                else:
+                                        return False
+                return False
+
         def propose_fmri(self, fmri):
                 # is a version of fmri.stem in the inventory?
+                if self.image.is_installed(fmri):
+                        return
+
                 #   is there a freeze or incorporation statement?
                 #   do any of them eliminate this fmri version?
                 #     discard
+
                 # is a version of fmri in our target_fmris?
                 n = range(len(self.target_fmris))
                 if n == []:
@@ -96,36 +109,78 @@ class ImagePlan(object):
                 for i in n:
                         p = self.target_fmris[i]
                         if fmri.is_same_pkg(p):
-                                if fmri > p:
+                                if fmri.is_successor(p):
                                         self.target_fmris[i] = fmri
                                         break
 
                 return
 
-        def evaluate_fmri(self, fmri):
-                # [image] do we have this manifest?
-                if not self.image.has_manifest(fmri):
-                        retrieve.get_manifest(self.image, fmri)
+        def evaluate_fmri(self, pfmri):
 
-                m = self.image.get_manifest(fmri)
+                # [image] do we have this manifest?
+                if not self.image.has_manifest(pfmri):
+                        retrieve.get_manifest(self.image, pfmri)
+
+                m = self.image.get_manifest(pfmri)
 
                 # [manifest] examine manifest for dependencies
-                #   [image] if satisfied by inventory, continue
-                #   [imageplan] if satisfied by pending transaction, continue
-                #   if unsatisfied, then
-                #     if optional, then evaluate client's optional policy to either
-                #     treat-as-required, treat-as-required-unless-pinned, ignore
-                #     skip if ignoring
-                #     if pinned
-                #       ignore if treat-as-required-unless-pinned
-                #     else
-                #       **evaluation of incorporations**
-                #     [imageplan] pursue installation of this package -->
-                #     backtrack or reset??
+                for a in m.actions:
+                        if a.name != "depend":
+                                continue
+
+                        f = fmri.PkgFmri(a.attrs["fmri"],
+                            self.image.attrs["Build-Release"])
+
+                        if self.image.is_installed(f):
+                                continue
+
+                        if self.is_proposed_fmri(f):
+                                continue
+
+                        # XXX LOG  "%s not in pending transaction;
+                        # checking catalog" % f
+
+                        required = True
+                        excluded = False
+
+                        if a.attrs["type"] == "optional" and \
+                            not self.image.attrs["Policy-Require-Optional"]:
+                                required = False
+                        elif a.attrs["type"] == "exclude":
+                                excluded = True
+
+                        if not required:
+                                continue
+
+                        if excluded:
+                                raise RuntimeError, "excluded by '%s'" % f
+
+                        # treat-as-required, treat-as-required-unless-pinned, ignore
+                        # skip if ignoring
+                        #     if pinned
+                        #       ignore if treat-as-required-unless-pinned
+                        #     else
+                        #       **evaluation of incorporations**
+                        #     [imageplan] pursue installation of this package -->
+                        #     backtrack or reset??
+
+                        mvs = self.image.get_matching_pkgs(f)
+
+                        cf = f
+                        for i in mvs:
+                                if i[1].is_successor(cf):
+                                         cf = i[1]
+
+                        # XXX LOG "adding dependency %s" % pfmri
+                        self.evaluate_fmri(cf)
 
                 pp = pkgplan.PkgPlan(self.image)
 
-                pp.propose_destination(fmri, m)
+                try:
+                        pp.propose_destination(pfmri, m)
+                except RuntimeError:
+                        print "pkg: %s already installed" % pfmri
+                        return
 
                 pp.evaluate()
 

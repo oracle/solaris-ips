@@ -25,9 +25,11 @@
 # Use is subject to license terms.
 #
 
+import datetime
 import exceptions
 import re
 import string
+import time
 
 CONSTRAINT_NONE = 0
 
@@ -111,24 +113,43 @@ class IllegalVersion(exceptions.Exception):
                 self.args = args
 
 class Version(object):
-        """Version format is release[,build_release]-branch:timestamp, which we
-        decompose into three DotSequences and the timestamp.  The
-        release and branch DotSequences are interpreted normally, where v1 < v2
-        implies that v2 is a later release or branch.  The build_release
-        DotSequence records the system on which the package binaries were
-        constructed.  Interpretation of the build_release by the client is that,
-        in the case b1 < b2, a b1 package can be run on either b1 or b2
-        systems,while a b2 package can only be run on a b2 system."""
+        """Version format is release[,build_release]-branch:datetime, which we
+        decompose into three DotSequences and the datetime.  The text
+        representation is in the ISO8601-compliant form "YYYYMMDDTHHMMSSZ",
+        referring to the UTC time associated with the version.  The release and
+        branch DotSequences are interpreted normally, where v1 < v2 implies that
+        v2 is a later release or branch.  The build_release DotSequence records
+        the system on which the package binaries were constructed.
+        Interpretation of the build_release by the client is that, in the case
+        b1 < b2, a b1 package can be run on either b1 or b2 systems,while a b2
+        package can only be run on a b2 system."""
 
         def __init__(self, version_string, build_string):
                 # XXX If illegally formatted, raise exception.
-                m = re.match("(\d+[\.\d]*),(\d+[\.\d]*)-(\d+[\.\d]*)\:(\d+)",
+                m = re.match(
+                    "(\d+[\.\d]*),(\d+[\.\d]*)-(\d+[\.\d]*)\:(\d+T\d+Z)",
                     version_string)
+
                 if m != None:
                         self.release = DotSequence(m.group(1))
                         self.build_release = DotSequence(m.group(2))
                         self.branch = DotSequence(m.group(3))
-                        self.timestamp = int(m.group(4))
+                        self.datetime = datetime.datetime(
+                             *time.strptime(m.group(4), "%Y%m%dT%H%M%SZ")[0:6])
+
+                        return
+
+                m = re.match(
+                    "(\d+[\.\d]*),(\d+[\.\d]*)-(\d+[\.\d]*)\:(\d+)",
+                    version_string)
+
+                if m != None:
+                        self.release = DotSequence(m.group(1))
+                        self.build_release = DotSequence(m.group(2))
+                        self.branch = DotSequence(m.group(3))
+                        self.datetime = datetime.datetime.fromtimestamp(
+                                float(m.group(4)))
+
                         return
 
                 m = re.match("(\d+[\.\d]*),(\d+[\.\d]*)-(\d+[\.\d]*)",
@@ -137,7 +158,7 @@ class Version(object):
                         self.release = DotSequence(m.group(1))
                         self.build_release = DotSequence(m.group(2))
                         self.branch = DotSequence(m.group(3))
-                        self.timestamp = 0
+                        self.datetime = datetime.datetime.fromtimestamp(0)
                         return
 
                 m = re.match("(\d+[\.\d]*),(\d+[\.\d]*)",
@@ -146,17 +167,27 @@ class Version(object):
                         self.release = DotSequence(m.group(1))
                         self.build_release = DotSequence(m.group(2))
                         self.branch = DotSequence("0")
-                        self.timestamp = 0
+                        self.datetime = datetime.datetime.fromtimestamp(0)
                         return
 
                 assert build_string != None
                 self.build_release = DotSequence(build_string)
 
+                m = re.match("(\d+[\.\d]*)-(\d+[\.\d]*)\:(\d+T\d+Z)",
+                    version_string)
+                if m != None:
+                        self.release = DotSequence(m.group(1))
+                        self.branch = DotSequence(m.group(2))
+                        self.datetime = datetime.datetime(
+                            *time.strptime(m.group(3), "%Y%m%dT%H%M%SZ")[0:6])
+                        return
+
                 m = re.match("(\d+[\.\d]*)-(\d+[\.\d]*)\:(\d+)", version_string)
                 if m != None:
                         self.release = DotSequence(m.group(1))
                         self.branch = DotSequence(m.group(2))
-                        self.timestamp = int(m.group(3))
+                        self.datetime = datetime.datetime.fromtimestamp(
+                            float(m.group(3)))
                         return
 
                 # Sequence omitted?
@@ -164,7 +195,7 @@ class Version(object):
                 if m != None:
                         self.release = DotSequence(m.group(1))
                         self.branch = DotSequence(m.group(2))
-                        self.timestamp = 0
+                        self.datetime = datetime.datetime.fromtimestamp(0)
                         return
 
                 # Branch omitted?
@@ -172,7 +203,7 @@ class Version(object):
                 if m != None:
                         self.release = DotSequence(m.group(1))
                         self.branch = DotSequence("0")
-                        self.timestamp = 0
+                        self.datetime = datetime.datetime.fromtimestamp(0)
                         return
 
                 raise IllegalVersion
@@ -185,17 +216,16 @@ class Version(object):
 
         def __str__(self):
                 return "%s,%s-%s:%s" % (self.release, self.build_release,
-                    self.branch, self.timestamp)
+                    self.branch, self.datetime.strftime("%Y%m%dT%H%M%SZ"))
 
         def get_short_version(self):
                 return "%s-%s" % (self.release, self.branch)
 
-        def set_timestamp(self, new_ts):
-                assert new_ts > self.timestamp
-                self.timestamp = int(new_ts)
+        def set_timestamp(self, timestamp):
+                self.datetime = datetime.datetime.fromtimestamp(timestamp)
 
-        def get_timestamp(self):
-                return self.timestamp
+        def get_datetime(self):
+                return self.datetime
 
         def __ne__(self, other):
                 if other == None:
@@ -203,7 +233,7 @@ class Version(object):
 
                 if self.release == other.release and \
                     self.branch == other.branch and \
-                    self.timestamp == other.timestamp:
+                    self.datetime == other.datetime:
                         return False
                 return True
 
@@ -213,7 +243,7 @@ class Version(object):
 
                 if self.release == other.release and \
                     self.branch == other.branch and \
-                    self.timestamp == other.timestamp:
+                    self.datetime == other.datetime:
                         return True
                 return False
 
@@ -226,7 +256,7 @@ class Version(object):
                         return True
                 if self.branch != other.branch:
                         return False
-                if self.timestamp < other.timestamp:
+                if self.datetime < other.datetime:
                         return True
                 return False
 
@@ -239,7 +269,7 @@ class Version(object):
                         return True
                 if self.branch != other.branch:
                         return False
-                if self.timestamp > other.timestamp:
+                if self.datetime > other.datetime:
                         return True
                 return False
 
@@ -264,7 +294,7 @@ class Version(object):
 
                 For CONSTRAINT_RELEASE, self is a successor to other if all of
                 the components of other's release match, and there are later
-                components of self's version.  The branch and timestamp
+                components of self's version.  The branch and datetime
                 components are ignored.
 
                 For CONSTRAINT_RELEASE_MAJOR and CONSTRAINT_RELEASE_MINOR, other
@@ -304,8 +334,8 @@ if __name__ == "__main__":
         d2 = DotSequence("1.1.3")
         assert d1 == d2
 
-        v1 = Version("5.5.1-10:6", "5.5.1")
-        v2 = Version("5.5.1-10:8", "5.5.1")
+        v1 = Version("5.5.1-10:20051122T000000Z", "5.5.1")
+        v2 = Version("5.5.1-10:20070318T123456Z", "5.5.1")
         v3 = Version("5.5.1-10", "5.5")
         v4 = Version("5.5.1-6", "5.4")
         v5 = Version("5.6,1", "5.4")
@@ -313,6 +343,9 @@ if __name__ == "__main__":
         v7 = Version("5.10", "5.5.1")
         v8 = Version("5.10.1", "5.5.1")
         v9 = Version("5.11", "5.5.1")
+
+        v10 = Version("0.1,5.11-1", None)
+        v11 = Version("0.1,5.11-1:20070710T120000Z", None)
 
         d3 = DotSequence("5.4")
         d4 = DotSequence("5.6")
@@ -328,6 +361,8 @@ if __name__ == "__main__":
 
         assert not v9.compatible_with_build(d3)
         assert v9.compatible_with_build(d4)
+
+        assert v11 > v10
 
         assert v2.is_successor(v1, CONSTRAINT_BRANCH)
         assert v4.is_successor(v2, CONSTRAINT_RELEASE)

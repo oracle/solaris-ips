@@ -49,11 +49,18 @@ class LinkAction(generic.Action):
 
         def install(self, image):
                 """Client-side method that installs a link."""
+                # XXX The exists-unlink-symlink path appears to be as safe as it
+                # gets with the current symlink(2) interface.
+
                 path = self.attrs["path"]
                 target = self.attrs["target"]
 
                 path = os.path.normpath(os.path.sep.join(
                     (image.get_root(), path)))
+
+                if os.path.exists(path):
+                        os.unlink(path)
+
                 os.symlink(target, path)
 
         def postinstall(self):

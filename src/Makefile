@@ -45,11 +45,15 @@ ROOTDIRS = \
 	$(ROOT) \
 	$(ROOTUSRBIN) \
 	$(ROOTUSRLIB) \
+	$(ROOTPYTHONPKG)/actions \
 	$(ROOTPYTHONPKG)/server \
 	$(ROOTPYTHONPKG)/publish \
-	$(ROOTPYTHONPKG)/client
+	$(ROOTPYTHONPKG)/client \
+	$(ROOTPYTHONPKG)/actions \
+	$(ROOTPYTHONPKG)/bundle
 
 PROGS = pkg pkgsend pkg.depotd
+
 ROOTPROGS = \
 	$(ROOT)/usr/bin/pkg \
 	$(ROOT)/usr/bin/pkgsend \
@@ -61,13 +65,26 @@ PYMODS = \
 	modules/catalog.py \
 	modules/config.py \
 	modules/content.py \
+	modules/cpiofile.py \
 	modules/dependency.py \
 	modules/elf.so \
 	modules/fmri.py \
+	modules/manifest.py \
 	modules/misc.py \
 	modules/package.py \
 	modules/sysvpkg.py \
 	modules/version.py
+
+PYACTIONMODS = \
+	modules/actions/__init__.py \
+	modules/actions/attribute.py \
+	modules/actions/depend.py \
+	modules/actions/directory.py \
+	modules/actions/file.py \
+	modules/actions/generic.py \
+	modules/actions/hardlink.py \
+	modules/actions/link.py \
+	modules/actions/unknown.py
 
 PYSERVERMODS = \
 	modules/server/__init__.py \
@@ -76,19 +93,55 @@ PYSERVERMODS = \
 
 PYCLIENTMODS = \
 	modules/client/__init__.py \
-	modules/client/image.py
+	modules/client/image.py \
+	modules/client/imageplan.py \
+	modules/client/pkgplan.py \
+	modules/client/retrieve.py
 
 PYPUBLISHMODS = \
 	modules/publish/__init__.py \
 	modules/publish/transaction.py
 
+PYACTIONMODS = \
+	modules/actions/__init__.py \
+	modules/actions/directory.py \
+	modules/actions/generic.py \
+	modules/actions/link.py \
+	modules/actions/attribute.py \
+	modules/actions/file.py \
+	modules/actions/hardlink.py \
+	modules/actions/unknown.py
+
+PYBUNDLEMODS = \
+	modules/bundle/__init__.py \
+	modules/bundle/SolarisPackageDatastreamBundle.py \
+	modules/bundle/TarBundle.py \
+	modules/bundle/SolarisPackageDirBundle.py
+
 ROOTPYMODS = $(PYMODS:modules/%=$(ROOTPYTHONPKG)/%)
+ROOTPYACTIONMODS = \
+	$(PYACTIONMODS:modules/actions/%=$(ROOTPYTHONPKG)/actions/%)
 ROOTPYSERVERMODS = \
 	$(PYSERVERMODS:modules/server/%=$(ROOTPYTHONPKG)/server/%)
 ROOTPYPUBLISHMODS = \
 	$(PYPUBLISHMODS:modules/publish/%=$(ROOTPYTHONPKG)/publish/%)
 ROOTPYCLIENTMODS = \
 	$(PYCLIENTMODS:modules/client/%=$(ROOTPYTHONPKG)/client/%)
+ROOTPYACTIONMODS = \
+	$(PYACTIONMODS:modules/actions/%=$(ROOTPYTHONPKG)/actions/%)
+ROOTPYBUNDLEMODS = \
+	$(PYBUNDLEMODS:modules/bundle/%=$(ROOTPYTHONPKG)/bundle/%)
+
+ROOTCOMPONENTS = \
+	$(ROOTDIRS) \
+	$(ROOTPROGS) \
+	$(ROOTPYMODS) \
+	$(ROOTPYACTIONMODS) \
+	$(ROOTPYSERVERMODS) \
+	$(ROOTPYPUBLISHMODS) \
+	$(ROOTPYCLIENTMODS) \
+	$(ROOTPYACTIONMODS) \
+	$(ROOTPYBUNDLEMODS)
 
 all := TARGET = all
 
@@ -100,8 +153,7 @@ clean:
 clobber: clean
 	rm -fr $(ROOT)
 
-install: $(ROOTDIRS) $(ROOTPROGS) $(ROOTPYMODS) $(ROOTPYSERVERMODS) \
-	$(ROOTPYPUBLISHMODS) $(ROOTPYCLIENTMODS)
+install: $(ROOTCOMPONENTS)
 
 binary-modules:
 	@cd modules; pwd; $(MAKE) $(TARGET)
@@ -140,11 +192,20 @@ $(ROOTPYTHONPKG)/publish:
 $(ROOTPYTHONPKG)/client:
 	mkdir -p $(ROOTPYTHONPKG)/client
 
+$(ROOTPYTHONPKG)/actions:
+	mkdir -p $(ROOTPYTHONPKG)/actions
+
+$(ROOTPYTHONPKG)/bundle:
+	mkdir -p $(ROOTPYTHONPKG)/bundle
+
 $(ROOTUSRBIN)/%: %
 	rm -f $@; install -f $(ROOTUSRBIN) -m 0555 $<
 
 $(ROOTUSRLIB)/%: %
 	rm -f $@; install -f $(ROOT)/usr/lib -m 0555 $<
+
+$(ROOTPYTHONPKG)/actions/%: modules/actions/%
+	rm -f $@; install -f $(ROOTPYTHONPKG)/actions -m 0444 $<
 
 $(ROOTPYTHONPKG)/server/%: modules/server/%
 	rm -f $@; install -f $(ROOTPYTHONPKG)/server -m 0444 $<
@@ -154,6 +215,12 @@ $(ROOTPYTHONPKG)/publish/%: modules/publish/%
 
 $(ROOTPYTHONPKG)/client/%: modules/client/%
 	rm -f $@; install -f $(ROOTPYTHONPKG)/client -m 0444 $<
+
+$(ROOTPYTHONPKG)/actions/%: modules/actions/%
+	rm -f $@; install -f $(ROOTPYTHONPKG)/actions -m 0444 $<
+
+$(ROOTPYTHONPKG)/bundle/%: modules/bundle/%
+	rm -f $@; install -f $(ROOTPYTHONPKG)/bundle -m 0444 $<
 
 $(ROOTPYTHONPKG)/%.so: modules/%.so
 	rm -f $@; install -f $(ROOTPYTHONPKG) -m 0555 $<

@@ -52,6 +52,10 @@ class PkgPlan(object):
                 self.destination_fmri = fmri
                 self.destination_mfst = manifest
 
+                if os.path.exists("%s/pkg/%s/installed" % (self.image.imgdir,
+                    fmri.get_dir_path())):
+                        raise RuntimeError, "already installed"
+
         def is_valid(self):
                 if self.origin_fmri == None:
                         return True
@@ -73,20 +77,30 @@ class PkgPlan(object):
                 f = None
                 if self.origin_fmri == None:
                         try:
-                                f = self.image.get_version_installed(self.destination_fmri)
+                                f = self.image.get_version_installed(
+                                    self.destination_fmri)
+                                self.origin_fmri = f
                         except LookupError:
                                 pass
 
                 # if null package, then our plan is the set of actions for the
                 # destination version
-                if f == None:
+                if self.origin_fmri == None:
                         self.actions = self.destination_mfst.actions
                 else:
-                        # if a previous package, then our plan is derived from the
-                        # set differences between the previous manifest's actions and
-                        # the union of the destination manifest's actions with the
-                        # critical actions of the critical versions in the version
-                        # interval between origin and destination.
+                        # if a previous package, then our plan is derived from
+                        # the set differences between the previous manifest's
+                        # actions and the union of the destination manifest's
+                        # actions with the critical actions of the critical
+                        # versions in the version interval between origin and
+                        # destination.
+                        if not self.image.has_manifest(self.origin_fmri):
+                                retrieve.get_manifest(self.image,
+                                    self.origin_fmri)
+
+                        self.origin_mfst = self.image.get_manifest(
+                            self.origin_fmri)
+
                         self.actions = self.destination_mfst.difference(
                             self.origin_mfst)
                 return
@@ -99,8 +113,6 @@ class PkgPlan(object):
 
         def execute(self):
                 # record that we are in an intermediate state
-                # mv step
-                # XXX
                 for a in self.actions:
                         a.install(self.image)
                 return
@@ -109,4 +121,12 @@ class PkgPlan(object):
                 # record that package states are consistent
                 for a in self.actions:
                         a.postinstall()
+
+                if self.origin_fmri != None:
+                        os.unlink("%s/pkg/%s/installed" % (self.image.imgdir,
+                            self.origin_fmri.get_dir_path()))
+
+                file("%s/pkg/%s/installed" % (self.image.imgdir,
+                    self.destination_fmri.get_dir_path()), "w")
+
                 return

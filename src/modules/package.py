@@ -197,12 +197,11 @@ class Package(object):
 
         def matching_versions(self, pfmri, constraint):
                 ret = []
-                pf = fmri.PkgFmri(pfmri, None)
 
                 for pv in self.pversions:
                         f = fmri.PkgFmri("%s@%s" % (self.fmri, pv.version),
                             None)
-                        if f.is_successor(pf):
+                        if f.is_successor(pfmri):
                                 ret.append(f)
 
                 return ret

@@ -56,32 +56,6 @@ depend_str = { DEPEND_REQUIRE : "require",
                 DEPEND_INCORPORATE : "incorporate"
 }
 
-class ManifestAction(object):
-        def __init__(self):
-                self.type = None
-                self.attrs = {}
-                self.mandatory_attrs = []
-
-class DependencyManifestAction(ManifestAction):
-        def __init__(self):
-                ManifestAction.__init__(self)
-
-                self.type = ACTION_DEPEND
-                self.mandatory_attrs = [ "fmri", "dtype" ]
-
-        def __str__(self):
-                # XXX generalize to superclass?
-                r = "%s %s" % (depend_str[self.attrs["dtype"]],
-                    self.attrs["fmri"])
-
-                for k in self.attrs.keys():
-                        if k in self.mandatory_attrs:
-                                continue
-                        r = r + " %s=%s" % (k, self.attrs[k])
-
-                return r
-
-
 class Manifest(object):
         """A Manifest is the representation of the actions composing a specific
         package version on both the client and the repository.  Both purposes
@@ -121,11 +95,11 @@ class Manifest(object):
         the non-null manifest, meaning that all operations can be viewed as
         tranitions between the manifest being installed and the manifest already
         present in the image (which may be the null manifest).
-
-        XXX Need one or more differences methods, so that we can build a list of
-        the actions we must take and the actions that are no longer relevant,
-        which would include deletions.
         """
+
+        # XXX The difference methods work, but are wrong:  we must provide
+        # action equivalency relationships, so that we can easily discriminate
+        # related actions from independent ones.
 
         def __init__(self):
                 self.fmri = None
@@ -148,20 +122,66 @@ class Manifest(object):
 
                 return r
 
+        def difference(self, other):
+                """Output is the list of positive actions to take to move from
+                other to self.  For instance, a file in self, but not in other,
+                would be added."""
+
+                sset = set([str(acs) for acs in self.actions])
+                oset = set([str(aco) for aco in other.actions])
+
+                for ats in self.attributes.keys():
+                        sset.add("%s=%s" % (ats, self.attributes[ats]))
+
+                for ato in other.attributes.keys():
+                        oset.add("%s=%s" % (ato, other.attributes[ato]))
+
+                dset = sset.symmetric_difference(oset)
+
+                positive_actions = []
+
+                for acs in self.actions:
+                        rep = str(acs)
+                        if rep in dset:
+                                positive_actions.append(acs)
+
+                return positive_actions
+
+
+        def antidifference(self, other):
+                """Output is the list of negative actions to take to move from
+                other to self.  For instance, a file in other, but not in self,
+                would be undone.
+
+                XXX The antidifference must be reconciled with any replacement
+                actions on the positive side by a higher level routine."""
+
+                sset = set([str(acs) for acs in self.actions])
+                oset = set([str(aco) for aco in other.actions])
+
+                for ats in self.attributes.keys():
+                        sset.add("%s=%s" % (ats, self.attributes[ats]))
+
+                for ato in other.attributes.keys():
+                        oset.add("%s=%s" % (ato, other.attributes[ato]))
+
+                dset = sset.symmetric_difference(oset)
+
+                for aco in other.actions:
+                        rep = "%s" % acs
+                        if rep in dset:
+                                negative_actions.append(aco)
+
+                return negative_actions
+
         def display_differences(self, other):
                 """Output expects that self is newer than other.  Use of sets
                 requires that we convert the action objects into some marshalled
                 form, otherwise set member identities are derived from the
                 object pointers, rather than the contents."""
 
-                sset = set()
-                oset = set()
-
-                for acs in self.actions:
-                        sset.add("%s" % acs)
-
-                for aco in other.actions:
-                        oset.add("%s" % aco)
+                sset = set([str(acs) for acs in self.actions])
+                oset = set([str(aco) for aco in other.actions])
 
                 for ats in self.attributes.keys():
                         sset.add("%s=%s" % (ats, self.attributes[ats]))
@@ -179,46 +199,6 @@ class Manifest(object):
 
         def set_fmri(self, fmri):
                 self.fmri = fmri
-
-        def add_dependency_action_line(self, str):
-                """A dependency action line is one or more of
-
-                require fmri n=v
-                incorporate fmri n=v
-                optional fmri n=v
-
-                """
-
-                m = re.match("^(require|incorporate|optional) ([^\s]+)\s?(.*)", str)
-                if m == None:
-                        raise SyntaxError, "invalid dependency action '%s'" % str
-
-                a = DependencyManifestAction()
-                for k in depend_str.keys():
-                        if depend_str[k] == m.group(1):
-                                a.attrs["dtype"] = k
-                                break
-
-                if a.attrs["dtype"] == None:
-                        raise KeyError, "unknown dependency type '%s'" % m.group(1)
-
-                a.attrs["fmri"] = m.group(2)
-
-                # if any name value settings, add to action's tags
-                if m.group(3) != "":
-                        nvs = re.split("\s+", m.group(6))
-
-                        for nv in nvs:
-                                # XXX what if v is empty?  syntax error?
-                                n, v = re.split("=", nv, 1)
-                                n.strip()
-                                v.strip()
-                                a.attrs[n] = v
-
-                if len(self.actions) == 0:
-                        self.actions.append(a)
-                else:
-                        bisect.insort(self.actions, a)
 
         @staticmethod
         def make_opener(fmri, action):
@@ -257,7 +237,7 @@ if __name__ == "__main__":
 
         x = """\
 set com.sun,test=true
-# require pkg:/library/libc
+depend type=require fmri=pkg:/library/libc
 file fff555fff mode=0555 owner=sch group=staff path=/usr/bin/i386/sort isa=i386
 """
         m1.set_content(x)
@@ -269,7 +249,7 @@ file fff555fff mode=0555 owner=sch group=staff path=/usr/bin/i386/sort isa=i386
         y = """\
 set com.sun,test=true
 set com.sun,data=true
-# require pkg:/library/libc
+depend type=require fmri=pkg:/library/libc
 file fff555ff9 mode=0555 owner=sch group=staff path=/usr/bin/i386/sort isa=i386
 file eeeaaaeee mode=0555 owner=sch group=staff path=/usr/bin/amd64/sort isa=amd64
 

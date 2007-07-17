@@ -10,3 +10,4 @@
 ^src/pkg$
 ^src/pkgsend$
 ^src/pkg.depotd$
+^webrev

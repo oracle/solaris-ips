@@ -198,6 +198,7 @@ def trans_add(config, args):
         # superset of the required attributes for each type.  Unfortunately,
         # only here can we specify commandline ordering.
         attrs = {
+                "depend": ("type", "fmri"),
                 "dir": ("mode", "owner", "group", "path"),
                 "displace": ("mode", "owner", "group", "path"),
                 "file": ("mode", "owner", "group", "path"),

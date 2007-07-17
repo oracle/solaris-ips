@@ -72,6 +72,7 @@ Usage:
 Install subcommands:
         pkg refresh
         pkg catalog [--verbose] pkg_fmri_pattern
+        pkg status [-uv] [pkg_fmri_pattern ...]
         pkg install pkg_fmri
         pkg uninstall pkg_fmri
         pkg freeze [--version version_spec] [--release] [--branch] pkg_fmri
@@ -129,6 +130,9 @@ def catalog_display(config, image, args):
         image.reload_catalogs()
         image.display_catalogs()
 
+def inventory_display(config, image, args):
+        image.reload_catalogs()
+        image.display_inventory(args)
 
 def install(config, image, args):
         """Attempt to take package specified to INSTALLED state.  The operands
@@ -256,6 +260,8 @@ if __name__ == "__main__":
                 catalog_refresh(pcfg, icfg, pargs)
         elif subcommand == "catalog":
                 catalog_display(pcfg, icfg, pargs)
+        elif subcommand == "status":
+                inventory_display(pcfg, icfg, pargs)
         elif subcommand == "install":
                 install(pcfg, icfg, pargs)
         elif subcommand == "uninstall":

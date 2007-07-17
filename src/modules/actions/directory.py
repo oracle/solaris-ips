@@ -59,7 +59,11 @@ class DirectoryAction(generic.Action):
 
                 path = os.path.normpath(os.path.sep.join(
                     (image.get_root(), path)))
-                os.mkdir(path, mode)
+                try:
+                        os.mkdir(path, mode)
+                except OSError, e:
+                        if e.errno != errno.EEXIST:
+                                raise
 
                 try:
                         os.chown(path, owner, group)

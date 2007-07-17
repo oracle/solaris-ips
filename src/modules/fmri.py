@@ -43,7 +43,7 @@ class PkgFmri(object):
 
         def __init__(self, fmri, build_release):
                 """XXX pkg:/?pkg_name@version not presently supported."""
-                m = re.match("pkg://([^/]*)/([^@]*)@([\d\,\.\-\:]*)", fmri)
+                m = re.match("pkg://([^/]*)/([^@]*)@([\dTZ\,\.\-\:]*)", fmri)
                 if m != None:
                         self.authority = m.group(1)
                         self.pkg_name = m.group(2)
@@ -59,7 +59,7 @@ class PkgFmri(object):
 
                         return
 
-                m = re.match("pkg:/([^/][^@]*)@([\d\,\.\-\:]*)", fmri)
+                m = re.match("pkg:/([^/][^@]*)@([\dTZ\,\.\-\:]*)", fmri)
                 if m != None:
                         # XXX Replace with server's default authority.
                         self.authority = None
@@ -77,7 +77,7 @@ class PkgFmri(object):
 
                         return
 
-                m = re.match("([^@]*)@([\d\,\.\-\:]*)", fmri)
+                m = re.match("([^@]*)@([\dTZ\,\.\-\:]*)", fmri)
                 if m != None:
                         # XXX Replace with server's default authority.
                         self.authority = None
@@ -128,6 +128,16 @@ class PkgFmri(object):
                         return "pkg:/%s" % self.pkg_name
 
                 return "pkg://%s/%s" % (self.authority, self.pkg_name)
+
+        def get_short_fmri(self):
+                """Return a string representation of the FMRI without a specific
+                version."""
+                if self.authority == None:
+                        return "pkg:/%s@%s" % (self.pkg_name,
+                            self.version.get_short_version())
+
+                return "pkg://%s/%s@s" % (self.authority, self.pkg_name,
+                    self.version.get_short_version())
 
         def get_dir_path(self, stemonly = False):
                 """Return the escaped directory path fragment for this FMRI."""
@@ -197,8 +207,8 @@ if __name__ == "__main__":
         n1 = PkgFmri("pkg://pion/sunos/coreutils", "5.9")
         n2 = PkgFmri("sunos/coreutils", "5.10")
         n3 = PkgFmri("sunos/coreutils@5.10", "5.10")
-        n4 = PkgFmri("sunos/coreutils@6.7,5.10-2:786868787", "5.10")
-        n5 = PkgFmri("sunos/coreutils@6.6,5.10-2:786868787", "5.10")
+        n4 = PkgFmri("sunos/coreutils@6.7,5.10-2:20070710T164744Z", "5.10")
+        n5 = PkgFmri("sunos/coreutils@6.6,5.10-2:20070710T164744Z", "5.10")
         n6 = PkgFmri("coreutils", None)
 
         print n1
