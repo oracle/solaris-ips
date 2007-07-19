@@ -211,5 +211,8 @@ class ImagePlan(object):
                 for p in self.pkg_plans:
                         p.postexecute()
 
+                for p in self.pkg_plans:
+                        p.make_indices()
+
                 self.state = EXECUTED_OK
 

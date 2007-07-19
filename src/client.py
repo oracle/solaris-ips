@@ -77,6 +77,7 @@ Install subcommands:
         pkg uninstall pkg_fmri
         pkg freeze [--version version_spec] [--release] [--branch] pkg_fmri
         pkg unfreeze pkg_fmri
+        pkg search token
 
         pkg image [--full|--partial|--user] dir
         pkg image [-FPU] dir
@@ -202,6 +203,27 @@ def unfreeze(config, args):
 
         return
 
+def search(config, image, args):
+        """Search through the reverse index databases for the given token."""
+
+        idxdir = os.path.join(image.imgdir, "index")
+
+        # Avoid enumerating any particular index directory, since some index
+        # databases may contain hundreds of thousands of keys.  Any given key in
+        # an index, however, hopefully won't point to more than a few hundred
+        # packages.
+        results = [
+            (dir, link)
+            for dir in os.listdir(idxdir)
+            if os.path.isdir(os.path.join(idxdir, dir, args[0]))
+            for link in os.listdir(os.path.join(idxdir, dir, args[0]))
+        ]
+
+        for idx, link in results:
+                print idx, fmri.PkgFmri(urllib.unquote(link), None)
+
+        return
+
 def create_image(config, args):
         """Create an image of the requested kind, at the given path."""
 
@@ -270,6 +292,8 @@ if __name__ == "__main__":
                 freeze(pcfg, icfg, pargs)
         elif subcommand == "unfreeze":
                 unfreeze(pcfg, icfg, pargs)
+        elif subcommand == "search":
+                search(pcfg, icfg, pargs)
         else:
                 print "pkg: unknown subcommand '%s'" % subcommand
                 usage()

@@ -84,3 +84,9 @@ class FileAction(generic.Action):
         def postinstall(self):
                 """Client-side method that performs post-install actions."""
                 pass
+
+        def generate_indices(self):
+                return {
+                    "content": self.hash,
+                    "basename": os.path.basename(self.attrs["path"])
+                }

@@ -104,3 +104,9 @@ class DriverAction(generic.Action):
         def update_install(self, image):
                 # XXX This needs to run update_drv or something.
                 pass
+
+        def generate_indices(self):
+                return {
+                    "driver_name": self.attrs["name"],
+                    "driver_aliases": self.attrs["alias"]
+                }

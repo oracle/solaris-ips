@@ -195,6 +195,37 @@ class Action(object):
                 else:
                         return cmp(id(self), id(other))
 
+        def generate_indices(self):
+                """Generate for the reverse index database data for this action.
+
+                See pkg.client.pkgplan.make_indices for more information about
+                the reverse index database.
+                
+                This method returns a dictionary mapping attribute names to
+                their values.  This is not simply the action attribute
+                dictionary, 'attrs', as not necessarily all of these attributes
+                are interesting to look up, and there may be others which are
+                derived from the canonical attributes (like the path's basename).
+                """
+
+                indices = {}
+
+                # XXX What about derived indices -- those which aren't one of
+                # the attributes, such as basename?  Just push computing them
+                # into the subclasses?  Or is this simple enough that we have no
+                # need for a generic.generate_indices() that does anything
+                # interesting?
+                if hasattr(self, "reverse_indices"):
+                        indices.update(
+                            (idx, self.attrs[idx])
+                            for idx in self.reverse_indices
+                        )
+
+                if hasattr(self, "hash"):
+                        indices["content"] = self.hash
+
+                return indices
+
         def preinstall(self, image):
                 """Client-side method that performs pre-install actions."""
                 pass

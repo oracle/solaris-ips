@@ -23,6 +23,7 @@
 # Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
+import errno
 import os
 import re
 import urllib
@@ -130,3 +131,50 @@ class PkgPlan(object):
                     self.destination_fmri.get_dir_path()), "w")
 
                 return
+
+        def make_indices(self):
+                """Create the reverse index databases for a particular package.
+                
+                These are the databases mapping packaging object attribute
+                values back to their corresponding packages, allowing the
+                packaging system to look up a package based on, say, the
+                basename of a file that was installed.
+
+                XXX Need a method to remove what we put down here.
+                """
+
+                target = os.path.join("..", "..", "..", "pkg",
+                    self.destination_fmri.get_dir_path())
+
+                gen = (
+                    (k, v)
+                    for action in self.actions
+                    for k, v in action.generate_indices().iteritems()
+                )
+
+                for idx, val in gen:
+                        idxdir = os.path.join(self.image.imgdir, "index", idx)
+
+                        try:
+                                os.makedirs(idxdir)
+                        except OSError, e:
+                                if e.errno != errno.EEXIST:
+                                        raise
+
+                        if not isinstance(val, list):
+                                val = [ val ]
+
+                        for v in val:
+                                dir = os.path.join(idxdir, v)
+
+                                try:
+                                        os.makedirs(dir)
+                                except OSError, e:
+                                        if e.errno != errno.EEXIST:
+                                                raise
+
+                                link = os.path.join(dir,
+                                    self.destination_fmri.get_url_path())
+
+                                if not os.path.lexists(link):
+                                        os.symlink(target, link)

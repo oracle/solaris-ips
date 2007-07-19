@@ -74,6 +74,9 @@ class Image(object):
           $IROOT/pkg
                Directory containing manifests and states of installed packages.
 
+          $IROOT/index
+               Directory containing reverse-index databases.
+
         XXX Root path probably can't be absolute, so that we can combine or
         reuse Image contents.
 
@@ -130,6 +133,8 @@ class Image(object):
                         os.makedirs(self.imgdir + "/file")
                 if not os.path.isdir(self.imgdir + "/pkg"):
                         os.makedirs(self.imgdir + "/pkg")
+                if not os.path.isdir(self.imgdir + "/index"):
+                        os.makedirs(self.imgdir + "/index")
 
         def set_attrs(self, type, root):
                 self.type = type
