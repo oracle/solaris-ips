@@ -29,7 +29,7 @@ ARCHOBJS = $(ARCHSRCS:%.c=%.o)
 
 ELFMODULE = elf.so
 
-ELFSRCS = elf.c
+ELFSRCS = elf.c liblist.c elfextract.c
 ELFOBJS = $(ELFSRCS:%.c=%.o)
 
 PYTHONINC = /usr/include/python2.4
