@@ -36,7 +36,7 @@ PYTHONINC = /usr/include/python2.4
 
 INC = -I$(PYTHONINC)
 CFLAGS = -Kpic $(INC)
-LDFLAGS = -G
+LDFLAGS = -G -lelf
 
 gcc := CC = gcc
 gcc := CFLAGS = -fpic $(INC)

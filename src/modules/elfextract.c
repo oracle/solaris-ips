@@ -1,4 +1,4 @@
-#include <elf.h>
+#include <libelf.h>
 #include <gelf.h>
 
 #include <sys/stat.h>
@@ -15,6 +15,73 @@
 
 #include "liblist.h"
 #include "elfextract.h"
+
+char *
+pkg_string_from_type(int type)
+{
+	switch (type) {
+	case ET_EXEC:
+		return "exe";
+	case ET_DYN:
+		return "so";
+	case ET_CORE:
+		return "core";
+	case ET_REL:
+		return "rel";
+	default:
+		return "other";
+	}
+}
+
+char *
+pkg_string_from_arch(int arch)
+{
+	switch (arch) {
+	case EM_NONE:
+		return "none";
+	case EM_SPARC:
+	case EM_SPARC32PLUS:
+	case EM_SPARCV9:
+		return "sparc";
+	case EM_386:
+	case EM_AMD64:
+		return "x86";
+	case EM_PPC:
+	case EM_PPC64:
+		return "ppc";
+	default:
+		return "other";
+	}
+}
+
+char *
+pkg_string_from_data(int data)
+{
+	switch (data) {
+	case ELFDATA2LSB:
+		return "lsb";
+	case ELFDATA2MSB:
+		return "msb";
+	default:
+		return "unknown";
+	}
+}
+
+char *
+pkg_string_from_osabi(int osabi)
+{
+	switch (osabi) {
+	case ELFOSABI_NONE:
+	/*case ELFOSABI_SYSV:*/
+		return "none";
+	case ELFOSABI_LINUX:
+		return "linux";
+	case ELFOSABI_SOLARIS:
+		return "solaris";
+	default:
+		return "other";
+	}
+}
 
 char *
 getident(int fd)
@@ -58,47 +125,72 @@ iself32(int fd)
 	return (ident[EI_CLASS] == ELFCLASS32);
 }
 
-Elf32_Ehdr *
-gethead32(int fd)
+static GElf_Ehdr *
+gethead(Elf *elf)
 {
-	Elf32_Ehdr *hdr;
+	GElf_Ehdr *hdr;
 
-	if (!(hdr = malloc(sizeof(Elf32_Ehdr))))
+	if (!elf)
+		return (NULL);
+	
+	if (!(hdr = malloc(sizeof(GElf_Ehdr))))
 		return (NULL);
 
-	lseek(fd, 0, SEEK_SET);
-	read(fd, hdr, sizeof(Elf32_Ehdr));
+	if (gelf_getehdr(elf, hdr) == 0)
+		return (NULL);
+
 
 	return (hdr);
 }
 
-Elf64_Ehdr *
-gethead64(int fd)
+hdrinfo_t *
+getheaderinfo(int fd)
 {
-	Elf64_Ehdr *hdr;
+	Elf *elf;
+	GElf_Ehdr *hdr;
+	hdrinfo_t *hi;
 
-	if (!(hdr = malloc(sizeof(Elf64_Ehdr))))
+	if (!iself(fd))
 		return (NULL);
 
-	lseek(fd, 0, SEEK_SET);
-	read(fd, hdr, sizeof(Elf64_Ehdr));
+	if (!(hi = malloc(sizeof(hdrinfo_t))))
+		return (NULL);
 
-	return (hdr);
+	if (elf_version(EV_CURRENT) == EV_NONE)
+		return (NULL);
+
+	if (!(elf = elf_begin(fd, ELF_C_READ, NULL))) {
+		free(hi);
+		return (NULL);
+	}
+	
+	if (!(hdr = gethead(elf))) {
+		elf_end(elf);
+		return (NULL);
+	}
+
+	hi->type = hdr->e_type;
+	hi->bits = hdr->e_ident[EI_CLASS] == ELFCLASS32 ? 32 : 64;
+	hi->arch = hdr->e_machine;
+	hi->data = hdr->e_ident[EI_DATA];
+	hi->osabi = hdr->e_ident[EI_OSABI];
+	free(hdr);
+	
+	elf_end(elf);
+
+	return (hi);
 }
+
+
 
 static int
-hashsection(off_t name, char *sh_table)
+hashsection(char *name)
 {
-	if (!strcmp((char*)(name + sh_table),
-		".text") ||
-	    !strcmp((char*)(name + sh_table),
-		".data") ||
-	    !strcmp((char*)(name + sh_table),
-		".data1") ||
-	    !strcmp((char*)(name + sh_table),
-		".rodata") ||
-	    !strcmp((char*)(name + sh_table),
-		".rodata1")) {
+	if (!strcmp(name, ".text") ||
+	    !strcmp(name, ".data") ||
+	    !strcmp(name, ".data1") ||
+	    !strcmp(name, ".rodata") ||
+	    !strcmp(name, ".rodata1")) {
 		return (1);
 	}
 
@@ -128,406 +220,236 @@ readhash(int fd, SHA1_CTX *shc, off_t offset, off_t size)
 }
 
 /*
- * getdynamic32|64 - returns a struct filled with the
+ * getdynamic - returns a struct filled with the
  * information we want from an ELF file.  Returns NULL
  * if it can't find everything (eg. not ELF file, wrong
  * class of ELF file).
  */
 dyninfo_t *
-getdynamic32(int fd)
+getdynamic(int fd)
 {
-	Elf32_Ehdr 	*hdr = gethead32(fd);
-	Elf32_Shdr	*shdr = NULL;
-	Elf32_Shdr	*heads = NULL;
-	char		*sh_table = NULL;
-	off_t		sh_size = 0;
-	off_t		dynamic = 0, dsz = 0;
-	Elf32_Dyn	*dt = NULL;
-	off_t		verneed = 0, vernum = 0;
-	long		numsect = 0, t = 0;
-	off_t		rpath = 0, runpath = 0;
-	char		*st = NULL;
+	Elf		*elf = NULL;
+	Elf_Scn		*scn = NULL;
+	GElf_Ehdr	hdr;
+	GElf_Shdr	shdr;
+	Elf_Data	*data_dyn = NULL;
+	Elf_Data	*data_verneed = NULL, *data_verdef = NULL;
+	GElf_Dyn	gd;
 
+	char		*name = NULL;
+	size_t		sh_str = 0;
+	size_t		vernum = 0, verdefnum = 0;
+	int		t = 0, dynstr = -1;
+	
 	SHA1_CTX	shc;
-	
+	dyninfo_t	*dyn = NULL;
+
 	liblist_t	*deps = NULL;
-	liblist_t	*vers = NULL;
+	off_t		rpath = 0, runpath = 0;
 	
-	Elf32_Verneed	ev;
-	Elf32_Vernaux	ea;
-	off_t		n, a, p;
+	if (elf_version(EV_CURRENT) == EV_NONE)
+		return (NULL);
+
+	if (!(elf = elf_begin(fd, ELF_C_READ, NULL))) {
+		return (NULL);
+	}
 	
-	/*
-	 * Load section headers.  On the off chance that 
-	 * there are more than 65,279 section entries to 
-	 * this file, perform indirection.
-	 */
-	if (hdr->e_shnum == 0) {
-		lseek(fd, hdr->e_shoff, SEEK_SET);
-		if (!(shdr = malloc(sizeof(Elf32_Shdr))))
-			return (NULL);
-		read(fd, shdr, sizeof(Elf32_Shdr));
-		numsect = shdr->sh_size;
-		free(shdr);
-	}
-	else {
-		numsect = hdr->e_shnum;
-	}
-	if (!(heads = malloc(numsect * sizeof(Elf32_Shdr))))
-		return (NULL);
-	lseek(fd, hdr->e_shoff, SEEK_SET);
-	read(fd, heads, numsect * sizeof(Elf32_Shdr));
+	if (!elf_getshstrndx(elf, &sh_str))
+                return (NULL);
 
-	/*
-	 * Section header string table 
-	 */
-	if (hdr->e_shstrndx != SHN_XINDEX)
-		shdr = &heads[hdr->e_shstrndx];
-	else
-		shdr = &heads[heads[0].sh_link];
-
-	sh_size = shdr->sh_size;
-	if (!(sh_table = malloc(sh_size)))
-		return (NULL);
-	lseek(fd, shdr->sh_offset, SEEK_SET);
-	read(fd, sh_table, shdr->sh_size);
-
-
-	/*
-	 * Get useful sections
-	 */
+	/* get useful sections */
 	SHA1Init(&shc);
-	for (t=0; t < numsect; t++) {
-		shdr = &heads[t];
-		switch (shdr->sh_type) {
+	while ((scn = elf_nextscn(elf, scn))) {
+                if (gelf_getshdr(scn, &shdr) != &shdr)
+			return (NULL);
+
+                if (!(name = elf_strptr(elf, sh_str, shdr.sh_name)))
+			return (NULL);
+		
+		switch (shdr.sh_type) {
 		case SHT_DYNAMIC:
-			dynamic = shdr->sh_offset;
-			dsz	= shdr->sh_size;
+			if (!(data_dyn = elf_getdata(scn, NULL))) {
+				elf_end(elf);
+				return (NULL);
+			}
 			break;
 		case SHT_STRTAB:
-			if (!strcmp((char*)(shdr->sh_name + sh_table), 
-				            ".dynstr")) {
-
-				if (!(st = malloc(shdr->sh_size))) {
-					free(heads);
-					return (NULL);
-				}
-				lseek(fd, shdr->sh_offset, SEEK_SET);
-				read(fd, st, shdr->sh_size);
-			}
+			if (!strcmp(name, ".dynstr"))
+				dynstr = elf_ndxscn(scn);
 			break;
 		case SHT_PROGBITS:
-			if (hashsection(shdr->sh_name, sh_table)) {
+			if (hashsection(name)) {
 				readhash(fd, &shc, 
-				    shdr->sh_offset, shdr->sh_size);
+				    shdr.sh_offset, shdr.sh_size);
 			}
 			break;
+		case SHT_SUNW_verdef:
+			if (!(data_verdef = elf_getdata(scn, NULL))) {
+				elf_end(elf);
+				return (NULL);
+			}
+			verdefnum = shdr.sh_info;
+			break;
 		case SHT_SUNW_verneed:
-			verneed = shdr->sh_offset;
-			vernum = shdr->sh_link;
+			if (!(data_verneed = elf_getdata(scn, NULL))) {
+				elf_end(elf);
+				return (NULL);
+			}
+			vernum = shdr.sh_info;
 			break;
 		}
-	}
-	free(heads);
 
-	/* Didn't find some part? */
-	if (!st || !dynamic || !verneed) {
-		printf("elf: didn't find the triumvirate\n");
-		free(st);
+        }
+
+	/* Dynamic but no string table? */
+	if (data_dyn && (dynstr < 0)) {
+		printf("bad elf: didn't find the dynamic duo\n");
+		elf_end(elf);
 		return (NULL);
 	}
 
 	/* Parse dynamic section */
 	if (!(deps = liblist_alloc())) {
-		free(st);
+		elf_end(elf);
 		return (NULL);
 	}
-	if (!(dt = malloc(dsz))) {
-		liblist_free(deps);
-		free(st);
-		return (NULL);
-	}
-	lseek(fd, dynamic, SEEK_SET);
-	read(fd, dt, dsz);
-	for (t=0; t < (dsz / sizeof(Elf32_Dyn)); t++) {
-		switch (dt[t].d_tag) {
-			case DT_NEEDED:
-				liblist_add(deps, (off_t)dt[t].d_un.d_val);
-				break;
-			case DT_RPATH:
-				rpath = dt[t].d_un.d_val;
-				break;
-			case DT_RUNPATH:
-				runpath = dt[t].d_un.d_val;
-				break;
+	t = 0;
+	while ((gelf_getdyn(data_dyn, t, &gd))) {
+		switch (gd.d_tag) {
+		case DT_NEEDED:
+			liblist_add(deps, gd.d_un.d_val);
+			break;
+		case DT_RPATH:
+			rpath = gd.d_un.d_val;
+			break;
+		case DT_RUNPATH:
+			runpath = gd.d_un.d_val;
+			break;
 		}
+		t++;
 	}
-	free(dt);
 
 	/* Runpath supercedes rpath, but use rpath if no runpath */
 	if (!runpath)
 		runpath = rpath;
 
+	/* Verneed */
+	int a = 0;
+	char *buf = NULL, *cp = NULL;
+	GElf_Verneed *ev = NULL;
+	GElf_Vernaux *ea = NULL;
+	liblist_t *vers = NULL;
+
 	/*
 	 * Finally, get version information for each item in 
 	 * our dependency list.  This part is a little messier,
-	 * as it seems that this is of unspecified length and 
-	 * ordering, so we have to do a lot of seeking and reading.
+	 * as it seems that libelf / gelf do not implement this.
 	 */
 	if (!(vers = liblist_alloc())) {
 		liblist_free(deps);
-		free(st);
+		elf_end(elf);
 		return (NULL);
 	}
 
-	ev.vn_next = 0;
+	if (vernum > 0 && data_verneed) {
+		buf = data_verneed->d_buf;
+		cp = buf;
+	}
 	
-	lseek(fd, verneed, SEEK_SET);
 	for (t=0; t < vernum; t++) {
-		n = lseek(fd, ev.vn_next, SEEK_CUR);
-		read(fd, &ev, sizeof(Elf32_Verneed));
-		lseek(fd, n, SEEK_SET);
+		if (ev)
+			cp += ev->vn_next;
+		ev = (GElf_Verneed*)cp;
 
 		liblist_t *veraux = NULL;
 		if (!(veraux = liblist_alloc())) {
 			liblist_free(deps);
 			liblist_free(vers);
-			free(st);
+			elf_end(elf);
 			return (NULL);
 		}
 		
-		lseek(fd, ev.vn_aux, SEEK_CUR);
-		ea.vna_next = 0;
-		for (a = 0; a < ev.vn_cnt; a++) {
-			p = lseek(fd, ea.vna_next, SEEK_CUR);
-			read(fd, &ea, sizeof(Elf32_Vernaux));
-			liblist_add(veraux, ea.vna_name);
-			lseek(fd, p, SEEK_SET);
+		buf = cp;
+
+		cp += ev->vn_aux;
+		
+		ea = NULL;
+		for (a = 0; a < ev->vn_cnt; a++) {
+			if (ea)
+				cp += ea->vna_next;
+			ea = (GElf_Vernaux*)cp;
+			liblist_add(veraux, ea->vna_name);
 		}
-		liblist_add(vers, ev.vn_file);
+
+		liblist_add(vers, ev->vn_file);
 		vers->tail->verlist = veraux;
 
-		lseek(fd, n, SEEK_SET);
+		cp = buf;
 	}
 
 	/* Consolidate version and dependency information */
 	liblist_foreach(deps, setver_liblist_cb, vers, NULL);
 	liblist_free(vers);
 
-
-	/*liblist_foreach(deps, print_liblist_cb, st, NULL);*/
-
-	dyninfo_t *ret = NULL;
-	if (!(ret = malloc(sizeof(dyninfo_t)))) {
+	/*
+	 * Now, figure out what versions we provide.
+	 */
+	GElf_Verdef *vd = NULL;
+	GElf_Verdaux *va = NULL;
+	liblist_t *verdef = NULL;
+	
+	if (!(verdef = liblist_alloc())) {
 		liblist_free(deps);
-		free(st);
+		liblist_free(vers);
+		elf_end(elf);
 		return (NULL);
 	}
 
-	ret->runpath = runpath;
-	ret->st = st;
-	ret->deps = deps;
-	SHA1Final(ret->hash, &shc);
-
-	return (ret);
-}
-
-dyninfo_t *
-getdynamic64(int fd)
-{
-	Elf64_Ehdr 	*hdr = gethead64(fd);
-	Elf64_Shdr	*shdr = NULL;
-	Elf64_Shdr	*heads = NULL;
-	char		*sh_table = NULL;
-	off_t		sh_size = 0;
-	off_t		dynamic = 0, dsz = 0;
-	Elf64_Dyn	*dt = NULL;
-	off_t		verneed = 0, vernum = 0;
-	long		numsect = 0, t = 0;
-	off_t		rpath = 0, runpath = 0;
-	char		*st = NULL;
+	if (verdefnum > 0 && data_verdef) {
+		buf = data_verdef->d_buf;
+		cp = buf;
+	}
 	
-	SHA1_CTX	shc;
-	
-	liblist_t	*deps = NULL;
-	liblist_t	*vers = NULL;
-	
-	Elf64_Verneed	ev;
-	Elf64_Vernaux	ea;
-	off_t		n, a, p;
-	
-	/*
-	 * Load section headers.  On the off chance that 
-	 * there are more than 65,279 section entries to 
-	 * this file, perform indirection.
-	 */
-	if (hdr->e_shnum == 0) {
-		lseek(fd, hdr->e_shoff, SEEK_SET);
-		if (!(shdr = malloc(sizeof(Elf64_Shdr))))
-			return (NULL);
-		read(fd, shdr, sizeof(Elf64_Shdr));
-		numsect = shdr->sh_size;
-		free(shdr);
-	}
-	else {
-		numsect = hdr->e_shnum;
-	}
-	if (!(heads = malloc(numsect * sizeof(Elf64_Shdr))))
-		return (NULL);
-	lseek(fd, hdr->e_shoff, SEEK_SET);
-	read(fd, heads, numsect * sizeof(Elf64_Shdr));
+	for (t=0; t < verdefnum; t++) {
+		if (vd)
+			cp += vd->vd_next;
+		vd = (GElf_Verdef*)cp;
 
-	/*
-	 * Section header string table 
-	 */
-	if (hdr->e_shstrndx != SHN_XINDEX)
-		shdr = &heads[hdr->e_shstrndx];
-	else
-		shdr = &heads[heads[0].sh_link];
-
-	sh_size = shdr->sh_size;
-	if (!(sh_table = malloc(sh_size)))
-		return (NULL);
-	lseek(fd, shdr->sh_offset, SEEK_SET);
-	read(fd, sh_table, shdr->sh_size);
-
-
-	/*
-	 * Get useful sections
-	 */
-	SHA1Init(&shc);
-	for (t=0; t < numsect; t++) {
-		shdr = &heads[t];
-		switch (shdr->sh_type) {
-		case SHT_DYNAMIC:
-			dynamic = shdr->sh_offset;
-			dsz	= shdr->sh_size;
-			break;
-		case SHT_STRTAB:
-			if (!strcmp((char*)(shdr->sh_name + sh_table), 
-				            ".dynstr")) {
-
-				if (!(st = malloc(shdr->sh_size))) {
-					free(heads);
-					return (NULL);
-				}
-				lseek(fd, shdr->sh_offset, SEEK_SET);
-				read(fd, st, shdr->sh_size);
-			}
-			break;
-		case SHT_PROGBITS:
-			if (hashsection(shdr->sh_name, sh_table)) {
-				readhash(fd, &shc, 
-				    shdr->sh_offset, shdr->sh_size);
-			}
-			break;
-		case SHT_SUNW_verneed:
-			verneed = shdr->sh_offset;
-			vernum = shdr->sh_link;
-			break;
-		}
-	}
-	free(heads);
-
-	/* Didn't find some part? */
-	if (!st || !dynamic || !verneed) {
-		printf("elf: didn't find the triumvirate\n");
-		free(st);
-		return (NULL);
-	}
-
-	/* Parse dynamic section */
-	if (!(deps = liblist_alloc())) {
-		free(st);
-		return (NULL);
-	}
-	if (!(dt = malloc(dsz))) {
-		liblist_free(deps);
-		free(st);
-		return (NULL);
-	}
-	lseek(fd, dynamic, SEEK_SET);
-	read(fd, dt, dsz);
-	for (t=0; t < (dsz / sizeof(Elf64_Dyn)); t++) {
-		switch (dt[t].d_tag) {
-			case DT_NEEDED:
-				liblist_add(deps, (off_t)dt[t].d_un.d_val);
-				break;
-			case DT_RPATH:
-				rpath = dt[t].d_un.d_val;
-				break;
-			case DT_RUNPATH:
-				runpath = dt[t].d_un.d_val;
-				break;
-		}
-	}
-	free(dt);
-
-	/* Runpath supercedes rpath, but use rpath if no runpath */
-	if (!runpath)
-		runpath = rpath;
-
-	/*
-	 * Finally, get version information for each item in 
-	 * our dependency list.  This part is a little messier,
-	 * as it seems that this is of unspecified length and 
-	 * ordering, so we have to do a lot of seeking and reading.
-	 */
-	if (!(vers = liblist_alloc())) {
-		liblist_free(deps);
-		free(st);
-		return (NULL);
-	}
-
-	ev.vn_next = 0;
-	
-	lseek(fd, verneed, SEEK_SET);
-	for (t=0; t < vernum; t++) {
-		n = lseek(fd, ev.vn_next, SEEK_CUR);
-		read(fd, &ev, sizeof(Elf64_Verneed));
-		lseek(fd, n, SEEK_SET);
-
-		liblist_t *veraux = NULL;
-		if (!(veraux = liblist_alloc())) {
-			liblist_free(deps);
-			liblist_free(vers);
-			free(st);
-			return (NULL);
-		}
+		buf = cp;
+		cp += vd->vd_aux;
 		
-		lseek(fd, ev.vn_aux, SEEK_CUR);
-		ea.vna_next = 0;
-		for (a = 0; a < ev.vn_cnt; a++) {
-			p = lseek(fd, ea.vna_next, SEEK_CUR);
-			read(fd, &ea, sizeof(Elf64_Vernaux));
-			liblist_add(veraux, ea.vna_name);
-			lseek(fd, p, SEEK_SET);
+		va = NULL;
+		for (a = 0; a < vd->vd_cnt; a++) {
+			if (va)
+				cp += va->vda_next;
+			va = (GElf_Verdaux*)cp;
+			liblist_add(verdef, va->vda_name);
 		}
-		liblist_add(vers, ev.vn_file);
-		vers->tail->verlist = veraux;
 
-		lseek(fd, n, SEEK_SET);
+		cp = buf;
 	}
-
-	/* Consolidate version and dependency information */
-	liblist_foreach(deps, setver_liblist_cb, vers, NULL);
-	liblist_free(vers);
-
-
-	/*liblist_foreach(deps, print_liblist_cb, st, NULL);*/
-
-	dyninfo_t *ret = NULL;
-	if (!(ret = malloc(sizeof(dyninfo_t)))) {
-		liblist_free(deps);
-		free(st);
+	
+	if (!(dyn = malloc(sizeof(dyninfo_t)))) {
+		elf_end(elf);
 		return (NULL);
 	}
 
-	ret->runpath = runpath;
-	ret->st = st;
-	ret->deps = deps;
-	SHA1Final(ret->hash, &shc);
+	dyn->runpath = runpath;
+	dyn->dynstr = dynstr;
+	dyn->elf = elf;
+	dyn->deps = deps;
+	dyn->defs = verdef;
+	SHA1Final(dyn->hash, &shc);
 
-	return (ret);
+	return (dyn);
 }
 
+void
+dyninfo_free(dyninfo_t *dyn)
+{
+	if (dyn) {
+		liblist_free(dyn->deps);
+		elf_end(dyn->elf);
+		free(dyn);
+	}
+}

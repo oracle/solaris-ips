@@ -42,27 +42,36 @@ pythonify_ver_liblist_cb(libnode_t *n, void *info, void *info2)
 {
 	PyObject *pverlist = (PyObject*)info;
 	PyObject *ent;
-	char *st = (char*)info2;
+	dyninfo_t *dyn = (dyninfo_t*)info2;
 
-	ent = Py_BuildValue("s", (char*)(st + n->nameoff));
+	ent = Py_BuildValue("s", elf_strptr(dyn->elf, dyn->dynstr, n->nameoff));
 
 	PyList_Append(pverlist, ent);
 }
 
 static void
-pythonify_liblist_cb(libnode_t *n, void *info, void *info2)
+pythonify_2dliblist_cb(libnode_t *n, void *info, void *info2)
 {
 	PyObject *pdep = (PyObject*)info;
-	char *st = (char*)info2;
+	dyninfo_t *dyn = (dyninfo_t*)info2;
 	
 	PyObject *pverlist;
 
 	pverlist = PyList_New(0);
-	liblist_foreach(n->verlist, pythonify_ver_liblist_cb, pverlist, st);
-	PyList_Append(pdep,
-	    Py_BuildValue("[s,O]", (char*)(st + n->nameoff), pverlist));
+	liblist_foreach(n->verlist, pythonify_ver_liblist_cb, pverlist, dyn);
+	PyList_Append(pdep, Py_BuildValue("[s,O]",
+		elf_strptr(dyn->elf, dyn->dynstr, n->nameoff), pverlist));
 }
 
+static void
+pythonify_1dliblist_cb(libnode_t *n, void *info, void *info2)
+{
+	PyObject *pdef = (PyObject*)info;
+	dyninfo_t *dyn = (dyninfo_t*)info2;
+	
+	PyList_Append(pdef, Py_BuildValue("s", 
+		elf_strptr(dyn->elf, dyn->dynstr, n->nameoff)));
+}
 /*
  * Open a file named by python, setting an appropriate error on failure.
  */
@@ -107,62 +116,46 @@ elf_is_elf_object(PyObject *self, PyObject *args)
  * Returns information about the ELF file in a dictionary
  * of the following format:
  *
- *  { type: exe|so, bits: 32|64, arch: sparc|intel, end: lsb|msb }
+ *  { 	
+ *  	type: exe|so|core|rel, 
+ *  	bits: 32|64, 
+ *  	arch: sparc|x86|ppc|other|none,
+ *  	end: lsb|msb,
+ *  	osabi: none|linux|solaris|other
+ *  }
  *
- * XXX Currently assumes only input types are exe or so,
- * 	and only architectures are "sparc" or "intel." 
- * 	There is room for improved granularity in both
- * 	fields.
- * 	
+ *  XXX: I have yet to find a binary with osabi set to something
+ *  aside from "none."
  */
 PyObject *
 get_info(PyObject *self, PyObject *args)
 {
 	int fd;
 	int type = 0, bits = 0, arch = 0, data = 0;
+	hdrinfo_t *hi = NULL;
 	PyObject *pdict = NULL;
 	
 	if ((fd = py_get_fd(args)) < 0)
 		return (NULL);
 
-	if (iself32(fd)) {
-		Elf32_Ehdr *hdr;
-		if (!(hdr = gethead32(fd))) {
-			PyErr_SetString(PyExc_RuntimeError, 
-			    "failed to get ELF32 header");
-		}
-		else {
-			type = hdr->e_type;
-			bits = 32;
-			arch = hdr->e_machine;
-			data = hdr->e_ident[EI_DATA];
-			free(hdr);
-		}
-	}
-	else {
-		Elf64_Ehdr *hdr;
-		if (!(hdr = gethead64(fd))) {
-			PyErr_SetString(PyExc_RuntimeError, 
-			    "failed to get ELF64 header");
-		}
-		else {
-			type = hdr->e_type;
-			bits = 64;
-			arch = hdr->e_machine;
-			data = hdr->e_ident[EI_DATA];
-			free(hdr);
-		}
+	if (!(hi = getheaderinfo(fd))) {
+		PyErr_SetString(PyExc_RuntimeError, "could not get elf header");
+		close(fd);
+		return (NULL);
 	}
 
 	pdict = PyDict_New();
 	PyDict_SetItemString(pdict, "type", 
-	    Py_BuildValue("s", type == ET_EXEC ? "exe" : "so"));
-	PyDict_SetItemString(pdict, "bits", Py_BuildValue("i", bits));
+	    Py_BuildValue("s", pkg_string_from_type(hi->type)));
+	PyDict_SetItemString(pdict, "bits", Py_BuildValue("i", hi->bits));
 	PyDict_SetItemString(pdict, "arch",
-	    Py_BuildValue("s", arch == EM_SPARC ? "sparc" : "intel"));
+	    Py_BuildValue("s", pkg_string_from_arch(hi->arch)));
 	PyDict_SetItemString(pdict, "end",
-	    Py_BuildValue("s", data == ELFDATA2LSB ? "lsb" : "msb"));
+	    Py_BuildValue("s", pkg_string_from_data(hi->data)));
+	PyDict_SetItemString(pdict, "osabi",
+	    Py_BuildValue("s", pkg_string_from_osabi(hi->osabi)));
 
+	free(hi);
 	close(fd);
 	return (pdict);
 }
@@ -175,9 +168,18 @@ get_info(PyObject *self, PyObject *args)
  * 		.text .data .data1 .rodata .rodata1
  *
  * Dictionary format:
- * { runpath: "/path:/entries", deps: ["file", ["versionlist"]],
- * 	hash: "sha1hash" }
+ * 
+ * {
+ *	runpath: "/path:/entries",
+ *	defs: ["version", ... ],
+ *	deps: [["file", ["versionlist"]], ...],
+ * 	hash: "sha1hash"
+ * }
  *
+ * XXX: Currently, defs contains some duplicate entries.  There 
+ * may be meaning attached to this, or it may just be something 
+ * worth trimming out at this stage or above.
+ * 
  */
 PyObject *
 get_dynamic(PyObject *self, PyObject *args)
@@ -185,15 +187,13 @@ get_dynamic(PyObject *self, PyObject *args)
 	int 	fd;
 	dyninfo_t 	*dyn = NULL;
 	PyObject	*pdep = NULL;
+	PyObject	*pdef = NULL;
 	PyObject	*pdict = NULL;
 
 	if ((fd = py_get_fd(args)) < 0)
 		return (NULL);
 
-	if (iself32(fd))
-		dyn = getdynamic32(fd);
-	else
-		dyn = getdynamic64(fd);
+	dyn = getdynamic(fd);
 
 	if (!dyn) {
 		PyErr_SetString(PyExc_RuntimeError,
@@ -202,26 +202,26 @@ get_dynamic(PyObject *self, PyObject *args)
 	}
 	
 	pdep = PyList_New(0);
-	liblist_foreach(dyn->deps, pythonify_liblist_cb, pdep, dyn->st);
+	liblist_foreach(dyn->deps, pythonify_2dliblist_cb, pdep, dyn);
+	pdef = PyList_New(0);
+	liblist_foreach(dyn->defs, pythonify_1dliblist_cb, pdef, dyn);
 
 	pdict = PyDict_New();
 	PyDict_SetItemString(pdict, "runpath",
-	    Py_BuildValue("s",(char*)(dyn->st + dyn->runpath)));
+	    Py_BuildValue("s",elf_strptr(dyn->elf, dyn->dynstr, dyn->runpath)));
 	PyDict_SetItemString(pdict, "deps", pdep);
+	PyDict_SetItemString(pdict, "defs", pdef);
 	PyDict_SetItemString(pdict, "hash", Py_BuildValue("s", dyn->hash));
 	
-	liblist_free(dyn->deps);
-	free(dyn->st);
-	free(dyn);
+	dyninfo_free(dyn);
 	close(fd);
 
 	return (pdict);
 }
 
-/* XXX below implemented in get_dynamic now? */
-
-
 /*
+ * XXX: Implemented as part of get_dynamic above.
+ * 
  * For ELF nontriviality: Need to turn an ELF object into a unique hash.
  *
  * From Eric Saxe's investigations, we see that the following sections can
@@ -236,21 +236,8 @@ get_dynamic(PyObject *self, PyObject *args)
  *
  * Accordingly, we will hash on the latter group of sections to determine our
  * ELF hash.
- *
- * XXX Should we hash in C, or defer to a higher level function?
  */
-PyObject *
-get_significant_sections(PyObject *self, PyObject *args)
-{
-	char *f;
 
-	if (PyArg_ParseTuple(args, "s", &f) == 0) {
-		PyErr_SetString(PyExc_ValueError, "could not parse argument");
-		return (NULL);
-	}
-
-	return (NULL);
-}
 
 static PyMethodDef methods[] = {
 	{ "is_elf_object", elf_is_elf_object, METH_VARARGS },
