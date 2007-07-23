@@ -45,6 +45,9 @@ class PkgPlan(object):
 
                 self.actions = []
 
+        def __str__(self):
+                return "%s -> %s" % (self.origin_fmri, self.destination_fmri)
+
         def set_origin(self, fmri):
                 self.origin_fmri = fmri
                 self.origin_mfst = manifest.retrieve(fmri)

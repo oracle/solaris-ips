@@ -73,8 +73,8 @@ Install subcommands:
         pkg refresh
         pkg catalog [--verbose] pkg_fmri_pattern
         pkg status [-uv] [pkg_fmri_pattern ...]
-        pkg install pkg_fmri
-        pkg uninstall pkg_fmri
+        pkg install [-nv] pkg_fmri
+        pkg uninstall [-nv] pkg_fmri
         pkg freeze [--version version_spec] [--release] [--branch] pkg_fmri
         pkg unfreeze pkg_fmri
         pkg search token
@@ -145,11 +145,16 @@ def install(config, image, args):
         error = 0
 
         if len(args) > 0:
-                opts, pargs = getopt.getopt(args, "S")
+                opts, pargs = getopt.getopt(args, "Snv")
 
+        strict = noexecute = verbose = False
         for opt, arg in opts:
                 if opt == "-S":
                         strict = True
+                elif opt == "-n":
+                        noexecute = True
+                elif opt == "-v":
+                        verbose = True
 
         image.reload_catalogs()
 
@@ -183,10 +188,18 @@ pkg: no package matching '%s' could be found in current catalog
         if error != 0:
                 sys.exit(error)
 
-        ip.evaluate()
-        ip.execute()
+        if verbose:
+                print "Before evaluation:"
+                print ip
 
-        return
+        ip.evaluate()
+
+        if verbose:
+                print "After evaluation:"
+                print ip
+
+        if not noexecute:
+                ip.execute()
 
 def uninstall(config, args):
         """Attempt to take package specified to DELETED state."""
@@ -270,13 +283,27 @@ if __name__ == "__main__":
         subcommand = pargs[0]
         del pargs[0]
 
-        # Handle PKG_IMAGE and PKG_SERVER environment variables.
+        # XXX Handle PKG_SERVER environment variable.
 
         if subcommand == "image":
                 create_image(pcfg, pargs)
                 sys.exit(0)
 
-        icfg.find_parent()
+        for opt, arg in opts:
+                if opt == "-R":
+                        dir = arg
+
+        if "dir" not in locals():
+                try:
+                        dir = os.environ["PKG_IMAGE"]
+                except KeyError:
+                        dir = os.getcwd()
+
+        try:
+                icfg.find_parent(dir)
+        except AssertionError:
+                print "'%s' is not an install image" % dir
+                sys.exit(1)
 
         if subcommand == "refresh":
                 catalog_refresh(pcfg, icfg, pargs)

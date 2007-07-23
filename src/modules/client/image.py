@@ -97,12 +97,10 @@ class Image(object):
                 self.attrs["Policy-Require-Optional"] = False
                 self.attrs["Policy-Pursue-Latest"] = True
 
-        def find_parent(self):
+        def find_parent(self, d):
                 # Ascend from current working directory to find first
                 # encountered image.
                 while True:
-                        d = os.getcwd()
-
                         if os.path.isdir("%s/%s" % (d, img_user_prefix)):
                                 # XXX Look at image file to determine filter
                                 # tags and repo URIs.
@@ -124,7 +122,8 @@ class Image(object):
 
                         assert d != "/"
 
-                        os.chdir("..")
+                        # XXX follow symlinks or not?
+                        d = os.path.normpath(os.path.join(d, os.path.pardir))
 
         def mkdirs(self):
                 if not os.path.isdir(self.imgdir + "/catalog"):

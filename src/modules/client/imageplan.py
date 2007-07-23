@@ -70,11 +70,12 @@ class ImagePlan(object):
 
         def __str__(self):
                 if self.state == UNEVALUATED:
-                        s = "UNEVALUATED: "
+                        s = "UNEVALUATED:\n"
                         for t in self.target_fmris:
-                                s = s + "%s\n" % t
+                                s = s + "+%s\n" % t
                         return s
 
+                s = ""
                 for pp in self.pkg_plans:
                         s = s + "%s\n" % pp
                 return s
