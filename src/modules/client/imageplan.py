@@ -101,18 +101,15 @@ class ImagePlan(object):
                 #   do any of them eliminate this fmri version?
                 #     discard
 
-                # is a version of fmri in our target_fmris?
-                n = range(len(self.target_fmris))
-                if n == []:
-                        self.target_fmris.append(fmri)
-                        return
-
-                for i in n:
-                        p = self.target_fmris[i]
+                # Add fmri to target list only if it (or a successor) isn't
+                # there already.
+                for i, p in enumerate(self.target_fmris):
                         if fmri.is_same_pkg(p):
                                 if fmri.is_successor(p):
                                         self.target_fmris[i] = fmri
                                         break
+                else:
+                        self.target_fmris.append(fmri)
 
                 return
 
