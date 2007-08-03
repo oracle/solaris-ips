@@ -62,7 +62,6 @@ class ImagePlan(object):
 
         def __init__(self, image):
                 self.image = image
-                self.goal_fmris = []
                 self.state = UNEVALUATED
 
                 self.target_fmris = []
@@ -79,9 +78,6 @@ class ImagePlan(object):
                 for pp in self.pkg_plans:
                         s = s + "%s\n" % pp
                 return s
-
-        def set_goal_pkg_fmris(self, pflist):
-                self.goal_pkg_fmris = pflist
 
         def is_proposed_fmri(self, fmri):
                 for pf in self.target_fmris:
@@ -132,6 +128,13 @@ class ImagePlan(object):
                         if self.image.is_installed(f):
                                 continue
 
+                        # XXX This alone only prevents infinite recursion when a
+                        # cycle member is on the commandline, as we never update
+                        # target_fmris.  Is target_fmris supposed to be just
+                        # what was specified on the commandline, or include what
+                        # we've found while processing dependencies?
+                        # XXX probably should just use propose_fmri() here
+                        # instead of this and the is_installed() call above.
                         if self.is_proposed_fmri(f):
                                 continue
 
@@ -170,6 +173,7 @@ class ImagePlan(object):
                                          cf = i[1]
 
                         # XXX LOG "adding dependency %s" % pfmri
+                        self.target_fmris.append(cf)
                         self.evaluate_fmri(cf)
 
                 pp = pkgplan.PkgPlan(self.image)
@@ -187,7 +191,8 @@ class ImagePlan(object):
         def evaluate(self):
                 assert self.state == UNEVALUATED
 
-                for f in self.target_fmris:
+                # Operate on a copy, as it will be modified in flight.
+                for f in self.target_fmris[:]:
                         self.evaluate_fmri(f)
 
                 self.state = EVALUATED_OK
