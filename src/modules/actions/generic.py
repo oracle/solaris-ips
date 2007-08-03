@@ -237,3 +237,15 @@ class Action(object):
         def postinstall(self):
                 """Client-side method that performs post-install actions."""
                 pass
+
+        def preremove(self, image):
+                """Client-side method that performs pre-remove actions."""
+                pass
+
+        def remove(self, image):
+                """Client-side method that removes the object."""
+                pass
+
+        def postremove(self):
+                """Client-side method that performs post-remove actions."""
+                pass

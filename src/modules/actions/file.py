@@ -85,6 +85,13 @@ class FileAction(generic.Action):
                 """Client-side method that performs post-install actions."""
                 pass
 
+        def remove(self, image):
+                path = os.path.normpath(os.path.sep.join(
+                    (image.get_root(), self.attrs["path"])))
+
+                print "removing file:", path
+                os.unlink(path)
+
         def generate_indices(self):
                 return {
                     "content": self.hash,

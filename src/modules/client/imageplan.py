@@ -65,6 +65,7 @@ class ImagePlan(object):
                 self.state = UNEVALUATED
 
                 self.target_fmris = []
+                self.target_rem_fmris = []
                 self.pkg_plans = []
 
         def __str__(self):
@@ -72,6 +73,8 @@ class ImagePlan(object):
                         s = "UNEVALUATED:\n"
                         for t in self.target_fmris:
                                 s = s + "+%s\n" % t
+                        for t in self.target_rem_fmris:
+                                s = s + "-%s\n" % t
                         return s
 
                 s = ""
@@ -108,6 +111,21 @@ class ImagePlan(object):
                         self.target_fmris.append(fmri)
 
                 return
+
+        # XXX Need to make sure that the same package isn't being added and
+        # removed in the same imageplan.
+        def propose_fmri_removal(self, fmri):
+                if not self.image.is_installed(fmri):
+                        return
+
+                for i, p in enumerate(self.target_rem_fmris):
+                        if fmri.is_same_pkg(p):
+                                if fmri.is_successor(p):
+                                        self.target_rem_fmris[i] = fmri
+                                        break
+                else:
+                        if "i" not in locals():
+                                self.target_rem_fmris.append(fmri)
 
         def evaluate_fmri(self, pfmri):
 
@@ -188,12 +206,34 @@ class ImagePlan(object):
 
                 self.pkg_plans.append(pp)
 
+        def evaluate_fmri_removal(self, pfmri):
+                assert self.image.has_manifest(pfmri)
+
+                m = self.image.get_manifest(pfmri)
+
+                # XXX What to do with dependencies?
+
+                pp = pkgplan.PkgPlan(self.image)
+
+                try:
+                        pp.propose_removal(pfmri, m)
+                except RuntimeError:
+                        print "pkg %s not installed" % pfmri
+                        return
+
+                pp.evaluate()
+
+                self.pkg_plans.append(pp)
+
         def evaluate(self):
                 assert self.state == UNEVALUATED
 
                 # Operate on a copy, as it will be modified in flight.
                 for f in self.target_fmris[:]:
                         self.evaluate_fmri(f)
+
+                for f in self.target_rem_fmris:
+                        self.evaluate_fmri_removal(f)
 
                 self.state = EVALUATED_OK
 

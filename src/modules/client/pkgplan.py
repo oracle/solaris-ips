@@ -33,7 +33,10 @@ import pkg.catalog as catalog
 class PkgPlan(object):
         """A package plan takes two package FMRIs and an Image, and produces the
         set of actions required to take the Image from the origin FMRI to the
-        destination FMRI."""
+        destination FMRI.
+        
+        If the destination FMRI is None, the package is removed.
+        """
 
         def __init__(self, image):
                 self.origin_fmri = None
@@ -60,6 +63,14 @@ class PkgPlan(object):
                     fmri.get_dir_path())):
                         raise RuntimeError, "already installed"
 
+        def propose_removal(self, fmri, manifest):
+                self.origin_fmri = fmri
+                self.origin_mfst = manifest
+
+                if not os.path.exists("%s/pkg/%s/installed" % \
+                    (self.image.imgdir, fmri.get_dir_path())):
+                        raise RuntimeError, "not installed"
+
         def is_valid(self):
                 if self.origin_fmri == None:
                         return True
@@ -76,8 +87,12 @@ class PkgPlan(object):
                 return []
 
         def evaluate(self):
+                """Determine the actions required to transition the package."""
                 # if origin unset, determine if we're dealing with an previously
                 # installed version or if we're dealing with the null package
+                #
+                # XXX Perhaps make the pkgplan creator make this explicit, so we
+                # don't have to check?
                 f = None
                 if self.origin_fmri == None:
                         try:
@@ -91,6 +106,10 @@ class PkgPlan(object):
                 # destination version
                 if self.origin_fmri == None:
                         self.actions = self.destination_mfst.actions
+                elif self.destination_fmri == None:
+                        # XXX
+                        self.actions = sorted(self.origin_mfst.actions,
+                            reverse = True)
                 else:
                         # if a previous package, then our plan is derived from
                         # the set differences between the previous manifest's
@@ -107,33 +126,60 @@ class PkgPlan(object):
 
                         self.actions = self.destination_mfst.difference(
                             self.origin_mfst)
-                return
 
         def preexecute(self):
+                """Perform actions required prior to installation or removal of a package.
+                
+                This method executes each action's preremove() or preinstall()
+                methods, as well as any package-wide steps that need to be taken
+                at such a time.
+                """
                 # retrieval step
-                for a in self.actions:
-                        a.preinstall(self.image)
-                return
-
-        def execute(self):
-                # record that we are in an intermediate state
-                for a in self.actions:
-                        a.install(self.image)
-                return
-
-        def postexecute(self):
-                # record that package states are consistent
-                for a in self.actions:
-                        a.postinstall()
-
-                if self.origin_fmri != None:
+                if self.destination_fmri == None:
                         os.unlink("%s/pkg/%s/installed" % (self.image.imgdir,
                             self.origin_fmri.get_dir_path()))
 
-                file("%s/pkg/%s/installed" % (self.image.imgdir,
-                    self.destination_fmri.get_dir_path()), "w")
+                for a in self.actions:
+                        if self.destination_fmri == None:
+                                a.preremove(self.image)
+                        else:
+                                a.preinstall(self.image)
 
-                return
+        def execute(self):
+                """Perform actions for installation or removal of a package.
+                
+                This method executes each action's remove() or install()
+                methods.
+                """
+                # record that we are in an intermediate state
+                for a in self.actions:
+                        if self.destination_fmri == None:
+                                a.remove(self.image)
+                        else:
+                                a.install(self.image)
+
+        def postexecute(self):
+                """Perform actions required after installation or removal of a package.
+                
+                This method executes each action's postremove() or postinstall()
+                methods, as well as any package-wide steps that need to be taken
+                at such a time.
+                """
+                # record that package states are consistent
+                for a in self.actions:
+                        if self.destination_fmri == None:
+                                a.postremove()
+                        else:
+                                a.postinstall()
+
+                # XXX should this just go in preexecute?
+                if self.origin_fmri != None and self.destination_fmri != None:
+                        os.unlink("%s/pkg/%s/installed" % (self.image.imgdir,
+                            self.origin_fmri.get_dir_path()))
+
+                if self.destination_fmri != None:
+                        file("%s/pkg/%s/installed" % (self.image.imgdir,
+                            self.destination_fmri.get_dir_path()), "w")
 
         def make_indices(self):
                 """Create the reverse index databases for a particular package.
@@ -145,6 +191,10 @@ class PkgPlan(object):
 
                 XXX Need a method to remove what we put down here.
                 """
+
+                # XXX bail out, for now.
+                if self.destination_fmri == None:
+                        return
 
                 target = os.path.join("..", "..", "..", "pkg",
                     self.destination_fmri.get_dir_path())

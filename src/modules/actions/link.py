@@ -43,10 +43,6 @@ class LinkAction(generic.Action):
         def __init__(self, data=None, **attrs):
                 generic.Action.__init__(self, data, **attrs)
 
-        def preinstall(self, link):
-                """Client-side method that performs pre-install actions."""
-                pass
-
         def install(self, image):
                 """Client-side method that installs a link."""
                 # XXX The exists-unlink-symlink path appears to be as safe as it
@@ -63,6 +59,9 @@ class LinkAction(generic.Action):
 
                 os.symlink(target, path)
 
-        def postinstall(self):
-                """Client-side method that performs post-install actions."""
-                pass
+        def remove(self, image):
+                path = os.path.normpath(os.path.sep.join(
+                    (image.get_root(), self.attrs["path"])))
+
+                print "removing link:", path
+                os.unlink(path)

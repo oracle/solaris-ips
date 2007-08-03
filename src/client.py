@@ -201,9 +201,64 @@ pkg: no package matching '%s' could be found in current catalog
         if not noexecute:
                 ip.execute()
 
-def uninstall(config, args):
+def uninstall(config, image, args):
         """Attempt to take package specified to DELETED state."""
-        return
+
+        if len(args) > 0:
+                opts, pargs = getopt.getopt(args, "nv")
+
+        noexecute = verbose = False
+        for opt, arg in opts:
+                if opt == "-n":
+                        noexecute = True
+                elif opt == "-v":
+                        verbose = True
+
+        image.reload_catalogs() # XXX ???
+
+        ip = imageplan.ImagePlan(image)
+
+        for ppat in pargs:
+                rpat = re.sub("\*", ".*", ppat)
+                rpat = re.sub("\?", ".", rpat)
+
+                try:
+                        matches = image.get_regex_matching_fmris(rpat)
+                except KeyError:
+                        print "'%s' not even in catalog!" % ppat
+                        error = 1
+                        continue
+
+                pnames = dict(
+                    (m[1], 1)
+                    for m in matches
+                    if image.is_installed(m[1])
+                )
+
+                if len(pnames) > 1:
+                        print "pkg: '%s' matches multiple packages" % ppat
+                        for k in pnames.keys():
+                                print "\t%s" % k
+                        continue
+
+                if len(pnames) < 1:
+                        print "pkg: '%s' matches no installed packages" % ppat
+                        continue
+
+                ip.propose_fmri_removal(pnames.keys()[0])
+
+        if verbose:
+                print "Before evaluation:"
+                print ip
+
+        ip.evaluate()
+
+        if verbose:
+                print "After evaluation:"
+                print ip
+
+        if not noexecute:
+                ip.execute()
 
 def freeze(config, args):
         """Attempt to take package specified to FROZEN state, with given
