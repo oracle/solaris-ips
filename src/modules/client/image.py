@@ -222,6 +222,26 @@ class Image(object):
 
                 return False
 
+        def get_dependents(self, pfmri):
+                """Return a list of the packages directly dependent on the given FMRI."""
+
+                thedir = os.path.join(self.imgdir, "index", "depend",
+                    urllib.quote(str(pfmri.get_pkg_stem())[5:], ""))
+
+                if not os.path.isdir(thedir):
+                        return []
+
+                for v in os.listdir(thedir):
+                        f = fmri.PkgFmri(pfmri.get_pkg_stem() + "@" + v,
+                            self.attrs["Build-Release"])
+                        if pfmri.is_successor(f):
+                                dependents = [
+                                    urllib.unquote(d)
+                                    for d in os.listdir(os.path.join(thedir, v))
+                                ]
+
+                return dependents
+
         def reload_catalogs(self):
                 cdir = "%s/%s" % (self.imgdir, "catalog")
                 for cf in os.listdir(cdir):

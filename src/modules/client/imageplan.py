@@ -60,9 +60,10 @@ class ImagePlan(object):
         "pkg delete fmri; pkg install fmri@v(n - 1)", then we'd better have a
         plan to identify when this operation is safe or unsafe."""
 
-        def __init__(self, image):
+        def __init__(self, image, recursive_removal = False):
                 self.image = image
                 self.state = UNEVALUATED
+                self.recursive_removal = recursive_removal
 
                 self.target_fmris = []
                 self.target_rem_fmris = []
@@ -85,6 +86,17 @@ class ImagePlan(object):
         def is_proposed_fmri(self, fmri):
                 for pf in self.target_fmris:
                         if fmri.is_same_pkg(pf):
+                                if not fmri.is_successor(pf):
+                                        return True
+                                else:
+                                        return False
+                return False
+
+        def is_proposed_rem_fmri(self, fmri):
+                for pf in self.target_rem_fmris:
+                        if fmri.is_same_pkg(pf):
+                                return True
+                                # XXX is this the right test?
                                 if not fmri.is_successor(pf):
                                         return True
                                 else:
@@ -209,9 +221,16 @@ class ImagePlan(object):
         def evaluate_fmri_removal(self, pfmri):
                 assert self.image.has_manifest(pfmri)
 
-                m = self.image.get_manifest(pfmri)
+                dependents = self.image.get_dependents(pfmri)
 
-                # XXX What to do with dependencies?
+                if dependents and not self.recursive_removal:
+                        print "Cannot remove '%s' due to" % pfmri
+                        print "the following packages that directly depend on it:"
+                        for d in dependents:
+                                print " ", fmri.PkgFmri(d, "")
+                        return
+
+                m = self.image.get_manifest(pfmri)
 
                 pp = pkgplan.PkgPlan(self.image)
 
@@ -223,6 +242,18 @@ class ImagePlan(object):
 
                 pp.evaluate()
 
+                for d in dependents:
+                        rf = fmri.PkgFmri(d, None)
+                        if self.is_proposed_rem_fmri(rf):
+                                continue
+                        if not self.image.is_installed(rf):
+                                continue
+                        self.target_rem_fmris.append(rf)
+                        self.evaluate_fmri_removal(rf)
+
+                # Post-order append will ensure topological sorting for acyclic
+                # dependency graphs.  Cycles need to be arbitrarily broken, and
+                # are done so in the loop above.
                 self.pkg_plans.append(pp)
 
         def evaluate(self):
@@ -232,7 +263,7 @@ class ImagePlan(object):
                 for f in self.target_fmris[:]:
                         self.evaluate_fmri(f)
 
-                for f in self.target_rem_fmris:
+                for f in self.target_rem_fmris[:]:
                         self.evaluate_fmri_removal(f)
 
                 self.state = EVALUATED_OK

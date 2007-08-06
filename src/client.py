@@ -74,7 +74,7 @@ Install subcommands:
         pkg catalog [--verbose] pkg_fmri_pattern
         pkg status [-uv] [pkg_fmri_pattern ...]
         pkg install [-nv] pkg_fmri
-        pkg uninstall [-nv] pkg_fmri
+        pkg uninstall [-nrv] pkg_fmri
         pkg freeze [--version version_spec] [--release] [--branch] pkg_fmri
         pkg unfreeze pkg_fmri
         pkg search token
@@ -205,18 +205,20 @@ def uninstall(config, image, args):
         """Attempt to take package specified to DELETED state."""
 
         if len(args) > 0:
-                opts, pargs = getopt.getopt(args, "nv")
+                opts, pargs = getopt.getopt(args, "nrv")
 
-        noexecute = verbose = False
+        noexecute = recursive_removal = verbose = False
         for opt, arg in opts:
                 if opt == "-n":
                         noexecute = True
+                elif opt == "-r":
+                        recursive_removal = True
                 elif opt == "-v":
                         verbose = True
 
         image.reload_catalogs() # XXX ???
 
-        ip = imageplan.ImagePlan(image)
+        ip = imageplan.ImagePlan(image, recursive_removal)
 
         for ppat in pargs:
                 rpat = re.sub("\*", ".*", ppat)
@@ -369,7 +371,10 @@ if __name__ == "__main__":
         elif subcommand == "install":
                 install(pcfg, icfg, pargs)
         elif subcommand == "uninstall":
-                uninstall(pcfg, icfg, pargs)
+                try:
+                        uninstall(pcfg, icfg, pargs)
+                except KeyboardInterrupt:
+                        pass
         elif subcommand == "freeze":
                 freeze(pcfg, icfg, pargs)
         elif subcommand == "unfreeze":

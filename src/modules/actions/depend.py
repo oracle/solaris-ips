@@ -31,6 +31,7 @@ This module contains the DependencyAction class, which represents a
 relationship between the package containing the action and another package.
 """
 
+import urllib
 import generic
 
 class DependencyAction(generic.Action):
@@ -49,3 +50,27 @@ class DependencyAction(generic.Action):
 
         def __init__(self, data=None, **attrs):
                 generic.Action.__init__(self, data, **attrs)
+
+        def generate_indices(self):
+                # XXX Probably need to do something for other types, too.
+                if self.attrs["type"] != "require":
+                        return {}
+
+                fmri = self.attrs["fmri"]
+
+                # XXX Ideally, we'd turn the string into a PkgFmri, and separate
+                # the stem from the version, or use get_dir_path, but we can't
+                # create a PkgFmri without supplying a build release and without
+                # it creating a dummy timestamp.  So we have to split it apart
+                # manually.
+                #
+                # XXX This code will need to change once we start using fmris
+                # with authorities.
+                if fmri.startswith("pkg:/"):
+                        fmri = fmri[5:]
+                # Note that this creates a directory hierarchy!
+                fmri = urllib.quote(fmri, "@").replace("@", "/")
+
+                return {
+                    "depend": fmri
+                }

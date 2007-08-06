@@ -229,5 +229,12 @@ class PkgPlan(object):
                                 link = os.path.join(dir,
                                     self.destination_fmri.get_url_path())
 
+                                # If the value has slashes in it, link will be
+                                # that many directories further down, so we need
+                                # to add suffcient parent dirs to get back up to
+                                # the right level.
+                                extra = os.path.sep.join(("..",) * v.count("/"))
+
                                 if not os.path.lexists(link):
-                                        os.symlink(target, link)
+                                        os.symlink(
+                                            os.path.join(extra, target), link)
