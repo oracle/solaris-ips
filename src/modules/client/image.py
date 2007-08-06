@@ -153,10 +153,15 @@ class Image(object):
                 """Exact matches to the given FMRI.  Returns a list of (catalog,
                 pkg) pairs."""
 
-                m = []
-                for c in self.catalogs.values():
-                        m.extend([(c, p) \
-                            for p in c.get_matching_pkgs(pfmri, None)])
+                m = [
+                    (c, p)
+                    for c in self.catalogs.values()
+                    for p in c.get_matching_pkgs(pfmri, None)
+                ]
+
+                if not m:
+                        raise KeyError, "pattern '%s' not found in catalog" \
+                            % regex
 
                 return m
 
@@ -164,10 +169,15 @@ class Image(object):
                 """FMRIs matching the given regular expression.  Returns of a
                 list of (catalog, PkgFmri) pairs."""
 
-                m = []
-                for c in self.catalogs.values():
-                        m.extend([(c, p) \
-                            for p in c.get_regex_matching_fmris(regex)])
+                m = [
+                    (c, p)
+                    for c in self.catalogs.values()
+                    for p in c.get_regex_matching_fmris(regex)
+                ]
+
+                if not m:
+                        raise KeyError, "pattern '%s' not found in catalog" \
+                            % regex
 
                 return m
 
