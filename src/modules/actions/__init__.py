@@ -82,7 +82,7 @@ def fromstr(str):
                 raise KeyError, "Action '%s'" % type
 
         # That is, if the first attribute is a hash
-        if str.find(" ") < str.find("="):
+        if 0 < str.find(" ") < str.find("="):
                 hash, str = str.split(" ", 1)
 
         # Split the string on spaces, then reconstruct and dequote quoted
