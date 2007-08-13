@@ -54,7 +54,7 @@ class LinkAction(generic.Action):
                 path = os.path.normpath(os.path.sep.join(
                     (image.get_root(), path)))
 
-                if os.path.exists(path):
+                if os.path.lexists(path):
                         os.unlink(path)
 
                 os.symlink(target, path)
