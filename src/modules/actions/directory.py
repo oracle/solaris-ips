@@ -42,44 +42,46 @@ class DirectoryAction(generic.Action):
 
         name = "dir"
         attributes = ("mode", "owner", "group", "path")
+        key_attr = "path"
 
         def __init__(self, data=None, **attrs):
                 generic.Action.__init__(self, data, **attrs)
 
-        def preinstall(self, image):
-                """Client-side method that performs pre-install actions."""
-                pass
-
-        def install(self, image):
+        def install(self, image, orig):
                 """Client-side method that installs a directory."""
                 path = self.attrs["path"]
                 mode = int(self.attrs["mode"], 8)
                 owner = pwd.getpwnam(self.attrs["owner"]).pw_uid
                 group = grp.getgrnam(self.attrs["group"]).gr_gid
 
+                if orig:
+                        omode = int(orig.attrs["mode"], 8)
+                        oowner = pwd.getpwnam(orig.attrs["owner"]).pw_uid
+                        ogroup = grp.getgrnam(orig.attrs["group"]).gr_gid
+
                 path = os.path.normpath(os.path.sep.join(
                     (image.get_root(), path)))
-                try:
-                        os.mkdir(path, mode)
-                except OSError, e:
-                        if e.errno != errno.EEXIST:
-                                raise
 
-                try:
-                        os.chown(path, owner, group)
-                except OSError, e:
-                        if e.errno != errno.EPERM:
-                                raise
+                if not orig:
+                        try:
+                                os.mkdir(path, mode)
+                        except OSError, e:
+                                if e.errno != errno.EEXIST:
+                                        raise
+                elif mode != omode:
+                        os.chmod(path, mode)
 
-        def postinstall(self):
-                """Client-side method that performs post-install actions."""
-                pass
+                if not orig or oowner != owner or ogroup != group:
+                        try:
+                                os.chown(path, owner, group)
+                        except OSError, e:
+                                if e.errno != errno.EPERM:
+                                        raise
 
         def remove(self, image):
                 path = os.path.normpath(os.path.sep.join(
                     (image.get_root(), self.attrs["path"])))
 
-                print "removing directory:", path
                 try:
                         os.rmdir(path)
                 except OSError, e:

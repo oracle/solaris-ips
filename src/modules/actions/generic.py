@@ -110,8 +110,17 @@ class Action(object):
         files.
         """
 
+        # 'name' is the name of the action, as specified in a manifest.
         name = "generic"
+        # 'attributes' is a list of the known usable attributes.  Or something.
+        # There probably isn't a good use for it.
         attributes = ()
+        # 'key_attr' is the name of the attribute whose value must be unique in
+        # the namespace of objects represented by a particular action.  For
+        # instance, a file's key_attr would be its pathname.  Or a driver's
+        # key_attr would be the driver name.  When 'key_attr' is None, it means
+        # that all attributes of the action are distinguishing.
+        key_attr = None
 
         def __init__(self, data=None, **attrs):
                 """Action constructor.
@@ -195,6 +204,27 @@ class Action(object):
                 else:
                         return cmp(id(self), id(other))
 
+        def different(self, other):
+                """Returns True if other represents a non-ignorable change from self.
+                
+                By default, this means two actions are different if any of their
+                attributes are different.  Subclasses should override this
+                behavior when appropriate.
+                """
+
+                # We could ignore key_attr, or possibly assert that it's the
+                # same.
+                for a in self.attrs:
+                        if a not in other.attrs or self.attrs[a] != other.attrs[a]:
+                                return True
+
+                if hasattr(self, "hash"):
+                        assert(hasattr(other, "hash"))
+                        if self.hash != other.hash:
+                                return True
+
+                return False
+
         def generate_indices(self):
                 """Generate for the reverse index database data for this action.
 
@@ -226,15 +256,15 @@ class Action(object):
 
                 return indices
 
-        def preinstall(self, image):
+        def preinstall(self, image, orig):
                 """Client-side method that performs pre-install actions."""
                 pass
 
-        def install(self, image):
+        def install(self, image, orig):
                 """Client-side method that installs the object."""
                 pass
 
-        def postinstall(self):
+        def postinstall(self, image, orig):
                 """Client-side method that performs post-install actions."""
                 pass
 
@@ -246,6 +276,6 @@ class Action(object):
                 """Client-side method that removes the object."""
                 pass
 
-        def postremove(self):
+        def postremove(self, image):
                 """Client-side method that performs post-remove actions."""
                 pass

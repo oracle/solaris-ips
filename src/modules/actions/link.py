@@ -39,11 +39,12 @@ class LinkAction(generic.Action):
 
         name = "link"
         attributes = ("path", "target")
+        key_attr = "path"
 
         def __init__(self, data=None, **attrs):
                 generic.Action.__init__(self, data, **attrs)
 
-        def install(self, image):
+        def install(self, image, orig):
                 """Client-side method that installs a link."""
                 # XXX The exists-unlink-symlink path appears to be as safe as it
                 # gets with the current symlink(2) interface.
@@ -63,5 +64,4 @@ class LinkAction(generic.Action):
                 path = os.path.normpath(os.path.sep.join(
                     (image.get_root(), self.attrs["path"])))
 
-                print "removing link:", path
                 os.unlink(path)

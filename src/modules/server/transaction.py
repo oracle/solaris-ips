@@ -196,6 +196,9 @@ class Transaction(object):
                 if "Content-Length" in hdrs and \
                     int(hdrs.getheader("Content-Length")) != 0:
                         rfile = request.rfile
+                # XXX Ugly special case to handle empty files.
+                elif type == "file":
+                        rfile = "/dev/null"
                 action = pkg.actions.types[type](rfile, **attrs)
 
                 # XXX Once actions are labelled with critical nature.

@@ -42,54 +42,63 @@ class FileAction(generic.Action):
 
         name = "file"
         attributes = ("mode", "owner", "group", "path")
+        key_attr = "path"
 
         def __init__(self, data=None, **attrs):
                 generic.Action.__init__(self, data, **attrs)
                 self.hash = "NOHASH"
 
-        def preinstall(self, image):
-                """Client-side method that performs pre-install actions."""
-                pass
-
-        def install(self, image):
+        def install(self, image, orig):
                 """Client-side method that installs a file."""
                 path = self.attrs["path"]
                 mode = int(self.attrs["mode"], 8)
                 owner = pwd.getpwnam(self.attrs["owner"]).pw_uid
                 group = grp.getgrnam(self.attrs["group"]).gr_gid
 
-                temp = os.path.normpath(os.path.sep.join(
-                    (image.get_root(), path + "." + self.hash)))
-                path = os.path.normpath(os.path.sep.join(
+                final_path = os.path.normpath(os.path.sep.join(
                     (image.get_root(), path)))
 
-                stream = self.data()
-                tfile = file(temp, "wb")
-                shasum = generic.gunzip_from_stream(stream, tfile)
+                # If we're upgrading, extract the attributes from the old file.
+                if orig:
+                        omode = int(orig.attrs["mode"], 8)
+                        oowner = pwd.getpwnam(orig.attrs["owner"]).pw_uid
+                        ogroup = grp.getgrnam(orig.attrs["group"]).gr_gid
 
-                tfile.close()
-                stream.close()
+                # If we're not upgrading, or the file contents have changed,
+                # retrieve the file and write it to a temporary location.
+                if not orig or orig.hash != self.hash:
+                        temp = os.path.normpath(os.path.sep.join(
+                            (image.get_root(), path + "." + self.hash)))
 
-                # XXX Should throw an exception if shasum doesn't match self.hash
+                        stream = self.data()
+                        tfile = file(temp, "wb")
+                        shasum = generic.gunzip_from_stream(stream, tfile)
 
-                os.chmod(temp, mode)
-                try:
-                        os.chown(temp, owner, group)
-                except OSError, e:
-                        if e.errno != errno.EPERM:
-                                raise
+                        tfile.close()
+                        stream.close()
 
-                os.rename(temp, path)
+                        # XXX Should throw an exception if shasum doesn't match
+                        # self.hash
+                else:
+                        temp = final_path
 
-        def postinstall(self):
-                """Client-side method that performs post-install actions."""
-                pass
+                if not orig or omode != mode:
+                        os.chmod(temp, mode)
+
+                if not orig or oowner != owner or ogroup != group:
+                        try:
+                                os.chown(temp, owner, group)
+                        except OSError, e:
+                                if e.errno != errno.EPERM:
+                                        raise
+
+                # This is safe even if temp == final_path.
+                os.rename(temp, final_path)
 
         def remove(self, image):
                 path = os.path.normpath(os.path.sep.join(
                     (image.get_root(), self.attrs["path"])))
 
-                print "removing file:", path
                 os.unlink(path)
 
         def generate_indices(self):

@@ -41,3 +41,10 @@ class AttributeAction(generic.Action):
 
         def __init__(self, data=None, **attrs):
                 generic.Action.__init__(self, data, **attrs)
+
+                # XXX This is pretty hokey.  Is this okay, do we get rid of it
+                # in favor of just doing name/value attributes to start with, or
+                # do we find a better solution for upgrade?
+                if len(attrs) == 1:
+                        self.key_attr = "name"
+                        self.attrs["name"] = attrs.keys()[0]

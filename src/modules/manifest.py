@@ -97,10 +97,6 @@ class Manifest(object):
         present in the image (which may be the null manifest).
         """
 
-        # XXX The difference methods work, but are wrong:  we must provide
-        # action equivalency relationships, so that we can easily discriminate
-        # related actions from independent ones.
-
         def __init__(self):
                 self.fmri = None
 
@@ -122,57 +118,45 @@ class Manifest(object):
 
                 return r
 
-        def difference(self, other):
-                """Output is the list of positive actions to take to move from
-                other to self.  For instance, a file in self, but not in other,
-                would be added."""
+        def difference(self, origin):
+                """Return a list of action pairs representing origin and
+                destination actions."""
+                # XXX Do we need to find some way to assert that the keys are
+                # all unique?
 
-                sset = set([str(acs) for acs in self.actions])
-                oset = set([str(aco) for aco in other.actions])
+                sdict = dict(
+                    ((a.name, a.attrs.get(a.key_attr, id(a))), a)
+                    for a in self.actions
+                )
+                odict = dict(
+                    ((a.name, a.attrs.get(a.key_attr, id(a))), a)
+                    for a in origin.actions
+                )
 
-                for ats in self.attributes.keys():
-                        sset.add("%s=%s" % (ats, self.attributes[ats]))
+                sset = set(sdict.keys())
+                oset = set(odict.keys())
 
-                for ato in other.attributes.keys():
-                        oset.add("%s=%s" % (ato, other.attributes[ato]))
+                added = [(None, sdict[i]) for i in sset - oset]
+                removed = [(odict[i], None) for i in oset - sset]
+                changed = [
+                    (odict[i], sdict[i])
+                    for i in oset & sset
+                    if odict[i].different(sdict[i])
+                ]
 
-                dset = sset.symmetric_difference(oset)
+                # XXX Do changed actions need to be sorted at all?  This is
+                # likely to be the largest list, so we might save significant
+                # time by not sorting.  Should we sort above?  Insert into a
+                # sorted list?
 
-                positive_actions = []
+                # singlesort = lambda x: x[0] or x[1]
+                addsort = lambda x: x[1]
+                remsort = lambda x: x[0]
+                removed.sort(key = remsort)
+                added.sort(key = addsort)
+                changed.sort(key = addsort)
 
-                for acs in self.actions:
-                        rep = str(acs)
-                        if rep in dset:
-                                positive_actions.append(acs)
-
-                return positive_actions
-
-
-        def antidifference(self, other):
-                """Output is the list of negative actions to take to move from
-                other to self.  For instance, a file in other, but not in self,
-                would be undone.
-
-                XXX The antidifference must be reconciled with any replacement
-                actions on the positive side by a higher level routine."""
-
-                sset = set([str(acs) for acs in self.actions])
-                oset = set([str(aco) for aco in other.actions])
-
-                for ats in self.attributes.keys():
-                        sset.add("%s=%s" % (ats, self.attributes[ats]))
-
-                for ato in other.attributes.keys():
-                        oset.add("%s=%s" % (ato, other.attributes[ato]))
-
-                dset = sset.symmetric_difference(oset)
-
-                for aco in other.actions:
-                        rep = "%s" % acs
-                        if rep in dset:
-                                negative_actions.append(aco)
-
-                return negative_actions
+                return removed + added + changed
 
         def display_differences(self, other):
                 """Output expects that self is newer than other.  Use of sets
@@ -180,22 +164,15 @@ class Manifest(object):
                 form, otherwise set member identities are derived from the
                 object pointers, rather than the contents."""
 
-                sset = set([str(acs) for acs in self.actions])
-                oset = set([str(aco) for aco in other.actions])
+                l = self.difference(other)
 
-                for ats in self.attributes.keys():
-                        sset.add("%s=%s" % (ats, self.attributes[ats]))
-
-                for ato in other.attributes.keys():
-                        oset.add("%s=%s" % (ato, other.attributes[ato]))
-
-                dset = sset.symmetric_difference(oset)
-
-                for att in dset:
-                        if att in sset:
-                                print "+ %s" % att
+                for src, dest in l:
+                        if not src:
+                                print "+", dest
+                        elif not dest:
+                                print "-", src
                         else:
-                                print "- %s" % att
+                                print "%s -> %s" % (src, dest)
 
         def set_fmri(self, fmri):
                 self.fmri = fmri
@@ -209,6 +186,13 @@ class Manifest(object):
         def set_content(self, str):
                 """str is the text representation of the manifest"""
 
+                # So we could build up here the type/key_attr dictionaries like
+                # sdict and odict in difference() above, and have that be our
+                # main datastore, rather than the simple list we have now.  If
+                # we do that here, we can even assert that the "same" action
+                # can't be in a manifest twice.  (The problem of having the same
+                # action more than once in packages that can be installed
+                # together has to be solved somewhere else, though.)
                 for l in str.splitlines():
                         if re.match("^\s*(#.*)?$", l):
                                 continue
@@ -223,7 +207,7 @@ class Manifest(object):
                                 action.data = \
                                     self.make_opener(self.fmri, action)
 
-                        if len(self.actions) == 0:
+                        if not self.actions:
                                 self.actions.append(action)
                         else:
                                 bisect.insort(self.actions, action)
@@ -247,7 +231,7 @@ file fff555fff mode=0555 owner=sch group=staff path=/usr/bin/i386/sort isa=i386
         m2 = Manifest()
 
         y = """\
-set com.sun,test=true
+set com.sun,test=false
 set com.sun,data=true
 depend type=require fmri=pkg:/library/libc
 file fff555ff9 mode=0555 owner=sch group=staff path=/usr/bin/i386/sort isa=i386
@@ -267,3 +251,37 @@ file ff555ffd mode=0644 owner=root group=bin path=/kernel/drv/foo.conf
         print null
 
         m2.display_differences(null)
+
+        print
+        m2.difference(m1)
+
+        m3 = Manifest()
+        t3 = """\
+dir mode=0755 owner=root group=sys path=/bin
+file 00000000 mode=0644 owner=root group=sys path=/bin/change
+file 00000001 mode=0644 owner=root group=sys path=/bin/nochange
+file 00000002 mode=0644 owner=root group=sys path=/bin/toberemoved
+link path=/bin/change-link target=change
+link path=/bin/nochange-link target=nochange
+link path=/bin/change-target target=target1
+link path=/bin/change-type target=random
+"""
+        m3.set_content(t3)
+
+        m4 = Manifest()
+        t4 = """\
+dir mode=0755 owner=root group=sys path=/bin
+file 0000000f mode=0644 owner=root group=sys path=/bin/change
+file 00000001 mode=0644 owner=root group=sys path=/bin/nochange
+file 00000003 mode=0644 owner=root group=sys path=/bin/wasadded
+link path=/bin/change-link target=change
+link path=/bin/nochange-link target=nochange
+link path=/bin/change-target target=target2
+dir mode=0755 owner=root group=sys path=/bin/change-type
+"""
+        m4.set_content(t4)
+
+        print "\n" + 50 * "=" + "\n"
+        m4.difference(m3)
+        print "\n" + 50 * "=" + "\n"
+        m4.difference(null)

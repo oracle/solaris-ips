@@ -25,10 +25,8 @@
 
 import errno
 import os
-import re
-import urllib
 
-import pkg.catalog as catalog
+import pkg.manifest as manifest
 
 class PkgPlan(object):
         """A package plan takes two package FMRIs and an Image, and produces the
@@ -41,15 +39,20 @@ class PkgPlan(object):
         def __init__(self, image):
                 self.origin_fmri = None
                 self.destination_fmri = None
-                self.origin_mfst = None
-                self.destination_mfst = None
+                self.origin_mfst = manifest.null
+                self.destination_mfst = manifest.null
 
                 self.image = image
 
                 self.actions = []
 
         def __str__(self):
-                return "%s -> %s" % (self.origin_fmri, self.destination_fmri)
+                s = "%s -> %s\n" % (self.origin_fmri, self.destination_fmri)
+
+                for src, dest in self.actions:
+                        s += "  %s -> %s\n" % (src, dest)
+
+                return s
 
         def set_origin(self, fmri):
                 self.origin_fmri = fmri
@@ -94,38 +97,17 @@ class PkgPlan(object):
                 # XXX Perhaps make the pkgplan creator make this explicit, so we
                 # don't have to check?
                 f = None
-                if self.origin_fmri == None:
+                if not self.origin_fmri:
                         try:
                                 f = self.image.get_version_installed(
                                     self.destination_fmri)
                                 self.origin_fmri = f
+                                self.origin_mfst = self.image.get_manifest(f)
                         except LookupError:
                                 pass
 
-                # if null package, then our plan is the set of actions for the
-                # destination version
-                if self.origin_fmri == None:
-                        self.actions = self.destination_mfst.actions
-                elif self.destination_fmri == None:
-                        # XXX
-                        self.actions = sorted(self.origin_mfst.actions,
-                            reverse = True)
-                else:
-                        # if a previous package, then our plan is derived from
-                        # the set differences between the previous manifest's
-                        # actions and the union of the destination manifest's
-                        # actions with the critical actions of the critical
-                        # versions in the version interval between origin and
-                        # destination.
-                        if not self.image.has_manifest(self.origin_fmri):
-                                retrieve.get_manifest(self.image,
-                                    self.origin_fmri)
-
-                        self.origin_mfst = self.image.get_manifest(
-                            self.origin_fmri)
-
-                        self.actions = self.destination_mfst.difference(
-                            self.origin_mfst)
+                self.actions = self.destination_mfst.difference(
+                    self.origin_mfst)
 
         def preexecute(self):
                 """Perform actions required prior to installation or removal of a package.
@@ -139,11 +121,11 @@ class PkgPlan(object):
                         os.unlink("%s/pkg/%s/installed" % (self.image.imgdir,
                             self.origin_fmri.get_dir_path()))
 
-                for a in self.actions:
-                        if self.destination_fmri == None:
-                                a.preremove(self.image)
+                for src, dest in self.actions:
+                        if dest:
+                                dest.preinstall(self.image, src)
                         else:
-                                a.preinstall(self.image)
+                                src.preremove(self.image)
 
         def execute(self):
                 """Perform actions for installation or removal of a package.
@@ -151,12 +133,18 @@ class PkgPlan(object):
                 This method executes each action's remove() or install()
                 methods.
                 """
+
                 # record that we are in an intermediate state
-                for a in self.actions:
-                        if self.destination_fmri == None:
-                                a.remove(self.image)
+
+                # It might be nice to have a single action.execute() method, but
+                # I can't think of an example where it would make especially
+                # good sense (i.e., where "remove" is as similar to "upgrade" as
+                # is "install").
+                for src, dest in self.actions:
+                        if dest:
+                                dest.install(self.image, src)
                         else:
-                                a.install(self.image)
+                                src.remove(self.image)
 
         def postexecute(self):
                 """Perform actions required after installation or removal of a package.
@@ -166,11 +154,11 @@ class PkgPlan(object):
                 at such a time.
                 """
                 # record that package states are consistent
-                for a in self.actions:
-                        if self.destination_fmri == None:
-                                a.postremove()
+                for src, dest in self.actions:
+                        if dest:
+                                dest.postinstall(self.image, src)
                         else:
-                                a.postinstall()
+                                src.postremove(self.image)
 
                 # XXX should this just go in preexecute?
                 if self.origin_fmri != None and self.destination_fmri != None:
@@ -201,8 +189,9 @@ class PkgPlan(object):
 
                 gen = (
                     (k, v)
-                    for action in self.actions
-                    for k, v in action.generate_indices().iteritems()
+                    for src, dest in self.actions
+                    if dest
+                    for k, v in dest.generate_indices().iteritems()
                 )
 
                 for idx, val in gen:

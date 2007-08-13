@@ -193,8 +193,18 @@ class Image(object):
 
         def get_manifest(self, fmri):
                 m = manifest.Manifest()
-                mcontent = file("%s/pkg/%s/manifest" % 
-                    (self.imgdir, fmri.get_dir_path())).read()
+
+                # If the manifest isn't there, download and retry.
+                try:
+                        mcontent = file("%s/pkg/%s/manifest" % 
+                            (self.imgdir, fmri.get_dir_path())).read()
+                except IOError, e:
+                        if e.errno != errno.ENOENT:
+                                raise
+                        retrieve.get_manifest(self, fmri)
+                        mcontent = file("%s/pkg/%s/manifest" % 
+                            (self.imgdir, fmri.get_dir_path())).read()
+
                 m.set_fmri(fmri)
                 m.set_content(mcontent)
                 return m
