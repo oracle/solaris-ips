@@ -78,13 +78,16 @@ class Catalog(object):
                 self.catalog_root = ""
 
                 self.attrs = {}
-                self.attrs["Last-Modified"] = time.time()
+                self.set_time()
 
                 self.authorities = {}
                 self.pkgs = []
                 self.critical_pkgs = []
 
                 self.relns = {}
+
+        def set_time(self):
+                self.attrs["Last-Modified"] = time.strftime("%Y%m%dT%H%M%SZ")
 
         def add_authority(self, authority, urls):
                 self.authorities[authority] = urls
@@ -129,21 +132,25 @@ class Catalog(object):
                 pkg = package.Package(pfmri)
                 pkg.add_version(pkgfmri)
                 self.pkgs.append(pkg)
+                self.set_time()
 
         def add_pkg(self, pkg, critical = False):
                 for opkg in self.pkgs:
-                        if pkg.fmri == opkg.fmri:
+                        if pkg.fmri.is_same_pkg(opkg.fmri):
                                 #
                                 # XXX This package is already in the catalog
                                 # with some version set.  Are we updating the
                                 # version set or merging the two?
                                 #
-                                opkg = pkg
-                                return
+                                opkg.add_version(pkg.pversions[0])
+                                # Skip the append in the else clause
+                                break
+                else:
+                        self.pkgs.append(pkg)
 
-                self.pkgs.append(pkg)
                 if critical:
                         self.critical_pkgs.append(pkg)
+                self.set_time()
 
         def get_matching_pkgs(self, pfmri, constraint):
                 """Iterate through the catalogs, looking for an exact fmri

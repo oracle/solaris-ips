@@ -263,6 +263,7 @@ class Transaction(object):
                 # our response with any other packages that moved to
                 # PUBLISHED due to the package's arrival.
                 p = package.Package(self.fmri)
+                p.add_version(self.fmri)
                 p.set_dir(self.cfg)
                 p.update(self.cfg, self)
 

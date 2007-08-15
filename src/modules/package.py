@@ -85,8 +85,10 @@ class Package(object):
         """A Package is a named list of PkgVersions in the package graph.
         Packages have a package FMRI without a specific version."""
 
-        def __init__(self, fmri):
-                self.fmri = fmri
+        def __init__(self, pfmri):
+                # Strip any version off pfmri; require caller to explicitly add
+                # versions via add_version().
+                self.fmri = fmri.PkgFmri(pfmri.pkg_name, None)
                 self.pversions = []
 
                 self.dir = ""
@@ -116,7 +118,7 @@ class Package(object):
 
                 for e in os.listdir(self.dir):
                         e = urllib.unquote(e)
-                        print e
+                        print self.fmri, e
                         v = version.Version(e, None)
                         pn = PkgVersion(self, v)
                         self.pversions.append(pn)
@@ -142,16 +144,21 @@ class Package(object):
                 Package object on success.  Registration of the new package
                 version with the catalog is the caller's responsibility."""
 
+                # Assume that there's only one version associated with this
+                # package, because we should only be called from a server
+                # transaction.
+                assert len(self.pversions) == 1
+
                 if not self.bulk_state:
                         os.makedirs(self.dir)
 
-                (authority, name, version) = self.fmri.tuple()
+                version = self.pversions[0].version
 
                 # mv manifest to pkg_name / version
                 # A package may have no files, so there needn't be a manifest.
                 if os.path.exists("%s/manifest" % trans.dir):
                         os.rename("%s/manifest" % trans.dir, "%s/%s" %
-                            (self.dir, urllib.quote(version.__str__(), "")))
+                            (self.dir, urllib.quote(str(version), "")))
 
                 # Move each file to file_root, with appropriate directory
                 # structure.
@@ -180,7 +187,8 @@ class Package(object):
                                                 raise
                                 os.rename(src_path, dst_path)
 
-                return Package(self.fmri)
+                # XXX We don't actually use this value; should we bother?
+                return Package(fmri.PkgFmri(self.fmri.pkg_name, version))
 
         def add_version(self, fmri):
                 v = fmri.version
