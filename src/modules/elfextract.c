@@ -44,8 +44,9 @@ pkg_string_from_arch(int arch)
 	case EM_SPARCV9:
 		return "sparc";
 	case EM_386:
+	case EM_486:
 	case EM_AMD64:
-		return "x86";
+		return "i386";
 	case EM_PPC:
 	case EM_PPC64:
 		return "ppc";

@@ -34,6 +34,7 @@ import urllib
 
 import pkg.fmri as fmri
 import pkg.package as package
+import pkg.elf as elf
 
 import pkg.actions
 
@@ -175,8 +176,6 @@ class Transaction(object):
                 sequence of buffers as well, with intermediate storage to
                 disk."""
 
-                trans_id = self.get_basename()
-
                 hdrs = request.headers
 
                 attrs = dict((hdr.lower(), hdrs[hdr])
@@ -209,12 +208,24 @@ class Transaction(object):
 
                 if action.data != None:
                         data = action.data().read(size)
+
+                        # Extract ELF information
+                        # XXX This needs to be modularized.
+                        if data[:4] == "\x7fELF":
+                                elf_name = "%s/.temp" % self.dir
+                                elf_file = open(elf_name, "wb")
+                                elf_file.write(data)
+                                elf_file.close()
+                                elf_info = elf.get_info(elf_name)
+                                elf_hash = elf.get_dynamic(elf_name)["hash"]
+                                action.attrs["elfbits"] = str(elf_info["bits"])
+                                action.attrs["elfarch"] = elf_info["arch"]
+                                action.attrs["elfhash"] = elf_hash
+
                         hash = sha.new(data)
                         fname = hash.hexdigest()
                         action.hash = fname
-
-                        ofile = gzip.GzipFile("%s/%s/%s" %
-                            (self.cfg.trans_root, trans_id, fname), "wb")
+                        ofile = gzip.GzipFile("%s/%s" % (self.dir, fname), "wb")
 
                         bufsz = 64 * 1024
 
@@ -227,10 +238,11 @@ class Transaction(object):
 
                         m = nbuf * bufsz
                         ofile.write(data[m:])
+                        ofile.close()
 
-                tfile = file("%s/%s/manifest" %
-                    (self.cfg.trans_root, trans_id), "a")
+                tfile = file("%s/manifest" % self.dir, "a")
                 print >>tfile, action
+                tfile.close()
 
                 try:
                         request.send_response(200)
