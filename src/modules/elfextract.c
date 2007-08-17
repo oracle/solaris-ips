@@ -182,20 +182,22 @@ getheaderinfo(int fd)
 	return (hi);
 }
 
-
-
 static int
 hashsection(char *name)
 {
-	if (!strcmp(name, ".text") ||
-	    !strcmp(name, ".data") ||
-	    !strcmp(name, ".data1") ||
-	    !strcmp(name, ".rodata") ||
-	    !strcmp(name, ".rodata1")) {
-		return (1);
-	}
+	if (strcmp(name, ".SUNW_signature") == 0 ||
+	    strcmp(name, ".comment") == 0 ||
+	    strcmp(name, ".SUNW_ctf") == 0 ||
+	    strcmp(name, ".debug") == 0 ||
+	    strcmp(name, ".plt") == 0 ||
+	    strcmp(name, ".rela.bss") == 0 ||
+	    strcmp(name, ".rela.plt") == 0 ||
+	    strcmp(name, ".line") == 0 ||
+	    strcmp(name, ".note") == 0 ||
+	    strcmp(name, ".compcom") == 0)
+		return (0);
 
-	return (0);
+	return (1);
 }
 
 /*
@@ -261,12 +263,15 @@ getdynamic(int fd)
 	/* get useful sections */
 	SHA1Init(&shc);
 	while ((scn = elf_nextscn(elf, scn))) {
-                if (gelf_getshdr(scn, &shdr) != &shdr)
+		if (gelf_getshdr(scn, &shdr) != &shdr)
 			return (NULL);
 
                 if (!(name = elf_strptr(elf, sh_str, shdr.sh_name)))
 			return (NULL);
-		
+
+		if (hashsection(name))
+			readhash(fd, &shc, shdr.sh_offset, shdr.sh_size);
+
 		switch (shdr.sh_type) {
 		case SHT_DYNAMIC:
 			if (!(data_dyn = elf_getdata(scn, NULL))) {
@@ -274,16 +279,12 @@ getdynamic(int fd)
 				return (NULL);
 			}
 			break;
+
 		case SHT_STRTAB:
-			if (!strcmp(name, ".dynstr"))
+			if (strcmp(name, ".dynstr") == 0)
 				dynstr = elf_ndxscn(scn);
 			break;
-		case SHT_PROGBITS:
-			if (hashsection(name)) {
-				readhash(fd, &shc, 
-				    shdr.sh_offset, shdr.sh_size);
-			}
-			break;
+
 		case SHT_SUNW_verdef:
 			if (!(data_verdef = elf_getdata(scn, NULL))) {
 				elf_end(elf);
@@ -291,6 +292,7 @@ getdynamic(int fd)
 			}
 			verdefnum = shdr.sh_info;
 			break;
+
 		case SHT_SUNW_verneed:
 			if (!(data_verneed = elf_getdata(scn, NULL))) {
 				elf_end(elf);
@@ -299,8 +301,7 @@ getdynamic(int fd)
 			vernum = shdr.sh_info;
 			break;
 		}
-
-        }
+	}
 
 	/* Dynamic but no string table? */
 	if (data_dyn && (dynstr < 0)) {
