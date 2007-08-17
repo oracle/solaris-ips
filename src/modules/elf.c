@@ -176,6 +176,9 @@ get_info(PyObject *self, PyObject *args)
  * 	hash: "sha1hash"
  * }
  *
+ * If any item is empty or has no value, it is omitted from the 
+ * dictionary.
+ * 
  * XXX: Currently, defs contains some duplicate entries.  There 
  * may be meaning attached to this, or it may just be something 
  * worth trimming out at this stage or above.
@@ -184,11 +187,13 @@ get_info(PyObject *self, PyObject *args)
 PyObject *
 get_dynamic(PyObject *self, PyObject *args)
 {
-	int 	fd;
+	int 	fd, i;
 	dyninfo_t 	*dyn = NULL;
 	PyObject	*pdep = NULL;
 	PyObject	*pdef = NULL;
 	PyObject	*pdict = NULL;
+	char		hexhash[41];
+	char		hexchars[17] = "0123456789abcdef";
 
 	if ((fd = py_get_fd(args)) < 0)
 		return (NULL);
@@ -201,17 +206,31 @@ get_dynamic(PyObject *self, PyObject *args)
 		return (NULL);
 	}
 	
-	pdep = PyList_New(0);
-	liblist_foreach(dyn->deps, pythonify_2dliblist_cb, pdep, dyn);
-	pdef = PyList_New(0);
-	liblist_foreach(dyn->defs, pythonify_1dliblist_cb, pdef, dyn);
-
 	pdict = PyDict_New();
-	PyDict_SetItemString(pdict, "runpath",
-	    Py_BuildValue("s",elf_strptr(dyn->elf, dyn->dynstr, dyn->runpath)));
-	PyDict_SetItemString(pdict, "deps", pdep);
-	PyDict_SetItemString(pdict, "defs", pdef);
-	PyDict_SetItemString(pdict, "hash", Py_BuildValue("s", dyn->hash));
+	if (dyn->deps->head) {
+		pdep = PyList_New(0);
+		liblist_foreach(dyn->deps, pythonify_2dliblist_cb, pdep, dyn);
+		PyDict_SetItemString(pdict, "deps", pdep);
+	}
+	if (dyn->def) {
+		pdef = PyList_New(0);
+		liblist_foreach(dyn->vers, pythonify_1dliblist_cb, pdef, dyn);
+		PyDict_SetItemString(pdict, "vers", pdef);
+		PyDict_SetItemString(pdict, "def", Py_BuildValue("s",
+			elf_strptr(dyn->elf, dyn->dynstr, dyn->def)));
+	}
+	if (*elf_strptr(dyn->elf, dyn->dynstr, dyn->runpath)) {
+		PyDict_SetItemString(pdict, "runpath",
+		    Py_BuildValue("s",
+			elf_strptr(dyn->elf, dyn->dynstr, dyn->runpath)));
+	}
+
+	for (i = 0; i < 20; i++) {
+		hexhash[2 * i] = hexchars[(dyn->hash[i] & 0xf0) >> 4];
+		hexhash[2 * i + 1] = hexchars[dyn->hash[i] & 0x0f];
+	}
+
+	PyDict_SetItemString(pdict, "hash", Py_BuildValue("s", hexhash));
 	
 	dyninfo_free(dyn);
 	close(fd);

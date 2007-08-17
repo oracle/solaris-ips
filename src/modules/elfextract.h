@@ -10,10 +10,11 @@
 
 typedef struct dyninfo {
 	off_t		runpath;	/* offset in table of the runpath */
+	off_t		def;		/* offset in table of the vdefname*/
 	off_t		dynstr;		/* string table			  */
 	liblist_t 	*deps;		/* dependency list (also contains */
 					/* 	offsets)		  */
-	liblist_t 	*defs;		/* version provided list (also	  */
+	liblist_t 	*vers;		/* version provided list (also	  */
 					/* 	contains offsets)	  */
 	unsigned char	hash[20];	/* SHA1 Hash of significant segs. */
 	Elf		*elf;		/* elf data -- must be freed	  */

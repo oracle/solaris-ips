@@ -245,7 +245,7 @@ getdynamic(int fd)
 	dyninfo_t	*dyn = NULL;
 
 	liblist_t	*deps = NULL;
-	off_t		rpath = 0, runpath = 0;
+	off_t		rpath = 0, runpath = 0, def = 0;
 	
 	if (elf_version(EV_CURRENT) == EV_NONE)
 		return (NULL);
@@ -423,7 +423,11 @@ getdynamic(int fd)
 			if (va)
 				cp += va->vda_next;
 			va = (GElf_Verdaux*)cp;
-			liblist_add(verdef, va->vda_name);
+			/* first one is name, rest are versions */
+			if (!def)
+				def = va->vda_name;
+			else
+				liblist_add(verdef, va->vda_name);
 		}
 
 		cp = buf;
@@ -438,7 +442,8 @@ getdynamic(int fd)
 	dyn->dynstr = dynstr;
 	dyn->elf = elf;
 	dyn->deps = deps;
-	dyn->defs = verdef;
+	dyn->def = def;
+	dyn->vers = verdef;
 	SHA1Final(dyn->hash, &shc);
 
 	return (dyn);
