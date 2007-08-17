@@ -177,6 +177,7 @@ test:
 	$(PYTHON) $(LINKPYTHONPKG)/fmri.py
 	$(PYTHON) $(LINKPYTHONPKG)/catalog.py
 	$(PYTHON) $(LINKPYTHONPKG)/manifest.py
+	$(PYTHON) $(LINKPYTHONPKG)/smf.py
 
 $(ROOT) $(ROOTUSRBIN) $(ROOTUSRLIB):
 	mkdir -p $(ROOT)
