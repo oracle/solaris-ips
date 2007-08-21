@@ -221,6 +221,7 @@ class Transaction(object):
                                 action.attrs["elfbits"] = str(elf_info["bits"])
                                 action.attrs["elfarch"] = elf_info["arch"]
                                 action.attrs["elfhash"] = elf_hash
+                                os.unlink(elf_name)
 
                         hash = sha.new(data)
                         fname = hash.hexdigest()
@@ -233,7 +234,7 @@ class Transaction(object):
 
                         for n in range(0, nbuf):
                                 l = n * bufsz
-                                h = (n + 1) * bufsz - 1
+                                h = (n + 1) * bufsz
                                 ofile.write(data[l:h])
 
                         m = nbuf * bufsz
