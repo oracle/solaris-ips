@@ -219,7 +219,7 @@ get_dynamic(PyObject *self, PyObject *args)
 		PyDict_SetItemString(pdict, "def", Py_BuildValue("s",
 			elf_strptr(dyn->elf, dyn->dynstr, dyn->def)));
 	}
-	if (*elf_strptr(dyn->elf, dyn->dynstr, dyn->runpath)) {
+	if (dyn->runpath) {
 		PyDict_SetItemString(pdict, "runpath",
 		    Py_BuildValue("s",
 			elf_strptr(dyn->elf, dyn->dynstr, dyn->runpath)));

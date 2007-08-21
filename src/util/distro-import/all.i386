@@ -1,0 +1,5 @@
+include common/SUNWgm4
+include common/SUNWopenssl
+include common/SUNWsunos-coreutils
+include common/SUNWtcsh
+include i386/SUNWcpc

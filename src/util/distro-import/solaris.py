@@ -1,0 +1,229 @@
+#!/usr/bin/python
+
+import getopt
+import os
+import shlex
+import sys
+
+from itertools import groupby
+
+from pkg.sysvpkg import SolarisPackage
+from pkg.bundle import SolarisPackageDirBundle
+
+import pkg.config as config
+import pkg.publish.transaction as trans
+from pkg import actions
+
+class pkg(object):
+        def __init__(self, name):
+                self.name = name
+                self.files = []
+                self.depend = []
+                self.undepend = []
+                self.desc = ""
+                self.version = ""
+                self.imppkg = None
+                self.file_to_pkgname = {}
+
+        def import_pkg(self, imppkg):
+                try:
+                        p = SolarisPackage(pkg_path(imppkg))
+                except:
+                        raise RuntimeError, "No such package: '%s'" % imppkg
+
+                for o in p.manifest:
+                        if o.type in "fev":
+                                self.file_to_pkgname[o.pathname] = imppkg
+
+                self.files.extend([
+                    o
+                    for o in p.manifest
+                    if o.type != "i"
+                ])
+
+                if not self.version:
+                        self.version = "%s-%s" % (def_vers, def_branch)
+                if not self.desc:
+                        self.desc = p.pkginfo["NAME"]
+
+                # This is how we'd import dependencies, but we'll let the
+                # analyzer do all the work here.
+                # self.depend.extend([
+                #     d.req_pkg_fmri
+                #     for d in p.deps
+                # ])
+
+        def import_file(self, file):
+                self.file_to_pkgname[file] = self.imppkg.pkginfo["PKG"]
+                self.files.extend([
+                    o
+                    for o in self.imppkg.manifest
+                    if o.pathname == file
+                ])
+
+def sysv_to_new_name(pkgname):
+        return "pkg:/" + pkgname
+
+def pkg_path(pkgname):
+        return wos_path + "/" + pkgname
+
+def start_package(pkgname):
+        return pkg(pkgname)
+
+def end_package(pkg):
+        if not pkg.version:
+                pkg.version = "%s-%s" % (def_vers, def_branch)
+
+        print "Package '%s'" % sysv_to_new_name(pkg.name)
+        print "  Version:", pkg.version
+        print "  Description:", pkg.desc
+
+        print "    pkgsend open %s@%s" % (sysv_to_new_name(pkg.name), pkg.version)
+
+        cfg = config.ParentRepo("http://localhost:10000", ["http://localhost:10000"])
+        t = trans.Transaction()
+        status, id = t.open(cfg, "%s@%s" % (sysv_to_new_name(pkg.name), pkg.version))
+        if status / 100 in (4, 5) or not id:
+                raise RuntimeError, "failed to open transaction for %s" % pkg.name
+
+        for f in pkg.files:
+                if f.type in "dx":
+                        print "    pkgsend add dir %s %s %s %s" % \
+                            (f.mode, f.owner, f.group, f.pathname)
+                        action = actions.directory.DirectoryAction(None,
+                            mode = f.mode, owner = f.owner, group = f.group,
+                            path = f.pathname)
+                        t.add(cfg, id, action)
+                elif f.type == "s":
+                        print "    pkgsend add link %s %s" % (f.pathname, f.target)
+                        action = actions.link.LinkAction(None,
+                            target = f.target, path = f.pathname)
+                        t.add(cfg, id, action)
+                elif f.type == "l":
+                        print "    pkgsend add hardlink %s %s" % (f.pathname, f.target)
+                        action = actions.hardlink.HardLinkAction(None,
+                            target = f.target, path = f.pathname)
+                        t.add(cfg, id, action)
+
+        def fn(key):
+                return pkg.file_to_pkgname[key.pathname]
+        groups = []
+        for k, g in groupby((f for f in pkg.files if f.type in "fev"), fn):
+                groups.append(list(g))
+
+        for g in groups:
+                pkgname = pkg.file_to_pkgname[g[0].pathname]
+                print "new group", pkgname
+                bundle = SolarisPackageDirBundle.SolarisPackageDirBundle(pkg_path(pkgname))
+                ng = [f.pathname for f in g]
+                for f in bundle:
+                        if f.attrs["path"] in ng:
+                                print "    pkgsend add file %s %s %s %s" % \
+                                    (f.attrs["mode"], f.attrs["owner"],
+                                        f.attrs["group"], f.attrs["path"])
+                                t.add(cfg, id, f)
+
+        for p in set(pkg.depend) - set(pkg.undepend):
+                print "    pkgsend add depend require %s" % sysv_to_new_name(p)
+                action = actions.depend.DependencyAction(None,
+                    type = "require", fmri = sysv_to_new_name(p))
+                t.add(cfg, id, action)
+
+        print "    pkgsend close"
+        ret, hdrs = t.close(cfg, id, False)
+        if hdrs:
+                print "%s: %s" % (hdrs["Package-FMRI"], hdrs["State"])
+        else:
+                print "%s: FAILED" % pkg.name
+
+        print
+
+def_vers = "5.11"
+def_branch = ""
+wos_path = "/net/netinstall.eng/export/nv/s/latest/Solaris_11/Product"
+
+try:
+        opts, args = getopt.getopt(sys.argv[1:], "b:v:w:")
+except getopt.GetoptError, e:
+        print "unknown option", e.opt
+        sys.exit(1)
+
+# Quick, icky hack.
+if "i386" in args[0]:
+        wos_path = wos_path.replace("/s/", "/x/")
+
+for opt, arg in opts:
+        if opt == "-b":
+                def_branch = arg
+        if opt == "-v":
+                def_vers = arg
+        elif opt == "-w":
+                wos_path = arg
+
+if not def_branch:
+        release_file = wos_path + "/SUNWsolnm/reloc/etc/release"
+        if os.path.isfile(release_file):
+                rf = file(release_file)
+                l = rf.readline()
+                idx = l.index("nv_") + 3
+                def_branch = "0." + l[idx:idx+2]
+if not def_branch:
+        print "need a branch id (build number)"
+        sys.exit(1)
+elif "." not in def_branch:
+        print "branch id needs to be of the form 'x.y'"
+        sys.exit(1)
+
+if not args:
+        print "need argument!"
+        sys.exit(1)
+
+infile = file(args[0])
+lexer = shlex.shlex(infile, args[0], True)
+lexer.whitespace_split = True
+lexer.source = "include"
+
+while True:
+        token = lexer.get_token()
+
+        if not token:
+                break
+
+        if token == "package":
+                curpkg = start_package(lexer.get_token())
+
+        elif token == "end":
+                endarg = lexer.get_token()
+                if endarg == "package":
+                        end_package(curpkg)
+                        curpkg = None
+                if endarg == "import":
+                        in_multiline_import = False
+                        curpkg.imppkg = None
+
+        elif token == "version":
+                curpkg.version = lexer.get_token()
+
+        elif token == "import":
+                curpkg.import_pkg(lexer.get_token())
+
+        elif token == "from":
+                curpkg.imppkg = SolarisPackage(pkg_path(lexer.get_token()))
+                junk = lexer.get_token()
+                assert junk == "import"
+                in_multiline_import = True
+
+        elif token == "description":
+                curpkg.desc = lexer.get_token()
+
+        elif token == "depend":
+                curpkg.depend.append(lexer.get_token())
+
+        elif token == "undepend":
+                curpkg.undepend.append(lexer.get_token())
+
+        elif in_multiline_import:
+                curpkg.import_file(token)
+
+        else:
+                print "unknown token '%s'" % token
