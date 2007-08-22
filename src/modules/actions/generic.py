@@ -214,8 +214,13 @@ class Action(object):
 
                 # We could ignore key_attr, or possibly assert that it's the
                 # same.
+                sset = set(self.attrs.keys())
+                oset = set(other.attrs.keys())
+                if sset.symmetric_difference(oset):
+                        return True
+
                 for a in self.attrs:
-                        if a not in other.attrs or self.attrs[a] != other.attrs[a]:
+                        if self.attrs[a] != other.attrs[a]:
                                 return True
 
                 if hasattr(self, "hash"):

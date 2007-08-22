@@ -66,7 +66,14 @@ class FileAction(generic.Action):
 
                 # If we're not upgrading, or the file contents have changed,
                 # retrieve the file and write it to a temporary location.
-                if not orig or orig.hash != self.hash:
+                # For ELF files, only write the new file if the elfhash changed.
+                # XXX This needs to be modularized.
+                # XXX This needs to be controlled by policy.
+                bothelf = orig and "elfhash" in orig.attrs and "elfhash" in self.attrs
+                if not orig or \
+                    (bothelf and orig.attrs["elfhash"] !=
+                        self.attrs["elfhash"]) or \
+                    (not bothelf and orig.hash != self.hash):
                         temp = os.path.normpath(os.path.sep.join(
                             (image.get_root(), path + "." + self.hash)))
 
@@ -100,6 +107,26 @@ class FileAction(generic.Action):
                     (image.get_root(), self.attrs["path"])))
 
                 os.unlink(path)
+
+        def different(self, other):
+                # Override the generic different() method to ignore the file
+                # hash for ELF files and compare the ELF hash instead.
+                # XXX This should be modularized and controlled by policy.
+
+                # One of these isn't an ELF file, so call the generic method
+                if "elfhash" not in self.attrs or "elfhash" not in other.attrs:
+                        return generic.Action.different(self, other)
+
+                sset = set(self.attrs.keys())
+                oset = set(other.attrs.keys())
+                if sset.symmetric_difference(oset):
+                        return True
+
+                for a in self.attrs:
+                        if self.attrs[a] != other.attrs[a]:
+                                return True
+
+                return False
 
         def generate_indices(self):
                 return {
