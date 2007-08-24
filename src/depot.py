@@ -256,14 +256,18 @@ if __name__ == "__main__":
         scfg.acquire_in_flight()
         scfg.acquire_catalog()
 
+        port = 10000
+
         try:
-                opts, pargs = getopt.getopt(sys.argv[1:], "n")
+                opts, pargs = getopt.getopt(sys.argv[1:], "np:")
                 for opt, arg in opts:
                         if opt == "-n":
                                 sys.exit(0)
+                        elif opt == "-p":
+                                port = int(arg)
         except getopt.GetoptError, e:
                 print "pkg.depotd: unknown option '%s'" % e.opt
                 usage()
 
-        server = ThreadingHTTPServer(('', 10000), pkgHandler)
+        server = ThreadingHTTPServer(('', port), pkgHandler)
         server.serve_forever()
