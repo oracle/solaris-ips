@@ -41,7 +41,8 @@ class pkg(object):
                 # the key/value pair, but throws an exception if the key is
                 # already present.
                 for o in p.manifest:
-                        if o.type in "fev" and o.pathname in usedlist:
+                        # XXX This decidedly ignores "e"-type files.
+                        if o.type in "fv" and o.pathname in usedlist:
                                 raise RuntimeError, reuse_err % \
                                     (o.pathname, imppkg, self.name, usedlist[o.pathname][1])
                         elif o.type != "i":
@@ -95,30 +96,36 @@ def end_package(pkg):
 
         print "    open %s@%s" % (sysv_to_new_name(pkg.name), pkg.version)
 
-        cfg = config.ParentRepo("http://localhost:10000", ["http://localhost:10000"])
-        t = trans.Transaction()
-        status, id = t.open(cfg, "%s@%s" % (sysv_to_new_name(pkg.name), pkg.version))
-        if status / 100 in (4, 5) or not id:
-                raise RuntimeError, "failed to open transaction for %s" % pkg.name
+        if not notransact:
+                cfg = config.ParentRepo("http://localhost:10000", ["http://localhost:10000"])
+                t = trans.Transaction()
+                status, id = t.open(cfg, "%s@%s" % (sysv_to_new_name(pkg.name), pkg.version))
+                if status / 100 in (4, 5) or not id:
+                        raise RuntimeError, "failed to open transaction for %s" % pkg.name
 
         for f in pkg.files:
                 if f.type in "dx":
-                        print "    add dir %s %s %s %s" % \
-                            (f.mode, f.owner, f.group, f.pathname)
-                        action = actions.directory.DirectoryAction(None,
-                            mode = f.mode, owner = f.owner, group = f.group,
-                            path = f.pathname)
-                        t.add(cfg, id, action)
+                        print "    %s add dir %s %s %s %s" % \
+                            (pkg.name, f.mode, f.owner, f.group, f.pathname)
+                        if not notransact:
+                                action = actions.directory.DirectoryAction(
+                                    None, mode = f.mode, owner = f.owner,
+                                    group = f.group, path = f.pathname)
+                                t.add(cfg, id, action)
                 elif f.type == "s":
-                        print "    add link %s %s" % (f.pathname, f.target)
-                        action = actions.link.LinkAction(None,
-                            target = f.target, path = f.pathname)
-                        t.add(cfg, id, action)
+                        print "    %s add link %s %s" % \
+                            (pkg.name, f.pathname, f.target)
+                        if not notransact:
+                                action = actions.link.LinkAction(None,
+                                    target = f.target, path = f.pathname)
+                                t.add(cfg, id, action)
                 elif f.type == "l":
-                        print "    add hardlink %s %s" % (f.pathname, f.target)
-                        action = actions.hardlink.HardLinkAction(None,
-                            target = f.target, path = f.pathname)
-                        t.add(cfg, id, action)
+                        print "    %s add hardlink %s %s" % \
+                            (pkg.name, f.pathname, f.target)
+                        if not notransact:
+                                action = actions.hardlink.HardLinkAction(None,
+                                    target = f.target, path = f.pathname)
+                                t.add(cfg, id, action)
 
         def fn(key):
                 return usedlist[key.pathname][0]
@@ -133,37 +140,44 @@ def end_package(pkg):
                 ng = [f.pathname for f in g]
                 for f in bundle:
                         if f.attrs["path"] in ng:
-                                print "    add file %s %s %s %s" % \
-                                    (f.attrs["mode"], f.attrs["owner"],
-                                        f.attrs["group"], f.attrs["path"])
-                                t.add(cfg, id, f)
+                                print "    %s add file %s %s %s %s" % \
+                                    (pkg.name, f.attrs["mode"],
+                                        f.attrs["owner"], f.attrs["group"],
+                                        f.attrs["path"])
+                                if not notransact:
+                                        t.add(cfg, id, f)
 
         for p in set(pkg.depend) - set(pkg.undepend):
-                print "    add depend require %s" % sysv_to_new_name(p)
+                print "    %s add depend require %s" % \
+                    (pkg.name, sysv_to_new_name(p))
                 action = actions.depend.DependencyAction(None,
                     type = "require", fmri = sysv_to_new_name(p))
-                t.add(cfg, id, action)
+                if not notransact:
+                        t.add(cfg, id, action)
 
         for a in pkg.extra:
-                print "    add %s" % a
+                print "    %s add %s" % (pkg.name, a)
                 action = actions.fromstr(a)
-                t.add(cfg, id, action)
+                if not notransact:
+                        t.add(cfg, id, action)
 
         print "    close"
-        ret, hdrs = t.close(cfg, id, False)
-        if hdrs:
-                print "%s: %s" % (hdrs["Package-FMRI"], hdrs["State"])
-        else:
-                print "%s: FAILED" % pkg.name
+        if not notransact:
+                ret, hdrs = t.close(cfg, id, False)
+                if hdrs:
+                        print "%s: %s" % (hdrs["Package-FMRI"], hdrs["State"])
+                else:
+                        print "%s: FAILED" % pkg.name
 
         print
 
-def_vers = "5.11"
+def_vers = "0.5.11"
 def_branch = ""
 wos_path = "/net/netinstall.eng/export/nv/s/latest/Solaris_11/Product"
+notransact = False
 
 try:
-        opts, args = getopt.getopt(sys.argv[1:], "b:v:w:")
+        opts, args = getopt.getopt(sys.argv[1:], "b:nv:w:")
 except getopt.GetoptError, e:
         print "unknown option", e.opt
         sys.exit(1)
@@ -175,7 +189,9 @@ if "i386" in args[0]:
 for opt, arg in opts:
         if opt == "-b":
                 def_branch = arg
-        if opt == "-v":
+        elif opt == "-n":
+                notransact = True
+        elif opt == "-v":
                 def_vers = arg
         elif opt == "-w":
                 wos_path = arg
@@ -187,6 +203,7 @@ if not def_branch:
                 l = rf.readline()
                 idx = l.index("nv_") + 3
                 def_branch = "0." + l[idx:idx+2]
+                rf.close()
 if not def_branch:
         print "need a branch id (build number)"
         sys.exit(1)
@@ -224,7 +241,11 @@ while True:
         elif token == "end":
                 endarg = lexer.get_token()
                 if endarg == "package":
-                        end_package(curpkg)
+                        try:
+                                end_package(curpkg)
+                        except Exception, e:
+                                print "ERROR:", e
+
                         curpkg = None
                 if endarg == "import":
                         in_multiline_import = False
@@ -234,7 +255,10 @@ while True:
                 curpkg.version = lexer.get_token()
 
         elif token == "import":
-                curpkg.import_pkg(lexer.get_token())
+                try:
+                        curpkg.import_pkg(lexer.get_token())
+                except Exception, e:
+                        print "ERROR:", e
 
         elif token == "from":
                 pkgname = lexer.get_token()
@@ -256,7 +280,10 @@ while True:
                 curpkg.extra.append(lexer.get_token())
 
         elif in_multiline_import:
-                curpkg.import_file(token)
+                try:
+                        curpkg.import_file(token)
+                except Exception, e:
+                        print "ERROR:", e
 
         else:
                 print "unknown token '%s' (%s:%s)" % \
