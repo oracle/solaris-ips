@@ -58,7 +58,7 @@ class PkgMapLine(object):
 	fleshed out.
 	"""
 
-	def __init__(self, line):
+	def __init__(self, line, basedir = ""):
 		array = line.split()
 		try:
 			self.part = int(array[0])
@@ -92,6 +92,8 @@ class PkgMapLine(object):
 
 		else:
 			raise ValueError("Invalid file type: " + self.type)
+
+                self.pathname = os.path.join(basedir, self.pathname)
 
 # XXX This needs to have a constructor that takes a pkg: FMRI (the new name of
 # the package). - sch
@@ -171,6 +173,12 @@ class SolarisPackage(object):
                         self.pkgpath = path
 
 		self.pkginfo = self.readPkginfoFile()
+                # Snag BASEDIR, and remove leading and trailing slashes.
+                try:
+                        assert self.pkginfo["BASEDIR"][0] == "/"
+                        self.basedir = self.pkginfo["BASEDIR"][1:].rstrip("/")
+                except KeyError:
+                        self.basedir = ""
 		self.deps = self.readDependFile()
 		self.manifest = self.readPkgmapFile()
 
@@ -259,7 +267,7 @@ class SolarisPackage(object):
 			if line[0] == ':':
 				continue
 
-			pkgmap += [ PkgMapLine(line) ]
+			pkgmap += [ PkgMapLine(line, self.basedir) ]
 
 		return pkgmap
 
@@ -267,7 +275,7 @@ if __name__ == "__main__":
 	pkg = SolarisPackage(sys.argv[1])
 
 	for key in sorted(pkg.pkginfo):
-		print key + '=' + pkg.pkginfo[key]
+		print key + '=' + str(pkg.pkginfo[key])
 
 	print
 

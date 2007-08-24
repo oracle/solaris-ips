@@ -47,12 +47,28 @@ class SolarisPackageDirBundle(object):
                 for p in self.pkg.manifest:
                         pkgmap[p.pathname] = p
 
+                def j(path):
+                        return os.path.join(self.pkg.basedir, path)
+
                 for klass in faspac:
                         cf = CpioFile.open(os.path.join(
                             self.filename, "archive", klass + ".bz2"))
                         for ci in cf:
-                                yield self.action(pkgmap[ci.name],
+                                yield self.action(pkgmap[j(ci.name)],
                                     ci.extractfile())
+
+                # Remove BASEDIR from the path.  The extra work is because if
+                # BASEDIR is not empty (non-"/"), then we probably need to strip
+                # an extra slash from the beginning of the path, but if BASEDIR
+                # is "" ("/" in the pkginfo file), then we don't need to do
+                # anything extra.
+                def r(path, type):
+                        if type == "i":
+                                return path
+                        p = path[len(self.pkg.basedir):]
+                        if p[0] == "/":
+                                p = p[1:]
+                        return p
 
                 for p in self.pkg.manifest:
                         # Just do the files that remain.  Only regular file
@@ -63,7 +79,7 @@ class SolarisPackageDirBundle(object):
                         # These are the only valid file types in SysV packages
                         if p.type in "ifevbcdxpls":
                                 yield self.action(p, os.path.join(self.filename,
-                                    "reloc", p.pathname))
+                                    "reloc", r(p.pathname, p.type)))
 
         def action(self, mapline, data):
                 if mapline.type in "fev":
