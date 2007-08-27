@@ -219,7 +219,10 @@ class SolarisPackage(object):
 				continue
 
 			if line[0] == 'P':
-				(type, pkg, desc) = line.split(None, 2)
+                                try:
+                                        type, pkg, desc = line.split(None, 2)
+                                except ValueError:
+                                        type, pkg = line.split()
 				deps += [ Dependency(self.pkginfo['PKG'], pkg) ]
 
 		return deps

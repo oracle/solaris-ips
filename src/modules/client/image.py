@@ -160,8 +160,8 @@ class Image(object):
                 ]
 
                 if not m:
-                        raise KeyError, "pattern '%s' not found in catalog" \
-                            % regex
+                        raise KeyError, "package matching '%s' not found in catalog" \
+                            % pfmri
 
                 return m
 
