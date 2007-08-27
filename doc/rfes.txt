@@ -34,3 +34,12 @@
 
 10.  [sch]  Examine use of alternative, HTTP 1.1-friendly URL loading
      modules.  (Example:  Duke's urlgrabber.)
+
+11.  [pelegri]  Use of package-level metadata to provide additional
+     information, such as links to training/learning resources,
+     declarations of related packages, endorsements by certifying
+     authorities.
+
+12.  [sch]  Support use of :timestamp field for "newer" and "older"
+     queries.
+
