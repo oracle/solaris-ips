@@ -279,11 +279,7 @@ getdynamic(int fd)
 				return (NULL);
 			}
 			num_dyn = shdr.sh_size / shdr.sh_entsize;
-			break;
-
-		case SHT_STRTAB:
-			if (strcmp(name, ".dynstr") == 0)
-				dynstr = elf_ndxscn(scn);
+			dynstr = shdr.sh_link;
 			break;
 
 		case SHT_SUNW_verdef:
@@ -305,7 +301,7 @@ getdynamic(int fd)
 	}
 
 	/* Dynamic but no string table? */
-	if (data_dyn && (dynstr < 0)) {
+	if (data_dyn && dynstr < 0) {
 		printf("bad elf: didn't find the dynamic duo\n");
 		elf_end(elf);
 		return (NULL);
