@@ -1,0 +1,4 @@
+package SUNWtftp
+import SUNWtftp
+import SUNWtftpr
+end package

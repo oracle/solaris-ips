@@ -1,0 +1,5 @@
+package SUNWgnome-vfs
+import SUNWgnome-vfs
+import SUNWgnome-vfs-devel
+import SUNWgnome-vfs-root
+end package

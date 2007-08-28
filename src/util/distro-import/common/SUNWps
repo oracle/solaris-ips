@@ -1,0 +1,4 @@
+package SUNWps
+import SUNWpsu
+import SUNWpsr
+end package

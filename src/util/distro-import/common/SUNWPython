@@ -1,0 +1,5 @@
+package SUNWPython
+import SUNWPython
+import SUNWPython-devel
+version 2.4.4
+end package

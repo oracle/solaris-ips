@@ -1,0 +1,5 @@
+package SUNWgnome-utility-applets
+import SUNWgnome-utility-applets
+import SUNWgnome-utility-applets-devel
+import SUNWgnome-utility-applets-root
+end package

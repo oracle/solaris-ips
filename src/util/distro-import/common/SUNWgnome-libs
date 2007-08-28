@@ -1,0 +1,5 @@
+package SUNWgnome-libs
+import SUNWgnome-libs
+import SUNWgnome-libs-devel
+import SUNWgnome-libs-root
+end package

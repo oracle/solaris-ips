@@ -1,0 +1,4 @@
+package SUNWtcat
+import SUNWtcatu
+import SUNWtcatr
+end package

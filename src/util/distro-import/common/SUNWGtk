@@ -1,0 +1,5 @@
+package SUNWGtk
+import SUNWGtku
+import SUNWGtkr
+version 1.2.10
+end package

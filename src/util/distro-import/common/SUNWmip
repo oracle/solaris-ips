@@ -1,0 +1,4 @@
+package SUNWmip
+import SUNWmipu
+import SUNWmipr
+end package

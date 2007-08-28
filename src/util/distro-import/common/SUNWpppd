@@ -1,0 +1,5 @@
+package SUNWpppd
+import SUNWpppd
+import SUNWpppdu
+import SUNWpppdr
+end package

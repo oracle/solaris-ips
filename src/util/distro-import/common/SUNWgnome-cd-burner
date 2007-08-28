@@ -1,0 +1,5 @@
+package SUNWgnome-cd-burner
+import SUNWgnome-cd-burner
+import SUNWgnome-cd-burner-devel
+import SUNWgnome-cd-burner-root
+end package

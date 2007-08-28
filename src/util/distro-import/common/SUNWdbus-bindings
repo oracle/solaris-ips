@@ -1,0 +1,4 @@
+package SUNWdbus-bindings
+import SUNWdbus-bindings
+import SUNWdbus-bindings-devel
+end package

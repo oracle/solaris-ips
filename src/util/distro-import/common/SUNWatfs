@@ -1,0 +1,4 @@
+package SUNWatfs
+import SUNWatfsu
+import SUNWatfsr
+end package

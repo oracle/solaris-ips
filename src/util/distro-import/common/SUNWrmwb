@@ -1,0 +1,4 @@
+package SUNWrmwb
+import SUNWrmwbu
+import SUNWrmwbr
+end package

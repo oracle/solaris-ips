@@ -1,0 +1,4 @@
+package SUNWbs
+import SUNWbsu
+import SUNWbsr
+end package

@@ -1,0 +1,5 @@
+package SUNWgnome-system-tools
+import SUNWgnome-system-tools
+import SUNWgnome-system-tools-devel
+import SUNWgnome-system-tools-root
+end package

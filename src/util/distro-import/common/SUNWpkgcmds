@@ -1,0 +1,4 @@
+package SUNWpkgcmds
+import SUNWpkgcmdsu
+import SUNWpkgcmdsr
+end package

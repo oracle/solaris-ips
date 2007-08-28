@@ -1,0 +1,6 @@
+package SUNWlxsl
+import SUNWlxsl
+import SUNWlxsl-devel
+import SUNWlxsl-python
+version 1.1.15
+end package

@@ -1,0 +1,5 @@
+package SUNWgnome-pilot
+import SUNWgnome-pilot
+import SUNWgnome-pilot-devel
+import SUNWgnome-pilot-root
+end package

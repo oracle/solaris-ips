@@ -1,0 +1,4 @@
+package SUNWlibm
+import SUNWlibm
+import SUNWlibmr
+end package

@@ -1,0 +1,4 @@
+package SUNWmd
+import SUNWmdu
+import SUNWmdr
+end package

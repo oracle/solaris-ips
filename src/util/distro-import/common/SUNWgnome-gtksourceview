@@ -1,0 +1,4 @@
+package SUNWgnome-gtksourceview
+import SUNWgnome-gtksourceview
+import SUNWgnome-gtksourceview-devel
+end package

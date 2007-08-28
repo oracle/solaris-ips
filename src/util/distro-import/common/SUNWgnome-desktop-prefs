@@ -1,0 +1,5 @@
+package SUNWgnome-desktop-prefs
+import SUNWgnome-desktop-prefs
+import SUNWgnome-desktop-prefs-devel
+import SUNWgnome-desktop-prefs-root
+end package

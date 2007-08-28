@@ -1,0 +1,4 @@
+package SUNWkdc
+import SUNWkdcu
+import SUNWkdcr
+end package

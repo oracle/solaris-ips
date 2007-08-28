@@ -1,0 +1,5 @@
+package SUNWgnome-component
+import SUNWgnome-component
+import SUNWgnome-component-devel
+import SUNWgnome-component-root
+end package

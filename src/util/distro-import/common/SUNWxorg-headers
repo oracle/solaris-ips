@@ -1,0 +1,46 @@
+package SUNWxorg-headers
+# XKBsrv.h is removed to work around 6594768, fixed in 73.
+from SUNWxorg-headers import
+usr/X11
+usr/X11/include
+usr/X11/include/X11
+usr/X11/include/X11/extensions
+usr/X11/include/X11/extensions/XKBbells.h
+usr/X11/include/X11/extensions/XKBconfig.h
+usr/X11/include/X11/extensions/XKBfile.h
+usr/X11/include/X11/extensions/XKBrules.h
+usr/X11/include/X11/extensions/Xrandr.h
+usr/X11/include/X11/extensions/Xv.h
+usr/X11/include/X11/extensions/XvMC.h
+usr/X11/include/X11/extensions/XvMClib.h
+usr/X11/include/X11/extensions/XvMCproto.h
+usr/X11/include/X11/extensions/Xvlib.h
+usr/X11/include/X11/extensions/Xvproto.h
+usr/X11/include/X11/extensions/randr.h
+usr/X11/include/X11/extensions/randrproto.h
+usr/X11/include/X11/extensions/xf86misc.h
+usr/X11/include/X11/extensions/xf86mscstr.h
+usr/X11/include/X11/extensions/xf86vmode.h
+usr/X11/include/X11/extensions/xf86vmstr.h
+usr/lib/amd64/pkgconfig
+usr/lib/amd64/pkgconfig/randrproto.pc
+usr/lib/amd64/pkgconfig/videoproto.pc
+usr/lib/amd64/pkgconfig/xf86miscproto.pc
+usr/lib/amd64/pkgconfig/xf86vidmodeproto.pc
+usr/lib/amd64/pkgconfig/xrandr.pc
+usr/lib/amd64/pkgconfig/xv.pc
+usr/lib/amd64/pkgconfig/xvmc.pc
+usr/lib/amd64/pkgconfig/xxf86misc.pc
+usr/lib/amd64/pkgconfig/xxf86vm.pc
+usr/lib/pkgconfig
+usr/lib/pkgconfig/randrproto.pc
+usr/lib/pkgconfig/videoproto.pc
+usr/lib/pkgconfig/xf86miscproto.pc
+usr/lib/pkgconfig/xf86vidmodeproto.pc
+usr/lib/pkgconfig/xrandr.pc
+usr/lib/pkgconfig/xv.pc
+usr/lib/pkgconfig/xvmc.pc
+usr/lib/pkgconfig/xxf86misc.pc
+usr/lib/pkgconfig/xxf86vm.pc
+end import
+end package

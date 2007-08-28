@@ -1,0 +1,4 @@
+package SUNWwget
+import SUNWwgetu
+import SUNWwgetr
+end package

@@ -1,0 +1,4 @@
+package SUNWmda
+import SUNWmdau
+import SUNWmdar
+end package

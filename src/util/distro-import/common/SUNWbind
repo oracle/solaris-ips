@@ -1,0 +1,4 @@
+package SUNWbind
+import SUNWbind
+import SUNWbindr
+end package

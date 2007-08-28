@@ -1,0 +1,5 @@
+package SUNWgnome-media-apps
+import SUNWgnome-media-apps
+import SUNWgnome-media-apps-devel
+import SUNWgnome-media-apps-root
+end package

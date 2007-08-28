@@ -1,0 +1,4 @@
+package SUNWiscsi
+import SUNWiscsiu
+import SUNWiscsir
+end package

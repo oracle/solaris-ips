@@ -1,0 +1,4 @@
+package SUNWa2ps
+import SUNWa2psu
+import SUNWa2psr
+end package

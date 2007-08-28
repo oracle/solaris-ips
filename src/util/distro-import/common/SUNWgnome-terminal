@@ -1,0 +1,5 @@
+package SUNWgnome-terminal
+import SUNWgnome-terminal
+import SUNWgnome-terminal-devel
+import SUNWgnome-terminal-root
+end package

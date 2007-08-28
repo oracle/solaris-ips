@@ -1,0 +1,5 @@
+package SUNWgnome-audio
+import SUNWgnome-audio
+import SUNWgnome-audio-devel
+import SUNWgnome-audio-root
+end package

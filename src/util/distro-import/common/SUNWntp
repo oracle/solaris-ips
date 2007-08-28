@@ -1,0 +1,4 @@
+package SUNWntp
+import SUNWntpu
+import SUNWntpr
+end package

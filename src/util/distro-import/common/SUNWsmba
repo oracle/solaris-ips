@@ -1,0 +1,4 @@
+package SUNWsmba
+import SUNWsmbau
+import SUNWsmbar
+end package

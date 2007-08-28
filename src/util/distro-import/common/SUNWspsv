@@ -1,0 +1,4 @@
+package SUNWspsv
+import SUNWspsvu
+import SUNWspsvr
+end package

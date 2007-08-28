@@ -1,0 +1,4 @@
+package SUNWdhcs
+import SUNWdhcsu
+import SUNWdhcsr
+end package

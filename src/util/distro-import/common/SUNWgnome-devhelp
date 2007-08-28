@@ -1,0 +1,5 @@
+package SUNWgnome-devhelp
+import SUNWgnome-devhelp
+import SUNWgnome-devhelp-devel
+import SUNWgnome-devhelp-root
+end package

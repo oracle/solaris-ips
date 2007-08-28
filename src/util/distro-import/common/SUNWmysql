@@ -1,0 +1,4 @@
+package SUNWmysql
+import SUNWmysqlu
+import SUNWmysqlr
+end package

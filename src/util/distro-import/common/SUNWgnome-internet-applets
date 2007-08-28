@@ -1,0 +1,5 @@
+package SUNWgnome-internet-applets
+import SUNWgnome-internet-applets
+import SUNWgnome-internet-applets-devel
+import SUNWgnome-internet-applets-root
+end package

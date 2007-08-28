@@ -1,0 +1,4 @@
+package SUNWrcmds
+import SUNWrcmds
+import SUNWrcmdr
+end package

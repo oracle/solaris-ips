@@ -1,0 +1,4 @@
+package SUNWscm
+import SUNWscmu
+import SUNWscmr
+end package

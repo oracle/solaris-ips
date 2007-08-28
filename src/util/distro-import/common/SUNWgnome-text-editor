@@ -1,0 +1,5 @@
+package SUNWgnome-text-editor
+import SUNWgnome-text-editor
+import SUNWgnome-text-editor-devel
+import SUNWgnome-text-editor-root
+end package

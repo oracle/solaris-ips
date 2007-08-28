@@ -1,0 +1,4 @@
+package SUNWnis
+import SUNWnisu
+import SUNWnisr
+end package

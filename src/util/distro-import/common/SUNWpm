@@ -1,0 +1,4 @@
+package SUNWpm
+import SUNWpmu
+import SUNWpmr
+end package

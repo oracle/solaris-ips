@@ -1,0 +1,5 @@
+package SUNWgnome-media-player
+import SUNWgnome-media-player
+import SUNWgnome-media-player-devel
+import SUNWgnome-media-player-root
+end package

@@ -1,0 +1,5 @@
+package SUNWgnome-wm
+import SUNWgnome-wm
+import SUNWgnome-wm-devel
+import SUNWgnome-wm-root
+end package

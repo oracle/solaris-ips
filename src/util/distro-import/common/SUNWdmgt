@@ -1,0 +1,4 @@
+package SUNWdmgt
+import SUNWdmgtu
+import SUNWdmgtr
+end package

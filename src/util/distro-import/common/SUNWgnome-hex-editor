@@ -1,0 +1,5 @@
+package SUNWgnome-hex-editor
+import SUNWgnome-hex-editor
+import SUNWgnome-hex-editor-devel
+import SUNWgnome-hex-editor-root
+end package

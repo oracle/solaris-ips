@@ -1,0 +1,4 @@
+package SUNWcns
+import SUNWcnsu
+import SUNWcnsr
+end package

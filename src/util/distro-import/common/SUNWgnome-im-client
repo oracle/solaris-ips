@@ -1,0 +1,5 @@
+package SUNWgnome-im-client
+import SUNWgnome-im-client
+import SUNWgnome-im-client-devel
+import SUNWgnome-im-client-root
+end package

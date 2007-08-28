@@ -1,0 +1,4 @@
+package SUNWtnetd
+import SUNWtnetd
+import SUNWtnetr
+end package
