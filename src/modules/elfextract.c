@@ -242,7 +242,7 @@ getdynamic(int fd)
 	char		*name = NULL;
 	size_t		sh_str = 0;
 	size_t		vernum = 0, verdefnum = 0;
-	int		t = 0, dynstr = -1;
+	int		t = 0, num_dyn, dynstr = -1;
 	
 	SHA1_CTX	shc;
 	dyninfo_t	*dyn = NULL;
@@ -278,6 +278,7 @@ getdynamic(int fd)
 				elf_end(elf);
 				return (NULL);
 			}
+			num_dyn = shdr.sh_size / shdr.sh_entsize;
 			break;
 
 		case SHT_STRTAB:
@@ -315,8 +316,8 @@ getdynamic(int fd)
 		elf_end(elf);
 		return (NULL);
 	}
-	t = 0;
-	while ((gelf_getdyn(data_dyn, t, &gd))) {
+	for (t = 0; t < num_dyn; t++) {
+		gelf_getdyn(data_dyn, t, &gd);
 		switch (gd.d_tag) {
 		case DT_NEEDED:
 			liblist_add(deps, gd.d_un.d_val);
@@ -328,7 +329,6 @@ getdynamic(int fd)
 			runpath = gd.d_un.d_val;
 			break;
 		}
-		t++;
 	}
 
 	/* Runpath supercedes rpath, but use rpath if no runpath */
