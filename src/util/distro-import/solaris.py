@@ -399,8 +399,6 @@ while True:
         if not token:
                 break
 
-        # XXX want "drop /usr/bin/foo"
-
         if token == "package":
                 curpkg = start_package(lexer.get_token())
 
@@ -444,6 +442,21 @@ while True:
 
         elif token == "add":
                 curpkg.extra.append(lexer.get_token())
+
+        elif token == "drop":
+                f = lexer.get_token()
+                l = [o for o in curpkg.files if o.pathname == f]
+                if not l:
+                        print "Cannot drop '%s' from '%s': not found" % \
+                            (f, curpkg.name)
+                else:
+                        del curpkg.files[curpkg.files.index(l[0])]
+                        # XXX The problem here is that if we do this on a shared
+                        # file (directory, etc), then it's missing from usedlist
+                        # entirely, since we don't keep around *all* packages
+                        # delivering a shared file, just the last seen.  This
+                        # probably doesn't matter much.
+                        del usedlist[f]
 
         elif in_multiline_import:
                 next = lexer.get_token()
