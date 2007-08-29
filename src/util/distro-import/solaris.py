@@ -64,7 +64,7 @@ class pkg(object):
                 #     for d in p.deps
                 # )
 
-        def import_file(self, file):
+        def import_file(self, file, line):
                 imppkgname = self.imppkg.pkginfo["PKG"]
 
                 if file in usedlist:
@@ -80,11 +80,31 @@ class pkg(object):
                                         usedlist[file][1].name)
 
                 usedlist[file] = (imppkgname, self)
-                self.files.extend(
+                o = [
                     o
                     for o in self.imppkg.manifest
                     if o.pathname == file
-                )
+                ]
+                # There should be only one file with a given pathname in a
+                # single package.
+                assert len(o) == 1
+                if line:
+                        t = {
+                            "f": "file", "e": "file", "v": "file",
+                            "d": "dir", "x": "dir",
+                            "s": "link",
+                            "l": "hardlink"
+                        }[o[0].type]
+                        a = actions.fromstr(
+                            "%s path=%s %s" % (t, o[0].pathname, line))
+                        for attr in a.attrs:
+                                if attr == "owner":
+                                        o[0].owner = a.attrs[attr]
+                                elif attr == "group":
+                                        o[0].group = a.attrs[attr]
+                                elif attr == "mode":
+                                        o[0].mode = a.attrs[attr]
+                self.files.extend(o)
 
 def sysv_to_new_name(pkgname):
         return "pkg:/" + pkgname
@@ -162,10 +182,13 @@ def publish_pkg(pkg):
                 pkgname = usedlist[g[0].pathname][0]
                 print "pulling files from archive in package", pkgname
                 bundle = SolarisPackageDirBundle(pkg_path(pkgname))
-                ng = [f.pathname for f in g]
+                pathdict = dict((f.pathname, f) for f in g)
                 for f in bundle:
                         path = f.attrs["path"]
-                        if path in ng:
+                        if path in pathdict:
+                                f.attrs["owner"] = pathdict[path].owner
+                                f.attrs["group"] = pathdict[path].group
+                                f.attrs["mode"] = pathdict[path].mode
                                 print "    %s add file %s %s %s %s" % \
                                     (pkg.name, f.attrs["mode"],
                                         f.attrs["owner"], f.attrs["group"],
@@ -376,7 +399,6 @@ while True:
         if not token:
                 break
 
-        # XXX want "from package import foobar with name=blah mode=blah etc"
         # XXX want "drop /usr/bin/foo"
 
         if token == "package":
@@ -424,8 +446,18 @@ while True:
                 curpkg.extra.append(lexer.get_token())
 
         elif in_multiline_import:
+                next = lexer.get_token()
+                if next == "with":
+                        # I can't imagine this is supported, but there's no
+                        # other way to read the rest of the line without a whole
+                        # lot more pain.
+                        line = lexer.instream.readline().strip()
+                else:
+                        lexer.push_token(next)
+                        line = ""
+
                 try:
-                        curpkg.import_file(token)
+                        curpkg.import_file(token, line)
                 except Exception, e:
                         print "ERROR(import_file):", e
                         raise
