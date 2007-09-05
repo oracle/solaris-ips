@@ -144,6 +144,7 @@ ROOTCOMPONENTS = \
 	$(ROOTPYBUNDLEMODS)
 
 all := TARGET = all
+link := TARGET = link
 
 all: $(PROGS) binary-modules
 
@@ -166,6 +167,7 @@ link:
 	ln -s $(PWD)/publish.py /usr/bin/pkgsend
 	ln -s $(PWD)/depot.py /usr/lib/pkg.depotd
 	ln -s $(PWD)/modules /usr/lib/python2.4/vendor-packages/pkg
+	@cd brand; pwd; $(MAKE) $(TARGET)
 
 # Invoke all known modules with tests.
 # XXX Invoke the bundle tests.

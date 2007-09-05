@@ -1,0 +1,78 @@
+#!/bin/ksh -p
+#
+# CDDL HEADER START
+#
+# The contents of this file are subject to the terms of the
+# Common Development and Distribution License (the "License").
+# You may not use this file except in compliance with the License.
+#
+# You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+# or http://www.opensolaris.org/os/licensing.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+#
+# When distributing Covered Code, include this CDDL HEADER in each
+# file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+# If applicable, add the following below this CDDL HEADER, with the
+# fields enclosed by brackets "[]" replaced with your own identifying
+# information: Portions Copyright [yyyy] [name of copyright owner]
+#
+# CDDL HEADER END
+#
+#
+# Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+# Use is subject to license terms.
+#
+
+usage() {
+	print "Usage: $0 [-h] -R <zoneroot> -z <zonename>"
+	exit $ZONE_SUBPROC_USAGE
+}
+
+trap_cleanup() {
+	print "Installation cancelled due to interrupt."
+	exit $int_code
+}
+
+ZONE_SUBPROC_OK=0
+ZONE_SUBPROC_USAGE=253
+ZONE_SUBPROC_NOTCOMPLETE=254
+ZONE_SUBPROC_FATAL=255
+
+int_code=$ZONE_SUBPROC_NOTCOMPLETE
+
+trap trap_cleanup INT
+
+while getopts "z:R:h" opt; do
+	case $opt in
+		h)	usage ;;
+		R)	zoneroot="$OPTARG" ;;
+		z)	zonename="$OPTARG" ;;
+		*)	usage ;;
+	esac
+done
+shift $((OPTIND-1))
+
+if [[ -z $zoneroot || -z $zonename ]]; then
+	print "No zone root or name"
+	exit $ZONE_SUBPROC_USAGE
+fi
+
+print "Preparing image"
+mkdir -p -m 0700 $zoneroot
+rootdir=$zoneroot/root
+pkg image -F $rootdir
+print "Retrieving catalog"
+pkg -R $rootdir refresh
+print "Installing SUNWcs SUNWesu SUNWadmr SUNWts"
+pkg -R $rootdir install SUNWcs@ SUNWesu SUNWadmr SUNWts@
+print "Setting up SMF profile links"
+# This was formerly done in SUNWcsr/postinstall
+ln -s ns_files.xml $rootdir/var/svc/profile/name_service.xml
+ln -s generic_open.xml $rootdir/var/svc/profile/generic.xml
+ln -s inetd_generic.xml $rootdir/var/svc/profile/inetd_services.xml
+ln -s platform_none.xml $rootdir/var/svc/profile/platform.xml
+print "Copying SMF seed repository"
+# This was formerly done in i.manifest
+cp $rootdir/lib/svc/seed/nonglobal.db $rootdir/etc/svc/repository.db
+print "Done (${SECONDS}s)"
