@@ -1,3 +1,4 @@
 package SUNWpostgr-contrib
 import SUNWpostgr-contrib
+version 8.1.9
 end package

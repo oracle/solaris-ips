@@ -1,4 +1,5 @@
 package SUNWmysql
 import SUNWmysqlu
 import SUNWmysqlr
+version 4.0.24
 end package

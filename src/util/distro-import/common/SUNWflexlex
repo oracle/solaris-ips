@@ -1,3 +1,4 @@
 package SUNWflexlex
 import SUNWflexlex
+version 2.5.33
 end package

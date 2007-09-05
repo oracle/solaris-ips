@@ -1,3 +1,4 @@
 package SUNWgnu-automake-110
 import SUNWgnu-automake-110
+version 1.10
 end package

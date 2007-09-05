@@ -1,3 +1,4 @@
 package SUNWbinutils
 import SUNWbinutils
+version 2.15
 end package

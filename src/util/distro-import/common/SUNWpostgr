@@ -1,4 +1,5 @@
 package SUNWpostgr
 import SUNWpostgr
 import SUNWpostgr-devel
+version 8.1.9
 end package

@@ -1,3 +1,4 @@
 package SUNWpostgr-server
 import SUNWpostgr-server
+version 8.1.9
 end package

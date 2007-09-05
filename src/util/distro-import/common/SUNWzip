@@ -1,3 +1,4 @@
 package SUNWzip
 import SUNWzip
+version 2.31
 end package

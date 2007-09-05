@@ -1,3 +1,4 @@
 package SUNWmercurial
 import SUNWmercurial
+version 0.9.3
 end package

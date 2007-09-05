@@ -1,3 +1,4 @@
 package SUNWgnu-coreutils
 import SUNWgnu-coreutils
+version 6.7
 end package

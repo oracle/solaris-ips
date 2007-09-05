@@ -1,3 +1,4 @@
 package SUNWunzip
 import SUNWunzip
+version 5.52
 end package

@@ -1,3 +1,4 @@
 package SUNWpostgr-82-tcl
 import SUNWpostgr-82-tcl
+version 1.5
 end package

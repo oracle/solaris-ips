@@ -1,4 +1,5 @@
 package SUNWbind
 import SUNWbind
 import SUNWbindr
+version 9.3.4.1
 end package

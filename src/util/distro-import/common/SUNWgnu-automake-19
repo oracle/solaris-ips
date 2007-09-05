@@ -1,3 +1,4 @@
 package SUNWgnu-automake-19
 import SUNWgnu-automake-19
+version 1.9.6
 end package

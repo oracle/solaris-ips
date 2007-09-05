@@ -1,3 +1,4 @@
 package SUNWtidy
 import SUNWtidy
+version 1.0.0
 end package

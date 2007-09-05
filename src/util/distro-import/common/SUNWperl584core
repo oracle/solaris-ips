@@ -1,3 +1,4 @@
 package SUNWperl584core
 import SUNWperl584core
+version 5.8.4
 end package

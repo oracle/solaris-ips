@@ -1,3 +1,4 @@
 package SUNWpostgr-docs
 import SUNWpostgr-docs
+version 8.1.9
 end package

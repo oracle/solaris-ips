@@ -1,3 +1,4 @@
 package SUNWgdb
 import SUNWgdb
+version 6.3
 end package

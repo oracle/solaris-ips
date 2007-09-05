@@ -1,4 +1,5 @@
 package SUNWffilters
 import SUNWffiltersu
 import SUNWffiltersr
+version 3.0.2
 end package

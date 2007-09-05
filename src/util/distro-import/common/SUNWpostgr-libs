@@ -1,3 +1,4 @@
 package SUNWpostgr-libs
 import SUNWpostgr-libs
+version 8.1.9
 end package

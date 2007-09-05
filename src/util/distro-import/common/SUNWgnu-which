@@ -1,3 +1,4 @@
 package SUNWgnu-which
 import SUNWgnu-which
+version 2.16
 end package

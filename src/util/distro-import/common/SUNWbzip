@@ -1,3 +1,4 @@
 package SUNWbzip
 import SUNWbzip
+version 1.0.4
 end package

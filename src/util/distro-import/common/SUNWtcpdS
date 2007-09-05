@@ -1,3 +1,4 @@
 package SUNWtcpdS
 import SUNWtcpdS
+version 7.6
 end package

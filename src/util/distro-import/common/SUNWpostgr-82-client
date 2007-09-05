@@ -1,3 +1,4 @@
 package SUNWpostgr-82-client
 import SUNWpostgr-82-client
+version 8.2.4
 end package
