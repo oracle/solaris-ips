@@ -201,6 +201,16 @@ class Action(object):
                         return -1
                 elif type(self) != types["dir"] == type(other):
                         return 1
+                # Hard links come after files.
+                # XXX We order them after everything, though, so that they
+                # really do show up after files.  Otherwise they could get
+                # sorted only through comparisons with things that don't care
+                # how they're sorted with regard to files, and they could end up
+                # before the files they need to be before.  :(
+                elif type(self) == types["hardlink"] != type(other):
+                        return 1
+                elif type(self) != types["hardlink"] == type(other):
+                        return -1
                 # Resort to the default comparison
                 else:
                         return cmp(id(self), id(other))

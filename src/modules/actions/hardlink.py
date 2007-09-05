@@ -30,6 +30,8 @@
 This module contains the HardLinkAction class, which represents a hardlink-type
 packaging object."""
 
+import os
+
 import link
 
 class HardLinkAction(link.LinkAction):
@@ -39,3 +41,23 @@ class HardLinkAction(link.LinkAction):
 
         def __init__(self, data=None, **attrs):
                 link.LinkAction.__init__(self, data, **attrs)
+
+        def install(self, image, orig):
+                """Client-side method that installs a hard link."""
+
+                path = self.attrs["path"]
+                target = self.attrs["target"]
+
+                path = os.path.normpath(os.path.sep.join(
+                    (image.get_root(), path)))
+
+                if os.path.exists(path):
+                        os.unlink(path)
+
+                # If the target has a relative path, we need to construct its
+                # absolute path.
+                if target[0] != "/":
+                        target = os.path.normpath(
+                            os.path.join(os.path.split(path)[0], target))
+
+                os.link(target, path)
