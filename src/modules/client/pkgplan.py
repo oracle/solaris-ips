@@ -142,7 +142,14 @@ class PkgPlan(object):
                 # is "install").
                 for src, dest in self.actions:
                         if dest:
-                                dest.install(self.image, src)
+                                try:
+                                        dest.install(self.image, src)
+                                except Exception, e:
+                                        print "Action install failed for '%s' (%s):\n  %s: %s" % \
+                                            (dest.attrs[dest.key_attr],
+                                            self.destination_fmri.get_pkg_stem(),
+                                            e.__class__.__name__, e)
+                                        raise
                         else:
                                 src.remove(self.image)
 

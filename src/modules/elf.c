@@ -229,6 +229,7 @@ get_dynamic(PyObject *self, PyObject *args)
 		hexhash[2 * i] = hexchars[(dyn->hash[i] & 0xf0) >> 4];
 		hexhash[2 * i + 1] = hexchars[dyn->hash[i] & 0x0f];
 	}
+	hexhash[40] = '\0';
 
 	PyDict_SetItemString(pdict, "hash", Py_BuildValue("s", hexhash));
 	

@@ -25,6 +25,7 @@
 # Use is subject to license terms.
 #
 
+import errno
 import os
 import re
 import sha
