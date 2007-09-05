@@ -62,12 +62,27 @@ class DirectoryAction(generic.Action):
                 path = os.path.normpath(os.path.sep.join(
                     (image.get_root(), path)))
 
+                # XXX Hack!  (See below comment.)
+                mode |= 0200
+
                 if not orig:
                         try:
-                                os.mkdir(path, mode)
+                                self.makedirs(path, mode)
                         except OSError, e:
                                 if e.errno != errno.EEXIST:
                                         raise
+
+                # The downside of chmodding the directory is that as a non-root
+                # user, if we set perms u-w, we won't be able to put anything in
+                # it, which is often not what we want at install time.  We save
+                # the chmods for the postinstall phase, but it's always possible
+                # that a later package install will want to place something in
+                # this directory and then be unable to.  So perhaps we need to
+                # (in all action types) chmod the parent directory to u+w on
+                # failure, and chmod it back aftwards.  The trick is to
+                # recognize failure due to missing file_dac_write in contrast to
+                # other failures.  Or can we require that everyone simply have
+                # file_dac_write who wants to use the tools.  Probably not.
                 elif mode != omode:
                         os.chmod(path, mode)
 

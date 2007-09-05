@@ -31,6 +31,7 @@ This module contains the Action class, which represents a generic packaging
 object.  It also contains a helper function, gunzip_from_stream(), which actions
 may use to decompress their data payloads."""
 
+import os
 import sha
 import zlib
 
@@ -260,6 +261,31 @@ class Action(object):
                         indices["content"] = self.hash
 
                 return indices
+
+        @staticmethod
+        def makedirs(path, leafmode):
+                """Make directory specified by 'path' with mode 'leafmode', as
+                well as all missing parent directories.
+
+                The difference between this and os.makedirs() is that 'leafmode'
+                specifies only the mode of the leaf directory.  Missing parent
+                directories are created with the permissions of the deepest
+                existing directory."""
+
+                pathlist = path.split("/")
+                pathlist[0] = "/"
+
+                g = enumerate(pathlist)
+                for i, e in g:
+                        if not os.path.isdir(os.path.join("/", *pathlist[:i + 1])):
+                                break
+
+                # XXX need to set owner/group, too
+                mode = os.stat(os.path.join("/", *pathlist[:i])).st_mode
+                for i, e in g:
+                        os.mkdir(os.path.join("/", *pathlist[:i]), mode)
+
+                os.mkdir(path, leafmode)
 
         def preinstall(self, image, orig):
                 """Client-side method that performs pre-install actions."""
