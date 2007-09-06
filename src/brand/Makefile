@@ -28,6 +28,8 @@ MACH:sh = uname -p
 PYTHON = /usr/bin/python
 
 ROOT = ../../proto/root_${MACH}
+ROOTETC = $(ROOT)/etc
+ROOTETCZONES = $(ROOT)/etc/zones
 ROOTUSRLIB = $(ROOT)/usr/lib
 ROOTBRAND = $(ROOTUSRLIB)/brand
 ROOTBRANDPKG = $(ROOTBRAND)/ipkg
@@ -36,11 +38,14 @@ LINKBRANDPKG = /usr/lib/brand/ipkg
 
 ROOTDIRS = \
 	$(ROOT) \
+	$(ROOTETC) \
+	$(ROOTETCZONES) \
 	$(ROOTUSRLIB) \
 	$(ROOTBRAND) \
 	$(ROOTBRANDPKG)
 
 ROOTFILES = \
+	$(ROOTETCZONES)/SUNWipkg.xml \
 	$(ROOTBRANDPKG)/config.xml \
 	$(ROOTBRANDPKG)/platform.xml
 
@@ -64,8 +69,11 @@ link:
 	ln -s $(PWD)/platform.xml /usr/lib/brand/ipkg/platform.xml
 	ln -s $(PWD)/SUNWipkg.xml /etc/zones/SUNWipkg.xml
 
-$(ROOT) $(ROOTUSRLIB) $(ROOTBRAND) $(ROOTBRANDPKG):
-	mkdir -p $(ROOTBRANDPKG)
+$(ROOT) $(ROOTETC) $(ROOTETCZONES) $(ROOTUSRLIB) $(ROOTBRAND) $(ROOTBRANDPKG):
+	mkdir -p $@
+
+$(ROOTETCZONES)/%: $(ROOTETCZONES) %
+	rm -f $@; install -f $(ROOTETCZONES) -m 0444 $<
 
 $(ROOTBRANDPKG)/%: $(ROOTBRANDPKG) %
 	rm -f $@; install -f $(ROOTBRANDPKG) -m 0444 $<

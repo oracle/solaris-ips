@@ -6,6 +6,7 @@
 \.so
 \.sw.
 ^proto
+^packages
 # Specific build products
 ^src/pkg$
 ^src/pkgsend$

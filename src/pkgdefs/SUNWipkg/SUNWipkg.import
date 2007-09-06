@@ -1,0 +1,6 @@
+package SUNWipkg
+import SUNWipkg
+depend SUNWPython@2.4.4
+depend SUNWcsl@0.5.11
+version 0.0.0
+end package

@@ -61,6 +61,7 @@ ROOTPROGS = \
 
 PYMODS = \
 	modules/__init__.py \
+	modules/Queue25.py \
 	modules/arch.so \
 	modules/catalog.py \
 	modules/config.py \
@@ -72,6 +73,7 @@ PYMODS = \
 	modules/manifest.py \
 	modules/misc.py \
 	modules/package.py \
+	modules/smf.py \
 	modules/sysvpkg.py \
 	modules/version.py
 
@@ -80,6 +82,7 @@ PYACTIONMODS = \
 	modules/actions/attribute.py \
 	modules/actions/depend.py \
 	modules/actions/directory.py \
+	modules/actions/driver.py \
 	modules/actions/file.py \
 	modules/actions/generic.py \
 	modules/actions/hardlink.py \
@@ -101,16 +104,6 @@ PYCLIENTMODS = \
 PYPUBLISHMODS = \
 	modules/publish/__init__.py \
 	modules/publish/transaction.py
-
-PYACTIONMODS = \
-	modules/actions/__init__.py \
-	modules/actions/directory.py \
-	modules/actions/generic.py \
-	modules/actions/link.py \
-	modules/actions/attribute.py \
-	modules/actions/file.py \
-	modules/actions/hardlink.py \
-	modules/actions/unknown.py
 
 PYBUNDLEMODS = \
 	modules/bundle/__init__.py \
@@ -145,6 +138,7 @@ ROOTCOMPONENTS = \
 
 all := TARGET = all
 link := TARGET = link
+install := TARGET = install
 
 all: $(PROGS) binary-modules
 
@@ -155,6 +149,8 @@ clobber: clean
 	rm -fr $(ROOT)
 
 install: $(ROOTCOMPONENTS)
+	@cd brand; pwd; $(MAKE) $(TARGET)
+	@cd pkgdefs; pwd; $(MAKE) $(TARGET)
 
 binary-modules:
 	@cd modules; pwd; $(MAKE) $(TARGET)
@@ -218,9 +214,6 @@ $(ROOTPYTHONPKG)/publish/%: modules/publish/%
 
 $(ROOTPYTHONPKG)/client/%: modules/client/%
 	rm -f $@; install -f $(ROOTPYTHONPKG)/client -m 0444 $<
-
-$(ROOTPYTHONPKG)/actions/%: modules/actions/%
-	rm -f $@; install -f $(ROOTPYTHONPKG)/actions -m 0444 $<
 
 $(ROOTPYTHONPKG)/bundle/%: modules/bundle/%
 	rm -f $@; install -f $(ROOTPYTHONPKG)/bundle -m 0444 $<

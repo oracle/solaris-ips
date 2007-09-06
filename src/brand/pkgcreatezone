@@ -64,8 +64,16 @@ rootdir=$zoneroot/root
 pkg image -F $rootdir
 print "Retrieving catalog"
 pkg -R $rootdir refresh
-print "Installing SUNWcs SUNWesu SUNWadmr SUNWts"
-pkg -R $rootdir install SUNWcs@ SUNWesu SUNWadmr SUNWts@
+if [[ $? -ne 0 ]]; then
+	print "Failed to retrieve catalog"
+	exit 1
+fi
+print "Installing SUNWcs SUNWesu SUNWadmr SUNWts SUNWipkg"
+pkg -R $rootdir install SUNWcs@ SUNWesu SUNWadmr SUNWts@ SUNWipkg
+if [[ $? -ne 0 ]]; then
+	print "Failed to install packages"
+	exit 1
+fi
 print "Setting up SMF profile links"
 # This was formerly done in SUNWcsr/postinstall
 ln -s ns_files.xml $rootdir/var/svc/profile/name_service.xml
