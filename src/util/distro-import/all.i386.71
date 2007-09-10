@@ -1,0 +1,3 @@
+include all.i386
+include common/SUNWjds-registration.71
+include common/SUNWmip

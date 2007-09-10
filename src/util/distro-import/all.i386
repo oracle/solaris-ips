@@ -441,7 +441,6 @@ include common/SUNWjavadb-docs
 include common/SUNWjavadb-javadoc
 include common/SUNWjaxp
 include common/SUNWjdmk-base
-include common/SUNWjds-registration
 include common/SUNWjdsrm
 include common/SUNWjdsver
 include common/SUNWjfp
@@ -527,7 +526,6 @@ include common/SUNWmfrun
 include common/SUNWmga
 include common/SUNWmgapp
 include common/SUNWmibii
-include common/SUNWmip
 include common/SUNWmkcd
 include common/SUNWmlib
 include common/SUNWmlibe

@@ -1,0 +1,9 @@
+include all.i386
+include common/SUNWastdev
+include common/SUNWdsd
+include common/SUNWdttshelp
+include common/SUNWdtts
+include common/SUNWjds-registration.72
+include common/SUNWgnu-idn
+include common/SUNWxorg-tsol-module
+include common/SUNWxwts

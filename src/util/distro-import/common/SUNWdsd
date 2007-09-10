@@ -1,0 +1,4 @@
+package SUNWdsd
+import SUNWdsdr
+import SUNWdsdu
+end package
