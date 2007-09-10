@@ -178,9 +178,8 @@ class Transaction(object):
 
                 hdrs = request.headers
 
-                attrs = dict((hdr.lower(), hdrs[hdr])
-                    for hdr in hdrs
-                    if hdr in pkg.actions.types[type].attributes)
+                attrs = dict(hdr.split("=", 1)
+                    for hdr in hdrs.getheaders("X-IPkg-SetAttr"))
 
                 # If any attributes appear to be lists, make them lists.
                 for a in attrs:

@@ -106,6 +106,18 @@ class pkg(object):
                                         o[0].mode = a.attrs[attr]
                 self.files.extend(o)
 
+        def chattr(self, file, line):
+                o = [f for f in self.files if f.pathname == file]
+                if not o:
+                        raise RuntimeError, "No file '%s' in package '%s'" % \
+                            (file, curpkg.name)
+                # It's probably a file, but all we care about are the
+                # attributes.
+                print "Updating attributes on '%s' in '%s' with '%s'" % \
+                    (file, curpkg.name, line)
+                a = actions.fromstr("file path=%s %s" % (file, line))
+                o[0].changed_attrs = a.attrs
+
 def sysv_to_new_name(pkgname):
         return "pkg:/" + pkgname
 
@@ -191,6 +203,9 @@ def publish_pkg(pkg):
                                 f.attrs["owner"] = pathdict[path].owner
                                 f.attrs["group"] = pathdict[path].group
                                 f.attrs["mode"] = pathdict[path].mode
+                                if hasattr(pathdict[path], "changed_attrs"):
+                                        f.attrs.update(
+                                            pathdict[path].changed_attrs)
                                 print "    %s add file %s %s %s %s" % \
                                     (pkg.name, f.attrs["mode"],
                                         f.attrs["owner"], f.attrs["group"],
@@ -470,6 +485,16 @@ while True:
                         # delivering a shared file, just the last seen.  This
                         # probably doesn't matter much.
                         del usedlist[f]
+
+        elif token == "chattr":
+                fname = lexer.get_token()
+                line = lexer.instream.readline().strip()
+                try:
+                        curpkg.chattr(fname, line)
+                except Exception, e:
+                        print "Can't change attributes on '%s': not in the package" % \
+                            fname
+                        raise
 
         elif in_multiline_import:
                 next = lexer.get_token()

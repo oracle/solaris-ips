@@ -149,21 +149,21 @@ class Transaction(object):
                 host, port = uri_exp[1].split(":")
                 selector = "/add/%s/%s" % (trans_id, type)
 
-                headers = dict((k.capitalize(), attrs[k])
-                    for k in attrs
-                    if k in pkg.actions.types[type].attributes)
-
                 # XXX Need to handle large files
                 if action.data != None:
                         datastream = action.data()
                         data = datastream.read()
                 else:
                         data = ""
-                headers["Content-Length"] = len(data)
 
                 c = httplib.HTTPConnection(host, port)
                 c.connect()
-                c.request("POST", selector, data, headers)
+                c.putrequest("POST", selector)
+                for k in attrs:
+                        c.putheader("X-IPkg-SetAttr", "%s=%s" % (k, attrs[k]))
+                c.putheader("Content-Length", len(data))
+                c.endheaders()
+                c.send(data)
 
                 try:
                         r = c.getresponse()
