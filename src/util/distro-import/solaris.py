@@ -166,6 +166,8 @@ def publish_pkg(pkg):
                         action = actions.hardlink.HardLinkAction(None,
                             target = f.target, path = f.pathname)
                         t.add(cfg, id, action)
+                        pkg.depend += process_link_dependencies(
+                            f.pathname, f.target)
 
         # Group the files in a (new) package based on what (old) package they
         # came from, so that we can iterate through all files in a single (old)
@@ -240,6 +242,17 @@ def publish_pkg(pkg):
                 print "%s: FAILED" % pkg.name
 
         print
+
+def process_link_dependencies(path, target):
+        if target[0] != "/":
+                target = os.path.normpath(
+                    os.path.join(os.path.split(path)[0], target))
+
+        if target in usedlist:
+                return ["%s@%s" % (usedlist[target][1].name,
+                    usedlist[target][1].version)]
+        else:
+                return []
 
 def process_dependencies(file, path):
         if not elf.is_elf_object(file):

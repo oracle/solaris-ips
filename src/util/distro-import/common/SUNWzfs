@@ -1,4 +1,6 @@
 package SUNWzfs
 import SUNWzfsu
 import SUNWzfsr
+drop usr/sbin/zdb
+drop usr/lib/fs/zfs/fstyp
 end package
