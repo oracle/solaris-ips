@@ -176,11 +176,18 @@ pkg: no package matching '%s' could be found in current catalog
                 pnames = {}
                 for m in matches:
                         pnames[m[1].get_pkg_stem()] = 1
+                        # If we find an exact match, forget about anything else
+                        # and stop looking.
+                        if m[1].pkg_name == ppat:
+                                pnames.clear()
+                                pnames[m[1].get_pkg_stem()] = 1
+                                break
 
                 if len(pnames.keys()) > 1:
                         print "pkg: '%s' matches multiple packages" % ppat
                         for k in pnames.keys():
                                 print "\t%s" % k
+                        error = 1
                         continue
 
                 ip.propose_fmri(m[1])
