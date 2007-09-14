@@ -107,3 +107,55 @@ IMAGES
 
     (XXX Should we instead assume that each of Zones and Xen will
     acquire service FMRIs per zone/domain?)
+
+
+2.3  Image-filesystem interactions
+
+    The intent is to utilize snapshot-capable filesystems to provide a
+    rollback mechanism that includes both the pkg(1M)-driven
+    modifications as well as subsequent modifications from configuration
+    methods, etc.  In most cases, we are considering a filesystem with
+    capabilities similar to ZFS.
+
+    XXX Is fssnap_ufs(1M) sufficient to build something meaningful for
+    UFS?
+
+    With appropriate policies set, the image plan, prior to execution
+    must snapshot the involved filesystems.
+
+    There seem to be two options:
+
+    1.  The image can build its list of filesystems and types (plus
+	other attributes, like mutability.
+
+    2.  A list of filesystems is given to each package plan, the package
+	plan then evaluates its proposed actions against that list, and
+	offers a method to return the affected subset of the list.
+
+	In this case, we must also determine whether or not we are
+	restricted to clones (because one or more packages in the image
+	plan require kernel-restart) or are potentially live.
+
+    XXX Either of these approaches is applicable in the image/substrate
+    model, where the substrate owns the low-level properties specific to
+    a particular "place to write data".
+
+    In the case that one or more filesystems in the image is or are not
+    capable of snapshots, we have two choices:
+
+    - take no snapshot, as image-revert not possible in any safe or
+      complete sense
+
+    - take a set of snapshots that lead to a revert point that requires
+      manual forcing
+
+    We must warn about images of this kind, unless policy settings allow
+    us otherwise.  Since we want to allow and understand "zfs
+    split"-style operations [1], we also need to determine if a snapshot
+    set taken before a split can sensibly be restored after the split
+    operation.
+
+
+3.  References
+
+[1] (The zfs split RFE.)

@@ -10,7 +10,7 @@ SUPPORTED ACTIONS
   scripts and the postinstall scripts to identify the set of common
   actions.
 
-  [null]	For non editable files
+  file		For non editable files
   preserve	Keep edited file, install latest version of file in
   		documented location
   displace	Install file, move edited file to documented location
@@ -28,4 +28,37 @@ SUPPORTED ACTIONS
   XXX Do we have a hard-reboot, reconfigure-reboot, and/or soft-reboot
   action?  Otherwise we are going to build path knowledge somewhere else
   in the packaging system.
+
+  <interface>
+  	<action name="file" payload="true" commitment="Committed" />
+  	<action name="preserve" payload="true" commitment="Committed" />
+  	<action name="displace" payload="true" commitment="Committed" />
+  	<action name="service" payload="true" commitment="Committed" />
+  	<action name="driver" payload="false" commitment="Committed" />
+	<!-- XXX credential incomplete -->
+  </interface>
+
+1.  Custom actions
+
+  It is discouraged, but certainly possible to deliver custom actions
+  into the appropriate $PYTHONROOT/vendor-packages/pkg directory, by
+  including those actions in a separate package that the new package
+  requires, and invoking the pkg(1) client twice--once to deliver the
+  custom actions and once to use them to install the new package.
+  (Rescanning pkg.actions would complicate the image plan/package plan
+  evaluations.)
+
+  The deployer may wish to deny such actions from operating.  For this
+  case, the set of known actions is fixed elsewhere in the pkg modules
+  and updated with subsequent versions.  A global and per-image policy,
+  known-actions-only, allows the deployer to disallow operations on
+  packages utilizing actions of unknown provenance.
+
+  <interface>
+  	<policy name="known-actions-only" scope="global,image"
+	    type="boolean" commitment="Committed">
+	Deployer control over execution of unknown actions.
+	</policy>
+  <interface>
+
 

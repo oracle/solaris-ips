@@ -1,29 +1,69 @@
 
-Design
-- need a discussion of catalogs, comparisons between, and operations on
-- need a discussion of client-side cache/state
+pkg
+TODO
 
-Code
-- need to outline ELF inspection module
-	- ali has constructed a simple C example for extracting run
-	paths
-	http://blogs.sun.com/ali/entry/changing_elf_runpaths
+  During the prototype phase, this is merely a list of items not fully
+  discussed, written up or implemented.
 
-- need to start constructing placeholder classes/methods for various
-  pieces
-	- list of pieces
-- naming convention to split objects into common, client-only, and
-  server-only
+1.  Algorithms/Logic
 
-Data
-- version and patch history of S9 and S10 (S8?)
-- version history of something complicated, like
-  Firefox/Thunderbird/Sunbird
+	- Preferred authority fallback
+		- a discussion of catalogs, comparisons between, and
+		  operations on
+		- per-package authority association
 
-Demos
-- encoded package sequences for Firefox/Thunderbird/Sunbird
-- encoded package sequence for OpenOffice (may not be possible,
-  depending on installer function)
-- whole root zone
-- distro (install to Xen)
+	- Catalog update mechanism
+		- event oriented
+		- digested
+
+	- Freeze/constraint flow
+		- statement
+		- back tracking
+
+	- Snapshot/revert safety
+
+	- Image/substrate relationship
+	- Image operational history
+
+	- Conventions for automated repository discovery
+	- Peer/neighborhood cooperation/verification/etc.
+
+	- Depot management
+		- store forever and demote from catalog
+		- conserve disk space
+		- client as depot?
+
+	- Compatibility options
+		- understand SysV as fixed version:timestamp packages
+		  from a legacy authority?
+
+2.  Formats/interfaces
+
+	- Versioned formats (event, full) for catalog
+	- Versioned format for manifest
+
+	- Versioned format for marshalled transactions ("new package
+	  format")
+
+	- Practices around REST and versions (entry points or data?)
+
+3.  Data analysis
+
+	- continued examination of version and patch history of S9 and
+	  S10 (S8?)
+		- write up worked examples (e.g. telnet on both sides
+		  of private kernel API change)
+
+4.  Coding
+
+	- Server split to transaction server and plain old HTTP server
+	  sides
+
+	- SSH tunnel support in pkgsend(1)
+
+5.  Demonstration distro
+
+	- x64/x86 first, based on Indiana requests
+
+	- Need pkg(1), pkgsend(1), pkg.depotd(1M) manual pages
 
