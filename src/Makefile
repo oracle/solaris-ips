@@ -65,7 +65,6 @@ PYMODS = \
 	modules/arch.so \
 	modules/catalog.py \
 	modules/config.py \
-	modules/content.py \
 	modules/cpiofile.py \
 	modules/dependency.py \
 	modules/elf.so \
@@ -97,6 +96,7 @@ PYSERVERMODS = \
 PYCLIENTMODS = \
 	modules/client/__init__.py \
 	modules/client/image.py \
+	modules/client/imageconfig.py \
 	modules/client/imageplan.py \
 	modules/client/pkgplan.py \
 	modules/client/retrieve.py
@@ -176,6 +176,7 @@ test:
 	$(PYTHON) $(LINKPYTHONPKG)/catalog.py
 	$(PYTHON) $(LINKPYTHONPKG)/manifest.py
 	$(PYTHON) $(LINKPYTHONPKG)/smf.py
+	$(PYTHON) $(LINKPYTHONPKG)/client/imageconfig.py
 
 $(ROOT) $(ROOTUSRBIN) $(ROOTUSRLIB):
 	mkdir -p $(ROOT)

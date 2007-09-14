@@ -54,8 +54,8 @@ PKG_HDR_END = "# end of header"
 class PkgMapLine(object):
 	"""A class that represents a single line of a SysV package's pkgmap.
 
-	XXX This class should probably disappear once pkg.Content is a bit more
-	fleshed out.
+        XXX This class should probably disappear once pkg.manifest? is a bit
+        more fleshed out.
 	"""
 
 	def __init__(self, line, basedir = ""):
@@ -189,8 +189,6 @@ class SolarisPackage(object):
                 # pkg: FMRI.
                 pv = PkgVersion(self.pkginfo["PKG"], self.pkginfo["VERSION"])
 
-                # XXX this should create Contents objects, but those aren't
-                # useful at the moment.  For now, any list will do.
                 pv.set_contents(self.manifest)
                 pv.set_dependencies(self.deps)
 

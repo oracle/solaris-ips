@@ -23,14 +23,18 @@
 # Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
+import ConfigParser
 import getopt
 import os
 import re
 import urllib
+# import uuid           # XXX interesting 2.5 module
 
 import pkg.catalog as catalog
 import pkg.fmri as fmri
 import pkg.manifest as manifest
+
+import pkg.client.imageconfig as imageconfig
 
 IMG_ENTIRE = 0
 IMG_PARTIAL = 1
@@ -77,12 +81,19 @@ class Image(object):
           $IROOT/index
                Directory containing reverse-index databases.
 
+          $IROOT/cfg_cache
+               File containing image's cached configuration.
+
+          $IROOT/state
+               File containing image's opaque state.
+
         XXX Root path probably can't be absolute, so that we can combine or
         reuse Image contents.
 
         XXX Image file format?  Image file manipulation API?"""
 
         def __init__(self):
+                self.cfg_cache = None
                 self.type = None
                 self.root = None
                 self.imgdir = None
@@ -97,7 +108,7 @@ class Image(object):
                 self.attrs["Policy-Require-Optional"] = False
                 self.attrs["Policy-Pursue-Latest"] = True
 
-        def find_parent(self, d):
+        def find_root(self, d):
                 # Ascend from current working directory to find first
                 # encountered image.
                 while True:
@@ -125,6 +136,25 @@ class Image(object):
                         # XXX follow symlinks or not?
                         d = os.path.normpath(os.path.join(d, os.path.pardir))
 
+        def load_config(self):
+                """Load this image's cached configuration from the default
+                location."""
+
+                # XXX Incomplete with respect to doc/image.txt description of
+                # configuration.
+
+                if self.root == None:
+                        raise RuntimeError, "self.root must be set"
+
+                ic = imageconfig.ImageConfig()
+
+                if os.path.isfile("%s/cfg_cache" % self.imgdir):
+                        ic.read("%s/cfg_cache" % self.imgdir)
+
+                self.cfg_cache = ic
+
+        # XXX mkdirs and set_attrs() need to be combined into a create
+        # operation.
         def mkdirs(self):
                 if not os.path.isdir(self.imgdir + "/catalog"):
                         os.makedirs(self.imgdir + "/catalog")
@@ -135,7 +165,7 @@ class Image(object):
                 if not os.path.isdir(self.imgdir + "/index"):
                         os.makedirs(self.imgdir + "/index")
 
-        def set_attrs(self, type, root):
+        def set_attrs(self, type, root, is_zone, auth_name, auth_url):
                 self.type = type
                 self.root = root
                 if self.type == IMG_USER:
@@ -143,11 +173,47 @@ class Image(object):
                 else:
                         self.imgdir = self.root + "/" + img_root_prefix
 
+                self.mkdirs()
+
+                self.cfg_cache = imageconfig.ImageConfig()
+
+                self.cfg_cache.filters["opensolaris.zone"] = is_zone
+
+                self.cfg_cache.authorities[auth_name] = {}
+                self.cfg_cache.authorities[auth_name]["prefix"] = auth_name
+                self.cfg_cache.authorities[auth_name]["origin"] = auth_url
+                self.cfg_cache.authorities[auth_name]["mirrors"] = None
+
+                self.cfg_cache.preferred_authority = auth_name
+
+                self.cfg_cache.write("%s/cfg_cache" % self.imgdir)
+
         def get_root(self):
                 return self.root
 
-        def set_resource(self, resource):
-                return
+        def gen_authorities(self):
+                if not self.cfg_cache:
+                        raise RuntimeError, "empty ImageConfig"
+                if not self.cfg_cache.authorities:
+                        raise RuntimeError, "no defined authorities"
+                for a in self.cfg_cache.authorities:
+                        yield self.cfg_cache.authorities[a]
+
+        def get_url_by_authority(self, authority = None):
+                """Return the URL prefix associated with the given authority.
+                For the undefined case, represented by None, return the
+                preferred authority."""
+
+                # XXX This function is a possible location to insert one or more
+                # policies regarding use of mirror responses, etc.
+
+                if authority == None:
+                        authority = self.cfg_cache.preferred_authority
+
+                return self.cfg_cache.authorities[authority]["origin"]
+
+        def get_default_authority(self):
+                return self.cfg_cache.preferred_authority
 
         def get_matching_pkgs(self, pfmri):
                 """Exact matches to the given FMRI.  Returns a list of (catalog,
@@ -205,7 +271,7 @@ class Image(object):
                         mcontent = file("%s/pkg/%s/manifest" % 
                             (self.imgdir, fmri.get_dir_path())).read()
 
-                m.set_fmri(fmri)
+                m.set_fmri(self, fmri)
                 m.set_content(mcontent)
                 return m
 
@@ -228,6 +294,17 @@ class Image(object):
 
                 return fmri.PkgFmri(pkgs_inst[0], None)
 
+        def get_pkg_state_by_fmri(self, pfmri):
+                """Given pfmri, determine the local state of the package."""
+
+                if os.path.exists("%s/pkg/%s/installed" % (self.imgdir,
+                    pfmri.get_dir_path())):
+                        return "installed"
+
+                # XXX If in a catalog, but not installed, then "uninstalled".
+
+                return "unknown"
+
         def is_installed(self, fmri):
                 """Check that the version given in the FMRI or a successor is
                 installed in the current image."""
@@ -243,7 +320,8 @@ class Image(object):
                 return False
 
         def get_dependents(self, pfmri):
-                """Return a list of the packages directly dependent on the given FMRI."""
+                """Return a list of the packages directly dependent on the given
+                FMRI."""
 
                 thedir = os.path.join(self.imgdir, "index", "depend",
                     urllib.quote(str(pfmri.get_pkg_stem())[5:], ""))
@@ -284,34 +362,51 @@ class Image(object):
                 opts = []
                 pargs = []
 
+                all_known = False
                 verbose = False
                 upgradable_only = False
 
                 if len(args) > 0:
-                         opts, pargs = getopt.getopt(args, "uv")
+                         opts, pargs = getopt.getopt(args, "auv")
 
                 for opt, arg in opts:
+                        if opt == "-a":
+                                all_known = True
                         if opt == "-u":
                                 upgradable_only = True
                         if opt == "-v":
                                 verbose = True
 
-                fmt_str = "%-50s %-10s %c%c%c%c"
+
+                if verbose:
+                        fmt_str = "%-64s %-10s %c%c%c%c"
+                else:
+                        fmt_str = "%-50s %-10s %c%c%c%c"
 
                 proot = "%s/pkg" % self.imgdir
 
-                pkgs_inst = [ urllib.unquote("%s@%s" % (pd, vd))
-                    for pd in os.listdir(proot)
-                    for vd in os.listdir("%s/%s" % (proot, pd))
-                    if os.path.exists("%s/%s/%s/installed" % (proot, pd, vd)) ]
+                # XXX if len(pargs) > 0, then pkgs_known is pargs and all_known
+                # is unused
 
-                if len(pkgs_inst) == 0:
+                if all_known:
+                        # XXX Iterate through catalogs, building up list of
+                        # packages.
+                        pass
+
+                else:
+                        pkgs_known = [ urllib.unquote("%s@%s" % (pd, vd))
+                            for pd in os.listdir(proot)
+                            for vd in os.listdir("%s/%s" % (proot, pd))
+                            if os.path.exists("%s/%s/%s/installed" %
+                                (proot, pd, vd)) ]
+
+                if len(pkgs_known) == 0:
                         print "pkg: no packages installed"
                         return
 
                 print fmt_str % ("FMRI", "STATE", "U", "F", "I", "X")
 
-                for p in pkgs_inst:
+                for p in pkgs_known:
                         f = fmri.PkgFmri(p, None)
 
                         upgradable = "-"
@@ -327,10 +422,10 @@ class Image(object):
                         if not verbose:
                                 pf = f.get_short_fmri()
                         else:
-                                pf = str(f)
+                                pf = f.get_fmri(self.get_default_authority())
 
-                        print fmt_str % (pf, "installed", upgradable, frozen,
-                            incorporated, excludes)
+                        print fmt_str % (pf, self.get_pkg_state_by_fmri(f),
+                            upgradable, frozen, incorporated, excludes)
 
 
 if __name__ == "__main__":

@@ -40,7 +40,7 @@ LDFLAGS = -G -lelf
 
 gcc := CC = gcc
 gcc := CFLAGS = -fpic $(INC)
-gcc := LDFLAGS = --shared
+gcc := LDFLAGS = --shared -lelf
 
 all: $(ARCHMODULE) $(ELFMODULE)
 

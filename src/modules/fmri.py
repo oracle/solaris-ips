@@ -95,19 +95,6 @@ class PkgFmri(object):
 
                         return
 
-        def __str__(self):
-                """Return as specific an FMRI representation as possible."""
-                if self.authority == None:
-                        if self.version == None:
-                                return "pkg:/%s" % self.pkg_name
-
-                        return "pkg:/%s@%s" % (self.pkg_name, self.version)
-
-                if self.version == None:
-                        return "pkg://%s/%s" % (self.authority, self.pkg_name)
-
-                return "pkg://%s/%s@%s" % (self.authority, self.pkg_name,
-                                self.version)
 
         def get_authority(self):
                 return self.authority
@@ -121,7 +108,7 @@ class PkgFmri(object):
         def get_timestamp(self, new_ts):
                 return self.version.get_timestamp()
 
-        def get_pkg_stem(self):
+        def get_pkg_stem(self, default_authority = None):
                 """Return a string representation of the FMRI without a specific
                 version."""
                 if self.authority == None:
@@ -129,15 +116,41 @@ class PkgFmri(object):
 
                 return "pkg://%s/%s" % (self.authority, self.pkg_name)
 
-        def get_short_fmri(self):
+        def get_short_fmri(self, default_authority = None):
                 """Return a string representation of the FMRI without a specific
                 version."""
-                if self.authority == None:
+                authority = self.authority
+                if authority == None:
+                        authority = default_authority
+
+                if authority == None:
                         return "pkg:/%s@%s" % (self.pkg_name,
                             self.version.get_short_version())
 
-                return "pkg://%s/%s@s" % (self.authority, self.pkg_name,
+                return "pkg://%s/%s@s" % (authority, self.pkg_name,
                     self.version.get_short_version())
+
+        def get_fmri(self, default_authority = None):
+                """Return a string representation of the FMRI."""
+                authority = self.authority
+                if authority == None:
+                        authority = default_authority
+
+                if authority == None:
+                        if self.version == None:
+                                return "pkg:/%s" % self.pkg_name
+
+                        return "pkg:/%s@%s" % (self.pkg_name, self.version)
+
+                if self.version == None:
+                        return "pkg://%s/%s" % (authority, self.pkg_name)
+
+                return "pkg://%s/%s@%s" % (authority, self.pkg_name,
+                                self.version)
+
+        def __str__(self):
+                """Return as specific an FMRI representation as possible."""
+                return self.get_fmri(None)
 
         def get_dir_path(self, stemonly = False):
                 """Return the escaped directory path fragment for this FMRI."""

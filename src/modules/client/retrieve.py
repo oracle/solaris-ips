@@ -68,15 +68,14 @@ def url_catalog(config, image, args):
                 cfile = file("%s/catalog/%s" % (croot, fname), "w")
                 print >>cfile, data
 
-def get_datastream(fmri, hash):
+def get_datastream(img, fmri, hash):
         """Retrieve a file handle based on a package fmri and a file hash."""
 
         authority, pkg_name, version = fmri.tuple()
 
-        if authority == None:
-                authority = "localhost:10000"
+        url_prefix = img.get_url_by_authority(authority)
 
-        url_fpath = "http://%s/file/%s" % (authority, hash)
+        url_fpath = "%s/file/%s" % (url_prefix, hash)
 
         try:
                 f = urllib.urlopen(url_fpath)
@@ -85,17 +84,15 @@ def get_datastream(fmri, hash):
 
         return f
 
-def get_manifest(image, fmri):
+def get_manifest(img, fmri):
         """Calculate URI and retrieve.
         XXX Authority-catalog issues."""
 
         authority, pkg_name, version = fmri.tuple()
 
-        # XXX convert authority reference to server
-        if authority == None:
-                authority = "localhost:10000"
+        url_prefix = img.get_url_by_authority(authority)
 
-        url_mpath = "http://%s/manifest/%s" % (authority,
+        url_mpath = "%s/manifest/%s" % (url_prefix,
             fmri.get_url_path())
 
         try:
@@ -104,7 +101,7 @@ def get_manifest(image, fmri):
                 raise NameError, "could not open %s" % url_mpath
 
         data = m.read()
-        local_mpath = "%s/pkg/%s/manifest" % (image.imgdir, fmri.get_dir_path())
+        local_mpath = "%s/pkg/%s/manifest" % (img.imgdir, fmri.get_dir_path())
 
         try:
                 mfile = file(local_mpath, "w")

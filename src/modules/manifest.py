@@ -98,6 +98,7 @@ class Manifest(object):
         """
 
         def __init__(self):
+                self.img = None
                 self.fmri = None
 
                 self.actions = []
@@ -174,13 +175,14 @@ class Manifest(object):
                         else:
                                 print "%s -> %s" % (src, dest)
 
-        def set_fmri(self, fmri):
+        def set_fmri(self, img, fmri):
+                self.img = img
                 self.fmri = fmri
 
         @staticmethod
-        def make_opener(fmri, action):
+        def make_opener(img, fmri, action):
                 def opener():
-                        return retrieve.get_datastream(fmri, action.hash)
+                        return retrieve.get_datastream(img, fmri, action.hash)
                 return opener
 
         def set_content(self, str):
@@ -205,7 +207,7 @@ class Manifest(object):
 
                         if hasattr(action, "hash"):
                                 action.data = \
-                                    self.make_opener(self.fmri, action)
+                                    self.make_opener(self.img, self.fmri, action)
 
                         if not self.actions:
                                 self.actions.append(action)

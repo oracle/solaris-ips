@@ -216,7 +216,7 @@ class Package(object):
                 return ret
 
         def get_state(self, version):
-                return 0;
+                return "state"
 
         def get_manifest(self, version):
                 return

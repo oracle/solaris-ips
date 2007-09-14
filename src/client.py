@@ -79,11 +79,8 @@ Install subcommands:
         pkg unfreeze pkg_fmri
         pkg search token
 
-        pkg image [--full|--partial|--user] dir
-        pkg image [-FPU] dir
-
-        pkg set name value
-        pkg unset name
+        pkg image-create [-FPUz] [--full|--partial|--user] [--zone]
+            [--authority prefix=url] dir
 
 Options:
         --server, -s
@@ -94,9 +91,18 @@ Environment:
         PKG_IMAGE"""
         sys.exit(2)
 
-def catalog_refresh(config, image, args):
-        """XXX will need to show available content series for each package"""
-        croot = image.imgdir
+# XXX Subcommands to implement:
+#        pkg image-set name value
+#        pkg image-unset name
+#        pkg image-get [name ...]
+#        pkg image-update
+
+def catalog_refresh(img, args):
+        """Update image's catalogs."""
+
+        # XXX will need to show available content series for each package
+
+        croot = img.imgdir
 
         if len(args) != 0:
                 print "pkg: catalog subcommand takes no arguments"
@@ -104,18 +110,22 @@ def catalog_refresh(config, image, args):
 
         # Ensure Image directory structure is valid.
         if not os.path.isdir("%s/catalog" % croot):
-                image.mkdirs()
+                img.mkdirs()
 
         # GET /catalog
-        for repo in pcfg.repo_uris:
+        for auth in img.gen_authorities():
+                # XXX Mirror selection and retrieval policy?
+
+                print auth
+
                 # Ignore http_proxy for localhost case, by overriding default
                 # proxy behaviour of urlopen().
                 proxy_uri = None
-                netloc = urlparse.urlparse(repo)[1]
+                netloc = urlparse.urlparse(auth["origin"])[1]
                 if urllib.splitport(netloc)[0] == "localhost":
                         proxy_uri = {}
 
-                uri = urlparse.urljoin(repo, "catalog")
+                uri = urlparse.urljoin(auth["origin"], "catalog")
 
                 c = urllib.urlopen(uri, proxies=proxy_uri)
 
@@ -127,19 +137,20 @@ def catalog_refresh(config, image, args):
                 cfile = file("%s/catalog/%s" % (croot, fname), "w")
                 print >>cfile, data
 
-def catalog_display(config, image, args):
-        image.reload_catalogs()
-        image.display_catalogs()
+def catalog_display(img, args):
+        img.reload_catalogs()
+        img.display_catalogs()
 
-def inventory_display(config, image, args):
-        image.reload_catalogs()
-        image.display_inventory(args)
+def inventory_display(img, args):
+        img.reload_catalogs()
+        img.display_inventory(args)
 
-def install(config, image, args):
+def install(img, args):
         """Attempt to take package specified to INSTALLED state.  The operands
-        are interpreted as glob patterns.
+        are interpreted as glob patterns."""
 
-        XXX Authority-catalog issues."""
+        # XXX Authority-catalog issues.
+
         opts = None
         pargs = None
         error = 0
@@ -156,16 +167,16 @@ def install(config, image, args):
                 elif opt == "-v":
                         verbose = True
 
-        image.reload_catalogs()
+        img.reload_catalogs()
 
-        ip = imageplan.ImagePlan(image)
+        ip = imageplan.ImagePlan(img)
 
         for ppat in pargs:
                 rpat = re.sub("\*", ".*", ppat)
                 rpat = re.sub("\?", ".", rpat)
 
                 try:
-                        matches = image.get_regex_matching_fmris(rpat)
+                        matches = img.get_regex_matching_fmris(rpat)
                 except KeyError:
                         print """\
 pkg: no package matching '%s' could be found in current catalog
@@ -208,7 +219,7 @@ pkg: no package matching '%s' could be found in current catalog
         if not noexecute:
                 ip.execute()
 
-def uninstall(config, image, args):
+def uninstall(img, args):
         """Attempt to take package specified to DELETED state."""
 
         if len(args) > 0:
@@ -223,16 +234,16 @@ def uninstall(config, image, args):
                 elif opt == "-v":
                         verbose = True
 
-        image.reload_catalogs() # XXX ???
+        img.reload_catalogs() # XXX ???
 
-        ip = imageplan.ImagePlan(image, recursive_removal)
+        ip = imageplan.ImagePlan(img, recursive_removal)
 
         for ppat in pargs:
                 rpat = re.sub("\*", ".*", ppat)
                 rpat = re.sub("\?", ".", rpat)
 
                 try:
-                        matches = image.get_regex_matching_fmris(rpat)
+                        matches = img.get_regex_matching_fmris(rpat)
                 except KeyError:
                         print "'%s' not even in catalog!" % ppat
                         error = 1
@@ -241,7 +252,7 @@ def uninstall(config, image, args):
                 pnames = dict(
                     (m[1], 1)
                     for m in matches
-                    if image.is_installed(m[1])
+                    if img.is_installed(m[1])
                 )
 
                 if len(pnames) > 1:
@@ -269,21 +280,21 @@ def uninstall(config, image, args):
         if not noexecute:
                 ip.execute()
 
-def freeze(config, args):
+def freeze(img, args):
         """Attempt to take package specified to FROZEN state, with given
         restrictions."""
         return
 
-def unfreeze(config, args):
+def unfreeze(img, args):
         """Attempt to return package specified to INSTALLED state from FROZEN
         state."""
 
         return
 
-def search(config, image, args):
+def search(img, args):
         """Search through the reverse index databases for the given token."""
 
-        idxdir = os.path.join(image.imgdir, "index")
+        idxdir = os.path.join(img.imgdir, "index")
 
         # Avoid enumerating any particular index directory, since some index
         # databases may contain hundreds of thousands of keys.  Any given key in
@@ -301,18 +312,22 @@ def search(config, image, args):
 
         return
 
-def create_image(config, args):
+def create_image(img, args):
         """Create an image of the requested kind, at the given path."""
+
+        # XXX Long options support
+        # XXX Support for setting initial authority
 
         type = image.IMG_USER
         filter_tags = arch.get_isainfo()
+        is_zone = False
+        auth_name = None
+        auth_url = None
 
         opts = None
         pargs = None
         if len(args) > 0:
-                opts, pargs = getopt.getopt(args, "FPU")
-
-        i = image.Image()
+                opts, pargs = getopt.getopt(args, "FPUza:")
 
         for opt, arg in opts:
                 if opt == "-F":
@@ -321,15 +336,16 @@ def create_image(config, args):
                         type = image.IMG_PARTIAL
                 if opt == "-U":
                         type = image.IMG_USER
+                if opt == "-z":
+                        is_zone = True
+                if opt == "-a":
+                        (auth_name, auth_url) = re.split("=", arg, maxsplit = 2)
 
-        i.set_attrs(type, pargs[0])
-        i.mkdirs()
+        img.set_attrs(type, pargs[0], is_zone, auth_name, auth_url)
 
         return
 
-# XXX need an Image configuration by default
-icfg = image.Image()
-pcfg = config.ParentRepo("http://localhost:10000", ["http://localhost:10000"])
+img = image.Image()
 
 if __name__ == "__main__":
         opts = None
@@ -349,8 +365,8 @@ if __name__ == "__main__":
 
         # XXX Handle PKG_SERVER environment variable.
 
-        if subcommand == "image":
-                create_image(pcfg, pargs)
+        if subcommand == "image-create":
+                create_image(img, pargs)
                 sys.exit(0)
 
         for opt, arg in opts:
@@ -364,30 +380,32 @@ if __name__ == "__main__":
                         dir = os.getcwd()
 
         try:
-                icfg.find_parent(dir)
+                img.find_root(dir)
         except AssertionError:
                 print "'%s' is not an install image" % dir
                 sys.exit(1)
 
+        img.load_config()
+
         if subcommand == "refresh":
-                catalog_refresh(pcfg, icfg, pargs)
+                catalog_refresh(img, pargs)
         elif subcommand == "catalog":
-                catalog_display(pcfg, icfg, pargs)
+                catalog_display(img, pargs)
         elif subcommand == "status":
-                inventory_display(pcfg, icfg, pargs)
+                inventory_display(img, pargs)
         elif subcommand == "install":
-                install(pcfg, icfg, pargs)
+                install(img, pargs)
         elif subcommand == "uninstall":
                 try:
-                        uninstall(pcfg, icfg, pargs)
+                        uninstall(img, pargs)
                 except KeyboardInterrupt:
                         pass
         elif subcommand == "freeze":
-                freeze(pcfg, icfg, pargs)
+                freeze(img, pargs)
         elif subcommand == "unfreeze":
-                unfreeze(pcfg, icfg, pargs)
+                unfreeze(img, pargs)
         elif subcommand == "search":
-                search(pcfg, icfg, pargs)
+                search(img, pargs)
         else:
                 print "pkg: unknown subcommand '%s'" % subcommand
                 usage()
