@@ -212,7 +212,6 @@ class Image(object):
 
                 o = self.cfg_cache.authorities[authority]["origin"]
 
-                print o, re.sub("/+$", "", o)
                 return re.sub("/+$", "", o)
 
         def get_default_authority(self):
