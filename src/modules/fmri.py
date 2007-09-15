@@ -152,6 +152,38 @@ class PkgFmri(object):
                 """Return as specific an FMRI representation as possible."""
                 return self.get_fmri(None)
 
+        def __cmp__(self, other):
+                if not other:
+                        return 1
+
+                if self.authority and not other.authority:
+                        return 1
+
+                if not self.authority and other.authority:
+                        return -1
+
+                if self.authority and other.authority:
+                        a = self.authority.__cmp__(other.authority)
+                        if a != 0:
+                                return a
+
+                if self.pkg_name == other.pkg_name:
+                        if self.version and not other.version:
+                                return 1
+
+                        if other.version and not self.version:
+                                return -1
+
+                        if not self.version and not other.version:
+                                return 0
+
+                        return self.version.__cmp__(other.version)
+
+                if self.pkg_name > other.pkg_name:
+                        return 1
+
+                return -1
+
         def get_dir_path(self, stemonly = False):
                 """Return the escaped directory path fragment for this FMRI."""
 
@@ -228,6 +260,10 @@ if __name__ == "__main__":
         print n2
         print n3
 
+        assert n3.__cmp__(n3) == 0
+        assert n3.__cmp__(n4) < 0
+        assert n5.__cmp__(n3) > 0
+        
         assert not n1.is_successor(n2)
         assert n4.is_successor(n3)
         assert not n5.is_successor(n4)

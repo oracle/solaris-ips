@@ -41,9 +41,9 @@ class ImageConfig(object):
                 self.children = []
 
                 self.policies = {}
-                self.policies["Require-Optional"] = False
-                self.policies["Pursue-Latest"] = True
-                self.policies["Display-Copyrights"] = True
+                self.policies["require-optional"] = False
+                self.policies["pursue-latest"] = True
+                self.policies["display-copyrights"] = True
 
         def __str__(self):
                 return "%s\n%s" % (self.authorities, self.policies)
@@ -83,14 +83,14 @@ class ImageConfig(object):
 
                         # XXX Child images
 
-                if self.policies.has_key["Preferred-Authority"]:
-                        self.preferred_authority = self.policies["Preferred-Authority"]
+                if self.policies.has_key("preferred-authority"):
+                        self.preferred_authority = self.policies["preferred-authority"]
 
 
         def write(self, path):
                 cp = ConfigParser.SafeConfigParser()
 
-                self.policies["Preferred-Authority"] = self.preferred_authority
+                self.policies["preferred-authority"] = self.preferred_authority
 
                 cp.add_section("policy")
                 for p in self.policies:

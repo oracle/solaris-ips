@@ -54,7 +54,6 @@ import time
 import urllib
 
 import pkg.catalog as catalog
-import pkg.content as content
 import pkg.dependency as dependency
 import pkg.fmri as fmri
 import pkg.misc as misc

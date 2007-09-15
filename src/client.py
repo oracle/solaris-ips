@@ -54,7 +54,6 @@ import urlparse
 import pkg.arch as arch
 import pkg.catalog as catalog
 import pkg.config as config
-import pkg.content as content
 import pkg.dependency as dependency
 import pkg.fmri as fmri
 import pkg.manifest as manifest
@@ -71,8 +70,7 @@ Usage:
 
 Install subcommands:
         pkg refresh
-        pkg catalog [--verbose] pkg_fmri_pattern
-        pkg status [-uv] [pkg_fmri_pattern ...]
+        pkg status [-auv] [pkg_fmri_pattern ...]
         pkg install [-nv] pkg_fmri
         pkg uninstall [-nrv] pkg_fmri
         pkg freeze [--version version_spec] [--release] [--branch] pkg_fmri
@@ -116,8 +114,6 @@ def catalog_refresh(img, args):
         for auth in img.gen_authorities():
                 # XXX Mirror selection and retrieval policy?
 
-                print auth
-
                 # Ignore http_proxy for localhost case, by overriding default
                 # proxy behaviour of urlopen().
                 proxy_uri = None
@@ -136,10 +132,6 @@ def catalog_refresh(img, args):
                 # Filename should be reduced to host\:port
                 cfile = file("%s/catalog/%s" % (croot, fname), "w")
                 print >>cfile, data
-
-def catalog_display(img, args):
-        img.reload_catalogs()
-        img.display_catalogs()
 
 def inventory_display(img, args):
         img.reload_catalogs()

@@ -46,7 +46,6 @@ import traceback
 
 import pkg.bundle
 import pkg.config as config
-import pkg.content as content
 import pkg.dependency as dependency
 import pkg.fmri as fmri
 import pkg.package as package

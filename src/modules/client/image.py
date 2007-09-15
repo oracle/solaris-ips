@@ -210,7 +210,10 @@ class Image(object):
                 if authority == None:
                         authority = self.cfg_cache.preferred_authority
 
-                return self.cfg_cache.authorities[authority]["origin"]
+                o = self.cfg_cache.authorities[authority]["origin"]
+
+                print o, re.sub("/+$", "", o)
+                return re.sub("/+$", "", o)
 
         def get_default_authority(self):
                 return self.cfg_cache.preferred_authority
@@ -301,9 +304,7 @@ class Image(object):
                     pfmri.get_dir_path())):
                         return "installed"
 
-                # XXX If in a catalog, but not installed, then "uninstalled".
-
-                return "unknown"
+                return "known"
 
         def is_installed(self, fmri):
                 """Check that the version given in the FMRI or a successor is
@@ -351,9 +352,10 @@ class Image(object):
                         # XXX XXX
                         # build up authorities
 
-        def display_catalogs(self):
+        def gen_known_packages(self):
                 for c in self.catalogs.values():
-                        c.display()
+                        for pf in c.gen_package_versions():
+                                yield pf
 
         def display_inventory(self, args):
                 """XXX Reimplement if we carve out the inventory as a has-a
@@ -391,12 +393,12 @@ class Image(object):
                 if all_known:
                         # XXX Iterate through catalogs, building up list of
                         # packages.
-                        pass
+                        pkgs_known = [ str(pf) for pf in self.gen_known_packages() ]
 
                 else:
                         pkgs_known = [ urllib.unquote("%s@%s" % (pd, vd))
-                            for pd in os.listdir(proot)
-                            for vd in os.listdir("%s/%s" % (proot, pd))
+                            for pd in sorted(os.listdir(proot))
+                            for vd in sorted(os.listdir("%s/%s" % (proot, pd)))
                             if os.path.exists("%s/%s/%s/installed" %
                                 (proot, pd, vd)) ]
 

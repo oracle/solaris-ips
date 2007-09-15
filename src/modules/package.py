@@ -95,6 +95,18 @@ class Package(object):
                 self.dir = ""
                 self.bulk_state = None
 
+        def __cmp__(self, other):
+                if self.fmri and not other.fmri:
+                        return -1
+
+                if other.fmri and not self.fmri:
+                        return 1
+
+                if not self.fmri and not other.fmri:
+                        return 0
+
+                return self.fmri.__cmp__(other.fmri)
+
         def set_dir(self, cfg):
                 authority, pkg_name, version = self.fmri.tuple()
                 self.dir = "%s/%s" % (cfg.pkg_root,

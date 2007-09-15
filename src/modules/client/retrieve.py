@@ -85,8 +85,7 @@ def get_datastream(img, fmri, hash):
         return f
 
 def get_manifest(img, fmri):
-        """Calculate URI and retrieve.
-        XXX Authority-catalog issues."""
+        """Calculate URI and retrieve."""
 
         authority, pkg_name, version = fmri.tuple()
 
@@ -102,6 +101,9 @@ def get_manifest(img, fmri):
 
         data = m.read()
         local_mpath = "%s/pkg/%s/manifest" % (img.imgdir, fmri.get_dir_path())
+
+        if re.match("^404", data):
+                raise NameError, "could not open %s (404)" % url_mpath
 
         try:
                 mfile = file(local_mpath, "w")

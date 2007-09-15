@@ -209,12 +209,11 @@ class Catalog(object):
                         for v in p.pversions:
                                 print "          %20s" % v.version
 
-        def difference(self, catalog):
-                """Return a pair of lists, the first list being those package
-                FMRIs present in the current object but not in the presented
-                catalog, the second being those present in the presented catalog
-                but not in the current catalog."""
-                return
+
+        def gen_package_versions(self, latest_only = True):
+                for p in sorted(self.pkgs):
+                        for v in sorted(p.pversions):
+                                yield fmri.PkgFmri("%s@%s" % (p.fmri, v.version), None)
 
 if __name__ == "__main__":
         c = Catalog()
@@ -225,7 +224,9 @@ if __name__ == "__main__":
             fmri.PkgFmri("pkg:/test@1.0,5.11-1.1:20000101T120020Z", None),
             fmri.PkgFmri("pkg:/test@1.0,5.11-1.2:20000101T120030Z", None),
             fmri.PkgFmri("pkg:/test@1.0,5.11-2:20000101T120040Z", None),
-            fmri.PkgFmri("pkg:/test@1.1,5.11-1:20000101T120040Z", None)
+            fmri.PkgFmri("pkg:/test@1.1,5.11-1:20000101T120040Z", None),
+            fmri.PkgFmri("pkg:/apkg@1.0,5.11-1:20000101T120040Z", None),
+            fmri.PkgFmri("pkg:/zpkg@1.0,5.11-1:20000101T120040Z", None)
             ]:
                 c.add_fmri(f)
 
@@ -251,3 +252,8 @@ if __name__ == "__main__":
             l = c.get_regex_matching_fmris("flob")
         except KeyError:
             print "correctly determined no match for 'flob'"
+
+        print sorted(c.pkgs)
+
+        for p in c.gen_package_versions():
+                print p
