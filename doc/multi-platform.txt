@@ -1,0 +1,47 @@
+pkg
+MULTI-PLATFORM
+
+pkg technology is generic enough to be useful across multiple platforms
+(e.g. Windows and Linux).
+
+Below are the issues discovered during a prototyping port effort, to
+port pkg to Ubuntu and Windows in August 2007.  
+Only basic functionality (e.g. the tests in the
+src/tests directory) was tested.
+
+Ubuntu (7.04, a.k.a. "Feisty Fawn")
+***********************************
+
+Build support:
+--------------
+Makefiles don't work with GNU Make
+  - Conditional substitution syntax is different
+
+'make install' assumes availability of Solaris tools like pkgmk
+  - This depends on the packaging of course, probably should
+    have a target to create an IPS package :)
+    
+Build environment:
+------------------
+Several Solaris-specific #includes
+  - e.g. port.h or sys/systeminfo.h
+  - Most have linux counterparts, except for sysinfo(2)
+  
+Solaris-specific APIs:
+
+  - get_sysinfo(SI_*) (no counterpart on Ubuntu)
+  
+  - SHA-1 APIs (Solaris has built-in, most Linux use openssl)
+  - References to "amd64" (most Linux call this x86_64)
+  - Minor differences in libelf constants (e.g. SHT_SUNW_verdef
+    vs. SHT_GNU_verdef).
+  
+Design:
+-------
+
+OS Relase version (e.g. uname -r) values contain non-numerics
+on Ubuntu (see src/modules/version.py)
+
+Windows XP
+***********************************
+TBD
