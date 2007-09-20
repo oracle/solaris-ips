@@ -28,16 +28,15 @@ class pkg(object):
                 self.imppkg = None
 
         def import_pkg(self, imppkg):
+
                 try:
                         p = SolarisPackage(pkg_path(imppkg))
                 except:
                         raise RuntimeError, "No such package: '%s'" % imppkg
 
-                self.files.extend(
-                    o
-                    for o in p.manifest
-                    if o.type != "i"
-                )
+                self.imppkg = p
+
+                imppkg = os.path.basename(imppkg)
 
                 # XXX This isn't thread-safe.  We want a dict method that adds
                 # the key/value pair, but throws an exception if the key is
@@ -45,11 +44,13 @@ class pkg(object):
                 for o in p.manifest:
                         # XXX This decidedly ignores "e"-type files.
                         if o.type in "fv" and o.pathname in usedlist:
-                                raise RuntimeError, reuse_err % \
+                                print reuse_err % \
                                     (o.pathname, imppkg, self.name,
                                         usedlist[o.pathname][1].name)
                         elif o.type != "i":
                                 usedlist[o.pathname] = (imppkg, self)
+                                newpaths[o.pathname] = o.pathname
+                                self.files.append(o)
 
                 if not self.version:
                         self.version = "%s-%s" % (def_vers, def_branch)
@@ -105,6 +106,7 @@ class pkg(object):
                                 elif attr == "mode":
                                         o[0].mode = a.attrs[attr]
                 self.files.extend(o)
+                newpaths[o[0].pathname] = o[0].pathname
 
         def chattr(self, file, line):
                 o = [f for f in self.files if f.pathname == file]
@@ -113,16 +115,39 @@ class pkg(object):
                             (file, curpkg.name)
                 # It's probably a file, but all we care about are the
                 # attributes.
-                print "Updating attributes on '%s' in '%s' with '%s'" % \
-                    (file, curpkg.name, line)
-                a = actions.fromstr("file path=%s %s" % (file, line))
-                o[0].changed_attrs = a.attrs
+		if show_debug:
+		        print "Updating attributes on '%s' in '%s' with '%s'" % \
+                            (file, curpkg.name, line)
+		# XXX this code assumes that a path change is done by itself
+                # w/o any other attribute changes.  Should be cleaner...
+                if line[0:5] != "path=":
+                        a = actions.fromstr("file path=%s %s" % (file, line))
+                        o[0].changed_attrs = a.attrs
+                else:
+                        del usedlist[file]
+                        a = actions.fromstr("file %s" % line)
+                        newpaths[o[0].pathname] = line[5:]
+                        o[0].pathname = line[5:]
+                        usedlist[line[5:]] = (self.imppkg.pkginfo["PKG"], self)
+                        o[0].changed_attrs = a.attrs
 
 def sysv_to_new_name(pkgname):
-        return "pkg:/" + pkgname
+        return "pkg:/" + os.path.basename(pkgname)
+
+
+pkgpaths = {}
 
 def pkg_path(pkgname):
-        return wos_path + "/" + pkgname
+        name = os.path.basename(pkgname)
+        if pkgname in pkgpaths:
+                return pkgpaths[name]
+        if pkgname[0] == "/":
+                pkgpaths[name] = pkgname
+                return pkgname
+        else:
+                pkgpaths[name] = wos_path + "/" + pkgname
+                return pkgpaths[name]
+
 
 def start_package(pkgname):
         return pkg(pkgname)
@@ -138,6 +163,7 @@ def end_package(pkg):
         print "  Description:", pkg.desc
 
 def publish_pkg(pkg):
+        
         t = trans.Transaction()
 
         if nopublish:
@@ -198,8 +224,8 @@ def publish_pkg(pkg):
                 bundle = SolarisPackageDirBundle(pkg_path(pkgname))
                 pathdict = dict((f.pathname, f) for f in g)
                 for f in bundle:
-                        path = f.attrs["path"]
-                        if path in pathdict:
+		        if f.attrs["path"] in newpaths and newpaths[f.attrs["path"]] in pathdict:
+                                path = newpaths[f.attrs["path"]]
                                 f.attrs["owner"] = pathdict[path].owner
                                 f.attrs["group"] = pathdict[path].group
                                 f.attrs["mode"] = pathdict[path].mode
@@ -259,11 +285,16 @@ def publish_pkg(pkg):
         print
 
 def process_link_dependencies(path, target):
+        orig_target = target
         if target[0] != "/":
                 target = os.path.normpath(
                     os.path.join(os.path.split(path)[0], target))
 
         if target in usedlist:
+                if show_debug:
+                        print "hardlink %s -> %s makes %s depend on %s" % \
+                            (path, orig_target,
+                                usedlist[path][1].name, usedlist[target][1].name)
                 return ["%s@%s" % (usedlist[target][1].name,
                     usedlist[target][1].version)]
         else:
@@ -323,6 +354,7 @@ def process_dependencies(file, path):
 
         dep_pkgs = []
         undeps = []
+        depend_list = []
         for d in deps:
                 for p in rp:
                         # The instances of "[1:]" below are because usedlist
@@ -353,9 +385,13 @@ def process_dependencies(file, path):
                                 dep_pkgs += [ "%s@%s" %
                                     (usedlist[deppath][1].name,
                                     usedlist[deppath][1].version) ]
+                                depend_list.append((deppath, usedlist[deppath][1].name))
                                 break
                 else:
                         undeps += [ d ]
+
+        if show_debug:
+                print "%s makes %s depend on %s" % (path, usedlist[path][1].name, depend_list)
 
         return dep_pkgs, undeps
 
@@ -363,9 +399,10 @@ def_vers = "0.5.11"
 def_branch = ""
 wos_path = "/net/netinstall.eng/export/nv/s/latest/Solaris_11/Product"
 nopublish = False
+show_debug = False
 
 try:
-        opts, args = getopt.getopt(sys.argv[1:], "b:nv:w:")
+        opts, args = getopt.getopt(sys.argv[1:], "b:dnv:w:")
 except getopt.GetoptError, e:
         print "unknown option", e.opt
         sys.exit(1)
@@ -383,6 +420,8 @@ for opt, arg in opts:
                 def_vers = arg
         elif opt == "-w":
                 wos_path = arg
+        elif opt == "-d":
+                show_debug = True
 
 if not def_branch:
         release_file = wos_path + "/SUNWsolnm/reloc/etc/release"
@@ -415,7 +454,12 @@ in_multiline_import = False
 # grabbing the same file.
 usedlist = {}
 
-reuse_err = "Tried to put file '%s' from package '%s' into\n    '%s' as well as '%s'!"
+#
+# newpaths maps old paths in svr4 pkgs to possibly different new paths in ips
+#
+newpaths = {}
+
+reuse_err = "Tried to put file '%s' from package '%s' into\n    '%s' as well as '%s': file dropped"
 
 print "First pass:", datetime.now()
 
@@ -469,7 +513,7 @@ while True:
                 curpkg.undepend.append(lexer.get_token())
 
         elif token == "add":
-                curpkg.extra.append(lexer.get_token())
+                curpkg.extra.append(lexer.instream.readline().strip())
 
         elif token == "drop":
                 f = lexer.get_token()
@@ -493,7 +537,7 @@ while True:
                         curpkg.chattr(fname, line)
                 except Exception, e:
                         print "Can't change attributes on '%s': not in the package" % \
-                            fname
+                            fname, e
                         raise
 
         elif in_multiline_import:
@@ -523,8 +567,7 @@ print "Files you seem to have forgotten:\n  " + "\n  ".join(
     "%s %s" % (f.type, f.pathname)
     for pkg in seenpkgs
     for f in SolarisPackage(pkg_path(pkg)).manifest
-    if f.type != "i" and f.pathname not in usedlist
-)
+    if f.type != "i" and f.pathname in newpaths and newpaths[f.pathname] not in usedlist)
 
 # Second pass: iterate over the existing package objects, gathering dependencies
 # and publish!

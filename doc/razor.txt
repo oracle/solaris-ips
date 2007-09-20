@@ -76,8 +76,8 @@ A new packaging system must:
 * be of acceptable performance.  Upgrade operations should not reacquire files
   already in place on the system.  As much as possible, packaging operations 
   should be order (1) rather then order(number of zones).  Packaging operations
-  should not be significantly affected by the number of packages installed on 
-  the system.
+  should not be significantly affected by the number of packages already 
+  installed on the system
     
 A new packaging system must not:
 
