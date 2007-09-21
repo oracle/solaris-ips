@@ -61,7 +61,7 @@ fi
 print "Preparing image"
 mkdir -p -m 0700 $zoneroot
 rootdir=$zoneroot/root
-pkg image -F $rootdir
+pkg image-create -z -F -a "localhost=http://localhost:10000" $rootdir
 print "Retrieving catalog"
 pkg -R $rootdir refresh
 if [[ $? -ne 0 ]]; then

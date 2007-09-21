@@ -29,11 +29,13 @@ import sha
 import shutil
 import time
 import urllib
+from itertools import groupby
 
 import pkg.actions as actions
 import pkg.fmri as fmri
 import pkg.package as package
 import pkg.client.retrieve as retrieve
+import pkg.client.filter as filter
 
 # The type member is used for the ordering of actions.
 ACTION_DIR = 10
@@ -174,6 +176,42 @@ class Manifest(object):
                                 print "-", src
                         else:
                                 print "%s -> %s" % (src, dest)
+
+        def filter(self, filters):
+                """Filter out actions from the manifest based on filters."""
+
+                self.actions = [
+                    a
+                    for a in self.actions
+                    if filter.apply_filters(a, filters)
+                ]
+
+        def duplicates(self):
+                """Find actions in the manifest which are duplicates (i.e.,
+                represent the same object) but which are not identical (i.e.,
+                have all the same attributes)."""
+
+                def fun(a):
+                        """Return a key on which actions can be sorted."""
+                        return a.name, a.attrs.get(a.key_attr, id(a))
+
+                def dup(a, b):
+                        "Return whether or not two actions are duplicates."""
+                        if not b:
+                                return False
+                        elif a.name == b.name and \
+                            a.attrs.get(a.key_attr, id(a)) == \
+                            b.attrs.get(b.key_attr, id(b)):
+                                return True
+                        else:
+                                return False
+
+                dups = []
+                for k, g in groupby(sorted(self.actions, key = fun), fun):
+                        gr = list(g)
+                        if len(gr) > 1:
+                                dups.append((k, gr))
+                return dups
 
         def set_fmri(self, img, fmri):
                 self.img = img

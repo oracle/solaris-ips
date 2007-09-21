@@ -79,11 +79,11 @@ class ImageConfig(object):
 
                         if re.match("filter", s):
                                 for o in cp.options("filter"):
-                                        self.policies[o] = cp.get("filter", o)
+                                        self.filters[o] = cp.get("filter", o)
 
                         # XXX Child images
 
-                if self.policies.has_key("preferred-authority"):
+                if "preferred-authority" in self.policies:
                         self.preferred_authority = self.policies["preferred-authority"]
 
 

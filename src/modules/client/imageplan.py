@@ -33,6 +33,8 @@ import pkg.fmri as fmri
 import pkg.client.pkgplan as pkgplan
 import pkg.client.retrieve as retrieve # XXX inventory??
 
+from pkg.client.filter import compile_filter
+
 UNEVALUATED = 0
 EVALUATED_OK = 1
 EVALUATED_ERROR = 2
@@ -60,7 +62,7 @@ class ImagePlan(object):
         "pkg delete fmri; pkg install fmri@v(n - 1)", then we'd better have a
         plan to identify when this operation is safe or unsafe."""
 
-        def __init__(self, image, recursive_removal = False):
+        def __init__(self, image, recursive_removal = False, filters = []):
                 self.image = image
                 self.state = UNEVALUATED
                 self.recursive_removal = recursive_removal
@@ -68,6 +70,12 @@ class ImagePlan(object):
                 self.target_fmris = []
                 self.target_rem_fmris = []
                 self.pkg_plans = []
+
+                ifilters = [
+                    "%s = %s" % (k, v)
+                    for k, v in image.cfg_cache.filters.iteritems()
+                ]
+                self.filters = [ compile_filter(f) for f in filters + ifilters ]
 
         def __str__(self):
                 if self.state == UNEVALUATED:
@@ -214,7 +222,7 @@ class ImagePlan(object):
                         print "pkg: %s already installed" % pfmri
                         return
 
-                pp.evaluate()
+                pp.evaluate(self.filters)
 
                 self.pkg_plans.append(pp)
 

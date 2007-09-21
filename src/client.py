@@ -148,9 +148,10 @@ def install(img, args):
         error = 0
 
         if len(args) > 0:
-                opts, pargs = getopt.getopt(args, "Snv")
+                opts, pargs = getopt.getopt(args, "Snvf:")
 
         strict = noexecute = verbose = False
+        filters = []
         for opt, arg in opts:
                 if opt == "-S":
                         strict = True
@@ -158,10 +159,12 @@ def install(img, args):
                         noexecute = True
                 elif opt == "-v":
                         verbose = True
+                elif opt == "-f":
+                        filters += [ arg ]
 
         img.reload_catalogs()
 
-        ip = imageplan.ImagePlan(img)
+        ip = imageplan.ImagePlan(img, filters = filters)
 
         for ppat in pargs:
                 rpat = re.sub("\*", ".*", ppat)
@@ -321,6 +324,7 @@ def create_image(img, args):
         if len(args) > 0:
                 opts, pargs = getopt.getopt(args, "FPUza:")
 
+        # XXX Can -z and -U be used at the same time?
         for opt, arg in opts:
                 if opt == "-F":
                         type = image.IMG_ENTIRE
@@ -331,7 +335,7 @@ def create_image(img, args):
                 if opt == "-z":
                         is_zone = True
                 if opt == "-a":
-                        (auth_name, auth_url) = re.split("=", arg, maxsplit = 2)
+                        auth_name, auth_url = arg.split("=", 1)
 
         img.set_attrs(type, pargs[0], is_zone, auth_name, auth_url)
 

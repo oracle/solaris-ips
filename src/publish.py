@@ -214,8 +214,10 @@ def trans_add(config, args):
                         for i in range(len(attrs[args[0]])))
                 if args[0] == "file":
                         action = actions[args[0]](args[5], **kw)
+                        extra = 6
                 else:
                         action = actions[args[0]](**kw)
+                        extra = len(attrs[args[0]]) + 1
         except KeyError, e:
                 if "add_" + e[0] in globals():
                         method = globals()["add_" + e[0]]
@@ -230,6 +232,14 @@ def trans_add(config, args):
         except IndexError, e:
                 print 'pkgsend: not enough arguments for "%s" action' % args[0]
                 sys.exit(1)
+
+        # If we're presented with extra arguments, update the action's attribute
+        # dictionary.
+        if len(args) > extra:
+                action.attrs.update(dict(
+                    s.split("=")
+                    for s in args[extra:]
+                ))
 
         t = trans.Transaction()
         try:

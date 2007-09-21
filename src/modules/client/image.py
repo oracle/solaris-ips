@@ -177,7 +177,8 @@ class Image(object):
 
                 self.cfg_cache = imageconfig.ImageConfig()
 
-                self.cfg_cache.filters["opensolaris.zone"] = is_zone
+                if is_zone:
+                        self.cfg_cache.filters["opensolaris.zone"] = "nonglobal"
 
                 self.cfg_cache.authorities[auth_name] = {}
                 self.cfg_cache.authorities[auth_name]["prefix"] = auth_name

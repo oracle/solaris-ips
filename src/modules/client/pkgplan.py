@@ -89,7 +89,7 @@ class PkgPlan(object):
         def get_actions(self):
                 return []
 
-        def evaluate(self):
+        def evaluate(self, filters = []):
                 """Determine the actions required to transition the package."""
                 # if origin unset, determine if we're dealing with an previously
                 # installed version or if we're dealing with the null package
@@ -106,6 +106,35 @@ class PkgPlan(object):
                         except LookupError:
                                 pass
 
+                self.destination_filters = filters
+
+                # Try to load the filter used for the last install of the
+                # package.
+                self.origin_filters = []
+                if self.origin_fmri:
+                        try:
+                                f = file("%s/pkg/%s/filters" % \
+                                    (self.image.imgdir,
+                                    self.origin_fmri.get_dir_path()), "r")
+                        except OSError, e:
+                                if e.errno != errno.ENOENT:
+                                        raise
+                        else:
+                                self.origin_filters = [
+                                    (l.strip(), compile(
+                                        l.strip(), "<filter string>", "eval"))
+                                    for l in f.readlines()
+                                ]
+
+                self.destination_mfst.filter(self.destination_filters)
+                self.origin_mfst.filter(self.origin_filters)
+
+                # Assume that origin actions are unique, but make sure that
+                # destination ones are.
+                ddups = self.destination_mfst.duplicates()
+                if ddups:
+                        raise RuntimeError, ["Duplicate actions", ddups]
+
                 self.actions = self.destination_mfst.difference(
                     self.origin_mfst)
 
@@ -119,6 +148,9 @@ class PkgPlan(object):
                 # retrieval step
                 if self.destination_fmri == None:
                         os.unlink("%s/pkg/%s/installed" % (self.image.imgdir,
+                            self.origin_fmri.get_dir_path()))
+
+                        os.unlink("%s/pkg/%s/filters" % (self.image.imgdir,
                             self.origin_fmri.get_dir_path()))
 
                 for src, dest in self.actions:
@@ -146,7 +178,7 @@ class PkgPlan(object):
                                         dest.install(self.image, src)
                                 except Exception, e:
                                         print "Action install failed for '%s' (%s):\n  %s: %s" % \
-                                            (dest.attrs[dest.key_attr],
+                                            (dest.attrs.get(dest.key_attr, id(dest)),
                                             self.destination_fmri.get_pkg_stem(),
                                             e.__class__.__name__, e)
                                         raise
@@ -167,14 +199,32 @@ class PkgPlan(object):
                         else:
                                 src.postremove(self.image)
 
+                # In the case of an upgrade, remove the installation turds from
+                # the origin's directory.
                 # XXX should this just go in preexecute?
                 if self.origin_fmri != None and self.destination_fmri != None:
                         os.unlink("%s/pkg/%s/installed" % (self.image.imgdir,
                             self.origin_fmri.get_dir_path()))
 
+                        os.unlink("%s/pkg/%s/filters" % (self.image.imgdir,
+                            self.origin_fmri.get_dir_path()))
+
                 if self.destination_fmri != None:
                         file("%s/pkg/%s/installed" % (self.image.imgdir,
                             self.destination_fmri.get_dir_path()), "w")
+
+                        # Save the filters we used to install the package, so
+                        # they can be referenced later.
+                        if self.destination_filters:
+                                f = file("%s/pkg/%s/filters" % \
+                                    (self.image.imgdir,
+                                    self.destination_fmri.get_dir_path()), "w")
+
+                                f.writelines([
+                                    filter + "\n"
+                                    for filter, code in self.destination_filters
+                                ])
+                                f.close()
 
         def make_indices(self):
                 """Create the reverse index databases for a particular package.

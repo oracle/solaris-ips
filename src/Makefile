@@ -177,6 +177,7 @@ test:
 	$(PYTHON) $(LINKPYTHONPKG)/manifest.py
 	$(PYTHON) $(LINKPYTHONPKG)/smf.py
 	$(PYTHON) $(LINKPYTHONPKG)/client/imageconfig.py
+	$(PYTHON) $(LINKPYTHONPKG)/client/filter.py
 
 $(ROOT) $(ROOTUSRBIN) $(ROOTUSRLIB):
 	mkdir -p $(ROOT)
