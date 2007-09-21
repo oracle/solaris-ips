@@ -1,0 +1,4 @@
+package SUNWaudd
+import SUNWaudd
+add driver name=audioens alias=pci1274,1371 alias=pci1274,5880
+end package

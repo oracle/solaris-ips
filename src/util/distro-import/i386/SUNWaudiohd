@@ -1,3 +1,4 @@
 package SUNWaudiohd
 import SUNWaudiohd
+add driver name=audiohd alias=pci8086,2668 alias=pci10de,371 alias=pciclass,0403
 end package

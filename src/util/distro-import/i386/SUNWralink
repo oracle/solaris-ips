@@ -1,3 +1,4 @@
 package SUNWralink
 import SUNWralink
+add driver name=ral alias=pci1814,201
 end package

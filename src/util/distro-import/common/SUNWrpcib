@@ -1,3 +1,4 @@
 package SUNWrpcib
 import SUNWrpcib
+add driver name=rpcib perms="* 0644 root sys"
 end package

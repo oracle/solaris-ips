@@ -1,3 +1,4 @@
 package CADP160
 import CADP160
+add driver name=cadp160 class=scsi perms="cadp160ctl 0666 root sys" alias=pci9005,cf alias=pci9005,8f alias=pci9005,c0 alias=pci9005,80
 end package

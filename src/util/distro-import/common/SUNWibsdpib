@@ -1,3 +1,4 @@
 package SUNWibsdpib
 import SUNWibsdpib
+add driver name=sdpib perms="* 0644 root sys"
 end package

@@ -1,3 +1,6 @@
 package SUNWpsdir
 import SUNWpsdir
+add driver name=sbpro alias=mwss
+add driver name=pci-ide
+add driver name=ata class=dada class=scsi alias=ide
 end package

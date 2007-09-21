@@ -1,3 +1,4 @@
 package SUNWpcan
 import SUNWpcan
+add driver name=pcan alias=pccard15f,a alias=pccard15f,7 alias=pci14b9,5000 alias=pci14b9,a504
 end package

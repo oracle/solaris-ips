@@ -1,3 +1,4 @@
 package SUNWfcp
 import SUNWfcp
+add driver name=fcp perm="* 0600 root sys"
 end package

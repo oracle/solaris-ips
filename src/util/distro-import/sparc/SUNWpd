@@ -1,0 +1,4 @@
+package SUNWpd
+import SUNWpd
+add driver name=ecpp perms="* 0666 root sys" alias=pnpALI,1533,3 alias=ns87317-ecpp
+end package

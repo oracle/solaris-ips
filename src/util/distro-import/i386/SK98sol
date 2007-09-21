@@ -1,3 +1,4 @@
 package SK98sol
 import SK98sol
+add driver name=sk98sol class=pci perms="* 0666 root sys" alias=pci1148,9821 alias=pci1148,9822 alias=pci1148,9841 alias=pci1148,9842 alias=pci1148,9843 alias=pci1148,9844 alias=pci1148,9861 alias=pci1148,9862 alias=pci1259,2970 alias=pci1259,2971 alias=pci1259,2972 alias=pci1259,2975 alias=pci1259,2976 alias=pci1259,2977
 end package

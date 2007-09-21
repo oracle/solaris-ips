@@ -1,3 +1,4 @@
 package SUNWipw
 import SUNWipw
+add driver name=ipw alias=pci8086,1043
 end package

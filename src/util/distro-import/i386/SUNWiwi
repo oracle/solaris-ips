@@ -1,3 +1,4 @@
 package SUNWiwi
 import SUNWiwi
+add driver name=iwi alias=pci8086,4220 alias=pci8086,4223 alias=pci8086,4224 alias=pci8086,4223.8086.1000 alias=pci8086,4223.8086.1001 alias=pci8086,4224.8086.1010 alias=pci8086,4224.8086.1011
 end package

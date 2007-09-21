@@ -1,3 +1,4 @@
 package SUNWpsdpr
 import SUNWpsdpr
+add driver name=pcata alias=pccard,disk
 end package

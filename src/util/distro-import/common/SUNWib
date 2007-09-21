@@ -1,3 +1,4 @@
 package SUNWib
 import SUNWib
+add driver name=ib perms="* 0644 root sys"
 end package

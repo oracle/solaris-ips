@@ -1,0 +1,4 @@
+package SUNWpd
+import SUNWpd
+add driver name=glm class=scsi perms="* 0755 root sys" alias=pci1000,b
+end package

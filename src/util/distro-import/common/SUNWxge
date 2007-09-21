@@ -1,3 +1,4 @@
 package SUNWxge
 import SUNWxge
+add driver name=xge alias=pci17d5,5731 alias=pci17d5,5831 alias=pci17d5,5832
 end package

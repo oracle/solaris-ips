@@ -1,3 +1,5 @@
 package SUNWpsdcr
 import SUNWpsdcr
+add driver name=ecpp perms="* 0666 root sys" alias=lp
+add driver name=asy alias=pci11c1,480
 end package

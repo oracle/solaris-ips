@@ -1,3 +1,4 @@
 package SUNWrtw
 import SUNWrtw
+add driver name=rtw alias=pci10ec,8180
 end package

@@ -1,4 +1,4 @@
 package SUNWneon
 import SUNWneon
-import 0.25.5
+version 0.25.5
 end package

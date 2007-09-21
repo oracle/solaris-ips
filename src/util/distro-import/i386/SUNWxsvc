@@ -1,3 +1,4 @@
 package SUNWxsvc
 import SUNWxsvc
+add driver name=xsvc
 end package

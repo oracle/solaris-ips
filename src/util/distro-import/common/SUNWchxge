@@ -1,3 +1,4 @@
 package SUNWchxge
 import SUNWchxge
+add driver name=chxge alias=pci1425,7 alias=pci1425,a
 end package

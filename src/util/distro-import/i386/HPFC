@@ -1,3 +1,4 @@
 package HPFC
 import HPFC
+add driver name=hpfc class=scsi perms="* 0666 root sys" alias=pci103c,1028 alias=pci103c,102a
 end package

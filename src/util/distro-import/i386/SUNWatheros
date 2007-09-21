@@ -1,3 +1,4 @@
 package SUNWatheros
 import SUNWatheros
+add driver name=ath alias=pci168c,12 alias=pci168c,13 alias=pci168c,1014 alias=pci168c,1a alias=pci168c,1b
 end package

@@ -1,4 +1,5 @@
 package SUNWnca
 import SUNWncau
 import SUNWncar
+add driver name=nca
 end package

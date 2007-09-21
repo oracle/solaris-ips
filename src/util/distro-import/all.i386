@@ -15,6 +15,7 @@ include i386/SUNWahci
 include i386/SUNWamd8111s
 include i386/SUNWamr
 include i386/SUNWatheros
+include i386/SUNWaudd
 include i386/SUNWaudiohd
 include i386/SUNWbge
 include i386/SUNWcadp
@@ -36,10 +37,13 @@ include i386/SUNWnge
 include i386/SUNWnvsata
 include i386/SUNWnxge
 include i386/SUNWos86r
+include i386/SUNWpcmci
+include i386/SUNWpd
 include i386/SUNWpmi
 include i386/SUNWpsdcr
 include i386/SUNWpsdir
 include i386/SUNWpsh
+include i386/SUNWqlc
 include i386/SUNWralink
 include i386/SUNWrmodr
 include i386/SUNWrtls
@@ -115,7 +119,6 @@ include common/SUNWaspell-en
 include common/SUNWasut
 include common/SUNWatfs
 include common/SUNWauda
-include common/SUNWaudd
 include common/SUNWaudf
 include common/SUNWaudh
 include common/SUNWaudit
@@ -566,14 +569,12 @@ include common/SUNWpapi
 include common/SUNWpc
 include common/SUNWpcan
 include common/SUNWpcelx
-include common/SUNWpcmci
 include common/SUNWpcmcu
 include common/SUNWpcmem
 include common/SUNWpcre
 include common/SUNWpcsclite
 include common/SUNWpcser
 include common/SUNWpcwl
-include common/SUNWpd
 include common/SUNWpdas
 include common/SUNWperl-authen-pam
 include common/SUNWperl-xml-parser
@@ -635,7 +636,6 @@ include common/SUNWpsf
 include common/SUNWpsm-ipp
 include common/SUNWpsm-lpd
 include common/SUNWpsutils
-include common/SUNWqlc
 include common/SUNWqlcu
 include common/SUNWqos
 include common/SUNWqosu

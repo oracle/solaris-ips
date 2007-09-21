@@ -1,3 +1,4 @@
 package SUNWlsimega
 import SUNWlsimega
+add driver name=lsimega class=scsi alias=pci1028,13 alias=pci1000,407 alias=pci1000,407.1000.532 alias=pci1000,408 alias=pci1000,408.1000.2 alias=pci1000,1960
 end package

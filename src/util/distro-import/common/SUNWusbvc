@@ -1,3 +1,4 @@
 package SUNWusbvc
 import SUNWusbvc
+add driver name=usbvc perms="* 0666 root sys" alias=usbia,classe alias=usbia46d,8c5.config1.0 alias=usbia46d,8c3.config1.0 alias=usbia46d,8c1.config1.0 alias=usbia46d,8c2.config1.0
 end package

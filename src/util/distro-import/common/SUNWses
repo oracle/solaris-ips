@@ -1,3 +1,4 @@
 package SUNWses
 import SUNWses
+add driver name=ses perms="* 0666 bin bin" alias=scsiclass,0d
 end package

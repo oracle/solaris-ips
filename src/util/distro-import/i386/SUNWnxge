@@ -1,3 +1,4 @@
 package SUNWnxge
 import SUNWnxge.i
+add driver name=nxge perms="* 0600 root sys" alias=pciex108e,abcd alias=SUNW,niusl
 end package

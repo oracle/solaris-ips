@@ -1,3 +1,4 @@
 package SYMhisl
 import SYMhisl
+add driver name=symhisl class=scsi alias=pci1000,12 alias=pci1000,20 alias=pci1000,21
 end package

@@ -1,3 +1,4 @@
 package SUNWced
 import SUNWced
+add driver name=ce perms="* 0600 root sys" alias=pci108e,abba alias=pci100b,35
 end package

@@ -1,3 +1,4 @@
 package SUNWuprl
 import SUNWuprl
+add driver name=usbsprl perms="* 0666 root sys" alias=usb67b,2303 alias=usb67b,aaa2 alias=usb56e,5004 alias=usb557,2008 alias=usb6189,2068
 end package

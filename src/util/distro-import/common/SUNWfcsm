@@ -1,3 +1,4 @@
 package SUNWfcsm
 import SUNWfcsm
+add driver name=fcsm perm="* 0600 root sys"
 end package

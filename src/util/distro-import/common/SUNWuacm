@@ -1,3 +1,4 @@
 package SUNWuacm
 import SUNWuacm
+add driver name=usbsacm perms="* 0666 root sys" alias=usb,class2.2.0 alias=usbif,class2.2 alias=usbc88,17da alias=usb1410,1110 
 end package
