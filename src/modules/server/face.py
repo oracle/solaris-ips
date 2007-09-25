@@ -28,6 +28,8 @@
 
 import re
 
+# Non-HTML GET functions
+
 def css(img, request):
         request.send_response(200)
         request.send_header('Content-type', 'text/css')
@@ -38,6 +40,17 @@ def css(img, request):
         request.wfile.write(css.read())
 
         css.close()
+
+def icon(img, request):
+        request.send_response(200)
+        request.send_header('Content-type', 'image/png')
+        request.end_headers()
+
+        icon = open("/usr/share/lib/pkg/pkg-block-icon.png")
+
+        request.wfile.write(icon.read())
+
+        icon.close()
 
 def logo(img, request):
         request.send_response(200)
@@ -50,16 +63,24 @@ def logo(img, request):
 
         logo.close()
 
+# HTML GET functions
+
+def head(request, title = "pkg - image packaging system"):
+        request.wfile.write("""\
+<html>
+<head>
+ <link rel="shortcut icon" type="image/png" href="/icon">
+ <link rel="stylesheet" type="text/css" href="/css">
+ <title>%s</title>
+</head>
+""" % title)
+
 def unknown(img, request):
         request.send_response(404)
         request.send_header('Content-type', 'text/html')
         request.end_headers()
+        head(request)
         request.wfile.write("""\
-<html>
-<head>
- <link rel="shortcut icon" type="image/png" href="/logo">
- <link rel="stylesheet" type="text/css" href="/css">
-</head>
 <body>
  <div id="doc4" class="yui-t5">
   <div id="hd">
@@ -86,12 +107,8 @@ def error(img, request):
         request.send_response(500)
         request.send_header('Content-type', 'text/html')
         request.end_headers()
+        head(request)
         request.wfile.write("""\
-<html>
-<head>
- <link rel="shortcut icon" type="image/png" href="/logo">
- <link rel="stylesheet" type="text/css" href="/css">
-</head>
 <body>
  <div id="doc4" class="yui-t5">
   <div id="hd">
@@ -115,12 +132,8 @@ def index(img, request):
         request.send_response(200)
         request.send_header('Content-type', 'text/html')
         request.end_headers()
+        head(request)
         request.wfile.write("""\
-<html>
-<head>
- <link rel="shortcut icon" type="image/png" href="/logo">
- <link rel="stylesheet" type="text/css" href="/css">
-</head>
 <body>
  <div id="doc4" class="yui-t5">
   <div id="hd">
@@ -152,6 +165,7 @@ def index(img, request):
 pages = {
         "/" : index,
         "/index.html" : index,
+        "/icon" :     icon,
         "/logo" :     logo,
         "/css" :      css
 }

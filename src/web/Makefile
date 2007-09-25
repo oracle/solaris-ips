@@ -28,7 +28,10 @@ ROOT = ../../proto/root_${MACH}
 ROOTSHARE = $(ROOT)/usr/share/lib/pkg
 ROOTPKGWEB = $(ROOTSHARE)
 
-WEBCOMPONENTS = $(ROOTPKGWEB)/pkg-block-logo.png
+WEBCOMPONENTS = \
+	$(ROOTPKGWEB)/pkg-block-icon.png \
+	$(ROOTPKGWEB)/pkg-block-logo.png \
+	$(ROOTPKGWEB)/pkg.css
 
 all := TARGET = all
 link := TARGET = link
@@ -40,8 +43,9 @@ install: $(WEBCOMPONENTS)
 
 link:
 	mkdir -p /usr/share/lib/pkg
-	ln -s $(PWD)/pkg.css /usr/share/lib/pkg
+	ln -s $(PWD)/pkg-block-icon.png /usr/share/lib/pkg
 	ln -s $(PWD)/pkg-block-logo.png /usr/share/lib/pkg
+	ln -s $(PWD)/pkg.css /usr/share/lib/pkg
 
 clean:
 
