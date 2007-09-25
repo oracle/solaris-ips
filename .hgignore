@@ -12,3 +12,7 @@
 ^src/pkgsend$
 ^src/pkg.depotd$
 ^webrev
+^src/man/pkg.1$
+^src/man/pkgsend.1$
+^src/man/pkg.depotd.1m$
+^src/pkgdefs/SUNWipkg/prototype$

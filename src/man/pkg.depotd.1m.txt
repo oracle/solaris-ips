@@ -1,0 +1,86 @@
+System Administration Commands				 pkg.depotd(1M)
+
+
+NAME
+     pkg.depotd - image packaging system depot server
+
+SYNOPSIS
+     /usr/lib/pkg.depotd
+
+DESCRIPTION
+     pkg.depotd is the depot server for the image packaging system.
+     pkg(1), the retrieval client, makes requests of the depot server
+     for catalogs and packages.  pkgsend(1), the publication client,
+     sends new versions of packages to the depot server.  pkg.depotd is
+     typically run as a service on the system.  Package and software
+     developers may wish to run private copies for various testing
+     purposes.
+
+     The pkg.depot server is generally configured via the smf(5)
+     properties associated with its service instance.  Two properties
+     are currently recognized
+
+     application/port		(count) The port number on which this
+				instance of should listen for incoming
+				package requests.  The default value is
+				80.
+
+     application/repo_root	(astring) The file system path at which
+     				this instance should find its repository
+				data.  The default value is
+				/var/pkg/repo.
+
+EXAMPLES
+     Example 1:  Enabling the depot server.
+
+     # svcadm enable application/pkg/server:default
+     
+     Example 2:  Changing the listening port of the server.
+
+     # svccfg -s application/pkg/server:default set application/port = 9999
+     # svcadm refresh application/pkg/server:default
+     # svcadm restart application/pkg/server:default
+     
+EXIT STATUS
+     The following exit values are returned:
+
+     0     Successful operation.
+
+     1     Error encountered.  
+
+     2     Invalid command line options were specified.
+
+FILES
+     /var/pkg/repo		Default repository location; modify
+     				application/repo_root to select an
+				alternate location.
+
+ATTRIBUTES
+     See attributes(5) for descriptions of the  following  attri-
+     butes:
+     ____________________________________________________________
+    |       ATTRIBUTE TYPE        |       ATTRIBUTE VALUE       |
+    |_____________________________|_____________________________|
+    | Availability                |                             |
+    |_____________________________|_____________________________|
+
+SEE ALSO
+     pkg(1), pkgsend(1), attributes(5), smf(5)
+
+NOTES
+     The image packaging system is an under-development feature.
+     Command names, invocation, formats, and operations are all subject
+     to change.  Development is hosted in the OpenSolaris community
+     at 
+
+     http://opensolaris.org/os/project/pkg/
+
+     The pkd.depotd service is managed by the service  management
+     facility, smf(5), under the service identifier:
+
+          svc:/application/pkg/server
+
+     Because the depot server expects to be run by an smf(5) restarter,
+     it does not daemonize.  Error messages are generally sent to
+     standard output, or to the syslogd(1M) system.
+

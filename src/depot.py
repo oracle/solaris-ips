@@ -60,6 +60,7 @@ import pkg.misc as misc
 import pkg.package as package
 import pkg.version as version
 
+import pkg.server.face as face
 import pkg.server.config as config
 import pkg.server.transaction as trans
 
@@ -195,36 +196,10 @@ class pkgHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                         trans_add(scfg, self)
 
                 # Informational APIs
-                elif re.match("^/$", self.path) or re.match("^/index.html",
-                    self.path):
-                        self.send_response(200)
-                        self.send_header('Content-type', 'text/html')
-                        self.end_headers()
-                        self.wfile.write("""\
-<html>
-<body>
-<h1><code>pkg</code> server ok</h1>
-<h2>Statistics</h2>
-<pre>
-""")
-                        self.wfile.write(scfg.get_status())
-                        self.wfile.write("""\
-</pre>
-<h2>Catalog</h2>
-<pre>
-""")
-                        self.wfile.write("%s" % scfg.catalog)
-                        self.wfile.write("""\
-</pre>
-</body>
-</html>""")
+                elif face.match(self):
+                        face.respond(scfg, self)
                 else:
-                        self.send_response(404)
-                        self.send_header('Content-type', 'text/plain')
-                        self.end_headers()
-                        self.wfile.write('''404 GET URI %s ; headers %s''' %
-                            (self.path, self.headers))
-
+                        face.unknown(scfg, self)
 
         def do_PUT(self):
                 self.send_response(200)

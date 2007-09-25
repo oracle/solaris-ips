@@ -1,0 +1,111 @@
+User Commands                                            pkgsend(1)
+
+
+NAME
+     pkgsend - image packaging system publication client
+
+SYNOPSIS
+     /usr/bin/pkgsend [options] command [cmd_options] [operands]
+
+     /usr/bin/pkgsend open [-en] pkg_fmri
+     /usr/bin/pkgsend add action arguments
+     /usr/bin/pkgsend send bundlefile ...
+     /usr/bin/pkgsend close [-A]
+
+DESCRIPTION
+     pkgsend allows the publication of new packages and new package
+     versions to an image packaging depot server.  Each publication is
+     structured as a transaction; multiple invocations of pkgsend
+     through a transaction allow the addition of resources and the
+     transaction submission.
+
+     pkgsend also has an alternate invocation that allows the conversion
+     of existing software bundles via a submission.
+
+SUBCOMMANDS
+     The following subcommands are supported:
+
+     open [-en] pkg_fmri
+          Begin a transaction on the package and version specified by
+          pkg_fmri.  Standard output will contain a sh(1)-compatible
+          environment statement, suitable for use with an eval built-in.
+
+     add action arguments
+          Add a resource associated with an action to the current
+          transaction.  Requires transaction context.  See ACTIONS
+          below.
+
+     close [-A]
+          Close current transaction.  With -A, abandon the current
+          transaction.
+
+     send bundlefile ...
+          Send each given bundlefile as a new package version, in an
+          appropriate series of transactions.
+
+ENVIRONMENT VARIABLES
+     The following environment variables are supported:
+
+     PKG_TRANS_ID               Transaction identifier to use for this
+                                transaction.  If undefined (and no
+                                alternative means of specifying a
+                                transaction is given), subcommands
+                                requiring transaction context will fail.
+
+ACTIONS
+     Each resource within a package must be associated with an action.
+     The following actions are known in the current system.
+
+     depend depend_type pkg_fmri
+          Make this package version dependent on the give package FMRI.
+          Valid depend_types are require and optional.
+
+     dir mode userid groupid path [name=value ...]
+          Deliver a directory with the listed attributes into the
+          transaction.
+
+     file mode userid groupid path src_path [name=value ...]
+          Deliver a file with the listed attributes into the
+          transaction.
+
+EXAMPLES
+     Example 1:  Create a trivial package.
+
+     $ eval `pkgsend open example@1.0-1`
+     $ pkgsend add file 0555 root bin /usr/bin/example example
+     $ pkgsend close
+
+EXIT STATUS
+     The following exit values are returned:
+
+     0     Everything worked.
+
+     1     Something bad happened.
+
+     2     Invalid command line options were specified.
+
+FILES
+
+ATTRIBUTES
+     See attributes(5) for descriptions of the  following  attri-
+     butes:
+     ____________________________________________________________
+    |       ATTRIBUTE TYPE        |       ATTRIBUTE VALUE       |
+    |_____________________________|_____________________________|
+    | Availability                |                             |
+    |_____________________________|_____________________________|
+
+SEE ALSO
+     pkg.depotd(1M), attributes(5)
+
+NOTES
+     The image packaging system is an under-development feature.
+     Command names, invocation, formats, and operations are all subject
+     to change.  Development is hosted in the OpenSolaris community
+     at
+
+     http://opensolaris.org/os/project/pkg/
+
+     Other package bundle formats can be created.  Other forms of
+     package publication, via the underlying Python API or via the web
+     API, are also possible.

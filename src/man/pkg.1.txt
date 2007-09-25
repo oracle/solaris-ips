@@ -1,0 +1,137 @@
+User Commands                                            pkg(1)
+
+
+NAME
+     pkg - image packaging retrieval client
+
+SYNOPSIS
+     /usr/bin/pkg [options] command [cmd_options] [operands]
+
+     /usr/bin/pkg install [-nv] pkg_fmri
+     /usr/bin/pkg uninstall [-nrv] pkg_fmri
+
+     /usr/bin/pkg status [-auv] [pkg_fmri_pattern ...]
+     /usr/bin/pkg search token
+
+     /usr/bin/pkg refresh
+
+     /usr/bin/pkg image-create [-FPUz] [-a prefix=url] dir
+
+DESCRIPTION
+     pkg is the retrieval client for the image packaging system.  With a
+     valid configuration, pkg can be invoked to create images, target
+     locations for packages to be installed, and install packages into
+     those images.
+
+     pkg can also uninstall packages, refresh the package catalogs, and
+     query the image for various tokens.
+
+     Images can be of three types:  full images, capable of providing a
+     complete system; partial images, which are linked to a full image
+     (parent image), but do not provide a complete system on their own;
+     and user images, which contain only relocatable packages.  (See
+     NOTES on user images.)
+
+     pkg(1) attempts to determine, based on its working directory, in
+     what image it has been invoked.  If no image metadata can be found
+     in the parent directories, the invocation will fail.
+
+SUBCOMMANDS
+     The following subcommands are supported:
+
+     image-create [-FPUz] [-a prefix=url] dir
+          Create, at location given by dir, an image suitable for
+          package operations.  The default image type is user, as given
+          by the -U option.  The image type may be set to a full image
+          (-F) or to a partial image (-P) linked to the full image
+          enclosing the given dir path.
+
+          A preferred authority may be set using the -a option.  An
+          attempt to retrieve the catalog associated with this authority
+          will be made following the initial creation operations.
+
+          If the image is to be run within nonglobal zone context, then
+          the -z option can be used to set an appropriate filter.
+
+     refresh
+          Retrieve updated catalogs for each authority registered within
+          the image.
+
+     install [-nv] pkg_fmri
+     uninstall [-nrv] pkg_fmri 
+          Install or remove the package specified by pkg_fmri or
+          matching pkg_fmri as a substring.  With the -n option, execute
+          the requested operation but make no persistent changes to the
+          image.  With the -v option, issue verbose progress messages
+          during the requested operation.
+
+          In the case of uninstall, the -r option will recursively
+          uninstall any packages that lack dependents after the initial
+          packages has been uninstalled.
+
+     status [-auv] [pkg_fmri_pattern ...]
+          Report on the state of packages in the current image.  With
+          -a, report on all packages known, whether installed or not;
+          without -a, report only based on installed packages in the
+          image.  With -u, report only packages with newer versions
+          available.  With -v, report full package FMRIs.
+
+
+EXAMPLES
+     Example 1:  Create a new, full image, with authority example.com,
+     stored at /aux0/example_root
+
+     $ pkg image-create -F -a example.com=http://pkg.example.com:10000 \
+          /aux0/example_root
+
+     Example 2:  Install the latest version of the widget package in the
+     current image.
+
+     $ pkg install application/widget
+
+
+EXIT STATUS
+     The following exit values are returned:
+
+     0     Everything worked.
+
+     1     Something bad happened.
+
+     2     Invalid command line options were specified.
+
+FILES
+     var/pkg                    Metadata location for full and partial
+                                images, relative to image's root
+                                directory.
+
+     .org.opensolaris,pkg       Metadata location for user images,
+                                relative to image's root directory.
+
+     Metadata is stored in an equivalent tree and format for any image
+     type, starting at $META as above.
+
+     $META/catalog              Directory of catalogs from defined
+                                authorities.
+
+ATTRIBUTES
+     See attributes(5) for descriptions of the  following  attri-
+     butes:
+     ____________________________________________________________
+    |       ATTRIBUTE TYPE        |       ATTRIBUTE VALUE       |
+    |_____________________________|_____________________________|
+    | Availability                |                             |
+    |_____________________________|_____________________________|
+
+SEE ALSO
+     pkgsend(1), pkg.depotd(1M), attributes(5)
+
+NOTES
+     The image packaging system is an under-development feature.
+     Command names, invocation, formats, and operations are all subject
+     to change.  Development is hosted in the OpenSolaris community
+     at
+
+     http://opensolaris.org/os/project/pkg/
+
+     At present, user images are not restricted to relocatable
+     packages--but they will be.

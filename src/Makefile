@@ -35,9 +35,13 @@ PYTHON = /usr/bin/python
 ROOT = ../proto/root_${MACH}
 ROOTUSRBIN = $(ROOT)/usr/bin
 ROOTUSRLIB = $(ROOT)/usr/lib
+ROOTSHARE = $(ROOT)/usr/share/lib/pkg
+ROOTMANIFEST = $(ROOT)/var/svc/manifest
 ROOTPYTHON = $(ROOTUSRLIB)/python2.4
 ROOTPYTHONVENDOR = $(ROOTPYTHON)/vendor-packages
 ROOTPYTHONPKG = $(ROOTPYTHONVENDOR)/pkg
+ROOTMAN1 = $(ROOT)/usr/share/man/cat1
+ROOTMAN1M = $(ROOT)/usr/share/man/cat1m
 
 LINKPYTHONPKG = /usr/lib/python2.4/vendor-packages/pkg
 
@@ -50,7 +54,11 @@ ROOTDIRS = \
 	$(ROOTPYTHONPKG)/publish \
 	$(ROOTPYTHONPKG)/client \
 	$(ROOTPYTHONPKG)/actions \
-	$(ROOTPYTHONPKG)/bundle
+	$(ROOTPYTHONPKG)/bundle \
+	$(ROOTMANIFEST) \
+	$(ROOTSHARE) \
+	$(ROOTMAN1) \
+	$(ROOTMAN1M)
 
 PROGS = pkg pkgsend pkg.depotd
 
@@ -125,6 +133,10 @@ ROOTPYACTIONMODS = \
 ROOTPYBUNDLEMODS = \
 	$(PYBUNDLEMODS:modules/bundle/%=$(ROOTPYTHONPKG)/bundle/%)
 
+ROOTPKGMANIFEST = $(ROOTMANIFEST)/pkg-server.xml
+
+ROOTPKGWEB = $(ROOTSHARE)/pkg-block-logo.png
+
 ROOTCOMPONENTS = \
 	$(ROOTDIRS) \
 	$(ROOTPROGS) \
@@ -148,22 +160,27 @@ clean:
 clobber: clean
 	rm -fr $(ROOT)
 
-install: $(ROOTCOMPONENTS)
+install: all $(ROOTCOMPONENTS)
 	@cd brand; pwd; $(MAKE) $(TARGET)
+	@cd man; pwd; $(MAKE) $(TARGET)
+	@cd web; pwd; $(MAKE) $(TARGET)
 	@cd pkgdefs; pwd; $(MAKE) $(TARGET)
 
 binary-modules:
 	@cd modules; pwd; $(MAKE) $(TARGET)
 
 # XXX link is a developer target to connect the local machine to the current
-# repository's working copy's versions of the commands and modules.
+# repository's working copy's versions of the commands, modules, and supporting
+# files.
 PWD:sh = pwd
 link:
 	ln -s $(PWD)/client.py /usr/bin/pkg
 	ln -s $(PWD)/publish.py /usr/bin/pkgsend
 	ln -s $(PWD)/depot.py /usr/lib/pkg.depotd
 	ln -s $(PWD)/modules /usr/lib/python2.4/vendor-packages/pkg
+	@cd web; pwd; $(MAKE) $(TARGET)
 	@cd brand; pwd; $(MAKE) $(TARGET)
+	@cd man; pwd; $(MAKE) $(TARGET)
 
 # Invoke all known modules with tests.
 # XXX Invoke the bundle tests.
@@ -179,25 +196,10 @@ test:
 	$(PYTHON) $(LINKPYTHONPKG)/client/imageconfig.py
 	$(PYTHON) $(LINKPYTHONPKG)/client/filter.py
 
-$(ROOT) $(ROOTUSRBIN) $(ROOTUSRLIB):
-	mkdir -p $(ROOT)
-	mkdir -p $(ROOTUSRBIN)
-	mkdir -p $(ROOTUSRLIB)
+proto: $(ROOT)
 
-$(ROOTPYTHONPKG) $(ROOTPYTHONPKG)/server:
-	mkdir -p $(ROOTPYTHONPKG)/server
-
-$(ROOTPYTHONPKG)/publish:
-	mkdir -p $(ROOTPYTHONPKG)/publish
-
-$(ROOTPYTHONPKG)/client:
-	mkdir -p $(ROOTPYTHONPKG)/client
-
-$(ROOTPYTHONPKG)/actions:
-	mkdir -p $(ROOTPYTHONPKG)/actions
-
-$(ROOTPYTHONPKG)/bundle:
-	mkdir -p $(ROOTPYTHONPKG)/bundle
+$(ROOT):
+	mkdir -p $(ROOTDIRS)
 
 $(ROOTUSRBIN)/%: %
 	rm -f $@; install -f $(ROOTUSRBIN) -m 0555 $<
