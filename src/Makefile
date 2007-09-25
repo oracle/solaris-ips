@@ -99,6 +99,7 @@ PYACTIONMODS = \
 PYSERVERMODS = \
 	modules/server/__init__.py \
 	modules/server/config.py \
+	modules/server/face.py \
 	modules/server/transaction.py
 
 PYCLIENTMODS = \
