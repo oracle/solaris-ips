@@ -195,23 +195,17 @@ class Manifest(object):
                         """Return a key on which actions can be sorted."""
                         return a.name, a.attrs.get(a.key_attr, id(a))
 
-                def dup(a, b):
-                        "Return whether or not two actions are duplicates."""
-                        if not b:
-                                return False
-                        elif a.name == b.name and \
-                            a.attrs.get(a.key_attr, id(a)) == \
-                            b.attrs.get(b.key_attr, id(b)):
-                                return True
-                        else:
-                                return False
-
-                dups = []
+                alldups = []
                 for k, g in groupby(sorted(self.actions, key = fun), fun):
-                        gr = list(g)
-                        if len(gr) > 1:
-                                dups.append((k, gr))
-                return dups
+                        glist = list(g)
+                        dups = set()
+                        for i in range(len(glist) - 1):
+                                if glist[i].different(glist[i + 1]):
+                                        dups.add(glist[i])
+                                        dups.add(glist[i + 1])
+                        if dups:
+                                alldups.append((k, dups))
+                return alldups
 
         def set_fmri(self, img, fmri):
                 self.img = img
@@ -325,3 +319,19 @@ dir mode=0755 owner=root group=sys path=/bin/change-type
         m4.difference(m3)
         print "\n" + 50 * "=" + "\n"
         m4.difference(null)
+
+        # Test the duplicate search.  /bin shouldn't show up, since they're
+        # identical actions, but /usr should show up three times.
+        m5 = Manifest()
+        t5 = """\
+dir mode=0755 owner=root group=sys path=/bin
+dir mode=0755 owner=root group=sys path=/bin
+dir mode=0755 owner=root group=sys path=/usr
+dir mode=0755 owner=root group=root path=/usr
+dir mode=0755 owner=bin group=sys path=/usr
+"""
+        m5.set_content(t5)
+        for kv, actions in m5.duplicates():
+                print kv
+                for a in actions:
+                        print "  %s" % a

@@ -116,6 +116,7 @@ include common/SUNWasjdoc
 include common/SUNWasman
 include common/SUNWaspell
 include common/SUNWaspell-en
+include common/SUNWastdev
 include common/SUNWasut
 include common/SUNWatfs
 include common/SUNWauda
@@ -181,6 +182,7 @@ include common/SUNWdhcsb
 include common/SUNWdmgt
 include common/SUNWdoc
 include common/SUNWdpl
+include common/SUNWdsd
 include common/SUNWdtab
 include common/SUNWdtbas
 include common/SUNWdtcor
@@ -206,6 +208,7 @@ include common/SUNWdtmaz
 include common/SUNWdtrc
 include common/SUNWdtrp
 include common/SUNWdtscm
+include common/SUNWdttshelp
 include common/SUNWdtwm
 include common/SUNWdvdrw
 include common/SUNWemlxs
@@ -349,6 +352,7 @@ include common/SUNWgnu-automake-110
 include common/SUNWgnu-automake-19
 include common/SUNWgnu-coreutils
 include common/SUNWgnu-diffutils
+include common/SUNWgnu-idn
 include common/SUNWgnu-which
 include common/SUNWgnutls
 include common/SUNWgpch
@@ -840,6 +844,7 @@ include common/SUNWxorg-doc
 include common/SUNWxorg-graphics-ddx
 include common/SUNWxorg-headers
 include common/SUNWxorg-server
+include common/SUNWxorg-tsol-module
 include common/SUNWxorg-xkb
 include common/SUNWxprint-server
 include common/SUNWxrgrt
@@ -875,6 +880,7 @@ include common/SUNWxwslb
 include common/SUNWxwsrc
 include common/SUNWxwsrv
 include common/SUNWxwsvr
+include common/SUNWxwts
 include common/SUNWxwxft
 include common/SUNWyp
 include common/SUNWzfs

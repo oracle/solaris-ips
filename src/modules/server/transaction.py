@@ -85,6 +85,14 @@ class Transaction(object):
                 self.dir = "%s/%s" % (self.cfg.trans_root, trans_basename)
                 os.makedirs(self.dir)
 
+		#
+		# always create a minimal manifest
+		#
+                tfile = file("%s/manifest" % self.dir, "a")
+                print >>tfile,  "# %s, client release %s" % (self.pkg_name, \
+                    self.client_release)
+                tfile.close()
+
                 # lookup package by name
                 p = package.Package(self.fmri)
 

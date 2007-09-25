@@ -1,4 +1,27 @@
 #!/usr/bin/python
+#
+# CDDL HEADER START
+#
+# The contents of this file are subject to the terms of the
+# Common Development and Distribution License (the "License").
+# You may not use this file except in compliance with the License.
+#
+# You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+# or http://www.opensolaris.org/os/licensing.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+#
+# When distributing Covered Code, include this CDDL HEADER in each
+# file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+# If applicable, add the following below this CDDL HEADER, with the
+# fields enclosed by brackets "[]" replaced with your own identifying
+# information: Portions Copyright [yyyy] [name of copyright owner]
+#
+# CDDL HEADER END
+#
+# Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+# Use is subject to license terms.
+
 
 import getopt
 import os
@@ -21,11 +44,13 @@ class pkg(object):
                 self.name = name
                 self.files = []
                 self.depend = []
+                self.idepend = []     #svr4 pkg deps, if any
                 self.undepend = []
                 self.extra = []
                 self.desc = ""
                 self.version = ""
                 self.imppkg = None
+                pkgdict[name] = self
 
         def import_pkg(self, imppkg):
 
@@ -36,8 +61,11 @@ class pkg(object):
 
                 self.imppkg = p
 
-                imppkg = os.path.basename(imppkg)
+                Svr4pkgpaths[p.pkginfo["PKG"]] = pkg_path(imppkg)
 
+                imppkg = p.pkginfo["PKG"] # filename NOT always same as pkgname
+                svr4pkgsseen[imppkg] = p;
+                
                 # XXX This isn't thread-safe.  We want a dict method that adds
                 # the key/value pair, but throws an exception if the key is
                 # already present.
@@ -64,6 +92,15 @@ class pkg(object):
                 #     d.req_pkg_fmri
                 #     for d in p.deps
                 # )
+
+                self.add_svr4_src(imppkg)
+
+        def add_svr4_src(self, imppkg):
+                if imppkg in destpkgs:
+                        destpkgs[imppkg].append(self.name)
+                else:
+                        destpkgs[imppkg] = [self.name]
+
 
         def import_file(self, file, line):
                 imppkgname = self.imppkg.pkginfo["PKG"]
@@ -115,10 +152,10 @@ class pkg(object):
                             (file, curpkg.name)
                 # It's probably a file, but all we care about are the
                 # attributes.
-		if show_debug:
-		        print "Updating attributes on '%s' in '%s' with '%s'" % \
+                if show_debug:
+                        print "Updating attributes on '%s' in '%s' with '%s'" % \
                             (file, curpkg.name, line)
-		# XXX this code assumes that a path change is done by itself
+                # XXX this code assumes that a path change is done by itself
                 # w/o any other attribute changes.  Should be cleaner...
                 if line[0:5] != "path=":
                         a = actions.fromstr("file path=%s %s" % (file, line))
@@ -221,10 +258,10 @@ def publish_pkg(pkg):
         for g in groups:
                 pkgname = usedlist[g[0].pathname][0]
                 print "pulling files from archive in package", pkgname
-                bundle = SolarisPackageDirBundle(pkg_path(pkgname))
+                bundle = SolarisPackageDirBundle(svr4pkgpaths[pkgname])
                 pathdict = dict((f.pathname, f) for f in g)
                 for f in bundle:
-		        if f.attrs["path"] in newpaths and newpaths[f.attrs["path"]] in pathdict:
+                        if f.attrs["path"] in newpaths and newpaths[f.attrs["path"]] in pathdict:
                                 path = newpaths[f.attrs["path"]]
                                 f.attrs["owner"] = pathdict[path].owner
                                 f.attrs["group"] = pathdict[path].group
@@ -257,10 +294,21 @@ def publish_pkg(pkg):
                                 os.unlink(tmp)
 
         # Publish dependencies
+
+        for p in set(pkg.idepend):              # over set of svr4 deps, append ipkgs
+                if p in destpkgs:
+                        pkg.depend.extend(destpkgs[p]) 
+                else:
+                        print "SVR4 package %s not seen - ignoring dependency" % p
+
         for p in set(pkg.depend) - set(pkg.undepend):
                 # Don't make a package depend on itself.
                 if p[:len(pkg.name)] == pkg.name:
                         continue
+                # enhance unqualified dependencies to include current pkg version
+                if "@" not in p and p in pkgdict:
+                        p = "%s@%s" % (p, pkgdict[p].version)
+
                 print "    %s add depend require %s" % \
                     (pkg.name, sysv_to_new_name(p))
                 action = actions.depend.DependencyAction(None,
@@ -270,6 +318,16 @@ def publish_pkg(pkg):
         for a in pkg.extra:
                 print "    %s add %s" % (pkg.name, a)
                 action = actions.fromstr(a)
+                #
+                # fmris may not be completely specified; enhance them to current
+                # version if this is the case
+                #
+                for attr in action.attrs:
+                        if attr == "fmri" and \
+                            "@" not in action.attrs[attr] and \
+                            action.attrs[attr][5:] in pkgdict:
+                                action.attrs[attr] += "@%s" % \
+                                    pkgdict[action.attrs[attr][5:]].version
                 t.add(cfg, id, action)
 
         if undeps:
@@ -397,7 +455,7 @@ def process_dependencies(file, path):
 
 def_vers = "0.5.11"
 def_branch = ""
-wos_path = "/net/netinstall.eng/export/nv/s/latest/Solaris_11/Product"
+wos_path = "/net/netinstall.eng/export/nv/x/latest/Solaris_11/Product"
 nopublish = False
 show_debug = False
 
@@ -459,6 +517,27 @@ usedlist = {}
 #
 newpaths = {}
 
+#
+# pkgdict contains ipkgs by name
+#
+pkgdict = {}
+
+#
+# destpkgs contains the list of ipkgs generated from each svr4 pkg
+# this is needed to generate metaclusters
+#
+destpkgs = {}
+
+#
+#svr4 pkgs seen - pkgs indexed by name
+#
+svr4pkgsseen = {}
+
+#
+#paths where we found the packages we need
+#
+svr4pkgpaths = {}
+
 reuse_err = "Tried to put file '%s' from package '%s' into\n    '%s' as well as '%s': file dropped"
 
 print "First pass:", datetime.now()
@@ -508,6 +587,12 @@ while True:
 
         elif token == "depend":
                 curpkg.depend.append(lexer.get_token())
+
+        elif token == "cluster":
+                curpkg.add_svr4_src(lexer.get_token())
+
+        elif token == "idepend":
+                curpkg.idepend.append(lexer.get_token())
 
         elif token == "undepend":
                 curpkg.undepend.append(lexer.get_token())
@@ -566,7 +651,7 @@ seenpkgs = set(i[0] for i in usedlist.values())
 print "Files you seem to have forgotten:\n  " + "\n  ".join(
     "%s %s" % (f.type, f.pathname)
     for pkg in seenpkgs
-    for f in SolarisPackage(pkg_path(pkg)).manifest
+    for f in svr4pkgsseen[pkg].manifest
     if f.type != "i" and f.pathname in newpaths and newpaths[f.pathname] not in usedlist)
 
 # Second pass: iterate over the existing package objects, gathering dependencies
@@ -578,9 +663,9 @@ print "New packages:\n"
 # XXX Sort these.  Preferably topologically, if possible, alphabetically
 # otherwise (for a rough progress gauge).
 if args[1:]:
-        newpkgs = set(i[1] for i in usedlist.values() if i[1].name in args[1:])
+        newpkgs = set(pkgdict[name] for name in pkgdict.keys() if name in args[1:])
 else:
-        newpkgs = set(i[1] for i in usedlist.values())
+        newpkgs = set(pkgdict.values())
 for p in sorted(newpkgs):
         print "Package '%s'" % sysv_to_new_name(p.name)
         print "  Version:", p.version
