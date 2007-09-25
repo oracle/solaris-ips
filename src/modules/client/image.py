@@ -28,6 +28,7 @@ import getopt
 import os
 import re
 import urllib
+import urlparse
 # import uuid           # XXX interesting 2.5 module
 
 import pkg.catalog as catalog
@@ -341,16 +342,36 @@ class Image(object):
 
                 return dependents
 
+        def retrieve_catalogs(self):
+                for auth in self.gen_authorities():
+                        # XXX Mirror selection and retrieval policy?
+
+                        # Ignore http_proxy for localhost case, by overriding
+                        # default proxy behaviour of urlopen().
+                        proxy_uri = None
+                        netloc = urlparse.urlparse(auth["origin"])[1]
+                        if urllib.splitport(netloc)[0] == "localhost":
+                                proxy_uri = {}
+
+                        uri = urlparse.urljoin(auth["origin"], "catalog")
+
+                        c = urllib.urlopen(uri, proxies=proxy_uri)
+
+                        # compare headers
+                        data = c.read()
+
+                        # Filename should be reduced to host\:port
+                        cfile = file("%s/catalog/%s" % (self.imgdir,
+                            auth["prefix"]), "w")
+                        print >>cfile, data
+
         def reload_catalogs(self):
                 cdir = "%s/%s" % (self.imgdir, "catalog")
-                for cf in os.listdir(cdir):
+                for auth in self.gen_authorities():
                         c = catalog.Catalog()
-                        c.load("%s/%s" % (cdir, cf))
+                        c.load("%s/%s" % (cdir, auth["prefix"]))
 
-                        self.catalogs[cf] = c
-
-                        # XXX XXX
-                        # build up authorities
+                        self.catalogs[auth["prefix"]] = c
 
         def gen_known_packages(self):
                 for c in self.catalogs.values():
@@ -379,7 +400,6 @@ class Image(object):
                         if opt == "-v":
                                 verbose = True
 
-
                 if verbose:
                         fmt_str = "%-64s %-10s %c%c%c%c"
                 else:
@@ -387,46 +407,49 @@ class Image(object):
 
                 proot = "%s/pkg" % self.imgdir
 
-                # XXX if len(pargs) > 0, then pkgs_known is pargs and all_known
-                # is unused
+                if len(pargs):
+                        pkgs_known = [ m[1]
+                            for p in pargs
+                            for m in self.get_regex_matching_fmris(p) ]
 
-                if all_known:
-                        # XXX Iterate through catalogs, building up list of
-                        # packages.
-                        pkgs_known = [ str(pf) for pf in self.gen_known_packages() ]
+                elif all_known:
+                        pkgs_known = [ pf for pf in
+                            self.gen_known_packages() ]
 
                 else:
-                        pkgs_known = [ urllib.unquote("%s@%s" % (pd, vd))
+                        pkgs_known = [ fmri.PkgFmri(urllib.unquote("%s@%s" %
+                            (pd, vd)), None)
                             for pd in sorted(os.listdir(proot))
                             for vd in sorted(os.listdir("%s/%s" % (proot, pd)))
                             if os.path.exists("%s/%s/%s/installed" %
                                 (proot, pd, vd)) ]
 
                 if len(pkgs_known) == 0:
-                        print "pkg: no packages installed"
+                        if len(pargs):
+                                print "pkg: no matching packages installed"
+                        else:
+                                print "pkg: no packages installed"
                         return
 
                 print fmt_str % ("FMRI", "STATE", "U", "F", "I", "X")
 
                 for p in pkgs_known:
-                        f = fmri.PkgFmri(p, None)
-
                         upgradable = "-"
                         frozen = "-"
                         incorporated = "-"
                         excludes = "-"
 
-                        if len(self.get_matching_pkgs(f)) > 1:
+                        if len(self.get_matching_pkgs(p)) > 1:
                                 upgradable = "u"
                         elif upgradable_only:
                                 continue
 
                         if not verbose:
-                                pf = f.get_short_fmri()
+                                pf = p.get_short_fmri()
                         else:
-                                pf = f.get_fmri(self.get_default_authority())
+                                pf = p.get_fmri(self.get_default_authority())
 
-                        print fmt_str % (pf, self.get_pkg_state_by_fmri(f),
+                        print fmt_str % (pf, self.get_pkg_state_by_fmri(p),
                             upgradable, frozen, incorporated, excludes)
 
 

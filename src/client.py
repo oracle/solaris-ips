@@ -43,6 +43,7 @@
 #       XXX or is this in the Image configuration?
 
 import getopt
+import gettext
 import httplib
 import os
 import re
@@ -64,7 +65,7 @@ import pkg.client.image as image
 import pkg.client.imageplan as imageplan
 
 def usage():
-        print """\
+        print _("""\
 Usage:
         pkg [options] command [cmd_options] [operands]
 
@@ -86,7 +87,7 @@ Options:
 
 Environment:
         PKG_SERVER
-        PKG_IMAGE"""
+        PKG_IMAGE""")
         sys.exit(2)
 
 # XXX Subcommands to implement:
@@ -100,38 +101,15 @@ def catalog_refresh(img, args):
 
         # XXX will need to show available content series for each package
 
-        croot = img.imgdir
-
         if len(args) != 0:
-                print "pkg: catalog subcommand takes no arguments"
+                print _("pkg: refresh subcommand takes no arguments")
                 usage()
 
         # Ensure Image directory structure is valid.
-        if not os.path.isdir("%s/catalog" % croot):
+        if not os.path.isdir("%s/catalog" % img.imgdir):
                 img.mkdirs()
 
-        # GET /catalog
-        for auth in img.gen_authorities():
-                # XXX Mirror selection and retrieval policy?
-
-                # Ignore http_proxy for localhost case, by overriding default
-                # proxy behaviour of urlopen().
-                proxy_uri = None
-                netloc = urlparse.urlparse(auth["origin"])[1]
-                if urllib.splitport(netloc)[0] == "localhost":
-                        proxy_uri = {}
-
-                uri = urlparse.urljoin(auth["origin"], "catalog")
-
-                c = urllib.urlopen(uri, proxies=proxy_uri)
-
-                # compare headers
-                data = c.read()
-                fname = urllib.quote(c.geturl(), "")
-
-                # Filename should be reduced to host\:port
-                cfile = file("%s/catalog/%s" % (croot, fname), "w")
-                print >>cfile, data
+        img.retrieve_catalogs()
 
 def inventory_display(img, args):
         img.reload_catalogs()
@@ -173,9 +151,9 @@ def install(img, args):
                 try:
                         matches = img.get_regex_matching_fmris(rpat)
                 except KeyError:
-                        print """\
+                        print _("""\
 pkg: no package matching '%s' could be found in current catalog
-     suggest relaxing pattern, refreshing and/or examining catalogs""" % ppat
+     suggest relaxing pattern, refreshing and/or examining catalogs""") % ppat
                         error = 1
                         continue
 
@@ -190,7 +168,7 @@ pkg: no package matching '%s' could be found in current catalog
                                 break
 
                 if len(pnames.keys()) > 1:
-                        print "pkg: '%s' matches multiple packages" % ppat
+                        print _("pkg: '%s' matches multiple packages") % ppat
                         for k in pnames.keys():
                                 print "\t%s" % k
                         error = 1
@@ -202,13 +180,13 @@ pkg: no package matching '%s' could be found in current catalog
                 sys.exit(error)
 
         if verbose:
-                print "Before evaluation:"
+                print _("Before evaluation:")
                 print ip
 
         ip.evaluate()
 
         if verbose:
-                print "After evaluation:"
+                print _("After evaluation:")
                 print ip
 
         if not noexecute:
@@ -240,7 +218,7 @@ def uninstall(img, args):
                 try:
                         matches = img.get_regex_matching_fmris(rpat)
                 except KeyError:
-                        print "'%s' not even in catalog!" % ppat
+                        print _("pkg: '%s' not even in catalog!") % ppat
                         error = 1
                         continue
 
@@ -251,25 +229,25 @@ def uninstall(img, args):
                 )
 
                 if len(pnames) > 1:
-                        print "pkg: '%s' matches multiple packages" % ppat
+                        print _("pkg: '%s' matches multiple packages") % ppat
                         for k in pnames.keys():
                                 print "\t%s" % k
                         continue
 
                 if len(pnames) < 1:
-                        print "pkg: '%s' matches no installed packages" % ppat
+                        print _("pkg: '%s' matches no installed packages") % ppat
                         continue
 
                 ip.propose_fmri_removal(pnames.keys()[0])
 
         if verbose:
-                print "Before evaluation:"
+                print _("Before evaluation:")
                 print ip
 
         ip.evaluate()
 
         if verbose:
-                print "After evaluation:"
+                print _("After evaluation:")
                 print ip
 
         if not noexecute:
@@ -277,13 +255,12 @@ def uninstall(img, args):
 
 def freeze(img, args):
         """Attempt to take package specified to FROZEN state, with given
-        restrictions."""
+        restrictions.  Package must have been in the INSTALLED state."""
         return
 
 def unfreeze(img, args):
         """Attempt to return package specified to INSTALLED state from FROZEN
         state."""
-
         return
 
 def search(img, args):
@@ -308,10 +285,15 @@ def search(img, args):
         return
 
 def create_image(img, args):
-        """Create an image of the requested kind, at the given path."""
+        """Create an image of the requested kind, at the given path.  Load
+        catalog for initial authority for convenience.
+
+        At present, it is legitimate for a user image to specify that it will be
+        deployed in a zone.  An easy example would be a program with an optional
+        component that consumes global zone-only information, such as various
+        kernel statistics or device information."""
 
         # XXX Long options support
-        # XXX Support for setting initial authority
 
         type = image.IMG_USER
         filter_tags = arch.get_isainfo()
@@ -324,7 +306,6 @@ def create_image(img, args):
         if len(args) > 0:
                 opts, pargs = getopt.getopt(args, "FPUza:")
 
-        # XXX Can -z and -U be used at the same time?
         for opt, arg in opts:
                 if opt == "-F":
                         type = image.IMG_ENTIRE
@@ -339,18 +320,23 @@ def create_image(img, args):
 
         img.set_attrs(type, pargs[0], is_zone, auth_name, auth_url)
 
+        img.retrieve_catalogs()
+
         return
 
 img = image.Image()
 
 if __name__ == "__main__":
+        # XXX /usr/lib/locale is OpenSolaris-specific.
+        gettext.install("pkg", "/usr/lib/locale")
+
         opts = None
         pargs = None
         try:
                 if len(sys.argv) > 1:
                         opts, pargs = getopt.getopt(sys.argv[1:], "s:R:")
         except getopt.GetoptError, e:
-                print "pkg: illegal global option '%s'" % e.opt
+                print _("pkg: illegal global option '%s'") % e.opt
                 usage()
 
         if pargs == None or len(pargs) == 0:
@@ -378,15 +364,13 @@ if __name__ == "__main__":
         try:
                 img.find_root(dir)
         except AssertionError:
-                print "'%s' is not an install image" % dir
+                print _("'%s' is not an install image") % dir
                 sys.exit(1)
 
         img.load_config()
 
         if subcommand == "refresh":
                 catalog_refresh(img, pargs)
-        elif subcommand == "catalog":
-                catalog_display(img, pargs)
         elif subcommand == "status":
                 inventory_display(img, pargs)
         elif subcommand == "install":
@@ -403,5 +387,5 @@ if __name__ == "__main__":
         elif subcommand == "search":
                 search(img, pargs)
         else:
-                print "pkg: unknown subcommand '%s'" % subcommand
+                print _("pkg: unknown subcommand '%s'") % subcommand
                 usage()
