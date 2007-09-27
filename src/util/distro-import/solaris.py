@@ -61,7 +61,7 @@ class pkg(object):
 
                 self.imppkg = p
 
-                Svr4pkgpaths[p.pkginfo["PKG"]] = pkg_path(imppkg)
+                svr4pkgpaths[p.pkginfo["PKG"]] = pkg_path(imppkg)
 
                 imppkg = p.pkginfo["PKG"] # filename NOT always same as pkgname
                 svr4pkgsseen[imppkg] = p;

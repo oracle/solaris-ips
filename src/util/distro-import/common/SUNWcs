@@ -1,4 +1,11 @@
 package SUNWcs
 import SUNWcsu
+# BEGIN NON-REDISTRIBUTABLE
+drop usr/bin/ksh
+drop usr/bin/pfksh
+drop usr/bin/rksh
+add link path=usr/bin/ksh target=ksh93
+add link path=usr/bin/rksh target=rksh93
+# END NON-REDISTRIBUTABLE
 import SUNWcsr
 end package

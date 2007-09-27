@@ -1,3 +1,9 @@
 package SUNWhea
 import SUNWhea
+# BEGIN NON-REDISTRIBUTABLE
+drop usr/include/sys/scsi/adapters/ispcmd.h
+drop usr/include/sys/scsi/adapters/ispmail.h
+drop usr/include/sys/scsi/adapters/ispreg.h
+drop usr/include/sys/scsi/adapters/ispvar.h
+# END NON-REDISTRIBUTABLE
 end package

@@ -1,6 +1,10 @@
 package SUNWpsdir
 import SUNWpsdir
-add driver name=sbpro alias=mwss
+# BEGIN NON-REDISTRIBUTABLE
+# add driver name=sbpro alias=mwss
+drop kernel/drv/sbpro
+drop kernel/drv/sbpro.conf
+# END NON-REDISTRIBUTABLE
 add driver name=pci-ide
 add driver name=ata class=dada class=scsi alias=ide
 end package

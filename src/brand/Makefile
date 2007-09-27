@@ -33,6 +33,7 @@ ROOTETCZONES = $(ROOT)/etc/zones
 ROOTUSRLIB = $(ROOT)/usr/lib
 ROOTBRAND = $(ROOTUSRLIB)/brand
 ROOTBRANDPKG = $(ROOTBRAND)/ipkg
+ROOTPKG = $(ROOTUSRLIB)/pkg
 
 LINKBRANDPKG = /usr/lib/brand/ipkg
 
@@ -42,12 +43,14 @@ ROOTDIRS = \
 	$(ROOTETCZONES) \
 	$(ROOTUSRLIB) \
 	$(ROOTBRAND) \
-	$(ROOTBRANDPKG)
+	$(ROOTBRANDPKG) \
+	$(ROOTPKG)
 
 ROOTFILES = \
 	$(ROOTETCZONES)/SUNWipkg.xml \
 	$(ROOTBRANDPKG)/config.xml \
-	$(ROOTBRANDPKG)/platform.xml
+	$(ROOTBRANDPKG)/platform.xml \
+	$(ROOTPKG)/pkgcreatezone
 
 all := TARGET = all
 
@@ -56,7 +59,7 @@ all:
 clean:
 
 clobber: clean
-	rm -fr $(ROOTBRAND)
+	rm -fr $(ROOTBRAND) $(ROOTPKG)
 
 install: $(ROOTFILES)
 
@@ -69,7 +72,8 @@ link:
 	ln -s $(PWD)/platform.xml /usr/lib/brand/ipkg/platform.xml
 	ln -s $(PWD)/SUNWipkg.xml /etc/zones/SUNWipkg.xml
 
-$(ROOT) $(ROOTETC) $(ROOTETCZONES) $(ROOTUSRLIB) $(ROOTBRAND) $(ROOTBRANDPKG):
+$(ROOT) $(ROOTETC) $(ROOTETCZONES) $(ROOTUSRLIB) $(ROOTBRAND) $(ROOTBRANDPKG) \
+	$(ROOTPKG):
 	mkdir -p $@
 
 $(ROOTETCZONES)/%: $(ROOTETCZONES) %
@@ -77,3 +81,6 @@ $(ROOTETCZONES)/%: $(ROOTETCZONES) %
 
 $(ROOTBRANDPKG)/%: $(ROOTBRANDPKG) %
 	rm -f $@; install -f $(ROOTBRANDPKG) -m 0444 $<
+
+$(ROOTPKG)/%: $(ROOTPKG) %
+	rm -f $@; install -f $(ROOTPKG) -m 0555 $<

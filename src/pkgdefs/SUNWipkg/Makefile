@@ -44,14 +44,14 @@ prototype: FRC
 		$$1 == "f" { \
 			$$4 = "444" \
 		} \
-		$$1 == "f" && $$3 ~ /usr\/lib\/pkg.depotd|usr\/bin\/pkg(send)?/ { \
+		$$1 == "f" && $$3 ~ /usr\/lib\/pkg.depotd|usr\/bin\/pkg(send)?|usr\/lib\/pkg\/pkgcreatezone/ { \
 			$$4 = "755" \
 		} \
 		{ \
 			$$5 = "root"; \
 			$$6 = "bin"; \
 		} \
-		$$3 ~ /^(etc|etc\/zones|usr)$$/ { \
+		$$3 ~ /^(etc|etc\/zones|usr|var|var\/svc|var\/svc\/manifest)$$/ { \
 			$$6 = "sys"; \
 		} \
 		{ \

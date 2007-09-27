@@ -104,6 +104,7 @@ PYSERVERMODS = \
 
 PYCLIENTMODS = \
 	modules/client/__init__.py \
+	modules/client/filter.py \
 	modules/client/image.py \
 	modules/client/imageconfig.py \
 	modules/client/imageplan.py \

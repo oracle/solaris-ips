@@ -1,3 +1,8 @@
 package SUNWocfh
 import SUNWocfh
+# BEGIN NON-REDISTRIBUTABLE
+drop usr/include/smartcard
+drop usr/include/smartcard/ifdhandler.h
+drop usr/include/smartcard/scf.h
+# END NON-REDISTRIBUTABLE
 end package

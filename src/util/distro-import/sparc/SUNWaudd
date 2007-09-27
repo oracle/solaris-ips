@@ -1,6 +1,10 @@
 package SUNWaudd
 import SUNWaudd
-add driver name=audioens alias=pci1274,1371 alias=pci1274,5880
+# BEGIN NON-REDISTRIBUTABLE
+# add driver name=audioens alias=pci1274,1371 alias=pci1274,5880
+drop kernel/drv/audioens.conf
+drop kernel/drv/sparcv9/audioens
+# END NON-REDISTRIBUTABLE
 add driver name=audiocs alias=SUNW,CS4231
 add driver name=audiots alias=pci10b9,5451
 add driver name=audio1575 alias=pci10b9,5455
