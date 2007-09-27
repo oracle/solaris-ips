@@ -85,15 +85,13 @@ class FileAction(generic.Action):
                 else:
                         temp = final_path
 
-                if not orig or omode != mode:
-                        os.chmod(temp, mode)
+                os.chmod(temp, mode)
 
-                if not orig or oowner != owner or ogroup != group:
-                        try:
-                                os.chown(temp, owner, group)
-                        except OSError, e:
-                                if e.errno != errno.EPERM:
-                                        raise
+                try:
+                        os.chown(temp, owner, group)
+                except OSError, e:
+                        if e.errno != errno.EPERM:
+                                raise
 
                 # This is safe even if temp == final_path.
                 os.rename(temp, final_path)
