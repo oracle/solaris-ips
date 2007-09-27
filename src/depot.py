@@ -52,6 +52,8 @@ import shutil
 import sys
 import time
 import urllib
+import tarfile
+import cgi
 
 import pkg.catalog as catalog
 import pkg.dependency as dependency
@@ -100,6 +102,38 @@ def manifest_get(scfg, request):
         request.end_headers()
         request.wfile.write(data)
 
+def file_get_multiple(scfg, request):
+        """Request data contains application/x-www-form-urlencoded entries
+        with the requested filenames."""
+        hdrs = request.headers
+        # If the sender doesn't specify the content length, reject this request.
+        # Calling read() with no size specified will force the server to block
+        # until the client sends EOF, an undesireable situation
+        size = int(hdrs.getheader("Content-Length"))
+        if size == 0:
+                request.send_response(411)
+                return
+
+        rfile = request.rfile
+        data_dict = cgi.parse_qs(rfile.read(size))
+
+        scfg.inc_flist()
+
+        request.send_response(200)
+        request.send_header("Content-type", "application/data")
+        request.end_headers()
+
+        tar_stream = tarfile.open(mode = "w|", fileobj = request.wfile)
+
+        for v in data_dict.values():
+                filepath = os.path.normpath(os.path.join(
+                    scfg.file_root, misc.hash_file_name(v[0])))
+
+                tar_stream.add(filepath, v[0], False)
+                scfg.inc_flist_files()
+
+        tar_stream.close()
+
 def file_get_single(scfg, request):
         """The request is the SHA-1 hash name for the file."""
         scfg.inc_file()
@@ -108,7 +142,8 @@ def file_get_single(scfg, request):
         fhash = m.group(1)
 
         try:
-                file = open(scfg.file_root + "/" + misc.hash_file_name(fhash))
+                file = open(os.path.normpath(os.path.join(
+                    scfg.file_root, misc.hash_file_name(fhash))))
         except IOError, e:
                 if e.errno == errno.ENOENT:
                         request.send_response(404)
@@ -209,7 +244,9 @@ class pkgHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                     (self.path, self.headers))
 
         def do_POST(self):
-                if re.match("^/add/(.*)$", self.path):
+                if re.match("^/filelist/.*$", self.path):
+                        file_get_multiple(scfg, self)
+                elif re.match("^/add/(.*)$", self.path):
                         trans_add(scfg, self)
                 else:
                         self.send_response(404)

@@ -63,6 +63,7 @@ import pkg.version as version
 
 import pkg.client.image as image
 import pkg.client.imageplan as imageplan
+import pkg.client.filelist as filelist
 
 def usage():
         print _("""\
@@ -126,7 +127,7 @@ def install(img, args):
         error = 0
 
         if len(args) > 0:
-                opts, pargs = getopt.getopt(args, "Snvf:")
+                opts, pargs = getopt.getopt(args, "Snvb:f:")
 
         strict = noexecute = verbose = False
         filters = []
@@ -137,6 +138,8 @@ def install(img, args):
                         noexecute = True
                 elif opt == "-v":
                         verbose = True
+                elif opt == "-b":
+                        filelist.FileList.maxfiles = int(arg)
                 elif opt == "-f":
                         filters += [ arg ]
 

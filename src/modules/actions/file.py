@@ -69,11 +69,7 @@ class FileAction(generic.Action):
                 # For ELF files, only write the new file if the elfhash changed.
                 # XXX This needs to be modularized.
                 # XXX This needs to be controlled by policy.
-                bothelf = orig and "elfhash" in orig.attrs and "elfhash" in self.attrs
-                if not orig or \
-                    (bothelf and orig.attrs["elfhash"] !=
-                        self.attrs["elfhash"]) or \
-                    (not bothelf and orig.hash != self.hash):
+                if self.needsdata(orig): 
                         temp = os.path.normpath(os.path.sep.join(
                             (image.get_root(), path + "." + self.hash)))
 
@@ -101,6 +97,17 @@ class FileAction(generic.Action):
 
                 # This is safe even if temp == final_path.
                 os.rename(temp, final_path)
+
+        def needsdata(self, orig):
+                bothelf = orig and "elfhash" in orig.attrs and "elfhash" in self.attrs
+                if not orig or \
+                    (bothelf and orig.attrs["elfhash"] !=
+                        self.attrs["elfhash"]) or \
+                    (not bothelf and orig.hash != self.hash):
+                        return True
+
+                return False
+
 
         def remove(self, image):
                 path = os.path.normpath(os.path.sep.join(

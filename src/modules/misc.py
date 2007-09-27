@@ -23,12 +23,13 @@
 #
 # Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
-#
+
+import os
 
 def hash_file_name(f):
         """Return the two-level path fragment for the given filename, which is
         assumed to be a content hash of at least 8 distinct characters."""
-        return "%s/%s/%s" % (f[0:2], f[2:8], f)
+        return os.path.join("%s" % f[0:2], "%s" % f[2:8], "%s" % f)
 
 if __name__ == "__main__":
         print hash_file_name("abcdefghijklmnopqrstuvwxyz")

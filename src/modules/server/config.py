@@ -60,6 +60,8 @@ class SvrConfig(object):
                 self.catalog_requests = 0
                 self.manifest_requests = 0
                 self.file_requests = 0
+                self.flist_requests = 0
+                self.flist_files = 0
 
         def init_dirs(self):
                 # XXX refine try/except
@@ -114,8 +116,11 @@ Number of in-flight transactions: %d
 Number of catalogs served: %d
 Number of manifests served: %d
 Number of files served: %d
+Number of flists requested: %d
+Number of files served by flist: %d
 """ % (len(self.catalog.pkgs), len(self.in_flight_trans), self.catalog_requests,
-                self.manifest_requests, self.file_requests)
+                self.manifest_requests, self.file_requests,
+                self.flist_requests, self.flist_files)
 
                 return ret
 
@@ -127,4 +132,10 @@ Number of files served: %d
 
         def inc_file(self):
                 self.file_requests += 1
+
+        def inc_flist(self):
+                self.flist_requests += 1
+
+        def inc_flist_files(self):
+                self.flist_files += 1
 

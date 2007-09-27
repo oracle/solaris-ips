@@ -297,6 +297,11 @@ class Action(object):
 
                 os.mkdir(path, leafmode)
 
+        def needsdata(self, orig):
+                """Returns True if the action transition requires a
+                datastream."""
+                return False
+
         def preinstall(self, image, orig):
                 """Client-side method that performs pre-install actions."""
                 pass

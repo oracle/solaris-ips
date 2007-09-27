@@ -27,6 +27,7 @@ import errno
 import os
 
 import pkg.manifest as manifest
+import pkg.client.filelist as filelist
 
 class PkgPlan(object):
         """A package plan takes two package FMRIs and an Image, and produces the
@@ -145,6 +146,9 @@ class PkgPlan(object):
                 methods, as well as any package-wide steps that need to be taken
                 at such a time.
                 """
+                flist = None
+                flist_supported = True
+
                 # retrieval step
                 if self.destination_fmri == None:
                         os.unlink("%s/pkg/%s/installed" % (self.image.imgdir,
@@ -158,6 +162,34 @@ class PkgPlan(object):
                                 dest.preinstall(self.image, src)
                         else:
                                 src.preremove(self.image)
+
+                        if dest and dest.needsdata(src) and flist_supported:
+
+                                if flist and flist.is_full():
+                                        try:
+                                                flist.get_files()
+                                        except filelist.FileListException:
+                                                flist_supported = False
+                                                flist = None
+                                                continue
+
+                                        flist = None
+
+                                if flist is None:
+                                        flist = filelist.FileList(
+                                                    self.image,
+                                                    self.destination_fmri)
+
+                                flist.add_action(dest)
+
+
+                # Get any remaining files
+                if flist:
+                        try:
+                                flist.get_files()
+                        except filelist.FileListException:
+                                pass
+                        flist = None
 
         def execute(self):
                 """Perform actions for installation or removal of a package.
