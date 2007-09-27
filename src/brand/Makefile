@@ -53,6 +53,8 @@ ROOTFILES = \
 	$(ROOTPKG)/pkgcreatezone
 
 all := TARGET = all
+link := TARGET = link
+link-clean := TARGET = link-clean
 
 all:
 
@@ -68,9 +70,12 @@ install: $(ROOTFILES)
 PWD:sh = pwd
 link:
 	mkdir -p /usr/lib/brand/ipkg
-	ln -s $(PWD)/config.xml /usr/lib/brand/ipkg/config.xml
-	ln -s $(PWD)/platform.xml /usr/lib/brand/ipkg/platform.xml
-	ln -s $(PWD)/SUNWipkg.xml /etc/zones/SUNWipkg.xml
+	ln -sf $(PWD)/config.xml /usr/lib/brand/ipkg/config.xml
+	ln -sf $(PWD)/platform.xml /usr/lib/brand/ipkg/platform.xml
+	ln -sf $(PWD)/SUNWipkg.xml /etc/zones/SUNWipkg.xml
+
+link-clean:
+	rm -r /usr/lib/brand/ipkg
 
 $(ROOT) $(ROOTETC) $(ROOTETCZONES) $(ROOTUSRLIB) $(ROOTBRAND) $(ROOTBRANDPKG) \
 	$(ROOTPKG):

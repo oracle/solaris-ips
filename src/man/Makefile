@@ -33,17 +33,24 @@ MANPAGES = $(ROOTMAN1)/pkg.1 $(ROOTMAN1)/pkgsend.1 $(ROOTMAN1M)/pkg.depotd.1m
 
 all := TARGET = all
 link := TARGET = link
+link-clean := TARGET = link-clean
 install := TARGET = install
 
 all:
 
 install: $(MANPAGES)
 
+PWD:sh = pwd 
 link:
 	-mkdir -p /usr/share/man/cat1 /usr/share/man/cat1m
-	ln -s $(PWD)/pkg.1.txt /usr/share/man/cat1/pkg.1
-	ln -s $(PWD)/pkgsend.1.txt /usr/share/man/cat1/pkgsend.1
-	ln -s $(PWD)/pkg.depotd.1m.txt /usr/share/man/cat1m/pkg.depotd.1m
+	ln -sf $(PWD)/pkg.1.txt /usr/share/man/cat1/pkg.1
+	ln -sf $(PWD)/pkgsend.1.txt /usr/share/man/cat1/pkgsend.1
+	ln -sf $(PWD)/pkg.depotd.1m.txt /usr/share/man/cat1m/pkg.depotd.1m
+
+link-clean:
+	rm -f /usr/share/man/cat1/pkg.1
+	rm -f /usr/share/man/cat1/pkgsend.1
+	rm -f /usr/share/man/cat1m/pkg.depotd.1m
 
 clean:
 

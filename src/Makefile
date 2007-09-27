@@ -154,6 +154,7 @@ ROOTCOMPONENTS = \
 all := TARGET = all
 link := TARGET = link
 install := TARGET = install
+link-clean := TARGET = link-clean
 
 all: $(PROGS) binary-modules
 
@@ -177,14 +178,23 @@ binary-modules:
 # files.
 PWD:sh = pwd
 link:
-	ln -s $(PWD)/client.py /usr/bin/pkg
-	ln -s $(PWD)/publish.py /usr/bin/pkgsend
-	ln -s $(PWD)/depot.py /usr/lib/pkg.depotd
-	ln -s $(PWD)/modules /usr/lib/python2.4/vendor-packages/pkg
+	ln -sf $(PWD)/client.py /usr/bin/pkg
+	ln -sf $(PWD)/publish.py /usr/bin/pkgsend
+	ln -sf $(PWD)/depot.py /usr/lib/pkg.depotd
+	ln -sf $(PWD)/modules /usr/lib/python2.4/vendor-packages/pkg
 	@cd web; pwd; $(MAKE) $(TARGET)
 	@cd brand; pwd; $(MAKE) $(TARGET)
 	@cd man; pwd; $(MAKE) $(TARGET)
 
+link-clean:
+	rm -f /usr/bin/pkg
+	rm -f /usr/bin/pkgsend
+	rm -f /usr/lib/pkg.depotd
+	rm -f /usr/lib/python2.4/vendor-packages/pkg
+	@cd web; pwd; $(MAKE) $(TARGET)
+	@cd brand; pwd; $(MAKE) $(TARGET)
+	@cd man; pwd; $(MAKE) $(TARGET)
+        
 # Invoke all known modules with tests.
 # XXX Invoke the bundle tests.
 test:

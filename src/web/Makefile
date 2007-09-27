@@ -35,17 +35,22 @@ WEBCOMPONENTS = \
 
 all := TARGET = all
 link := TARGET = link
+link-clean := TARGET = link-clean
 install := TARGET = install
 
 all:
 
 install: $(WEBCOMPONENTS)
 
+PWD:sh = pwd 
 link:
 	mkdir -p /usr/share/lib/pkg
-	ln -s $(PWD)/pkg-block-icon.png /usr/share/lib/pkg
-	ln -s $(PWD)/pkg-block-logo.png /usr/share/lib/pkg
-	ln -s $(PWD)/pkg.css /usr/share/lib/pkg
+	ln -sf $(PWD)/pkg-block-icon.png /usr/share/lib/pkg/pkg-block-icon.png
+	ln -sf $(PWD)/pkg-block-logo.png /usr/share/lib/pkg/pkg-block-logo.png
+	ln -sf $(PWD)/pkg.css /usr/share/lib/pkg/pkg.css
+
+link-clean:
+	rm -r /usr/share/lib/pkg
 
 clean:
 
