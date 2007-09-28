@@ -890,3 +890,4 @@ include common/SUNWzip
 include common/SUNWzlib
 include common/SUNWzone
 include common/SUNWzsh
+include cluster.import

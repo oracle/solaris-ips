@@ -89,11 +89,22 @@ class PkgMapLine(object):
 
 		elif self.type == 'l' or self.type == 's':
 			(self.pathname, self.target) = array[3].split('=')
-
+			self.target = self.target.replace("$BASEDIR", basedir)
 		else:
 			raise ValueError("Invalid file type: " + self.type)
 
-                self.pathname = os.path.join(basedir, self.pathname)
+                # some packages have $BASEDIR in the pkgmap; this needs to
+                # be handled specially
+		if "$BASEDIR" in self.pathname:
+                        self.pathname = self.pathname.replace("$BASEDIR", basedir)
+                        # this will cause the pkg to have a NULL path after 
+                        # basedir removal, which breaks things.  Make this
+                        # entry go away by pretending it is an 'i' type file.
+			if self.pathname == basedir:
+                                self.type = 'i'
+                else:
+                        self.pathname = os.path.join(basedir, self.pathname)
+
 
 # XXX This needs to have a constructor that takes a pkg: FMRI (the new name of
 # the package). - sch

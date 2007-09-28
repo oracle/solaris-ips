@@ -302,6 +302,14 @@ class Action(object):
                 datastream."""
                 return False
 
+        def attrlist(self, name):
+                """return list containing value of named attribute."""
+	        value = self.attrs[name]
+		if isinstance(value, list):
+		        return value
+                else:
+                        return [ value ]
+
         def preinstall(self, image, orig):
                 """Client-side method that performs pre-install actions."""
                 pass

@@ -346,6 +346,8 @@ if __name__ == "__main__":
 
         v10 = Version("0.1,5.11-1", None)
         v11 = Version("0.1,5.11-1:20070710T120000Z", None)
+        v12 = Version("5.11-0.72:20070921T211008Z", "0.5.11")
+        v13 = Version("5.11-0.72:20070922T160226Z", "0.5.11")
 
         d3 = DotSequence("5.4")
         d4 = DotSequence("5.6")
@@ -364,6 +366,8 @@ if __name__ == "__main__":
 
         assert v11 > v10
 
+	assert v13 > v12
+	assert v13.is_successor(v12, CONSTRAINT_BRANCH)
         assert v2.is_successor(v1, CONSTRAINT_BRANCH)
         assert v4.is_successor(v2, CONSTRAINT_RELEASE)
         assert v6.is_successor(v5, CONSTRAINT_RELEASE_MAJOR)

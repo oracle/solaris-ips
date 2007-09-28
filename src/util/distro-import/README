@@ -1,0 +1,23 @@
+Importing a Solaris build into IPS.
+-----------------------------------
+
+% BUILD_IMAGE=/net/netinstall/export/nv/x/72/Solaris_11/Product
+% ./clustertoc2import $BUILD_IMAGE/.clustertoc > cluster.import
+% cat > my_import
+include all.i386
+include cluster.import
+^D
+% ./solaris.py -w $BUILD_IMAGE my_import
+
+The output from solaris.py is large; if new packages appear that
+aren't mapped in all.i386, errors about ignoring svr4 packages will
+appear.  These need to be resolved before publishing will be successful.
+
+Some more work is needed to make this easier to use and move from 
+build to build.
+
+To add only some packages, specify their name after the above command 
+as in:
+
+% ./solaris.py -w $BUILD_IMAGE my_import SUNWcsd ...
+

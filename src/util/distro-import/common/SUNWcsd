@@ -1,3 +1,6 @@
 package SUNWcsd
 import SUNWcsd
+drop etc/name_to_major
+drop etc/driver_aliases
+import ./SUNWcsdreplace
 end package

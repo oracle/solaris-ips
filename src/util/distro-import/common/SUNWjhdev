@@ -1,3 +1,8 @@
 package SUNWjhdev
+add dir mode=0755 owner=root group=bin path=usr/j2se
+add dir mode=0755 owner=root group=bin path=usr/j2se/bin
+add dir mode=0755 owner=root group=bin path=usr/java1.2/bin
+add dir mode=0755 owner=root group=bin path=usr/jdk/instances/jdk1.5.0/bin
+add dir mode=0755 owner=root group=bin path=usr/jdk/instances/jdk1.6.0/bin
 import SUNWjhdev
 end package

@@ -82,32 +82,36 @@ class DriverAction(generic.Action):
                         return self.update_install(image, orig)
 
                 args = ( self.add_drv, "-n", "-b", image.get_root() )
+
                 if "alias" in self.attrs:
                         args += (
                             "-i",
-                            " ".join([ '"%s"' % x for x in self.attrs["alias"] ])
+                            " ".join([ '"%s"' % x for x in self.attrlist("alias") ])
                         )
                 if "class" in self.attrs:
-                        args += ( "-c", self.attrs["class"] )
+                        for eachclass in self.attrlist("class"):
+                                args += ( "-c", eachclass )
                 if "perms" in self.attrs:
                         args += (
                             "-m",
-                            ",".join(self.attrs["perms"])
+                            ",".join(self.attrlist("perms"))
                         )
                 if "policy" in self.attrs:
                         args += ( "-p", self.attrs["policy"] )
                 if "privs" in self.attrs:
                         args += (
                             "-P",
-                            ",".join(self.attrs["privs"])
+                            ",".join(self.attrlist("privs"))
                         )
 
                 args += ( self.attrs["name"], )
 
                 retcode = subprocess.call(args)
                 if retcode != 0:
+
                         print "%s (%s) install failed with return code %s" % \
                             (self.name, self.attrs["name"], retcode)
+                        print "command run was ", args
 
         def update_install(self, image, orig):
                 add_args = ( self.update_drv, "-b", image.get_root(), "-a" )
@@ -201,7 +205,10 @@ class DriverAction(generic.Action):
                             (self.name, self.attrs["name"], retcode)
 
         def generate_indices(self):
-                return {
-                    "driver_name": self.attrs["name"],
-                    "driver_aliases": self.attrs["alias"]
-                }
+		ret = {}
+		if "name" in self.attrs:
+                        ret["driver_name"] = self.attrs["name"]
+                if "alias" in self.attrs:
+                        ret["driver_aliases"] = self.attrs["alias"]
+                return ret
+

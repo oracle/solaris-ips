@@ -255,15 +255,22 @@ if __name__ == "__main__":
         n4 = PkgFmri("sunos/coreutils@6.7,5.10-2:20070710T164744Z", "5.10")
         n5 = PkgFmri("sunos/coreutils@6.6,5.10-2:20070710T164744Z", "5.10")
         n6 = PkgFmri("coreutils", None)
+	n7 = PkgFmri("pkg://origin/SUNWxwssu@0.5.11,5.11-0.72:20070921T203926Z", "0.5.11")
+	n8 = PkgFmri("pkg://origin/SUNWxwssu@0.5.11,5.11-0.72:20070922T153047Z", "0.5.11")
 
         print n1
         print n2
         print n3
 
+	print n7
+	print n8
+
         assert n3.__cmp__(n3) == 0
         assert n3.__cmp__(n4) < 0
         assert n5.__cmp__(n3) > 0
         
+        assert n8.is_successor(n7)
+
         assert not n1.is_successor(n2)
         assert n4.is_successor(n3)
         assert not n5.is_successor(n4)

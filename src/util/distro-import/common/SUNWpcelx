@@ -1,4 +1,4 @@
 package SUNWpcelx
 import SUNWpcelx
-add driver name=pcelx perms="* 0666 root sys" alias=pccard101,556 alias=pccard101,574 alias=pccard101,589 alias=pccard101,562,0 policy="pcelx:* read_priv_set=net_rawaccess write_priv_set=net_rawaccess"
+add driver name=pcelx perms="* 0666 root sys" alias=pccard101,556 alias=pccard101,574 alias=pccard101,589 alias=pccard101,562,0 policy="read_priv_set=net_rawaccess write_priv_set=net_rawaccess"
 end package

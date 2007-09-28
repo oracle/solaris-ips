@@ -101,7 +101,6 @@ class pkg(object):
                 else:
                         destpkgs[imppkg] = [self.name]
 
-
         def import_file(self, file, line):
                 imppkgname = self.imppkg.pkginfo["PKG"]
 
@@ -178,8 +177,8 @@ def pkg_path(pkgname):
         name = os.path.basename(pkgname)
         if pkgname in pkgpaths:
                 return pkgpaths[name]
-        if pkgname[0] == "/":
-                pkgpaths[name] = pkgname
+	if "/" in pkgname: 
+                pkgpaths[name] = os.path.realpath(pkgname)
                 return pkgname
         else:
                 pkgpaths[name] = wos_path + "/" + pkgname
@@ -291,7 +290,7 @@ def publish_pkg(pkg):
                                         print "%s has missing dependencies: %s" % \
                                             (path, u)
                                 undeps |= set(u)
-                                os.unlink(tmp)
+                                os.unlink(tmp)              
 
         # Publish dependencies
 
@@ -570,10 +569,7 @@ while True:
                 curpkg.version = lexer.get_token()
 
         elif token == "import":
-                try:
-                        curpkg.import_pkg(lexer.get_token())
-                except Exception, e:
-                        print "ERROR(import_pkg):", e
+                curpkg.import_pkg(lexer.get_token())
 
         elif token == "from":
                 pkgname = lexer.get_token()
