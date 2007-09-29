@@ -127,7 +127,7 @@ class FileList(object):
                 tar_stream = tarfile.open(mode = "r|", fileobj = f)
                 for info in tar_stream:
                         hashval = info.name
-                        pkgnm = self.fmri.pkg_name
+                        pkgnm = self.fmri.get_dir_path(True)
                         l = self.fhash[hashval]
                         act = l.pop()
                         path = act.attrs["path"]

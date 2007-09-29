@@ -237,6 +237,10 @@ class Manifest(object):
                                 raise SyntaxError, \
                                     "unknown action '%s'" % l.split()[0]
 
+                        if action.attrs.has_key("path"):
+                                np = action.attrs["path"].lstrip(os.path.sep)
+                                action.attrs["path"] = np
+
                         if hasattr(action, "hash"):
                                 action.data = \
                                     self.make_opener(self.img, self.fmri, action)
