@@ -33,7 +33,6 @@ ROOTETCZONES = $(ROOT)/etc/zones
 ROOTUSRLIB = $(ROOT)/usr/lib
 ROOTBRAND = $(ROOTUSRLIB)/brand
 ROOTBRANDPKG = $(ROOTBRAND)/ipkg
-ROOTPKG = $(ROOTUSRLIB)/pkg
 
 LINKBRANDPKG = /usr/lib/brand/ipkg
 
@@ -43,14 +42,13 @@ ROOTDIRS = \
 	$(ROOTETCZONES) \
 	$(ROOTUSRLIB) \
 	$(ROOTBRAND) \
-	$(ROOTBRANDPKG) \
-	$(ROOTPKG)
+	$(ROOTBRANDPKG)
 
 ROOTFILES = \
 	$(ROOTETCZONES)/SUNWipkg.xml \
 	$(ROOTBRANDPKG)/config.xml \
 	$(ROOTBRANDPKG)/platform.xml \
-	$(ROOTPKG)/pkgcreatezone
+	$(ROOTBRANDPKG)/pkgcreatezone
 
 all := TARGET = all
 link := TARGET = link
@@ -61,7 +59,7 @@ all:
 clean:
 
 clobber: clean
-	rm -fr $(ROOTBRAND) $(ROOTPKG)
+	rm -fr $(ROOTBRAND)
 
 install: $(ROOTFILES)
 
@@ -72,13 +70,14 @@ link:
 	mkdir -p /usr/lib/brand/ipkg
 	ln -sf $(PWD)/config.xml /usr/lib/brand/ipkg/config.xml
 	ln -sf $(PWD)/platform.xml /usr/lib/brand/ipkg/platform.xml
+	ln -sf $(PWD)/pkgcreatezone /usr/lib/brand/ipkg/pkgcreatezone
 	ln -sf $(PWD)/SUNWipkg.xml /etc/zones/SUNWipkg.xml
 
 link-clean:
-	rm -r /usr/lib/brand/ipkg
+	rm -rf /usr/lib/brand/ipkg
+	rm -f /etc/zones/SUNWipkg.xml
 
-$(ROOT) $(ROOTETC) $(ROOTETCZONES) $(ROOTUSRLIB) $(ROOTBRAND) $(ROOTBRANDPKG) \
-	$(ROOTPKG):
+$(ROOT) $(ROOTETC) $(ROOTETCZONES) $(ROOTUSRLIB) $(ROOTBRAND) $(ROOTBRANDPKG):
 	mkdir -p $@
 
 $(ROOTETCZONES)/%: $(ROOTETCZONES) %
@@ -86,6 +85,3 @@ $(ROOTETCZONES)/%: $(ROOTETCZONES) %
 
 $(ROOTBRANDPKG)/%: $(ROOTBRANDPKG) %
 	rm -f $@; install -f $(ROOTBRANDPKG) -m 0444 $<
-
-$(ROOTPKG)/%: $(ROOTPKG) %
-	rm -f $@; install -f $(ROOTPKG) -m 0555 $<

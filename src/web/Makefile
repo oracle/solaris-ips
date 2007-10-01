@@ -50,7 +50,7 @@ link:
 	ln -sf $(PWD)/pkg.css /usr/share/lib/pkg/pkg.css
 
 link-clean:
-	rm -r /usr/share/lib/pkg
+	rm -rf /usr/share/lib/pkg
 
 clean:
 

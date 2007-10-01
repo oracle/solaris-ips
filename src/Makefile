@@ -83,6 +83,7 @@ PYMODS = \
 	modules/smf.py \
 	modules/sysvpkg.py \
 	modules/version.py
+PYCMODS = $(PYMODS:%.py=%.pyc)
 
 PYACTIONMODS = \
 	modules/actions/__init__.py \
@@ -95,12 +96,14 @@ PYACTIONMODS = \
 	modules/actions/hardlink.py \
 	modules/actions/link.py \
 	modules/actions/unknown.py
+PYCACTIONMODS = $(PYACTIONMODS:%.py=%.pyc)
 
 PYSERVERMODS = \
 	modules/server/__init__.py \
 	modules/server/config.py \
 	modules/server/face.py \
 	modules/server/transaction.py
+PYCSERVERMODS = $(PYSERVERMODS:%.py=%.pyc)
 
 PYCLIENTMODS = \
 	modules/client/__init__.py \
@@ -111,16 +114,19 @@ PYCLIENTMODS = \
 	modules/client/imageplan.py \
 	modules/client/pkgplan.py \
 	modules/client/retrieve.py
+PYCCLIENTMODS = $(PYCLIENTMODS:%.py=%.pyc)
 
 PYPUBLISHMODS = \
 	modules/publish/__init__.py \
 	modules/publish/transaction.py
+PYCPUBLISHMODS = $(PYPUBLISHMODS:%.py=%.pyc)
 
 PYBUNDLEMODS = \
 	modules/bundle/__init__.py \
 	modules/bundle/SolarisPackageDatastreamBundle.py \
 	modules/bundle/TarBundle.py \
 	modules/bundle/SolarisPackageDirBundle.py
+PYCBUNDLEMODS = $(PYBUNDLEMODS:%.py=%.pyc)
 
 ROOTPYMODS = $(PYMODS:modules/%=$(ROOTPYTHONPKG)/%)
 ROOTPYACTIONMODS = \
@@ -131,10 +137,16 @@ ROOTPYPUBLISHMODS = \
 	$(PYPUBLISHMODS:modules/publish/%=$(ROOTPYTHONPKG)/publish/%)
 ROOTPYCLIENTMODS = \
 	$(PYCLIENTMODS:modules/client/%=$(ROOTPYTHONPKG)/client/%)
-ROOTPYACTIONMODS = \
-	$(PYACTIONMODS:modules/actions/%=$(ROOTPYTHONPKG)/actions/%)
 ROOTPYBUNDLEMODS = \
 	$(PYBUNDLEMODS:modules/bundle/%=$(ROOTPYTHONPKG)/bundle/%)
+
+ROOTPYCALLMODS = \
+	$(ROOTPYMODS:%.py=%.pyc) \
+	$(ROOTPYACTIONMODS:%.py=%.pyc) \
+	$(ROOTPYSERVERMODS:%.py=%.pyc) \
+	$(ROOTPYPUBLISHMODS:%.py=%.pyc) \
+	$(ROOTPYCLIENTMODS:%.py=%.pyc) \
+	$(ROOTPYBUNDLEMODS:%.py=%.pyc)
 
 ROOTPKGMANIFEST = $(ROOTMANIFEST)/pkg-server.xml
 
@@ -149,26 +161,41 @@ ROOTCOMPONENTS = \
 	$(ROOTPYPUBLISHMODS) \
 	$(ROOTPYCLIENTMODS) \
 	$(ROOTPYACTIONMODS) \
-	$(ROOTPYBUNDLEMODS)
+	$(ROOTPYBUNDLEMODS) \
+	$(ROOTPYCALLMODS) \
+	$(ROOTPKGMANIFEST)
 
 all := TARGET = all
 link := TARGET = link
 install := TARGET = install
 link-clean := TARGET = link-clean
+clean := TARGET = clean
+clobber := TARGET = clobber
 
 all: $(PROGS) binary-modules
 
 clean:
 	rm -f $(PROGS)
+	@cd modules; pwd; $(MAKE) $(TARGET)
+	@cd man; pwd; $(MAKE) $(TARGET)
+	@cd web; pwd; $(MAKE) $(TARGET)
 
 clobber: clean
 	rm -fr $(ROOT)
+	rm -f $(PYCMODS) $(PYCACTIONMODS) $(PYCSERVERMODS) \
+	$(PYCPUBLISHMODS) $(PYCCLIENTMODS) $(PYCBUNDLEMODS)
+	@cd modules; pwd; $(MAKE) $(TARGET)
+	@cd man; pwd; $(MAKE) $(TARGET)
+	@cd web; pwd; $(MAKE) $(TARGET)
 
 install: all $(ROOTCOMPONENTS)
 	@cd brand; pwd; $(MAKE) $(TARGET)
 	@cd man; pwd; $(MAKE) $(TARGET)
 	@cd web; pwd; $(MAKE) $(TARGET)
 	@cd pkgdefs; pwd; $(MAKE) $(TARGET)
+
+modules/%.pyc: modules/%.py
+	python -m compileall -l $(@D)
 
 binary-modules:
 	@cd modules; pwd; $(MAKE) $(TARGET)
@@ -182,6 +209,7 @@ link:
 	ln -sf $(PWD)/publish.py /usr/bin/pkgsend
 	ln -sf $(PWD)/depot.py /usr/lib/pkg.depotd
 	ln -sf $(PWD)/modules /usr/lib/python2.4/vendor-packages/pkg
+	ln -sf $(PWD)/pkg-server.xml /var/svc/manifest/pkg-server.xml
 	@cd web; pwd; $(MAKE) $(TARGET)
 	@cd brand; pwd; $(MAKE) $(TARGET)
 	@cd man; pwd; $(MAKE) $(TARGET)
@@ -191,6 +219,7 @@ link-clean:
 	rm -f /usr/bin/pkgsend
 	rm -f /usr/lib/pkg.depotd
 	rm -f /usr/lib/python2.4/vendor-packages/pkg
+	rm -f /var/svc/manifest/pkg-server.xml
 	@cd web; pwd; $(MAKE) $(TARGET)
 	@cd brand; pwd; $(MAKE) $(TARGET)
 	@cd man; pwd; $(MAKE) $(TARGET)
@@ -240,6 +269,9 @@ $(ROOTPYTHONPKG)/%.so: modules/%.so
 
 $(ROOTPYTHONPKG)/%: modules/%
 	rm -f $@; install -f $(ROOTPYTHONPKG) -m 0444 $<
+
+$(ROOTMANIFEST)/%: %
+	rm -f $@; install -f $(ROOTMANIFEST) -m 0444 $<
 
 pkg: client.py
 	cp client.py pkg

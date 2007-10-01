@@ -27,7 +27,9 @@ MACH:sh = uname -p
 ROOT = ../../../proto/root_$(MACH)
 PKGARCHIVE = ../../../packages/$(MACH)
 
-install: img-pkg
+# by default create only the sysv package; failure of the IPS package to build
+# may confuse without enlightening.
+install: sysv-pkg
 
 sysv-pkg: $(PKGARCHIVE) prototype
 	pkgmk -a $(MACH) -o -r $(ROOT) -d $(PKGARCHIVE)
@@ -44,20 +46,21 @@ prototype: FRC
 		$$1 == "f" { \
 			$$4 = "444" \
 		} \
-		$$1 == "f" && $$3 ~ /usr\/lib\/pkg.depotd|usr\/bin\/pkg(send)?|usr\/lib\/pkg\/pkgcreatezone/ { \
+		$$1 == "f" && $$3 ~ /usr\/lib\/pkg.depotd|usr\/bin\/pkg(send)?|usr\/lib\/brand\/ipkg\/pkgcreatezone/ { \
 			$$4 = "755" \
 		} \
 		{ \
 			$$5 = "root"; \
 			$$6 = "bin"; \
 		} \
-		$$3 ~ /^(etc|etc\/zones|usr|var|var\/svc|var\/svc\/manifest)$$/ { \
+		$$3 ~ /^(etc(\/zones)?|usr(\/share(\/lib)?)?|var(\/svc(\/manifest)?)?)$$/ { \
 			$$6 = "sys"; \
 		} \
 		{ \
 			print \
 		}' > prototype
 
+# This will only work if there's a server running, so allow failure.
 img-pkg: sysv-pkg
 	-../../util/distro-import/solaris.py -b 0.0 -w $(PKGARCHIVE) SUNWipkg.import
 
