@@ -34,6 +34,7 @@ import os
 import grp
 import pwd
 import errno
+import sha
 
 import generic
 
@@ -63,10 +64,32 @@ class FileAction(generic.Action):
                         omode = int(orig.attrs["mode"], 8)
                         oowner = pwd.getpwnam(orig.attrs["owner"]).pw_uid
                         ogroup = grp.getgrnam(orig.attrs["group"]).gr_gid
+                        ohash = orig.hash
 
-                # If we're not upgrading, or the file contents have changed,
-                # retrieve the file and write it to a temporary location.
-                # For ELF files, only write the new file if the elfhash changed.
+                # If the action has been marked with a preserve attribute, and
+                # the file exists and has a contents hash different from what
+                # the system expected it to be, then we preserve the original
+                # file in some way, depending on the value of preserve.
+                #
+                # XXX What happens when we transition from preserve to
+                # non-preserve or vice versa? Do we want to treat a preserve
+                # attribute as turning the action into a critical action?
+                if "preserve" in self.attrs and os.path.isfile(final_path):
+                        cfile = file(final_path)
+                        chash = sha.sha(cfile.read()).hexdigest()
+
+                        # XXX We should save the originally installed file.  It
+                        # can be used as an ancestor for a three-way merge, for
+                        # example.  Where should it be stored?
+                        if chash != ohash:
+                                pres_type = self.attrs["preserve"]
+                                if pres_type == "renameold":
+                                        old_path = final_path + ".old"
+                                elif pres_type == "renamenew":
+                                        final_path = final_path + ".new"
+                                else:
+                                        return
+
                 # XXX This needs to be modularized.
                 # XXX This needs to be controlled by policy.
                 if self.needsdata(orig): 
@@ -93,9 +116,17 @@ class FileAction(generic.Action):
                         if e.errno != errno.EPERM:
                                 raise
 
+                # XXX There's a window where final_path doesn't exist, but we
+                # probably don't care.
+                if "old_path" in locals():
+                        os.rename(final_path, old_path)
+
                 # This is safe even if temp == final_path.
                 os.rename(temp, final_path)
 
+        # If we're not upgrading, or the file contents have changed,
+        # retrieve the file and write it to a temporary location.
+        # For ELF files, only write the new file if the elfhash changed.
         def needsdata(self, orig):
                 bothelf = orig and "elfhash" in orig.attrs and "elfhash" in self.attrs
                 if not orig or \

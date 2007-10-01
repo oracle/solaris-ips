@@ -30,7 +30,7 @@ WOS_PATH=/net/netinstall.sfbay/export/nv/x/72/Solaris_11/Product
 
 TMPPKGS=SUNWcsdreplace
 
-default:	$(TMPPKGS)
+default:	$(TMPPKGS) cluster.import
 
 cluster.import:	$(WOS_PATH)/.clustertoc
 	./clustertoc2import.py $(WOS_PATH)/.clustertoc | egrep -v 'SUNWjds-registration|SUNWdttsr|SUNWdttsu' > $@
@@ -53,5 +53,5 @@ SUNWcsdreplace: etc/name_to_major etc/driver_aliases
 	pkgmk -r `pwd` -f $@.prototype -d `pwd` -o
 
 
-import:	cluster.import
+import:	cluster.import $(TMPPKGS)
 	./solaris.py -w $(WOS_PATH) all.i386

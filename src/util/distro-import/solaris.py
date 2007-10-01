@@ -253,6 +253,25 @@ def publish_pkg(pkg):
         for k, g in groupby((f for f in pkg.files if f.type in "fev"), fn):
                 groups.append(list(g))
 
+        def otherattrs(action):
+                s = " ".join(
+                    "%s=%s" % (a, action.attrs[a])
+                    for a in action.attrs
+                    if a not in ("owner", "group", "mode", "path")
+                )
+                if s:
+                        return " " + s
+                else:
+                        return ""
+
+        # Maps class names to preserve attribute values.
+        preserve_dict = {
+            "renameold": "renameold",
+            "renamenew": "renamenew",
+            "preserve": "true",
+            "svmpreserve": "true"
+        }
+
         undeps = set()
         for g in groups:
                 pkgname = usedlist[g[0].pathname][0]
@@ -265,13 +284,16 @@ def publish_pkg(pkg):
                                 f.attrs["owner"] = pathdict[path].owner
                                 f.attrs["group"] = pathdict[path].group
                                 f.attrs["mode"] = pathdict[path].mode
+                                if pathdict[path].klass in preserve_dict.keys():
+                                        f.attrs["preserve"] = \
+                                            preserve_dict[pathdict[path].klass]
                                 if hasattr(pathdict[path], "changed_attrs"):
                                         f.attrs.update(
                                             pathdict[path].changed_attrs)
-                                print "    %s add file %s %s %s %s" % \
+                                print "    %s add file %s %s %s %s%s" % \
                                     (pkg.name, f.attrs["mode"],
                                         f.attrs["owner"], f.attrs["group"],
-                                        path)
+                                        path, otherattrs(f))
                                 # Write the file to a temporary location.
                                 d = f.data().read()
                                 fd, tmp = mkstemp(prefix="pkg.")
