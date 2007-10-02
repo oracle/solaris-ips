@@ -40,6 +40,7 @@ import pkg.client.image
 import pkg.actions as actions
 import pkg.actions.generic as generic
 import pkg.fmri as fmri
+import pkg.pkgtarfile as ptf
 
 class FileList(object):
         """A FileList maintains mappings between files and Actions.
@@ -124,7 +125,7 @@ class FileList(object):
                         else:
                                 raise
 
-                tar_stream = tarfile.open(mode = "r|", fileobj = f)
+                tar_stream = ptf.PkgTarFile.open(mode = "r|", fileobj = f)
                 for info in tar_stream:
                         hashval = info.name
                         pkgnm = self.fmri.get_dir_path(True)
@@ -138,28 +139,24 @@ class FileList(object):
                         path = os.path.normpath(os.path.join(
                             imgroot, dir))
 
-                        # XXX catch IOError if tar stream closes inadvertently?
-                        tar_stream.extract(info, path)
-
-                        # extract path is where the file now lives
-                        # after the extract
-                        extract_path = os.path.normpath(os.path.join(
-                            path, info.name))
-
                         # Since the file hash value identifies the content, and
                         # not the file or package itself, generate temporary
                         # file names that are unique by package and file name.
                         # This ensures that each opener gets access to a unique
                         # file name that hasn't been manipulated by another
                         # action.
+                        filename =  "." + pkgnm + "-" + base + "-" + hashval
 
-                        mvpath = os.path.normpath(os.path.join(
-                            path, "." + pkgnm + "-" + base + "-" + hashval))
-                         
-                        os.rename(extract_path, mvpath)
-                        
+                        # XXX catch IOError if tar stream closes inadvertently?
+                        tar_stream.extract_to(info, path, filename)
+
+                        # extract path is where the file now lives
+                        # after being extracted
+                        extract_path = os.path.normpath(os.path.join(
+                            path, filename))
+                       
                         # assign opener
-                        act.data = self._make_opener(mvpath)
+                        act.data = self._make_opener(extract_path)
 
                         # If there are more actions in the list, copy the
                         # extracted file to their paths, changing names as
@@ -174,7 +171,7 @@ class FileList(object):
                                     + "-" + hashval))
                                 if not os.path.exists(cpdir):
                                         os.makedirs(cpdir)
-                                shutil.copy(mvpath, cppath)
+                                shutil.copy(extract_path, cppath)
                                 action.data = self._make_opener(cppath)
 
                 tar_stream.close()

@@ -80,6 +80,7 @@ PYMODS = \
 	modules/manifest.py \
 	modules/misc.py \
 	modules/package.py \
+	modules/pkgtarfile.py \
 	modules/smf.py \
 	modules/sysvpkg.py \
 	modules/version.py
