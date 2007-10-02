@@ -37,7 +37,7 @@
 	<user_cmd>/usr/bin/getent passwd %u</user_cmd>
 
 	<!-- We may not be able to do the create in pkg(1) proper. -->
-	<install>/usr/lib/pkg/pkgcreatezone -z %z -R %R %*</install>
+	<install>/usr/lib/brand/ipkg/pkgcreatezone -z %z -R %R %*</install>
 	<installopts></installopts>
 	<boot></boot>
 	<halt></halt>
