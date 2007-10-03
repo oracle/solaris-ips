@@ -1,0 +1,15 @@
+include all.i386
+include common/SUNWafe
+include common/SUNWastdev
+include common/SUNWcsdhcm
+include common/SUNWcsos
+include common/SUNWcurl
+include common/SUNWdsd
+include common/SUNWdtts
+include common/SUNWdttshelp
+include common/SUNWgnu-idn
+include common/SUNWjds-registration.72
+include common/SUNWmxfe
+include common/SUNWxcursor-themes
+include common/SUNWxorg-tsol-module
+include common/SUNWxwts

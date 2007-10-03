@@ -1,4 +1,4 @@
 package SUNWnge
 import SUNWnge
-add driver name=nge perms="* 0666 root root" alias=pci10de,56 alias=pci10de,57 alias=pci10de,269 alias=pci10de,268 alias=pci10de,373 alias=pci10de,372 alias=pci10de,37 alias=pci10de,38
+add driver name=nge perms="* 0666 root root" alias=pci10de,56 alias=pci10de,57 alias=pci10de,269 alias=pci10de,268 alias=pci10de,373 alias=pci10de,372 alias=pci10de,37 alias=pci10de,38 alias=pci10de,3ee alias=pci10de,3ef alias=pci10de,e6 alias=pci10de,df
 end package

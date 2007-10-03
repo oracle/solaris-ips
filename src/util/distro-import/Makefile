@@ -26,7 +26,7 @@
 
 # Needs to point to filesystem on Solaris install dvd
 # replace as needed with a local solaris install image
-WOS_PATH=/net/netinstall.sfbay/export/nv/x/72/Solaris_11/Product
+WOS_PATH=/net/netinstall.sfbay/export/nv/x/74/Solaris_11/Product
 
 TMPPKGS=SUNWcsdreplace
 
