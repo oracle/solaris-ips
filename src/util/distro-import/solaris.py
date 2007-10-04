@@ -77,7 +77,6 @@ class pkg(object):
                                         usedlist[o.pathname][1].name)
                         elif o.type != "i":
                                 usedlist[o.pathname] = (imppkg, self)
-                                newpaths[o.pathname] = o.pathname
                                 self.files.append(o)
 
                 if not self.version:
@@ -142,7 +141,6 @@ class pkg(object):
                                 elif attr == "mode":
                                         o[0].mode = a.attrs[attr]
                 self.files.extend(o)
-                newpaths[o[0].pathname] = o[0].pathname
 
         def chattr(self, file, line):
                 o = [f for f in self.files if f.pathname == file]
@@ -154,18 +152,9 @@ class pkg(object):
                 if show_debug:
                         print "Updating attributes on '%s' in '%s' with '%s'" % \
                             (file, curpkg.name, line)
-                # XXX this code assumes that a path change is done by itself
-                # w/o any other attribute changes.  Should be cleaner...
-                if line[0:5] != "path=":
-                        a = actions.fromstr("file path=%s %s" % (file, line))
-                        o[0].changed_attrs = a.attrs
-                else:
-                        del usedlist[file]
-                        a = actions.fromstr("file %s" % line)
-                        newpaths[o[0].pathname] = line[5:]
-                        o[0].pathname = line[5:]
-                        usedlist[line[5:]] = (self.imppkg.pkginfo["PKG"], self)
-                        o[0].changed_attrs = a.attrs
+
+                a = actions.fromstr("file path=%s %s" % (file, line))
+		o[0].changed_attrs = a.attrs
 
 def sysv_to_new_name(pkgname):
         return "pkg:/" + os.path.basename(pkgname)
@@ -279,8 +268,8 @@ def publish_pkg(pkg):
                 bundle = SolarisPackageDirBundle(svr4pkgpaths[pkgname])
                 pathdict = dict((f.pathname, f) for f in g)
                 for f in bundle:
-                        if f.attrs["path"] in newpaths and newpaths[f.attrs["path"]] in pathdict:
-                                path = newpaths[f.attrs["path"]]
+                        if f.attrs["path"] in pathdict:
+                                path = f.attrs["path"]
                                 f.attrs["owner"] = pathdict[path].owner
                                 f.attrs["group"] = pathdict[path].group
                                 f.attrs["mode"] = pathdict[path].mode
@@ -290,10 +279,12 @@ def publish_pkg(pkg):
                                 if hasattr(pathdict[path], "changed_attrs"):
                                         f.attrs.update(
                                             pathdict[path].changed_attrs)
+                                        # chattr may have produced two path values
+				        f.attrs["path"] = f.attrlist("path")[-1]
                                 print "    %s add file %s %s %s %s%s" % \
                                     (pkg.name, f.attrs["mode"],
                                         f.attrs["owner"], f.attrs["group"],
-                                        path, otherattrs(f))
+				        f.attrs["path"], otherattrs(f))
                                 # Write the file to a temporary location.
                                 d = f.data().read()
                                 fd, tmp = mkstemp(prefix="pkg.")
@@ -534,11 +525,6 @@ in_multiline_import = False
 usedlist = {}
 
 #
-# newpaths maps old paths in svr4 pkgs to possibly different new paths in ips
-#
-newpaths = {}
-
-#
 # pkgdict contains ipkgs by name
 #
 pkgdict = {}
@@ -594,8 +580,14 @@ while True:
                 curpkg.import_pkg(lexer.get_token())
 
         elif token == "from":
-                pkgname = lexer.get_token()
-                curpkg.imppkg = SolarisPackage(pkg_path(pkgname))
+                pkgspec = lexer.get_token()
+		p = SolarisPackage(pkg_path(pkgspec))
+                curpkg.imppkg = p
+		spkgname = p.pkginfo["PKG"]
+                svr4pkgpaths[spkgname] = pkg_path(pkgspec)
+                svr4pkgsseen[spkgname] = p;
+		curpkg.add_svr4_src(spkgname)
+
                 junk = lexer.get_token()
                 assert junk == "import"
                 in_multiline_import = True
@@ -670,7 +662,7 @@ print "Files you seem to have forgotten:\n  " + "\n  ".join(
     "%s %s" % (f.type, f.pathname)
     for pkg in seenpkgs
     for f in svr4pkgsseen[pkg].manifest
-    if f.type != "i" and f.pathname in newpaths and newpaths[f.pathname] not in usedlist)
+    if f.type != "i" and f.pathname not in usedlist)
 
 # Second pass: iterate over the existing package objects, gathering dependencies
 # and publish!

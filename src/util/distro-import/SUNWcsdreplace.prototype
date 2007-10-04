@@ -1,3 +1,0 @@
-i pkginfo=SUNWcsdreplace.pkginfo
-f none etc/driver_aliases 0644 root sys
-f none etc/name_to_major 0644 root sys

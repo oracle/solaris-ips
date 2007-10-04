@@ -2,5 +2,8 @@ package SUNWcsd
 import SUNWcsd
 drop etc/name_to_major
 drop etc/driver_aliases
-import ./SUNWcsdreplace
+from ./SUNWfixes import
+etc/name_to_major
+etc/driver_aliases
+end import
 end package

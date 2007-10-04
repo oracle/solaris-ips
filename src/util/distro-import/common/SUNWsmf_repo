@@ -1,0 +1,8 @@
+package SUNWsmf_repo
+from ./SUNWfixes import
+etc/svc/global_repo.db
+etc/svc/nonglobal_repo.db
+end import
+chattr etc/svc/global_repo.db path=etc/svc/repository.db opensolaris.zone=global preserve=true
+chattr etc/svc/nonglobal_repo.db path=etc/svc/repository.db opensolaris.zone=nonglobal preserve=true
+end package
