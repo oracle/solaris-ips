@@ -32,15 +32,15 @@ echo "version 1 of /bin/change" > /tmp/change
 echo "version 1 of /bin/nochange" > /tmp/nochange
 
 echo $PKG_TRANS_ID
-pkgsend add dir  0755 root sys /bin
-pkgsend add file 0644 root sys /bin/change /tmp/change
-pkgsend add file 0644 root sys /bin/nochange /tmp/nochange
-pkgsend add file 0644 root sys /bin/toberemoved /dev/null
-pkgsend add file 0755 root sys /bin/attributechangeonly /dev/null
-pkgsend add link /bin/change-link change
-pkgsend add link /bin/nochange-link nochange
-pkgsend add link /bin/change-target target1
-pkgsend add link /bin/change-type random
+pkgsend add dir  mode=0755 owner=root group=sys path=/bin
+pkgsend add file /tmp/change mode=0644 owner=root group=sys path=/bin/change
+pkgsend add file /tmp/nochange mode=0644 owner=root group=sys path=/bin/nochange
+pkgsend add file /dev/null mode=0644 owner=root group=sys path=/bin/toberemoved
+pkgsend add file /dev/null mode=0755 owner=root group=sys path=/bin/attributechangeonly
+pkgsend add link path=/bin/change-link target=change
+pkgsend add link path=/bin/nochange-link target=nochange
+pkgsend add link path=/bin/change-target target=target1
+pkgsend add link path=/bin/change-type target=random
 pkgsend close
 
 eval `pkgsend open test/upgrade/A@0.2-1`
@@ -52,15 +52,15 @@ fi
 echo "version 2 of /bin/change" > /tmp/change
 
 echo $PKG_TRANS_ID
-pkgsend add dir  0755 root sys /bin
-pkgsend add file 0644 root sys /bin/change /tmp/change
-pkgsend add file 0644 root sys /bin/nochange /tmp/nochange
-pkgsend add file 0644 root sys /bin/wasadded /dev/null
-pkgsend add file 0444 root sys /bin/attributechangeonly /dev/null
-pkgsend add link /bin/change-link change
-pkgsend add link /bin/nochange-link nochange
-pkgsend add link /bin/change-target target2
-pkgsend add dir  0755 root sys /bin/change-type
+pkgsend add dir  mode=0755 owner=root group=sys path=/bin
+pkgsend add file /tmp/change mode=0644 owner=root group=sys path=/bin/change
+pkgsend add file /tmp/nochange mode=0644 owner=root group=sys path=/bin/nochange
+pkgsend add file /dev/null mode=0644 owner=root group=sys path=/bin/wasadded
+pkgsend add file /dev/null mode=0444 owner=root group=sys path=/bin/attributechangeonly
+pkgsend add link path=/bin/change-link target=change
+pkgsend add link path=/bin/nochange-link target=nochange
+pkgsend add link path=/bin/change-target target=target2
+pkgsend add dir  mode=0755 owner=root group=sys path=/bin/change-type
 pkgsend close
 
 rm /tmp/change /tmp/nochange

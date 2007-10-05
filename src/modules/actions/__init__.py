@@ -84,6 +84,8 @@ def fromstr(str):
         # That is, if the first attribute is a hash
         if 0 < str.find(" ") < str.find("="):
                 hash, str = str.split(" ", 1)
+        else:
+                hash = None
 
         # Split the string on spaces, then reconstruct and dequote quoted
         # values.
@@ -111,14 +113,15 @@ def fromstr(str):
 
                 count += 1
 
-        list = nlist
+        return fromlist(type, list, hash)
 
+def fromlist(type, args, hash = None):
         # Create a list of key/value lists
-        nlist = [kv.split("=", 1) for kv in nlist]
+        args = [kv.split("=", 1) for kv in args]
         # Remove attribute duplication
-        attrset = set(zip(*nlist)[0])
+        attrset = set(zip(*args)[0])
         # Put values belonging to the same attribute into individual lists
-        vallist = [[j[1] for j in nlist if j[0] == i] for i in attrset]
+        vallist = [[j[1] for j in args if j[0] == i] for i in attrset]
         # Create a dict from the two lists
         attrs = dict((o, a) for o, a in zip(attrset, vallist))
 
@@ -132,7 +135,7 @@ def fromstr(str):
                         attrs[a] = attrs[a][0]
 
         action = types[type](**attrs)
-        if "hash" in locals():
+        if hash:
                 action.hash = hash
 
         return action

@@ -33,9 +33,9 @@ sparcdir=/ws/onnv-gate/packages/sparc/nightly
 file=SUNWcsu/reloc/usr/bin/ls
 
 echo $PKG_TRANS_ID
-pkgsend add dir  0755 root sys /bin
-pkgsend add file 0755 root sys /bin/ls $i386dir/$file debug=true
-pkgsend add file 0755 root sys /bin/ls $i386dir-nd/$file debug=false
-pkgsend add file 0755 root sys /bin/ls $sparcdir/$file debug=true
-pkgsend add file 0755 root sys /bin/ls $sparcdir-nd/$file debug=false
+pkgsend add dir  mode=0755 owner=root group=sys path=/bin
+pkgsend add file $i386dir/$file mode=0755 owner=root group=sys path=/bin/ls debug=true
+pkgsend add file $i386dir-nd/$file mode=0755 owner=root group=sys path=/bin/ls debug=false
+pkgsend add file $sparcdir/$file mode=0755 owner=root group=sys path=/bin/ls debug=true
+pkgsend add file $sparcdir-nd/$file mode=0755 owner=root group=sys path=/bin/ls debug=false
 pkgsend close

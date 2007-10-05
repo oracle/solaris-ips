@@ -31,10 +31,10 @@ fi
 echo "This is the old version" > /tmp/test1
 
 echo $PKG_TRANS_ID
-pkgsend add dir  0755 root sys /bin
-pkgsend add file 0644 root sys /bin/test1 /tmp/test1 preserve=renamenew
-pkgsend add file 0644 root sys /bin/test2 /tmp/test1 preserve=renameold
-pkgsend add file 0644 root sys /bin/test3 /tmp/test1 preserve=true
+pkgsend add dir  mode=0755 owner=root group=sys path=/bin
+pkgsend add file /tmp/test1 mode=0644 owner=root group=sys path=/bin/test1 preserve=renamenew
+pkgsend add file /tmp/test1 mode=0644 owner=root group=sys path=/bin/test2 preserve=renameold
+pkgsend add file /tmp/test1 mode=0644 owner=root group=sys path=/bin/test3 preserve=true
 pkgsend close
 
 eval `pkgsend open test/preserve/A@0.2-1`
@@ -46,10 +46,10 @@ fi
 echo "This is the new version" > /tmp/test1
 
 echo $PKG_TRANS_ID
-pkgsend add dir  0755 root sys /bin
-pkgsend add file 0644 root sys /bin/test1 /tmp/test1 preserve=renamenew
-pkgsend add file 0644 root sys /bin/test2 /tmp/test1 preserve=renameold
-pkgsend add file 0644 root sys /bin/test3 /tmp/test1 preserve=true
+pkgsend add dir  mode=0755 owner=root group=sys path=/bin
+pkgsend add file /tmp/test1 mode=0644 owner=root group=sys path=/bin/test1 preserve=renamenew
+pkgsend add file /tmp/test1 mode=0644 owner=root group=sys path=/bin/test2 preserve=renameold
+pkgsend add file /tmp/test1 mode=0644 owner=root group=sys path=/bin/test3 preserve=true
 pkgsend close
 
 rm /tmp/test1

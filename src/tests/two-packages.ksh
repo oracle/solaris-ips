@@ -29,10 +29,9 @@ if [ $? != 0 ]; then
 fi
 
 echo $PKG_TRANS_ID
-pkgsend add dir 0755 root bin /lib
-pkgsend add file 0555 root bin \
-	/lib/libc.so.1 /lib/libc.so.1
-pkgsend add link /lib/libc.so /lib/libc.so.1
+pkgsend add dir mode=0755 owner=root group=bin path=/lib
+pkgsend add file /lib/libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.so.1
+pkgsend add link path=/lib/libc.so target=/lib/libc.so.1
 pkgsend close
 
 eval `pkgsend open application/cat@0.1-1`
@@ -42,9 +41,8 @@ if [ $? != 0 ]; then
 fi
 
 echo $PKG_TRANS_ID
-pkgsend add depend require pkg:/library/libc@0.1-1
-pkgsend add dir 0755 root bin /usr
-pkgsend add dir 0755 root bin /usr/bin
-pkgsend add file 0555 root bin \
-	/usr/bin/cat /usr/bin/cat
+pkgsend add depend type=require fmri=pkg:/library/libc@0.1-1
+pkgsend add dir mode=0755 owner=root group=bin path=/usr
+pkgsend add dir mode=0755 owner=root group=bin path=/usr/bin
+pkgsend add file /usr/bin/cat mode=0555 owner=root group=bin path=/usr/bin/cat
 pkgsend close

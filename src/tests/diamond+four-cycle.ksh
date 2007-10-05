@@ -40,8 +40,8 @@ if [ $? != 0 ]; then
 fi
 
 echo $PKG_TRANS_ID
-pkgsend add depend require pkg:/test/diamond4cycle/libB@0.1-1
-pkgsend add depend require pkg:/test/diamond4cycle/libC@0.1-1
+pkgsend add depend type=require fmri=pkg:/test/diamond4cycle/libB@0.1-1
+pkgsend add depend type=require fmri=pkg:/test/diamond4cycle/libC@0.1-1
 pkgsend close
 
 eval `pkgsend open test/diamond4cycle/libB@0.1-1`
@@ -51,7 +51,7 @@ if [ $? != 0 ]; then
 fi
 
 echo $PKG_TRANS_ID
-pkgsend add depend require pkg:/test/diamond4cycle/libC@0.1-1
+pkgsend add depend type=require fmri=pkg:/test/diamond4cycle/libC@0.1-1
 pkgsend close
 
 eval `pkgsend open test/diamond4cycle/libC@0.1-1`
@@ -61,7 +61,7 @@ if [ $? != 0 ]; then
 fi
 
 echo $PKG_TRANS_ID
-pkgsend add depend require pkg:/test/diamond4cycle/libE@0.1-1
+pkgsend add depend type=require fmri=pkg:/test/diamond4cycle/libE@0.1-1
 pkgsend close
 
 eval `pkgsend open test/diamond4cycle/libD@0.1-1`
@@ -71,8 +71,8 @@ if [ $? != 0 ]; then
 fi
 
 echo $PKG_TRANS_ID
-pkgsend add depend require pkg:/test/diamond4cycle/libB@0.1-1
-pkgsend add depend require pkg:/test/diamond4cycle/libF@0.1-1
+pkgsend add depend type=require fmri=pkg:/test/diamond4cycle/libB@0.1-1
+pkgsend add depend type=require fmri=pkg:/test/diamond4cycle/libF@0.1-1
 pkgsend close
 
 eval `pkgsend open test/diamond4cycle/libE@0.1-1`
@@ -82,8 +82,8 @@ if [ $? != 0 ]; then
 fi
 
 echo $PKG_TRANS_ID
-pkgsend add depend require pkg:/test/diamond4cycle/libD@0.1-1
-pkgsend add depend require pkg:/test/diamond4cycle/libF@0.1-1
+pkgsend add depend type=require fmri=pkg:/test/diamond4cycle/libD@0.1-1
+pkgsend add depend type=require fmri=pkg:/test/diamond4cycle/libF@0.1-1
 pkgsend close
 
 eval `pkgsend open test/diamond4cycle/libF@0.1-1`
@@ -93,5 +93,5 @@ if [ $? != 0 ]; then
 fi
 
 echo $PKG_TRANS_ID
-pkgsend add dir 0755 root bin /lib
+pkgsend add dir mode=0755 owner=root group=bin path=/lib
 pkgsend close

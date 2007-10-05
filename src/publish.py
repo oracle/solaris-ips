@@ -159,32 +159,6 @@ def trans_close(config, args):
 
         return
 
-def add_driver(config, args):
-        opts, nargs = getopt.getopt(args, "i:c:m:p:P:")
-
-        if nargs == None or len(nargs) == 0:
-                raise getopt.GetoptError("missing name")
-
-        cmdline_mapping = {
-            "-i": "alias",
-            "-c": "class",
-            "-m": "perms",
-            "-p": "policy",
-            "-P": "privs"
-        }
-
-        # For any flag that appears multiple times, accumulate the args into a
-        # list, and map the expanded name to that list.
-        optset = set(zip(*opts)[0])
-        argslist = [[j[1] for j in opts if j[0] == i] for i in optset]
-        kw = dict((cmdline_mapping[o], a) for o, a in zip(optset, argslist))
-
-        kw["name"] = nargs[0]
-
-        action = pkg.actions.types["driver"](**kw)
-
-        return action
-
 def trans_add(config, args):
         try:
                 trans_id = os.environ["PKG_TRANS_ID"]
@@ -192,54 +166,13 @@ def trans_add(config, args):
                 print "No transaction ID specified in $PKG_TRANS_ID"
                 sys.exit(1)
 
-        # Specifies the ordering of the commandline arguments for each file type
-        # XXX We might want to check that the list of attributes here is a
-        # superset of the required attributes for each type.  Unfortunately,
-        # only here can we specify commandline ordering.
-        attrs = {
-                "depend": ("type", "fmri"),
-                "dir": ("mode", "owner", "group", "path"),
-                "displace": ("mode", "owner", "group", "path"),
-                "file": ("mode", "owner", "group", "path"),
-                "preserve": ("mode", "owner", "group", "path"),
-                "service": ("manifest", ),
-                "link": ("path", "target"),
-                "hardlink": ("path", "target"),
-        }
-
-        actions = pkg.actions.types
-
-        try:
-                kw = dict((attrs[args[0]][i], args[i + 1])
-                        for i in range(len(attrs[args[0]])))
-                if args[0] == "file":
-                        action = actions[args[0]](args[5], **kw)
-                        extra = 6
-                else:
-                        action = actions[args[0]](**kw)
-                        extra = len(attrs[args[0]]) + 1
-        except KeyError, e:
-                if "add_" + e[0] in globals():
-                        method = globals()["add_" + e[0]]
-                        try:
-                                action = method(config, args[1:])
-                        except getopt.GetoptError, e2:
-                                print "add_%s: %s" % (e[0], e2)
-                                sys.exit(1)
-                else:
-                        print 'pkgsend: action "%s" not defined' % e[0]
-                        sys.exit(1)
-        except IndexError, e:
-                print 'pkgsend: not enough arguments for "%s" action' % args[0]
-                sys.exit(1)
-
-        # If we're presented with extra arguments, update the action's attribute
-        # dictionary.
-        if len(args) > extra:
-                action.attrs.update(dict(
-                    s.split("=")
-                    for s in args[extra:]
-                ))
+        if args[0] == "file":
+                action = pkg.actions.fromlist(args[0], args[2:])
+                def opener():
+                        return open(args[1])
+                action.data = opener
+        else:
+                action = pkg.actions.fromlist(args[0], args[1:])
 
         t = trans.Transaction()
         try:

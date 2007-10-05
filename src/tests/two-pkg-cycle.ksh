@@ -31,11 +31,10 @@ if [ $? != 0 ]; then
 fi
 
 echo $PKG_TRANS_ID
-pkgsend add depend require pkg:/library/libc@0.1-1
-pkgsend add depend require pkg:/library/libscf@0.1-1
-pkgsend add dir 0755 root bin /lib
-pkgsend add file 0555 root bin \
-	/lib/libuutil.so.1 /lib/libuutil.so.1
+pkgsend add depend type=require fmri=pkg:/library/libc@0.1-1
+pkgsend add depend type=require fmri=pkg:/library/libscf@0.1-1
+pkgsend add dir mode=0755 owner=root group=bin path=/lib
+pkgsend add file /lib/libuutil.so.1 mode=0555 owner=root group=bin path=/lib/libuutil.so.1
 pkgsend close
 
 eval `pkgsend open library/libscf@0.1-1`
@@ -45,14 +44,13 @@ if [ $? != 0 ]; then
 fi
 
 echo $PKG_TRANS_ID
-pkgsend add depend require pkg:/library/libc@0.1-1
-pkgsend add depend require pkg:/library/libuutil@0.1-1
-pkgsend add dir 0755 root bin /lib
-pkgsend add file 0555 root bin \
-	/lib/libscf.so.1 /lib/libscf.so.1
-pkgsend add link /lib/libscf.so /lib/libscf.so.1
-pkgsend add dir 0755 root bin /usr
-pkgsend add dir 0755 root bin /usr/lib
-pkgsend add link /usr/lib/libscf.so ../../lib/libscf.so.1
-pkgsend add link /usr/lib/libscf.so.1 ../../lib/libscf.so.1
+pkgsend add depend type=require fmri=pkg:/library/libc@0.1-1
+pkgsend add depend type=require fmri=pkg:/library/libuutil@0.1-1
+pkgsend add dir mode=0755 owner=root group=bin path=/lib
+pkgsend add file /lib/libscf.so.1 mode=0555 owner=root group=bin path=/lib/libscf.so.1
+pkgsend add link path=/lib/libscf.so target=/lib/libscf.so.1
+pkgsend add dir mode=0755 owner=root group=bin path=/usr
+pkgsend add dir mode=0755 owner=root group=bin path=/usr/lib
+pkgsend add link path=/usr/lib/libscf.so target=../../lib/libscf.so.1
+pkgsend add link path=/usr/lib/libscf.so.1 target=../../lib/libscf.so.1
 pkgsend close
