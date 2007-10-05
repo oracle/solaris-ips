@@ -38,13 +38,17 @@ class AttributeAction(generic.Action):
 
         name = "set"
         attributes = ("type",)
+        key_attr = "name"
 
         def __init__(self, data=None, **attrs):
                 generic.Action.__init__(self, data, **attrs)
 
-                # XXX This is pretty hokey.  Is this okay, do we get rid of it
-                # in favor of just doing name/value attributes to start with, or
-                # do we find a better solution for upgrade?
+                # For convenience, we allow people to express attributes as
+                # "<name>=<value>", rather than "name=<name> value=<value>", but
+                # we always convert to the latter.
                 if len(attrs) == 1:
-                        self.key_attr = "name"
-                        self.attrs["name"] = attrs.keys()[0]
+                        self.attrs["name"], self.attrs["value"] = \
+                            self.attrs.popitem()
+                else:
+                        assert len(attrs) == 2
+                        assert set(attrs.keys()) == set([ "name", "value" ])

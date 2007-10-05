@@ -47,6 +47,7 @@ class pkg(object):
                 self.idepend = []     #svr4 pkg deps, if any
                 self.undepend = []
                 self.extra = []
+                self.srcpkgs = []
                 self.desc = ""
                 self.version = ""
                 self.imppkg = None
@@ -99,6 +100,7 @@ class pkg(object):
                         destpkgs[imppkg].append(self.name)
                 else:
                         destpkgs[imppkg] = [self.name]
+                self.srcpkgs.append(imppkg)
 
         def import_file(self, file, line):
                 imppkgname = self.imppkg.pkginfo["PKG"]
@@ -340,6 +342,18 @@ def publish_pkg(pkg):
                             action.attrs[attr][5:] in pkgdict:
                                 action.attrs[attr] += "@%s" % \
                                     pkgdict[action.attrs[attr][5:]].version
+                t.add(cfg, id, action)
+
+        if pkg.desc:
+                print "    %s add set description=%s" % (pkg.name, pkg.desc)
+                action = actions.attribute.AttributeAction(None,
+                    description = pkg.desc)
+                t.add(cfg, id, action)
+
+        if pkg.srcpkgs:
+                action = actions.attribute.AttributeAction(None,
+                    srcpkgs = pkg.srcpkgs)
+                print "    %s add %s" % (pkg.name, action)
                 t.add(cfg, id, action)
 
         if undeps:
