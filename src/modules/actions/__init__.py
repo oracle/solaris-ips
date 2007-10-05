@@ -113,7 +113,7 @@ def fromstr(str):
 
                 count += 1
 
-        return fromlist(type, list, hash)
+        return fromlist(type, nlist, hash)
 
 def fromlist(type, args, hash = None):
         # Create a list of key/value lists
