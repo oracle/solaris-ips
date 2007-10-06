@@ -81,7 +81,7 @@ class FileAction(generic.Action):
                         # XXX We should save the originally installed file.  It
                         # can be used as an ancestor for a three-way merge, for
                         # example.  Where should it be stored?
-                        if chash != ohash:
+                        if not orig or chash != ohash:
                                 pres_type = self.attrs["preserve"]
                                 if pres_type == "renameold":
                                         old_path = final_path + ".old"

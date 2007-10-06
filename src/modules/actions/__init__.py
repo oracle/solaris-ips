@@ -123,7 +123,7 @@ def fromlist(type, args, hash = None):
         # Put values belonging to the same attribute into individual lists
         vallist = [[j[1] for j in args if j[0] == i] for i in attrset]
         # Create a dict from the two lists
-        attrs = dict((o, a) for o, a in zip(attrset, vallist))
+        attrs = dict(zip(attrset, vallist))
 
         # Convert any single-valued attributes to simple strings.
         # attrs = dict(
