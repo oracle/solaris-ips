@@ -51,7 +51,7 @@ class DependencyAction(generic.Action):
         def __init__(self, data=None, **attrs):
                 generic.Action.__init__(self, data, **attrs)
 
-        def generate_indices(self):
+        def generate_indices(self, image):
                 # XXX Probably need to do something for other types, too.
                 if self.attrs["type"] != "require":
                         return {}

@@ -241,7 +241,7 @@ class Action(object):
 
                 return False
 
-        def generate_indices(self):
+        def generate_indices(self, image):
                 """Generate for the reverse index database data for this action.
 
                 See pkg.client.pkgplan.make_indices for more information about

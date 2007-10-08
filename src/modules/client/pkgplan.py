@@ -290,7 +290,7 @@ class PkgPlan(object):
                     (k, v)
                     for src, dest in self.actions
                     if dest
-                    for k, v in dest.generate_indices().iteritems()
+                    for k, v in dest.generate_indices(self.image).iteritems()
                 )
 
                 for idx, val in gen:

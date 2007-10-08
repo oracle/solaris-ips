@@ -31,6 +31,7 @@ This module contains the LinkAction class, which represents a link-type
 packaging object."""
 
 import os
+import sha
 
 import generic
 
@@ -65,3 +66,18 @@ class LinkAction(generic.Action):
                     (pkgplan.image.get_root(), self.attrs["path"])))
 
                 os.unlink(path)
+
+        def generate_indices(self, image):
+                # quote the path separator character as in a URL (as well as any
+                # '%' symbol), and take the digest if it's too long.
+                path = self.attrs["path"].replace("%", "%25")
+                path = (os.path.sep + path).replace(os.path.sep,
+                    ("%%%x" % ord(os.path.sep)).upper())
+                if len(path) > \
+                    os.pathconf(image.imgdir, os.pathconf_names["PC_NAME_MAX"]):
+                        path = sha.sha(path).hexdigest()
+
+                return {
+                    "basename": os.path.basename(self.attrs["path"]),
+                    "path": path
+                }

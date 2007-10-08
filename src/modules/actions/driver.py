@@ -205,7 +205,7 @@ class DriverAction(generic.Action):
                         print "%s (%s) removal failed with return code %s" % \
                             (self.name, self.attrs["name"], retcode)
 
-        def generate_indices(self):
+        def generate_indices(self, image):
 		ret = {}
 		if "name" in self.attrs:
                         ret["driver_name"] = self.attrs["name"]
