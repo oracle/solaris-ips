@@ -1,0 +1,38 @@
+
+Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+Use is subject to license terms.
+
+tests/README
+
+  1.  Summary
+
+  The global test target, i.e. "make test", should be executed prior to
+  requesting code review and prior to integration.  That target invokes
+  both the unit tests embedded in a subset of the modules and the
+  tests/cli-complete.ksh script.  The remainder of tests/ is a
+  miscellany of ksh scripts that do various small dependency scenarios.
+
+  cli-complete.ksh is a script that exercises each of the command line
+  options of pkg(1) and pkgsend(1), using a variety of dependency
+  scenarios.  
+
+  2.  Pending work.
+
+  The embedded tests from the various modules should become disembedded
+  and coded to use the Python unittest testing framework module.
+
+  The special dependency scenarios should be recoded as part of
+  cli-compelete.ksh
+
+  Targets to evaluate code coverage [1,2] should be added, possibly with
+  supporting global options added to each utility.
+
+  3.  References
+
+  [1] N. Batchelder, coverage module, 2007.  
+      http://nedbatchelder.com/code/modules/coverage.html
+
+  [2] C. T. Brown, figleaf module, 2006.
+      http://darcs.idyll.org/~t/projects/figleaf/README.html
+
+  

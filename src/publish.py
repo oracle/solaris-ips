@@ -40,8 +40,10 @@
 #       pkgsend close -A
 
 import getopt
+import gettext
 import os
 import sys
+import threading
 import traceback
 
 import pkg.bundle
@@ -54,10 +56,9 @@ import pkg.version as version
 import pkg.publish.transaction as trans
 
 import pkg.Queue25 as Queue25
-import threading
 
 def usage():
-        print """\
+        print _("""\
 Usage:
         pkgsend [options] command [cmd_options] [operands]
 
@@ -74,10 +75,10 @@ Packager subcommands:
         pkgsend close [-A]
 
 Options:
-        --repo, -s
+        -s repo_url     destination repository server URL prefix
 
 Environment:
-        PKG_REPO"""
+        PKG_REPO""")
         sys.exit(2)
 
 def trans_open(config, args):
@@ -86,7 +87,7 @@ def trans_open(config, args):
         try:
                 opts, pargs = getopt.getopt(args, "e")
         except getopt.GetoptError, e:
-                print "pkgsend: illegal open option '%s'" % e.opt
+                print _("pkgsend: illegal open option '%s'") % e.opt
                 usage()
 
         eval_form = True
@@ -97,7 +98,7 @@ def trans_open(config, args):
                         eval_form = False
 
         if len(pargs) != 1:
-                print "pkgsend: open requires one package name"
+                print _("pkgsend: open requires one package name")
                 usage()
 
         t = trans.Transaction()
@@ -105,11 +106,11 @@ def trans_open(config, args):
         status, id = t.open(config, pargs[0])
 
         if status / 100 == 4 or status / 100 == 5:
-                print "pkgsend: server failed (status %s)" % status
+                print _("pkgsend: server failed (status %s)") % status
                 sys.exit(1)
 
         if id == None:
-                print "pkgsend: no transaction ID provided in response"
+                print _("pkgsend: no transaction ID provided in response")
                 sys.exit(1)
 
         if eval_form:
@@ -135,7 +136,7 @@ def trans_close(config, args):
                                 if opt == "-t":
                                         trans_id = arg
         except getopt.GetoptError, e:
-                print "pkgsend: illegal option to close '%s'" % e.opt
+                print _("pkgsend: illegal option to close: '%s'") % e.opt
                 usage()
 
         if trans_id == None:
@@ -156,8 +157,6 @@ def trans_close(config, args):
                 print hdrs["Package-FMRI"]
         else:
                 print "Failed with", ret
-
-        return
 
 def trans_add(config, args):
         try:
@@ -187,7 +186,7 @@ def trans_meta(config, args):
         """Via POST request, transfer a piece of metadata to the server."""
 
         if not args[0] in ["set", "unset"]:
-                print "pkgsend: unknown metadata item '%s'" % args[0]
+                print _("pkgsend: unknown metadata item '%s'") % args[0]
                 usage()
 
         trans_id = os.environ["PKG_TRANS_ID"]
@@ -195,9 +194,6 @@ def trans_meta(config, args):
         t = trans.Transaction()
         t.meta(config, trans_id, args)
 
-        return
-
-def trans_summary(config, args):
         return
 
 def batch(config, args):
@@ -273,20 +269,31 @@ def send_bundle(config, filename):
 
         t.close(config, id)
 
-
-pcfg = config.ParentRepo("http://localhost:10000", ["http://localhost:10000"])
+try:
+        repo = os.environ["PKG_REPO"]
+except KeyError:
+        repo_url = "http://localhost:10000"
 
 if __name__ == "__main__":
+        # XXX /usr/lib/locale is OpenSolaris-specific.
+        gettext.install("pkgsend", "/usr/lib/locale")
+
         opts = None
         pargs = None
         try:
-                opts, pargs = getopt.getopt(sys.argv[1:], "s:R:")
+                opts, pargs = getopt.getopt(sys.argv[1:], "s:")
+                for opt, arg in opts:
+                        if opt == "-s":
+                                repo_url = arg
+
         except getopt.GetoptError, e:
-                print "pkgsend: illegal global option '%s'" % e.opt
+                print _("pkgsend: illegal global option '%s'") % e.opt
                 usage()
 
         if pargs == None or len(pargs) == 0:
                 usage()
+
+        pcfg = config.ParentRepo(repo_url, [repo_url])
 
         subcommand = pargs[0]
         del pargs[0]
@@ -300,7 +307,7 @@ if __name__ == "__main__":
         elif subcommand == "send":
                 send_bundles(pcfg, pargs)
         else:
-                print "pkgsend: unknown subcommand '%s'" % subcommand
+                print _("pkgsend: unknown subcommand '%s'") % subcommand
                 usage()
 
         sys.exit(0)

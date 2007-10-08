@@ -113,7 +113,7 @@ class ImagePlan(object):
 
         def propose_fmri(self, fmri):
                 # is a version of fmri.stem in the inventory?
-                if self.image.is_installed(fmri):
+                if self.image.has_version_installed(fmri):
                         return
 
                 #   is there a freeze or incorporation statement?
@@ -135,7 +135,7 @@ class ImagePlan(object):
         # XXX Need to make sure that the same package isn't being added and
         # removed in the same imageplan.
         def propose_fmri_removal(self, fmri):
-                if not self.image.is_installed(fmri):
+                if not self.image.has_version_installed(fmri):
                         return
 
                 for i, p in enumerate(self.target_rem_fmris):
@@ -144,11 +144,9 @@ class ImagePlan(object):
                                         self.target_rem_fmris[i] = fmri
                                         break
                 else:
-                        if "i" not in locals():
-                                self.target_rem_fmris.append(fmri)
+                        self.target_rem_fmris.append(fmri)
 
         def evaluate_fmri(self, pfmri):
-
                 # [image] do we have this manifest?
                 if not self.image.has_manifest(pfmri):
                         retrieve.get_manifest(self.image, pfmri)
@@ -163,7 +161,7 @@ class ImagePlan(object):
                         f = fmri.PkgFmri(a.attrs["fmri"],
                             self.image.attrs["Build-Release"])
 
-                        if self.image.is_installed(f):
+                        if self.image.has_version_installed(f):
                                 continue
 
                         # XXX This alone only prevents infinite recursion when a
@@ -172,7 +170,8 @@ class ImagePlan(object):
                         # what was specified on the commandline, or include what
                         # we've found while processing dependencies?
                         # XXX probably should just use propose_fmri() here
-                        # instead of this and the is_installed() call above.
+                        # instead of this and the has_version_installed() call
+                        # above.
                         if self.is_proposed_fmri(f):
                                 continue
 
@@ -194,13 +193,15 @@ class ImagePlan(object):
                         if excluded:
                                 raise RuntimeError, "excluded by '%s'" % f
 
-                        # treat-as-required, treat-as-required-unless-pinned, ignore
+                        # treat-as-required, treat-as-required-unless-pinned,
+                        # ignore
                         # skip if ignoring
                         #     if pinned
                         #       ignore if treat-as-required-unless-pinned
                         #     else
                         #       **evaluation of incorporations**
-                        #     [imageplan] pursue installation of this package -->
+                        #     [imageplan] pursue installation of this package
+                        #     -->
                         #     backtrack or reset??
 
                         mvs = self.image.get_matching_pkgs(f)
@@ -231,9 +232,18 @@ class ImagePlan(object):
 
                 dependents = self.image.get_dependents(pfmri)
 
+                # Don't consider those dependencies already being removed in
+                # this imageplan transaction.
+                for i, d in enumerate(dependents):
+                        if fmri.PkgFmri(d, None) in self.target_rem_fmris:
+                                del dependents[i]
+
                 if dependents and not self.recursive_removal:
-                        print "Cannot remove '%s' due to" % pfmri
-                        print "the following packages that directly depend on it:"
+                        # XXX Module function is printing, should raise or have
+                        # complex return.
+                        print """\
+Cannot remove '%s' due to the following packages that directly depend on it:"""\
+                        % pfmri
                         for d in dependents:
                                 print " ", fmri.PkgFmri(d, "")
                         return
@@ -243,6 +253,7 @@ class ImagePlan(object):
                 pp = pkgplan.PkgPlan(self.image)
 
                 try:
+                        print "pkgplan remove %s proposed" % pfmri
                         pp.propose_removal(pfmri, m)
                 except RuntimeError:
                         print "pkg %s not installed" % pfmri
@@ -253,8 +264,10 @@ class ImagePlan(object):
                 for d in dependents:
                         rf = fmri.PkgFmri(d, None)
                         if self.is_proposed_rem_fmri(rf):
+                                print "%s is already proposed for removal" % rf
                                 continue
-                        if not self.image.is_installed(rf):
+                        if not self.image.has_version_installed(rf):
+                                print "%s is not installed" % rf
                                 continue
                         self.target_rem_fmris.append(rf)
                         self.evaluate_fmri_removal(rf)

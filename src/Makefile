@@ -30,6 +30,7 @@
 
 MACH:sh = uname -p
 
+KSH=/usr/bin/ksh
 PYTHON = /usr/bin/python
 
 ROOT = ../proto/root_${MACH}
@@ -224,7 +225,7 @@ link-clean:
 	@cd web; pwd; $(MAKE) $(TARGET)
 	@cd brand; pwd; $(MAKE) $(TARGET)
 	@cd man; pwd; $(MAKE) $(TARGET)
-        
+
 # Invoke all known modules with tests.
 # XXX Invoke the bundle tests.
 test:
@@ -238,6 +239,7 @@ test:
 	$(PYTHON) $(LINKPYTHONPKG)/smf.py
 	$(PYTHON) $(LINKPYTHONPKG)/client/imageconfig.py
 	$(PYTHON) $(LINKPYTHONPKG)/client/filter.py
+	cd tests; $(KSH) -x cli-complete.ksh
 
 proto: $(ROOT)
 

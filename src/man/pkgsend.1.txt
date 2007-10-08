@@ -22,6 +22,12 @@ DESCRIPTION
      pkgsend also has an alternate invocation that allows the conversion
      of existing software bundles via a submission.
 
+OPTIONS
+     The following options alter the default behavior:
+
+     -s repo_url    The URL prefix of the depot server.  The default
+                    value is "http://localhost:10000/
+
 SUBCOMMANDS
      The following subcommands are supported:
 

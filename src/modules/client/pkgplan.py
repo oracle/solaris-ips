@@ -33,7 +33,7 @@ class PkgPlan(object):
         """A package plan takes two package FMRIs and an Image, and produces the
         set of actions required to take the Image from the origin FMRI to the
         destination FMRI.
-        
+
         If the destination FMRI is None, the package is removed.
         """
 
@@ -117,7 +117,7 @@ class PkgPlan(object):
                                 f = file("%s/pkg/%s/filters" % \
                                     (self.image.imgdir,
                                     self.origin_fmri.get_dir_path()), "r")
-                        except OSError, e:
+                        except IOError, e:
                                 if e.errno != errno.ENOENT:
                                         raise
                         else:
@@ -141,7 +141,7 @@ class PkgPlan(object):
 
         def preexecute(self):
                 """Perform actions required prior to installation or removal of a package.
-                
+
                 This method executes each action's preremove() or preinstall()
                 methods, as well as any package-wide steps that need to be taken
                 at such a time.
@@ -154,8 +154,13 @@ class PkgPlan(object):
                         os.unlink("%s/pkg/%s/installed" % (self.image.imgdir,
                             self.origin_fmri.get_dir_path()))
 
-                        os.unlink("%s/pkg/%s/filters" % (self.image.imgdir,
-                            self.origin_fmri.get_dir_path()))
+                        try:
+                                os.unlink("%s/pkg/%s/filters" % (
+                                    self.image.imgdir,
+                                    self.origin_fmri.get_dir_path()))
+                        except OSError, e:
+                                if e.errno != errno.ENOENT:
+                                        raise
 
                 for src, dest in self.actions:
                         if dest:
@@ -193,7 +198,7 @@ class PkgPlan(object):
 
         def execute(self):
                 """Perform actions for installation or removal of a package.
-                
+
                 This method executes each action's remove() or install()
                 methods.
                 """
@@ -219,7 +224,7 @@ class PkgPlan(object):
 
         def postexecute(self):
                 """Perform actions required after installation or removal of a package.
-                
+
                 This method executes each action's postremove() or postinstall()
                 methods, as well as any package-wide steps that need to be taken
                 at such a time.
@@ -238,8 +243,13 @@ class PkgPlan(object):
                         os.unlink("%s/pkg/%s/installed" % (self.image.imgdir,
                             self.origin_fmri.get_dir_path()))
 
-                        os.unlink("%s/pkg/%s/filters" % (self.image.imgdir,
-                            self.origin_fmri.get_dir_path()))
+                        try:
+                                os.unlink("%s/pkg/%s/filters" % (
+                                    self.image.imgdir,
+                                    self.origin_fmri.get_dir_path()))
+                        except OSError, e:
+                                if e.errno != errno.ENOENT:
+                                        raise
 
                 if self.destination_fmri != None:
                         file("%s/pkg/%s/installed" % (self.image.imgdir,
@@ -260,7 +270,7 @@ class PkgPlan(object):
 
         def make_indices(self):
                 """Create the reverse index databases for a particular package.
-                
+
                 These are the databases mapping packaging object attribute
                 values back to their corresponding packages, allowing the
                 packaging system to look up a package based on, say, the

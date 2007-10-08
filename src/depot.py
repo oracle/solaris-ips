@@ -68,8 +68,10 @@ import pkg.server.transaction as trans
 
 def usage():
         print """\
-Usage: /usr/lib/pkg.depotd [-n]
+Usage: /usr/lib/pkg.depotd [--readonly] [-d repo_dir] [-p port]
+        --readonly      Read-only operation; modifying operations disallowed
 """
+        sys.exit(2)
 
 def catalog_get(scfg, request):
         scfg.inc_catalog()
@@ -161,6 +163,10 @@ def file_get_single(scfg, request):
 def trans_open(scfg, request):
         # XXX Authentication will be handled by virtue of possessing a signed
         # certificate (or a more elaborate system).
+        if scfg.is_read_only():
+                request.send_error(403, "Read-only server")
+                return
+
         t = trans.Transaction()
 
         ret = t.open(scfg, request)
@@ -178,6 +184,10 @@ def trans_open(scfg, request):
 
 
 def trans_close(scfg, request):
+        if scfg.is_read_only():
+                request.send_error(403, "Read-only server")
+                return
+
         # Pull transaction ID from headers.
         m = re.match("^/close/(.*)", request.path)
         trans_id = m.group(1)
@@ -188,6 +198,10 @@ def trans_close(scfg, request):
         del scfg.in_flight_trans[trans_id]
 
 def trans_abandon(scfg, request):
+        if scfg.is_read_only():
+                request.send_error(403, "Read-only server")
+                return
+
         # Pull transaction ID from headers.
         m = re.match("^/abandon/(.*)", request.path)
         trans_id = m.group(1)
@@ -197,6 +211,10 @@ def trans_abandon(scfg, request):
         del scfg.in_flight_trans[trans_id]
 
 def trans_add(scfg, request):
+        if scfg.is_read_only():
+                request.send_error(403, "Read-only server")
+                return
+
         m = re.match("^/add/([^/]*)/(.*)", request.path)
         trans_id = m.group(1)
         type = m.group(2)
@@ -263,22 +281,26 @@ class ThreadingHTTPServer(SocketServer.ThreadingMixIn,
         pass
 
 if __name__ == "__main__":
-        scfg.init_dirs()
-        scfg.acquire_in_flight()
-        scfg.acquire_catalog()
-
         port = 10000
 
         try:
-                opts, pargs = getopt.getopt(sys.argv[1:], "np:")
+                opts, pargs = getopt.getopt(sys.argv[1:], "d:np:", ["readonly"])
                 for opt, arg in opts:
                         if opt == "-n":
                                 sys.exit(0)
+                        elif opt == "-d":
+                                scfg.set_repo_root(arg)
                         elif opt == "-p":
                                 port = int(arg)
+                        elif opt == "--readonly":
+                                scfg.set_read_only()
         except getopt.GetoptError, e:
                 print "pkg.depotd: unknown option '%s'" % e.opt
                 usage()
+
+        scfg.init_dirs()
+        scfg.acquire_in_flight()
+        scfg.acquire_catalog()
 
         server = ThreadingHTTPServer(('', port), pkgHandler)
         server.serve_forever()

@@ -168,7 +168,7 @@ class Transaction(object):
                 try:
                         r = c.getresponse()
                 except httplib.BadStatusLine:
-                        print "Server-side exception for:", action
+                        print "Server-side exception for '%s'" % action
                         return 500
 
                 return r.status

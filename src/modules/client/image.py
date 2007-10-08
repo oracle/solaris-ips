@@ -307,7 +307,7 @@ class Image(object):
 
                 return "known"
 
-        def is_installed(self, fmri):
+        def has_version_installed(self, fmri):
                 """Check that the version given in the FMRI or a successor is
                 installed in the current image."""
 
@@ -320,6 +320,17 @@ class Image(object):
                         return True
 
                 return False
+
+        def is_installed(self, fmri):
+                """Check that the exact version given in the FMRI is installed
+                in the current image."""
+
+                try:
+                        v = self.get_version_installed(fmri)
+                except LookupError:
+                        return False
+
+                return v == fmri
 
         def get_dependents(self, pfmri):
                 """Return a list of the packages directly dependent on the given

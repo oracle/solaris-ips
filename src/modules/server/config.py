@@ -25,7 +25,9 @@
 # Use is subject to license terms.
 #
 
+import errno
 import os
+import statvfs
 import urllib
 
 import pkg.catalog as catalog
@@ -33,6 +35,11 @@ import pkg.fmri as fmri
 import pkg.package as package
 
 import pkg.server.transaction as trans
+
+# OpenSolaris:  statvfs(2) flags field
+ST_RDONLY = 0x01
+ST_NOSUID = 0x02
+ST_NOTRUNC = 0x04
 
 # depot Server Configuration
 
@@ -43,12 +50,11 @@ class SvrConfig(object):
         transactions and packages stored by the repository."""
 
         def __init__(self, repo_root, authority):
-                self.repo_root = repo_root
-                self.trans_root = "%s/trans" % self.repo_root
-                self.file_root = "%s/file" % self.repo_root
-                self.pkg_root = "%s/pkg" % self.repo_root
+                self.set_repo_root(repo_root)
 
                 self.authority = authority
+
+                self.read_only = False
 
                 self.catalog = catalog.Catalog()
                 self.in_flight_trans = {}
@@ -64,13 +70,52 @@ class SvrConfig(object):
                 self.flist_files = 0
 
         def init_dirs(self):
-                # XXX refine try/except
+                root_needed = False
+
                 try:
+                        vfs = os.statvfs(self.repo_root)
+                except OSError, e:
+                        if e.errno == errno.ENOENT:
+                                root_needed = True
+                        else:
+                                raise
+
+                if root_needed:
+                        try:
+                                os.makedirs(self.repo_root)
+                        except OSError, e:
+                                raise
+
+                        vfs = os.statvfs(self.repo_root)
+
+                emsg = "repository directories incomplete"
+
+                if vfs[statvfs.F_FLAG] & ST_RDONLY != 0:
+                        self.set_read_only()
+                        emsg = "repository directories read-only and incomplete"
+                else:
                         os.makedirs(self.trans_root)
                         os.makedirs(self.file_root)
                         os.makedirs(self.pkg_root)
-                except OSError:
-                        pass
+
+                if os.path.exists(self.trans_root) and \
+                    os.path.exists(self.file_root) and \
+                    os.path.exists(self.pkg_root):
+                        return
+
+                raise RuntimeError, emsg
+
+        def set_repo_root(self, root):
+                self.repo_root = root
+                self.trans_root = "%s/trans" % self.repo_root
+                self.file_root = "%s/file" % self.repo_root
+                self.pkg_root = "%s/pkg" % self.repo_root
+
+        def set_read_only(self):
+                self.read_only = True
+
+        def is_read_only(self):
+                return self.read_only
 
         def acquire_in_flight(self):
                 """Walk trans_root, acquiring valid transaction IDs."""

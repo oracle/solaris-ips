@@ -1,11 +1,11 @@
-System Administration Commands				 pkg.depotd(1M)
+System Administration Commands                           pkg.depotd(1M)
 
 
 NAME
      pkg.depotd - image packaging system depot server
 
 SYNOPSIS
-     /usr/lib/pkg.depotd
+     /usr/lib/pkg.depotd [--readonly] [-d repo_dir] [-p port]
 
 DESCRIPTION
      pkg.depotd is the depot server for the image packaging system.
@@ -20,40 +20,59 @@ DESCRIPTION
      properties associated with its service instance.  Two properties
      are currently recognized
 
-     application/port		(count) The port number on which this
-				instance of should listen for incoming
-				package requests.  The default value is
-				80.
+     application/port           (count) The port number on which this
+                                instance of should listen for incoming
+                                package requests.  The default value is
+                                80.
 
-     application/repo_root	(astring) The file system path at which
-     				this instance should find its repository
-				data.  The default value is
-				/var/pkg/repo.
+     application/read_only      (boolean) Modifying operations, such as
+                                those initiated by pkgsend(1M) are
+                                disabled.  Retrieval operations are
+                                still available.
+
+     application/repo_dir       (astring) The file system path at which
+                                this instance should find its repository
+                                data.  The default value is
+                                /var/pkg/repo.
+
+OPTIONS
+     The following options alter the default behavior, if present, and
+     will override the settings from the service instance when managed
+     via an smf(5) restarter:
+
+     -d repo_dir                Overrides application/repo_dir with the
+                                value given by repo_dir.
+
+     -p port                    Overrides application/port with the
+                                value given by port.
+
+     --readonly                 Overrides application/read_only to be
+                                true.
 
 EXAMPLES
      Example 1:  Enabling the depot server.
 
      # svcadm enable application/pkg/server:default
-     
+
      Example 2:  Changing the listening port of the server.
 
      # svccfg -s application/pkg/server:default set application/port = 9999
      # svcadm refresh application/pkg/server:default
      # svcadm restart application/pkg/server:default
-     
+
 EXIT STATUS
      The following exit values are returned:
 
      0     Successful operation.
 
-     1     Error encountered.  
+     1     Error encountered.
 
      2     Invalid command line options were specified.
 
 FILES
-     /var/pkg/repo		Default repository location; modify
-     				application/repo_root to select an
-				alternate location.
+     /var/pkg/repo              Default repository location; modify
+                                application/repo_root to select an
+                                alternate location.
 
 ATTRIBUTES
      See attributes(5) for descriptions of the  following  attri-
@@ -71,7 +90,7 @@ NOTES
      The image packaging system is an under-development feature.
      Command names, invocation, formats, and operations are all subject
      to change.  Development is hosted in the OpenSolaris community
-     at 
+     at
 
      http://opensolaris.org/os/project/pkg/
 
