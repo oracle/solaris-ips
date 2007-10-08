@@ -94,9 +94,13 @@ class SvrConfig(object):
                         self.set_read_only()
                         emsg = "repository directories read-only and incomplete"
                 else:
-                        os.makedirs(self.trans_root)
-                        os.makedirs(self.file_root)
-                        os.makedirs(self.pkg_root)
+                        try:
+                                os.makedirs(self.trans_root)
+                                os.makedirs(self.file_root)
+                                os.makedirs(self.pkg_root)
+                        except OSError, e:
+                                if e.errno != errno.EEXIST:
+                                        raise
 
                 if os.path.exists(self.trans_root) and \
                     os.path.exists(self.file_root) and \

@@ -31,10 +31,11 @@
 #
 # XXX Should really select which cases to run.
 
+TEMPDIR=${TEMPDIR:-/tmp}
 REPO_PORT=${REPO_PORT:-8000}
-REPO_DIR=/tmp/repo.$$
+REPO_DIR=$TEMPDIR/repo.$$
 REPO_URL=http://localhost:$REPO_PORT
-IMAGE_DIR=/tmp/image.$$
+IMAGE_DIR=$TEMPDIR/image.$$
 
 restore_dir=$PWD
 
@@ -75,6 +76,20 @@ fail () {
 }
 
 trap "ret=$?; image_cleanup; depot_cleanup $ret" EXIT
+
+# Case 0.  Stop server, start again.
+# {{{1
+
+kill $DEPOT_PID
+wait $DEPOT_PID
+
+$ROOT/usr/lib/pkg.depotd -p $REPO_PORT -d $REPO_DIR &
+
+DEPOT_PID=$!
+
+sleep 1
+
+# }}}1
 
 # Case 1.  Send empty package foo@1.0, install and uninstall.
 # {{{1
