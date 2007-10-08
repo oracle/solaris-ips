@@ -273,14 +273,16 @@ class Action(object):
                 return indices
 
         @staticmethod
-        def makedirs(path, leafmode):
-                """Make directory specified by 'path' with mode 'leafmode', as
-                well as all missing parent directories.
+        def makedirs(path, **kw):
+                """Make directory specified by 'path' with given permissions, as
+                well as all missing parent directories.  Permissions are
+                specified by the keyword arguments 'mode', 'uid', and 'gid'.
 
-                The difference between this and os.makedirs() is that 'leafmode'
-                specifies only the mode of the leaf directory.  Missing parent
-                directories are created with the permissions of the deepest
-                existing directory."""
+                The difference between this and os.makedirs() is that the
+                permissions specify only those of the leaf directory.  Missing
+                parent directories inherit the permissions of the deepest
+                existing directory.  The leaf directory will also inherit any
+                permissions not explicitly set."""
 
                 pathlist = path.split("/")
                 pathlist[0] = "/"
@@ -289,13 +291,32 @@ class Action(object):
                 for i, e in g:
                         if not os.path.isdir(os.path.join("/", *pathlist[:i + 1])):
                                 break
+                else:
+                        # If we run off the end of the list, the requested
+                        # directory is present, so we can just return.
+                        return
 
-                # XXX need to set owner/group, too
-                mode = os.stat(os.path.join("/", *pathlist[:i])).st_mode
+                stat = os.stat(os.path.join("/", *pathlist[:i]))
                 for i, e in g:
-                        os.mkdir(os.path.join("/", *pathlist[:i]), mode)
+                        p = os.path.join("/", *pathlist[:i])
+                        os.mkdir(p, stat.st_mode)
+                        try:
+                                os.chown(p, stat.st_uid, stat.st_gid)
+                        except OSError, e:
+                                if e.errno != errno.EPERM:
+                                        raise
 
-                os.mkdir(path, leafmode)
+                # Create the leaf with any requested permissions, substituting
+                # missing perms with the parent's perms.
+                mode = kw.get("mode", stat.st_mode)
+                uid = kw.get("uid", stat.st_uid)
+                gid = kw.get("gid", stat.st_gid)
+                os.mkdir(path, mode)
+                try:
+                        os.chown(path, uid, gid)
+                except OSError, e:
+                        if e.errno != errno.EPERM:
+                                raise
 
         def needsdata(self, orig):
                 """Returns True if the action transition requires a
@@ -310,26 +331,26 @@ class Action(object):
                 else:
                         return [ value ]
 
-        def preinstall(self, image, orig):
+        def preinstall(self, pkgplan, orig):
                 """Client-side method that performs pre-install actions."""
                 pass
 
-        def install(self, image, orig):
+        def install(self, pkgplan, orig):
                 """Client-side method that installs the object."""
                 pass
 
-        def postinstall(self, image, orig):
+        def postinstall(self, pkgplan, orig):
                 """Client-side method that performs post-install actions."""
                 pass
 
-        def preremove(self, image):
+        def preremove(self, pkgplan):
                 """Client-side method that performs pre-remove actions."""
                 pass
 
-        def remove(self, image):
+        def remove(self, pkgplan):
                 """Client-side method that removes the object."""
                 pass
 
-        def postremove(self, image):
+        def postremove(self, pkgplan):
                 """Client-side method that performs post-remove actions."""
                 pass

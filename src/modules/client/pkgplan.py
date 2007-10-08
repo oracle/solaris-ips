@@ -164,9 +164,9 @@ class PkgPlan(object):
 
                 for src, dest in self.actions:
                         if dest:
-                                dest.preinstall(self.image, src)
+                                dest.preinstall(self, src)
                         else:
-                                src.preremove(self.image)
+                                src.preremove(self)
 
                         if dest and dest.needsdata(src) and flist_supported:
 
@@ -212,7 +212,7 @@ class PkgPlan(object):
                 for src, dest in self.actions:
                         if dest:
                                 try:
-                                        dest.install(self.image, src)
+                                        dest.install(self, src)
                                 except Exception, e:
                                         print "Action install failed for '%s' (%s):\n  %s: %s" % \
                                             (dest.attrs.get(dest.key_attr, id(dest)),
@@ -220,7 +220,7 @@ class PkgPlan(object):
                                             e.__class__.__name__, e)
                                         raise
                         else:
-                                src.remove(self.image)
+                                src.remove(self)
 
         def postexecute(self):
                 """Perform actions required after installation or removal of a package.
@@ -232,9 +232,9 @@ class PkgPlan(object):
                 # record that package states are consistent
                 for src, dest in self.actions:
                         if dest:
-                                dest.postinstall(self.image, src)
+                                dest.postinstall(self, src)
                         else:
-                                src.postremove(self.image)
+                                src.postremove(self)
 
                 # In the case of an upgrade, remove the installation turds from
                 # the origin's directory.

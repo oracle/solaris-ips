@@ -60,7 +60,8 @@ class DriverAction(generic.Action):
         def __init__(self, data=None, **attrs):
                 generic.Action.__init__(self, data, **attrs)
 
-        def install(self, image, orig):
+        def install(self, pkgplan, orig):
+                image = pkgplan.image
                 n2m = os.path.normpath(os.path.sep.join(
                     (image.get_root(), "etc/name_to_major")))
 
@@ -191,11 +192,11 @@ class DriverAction(generic.Action):
                                     "return code %s" % \
                                     (self.name, self.attrs["name"], retcode)
 
-        def remove(self, image):
+        def remove(self, pkgplan):
                 args = (
                     self.rem_drv,
                     "-b",
-                    image.get_root(),
+                    pkgplan.image.get_root(),
                     self.attrs["name"]
                 )
 

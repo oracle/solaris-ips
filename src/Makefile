@@ -96,6 +96,7 @@ PYACTIONMODS = \
 	modules/actions/file.py \
 	modules/actions/generic.py \
 	modules/actions/hardlink.py \
+	modules/actions/license.py \
 	modules/actions/link.py \
 	modules/actions/unknown.py
 PYCACTIONMODS = $(PYACTIONMODS:%.py=%.pyc)

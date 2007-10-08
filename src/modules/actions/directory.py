@@ -47,7 +47,7 @@ class DirectoryAction(generic.Action):
         def __init__(self, data=None, **attrs):
                 generic.Action.__init__(self, data, **attrs)
 
-        def install(self, image, orig):
+        def install(self, pkgplan, orig):
                 """Client-side method that installs a directory."""
                 path = self.attrs["path"]
                 mode = int(self.attrs["mode"], 8)
@@ -60,14 +60,14 @@ class DirectoryAction(generic.Action):
                         ogroup = grp.getgrnam(orig.attrs["group"]).gr_gid
 
                 path = os.path.normpath(os.path.sep.join(
-                    (image.get_root(), path)))
+                    (pkgplan.image.get_root(), path)))
 
                 # XXX Hack!  (See below comment.)
                 mode |= 0200
 
                 if not orig:
                         try:
-                                self.makedirs(path, mode)
+                                self.makedirs(path, mode = mode)
                         except OSError, e:
                                 if e.errno != errno.EEXIST:
                                         raise
@@ -93,9 +93,9 @@ class DirectoryAction(generic.Action):
                                 if e.errno != errno.EPERM:
                                         raise
 
-        def remove(self, image):
+        def remove(self, pkgplan):
                 path = os.path.normpath(os.path.sep.join(
-                    (image.get_root(), self.attrs["path"])))
+                    (pkgplan.image.get_root(), self.attrs["path"])))
 
                 try:
                         os.rmdir(path)

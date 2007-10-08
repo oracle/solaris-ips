@@ -44,7 +44,7 @@ class LinkAction(generic.Action):
         def __init__(self, data=None, **attrs):
                 generic.Action.__init__(self, data, **attrs)
 
-        def install(self, image, orig):
+        def install(self, pkgplan, orig):
                 """Client-side method that installs a link."""
                 # XXX The exists-unlink-symlink path appears to be as safe as it
                 # gets with the current symlink(2) interface.
@@ -53,15 +53,15 @@ class LinkAction(generic.Action):
                 target = self.attrs["target"]
 
                 path = os.path.normpath(os.path.sep.join(
-                    (image.get_root(), path)))
+                    (pkgplan.image.get_root(), path)))
 
                 if os.path.lexists(path):
                         os.unlink(path)
 
                 os.symlink(target, path)
 
-        def remove(self, image):
+        def remove(self, pkgplan):
                 path = os.path.normpath(os.path.sep.join(
-                    (image.get_root(), self.attrs["path"])))
+                    (pkgplan.image.get_root(), self.attrs["path"])))
 
                 os.unlink(path)

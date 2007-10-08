@@ -49,7 +49,7 @@ class FileAction(generic.Action):
                 generic.Action.__init__(self, data, **attrs)
                 self.hash = "NOHASH"
 
-        def install(self, image, orig):
+        def install(self, pkgplan, orig):
                 """Client-side method that installs a file."""
                 path = self.attrs["path"]
                 mode = int(self.attrs["mode"], 8)
@@ -57,7 +57,7 @@ class FileAction(generic.Action):
                 group = grp.getgrnam(self.attrs["group"]).gr_gid
 
                 final_path = os.path.normpath(os.path.sep.join(
-                    (image.get_root(), path)))
+                    (pkgplan.image.get_root(), path)))
 
                 # If we're upgrading, extract the attributes from the old file.
                 if orig:
@@ -94,7 +94,7 @@ class FileAction(generic.Action):
                 # XXX This needs to be controlled by policy.
                 if self.needsdata(orig): 
                         temp = os.path.normpath(os.path.sep.join(
-                            (image.get_root(), path + "." + self.hash)))
+                            (pkgplan.image.get_root(), path + "." + self.hash)))
 
                         stream = self.data()
                         tfile = file(temp, "wb")
@@ -138,9 +138,9 @@ class FileAction(generic.Action):
                 return False
 
 
-        def remove(self, image):
+        def remove(self, pkgplan):
                 path = os.path.normpath(os.path.sep.join(
-                    (image.get_root(), self.attrs["path"])))
+                    (pkgplan.image.get_root(), self.attrs["path"])))
 
                 os.unlink(path)
 

@@ -42,14 +42,14 @@ class HardLinkAction(link.LinkAction):
         def __init__(self, data=None, **attrs):
                 link.LinkAction.__init__(self, data, **attrs)
 
-        def install(self, image, orig):
+        def install(self, pkgplan, orig):
                 """Client-side method that installs a hard link."""
 
                 path = self.attrs["path"]
                 target = self.attrs["target"]
 
                 path = os.path.normpath(os.path.sep.join(
-                    (image.get_root(), path)))
+                    (pkgplan.image.get_root(), path)))
 
                 if os.path.exists(path):
                         os.unlink(path)

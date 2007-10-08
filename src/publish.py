@@ -165,7 +165,7 @@ def trans_add(config, args):
                 print "No transaction ID specified in $PKG_TRANS_ID"
                 sys.exit(1)
 
-        if args[0] == "file":
+        if args[0] in ("file", "license"):
                 action = pkg.actions.fromlist(args[0], args[2:])
                 def opener():
                         return open(args[1])
