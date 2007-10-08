@@ -147,6 +147,11 @@ class FileList(object):
                         # action.
                         filename =  "." + pkgnm + "-" + base + "-" + hashval
 
+                        # Set the perms of the temporary file.
+                        info.mode = 0400
+                        info.uname = "root"
+                        info.gname = "root"
+
                         # XXX catch IOError if tar stream closes inadvertently?
                         tar_stream.extract_to(info, path, filename)
 
