@@ -194,13 +194,14 @@ class Transaction(object):
                         if attrs[a].startswith("[") and attrs[a].endswith("]"):
                                 attrs[a] = eval(attrs[a])
 
+                size = int(hdrs.getheader("Content-Length", "0"))
+
                 # The request object always has a readable rfile, even if it'll
                 # return no data.  We check ahead of time to see if we'll get
                 # any data, and only create the object with data if there will
                 # be any.
                 rfile = None
-                if "Content-Length" in hdrs and \
-                    int(hdrs.getheader("Content-Length")) != 0:
+                if size > 0:
                         rfile = request.rfile
                 # XXX Ugly special case to handle empty files.
                 elif type == "file":
@@ -211,7 +212,9 @@ class Transaction(object):
                 # if type in critical_actions:
                 #         self.critical = True
 
-                size = int(hdrs.getheader("Content-Length"))
+                # Record the size of the payload, if there is one.
+                if size > 0:
+                        action.attrs["pkg.size"] = str(size)
 
                 if action.data != None:
                         data = action.data().read(size)
