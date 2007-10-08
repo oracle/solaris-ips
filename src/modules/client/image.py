@@ -349,6 +349,8 @@ class Image(object):
                                 dependents = [
                                     urllib.unquote(d)
                                     for d in os.listdir(os.path.join(thedir, v))
+                                    if os.path.exists(
+                                        os.path.join(thedir, v, d, "installed"))
                                 ]
 
                 return dependents
