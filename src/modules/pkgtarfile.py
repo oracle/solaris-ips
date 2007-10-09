@@ -75,7 +75,7 @@ class PkgTarFile(tarfile.TarFile):
                                 else:
                                         self._dbg(1, "tarfile: %s %r" % (
                                             e.strerror, e.filename))
-                except ExtractError, e:
+                except tarfile.ExtractError, e:
                         if self.errorlevel > 1:
                                 raise
                         else:
