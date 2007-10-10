@@ -78,6 +78,7 @@ class pkg(object):
                                         usedlist[o.pathname][1].name)
                         elif o.type != "i":
                                 usedlist[o.pathname] = (imppkg, self)
+                                self.check_perms(o)
                                 self.files.append(o)
 
                 if not self.version:
@@ -142,7 +143,27 @@ class pkg(object):
                                         o[0].group = a.attrs[attr]
                                 elif attr == "mode":
                                         o[0].mode = a.attrs[attr]
+                self.check_perms(o[0])
                 self.files.extend(o)
+
+	def check_perms(self, manifest):
+                if manifest.type not in "fevdxbc":
+                        return
+
+                if manifest.owner == "?":
+                        manifest.owner = "root"
+                        print "File %s in pkg %s owned by '?': mapping to %s" % \
+			    (manifest.pathname, self.name, manifest.owner)
+
+		if manifest.group == "?":
+                        manifest.group = "bin"
+                        print "File %s in pkg %s of group '?': mapping to %s" % \
+			    (manifest.pathname, self.name, manifest.group)
+                if manifest.mode == "?":
+			manifest.mode = "0444"
+                        print "File %s in pkg %s mode '?': mapping to %s" % \
+			    (manifest.pathname, self.name, manifest.mode)
+
 
         def chattr(self, file, line):
                 o = [f for f in self.files if f.pathname == file]
@@ -172,8 +193,12 @@ def pkg_path(pkgname):
                 pkgpaths[name] = os.path.realpath(pkgname)
                 return pkgname
         else:
-                pkgpaths[name] = wos_path + "/" + pkgname
-                return pkgpaths[name]
+                for each_path in wos_path:
+                        if os.path.exists(each_path + "/" + pkgname):
+                                pkgpaths[name] = each_path + "/" + pkgname
+		                return pkgpaths[name]
+
+                raise RuntimeError, "package %s not found" % pkgname
 
 
 def start_package(pkgname):
@@ -204,7 +229,7 @@ def publish_pkg(pkg):
                     "State": "PUBLISHED"
                 })
 
-        cfg = config.ParentRepo("http://localhost:10000", ["http://localhost:10000"])
+        cfg = config.ParentRepo(def_repo, [def_repo])
         print "    open %s@%s" % (sysv_to_new_name(pkg.name), pkg.version)
         status, id = t.open(cfg, "%s@%s" % (sysv_to_new_name(pkg.name), pkg.version))
         if status / 100 in (4, 5) or not id:
@@ -309,11 +334,17 @@ def publish_pkg(pkg):
 
         # Publish dependencies
 
+	missing_cnt = 0
+
         for p in set(pkg.idepend):              # over set of svr4 deps, append ipkgs
                 if p in destpkgs:
                         pkg.depend.extend(destpkgs[p]) 
                 else:
-                        print "SVR4 package %s not seen - ignoring dependency" % p
+                        print "pkg %s: SVR4 package %s not seen" % \
+                            (pkg.name, p)
+			missing_cnt += 1
+        if missing_cnt > 0:
+	        raise RuntimeError, "missing packages!"
 
         for p in set(pkg.depend) - set(pkg.undepend):
                 # Don't make a package depend on itself.
@@ -481,40 +512,45 @@ def process_dependencies(file, path):
 
 def_vers = "0.5.11"
 def_branch = ""
-wos_path = "/net/netinstall.eng/export/nv/x/latest/Solaris_11/Product"
+def_wos_path = ["/net/netinstall.eng/export/nv/x/latest/Solaris_11/Product"]
 nopublish = False
 show_debug = False
+def_repo = "http://localhost:10000"
+wos_path = []
 
 try:
-        opts, args = getopt.getopt(sys.argv[1:], "b:dnv:w:")
+        opts, args = getopt.getopt(sys.argv[1:], "b:dns:v:w:")
 except getopt.GetoptError, e:
         print "unknown option", e.opt
         sys.exit(1)
 
-# Quick, icky hack.
-if "i386" in args[0]:
-        wos_path = wos_path.replace("/s/", "/x/")
-
 for opt, arg in opts:
         if opt == "-b":
                 def_branch = arg
+        elif opt == "-d":
+                show_debug = True
         elif opt == "-n":
                 nopublish = True
+	elif  opt == "-s":
+                def_repo = arg
         elif opt == "-v":
                 def_vers = arg
         elif opt == "-w":
-                wos_path = arg
-        elif opt == "-d":
-                show_debug = True
+	        wos_path.append(arg)
 
 if not def_branch:
-        release_file = wos_path + "/SUNWsolnm/reloc/etc/release"
-        if os.path.isfile(release_file):
-                rf = file(release_file)
-                l = rf.readline()
-                idx = l.index("nv_") + 3
-                def_branch = "0." + l[idx:idx+2]
-                rf.close()
+        try:
+                pkgpath = pkg_path("SUNWsolnm")
+                release_file = pkgpath + "/reloc/etc/release"
+                if os.path.isfile(release_file):
+                        rf = file(release_file)
+                        l = rf.readline()
+                        idx = l.index("nv_") + 3
+                        def_branch = "0." + l[idx:idx+2]
+                        rf.close()	
+        except:
+	        pass
+
 if not def_branch:
         print "need a branch id (build number)"
         sys.exit(1)
@@ -525,6 +561,9 @@ elif "." not in def_branch:
 if not args:
         print "need argument!"
         sys.exit(1)
+
+if not wos_path:
+        wos_path = def_wos_path
 
 infile = file(args[0])
 lexer = shlex.shlex(infile, args[0], True)

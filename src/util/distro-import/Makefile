@@ -26,7 +26,13 @@
 
 # Needs to point to filesystem on Solaris install dvd
 # replace as needed with a local solaris install image
-WOS_PATH=/net/netinstall.sfbay/export/nv/x/74/Solaris_11/Product
+
+WOS_PKGS=/net/netinstall.sfbay/export/nv/x/74/Solaris_11/Product
+SLIM_PATH=/net/indiana-build.central/export/slim_stage
+GNOME_PKGS=$(SLIM_PATH)/GNOME/latest
+INSTALL_PKGS=$(SLIM_PATH)/INSTALL/latest
+SLIM_PKGS=$(SLIM_PATH)/SLIM_PKGS/latest
+FOX_PKGS=$(SLIM_PATH)/FOX/latest
 
 TMPPKGS=SUNWfixes
 
@@ -39,9 +45,8 @@ FIXFILES= \
 
 default:	$(TMPPKGS) cluster.import
 
-cluster.import:	$(WOS_PATH)/.clustertoc Makefile slim_install.toc
+cluster.import:	$(WOS_PATH)/.clustertoc Makefile
 	./clustertoc2import.py $(WOS_PATH)/.clustertoc | egrep -v 'SUNWjds-registration|SUNWdttsr|SUNWdttsu' > $@
-	./clustertoc2import.py ./slim_install.toc >> $@
 
 proto/etc/driver_aliases: proto
 	./get_file_from_pkg.py $(WOS_PATH)/SUNWcsd etc/driver_aliases | \
@@ -73,3 +78,7 @@ SUNWfixes: $(FIXFILES:%=proto/%)
 
 import:	cluster.import $(TMPPKGS)
 	./solaris.py -w $(WOS_PATH) all.i386
+
+slim_import:	slim_cluster $(TMPPKGS)
+	./solaris.py -w $(GNOME_PKGS) -w $(INSTALL_PKGS) -w $(FOX_PKGS) -w $(SLIM_PKGS) -w $(WOS_PKGS) slim_cluster
+
