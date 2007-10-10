@@ -32,6 +32,8 @@ import urllib
 import urllib2
 import urlparse
 
+import pkg.manifest
+
 # client/retrieve.py - collected methods for retrieval of pkg components
 # from repositories
 

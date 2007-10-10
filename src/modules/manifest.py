@@ -29,6 +29,7 @@ import sha
 import shutil
 import time
 import urllib
+import cPickle
 from itertools import groupby
 
 import pkg.actions as actions
@@ -251,6 +252,32 @@ class Manifest(object):
                                 bisect.insort(self.actions, action)
 
                 return
+
+        def search_dict(self):
+                """Return the dictionary used for searching."""
+                action_dict = {}
+                for a in self.actions:
+                        for k, v in a.generate_indices().iteritems():
+                                if isinstance(v, list):
+                                        if k in action_dict:
+                                                action_dict[k].update(
+                                                    dict((i, True) for i in v))
+                                        else:
+                                                action_dict[k] = \
+                                                    dict((i, True) for i in v)
+                                else:
+                                        if k in action_dict:
+                                                action_dict[k][v] = True
+                                        else:
+                                                action_dict[k] = { v: True }
+                return action_dict
+
+        def pickle(self, file):
+                """Pickle the indices of the manifest's actions to the 'file'.
+                """
+
+                cPickle.dump(self.search_dict(), file,
+                    protocol = cPickle.HIGHEST_PROTOCOL)
 
 null = Manifest()
 

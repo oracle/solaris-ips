@@ -294,8 +294,6 @@ Cannot remove '%s' due to the following packages that directly depend on it:"""\
                 plan."""
                 assert self.state == EVALUATED_OK
 
-                # image related operations, like a snapshot
-
                 for p in self.pkg_plans:
                         p.preexecute()
 
@@ -305,9 +303,6 @@ Cannot remove '%s' due to the following packages that directly depend on it:"""\
 
                 for p in self.pkg_plans:
                         p.postexecute()
-
-                for p in self.pkg_plans:
-                        p.make_indices()
 
                 self.state = EXECUTED_OK
 

@@ -24,6 +24,7 @@
 # Use is subject to license terms.
 
 import ConfigParser
+import cPickle
 import getopt
 import os
 import re
@@ -264,19 +265,27 @@ class Image(object):
         def get_manifest(self, fmri):
                 m = manifest.Manifest()
 
+                fmri_dir_path = os.path.join(self.imgdir, "pkg",
+                    fmri.get_dir_path())
+                mpath = os.path.join(fmri_dir_path, "manifest")
+
                 # If the manifest isn't there, download and retry.
                 try:
-                        mcontent = file("%s/pkg/%s/manifest" % 
-                            (self.imgdir, fmri.get_dir_path())).read()
+                        mcontent = file(mpath).read()
                 except IOError, e:
                         if e.errno != errno.ENOENT:
                                 raise
                         retrieve.get_manifest(self, fmri)
-                        mcontent = file("%s/pkg/%s/manifest" % 
-                            (self.imgdir, fmri.get_dir_path())).read()
+                        mcontent = file(mpath).read()
 
                 m.set_fmri(self, fmri)
                 m.set_content(mcontent)
+
+                # Pickle the manifest's indices, for searching
+                pfile = file(os.path.join(fmri_dir_path, "index"), "wb")
+                m.pickle(pfile)
+                pfile.close()
+
                 return m
 
         def get_version_installed(self, pfmri):
@@ -464,6 +473,45 @@ class Image(object):
 
                         print fmt_str % (pf, self.get_pkg_state_by_fmri(p),
                             upgradable, frozen, incorporated, excludes)
+
+        def search(self, args):
+                """Search the image for the token in args[0]."""
+
+                idxdir = os.path.join(self.imgdir, "pkg")
+
+                # Convert a full directory path to the FMRI it represents.
+                def idx_to_fmri(index):
+                        return fmri.PkgFmri(urllib.unquote(
+                            os.path.dirname(index[len(idxdir) + 1:])), None)
+
+                indices = (
+                    (os.path.join(dir, "index"), os.path.join(dir, "manifest"))
+                    for dir, dirnames, filenames in os.walk(idxdir)
+                    if "manifest" in filenames
+                )
+
+                for index, mfst in indices:
+                        # Try loading the index; if that fails, try parsing the
+                        # manifest.
+                        try:
+                                d = cPickle.load(file(index))
+                        except:
+                                m = manifest.Manifest()
+                                try:
+                                        mcontent = file(mfst).read()
+                                except:
+                                        # XXX log something?
+                                        continue
+                                m.set_content(mcontent)
+                                try:
+                                        m.pickle(file(index, "wb"))
+                                except:
+                                        pass
+                                d = m.search_dict()
+
+                        for k, v in d.items():
+                                if args[0] in v:
+                                        yield k, idx_to_fmri(index)
 
 
 if __name__ == "__main__":

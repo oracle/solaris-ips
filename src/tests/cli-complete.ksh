@@ -141,7 +141,7 @@ fi
 # }}}1
 
 # Case 2.  Send package foo@1.1, containing a directory and a file,
-# install and uninstall.
+# install, search, and uninstall.
 # {{{1
 
 tcase=2
@@ -186,6 +186,14 @@ find $IMAGE_DIR
 
 if ! pkg status; then
 	fail pkg status failed
+fi
+
+if ! pkg search /lib/libc.so.1; then
+	fail pkg search failed
+fi
+
+if ! pkg search blah; then
+	fail pkg search failed
 fi
 
 if ! pkg uninstall foo; then

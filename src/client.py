@@ -270,31 +270,8 @@ def unfreeze(img, args):
 def search(img, args):
         """Search through the reverse index databases for the given token."""
 
-        idxdir = os.path.join(img.imgdir, "index")
-
-        # quote the path separator character as in a URL (as well as any
-        # '%' symbol), and take the digest if it's too long.
-        token = args[0].replace("%", "%25")
-        token = token.replace(os.path.sep, ("%%%x" % ord(os.path.sep)).upper())
-        if len(token) > \
-            os.pathconf(img.imgdir, os.pathconf_names["PC_NAME_MAX"]):
-                token = sha.sha(token).hexdigest()
-
-        # Avoid enumerating any particular index directory, since some index
-        # databases may contain hundreds of thousands of keys.  Any given key in
-        # an index, however, hopefully won't point to more than a few hundred
-        # packages.
-        results = [
-            (dir, link)
-            for dir in os.listdir(idxdir)
-            if os.path.isdir(os.path.join(idxdir, dir, token))
-            for link in os.listdir(os.path.join(idxdir, dir, token))
-        ]
-
-        for idx, link in results:
-                print idx, fmri.PkgFmri(urllib.unquote(link), None)
-
-        return
+        for k, v in img.search(args):
+                print k, v
 
 def create_image(img, args):
         """Create an image of the requested kind, at the given path.  Load

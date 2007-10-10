@@ -67,17 +67,8 @@ class LinkAction(generic.Action):
 
                 os.unlink(path)
 
-        def generate_indices(self, image):
-                # quote the path separator character as in a URL (as well as any
-                # '%' symbol), and take the digest if it's too long.
-                path = self.attrs["path"].replace("%", "%25")
-                path = (os.path.sep + path).replace(os.path.sep,
-                    ("%%%x" % ord(os.path.sep)).upper())
-                if len(path) > \
-                    os.pathconf(image.imgdir, os.pathconf_names["PC_NAME_MAX"]):
-                        path = sha.sha(path).hexdigest()
-
+        def generate_indices(self):
                 return {
                     "basename": os.path.basename(self.attrs["path"]),
-                    "path": path
+                    "path": os.path.sep + self.attrs["path"]
                 }
