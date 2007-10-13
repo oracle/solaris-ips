@@ -38,6 +38,8 @@ import pkg.manifest as manifest
 
 import pkg.client.imageconfig as imageconfig
 
+from pkg.misc import versioned_urlopen
+
 IMG_ENTIRE = 0
 IMG_PARTIAL = 1
 IMG_USER = 2
@@ -368,16 +370,7 @@ class Image(object):
                 for auth in self.gen_authorities():
                         # XXX Mirror selection and retrieval policy?
 
-                        # Ignore http_proxy for localhost case, by overriding
-                        # default proxy behaviour of urlopen().
-                        proxy_uri = None
-                        netloc = urlparse.urlparse(auth["origin"])[1]
-                        if urllib.splitport(netloc)[0] == "localhost":
-                                proxy_uri = {}
-
-                        uri = urlparse.urljoin(auth["origin"], "catalog")
-
-                        c = urllib.urlopen(uri, proxies=proxy_uri)
+                        c, v = versioned_urlopen(auth["origin"], "catalog", [0])
 
                         # compare headers
                         data = c.read()

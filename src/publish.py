@@ -174,26 +174,13 @@ def trans_add(config, args):
                 action = pkg.actions.fromlist(args[0], args[1:])
 
         t = trans.Transaction()
-        try:
-                t.add(config, trans_id, action)
-        except TypeError, e:
-                print "warning:", e
+        status = t.add(config, trans_id, action)
+
+        if status / 100 == 4 or status / 100 == 5:
+                print _("pkgsend: server failed (status %s)") % status
+                sys.exit(1)
 
 def trans_delete(config, args):
-        return
-
-def trans_meta(config, args):
-        """Via POST request, transfer a piece of metadata to the server."""
-
-        if not args[0] in ["set", "unset"]:
-                print _("pkgsend: unknown metadata item '%s'") % args[0]
-                usage()
-
-        trans_id = os.environ["PKG_TRANS_ID"]
-
-        t = trans.Transaction()
-        t.meta(config, trans_id, args)
-
         return
 
 def batch(config, args):

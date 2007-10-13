@@ -70,7 +70,7 @@ class Transaction(object):
                 # If client_release is not defined, then this request is
                 # invalid.
 
-                m = re.match("^/open/(.*)", request.path)
+                m = re.match("^/open/\d+/(.*)", request.path)
                 self.esc_pkg_name = m.group(1)
                 self.pkg_name = urllib.unquote(self.esc_pkg_name)
                 self.open_time = time.time()
@@ -174,27 +174,25 @@ class Transaction(object):
                         request.send_response(404)
 
         def add_content(self, request, type):
-                """XXX Current implementation is only for file, preserve, and
-                displace.
-
-                XXX We're currently taking the file from the HTTP request
+                """XXX We're currently taking the file from the HTTP request
                 directly onto the heap, to make the hash computation convenient.
                 We then do the compression as a sequence of buffers.  To handle
                 large files, we'll need to process the incoming data as a
                 sequence of buffers as well, with intermediate storage to
                 disk."""
 
-                hdrs = request.headers
-
-                attrs = dict(hdr.split("=", 1)
-                    for hdr in hdrs.getheaders("X-IPkg-SetAttr"))
+                attrs = dict(
+                    val.split("=", 1)
+                    for hdr, val in request.headers.items()
+                    if hdr.startswith("x-ipkg-setattr")
+                )
 
                 # If any attributes appear to be lists, make them lists.
                 for a in attrs:
                         if attrs[a].startswith("[") and attrs[a].endswith("]"):
                                 attrs[a] = eval(attrs[a])
 
-                size = int(hdrs.getheader("Content-Length", "0"))
+                size = int(request.headers.getheader("Content-Length", "0"))
 
                 # The request object always has a readable rfile, even if it'll
                 # return no data.  We check ahead of time to see if we'll get

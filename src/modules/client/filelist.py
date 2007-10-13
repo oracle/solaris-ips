@@ -28,7 +28,6 @@
 import sys
 import os
 import exceptions
-import httplib
 import urllib
 import urllib2
 import urlparse
@@ -41,6 +40,7 @@ import pkg.actions as actions
 import pkg.actions.generic as generic
 import pkg.fmri as fmri
 import pkg.pkgtarfile as ptf
+from pkg.misc import versioned_urlopen
 
 class FileList(object):
         """A FileList maintains mappings between files and Actions.
@@ -106,7 +106,6 @@ class FileList(object):
 
                 authority, pkg_name, version = self.fmri.tuple()
                 url_prefix = self.image.get_url_by_authority(authority)
-                url_fpath = "%s/filelist/" % url_prefix
 
                 for i, k in enumerate(self.fhash.keys()):
                         fstr = "File-Name-%s" % i
@@ -114,16 +113,11 @@ class FileList(object):
 
                 req_str = urllib.urlencode(req_dict)
 
-                req = urllib2.Request(url = url_fpath, data = req_str)
-
                 try:
-                        f = urllib2.urlopen(req)
-                except urllib2.HTTPError, e:
-                        if int(e.code) >= 400:
-                                raise FileListException, \
-                                    "No server-side support" 
-                        else:
-                                raise
+                        f, v = versioned_urlopen(url_prefix, "filelist", [0],
+                            data = req_str)
+                except RuntimeError:
+                        raise FileListException, "No server-side support" 
 
                 tar_stream = ptf.PkgTarFile.open(mode = "r|", fileobj = f)
                 for info in tar_stream:

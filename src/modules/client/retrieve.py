@@ -24,19 +24,18 @@
 #
 
 import getopt
-import httplib
 import os
 import re
 import sys
 import urllib
-import urllib2
 import urlparse
 
-import pkg.manifest
+from pkg.misc import versioned_urlopen
 
 # client/retrieve.py - collected methods for retrieval of pkg components
 # from repositories
 
+# XXX This method is never called
 def url_catalog(config, image, args):
         """XXX will need to show available content series for each package"""
         croot = image.imgdir
@@ -51,16 +50,7 @@ def url_catalog(config, image, args):
 
         # GET /catalog
         for repo in pcfg.repo_uris:
-                # Ignore http_proxy for localhost case, by overriding default
-                # proxy behaviour of urlopen().
-                proxy_uri = None
-                netloc = urlparse.urlparse(repo)[1]
-                if urllib.splitport(netloc)[0] == "localhost":
-                        proxy_uri = {}
-
-                uri = urlparse.urljoin(repo, "catalog")
-
-                c = urllib.urlopen(uri, proxies=proxy_uri)
+                c, v = versioned_urlopen(uri, "catalog", [0])
 
                 # compare headers
                 data = c.read()
@@ -77,12 +67,11 @@ def get_datastream(img, fmri, hash):
 
         url_prefix = img.get_url_by_authority(authority)
 
-        url_fpath = "%s/file/%s" % (url_prefix, hash)
-
         try:
-                f = urllib.urlopen(url_fpath)
+                f, v = versioned_urlopen(url_prefix, "file", [0], hash)
         except:
-                raise NameError, "could not open %s" % url_fpath
+                raise NameError, "could not retrieve file '%s' from '%s'" % \
+                    (hash, url_prefix)
 
         return f
 
@@ -93,19 +82,15 @@ def get_manifest(img, fmri):
 
         url_prefix = img.get_url_by_authority(authority)
 
-        url_mpath = "%s/manifest/%s" % (url_prefix,
-            fmri.get_url_path())
-
         try:
-                m = urllib.urlopen(url_mpath)
+                m, v = versioned_urlopen(url_prefix, "manifest", [0],
+                    fmri.get_url_path())
         except:
-                raise NameError, "could not open %s" % url_mpath
+                raise NameError, "could not retrieve manifest '%s' from '%s'" % \
+                    (fmri.get_url_path(), url_prefix)
 
         data = m.read()
         local_mpath = "%s/pkg/%s/manifest" % (img.imgdir, fmri.get_dir_path())
-
-        if re.match("^404", data):
-                raise NameError, "could not open %s (404)" % url_mpath
 
         try:
                 mfile = file(local_mpath, "w")

@@ -35,6 +35,7 @@ import urllib2
 import urlparse
 
 import pkg.actions
+from pkg.misc import versioned_urlopen
 
 class Transaction(object):
 
@@ -52,25 +53,18 @@ class Transaction(object):
                 self.cfg = config
                 self.pkg_name = pkg_name
 
-                repo = self.cfg.install_uri
-                uri_exp = urlparse.urlparse(repo)
-                host, port = uri_exp[1].split(":")
-
-                c = httplib.HTTPConnection(host, port)
-                c.connect()
-                c.putrequest("GET", "/open/%s" %
-                        urllib.quote(self.pkg_name, ""))
-                c.putheader("Client-Release", os.uname()[2])
-                c.endheaders()
-
                 try:
-                        r = c.getresponse()
-                except httplib.BadStatusLine:
+                        c, v = versioned_urlopen(self.cfg.install_uri, "open",
+                            [0], urllib.quote(self.pkg_name, ""),
+                            headers = {"Client-Release": os.uname()[2]})
+                except (httplib.BadStatusLine, RuntimeError):
                         return 500, None
+                except urllib2.HTTPError, e:
+                        return e.code, None
 
-                id = r.getheader("Transaction-ID", None)
+                id = c.headers.get("Transaction-ID", None)
 
-                return r.status, id
+                return c.code, id
 
         # XXX shouldn't need to pass trans_id or config in, as it ought to
         # be part of self.  But currently, the front-end is stateless
@@ -82,13 +76,12 @@ class Transaction(object):
                         op = "abandon"
 
                 repo = config.install_uri
-                uri = urlparse.urljoin(repo, "%s/%s" % (op, trans_id))
                 try:
-                        c = urllib2.urlopen(uri)
-                except urllib2.HTTPError:
+                        c, v = versioned_urlopen(repo, op, [0], trans_id)
+                except (httplib.BadStatusLine, RuntimeError):
                         return 500, None
-                except httplib.BadStatusLine:
-                        return 500, None
+                except urllib2.HTTPError, e:
+                        return e.code, None
 
                 if abandon:
                         return c.code, None
@@ -99,55 +92,10 @@ class Transaction(object):
                 return c.code, dict((h, c.info()[h]) for h in ret_hdrs)
 
         def add(self, config, trans_id, action):
-                """POST the file contents to the transaction.  Default is to
-                post to the currently open content series.  -s option selects a
-                different series.
-
-                dir mode owner group path [n=v ...]
-                file mode owner group path [n=v ...]
-                displace mode owner group path [n=v ...]
-                preserve mode owner group path [n=v ...]
-
-                link path_from path_to [n=v ...]
-                        This action is exclusively for symbolic links.
-
-                service manifest_path [n=v ...]
-                        0444 root sys
-                driver class  [n=v ...] (a whole slew of specifiers)
-                        0755 root sys binaries; 0644 root sys conf file
-
-                restart fmri [n=v ...]
-                        [no file, illegal in user image]
-
-                XXX do we need hardlinks?
-
-                XXX driver action could follow the upload of two or three files.
-                In this case, the action can either cause the transaction to
-                fail (since modes and ownership may be inconsistent) or correct
-                the transaction to follow convention (with a warning).
-
-                XXX driver action must be architecture tag-dependent, as a
-                driver may exist only on a single platform kind.
-
-                XXX Setting a driver from the command line, rather than via a
-                batched file, seems error prone.
-                """
+                """POST the file contents to the transaction."""
 
                 type = action.name
                 attrs = action.attrs
-
-                if not type in pkg.actions.types.keys():
-                        if "path" in attrs:
-                                path = attrs["path"]
-                        else:
-                                path = "<unknown path>"
-                        raise TypeError("%s: unknown file type '%s'" %
-                                (path, type))
-
-                repo = config.install_uri
-                uri_exp = urlparse.urlparse(repo)
-                host, port = uri_exp[1].split(":")
-                selector = "/add/%s/%s" % (trans_id, type)
 
                 # XXX Need to handle large files
                 if action.data != None:
@@ -156,50 +104,19 @@ class Transaction(object):
                 else:
                         data = ""
 
-                c = httplib.HTTPConnection(host, port)
-                c.connect()
-                c.putrequest("POST", selector)
-                for k in attrs:
-                        c.putheader("X-IPkg-SetAttr", "%s=%s" % (k, attrs[k]))
-                c.putheader("Content-Length", len(data))
-                c.endheaders()
-                c.send(data)
+                headers = dict(
+                    ("X-IPkg-SetAttr%s" % i, "%s=%s" % (k, attrs[k]))
+                    for i, k in enumerate(attrs)
+                )
+                headers["Content-Length"] = len(data)
 
                 try:
-                        r = c.getresponse()
-                except httplib.BadStatusLine:
-                        print "Server-side exception for '%s'" % action
+                        c, v = versioned_urlopen(config.install_uri, "add",
+                            [0], "%s/%s" % (trans_id, type), data = data,
+                            headers = headers)
+                except (httplib.BadStatusLine, RuntimeError):
                         return 500
+                except urllib2.HTTPError, e:
+                        return e.code
 
-                return r.status
-
-        def meta(self, config, trans_id, args):
-                """Via POST request, transfer a piece of metadata to the server.
-
-                XXX This is just a stub.
-                """
-
-                repo = config.install_uri
-                uri_exp = urlparse.urlparse(repo)
-                host, port = uri_exp[1].split(":")
-                selector = "/meta/%s/%s" % (trans_id, args[0])
-
-                # subcommand handling
-                # /meta/trans_id/set/property_name
-                #       Payload is value.
-                # /meta/trans_id/unset/property_name
-                #       No payload.
-                # /meta/trans_id/include
-                # /meta/trans_id/require
-                # /meta/trans_id/exclude
-                #       Payload is fmri.
-                # /meta/trans_id/disclaim
-                #       Payload is fmri.
-
-                headers = {}
-                headers["Path"] = args[1]
-
-                c = httplib.HTTPConnection(host, port)
-                c.connect()
-                c.request("POST", selector, data, headers)
-                return
+                return c.code

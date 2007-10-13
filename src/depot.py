@@ -54,6 +54,7 @@ import time
 import urllib
 import tarfile
 import cgi
+import traceback
 
 import pkg.catalog as catalog
 import pkg.dependency as dependency
@@ -73,7 +74,17 @@ Usage: /usr/lib/pkg.depotd [--readonly] [-d repo_dir] [-p port]
 """
         sys.exit(2)
 
-def catalog_get(scfg, request):
+def versions_0(scfg, request):
+        request.send_response(200)
+        request.send_header('Content-type', 'text/plain')
+        request.end_headers()
+        versions = "\n".join(
+            "%s %s" % (op, " ".join(vers))
+            for op, vers in vops.iteritems()
+        ) + "\n"
+        request.wfile.write(versions)
+
+def catalog_0(scfg, request):
         scfg.inc_catalog()
 
         request.send_response(200)
@@ -81,7 +92,7 @@ def catalog_get(scfg, request):
         request.end_headers()
         request.wfile.write("%s" % scfg.catalog)
 
-def manifest_get(scfg, request):
+def manifest_0(scfg, request):
         """The request is an encoded pkg FMRI.  If the version is specified
         incompletely, we return an error, as the client is expected to form
         correct requests, based on its interpretation of the catalog and its
@@ -90,7 +101,7 @@ def manifest_get(scfg, request):
         scfg.inc_manifest()
 
         # Parse request into FMRI component and decode.
-        m = re.match("^/manifest/(.*)", request.path)
+        m = re.match("^/manifest/\d+/(.*)", request.path)
         pfmri = urllib.unquote(m.group(1))
 
         f = fmri.PkgFmri(pfmri, None)
@@ -104,7 +115,7 @@ def manifest_get(scfg, request):
         request.end_headers()
         request.wfile.write(data)
 
-def file_get_multiple(scfg, request):
+def filelist_0(scfg, request):
         """Request data contains application/x-www-form-urlencoded entries
         with the requested filenames."""
         hdrs = request.headers
@@ -136,11 +147,11 @@ def file_get_multiple(scfg, request):
 
         tar_stream.close()
 
-def file_get_single(scfg, request):
+def file_0(scfg, request):
         """The request is the SHA-1 hash name for the file."""
         scfg.inc_file()
 
-        m = re.match("^/file/(.*)", request.path)
+        m = re.match("^/file/\d+/(.*)", request.path)
         fhash = m.group(1)
 
         try:
@@ -160,7 +171,7 @@ def file_get_single(scfg, request):
         request.end_headers()
         request.wfile.write(data)
 
-def trans_open(scfg, request):
+def open_0(scfg, request):
         # XXX Authentication will be handled by virtue of possessing a signed
         # certificate (or a more elaborate system).
         if scfg.is_read_only():
@@ -183,13 +194,13 @@ def trans_open(scfg, request):
                 request.send_response(500)
 
 
-def trans_close(scfg, request):
+def close_0(scfg, request):
         if scfg.is_read_only():
                 request.send_error(403, "Read-only server")
                 return
 
         # Pull transaction ID from headers.
-        m = re.match("^/close/(.*)", request.path)
+        m = re.match("^/close/\d+/(.*)", request.path)
         trans_id = m.group(1)
 
         # XXX KeyError?
@@ -197,25 +208,25 @@ def trans_close(scfg, request):
         t.close(request)
         del scfg.in_flight_trans[trans_id]
 
-def trans_abandon(scfg, request):
+def abandon_0(scfg, request):
         if scfg.is_read_only():
                 request.send_error(403, "Read-only server")
                 return
 
         # Pull transaction ID from headers.
-        m = re.match("^/abandon/(.*)", request.path)
+        m = re.match("^/abandon/\d+/(.*)", request.path)
         trans_id = m.group(1)
 
         t = scfg.in_flight_trans[trans_id]
         t.abandon(request)
         del scfg.in_flight_trans[trans_id]
 
-def trans_add(scfg, request):
+def add_0(scfg, request):
         if scfg.is_read_only():
                 request.send_error(403, "Read-only server")
                 return
 
-        m = re.match("^/add/([^/]*)/(.*)", request.path)
+        m = re.match("^/add/\d+/([^/]*)/(.*)", request.path)
         trans_id = m.group(1)
         type = m.group(2)
 
@@ -227,32 +238,75 @@ if "PKG_REPO" in os.environ:
 else:
         scfg = config.SvrConfig("/var/pkg/repo", "pkg.sun.com")
 
+def set_ops():
+        vops = {}
+        for name in globals():
+                m = re.match("(.*)_(\d+)", name)
+
+                if not m:
+                        continue
+
+                op = m.group(1)
+                ver = m.group(2)
+
+                if op in vops:
+                        vops[op].append(ver)
+                else:
+                        vops[op] = [ ver ]
+
+        return vops
+
 class pkgHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
         def do_GET(self):
-                # Client APIs
-                if re.match("^/catalog$", self.path):
-                        catalog_get(scfg, self)
-                elif re.match("^/manifest/.*$", self.path):
-                        manifest_get(scfg, self)
-                elif re.match("^/file/.*$", self.path):
-                        file_get_single(scfg, self)
+                reqarr = self.path.lstrip("/").split("/")
+                operation = reqarr[0]
 
-                # Publisher APIs
-                elif re.match("^/open/(.*)$", self.path):
-                        trans_open(scfg, self)
-                elif re.match("^/close/(.*)$", self.path):
-                        trans_close(scfg, self)
-                elif re.match("^/abandon/(.*)$", self.path):
-                        trans_abandon(scfg, self)
-                elif re.match("^/add/(.*)$", self.path):
-                        trans_add(scfg, self)
+                if operation not in vops:
+                        if face.match(self):
+                                face.respond(scfg, self)
+                        else:
+                                face.unknown(scfg, self)
+                        return
 
-                # Informational APIs
-                elif face.match(self):
-                        face.respond(scfg, self)
-                else:
-                        face.unknown(scfg, self)
+                # Make sure that we have a integer protocol version
+                try:
+                        version = int(reqarr[1])
+                except IndexError, e:
+                        self.send_response(400)
+                        self.send_header("Content-type", "text/plain")
+                        self.end_headers()
+                        self.wfile.write("Missing version\n")
+                        return
+                except ValueError, e:
+                        self.send_response(400)
+                        self.send_header("Content-type", "text/plain")
+                        self.end_headers()
+                        self.wfile.write("Non-integer version\n")
+                        return
+
+                op_method = "%s_%s" % (operation, version)
+                if op_method not in globals():
+                        # If we get here, we know that 'operation' is supported.
+                        # Assume 'version' is not supported for that operation.
+                        self.send_response(404, "Version not supported")
+                        self.send_header("Content-type", "text/plain")
+                        self.end_headers()
+
+                        vns = "Version '%s' not supported for operation '%s'\n"
+                        self.wfile.write(vns % (version, operation))
+                        return
+
+                op_call = op_method + "(scfg, self)"
+
+                try:
+                        exec op_call
+                except:
+                        traceback.print_exc()
+                        self.send_response(500)
+
+        def do_POST(self):
+                self.do_GET()
 
         def do_PUT(self):
                 self.send_response(200)
@@ -260,14 +314,6 @@ class pkgHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write('''PUT URI %s ; headers %s''' %
                     (self.path, self.headers))
-
-        def do_POST(self):
-                if re.match("^/filelist/.*$", self.path):
-                        file_get_multiple(scfg, self)
-                elif re.match("^/add/(.*)$", self.path):
-                        trans_add(scfg, self)
-                else:
-                        self.send_response(404)
 
         def do_DELETE(self):
                 self.send_response(200)
@@ -279,6 +325,8 @@ class pkgHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 class ThreadingHTTPServer(SocketServer.ThreadingMixIn,
     BaseHTTPServer.HTTPServer):
         pass
+
+vops = {}
 
 if __name__ == "__main__":
         port = 10000
@@ -301,6 +349,8 @@ if __name__ == "__main__":
         scfg.init_dirs()
         scfg.acquire_in_flight()
         scfg.acquire_catalog()
+
+        vops = set_ops()
 
         server = ThreadingHTTPServer(('', port), pkgHandler)
         server.serve_forever()
