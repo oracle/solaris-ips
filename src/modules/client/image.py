@@ -27,7 +27,6 @@ import ConfigParser
 import cPickle
 import getopt
 import os
-import re
 import urllib
 import urlparse
 # import uuid           # XXX interesting 2.5 module
@@ -217,7 +216,7 @@ class Image(object):
 
                 o = self.cfg_cache.authorities[authority]["origin"]
 
-                return re.sub("/+$", "", o)
+                return o.rstrip("/")
 
         def get_default_authority(self):
                 return self.cfg_cache.preferred_authority

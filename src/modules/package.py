@@ -27,7 +27,6 @@
 
 import errno
 import os
-import re
 import sha
 import shutil
 import time

@@ -101,8 +101,7 @@ def manifest_0(scfg, request):
         scfg.inc_manifest()
 
         # Parse request into FMRI component and decode.
-        m = re.match("^/manifest/\d+/(.*)", request.path)
-        pfmri = urllib.unquote(m.group(1))
+        pfmri = urllib.unquote(request.path.split("/", 3)[-1])
 
         f = fmri.PkgFmri(pfmri, None)
 
@@ -151,8 +150,7 @@ def file_0(scfg, request):
         """The request is the SHA-1 hash name for the file."""
         scfg.inc_file()
 
-        m = re.match("^/file/\d+/(.*)", request.path)
-        fhash = m.group(1)
+        fhash = request.path.split("/", 3)[-1]
 
         try:
                 file = open(os.path.normpath(os.path.join(
@@ -200,8 +198,7 @@ def close_0(scfg, request):
                 return
 
         # Pull transaction ID from headers.
-        m = re.match("^/close/\d+/(.*)", request.path)
-        trans_id = m.group(1)
+        trans_id = request.path.split("/", 3)[-1]
 
         # XXX KeyError?
         t = scfg.in_flight_trans[trans_id]
@@ -214,8 +211,7 @@ def abandon_0(scfg, request):
                 return
 
         # Pull transaction ID from headers.
-        m = re.match("^/abandon/\d+/(.*)", request.path)
-        trans_id = m.group(1)
+        trans_id = request.path.split("/", 3)[-1]
 
         t = scfg.in_flight_trans[trans_id]
         t.abandon(request)
@@ -226,9 +222,7 @@ def add_0(scfg, request):
                 request.send_error(403, "Read-only server")
                 return
 
-        m = re.match("^/add/\d+/([^/]*)/(.*)", request.path)
-        trans_id = m.group(1)
-        type = m.group(2)
+        trans_id, type = request.path.split("/", 4)[-2:]
 
         t = scfg.in_flight_trans[trans_id]
         t.add_content(request, type)

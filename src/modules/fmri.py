@@ -43,58 +43,27 @@ class PkgFmri(object):
 
         def __init__(self, fmri, build_release):
                 """XXX pkg:/?pkg_name@version not presently supported."""
-                m = re.match("pkg://([^/]*)/([^@]*)@([\dTZ\,\.\-\:]*)", fmri)
-                if m != None:
-                        self.authority = m.group(1)
-                        self.pkg_name = m.group(2)
-                        self.version = Version(m.group(3), build_release)
+                fmri = fmri.rstrip()
 
-                        return
+                try:
+                        veridx = fmri.rindex("@")
+                        self.version = Version(fmri[veridx + 1:], build_release)
+                except ValueError:
+                        self.version = veridx = None
 
-                m = re.match("pkg://([^/]*)/([^@]*)", fmri)
-                if m != None:
-                        self.authority = m.group(1)
-                        self.pkg_name = m.group(2)
-                        self.version = None
+                self.authority = None
+                if fmri.startswith("pkg://"):
+                        nameidx = fmri.index("/", 6) + 1
+                        self.authority = fmri[6:nameidx - 1]
+                elif fmri.startswith("pkg:/"):
+                        nameidx = 5
+                else:
+                        nameidx = 0
 
-                        return
-
-                m = re.match("pkg:/([^/][^@]*)@([\dTZ\,\.\-\:]*)", fmri)
-                if m != None:
-                        # XXX Replace with server's default authority.
-                        self.authority = None
-                        self.pkg_name = m.group(1)
-                        self.version = Version(m.group(2), build_release)
-
-                        return
-
-                m = re.match("pkg:/([^/][^@]*)", fmri)
-                if m != None:
-                        # XXX Replace with server's default authority.
-                        self.authority = None
-                        self.pkg_name = m.group(1)
-                        self.version = None
-
-                        return
-
-                m = re.match("([^@]*)@([\dTZ\,\.\-\:]*)", fmri)
-                if m != None:
-                        # XXX Replace with server's default authority.
-                        self.authority = None
-                        self.pkg_name = m.group(1)
-                        self.version = Version(m.group(2), build_release)
-
-                        return
-
-                m = re.match("([^@]*)", fmri)
-                if m != None:
-                        # XXX Replace with server's default authority.
-                        self.authority = None
-                        self.pkg_name = m.group(1)
-                        self.version = None
-
-                        return
-
+                if veridx:
+                        self.pkg_name = fmri[nameidx:veridx]
+                else:
+                        self.pkg_name = fmri[nameidx:]
 
         def get_authority(self):
                 return self.authority

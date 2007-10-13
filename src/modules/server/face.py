@@ -26,8 +26,6 @@
 
 # XXX Use small templating module?
 
-import re
-
 # Non-HTML GET functions
 
 def css(img, request):

@@ -24,7 +24,6 @@
 
 import bisect
 import os
-import re
 import sha
 import shutil
 import time
@@ -229,7 +228,8 @@ class Manifest(object):
                 # action more than once in packages that can be installed
                 # together has to be solved somewhere else, though.)
                 for l in str.splitlines():
-                        if re.match("^\s*(#.*)?$", l):
+                        l = l.lstrip()
+                        if not l or l[0] == "#":
                                 continue
 
                         try:

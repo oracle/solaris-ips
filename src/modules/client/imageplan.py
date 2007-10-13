@@ -24,7 +24,6 @@
 # Use is subject to license terms.
 
 import os
-import re
 import urllib
 
 import pkg.catalog as catalog

@@ -27,8 +27,6 @@
 
 import datetime
 import exceptions
-import re
-import string
 import time
 
 CONSTRAINT_NONE = 0
@@ -53,13 +51,13 @@ class DotSequence(object):
         value as the first two numbers in the sequence."""
 
         def __init__(self, dotstring):
-                m = re.match("\d+(\.\d)*", dotstring)
-                if m == None:
-                        raise IllegalDotSequence
-                self.sequence = map(int, re.split("\.", dotstring))
+                try:
+                        self.sequence = map(int, dotstring.split("."))
+                except ValueError:
+                        raise IllegalDotSequence(dotstring)
 
         def __str__(self):
-                return string.join(map(str, self.sequence), ".")
+                return ".".join(map(str, self.sequence))
 
         def __ne__(self, other):
                 if self.sequence != other.sequence:
@@ -126,87 +124,52 @@ class Version(object):
 
         def __init__(self, version_string, build_string):
                 # XXX If illegally formatted, raise exception.
-                m = re.match(
-                    "(\d+[\.\d]*),(\d+[\.\d]*)-(\d+[\.\d]*)\:(\d+T\d+Z)",
-                    version_string)
 
-                if m != None:
-                        self.release = DotSequence(m.group(1))
-                        self.build_release = DotSequence(m.group(2))
-                        self.branch = DotSequence(m.group(3))
-                        self.datetime = datetime.datetime(
-                             *time.strptime(m.group(4), "%Y%m%dT%H%M%SZ")[0:6])
+                try:
+                        timeidx = version_string.index(":")
+                        timestr = version_string[timeidx + 1:]
+                except ValueError:
+                        timeidx = None
+                        timestr = None
 
-                        return
+                try:
+                        branchidx = version_string.index("-")
+                        branch = version_string[branchidx + 1:timeidx]
+                except ValueError:
+                        branchidx = timeidx
+                        branch = None
 
-                m = re.match(
-                    "(\d+[\.\d]*),(\d+[\.\d]*)-(\d+[\.\d]*)\:(\d+)",
-                    version_string)
+                try:
+                        buildidx = version_string.index(",")
+                        build = version_string[buildidx + 1:branchidx]
+                except ValueError:
+                        buildidx = branchidx
+                        build = None
 
-                if m != None:
-                        self.release = DotSequence(m.group(1))
-                        self.build_release = DotSequence(m.group(2))
-                        self.branch = DotSequence(m.group(3))
-                        self.datetime = datetime.datetime.fromtimestamp(
-                                float(m.group(4)))
+                self.release = DotSequence(version_string[:buildidx])
 
-                        return
-
-                m = re.match("(\d+[\.\d]*),(\d+[\.\d]*)-(\d+[\.\d]*)",
-                    version_string)
-                if m != None:
-                        self.release = DotSequence(m.group(1))
-                        self.build_release = DotSequence(m.group(2))
-                        self.branch = DotSequence(m.group(3))
-                        self.datetime = datetime.datetime.fromtimestamp(0)
-                        return
-
-                m = re.match("(\d+[\.\d]*),(\d+[\.\d]*)",
-                    version_string)
-                if m != None:
-                        self.release = DotSequence(m.group(1))
-                        self.build_release = DotSequence(m.group(2))
+                if branch:
+                        self.branch = DotSequence(branch)
+                else:
                         self.branch = DotSequence("0")
+
+                if build:
+                        self.build_release = DotSequence(build)
+                else:
+                        assert build_string is not None
+                        self.build_release = DotSequence(build_string)
+
+                if timestr:
+                        if timestr.endswith("Z") and "T" in timestr:
+                                self.datetime = datetime.datetime(
+                                    *time.strptime(timestr, "%Y%m%dT%H%M%SZ")[0:6])
+                        else:
+                                self.datetime = datetime.datetime.fromtimestamp(
+                                    float(timestr))
+                else:
                         self.datetime = datetime.datetime.fromtimestamp(0)
-                        return
 
-                assert build_string != None
-                self.build_release = DotSequence(build_string)
-
-                m = re.match("(\d+[\.\d]*)-(\d+[\.\d]*)\:(\d+T\d+Z)",
-                    version_string)
-                if m != None:
-                        self.release = DotSequence(m.group(1))
-                        self.branch = DotSequence(m.group(2))
-                        self.datetime = datetime.datetime(
-                            *time.strptime(m.group(3), "%Y%m%dT%H%M%SZ")[0:6])
-                        return
-
-                m = re.match("(\d+[\.\d]*)-(\d+[\.\d]*)\:(\d+)", version_string)
-                if m != None:
-                        self.release = DotSequence(m.group(1))
-                        self.branch = DotSequence(m.group(2))
-                        self.datetime = datetime.datetime.fromtimestamp(
-                            float(m.group(3)))
-                        return
-
-                # Sequence omitted?
-                m = re.match("(\d[\.\d]*)-(\d[\.\d]*)", version_string)
-                if m != None:
-                        self.release = DotSequence(m.group(1))
-                        self.branch = DotSequence(m.group(2))
-                        self.datetime = datetime.datetime.fromtimestamp(0)
-                        return
-
-                # Branch omitted?
-                m = re.match("(\d[\.\d]*)", version_string)
-                if m != None:
-                        self.release = DotSequence(m.group(1))
-                        self.branch = DotSequence("0")
-                        self.datetime = datetime.datetime.fromtimestamp(0)
-                        return
-
-                raise IllegalVersion
+                # raise IllegalVersion
 
         def compatible_with_build(self, target):
                 """target is a DotSequence for the target system."""
@@ -351,6 +314,18 @@ if __name__ == "__main__":
 
         d3 = DotSequence("5.4")
         d4 = DotSequence("5.6")
+
+        assert str(v1) == "5.5.1,5.5.1-10:20051122T000000Z"
+        assert str(v2) == "5.5.1,5.5.1-10:20070318T123456Z"
+        assert str(v3) == "5.5.1,5.5-10:19691231T160000Z"
+        assert str(v4) == "5.5.1,5.4-6:19691231T160000Z"
+        assert str(v5) == "5.6,1-0:19691231T160000Z"
+        assert str(v6) == "5.7,5.4-0:19691231T160000Z"
+        assert str(v7) == "5.10,5.5.1-0:19691231T160000Z"
+        assert str(v8) == "5.10.1,5.5.1-0:19691231T160000Z"
+        assert str(v9) == "5.11,5.5.1-0:19691231T160000Z"
+        assert str(v10) == "0.1,5.11-1:19691231T160000Z"
+        assert str(v11) == "0.1,5.11-1:20070710T120000Z"
 
         assert v1 < v2
         assert v4 < v3
