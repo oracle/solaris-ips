@@ -164,8 +164,8 @@ class Catalog(object):
 
         def get_regex_matching_fmris(self, regex):
                 """Iterate through the catalogs, looking for a regular
-                expression match.  Returns an unsorted list of PkgFmri
-                objects."""
+                expression match.  Returns a sorted list of PkgFmri objects,
+                newest versions first."""
 
                 ret = []
 
@@ -179,7 +179,7 @@ class Catalog(object):
                         raise KeyError, "pattern '%s' not found in catalog" \
                             % regex
 
-                return ret
+                return sorted(ret, reverse = True)
 
         def __str__(self):
                 s = ""
