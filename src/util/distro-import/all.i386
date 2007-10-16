@@ -262,7 +262,6 @@ include common/SUNWgksu
 include common/SUNWglt
 include common/SUNWgm4
 include common/SUNWgmake
-include common/SUNWgnome-a11y-base-libs
 include common/SUNWgnome-a11y-dasher
 include common/SUNWgnome-a11y-gok
 include common/SUNWgnome-a11y-libs
@@ -307,7 +306,6 @@ include common/SUNWgnome-hex-editor
 include common/SUNWgnome-im-client
 include common/SUNWgnome-img-editor
 include common/SUNWgnome-img-organizer
-include common/SUNWgnome-img-viewer
 include common/SUNWgnome-internet-applets
 include common/SUNWgnome-intranet-applets
 include common/SUNWgnome-keyring-manager
@@ -480,7 +478,6 @@ include common/SUNWless
 include common/SUNWlexpt
 include common/SUNWlibC
 include common/SUNWlibCf
-include common/SUNWlibcdio
 include common/SUNWlibcroco
 include common/SUNWlibexif
 include common/SUNWlibgcrypt

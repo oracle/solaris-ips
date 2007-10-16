@@ -27,7 +27,7 @@
 # Needs to point to filesystem on Solaris install dvd
 # replace as needed with a local solaris install image
 
-WOS_PKGS=/net/netinstall.sfbay/export/nv/x/74/Solaris_11/Product
+WOS_PKGS=/net/netinstall.sfbay/export/nv/x/75a/Solaris_11/Product
 SLIM_PATH=/net/indiana-build.central/export/slim_stage
 GNOME_PKGS=$(SLIM_PATH)/GNOME/latest
 INSTALL_PKGS=$(SLIM_PATH)/INSTALL/latest

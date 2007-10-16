@@ -7,8 +7,11 @@ include common/SUNWcurl
 include common/SUNWdsd
 include common/SUNWdtts
 include common/SUNWdttshelp
+include common/SUNWgnome-a11y-base-libs
+include common/SUNWgnome-img-viewer.71
 include common/SUNWgnu-idn
 include common/SUNWjds-registration.72
+include common/SUNWlibcdio
 include common/SUNWmxfe
 include common/SUNWxcursor-themes
 include common/SUNWxorg-tsol-module

@@ -1,9 +1,12 @@
 include all.i386
 include common/SUNWastdev
 include common/SUNWdsd
-include common/SUNWdttshelp
 include common/SUNWdtts
-include common/SUNWjds-registration.72
+include common/SUNWdttshelp
+include common/SUNWgnome-a11y-base-libs
+include common/SUNWgnome-img-viewer.71
 include common/SUNWgnu-idn
+include common/SUNWjds-registration.72
+include common/SUNWlibcdio
 include common/SUNWxorg-tsol-module
 include common/SUNWxwts

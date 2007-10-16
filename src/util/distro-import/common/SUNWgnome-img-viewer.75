@@ -1,0 +1,5 @@
+package SUNWgnome-img-viewer
+import SUNWgnome-img-viewer
+import SUNWgnome-img-viewer-devel
+import SUNWgnome-img-viewer-root
+end package
