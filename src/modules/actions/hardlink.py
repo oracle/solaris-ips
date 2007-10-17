@@ -55,9 +55,13 @@ class HardLinkAction(link.LinkAction):
                         os.unlink(path)
 
                 # If the target has a relative path, we need to construct its
-                # absolute path.
+                # absolute path.  If the target has an absolute path, make sure
+                # it's constrained to the image root.
                 if target[0] != "/":
                         target = os.path.normpath(
                             os.path.join(os.path.split(path)[0], target))
+                else:
+                        target = os.path.normpath(os.path.sep.join(
+                            (pkgplan.image.get_root(), target)))
 
                 os.link(target, path)
