@@ -192,6 +192,7 @@ include common/SUNWimac
 include common/SUNWimagick
 include common/SUNWintgige
 include common/SUNWipf
+include common/SUNWipkg
 include common/SUNWipmi
 include common/SUNWipoib
 include common/SUNWippcore
@@ -665,6 +666,7 @@ idepend SUNWimar
 idepend SUNWintgige
 idepend SUNWipfr
 idepend SUNWipfu
+depend SUNWipkg
 idepend SUNWipmi
 idepend SUNWipmir
 idepend SUNWipoib

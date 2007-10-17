@@ -1,0 +1,11 @@
+i pkginfo=SUNWfixes.pkginfo
+f none etc/driver_aliases 0644 root sys
+f none etc/name_to_major 0644 root sys
+f none boot/solaris/filelist.ramdisk 0644 root sys
+f none etc/svc/global_repo.db 0600 root sys
+f none etc/svc/nonglobal_repo.db 0600 root sys
+e none boot/solaris/devicedb/master 0644 root sys
+e none etc/security/auth_attr 0644 root sys
+e none etc/security/exec_attr 0644 root sys
+e none etc/security/prof_attr 0644 root sys
+e none etc/devlink.tab 0644 root sys

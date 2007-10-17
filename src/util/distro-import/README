@@ -21,3 +21,17 @@ as in:
 
 % ./solaris.py -w $BUILD_IMAGE my_import SUNWcsd ...
 
+
+10/16/2007
+----------
+
+Note that the Makefile targets are setup to build specific 
+builds.
+
+make 74/import
+make 75a/import
+
+will place those builds in the default repo (localhost:10000).
+
+make import doesn't do anything sensible anymore; you must specify
+the build as shown.

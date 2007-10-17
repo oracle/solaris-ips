@@ -27,58 +27,97 @@
 # Needs to point to filesystem on Solaris install dvd
 # replace as needed with a local solaris install image
 
-WOS_PKGS=/net/netinstall.sfbay/export/nv/x/75a/Solaris_11/Product
+WOS_PKGS=/net/netinstall.sfbay/export/nv/x/$(BUILDID)/Solaris_11/Product
 SLIM_PATH=/net/indiana-build.central/export/slim_stage
 GNOME_PKGS=$(SLIM_PATH)/GNOME/latest
 INSTALL_PKGS=$(SLIM_PATH)/INSTALL/latest
 SLIM_PKGS=$(SLIM_PATH)/SLIM_PKGS/latest
 FOX_PKGS=$(SLIM_PATH)/FOX/latest
 
+ALL_PKGS=$(GNOME_PKGS) \
+         $(INSTALL_PKGS) \
+         $(SLIM_PKGS) \
+         $(FOX_PKGS) \
+	 $(WOS_PKGS)
+
 TMPPKGS=SUNWfixes
+
+#
+# always remove the following (editable) files from packages we bulk import; 
+# we're doing this until the necessary actions are available.  
+#
+ELIDED_FILES= \
+	boot/solaris/devicedb/master 	\
+	etc/security/auth_attr 		\
+	etc/security/prof_attr 		\
+	etc/security/exec_attr		\
+	etc/devlink.tab
 
 FIXFILES= \
 	etc/name_to_major \
 	etc/driver_aliases \
 	boot/solaris/filelist.ramdisk \
 	etc/svc/global_repo.db \
-	etc/svc/nonglobal_repo.db
+	etc/svc/nonglobal_repo.db \
+	$(ELIDED_FILES)
 
-default:	$(TMPPKGS) cluster.import
 
-cluster.import:	$(WOS_PATH)/.clustertoc Makefile
-	./clustertoc2import.py $(WOS_PATH)/.clustertoc | egrep -v 'SUNWjds-registration|SUNWdttsr|SUNWdttsu' > $@
+default: 74/$(TMPPKGS)
 
-proto/etc/driver_aliases: proto
-	./get_file_from_pkg.py $(WOS_PATH)/SUNWcsd etc/driver_aliases | \
-	./driver_names.py `find common i386 -type f` > $@
 
-proto/etc/name_to_major:	proto
-	./get_file_from_pkg.py $(WOS_PATH)/SUNWcsd etc/name_to_major | \
-	./driver_names.py `find common i386 -type f` > $@
+cluster.import:	$(WOS_PKGS)/.clustertoc Makefile
+	./clustertoc2import.py $(WOS_PKGS)/.clustertoc  > $@
+
+proto/etc/driver_aliases: proto $(BUILDID)/all.i386.$(BUILDID) cluster.import
+	./get_file_from_pkg.py $(WOS_PKGS)/SUNWcsd etc/driver_aliases | \
+	./driver_names.py $(BUILDID)/all.i386.$(BUILDID) > $@
+
+proto/etc/name_to_major:	proto $(BUILDID)/all.i386.$(BUILDID) cluster.import
+	./get_file_from_pkg.py $(WOS_PKGS)/SUNWcsd etc/name_to_major | \
+	./driver_names.py $(BUILDID)/all.i386.$(BUILDID) > $@
 
 proto/boot/solaris/filelist.ramdisk:	proto
-	(./get_file_from_pkg.py $(WOS_PATH)/SUNWcakr.i boot/solaris/filelist.ramdisk; \
+	(./get_file_from_pkg.py $(WOS_PKGS)/SUNWcakr.i boot/solaris/filelist.ramdisk; \
 	echo etc/zfs/zpool.cache) > $@
 
 proto/etc/svc/global_repo.db:	proto
-	./get_file_from_pkg.py $(WOS_PATH)/SUNWcsr lib/svc/seed/global.db > $@
+	./get_file_from_pkg.py $(WOS_PKGS)/SUNWcsr lib/svc/seed/global.db > $@
 
 proto/etc/svc/nonglobal_repo.db:	proto
-	./get_file_from_pkg.py $(WOS_PATH)/SUNWcsr lib/svc/seed/nonglobal.db > $@
+	./get_file_from_pkg.py $(WOS_PKGS)/SUNWcsr lib/svc/seed/nonglobal.db > $@
+
+$(ELIDED_FILES:%=proto/%):	proto $(BUILDID)/$(@F)
+	cat $(BUILDID)/$(@F) > $@
 
 proto:	Makefile
 	mkdir -p proto/etc/svc
-	mkdir -p proto/boot/solaris
+	mkdir -p proto/boot/solaris/devicedb
+	mkdir -p proto/etc/security
 
-SUNWfixes: $(FIXFILES:%=proto/%)
 
-%:	%.prototype
-	pkgmk -b ./proto -r . -f $@.prototype -d `pwd` -o
+%/$(TMPPKGS): 
+	$(MAKE) BUILDID=$(@D) $(@F)
+
+%:	$(BUILDID)/%.prototype $(BUILDID)/%.pkginfo $(FIXFILES:%=proto/%)
+	pkgmk -b ./proto -r . -f $(BUILDID)/$@.prototype -d `pwd` -o
 
 
 import:	cluster.import $(TMPPKGS)
-	./solaris.py -w $(WOS_PATH) all.i386
+	./solaris.py -w $(WOS_PKGS)  $(ELIDED_FILES:%=-D %) $(BUILDID)/all.i386.$(BUILDID)
 
-slim_import:	slim_cluster $(TMPPKGS)
-	./solaris.py -w $(GNOME_PKGS) -w $(INSTALL_PKGS) -w $(FOX_PKGS) -w $(SLIM_PKGS) -w $(WOS_PKGS) slim_cluster
+%/import:	
+	$(MAKE) BUILDID=$(@:%/import=%) import
+
+
+%/slim_import:	
+	$(MAKE) BUILDID=$(@:%/slim_import=%) slim_import
+
+
+slim_import:	$(BUILDID)/slim_cluster  $(TMPPKGS)
+	rm slim_cluster; ln -s  $(BUILDID)/slim_cluster slim_cluster
+	./solaris.py $(ALL_PKGS:%=-w %) $(ELIDED_FILES:%=-D %) slim_cluster
+
+
+.KEEP_STATE:
+
 

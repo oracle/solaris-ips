@@ -71,7 +71,18 @@ class pkg(object):
                 # the key/value pair, but throws an exception if the key is
                 # already present.
                 for o in p.manifest:
+                        if o.pathname in elided_files:
+                                print "ignoring %s in %s" % (o.pathname, imppkg)
+                                continue
+
+                        if o.type == "e":
+                                   if o.pathname not in editable_files:
+                                        editable_files[o.pathname] = [(imppkg, self)]
+                                   else :
+                                        editable_files[o.pathname].append((imppkg, self))
+
                         # XXX This decidedly ignores "e"-type files.
+
                         if o.type in "fv" and o.pathname in usedlist:
                                 print reuse_err % \
                                     (o.pathname, imppkg, self.name,
@@ -146,23 +157,23 @@ class pkg(object):
                 self.check_perms(o[0])
                 self.files.extend(o)
 
-	def check_perms(self, manifest):
+        def check_perms(self, manifest):
                 if manifest.type not in "fevdxbc":
                         return
 
                 if manifest.owner == "?":
                         manifest.owner = "root"
                         print "File %s in pkg %s owned by '?': mapping to %s" % \
-			    (manifest.pathname, self.name, manifest.owner)
+                            (manifest.pathname, self.name, manifest.owner)
 
-		if manifest.group == "?":
+                if manifest.group == "?":
                         manifest.group = "bin"
                         print "File %s in pkg %s of group '?': mapping to %s" % \
-			    (manifest.pathname, self.name, manifest.group)
+                            (manifest.pathname, self.name, manifest.group)
                 if manifest.mode == "?":
-			manifest.mode = "0444"
+                        manifest.mode = "0444"
                         print "File %s in pkg %s mode '?': mapping to %s" % \
-			    (manifest.pathname, self.name, manifest.mode)
+                            (manifest.pathname, self.name, manifest.mode)
 
 
         def chattr(self, file, line):
@@ -177,7 +188,7 @@ class pkg(object):
                             (file, curpkg.name, line)
 
                 a = actions.fromstr("file path=%s %s" % (file, line))
-		o[0].changed_attrs = a.attrs
+                o[0].changed_attrs = a.attrs
 
 def sysv_to_new_name(pkgname):
         return "pkg:/" + os.path.basename(pkgname)
@@ -189,14 +200,14 @@ def pkg_path(pkgname):
         name = os.path.basename(pkgname)
         if pkgname in pkgpaths:
                 return pkgpaths[name]
-	if "/" in pkgname: 
+        if "/" in pkgname: 
                 pkgpaths[name] = os.path.realpath(pkgname)
                 return pkgname
         else:
                 for each_path in wos_path:
                         if os.path.exists(each_path + "/" + pkgname):
                                 pkgpaths[name] = each_path + "/" + pkgname
-		                return pkgpaths[name]
+                                return pkgpaths[name]
 
                 raise RuntimeError, "package %s not found" % pkgname
 
@@ -307,11 +318,11 @@ def publish_pkg(pkg):
                                         f.attrs.update(
                                             pathdict[path].changed_attrs)
                                         # chattr may have produced two path values
-				        f.attrs["path"] = f.attrlist("path")[-1]
+                                        f.attrs["path"] = f.attrlist("path")[-1]
                                 print "    %s add file %s %s %s %s%s" % \
                                     (pkg.name, f.attrs["mode"],
                                         f.attrs["owner"], f.attrs["group"],
-				        f.attrs["path"], otherattrs(f))
+                                        f.attrs["path"], otherattrs(f))
                                 # Write the file to a temporary location.
                                 d = f.data().read()
                                 fd, tmp = mkstemp(prefix="pkg.")
@@ -334,7 +345,7 @@ def publish_pkg(pkg):
 
         # Publish dependencies
 
-	missing_cnt = 0
+        missing_cnt = 0
 
         for p in set(pkg.idepend):              # over set of svr4 deps, append ipkgs
                 if p in destpkgs:
@@ -342,9 +353,9 @@ def publish_pkg(pkg):
                 else:
                         print "pkg %s: SVR4 package %s not seen" % \
                             (pkg.name, p)
-			missing_cnt += 1
+                        missing_cnt += 1
         if missing_cnt > 0:
-	        raise RuntimeError, "missing packages!"
+                raise RuntimeError, "missing packages!"
 
         for p in set(pkg.depend) - set(pkg.undepend):
                 # Don't make a package depend on itself.
@@ -517,9 +528,14 @@ nopublish = False
 show_debug = False
 def_repo = "http://localhost:10000"
 wos_path = []
+#
+# files (by path) we always delete for bulk imports
+# note that we ignore these if specifically included.
+#
+elided_files = {}
 
 try:
-        opts, args = getopt.getopt(sys.argv[1:], "b:dns:v:w:")
+        opts, args = getopt.getopt(sys.argv[1:], "D:b:dns:v:w:")
 except getopt.GetoptError, e:
         print "unknown option", e.opt
         sys.exit(1)
@@ -531,12 +547,14 @@ for opt, arg in opts:
                 show_debug = True
         elif opt == "-n":
                 nopublish = True
-	elif  opt == "-s":
+        elif  opt == "-s":
                 def_repo = arg
         elif opt == "-v":
                 def_vers = arg
         elif opt == "-w":
-	        wos_path.append(arg)
+                wos_path.append(arg)
+        elif opt == "-D":
+                elided_files[arg] = True
 
 if not def_branch:
         try:
@@ -547,9 +565,9 @@ if not def_branch:
                         l = rf.readline()
                         idx = l.index("nv_") + 3
                         def_branch = "0." + l[idx:idx+2]
-                        rf.close()	
+                        rf.close()        
         except:
-	        pass
+                pass
 
 if not def_branch:
         print "need a branch id (build number)"
@@ -598,6 +616,13 @@ svr4pkgsseen = {}
 #
 svr4pkgpaths = {}
 
+#
+# editable files and where they're found
+#
+editable_files = {}
+
+
+
 reuse_err = "Tried to put file '%s' from package '%s' into\n    '%s' as well as '%s': file dropped"
 
 print "First pass:", datetime.now()
@@ -634,12 +659,12 @@ while True:
 
         elif token == "from":
                 pkgspec = lexer.get_token()
-		p = SolarisPackage(pkg_path(pkgspec))
+                p = SolarisPackage(pkg_path(pkgspec))
                 curpkg.imppkg = p
-		spkgname = p.pkginfo["PKG"]
+                spkgname = p.pkginfo["PKG"]
                 svr4pkgpaths[spkgname] = pkg_path(pkgspec)
                 svr4pkgsseen[spkgname] = p;
-		curpkg.add_svr4_src(spkgname)
+                curpkg.add_svr4_src(spkgname)
 
                 junk = lexer.get_token()
                 assert junk == "import"
@@ -716,6 +741,17 @@ print "Files you seem to have forgotten:\n  " + "\n  ".join(
     for pkg in seenpkgs
     for f in svr4pkgsseen[pkg].manifest
     if f.type != "i" and f.pathname not in usedlist)
+
+print "\n\nDuplicate Editables files list:\n"
+
+if editable_files:
+	length = 2 + max(len(p) for p in editable_files)
+	for paths in editable_files:
+		if len(editable_files[paths]) > 1:
+			print ("%s:" % paths).ljust(length - 1) + \
+			    ("\n".ljust(length)).join("%s (from %s)" % (l[1].name, l[0])
+                            for l in editable_files[paths])
+
 
 # Second pass: iterate over the existing package objects, gathering dependencies
 # and publish!

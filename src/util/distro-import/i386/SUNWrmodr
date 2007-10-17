@@ -1,3 +1,6 @@
 package SUNWrmodr
 import SUNWrmodr
+from ./SUNWfixes import
+boot/solaris/devicedb/master
+end import
 end package

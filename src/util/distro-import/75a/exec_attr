@@ -1,0 +1,507 @@
+#
+# CDDL HEADER START
+#
+# The contents of this file are subject to the terms of the
+# Common Development and Distribution License (the "License").
+# You may not use this file except in compliance with the License.
+#
+# You can obtain a copy of the license at src/sun_nws/OPENSOLARIS.LICENSE
+# or http://www.opensolaris.org/os/licensing.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+#
+# When distributing Covered Code, include this CDDL HEADER in each
+# file and include the License file at src/sun_nws/OPENSOLARIS.LICENSE.
+# If applicable, add the following below this CDDL HEADER, with the
+# fields enclosed by brackets "[]" replaced with your own identifying
+# information: Portions Copyright [yyyy] [name of copyright owner]
+#
+# CDDL HEADER END
+#
+#
+# Copyright 2006 Sun Microsystems, Inc.  All rights reserved.
+# Use is subject to license terms.
+#
+#ident	"@(#)exec_attr	1.2	06/09/15 SMI"
+#
+# execution attributes for profiles. see exec_attr(4)
+#
+All Actions:solaris:act:::*;*;*;*;*:
+All:solaris:act:::*;*;*;*;*:
+All:suser:cmd:::*:
+Application Server Management:suser:cmd:::/usr/appserver/bin/asadmin:
+Audit Control:solaris:act:::AuditClass;*;*;*;*:privs=all
+Audit Control:solaris:act:::AuditControl;*;*;*;*:privs=all
+Audit Control:solaris:act:::AuditEvent;*;*;*;*:privs=all
+Audit Control:solaris:act:::AuditStartup;*;*;*;*:privs=all
+Audit Control:solaris:act:::AuditUser;*;*;*;*:privs=all
+Audit Control:solaris:cmd:::/usr/sbin/audit:privs=sys_audit,file_dac_read,proc_owner
+Audit Control:suser:cmd:::/etc/security/bsmconv:uid=0
+Audit Control:suser:cmd:::/etc/security/bsmunconv:uid=0
+Audit Control:suser:cmd:::/usr/sbin/audit:euid=0
+Audit Control:suser:cmd:::/usr/sbin/auditconfig:euid=0
+Audit Control:suser:cmd:::/usr/sbin/auditd:uid=0
+Audit Review:suser:cmd:::/usr/sbin/auditreduce:euid=0
+Audit Review:suser:cmd:::/usr/sbin/auditstat:euid=0
+Audit Review:suser:cmd:::/usr/sbin/praudit:euid=0
+Basic Actions:solaris:act:::AddItemToMenu;*;*;*;*:
+Basic Actions:solaris:act:::BuildDataBaseRequest;*;*;*;*:
+Basic Actions:solaris:act:::Compose;*;*;*;*:
+Basic Actions:solaris:act:::Compress;*;*;*;*:
+Basic Actions:solaris:act:::CustomizeWorkspaceMenu;*;*;*;0:
+Basic Actions:solaris:act:::Df;*;*;*;0:
+Basic Actions:solaris:act:::Diff;*;*;*;*:
+Basic Actions:solaris:act:::DtEmptyTrash;*;*;*;0:
+Basic Actions:solaris:act:::DtPrint;*;*;*;0:
+Basic Actions:solaris:act:::DtPrintManager;*;*;*;*:
+Basic Actions:solaris:act:::DtTTMediaOpen;*;*;*;0:
+Basic Actions:solaris:act:::DtTTMediaOpen;BUFFER;*;!w;>0:
+Basic Actions:solaris:act:::DtTTMediaOpen;BUFFER;*;w;>0:
+Basic Actions:solaris:act:::DtTTMediaOpen;FILE;*;*;>0:
+Basic Actions:solaris:act:::DtUnlink;*;*;*;2:
+Basic Actions:solaris:act:::DtUnlink;*;*;*;>2:
+Basic Actions:solaris:act:::Dtappmgr;*;*;*;*:
+Basic Actions:solaris:act:::Dtcalc;*;*;*;0:
+Basic Actions:solaris:act:::Dtcreate;*;*;*;*:
+Basic Actions:solaris:act:::Dtdevmgr;*;*;*;*:
+Basic Actions:solaris:act:::Dtfile;*;*;*;0:
+Basic Actions:solaris:act:::DtfileHome;*;*;*;0:
+Basic Actions:solaris:act:::Dthelpview;*;*;*;0:
+Basic Actions:solaris:act:::Dthelpview;BUFFER;*;*;1:
+Basic Actions:solaris:act:::Dthelpview;FILE;DTHELP_VOL;*;1:
+Basic Actions:solaris:act:::Dticon;*;*;*;*:
+Basic Actions:solaris:act:::Dtmail;*;*;*;*:
+Basic Actions:solaris:act:::Dtmanpageview;*;*;*;*:
+Basic Actions:solaris:act:::Dtpad;*;*;*;*:
+Basic Actions:solaris:act:::Dtprintinfo;*;*;*;*:
+Basic Actions:solaris:act:::Dtprintinfo;*;*;*;0:
+Basic Actions:solaris:act:::Dtterm;*;*;*;0:
+Basic Actions:solaris:act:::Dtterm;*;*;*;1:
+Basic Actions:solaris:act:::DttermConsole;*;*;*;0:
+Basic Actions:solaris:act:::DttermErrorlog;*;*;*;0:
+Basic Actions:solaris:act:::Dttrash;*;*;*;0:
+Basic Actions:solaris:act:::Dttrash;*;*;*;>0:
+Basic Actions:solaris:act:::DuSort;*;*;*;*:
+Basic Actions:solaris:act:::Env;*;*;*;0:
+Basic Actions:solaris:act:::FPHelp;*;*;*;0:
+Basic Actions:solaris:act:::FileProperties;*;*;*;*:
+Basic Actions:solaris:act:::FileProperties;*;*;*;0:
+Basic Actions:solaris:act:::Grep;*;*;*;*:
+Basic Actions:solaris:act:::HOST_Find;*;*;*;*:
+Basic Actions:solaris:act:::InvokeFILEMGR;*;*;*;*:
+Basic Actions:solaris:act:::InvokeMAILER;*;*;*;*:
+Basic Actions:solaris:act:::MailTo;*;*;*;0:
+Basic Actions:solaris:act:::MailTo;*;ADDRESS_CARD;*;*:
+Basic Actions:solaris:act:::MailTo;*;EMAIL_ADDRESS,WSMENU_Suggestion_Box;*;1:
+Basic Actions:solaris:act:::MailTo;*;EMAIL_ADDRESS,WSMENU_Suggestion_Box;*;>1:
+Basic Actions:solaris:act:::MailTo;*;MAILTO_URL;*;1:
+Basic Actions:solaris:act:::Note;*;*;*;*:
+Basic Actions:solaris:act:::Open;*;*;*;*:
+Basic Actions:solaris:act:::OpenCD-ROM;*;*;*;0:
+Basic Actions:solaris:act:::OpenCD-ROM;*;*;*;1:
+Basic Actions:solaris:act:::OpenDtIntro;*;*;*;0:
+Basic Actions:solaris:act:::OpenFloppy;*;*;*;0:
+Basic Actions:solaris:act:::OpenFloppy;*;*;*;1:
+Basic Actions:solaris:act:::OpenFolder;*;*;*;*:
+Basic Actions:solaris:act:::OpenTerminal;*;*;*;*:
+Basic Actions:solaris:act:::Print;*;*;*;*:
+Basic Actions:solaris:act:::PutOnWorkspace;BUFFER;*;*;1:
+Basic Actions:solaris:act:::PutOnWorkspace;FILE;*;*;1:
+Basic Actions:solaris:act:::ReOpenRestrictedFolder;*;*;*;1:
+Basic Actions:solaris:act:::Record;*;*;*;*:
+Basic Actions:solaris:act:::ReloadActions;*;*;*;*:
+Basic Actions:solaris:act:::ReloadActionsNotice;*;*;*;*:
+Basic Actions:solaris:act:::ReloadApps;*;*;*;0:
+Basic Actions:solaris:act:::ReloadResources;*;*;*;0:
+Basic Actions:solaris:act:::Rm;*;*;*;*:
+Basic Actions:solaris:act:::SDTab2;*;*;*;*:
+Basic Actions:solaris:act:::SDTaudio;*;*;*;0:
+Basic Actions:solaris:act:::SDTimage;*;*;*;0:
+Basic Actions:solaris:act:::SDTimage;BUFFER;*;*;1:
+Basic Actions:solaris:act:::SDTimage;FILE;*;*;1:
+Basic Actions:solaris:act:::SDTpowermgr;*;*;*;*:
+Basic Actions:solaris:act:::SDTsnapshot;*;*;*;0:
+Basic Actions:solaris:act:::SDtFind;*;*;*;<2:
+Basic Actions:solaris:act:::SDtName;*;*;*;*:
+Basic Actions:solaris:act:::SDtName;*;*;*;0:
+Basic Actions:solaris:act:::SDtName;*;ADDRESS_CARD;*;*:
+Basic Actions:solaris:act:::SDtName;*;DTMAIL_FILE;*;*:
+Basic Actions:solaris:act:::SDtName;*;HOST;*;*:
+Basic Actions:solaris:act:::SDtPerfmeter;*;*;*;0:
+Basic Actions:solaris:act:::SDtPerfmeter;*;HOST,WSMENU_This_Host;*;1:
+Basic Actions:solaris:act:::SDtPersonalBookmarks;*;*;*;0:
+Basic Actions:solaris:act:::SDtProcess;*;*;*;0:
+Basic Actions:solaris:act:::SDtProcess;*;HOST,WSMENU_This_Host;*;1:
+Basic Actions:solaris:act:::SDtSampleBookmarks;*;*;*;0:
+Basic Actions:solaris:act:::SDtWebClient;*;*;*;0:
+Basic Actions:solaris:act:::SDtWebClient;*;HTML;*;1:
+Basic Actions:solaris:act:::SDtWebClient;*;WEB_URL,FILE_URL,MAILTO_URL,RLOGIN_URL,WSMENU_SunSolve_Online,WSMENU_Find_Web_Page,WSMENU_Solaris_Support;*;1:
+Basic Actions:solaris:act:::SDtWsinfo;*;*;*;0:
+Basic Actions:solaris:act:::SDtWsinfo;*;HOST,WSMENU_This_Host;*;1:
+Basic Actions:solaris:act:::Terminal;*;*;*;*:
+Basic Actions:solaris:act:::TextEditor;*;*;*;*:
+Basic Actions:solaris:act:::Trash;*;*;*;*:
+Basic Actions:solaris:act:::WebBrowser;*;*;*;*:
+Basic Actions:solaris:act:::Xhost+;*;*;*;0:
+Basic Actions:solaris:act:::Xhost-;*;*;*;0:
+Basic Actions:solaris:act:::Xrefresh;*;*;*;0:
+Basic Solaris User:solaris:cmd:::/usr/bin/cdda2wav.bin:privs=file_dac_read,sys_devices,proc_priocntl,net_privaddr
+Basic Solaris User:solaris:cmd:::/usr/bin/cdrecord.bin:privs=file_dac_read,sys_devices,proc_lock_memory,proc_priocntl,net_privaddr
+Basic Solaris User:solaris:cmd:::/usr/bin/readcd.bin:privs=file_dac_read,sys_devices,net_privaddr
+Basic Solaris User:suser:cmd:::/usr/lib/ospm/lp-queue-helper:euid=lp;gid=lp
+Contract Observer:solaris:cmd:::/usr/bin/ctwatch:	privs=contract_event,contract_observer
+Cron Management:suser:cmd:::/usr/bin/crontab:euid=0
+Crypto Management:suser:cmd:::/usr/bin/kmfcfg:euid=0
+Crypto Management:suser:cmd:::/usr/sbin/cryptoadm:euid=0
+Crypto Management:suser:cmd:::/usr/sfw/bin/CA.pl:euid=0
+Crypto Management:suser:cmd:::/usr/sfw/bin/openssl:euid=0
+DAT Administration:solaris:cmd:::/usr/sbin/datadm:euid=0
+DHCP Management:suser:cmd:::/usr/lib/inet/dhcp/svcadm/dhcpconfig:uid=0
+DHCP Management:suser:cmd:::/usr/lib/inet/dhcp/svcadm/dhtadm:uid=0
+DHCP Management:suser:cmd:::/usr/lib/inet/dhcp/svcadm/pntadm:uid=0
+Desktop Configuration:solaris:cmd:::/usr/X11/bin/scanpci:euid=0;privs=sys_config
+Desktop Configuration:solaris:cmd:::/usr/X11/bin/xorgcfg:euid=0
+Desktop Configuration:solaris:cmd:::/usr/X11/bin/xorgconfig:euid=0
+Device Management:suser:cmd:::/usr/sbin/add_drv:uid=0
+Device Management:suser:cmd:::/usr/sbin/allocate:uid=0
+Device Management:suser:cmd:::/usr/sbin/deallocate:uid=0
+Device Management:suser:cmd:::/usr/sbin/rem_drv:uid=0
+Device Management:suser:cmd:::/usr/sbin/update_drv:uid=0
+Device Security:solaris:act:::AddAllocDev;*;*;*;*:privs=all
+Device Security:solaris:cmd:::/usr/bin/kbd:uid=0;gid=sys
+Device Security:suser:cmd:::/usr/sbin/add_allocatable:euid=0
+Device Security:suser:cmd:::/usr/sbin/add_drv:uid=0
+Device Security:suser:cmd:::/usr/sbin/devfsadm:uid=0
+Device Security:suser:cmd:::/usr/sbin/eeprom:uid=0
+Device Security:suser:cmd:::/usr/sbin/list_devices:euid=0
+Device Security:suser:cmd:::/usr/sbin/rem_drv:uid=0
+Device Security:suser:cmd:::/usr/sbin/remove_allocatable:euid=0
+Device Security:suser:cmd:::/usr/sbin/strace:euid=0
+Device Security:suser:cmd:::/usr/sbin/update_drv:uid=0
+FTP Management:suser:cmd:::/usr/sbin/ftpaddhost:uid=0
+FTP Management:suser:cmd:::/usr/sbin/ftpconfig:uid=0
+FTP Management:suser:cmd:::/usr/sbin/ftprestart:euid=0
+FTP Management:suser:cmd:::/usr/sbin/ftpshut:euid=0;egid=sys
+FTP Management:suser:cmd:::/usr/sbin/privatepw:uid=0;egid=sys
+File System Management:solaris:act:::ShareFS;*;*;*;*:privs=all
+File System Management:solaris:act:::Vfstab;*;*;*;*:privs=all
+File System Management:solaris:cmd:::/sbin/mount:privs=sys_mount
+File System Management:solaris:cmd:::/sbin/umount:privs=sys_mount
+File System Management:solaris:cmd:::/usr/sbin/mpathadm:privs=sys_devices
+File System Management:solaris:cmd:::/usr/sbin/quotacheck:uid=0;gid=sys
+File System Management:solaris:cmd:::/usr/sbin/quotaoff:uid=0;gid=sys
+File System Management:solaris:cmd:::/usr/sbin/quotaon:uid=0;gid=sys
+File System Management:solaris:cmd:::/usr/sbin/raidctl:privs=sys_config,sys_devices;euid=0
+File System Management:suser:cmd:::/usr/bin/eject:euid=0
+File System Management:suser:cmd:::/usr/bin/mkdir:euid=0
+File System Management:suser:cmd:::/usr/bin/rmdir:euid=0
+File System Management:suser:cmd:::/usr/lib/autofs/automountd:euid=0
+File System Management:suser:cmd:::/usr/lib/fs/autofs/automount:euid=0
+File System Management:suser:cmd:::/usr/lib/fs/nfs/showmount:euid=0
+File System Management:suser:cmd:::/usr/lib/fs/ufs/fsirand:euid=0
+File System Management:suser:cmd:::/usr/lib/fs/ufs/newfs:euid=0
+File System Management:suser:cmd:::/usr/lib/fs/ufs/tunefs:uid=0
+File System Management:suser:cmd:::/usr/sbin/clri:euid=0
+File System Management:suser:cmd:::/usr/sbin/devinfo:euid=0
+File System Management:suser:cmd:::/usr/sbin/dfmounts:euid=0
+File System Management:suser:cmd:::/usr/sbin/dfshares:euid=0
+File System Management:suser:cmd:::/usr/sbin/ff:euid=0
+File System Management:suser:cmd:::/usr/sbin/format:euid=0
+File System Management:suser:cmd:::/usr/sbin/fsck:euid=0
+File System Management:suser:cmd:::/usr/sbin/fsdb:euid=0
+File System Management:suser:cmd:::/usr/sbin/fstyp:euid=0
+File System Management:suser:cmd:::/usr/sbin/fuser:euid=0
+File System Management:suser:cmd:::/usr/sbin/iscsiadm:euid=0,privs=basic
+File System Management:suser:cmd:::/usr/sbin/iscsitgtadm:euid=0,privs=basic
+File System Management:suser:cmd:::/usr/sbin/mkfile:euid=0
+File System Management:suser:cmd:::/usr/sbin/mkfs:euid=0
+File System Management:suser:cmd:::/usr/sbin/mount:uid=0
+File System Management:suser:cmd:::/usr/sbin/mountall:uid=0
+File System Management:suser:cmd:::/usr/sbin/ramdiskadm:euid=0
+File System Management:suser:cmd:::/usr/sbin/share:uid=0;gid=root
+File System Management:suser:cmd:::/usr/sbin/shareall:uid=0;gid=root
+File System Management:suser:cmd:::/usr/sbin/sharemgr:uid=0;gid=root
+File System Management:suser:cmd:::/usr/sbin/swap:euid=0
+File System Management:suser:cmd:::/usr/sbin/umount:uid=0
+File System Management:suser:cmd:::/usr/sbin/umountall:uid=0
+File System Management:suser:cmd:::/usr/sbin/unshare:uid=0;gid=root
+File System Management:suser:cmd:::/usr/sbin/unshareall:uid=0;gid=root
+File System Management:suser:cmd:::/usr/share/setup-tool-backends/scripts/shares-conf:uid=0
+IP Filter Management:solaris:cmd:::/usr/sbin/ipf:privs=sys_ip_config
+IP Filter Management:solaris:cmd:::/usr/sbin/ipfs:privs=sys_ip_config
+IP Filter Management:solaris:cmd:::/usr/sbin/ipfstat:privs=sys_ip_config;gid=sys
+IP Filter Management:solaris:cmd:::/usr/sbin/ipmon:privs=sys_ip_config
+IP Filter Management:solaris:cmd:::/usr/sbin/ipnat:privs=sys_ip_config;gid=sys
+IP Filter Management:solaris:cmd:::/usr/sbin/ippool:privs=sys_ip_config;gid=sys
+Kerberos Client Management:solaris:cmd:::/usr/bin/klist:euid=0;privs=file_dac_read
+Kerberos Client Management:solaris:cmd:::/usr/sbin/kadmin:euid=0;privs=none
+Kerberos Client Management:solaris:cmd:::/usr/sbin/kclient:euid=0;privs=none
+Kerberos Server Management:solaris:cmd:::/usr/lib/krb5/kadmind:uid=0
+Kerberos Server Management:solaris:cmd:::/usr/lib/krb5/kprop:euid=0;privs=none
+Kerberos Server Management:solaris:cmd:::/usr/lib/krb5/krb5kdc:uid=0
+Kerberos Server Management:solaris:cmd:::/usr/sbin/kadmin.local:euid=0;privs=none
+Kerberos Server Management:solaris:cmd:::/usr/sbin/kdb5_ldap_util:euid=0;privs=none
+Kerberos Server Management:solaris:cmd:::/usr/sbin/kdb5_util:euid=0;privs=none
+Kerberos Server Management:solaris:cmd:::/usr/sbin/kdcmgr:euid=0;privs=none
+Log Management:suser:cmd:::/usr/sbin/logadm:euid=0
+Mail Management:suser:cmd:::/usr/lib/sendmail:uid=0
+Mail Management:suser:cmd:::/usr/sbin/editmap:euid=0
+Mail Management:suser:cmd:::/usr/sbin/makemap:euid=0
+Mail Management:suser:cmd:::/usr/sbin/newaliases:euid=0
+Maintenance and Repair:solaris:cmd:::/usr/bin/coreadm:euid=0;	privs=sys_config,proc_owner
+Maintenance and Repair:solaris:cmd:::/usr/bin/mdb:privs=all
+Maintenance and Repair:solaris:cmd:::/usr/sbin/ucodeadm:privs=all
+Maintenance and Repair:suser:cmd:::/sbin/bootadm:euid=0
+Maintenance and Repair:suser:cmd:::/sbin/init:uid=0
+Maintenance and Repair:suser:cmd:::/usr/bin/date:euid=0
+Maintenance and Repair:suser:cmd:::/usr/bin/ldd:euid=0
+Maintenance and Repair:suser:cmd:::/usr/bin/mdb:euid=0
+Maintenance and Repair:suser:cmd:::/usr/bin/vmstat:euid=0
+Maintenance and Repair:suser:cmd:::/usr/sbin/eeprom:euid=0
+Maintenance and Repair:suser:cmd:::/usr/sbin/halt:euid=0
+Maintenance and Repair:suser:cmd:::/usr/sbin/poweroff:uid=0
+Maintenance and Repair:suser:cmd:::/usr/sbin/prtconf:euid=0
+Maintenance and Repair:suser:cmd:::/usr/sbin/reboot:uid=0
+Maintenance and Repair:suser:cmd:::/usr/sbin/syslogd:euid=0
+Maintenance and Repair:suser:cmd:::/usr/share/setup-tool-backends/scripts/time-conf:uid=0
+Media Backup:solaris:act:::Tar;*;*;*;*:privs=all
+Media Backup:solaris:act:::Tar;*;TAR,MAGTAPE;*;>0:privs=all
+Media Backup:solaris:act:::TarList;*;*;*;*:
+Media Backup:suser:cmd:::/usr/bin/mt:euid=0
+Media Backup:suser:cmd:::/usr/lib/fs/ufs/ufsdump:euid=0;gid=sys
+Media Backup:suser:cmd:::/usr/sbin/tar:euid=0
+Media Restore:solaris:act:::TarList;*;*;*;*:
+Media Restore:solaris:act:::TarUnpack;*;*;*;2:privs=all
+Media Restore:solaris:act:::TarUnpack;*;*;*;<2:privs=all
+Media Restore:suser:cmd:::/usr/bin/cpio:euid=0
+Media Restore:suser:cmd:::/usr/bin/mt:euid=0
+Media Restore:suser:cmd:::/usr/lib/fs/ufs/ufsrestore:euid=0
+Media Restore:suser:cmd:::/usr/sbin/tar:euid=0
+Name Serivce Management:solaris:act:::SDTZoneInit;*;*;*;*:uid=0
+Name Service Management:solaris:act:::SDTLDAPclient;*;*;*;*:privs=all
+Name Service Management:suser:cmd:::/usr/bin/nischttl:euid=0
+Name Service Management:suser:cmd:::/usr/bin/nisln:euid=0
+Name Service Management:suser:cmd:::/usr/lib/nis/nisctl:euid=0
+Name Service Management:suser:cmd:::/usr/lib/nis/nisping:euid=0
+Name Service Management:suser:cmd:::/usr/lib/nis/nisshowcache:euid=0
+Name Service Management:suser:cmd:::/usr/lib/nis/nisstat:euid=0
+Name Service Management:suser:cmd:::/usr/sbin/nscd:euid=0
+Name Service Security:suser:cmd:::/usr/bin/chkey:euid=0
+Name Service Security:suser:cmd:::/usr/bin/nisaddcred:euid=0
+Name Service Security:suser:cmd:::/usr/bin/nischgrp:euid=0
+Name Service Security:suser:cmd:::/usr/bin/nischmod:euid=0
+Name Service Security:suser:cmd:::/usr/bin/nischown:euid=0
+Name Service Security:suser:cmd:::/usr/bin/nisgrpadm:euid=0
+Name Service Security:suser:cmd:::/usr/bin/nismkdir:euid=0
+Name Service Security:suser:cmd:::/usr/bin/nispasswd:euid=0
+Name Service Security:suser:cmd:::/usr/bin/nisrm:euid=0
+Name Service Security:suser:cmd:::/usr/bin/nisrmdir:euid=0
+Name Service Security:suser:cmd:::/usr/bin/nistbladm:euid=0
+Name Service Security:suser:cmd:::/usr/lib/nis/nisaddent:euid=0
+Name Service Security:suser:cmd:::/usr/lib/nis/nisclient:uid=0
+Name Service Security:suser:cmd:::/usr/lib/nis/nispopulate:euid=0
+Name Service Security:suser:cmd:::/usr/lib/nis/nisserver:uid=0
+Name Service Security:suser:cmd:::/usr/lib/nis/nissetup:euid=0
+Name Service Security:suser:cmd:::/usr/lib/nis/nisupdkeys:euid=0
+Name Service Security:suser:cmd:::/usr/sadm/bin/smattrpop:uid=0;gid=sys
+Name Service Security:suser:cmd:::/usr/sbin/ldapclient:uid=0
+Name Service Security:suser:cmd:::/usr/sbin/newkey:euid=0
+Name Service Security:suser:cmd:::/usr/sbin/nisinit:euid=0
+Name Service Security:suser:cmd:::/usr/sbin/nislog:euid=0
+Name Service Security:suser:cmd:::/usr/sbin/rpc.nisd:uid=0;gid=0
+Network IPsec Management:solaris:cmd:::/usr/lib/inet/certdb:euid=0;privs=none
+Network IPsec Management:solaris:cmd:::/usr/lib/inet/certlocal:euid=0;privs=none
+Network IPsec Management:solaris:cmd:::/usr/lib/inet/certrldb:euid=0;privs=none
+Network IPsec Management:solaris:cmd:::/usr/lib/inet/in.iked:euid=0
+Network IPsec Management:solaris:cmd:::/usr/sbin/ikeadm:euid=0;privs=file_dac_write
+Network IPsec Management:solaris:cmd:::/usr/sbin/ikecert:euid=0;privs=none
+Network IPsec Management:solaris:cmd:::/usr/sbin/ipsecalgs:privs=sys_ip_config
+Network IPsec Management:solaris:cmd:::/usr/sbin/ipsecconf:euid=0;privs=sys_ip_config
+Network IPsec Management:solaris:cmd:::/usr/sbin/ipseckey:uid=0;privs=sys_ip_config
+Network IPsec Management:suser:cmd:::/usr/lib/inet/certdb:euid=0
+Network IPsec Management:suser:cmd:::/usr/lib/inet/certlocal:euid=0
+Network IPsec Management:suser:cmd:::/usr/lib/inet/certrldb:euid=0
+Network IPsec Management:suser:cmd:::/usr/lib/inet/in.iked:euid=0
+Network IPsec Management:suser:cmd:::/usr/sbin/ikeadm:euid=0
+Network IPsec Management:suser:cmd:::/usr/sbin/ikecert:euid=0
+Network IPsec Management:suser:cmd:::/usr/sbin/ipsecalgs:euid=0
+Network IPsec Management:suser:cmd:::/usr/sbin/ipsecconf:euid=0
+Network IPsec Management:suser:cmd:::/usr/sbin/ipseckey:uid=0
+Network Link Security:solaris:cmd:::/sbin/dladm:euid=dladm;egid=sys;	privs=sys_net_config,net_rawaccess,proc_audit
+Network Management:solaris:act:::DNS_Resolve;*;*;*;*:privs=all
+Network Management:solaris:act:::EditMotd;*;*;*;*:privs=all
+Network Management:solaris:act:::Nsswitch;*;*;*;*:privs=all
+Network Management:solaris:act:::SDTShareLogical;*;*;*;*:privs=all
+Network Management:solaris:act:::SDTSharePhysical;*;*;*;*:privs=all
+Network Management:solaris:act:::SetRoutes;*;*;*;*:privs=all
+Network Management:solaris:act:::Tnchkdb;*;*;*;*:
+Network Management:solaris:cmd:::/sbin/dladm:euid=dladm;egid=sys;	privs=sys_net_config,net_rawaccess,proc_audit
+Network Management:solaris:cmd:::/sbin/ifconfig:uid=0
+Network Management:solaris:cmd:::/sbin/route:privs=sys_ip_config
+Network Management:solaris:cmd:::/sbin/routeadm:euid=0;	privs=proc_chroot,proc_owner,sys_ip_config
+Network Management:solaris:cmd:::/usr/sbin/quaggaadm:privs=basic
+Network Management:solaris:cmd:::/usr/sbin/zebraadm:privs=basic
+Network Management:suser:cmd:::/usr/bin/netstat:uid=0
+Network Management:suser:cmd:::/usr/bin/rup:euid=0
+Network Management:suser:cmd:::/usr/bin/ruptime:euid=0
+Network Management:suser:cmd:::/usr/bin/setuname:euid=0
+Network Management:suser:cmd:::/usr/sbin/asppp2pppd:euid=0
+Network Management:suser:cmd:::/usr/sbin/ifconfig:uid=0
+Network Management:suser:cmd:::/usr/sbin/ipaddrsel:euid=0
+Network Management:suser:cmd:::/usr/sbin/ipqosconf:euid=0
+Network Management:suser:cmd:::/usr/sbin/rndc:privs=file_dac_read
+Network Management:suser:cmd:::/usr/sbin/route:uid=0
+Network Management:suser:cmd:::/usr/sbin/snoop:uid=0
+Network Management:suser:cmd:::/usr/sbin/spray:euid=0
+Network Management:suser:cmd:::/usr/share/setup-tool-backends/scripts/network-conf:uid=0
+Network Security:solaris:cmd:::/usr/sbin/ksslcfg:euid=0
+Network Security:suser:cmd:::/usr/bin/ssh-keygen:uid=0;gid=sys
+Object Access Management:solaris:act:::Dtfile;*;*;*;0:
+Object Access Management:solaris:act:::DtfileHome;*;*;*;0:
+Object Access Management:solaris:act:::Dttrash;*;*;*;0:
+Object Access Management:solaris:act:::Dttrash;*;*;*;>0:
+Object Access Management:solaris:act:::InvokeFILEMGR;*;*;*;*:
+Object Access Management:solaris:act:::TrustedEditor;*;*;*;*:privs=all
+Object Access Management:solaris:cmd:::/usr/bin/chgrp:privs=file_chown
+Object Access Management:solaris:cmd:::/usr/bin/chmod:privs=file_owner
+Object Access Management:solaris:cmd:::/usr/bin/chown:privs=file_chown
+Object Access Management:solaris:cmd:::/usr/bin/setfacl:privs=file_owner
+Object Access Management:suser:cmd:::/usr/bin/chgrp:euid=0
+Object Access Management:suser:cmd:::/usr/bin/chmod:euid=0
+Object Access Management:suser:cmd:::/usr/bin/chown:euid=0
+Object Access Management:suser:cmd:::/usr/bin/getfacl:euid=0
+Object Access Management:suser:cmd:::/usr/bin/setfacl:euid=0
+Object Label Management:solaris:act:::CheckEncodings;*;*;*;*:privs=all
+Object Label Management:solaris:act:::Dtfile;*;*;*;0:
+Object Label Management:solaris:act:::DtfileHome;*;*;*;0:
+Object Label Management:solaris:act:::Dttrash;*;*;*;0:
+Object Label Management:solaris:act:::Dttrash;*;*;*;>0:
+Object Label Management:solaris:act:::EditEncodings;*;*;*;*:privs=all
+Object Label Management:solaris:act:::Selconfig;*;*;*;*:privs=all
+Object Privilege Management:solaris:act:::Dtfile;*;*;*;0:
+Object Privilege Management:solaris:act:::DtfileHome;*;*;*;0:
+Object Privilege Management:solaris:act:::InvokeFILEMGR;*;*;*;*:
+Postgres Administration:solaris:cmd:::/usr/postgres/8.2/bin/initdb:uid=postgres
+Postgres Administration:solaris:cmd:::/usr/postgres/8.2/bin/ipcclean:uid=postgres
+Postgres Administration:solaris:cmd:::/usr/postgres/8.2/bin/pg_controldata:uid=postgres
+Postgres Administration:solaris:cmd:::/usr/postgres/8.2/bin/pg_ctl:uid=postgres
+Postgres Administration:solaris:cmd:::/usr/postgres/8.2/bin/pg_resetxlog:uid=postgres
+Postgres Administration:solaris:cmd:::/usr/postgres/8.2/bin/postgres:uid=postgres
+Postgres Administration:solaris:cmd:::/usr/postgres/8.2/bin/postmaster:uid=postgres
+Primary Administrator:suser:cmd:::*:uid=0;gid=0
+Printer Management:solaris:act:::PrinterAdministrator;*;*;*;*:euid=0;egid=14;privs=file_chown,file_dac_read,file_dac_search,file_dac_write,file_owner,proc_audit,sys_trans_label
+Printer Management:suser:cmd:::/usr/lib/lp/local/lpadmin:uid=lp;gid=lp 
+Printer Management:suser:cmd:::/usr/sbin/lpfilter:euid=lp;uid=lp
+Printer Management:suser:cmd:::/usr/sbin/lpforms:euid=lp
+Printer Management:suser:cmd:::/usr/sbin/lpusers:euid=lp
+Printer Management:suser:cmd:::/usr/sbin/ppdmgr:euid=0
+Process Management:solaris:cmd:::/usr/bin/kill:privs=proc_owner
+Process Management:solaris:cmd:::/usr/bin/nice:privs=proc_owner,proc_priocntl
+Process Management:solaris:cmd:::/usr/bin/pcred:privs=proc_owner
+Process Management:solaris:cmd:::/usr/bin/pfiles:privs=proc_owner
+Process Management:solaris:cmd:::/usr/bin/pflags:privs=proc_owner
+Process Management:solaris:cmd:::/usr/bin/ppriv:privs=proc_owner
+Process Management:solaris:cmd:::/usr/bin/renice:privs=proc_owner,proc_priocntl
+Process Management:solaris:cmd:::/usr/sbin/rcapadm:uid=0
+Process Management:suser:cmd:::/usr/bin/crontab:euid=0
+Process Management:suser:cmd:::/usr/bin/kill:euid=0
+Process Management:suser:cmd:::/usr/bin/nice:euid=0
+Process Management:suser:cmd:::/usr/bin/pcred:euid=0
+Process Management:suser:cmd:::/usr/bin/pfiles:euid=0
+Process Management:suser:cmd:::/usr/bin/pflags:euid=0
+Process Management:suser:cmd:::/usr/bin/pldd:euid=0
+Process Management:suser:cmd:::/usr/bin/pmap:euid=0
+Process Management:suser:cmd:::/usr/bin/prun:euid=0
+Process Management:suser:cmd:::/usr/bin/ps:euid=0
+Process Management:suser:cmd:::/usr/bin/psig:euid=0
+Process Management:suser:cmd:::/usr/bin/pstack:euid=0
+Process Management:suser:cmd:::/usr/bin/pstop:euid=0
+Process Management:suser:cmd:::/usr/bin/ptime:euid=0
+Process Management:suser:cmd:::/usr/bin/ptree:euid=0
+Process Management:suser:cmd:::/usr/bin/pwait:euid=0
+Process Management:suser:cmd:::/usr/bin/pwdx:euid=0
+Process Management:suser:cmd:::/usr/bin/renice:euid=0
+Process Management:suser:cmd:::/usr/bin/truss:euid=0
+Process Management:suser:cmd:::/usr/sbin/fuser:euid=0
+Project Management:solaris:cmd:::/usr/sbin/projadd:euid=0
+Project Management:solaris:cmd:::/usr/sbin/projdel:euid=0
+Project Management:solaris:cmd:::/usr/sbin/projmod:euid=0
+Remote Administration:solaris:act:::smc;*;*;*;0:privs=win_dga
+Service Management:suser:cmd:::/usr/share/setup-tool-backends/scripts/services-conf:uid=0
+Software Installation:solaris:act:::Open;*;JAVA_BYTE_CODE;*;*:uid=0;gid=2
+Software Installation:suser:cmd:::/usr/bin/ln:euid=0
+Software Installation:suser:cmd:::/usr/bin/pkginfo:uid=0
+Software Installation:suser:cmd:::/usr/bin/pkgmk:uid=0
+Software Installation:suser:cmd:::/usr/bin/pkgparam:uid=0
+Software Installation:suser:cmd:::/usr/bin/pkgproto:uid=0
+Software Installation:suser:cmd:::/usr/bin/pkgtrans:uid=0
+Software Installation:suser:cmd:::/usr/bin/prodreg:uid=0
+Software Installation:suser:cmd:::/usr/ccs/bin/make:euid=0
+Software Installation:suser:cmd:::/usr/sbin/install:euid=0
+Software Installation:suser:cmd:::/usr/sbin/patchadd:uid=0
+Software Installation:suser:cmd:::/usr/sbin/patchrm:uid=0
+Software Installation:suser:cmd:::/usr/sbin/pkgadd:uid=0;gid=bin
+Software Installation:suser:cmd:::/usr/sbin/pkgask:uid=0
+Software Installation:suser:cmd:::/usr/sbin/pkgchk:uid=0
+Software Installation:suser:cmd:::/usr/sbin/pkgrm:uid=0;gid=bin
+System Event Management:suser:cmd:::/usr/sbin/syseventadm:uid=0
+User Management:solaris:cmd:::/usr/sbin/groupadd:uid=0
+User Management:solaris:cmd:::/usr/sbin/groupdel:uid=0
+User Management:solaris:cmd:::/usr/sbin/groupmod:uid=0
+User Management:solaris:cmd:::/usr/sbin/roleadd:euid=0
+User Management:solaris:cmd:::/usr/sbin/roledel:euid=0
+User Management:solaris:cmd:::/usr/sbin/rolemod:euid=0
+User Management:solaris:cmd:::/usr/sbin/useradd:euid=0
+User Management:solaris:cmd:::/usr/sbin/userdel:euid=0
+User Management:solaris:cmd:::/usr/sbin/usermod:euid=0
+User Management:suser:cmd:::/usr/sbin/grpck:euid=0
+User Management:suser:cmd:::/usr/sbin/pwck:euid=0
+User Management:suser:cmd:::/usr/share/setup-tool-backends/scripts/users-conf:uid=0
+User Security:solaris:act:::SDTscgui;*;*;*;0:uid=0
+User Security:solaris:cmd:::/usr/sbin/passmgmt:uid=0
+User Security:suser:cmd:::/usr/bin/passwd:uid=0
+User Security:suser:cmd:::/usr/sbin/pwck:euid=0
+User Security:suser:cmd:::/usr/sbin/pwconv:euid=0
+Web Console Management:solaris:cmd:::/usr/share/webconsole/private/bin/smcwebstart:uid=noaccess;gid=noaccess;privs=proc_audit
+ZFS File System Management:solaris:cmd:::/sbin/zfs:euid=0
+ZFS Storage Management:solaris:cmd:::/sbin/zpool:uid=0
+ZFS Storage Management:solaris:cmd:::/usr/lib/zfs/availdevs:uid=0
+Zone Management:solaris:act:::SDTZoneBoot;*;*;*;*:uid=0
+Zone Management:solaris:act:::SDTZoneClone;*;*;*;*:uid=0
+Zone Management:solaris:act:::SDTZoneConfigure;*;*;*;*:uid=0
+Zone Management:solaris:act:::SDTZoneConsole;*;*;*;*:uid=0
+Zone Management:solaris:act:::SDTZoneHalt;*;*;*;*:uid=0
+Zone Management:solaris:act:::SDTZoneInstall;*;*;*;*:uid=0
+Zone Management:solaris:act:::SDTZoneReboot;*;*;*;*:uid=0
+Zone Management:solaris:cmd:::/usr/sbin/txzonemgr:uid=0
+Zone Management:solaris:cmd:::/usr/sbin/zlogin:uid=0
+Zone Management:solaris:cmd:::/usr/sbin/zoneadm:uid=0
+Zone Management:solaris:cmd:::/usr/sbin/zonecfg:uid=0
+dtwm:solaris:act:::Dtdevmgr;*;*;*;*:
+dtwm:solaris:act:::Dtstyle;*;*;*;0:
+dtwm:solaris:act:::ExitSession;*;*;*;0:
+dtwm:solaris:act:::LockDisplay;*;*;*;*:
+dtwm:solaris:act:::SDTaccessx;*;*;*;*:
+dtwm:solaris:act:::SDTsuspend;*;*;*;*:
+dtwm:solaris:act:::StartDtscreenBlank;*;*;*;*:
+dtwm:solaris:act:::StartDtscreenFlame;*;*;*;*:
+dtwm:solaris:act:::StartDtscreenHop;*;*;*;*:
+dtwm:solaris:act:::StartDtscreenImage;*;*;*;*:
+dtwm:solaris:act:::StartDtscreenLife;*;*;*;*:
+dtwm:solaris:act:::StartDtscreenPyro;*;*;*;*:
+dtwm:solaris:act:::StartDtscreenQix;*;*;*;*:
+dtwm:solaris:act:::StartDtscreenRotor;*;*;*;*:
+dtwm:solaris:act:::StartDtscreenSwarm;*;*;*;*:
+dtwm:solaris:act:::StartDtscreenWorm;*;*;*;*:
+shutdown:solaris:act:::Halt;*;*;*;0:
+shutdown:solaris:act:::Halt;*;HOST,WSMENU_This_Host;*;1:
+shutdown:solaris:act:::Reboot;*;*;*;0:
+shutdown:solaris:act:::SDTZoneBoot;*;*;*;*:
+shutdown:solaris:act:::SDTZoneClone;*;*;*;*:
+shutdown:solaris:act:::SDTZoneConsole;*;*;*;*:
+shutdown:solaris:act:::SDTZoneHalt;*;*;*;*:
+shutdown:solaris:act:::SDTZoneInit;*;*;*;*:
+shutdown:solaris:act:::SDTZoneInstall;*;*;*;*:
+shutdown:solaris:act:::SDTZoneReboot;*;*;*;*:
+shutdown:solaris:act:::SDTpowermgr;*;*;*;*:
+shutdown:solaris:act:::SDTsuspend;*;*;*;*:
