@@ -1,4 +1,4 @@
-Include common/FSWfontconfig-devel-docs
+include common/FSWfontconfig-devel-docs
 include common/FSWxorg-client-docs
 include common/FSWxorg-client-programs
 include common/FSWxorg-clientlibs

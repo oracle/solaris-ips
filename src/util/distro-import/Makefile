@@ -33,6 +33,7 @@ GNOME_PKGS=$(SLIM_PATH)/GNOME/latest
 INSTALL_PKGS=$(SLIM_PATH)/INSTALL/latest
 SLIM_PKGS=$(SLIM_PATH)/SLIM_PKGS/latest
 FOX_PKGS=$(SLIM_PATH)/FOX/latest
+REPO=http://localhost:10000
 
 ALL_PKGS=$(GNOME_PKGS) \
          $(INSTALL_PKGS) \
@@ -103,7 +104,8 @@ proto:	Makefile
 
 
 import:	cluster.import $(TMPPKGS)
-	./solaris.py -w $(WOS_PKGS)  $(ELIDED_FILES:%=-D %) $(BUILDID)/all.i386.$(BUILDID)
+	rm -f all.i386.$(BUILDID); ln -s $(BUILDID)/all.i386.$(BUILDID)
+	./solaris.py -s $(REPO) -w $(WOS_PKGS) $(ELIDED_FILES:%=-D %) all.i386.$(BUILDID)
 
 %/import:	
 	$(MAKE) BUILDID=$(@:%/import=%) import
@@ -114,9 +116,8 @@ import:	cluster.import $(TMPPKGS)
 
 
 slim_import:	$(BUILDID)/slim_cluster  $(TMPPKGS)
-	rm slim_cluster; ln -s  $(BUILDID)/slim_cluster slim_cluster
-	./solaris.py $(ALL_PKGS:%=-w %) $(ELIDED_FILES:%=-D %) slim_cluster
-
+	rm -f slim_cluster; ln -s $(BUILDID)/slim_cluster slim_cluster
+	./solaris.py -s $(REPO) $(ALL_PKGS:%=-w %) $(ELIDED_FILES:%=-D %) slim_cluster
 
 .KEEP_STATE:
 

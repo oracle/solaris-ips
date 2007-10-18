@@ -729,9 +729,8 @@ while True:
                 except Exception, e:
                         print "ERROR(import_file):", e
                         raise
-
         else:
-                print "unknown token '%s' (%s:%s)" % \
+		raise "Error: unknown token '%s' (%s:%s)" % \
                     (token, lexer.infile, lexer.lineno)
 
 seenpkgs = set(i[0] for i in usedlist.values())

@@ -292,8 +292,25 @@ class Action(object):
                         if not os.path.isdir(os.path.join("/", *pathlist[:i + 1])):
                                 break
                 else:
-                        # If we run off the end of the list, the requested
-                        # directory is present, so we can just return.
+			# XXX Because the filelist codepath may create directories with
+			# incorrect permissions (see pkgtarfile.py), we need to correct
+			# those permissions here.  Note that this solution relies on all
+			# intermediate directories being explicitly created by the
+			# packaging system; otherwise intermediate directories will  not
+			# get their permissions corrected.
+
+			stat = os.stat(path)
+	                mode = kw.get("mode", stat.st_mode)
+			uid = kw.get("uid", stat.st_uid)
+			gid = kw.get("gid", stat.st_gid)
+			try:
+				if mode != stat.st_mode:
+					os.chmod(path, mode)
+				if uid != stat.st_uid or gid != stat.st_gid:         
+					os.chown(path, uid, gid)
+			except  OSError, e:
+				if e.errno != errno.EPERM:
+                                        raise			
                         return
 
                 stat = os.stat(os.path.join("/", *pathlist[:i]))
