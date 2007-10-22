@@ -72,7 +72,7 @@ def versioned_urlopen(base_uri, operation, versions = [], tail = None,
 
                 try:
                         c = url_opener(req)
-                except urllib2.URLError, e:
+                except urllib2.HTTPError, e:
                         if e.code != 404 or e.msg != "Version not supported":
                                 raise
                         continue

@@ -309,9 +309,13 @@ def create_image(img, args):
 
         img.set_attrs(type, pargs[0], is_zone, auth_name, auth_url)
 
-        img.retrieve_catalogs()
+        try:
+                img.retrieve_catalogs()
+        except urllib2.URLError, e:
+                print >> sys.stderr, "pkg:", e.reason[1]
+                return 1
 
-        return
+        return 0
 
 img = image.Image()
 
@@ -337,8 +341,7 @@ if __name__ == "__main__":
         # XXX Handle PKG_SERVER environment variable.
 
         if subcommand == "image-create":
-                create_image(img, pargs)
-                sys.exit(0)
+                sys.exit(create_image(img, pargs))
 
         for opt, arg in opts:
                 if opt == "-R":
