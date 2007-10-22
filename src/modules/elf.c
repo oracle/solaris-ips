@@ -23,19 +23,19 @@
  * Use is subject to license terms.
  */
 
-#include <elf.h>
-#include <gelf.h>
-
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/uio.h>
 #include <fcntl.h>
-#include <port.h>
 #include <unistd.h>
+#include <sha1.h>
+#include <elf.h>
+#include <gelf.h>
 
-#include "Python.h"
 #include "liblist.h"
 #include "elfextract.h"
+#include <Python.h>
+
 
 static void
 pythonify_ver_liblist_cb(libnode_t *n, void *info, void *info2)
@@ -75,7 +75,7 @@ pythonify_1dliblist_cb(libnode_t *n, void *info, void *info2)
 /*
  * Open a file named by python, setting an appropriate error on failure.
  */
-int
+static int
 py_get_fd(PyObject *args)
 {
 	int fd;
@@ -97,7 +97,8 @@ py_get_fd(PyObject *args)
 /*
  * For ELF operations: Need to check if a file is an ELF object.
  */
-PyObject *
+/*ARGSUSED*/
+static PyObject *
 elf_is_elf_object(PyObject *self, PyObject *args)
 {
 	int fd, ret;
@@ -107,7 +108,7 @@ elf_is_elf_object(PyObject *self, PyObject *args)
 
 	ret = iself(fd);
 
-	close(fd);
+	(void) close(fd);
 
 	return (Py_BuildValue("i", ret));
 }
@@ -127,21 +128,20 @@ elf_is_elf_object(PyObject *self, PyObject *args)
  *  XXX: I have yet to find a binary with osabi set to something
  *  aside from "none."
  */
-PyObject *
+/*ARGSUSED*/
+static PyObject *
 get_info(PyObject *self, PyObject *args)
 {
 	int fd;
-	int type = 0, bits = 0, arch = 0, data = 0;
 	hdrinfo_t *hi = NULL;
 	PyObject *pdict = NULL;
 	
 	if ((fd = py_get_fd(args)) < 0)
 		return (NULL);
 
-	if (!(hi = getheaderinfo(fd))) {
+	if ((hi = getheaderinfo(fd)) == NULL) {
 		PyErr_SetString(PyExc_RuntimeError, "could not get elf header");
-		close(fd);
-		return (NULL);
+		goto out;
 	}
 
 	pdict = PyDict_New();
@@ -155,8 +155,9 @@ get_info(PyObject *self, PyObject *args)
 	PyDict_SetItemString(pdict, "osabi",
 	    Py_BuildValue("s", pkg_string_from_osabi(hi->osabi)));
 
+out:
 	free(hi);
-	close(fd);
+	(void) close(fd);
 	return (pdict);
 }
 
@@ -184,7 +185,8 @@ get_info(PyObject *self, PyObject *args)
  * worth trimming out at this stage or above.
  * 
  */
-PyObject *
+/*ARGSUSED*/
+static PyObject *
 get_dynamic(PyObject *self, PyObject *args)
 {
 	int 	fd, i;
@@ -198,12 +200,10 @@ get_dynamic(PyObject *self, PyObject *args)
 	if ((fd = py_get_fd(args)) < 0)
 		return (NULL);
 
-	dyn = getdynamic(fd);
-
-	if (!dyn) {
+	if ((dyn = getdynamic(fd)) == NULL) {
 		PyErr_SetString(PyExc_RuntimeError,
 		    "failed to load dynamic section");
-		return (NULL);
+		goto out;
 	}
 	
 	pdict = PyDict_New();
@@ -233,9 +233,11 @@ get_dynamic(PyObject *self, PyObject *args)
 
 	PyDict_SetItemString(pdict, "hash", Py_BuildValue("s", hexhash));
 	
-	dyninfo_free(dyn);
-	close(fd);
+out:
+	if (dyn != NULL)
+		dyninfo_free(dyn);
 
+	(void) close(fd);
 	return (pdict);
 }
 

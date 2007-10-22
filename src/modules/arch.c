@@ -23,12 +23,11 @@
  * Use is subject to license terms.
  */
 
-#include "Python.h"
-
 #include <sys/systeminfo.h>
 #include <sys/types.h>
-#include <alloca.h>
 #include <stdlib.h>
+
+#include <Python.h>
 
 static char *
 get_sysinfo(int sicmd)
@@ -60,7 +59,7 @@ get_sysinfo(int sicmd)
  * system.
  */
 /*ARGSUSED*/
-PyObject *
+static PyObject *
 arch_isainfo(PyObject *self, PyObject *args)
 {
 	char *buf1;
@@ -96,7 +95,7 @@ arch_isainfo(PyObject *self, PyObject *args)
  * Return the release string ("5.11") for the invoking system.
  */
 /*ARGSUSED*/
-PyObject *
+static PyObject *
 arch_release(PyObject *self, PyObject *args)
 {
 	char *buf = NULL;
@@ -116,7 +115,7 @@ arch_release(PyObject *self, PyObject *args)
  * Return the platform tag ("i86pc") for the invoking system.
  */
 /*ARGSUSED*/
-PyObject *
+static PyObject *
 arch_platform(PyObject *self, PyObject *args)
 {
 	char *buf = NULL;

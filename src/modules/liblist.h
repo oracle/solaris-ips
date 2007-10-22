@@ -1,5 +1,30 @@
-#ifndef __LIBLIST_H__
-#define __LIBLIST_H__
+/*
+ * CDDL HEADER START
+ *
+ * The contents of this file are subject to the terms of the
+ * Common Development and Distribution License (the "License").
+ * You may not use this file except in compliance with the License.
+ *
+ * You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+ * or http://www.opensolaris.org/os/licensing.
+ * See the License for the specific language governing permissions
+ * and limitations under the License.
+ *
+ * When distributing Covered Code, include this CDDL HEADER in each
+ * file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+ * If applicable, add the following below this CDDL HEADER, with the
+ * fields enclosed by brackets "[]" replaced with your own identifying
+ * information: Portions Copyright [yyyy] [name of copyright owner]
+ *
+ * CDDL HEADER END
+ */
+/*
+ * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+ * Use is subject to license terms.
+ */
+
+#ifndef _LIBLIST_H_
+#define _LIBLIST_H_
 
 #include <sys/types.h>
 
@@ -25,11 +50,8 @@ void liblist_free(liblist_t *lst);
 libnode_t *liblist_add(liblist_t *lst, off_t off);
 void liblist_foreach(liblist_t *lst, void (*cb)(libnode_t *, void *, void *), 
     void *info, void *info2);
-liblist_t *liblist_copy(liblist_t *lst);
 
 /* callbacks */
-void print_liblist_cb(libnode_t *n, void *info, void *info2);
 void setver_liblist_cb(libnode_t *n, void *info, void *info2);
-void copyto_liblist_cb(libnode_t *n, void *info, void *info2);
 
-#endif
+#endif	/* _LIBLIST_H_ */

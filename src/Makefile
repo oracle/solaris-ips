@@ -240,7 +240,9 @@ test:
 	$(PYTHON) $(LINKPYTHONPKG)/smf.py
 	$(PYTHON) $(LINKPYTHONPKG)/client/imageconfig.py
 	$(PYTHON) $(LINKPYTHONPKG)/client/filter.py
-	cd tests; $(KSH) -x cli-complete.ksh
+	cd tests && $(KSH) -x cli-complete.ksh
+	cd tests && $(PYTHON) t_elf.py
+	cd tests && $(KSH) -x memleaks.ksh
 
 proto: $(ROOT)
 

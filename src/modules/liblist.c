@@ -1,6 +1,34 @@
+/*
+ * CDDL HEADER START
+ *
+ * The contents of this file are subject to the terms of the
+ * Common Development and Distribution License (the "License").
+ * You may not use this file except in compliance with the License.
+ *
+ * You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+ * or http://www.opensolaris.org/os/licensing.
+ * See the License for the specific language governing permissions
+ * and limitations under the License.
+ *
+ * When distributing Covered Code, include this CDDL HEADER in each
+ * file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+ * If applicable, add the following below this CDDL HEADER, with the
+ * fields enclosed by brackets "[]" replaced with your own identifying
+ * information: Portions Copyright [yyyy] [name of copyright owner]
+ *
+ * CDDL HEADER END
+ */
+/*
+ * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+ * Use is subject to license terms.
+ */
+
 #include <stdlib.h>
 #include <stdio.h>
+#include <assert.h>
 #include "liblist.h"
+
+static void copyto_liblist_cb(libnode_t *, void *, void *);
 
 liblist_t *
 liblist_alloc()
@@ -77,7 +105,7 @@ liblist_foreach(liblist_t *lst, void (*cb)(libnode_t *, void *, void *),
 	}
 }
 
-liblist_t *
+static liblist_t *
 liblist_copy(liblist_t *lst)
 {
 	if (!lst)
@@ -95,14 +123,8 @@ liblist_copy(liblist_t *lst)
 
 
 /* callbacks */
-void
-print_liblist_cb(libnode_t *n, void *info, void *info2)
-{
-	char *st = (char*)info;
-	printf("%s\n", (char*) (st + n->nameoff), n->verlist);
-	liblist_foreach(n->verlist, print_liblist_cb, info, NULL);
-}
 
+/*ARGSUSED2*/
 void
 setver_liblist_cb(libnode_t *n, void *info, void *info2)
 {
@@ -119,11 +141,14 @@ setver_liblist_cb(libnode_t *n, void *info, void *info2)
 	}
 }
 
-void
+/*ARGSUSED2*/
+static void
 copyto_liblist_cb(libnode_t *n, void *info, void *info2)
 {
 	liblist_t *lst = (liblist_t*)info;
-	liblist_add(lst, n->nameoff);
+	if (liblist_add(lst, n->nameoff) == NULL) {
+		assert(0); /* XXX */
+	}
 	lst->tail->verlist = liblist_copy(n->verlist);
 }
 

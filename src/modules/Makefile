@@ -35,20 +35,33 @@ ELFOBJS = $(ELFSRCS:%.c=%.o)
 PYTHONINC = /usr/include/python2.4
 
 INC = -I$(PYTHONINC)
-CFLAGS = -Kpic $(INC)
-LDFLAGS = -G -lelf
+CFLAGS = -g -Kpic -v $(INC)
+LIBS = -lelf -lmd
+LDFLAGS = -G
+
+LINTFLAGS += -u -axms -erroff=E_NAME_DEF_NOT_USED2
 
 gcc := CC = gcc
-gcc := CFLAGS = -fpic $(INC)
-gcc := LDFLAGS = --shared -lelf
+gcc := CFLAGS = -Wall -fpic $(INC)
+gcc := LDFLAGS = --shared
+
+#
+# 'arch' can be built large files aware, which seems to be what python
+# would like the best.
+#
+# The elf stuff seems less reasonable, since libelf consumers must be 
+# built non-LF aware (sigh... fist shaking).
+#
+LF = -D_FILE_OFFSET_BITS=64
+$(ARCHMODULE) := CFLAGS += $(LF)
 
 all: $(ARCHMODULE) $(ELFMODULE)
 
 gcc: all
 
 lint:
-	$(LINT) -c $(CFLAGS) $(ARCHSRCS)
-	$(LINT) -c $(CFLAGS) $(ELFSRCS)
+	$(LINT) $(LINTFLAGS) $(LF) $(LIBS) $(INC) $(ARCHSRCS)
+	$(LINT) $(LINTFLAGS) $(LIBS) $(INC) $(ELFSRCS)
 
 clean:
 	rm -f $(ARCHOBJS) $(ELFOBJS)
@@ -57,10 +70,10 @@ clobber: clean
 	rm -f $(ARCHMODULE) $(ELFMODULE)
 
 $(ARCHMODULE): $(ARCHOBJS)
-	$(CC) $(LDFLAGS) $(ARCHOBJS) -o $@
+	$(CC) $(LDFLAGS) $(LIBS) $(ARCHOBJS) -o $@
 
 $(ELFMODULE): $(ELFOBJS)
-	$(CC) $(LDFLAGS) $(ELFOBJS) -o $@
+	$(CC) $(LDFLAGS) $(LIBS) $(ELFOBJS) -o $@
 
 %.o : %.c
-	$(CC) -c $(CFLAGS) $<
+	$(CC) -c $(CFLAGS) $(LF_FLAGS) $<

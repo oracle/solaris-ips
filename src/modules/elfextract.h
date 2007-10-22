@@ -1,5 +1,30 @@
-#ifndef __ELFEXTRACT_H__
-#define __ELFEXTRACT_H__
+/*
+ * CDDL HEADER START
+ *
+ * The contents of this file are subject to the terms of the
+ * Common Development and Distribution License (the "License").
+ * You may not use this file except in compliance with the License.
+ *
+ * You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+ * or http://www.opensolaris.org/os/licensing.
+ * See the License for the specific language governing permissions
+ * and limitations under the License.
+ *
+ * When distributing Covered Code, include this CDDL HEADER in each
+ * file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+ * If applicable, add the following below this CDDL HEADER, with the
+ * fields enclosed by brackets "[]" replaced with your own identifying
+ * information: Portions Copyright [yyyy] [name of copyright owner]
+ *
+ * CDDL HEADER END
+ */
+/*
+ * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+ * Use is subject to license terms.
+ */
+
+#ifndef _ELFEXTRACT_H_
+#define _ELFEXTRACT_H_
 
 #include <sys/types.h>
 #include "liblist.h"
@@ -28,16 +53,15 @@ typedef struct hdrinfo {
 	int osabi;			/* e_ident[EI_OSABI]	*/
 } hdrinfo_t;
 
-char *getident(int fd);
-int iself(int fd);
-int iself32(int fd);
-dyninfo_t *getdynamic(int fd);
-void dyninfo_free(dyninfo_t *dyn);
-hdrinfo_t *getheaderinfo(int fd);
+extern int iself(int fd);
+extern int iself32(int fd);
+extern dyninfo_t *getdynamic(int fd);
+extern void dyninfo_free(dyninfo_t *dyn);
+extern hdrinfo_t *getheaderinfo(int fd);
 
-char *pkg_string_from_type(int type);
-char *pkg_string_from_arch(int arch);
-char *pkg_string_from_data(int data);
-char *pkg_string_from_osabi(int osabi);
+extern char *pkg_string_from_type(int type);
+extern char *pkg_string_from_arch(int arch);
+extern char *pkg_string_from_data(int data);
+extern char *pkg_string_from_osabi(int osabi);
 
 #endif
