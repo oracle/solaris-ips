@@ -34,6 +34,7 @@ INSTALL_PKGS=$(SLIM_PATH)/INSTALL/latest
 SLIM_PKGS=$(SLIM_PATH)/SLIM_PKGS/latest
 FOX_PKGS=$(SLIM_PATH)/FOX/latest
 REPO=http://localhost:10000
+JUST_THESE_PKGS=
 
 ALL_PKGS=$(GNOME_PKGS) \
          $(INSTALL_PKGS) \
@@ -117,7 +118,7 @@ import:	cluster.import $(TMPPKGS)
 
 slim_import:	$(BUILDID)/slim_cluster  $(TMPPKGS)
 	rm -f slim_cluster; ln -s $(BUILDID)/slim_cluster slim_cluster
-	./solaris.py -s $(REPO) $(ALL_PKGS:%=-w %) $(ELIDED_FILES:%=-D %) slim_cluster
+	./solaris.py -s $(REPO) $(ALL_PKGS:%=-w %) $(ELIDED_FILES:%=-D %) slim_cluster $(JUST_THESE_PKGS)
 
 .KEEP_STATE:
 

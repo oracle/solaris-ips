@@ -75,7 +75,7 @@ class PkgTarFile(tarfile.TarFile):
 			# the action execute methods run.  If proper directory actions
 			# don't exist for these directories, the permissions will be wrong.
 			try:
-				os.makedirs(upperdirs, 700)
+				os.makedirs(upperdirs, 0700)
 			except:
 				pass
                 try:

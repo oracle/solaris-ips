@@ -1,3 +1,4 @@
 package SUNWadmc
 import SUNWadmc
+drop usr/bin/showrev
 end package

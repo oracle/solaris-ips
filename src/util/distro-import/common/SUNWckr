@@ -9,4 +9,18 @@ drop kernel/drv/bmc
 drop kernel/drv/bmc.conf
 drop kernel/drv/sparcv9/isp
 # END NON-REDISTRIBUTABLE
+# XXX until new hsfs hits nevada
+drop kernel/fs/amd64/hsfs
+drop kernel/fs/hsfs
+from SUNWhsfs import
+kernel/fs/amd64/hsfs
+kernel/fs/hsfs
+end import
+# XXX until new clofi hits nevada
+drop kernel/drv/amd64/lofi
+drop kernel/drv/lofi
+from SUNWclofi import
+kernel/drv/amd64/lofi
+kernel/drv/lofi
+end import
 end package

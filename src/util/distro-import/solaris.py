@@ -53,8 +53,7 @@ class pkg(object):
                 self.imppkg = None
                 pkgdict[name] = self
 
-        def import_pkg(self, imppkg):
-
+        def import_pkg(self, imppkg, line):
                 try:
                         p = SolarisPackage(pkg_path(imppkg))
                 except:
@@ -66,11 +65,17 @@ class pkg(object):
 
                 imppkg = p.pkginfo["PKG"] # filename NOT always same as pkgname
                 svr4pkgsseen[imppkg] = p;
-                
+
+		excludes = dict((f, True) for f in line.split())
+
                 # XXX This isn't thread-safe.  We want a dict method that adds
                 # the key/value pair, but throws an exception if the key is
                 # already present.
                 for o in p.manifest:
+			if o.pathname in excludes:
+				print "excluding %s from %s" % (o.pathname, imppkg)
+				continue
+
                         if o.pathname in elided_files:
                                 print "ignoring %s in %s" % (o.pathname, imppkg)
                                 continue
@@ -655,7 +660,15 @@ while True:
                 curpkg.version = lexer.get_token()
 
         elif token == "import":
-                curpkg.import_pkg(lexer.get_token())
+		package_name = lexer.get_token()
+		next = lexer.get_token()
+		if next != "exclude":
+			line = ""
+                        lexer.push_token(next)
+		else:
+			line = lexer.instream.readline().strip()
+
+                curpkg.import_pkg(package_name, line)
 
         elif token == "from":
                 pkgspec = lexer.get_token()
