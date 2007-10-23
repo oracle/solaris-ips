@@ -60,7 +60,6 @@ import pkg.catalog as catalog
 import pkg.dependency as dependency
 import pkg.fmri as fmri
 import pkg.misc as misc
-import pkg.package as package
 import pkg.version as version
 
 import pkg.server.face as face
@@ -69,8 +68,9 @@ import pkg.server.transaction as trans
 
 def usage():
         print """\
-Usage: /usr/lib/pkg.depotd [--readonly] [-d repo_dir] [-p port]
+Usage: /usr/lib/pkg.depotd [--readonly] [--rebuild] [-d repo_dir] [-p port]
         --readonly      Read-only operation; modifying operations disallowed
+        --rebuild       Re-build the catalog from pkgs in depot
 """
         sys.exit(2)
 
@@ -90,7 +90,7 @@ def catalog_0(scfg, request):
         request.send_response(200)
         request.send_header('Content-type', 'text/plain')
         request.end_headers()
-        request.wfile.write("%s" % scfg.catalog)
+        scfg.catalog.send(request.wfile)
 
 def manifest_0(scfg, request):
         """The request is an encoded pkg FMRI.  If the version is specified
@@ -326,7 +326,8 @@ if __name__ == "__main__":
         port = 10000
 
         try:
-                opts, pargs = getopt.getopt(sys.argv[1:], "d:np:", ["readonly"])
+                opts, pargs = getopt.getopt(sys.argv[1:], "d:np:",
+                    ["readonly", "rebuild"])
                 for opt, arg in opts:
                         if opt == "-n":
                                 sys.exit(0)
@@ -336,6 +337,8 @@ if __name__ == "__main__":
                                 port = int(arg)
                         elif opt == "--readonly":
                                 scfg.set_read_only()
+                        elif opt == "--rebuild":
+                                scfg.destroy_catalog()
         except getopt.GetoptError, e:
                 print "pkg.depotd: unknown option '%s'" % e.opt
                 usage()

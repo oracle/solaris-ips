@@ -33,7 +33,6 @@ from itertools import groupby
 
 import pkg.actions as actions
 import pkg.fmri as fmri
-import pkg.package as package
 import pkg.client.retrieve as retrieve
 import pkg.client.filter as filter
 

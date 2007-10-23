@@ -41,7 +41,7 @@ class PkgFmri(object):
         package, and that higher build release versions are superior
         publications than lower build release versions."""
 
-        def __init__(self, fmri, build_release):
+        def __init__(self, fmri, build_release = None, authority = None):
                 """XXX pkg:/?pkg_name@version not presently supported."""
                 fmri = fmri.rstrip()
 
@@ -51,7 +51,7 @@ class PkgFmri(object):
                 except ValueError:
                         self.version = veridx = None
 
-                self.authority = None
+                self.authority = authority
                 if fmri.startswith("pkg://"):
                         nameidx = fmri.index("/", 6) + 1
                         self.authority = fmri[6:nameidx - 1]
@@ -77,10 +77,10 @@ class PkgFmri(object):
         def get_timestamp(self, new_ts):
                 return self.version.get_timestamp()
 
-        def get_pkg_stem(self, default_authority = None):
+        def get_pkg_stem(self, default_authority = None, anarchy = False):
                 """Return a string representation of the FMRI without a specific
-                version."""
-                if self.authority == None:
+                version.  Anarchy returns a stem without any authority."""
+                if not self.authority or anarchy:
                         return "pkg:/%s" % self.pkg_name
 
                 return "pkg://%s/%s" % (self.authority, self.pkg_name)
@@ -99,13 +99,14 @@ class PkgFmri(object):
                 return "pkg://%s/%s@s" % (authority, self.pkg_name,
                     self.version.get_short_version())
 
-        def get_fmri(self, default_authority = None):
-                """Return a string representation of the FMRI."""
+        def get_fmri(self, default_authority = None, anarchy = False):
+                """Return a string representation of the FMRI.
+                Anarchy returns a string without any authority."""
                 authority = self.authority
                 if authority == None:
                         authority = default_authority
 
-                if authority == None:
+                if not authority or anarchy:
                         if self.version == None:
                                 return "pkg:/%s" % self.pkg_name
 

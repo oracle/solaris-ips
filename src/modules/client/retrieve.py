@@ -34,31 +34,6 @@ from pkg.misc import versioned_urlopen
 # client/retrieve.py - collected methods for retrieval of pkg components
 # from repositories
 
-# XXX This method is never called
-def url_catalog(config, image, args):
-        """XXX will need to show available content series for each package"""
-        croot = image.imgdir
-
-        if len(args) != 0:
-                print "pkg: catalog subcommand takes no arguments"
-                usage()
-
-        # Ensure Image directory structure is valid.
-        if not os.path.isdir("%s/catalog" % croot):
-                image.mkdirs()
-
-        # GET /catalog
-        for repo in pcfg.repo_uris:
-                c, v = versioned_urlopen(uri, "catalog", [0])
-
-                # compare headers
-                data = c.read()
-                fname = urllib.quote(c.geturl(), "")
-
-                # Filename should be reduced to host\:port
-                cfile = file("%s/catalog/%s" % (croot, fname), "w")
-                print >>cfile, data
-
 def get_datastream(img, fmri, hash):
         """Retrieve a file handle based on a package fmri and a file hash."""
 

@@ -29,10 +29,10 @@ import errno
 import os
 import statvfs
 import urllib
+import shutil
 
 import pkg.catalog as catalog
 import pkg.fmri as fmri
-import pkg.package as package
 
 import pkg.server.transaction as trans
 
@@ -56,7 +56,6 @@ class SvrConfig(object):
 
                 self.read_only = False
 
-                self.catalog = catalog.Catalog()
                 self.in_flight_trans = {}
 
                 # XXX naive:  change to
@@ -94,17 +93,19 @@ class SvrConfig(object):
                         self.set_read_only()
                         emsg = "repository directories read-only and incomplete"
                 else:
-                        try:
+                        if not os.path.exists(self.trans_root):
                                 os.makedirs(self.trans_root)
+                        if not os.path.exists(self.file_root):
                                 os.makedirs(self.file_root)
+                        if not os.path.exists(self.pkg_root):
                                 os.makedirs(self.pkg_root)
-                        except OSError, e:
-                                if e.errno != errno.EEXIST:
-                                        raise
+                        if not os.path.exists(self.cat_root):
+                                os.makedirs(self.cat_root)
 
                 if os.path.exists(self.trans_root) and \
                     os.path.exists(self.file_root) and \
-                    os.path.exists(self.pkg_root):
+                    os.path.exists(self.pkg_root) and \
+                    os.path.exists(self.cat_root):
                         return
 
                 raise RuntimeError, emsg
@@ -114,6 +115,7 @@ class SvrConfig(object):
                 self.trans_root = "%s/trans" % self.repo_root
                 self.file_root = "%s/file" % self.repo_root
                 self.pkg_root = "%s/pkg" % self.repo_root
+                self.cat_root = "%s/catalog" % self.repo_root
 
         def set_read_only(self):
                 self.read_only = True
@@ -135,25 +137,17 @@ class SvrConfig(object):
                         self.in_flight_trans[t.get_basename()] = t
 
         def acquire_catalog(self):
-                """Walk pkg_root, constructing in-memory catalog.
+                """Tell the catalog to set itself up.  Associate an
+                instance of the catalog with this depot."""
 
-                XXX An alternate implementation would be to treat an on-disk
-                catalog as authoritative, although interruptions between package
-                version commits and catalog updates would still require a walk
-                of the package version tree."""
+                self.catalog = catalog.Catalog(self.cat_root, self.pkg_root)
 
-                tree = os.walk(self.pkg_root)
+        def destroy_catalog(self):
+                """Destroy the catalog.  This is generally done before we
+                re-create a new catalog."""
 
-                for pkg in tree:
-                        if pkg[0] == self.pkg_root:
-                                continue
-
-                        f = fmri.PkgFmri(urllib.unquote(
-                            os.path.basename(pkg[0])), None)
-                        p = package.Package(f)
-                        p.load(self)
-
-                        self.catalog.add_pkg(p)
+                if os.path.exists(self.cat_root):
+                        shutil.rmtree(self.cat_root)
 
         def get_status(self):
                 """Display simple server status."""
@@ -167,9 +161,9 @@ Number of manifests served: %d
 Number of files served: %d
 Number of flists requested: %d
 Number of files served by flist: %d
-""" % (len(self.catalog.pkgs), len(self.in_flight_trans), self.catalog_requests,
-                self.manifest_requests, self.file_requests,
-                self.flist_requests, self.flist_files)
+""" % (len(self.catalog.npkgs()), len(self.in_flight_trans),
+                self.catalog_requests, self.manifest_requests,
+                self.file_requests, self.flist_requests, self.flist_files)
 
                 return ret
 

@@ -34,7 +34,6 @@ import urlparse
 import pkg.catalog as catalog
 import pkg.fmri as fmri
 import pkg.manifest as manifest
-
 import pkg.client.imageconfig as imageconfig
 
 from pkg.misc import versioned_urlopen
@@ -223,12 +222,12 @@ class Image(object):
 
         def get_matching_pkgs(self, pfmri):
                 """Exact matches to the given FMRI.  Returns a list of (catalog,
-                pkg) pairs."""
+                PkgFmri) pairs."""
 
                 m = [
                     (c, p)
                     for c in self.catalogs.values()
-                    for p in c.get_matching_pkgs(pfmri, None)
+                    for p in c.find_matching_pkgs(pfmri)
                 ]
 
                 if not m:
@@ -244,7 +243,7 @@ class Image(object):
                 m = [
                     (c, p)
                     for c in self.catalogs.values()
-                    for p in c.get_regex_matching_fmris(regex)
+                    for p in c.find_regex_matching_fmris(regex)
                 ]
 
                 if not m:
@@ -371,25 +370,21 @@ class Image(object):
 
                         c, v = versioned_urlopen(auth["origin"], "catalog", [0])
 
-                        # compare headers
-                        data = c.read()
+                        # root for this catalog
+                        croot = "%s/catalog/%s" % (self.imgdir, auth["prefix"])
 
-                        # Filename should be reduced to host\:port
-                        cfile = file("%s/catalog/%s" % (self.imgdir,
-                            auth["prefix"]), "w")
-                        print >>cfile, data
+                        catalog.recv(c, croot)
 
-        def reload_catalogs(self):
-                cdir = "%s/%s" % (self.imgdir, "catalog")
+        def load_catalogs(self):
                 for auth in self.gen_authorities():
-                        c = catalog.Catalog()
-                        c.load("%s/%s" % (cdir, auth["prefix"]))
+                        croot = "%s/catalog/%s" % (self.imgdir, auth["prefix"])
 
+                        c = catalog.Catalog(croot)
                         self.catalogs[auth["prefix"]] = c
 
-        def gen_known_packages(self):
+        def gen_known_package_fmris(self):
                 for c in self.catalogs.values():
-                        for pf in c.gen_package_versions():
+                        for pf in c.fmris():
                                 yield pf
 
         def display_inventory(self, args):
@@ -424,11 +419,11 @@ class Image(object):
                 if len(pargs):
                         pkgs_known = [ m[1]
                             for p in pargs
-                            for m in self.get_regex_matching_fmris(p) ]
+                            for m in self.get_regex_matching_fmris(p).sort() ]
 
                 elif all_known:
                         pkgs_known = [ pf for pf in
-                            self.gen_known_packages() ]
+                            sorted(self.gen_known_package_fmris()) ]
 
                 else:
                         pkgs_known = [ fmri.PkgFmri(urllib.unquote("%s@%s" %

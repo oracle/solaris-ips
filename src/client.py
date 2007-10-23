@@ -59,7 +59,6 @@ import pkg.config as config
 import pkg.dependency as dependency
 import pkg.fmri as fmri
 import pkg.manifest as manifest
-import pkg.package as package
 import pkg.version as version
 
 import pkg.client.image as image
@@ -114,7 +113,7 @@ def catalog_refresh(img, args):
         img.retrieve_catalogs()
 
 def inventory_display(img, args):
-        img.reload_catalogs()
+        img.load_catalogs()
         img.display_inventory(args)
 
 def install(img, args):
@@ -144,7 +143,7 @@ def install(img, args):
                 elif opt == "-f":
                         filters += [ arg ]
 
-        img.reload_catalogs()
+        img.load_catalogs()
 
         ip = imageplan.ImagePlan(img, filters = filters)
 
@@ -211,7 +210,7 @@ def uninstall(img, args):
                 elif opt == "-v":
                         verbose = True
 
-        img.reload_catalogs() # XXX ???
+        img.load_catalogs() # XXX ???
 
         ip = imageplan.ImagePlan(img, recursive_removal)
 

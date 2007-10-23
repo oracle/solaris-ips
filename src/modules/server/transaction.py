@@ -33,8 +33,8 @@ import time
 import urllib
 
 import pkg.fmri as fmri
-import pkg.package as package
 import pkg.elf as elf
+import pkg.misc as misc
 
 import pkg.actions
 
@@ -92,9 +92,6 @@ class Transaction(object):
                 print >>tfile,  "# %s, client release %s" % (self.pkg_name, \
                     self.client_release)
                 tfile.close()
-
-                # lookup package by name
-                p = package.Package(self.fmri)
 
                 # validate that this version can be opened
                 #   if we specified no release, fail
@@ -283,17 +280,62 @@ class Transaction(object):
                 # XXX If we are going to publish, then we should augment
                 # our response with any other packages that moved to
                 # PUBLISHED due to the package's arrival.
-                p = package.Package(self.fmri)
-                p.add_version(self.fmri)
-                p.set_dir(self.cfg)
-                p.update(self.cfg, self)
 
-                # add entry to catalog
-                # XXX Is self.cfg.catalog a copy or a reference??
-                # XXX Could just write new catalog file...
-                self.cfg.catalog.add_pkg(p, self.critical)
+                self.publish_package()
+                self.cfg.catalog.add_fmri(self.fmri, self.critical)
 
                 return ("%s" % self.fmri, "PUBLISHED")
+
+        def publish_package(self):
+                """This method is called by the server to publish a package.
+
+                It moves the files associated with the transaction into the
+                appropriate position in the server repository.  Callers
+                shall supply a fmri, config, and transaction in fmri, cfg,
+                and trans, respectively."""
+
+                cfg = self.cfg
+                fmri = self.fmri
+
+                authority, pkg_name, version = fmri.tuple()
+                pkgdir = "%s/%s" % (cfg.pkg_root, urllib.quote(pkg_name, ""))
+
+                # If the directory isn't there, create it.
+                if not os.path.exists(pkgdir): 
+                        os.makedirs(pkgdir)
+
+                # mv manifest to pkg_name / version
+                # A package may have no files, so there needn't be a manifest.
+                if os.path.exists("%s/manifest" % self.dir):
+                        os.rename("%s/manifest" % self.dir, "%s/%s" %
+                            (pkgdir, urllib.quote(str(fmri.version), "")))
+
+                # Move each file to file_root, with appropriate directory
+                # structure.
+                for f in os.listdir(self.dir):
+                        path = misc.hash_file_name(f)
+                        src_path = "%s/%s" % (self.dir, f)
+                        dst_path = "%s/%s" % (cfg.file_root, path)
+                        try:
+                                os.rename(src_path, dst_path)
+                        except OSError, e:
+                                # XXX We might want to be more careful with this
+                                # exception, and only try makedirs() if rename()
+                                # failed because the directory didn't exist.
+                                #
+                                # I'm not sure it matters too much, except that
+                                # if makedirs() fails, we'll see that exception,
+                                # rather than the original one from rename().
+                                #
+                                # Interestingly, rename() failing due to missing
+                                # path component fails with ENOENT, not ENOTDIR
+                                # like rename(2) suggests (6578404).
+                                try:
+                                        os.makedirs(os.path.dirname(dst_path))
+                                except OSError, e:
+                                        if e.errno != errno.EEXIST:
+                                                raise
+                                os.rename(src_path, dst_path)
 
         def accept_incomplete(self):
                 """Transaction fails consistency criteria, and can be published.
