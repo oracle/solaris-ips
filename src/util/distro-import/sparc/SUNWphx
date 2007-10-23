@@ -1,0 +1,6 @@
+package SUNWphx
+import SUNWphx
+# BEGIN NON-REDISTRIBUTABLE
+drop kernel/misc/sparcv9/phx
+# END NON-REDISTRIBUTABLE
+end package

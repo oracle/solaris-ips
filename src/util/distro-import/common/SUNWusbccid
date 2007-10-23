@@ -1,8 +1,3 @@
 package SUNWusbccid
 import SUNWusbccid
-# BEGIN NON-REDISTRIBUTABLE
-drop usr/lib/smartcard
-drop usr/lib/smartcard/ifdh_usbccid.so
-drop usr/lib/smartcard/ifdh_usbccid.so.1
-# END NON-REDISTRIBUTABLE
 end package

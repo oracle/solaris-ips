@@ -7,7 +7,6 @@ chattr var/svc/manifest/system/intrd.xml opensolaris.zone=global
 drop kernel/drv/amd64/bmc
 drop kernel/drv/bmc
 drop kernel/drv/bmc.conf
-drop kernel/drv/sparcv9/isp
 # END NON-REDISTRIBUTABLE
 # XXX until new hsfs hits nevada
 drop kernel/fs/amd64/hsfs

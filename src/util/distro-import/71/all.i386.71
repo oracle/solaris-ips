@@ -4,3 +4,4 @@ include common/SUNWgnome-img-viewer.71
 include common/SUNWjds-registration.71
 include common/SUNWlibcdio
 include common/SUNWmip
+include common/SUNWxorg-headers.71

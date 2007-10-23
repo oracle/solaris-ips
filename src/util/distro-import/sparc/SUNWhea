@@ -5,5 +5,7 @@ drop usr/include/sys/scsi/adapters/ispcmd.h
 drop usr/include/sys/scsi/adapters/ispmail.h
 drop usr/include/sys/scsi/adapters/ispreg.h
 drop usr/include/sys/scsi/adapters/ispvar.h
+drop usr/platform/SUNW,Netra-T12
+drop usr/platform/SUNW,Netra-T12/include
 # END NON-REDISTRIBUTABLE
 end package

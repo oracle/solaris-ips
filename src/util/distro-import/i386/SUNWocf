@@ -9,9 +9,9 @@ drop usr/lib/libsmartcard.so
 drop usr/lib/libsmartcard.so.1
 drop usr/lib/llib-lsmartcard
 drop usr/lib/llib-lsmartcard.ln
-drop usr/lib/sparcv9/libsmartcard.so
-drop usr/lib/sparcv9/libsmartcard.so.1
-drop usr/lib/sparcv9/llib-lsmartcard.ln
+drop usr/lib/smartcard
+drop usr/lib/smartcard/libIFDNative.so
+drop usr/lib/smartcard/libIFDNative.so.1
 drop usr/sbin/ocfserv
 drop usr/share/lib/smartcard
 drop usr/share/lib/smartcard/CDESmartCardAdmin

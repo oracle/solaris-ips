@@ -14,5 +14,6 @@ include common/SUNWjds-registration.72
 include common/SUNWlibcdio
 include common/SUNWmxfe
 include common/SUNWxcursor-themes
+include common/SUNWxorg-headers.73
 include common/SUNWxorg-tsol-module
 include common/SUNWxwts

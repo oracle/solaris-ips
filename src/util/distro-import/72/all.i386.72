@@ -8,5 +8,6 @@ include common/SUNWgnome-img-viewer.71
 include common/SUNWgnu-idn
 include common/SUNWjds-registration.72
 include common/SUNWlibcdio
+include common/SUNWxorg-headers.71
 include common/SUNWxorg-tsol-module
 include common/SUNWxwts

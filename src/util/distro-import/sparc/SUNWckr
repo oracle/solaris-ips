@@ -1,0 +1,9 @@
+package SUNWckr
+import SUNWckr
+chattr var/svc/manifest/system/dumpadm.xml opensolaris.zone=global
+chattr var/svc/manifest/system/fmd.xml opensolaris.zone=global
+chattr var/svc/manifest/system/intrd.xml opensolaris.zone=global
+# BEGIN NON-REDISTRIBUTABLE
+drop kernel/drv/sparcv9/isp
+# END NON-REDISTRIBUTABLE
+end package

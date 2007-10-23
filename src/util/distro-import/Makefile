@@ -37,21 +37,21 @@ REPO=http://localhost:10000
 JUST_THESE_PKGS=
 
 ALL_PKGS=$(GNOME_PKGS) \
-         $(INSTALL_PKGS) \
-         $(SLIM_PKGS) \
-         $(FOX_PKGS) \
+	 $(INSTALL_PKGS) \
+	 $(SLIM_PKGS) \
+	 $(FOX_PKGS) \
 	 $(WOS_PKGS)
 
 TMPPKGS=SUNWfixes
 
 #
-# always remove the following (editable) files from packages we bulk import; 
-# we're doing this until the necessary actions are available.  
+# always remove the following (editable) files from packages we bulk import;
+# we're doing this until the necessary actions are available.
 #
 ELIDED_FILES= \
-	boot/solaris/devicedb/master 	\
-	etc/security/auth_attr 		\
-	etc/security/prof_attr 		\
+	boot/solaris/devicedb/master	\
+	etc/security/auth_attr		\
+	etc/security/prof_attr		\
 	etc/security/exec_attr		\
 	etc/devlink.tab
 
@@ -63,14 +63,13 @@ FIXFILES= \
 	etc/svc/nonglobal_repo.db \
 	$(ELIDED_FILES)
 
-
-default: 74/$(TMPPKGS)
-
+default:	74/$(TMPPKGS)
 
 cluster.import:	$(WOS_PKGS)/.clustertoc Makefile
-	./clustertoc2import.py $(WOS_PKGS)/.clustertoc  > $@
+	./clustertoc2import.py $(WOS_PKGS)/.clustertoc | \
+	    sed "s/version 2.2.1a/version 2.2.1.1/" > $@
 
-proto/etc/driver_aliases: proto $(BUILDID)/all.i386.$(BUILDID) cluster.import
+proto/etc/driver_aliases:	proto $(BUILDID)/all.i386.$(BUILDID) cluster.import
 	./get_file_from_pkg.py $(WOS_PKGS)/SUNWcsd etc/driver_aliases | \
 	./driver_names.py $(BUILDID)/all.i386.$(BUILDID) > $@
 
@@ -96,30 +95,31 @@ proto:	Makefile
 	mkdir -p proto/boot/solaris/devicedb
 	mkdir -p proto/etc/security
 
-
-%/$(TMPPKGS): 
+%/$(TMPPKGS):
 	$(MAKE) BUILDID=$(@D) $(@F)
 
 %:	$(BUILDID)/%.prototype $(BUILDID)/%.pkginfo $(FIXFILES:%=proto/%)
 	pkgmk -b ./proto -r . -f $(BUILDID)/$@.prototype -d `pwd` -o
 
-
 import:	cluster.import $(TMPPKGS)
 	rm -f all.i386.$(BUILDID); ln -s $(BUILDID)/all.i386.$(BUILDID)
 	./solaris.py -s $(REPO) -w $(WOS_PKGS) $(ELIDED_FILES:%=-D %) all.i386.$(BUILDID)
 
-%/import:	
+%/import:
 	$(MAKE) BUILDID=$(@:%/import=%) import
 
-
-%/slim_import:	
-	$(MAKE) BUILDID=$(@:%/slim_import=%) slim_import
-
-
-slim_import:	$(BUILDID)/slim_cluster  $(TMPPKGS)
+slim_import:	$(BUILDID)/slim_cluster $(TMPPKGS)
 	rm -f slim_cluster; ln -s $(BUILDID)/slim_cluster slim_cluster
 	./solaris.py -s $(REPO) $(ALL_PKGS:%=-w %) $(ELIDED_FILES:%=-D %) slim_cluster $(JUST_THESE_PKGS)
 
+%/slim_import:
+	$(MAKE) BUILDID=$(@:%/slim_import=%) slim_import
+
+redist_import:	$(BUILDID)/redist_cluster $(TMPPKGS)
+	rm -f redist_cluster; ln -s $(BUILDID)/redist_cluster redist_cluster
+	./solaris.py -s $(REPO) $(ALL_PKGS:%=-w %) $(ELIDED_FILES:%=-D %) redist_cluster $(JUST_THESE_PKGS)
+
+%/redist_import:
+	$(MAKE) BUILDID=$(@:%/redist_import=%) redist_import
+
 .KEEP_STATE:
-
-

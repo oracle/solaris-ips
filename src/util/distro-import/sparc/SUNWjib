@@ -1,3 +1,7 @@
 package SUNWjib
 import SUNWjib
+# BEGIN NON-REDISTRIBUTABLE
+drop usr/share/lib/smartcard
+drop usr/share/lib/smartcard/ibutton.jar
+# END NON-REDISTRIBUTABLE
 end package

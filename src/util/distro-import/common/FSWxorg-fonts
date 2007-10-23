@@ -1,3 +1,3 @@
-package  FSWxorg-fonts
-import  FSWxorg-fonts
+package FSWxorg-fonts
+import FSWxorg-fonts
 end package

@@ -24,6 +24,7 @@ include common/SUNWtgnome-tsoljdsselmgr
 include common/SUNWtgnome-tstripe
 include common/SUNWtgnome-xagent
 include common/SUNWxcursor-themes
+include common/SUNWxorg-headers.73
 include common/SUNWxorg-tsol-module
 include common/SUNWxwts
 include i386/SUNWcakrx
