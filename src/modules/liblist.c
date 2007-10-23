@@ -26,7 +26,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
-#include "liblist.h"
+#include <liblist.h>
 
 static void copyto_liblist_cb(libnode_t *, void *, void *);
 
@@ -35,9 +35,9 @@ liblist_alloc()
 {
 	liblist_t *n;
 
-	if(!(n = malloc(sizeof(liblist_t))))
+	if ((n = malloc(sizeof (liblist_t))) == NULL)
 		return (NULL);
-	
+
 	n->head = NULL;
 	n->tail = NULL;
 
@@ -49,10 +49,10 @@ liblist_free(liblist_t *lst)
 {
 	if (!lst)
 		return;
-	
+
 	libnode_t *n = lst->head;
 	libnode_t *temp = NULL;
-	
+
 	while (n) {
 		liblist_free(n->verlist);
 		temp = n;
@@ -71,18 +71,17 @@ liblist_add(liblist_t *lst, off_t off)
 	if (!lst)
 		return (NULL);
 
-	if(!(n = malloc(sizeof(libnode_t))))
+	if ((n = malloc(sizeof (libnode_t))) == NULL)
 		return (NULL);
-	
+
 	n->nameoff = off;
 	n->verlist = NULL;
 	n->next = NULL;
-	
+
 	if (!lst->head) {
 		lst->head = n;
 		lst->tail = n;
-	}
-	else {
+	} else {
 		lst->tail->next = n;
 		lst->tail = n;
 	}
@@ -110,15 +109,15 @@ liblist_copy(liblist_t *lst)
 {
 	if (!lst)
 		return (NULL);
-	
+
 	liblist_t *nl = NULL;
 
 	if (!(nl = liblist_alloc()))
 		return (NULL);
-	
+
 	liblist_foreach(lst, copyto_liblist_cb, nl, NULL);
 
-	return nl;
+	return (nl);
 }
 
 
@@ -128,7 +127,7 @@ liblist_copy(liblist_t *lst)
 void
 setver_liblist_cb(libnode_t *n, void *info, void *info2)
 {
-	liblist_t *vers = (liblist_t*)info;
+	liblist_t *vers = (liblist_t *)info;
 
 	libnode_t *vn = vers->head;
 
@@ -145,10 +144,9 @@ setver_liblist_cb(libnode_t *n, void *info, void *info2)
 static void
 copyto_liblist_cb(libnode_t *n, void *info, void *info2)
 {
-	liblist_t *lst = (liblist_t*)info;
+	liblist_t *lst = (liblist_t *)info;
 	if (liblist_add(lst, n->nameoff) == NULL) {
 		assert(0); /* XXX */
 	}
 	lst->tail->verlist = liblist_copy(n->verlist);
 }
-

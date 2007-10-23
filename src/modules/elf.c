@@ -32,17 +32,18 @@
 #include <elf.h>
 #include <gelf.h>
 
-#include "liblist.h"
-#include "elfextract.h"
+#include <liblist.h>
+#include <elfextract.h>
+
 #include <Python.h>
 
 
 static void
 pythonify_ver_liblist_cb(libnode_t *n, void *info, void *info2)
 {
-	PyObject *pverlist = (PyObject*)info;
+	PyObject *pverlist = (PyObject *)info;
 	PyObject *ent;
-	dyninfo_t *dyn = (dyninfo_t*)info2;
+	dyninfo_t *dyn = (dyninfo_t *)info2;
 
 	ent = Py_BuildValue("s", elf_strptr(dyn->elf, dyn->dynstr, n->nameoff));
 
@@ -52,25 +53,25 @@ pythonify_ver_liblist_cb(libnode_t *n, void *info, void *info2)
 static void
 pythonify_2dliblist_cb(libnode_t *n, void *info, void *info2)
 {
-	PyObject *pdep = (PyObject*)info;
-	dyninfo_t *dyn = (dyninfo_t*)info2;
-	
+	PyObject *pdep = (PyObject *)info;
+	dyninfo_t *dyn = (dyninfo_t *)info2;
+
 	PyObject *pverlist;
 
 	pverlist = PyList_New(0);
 	liblist_foreach(n->verlist, pythonify_ver_liblist_cb, pverlist, dyn);
 	PyList_Append(pdep, Py_BuildValue("[s,O]",
-		elf_strptr(dyn->elf, dyn->dynstr, n->nameoff), pverlist));
+	    elf_strptr(dyn->elf, dyn->dynstr, n->nameoff), pverlist));
 }
 
 static void
 pythonify_1dliblist_cb(libnode_t *n, void *info, void *info2)
 {
-	PyObject *pdef = (PyObject*)info;
-	dyninfo_t *dyn = (dyninfo_t*)info2;
-	
-	PyList_Append(pdef, Py_BuildValue("s", 
-		elf_strptr(dyn->elf, dyn->dynstr, n->nameoff)));
+	PyObject *pdef = (PyObject *)info;
+	dyninfo_t *dyn = (dyninfo_t *)info2;
+
+	PyList_Append(pdef, Py_BuildValue("s",
+	    elf_strptr(dyn->elf, dyn->dynstr, n->nameoff)));
 }
 /*
  * Open a file named by python, setting an appropriate error on failure.
@@ -80,7 +81,7 @@ py_get_fd(PyObject *args)
 {
 	int fd;
 	char *f;
-	
+
 	if (PyArg_ParseTuple(args, "s", &f) == 0) {
 		PyErr_SetString(PyExc_ValueError, "could not parse argument");
 		return (-1);
@@ -117,9 +118,9 @@ elf_is_elf_object(PyObject *self, PyObject *args)
  * Returns information about the ELF file in a dictionary
  * of the following format:
  *
- *  { 	
- *  	type: exe|so|core|rel, 
- *  	bits: 32|64, 
+ *  {
+ *  	type: exe|so|core|rel,
+ *  	bits: 32|64,
  *  	arch: sparc|x86|ppc|other|none,
  *  	end: lsb|msb,
  *  	osabi: none|linux|solaris|other
@@ -135,7 +136,7 @@ get_info(PyObject *self, PyObject *args)
 	int fd;
 	hdrinfo_t *hi = NULL;
 	PyObject *pdict = NULL;
-	
+
 	if ((fd = py_get_fd(args)) < 0)
 		return (NULL);
 
@@ -145,7 +146,7 @@ get_info(PyObject *self, PyObject *args)
 	}
 
 	pdict = PyDict_New();
-	PyDict_SetItemString(pdict, "type", 
+	PyDict_SetItemString(pdict, "type",
 	    Py_BuildValue("s", pkg_string_from_type(hi->type)));
 	PyDict_SetItemString(pdict, "bits", Py_BuildValue("i", hi->bits));
 	PyDict_SetItemString(pdict, "arch",
@@ -162,14 +163,14 @@ out:
 }
 
 /*
- * Returns a dictionary with the relevant information.  No longer 
+ * Returns a dictionary with the relevant information.  No longer
  * accurately titled "get_dynamic," as it returns the hash as well.
  *
  * The hash is currently of the following sections (when present):
  * 		.text .data .data1 .rodata .rodata1
  *
  * Dictionary format:
- * 
+ *
  * {
  *	runpath: "/path:/entries",
  *	defs: ["version", ... ],
@@ -177,13 +178,13 @@ out:
  * 	hash: "sha1hash"
  * }
  *
- * If any item is empty or has no value, it is omitted from the 
+ * If any item is empty or has no value, it is omitted from the
  * dictionary.
- * 
- * XXX: Currently, defs contains some duplicate entries.  There 
- * may be meaning attached to this, or it may just be something 
+ *
+ * XXX: Currently, defs contains some duplicate entries.  There
+ * may be meaning attached to this, or it may just be something
  * worth trimming out at this stage or above.
- * 
+ *
  */
 /*ARGSUSED*/
 static PyObject *
@@ -205,7 +206,7 @@ get_dynamic(PyObject *self, PyObject *args)
 		    "failed to load dynamic section");
 		goto out;
 	}
-	
+
 	pdict = PyDict_New();
 	if (dyn->deps->head) {
 		pdep = PyList_New(0);
@@ -217,12 +218,12 @@ get_dynamic(PyObject *self, PyObject *args)
 		liblist_foreach(dyn->vers, pythonify_1dliblist_cb, pdef, dyn);
 		PyDict_SetItemString(pdict, "vers", pdef);
 		PyDict_SetItemString(pdict, "def", Py_BuildValue("s",
-			elf_strptr(dyn->elf, dyn->dynstr, dyn->def)));
+		    elf_strptr(dyn->elf, dyn->dynstr, dyn->def)));
 	}
 	if (dyn->runpath) {
 		PyDict_SetItemString(pdict, "runpath",
 		    Py_BuildValue("s",
-			elf_strptr(dyn->elf, dyn->dynstr, dyn->runpath)));
+		    elf_strptr(dyn->elf, dyn->dynstr, dyn->runpath)));
 	}
 
 	for (i = 0; i < 20; i++) {
@@ -232,7 +233,7 @@ get_dynamic(PyObject *self, PyObject *args)
 	hexhash[40] = '\0';
 
 	PyDict_SetItemString(pdict, "hash", Py_BuildValue("s", hexhash));
-	
+
 out:
 	if (dyn != NULL)
 		dyninfo_free(dyn);
@@ -243,7 +244,7 @@ out:
 
 /*
  * XXX: Implemented as part of get_dynamic above.
- * 
+ *
  * For ELF nontriviality: Need to turn an ELF object into a unique hash.
  *
  * From Eric Saxe's investigations, we see that the following sections can

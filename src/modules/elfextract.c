@@ -36,23 +36,23 @@
 #include <assert.h>
 #include <sha1.h>
 
-#include "liblist.h"
-#include "elfextract.h"
+#include <liblist.h>
+#include <elfextract.h>
 
 char *
 pkg_string_from_type(int type)
 {
 	switch (type) {
 	case ET_EXEC:
-		return "exe";
+		return ("exe");
 	case ET_DYN:
-		return "so";
+		return ("so");
 	case ET_CORE:
-		return "core";
+		return ("core");
 	case ET_REL:
-		return "rel";
+		return ("rel");
 	default:
-		return "other";
+		return ("other");
 	}
 }
 
@@ -61,20 +61,20 @@ pkg_string_from_arch(int arch)
 {
 	switch (arch) {
 	case EM_NONE:
-		return "none";
+		return ("none");
 	case EM_SPARC:
 	case EM_SPARC32PLUS:
 	case EM_SPARCV9:
-		return "sparc";
+		return ("sparc");
 	case EM_386:
 	case EM_486:
 	case EM_AMD64:
-		return "i386";
+		return ("i386");
 	case EM_PPC:
 	case EM_PPC64:
-		return "ppc";
+		return ("ppc");
 	default:
-		return "other";
+		return ("other");
 	}
 }
 
@@ -83,11 +83,11 @@ pkg_string_from_data(int data)
 {
 	switch (data) {
 	case ELFDATA2LSB:
-		return "lsb";
+		return ("lsb");
 	case ELFDATA2MSB:
-		return "msb";
+		return ("msb");
 	default:
-		return "unknown";
+		return ("unknown");
 	}
 }
 
@@ -96,14 +96,14 @@ pkg_string_from_osabi(int osabi)
 {
 	switch (osabi) {
 	case ELFOSABI_NONE:
-	/*case ELFOSABI_SYSV:*/
-		return "none";
+	/* case ELFOSABI_SYSV: */
+		return ("none");
 	case ELFOSABI_LINUX:
-		return "linux";
+		return ("linux");
 	case ELFOSABI_SOLARIS:
-		return "solaris";
+		return ("solaris");
 	default:
-		return "other";
+		return ("other");
 	}
 }
 
@@ -112,9 +112,9 @@ getident(int fd)
 {
 	char *id = NULL;
 
-	if (!(id = malloc(EI_NIDENT)))
+	if ((id = malloc(EI_NIDENT)) == NULL)
 		return (NULL);
-	
+
 	if (lseek(fd, 0, SEEK_SET) == -1) {
 		assert(0);
 		free(id);
@@ -138,7 +138,7 @@ iself(int fd)
 	if (!(ident = getident(fd)))
 		return (0);
 
-	if (!strncmp(ident, ELFMAG, strlen(ELFMAG))) {
+	if (strncmp(ident, ELFMAG, strlen(ELFMAG)) == 0) {
 		free(ident);
 		return (1);
 	}
@@ -165,8 +165,8 @@ gethead(Elf *elf)
 
 	if (!elf)
 		return (NULL);
-	
-	if (!(hdr = malloc(sizeof(GElf_Ehdr))))
+
+	if ((hdr = malloc(sizeof (GElf_Ehdr))) == NULL)
 		return (NULL);
 
 	if (gelf_getehdr(elf, hdr) == 0) {
@@ -188,7 +188,7 @@ getheaderinfo(int fd)
 	if (!iself(fd))
 		return (NULL);
 
-	if ((hi = malloc(sizeof(hdrinfo_t))) == NULL)
+	if ((hi = malloc(sizeof (hdrinfo_t))) == NULL)
 		return (NULL);
 
 	if (elf_version(EV_CURRENT) == EV_NONE) {
@@ -200,7 +200,7 @@ getheaderinfo(int fd)
 		free(hi);
 		return (NULL);
 	}
-	
+
 	if (!(hdr = gethead(elf))) {
 		(void) elf_end(elf);
 		free(hi);
@@ -213,7 +213,7 @@ getheaderinfo(int fd)
 	hi->data = hdr->e_ident[EI_DATA];
 	hi->osabi = hdr->e_ident[EI_OSABI];
 	free(hdr);
-	
+
 	(void) elf_end(elf);
 
 	return (hi);
@@ -238,7 +238,7 @@ hashsection(char *name)
 }
 
 /*
- * Reads a section in 1k increments, adding it 
+ * Reads a section in 1k increments, adding it
  * to the hash.
  *
  * XXX this function seems to generate an invalid hash if either
@@ -252,7 +252,7 @@ readhash(int fd, SHA1_CTX *shc, off_t offset, off_t size)
 
 	if (!size)
 		return;
-	
+
 	/* XXX should we really just return here? */
 	if (lseek(fd, offset, SEEK_SET) == -1)
 		return;
@@ -288,7 +288,7 @@ getdynamic(int fd)
 	size_t		sh_str = 0;
 	size_t		vernum = 0, verdefnum = 0;
 	int		t = 0, num_dyn, dynstr = -1;
-	
+
 	SHA1_CTX	shc;
 	dyninfo_t	*dyn = NULL;
 
@@ -301,7 +301,7 @@ getdynamic(int fd)
 	GElf_Verneed *ev = NULL;
 	GElf_Vernaux *ea = NULL;
 	liblist_t *vers = NULL;
-	
+
 	GElf_Verdef *vd = NULL;
 	GElf_Verdaux *va = NULL;
 	liblist_t *verdef = NULL;
@@ -311,7 +311,7 @@ getdynamic(int fd)
 
 	if (!(elf = elf_begin(fd, ELF_C_READ, NULL)))
 		goto bad;
-	
+
 	if (!elf_getshstrndx(elf, &sh_str))
 		goto bad;
 
@@ -321,7 +321,7 @@ getdynamic(int fd)
 		if (gelf_getshdr(scn, &shdr) != &shdr)
 			goto bad;
 
-                if (!(name = elf_strptr(elf, sh_str, shdr.sh_name)))
+		if (!(name = elf_strptr(elf, sh_str, shdr.sh_name)))
 			goto bad;
 
 		if (hashsection(name))
@@ -388,7 +388,7 @@ getdynamic(int fd)
 		runpath = rpath;
 
 	/*
-	 * Finally, get version information for each item in 
+	 * Finally, get version information for each item in
 	 * our dependency list.  This part is a little messier,
 	 * as it seems that libelf / gelf do not implement this.
 	 */
@@ -399,8 +399,8 @@ getdynamic(int fd)
 		buf = data_verneed->d_buf;
 		cp = buf;
 	}
-	
-	for (t=0; t < vernum; t++) {
+
+	for (t = 0; t < vernum; t++) {
 		if (ev)
 			cp += ev->vn_next;
 		ev = (GElf_Verneed*)cp;
@@ -408,11 +408,11 @@ getdynamic(int fd)
 		liblist_t *veraux = NULL;
 		if (!(veraux = liblist_alloc()))
 			goto bad;
-		
+
 		buf = cp;
 
 		cp += ev->vn_aux;
-		
+
 		ea = NULL;
 		for (a = 0; a < ev->vn_cnt; a++) {
 			if (ea)
@@ -439,7 +439,7 @@ getdynamic(int fd)
 	/*
 	 * Now, figure out what versions we provide.
 	 */
-	
+
 	if (!(verdef = liblist_alloc()))
 		goto bad;
 
@@ -447,15 +447,15 @@ getdynamic(int fd)
 		buf = data_verdef->d_buf;
 		cp = buf;
 	}
-	
-	for (t=0; t < verdefnum; t++) {
+
+	for (t = 0; t < verdefnum; t++) {
 		if (vd)
 			cp += vd->vd_next;
 		vd = (GElf_Verdef*)cp;
 
 		buf = cp;
 		cp += vd->vd_aux;
-		
+
 		va = NULL;
 		for (a = 0; a < vd->vd_cnt; a++) {
 			if (va)
@@ -467,15 +467,15 @@ getdynamic(int fd)
 			} else {
 				if (liblist_add(verdef, va->vda_name) == NULL) {
 					/* XXX what do we do here? */
-					assert(0);	 
+					assert(0);
 				}
 			}
 		}
 
 		cp = buf;
 	}
-	
-	if (!(dyn = malloc(sizeof(dyninfo_t))))
+
+	if ((dyn = malloc(sizeof (dyninfo_t))) == NULL)
 		goto bad;
 
 	dyn->runpath = runpath;

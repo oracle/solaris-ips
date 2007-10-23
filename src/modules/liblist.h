@@ -23,17 +23,21 @@
  * Use is subject to license terms.
  */
 
-#ifndef _LIBLIST_H_
-#define _LIBLIST_H_
+#ifndef _LIBLIST_H
+#define	_LIBLIST_H
 
 #include <sys/types.h>
+
+#ifdef	__cplusplus
+extern "C" {
+#endif
 
 struct libnode;
 struct liblist;
 
 typedef struct libnode {
 	off_t		nameoff;	/* offset of name of this node in */
-					/* a particular name table 	  */
+					/* a particular name table	  */
 	struct liblist	*verlist;	/* version string list head	  */
 	struct libnode	*next;		/* next node			  */
 } libnode_t;
@@ -48,10 +52,14 @@ typedef struct liblist {
 liblist_t *liblist_alloc();
 void liblist_free(liblist_t *lst);
 libnode_t *liblist_add(liblist_t *lst, off_t off);
-void liblist_foreach(liblist_t *lst, void (*cb)(libnode_t *, void *, void *), 
+void liblist_foreach(liblist_t *lst, void (*cb)(libnode_t *, void *, void *),
     void *info, void *info2);
 
 /* callbacks */
 void setver_liblist_cb(libnode_t *n, void *info, void *info2);
 
-#endif	/* _LIBLIST_H_ */
+#ifdef	__cplusplus
+}
+#endif
+
+#endif	/* _LIBLIST_H */

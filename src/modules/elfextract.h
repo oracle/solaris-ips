@@ -23,26 +23,30 @@
  * Use is subject to license terms.
  */
 
-#ifndef _ELFEXTRACT_H_
-#define _ELFEXTRACT_H_
+#ifndef _ELFEXTRACT_H
+#define	_ELFEXTRACT_H
 
 #include <sys/types.h>
-#include "liblist.h"
+#include <liblist.h>
+
+#ifdef	__cplusplus
+extern "C" {
+#endif
 
 #ifndef MIN
-#define MIN(a,b) ((a) < (b) ? (a) : (b))
+#define	MIN(a, b) ((a) < (b) ? (a) : (b))
 #endif
 
 typedef struct dyninfo {
-	off_t		runpath;	/* offset in table of the runpath */
-	off_t		def;		/* offset in table of the vdefname*/
-	off_t		dynstr;		/* string table			  */
-	liblist_t 	*deps;		/* dependency list (also contains */
-					/* 	offsets)		  */
-	liblist_t 	*vers;		/* version provided list (also	  */
-					/* 	contains offsets)	  */
-	unsigned char	hash[20];	/* SHA1 Hash of significant segs. */
-	Elf		*elf;		/* elf data -- must be freed	  */
+	off_t		runpath;	/* offset in table of the runpath  */
+	off_t		def;		/* offset in table of the vdefname */
+	off_t		dynstr;		/* string table			   */
+	liblist_t 	*deps;		/* dependency list (also contains  */
+					/* 	offsets)		   */
+	liblist_t 	*vers;		/* version provided list (also	   */
+					/* 	contains offsets)	   */
+	unsigned char	hash[20];	/* SHA1 Hash of significant segs.  */
+	Elf		*elf;		/* elf data -- must be freed	   */
 } dyninfo_t;
 
 typedef struct hdrinfo {
@@ -64,4 +68,8 @@ extern char *pkg_string_from_arch(int arch);
 extern char *pkg_string_from_data(int data);
 extern char *pkg_string_from_osabi(int osabi);
 
+#ifdef	__cplusplus
+}
 #endif
+
+#endif	/* _ELFEXTRACT_H */

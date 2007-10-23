@@ -34,7 +34,7 @@ ELFOBJS = $(ELFSRCS:%.c=%.o)
 
 PYTHONINC = /usr/include/python2.4
 
-INC = -I$(PYTHONINC)
+INC = -I$(PYTHONINC) -I.
 CFLAGS = -g -Kpic -v $(INC)
 LIBS = -lelf -lmd
 LDFLAGS = -G
