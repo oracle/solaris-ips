@@ -150,7 +150,8 @@ def index(img, request):
      <h2>Catalog</h2>
      <pre>
 """)
-        request.wfile.write("%s" % img.catalog)
+        for f in img.catalog.fmris():
+                request.wfile.write("%s\n" % f.get_fmri())
         request.wfile.write("""\
      </pre>
     </div>

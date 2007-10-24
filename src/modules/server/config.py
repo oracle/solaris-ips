@@ -161,7 +161,7 @@ Number of manifests served: %d
 Number of files served: %d
 Number of flists requested: %d
 Number of files served by flist: %d
-""" % (len(self.catalog.npkgs()), len(self.in_flight_trans),
+""" % (self.catalog.npkgs(), len(self.in_flight_trans),
                 self.catalog_requests, self.manifest_requests,
                 self.file_requests, self.flist_requests, self.flist_files)
 
