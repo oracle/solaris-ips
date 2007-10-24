@@ -32,17 +32,33 @@ class TestElf(unittest.TestCase):
 	def test_is_elf_object(self):
 		if os.path.exists("/usr/bin/cat"):
 			self.assertEqual(elf.is_elf_object("/usr/bin/cat"),
-			    True);
+			    True)
 
 		if os.path.exists("/etc/motd"):
 			self.assertNotEqual(elf.is_elf_object("/etc/motd"),
-			    True);
+			    True)
 
 		if os.path.exists("/dev/ksyms"):
 			self.assertEqual(elf.is_elf_object("/dev/ksyms"),
-			    True);
+			    True)
 
-		self.assertRaises(OSError, elf.is_elf_object, "");
+		if os.path.exists("/usr/lib/libmlib.so"):
+			self.assertEqual(
+			    elf.is_elf_object("/usr/lib/libmlib.so"), True)
+
+		if os.path.exists("/kernel/drv/sd"):
+			self.assertEqual(elf.is_elf_object("/kernel/drv/sd"),
+			    True)
+
+		if os.path.exists("/kernel/drv/amd64/sd"):
+			self.assertEqual(
+			    elf.is_elf_object("/kernel/drv/amd64/sd"), True)
+
+		if os.path.exists("/kernel/drv/sparcv9/sd"):
+			self.assertEqual(
+			    elf.is_elf_object("/kernel/drv/sparcv9/sd"), True)
+
+		self.assertRaises(OSError, elf.is_elf_object, "")
 
 	def test_get_dynamic(self):
 		if os.path.exists("/usr/bin/cat"):
@@ -53,9 +69,25 @@ class TestElf(unittest.TestCase):
 
 		if os.path.exists("/etc/motd"):
 			self.assertRaises(RuntimeError, elf.get_dynamic,
-			    "/etc/motd");
+			    "/etc/motd")
 
-		self.assertRaises(OSError, elf.get_dynamic, "");
+		if os.path.exists("/usr/lib/libmlib.so"):
+			elf.get_dynamic("/usr/lib/libmlib.so")
+
+		if os.path.exists("/kernel/drv/sd"):
+			elf.get_dynamic("/kernel/drv/sd")
+
+		if os.path.exists("/kernel/drv/amd64/sd"):
+			elf.get_dynamic("/kernel/drv/amd64/sd")
+
+		if os.path.exists("/kernel/drv/sparcv9/sd"):
+			elf.get_dynamic("/kernel/drv/sparcv9/sd")
+
+		if os.path.exists("/usr/lib/crti.o"):
+			elf.get_dynamic("/usr/lib/crti.o")
+
+
+		self.assertRaises(OSError, elf.get_dynamic, "")
 
 	def test_get_info(self):
 		if os.path.exists("/usr/bin/cat"):
@@ -67,6 +99,21 @@ class TestElf(unittest.TestCase):
 		if os.path.exists("/etc/motd"):
 			self.assertRaises(RuntimeError, elf.get_info,
 			    "/etc/motd");
+
+		if os.path.exists("/usr/lib/libmlib.so"):
+			elf.get_info("/usr/lib/libmlib.so")
+
+		if os.path.exists("/kernel/drv/sd"):
+			elf.get_info("/kernel/drv/sd")
+
+		if os.path.exists("/kernel/drv/amd64/sd"):
+			elf.get_info("/kernel/drv/amd64/sd")
+
+		if os.path.exists("/kernel/drv/sparcv9/sd"):
+			elf.get_info("/kernel/drv/sparcv9/sd")
+
+		if os.path.exists("/usr/lib/crti.o"):
+			elf.get_info("/usr/lib/crti.o")
 
 		self.assertRaises(OSError, elf.get_info, "");
 		

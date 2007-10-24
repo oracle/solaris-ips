@@ -238,7 +238,7 @@ hashsection(char *name)
 }
 
 /*
- * Reads a section in 1k increments, adding it
+ * Reads a section in 64k increments, adding it
  * to the hash.
  *
  * XXX this function seems to generate an invalid hash if either
@@ -258,7 +258,7 @@ readhash(int fd, SHA1_CTX *shc, off_t offset, off_t size)
 		return;
 
 	do {
-		n = MIN(size, 1024);
+		n = MIN(size, sizeof (hashbuf));
 		if (read(fd, hashbuf, n) == -1) {
 			/* XXX what do we do here? */
 			assert(0);
@@ -287,7 +287,7 @@ getdynamic(int fd)
 	char		*name = NULL;
 	size_t		sh_str = 0;
 	size_t		vernum = 0, verdefnum = 0;
-	int		t = 0, num_dyn, dynstr = -1;
+	int		t = 0, num_dyn = 0, dynstr = -1;
 
 	SHA1_CTX	shc;
 	dyninfo_t	*dyn = NULL;
