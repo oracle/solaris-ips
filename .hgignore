@@ -5,6 +5,7 @@
 \.o
 \.so
 \.sw.
+\.make\.
 ^proto
 ^packages
 # Specific build products
@@ -16,3 +17,5 @@
 ^src/man/pkgsend.1$
 ^src/man/pkg.depotd.1m$
 ^src/pkgdefs/SUNWipkg/prototype$
+^src/util/distro-import/proto/
+^src/util/distro-import/SUNWfixes/
