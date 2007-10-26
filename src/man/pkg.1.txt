@@ -10,6 +10,9 @@ SYNOPSIS
      /usr/bin/pkg install [-nv] pkg_fmri
      /usr/bin/pkg uninstall [-nrv] pkg_fmri
 
+     /usr/bin/pkg info [-sv] pkg_fmri_pattern [pkg_fmri_pattern ...]
+     /usr/bin/pkg list [-o attribute ...] [-s sort_key] [-t action_type ... ]
+         pkg_fmri_pattern [pkg_fmri_pattern ...]
      /usr/bin/pkg status [-auv] [pkg_fmri_pattern ...]
      /usr/bin/pkg search token
 
@@ -66,8 +69,39 @@ SUBCOMMANDS
           during the requested operation.
 
           In the case of uninstall, the -r option will recursively
-          uninstall any packages that lack dependents after the initial
-          packages has been uninstalled.
+          uninstall any packages which are dependent on the initial
+	  package.
+
+     info [-sv] pkg_fmri_pattern [pkg_fmri_pattern ...]
+          Display information about packages in a human-readable form.
+	  With -s, display a one-line short-form giving the package name
+	  and description.  With -v, be extra verbose.  Multiple FMRI
+	  patterns may be specified.
+
+     list [-o attribute ...] [-s sort_key] [-t action_type ... ]
+              pkg_fmri_pattern [pkg_fmri_pattern ...]
+	  Display the contents (action attributes) of packages in the
+	  current image.  By default, only the path attribute is displayed,
+	  but the attribute set may be determined with the -o option.  The
+	  -o option may be specified multiple times, or multiple attributes
+	  may specified as the argument to one -o option by separating the
+	  attribute names with commas.  Only actions which have the
+	  requested attributes will be displayed.
+
+	  The -s option specifies the attribute by which the listing should
+	  be sorted.
+
+	  The -t option limits the action types which will be displayed.
+
+	  Multiple FMRI patterns may be specified.
+
+	  The special attribute names ":name" and ":key" correspond to the
+	  action name and the value of its key attribute, respectively.
+
+     search token
+          Search the installed packages for the token "token", and display
+	  the FMRIs in which the token was found.  Which tokens are indexed
+	  are action-dependent, but may include content hashes and pathnames.
 
      status [-auv] [pkg_fmri_pattern ...]
           Report on the state of packages in the current image.  With
@@ -89,6 +123,37 @@ EXAMPLES
 
      $ pkg install application/widget
 
+     Example 3:  List the contents of the zfs package.  Display the action
+     name, the mode of the file (if defined), the size (if defined), the
+     path, and the target (if a link).  Limit the action to types dir,
+     file, link, and hardlink, since specifying the :name attribute, which
+     is available for all actions, will display a line for all actions,
+     which is not desired here.
+
+     $ pkg list -t dir,file,link,hardlink -o :name,mode,pkg.size,path,target zfs
+     :NAME MODE   SIZE PATH                                      TARGET
+     dir   0755        etc
+     dir   0755        etc/fs
+     dir   0755        etc/fs/zfs
+     link              etc/fs/zfs/mount                          ../../../sbin/zfs
+     link              etc/fs/zfs/umount                         ../../../sbin/zfs
+     dir   0755        etc/zfs
+     dir   0755        lib
+     dir   0755        lib/amd64
+     link              lib/amd64/libzfs.so                       libzfs.so.1
+     file  0755 469616 lib/amd64/libzfs.so.1
+     file  0644  62057 lib/amd64/llib-lzfs.ln
+     link              lib/libzfs.so                             libzfs.so.1
+     [ ... ]
+
+     Example 4:  Search the package database for the token "bge".
+
+     $ pkg search bge
+     basename pkg:/driver/bge/0.5.11,5.11-0.72:20071001T101343Z
+     driver_name pkg:/driver/bge/0.5.11,5.11-0.72:20071001T101343Z
+
+     The token shows up both as a basename and as a driver name in the
+     package driver/bge.
 
 EXIT STATUS
      The following exit values are returned:
@@ -123,7 +188,7 @@ ATTRIBUTES
     |_____________________________|_____________________________|
 
 SEE ALSO
-     pkgsend(1), pkg.depotd(1M), attributes(5)
+     pkgsend(1), pkg.depotd(1M), attributes(5), pkg(5)
 
 NOTES
      The image packaging system is an under-development feature.

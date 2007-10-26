@@ -63,14 +63,8 @@ Usage:
 
 Packager subcommands:
         pkgsend open [-en] pkg_fmri
-        pkgsend add file|link|hardlink|device path file
-        pkgsend batch file
-        pkgsend delete path
-        pkgsend meta include|require|exclude pkg_fmri
-        pkgsend meta disclaim pkg_fmri
-        pkgsend meta set property value
-        pkgsend meta unset property
-        pkgsend summary
+        pkgsend add action arguments
+        pkgsend send bundlefile
         pkgsend close [-A]
 
 Options:

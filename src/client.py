@@ -74,12 +74,10 @@ Install subcommands:
         pkg refresh
         pkg install [-nv] pkg_fmri
         pkg uninstall [-nrv] pkg_fmri
-        pkg freeze [--version version_spec] [--release] [--branch] pkg_fmri
-        pkg unfreeze pkg_fmri
 
         pkg info [-sv] pkg_fmri_pattern [pkg_fmri_pattern ... ]
         pkg list [-o attribute ...] [-s sort_key] [-t action_type ... ]
-            [pkg_fmri_pattern ...]
+            pkg_fmri_pattern [pkg_fmri_pattern ...]
         pkg search token
         pkg status [-auv] [pkg_fmri_pattern ...]
 

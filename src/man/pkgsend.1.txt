@@ -60,17 +60,25 @@ ENVIRONMENT VARIABLES
 
 ACTIONS
      Each resource within a package must be associated with an action.
-     The following actions are known in the current system.
+     See pkg(5) for a complete list of actions.
+     
+     If an action has an associated payload, the path to the payload must
+     be the first argument after the action name.  All other attributes are
+     specified as "name=value", and may be given in any order.  Typically,
+     only an action's key attribute is required, though not all actions may
+     work properly without a fuller set of attributes.
 
-     depend depend_type pkg_fmri
+     depend type=<depend_type> fmri=<pkg_fmri>
           Make this package version dependent on the give package FMRI.
           Valid depend_types are require and optional.
 
-     dir mode userid groupid path [name=value ...]
+     dir mode=<mode> owner=<userid> group=<groupid> path=<path> \
+       [name=value ...]
           Deliver a directory with the listed attributes into the
           transaction.
 
-     file mode userid groupid path src_path [name=value ...]
+     file src_path mode=<mode> owner=<userid> group=<groupid> \
+        path=<path> [name=value ...]
           Deliver a file with the listed attributes into the
           transaction.
 
@@ -78,7 +86,8 @@ EXAMPLES
      Example 1:  Create a trivial package.
 
      $ eval `pkgsend open example@1.0-1`
-     $ pkgsend add file 0555 root bin /usr/bin/example example
+     $ pkgsend add file example mode=0555 owner=root group=bin \
+         path=/usr/bin/example
      $ pkgsend close
 
 EXIT STATUS
@@ -102,7 +111,7 @@ ATTRIBUTES
     |_____________________________|_____________________________|
 
 SEE ALSO
-     pkg.depotd(1M), attributes(5)
+     pkg.depotd(1M), attributes(5), pkg(5)
 
 NOTES
      The image packaging system is an under-development feature.
