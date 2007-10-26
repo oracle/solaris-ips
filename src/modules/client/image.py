@@ -25,6 +25,7 @@
 
 import ConfigParser
 import cPickle
+import errno
 import getopt
 import os
 import urllib
@@ -35,6 +36,7 @@ import pkg.catalog as catalog
 import pkg.fmri as fmri
 import pkg.manifest as manifest
 import pkg.client.imageconfig as imageconfig
+import pkg.client.retrieve as retrieve
 
 from pkg.misc import versioned_urlopen
 
@@ -220,35 +222,29 @@ class Image(object):
         def get_default_authority(self):
                 return self.cfg_cache.preferred_authority
 
-        def get_matching_pkgs(self, pfmri):
-                """Exact matches to the given FMRI.  Returns a list of (catalog,
-                PkgFmri) pairs."""
+        def get_matching_fmris(self, patterns, matcher = None,
+            constraint = None, counthash = None):
+                """Iterate through all catalogs, looking for packages matching
+                'pattern', based on the function in 'matcher' and the versioning
+                constraint described by 'constraint'.  If 'matcher' is None,
+                uses fmri subset matching as the default.  Returns a list of
+                (catalog, fmri) pairs.  If 'counthash' is a dictionary, instead
+                store the number of matched fmris for each package name which
+                was matched."""
+
+                # XXX Do we want to recognize regex (some) metacharacters and
+                # switch automatically to the regex matcher?
 
                 m = [
                     (c, p)
                     for c in self.catalogs.values()
-                    for p in c.find_matching_pkgs(pfmri)
+                    for p in c.get_matching_fmris(patterns, matcher, constraint,
+                        counthash)
                 ]
 
                 if not m:
-                        raise KeyError, "package matching '%s' not found in catalog" \
-                            % pfmri
-
-                return m
-
-        def get_regex_matching_fmris(self, regex):
-                """FMRIs matching the given regular expression.  Returns of a
-                list of (catalog, PkgFmri) pairs."""
-
-                m = [
-                    (c, p)
-                    for c in self.catalogs.values()
-                    for p in c.find_regex_matching_fmris(regex)
-                ]
-
-                if not m:
-                        raise KeyError, "pattern '%s' not found in catalog" \
-                            % regex
+                        raise KeyError, "packages matching '%s' not found in catalog" \
+                            % patterns
 
                 return m
 
@@ -419,7 +415,7 @@ class Image(object):
                 if len(pargs):
                         pkgs_known = [ m[1]
                             for p in pargs
-                            for m in self.get_regex_matching_fmris(p).sort() ]
+                            for m in self.get_matching_fmris(p) ]
 
                 elif all_known:
                         pkgs_known = [ pf for pf in
@@ -442,13 +438,16 @@ class Image(object):
 
                 print fmt_str % ("FMRI", "STATE", "U", "F", "I", "X")
 
+                counthash = {}
+                self.get_matching_fmris(pkgs_known, counthash = counthash)
+
                 for p in pkgs_known:
                         upgradable = "-"
                         frozen = "-"
                         incorporated = "-"
                         excludes = "-"
 
-                        if len(self.get_matching_pkgs(p)) > 1:
+                        if counthash[p] > 1:
                                 upgradable = "u"
                         elif upgradable_only:
                                 continue

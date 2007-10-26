@@ -218,6 +218,18 @@ class PkgFmri(object):
 
                 return True
 
+def fmri_match(pkg_name, pattern):
+        """Returns true if 'pattern' is a proper subset of 'pkg_name'."""
+        return ("/" + pkg_name).endswith("/" + pattern)
+
+def regex_match(pkg_name, pattern):
+        """Returns true if 'pattern' is a regular expression matching 'pkg_name'."""
+        return re.search(pattern, pkg_name)
+
+def exact_name_match(pkg_name, pattern):
+        """Returns true if 'pattern' matches 'pkg_name' exactly."""
+        return pkg_name == pattern
+
 if __name__ == "__main__":
         n1 = PkgFmri("pkg://pion/sunos/coreutils", "5.9")
         n2 = PkgFmri("sunos/coreutils", "5.10")

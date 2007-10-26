@@ -148,7 +148,6 @@ class Catalog(object):
                 the package catalog."""
                 tree = os.walk(pkg_root)
 
-
                 # XXX eschew os.walk in favor of another os.listdir here?
                 for pkg in tree:
                         if pkg[0] == pkg_root:
@@ -165,61 +164,76 @@ class Catalog(object):
 
                                 print f
 
-        def find_matching_pkgs(self, pfmri):
-                """Search the catalog for a package names that match
-                the specified FMRI.  Returns a list of FMRIs for any
-                versions found that are newer than the pfmri supplied as
-                an argument."""
+        def get_matching_fmris(self, patterns, matcher = None,
+            constraint = None, counthash = None):
+                """Iterate through the catalog, looking for packages matching
+                'pattern', based on the function in 'matcher' and the versioning
+                constraint described by 'constraint'.  If 'matcher' is None,
+                uses fmri subset matching as the default.  Returns a sorted list
+                of PkgFmri objects, newest versions first.  If 'counthash' is a
+                dictionary, instead store the number of matched fmris for each
+                package name which was matched."""
+
+                if not matcher:
+                        matcher = fmri.fmri_match
+
+                if not isinstance(patterns, list):
+                        patterns = [ patterns ]
+
+                # 'pattern' may be a partially or fully decorated fmri; we want
+                # to extract its name and version to match separately against
+                # the catalog.
+                # XXX "5.11" here needs to be saner
+                tuples = {}
+
+                for pattern in patterns:
+                        if isinstance(pattern, fmri.PkgFmri):
+                                tuples[pattern] = pattern.tuple()
+                        else:
+                                tuples[pattern] = \
+                                    fmri.PkgFmri(pattern, "5.11").tuple()
 
                 ret = []
-
-                pkgexpr = "%s" % pfmri.get_pkg_stem(anarchy = True)
 
                 pfile = file(os.path.normpath(
                     os.path.join(self.catalog_root, "catalog")), "r")
 
                 for entry in pfile:
-                        m = entry.find(pkgexpr)
-                        if m > -1:
-                                pkgstr = entry[m:]
-                                pkgstr.rstrip()
-                                nfmri = fmri.PkgFmri(pkgstr)
-                                if nfmri.is_successor(pfmri):
-                                        ret.append(nfmri)
+                        try:
+                                cv, pkg, cat_name, cat_version = entry.split()
+                        except ValueError:
+                                # Handle old two-column catalog file, mostly in
+                                # use on server.
+                                cv, cat_fmri = entry.split()
+                                pkg = "pkg"
+                                cat_auth, cat_name, cat_version = \
+                                    fmri.PkgFmri(cat_fmri, "5.11").tuple()
+
+                        for pattern in patterns:
+                                pat_auth, pat_name, pat_version = tuples[pattern]
+                                if pkg == "pkg" and matcher(cat_name, pat_name):
+                                        pkgfmri = fmri.PkgFmri("%s@%s" %
+                                            (cat_name, cat_version))
+                                        if not pat_version or \
+                                            not pat_version.is_successor(
+                                            pkgfmri.version, constraint):
+                                                    if counthash is not None:
+                                                            if pattern in counthash:
+                                                                    counthash[pattern] += 1
+                                                            else:
+                                                                    counthash[pattern] = 1
+                                                    else:
+                                                            ret.append(pkgfmri)
 
                 pfile.close()
 
-                if ret == []:
-                        raise KeyError, "FMRI '%s' not found in catalog" \
-                            % pfmri
+                if counthash:
+                        return counthash
 
-                return ret
-
-        def find_regex_matching_fmris(self, regex):
-                """Search the catalog for packages that match
-                the regex that is supplied as an argument.  This
-                returns an sorted list of FMRIs."""
-
-                ret = []
-
-                pkgexpr = "pkg:/"
-
-                pfile = file(os.path.normpath(
-                    os.path.join(self.catalog_root, "catalog")), "r")
-
-                for entry in pfile:
-                        m = entry.find(pkgexpr)
-                        if m > -1:
-                                pkgstr = entry[m:]
-                                pkgstr.rstrip()
-                                if re.search(regex, pkgstr):
-                                        ret.append(fmri.PkgFmri(pkgstr))
-
-                pfile.close()
-
-                if ret == []:
-                        raise KeyError, "pattern '%s' not found in catalog" \
-                            % regex
+                if not ret:
+                        raise KeyError, \
+                            "patterns '%s' match no packages in catalog" % \
+                            patterns
 
                 return sorted(ret, reverse = True)
 
@@ -227,17 +241,20 @@ class Catalog(object):
                 """A generator function that produces FMRIs as it
                 iterates over the contents of the catalog."""
 
-                pkgexpr = "pkg:/"
-
                 pfile = file(os.path.normpath(
                     os.path.join(self.catalog_root, "catalog")), "r")
 
                 for entry in pfile:
-                        m = entry.find(pkgexpr)
-                        if m > -1:
-                                pkgstr = entry[m:]
-                                pkgstr.rstrip()
-                                yield fmri.PkgFmri(pkgstr)
+                        try:
+                                cv, pkg, cat_name, cat_version = entry.split()
+                                if pkg == "pkg":
+                                        yield fmri.PkgFmri("%s@%s" %
+                                            (cat_name, cat_version))
+                        except ValueError:
+                                # Handle old two-column catalog file, mostly in
+                                # use on server.
+                                cv, cat_fmri = entry.split()
+                                yield fmri.PkgFmri(cat_fmri)
 
                 pfile.close()
 
@@ -284,7 +301,11 @@ class Catalog(object):
                         if s.startswith("S "):
                                 attrf.write(s)
                         else:
-                                catf.write(s)
+                                # XXX Need to be able to handle old and new
+                                # format catalogs.
+                                f = fmri.PkgFmri(s[2:])
+                                catf.write("%s %s %s %s\n" %
+                                    (s[0], "pkg", f.pkg_name, f.version))
 
                 attrf.close()
                 catf.close()
@@ -347,22 +368,22 @@ if __name__ == "__main__":
             "pkg:/test@1.0,5.11-1:20061231T120000Z",
             "pkg:/test@1.0,5.11-2",
             "pkg:/test@1.0,5.11-3"
-            ]
+        ]
 
         for tp in tps:
                 print "matches for %s:" % tp
 
-                for p in c.find_matching_pkgs(fmri.PkgFmri(tp, None)):
+                for p in c.get_matching_fmris(tp, None):
                         print "  ", p
 
         # Print TPS report
-        for p in c.find_regex_matching_fmris("test"):
+        for p in c.get_matching_fmris("test", matcher = fmri.regex_match):
                 print p
 
         try:
-            l = c.find_regex_matching_fmris("flob")
+                l = c.get_matching_fmris("flob", matcher = fmri.regex_match)
         except KeyError:
-            print "correctly determined no match for 'flob'"
+                print "correctly determined no match for 'flob'"
 
         for f in c.fmris():
                 print f

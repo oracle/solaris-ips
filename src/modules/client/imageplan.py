@@ -203,12 +203,14 @@ class ImagePlan(object):
                         #     -->
                         #     backtrack or reset??
 
-                        mvs = self.image.get_matching_pkgs(f)
+                        # XXX Do we want implicit freezing based on the portions
+                        # of a version present?
+                        mvs = self.image.get_matching_fmris(a.attrs["fmri"])
 
-                        cf = f
-                        for i in mvs:
-                                if i[1].is_successor(cf):
-                                         cf = i[1]
+                        # fmris in mvs are sorted with latest version first, so
+                        # take the first entry.
+                        # XXX This ignores all but one of the catalogs.
+                        cf = mvs[0][1]
 
                         # XXX LOG "adding dependency %s" % pfmri
                         self.target_fmris.append(cf)

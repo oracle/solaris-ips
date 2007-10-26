@@ -152,7 +152,7 @@ def install(img, args):
                 rpat = re.sub("\?", ".", rpat)
 
                 try:
-                        matches = img.get_regex_matching_fmris(rpat)
+                        matches = img.get_matching_fmris(rpat)
                 except KeyError:
                         print _("""\
 pkg: no package matching '%s' could be found in current catalog
@@ -163,12 +163,6 @@ pkg: no package matching '%s' could be found in current catalog
                 pnames = {}
                 for m in matches:
                         pnames[m[1].get_pkg_stem()] = 1
-                        # If we find an exact match, forget about anything else
-                        # and stop looking.
-                        if m[1].pkg_name == ppat:
-                                pnames.clear()
-                                pnames[m[1].get_pkg_stem()] = 1
-                                break
 
                 if len(pnames.keys()) > 1:
                         print _("pkg: '%s' matches multiple packages") % ppat
@@ -177,7 +171,9 @@ pkg: no package matching '%s' could be found in current catalog
                         error = 1
                         continue
 
-                ip.propose_fmri(m[1])
+                # matches is a list reverse sorted by version, so take the
+                # first; i.e., the latest.
+                ip.propose_fmri(matches[0][1])
 
         if error != 0:
                 sys.exit(error)
@@ -210,7 +206,7 @@ def uninstall(img, args):
                 elif opt == "-v":
                         verbose = True
 
-        img.load_catalogs() # XXX ???
+        img.reload_catalogs()
 
         ip = imageplan.ImagePlan(img, recursive_removal)
 
@@ -219,7 +215,7 @@ def uninstall(img, args):
                 rpat = re.sub("\?", ".", rpat)
 
                 try:
-                        matches = img.get_regex_matching_fmris(rpat)
+                        matches = img.get_matching_fmris(rpat)
                 except KeyError:
                         print _("pkg: '%s' not even in catalog!") % ppat
                         error = 1
