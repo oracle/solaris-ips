@@ -278,9 +278,12 @@ class Image(object):
                 m.set_content(mcontent)
 
                 # Pickle the manifest's indices, for searching
-                pfile = file(os.path.join(fmri_dir_path, "index"), "wb")
-                m.pickle(pfile)
-                pfile.close()
+                try:
+                        pfile = file(os.path.join(fmri_dir_path, "index"), "wb")
+                        m.pickle(pfile)
+                        pfile.close()
+                except IOError, e:
+                        pass
 
                 return m
 
@@ -473,7 +476,7 @@ class Image(object):
                 indices = (
                     (os.path.join(dir, "index"), os.path.join(dir, "manifest"))
                     for dir, dirnames, filenames in os.walk(idxdir)
-                    if "manifest" in filenames
+                    if "manifest" in filenames and "installed" in filenames
                 )
 
                 for index, mfst in indices:
