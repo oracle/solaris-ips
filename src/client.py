@@ -72,12 +72,16 @@ Usage:
 
 Install subcommands:
         pkg refresh
-        pkg status [-auv] [pkg_fmri_pattern ...]
         pkg install [-nv] pkg_fmri
         pkg uninstall [-nrv] pkg_fmri
         pkg freeze [--version version_spec] [--release] [--branch] pkg_fmri
         pkg unfreeze pkg_fmri
+
+        pkg info [-sv] pkg_fmri_pattern [pkg_fmri_pattern ... ]
+        pkg list [-o attribute ...] [-s sort_key] [-t action_type ... ]
+            [pkg_fmri_pattern ...]
         pkg search token
+        pkg status [-auv] [pkg_fmri_pattern ...]
 
         pkg image-create [-FPUz] [--full|--partial|--user] [--zone]
             [--authority prefix=url] dir
@@ -206,7 +210,7 @@ def uninstall(img, args):
                 elif opt == "-v":
                         verbose = True
 
-        img.reload_catalogs()
+        img.load_catalogs()
 
         ip = imageplan.ImagePlan(img, recursive_removal)
 
@@ -267,6 +271,208 @@ def search(img, args):
 
         for k, v in img.search(args):
                 print k, v
+
+def info(img, args):
+        """Display information about the package.
+        
+        By default, display generic metainformation about the package.  With -v,
+        display verbosely.  With -s, a short display.
+        """
+
+        try:
+                opts, pargs = getopt.getopt(args, "sv")
+        except getopt.GetoptError, e:
+                print _("pkg: illegal option '%s'") % e.opt
+                usage()
+
+        verbose = short = False
+        for opt, arg in opts:
+                if opt == "-s":
+                        short = True
+                elif opt == "-v":
+                        verbose = True # XXX -vv ?
+
+        img.load_catalogs()
+
+        # XXX Want to show info for all packages if no args given.
+        try:
+                matches = img.get_matching_fmris(pargs)
+        except KeyError:
+                print _("pkg: no matching packages found in catalog")
+                return
+
+        fmris = [
+            m[1]
+            for m in matches
+            if img.is_installed(m[1]) # XXX how about non-installed?
+        ]
+
+        if not fmris:
+                return
+
+        manifests = ( img.get_manifest(f) for f in fmris )
+
+        for i, m in enumerate(manifests):
+                if not short and i > 0:
+                        print
+                info_one(m, short, verbose)
+
+def info_one(manifest, short, verbose):
+        authority, name, version = manifest.fmri.tuple()
+        summary = [
+            a.attrs["value"]
+            for a in manifest.actions
+            if a.name == "set" and a.attrs["name"] == "description"][0]
+
+        if short:
+                print "%-12s%s" % (name, summary)
+        else:
+                print "Name:", name
+                print "FMRI:", manifest.fmri
+                print "Version:", version.release
+                print "Branch:", version.branch
+                print "Packaging Date:", version.get_datetime()
+                # XXX This needs to be simpler.  Making it so starts to
+                # turn Manifest into a "package" object (but not of the
+                # "Package" class).  Is that okay?
+                print "Summary:", [
+                    a.attrs["value"]
+                    for a in manifest.actions
+                    if a.name == "set" and \
+                        a.attrs["name"] == "description"][0]
+
+def list_contents(img, args):
+        """List package contents."""
+
+        try:
+                opts, pargs = getopt.getopt(args, "o:s:t:")
+        except getopt.GetoptError, e:
+                print _("pkg: illegal option '%s'") % e.opt
+                usage()
+
+        verbose = False
+        attrs = []
+        sort_attrs = []
+        action_types = []
+        for opt, arg in opts:
+                if opt == "-o":
+                        attrs.extend(arg.split(","))
+                elif opt == "-s":
+                        sort_attrs.append(arg)
+                elif opt == "-t":
+                        action_types.extend(arg.split(","))
+
+        img.load_catalogs()
+
+        # XXX Want to list contents of all packages if no args given.
+        # XXX Maybe want to make get_matching_fmris() return only installed
+        # fmris, if asked.
+        try:
+                matches = img.get_matching_fmris(pargs)
+        except KeyError:
+                print _("pkg: no matching packages found in catalog")
+                return
+
+        fmris = [
+            m[1]
+            for m in matches
+            if img.is_installed(m[1]) # XXX how about non-installed?
+        ]
+
+        if not attrs:
+                # XXX Possibly have multiple exclusive attributes per column?
+                # If listing dependencies and files, you could have a path/fmri
+                # column which would list paths for files and fmris for
+                # dependencies.
+                attrs = [ "path" ]
+        # XXX reverse sorting
+        if not sort_attrs:
+                # Most likely want to sort by path, so don't force people to
+                # make it explicit
+                if "path" in attrs:
+                        sort_attrs = [ "path" ]
+                else:
+                        sort_attrs = attrs[:1]
+
+        if not fmris:
+                return
+
+        manifests = ( img.get_manifest(f) for f in fmris )
+
+        lines = []
+        # widths is a list of tuples of column width and justification.  Start
+        # with the widths of the column headers, excluding any dotted prefixes.
+        JUST_UNKN = 0
+        JUST_LEFT = -1
+        JUST_RIGHT = 1
+        widths = [ (len(attr) - attr.find(".") - 1, JUST_UNKN) for attr in attrs ]
+        for manifest in manifests:
+                for action in manifest.actions:
+                        if action_types and action.name not in action_types:
+                                continue
+                        line = []
+                        for i, attr in enumerate(attrs):
+                                just = JUST_UNKN
+                                # As a first approximation, numeric attributes
+                                # are right justified, non-numerics left.
+                                try:
+                                        int(action.attrs[attr])
+                                        just = JUST_RIGHT
+                                # attribute is non-numeric or is something like
+                                # a list.
+                                except (ValueError, TypeError):
+                                        just = JUST_LEFT
+                                # attribute isn't in the list, so we don't know
+                                # what it might be
+                                except KeyError:
+                                        pass
+
+                                if attr in action.attrs:
+                                        a = action.attrs[attr]
+                                elif attr == ":name":
+                                        a = action.name
+                                        just = JUST_LEFT
+                                elif attr == ":key":
+                                        a = action.attrs[action.key_attr]
+                                        just = JUST_LEFT
+                                else:
+                                        a = ""
+
+                                line.append(a)
+
+                                # XXX What to do when a column's justification
+                                # changes?
+                                if just != JUST_UNKN:
+                                        widths[i] = \
+                                            (max(widths[i][0], len(a)), just)
+
+                        if line and [e for e in line if e != ""]:
+                                lines.append(line)
+
+        sortidx = 0
+        for i, attr in enumerate(attrs):
+                if attr == sort_attrs[0]:
+                        sortidx = i
+                        break
+
+        # Sort numeric columns numerically.
+        if widths[sortidx][1] == JUST_RIGHT:
+                def key_extract(x):
+                        try:
+                                return int(x[sortidx])
+                        except (ValueError, TypeError):
+                                return 0
+        else:
+                key_extract = lambda x: x[sortidx]
+
+        # Now that we know all the widths, multiply them by the justification
+        # values to get positive or negative numbers to pass to the %-expander.
+        widths = [ e[0] * e[1] for e in widths ]
+        fmt = ("%%%ss " * len(widths)) % tuple(widths)
+        headers = [a[a.find(".") + 1:].upper() for a in attrs]
+        print (fmt % tuple(headers)).rstrip()
+        for line in sorted(lines, key = key_extract):
+                print (fmt % tuple(line)).rstrip()
 
 def create_image(img, args):
         """Create an image of the requested kind, at the given path.  Load
@@ -373,6 +579,10 @@ if __name__ == "__main__":
                 unfreeze(img, pargs)
         elif subcommand == "search":
                 search(img, pargs)
+        elif subcommand == "info":
+                info(img, pargs)
+        elif subcommand == "list":
+                list_contents(img, pargs)
         else:
                 print _("pkg: unknown subcommand '%s'") % subcommand
                 usage()
