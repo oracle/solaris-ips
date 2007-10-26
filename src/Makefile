@@ -43,6 +43,7 @@ ROOTPYTHONVENDOR = $(ROOTPYTHON)/vendor-packages
 ROOTPYTHONPKG = $(ROOTPYTHONVENDOR)/pkg
 ROOTMAN1 = $(ROOT)/usr/share/man/cat1
 ROOTMAN1M = $(ROOT)/usr/share/man/cat1m
+ROOTMAN5 = $(ROOT)/usr/share/man/cat5
 
 LINKPYTHONPKG = /usr/lib/python2.4/vendor-packages/pkg
 
@@ -59,7 +60,8 @@ ROOTDIRS = \
 	$(ROOTMANIFEST) \
 	$(ROOTSHARE) \
 	$(ROOTMAN1) \
-	$(ROOTMAN1M)
+	$(ROOTMAN1M) \
+	$(ROOTMAN5)
 
 PROGS = pkg pkgsend pkg.depotd
 

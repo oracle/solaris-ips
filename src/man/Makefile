@@ -28,8 +28,9 @@ ROOT = ../../proto/root_${MACH}
 ROOTMAN = $(ROOT)/usr/share/man
 ROOTMAN1 = $(ROOTMAN)/cat1
 ROOTMAN1M = $(ROOTMAN)/cat1m
+ROOTMAN5 = $(ROOTMAN)/cat5
 
-MANPAGES = $(ROOTMAN1)/pkg.1 $(ROOTMAN1)/pkgsend.1 $(ROOTMAN1M)/pkg.depotd.1m
+MANPAGES = $(ROOTMAN1)/pkg.1 $(ROOTMAN1)/pkgsend.1 $(ROOTMAN1M)/pkg.depotd.1m $(ROOTMAN5)/pkg.5
 
 all := TARGET = all
 link := TARGET = link
@@ -42,20 +43,21 @@ install: $(MANPAGES)
 
 PWD:sh = pwd 
 link:
-	-mkdir -p /usr/share/man/cat1 /usr/share/man/cat1m
+	-mkdir -p /usr/share/man/cat1 /usr/share/man/cat1m /usr/share/man/cat5
 	ln -sf $(PWD)/pkg.1.txt /usr/share/man/cat1/pkg.1
 	ln -sf $(PWD)/pkgsend.1.txt /usr/share/man/cat1/pkgsend.1
 	ln -sf $(PWD)/pkg.depotd.1m.txt /usr/share/man/cat1m/pkg.depotd.1m
+	ln -sf $(PWD)/pkg.5.txt /usr/share/man/man5/pkg.5
 
 link-clean:
 	rm -f /usr/share/man/cat1/pkg.1
 	rm -f /usr/share/man/cat1/pkgsend.1
 	rm -f /usr/share/man/cat1m/pkg.depotd.1m
+	rm -f /usr/share/man/cat5/pkg.5
 
 clean:
 
 clobber: clean
-	rm -f $(ROOTPKGWEB)
 
 $(ROOTMAN1)/%: %.txt
 	cp $< $*
@@ -64,3 +66,7 @@ $(ROOTMAN1)/%: %.txt
 $(ROOTMAN1M)/%: %.txt
 	cp $< $*
 	rm -f $@; install -f $(ROOTMAN1M) -m 0444 $*
+
+$(ROOTMAN5)/%: %.txt
+	cp $< $*
+	rm -f $@; install -f $(ROOTMAN5) -m 0444 $*

@@ -1,0 +1,239 @@
+Standards, Environments, and Macros                       pkg(5)
+
+
+NAME
+     pkg - image packaging system
+
+DESCRIPTION
+     The image packaging system (IPS) is a framework which provides for
+     software lifecycle management (installation, upgrade, and removal).
+     IPS manages software in units of packages, which are collections of
+     'OpenSolaris.  actions', defined by a set of key/value pairs and
+     possibly a data payload.  In many cases, actions are files found in a
+     filesystem, but they also represent other installable objects, such as
+     drivers, services, and users.
+
+  Package FMRIs and Versions
+
+     Each package is represented by a fault management resource identifier
+     (FMRI) with the scheme 'pkg:'.  The full FMRI for a package consists
+     of the scheme, an authority, the package name, and a version string in
+     the following format:
+
+         pkg://opensolaris.org/library/libc@5.11,5.11-0.75:20071001T163427Z
+
+     'opensolaris.org' is the authority.  'library/libc' is the package
+     name.  Although the namespace is heirarchical and arbitrarily deep,
+     there is no enforced containment -- the name is essentially arbitrary.
+
+     The version follows the package name, separated by an '@'.  It
+     consists of four sequences of numbers, separated by punctuation.  The
+     elements in the first three sequences are separated by dots, and the
+     sequences are arbitrarily long.
+
+     The first part is the component version.  For components tightly bound
+     to Solaris, this will usually be the value of 'uname -r' for that
+     version of Solaris.  For a component with its own development
+     lifecycle, this sequence will be the dotted release number, such as
+     '2.4.10'.
+
+     The second part, following the comma, is the build version, specifying
+     what version of Solaris the contents of the package were built on,
+     providing a minimum bound on which Solaris version the contents can be
+     expected to run successfully.
+
+     The third part, following the dash, is the branch version, a
+     versioning component, providing vendor-specific information.  This may
+     be incremented when the packaging metadata is changed, independently
+     of the component, may contain a build number, or some other
+     information.
+
+     The fourth part, following the colon, is a timestamp.  It represents
+     when the package was published.
+
+     Many parts of the system, when appropriate, will contract FMRIs when
+     displaying them to reduce the volume of information provided.
+     Typically, the scheme, authority, build version, and timestamp will be
+     elided, and sometimes the versioning information altogether.
+
+  Actions
+     Actions represent the installable objects on a system.  They are
+     described in a package's manifest.  Every action consists primarily of
+     its name and a key attribute.  Together, these refer to a unique
+     object as it follows a version history.  Actions may have other
+     attributes.  Some of these will be interpreted directly by the
+     packaging system, others may be useful only to the system
+     administrator or the end-user.
+
+     The attributes listed below are not an exhaustive set; indeed, the
+     attributes which may be attached to an action are arbitrary, and
+     indeed, the standard sets are easily augmented to incorporate future
+     developments.
+
+  File Actions
+     The 'file' action is perhaps the most common action, and represents an
+     'ordinary file'.  It references a payload, and has four standard
+     attributes:
+
+     path   The filesystem path where the file is installed.  This is a
+            file action's key attribute.
+
+     mode   The access permissions (in numeric form) of the file.  These
+	    are simple permissions only, not ACLs.
+
+     owner  The name of the user which owns the file.
+
+     group  The name of the group which owns the file.
+
+     Other attributes include:
+
+     preserve  This specifies that the file's contents should not be
+               overwritten on upgrade if they are determined to have
+               changed since it was installed or last upgraded.
+
+               If the value of this attribute is 'renameold', then the
+               existing file will be renamed, and the new file will be put
+               in its place.
+
+               If the value of this attribute is 'renamenew', then the
+               existing file will be left alone, and the new file will be
+               installed with a new name.
+
+               If the value of this attribute is 'strawberry', then the
+               existing file will be left alone, and the new file will not
+               be installed.
+
+     Files may also be 'tasted', and depending on the flavor, may have
+     additional interesting attributes.  For ELF files, the following
+     attributes are recognized:
+
+     elfarch  The architecture of the ELF file.  This will be the output of
+              'uname -p' on the architecture for which the file is built.
+
+     elfbits  This will be '32' or '64'.
+
+     elfhash  This is the hash of the 'interesting' ELF sections in the
+              file.  These sections are the ones that are mapped into
+              memory when the binary is loaded, except for the section
+              containing the CTF data.  These sections are the only ones
+              necessary to consider when determining whether two binaries'
+              executable behavior will differ.
+
+  Directory Actions
+     The 'directory' action is like the file action in that it represents a
+     filesystem object, but a directory instead of an ordinary file.  It
+     has the same four standard attributes as the file action, and 'path'
+     is the key attribute.
+
+  Link Actions
+     The 'link' action represents a symbolic link.  It has two standard
+     attributes:
+
+     path    The filesystem path where the symlink is installed.  This is a
+             link action's key attribute.
+
+     target  The target of the symlink; the filesystem object to which the
+	     link resolves.
+
+  Hardlink actions
+     The 'hardlink' action represents a hard link.  It has the same
+     attributes as the link action, and 'path' is also its key attribute.
+
+  Driver actions
+     The 'driver' action represents a device driver.  It does not reference
+     a payload: the driver files themselves must be installed as file
+     actions.  The following attributes are recognized (see add_drv(1m) for
+     more information):
+
+     name    The name of the driver.  This is usually, but not always, the
+             filename of the driver binary.  This is the driver action's
+             key attribute.
+
+     alias   This represents an alias for the driver.  There may be more
+             than one alias attribute for any given driver.  There are no
+	     special quoting rules necessary.
+
+     class   This represents a driver class.  There may be more than one
+             class attribute for any given driver.
+
+     perms   This represents the filesystem permissions for the driver's
+             device nodes.
+
+     policy  This specifies additional security policy for the device.
+	     There may be more than one policy attribute for any given
+	     driver.
+
+     privs   This specifies privileges used by the driver.  There may be
+             more than one privs attribute for any given driver.
+
+  Depend actions
+     The 'depend' action represents an inter-package dependency.  A package
+     may depend on another package because the first requires functionality
+     in the second for the functionality in the first to work, or even to
+     install.  Dependencies may be optional.
+     
+     The following attributes are recognized:
+
+     type  The type of the dependency.  If the value is 'require', then the
+           dependency is required.  A package cannot be installed if any of
+	   its required dependencies cannot be satisfied.
+
+	   If the value is 'optional', then the dependency is optional.
+	   Optional dependencies are followed or not depending on image
+	   policy (see 'Policy' below).
+
+	   If the value is 'exclude', then the package is non-functional if
+	   the dependent package is present on the system.
+
+	   If the value is 'incorporate', then the dependency is required,
+	   but in addition, the version of the dependent package is
+	   constrained.  See 'Constraints and Freezing' below.
+
+     fmri  The FMRI representing the depended-upon package.
+
+     There is no key attribute for depend actions.
+
+  Set actions
+     The 'set' action represents a package-level attribute, such as the
+     package description.
+
+     The following attributes are recognized:
+
+     name   The name of the attribute.
+
+     value  The value given to the attribute.
+
+  Constraints and Freezing
+     TBD
+
+  Client-Server Operation
+     TBD
+
+  Authorities and Mirroring
+     TBD
+
+  Images and Substrates
+     TBD
+
+  Policy
+     TBD
+
+ATTRIBUTES
+     See attributes(5) for descriptions of the  following  attri-
+     butes:
+     ____________________________________________________________
+    |       ATTRIBUTE TYPE        |       ATTRIBUTE VALUE       |
+    |_____________________________|_____________________________|
+    | Availability                |                             |
+    |_____________________________|_____________________________|
+
+SEE ALSO
+     pkg(1), pkgsend(1), pkg.depotd(1M), attributes(5)
+
+NOTES
+     The image packaging system is an under-development feature.
+     Command names, invocation, formats, and operations are all subject
+     to change.  Development is hosted in the OpenSolaris community
+     at
+
+         http://opensolaris.org/os/project/pkg/
