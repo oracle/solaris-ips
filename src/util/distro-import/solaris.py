@@ -47,6 +47,7 @@ class pkg(object):
                 self.idepend = []     #svr4 pkg deps, if any
                 self.undepend = []
                 self.extra = []
+                self.nonhollow_dirs = {}
                 self.srcpkgs = []
                 self.desc = ""
                 self.version = ""
@@ -65,6 +66,10 @@ class pkg(object):
 
                 imppkg = p.pkginfo["PKG"] # filename NOT always same as pkgname
                 svr4pkgsseen[imppkg] = p;
+
+		if "SUNW_PKG_HOLLOW" in p.pkginfo and \
+		    p.pkginfo["SUNW_PKG_HOLLOW"].lower() == "true":
+			hollow_pkgs[imppkg] = True
 
 		excludes = dict((f, True) for f in line.split())
 
@@ -93,6 +98,10 @@ class pkg(object):
                                     (o.pathname, imppkg, self.name,
                                         usedlist[o.pathname][1].name)
                         elif o.type != "i":
+
+				if o.type in "dx" and imppkg not in hollow_pkgs:
+					self.nonhollow_dirs[o.pathname] = True
+					
                                 usedlist[o.pathname] = (imppkg, self)
                                 self.check_perms(o)
                                 self.files.append(o)
@@ -122,6 +131,10 @@ class pkg(object):
         def import_file(self, file, line):
                 imppkgname = self.imppkg.pkginfo["PKG"]
 
+		if "SUNW_PKG_HOLLOW" in self.imppkg.pkginfo and \
+		    self.impkpkg.pkginfo["SUNW_PKG_HOLLOW"].lower() == "true":
+			hollow_pkgs[imppkgname] = True
+
                 if file in usedlist:
                         t = [
                             f
@@ -142,7 +155,10 @@ class pkg(object):
                 ]
                 # There should be only one file with a given pathname in a
                 # single package.
-                assert len(o) == 1
+                if len(o) != 1:
+			print "ERROR: %s %s" % (imppkgname, file)
+			assert len(o) == 1
+			
                 if line:
                         t = {
                             "f": "file", "e": "file", "v": "file",
@@ -259,21 +275,34 @@ def publish_pkg(pkg):
                         action = actions.directory.DirectoryAction(
                             None, mode = f.mode, owner = f.owner,
                             group = f.group, path = f.pathname)
-                        t.add(cfg, id, action)
                 elif f.type == "s":
                         print "    %s add link %s %s" % \
                             (pkg.name, f.pathname, f.target)
                         action = actions.link.LinkAction(None,
                             target = f.target, path = f.pathname)
-                        t.add(cfg, id, action)
                 elif f.type == "l":
                         print "    %s add hardlink %s %s" % \
                             (pkg.name, f.pathname, f.target)
                         action = actions.hardlink.HardLinkAction(None,
                             target = f.target, path = f.pathname)
-                        t.add(cfg, id, action)
                         pkg.depend += process_link_dependencies(
                             f.pathname, f.target)
+		else:
+			continue
+		#
+		# If the originating package was hollow, tag this file
+		# as being global zone only.
+		#
+		if f.type not in "dx" and \
+		    usedlist[f.pathname][0] in hollow_pkgs:
+			action.attrs["opensolaris.zone"] = "global"
+
+		if f.type in "dx" and \
+		    usedlist[f.pathname][0] in hollow_pkgs and \
+		    f.pathname not in pkg.nonhollow_dirs:
+			action.attrs["opensolaris.zone"] = "global"
+
+		t.add(cfg, id, action)
 
         # Group the files in a (new) package based on what (old) package they
         # came from, so that we can iterate through all files in a single (old)
@@ -312,6 +341,9 @@ def publish_pkg(pkg):
                 pathdict = dict((f.pathname, f) for f in g)
                 for f in bundle:
                         if f.attrs["path"] in pathdict:
+				if pkgname in hollow_pkgs:
+					f.attrs["opensolaris.zone"] = "global"
+
                                 path = f.attrs["path"]
                                 f.attrs["owner"] = pathdict[path].owner
                                 f.attrs["group"] = pathdict[path].group
@@ -626,6 +658,10 @@ svr4pkgpaths = {}
 #
 editable_files = {}
 
+#
+# hollow svr4 packages processed
+#
+hollow_pkgs = {}
 
 
 reuse_err = "Tried to put file '%s' from package '%s' into\n    '%s' as well as '%s': file dropped"
