@@ -61,6 +61,7 @@ FIXFILES= \
 	boot/solaris/filelist.ramdisk \
 	etc/svc/global_repo.db \
 	etc/svc/nonglobal_repo.db \
+	usr/share/man/missing.man \
 	$(ELIDED_FILES)
 
 default:	74/$(TMPPKGS)
@@ -87,6 +88,9 @@ proto/etc/svc/global_repo.db:	proto
 proto/etc/svc/nonglobal_repo.db:	proto
 	./get_file_from_pkg.py $(WOS_PKGS)/SUNWcsr lib/svc/seed/nonglobal.db > $@
 
+proto/usr/share/man/missing.man:	proto	missing.man
+	cp missing.man $@
+
 $(ELIDED_FILES:%=proto/%):	proto $(BUILDID)/$(@F)
 	cat $(BUILDID)/$(@F) > $@
 
@@ -94,6 +98,7 @@ proto:	Makefile
 	mkdir -p proto/etc/svc
 	mkdir -p proto/boot/solaris/devicedb
 	mkdir -p proto/etc/security
+	mkdir -p proto/usr/share/man
 
 %/$(TMPPKGS):
 	$(MAKE) BUILDID=$(@D) $(@F)

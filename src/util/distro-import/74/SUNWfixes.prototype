@@ -4,6 +4,7 @@ f none etc/name_to_major 0644 root sys
 f none boot/solaris/filelist.ramdisk 0644 root sys
 f none etc/svc/global_repo.db 0600 root sys
 f none etc/svc/nonglobal_repo.db 0600 root sys
+f none usr/share/man/missing.man 0444 root bin
 e none boot/solaris/devicedb/master 0644 root sys
 e none etc/security/auth_attr 0644 root sys
 e none etc/security/exec_attr 0644 root sys
