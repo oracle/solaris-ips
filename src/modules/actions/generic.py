@@ -317,6 +317,7 @@ class Action(object):
                 for i, e in g:
                         p = os.path.join("/", *pathlist[:i])
                         os.mkdir(p, stat.st_mode)
+                        os.chmod(p, stat.st_mode)
                         try:
                                 os.chown(p, stat.st_uid, stat.st_gid)
                         except OSError, e:
@@ -329,6 +330,7 @@ class Action(object):
                 uid = kw.get("uid", stat.st_uid)
                 gid = kw.get("gid", stat.st_gid)
                 os.mkdir(path, mode)
+                os.chmod(path, mode)
                 try:
                         os.chown(path, uid, gid)
                 except OSError, e:

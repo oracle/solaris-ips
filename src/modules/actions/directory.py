@@ -64,7 +64,8 @@ class DirectoryAction(generic.Action):
                     (pkgplan.image.get_root(), path)))
 
                 # XXX Hack!  (See below comment.)
-                mode |= 0200
+                if os.getuid() != 0:
+                        mode |= 0200
 
                 if not orig:
                         try:
