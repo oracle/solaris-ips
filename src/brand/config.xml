@@ -38,7 +38,7 @@
 
 	<!-- We may not be able to do the create in pkg(1) proper. -->
 	<install>/usr/lib/brand/ipkg/pkgcreatezone -z %z -R %R %*</install>
-	<installopts></installopts>
+	<installopts>a:h</installopts>
 	<boot></boot>
 	<halt></halt>
 	<verify_cfg></verify_cfg>

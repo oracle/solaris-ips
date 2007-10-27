@@ -24,63 +24,182 @@
 # Use is subject to license terms.
 #
 
-usage() {
-	print "Usage: $0 [-h] -R <zoneroot> -z <zonename>"
-	exit $ZONE_SUBPROC_USAGE
-}
-
-trap_cleanup() {
-	print "Installation cancelled due to interrupt."
-	exit $int_code
-}
-
 ZONE_SUBPROC_OK=0
 ZONE_SUBPROC_USAGE=253
 ZONE_SUBPROC_NOTCOMPLETE=254
 ZONE_SUBPROC_FATAL=255
 
+f_img=$(gettext "failed to create image")
+f_pkg=$(gettext "failed to install package")
+f_interrupted=$(gettext "Installation cancelled due to interrupt.")
+
+m_image=$(gettext     "      Image: Preparing at %s ...")
+m_catalog=$(gettext   "    Catalog: Retrieving from %s ...")
+m_core=$(gettext      " Installing: Core Packages ...")
+m_coreu=$(gettext     " Installing: Core Utilities ...")
+m_pkg=$(gettext       " Installing: pkg(5) Utilities ...")
+m_diag=$(gettext      " Installing: Diagnostic Tools ...")
+m_shells=$(gettext    " Installing: Shells ...")
+m_ns=$(gettext        " Installing: Name Services ...")
+m_man=$(gettext       " Installing: man(1) Command ...")
+m_smf=$(gettext	      "Postinstall: Copying SMF seed repository ...")
+m_mannote=$(gettext   "       Note: Man pages can be obtained by installing SUNWman")
+m_complete=$(gettext  "       Done: Installation completed in %s seconds.")
+m_postnote=$(gettext  " Next Steps: Boot the zone, then log into the zone console")
+m_postnote2=$(gettext "             (zlogin -C) to complete the configuration process")
+
+m_done=$(gettext      " done.")
+
+
+fail_incomplete() {
+	print -u2 "$1"
+	exit $ZONE_SUBPROC_NOTCOMPLETE
+}
+
+fail_fatal() {
+	print -u2 "$1"
+	exit $ZONE_SUBPROC_FATAL
+}
+
+
+fail_usage() {
+	print "Usage: $0 [-h] [-a <authority>]"
+	exit $ZONE_SUBPROC_USAGE
+}
+
+trap_cleanup() {
+	print "$f_interrupted"
+	exit $int_code
+}
+
 int_code=$ZONE_SUBPROC_NOTCOMPLETE
 
 trap trap_cleanup INT
 
-while getopts "z:R:h" opt; do
+authority="localhost=http://localhost:10000"
+zonename=""
+zonepath=""
+
+# Setup i18n output
+TEXTDOMAIN="SUNW_OST_OSCMD"
+export TEXTDOMAIN
+
+
+while getopts "a:z:R:h" opt; do
 	case $opt in
-		h)	usage ;;
-		R)	zoneroot="$OPTARG" ;;
+		h)	fail_usage ;;
+		R)	zonepath="$OPTARG" ;;
 		z)	zonename="$OPTARG" ;;
-		*)	usage ;;
+		a)	authority="$OPTARG" ;;
+		*)	fail_usage ;;
 	esac
 done
 shift $((OPTIND-1))
 
-if [[ -z $zoneroot || -z $zonename ]]; then
-	print "No zone root or name"
+if [[ -z $zonepath || -z $zonename ]]; then
+	print -u2 "Brand error: No zone path or name"
 	exit $ZONE_SUBPROC_USAGE
 fi
 
-print "Preparing image"
-mkdir -p -m 0700 $zoneroot
-rootdir=$zoneroot/root
-pkg image-create -z -F -a "localhost=http://localhost:10000" $rootdir
-print "Retrieving catalog"
-pkg -R $rootdir refresh
+zoneroot=$zonepath/root
+
+printf "\n$m_image" $zoneroot/root
+pkg image-create -z -F -a "$authority" $zoneroot || fail_fatal $f_img
+printf "$m_done\n"
+
+PKG_IMAGE="$zoneroot"
+export PKG_IMAGE
+
+printf "$m_catalog" "$authority"
+pkg refresh || fail_fatal "$f_refresh"
 if [[ $? -ne 0 ]]; then
 	print "Failed to retrieve catalog"
 	exit 1
 fi
-print "Installing SUNWcs SUNWesu SUNWadmr SUNWts SUNWipkg"
-pkg -R $rootdir install SUNWcs@ SUNWesu SUNWadmr SUNWts@ SUNWipkg
-if [[ $? -ne 0 ]]; then
-	print "Failed to install packages"
-	exit 1
-fi
-print "Setting up SMF profile links"
+printf "$m_done\n"
+
+printf "$m_core"
+pkg install SUNWcsd || fail_incomplete "$f_pkg"
+pkg install SUNWcs SUNWcsl || fail_incomplete "$f_pkg"
+printf "$m_done\n"
+
+printf "$m_coreu"
+pkg install SUNWesu SUNWadmr SUNWadmap SUNWbzip SUNWgzip || fail_incomplete "$f_pkg"
+printf "$m_done\n"
+
+#
+# Workaround: in our test repo, SUNWipkg has no dependencies
+# so we must supply it python.
+#
+printf "$m_pkg"
+pkg install SUNWPython SUNWipkg || fail_incomplete "$f_pkg"
+printf "$m_done\n"
+
+#
+# Get some diagnostic tools, truss, dtrace, etc.
+#
+printf "$m_diag"
+pkg install SUNWtoo SUNWdtrc SUNWrcmdc SUNWbip || fail_incomplete "$f_pkg"
+printf "$m_done\n"
+
+#
+# Get some sensible shells
+#
+printf "$m_shells"
+pkg install SUNWbash SUNWzsh SUNWtcsh || fail_incomplete "$f_pkg"
+printf "$m_done\n"
+
+#
+# Get some name services.
+#
+printf "$m_ns"
+pkg install SUNWyp SUNWlldap || fail_incomplete "$f_pkg"
+printf "$m_done\n"
+
+#
+# Get man(1) but not the man pages
+#
+printf "$m_man"
+pkg install SUNWdoc || fail_incomplete "$f_pkg"
+printf "$m_done\n"
+print "$m_mannote\n"
+
+# XXX leaving this out for now.  Reconsider later.
+#
+# Core X and GNOME -- I add these because it's easy to overlook that
+# you need fonts, and the result is that fontconfig dumps core a lot.
+#
+#printf $m_corex
+#pkg install SUNWfontconfig FSWxorg-fonts || fail_incomplete "$f_pkg"
+#pkg install SUNWxorg-client-programs SUNWgnome-fonts || fail_incomplete "$f_pkg"
+#pkg install SUNWgnome-base-libs SUNWgnome-panel || fail_incomplete "$f_pkg"
+##
+## workaround for lack of xterm, and add GDM since it's nice to have it.
+##
+#pkg install SUNWgnome-terminal || fail_incomplete "$f_pkg"
+#pkg install SUNWgnome-display-mgr || fail_incomplete "$f_pkg"
+
+
+#print "Setting up SMF profile links"
 # This was formerly done in SUNWcsr/postinstall
-ln -s ns_files.xml $rootdir/var/svc/profile/name_service.xml
-ln -s generic_open.xml $rootdir/var/svc/profile/generic.xml
-ln -s inetd_generic.xml $rootdir/var/svc/profile/inetd_services.xml
-ln -s platform_none.xml $rootdir/var/svc/profile/platform.xml
-print "Copying SMF seed repository"
-# This was formerly done in i.manifest
-cp $rootdir/lib/svc/seed/nonglobal.db $rootdir/etc/svc/repository.db
-print "Done (${SECONDS}s)"
+printf "$m_smf"
+ln -s ns_files.xml $zoneroot/var/svc/profile/name_service.xml
+ln -s generic_limited_net.xml $zoneroot/var/svc/profile/generic.xml
+ln -s inetd_generic.xml $zoneroot/var/svc/profile/inetd_services.xml
+ln -s platform_none.xml $zoneroot/var/svc/profile/platform.xml
+
+## This was formerly done in i.manifest
+cp $zoneroot/lib/svc/seed/nonglobal.db $zoneroot/etc/svc/repository.db
+printf "$m_done\n"
+
+
+#
+# Make sure sysidtools run
+#
+touch $zoneroot/etc/.UNCONFIGURED
+
+printf "$m_complete\n\n" ${SECONDS}
+printf "$m_postnote\n"
+printf "$m_postnote2\n"
+
+exit $ZONE_SUBPROC_OK
