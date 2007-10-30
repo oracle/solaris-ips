@@ -29,6 +29,7 @@ import shutil
 import time
 import urllib
 import tempfile
+import errno
 
 import pkg.fmri as fmri
 import pkg.version as version
@@ -329,8 +330,16 @@ class Catalog(object):
                 # Send attributes first.
                 filep.writelines(self.attrs_as_lines())
 
-                cfile = file(os.path.normpath(
-                    os.path.join(self.catalog_root, "catalog")), "r")
+                try:
+                        cfile = file(os.path.normpath(
+                            os.path.join(self.catalog_root, "catalog")), "r")
+                except IOError, e:
+                        # Missing catalog is fine; other errors need to be
+                        # reported.
+                        if e.errno == errno.ENOENT:
+                                return
+                        else:
+                                raise
 
                 for e in cfile:
                         filep.write(e)

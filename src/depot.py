@@ -90,7 +90,15 @@ def catalog_0(scfg, request):
         request.send_response(200)
         request.send_header('Content-type', 'text/plain')
         request.end_headers()
-        scfg.catalog.send(request.wfile)
+        # Try to guard against a non-existent catalog.  The catalog open will
+        # raise an exception, and only the attributes will have been sent.  But
+        # because we've sent data already (never mind the response header), we
+        # can't raise an exception here, or a 500 header will get sent as well.
+        try:
+                scfg.catalog.send(request.wfile)
+        except:
+                request.log_error("Internal failure:\n%s",
+                    traceback.format_exc())
 
 def manifest_0(scfg, request):
         """The request is an encoded pkg FMRI.  If the version is specified
@@ -106,7 +114,16 @@ def manifest_0(scfg, request):
         f = fmri.PkgFmri(pfmri, None)
 
         # Open manifest and send.
-        file = open("%s/%s" % (scfg.pkg_root, f.get_dir_path()), "r")
+        try:
+                file = open("%s/%s" % (scfg.pkg_root, f.get_dir_path()), "r")
+        except IOError, e:
+                if e.errno == errno.ENOENT:
+                        request.send_response(404)
+                else:
+                        request.log_error("Internal failure:\n%s",
+                            traceback.format_exc())
+                        request.send_response(500)
+                return
         data = file.read()
 
         request.send_response(200)
@@ -159,6 +176,8 @@ def file_0(scfg, request):
                 if e.errno == errno.ENOENT:
                         request.send_response(404)
                 else:
+                        request.log_error("Internal failure:\n%s",
+                            traceback.format_exc())
                         request.send_response(500)
                 return
 
@@ -296,7 +315,12 @@ class pkgHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                 try:
                         exec op_call
                 except:
-                        traceback.print_exc()
+                        request.log_error("Internal failure:\n%s",
+                            traceback.format_exc())
+                        # XXX op_call may already have spit some data out to the
+                        # client, in which case this response just corrupts that
+                        # datastream.  I don't know of any way to tell whether
+                        # data has already been sent.
                         self.send_response(500)
 
         def do_POST(self):
