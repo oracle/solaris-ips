@@ -19,6 +19,7 @@ SYNOPSIS
      /usr/bin/pkg refresh
 
      /usr/bin/pkg image-create [-FPUz] [-a prefix=url] dir
+     /usr/bin/pkg image-update [-nv]
 
 DESCRIPTION
      pkg is the retrieval client for the image packaging system.  With a
@@ -55,6 +56,13 @@ SUBCOMMANDS
 
           If the image is to be run within nonglobal zone context, then
           the -z option can be used to set an appropriate filter.
+
+     image-update [-nv]
+          Update all installed packages in the current image to the
+	  latest available version.  With the -n option, execute the
+	  requested operation but make no persistent changes to the
+	  image.  With the -v option, issue verbose progress messages
+	  during the requested operation.
 
      refresh
           Retrieve updated catalogs for each authority registered within
@@ -109,7 +117,6 @@ SUBCOMMANDS
           without -a, report only based on installed packages in the
           image.  With -u, report only packages with newer versions
           available.  With -v, report full package FMRIs.
-
 
 EXAMPLES
      Example 1:  Create a new, full image, with authority example.com,
@@ -185,6 +192,7 @@ ATTRIBUTES
     |       ATTRIBUTE TYPE        |       ATTRIBUTE VALUE       |
     |_____________________________|_____________________________|
     | Availability                |                             |
+    | Interface Stability         | None / Under Development    |
     |_____________________________|_____________________________|
 
 SEE ALSO

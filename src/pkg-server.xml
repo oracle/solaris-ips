@@ -82,9 +82,9 @@
 	</property_group>
 
 	<property_group name='pkg' type='application'>
-		<propval name='port' type='count' value='10000' />
+		<propval name='port' type='count' value='80' />
 		<propval name='inst_root' type='astring'
-			value='/home/sch/play/pkg' />
+			value='/var/pkg/repo' />
 	</property_group>
 
 	<stability value='Unstable' />
@@ -92,7 +92,7 @@
 	<template>
 		<common_name>
 			<loctext xml:lang='C'>
-Packaging repository prototype
+image packaging repository
 			</loctext>
 		</common_name>
 	</template>

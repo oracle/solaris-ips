@@ -83,6 +83,7 @@ Install subcommands:
 
         pkg image-create [-FPUz] [--full|--partial|--user] [--zone]
             [--authority prefix=url] dir
+        pkg image-update [-nv]
 
 Options:
         --server, -s
@@ -97,7 +98,6 @@ Environment:
 #        pkg image-set name value
 #        pkg image-unset name
 #        pkg image-get [name ...]
-#        pkg image-update
 
 def catalog_refresh(img, args):
         """Update image's catalogs."""
@@ -118,6 +118,39 @@ def inventory_display(img, args):
         img.load_catalogs()
         img.display_inventory(args)
 
+def image_update(img, args):
+        """Attempt to take all installed packages specified to latest
+        version."""
+
+        # XXX Authority-catalog issues.
+        # XXX Are filters appropriate for an image update?
+        # XXX Leaf package refinements.
+
+        opts = None
+        pargs = None
+
+        if len(args) > 0:
+                opts, pargs = getopt.getopt(args, "b:nv")
+
+        strict = noexecute = verbose = False
+        filters = []
+        for opt, arg in opts:
+                if opt == "-n":
+                        noexecute = True
+                elif opt == "-v":
+                        verbose = True
+                elif opt == "-b":
+                        filelist.FileList.maxfiles = int(arg)
+
+        img.load_catalogs()
+
+        pkg_list = [ ipkg.get_pkg_stem() for ipkg in img.gen_installed_pkgs() ]
+        try:
+                img.list_install(pkg_list, verbose = verbose,
+                    noexecute = noexecute)
+        except RuntimeError, e:
+                sys.exit(1)
+
 def install(img, args):
         """Attempt to take package specified to INSTALLED state.  The operands
         are interpreted as glob patterns."""
@@ -126,7 +159,6 @@ def install(img, args):
 
         opts = None
         pargs = None
-        error = 0
 
         if len(args) > 0:
                 opts, pargs = getopt.getopt(args, "Snvb:f:")
@@ -149,52 +181,19 @@ def install(img, args):
 
         ip = imageplan.ImagePlan(img, filters = filters)
 
-        for ppat in pargs:
-                rpat = re.sub("\*", ".*", ppat)
-                rpat = re.sub("\?", ".", rpat)
+        pkg_list = [ pat.replace("*", ".*").replace("?", ".")
+            for pat in pargs ]
 
-                try:
-                        matches = img.get_matching_fmris(rpat)
-                except KeyError:
-                        print _("""\
-pkg: no package matching '%s' could be found in current catalog
-     suggest relaxing pattern, refreshing and/or examining catalogs""") % ppat
-                        error = 1
-                        continue
-
-                pnames = {}
-                for m in matches:
-                        pnames[m[1].get_pkg_stem()] = 1
-
-                if len(pnames.keys()) > 1:
-                        print _("pkg: '%s' matches multiple packages") % ppat
-                        for k in pnames.keys():
-                                print "\t%s" % k
-                        error = 1
-                        continue
-
-                # matches is a list reverse sorted by version, so take the
-                # first; i.e., the latest.
-                ip.propose_fmri(matches[0][1])
-
-        if error != 0:
-                sys.exit(error)
-
-        if verbose:
-                print _("Before evaluation:")
-                print ip
-
-        ip.evaluate()
-
-        if verbose:
-                print _("After evaluation:")
-                print ip
-
-        if not noexecute:
-                ip.execute()
+        try:
+                img.list_install(pkg_list, filters = filters, verbose = verbose,
+                    noexecute = noexecute)
+        except RuntimeError, e:
+                sys.exit(1)
 
 def uninstall(img, args):
         """Attempt to take package specified to DELETED state."""
+
+        # XXX Move uninstall logic to pkg.client.image.
 
         if len(args) > 0:
                 opts, pargs = getopt.getopt(args, "nrv")
@@ -272,7 +271,7 @@ def search(img, args):
 
 def info(img, args):
         """Display information about the package.
-        
+
         By default, display generic metainformation about the package.  With -v,
         display verbosely.  With -s, a short display.
         """
@@ -472,7 +471,7 @@ def list_contents(img, args):
         for line in sorted(lines, key = key_extract):
                 print (fmt % tuple(line)).rstrip()
 
-def create_image(img, args):
+def image_create(img, args):
         """Create an image of the requested kind, at the given path.  Load
         catalog for initial authority for convenience.
 
@@ -540,7 +539,7 @@ if __name__ == "__main__":
         # XXX Handle PKG_SERVER environment variable.
 
         if subcommand == "image-create":
-                sys.exit(create_image(img, pargs))
+                sys.exit(image_create(img, pargs))
 
         for opt, arg in opts:
                 if opt == "-R":
@@ -564,6 +563,8 @@ if __name__ == "__main__":
                 catalog_refresh(img, pargs)
         elif subcommand == "status":
                 inventory_display(img, pargs)
+        elif subcommand == "image-update":
+                image_update(img, pargs)
         elif subcommand == "install":
                 install(img, pargs)
         elif subcommand == "uninstall":

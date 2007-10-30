@@ -36,6 +36,7 @@ import pkg.catalog as catalog
 import pkg.fmri as fmri
 import pkg.manifest as manifest
 import pkg.client.imageconfig as imageconfig
+import pkg.client.imageplan as imageplan
 import pkg.client.retrieve as retrieve
 
 from pkg.misc import versioned_urlopen
@@ -306,6 +307,16 @@ class Image(object):
 
                 return fmri.PkgFmri(pkgs_inst[0], None)
 
+        def gen_installed_pkgs(self):
+                idir = "%s/pkg" % self.imgdir
+
+                for pd in os.listdir(idir):
+                        for vd in os.listdir("%s/%s" % (idir, pd)):
+                                if os.path.exists("%s/%s/%s/installed" %
+                                    (idir, pd, vd)):
+                                        yield fmri.PkgFmri(urllib.unquote(
+                                            "%s@%s" % (pd, vd)))
+
         def get_pkg_state_by_fmri(self, pfmri):
                 """Given pfmri, determine the local state of the package."""
 
@@ -502,6 +513,55 @@ class Image(object):
                                 if args[0] in v:
                                         yield k, idx_to_fmri(index)
 
+        def list_install(self, pkg_list, filters = [], verbose = False,
+            noexecute = False):
+                error = 0
+                ip = imageplan.ImagePlan(self, filters = filters)
+
+                for p in pkg_list:
+                        try:
+                                matches = self.get_matching_fmris(p)
+                        except KeyError:
+                                # XXX Module directly printing.
+                                print _("""\
+pkg: no package matching '%s' could be found in current catalog
+     suggest relaxing pattern, refreshing and/or examining catalogs""") % ppat
+                                error = 1
+                                continue
+
+                        pnames = {}
+                        for m in matches:
+                                pnames[m[1].get_pkg_stem()] = 1
+
+                        if len(pnames.keys()) > 1:
+                                # XXX Module directly printing.
+                                print \
+                                    _("pkg: '%s' matches multiple packages") % \
+                                    ppat
+                                for k in pnames.keys():
+                                        print "\t%s" % k
+                                error = 1
+                                continue
+
+                        # matches is a list reverse sorted by version, so take
+                        # the first; i.e., the latest.
+                        ip.propose_fmri(matches[0][1])
+
+                if error != 0:
+                        raise RuntimeError, "Unable to assemble image plan"
+
+                if verbose:
+                        print _("Before evaluation:")
+                        print ip
+
+                ip.evaluate()
+
+                if verbose:
+                        print _("After evaluation:")
+                        print ip
+
+                if not noexecute:
+                        ip.execute()
 
 if __name__ == "__main__":
         # XXX Need to construct a trivial image and catalog.

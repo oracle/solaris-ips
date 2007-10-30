@@ -358,4 +358,105 @@ fi
 
 # }}}1
 
+# Case 6.  Send package bar@1.1, dependent on foo@1.2.  Install bar@1.0.
+# Upgrade image.
+# {{{1
+
+tcase=6
+find $IMAGE_DIR
+
+cd $IMAGE_DIR
+
+if ! pkg refresh; then
+	fail pkg refresh failed
+fi
+
+if ! pkg status -a; then
+	fail pkg status -a failed
+fi
+
+if ! pkg install bar@1.0; then
+	fail pkg install bar failed
+fi
+
+trans_id=$(pkgsend -s $REPO_URL open foo@1.2,5.11-0)
+if [[ $? != 0 ]]; then
+	fail pkgsend open failed
+fi
+
+eval $trans_id
+
+if ! pkgsend -s $REPO_URL add dir mode=0755 owner=root group=bin path=/lib; then
+	fail pkgsend add dir failed
+fi
+
+if ! pkgsend -s $REPO_URL add file /lib/libc.so.1 mode=0555 owner=root group=bin \
+	path=/lib/libc.so.1; then
+	fail pkgsend add file failed
+fi
+
+if ! pkgsend -s $REPO_URL close; then
+	fail pkgsend close failed
+fi
+
+trans_id=$(pkgsend -s $REPO_URL open bar@1.1,5.11-0)
+if [[ $? != 0 ]]; then
+	fail pkgsend open failed
+fi
+
+eval $trans_id
+
+if ! pkgsend -s $REPO_URL add depend type=require fmri=pkg:/foo@1.2; then
+	fail pkgsend add depend require failed
+fi
+
+if ! pkgsend -s $REPO_URL add dir mode=0755 owner=root group=bin path=/bin; then
+	fail pkgsend add dir failed
+fi
+
+if ! pkgsend -s $REPO_URL add file /bin/cat mode=0555 owner=root group=bin \
+	path=/bin/cat; then
+	fail pkgsend add file failed
+fi
+
+if ! pkgsend -s $REPO_URL close; then
+	fail pkgsend close failed
+fi
+
+find $IMAGE_DIR
+
+if ! pkg status; then
+	fail pkg status failed
+fi
+
+if ! pkg refresh; then
+	fail pkg refresh failed
+fi
+
+if ! pkg status; then
+	fail pkg status failed
+fi
+
+if ! pkg image-update -v; then
+	fail pkg image-update failed
+fi
+
+find $IMAGE_DIR
+
+if ! pkg status -a; then
+	fail pkg status -a failed
+fi
+
+if ! pkg uninstall bar foo; then
+	fail pkg uninstall bar foo
+fi
+
+if ! pkg status; then
+	fail pkg status faileld
+fi
+
+find $IMAGE_DIR
+
+# }}}1
+
 exit 0

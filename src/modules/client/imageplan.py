@@ -254,7 +254,6 @@ Cannot remove '%s' due to the following packages that directly depend on it:"""\
                 pp = pkgplan.PkgPlan(self.image)
 
                 try:
-                        print "pkgplan remove %s proposed" % pfmri
                         pp.propose_removal(pfmri, m)
                 except RuntimeError:
                         print "pkg %s not installed" % pfmri
