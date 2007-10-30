@@ -41,6 +41,7 @@ restore_dir=$PWD
 
 ROOT=$PWD/../../proto/root_$(uname -p)
 
+export PKG_DEPOT_CONTENT=$ROOT/usr/share/lib/pkg
 export PYTHONPATH=$ROOT/usr/lib/python2.4/vendor-packages/
 export PATH=$ROOT/usr/bin:$PATH
 

@@ -347,7 +347,10 @@ class ThreadingHTTPServer(SocketServer.ThreadingMixIn,
 vops = {}
 
 if __name__ == "__main__":
-        port = 10000
+        port = 80
+
+        if "PKG_DEPOT_CONTENT" in os.environ:
+                face.set_content_root(os.environ["PKG_DEPOT_CONTENT"])
 
         try:
                 opts, pargs = getopt.getopt(sys.argv[1:], "d:np:",

@@ -28,12 +28,14 @@
 
 # Non-HTML GET functions
 
+content_root = "/usr/share/lib/pkg"
+
 def css(img, request):
         request.send_response(200)
         request.send_header('Content-type', 'text/css')
         request.end_headers()
 
-        css = open("/usr/share/lib/pkg/pkg.css")
+        css = open("%s/pkg.css" % content_root)
 
         request.wfile.write(css.read())
 
@@ -44,7 +46,7 @@ def icon(img, request):
         request.send_header('Content-type', 'image/png')
         request.end_headers()
 
-        icon = open("/usr/share/lib/pkg/pkg-block-icon.png")
+        icon = open("%s/pkg-block-icon.png" % content_root)
 
         request.wfile.write(icon.read())
 
@@ -55,7 +57,7 @@ def logo(img, request):
         request.send_header('Content-type', 'image/png')
         request.end_headers()
 
-        logo = open("/usr/share/lib/pkg/pkg-block-logo.png")
+        logo = open("%s/pkg-block-logo.png" % content_root)
 
         request.wfile.write(logo.read())
 
@@ -168,6 +170,9 @@ pages = {
         "/logo" :     logo,
         "/css" :      css
 }
+
+def set_content_root(path):
+        content_root = path
 
 def match(request):
         if request.path in pages.keys():

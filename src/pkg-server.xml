@@ -68,7 +68,7 @@
 	<exec_method
 		type='method'
 		name='start'
-		exec='/usr/lib/pkg.depotd'
+		exec='/usr/lib/pkg.depotd -p %{pkg/port} -d %{pkg/inst_root}'
 		timeout_seconds='0' />
 
 	<exec_method
