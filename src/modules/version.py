@@ -30,6 +30,7 @@ import exceptions
 import time
 
 CONSTRAINT_NONE = 0
+CONSTRAINT_AUTO = 50
 
 CONSTRAINT_RELEASE = 100
 CONSTRAINT_RELEASE_MAJOR = 101
@@ -87,8 +88,8 @@ class DotSequence(object):
                 if len(self.sequence) > len(other.sequence):
                         return False
 
-                for n in xrange(len(self.sequence) - 1):
-                        if self.sequence[n] != other.sequence[n]:
+                for a, b in zip(self.sequence, other.sequence):
+                        if a != b:
                                 return False
 
                 return True
@@ -146,12 +147,16 @@ class Version(object):
                         buildidx = branchidx
                         build = None
 
+                if buildidx == 0:
+                        raise IllegalVersion, \
+                            "Versions must have a release value."
+
                 self.release = DotSequence(version_string[:buildidx])
 
                 if branch:
                         self.branch = DotSequence(branch)
                 else:
-                        self.branch = DotSequence("0")
+                        self.branch = None
 
                 if build:
                         self.build_release = DotSequence(build)
@@ -167,7 +172,7 @@ class Version(object):
                                 self.datetime = datetime.datetime.fromtimestamp(
                                     float(timestr))
                 else:
-                        self.datetime = datetime.datetime.fromtimestamp(0)
+                        self.datetime = None
 
                 # raise IllegalVersion
 
@@ -178,11 +183,20 @@ class Version(object):
                 return False
 
         def __str__(self):
-                return "%s,%s-%s:%s" % (self.release, self.build_release,
-                    self.branch, self.datetime.strftime("%Y%m%dT%H%M%SZ"))
+                branch_str = date_str = ""
+                if self.branch:
+                        branch_str = "-%s" % self.branch
+                if self.datetime:
+                        date_str = ":%s" % \
+                            self.datetime.strftime("%Y%m%dT%H%M%SZ")
+                return "%s,%s%s%s" % (self.release, self.build_release,
+                    branch_str, date_str)
 
         def get_short_version(self):
-                return "%s-%s" % (self.release, self.branch)
+                branch_str = ""
+                if self.branch:
+                        branch_str = "-%s" % self.branch
+                return "%s%s" % (self.release, branch_str)
 
         def set_timestamp(self, timestamp):
                 self.datetime = datetime.datetime.fromtimestamp(timestamp)
@@ -211,29 +225,77 @@ class Version(object):
                 return False
 
         def __lt__(self, other):
-                if self.release < other.release:
-                        return True
-                if self.release != other.release:
+                """Returns True if 'self' comes before 'other', and vice versa.
+
+                If exactly one of the release values of the versions is None,
+                then that version is less than the other.  The same applies to
+                the branch and timestamp components.
+                """
+                if self.release and other.release:
+                        if self.release < other.release:
+                                return True
+                        if self.release != other.release:
+                                return False
+                elif self.release and not other.release:
                         return False
-                if self.branch < other.branch:
+                elif not self.release and other.release:
                         return True
-                if self.branch != other.branch:
+
+                if self.branch and other.branch:
+                        if self.branch < other.branch:
+                                return True
+                        if self.branch != other.branch:
+                                return False
+                elif self.branch and not other.branch:
                         return False
-                if self.datetime < other.datetime:
+                elif not self.branch and other.branch:
                         return True
+
+                if self.datetime and other.datetime:
+                        if self.datetime < other.datetime:
+                                return True
+                elif self.datetime and not other.datetime:
+                        return False
+                elif not self.datetime and other.datetime:
+                        return True
+
                 return False
 
         def __gt__(self, other):
-                if self.release > other.release:
+                """Returns True if 'self' comes after 'other', and vice versa.
+
+                If exactly one of the release values of the versions is None,
+                then that version is less than the other.  The same applies to
+                the branch and timestamp components.
+                """
+                if self.release and other.release:
+                        if self.release > other.release:
+                                return True
+                        if self.release != other.release:
+                                return False
+                elif self.release and not other.release:
                         return True
-                if self.release != other.release:
+                elif not self.release and other.release:
                         return False
-                if self.branch > other.branch:
+
+                if self.branch and other.branch:
+                        if self.branch > other.branch:
+                                return True
+                        if self.branch != other.branch:
+                                return False
+                elif self.branch and not other.branch:
                         return True
-                if self.branch != other.branch:
+                elif not self.branch and other.branch:
                         return False
-                if self.datetime > other.datetime:
+
+                if self.datetime and other.datetime:
+                        if self.datetime > other.datetime:
+                                return True
+                elif self.datetime and not other.datetime:
                         return True
+                elif not self.datetime and other.datetime:
+                        return False
+
                 return False
 
         def __cmp__(self, other):
@@ -255,6 +317,11 @@ class Version(object):
                 proceed through the policies we get stricter, depending on the
                 selected constraint.
 
+                Slightly less loose is CONSTRAINT_AUTO.  In this case, if any of
+                the release, branch, or timestamp components is None, it acts as
+                a "don't care" value -- a versioned component always succeeds
+                None.
+
                 For CONSTRAINT_RELEASE, self is a successor to other if all of
                 the components of other's release match, and there are later
                 components of self's version.  The branch and datetime
@@ -271,6 +338,29 @@ class Version(object):
 
                 if constraint == None or constraint == CONSTRAINT_NONE:
                         return self > other
+
+                if constraint == CONSTRAINT_AUTO:
+                        release_match = branch_match = date_match = False
+
+                        if other.release and self.release:
+                                if other.release.is_subsequence(self.release):
+                                        release_match = True
+                        elif not other.release:
+                                release_match = True
+
+                        if other.branch and self.branch:
+                                if other.branch.is_subsequence(self.branch):
+                                        branch_match = True
+                        elif not other.branch:
+                                branch_match = True
+
+                        if self.datetime and other.datetime:
+                                if other.datetime < self.datetime:
+                                        date_match = True
+                        elif not other.datetime:
+                                date_match = True
+
+                        return release_match and branch_match and date_match
 
                 if constraint == CONSTRAINT_RELEASE:
                         return other.release.is_subsequence(self.release)
@@ -312,19 +402,25 @@ if __name__ == "__main__":
         v12 = Version("5.11-0.72:20070921T211008Z", "0.5.11")
         v13 = Version("5.11-0.72:20070922T160226Z", "0.5.11")
 
+        v14 = Version("0.1,5.11", None)
+        v15 = Version("0.1,5.11:20071014T234545Z", None)
+        v16 = Version("0.2,5.11", None)
+        v17 = Version("0.2,5.11-1:20071029T131519Z", None)
+
+
         d3 = DotSequence("5.4")
         d4 = DotSequence("5.6")
 
         assert str(v1) == "5.5.1,5.5.1-10:20051122T000000Z"
         assert str(v2) == "5.5.1,5.5.1-10:20070318T123456Z"
-        assert str(v3) == "5.5.1,5.5-10:19691231T160000Z"
-        assert str(v4) == "5.5.1,5.4-6:19691231T160000Z"
-        assert str(v5) == "5.6,1-0:19691231T160000Z"
-        assert str(v6) == "5.7,5.4-0:19691231T160000Z"
-        assert str(v7) == "5.10,5.5.1-0:19691231T160000Z"
-        assert str(v8) == "5.10.1,5.5.1-0:19691231T160000Z"
-        assert str(v9) == "5.11,5.5.1-0:19691231T160000Z"
-        assert str(v10) == "0.1,5.11-1:19691231T160000Z"
+        assert str(v3) == "5.5.1,5.5-10"
+        assert str(v4) == "5.5.1,5.4-6"
+        assert str(v5) == "5.6,1"
+        assert str(v6) == "5.7,5.4"
+        assert str(v7) == "5.10,5.5.1"
+        assert str(v8) == "5.10.1,5.5.1"
+        assert str(v9) == "5.11,5.5.1"
+        assert str(v10) == "0.1,5.11-1"
         assert str(v11) == "0.1,5.11-1:20070710T120000Z"
 
         assert v1 < v2
@@ -348,3 +444,7 @@ if __name__ == "__main__":
         assert v6.is_successor(v5, CONSTRAINT_RELEASE_MAJOR)
         assert v8.is_successor(v7, CONSTRAINT_RELEASE_MAJOR)
 
+        assert v10.is_successor(v14, CONSTRAINT_AUTO)
+        assert v15.is_successor(v14, CONSTRAINT_AUTO)
+        assert not v16.is_successor(v14, CONSTRAINT_AUTO)
+        assert not v17.is_successor(v14, CONSTRAINT_AUTO)

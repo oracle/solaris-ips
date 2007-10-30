@@ -229,6 +229,10 @@ if ! pkg install foo@1.0; then
 	fail pkg install foo failed
 fi
 
+if ! pkg status | grep foo@1.0 > /dev/null; then
+	fail pkg install foo@1.0 didn\'t install version 1.0
+fi
+
 find $IMAGE_DIR
 
 if ! pkg status; then
@@ -237,6 +241,10 @@ fi
 
 if ! pkg install foo@1.1; then
 	fail pkg install foo \(1.0 -\> 1.1\) failed
+fi
+
+if ! pkg status | grep foo@1.1 > /dev/null; then
+	fail pkg install foo@1.1 didn\'t install version 1.1
 fi
 
 find $IMAGE_DIR

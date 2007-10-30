@@ -37,6 +37,7 @@ import urlparse
 import pkg.catalog as catalog
 import pkg.fmri as fmri
 import pkg.manifest as manifest
+import pkg.version as version
 import pkg.client.imageconfig as imageconfig
 import pkg.client.imageplan as imageplan
 import pkg.client.retrieve as retrieve
@@ -643,12 +644,13 @@ class Image(object):
 
                 for p in pkg_list:
                         try:
-                                matches = self.get_matching_fmris(p)
+                                matches = self.get_matching_fmris(p,
+                                    constraint = version.CONSTRAINT_AUTO)
                         except KeyError:
                                 # XXX Module directly printing.
                                 print _("""\
 pkg: no package matching '%s' could be found in current catalog
-     suggest relaxing pattern, refreshing and/or examining catalogs""") % ppat
+     suggest relaxing pattern, refreshing and/or examining catalogs""") % p
                                 error = 1
                                 continue
 
@@ -659,8 +661,7 @@ pkg: no package matching '%s' could be found in current catalog
                         if len(pnames.keys()) > 1:
                                 # XXX Module directly printing.
                                 print \
-                                    _("pkg: '%s' matches multiple packages") % \
-                                    ppat
+                                    _("pkg: '%s' matches multiple packages") % p
                                 for k in pnames.keys():
                                         print "\t%s" % k
                                 error = 1

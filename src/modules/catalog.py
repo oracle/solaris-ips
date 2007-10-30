@@ -212,12 +212,14 @@ class Catalog(object):
 
                         for pattern in patterns:
                                 pat_auth, pat_name, pat_version = tuples[pattern]
+                                # and (pat_auth == cat_auth or not pat_auth)
                                 if pkg == "pkg" and matcher(cat_name, pat_name):
                                         pkgfmri = fmri.PkgFmri("%s@%s" %
                                             (cat_name, cat_version))
                                         if not pat_version or \
-                                            not pat_version.is_successor(
-                                            pkgfmri.version, constraint):
+                                            pkgfmri.version.is_successor(
+                                            pat_version, constraint) or \
+                                            pkgfmri.version == pat_version:
                                                     if counthash is not None:
                                                             if pattern in counthash:
                                                                     counthash[pattern] += 1
