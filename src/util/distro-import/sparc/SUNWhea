@@ -8,4 +8,5 @@ drop usr/include/sys/scsi/adapters/ispvar.h
 drop usr/platform/SUNW,Netra-T12
 drop usr/platform/SUNW,Netra-T12/include
 # END NON-REDISTRIBUTABLE
+add link path=usr/include/tcpd.h target=../sfw/include/tcpd.h
 end package

@@ -1,0 +1,30 @@
+package SUNWsmagt
+import SUNWsmagt
+version 5.0.9
+add link path=usr/lib/amd64/libnetsnmp.a target=../../sfw/lib/amd64/libnetsnmp.a
+add link path=usr/lib/amd64/libnetsnmp.so target=../../sfw/lib/amd64/libnetsnmp.so
+add link path=usr/lib/amd64/libnetsnmp.so.5 target=../../sfw/lib/amd64/libnetsnmp.so.5
+add link path=usr/lib/amd64/libnetsnmpagent.a target=../../sfw/lib/amd64/libnetsnmpagent.a
+add link path=usr/lib/amd64/libnetsnmpagent.so target=../../sfw/lib/amd64/libnetsnmpagent.so
+add link path=usr/lib/amd64/libnetsnmpagent.so.5 target=../../sfw/lib/amd64/libnetsnmpagent.so.5
+add link path=usr/lib/amd64/libnetsnmphelpers.a target=../../sfw/lib/amd64/libnetsnmphelpers.a
+add link path=usr/lib/amd64/libnetsnmphelpers.so target=../../sfw/lib/amd64/libnetsnmphelpers.so
+add link path=usr/lib/amd64/libnetsnmphelpers.so.5 target=../../sfw/lib/amd64/libnetsnmphelpers.so.5
+add link path=usr/lib/amd64/libnetsnmpmibs.a target=../../sfw/lib/amd64/libnetsnmpmibs.a
+add link path=usr/lib/amd64/libnetsnmpmibs.so target=../../sfw/lib/amd64/libnetsnmpmibs.so
+add link path=usr/lib/amd64/libnetsnmpmibs.so.5 target=../../sfw/lib/amd64/libnetsnmpmibs.so.5
+add link path=usr/lib/libnetsnmp.a target=../sfw/lib/libnetsnmp.a
+add link path=usr/lib/libnetsnmp.so target=../sfw/lib/libnetsnmp.so
+add link path=usr/lib/libnetsnmp.so.5 target=../sfw/lib/libnetsnmp.so.5
+add link path=usr/lib/libnetsnmpagent.a target=../sfw/lib/libnetsnmpagent.a
+add link path=usr/lib/libnetsnmpagent.so target=../sfw/lib/libnetsnmpagent.so
+add link path=usr/lib/libnetsnmpagent.so.5 target=../sfw/lib/libnetsnmpagent.so.5
+add link path=usr/lib/libnetsnmphelpers.a target=../sfw/lib/libnetsnmphelpers.a
+add link path=usr/lib/libnetsnmphelpers.so target=../sfw/lib/libnetsnmphelpers.so
+add link path=usr/lib/libnetsnmphelpers.so.5 target=../sfw/lib/libnetsnmphelpers.so.5
+add link path=usr/lib/libnetsnmpmibs.a target=../sfw/lib/libnetsnmpmibs.a
+add link path=usr/lib/libnetsnmpmibs.so target=../sfw/lib/libnetsnmpmibs.so
+add link path=usr/lib/libnetsnmpmibs.so.5 target=../sfw/lib/libnetsnmpmibs.so.5
+add link path=usr/sbin/snmpd target=../sfw/sbin/snmpd
+add link path=usr/sbin/snmptrapd target=../sfw/sbin/snmptrapd
+end package

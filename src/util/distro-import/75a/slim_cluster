@@ -44,6 +44,7 @@ include common/SUNWcsd
 include common/SUNWcsl
 include common/SUNWdbus
 include common/SUNWdbus-bindings
+include common/SUNWdistro-license
 include common/SUNWdoc
 include common/SUNWdtrc
 include common/SUNWdtrp
@@ -69,7 +70,6 @@ include common/SUNWfmd
 include common/SUNWfontconfig
 include common/SUNWfontconfig-docs
 include common/SUNWfppd
-include common/SUNWfreetype2
 include common/SUNWfss
 include common/SUNWftp
 include common/SUNWfwdc
@@ -77,6 +77,7 @@ include common/SUNWfwdcu
 include common/SUNWfwflash
 include common/SUNWgccruntime
 include common/SUNWgcmn
+include common/SUNWgetting-started-guide
 include common/SUNWggrp
 include common/SUNWgimpprint
 include common/SUNWgksu
@@ -241,7 +242,6 @@ include common/SUNWnis
 include common/SUNWnmap
 include common/SUNWntp
 include common/SUNWogg-vorbis
-include common/SUNWopenssl
 include common/SUNWpapi
 include common/SUNWpc
 include common/SUNWpcan
@@ -377,6 +377,7 @@ include i386/SUNWcarx
 include i386/SUNWckr
 include i386/SUNWcpc
 include i386/SUNWdrmr
+include i386/SUNWfreetype2
 include i386/SUNWgrub
 include i386/SUNWipw
 include i386/SUNWiwi
@@ -388,6 +389,7 @@ include i386/SUNWmv88sx
 include i386/SUNWnge
 include i386/SUNWnvsata
 include i386/SUNWnxge
+include i386/SUNWopenssl
 include i386/SUNWos86r
 include i386/SUNWpcmci
 include i386/SUNWpd
@@ -486,6 +488,7 @@ idepend SUNWcsu
 idepend SUNWdbus
 idepend SUNWdbus-bindings
 idepend SUNWdbus-root
+idepend SUNWdistro-license
 idepend SUNWdoc
 idepend SUNWdrmr
 idepend SUNWdtrc
@@ -529,6 +532,7 @@ idepend SUNWfwdcu
 idepend SUNWfwflash
 idepend SUNWgccruntime
 idepend SUNWgcmn
+idepend SUNWgetting-started-guide
 idepend SUNWggrp
 idepend SUNWgimpprint
 idepend SUNWgksu

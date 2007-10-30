@@ -1,4 +1,5 @@
 package SUNWhpijs
 import SUNWhpijs
 version 1.6
+add link path=usr/bin/hpijs target=../sfw/bin/hpijs
 end package

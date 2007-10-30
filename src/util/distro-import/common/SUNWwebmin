@@ -2,4 +2,5 @@ package SUNWwebmin
 import SUNWwebminu
 import SUNWwebminr
 version 1.340
+add link path=usr/bin/webminsetup target=../sfw/bin/webminsetup
 end package

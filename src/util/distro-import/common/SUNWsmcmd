@@ -1,3 +1,28 @@
 package SUNWsmcmd
 import SUNWsmcmd
+version 5.0.9
+add link path=usr/bin/fixproc target=../sfw/bin/fixproc
+add link path=usr/bin/mib2c target=../sfw/bin/mib2c
+add link path=usr/bin/mib2c.perl target=../sfw/bin/mib2c.perl
+add link path=usr/bin/net-snmp-config target=../sfw/bin/net-snmp-config
+add link path=usr/bin/net-snmp-config-32 target=../sfw/bin/net-snmp-config-32
+add link path=usr/bin/net-snmp-config-64 target=../sfw/bin/net-snmp-config-64
+add link path=usr/bin/snmpbulkget target=../sfw/bin/snmpbulkget
+add link path=usr/bin/snmpbulkwalk target=../sfw/bin/snmpbulkwalk
+add link path=usr/bin/snmpconf target=../sfw/bin/snmpconf
+add link path=usr/bin/snmpdelta target=../sfw/bin/snmpdelta
+add link path=usr/bin/snmpdf target=../sfw/bin/snmpdf
+add link path=usr/bin/snmpget target=../sfw/bin/snmpget
+add link path=usr/bin/snmpgetnext target=../sfw/bin/snmpgetnext
+add link path=usr/bin/snmpinform target=../sfw/bin/snmpinform
+add link path=usr/bin/snmpnetstat target=../sfw/bin/snmpnetstat
+add link path=usr/bin/snmpset target=../sfw/bin/snmpset
+add link path=usr/bin/snmpstatus target=../sfw/bin/snmpstatus
+add link path=usr/bin/snmptable target=../sfw/bin/snmptable
+add link path=usr/bin/snmptest target=../sfw/bin/snmptest
+add link path=usr/bin/snmptranslate target=../sfw/bin/snmptranslate
+add link path=usr/bin/snmptrap target=../sfw/bin/snmptrap
+add link path=usr/bin/snmpusm target=../sfw/bin/snmpusm
+add link path=usr/bin/snmpvacm target=../sfw/bin/snmpvacm
+add link path=usr/bin/snmpwalk target=../sfw/bin/snmpwalk
 end package

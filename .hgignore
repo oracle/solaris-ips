@@ -9,13 +9,15 @@
 ^proto
 ^packages
 # Specific build products
-^src/pkg$
-^src/pkgsend$
-^src/pkg.depotd$
-^webrev
 ^src/man/pkg.1$
-^src/man/pkgsend.1$
+^src/man/pkg.5$
 ^src/man/pkg.depotd.1m$
+^src/man/pkgsend.1$
+^src/pkg$
+^src/pkg.depotd$
 ^src/pkgdefs/SUNWipkg/prototype$
-^src/util/distro-import/proto/
+^src/pkgsend$
 ^src/util/distro-import/SUNWfixes/
+^src/util/distro-import/cluster.import$
+^src/util/distro-import/proto/
+^webrev

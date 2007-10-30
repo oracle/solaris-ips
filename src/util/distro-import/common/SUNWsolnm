@@ -1,3 +1,7 @@
 package SUNWsolnm
 import SUNWsolnm
+drop etc/release
+from ./SUNWfixes import
+etc/release
+end import
 end package

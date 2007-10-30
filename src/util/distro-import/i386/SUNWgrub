@@ -1,3 +1,4 @@
 package SUNWgrub
 import SUNWgrub
+version 0.95
 end package

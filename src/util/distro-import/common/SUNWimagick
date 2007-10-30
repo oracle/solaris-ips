@@ -1,3 +1,4 @@
 package SUNWimagick
 import SUNWimagick
+version 6.3.4.2
 end package

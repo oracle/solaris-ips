@@ -1,3 +1,8 @@
 package SUNWsfwhea
 import SUNWsfwhea
+add link path=usr/include/glib-1.2 target=../sfw/include/glib-1.2
+add link path=usr/include/gtk-1.2 target=../sfw/include/gtk-1.2
+add link path=usr/include/net-snmp target=../sfw/include/net-snmp
+add link path=usr/include/ucd-snmp target=../sfw/include/ucd-snmp
+add link path=usr/include/usb.h target=../sfw/include/usb.h
 end package

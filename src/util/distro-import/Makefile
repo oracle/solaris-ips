@@ -56,11 +56,13 @@ ELIDED_FILES= \
 	etc/devlink.tab
 
 FIXFILES= \
-	etc/name_to_major \
-	etc/driver_aliases \
 	boot/solaris/filelist.ramdisk \
+	etc/driver_aliases \
+	etc/name_to_major \
+	etc/release \
 	etc/svc/global_repo.db \
 	etc/svc/nonglobal_repo.db \
+	usr/share/man/man.cf \
 	usr/share/man/missing.man \
 	$(ELIDED_FILES)
 
@@ -68,7 +70,7 @@ default:	74/$(TMPPKGS)
 
 cluster.import:	$(WOS_PKGS)/.clustertoc Makefile
 	./clustertoc2import.py $(WOS_PKGS)/.clustertoc | \
-	    sed "s/version 2.2.1a/version 2.2.1.1/" > $@
+	sed "s/version 2.2.1a/version 2.2.1.1/" > $@
 
 proto/etc/driver_aliases:	proto $(BUILDID)/all.i386.$(BUILDID) cluster.import
 	./get_file_from_pkg.py $(WOS_PKGS)/SUNWcsd etc/driver_aliases | \
@@ -90,6 +92,18 @@ proto/etc/svc/nonglobal_repo.db:	proto
 
 proto/usr/share/man/missing.man:	proto	missing.man
 	cp missing.man $@
+
+proto/etc/release:	proto
+	./get_file_from_pkg.py $(WOS_PKGS)/SUNWsolnm etc/release | head -1 | \
+	sed 's/.*Edition /                   OpenSolaris Developer Preview /' \
+	> $@
+	cat release.figlet >> $@
+
+proto/usr/share/man/man.cf:	proto
+	./get_file_from_pkg.py $(WOS_PKGS)/SUNWman usr/share/man/man.cf | \
+	sed \
+	'/MANSECTS/s/$$/,1openssl,3openssl,5openssl,7openssl/' \
+	> $@
 
 $(ELIDED_FILES:%=proto/%):	proto $(BUILDID)/$(@F)
 	cat $(BUILDID)/$(@F) > $@

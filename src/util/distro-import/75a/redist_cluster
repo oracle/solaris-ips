@@ -96,6 +96,7 @@ include common/SUNWdfbh
 include common/SUNWdhcm
 include common/SUNWdhcs
 include common/SUNWdhcsb
+include common/SUNWdistro-license
 include common/SUNWdmgt
 include common/SUNWdoc
 include common/SUNWdpl
@@ -128,7 +129,6 @@ include common/SUNWfmd
 include common/SUNWfontconfig
 include common/SUNWfontconfig-docs
 include common/SUNWfppd
-include common/SUNWfreetype2
 include common/SUNWfsexam
 include common/SUNWfss
 include common/SUNWftdu
@@ -136,11 +136,11 @@ include common/SUNWftp
 include common/SUNWfwdc
 include common/SUNWfwdcu
 include common/SUNWfwflash
-include common/SUNWgcc
 include common/SUNWgccruntime
 include common/SUNWgcmn
 include common/SUNWgd2
 include common/SUNWgdb
+include common/SUNWgetting-started-guide
 include common/SUNWggrp
 include common/SUNWgimpprint
 include common/SUNWgksu
@@ -365,7 +365,6 @@ include common/SUNWntp
 include common/SUNWogg-vorbis
 include common/SUNWopenjade
 include common/SUNWopensp
-include common/SUNWopenssl
 include common/SUNWosdem
 include common/SUNWpapi
 include common/SUNWpc
@@ -472,7 +471,6 @@ include common/SUNWsfwdemo
 include common/SUNWsfwhea
 include common/SUNWslim-utils
 include common/SUNWslp
-include common/SUNWsmagt
 include common/SUNWsmapi
 include common/SUNWsmba
 include common/SUNWsmcmd
@@ -802,6 +800,8 @@ include i386/SUNWckr
 include i386/SUNWcpc
 include i386/SUNWdfb
 include i386/SUNWdrmr
+include i386/SUNWfreetype2
+include i386/SUNWgcc
 include i386/SUNWgrub
 include i386/SUNWgrubS
 include i386/SUNWhea
@@ -816,6 +816,7 @@ include i386/SUNWmv88sx
 include i386/SUNWnge
 include i386/SUNWnvsata
 include i386/SUNWnxge
+include i386/SUNWopenssl
 include i386/SUNWos86r
 include i386/SUNWpcmci
 include i386/SUNWpd
@@ -829,6 +830,7 @@ include i386/SUNWrmodr
 include i386/SUNWrtls
 include i386/SUNWrtw
 include i386/SUNWsi3124
+include i386/SUNWsmagt
 include i386/SUNWurlgrabber
 include i386/SUNWvia823x
 include i386/SUNWvirtinst
@@ -1015,6 +1017,7 @@ idepend SUNWdhcm
 idepend SUNWdhcsb
 idepend SUNWdhcsr
 idepend SUNWdhcsu
+idepend SUNWdistro-license
 idepend SUNWdladm
 idepend SUNWdmgtr
 idepend SUNWdmgtu
@@ -1122,6 +1125,7 @@ idepend SUNWgccruntime
 idepend SUNWgcmn
 idepend SUNWgd2
 idepend SUNWgdb
+idepend SUNWgetting-started-guide
 idepend SUNWggrp
 idepend SUNWgimpprint
 idepend SUNWgksu

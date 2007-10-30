@@ -73,7 +73,6 @@ include common/SUNWfmd
 include common/SUNWfontconfig
 include common/SUNWfontconfig-docs
 include common/SUNWfppd
-include common/SUNWfreetype2
 include common/SUNWfss
 include common/SUNWftp
 include common/SUNWfwdc
@@ -261,7 +260,6 @@ include common/SUNWnis
 include common/SUNWnmap
 include common/SUNWntp
 include common/SUNWogg-vorbis
-include common/SUNWopenssl
 include common/SUNWpapi
 include common/SUNWpc
 include common/SUNWpcan
@@ -413,6 +411,7 @@ include i386/SUNWcar
 include i386/SUNWcpc
 include i386/SUNWcqhpc
 include i386/SUNWdrmr
+include i386/SUNWfreetype2
 include i386/SUNWgrub
 include i386/SUNWgrubS
 include i386/SUNWipw
@@ -424,6 +423,7 @@ include i386/SUNWmv88sx
 include i386/SUNWnge
 include i386/SUNWnvsata
 include i386/SUNWnxge
+include i386/SUNWopenssl
 include i386/SUNWos86r
 include i386/SUNWpcmci
 include i386/SUNWpd

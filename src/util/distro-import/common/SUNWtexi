@@ -1,4 +1,11 @@
 package SUNWtexi
 import SUNWtexi
 version 4.7
+add link path=usr/bin/ginstall-info target=../sfw/bin/ginstall-info
+add link path=usr/bin/info target=../sfw/bin/info
+add link path=usr/bin/install-info target=../sfw/bin/install-info
+add link path=usr/bin/makeinfo target=../sfw/bin/makeinfo
+add link path=usr/bin/texi2dvi target=../sfw/bin/texi2dvi
+add link path=usr/bin/texi2html target=../sfw/bin/texi2html
+add link path=usr/bin/texindex target=../sfw/bin/texindex
 end package

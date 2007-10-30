@@ -1,4 +1,9 @@
 package SUNWant
 import SUNWant
 version 1.6.5
+add link path=usr/bin/ant target=../sfw/bin/ant
+add link path=usr/bin/antRun target=../sfw/bin/antRun
+add link path=usr/bin/antRun.pl target=../sfw/bin/antRun.pl
+add link path=usr/bin/complete-ant-cmd.pl target=../sfw/bin/complete-ant-cmd.pl
+add link path=usr/bin/runant.pl target=../sfw/bin/runant.pl
 end package

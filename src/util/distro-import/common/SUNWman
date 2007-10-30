@@ -1,5 +1,6 @@
 package SUNWman
 from ./SUNWfixes import
+usr/share/man/man.cf
 usr/share/man/missing.man
 end import
 import SUNWman
@@ -1358,9 +1359,6 @@ drop usr/share/man/man9s/modldrv.9s
 drop usr/share/man/man9s/modlinkage.9s
 drop usr/share/man/man9s/modlstrmod.9s
 drop usr/share/man/man9s/tuple.9s
-# END NON-REDISTRIBUTABLE
-end import
-
 #
 # Add links to missing man pages so people won't freak out.
 #
@@ -2718,4 +2716,6 @@ add link path=usr/share/man/man9s/modldrv.9s target=../missing.man
 add link path=usr/share/man/man9s/modlinkage.9s target=../missing.man
 add link path=usr/share/man/man9s/modlstrmod.9s target=../missing.man
 add link path=usr/share/man/man9s/tuple.9s target=../missing.man
+# END NON-REDISTRIBUTABLE
+end import
 end package

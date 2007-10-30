@@ -1,0 +1,30 @@
+package SUNWsmagt
+import SUNWsmagt
+version 5.0.9
+add link path=usr/lib/libnetsnmp.a target=../sfw/lib/libnetsnmp.a
+add link path=usr/lib/libnetsnmp.so target=../sfw/lib/libnetsnmp.so
+add link path=usr/lib/libnetsnmp.so.5 target=../sfw/lib/libnetsnmp.so.5
+add link path=usr/lib/libnetsnmpagent.a target=../sfw/lib/libnetsnmpagent.a
+add link path=usr/lib/libnetsnmpagent.so target=../sfw/lib/libnetsnmpagent.so
+add link path=usr/lib/libnetsnmpagent.so.5 target=../sfw/lib/libnetsnmpagent.so.5
+add link path=usr/lib/libnetsnmphelpers.a target=../sfw/lib/libnetsnmphelpers.a
+add link path=usr/lib/libnetsnmphelpers.so target=../sfw/lib/libnetsnmphelpers.so
+add link path=usr/lib/libnetsnmphelpers.so.5 target=../sfw/lib/libnetsnmphelpers.so.5
+add link path=usr/lib/libnetsnmpmibs.a target=../sfw/lib/libnetsnmpmibs.a
+add link path=usr/lib/libnetsnmpmibs.so target=../sfw/lib/libnetsnmpmibs.so
+add link path=usr/lib/libnetsnmpmibs.so.5 target=../sfw/lib/libnetsnmpmibs.so.5
+add link path=usr/lib/sparcv9/libnetsnmp.a target=../../sfw/lib/sparcv9/libnetsnmp.a
+add link path=usr/lib/sparcv9/libnetsnmp.so target=../../sfw/lib/sparcv9/libnetsnmp.so
+add link path=usr/lib/sparcv9/libnetsnmp.so.5 target=../../sfw/lib/sparcv9/libnetsnmp.so.5
+add link path=usr/lib/sparcv9/libnetsnmpagent.a target=../../sfw/lib/sparcv9/libnetsnmpagent.a
+add link path=usr/lib/sparcv9/libnetsnmpagent.so target=../../sfw/lib/sparcv9/libnetsnmpagent.so
+add link path=usr/lib/sparcv9/libnetsnmpagent.so.5 target=../../sfw/lib/sparcv9/libnetsnmpagent.so.5
+add link path=usr/lib/sparcv9/libnetsnmphelpers.a target=../../sfw/lib/sparcv9/libnetsnmphelpers.a
+add link path=usr/lib/sparcv9/libnetsnmphelpers.so target=../../sfw/lib/sparcv9/libnetsnmphelpers.so
+add link path=usr/lib/sparcv9/libnetsnmphelpers.so.5 target=../../sfw/lib/sparcv9/libnetsnmphelpers.so.5
+add link path=usr/lib/sparcv9/libnetsnmpmibs.a target=../../sfw/lib/sparcv9/libnetsnmpmibs.a
+add link path=usr/lib/sparcv9/libnetsnmpmibs.so target=../../sfw/lib/sparcv9/libnetsnmpmibs.so
+add link path=usr/lib/sparcv9/libnetsnmpmibs.so.5 target=../../sfw/lib/sparcv9/libnetsnmpmibs.so.5
+add link path=usr/sbin/snmpd target=../sfw/sbin/snmpd
+add link path=usr/sbin/snmptrapd target=../sfw/sbin/snmptrapd
+end package

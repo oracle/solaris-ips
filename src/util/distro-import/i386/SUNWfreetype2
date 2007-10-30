@@ -1,0 +1,10 @@
+package SUNWfreetype2
+import SUNWfreetype2
+add link path=usr/bin/freetype-config target=../sfw/bin/freetype-config
+add link path=usr/include/freetype2 target=../sfw/include/freetype2
+add link path=usr/include/ft2build.h target=../sfw/include/ft2build.h
+add link path=usr/lib/amd64/libfreetype.so target=../../sfw/lib/amd64/libfreetype.so
+add link path=usr/lib/amd64/libfreetype.so.6 target=../../sfw/lib/amd64/libfreetype.so.6
+add link path=usr/lib/libfreetype.so target=../sfw/lib/libfreetype.so
+add link path=usr/lib/libfreetype.so.6 target=../sfw/lib/libfreetype.so.6
+end package
