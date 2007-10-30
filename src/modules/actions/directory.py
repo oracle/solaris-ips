@@ -31,8 +31,6 @@ This module contains the DirectoryAction class, which represents a
 directory-type packaging object."""
 
 import os
-import grp
-import pwd
 import sha
 import errno
 
@@ -52,13 +50,15 @@ class DirectoryAction(generic.Action):
                 """Client-side method that installs a directory."""
                 path = self.attrs["path"]
                 mode = int(self.attrs["mode"], 8)
-                owner = pwd.getpwnam(self.attrs["owner"]).pw_uid
-                group = grp.getgrnam(self.attrs["group"]).gr_gid
+                owner = pkgplan.image.getpwnam(self.attrs["owner"]).pw_uid
+                group = pkgplan.image.getgrnam(self.attrs["group"]).gr_gid
 
                 if orig:
                         omode = int(orig.attrs["mode"], 8)
-                        oowner = pwd.getpwnam(orig.attrs["owner"]).pw_uid
-                        ogroup = grp.getgrnam(orig.attrs["group"]).gr_gid
+                        oowner = pkgplan.image.getpwnam(
+                            orig.attrs["owner"]).pw_uid
+                        ogroup = pkgplan.image.getgrnam(
+                            orig.attrs["group"]).gr_gid
 
                 path = os.path.normpath(os.path.sep.join(
                     (pkgplan.image.get_root(), path)))

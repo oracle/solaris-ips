@@ -28,6 +28,8 @@ import cPickle
 import errno
 import getopt
 import os
+import grp
+import pwd
 import urllib
 import urlparse
 # import uuid           # XXX interesting 2.5 module
@@ -104,6 +106,11 @@ class Image(object):
                 self.imgdir = None
                 self.repo_uris = []
                 self.filter_tags = {}
+
+                self.users = {}
+                self.users_lastupdate = 0
+                self.groups = {}
+                self.groups_lastupdate = 0
 
                 self.catalogs = {}
                 self.authorities = {}
@@ -396,6 +403,122 @@ class Image(object):
                 for c in self.catalogs.values():
                         for pf in c.fmris():
                                 yield pf
+
+        def getpwnam(self, name):
+                """Do a name lookup in the image's password database.
+                
+                Keep a cached copy in memory for fast lookups, and fall back to
+                the current environment if the password database isn't
+                available.
+                """
+
+                # XXX What to do about IMG_PARTIAL?
+                if self.type == IMG_USER:
+                        return pwd.getpwnam(name)
+
+                # See if we've cached the name, first.
+                try:
+                        return self.users[name]
+                except KeyError:
+                        pass
+
+                # If not cached, try parsing the image's passwd file for the
+                # name.
+                passwd_file = os.path.join(self.root, "etc/passwd")
+
+                try:
+                        passwd_stamp = os.stat(passwd_file).st_mtime
+                except OSError, e:
+                        if e.errno != errno.ENOENT:
+                                raise
+                        # If the password file doesn't exist, bootstrap
+                        # ourselves from the current environment.
+                        return pwd.getpwnam(name)
+
+                # If the timestamp on the file isn't newer than the last time we
+                # checked, all its entries will already be in our cache, so we
+                # won't find the name.
+                if passwd_stamp <= self.users_lastupdate:
+                        raise KeyError, "getpwnam(): name not found: %s" % name
+
+                f = file(passwd_file)
+
+                found = False
+                for line in f:
+                        arr = line.rstrip().split(":")
+                        arr[2] = int(arr[2])
+                        arr[3] = int(arr[3])
+                        pw_entry = pwd.struct_passwd(arr)
+                        if pw_entry.pw_name == name:
+                                found = True
+
+                        self.users[pw_entry.pw_name] = pw_entry
+
+                self.users_lastupdate = passwd_stamp
+
+                f.close()
+
+                if not found:
+                        raise KeyError, "getpwnam(): name not found: %s" % name
+
+                return self.users[name]
+
+        def getgrnam(self, name):
+                """Do a name lookup in the image's group database.
+                
+                Keep a cached copy in memory for fast lookups, and fall back to
+                the current environment if the group database isn't available.
+                """
+
+                # XXX What to do about IMG_PARTIAL?
+                if self.type == IMG_USER:
+                        return grp.getgrnam(name)
+
+                # See if we've cached the name, first.
+                try:
+                        return self.groups[name]
+                except KeyError:
+                        pass
+
+                # If not cached, try parsing the image's group file for the
+                # name.
+                group_file = os.path.join(self.root, "etc/group")
+
+                try:
+                        group_stamp = os.stat(group_file).st_mtime
+                except OSError, e:
+                        if e.errno != errno.ENOENT:
+                                raise
+                        # If the group file doesn't exist, bootstrap ourselves
+                        # from the current environment.
+                        return grp.getgrnam(name)
+
+                # If the timestamp on the file isn't newer than the last time we
+                # checked, all its entries will already be in our cache, so we
+                # won't find the name.
+                if group_stamp <= self.groups_lastupdate:
+                        raise KeyError, "getgrnam(): name not found: %s" % name
+
+                f = file(group_file)
+
+                found = False
+                for line in f:
+                        arr = line.rstrip().split(":")
+                        arr[2] = int(arr[2])
+                        gr_entry = grp.struct_group(arr)
+                        if gr_entry.gr_name == name:
+                                found = True
+
+                        self.groups[gr_entry.gr_name] = gr_entry
+
+                self.group_lastupdate = group_stamp
+
+                f.close()
+
+                if not found:
+                        raise KeyError, "getgrnam(): name not found: %s" % name
+
+                return self.groups[name]
 
         def display_inventory(self, args):
                 """XXX Reimplement if we carve out the inventory as a has-a

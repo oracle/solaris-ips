@@ -31,8 +31,6 @@ This module contains the FileAction class, which represents a file-type
 packaging object."""
 
 import os
-import grp
-import pwd
 import errno
 import sha
 
@@ -53,8 +51,8 @@ class FileAction(generic.Action):
                 """Client-side method that installs a file."""
                 path = self.attrs["path"]
                 mode = int(self.attrs["mode"], 8)
-                owner = pwd.getpwnam(self.attrs["owner"]).pw_uid
-                group = grp.getgrnam(self.attrs["group"]).gr_gid
+                owner = pkgplan.image.getpwnam(self.attrs["owner"]).pw_uid
+                group = pkgplan.image.getgrnam(self.attrs["group"]).gr_gid
 
                 final_path = os.path.normpath(os.path.sep.join(
                     (pkgplan.image.get_root(), path)))
@@ -62,8 +60,10 @@ class FileAction(generic.Action):
                 # If we're upgrading, extract the attributes from the old file.
                 if orig:
                         omode = int(orig.attrs["mode"], 8)
-                        oowner = pwd.getpwnam(orig.attrs["owner"]).pw_uid
-                        ogroup = grp.getgrnam(orig.attrs["group"]).gr_gid
+                        oowner = pkgplan.image.getpwnam(
+                            orig.attrs["owner"]).pw_uid
+                        ogroup = pkgplan.image.getgrnam(
+                            orig.attrs["group"]).gr_gid
                         ohash = orig.hash
 
                 # If the action has been marked with a preserve attribute, and
