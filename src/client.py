@@ -307,7 +307,7 @@ def info(img, args):
         if not fmris:
                 return
 
-        manifests = ( img.get_manifest(f) for f in fmris )
+        manifests = ( img.get_manifest(f, filtered = True) for f in fmris )
 
         for i, m in enumerate(manifests):
                 if not short and i > 0:
@@ -316,10 +316,16 @@ def info(img, args):
 
 def info_one(manifest, short, verbose):
         authority, name, version = manifest.fmri.tuple()
-        summary = [
-            a.attrs["value"]
-            for a in manifest.actions
-            if a.name == "set" and a.attrs["name"] == "description"][0]
+        try:
+                # XXX Extracting package metadata needs to be simpler than this.
+                # That might start to turn Manifest into a "package" object (but
+                # not of the "Package" class).  Is that okay?
+                summary = [
+                    a.attrs["value"]
+                    for a in manifest.actions
+                    if a.name == "set" and a.attrs["name"] == "description"][0]
+        except IndexError:
+                summary = ""
 
         if short:
                 print "%-12s%s" % (name, summary)
@@ -329,14 +335,9 @@ def info_one(manifest, short, verbose):
                 print "Version:", version.release
                 print "Branch:", version.branch
                 print "Packaging Date:", version.get_datetime()
-                # XXX This needs to be simpler.  Making it so starts to
-                # turn Manifest into a "package" object (but not of the
-                # "Package" class).  Is that okay?
-                print "Summary:", [
-                    a.attrs["value"]
-                    for a in manifest.actions
-                    if a.name == "set" and \
-                        a.attrs["name"] == "description"][0]
+                print "Size:", sum(int(a.attrs.get("pkg.size", 0))
+                    for a in manifest.actions)
+                print "Summary:", summary
 
 def list_contents(img, args):
         """List package contents."""
@@ -394,7 +395,7 @@ def list_contents(img, args):
         if not fmris:
                 return
 
-        manifests = ( img.get_manifest(f) for f in fmris )
+        manifests = ( img.get_manifest(f, filtered = True) for f in fmris )
 
         lines = []
         # widths is a list of tuples of column width and justification.  Start

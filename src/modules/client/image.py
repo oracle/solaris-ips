@@ -267,7 +267,7 @@ class Image(object):
 
                 return False
 
-        def get_manifest(self, fmri):
+        def get_manifest(self, fmri, filtered = False):
                 m = manifest.Manifest()
 
                 fmri_dir_path = os.path.join(self.imgdir, "pkg",
@@ -293,6 +293,25 @@ class Image(object):
                         pfile.close()
                 except IOError, e:
                         pass
+
+                if filtered:
+                        filters = []
+                        try:
+                                print "trying"
+                                f = file("%s/filters" % fmri_dir_path, "r")
+                        except IOError, e:
+                                print e
+                                if e.errno != errno.ENOENT:
+                                        raise
+                        else:
+                                print "making filters"
+                                filters = [
+                                    (l.strip(), compile(
+                                        l.strip(), "<filter string>", "eval"))
+                                    for l in f.readlines()
+                                ]
+
+                        m.filter(filters)
 
                 return m
 
