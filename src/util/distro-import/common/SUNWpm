@@ -1,4 +1,9 @@
 package SUNWpm
 import SUNWpmu
 import SUNWpmr
+# customize power.conf
+drop etc/power.conf
+from SUNWfixes import
+etc/power.conf
+end import
 end package

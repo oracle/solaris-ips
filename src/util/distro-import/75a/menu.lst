@@ -1,0 +1,23 @@
+#
+#pragma ident	"@(#)install_menu	1.1	05/04/15 SMI"
+#
+default=0
+timeout=30
+splashimage=/boot/grub/splash.xpm.gz
+foreground=ffffff
+background=444444
+title OpenSolaris Developer Preview (32 bit) 
+	kernel /platform/i86pc/kernel/unix
+	module /boot/x86.microroot
+
+title OpenSolaris Developer Preview text console (32 bit)
+	kernel /platform/i86pc/kernel/unix -B livemode=text
+	module /boot/x86.microroot
+
+title OpenSolaris Developer Preview (32 bit, No ACPI) 
+	kernel /platform/i86pc/kernel/unix -B acpi-user-options=2
+	module /boot/x86.microroot
+
+title Boot from Hard Disk
+	rootnoverify (hd0)
+	chainloader +1

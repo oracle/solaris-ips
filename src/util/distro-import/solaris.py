@@ -343,8 +343,9 @@ def publish_pkg(pkg):
                         if f.attrs["path"] in pathdict:
 				if pkgname in hollow_pkgs:
 					f.attrs["opensolaris.zone"] = "global"
-
                                 path = f.attrs["path"]
+				if pathdict[path].type in "ev":
+					f.attrs["preserve"] = "true"
                                 f.attrs["owner"] = pathdict[path].owner
                                 f.attrs["group"] = pathdict[path].group
                                 f.attrs["mode"] = pathdict[path].mode

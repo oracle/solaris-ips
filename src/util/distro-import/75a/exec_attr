@@ -5,26 +5,28 @@
 # Common Development and Distribution License (the "License").
 # You may not use this file except in compliance with the License.
 #
-# You can obtain a copy of the license at src/sun_nws/OPENSOLARIS.LICENSE
+# You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
 # or http://www.opensolaris.org/os/licensing.
 # See the License for the specific language governing permissions
 # and limitations under the License.
 #
 # When distributing Covered Code, include this CDDL HEADER in each
-# file and include the License file at src/sun_nws/OPENSOLARIS.LICENSE.
+# file and include the License file at usr/src/OPENSOLARIS.LICENSE.
 # If applicable, add the following below this CDDL HEADER, with the
 # fields enclosed by brackets "[]" replaced with your own identifying
 # information: Portions Copyright [yyyy] [name of copyright owner]
 #
 # CDDL HEADER END
 #
-#
-# Copyright 2006 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
-#ident	"@(#)exec_attr	1.2	06/09/15 SMI"
+# /etc/security/exec_attr
 #
 # execution attributes for profiles. see exec_attr(4)
+#
+#ident	"@(#)exec_attr	1.7	07/01/07 SMI"
+#
 #
 All Actions:solaris:act:::*;*;*;*;*:
 All:solaris:act:::*;*;*;*;*:
@@ -429,6 +431,8 @@ Project Management:solaris:cmd:::/usr/sbin/projmod:euid=0
 Remote Administration:solaris:act:::smc;*;*;*;0:privs=win_dga
 Service Management:suser:cmd:::/usr/share/setup-tool-backends/scripts/services-conf:uid=0
 Software Installation:solaris:act:::Open;*;JAVA_BYTE_CODE;*;*:uid=0;gid=2
+Software Installation:suser:cmd:::/usr/bin/gui-install:uid=0
+Software Installation:suser:cmd:::/usr/bin/install-lan:uid=0
 Software Installation:suser:cmd:::/usr/bin/ln:euid=0
 Software Installation:suser:cmd:::/usr/bin/pkginfo:uid=0
 Software Installation:suser:cmd:::/usr/bin/pkgmk:uid=0

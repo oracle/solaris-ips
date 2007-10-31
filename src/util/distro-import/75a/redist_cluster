@@ -840,6 +840,7 @@ include i386/SUNWxsvc
 include i386/SUNWxvm
 include i386/SUNWxvmdom
 include i386/SUNWxvmhvm
+include common/slim_cd
 package redistributable
 cluster redistributable
 description "redistributable cluster"

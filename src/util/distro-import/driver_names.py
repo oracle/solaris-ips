@@ -35,7 +35,7 @@ def scan_import_file(s):
 
         for line in file:
                 fields = line.split()
-                if fields[0] == "include":
+                if fields and fields[0] == "include":
                         scan_import_file(fields[1])
                 elif len(fields) > 3 and fields[0] == "add" and \
                     fields[1] == "driver":

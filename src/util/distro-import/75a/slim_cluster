@@ -406,6 +406,7 @@ include i386/SUNWvia823x
 include i386/SUNWwpi
 include i386/SUNWxorg-mesa
 include i386/SUNWxsvc
+include common/slim_cd
 package slim_install
 cluster slim_install
 description "slim install cluster"
