@@ -4,7 +4,6 @@ import SUNWcsu
 drop usr/bin/ksh
 drop usr/bin/pfksh
 drop usr/bin/rksh
-add link path=usr/bin/ksh target=ksh93
 add link path=usr/bin/rksh target=rksh93
 # END NON-REDISTRIBUTABLE
 # hack until clofi integrates into nevada
@@ -29,5 +28,6 @@ etc/nsswitch.conf
 etc/user_attr
 etc/security/exec_attr
 root
+usr/bin/ksh
 end import
 end package
