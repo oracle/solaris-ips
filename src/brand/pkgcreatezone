@@ -76,7 +76,7 @@ int_code=$ZONE_SUBPROC_NOTCOMPLETE
 
 trap trap_cleanup INT
 
-authority="localhost=http://localhost:10000"
+authority="opensolaris.org=http://pkg.opensolaris.org"
 zonename=""
 zonepath=""
 
