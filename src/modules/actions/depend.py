@@ -47,6 +47,7 @@ class DependencyAction(generic.Action):
 
         name = "depend"
         attributes = ("type", "fmri")
+        key_attr = "fmri"
 
         def __init__(self, data=None, **attrs):
                 generic.Action.__init__(self, data, **attrs)
