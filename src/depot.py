@@ -271,6 +271,10 @@ def set_ops():
 
 class pkgHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
+        def address_string(self):
+                host, port = self.client_address[:2]
+                return host
+
         def do_GET(self):
                 reqarr = self.path.lstrip("/").split("/")
                 operation = reqarr[0]
