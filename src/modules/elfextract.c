@@ -248,7 +248,7 @@ static void
 readhash(int fd, SHA1_CTX *shc, off_t offset, off_t size)
 {
 	off_t n;
-	char hashbuf[1024];
+	char hashbuf[64 * 1024];
 
 	if (!size)
 		return;
