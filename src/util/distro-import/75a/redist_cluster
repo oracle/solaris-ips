@@ -80,6 +80,7 @@ include common/SUNWciu8
 include common/SUNWcnetr
 include common/SUNWcns
 include common/SUNWcpcu
+include common/SUNWcpp
 include common/SUNWcs
 include common/SUNWcsd
 include common/SUNWcsdhcm
@@ -194,7 +195,6 @@ include common/SUNWgnome-hex-editor
 include common/SUNWgnome-im-client
 include common/SUNWgnome-img-editor
 include common/SUNWgnome-img-organizer
-include common/SUNWgnome-img-viewer.71
 include common/SUNWgnome-img-viewer.75
 include common/SUNWgnome-internet-applets
 include common/SUNWgnome-intranet-applets
@@ -567,7 +567,7 @@ include common/SUNWxscreensaver-hacks-gl
 include common/SUNWxsun-keytables
 include common/SUNWxwdv
 include common/SUNWxwhl
-include common/SUNWxwplt
+include common/SUNWxwplr
 include common/SUNWxwrtl
 include common/SUNWxwsvr
 include common/SUNWxwxft
@@ -778,6 +778,7 @@ include common/loc/SUNWthunderbirdl10n-zh-CN
 include common/loc/SUNWthunderbirdl10n-zh-TW
 include common/loc/SUNWweuos
 include common/loc/SUNWweuow
+include common/slim_cd
 include i386/BRCMbnx
 include i386/SUNWaac
 include i386/SUNWad810
@@ -831,6 +832,7 @@ include i386/SUNWrtls
 include i386/SUNWrtw
 include i386/SUNWsi3124
 include i386/SUNWsmagt
+include i386/SUNWsprot
 include i386/SUNWurlgrabber
 include i386/SUNWvia823x
 include i386/SUNWvirtinst
@@ -840,7 +842,6 @@ include i386/SUNWxsvc
 include i386/SUNWxvm
 include i386/SUNWxvmdom
 include i386/SUNWxvmhvm
-include common/slim_cd
 package redistributable
 cluster redistributable
 description "redistributable cluster"
@@ -984,6 +985,7 @@ idepend SUNWcnsu
 idepend SUNWcos
 idepend SUNWcpc
 idepend SUNWcpcu
+idepend SUNWcpp
 idepend SUNWcpprou
 idepend SUNWcsd
 idepend SUNWcsdhcm
@@ -1556,6 +1558,11 @@ idepend SUNWmibii
 idepend SUNWmkcd
 idepend SUNWmkcdr
 idepend SUNWmlib
+idepend SUNWmlibe
+idepend SUNWmlibh
+idepend SUNWmlibk
+idepend SUNWmlibl
+idepend SUNWmlibt
 idepend SUNWmp
 idepend SUNWmpapi
 idepend SUNWmpapir
@@ -1793,6 +1800,7 @@ idepend SUNWspeex
 idepend SUNWspeex-devel
 idepend SUNWspnego
 idepend SUNWspprou
+idepend SUNWsprot
 idepend SUNWspsvr
 idepend SUNWspsvu
 idepend SUNWsra

@@ -39,6 +39,7 @@ include common/SUNWcfpl
 include common/SUNWchxge
 include common/SUNWcnetr
 include common/SUNWcpcu
+include common/SUNWcpp
 include common/SUNWcs
 include common/SUNWcsd
 include common/SUNWcsl
@@ -348,7 +349,7 @@ include common/SUNWxorg-server
 include common/SUNWxscreensaver-hacks
 include common/SUNWxscreensaver-hacks-gl
 include common/SUNWxwdv
-include common/SUNWxwplt
+include common/SUNWxwplr
 include common/SUNWxwsvr
 include common/SUNWxwxft
 include common/SUNWzfs
@@ -357,6 +358,7 @@ include common/SUNWzip
 include common/SUNWzlib
 include common/SUNWzone
 include common/SUNWzsh
+include common/slim_cd
 include i386/BRCMbnx
 include i386/SUNWaac
 include i386/SUNWad810
@@ -406,7 +408,6 @@ include i386/SUNWvia823x
 include i386/SUNWwpi
 include i386/SUNWxorg-mesa
 include i386/SUNWxsvc
-include common/slim_cd
 package slim_install
 cluster slim_install
 description "slim install cluster"
@@ -481,6 +482,7 @@ idepend SUNWckr
 idepend SUNWcnetr
 idepend SUNWcpc
 idepend SUNWcpcu
+idepend SUNWcpp
 idepend SUNWcsd
 idepend SUNWcsl
 idepend SUNWcslr

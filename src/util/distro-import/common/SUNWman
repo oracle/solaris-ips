@@ -1426,7 +1426,7 @@ add link path=usr/share/man/man1/idnconv.1 target=../missing.man
 add link path=usr/share/man/man1/jobs.1 target=../missing.man
 add link path=usr/share/man/man1/join.1 target=../missing.man
 add link path=usr/share/man/man1/kill.1 target=../missing.man
-add link path=usr/share/man/man1/ksh.1 target=../missing.man
+add link path=usr/share/man/man1/ksh.1 target=ksh93.1
 add link path=usr/share/man/man1/ld.so.1.1 target=../missing.man
 add link path=usr/share/man/man1/lex.1 target=../missing.man
 add link path=usr/share/man/man1/limit.1 target=../missing.man

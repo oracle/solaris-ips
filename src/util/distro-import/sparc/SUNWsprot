@@ -1,0 +1,7 @@
+package SUNWsprot
+import SUNWsprot
+# BEGIN NON-REDISTRIBUTABLE
+drop usr/bin/as
+drop usr/ccs/bin/as
+# END NON-REDISTRIBUTABLE
+end package
