@@ -62,9 +62,20 @@ FIXFILES= \
 	etc/release \
 	etc/svc/global_repo.db \
 	etc/svc/nonglobal_repo.db \
+	usr/bin/ksh \
 	usr/share/man/man.cf \
 	usr/share/man/missing.man \
 	$(ELIDED_FILES)
+
+PROG=	ksh-wrapper
+
+OBJS=	ksh-wrapper.o
+
+SRCS=	$(OBJS:%.o=%.c)
+
+CFLAGS=		-g -v
+
+LINTFLAGS=	-axsm
 
 default:	74/$(TMPPKGS)
 
@@ -105,13 +116,17 @@ proto/usr/share/man/man.cf:	proto
 	'/MANSECTS/s/$$/,1openssl,3openssl,5openssl,7openssl/' \
 	> $@
 
+proto/usr/bin/ksh:	proto $(PROG)
+	cp $(PROG) $@
+
 $(ELIDED_FILES:%=proto/%):	proto $(BUILDID)/$(@F)
 	cat $(BUILDID)/$(@F) > $@
 
 proto:	Makefile
-	mkdir -p proto/etc/svc
 	mkdir -p proto/boot/solaris/devicedb
 	mkdir -p proto/etc/security
+	mkdir -p proto/etc/svc
+	mkdir -p proto/usr/bin
 	mkdir -p proto/usr/share/man
 
 %/$(TMPPKGS):
@@ -140,5 +155,14 @@ redist_import:	$(BUILDID)/redist_cluster $(TMPPKGS)
 
 %/redist_import:
 	$(MAKE) BUILDID=$(@:%/redist_import=%) redist_import
+
+clean:
+	rm -f $(OBJS)
+
+clobber: clean
+	rm -f $(PROG)
+
+lint:
+	$(LINT) $(LINTFLAGS) $(SRCS)
 
 .KEEP_STATE:
