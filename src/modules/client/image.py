@@ -622,8 +622,8 @@ class Image(object):
 
                 # Convert a full directory path to the FMRI it represents.
                 def idx_to_fmri(index):
-                        return fmri.PkgFmri(urllib.unquote(
-                            os.path.dirname(index[len(idxdir) + 1:])), None)
+                        return fmri.PkgFmri(urllib.unquote(os.path.dirname(
+                            index[len(idxdir) + 1:]).replace("/", "@")), None)
 
                 indices = (
                     (os.path.join(dir, "index"), os.path.join(dir, "manifest"))
