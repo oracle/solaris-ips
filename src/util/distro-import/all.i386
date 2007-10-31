@@ -691,7 +691,7 @@ include common/SUNWsolnm
 include common/SUNWspeex
 include common/SUNWspl
 include common/SUNWspnego
-include common/SUNWsprot
+include i386/SUNWsprot
 include common/SUNWspsv
 include common/SUNWsra
 include common/SUNWsrh

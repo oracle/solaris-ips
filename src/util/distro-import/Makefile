@@ -61,13 +61,13 @@ ELIDED_FILES= \
 CACHED_FILES= 					\
 	$(ELIDED_FILES) 			\
 	boot/grub/menu.lst 			\
+	boot/grub/splash.xpm.gz 		\
 	etc/user_attr	 			\
-	etc/hosts 				\
+	etc/inet/hosts 				\
 	var/svc/profile/generic_limited_net.xml \
 	var/svc/profile/generic_open.xml
 
 FIXFILES= \
-	boot/grub/splash.xpm.gz \
 	boot/solaris/filelist.ramdisk \
 	etc/user_attr.cdonly \
 	etc/X11/gdm/custom.conf \
@@ -106,7 +106,6 @@ cluster.import:	$(WOS_PKGS)/.clustertoc Makefile
 proto/etc/user_attr.cdonly: proto $(BUILDID)/user_attr
 	( cat $(BUILDID)/user_attr; \
           echo "jack::::profiles=Primary Administrator;roles=root") > $@
-
 
 proto/etc/driver_aliases:	proto $(BUILDID)/all.i386.$(BUILDID) cluster.import
 	./get_file_from_pkg.py $(WOS_PKGS)/SUNWcsd etc/driver_aliases | \
