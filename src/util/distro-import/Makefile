@@ -179,7 +179,7 @@ proto/etc/passwd:	proto Makefile
 proto/etc/shadow:	proto Makefile
 	(./get_file_from_pkg.py $(WOS_PKGS)/SUNWcsr etc/shadow | nawk -F: 	\
 	'/^root/{ print "root:wqy8hz4xKqw4o:13817::::::";continue} {print $$0}'; \
-	echo "jack::6445::::::") > $@
+	echo "jack:9Nd/cwBcNWFZg:13817::::::") > $@
 
 
 
