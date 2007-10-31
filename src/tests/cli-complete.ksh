@@ -1,4 +1,4 @@
-#!/bin/ksh -px
+#!/bin/ksh -p
 #
 # CDDL HEADER START
 #
@@ -45,15 +45,19 @@ export PKG_DEPOT_CONTENT=$ROOT/usr/share/lib/pkg
 export PYTHONPATH=$ROOT/usr/lib/python2.4/vendor-packages/
 export PATH=$ROOT/usr/bin:$PATH
 
-$ROOT/usr/lib/pkg.depotd -p $REPO_PORT -d $REPO_DIR &
-
-DEPOT_PID=$!
-
-sleep 1
+print -u2 -- \
+    "\n--cli-complete testing------------------------------------------------"
 
 usage () {
 	cli-complete.ksh
 	exit 2
+}
+
+depot_start () {
+	print -u2 "Redirecting all repository logging to stdout"
+	$ROOT/usr/lib/pkg.depotd -p $REPO_PORT -d $REPO_DIR 2>&1 &
+	DEPOT_PID=$!
+	sleep 1
 }
 
 depot_cleanup () {
@@ -71,31 +75,48 @@ image_cleanup () {
 	rm -fr $IMAGE_DIR
 }
 
+tcase=0
+tassert="unknown"
+new_assert() {
+	tassert="$*"
+	intest=1
+}
+
+pass () {
+	print -u2 "PASS $tcase: $tassert"
+	tcase=`expr "$tcase" "+" "1"`
+	intest=0
+}
+
 fail () {
-	echo "*** case $tcase: $@"
+	print -u2 "*** case $tcase: $@"
+	print -u2 "*** ASSERT: $tassert"
 	exit 1
 }
 
-trap "ret=$?; image_cleanup; depot_cleanup $ret" EXIT
+died () {
+	if [[ $intest -ne 0 ]]; then
+		print -u2 "*** trap; died in case $tcase"
+		print -u2 "*** ($tassert)"
+	fi
+}
 
-# Case 0.  Stop server, start again.
+depot_start
+trap "ret=$?; died; image_cleanup; depot_cleanup $ret" EXIT
+
 # {{{1
+new_assert "Stop server, start again."
 
 kill $DEPOT_PID
 wait $DEPOT_PID
 
-$ROOT/usr/lib/pkg.depotd -p $REPO_PORT -d $REPO_DIR &
-
-DEPOT_PID=$!
-
-sleep 1
-
+depot_start
+pass
 # }}}1
 
-# Case 1.  Send empty package foo@1.0, install and uninstall.
 # {{{1
+new_assert "Send empty package foo@1.0, install and uninstall."
 
-tcase=1
 trans_id=$(pkgsend -s $REPO_URL open foo@1.0,5.11-0)
 if [[ $? != 0 ]]; then
 	fail pkgsend open failed
@@ -139,13 +160,14 @@ if ! pkg status -a; then
 	fail pkg status -a failed
 fi
 
+pass
 # }}}1
 
-# Case 2.  Send package foo@1.1, containing a directory and a file,
-# install, search, and uninstall.
-# {{{1
 
-tcase=2
+# {{{1
+new_assert "Send package foo@1.1, containing a directory and a file, install," \
+    "search, and uninstall."
+
 trans_id=$(pkgsend -s $REPO_URL open foo@1.1,5.11-0)
 if [[ $? != 0 ]]; then
 	fail pkgsend open failed
@@ -207,12 +229,11 @@ if ! pkg status -a; then
 	fail pkg status -a failed
 fi
 
+pass
 # }}}1
 
-# Case 3.  Install foo@1.0, upgrade to foo@1.1, uninstall.
 # {{{1
-
-tcase=3
+new_assert "Install foo@1.0, upgrade to foo@1.1, uninstall."
 
 if ! pkg image-create -F -a test=$REPO_URL $IMAGE_DIR; then
 	fail pkgsend close failed
@@ -260,12 +281,12 @@ if ! pkg status -a; then
 	fail pkg status -a failed
 fi
 
+pass
 # }}}1
 
-# Case 4.  Add bar@1.0, dependent on foo@1.0, install, uninstall.
 # {{{1
+new_assert "Add bar@1.0, dependent on foo@1.0, install, uninstall."
 
-tcase=4
 trans_id=$(pkgsend -s $REPO_URL open bar@1.0,5.11-0)
 if [[ $? != 0 ]]; then
 	fail pkgsend open failed
@@ -324,12 +345,11 @@ if ! pkg status -a; then
 	fail pkg status -a failed
 fi
 
+pass
 # }}}1
 
-# Case 5.  Install bar@1.0, dependent on foo@1.0, uninstall recursively.
 # {{{1
-
-tcase=5
+new_assert "Install bar@1.0, dependent on foo@1.0, uninstall recursively."
 
 if ! pkg image-create -F -a test=$REPO_URL $IMAGE_DIR; then
 	fail pkg image-create failed
@@ -365,13 +385,13 @@ if ! pkg status -a; then
 	fail pkg status -a failed
 fi
 
+pass
 # }}}1
 
-# Case 6.  Send package bar@1.1, dependent on foo@1.2.  Install bar@1.0.
-# Upgrade image.
 # {{{1
+new_assert "Send package bar@1.1, dependent on foo@1.2.  Install bar@1.0." \
+    "Upgrade image."
 
-tcase=6
 find $IMAGE_DIR
 
 cd $IMAGE_DIR
@@ -464,8 +484,10 @@ if ! pkg status; then
 	fail pkg status faileld
 fi
 
+
 find $IMAGE_DIR
 
+pass
 # }}}1
 
 exit 0

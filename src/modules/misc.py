@@ -84,6 +84,3 @@ def versioned_urlopen(base_uri, operation, versions = [], tail = None,
                 raise RuntimeError, \
                     "%s doesn't speak a known version of %s operation" % \
                     (base_uri, operation)
-
-if __name__ == "__main__":
-        print hash_file_name("abcdefghijklmnopqrstuvwxyz")

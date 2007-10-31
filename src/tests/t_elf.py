@@ -30,6 +30,9 @@ import unittest
 class TestElf(unittest.TestCase):
 
 	def test_is_elf_object(self):
+		""" ASSERT: is_elf_object correctly classifies a range of
+		    elf objects and non-elf objects """
+
 		if os.path.exists("/usr/bin/cat"):
 			self.assertEqual(elf.is_elf_object("/usr/bin/cat"),
 			    True)
@@ -58,7 +61,7 @@ class TestElf(unittest.TestCase):
 			self.assertEqual(
 			    elf.is_elf_object("/kernel/drv/sparcv9/sd"), True)
 
-		self.assertRaises(OSError, elf.is_elf_object, "")
+		self.assertRaises(OSError, elf.is_elf_object, "/does/not/exist")
 
 	def test_get_dynamic(self):
 		if os.path.exists("/usr/bin/cat"):
@@ -87,7 +90,7 @@ class TestElf(unittest.TestCase):
 			elf.get_dynamic("/usr/lib/crti.o")
 
 
-		self.assertRaises(OSError, elf.get_dynamic, "")
+		self.assertRaises(OSError, elf.get_dynamic, "/does/not/exist")
 
 	def test_get_info(self):
 		if os.path.exists("/usr/bin/cat"):
@@ -115,7 +118,7 @@ class TestElf(unittest.TestCase):
 		if os.path.exists("/usr/lib/crti.o"):
 			elf.get_info("/usr/lib/crti.o")
 
-		self.assertRaises(OSError, elf.get_info, "");
+		self.assertRaises(OSError, elf.get_info, "/does/not/exist");
 		
 
 if __name__ == "__main__":

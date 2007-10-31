@@ -1,4 +1,4 @@
-#!/bin/ksh -px
+#!/bin/ksh -p
 #
 # CDDL HEADER START
 #
@@ -39,19 +39,31 @@ ROOT=$PWD/../../proto/root_$(uname -p)
 export PYTHONPATH=$ROOT/usr/lib/python2.4/vendor-packages/
 export PATH=$ROOT/usr/bin:$PATH
 
+print -u2 -- \
+    "\n--memleaks testing----------------------------------------------------"
+
 if [[ ! -x /usr/bin/mdb ]]; then
-	echo "mdb(1) not available.  No leak checking."
+	print -u2 "mdb(1) not available.  No leak checking."
 	exit 0
 fi
+
+if [[ ! -x /usr/lib/libumem.so ]]; then
+	print -u2 "libumem not available.  No leak checking."
+	exit 0
+fi
+
+print -u2 "Note: set DBG_STOP=1 in your environment to stop for leak debugging"
 
 LD_PRELOAD=libumem.so UMEM_DEBUG=default
 export LD_PRELOAD
 export UMEM_DEBUG
 
-$ROOT/usr/lib/pkg.depotd -p $REPO_PORT -d $REPO_DIR &
-DEPOT_PID=$!
-
-sleep 1
+depot_start () {
+	print -u2 "Redirecting all repository logging to stdout"
+	$ROOT/usr/lib/pkg.depotd -p $REPO_PORT -d $REPO_DIR 2>&1 &
+	DEPOT_PID=$!
+	sleep 1
+}
 
 depot_cleanup () {
 	kill $DEPOT_PID
@@ -63,17 +75,31 @@ depot_cleanup () {
 	exit $1
 }
 
+tcase=0
+tassert="unknown"
+new_assert() {
+	tassert="$*"
+	intest=1
+}
+
+pass () {
+	print -u2 "PASS $tcase: $tassert"
+	tcase=`expr "$tcase" "+" "1"`
+	intest=0
+}
+
 fail () {
-	echo "*** case $tcase: $@"
+	print -u2 "*** FAIL case $tcase: $@"
+	print -u2 "*** ASSERT: $tassert"
 	exit 1
 }
 
+depot_start
 trap "ret=$?; depot_cleanup $ret" EXIT
 
-# Case 0.  Put some binaries into the server, then findleaks it.
 # {{{1
+new_assert "Put some binaries into the server, then findleaks it."
 
-tcase=0
 trans_id=$(pkgsend -s $REPO_URL open leaks@1.0,5.11-0)
 if [[ $? != 0 ]]; then
 	fail pkgsend open failed
@@ -112,7 +138,22 @@ pkgsend -s $REPO_URL add file /usr/sbin/init mode=0555 owner=root group=bin \
 pkgsend -s $REPO_URL close || \
 	fail pkgsend close failed
 
-echo "::findleaks" | mdb -p $DEPOT_PID
+output=`echo ::findleaks | mdb -p $DEPOT_PID`
+
+if [[ $? = 0 && -n "$output" ]]; then
+	print -u2 "$output"
+
+	if [ -n "$DBG_STOP" ]; then
+		print -u2 "stopping so you can debug the leaks"
+		print -u2 "depot is at $DEPOT_PID"
+		trap "" EXIT
+		exit 1
+	fi
+
+	fail "leaks found"
+else
+	pass
+fi
 
 # }}}1
 

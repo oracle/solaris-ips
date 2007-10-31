@@ -175,6 +175,8 @@ install := TARGET = install
 link-clean := TARGET = link-clean
 clean := TARGET = clean
 clobber := TARGET = clobber
+test := TARGET = test
+test-verbose := TARGET = test-verbose
 
 all: $(PROGS) binary-modules
 
@@ -183,6 +185,7 @@ clean:
 	@cd modules; pwd; $(MAKE) $(TARGET)
 	@cd man; pwd; $(MAKE) $(TARGET)
 	@cd web; pwd; $(MAKE) $(TARGET)
+	@cd tests; pwd; $(MAKE) $(TARGET)
 
 clobber: clean
 	rm -fr $(ROOT)
@@ -228,22 +231,10 @@ link-clean:
 	@cd brand; pwd; $(MAKE) $(TARGET)
 	@cd man; pwd; $(MAKE) $(TARGET)
 
-# Invoke all known modules with tests.
-# XXX Invoke the bundle tests.
 test:
-	# $(PYTHON) $(LINKPYTHONPKG)/bundle/__init__.py a_sysv_pkg
-	# $(PYTHON) $(LINKPYTHONPKG)/bundle/__init__.py a_tarball
-	$(PYTHON) $(LINKPYTHONPKG)/misc.py
-	$(PYTHON) $(LINKPYTHONPKG)/version.py
-	$(PYTHON) $(LINKPYTHONPKG)/fmri.py
-	$(PYTHON) $(LINKPYTHONPKG)/catalog.py
-	$(PYTHON) $(LINKPYTHONPKG)/manifest.py
-	$(PYTHON) $(LINKPYTHONPKG)/smf.py
-	$(PYTHON) $(LINKPYTHONPKG)/client/imageconfig.py
-	$(PYTHON) $(LINKPYTHONPKG)/client/filter.py
-	cd tests && $(KSH) -x cli-complete.ksh
-	cd tests && $(PYTHON) t_elf.py
-	cd tests && $(KSH) -x memleaks.ksh
+	@cd tests; pwd; $(MAKE) $(TARGET)
+
+test-verbose: test
 
 proto: $(ROOT)
 

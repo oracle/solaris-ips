@@ -160,21 +160,23 @@ class Manifest(object):
 
                 return removed + added + changed
 
-        def display_differences(self, other):
+        def humanized_differences(self, other):
                 """Output expects that self is newer than other.  Use of sets
                 requires that we convert the action objects into some marshalled
                 form, otherwise set member identities are derived from the
                 object pointers, rather than the contents."""
 
                 l = self.difference(other)
+		out = ""
 
                 for src, dest in l:
                         if not src:
-                                print "+", dest
+                                out += "+ %s\n" % str(dest)
                         elif not dest:
-                                print "-", src
+                                out += "- %s\n" + str(src)
                         else:
-                                print "%s -> %s" % (src, dest)
+                                out += "%s -> %s\n" % (src, dest)
+		return out
 
         def filter(self, filters):
                 """Filter out actions from the manifest based on filters."""
@@ -279,89 +281,3 @@ class Manifest(object):
                     protocol = cPickle.HIGHEST_PROTOCOL)
 
 null = Manifest()
-
-if __name__ == "__main__":
-        m1 = Manifest()
-
-        x = """\
-set com.sun,test=true
-depend type=require fmri=pkg:/library/libc
-file fff555fff mode=0555 owner=sch group=staff path=/usr/bin/i386/sort isa=i386
-"""
-        m1.set_content(x)
-
-        print m1
-
-        m2 = Manifest()
-
-        y = """\
-set com.sun,test=false
-set com.sun,data=true
-depend type=require fmri=pkg:/library/libc
-file fff555ff9 mode=0555 owner=sch group=staff path=/usr/bin/i386/sort isa=i386
-file eeeaaaeee mode=0555 owner=sch group=staff path=/usr/bin/amd64/sort isa=amd64
-
-file ff555fff mode=0555 owner=root group=bin path=/kernel/drv/foo isa=i386
-file ff555ffe mode=0555 owner=root group=bin path=/kernel/drv/amd64/foo isa=amd64
-file ff555ffd mode=0644 owner=root group=bin path=/kernel/drv/foo.conf
-"""
-
-        m2.set_content(y)
-
-        print m2
-
-        m2.display_differences(m1)
-
-        print null
-
-        m2.display_differences(null)
-
-        print
-        m2.difference(m1)
-
-        m3 = Manifest()
-        t3 = """\
-dir mode=0755 owner=root group=sys path=/bin
-file 00000000 mode=0644 owner=root group=sys path=/bin/change
-file 00000001 mode=0644 owner=root group=sys path=/bin/nochange
-file 00000002 mode=0644 owner=root group=sys path=/bin/toberemoved
-link path=/bin/change-link target=change
-link path=/bin/nochange-link target=nochange
-link path=/bin/change-target target=target1
-link path=/bin/change-type target=random
-"""
-        m3.set_content(t3)
-
-        m4 = Manifest()
-        t4 = """\
-dir mode=0755 owner=root group=sys path=/bin
-file 0000000f mode=0644 owner=root group=sys path=/bin/change
-file 00000001 mode=0644 owner=root group=sys path=/bin/nochange
-file 00000003 mode=0644 owner=root group=sys path=/bin/wasadded
-link path=/bin/change-link target=change
-link path=/bin/nochange-link target=nochange
-link path=/bin/change-target target=target2
-dir mode=0755 owner=root group=sys path=/bin/change-type
-"""
-        m4.set_content(t4)
-
-        print "\n" + 50 * "=" + "\n"
-        m4.difference(m3)
-        print "\n" + 50 * "=" + "\n"
-        m4.difference(null)
-
-        # Test the duplicate search.  /bin shouldn't show up, since they're
-        # identical actions, but /usr should show up three times.
-        m5 = Manifest()
-        t5 = """\
-dir mode=0755 owner=root group=sys path=/bin
-dir mode=0755 owner=root group=sys path=/bin
-dir mode=0755 owner=root group=sys path=/usr
-dir mode=0755 owner=root group=root path=/usr
-dir mode=0755 owner=bin group=sys path=/usr
-"""
-        m5.set_content(t5)
-        for kv, actions in m5.duplicates():
-                print kv
-                for a in actions:
-                        print "  %s" % a
