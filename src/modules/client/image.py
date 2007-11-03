@@ -542,15 +542,11 @@ class Image(object):
                 """XXX Reimplement if we carve out the inventory as a has-a
                 object from image."""
 
-                opts = []
-                pargs = []
-
                 all_known = False
                 verbose = False
                 upgradable_only = False
 
-                if len(args) > 0:
-                         opts, pargs = getopt.getopt(args, "auv")
+                opts, pargs = getopt.getopt(args, "auv")
 
                 for opt, arg in opts:
                         if opt == "-a":

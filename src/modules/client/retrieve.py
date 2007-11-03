@@ -23,7 +23,6 @@
 # Use is subject to license terms.
 #
 
-import getopt
 import os
 import sys
 import urllib

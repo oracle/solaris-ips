@@ -48,74 +48,25 @@ export PATH=$ROOT/usr/bin:$PATH
 print -u2 -- \
     "\n--cli-complete testing------------------------------------------------"
 
-usage () {
-	cli-complete.ksh
-	exit 2
-}
-
-depot_start () {
-	print -u2 "Redirecting all repository logging to stdout"
-	$ROOT/usr/lib/pkg.depotd -p $REPO_PORT -d $REPO_DIR 2>&1 &
-	DEPOT_PID=$!
-	sleep 1
-}
-
-depot_cleanup () {
-	kill $DEPOT_PID
-	sleep 1
-	if ps -p $DEPOT_PID > /dev/null; then
-		kill -9 $DEPOT_PID
-	fi
-	rm -fr $REPO_DIR
-	exit $1
-}
-
-image_cleanup () {
-	cd $restore_dir
-	rm -fr $IMAGE_DIR
-}
-
-tcase=0
-tassert="unknown"
-new_assert() {
-	tassert="$*"
-	intest=1
-}
-
-pass () {
-	print -u2 "PASS $tcase: $tassert"
-	tcase=`expr "$tcase" "+" "1"`
-	intest=0
-}
-
-fail () {
-	print -u2 "*** case $tcase: $@"
-	print -u2 "*** ASSERT: $tassert"
-	exit 1
-}
-
-died () {
-	if [[ $intest -ne 0 ]]; then
-		print -u2 "*** trap; died in case $tcase"
-		print -u2 "*** ($tassert)"
-	fi
-}
+. ./harness_lib.ksh
 
 depot_start
 trap "ret=$?; died; image_cleanup; depot_cleanup $ret" EXIT
 
-# {{{1
+
 new_assert "Stop server, start again."
+# {{{1
 
 kill $DEPOT_PID
 wait $DEPOT_PID
 
 depot_start
-pass
+end_assert
 # }}}1
 
-# {{{1
+
 new_assert "Send empty package foo@1.0, install and uninstall."
+# {{{1
 
 trans_id=$(pkgsend -s $REPO_URL open foo@1.0,5.11-0)
 if [[ $? != 0 ]]; then
@@ -160,13 +111,13 @@ if ! pkg status -a; then
 	fail pkg status -a failed
 fi
 
-pass
+end_assert
 # }}}1
 
 
-# {{{1
 new_assert "Send package foo@1.1, containing a directory and a file, install," \
     "search, and uninstall."
+# {{{1
 
 trans_id=$(pkgsend -s $REPO_URL open foo@1.1,5.11-0)
 if [[ $? != 0 ]]; then
@@ -229,11 +180,12 @@ if ! pkg status -a; then
 	fail pkg status -a failed
 fi
 
-pass
+end_assert
 # }}}1
 
-# {{{1
+
 new_assert "Install foo@1.0, upgrade to foo@1.1, uninstall."
+# {{{1
 
 if ! pkg image-create -F -a test=$REPO_URL $IMAGE_DIR; then
 	fail pkgsend close failed
@@ -281,11 +233,12 @@ if ! pkg status -a; then
 	fail pkg status -a failed
 fi
 
-pass
+end_assert
 # }}}1
 
-# {{{1
+
 new_assert "Add bar@1.0, dependent on foo@1.0, install, uninstall."
+# {{{1
 
 trans_id=$(pkgsend -s $REPO_URL open bar@1.0,5.11-0)
 if [[ $? != 0 ]]; then
@@ -345,11 +298,12 @@ if ! pkg status -a; then
 	fail pkg status -a failed
 fi
 
-pass
+end_assert
 # }}}1
 
-# {{{1
+
 new_assert "Install bar@1.0, dependent on foo@1.0, uninstall recursively."
+# {{{1
 
 if ! pkg image-create -F -a test=$REPO_URL $IMAGE_DIR; then
 	fail pkg image-create failed
@@ -385,12 +339,47 @@ if ! pkg status -a; then
 	fail pkg status -a failed
 fi
 
-pass
+end_assert
 # }}}1
 
+new_assert "Send package shouldnotexist@1.0, then abandon the transaction"
 # {{{1
+
+trans_id=$(pkgsend -s $REPO_URL open shouldnotexist@1.0,5.11-0)
+if [[ $? != 0 ]]; then
+	fail pkgsend open failed
+fi
+
+eval $trans_id
+
+if ! pkgsend -s $REPO_URL add dir mode=0755 owner=root group=bin path=/bin; then
+	fail pkgsend add dir failed
+fi
+
+if ! pkgsend -s $REPO_URL close -A; then
+	fail pkgsend close failed
+fi
+
+pkg refresh
+expect_exit 0 $?
+
+#
+# XXX currently broken, bugid:
+# 60 'pkg status does_not_exist' throws a traceback
+#
+begin_expect_test_fails 60
+
+pkg status -a shouldnotexist
+expect_exit 1 $?
+
+end_expect_test_fails
+
+end_assert
+# }}}1
+
 new_assert "Send package bar@1.1, dependent on foo@1.2.  Install bar@1.0." \
     "Upgrade image."
+# {{{1
 
 find $IMAGE_DIR
 
@@ -404,7 +393,7 @@ if ! pkg status -a; then
 	fail pkg status -a failed
 fi
 
-if ! pkg install bar@1.0; then
+if ! pkg install -v bar@1.0; then
 	fail pkg install bar failed
 fi
 
@@ -477,17 +466,148 @@ if ! pkg status -a; then
 fi
 
 if ! pkg uninstall bar foo; then
-	fail pkg uninstall bar foo
+	fail pkg uninstall bar foo failed
 fi
 
 if ! pkg status; then
-	fail pkg status faileld
+	fail pkg status failed
 fi
-
 
 find $IMAGE_DIR
 
-pass
+end_assert
+# }}}1
+
+new_assert "bad command line options should result in error status 2"
+# {{{1
+
+new_test pkg -@ is bogus
+pkg -@ 2>&1
+expect_exit 2 $?
+
+new_test pkg -s needs an arg
+pkg -s 2>&1
+expect_exit 2 $?
+
+new_test pkg -R need an arg
+pkg -R 2>&1
+expect_exit 2 $?
+
+new_test pkg status -@ is bogus
+pkg status -@ 2>&1
+expect_exit 2 $?
+
+new_test pkg list -@ is bogus
+pkg list -@ 2>&1
+expect_exit 2 $?
+
+new_test pkg list -o needs an arg
+pkg list -o 2>&1
+expect_exit 2 $?
+
+new_test pkg list -s needs an arg
+pkg list -s 2>&1
+expect_exit 2 $?
+
+new_test pkg list -t needs an arg
+pkg list -t 2>&1
+expect_exit 2 $?
+
+new_test image-update -@ is bogus
+pkg image-update -@ 2>&1
+expect_exit 2 $?
+
+new_test image-create -@ is bogus
+pkg image-create -@ 2>&1
+expect_exit 2 $?
+
+new_test image-create --bozo is bogus
+pkg image-create --bozo 2>&1
+expect_exit 2 $?
+
+new_test install -@ foo is bogus
+pkg install -@ foo 2>&1
+expect_exit 2 $?
+
+new_test uninstall -@ foo is bogus
+pkg uninstall -@ foo 2>&1
+expect_exit 2 $?
+
+new_test pkgsend -@ is bogus
+trans_id=$(pkgsend -@ -s $REPO_URL open foo@1.0,5.11-0 2>&1)
+expect_exit 2 $?
+
+new_test pkgsend -s REPO -@ open is bogus
+trans_id=$(pkgsend -s $REPO_URL -@ open foo@1.0,5.11-0 2>&1)
+expect_exit 2 $?
+
+# should work
+trans_id=$(pkgsend -s $REPO_URL open foo@1.0,5.11-0 2>&1)
+expect_exit 0 $?
+
+eval $trans_id
+
+# Bad command line option to close
+new_test close -Q is bogus
+pkgsend close -Q 2>&1
+expect_exit 2 $?
+
+# should work
+pkgsend close -A 2>&1
+expect_exit 0 $?
+
+end_assert
+# }}}1
+
+new_assert "exercise pkgsend open"
+# {{{1
+
+new_test "pkgsend open should emit a shell eval-able thing"
+res=`pkgsend -s $REPO_URL open foo@1.0,5.11-0`
+expect_exit 0 $?
+
+echo $res
+echo $res
+echo "$res" | egrep '^export PKG_TRANS_ID=[0-9]+'
+expect_exit 0 $?
+
+eval "$res"
+expect_exit 0 $?
+
+pkgsend close -A 2>&1
+expect_exit 0 $?
+
+new_test "pkgsend open -n should emit an integer"
+res=`pkgsend -s $REPO_URL open -n foo@1.0,5.11-0`
+expect_exit 0 $?
+echo $res
+echo $res | egrep '^[0-9]+'
+expect_exit 0 $?
+
+PKG_TRANS_ID="$res" pkgsend close -A 2>&1
+expect_exit 0 $?
+
+end_assert
+# }}}1
+
+new_assert "client correctly handles errors on bad pkgsends"
+# {{{1
+
+#
+# See http://defect.opensolaris.org/bz/show_bug.cgi?id=89
+#
+new_test "client handles rejection from depot following bogus transaction"
+
+begin_expect_test_fails 89
+
+PKG_TRANS_ID="foobarbaz"
+pkgsend -s $REPO_URL add file /lib/libc.so.1 mode=0555 owner=root group=bin \
+	path=/lib/libc.so.1
+expect_exit 1 $?
+
+end_expect_test_fails
+
+end_assert
 # }}}1
 
 exit 0

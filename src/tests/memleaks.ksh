@@ -42,6 +42,8 @@ export PATH=$ROOT/usr/bin:$PATH
 print -u2 -- \
     "\n--memleaks testing----------------------------------------------------"
 
+. ./harness_lib.ksh
+
 if [[ ! -x /usr/bin/mdb ]]; then
 	print -u2 "mdb(1) not available.  No leak checking."
 	exit 0
@@ -58,47 +60,11 @@ LD_PRELOAD=libumem.so UMEM_DEBUG=default
 export LD_PRELOAD
 export UMEM_DEBUG
 
-depot_start () {
-	print -u2 "Redirecting all repository logging to stdout"
-	$ROOT/usr/lib/pkg.depotd -p $REPO_PORT -d $REPO_DIR 2>&1 &
-	DEPOT_PID=$!
-	sleep 1
-}
-
-depot_cleanup () {
-	kill $DEPOT_PID
-	sleep 1
-	if ps -p $DEPOT_PID > /dev/null; then
-		kill -9 $DEPOT_PID
-	fi
-	rm -fr $REPO_DIR
-	exit $1
-}
-
-tcase=0
-tassert="unknown"
-new_assert() {
-	tassert="$*"
-	intest=1
-}
-
-pass () {
-	print -u2 "PASS $tcase: $tassert"
-	tcase=`expr "$tcase" "+" "1"`
-	intest=0
-}
-
-fail () {
-	print -u2 "*** FAIL case $tcase: $@"
-	print -u2 "*** ASSERT: $tassert"
-	exit 1
-}
-
 depot_start
-trap "ret=$?; depot_cleanup $ret" EXIT
+trap "ret=$?; died; image_cleanup; depot_cleanup $ret" EXIT
 
-# {{{1
 new_assert "Put some binaries into the server, then findleaks it."
+# {{{1
 
 trans_id=$(pkgsend -s $REPO_URL open leaks@1.0,5.11-0)
 if [[ $? != 0 ]]; then
@@ -138,7 +104,10 @@ pkgsend -s $REPO_URL add file /usr/sbin/init mode=0555 owner=root group=bin \
 pkgsend -s $REPO_URL close || \
 	fail pkgsend close failed
 
+new_test "echo ::findleaks | mdb"
+begin_expect_test_fails 124
 output=`echo ::findleaks | mdb -p $DEPOT_PID`
+expect_exit $? 0
 
 if [[ $? = 0 && -n "$output" ]]; then
 	print -u2 "$output"
@@ -151,10 +120,10 @@ if [[ $? = 0 && -n "$output" ]]; then
 	fi
 
 	fail "leaks found"
-else
-	pass
 fi
+end_expect_test_fails
 
+end_assert
 # }}}1
 
 #

@@ -75,13 +75,8 @@ Environment:
         sys.exit(2)
 
 def trans_open(config, args):
-        opts = None
-        pargs = None
-        try:
-                opts, pargs = getopt.getopt(args, "e")
-        except getopt.GetoptError, e:
-                print _("pkgsend: illegal open option '%s'") % e.opt
-                usage()
+
+	opts, pargs = getopt.getopt(args, "en")
 
         eval_form = True
         for opt, arg in opts:
@@ -91,7 +86,8 @@ def trans_open(config, args):
                         eval_form = False
 
         if len(pargs) != 1:
-                print _("pkgsend: open requires one package name")
+                print >> sys.stderr, \
+                    _("pkgsend: open requires one package name")
                 usage()
 
         t = trans.Transaction()
@@ -99,11 +95,13 @@ def trans_open(config, args):
         status, id = t.open(config, pargs[0])
 
         if status / 100 == 4 or status / 100 == 5:
-                print _("pkgsend: server failed (status %s)") % status
+                print >> sys.stderr, \
+                    _("pkgsend: server failed (status %s)") % status
                 sys.exit(1)
 
         if id == None:
-                print _("pkgsend: no transaction ID provided in response")
+                print >> sys.stderr, \
+                    _("pkgsend: no transaction ID provided in response")
                 sys.exit(1)
 
         if eval_form:
@@ -114,29 +112,22 @@ def trans_open(config, args):
         return
 
 def trans_close(config, args):
-        opts = None
-        pargs = None
         abandon = False
         trans_id = None
 
-        try:
-                if len(args) > 0:
-                        opts, pargs = getopt.getopt(args, "At:")
+	opts, pargs = getopt.getopt(args, "At:")
 
-                        for opt, arg in opts:
-                                if opt == "-A":
-                                        abandon = True
-                                if opt == "-t":
-                                        trans_id = arg
-        except getopt.GetoptError, e:
-                print _("pkgsend: illegal option to close: '%s'") % e.opt
-                usage()
+	for opt, arg in opts:
+		if opt == "-A":
+			abandon = True
+		if opt == "-t":
+			trans_id = arg
 
         if trans_id == None:
                 try:
                         trans_id = os.environ["PKG_TRANS_ID"]
                 except KeyError:
-                        print "No transaction ID specified"
+                        print >> stderr, _("No transaction ID specified")
                         sys.exit(1)
 
         t = trans.Transaction()
@@ -155,7 +146,8 @@ def trans_add(config, args):
         try:
                 trans_id = os.environ["PKG_TRANS_ID"]
         except KeyError:
-                print "No transaction ID specified in $PKG_TRANS_ID"
+                print >> sys.stderr, \
+                    _("No transaction ID specified in $PKG_TRANS_ID")
                 sys.exit(1)
 
         if args[0] in ("file", "license"):
@@ -170,7 +162,8 @@ def trans_add(config, args):
         status = t.add(config, trans_id, action)
 
         if status / 100 == 4 or status / 100 == 5:
-                print _("pkgsend: server failed (status %s)") % status
+                print >> sys.stderr, \
+                    _("pkgsend: server failed (status %s)") % status
                 sys.exit(1)
 
 def trans_delete(config, args):
@@ -249,17 +242,16 @@ def send_bundle(config, filename):
 
         t.close(config, id)
 
-try:
-        repo = os.environ["PKG_REPO"]
-except KeyError:
-        repo_url = "http://localhost:10000"
 
-if __name__ == "__main__":
+def main_func():
         # XXX /usr/lib/locale is OpenSolaris-specific.
         gettext.install("pkgsend", "/usr/lib/locale")
 
-        opts = None
-        pargs = None
+	try:
+		repo = os.environ["PKG_REPO"]
+	except KeyError:
+		repo_url = "http://localhost:10000"
+
         try:
                 opts, pargs = getopt.getopt(sys.argv[1:], "s:")
                 for opt, arg in opts:
@@ -267,7 +259,8 @@ if __name__ == "__main__":
                                 repo_url = arg
 
         except getopt.GetoptError, e:
-                print _("pkgsend: illegal global option '%s'") % e.opt
+                print >> sys.stderr, \
+                    _("pkgsend: illegal global option -- %s") % e.opt
                 usage()
 
         if pargs == None or len(pargs) == 0:
@@ -278,16 +271,39 @@ if __name__ == "__main__":
         subcommand = pargs[0]
         del pargs[0]
 
-        if subcommand == "open":
-                trans_open(pcfg, pargs)
-        elif subcommand == "close":
-                trans_close(pcfg, pargs)
-        elif subcommand == "add":
-                trans_add(pcfg, pargs)
-        elif subcommand == "send":
-                send_bundles(pcfg, pargs)
-        else:
-                print _("pkgsend: unknown subcommand '%s'") % subcommand
-                usage()
+	try:
+		if subcommand == "open":
+			trans_open(pcfg, pargs)
+		elif subcommand == "close":
+			trans_close(pcfg, pargs)
+		elif subcommand == "add":
+			trans_add(pcfg, pargs)
+		elif subcommand == "send":
+			send_bundles(pcfg, pargs)
+		else:
+			print >> sys.stderr, \
+                            _("pkgsend: unknown subcommand '%s'") % subcommand
+			usage()
+	except getopt.GetoptError, e:
+                print >> sys.stderr, \
+                    _("pkgsend: illegal %s option -- %s") % (subcommand, e.opt)
+		usage()
 
         sys.exit(0)
+
+
+
+#
+# Establish a specific exit status which means: "python barfed an exception"
+# so that we can more easily detect these in testing of the CLI commands.
+#
+if __name__ == "__main__":
+
+	try:
+		ret = main_func()
+	except SystemExit, e:
+		raise e
+	except:
+		traceback.print_exc()
+		sys.exit(99)
+	sys.exit(ret)

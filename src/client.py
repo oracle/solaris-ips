@@ -49,6 +49,7 @@ import os
 import re
 import sha
 import sys
+import traceback
 import urllib
 import urllib2
 import urlparse
@@ -66,7 +67,7 @@ import pkg.client.imageplan as imageplan
 import pkg.client.filelist as filelist
 
 def usage():
-        print _("""\
+        print >> sys.stderr, _("""\
 Usage:
         pkg [options] command [cmd_options] [operands]
 
@@ -105,7 +106,8 @@ def catalog_refresh(img, args):
         # XXX will need to show available content series for each package
 
         if len(args) != 0:
-                print _("pkg: refresh subcommand takes no arguments")
+                print >> sys.stderr, \
+                    _("pkg: refresh subcommand takes no arguments")
                 usage()
 
         # Ensure Image directory structure is valid.
@@ -126,11 +128,7 @@ def image_update(img, args):
         # XXX Are filters appropriate for an image update?
         # XXX Leaf package refinements.
 
-        opts = None
-        pargs = None
-
-        if len(args) > 0:
-                opts, pargs = getopt.getopt(args, "b:nv")
+        opts, pargs = getopt.getopt(args, "b:nv")
 
         strict = noexecute = verbose = False
         filters = []
@@ -157,11 +155,7 @@ def install(img, args):
 
         # XXX Authority-catalog issues.
 
-        opts = None
-        pargs = None
-
-        if len(args) > 0:
-                opts, pargs = getopt.getopt(args, "Snvb:f:")
+        opts, pargs = getopt.getopt(args, "Snvb:f:")
 
         strict = noexecute = verbose = False
         filters = []
@@ -195,8 +189,7 @@ def uninstall(img, args):
 
         # XXX Move uninstall logic to pkg.client.image.
 
-        if len(args) > 0:
-                opts, pargs = getopt.getopt(args, "nrv")
+        opts, pargs = getopt.getopt(args, "nrv")
 
         noexecute = recursive_removal = verbose = False
         for opt, arg in opts:
@@ -218,7 +211,8 @@ def uninstall(img, args):
                 try:
                         matches = img.get_matching_fmris(rpat)
                 except KeyError:
-                        print _("pkg: '%s' not even in catalog!") % ppat
+                        print >> sys.stderr, \
+                            _("pkg: '%s' not even in catalog!") % ppat
                         error = 1
                         continue
 
@@ -229,13 +223,15 @@ def uninstall(img, args):
                 )
 
                 if len(pnames) > 1:
-                        print _("pkg: '%s' matches multiple packages") % ppat
+                        print >> sys.stderr, \
+                            _("pkg: '%s' matches multiple packages") % ppat
                         for k in pnames.keys():
                                 print "\t%s" % k
                         continue
 
                 if len(pnames) < 1:
-                        print _("pkg: '%s' matches no installed packages") % ppat
+                        print >> sys.stderr, \
+                            _("pkg: '%s' matches no installed packages") % ppat
                         continue
 
                 ip.propose_fmri_removal(pnames.keys()[0])
@@ -275,12 +271,7 @@ def info(img, args):
         By default, display generic metainformation about the package.  With -v,
         display verbosely.  With -s, a short display.
         """
-
-        try:
-                opts, pargs = getopt.getopt(args, "sv")
-        except getopt.GetoptError, e:
-                print _("pkg: illegal option '%s'") % e.opt
-                usage()
+        opts, pargs = getopt.getopt(args, "sv")
 
         verbose = short = False
         for opt, arg in opts:
@@ -295,7 +286,8 @@ def info(img, args):
         try:
                 matches = img.get_matching_fmris(pargs)
         except KeyError:
-                print _("pkg: no matching packages found in catalog")
+                print >> sys.stderr, \
+                    _("pkg: no matching packages found in catalog")
                 return
 
         fmris = [
@@ -342,11 +334,7 @@ def info_one(manifest, short, verbose):
 def list_contents(img, args):
         """List package contents."""
 
-        try:
-                opts, pargs = getopt.getopt(args, "o:s:t:")
-        except getopt.GetoptError, e:
-                print _("pkg: illegal option '%s'") % e.opt
-                usage()
+        opts, pargs = getopt.getopt(args, "o:s:t:")
 
         verbose = False
         attrs = []
@@ -489,10 +477,7 @@ def image_create(img, args):
         auth_name = None
         auth_url = None
 
-        opts = None
-        pargs = None
-        if len(args) > 0:
-                opts, pargs = getopt.getopt(args, "FPUza:")
+	opts, pargs = getopt.getopt(args, "FPUza:")
 
         for opt, arg in opts:
                 if opt == "-F":
@@ -518,17 +503,15 @@ def image_create(img, args):
 
 img = image.Image()
 
-if __name__ == "__main__":
+def main_func():
         # XXX /usr/lib/locale is OpenSolaris-specific.
         gettext.install("pkg", "/usr/lib/locale")
 
-        opts = None
-        pargs = None
         try:
-                if len(sys.argv) > 1:
-                        opts, pargs = getopt.getopt(sys.argv[1:], "s:R:")
+                opts, pargs = getopt.getopt(sys.argv[1:], "s:R:")
         except getopt.GetoptError, e:
-                print _("pkg: illegal global option '%s'") % e.opt
+                print >> sys.stderr, \
+                    _("pkg: illegal global option -- %s") % e.opt
                 usage()
 
         if pargs == None or len(pargs) == 0:
@@ -540,7 +523,14 @@ if __name__ == "__main__":
         # XXX Handle PKG_SERVER environment variable.
 
         if subcommand == "image-create":
-                sys.exit(image_create(img, pargs))
+		try:
+			ret = image_create(img, pargs)
+		except getopt.GetoptError, e:
+			print >> sys.stderr, \
+                            _("pkg: illegal %s option -- %s") % \
+                            (subcommand, e.opt)
+                        usage()
+		return ret
 
         for opt, arg in opts:
                 if opt == "-R":
@@ -555,34 +545,59 @@ if __name__ == "__main__":
         try:
                 img.find_root(dir)
         except AssertionError:
-                print _("'%s' is not an install image") % dir
-                sys.exit(1)
+                print >> sys.stderr, \
+                    _("'%s' is not an install image") % dir
+                return 1
 
         img.load_config()
 
-        if subcommand == "refresh":
-                catalog_refresh(img, pargs)
-        elif subcommand == "status":
-                inventory_display(img, pargs)
-        elif subcommand == "image-update":
-                image_update(img, pargs)
-        elif subcommand == "install":
-                install(img, pargs)
-        elif subcommand == "uninstall":
-                try:
-                        uninstall(img, pargs)
-                except KeyboardInterrupt:
-                        pass
-        elif subcommand == "freeze":
-                freeze(img, pargs)
-        elif subcommand == "unfreeze":
-                unfreeze(img, pargs)
-        elif subcommand == "search":
-                search(img, pargs)
-        elif subcommand == "info":
-                info(img, pargs)
-        elif subcommand == "list":
-                list_contents(img, pargs)
-        else:
-                print _("pkg: unknown subcommand '%s'") % subcommand
+        try:
+                if subcommand == "refresh":
+                        catalog_refresh(img, pargs)
+                elif subcommand == "status":
+                        inventory_display(img, pargs)
+                elif subcommand == "image-update":
+                        image_update(img, pargs)
+                elif subcommand == "install":
+                        install(img, pargs)
+                elif subcommand == "uninstall":
+                        try:
+                                uninstall(img, pargs)
+                        except KeyboardInterrupt:
+                                pass
+                elif subcommand == "freeze":
+                        freeze(img, pargs)
+                elif subcommand == "unfreeze":
+                        unfreeze(img, pargs)
+                elif subcommand == "search":
+                        search(img, pargs)
+                elif subcommand == "info":
+                        info(img, pargs)
+                elif subcommand == "list":
+                        list_contents(img, pargs)
+                else:
+                        print >> sys.stderr, \
+                            _("pkg: unknown subcommand '%s'") % subcommand
+                        usage()
+
+        except getopt.GetoptError, e:
+                print >> sys.stderr, \
+                    _("pkg: illegal %s option -- %s") % (subcommand, e.opt)
                 usage()
+
+        return 0
+
+
+#
+# Establish a specific exit status which means: "python barfed an exception"
+# so that we can more easily detect these in testing of the CLI commands.
+#
+if __name__ == "__main__":
+	try:
+		ret = main_func()
+	except SystemExit, e:
+		raise e
+	except:
+		traceback.print_exc()
+		sys.exit(99)
+	sys.exit(ret)

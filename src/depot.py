@@ -371,7 +371,7 @@ if __name__ == "__main__":
                         elif opt == "--rebuild":
                                 scfg.destroy_catalog()
         except getopt.GetoptError, e:
-                print "pkg.depotd: unknown option '%s'" % e.opt
+                print "pkg.depotd: illegal option -- %s" % e.opt
                 usage()
 
         scfg.init_dirs()
