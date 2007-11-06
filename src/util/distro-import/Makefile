@@ -123,6 +123,7 @@ proto/etc/X11/gdm/custom.conf:	proto Makefile
         etc/X11/gdm/custom.conf | nawk '/^\[daemon\]/ { print $$0; \
 		            print "AutomaticLoginEnable=true"; \
 			    print "AutomaticLogin=jack";      \
+			    print "GdmXserverTimeout=30"; \
 			    continue }  { print $$0 }' > $@
 
 proto/etc/power.conf:	proto Makefile
