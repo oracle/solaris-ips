@@ -335,6 +335,7 @@ include common/SUNWwbsup
 include common/SUNWwget
 include common/SUNWwlan
 include common/SUNWwpa
+include common/SUNWwsr2
 include common/SUNWxcu4
 include common/SUNWxge
 include common/SUNWxorg-cfg
@@ -921,6 +922,7 @@ idepend SUNWwlanu
 idepend SUNWwpar
 idepend SUNWwpau
 idepend SUNWwpi
+idepend SUNWwsr2
 idepend SUNWxcu4
 idepend SUNWxge
 idepend SUNWxorg-cfg
