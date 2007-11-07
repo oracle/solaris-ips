@@ -63,16 +63,14 @@ class PkgPlan(object):
                 self.destination_fmri = fmri
                 self.destination_mfst = manifest
 
-                if os.path.exists("%s/pkg/%s/installed" % (self.image.imgdir,
-                    fmri.get_dir_path())):
+                if self.image.install_file_present(fmri):
                         raise RuntimeError, "already installed"
 
         def propose_removal(self, fmri, manifest):
                 self.origin_fmri = fmri
                 self.origin_mfst = manifest
 
-                if not os.path.exists("%s/pkg/%s/installed" % \
-                    (self.image.imgdir, fmri.get_dir_path())):
+                if not self.image.install_file_present(fmri):
                         raise RuntimeError, "not installed"
 
         def is_valid(self):
@@ -151,8 +149,7 @@ class PkgPlan(object):
 
                 # retrieval step
                 if self.destination_fmri == None:
-                        os.unlink("%s/pkg/%s/installed" % (self.image.imgdir,
-                            self.origin_fmri.get_dir_path()))
+                        self.image.remove_install_file(self.origin_fmri)
 
                         try:
                                 os.unlink("%s/pkg/%s/filters" % (
@@ -240,8 +237,7 @@ class PkgPlan(object):
                 # the origin's directory.
                 # XXX should this just go in preexecute?
                 if self.origin_fmri != None and self.destination_fmri != None:
-                        os.unlink("%s/pkg/%s/installed" % (self.image.imgdir,
-                            self.origin_fmri.get_dir_path()))
+                        self.image.remove_install_file(self.origin_fmri)
 
                         try:
                                 os.unlink("%s/pkg/%s/filters" % (
@@ -252,8 +248,7 @@ class PkgPlan(object):
                                         raise
 
                 if self.destination_fmri != None:
-                        file("%s/pkg/%s/installed" % (self.image.imgdir,
-                            self.destination_fmri.get_dir_path()), "w")
+                        self.image.add_install_file(self.destination_fmri)
 
                         # Save the filters we used to install the package, so
                         # they can be referenced later.

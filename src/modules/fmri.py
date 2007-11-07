@@ -96,7 +96,7 @@ class PkgFmri(object):
                         return "pkg:/%s@%s" % (self.pkg_name,
                             self.version.get_short_version())
 
-                return "pkg://%s/%s@s" % (authority, self.pkg_name,
+                return "pkg://%s/%s@%s" % (authority, self.pkg_name,
                     self.version.get_short_version())
 
         def get_fmri(self, default_authority = None, anarchy = False):
@@ -133,9 +133,8 @@ class PkgFmri(object):
                         return -1
 
                 if self.authority and other.authority:
-                        a = self.authority.__cmp__(other.authority)
-                        if a != 0:
-                                return a
+                        if self.authority != other.authority:
+                                return cmp(self.authority, other.authority)
 
                 if self.pkg_name == other.pkg_name:
                         if self.version and not other.version:
@@ -205,7 +204,8 @@ class PkgFmri(object):
                 if not self.pkg_name == fmri.pkg_name:
                         return False
 
-                # XXX Unequal authorities as a strictness criteria?
+                if self.authority != fmri.authority:
+                        return False
 
                 if fmri.version == None:
                         return False

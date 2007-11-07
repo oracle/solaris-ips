@@ -217,9 +217,9 @@ def uninstall(img, args):
                         continue
 
                 pnames = dict(
-                    (m[1], 1)
+                    (m, 1)
                     for m in matches
-                    if img.is_installed(m[1])
+                    if img.is_installed(m)
                 )
 
                 if len(pnames) > 1:
@@ -271,6 +271,10 @@ def info(img, args):
         By default, display generic metainformation about the package.  With -v,
         display verbosely.  With -s, a short display.
         """
+
+        # XXX Need remote-info option, to request equivalent information
+        # from repository.
+
         opts, pargs = getopt.getopt(args, "sv")
 
         verbose = short = False
@@ -291,9 +295,9 @@ def info(img, args):
                 return
 
         fmris = [
-            m[1]
+            m
             for m in matches
-            if img.is_installed(m[1]) # XXX how about non-installed?
+            if img.is_installed(m)
         ]
 
         if not fmris:
@@ -334,6 +338,9 @@ def info_one(manifest, short, verbose):
 def list_contents(img, args):
         """List package contents."""
 
+        # XXX Need remote-info option, to request equivalent information
+        # from repository.
+
         opts, pargs = getopt.getopt(args, "o:s:t:")
 
         verbose = False
@@ -360,9 +367,9 @@ def list_contents(img, args):
                 return
 
         fmris = [
-            m[1]
+            m
             for m in matches
-            if img.is_installed(m[1]) # XXX how about non-installed?
+            if img.is_installed(m)
         ]
 
         if not attrs:

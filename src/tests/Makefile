@@ -31,7 +31,7 @@ test-verbose := TEST_LOG=/dev/stdout
 
 # Invoke all known modules with tests.
 # XXX Invoke the bundle tests.
-test: api-test cli-test leak-test
+test: api-test cli-test leak-test two-depot-test
 
 api-test:
 	@echo "Logging to $(TEST_LOG)"
@@ -45,7 +45,11 @@ cli-test:
 	@echo "Logging to $(TEST_LOG)"
 	$(KSH) $(TEST_DEBUG) cli-complete.ksh >> $(TEST_LOG)
 
-leak-test: cli-test
+two-depot-test: cli-test
+	@echo "Logging to $(TEST_LOG)"
+	$(KSH) $(TEST_DEBUG) two-depot.ksh >> $(TEST_LOG)
+
+leak-test: two-depot-test
 	# workaround: memleaks doesn't run cleanly at this time
 	-$(KSH) $(TEST_DEBUG) memleaks.ksh >> $(TEST_LOG)
 

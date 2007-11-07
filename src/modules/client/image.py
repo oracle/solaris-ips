@@ -114,7 +114,6 @@ class Image(object):
                 self.groups_lastupdate = 0
 
                 self.catalogs = {}
-                self.authorities = {}
 
                 self.attrs = {}
 
@@ -243,13 +242,24 @@ class Image(object):
 
                 # XXX Do we want to recognize regex (some) metacharacters and
                 # switch automatically to the regex matcher?
+                
+                # XXX If the patterns contain an authority, we could reduce the
+                # number of catalogs searched by only looking at catalogs whose
+                # authorities match FMRIs in the pattern.
 
-                m = [
-                    (c, p)
-                    for c in self.catalogs.values()
-                    for p in c.get_matching_fmris(patterns, matcher, constraint,
-                        counthash)
-                ]
+                # Check preferred authority first, if package isn't found here,
+                # then check all authorities.
+
+                cat = self.catalogs[self.cfg_cache.preferred_authority]
+
+                m = cat.get_matching_fmris(patterns, matcher,
+                    constraint, counthash)
+
+                for k, c in self.catalogs.items():
+                        if k == self.cfg_cache.preferred_authority:
+                                continue
+                        m.extend(c.get_matching_fmris(patterns, matcher,
+                            constraint, counthash))
 
                 if not m:
                         raise KeyError, "packages matching '%s' not found in catalog" \
@@ -313,13 +323,51 @@ class Image(object):
 
                 return m
 
+        @staticmethod
+        def installed_file_authority(filepath):
+                """Find the pkg's installed file named by filepath.
+                Return the authority that installed this package."""
+
+                f = file(filepath, "r")
+                auth = f.readline()
+                f.close()
+
+                return auth
+
+        def install_file_present(self, fmri):
+                """Returns true if the package named by the fmri is installed
+                on the system.  Otherwise, returns false."""
+
+                return os.path.exists("%s/pkg/%s/installed" % (self.imgdir,
+                    fmri.get_dir_path()))
+
+        def add_install_file(self, fmri):
+                """Take an image and fmri. Write a file to disk that
+                indicates that the package named by the fmri has been
+                installed."""
+
+                f = file("%s/pkg/%s/installed" % (self.imgdir,
+                    fmri.get_dir_path()), "w")
+
+                f.write(fmri.authority)
+                f.close()
+
+        def remove_install_file(self, fmri):
+                """Take an image and a fmri.  Remove the file from disk
+                that indicates that the package named by the fmri has been
+                installed."""
+
+                os.unlink("%s/pkg/%s/installed" % (self.imgdir,
+                    fmri.get_dir_path()))
+
         def get_version_installed(self, pfmri):
                 pd = pfmri.get_pkg_stem()
                 pdir = "%s/pkg/%s" % (self.imgdir,
                     pfmri.get_dir_path(stemonly = True))
 
                 try:
-                        pkgs_inst = [ urllib.unquote("%s@%s" % (pd, vd))
+                        pkgs_inst = [ (urllib.unquote("%s@%s" % (pd, vd)),
+                            "%s/%s/installed" % (pdir, vd))
                             for vd in os.listdir(pdir)
                             if os.path.exists("%s/%s/installed" % (pdir, vd)) ]
                 except OSError:
@@ -330,7 +378,9 @@ class Image(object):
 
                 assert len(pkgs_inst) <= 1
 
-                return fmri.PkgFmri(pkgs_inst[0], None)
+                auth = self.installed_file_authority(pkgs_inst[0][1])
+
+                return fmri.PkgFmri(pkgs_inst[0][0], authority = auth)
 
         def gen_installed_pkgs(self):
                 idir = "%s/pkg" % self.imgdir
@@ -345,11 +395,21 @@ class Image(object):
         def get_pkg_state_by_fmri(self, pfmri):
                 """Given pfmri, determine the local state of the package."""
 
-                if os.path.exists("%s/pkg/%s/installed" % (self.imgdir,
-                    pfmri.get_dir_path())):
+                if self.install_file_present(pfmri):
                         return "installed"
 
                 return "known"
+
+        def fmri_set_default_authority(self, fmri):
+                """If the FMRI supplied as an argument does not have
+                an authority, set it to the image's preferred authority."""
+
+                if fmri.authority:
+                        return
+
+                adict = self.cfg_cache.authorities
+                da = adict[self.get_default_authority()]
+                fmri.set_authority(da["prefix"])
 
         def has_version_installed(self, fmri):
                 """Check that the version given in the FMRI or a successor is
@@ -368,6 +428,9 @@ class Image(object):
         def is_installed(self, fmri):
                 """Check that the exact version given in the FMRI is installed
                 in the current image."""
+
+                # All FMRIs passed to is_installed shall have an authority
+                assert fmri.authority
 
                 try:
                         v = self.get_version_installed(fmri)
@@ -414,13 +477,31 @@ class Image(object):
                 for auth in self.gen_authorities():
                         croot = "%s/catalog/%s" % (self.imgdir, auth["prefix"])
 
-                        c = catalog.Catalog(croot)
+                        c = catalog.Catalog(croot, authority = auth["prefix"])
                         self.catalogs[auth["prefix"]] = c
 
         def gen_known_package_fmris(self):
                 for c in self.catalogs.values():
                         for pf in c.fmris():
                                 yield pf
+
+        def list_installed_pkgs(self):
+                proot = "%s/pkg" % self.imgdir
+                ret = []
+
+                for pd in sorted(os.listdir(proot)):
+                        for vd in sorted(os.listdir("%s/%s" % (proot, pd))):
+                                path = "%s/%s/%s/installed" % (proot, pd, vd)
+                                if not os.path.exists(path):
+                                        continue
+                                fp = file(path, "r")
+                                auth = fp.readline()
+                                fp.close()
+                                fmristr = urllib.unquote("%s@%s" % (pd, vd))
+                                ret.append(fmri.PkgFmri(fmristr,
+                                    authority = auth))
+
+                return ret
 
         def getpwnam(self, name):
                 """Do a name lookup in the image's password database.
@@ -564,7 +645,7 @@ class Image(object):
                 proot = "%s/pkg" % self.imgdir
 
                 if len(pargs):
-                        pkgs_known = [ m[1]
+                        pkgs_known = [ m
                             for p in pargs
                             for m in self.get_matching_fmris(p) ]
 
@@ -573,12 +654,7 @@ class Image(object):
                             sorted(self.gen_known_package_fmris()) ]
 
                 else:
-                        pkgs_known = [ fmri.PkgFmri(urllib.unquote("%s@%s" %
-                            (pd, vd)), None)
-                            for pd in sorted(os.listdir(proot))
-                            for vd in sorted(os.listdir("%s/%s" % (proot, pd)))
-                            if os.path.exists("%s/%s/%s/installed" %
-                                (proot, pd, vd)) ]
+                        pkgs_known = self.list_installed_pkgs()
 
                 if len(pkgs_known) == 0:
                         if len(pargs):
@@ -669,7 +745,7 @@ pkg: no package matching '%s' could be found in current catalog
 
                         pnames = {}
                         for m in matches:
-                                pnames[m[1].get_pkg_stem()] = 1
+                                pnames[m.get_pkg_stem()] = 1
 
                         if len(pnames.keys()) > 1:
                                 # XXX Module directly printing.
@@ -682,7 +758,7 @@ pkg: no package matching '%s' could be found in current catalog
 
                         # matches is a list reverse sorted by version, so take
                         # the first; i.e., the latest.
-                        ip.propose_fmri(matches[0][1])
+                        ip.propose_fmri(matches[0])
 
                 if error != 0:
                         raise RuntimeError, "Unable to assemble image plan"

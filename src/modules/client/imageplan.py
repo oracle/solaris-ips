@@ -159,6 +159,8 @@ class ImagePlan(object):
 
                         f = fmri.PkgFmri(a.attrs["fmri"],
                             self.image.attrs["Build-Release"])
+        
+                        self.image.fmri_set_default_authority(f)
 
                         if self.image.has_version_installed(f):
                                 continue
@@ -209,8 +211,7 @@ class ImagePlan(object):
 
                         # fmris in mvs are sorted with latest version first, so
                         # take the first entry.
-                        # XXX This ignores all but one of the catalogs.
-                        cf = mvs[0][1]
+                        cf = mvs[0]
 
                         # XXX LOG "adding dependency %s" % pfmri
                         self.target_fmris.append(cf)

@@ -34,6 +34,7 @@ class TestCatalog(unittest.TestCase):
         def setUp(self):
 		self.cpath = tempfile.mkdtemp()
                 self.c = catalog.Catalog(self.cpath)
+                self.npkgs = 0
 
                 for f in [
                     fmri.PkgFmri("pkg:/test@1.0,5.11-1:20000101T120000Z", None),
@@ -46,9 +47,13 @@ class TestCatalog(unittest.TestCase):
                     fmri.PkgFmri("pkg:/zpkg@1.0,5.11-1:20000101T120040Z", None)
                 ]:
                         self.c.add_fmri(f)
+                        self.npkgs += 1
 
 	def tearDown(self):
 		shutil.rmtree(self.cpath)
+
+        def testnpkgs(self):
+                self.assert_(self.npkgs == self.c.npkgs())
 
         def testcatalogfmris1(self):
                 cf = fmri.PkgFmri("pkg:/test@1.0,5.10-1:20070101T120000Z")
@@ -75,9 +80,41 @@ class TestCatalog(unittest.TestCase):
                 self.assert_(len(cl) == 1)
 
         def testcatalogregex1(self):
-                self.assertRaises(KeyError,
-                    self.c.get_matching_fmris, "flob", \
+                cl = self.c.get_matching_fmris("flob",
                     matcher = fmri.regex_match)
+
+                self.assert_(len(cl) == 0)
+
+class TestEmptyCatalog(unittest.TestCase):
+        def setUp(self):
+		self.cpath = tempfile.mkdtemp()
+                self.c = catalog.Catalog(self.cpath)
+                # XXX How do we do this on Windows?
+                self.nullf = file("/dev/null", "w")
+
+	def tearDown(self):
+		shutil.rmtree(self.cpath)
+                self.nullf.close()
+
+        def testmatchingfmris(self):
+                cf = fmri.PkgFmri("pkg:/test@1.0,5.11-1:20061231T120000Z")
+                cl = self.c.get_matching_fmris(cf, None)
+
+                self.assert_(len(cl) == 0)
+
+        def testfmris(self):
+                r = []
+
+                for f in self.c.fmris():
+                        r.append(f)
+
+                self.assert_(len(r) == 0)
+
+        def testloadattrs(self):
+                self.c.load_attrs()
+
+        def testsend(self):
+                self.c.send(self.nullf)
 
 if __name__ == "__main__":
         unittest.main()

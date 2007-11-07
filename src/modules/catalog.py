@@ -78,14 +78,18 @@ class Catalog(object):
         # spread out into chunks, and may require a delta-oriented update
         # interface.
 
-        def __init__(self, cat_root, pkg_root = None):
+        def __init__(self, cat_root, authority = None, pkg_root = None):
                 """Create a catalog.  If the path supplied does not exist,
                 this will create the required directory structure.
                 Otherwise, if the directories are already in place, the
-                existing catalog is opened"""
+                existing catalog is opened.  If pkg_root is specified
+                and no catalog is found at cat_root, the catalog will be
+                rebuilt.  authority names the authority that
+                is represented by this catalog."""
 
                 self.catalog_root = cat_root
                 self.attrs = {}
+                self.auth = authority
 
                 self.attrs["npkgs"] = 0
 
@@ -96,8 +100,10 @@ class Catalog(object):
 
                 if pkg_root is not None and not os.path.exists(catpath):
                         self.build_catalog(pkg_root)
+                        self.set_time()
+                        self.save_attrs()
 
-                self.set_time()
+                self.load_attrs()
 
         def add_fmri(self, fmri, critical = False):
                 """Add a package, named by the fmri, to the catalog.
@@ -175,6 +181,8 @@ class Catalog(object):
                 dictionary, instead store the number of matched fmris for each
                 package name which was matched."""
 
+                cat_auth = self.auth
+
                 if not matcher:
                         matcher = fmri.fmri_match
 
@@ -196,8 +204,14 @@ class Catalog(object):
 
                 ret = []
 
-                pfile = file(os.path.normpath(
-                    os.path.join(self.catalog_root, "catalog")), "r")
+                try:
+                        pfile = file(os.path.normpath(
+                            os.path.join(self.catalog_root, "catalog")), "r")
+                except IOError, e:
+                        if e.errno == errno.ENOENT:
+                                return ret
+                        else:
+                                raise
 
                 for entry in pfile:
                         try:
@@ -208,14 +222,17 @@ class Catalog(object):
                                 cv, cat_fmri = entry.split()
                                 pkg = "pkg"
                                 cat_auth, cat_name, cat_version = \
-                                    fmri.PkgFmri(cat_fmri, "5.11").tuple()
+                                    fmri.PkgFmri(cat_fmri, "5.11",
+                                        authority = self.auth).tuple()
 
                         for pattern in patterns:
                                 pat_auth, pat_name, pat_version = tuples[pattern]
-                                # and (pat_auth == cat_auth or not pat_auth)
-                                if pkg == "pkg" and matcher(cat_name, pat_name):
+                                if pkg == "pkg" and \
+                                    (pat_auth == cat_auth or not pat_auth) and \
+                                    matcher(cat_name, pat_name):
                                         pkgfmri = fmri.PkgFmri("%s@%s" %
-                                            (cat_name, cat_version))
+                                            (cat_name, cat_version),
+                                            authority = cat_auth)
                                         if not pat_version or \
                                             pkgfmri.version.is_successor(
                                             pat_version, constraint) or \
@@ -225,18 +242,9 @@ class Catalog(object):
                                                                     counthash[pattern] += 1
                                                             else:
                                                                     counthash[pattern] = 1
-                                                    else:
-                                                            ret.append(pkgfmri)
+                                                    ret.append(pkgfmri)
 
                 pfile.close()
-
-                if counthash:
-                        return counthash
-
-                if not ret:
-                        raise KeyError, \
-                            "patterns '%s' match no packages in catalog" % \
-                            patterns
 
                 return sorted(ret, reverse = True)
 
@@ -244,20 +252,28 @@ class Catalog(object):
                 """A generator function that produces FMRIs as it
                 iterates over the contents of the catalog."""
 
-                pfile = file(os.path.normpath(
-                    os.path.join(self.catalog_root, "catalog")), "r")
+                try:
+                        pfile = file(os.path.normpath(
+                            os.path.join(self.catalog_root, "catalog")), "r")
+                except IOError, e:
+                        if e.errno == errno.ENOENT:
+                                return
+                        else:
+                                raise
 
                 for entry in pfile:
                         try:
                                 cv, pkg, cat_name, cat_version = entry.split()
                                 if pkg == "pkg":
                                         yield fmri.PkgFmri("%s@%s" %
-                                            (cat_name, cat_version))
+                                            (cat_name, cat_version),
+                                            authority = self.auth)
                         except ValueError:
                                 # Handle old two-column catalog file, mostly in
                                 # use on server.
                                 cv, cat_fmri = entry.split()
-                                yield fmri.PkgFmri(cat_fmri)
+                                yield fmri.PkgFmri(cat_fmri,
+                                    authority = self.auth)
 
                 pfile.close()
 
@@ -279,6 +295,9 @@ class Catalog(object):
                                 self.attrs[m.group(1)] = m.group(2)
 
                 afile.close()
+
+                if "npkgs" in self.attrs:
+                        self.attrs["npkgs"] = int(self.attrs["npkgs"])
 
         def npkgs(self):
                 """Returns the number of packages in the catalog."""

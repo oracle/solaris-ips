@@ -140,7 +140,8 @@ class SvrConfig(object):
                 """Tell the catalog to set itself up.  Associate an
                 instance of the catalog with this depot."""
 
-                self.catalog = catalog.Catalog(self.cat_root, self.pkg_root)
+                self.catalog = catalog.Catalog(self.cat_root,
+                    pkg_root = self.pkg_root)
 
         def destroy_catalog(self):
                 """Destroy the catalog.  This is generally done before we

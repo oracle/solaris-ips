@@ -47,6 +47,8 @@ def maketests():
 	import t_version
 
 	all_suite.addTest(unittest.makeSuite(t_catalog.TestCatalog, 'test'))
+	all_suite.addTest(unittest.makeSuite(t_catalog.TestEmptyCatalog,
+            'test'))
 	all_suite.addTest(unittest.makeSuite(t_elf.TestElf, 'test'))
 	all_suite.addTest(unittest.makeSuite(t_filter.TestFilter, 'test'))
 	all_suite.addTest(unittest.makeSuite(t_fmri.TestFMRI, 'test'))
