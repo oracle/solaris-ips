@@ -181,7 +181,6 @@ include common/SUNWgnome-dictionary
 include common/SUNWgnome-disk-analyzer
 include common/SUNWgnome-display-mgr
 include common/SUNWgnome-doc-utils
-include common/SUNWgnome-dtlogin-integration
 include common/SUNWgnome-dtstart
 include common/SUNWgnome-file-mgr
 include common/SUNWgnome-fonts
@@ -420,6 +419,7 @@ include common/SUNWpppgS
 include common/SUNWppro
 include common/SUNWppro-plugin-sunos-base
 include common/SUNWpr
+include common/SUNWprd
 include common/SUNWprint-monitor
 include common/SUNWproduct-registry-root
 include common/SUNWps
@@ -506,6 +506,8 @@ include common/SUNWthunderbird-calendar
 include common/SUNWtidy
 include common/SUNWtiu8
 include common/SUNWtls
+include common/SUNWtlsd
+include common/SUNWtlsu
 include common/SUNWtnetc
 include common/SUNWtnetd
 include common/SUNWtnfc
@@ -547,7 +549,6 @@ include common/SUNWwpa
 include common/SUNWwsr2
 include common/SUNWxcu4
 include common/SUNWxcu6
-include common/SUNWxcursor-themes
 include common/SUNWxge
 include common/SUNWxi18n
 include common/SUNWxorg-cfg
@@ -558,17 +559,14 @@ include common/SUNWxorg-compatlinks
 include common/SUNWxorg-devel-docs
 include common/SUNWxorg-doc
 include common/SUNWxorg-graphics-ddx
-include common/SUNWxorg-headers.73
 include common/SUNWxorg-server
 include common/SUNWxorg-tsol-module
-include common/SUNWxorg-xkb
 include common/SUNWxscreensaver-hacks
 include common/SUNWxscreensaver-hacks-gl
 include common/SUNWxsun-keytables
 include common/SUNWxwdv
 include common/SUNWxwhl
 include common/SUNWxwplr
-include common/SUNWxwrtl
 include common/SUNWxwsvr
 include common/SUNWxwxft
 include common/SUNWyp
@@ -659,7 +657,6 @@ include common/loc/SUNWgnome-l10ndocument-zhTW
 include common/loc/SUNWgnome-l10nmessages-cs
 include common/loc/SUNWgnome-l10nmessages-de
 include common/loc/SUNWgnome-l10nmessages-es
-include common/loc/SUNWgnome-l10nmessages-extra
 include common/loc/SUNWgnome-l10nmessages-fr
 include common/loc/SUNWgnome-l10nmessages-hu
 include common/loc/SUNWgnome-l10nmessages-it
@@ -1201,7 +1198,6 @@ idepend SUNWgnome-display-mgr
 idepend SUNWgnome-display-mgr-root
 idepend SUNWgnome-doc-utils
 idepend SUNWgnome-doc-utils-devel
-idepend SUNWgnome-dtlogin-integration
 idepend SUNWgnome-dtstart
 idepend SUNWgnome-file-mgr
 idepend SUNWgnome-file-mgr-devel
@@ -1698,6 +1694,7 @@ idepend SUNWppro-plugin-sunos-base
 idepend SUNWppror
 idepend SUNWpprou
 idepend SUNWpr
+idepend SUNWprd
 idepend SUNWprint-monitor
 idepend SUNWprint-monitor-root
 idepend SUNWproduct-registry-root
@@ -1780,7 +1777,6 @@ idepend SUNWsfwdemo
 idepend SUNWsfwhea
 idepend SUNWsi3124
 idepend SUNWsladm
-idepend SUNWslim-utils
 idepend SUNWslpr
 idepend SUNWslpu
 idepend SUNWsmagt
@@ -1851,6 +1847,8 @@ idepend SUNWthunderbirdl10n-zh-TW
 idepend SUNWtidy
 idepend SUNWtiu8
 idepend SUNWtls
+idepend SUNWtlsd
+idepend SUNWtlsu
 idepend SUNWtnetc
 idepend SUNWtnetd
 idepend SUNWtnetr
@@ -1938,7 +1936,6 @@ idepend SUNWxvmu
 idepend SUNWxwdv
 idepend SUNWxwhl
 idepend SUNWxwplr
-idepend SUNWxwrtl
 idepend SUNWxwsvr
 idepend SUNWxwxft
 idepend SUNWypr
@@ -2410,7 +2407,6 @@ idepend SUNWsfdoc
 idepend SUNWsfinf
 idepend SUNWsfman
 idepend SUNWsi3124
-idepend SUNWslim-utils
 idepend SUNWsmapi
 idepend SUNWsmedia
 idepend SUNWsmediar

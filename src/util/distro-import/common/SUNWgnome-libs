@@ -1,5 +1,6 @@
 package SUNWgnome-libs
-import SUNWgnome-libs
 import SUNWgnome-libs-devel
+drop usr/share/gnome-background-properties/gnome-default.xml
+import SUNWgnome-libs
 import SUNWgnome-libs-root
 end package

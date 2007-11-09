@@ -867,7 +867,6 @@ idepend SUNWsfdoc
 idepend SUNWsfinf
 idepend SUNWsfman
 idepend SUNWsi3124
-idepend SUNWslim-utils
 idepend SUNWsmapi
 idepend SUNWsmedia
 idepend SUNWsmediar

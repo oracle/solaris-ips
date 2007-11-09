@@ -1,3 +1,10 @@
 package FSWfontconfig-devel-docs
+import SUNWfontconfig-docs
+drop usr/share/doc/fontconfig/fontconfig-devel.pdf
+drop usr/share/doc/fontconfig/fontconfig-devel.txt
+drop usr/share/doc/fontconfig/fontconfig-user.html
+drop usr/share/doc/fontconfig/fontconfig-user.pdf
+drop usr/share/doc/fontconfig/fontconfig-user.txt
+drop usr/share/man/man1/fc-match.1
 import FSWfontconfig-devel-docs
 end package

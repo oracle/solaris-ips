@@ -17,7 +17,6 @@ drop var/svc/profile/generic_limited_net.xml
 drop etc/inet/hosts
 drop etc/nsswitch.conf
 drop etc/user_attr
-drop etc/security/exec_attr
 from ./SUNWfixes import
 # switch to gdm
 var/svc/profile/generic_open.xml

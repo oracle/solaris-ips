@@ -1,9 +1,9 @@
 package SUNWman
+import SUNWman
+drop usr/share/man/man.cf
 from ./SUNWfixes import
 usr/share/man/man.cf
-usr/share/man/missing.man
 end import
-import SUNWman
 # BEGIN NON-REDISTRIBUTABLE
 drop usr/share/man/man1/alias.1
 drop usr/share/man/man1/answerbook2.1
@@ -1362,6 +1362,9 @@ drop usr/share/man/man9s/tuple.9s
 #
 # Add links to missing man pages so people won't freak out.
 #
+from ./SUNWfixes import
+usr/share/man/missing.man
+end import
 add link path=usr/share/man/man1/alias.1 target=../missing.man
 add link path=usr/share/man/man1/answerbook2.1 target=../missing.man
 add link path=usr/share/man/man1/apropos.1 target=../missing.man
