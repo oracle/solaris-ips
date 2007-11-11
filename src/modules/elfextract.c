@@ -249,6 +249,7 @@ readhash(int fd, SHA1_CTX *shc, off_t offset, off_t size)
 {
 	off_t n;
 	char hashbuf[64 * 1024];
+	ssize_t rbytes;
 
 	if (!size)
 		return;
@@ -259,12 +260,12 @@ readhash(int fd, SHA1_CTX *shc, off_t offset, off_t size)
 
 	do {
 		n = MIN(size, sizeof (hashbuf));
-		if (read(fd, hashbuf, n) == -1) {
+		if ((rbytes = read(fd, hashbuf, n)) == -1) {
 			/* XXX what do we do here? */
 			assert(0);
 		}
-		SHA1Update(shc, hashbuf, n);
-		size -= n;
+		SHA1Update(shc, hashbuf, rbytes);
+		size -= rbytes;
 	} while (size != 0);
 }
 
@@ -324,8 +325,14 @@ getdynamic(int fd)
 		if (!(name = elf_strptr(elf, sh_str, shdr.sh_name)))
 			goto bad;
 
-		if (hashsection(name))
-			readhash(fd, &shc, shdr.sh_offset, shdr.sh_size);
+		if (hashsection(name)) {
+			if (shdr.sh_type == SHT_NOBITS)
+				SHA1Update(&shc, &shdr.sh_size,
+				    sizeof (shdr.sh_size));
+			else
+				readhash(fd, &shc, shdr.sh_offset,
+				    shdr.sh_size);
+		}
 
 		switch (shdr.sh_type) {
 		case SHT_DYNAMIC:
