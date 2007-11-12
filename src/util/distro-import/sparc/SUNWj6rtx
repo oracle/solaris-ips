@@ -1,0 +1,4 @@
+package SUNWj6rtx
+import SUNWj6rtx
+drop usr/jdk/instances/jdk1.6.0/jre/lib/sparcv9/motif21/libmawt.so
+end package

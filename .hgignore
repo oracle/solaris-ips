@@ -19,5 +19,6 @@
 ^src/pkgsend$
 ^src/util/distro-import/SUNWfixes/
 ^src/util/distro-import/cluster.import$
+^src/util/distro-import/ksh-wrapper$
 ^src/util/distro-import/proto/
 ^webrev

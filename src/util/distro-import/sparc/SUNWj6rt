@@ -1,0 +1,22 @@
+package SUNWj6rt
+import SUNWj6rt
+drop usr/jdk/instances/jdk1.6.0/jre/LICENSE
+drop usr/jdk/instances/jdk1.6.0/jre/README
+drop usr/jdk/instances/jdk1.6.0/jre/lib/sparc/motif21/libmawt.so
+from ./SUNWfixes import
+usr/jdk/instances/jdk1.6.0/jre/LICENSE
+usr/jdk/instances/jdk1.6.0/jre/README
+end import
+add link path=usr/bin/ControlPanel target=../java/jre/bin/ControlPanel
+add link path=usr/bin/java target=../java/bin/java
+add link path=usr/bin/javaws target=../java/bin/javaws
+add link path=usr/bin/jcontrol target=../java/jre/bin/jcontrol
+add link path=usr/bin/keytool target=../java/bin/keytool
+add link path=usr/bin/orbd target=../java/bin/orbd
+add link path=usr/bin/policytool target=../java/bin/policytool
+add link path=usr/bin/rmid target=../java/bin/rmid
+add link path=usr/bin/rmiregistry target=../java/bin/rmiregistry
+add link path=usr/bin/servertool target=../java/bin/servertool
+add link path=usr/bin/tnameserv target=../java/bin/tnameserv
+add link path=usr/java target=jdk/instances/jdk1.6.0
+end package

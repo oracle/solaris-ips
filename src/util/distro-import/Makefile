@@ -55,36 +55,44 @@ ELIDED_FILES= \
 	etc/security/prof_attr		\
 	etc/security/exec_attr		\
 	etc/devlink.tab
+
 #
 # these files get placed into proto area from per-build cached versions
 #
-CACHED_FILES= 					\
-	$(ELIDED_FILES) 			\
-	boot/grub/menu.lst 			\
-	boot/grub/splash.xpm.gz 		\
-	etc/user_attr	 			\
-	etc/inet/hosts 				\
+CACHED_FILES=					\
+	$(ELIDED_FILES)				\
+	boot/grub/menu.lst			\
+	boot/grub/splash.xpm.gz			\
+	etc/user_attr				\
+	etc/inet/hosts				\
 	var/svc/profile/generic_limited_net.xml \
 	var/svc/profile/generic_open.xml
 
-FIXFILES= \
-	boot/solaris/filelist.ramdisk \
-	etc/user_attr.cdonly \
-	etc/X11/gdm/custom.conf \
-	etc/driver_aliases \
-	etc/name_to_major \
-	etc/nsswitch.conf \
-	etc/release \
-	etc/svc/global_repo.db \
-	etc/svc/nonglobal_repo.db \
-	usr/bin/ksh \
-	etc/pam.conf \
-	etc/passwd 				\
-	etc/power.conf \
+FIXFILES=					\
+	boot/solaris/filelist.ramdisk		\
+	etc/X11/gdm/custom.conf			\
+	etc/driver_aliases			\
+	etc/name_to_major			\
+	etc/nsswitch.conf			\
+	etc/pam.conf				\
+	etc/passwd				\
+	etc/power.conf				\
+	etc/release				\
 	etc/shadow				\
-	usr/share/man/man.cf \
-	usr/share/man/missing.man \
+	etc/svc/global_repo.db			\
+	etc/svc/nonglobal_repo.db		\
+	etc/user_attr.cdonly			\
+	usr/bin/ksh				\
+	usr/jdk/instances/jdk1.6.0/LICENSE	\
+	usr/jdk/instances/jdk1.6.0/README.html	\
+	usr/jdk/instances/jdk1.6.0/jre/LICENSE	\
+	usr/jdk/instances/jdk1.6.0/jre/README	\
+	usr/share/man/man.cf			\
+	usr/share/man/missing.man		\
 	$(CACHED_FILES)
+
+JDKFILES = LICENSE README.html
+JREFILES = LICENSE README
 
 PROG=	ksh-wrapper
 
@@ -98,14 +106,13 @@ LINTFLAGS=	-axsm
 
 default:	75a/slim_import
 
-
 cluster.import:	$(WOS_PKGS)/.clustertoc Makefile
 	./clustertoc2import.py $(WOS_PKGS)/.clustertoc | \
 	sed "s/version 2.2.1a/version 2.2.1.1/" > $@
 
 proto/etc/user_attr.cdonly: proto $(BUILDID)/user_attr
 	( cat $(BUILDID)/user_attr; \
-          echo "jack::::profiles=Primary Administrator;roles=root") > $@
+	  echo "jack::::profiles=Primary Administrator;roles=root") > $@
 
 proto/etc/driver_aliases:	proto $(BUILDID)/all.i386.$(BUILDID) cluster.import
 	./get_file_from_pkg.py $(WOS_PKGS)/SUNWcsd etc/driver_aliases | \
@@ -119,11 +126,11 @@ proto/etc/nsswitch.conf:	proto Makefile
 	./get_file_from_pkg.py	$(WOS_PKGS)/SUNWcsr etc/nsswitch.files > $@
 
 proto/etc/X11/gdm/custom.conf:	proto Makefile
-	./get_file_from_pkg.py $(WOS_PKGS)/SUNWgnome-display-mgr-root \
-        etc/X11/gdm/custom.conf | nawk '/^\[daemon\]/ { print $$0; \
-		            print "AutomaticLoginEnable=true"; \
-			    print "AutomaticLogin=jack";      \
-			    print "GdmXserverTimeout=30"; \
+	./get_file_from_pkg.py $(WOS_PKGS)/SUNWgnome-display-mgr-root	\
+	etc/X11/gdm/custom.conf | nawk '/^\[daemon\]/ { print $$0;	\
+			    print "AutomaticLoginEnable=true";		\
+			    print "AutomaticLogin=jack";		\
+			    print "GdmXserverTimeout=30";		\
 			    continue }  { print $$0 }' > $@
 
 proto/etc/power.conf:	proto Makefile
@@ -136,10 +143,10 @@ proto/boot/solaris/filelist.ramdisk:	proto
 	echo etc/zfs/zpool.cache) > $@
 
 proto/etc/pam.conf:	proto
-	(./get_file_from_pkg.py $(WOS_PKGS)/SUNWcsr etc/pam.conf;  	\
-	echo "gdm-autologin auth  required    pam_unix_cred.so.1"; 	\
-	echo "gdm-autologin auth  sufficient  pam_allow.so.1"; 		\
-	echo "gdm-autologin account  sufficient  pam_allow.so.1"; 	\
+	(./get_file_from_pkg.py $(WOS_PKGS)/SUNWcsr etc/pam.conf;	\
+	echo "gdm-autologin auth  required    pam_unix_cred.so.1";	\
+	echo "gdm-autologin auth  sufficient  pam_allow.so.1";		\
+	echo "gdm-autologin account  sufficient  pam_allow.so.1";	\
 	echo "gdm-autologin session  sufficient  pam_allow.so.1";	\
 	echo "gdm-autologin password  sufficient  pam_allow.so.1"	\
 	) > $@
@@ -170,33 +177,37 @@ proto/usr/bin/ksh:	proto $(PROG)
 
 #
 # change root's default shell, homedir and add jack user
-# 
+#
 proto/etc/passwd:	proto Makefile
-	(./get_file_from_pkg.py $(WOS_PKGS)/SUNWcsr etc/passwd | nawk -F: 	\
-	'/^root/{ print "root:x:0:0:Super-User:/root:/usr/bin/bash";continue} {print $$0}'; \
+	(./get_file_from_pkg.py $(WOS_PKGS)/SUNWcsr etc/passwd | nawk -F:			\
+	'/^root/{ print "root:x:0:0:Super-User:/root:/usr/bin/bash";continue} {print $$0}';	\
 	echo "jack:x:65432:10:Default User:/jack:/usr/bin/bash") > $@
 
 proto/etc/shadow:	proto Makefile
-	(./get_file_from_pkg.py $(WOS_PKGS)/SUNWcsr etc/shadow | nawk -F: 	\
-	'/^root/{ print "root:wqy8hz4xKqw4o:13817::::::";continue} {print $$0}'; \
+	(./get_file_from_pkg.py $(WOS_PKGS)/SUNWcsr etc/shadow | nawk -F:		\
+	'/^root/{ print "root:wqy8hz4xKqw4o:13817::::::";continue} {print $$0}';	\
 	echo "jack:9Nd/cwBcNWFZg:13817::::::") > $@
 
+$(JDKFILES:%=proto/usr/jdk/instances/jdk1.6.0/%):	proto  DLJ/$(@F)
+	cp DLJ/$(@F) $@
 
-
+$(JREFILES:%=proto/usr/jdk/instances/jdk1.6.0/jre/%):	proto  DLJ/$(@F)
+	cp DLJ/$(@F) $@
 
 $(CACHED_FILES:%=proto/%):	proto $(BUILDID)/$(@F) Makefile
 	cat $(BUILDID)/$(@F) > $@
 
 proto:	Makefile
-	mkdir -p proto/boot/solaris/devicedb
-	mkdir -p proto/etc/security
-	mkdir -p proto/etc/inet
 	mkdir -p proto/boot/grub
-	mkdir -p proto/var/svc/profile
+	mkdir -p proto/boot/solaris/devicedb
 	mkdir -p proto/etc/X11/gdm
+	mkdir -p proto/etc/inet
+	mkdir -p proto/etc/security
 	mkdir -p proto/etc/svc
 	mkdir -p proto/usr/bin
+	mkdir -p proto/usr/jdk/instances/jdk1.6.0/jre
 	mkdir -p proto/usr/share/man
+	mkdir -p proto/var/svc/profile
 
 %/$(TMPPKGS):
 	$(MAKE) BUILDID=$(@D) $(@F)

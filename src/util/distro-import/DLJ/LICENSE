@@ -1,0 +1,663 @@
+        Operating System Distributor License for Java version 1.1
+
+SUN MICROSYSTEMS, INC. ("SUN") IS WILLING TO LICENSE THE JAVA PLATFORM
+STANDARD EDITION DEVELOPER KIT ("JDK" - THE "SOFTWARE") TO YOU ONLY
+UPON THE CONDITION THAT YOU ACCEPT ALL OF THE TERMS CONTAINED IN THIS
+LICENSE AGREEMENT (THE "AGREEMENT"). PLEASE READ THE AGREEMENT
+CAREFULLY. BY INSTALLING, USING, OR DISTRIBUTING THIS SOFTWARE, YOU
+ACCEPT ALL OF THE TERMS OF THE AGREEMENT.
+
+1.  DEFINITIONS. "Software" means the code identified above in binary
+    form, any other machine readable materials including, but not
+    limited to, libraries, source files, header files, and data files),
+    any updates or error corrections provided by Sun, and any user
+    manuals, programming guides and other documentation provided to you
+    by Sun under this Agreement, and any subsequent versions that Sun
+    makes available to you hereunder.  "Operating System" means any
+    version of the Linux or OpenSolaris operating systems that manages
+    the hardware resources of a general purpose desktop or server
+    computer and shares these resources with various software programs
+    that run on top of it. "Programs" means Java technology applets and
+    applications intended to run on the Java Platform Standard Edition
+    (Java SE platform) platform on Java-enabled general purpose desktop
+    computers and servers.
+
+2.  License Grant. Subject to the terms and conditions of this
+    Agreement, as well as the restrictions and exceptions set forth in
+    the Software README file, Sun grants you a non-exclusive,
+    non-transferable, royalty-free limited license to reproduce and use
+    the Software internally, complete and unmodified, for the sole
+    purposes of running Programs and designing, developing and testing
+    Programs.  Sun also grants you a non-exclusive, non-transferable,
+    royalty-free limited license to reproduce and distribute the
+    Software, directly or indirectly through your licensees,
+    distributors, resellers, or OEMs, electronically or in physical
+    form or pre-installed with your Operating System on a general
+    purpose desktop computer or server, provided that: (a) the Software
+    and any proprietary legends or notices are complete and unmodified;
+    (b) the Software is distributed with your Operating System, and
+    such distribution is solely for the purposes of running Programs
+    under the control of your Operating System and designing,
+    developing and testing Programs to be run under the control of your
+    Operating System; (c) you do not combine, configure or distribute
+    the Software to run in conjunction with any additional software
+    that implements the same or similar functionality or APIs as the
+    Software; (d) you do not remove or modify any included license
+    agreement or impede or prevent it from displaying and requiring
+    acceptance; (e) you only distribute the Software subject to this
+    license agreement; and (f) you agree to defend and indemnify Sun
+    and its licensors from and against any damages, costs, liabilities,
+    settlement amounts and/or expenses (including attorneys' fees)
+    incurred in connection with any claim, lawsuit or action by any
+    third party that arises or results from (i) the use or distribution
+    of your Operating System, or any part thereof, in any manner, or
+    (ii) your use or distribution of the Software in violation of the
+    terms of this Agreement or applicable law.  You shall not be
+    obligated under Section 2(f)(i) if such claim would not have
+    occurred but for a modification made to your Operating System by
+    someone not under your direction or control, and you were in
+    compliance with all other terms of this Agreement.  If the Software
+    README file permits certain files to be replaced or omitted from
+    your distribution, then any such replacement(s) or omission(s)
+    shall not be considered a breach of Section 2(a).
+
+3.  RESTRICTIONS.  Software is copyrighted and title to Software and
+    all associated intellectual property rights is retained by Sun
+    and/or its licensors.  Unless enforcement is prohibited by
+    applicable law, you may not modify, decompile, or reverse engineer
+    Software.  You may not create, modify, or change the behavior of,
+    or authorize your licensees, distributors, resellers, OEMs, or end
+    users (collectively, "Licensees") to create, modify, or change the
+    behavior of, classes, interfaces, or subpackages that are in any
+    way identified as "java", "javax", "sun" or similar convention as
+    specified by Sun in any naming convention designation. You
+    acknowledge that Licensed Software is not designed or intended for
+    use in the design, construction, operation or maintenance of any
+    nuclear facility. Sun Microsystems, Inc. disclaims any express or
+    implied warranty of fitness for such uses.
+
+4.  COMPATIBILITY.  If you exercise the license in Section 2, and Sun
+    or a licensee of the Software (under section 4(b)) notifies you
+    that there are compatibility issues (as determined by the
+    applicable Technology Compatibility Kit) caused by the interaction
+    of the Software with your Operating System, then within ninety
+    (90) days you must either: (a) modify the Operating System in a
+    way that resolves the compatibility issue (as determined by Sun)
+    and make a patch or replacement version available to your
+    Licensees who have already received the version of your Operating
+    System that was the subject of the compatibility issue ("Your
+    Incompatible Operating System"); or (b) cease distributing the
+    Software and make commercially reasonable attempts to forward the
+    notification to your Licensees who have already received Your
+    Incompatible Operating System.
+
+5.  Trademarks and Logos. No right, title or interest in or to any
+    trademark, service mark, logo or trade name of Sun or its
+    licensors is granted under this Agreement. You acknowledge and
+    agree that, as between you and Sun, Sun owns the SUN and JAVA
+    trademarks and all SUN and JAVA-related trademarks, service marks,
+    logos and other brand designations ("Sun Marks"), and you agree to
+    comply with the Sun Trademark and Logo Usage Requirements
+    currently located at http://www.sun.com/policies/trademarks. Any
+    use you make of the Sun Marks inures to Sun's benefit.
+
+6.  LIMITED WARRANTY.  If you received the Software directly from Sun
+    or its authorized resellers, Sun warrants to you that for a period
+    of ninety (90) days from delivery to you, the media on which
+    Software is furnished (if any) will be free of defects in
+    materials and workmanship under normal use.  Except for the
+    foregoing, Software is provided "AS IS".  Your exclusive remedy
+    and Sun's entire liability under this limited warranty will be
+    replacement of the Software media.  This limited warranty gives
+    you specific legal rights.  You may have others, which vary from
+    state to state.
+
+7.  DISCLAIMER OF WARRANTY.  UNLESS SPECIFIED IN THIS AGREEMENT, ALL
+    EXPRESS OR IMPLIED CONDITIONS, REPRESENTATIONS AND WARRANTIES,
+    INCLUDING ANY IMPLIED WARRANTY OF MERCHANTABILITY, FITNESS FOR A
+    PARTICULAR PURPOSE OR NON-INFRINGEMENT ARE DISCLAIMED, EXCEPT TO
+    THE EXTENT THAT THESE DISCLAIMERS ARE HELD TO BE LEGALLY INVALID.
+
+8.  LIMITATION OF LIABILITY.  IN NO EVENT WILL SUN OR ITS LICENSORS BE
+    LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL OR
+    PUNITIVE DAMAGES IN CONNECTION WITH OR ARISING OUT OF THIS
+    AGREEMENT (INCLUDING LOSS OF PROFITS, USE, DATA, OR OTHER ECONOMIC
+    ADVANTAGE), NO MATTER WHAT THEORY OF LIABILITY, EVEN IF SUN HAS
+    BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.  In no event will
+    Sun's liability to you, whether in contract, tort (including
+    negligence), or otherwise, exceed the amount paid by you for the
+    Software under this Agreement. The foregoing limitations will
+    apply even if the above stated warranty fails of its essential
+    purpose.  Some states do not allow the exclusion of incidental or
+    consequential damages, so some of the terms above may not be
+    applicable to you.
+
+9.  THIRD PARTY CODE. Additional copyright notices and license terms
+    applicable to portions of the Software are set forth in the
+    THIRDPARTYLICENSEREADME.txt file. In addition to any terms and
+    conditions of any third party opensource/freeware license
+    identified in the THIRDPARTYLICENSEREADME.txt file, the disclaimer
+    of warranty and limitation of liability provisions in paragraphs 7
+    and 8 of this Agreement shall apply to all Software in this
+    distribution.
+
+10. Termination.  This Agreement is effective until it is
+    terminated. You may terminate this Agreement at any time by
+    ceasing distribution of the Software. This Agreement will
+    terminate immediately without notice from Sun if you fail to
+    comply with any material provision herein.  Either party may
+    terminate this Agreement immediately should any Software become,
+    or in either party's opinion be likely to become, the subject of a
+    claim of infringement of any intellectual property right.  Upon
+    termination, you must destroy all copies and cease copying and
+    distribution of the Software. All of your obligations and any
+    applicable limitations on your rights and remedies under this
+    Agreement shall survive termination.
+
+11. SOURCE CODE.  Software may contain source code that, unless
+    expressly licensed for other purposes, is provided solely for
+    reference purposes pursuant to the terms of this Agreement.
+    Source code may not be redistributed unless expressly provided for
+    in this Agreement.
+
+12. Export Regulations. All Software and technical data delivered
+    under this Agreement are subject to US export control laws and may
+    be subject to export or import regulations in other countries.
+    You acknowledge that you have the responsibility to obtain such
+    licenses to export, re-export, or import as may be required after
+    delivery to you.
+
+13. U.S. GOVERNMENT RESTRICTED RIGHTS. If Software is being acquired
+    by or on behalf of the U.S. Government or by a U.S. Government
+    prime contractor or subcontractor (at any tier), then the
+    Government's rights in Software and accompanying documentation
+    will be only as set forth in this Agreement; this is in accordance
+    with 48 CFR 227.7201 through 227.7202-4 (for Department of Defense
+    (DOD) acquisitions) and with 48 CFR 2.101 and 12.212 (for non-DOD
+    acquisitions).
+
+14. MISCELLANEOUS.  Any action related to this Agreement will be
+    governed by California law and controlling U.S. federal law.  No
+    choice of law rules of any jurisdiction will apply. If any
+    provision of this Agreement is held to be unenforceable, this
+    Agreement will remain in effect upon the parties' agreement to
+    revised terms that most nearly accomplish the same effect. This
+    Agreement is the entire agreement between you and Sun relating to
+    its subject matter.  It supersedes all prior or contemporaneous
+    oral or written communications, proposals, representations and
+    warranties and prevails over any conflicting or additional terms
+    of any quote, order, acknowledgment, or other communication
+    between the parties relating to its subject matter during the term
+    of this Agreement.  No modification of this Agreement will be
+    binding, unless in writing and signed by an authorized
+    representative of each party.
+
+For inquiries please contact: Sun Microsystems, Inc., 4150 Network Circle, 
+Santa Clara, California 95054, U.S.A.
+
+DLJ v1.1                                                  27APR2006ANS
+
+  - - - - -         end of DLJ License text               - - - - -  
+
+-------------------------------------------------------------------------------
+*******************************************************************************
+-------------------------------------------------------------------------------
+
+     FAQ for the Operating System Distributor License for Java (DLJ)
+
+The purpose of this FAQ is to provide some insight into Sun's thoughts
+in creating the Operating System Distributor License for Java. 
+Although the FAQ is not a legal document, it is designed to illustrate 
+the license terms through explanation and examples. This is a well
+accepted way of helping non-lawyers attain some comfort with legal
+language, which is crafted by attorneys to meet the arcane 
+requirements of statutes and judicial opinions. For example, 
+Creative Commons does a similar thing with its "Deeds," 
+(e.g. http://creativecommons.org/licenses/by-sa/2.5/ ) which are 
+human-readable summaries of the "Legal Code" 
+(e.g. http://creativecommons.org/licenses/by-sa/2.5/legalcode ) and
+and are accompanied by a legal disclaimer
+( http://creativecommons.org/licenses/disclaimer-popup?lang=en-us ).
+
+If you think our FAQ is contradicted by the language in the license,
+we'd like to hear from you so that we can consider revising the
+license to clear up any confusion. Otherwise, we encourage you to
+think of the FAQ as a series of guideposts designed to help you
+understand and work with the license terms. Of course, if Sun clearly
+says in an FAQ that it's okay to do something (and we haven't made a
+blatant typographical error), we're not going to sue you -- even if
+one could make a clever legal argument that the license doesn't permit
+it. We believe in simplicity and transparency, and pledge to work
+diligently with the community to achieve those objectives.
+
+Sun expects to periodically update this FAQ to better reflect the
+concerns and questions of the developer community. You will find a
+pointer to the latest version of this FAQ at:
+  https://jdk-distros.dev.java.net/developer.html 
+
+1.  What is the Operating System Distribution License for Java
+    (a.k.a. the "Distro License for Java" or DLJ)?
+
+    The DLJ is a license created specifically for individuals and
+    communities who want to distribute Sun's binary Java Development
+    Kit (JDK) or Java Runtime Environment (JRE) with a Linux or
+    OpenSolaris Operating System (OS) distribution.
+
+2.   Why is Sun releasing the DLJ?
+
+    It's been difficult for developers who want to use Java SE
+    technology on a broad choice of Linux or OpenSolaris distributions
+    to easily obtain and use Sun's JDK or JRE. One issue has been the
+    redistribution terms of the Binary Code License (BCL) for Java SE
+    technology, which was never intended to license these bits for
+    general distribution with an Operating System. With this new
+    license, Sun is enabling the developer community to distribute our
+    binary JDK and JRE with distributions of Linux or OpenSolaris
+    operating systems, while still maintaining compatibility with the
+    Java Specifications.
+
+3.  How do I become a "DLJ Licensee?"
+
+    The DLJ is distributed by Sun as a "click-through license" in
+    special bundles available on java.net in the jdk-distros project
+    at https://jdk-distros.dev.java.net . These bundles contain the
+    same JDK software found in the standard Linux distribution bundles
+    and the Solaris bundles in the download area on java.sun.com
+    except that the LICENSE and README file are replaced by the DLJ
+    and a modified README file with matching terms. The README file
+    included in these bundles allows you to create JRE distributions
+    from the JDK bundles by following instructions in the file.
+
+4.  What does the DLJ allow me to do?
+
+    You can: 
+    - Use the JDK on your OS to design, develop, test, and run Java programs. 
+    - Repackage the JDK for use with your OS, within the limitations
+      spelled out in the README file.
+    - Distribute the JDK on any media, online, and preinstalled on
+      systems as a package with your OS.
+    - Distribute the JDK directly, or indirectly through your
+      licensees, distributors, resellers, OEMs, or downstream
+      recipients of your OS.
+
+5.  When I exercise the license and distribute the JDK, does it become
+    part of my Operating System, or do I need to explicitly declare it
+    as part of my OS?
+
+    No - the license grants you the right to distribute the JDK with
+    your Operating System, but it is still a separate piece of
+    software. You do not need to make the JDK part of what you define
+    as your OS when you exercise the license. All you need to do to
+    exercise the license is distribute the JDK with your OS. For
+    example, you could distribute the JDK bundles on a CD with your
+    OS, or in a package repository for your OS on your mirror
+    distribution sites.
+
+6.  Can projects such as the JPackage Project exercise the DLJ?
+
+    Sun recognizes and encourages the contributions of projects such
+    as the JPackage Project ( http://www.jpackage.org ) to the adoption
+    of Java technology on GNU/Linux OSs. Such projects are very
+    similar to the jdk-distros project that Sun has established,
+    providing recommendations for packaging Java technology with OS
+    distributions, but not actually distributing an OS. Anyone can
+    provide recommendations for packaging under the DLJ, but only
+    GNU/Linux and OpenSolaris OS distributors may exercise the DLJ and
+    ship the JDK, as the license requires that you ship the JDK
+    bundles with an OS.
+
+7.  I distribute my OS online from multiple mirror sites. Does such a
+    multi-site online distribution model fit into the definition of
+    "online" under this license?
+
+    Yes it does. Each mirror is, in essence, a downstream distributor
+    of the original OS bundles from the master site. Accordingly, the
+    mirror sites may distribute the JDK as part of these bundles,
+    under the terms and conditions of the DLJ.
+
+8.  What are my obligations under this license?
+
+    The license is the best reference for this. Some of the important 
+    terms to consider are that you are required to:
+    - Keep all copyright and other notices intact.
+    - Distribute the entire JDK - no subsetting. Note - the README
+      file has the specifics of what you must distribute, and what can
+      be omitted.
+    - Use the JDK only to design, develop, test, and run Java programs
+      on your OS - you may not use it or parts of it for other
+      purposes.
+    - Present for acceptance any end user licenses that are part of
+      the JDK, if such licenses are included in the generic install
+      bundle provided to you for repackaging.
+    - Redistribute subject to the DLJ - so that downstream users and
+      distributors of the JDK are also subject to the DLJ's terms.
+    - Indemnify Sun against claims arising from your OS or your
+      violation of the DLJ (or any applicable law) Note that you are
+      not responsible for changes made to your OS distribution by
+      downstream users or distributors when such changes are out of
+      your control.
+    - Ship only a compatible JDK on your OS. If notified of an
+      incompatibility, you must correct it and offer a patch or
+      replacement to downstream recipients within 90 days, or stop
+      shipment and notify downstream recipients.
+
+9.  What is the README file? Is it part of the license? Why not include 
+    it with the rest of the license?
+
+    The README file is explicitly called out in Section 2. License
+    Grant as a document that provides specific exceptions and
+    restrictions to what you may distribute, and should be considered
+    an adjunct to the license. The reason for keeping these details in
+    a separate file is simple: it allows us to adjust the technical
+    details of what constitutes the "Software" and what parts may be
+    redistributed separately or omitted from a distribution without
+    revising the license itself. This allows us to more quickly react
+    to clarify allowable modifications as additional distributions
+    package the JDK and discover modifications that are required to
+    ensure compatibility and quality.
+
+    You will find a pointer to the latest version of the README at:
+    https://jdk-distros.dev.java.net/developer.html
+
+10. May I redistribute the src.zip file?
+
+    This is one of the files listed in the README as being optional,
+    but redistributable, so yes.
+
+11. If I am working on alternative technology projects, will I be
+    "tainted" by the existence of the src.zip file on my system, or if
+    I open this file and examine its contents?
+
+    No. The source in src.zip is licensed as a reference for running,
+    designing, developing and testing Java applications, and is an
+    integral and useful component of the JDK. Sun maintains that you
+    aren't tainted simply by having looked at this code, or having it
+    on your hard drive.
+
+12. How do I ensure that my package reproduces all the right copyright 
+    notices and proprietary legends as required in Section 2(a)?
+
+    If you make certain that any copyright notices and licenses for
+    the packaging are clearly separate from the notices for the Java
+    platform, you'll be fine. Just make sure you distribute all the
+    notices that are provided as part of the JDK bundles you are
+    repackaging. For example in the 1.5.0 bundles, the notices are in
+    the following files in the top level directory:
+
+    COPYRIGHT
+    LICENSE
+    THIRDPARTYLICENSEREADME.txt
+
+    These files are the copyright notice for the JRE or JDK packages,
+    the license terms (DLJ) for the JRE or JDK packages and the
+    copyright notices and license terms for the THIRD PARTY CODE,
+    respectively.
+
+13. Can I use the JDK to develop programs that can be run anywhere,
+    or only for my OS? Section 2(b) seems to say I can't use the JDK
+    for developing arbitrary Java language applications.
+
+    The license allows you and your users to run Java programs from
+    any source, and develop Java programs for any platform. If you
+    distribute the JDK under this license, you must distribute it with
+    your OS, and for the purpose of running and developing Java
+    programs on your OS. The DLJ does not give you the right to
+    distribute a "naked" version of the JDK without your OS. The
+    purpose of the language in 2(b) is to require that you include
+    your OS, and to use the JDK only for its normal intended purpose
+    of running and developing Java programs.
+
+14. Does this license prevent me shipping any alternative technologies 
+    in my OS distribution? 
+
+    The DLJ does not restrict you from shipping any other technologies
+    you choose to include in your distribution. However, you can't use
+    pieces of the JDK configured in conjunction with any alternative
+    technologies to create hybrid implementations, or mingle the code
+    from the JDK with non-JDK components of any kind so that they run
+    together. It is of course perfectly OK to ship programs or
+    libraries that use the JDK. Because this question has caused
+    confusion in the past, we want to make this absolutely clear:
+    except for these limitations on combining technologies, there is
+    nothing in the DLJ intended to prevent you from shipping
+    alternative technologies with your OS distribution.
+
+15. So, can I ship Eclipse, or other language implementations like 
+    Perl or Python?
+
+    Sun can't give you permission to ship these technologies. Only the
+    lawful owners and licensors of those technologies can do that. The
+    DLJ doesn't prohibit you from shipping them or from running them.
+
+16. If some program in my OS specifies the option -Xbootclasspath to
+    the java command, is that considered a breach of Section 2(c)?
+
+    We realize there is some confusion about this because the
+    documentation for the java command at
+    http://java.sun.com/j2se/1.5.0/docs/tooldocs/solaris/java.html
+    makes specific mention of the Binary Code License (BCL). The
+    intent of Section 2(c) is not to restrict what end user programs
+    do with command line options but rather to ensure that the Sun
+    Java platform is not used to create hybrid implementations with
+    alternate technologies, or mingle the JDK code with alternate
+    technologies so they run together.
+
+17. What do you mean by "Present for acceptance end user licenses"
+    (from #8 above)? Do I have to create a click-through license
+    display when a user first installs or runs the JDK? Must my users
+    accept the license?
+
+    Your users must agree to the license terms for the JDK before
+    installing it. While you aren't required to show the DLJ on first
+    use or installation, you must inform them that the JDK is licensed
+    software and that they must agree to the license before using
+    it. A click-through mechanism is the preferred way to do this, but
+    at a minimum you must present the license by some appropriate
+    means for acceptance. For example, your OS download procedure
+    could show the user a page that informs him or her that software
+    packages included in the download may contain software licenses to
+    which the user must agree before installation, and allow the user
+    to review them before download.
+
+    You can leverage your distribution's packaging technology to
+    ensure that the license terms have been accepted. For instance, on
+    Debian and derivative distributions, you could configure the
+    package so that if the debconf key for accepting the DLJ has not
+    been pre-accepted, the installation will be canceled if the
+    license cannot be presented. The point of presenting the license
+    is that an individual, corporation, non-profit or entity which
+    will be an end user of the JRE or JDK has had a chance to review
+    and agree to the DLJ. If the user or administrator pre-accepts
+    the key for DLJ agreement on behalf of herself or her group then
+    it is perfectly acceptable to silently install Sun Java on one or
+    many computers. This is an excellent example of how you can
+    leverage packaging infrastructure to comply with the terms of the
+    DLJ in ways that are convenient and expected for your users.
+
+18. How do I redistribute the JDK in my OS, so that downstream
+    recipients are subject to the DLJ? Do I need to do anything
+    special?
+
+    Nothing special - just be sure to include the license in your JDK
+    bundle, and inform your downstream recipients that the JDK is
+    subject to the license when they download or install it.
+
+19. What obligations do I assume when I receive the JDK as part of an
+    OS distribution, and then turn around and redistribute it, even if
+    I don't change a thing?
+
+    When you redistribute the JDK under the DLJ, you are subject to
+    its terms. This means that you are granted the rights described in
+    the license (provided you remain in compliance with the license
+    terms) and assume its obligations, including compatibility
+    requirements and indemnification. It doesn't matter whether you
+    change the distribution you receive or not. When you redistribute,
+    you do so under the terms of the DLJ.
+
+20. Why does Sun ask for indemnification? What indemnification am I
+    providing to Sun? I'm concerned that I will be held responsible
+    for things over which I have no control.
+
+    Simply put, Sun requires indemnification to limit its exposure for
+    issues that are not Sun's fault. If your conduct or your OS
+    causes a problem that results in a third-party claim, then Sun
+    expects you to take responsibility for it. Note that you are not
+    indemnifying Sun against claims that are a result of something in
+    Sun's code. You also are not indemnifying Sun against claims due
+    to changes that a downstream distributor has made to your OS.
+
+    Since downstream distributors must redistribute the JDK under the
+    terms of the DLJ, they are the ones providing indemnification to
+    Sun for the changes they've made to your OS - which is now their
+    OS for the purposes of this license.
+
+21. What do you mean by "compatible"?
+
+    "Compatible" has a very specific meaning for Java technology, and
+    in this license. Specifically, a "Compatible" Implementation" is
+    an implementation of the Java SE technology specification that
+    meets the requirements of the Technology Compatibility Kit (TCK).,
+    i.e., the compliance tests, tools and documentation which allows
+    you to establish whether a particular implementation completely
+    and correctly implements the Java SE Specification on a specific
+    host platform.
+
+22. Am I required to run the TCK before I distribute the software?
+
+    No, this license does not require that you run the TCK.
+
+23. How do I learn more about the TCK?
+
+    There is a "read-only" version of the Java SE TCK available at
+    https://jck.dev.java.net which you can look at to better
+    understand the compatibility requirements. The license for this
+    is for evaluation purposes only.
+
+24. How do I verify compatibility when I don't have the TCK?
+
+    The DLJ is a binary redistribution license, for a binary that has
+    been verified on Sun's supported OS platforms (see
+    http://java.sun.com/j2se/1.5.0/system-configurations.html ).
+    However, it is possible that the combination of Sun's JDK with
+    your OS distribution could break compatibility. The jdk-distros
+    project was created as a place for Linux, OpenSolaris, and Java
+    developers to cooperate on creating new packaging for the JDK,
+    solving problems including compatibility issues, and as a
+    clearinghouse for best practices, tips and tricks, examples, and
+    solutions to common issues. This project includes helpful guides
+    to potential problems with compatibility based on Sun's experience
+    in creating JDK bundles for supported OS versions. You can use
+    this guide to help you discover potential problems before you
+    distribute the JDK with your OS.
+
+25. I'd like to test my OS distribution's compatibility. How do I 
+    obtain the TCK?
+
+    The TCK is available under a usage license that includes some
+    support, and which may be purchased from Sun.
+
+    If you are a qualified not-for-profit organization, you may be
+    eligible to obtain the TCK under a scholarship. You can find more
+    information about this program and request a scholarship
+    application at: http://java.sun.com/scholarship/
+
+    There is a "read-only" version of the Java SE TCK available at
+    http://jck.dev.java.net which you can look at to better understand
+    the compatibility requirements. The license for this is for
+    evaluation purposes only and while it does not allow you to run
+    the TCK, it may be helpful in your understanding of its
+    requirements.
+
+26. What happens if my OS does not behave compatibly with the JDK?
+
+    Sun provides JDK bundles which have been qualified as compatible
+    on several common Linux distributions and on
+    Solaris. Incompatibility problems will typically be the result of
+    variations between your OS and common distributions. Accordingly
+    you should fix any problems you are aware of in your OS before
+    distributing the software. The JDK must behave in a compatible
+    manner when running on your OS.
+
+27. If I'm aware of problems, can I document them for my users 
+    and ship anyway?
+
+    No, you must fix the problems before distributing the software. It
+    is worth noting however, that you may document supported and
+    unsupported platform configurations such as specific web browsers,
+    OS versions, or hardware devices.
+
+28. What if a problem comes up after I distribute the software?
+
+    If Sun becomes aware of a compatibility problem with the JDK
+    software on your OS distribution and notifies you about it, then
+    you must fix the problem and offer a patch or new version to your
+    downstream users and distributors, or stop distributing the
+    software within 90 days of being notified. If you stop
+    distributing the software, you must also make reasonable attempts
+    to notify your users, and anyone who might have downloaded your OS
+    distribution. Once your downstream users are notified, they must
+    make the same choice (i.e. fix the problem or stop
+    using/distributing the software)
+
+    Remember, you are always allowed to discontinue distribution of
+    the JDK and make a reasonable attempt to notify your downstream
+    users and distributors. For example you can stop shipping Sun Java
+    by removing it from the list of currently available software for
+    your OS. Sun will consider a stop-ship action to be a suitable
+    remedy for any compatibility problems. If at some future time you
+    are able to fix the problem, you can resume distribution of the
+    JDK under the terms of the DLJ.
+
+29. If I decide to stop-ship, must I remove the JDK from archived and 
+    compatible distribution bundles as well?
+
+    No, archived bundles can contain the JDK as long as there are no
+    compatibility issues. Removing the JDK from your active
+    distribution should be sufficient. For instance, on Debian and
+    derivative operating systems, you could remove the Sun Java
+    packages from the tag database so that users can no longer install
+    them using the conventional method (e.g. apt-get install
+    sun-java5-jre).
+
+30. What does Section 12, Export Regulations, mean?
+
+    As a U.S. company, Sun is obligated to comply with U.S. export
+    regulations --as well as the regulations of other countries where
+    it does business or ships to. One way we comply with this
+    obligation is to bring these laws and regulations to your
+    attention. Ultimately you are responsible for ensuring that your
+    use and distribution of the Software is in accordance with export
+    regulations, as well as any other applicable laws.
+
+31. May I use the Java logo to show that I'm including the JDK in my 
+    OS distribution? What may I do with Java logos?
+
+    No, you may not use the logo, as the right to use the logo is
+    based on acquiring a TCK license and passing the TCK. You may
+    state that you include the JDK as part of your description of your
+    distribution. This license does not grant any right to use any Sun
+    mark or logo.
+
+32. What notification must I give Sun before distributing the JDK?
+
+    You are not required to notify Sun, or register. You might find it
+    useful however to post something in the jdk-distros project forums
+    so that others interested in similar OS distributions to yours can
+    share their experiences with you and you can collaborate with them
+    on common issues and solutions.
+
+33. Who can I contact if I have additional questions or comments?
+
+    You can send questions related to the DLJ to DLJfeedback@sun.com
+    and/or post comments on the jdk-distros project forums on
+    java.net, at http://forums.java.net/jive/forum.jspa?forumID=94 .
+
+34. Is it okay to use Jython with the JDK?
+
+    The license does not prohibit the use or inclusion of external
+    classfiles, such as Jython, in a operating system distribution 
+    which includes the JDK.
+
+DLJ FAQ v1.3
+
+  - - - - -         end of DLJ FAQ text                   - - - - -  
