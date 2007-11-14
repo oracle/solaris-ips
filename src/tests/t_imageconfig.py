@@ -23,6 +23,7 @@
 # Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
+import os
 import unittest
 import tempfile
 import pkg.client.imageconfig as imageconfig
@@ -31,8 +32,8 @@ import pkg.client.imageconfig as imageconfig
 class TestImageConfig(unittest.TestCase):
         def setUp(self):
 
-		self.sample_conf = tempfile.mktemp()
-		f = open(self.sample_conf, "w")
+		fd, self.sample_conf = tempfile.mkstemp()
+                f = os.fdopen(fd, "w")
 
 		f.write("""\
 [policy]
@@ -43,8 +44,11 @@ prefix: sfbay.sun.com
 origin: http://zruty.sfbay:10001
 mirrors:
 """)
-
+                f.close()
 		self.ic = imageconfig.ImageConfig()
+
+        def tearDown(self):
+                os.remove(self.sample_conf)
 
 	def test_read(self):
 		self.ic.read(self.sample_conf)

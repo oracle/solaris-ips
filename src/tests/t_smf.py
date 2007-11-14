@@ -31,28 +31,28 @@ import pkg.smf as smf
 class TestSMF(unittest.TestCase):
 
 	def setUp(self):
-		self.passwd_tmp = tempfile.mktemp()
-		self.xml_tmp = tempfile.mktemp()
-		self.smf1_tmp = tempfile.mktemp()
-		self.smf2_tmp = tempfile.mktemp()
+		fd_passwd, self.passwd_tmp = tempfile.mkstemp()
+		fd_xml, self.xml_tmp = tempfile.mkstemp()
+		fd_s1, self.smf1_tmp = tempfile.mkstemp()
+		fd_s2, self.smf2_tmp = tempfile.mkstemp()
 
-		f=open(self.passwd_tmp, "w")
+                f = os.fdopen(fd_passwd, "w")
 		f.write("root:x:0:0:Super-User:/:/bin/bash\n")
 		f.write("daemon:x:1:1::/:")
-		f.close
+		f.close()
 
-		f=open(self.xml_tmp, "w")
+                f = os.fdopen(fd_xml, "w")
 		f.write("""<?xml version="1.0" encoding="ISO-8859-1"?>
 <?xml-stylesheet type="text/xsl" href="HelloWorld.xsl" ?>
 <!-- Hello World in XML -->
 <text><string>Hello, World</string></text>""")
-		f.close
+		f.close()
 
 		#
 		# This is a single-instance SMF manifest with pseudo contents;
 		# we can process this with get_info and easily test the results
 		#
-		f=open(self.smf1_tmp, "w")
+                f = os.fdopen(fd_s1, "w")
 		f.write("""<?xml version="1.0"?>
 <!DOCTYPE service_bundle SYSTEM
     "/usr/share/lib/xml/dtd/service_bundle.dtd.1">
@@ -82,13 +82,13 @@ class TestSMF(unittest.TestCase):
 </dependent>
 </service>
 </service_bundle>""")
-		f.close
+		f.close()
 
 		#
 		# This is a multi-instance SMF manifest with pseudo contents;
 		# we can process this with get_info and easily test the results
 		#
-		f=open(self.smf2_tmp, "w")
+                f = os.fdopen(fd_s2, "w")
 		f.write("""<?xml version="1.0"?>
 <!DOCTYPE service_bundle SYSTEM
     "/usr/share/lib/xml/dtd/service_bundle.dtd.1">
@@ -141,7 +141,7 @@ class TestSMF(unittest.TestCase):
 </instance>
 </service>
 </service_bundle>""")
-		f.close
+		f.close()
 
 
 	def tearDown(self):
