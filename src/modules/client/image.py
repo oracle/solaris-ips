@@ -31,6 +31,7 @@ import os
 import grp
 import pwd
 import urllib
+import urllib2
 import urlparse
 # import uuid           # XXX interesting 2.5 module
 
@@ -463,15 +464,33 @@ class Image(object):
                 return dependents
 
         def retrieve_catalogs(self):
+                failed = []
+                total = 0
+                succeeded = 0
+
                 for auth in self.gen_authorities():
+                        total += 1
                         # XXX Mirror selection and retrieval policy?
 
-                        c, v = versioned_urlopen(auth["origin"], "catalog", [0])
+                        try:
+                                c, v = versioned_urlopen(auth["origin"],
+                                    "catalog", [0])
+                        except urllib2.URLError, e:
+                                failed.append((auth, e))
+                                continue
 
                         # root for this catalog
                         croot = "%s/catalog/%s" % (self.imgdir, auth["prefix"])
 
-                        catalog.recv(c, croot)
+                        try:
+                                catalog.recv(c, croot)
+                        except IOError, e:
+                                failed.append((auth, e))
+                        else:
+                                succeeded += 1
+
+                if failed:
+                        raise RuntimeError, (failed, total, succeeded)
 
         def load_catalogs(self):
                 for auth in self.gen_authorities():

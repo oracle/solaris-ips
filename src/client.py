@@ -114,7 +114,31 @@ def catalog_refresh(img, args):
         if not os.path.isdir("%s/catalog" % img.imgdir):
                 img.mkdirs()
 
-        img.retrieve_catalogs()
+        try:
+                img.retrieve_catalogs()
+        except RuntimeError, failures:
+                total, succeeded = failures.args[1:3]
+                print _("pkg: %s/%s catalogs successfully updated:") % \
+                    (succeeded, total)
+
+                for auth, err in failures.args[0]:
+                        if isinstance(err, urllib2.URLError):
+                                if err.args[0][0] == 8:
+                                        print >> sys.stderr, "    %s: %s" % \
+                                            (urlparse.urlsplit(auth["origin"])[1].split(":")[0],
+                                            err.args[0][1])
+                                else:
+                                        print >> sys.stderr, "    %s: %s" % \
+                                            (auth["origin"], err.args[0][1])
+                        elif isinstance(err, IOError):
+                                print >> sys.stderr, "   ", err
+
+                if succeeded == 0:
+                        return 1
+                else:
+                        return 3
+        else:
+                return 0
 
 def inventory_display(img, args):
         img.load_catalogs()
@@ -563,7 +587,7 @@ def main_func():
 
         try:
                 if subcommand == "refresh":
-                        catalog_refresh(img, pargs)
+                        return catalog_refresh(img, pargs)
                 elif subcommand == "status":
                         inventory_display(img, pargs)
                 elif subcommand == "image-update":
