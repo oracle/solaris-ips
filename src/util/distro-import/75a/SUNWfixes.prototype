@@ -22,6 +22,7 @@ f none etc/svc/nonglobal_repo.db 0600 root sys
 e none etc/user_attr 0644 root sys
 e none etc/user_attr.cdonly 0644 root sys
 d none root 0700 root root
+f none lib/libc.so.1 0755 root bin
 f none usr/bin/ksh 0755 root bin
 f none usr/jdk/instances/jdk1.6.0/LICENSE 0644 root bin
 f none usr/jdk/instances/jdk1.6.0/README.html 0644 root bin

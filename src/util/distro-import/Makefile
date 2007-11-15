@@ -82,6 +82,7 @@ FIXFILES=					\
 	etc/svc/global_repo.db			\
 	etc/svc/nonglobal_repo.db		\
 	etc/user_attr.cdonly			\
+	lib/libc.so.1				\
 	usr/bin/ksh				\
 	usr/jdk/instances/jdk1.6.0/LICENSE	\
 	usr/jdk/instances/jdk1.6.0/README.html	\
@@ -157,6 +158,11 @@ proto/etc/svc/global_repo.db:	proto
 proto/etc/svc/nonglobal_repo.db:	proto
 	./get_file_from_pkg.py $(WOS_PKGS)/SUNWcsr lib/svc/seed/nonglobal.db > $@
 
+# fix booting on non-sse capable cpus until 6332924 gets fixed
+proto/lib/libc.so.1: proto
+	./get_file_from_pkg.py $(WOS_PKGS)/SUNWcslr lib/libc.so.1 > $@
+	/usr/bin/elfedit -e 'cap:hw1 -and -cmp sse' $@
+
 proto/usr/share/man/missing.man:	proto	missing.man
 	cp missing.man $@
 
@@ -204,6 +210,7 @@ proto:	Makefile
 	mkdir -p proto/etc/inet
 	mkdir -p proto/etc/security
 	mkdir -p proto/etc/svc
+	mkdir -p proto/lib
 	mkdir -p proto/usr/bin
 	mkdir -p proto/usr/jdk/instances/jdk1.6.0/jre
 	mkdir -p proto/usr/share/man
@@ -238,6 +245,7 @@ redist_import:	$(BUILDID)/redist_cluster $(TMPPKGS)
 
 clean:
 	rm -f $(OBJS)
+	rm -rf proto
 
 clobber: clean
 	rm -f $(PROG)

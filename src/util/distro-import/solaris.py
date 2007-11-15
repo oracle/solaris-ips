@@ -27,6 +27,8 @@ import getopt
 import os
 import shlex
 import sys
+import fnmatch
+import re
 
 from datetime import datetime
 from itertools import groupby
@@ -67,19 +69,19 @@ class pkg(object):
                 imppkg = p.pkginfo["PKG"] # filename NOT always same as pkgname
                 svr4pkgsseen[imppkg] = p;
 
-		if "SUNW_PKG_HOLLOW" in p.pkginfo and \
-		    p.pkginfo["SUNW_PKG_HOLLOW"].lower() == "true":
-			hollow_pkgs[imppkg] = True
+                if "SUNW_PKG_HOLLOW" in p.pkginfo and \
+                    p.pkginfo["SUNW_PKG_HOLLOW"].lower() == "true":
+                        hollow_pkgs[imppkg] = True
 
-		excludes = dict((f, True) for f in line.split())
+                excludes = dict((f, True) for f in line.split())
 
                 # XXX This isn't thread-safe.  We want a dict method that adds
                 # the key/value pair, but throws an exception if the key is
                 # already present.
                 for o in p.manifest:
-			if o.pathname in excludes:
-				print "excluding %s from %s" % (o.pathname, imppkg)
-				continue
+                        if o.pathname in excludes:
+                                print "excluding %s from %s" % (o.pathname, imppkg)
+                                continue
 
                         if o.pathname in elided_files:
                                 print "ignoring %s in %s" % (o.pathname, imppkg)
@@ -94,14 +96,19 @@ class pkg(object):
                         # XXX This decidedly ignores "e"-type files.
 
                         if o.type in "fv" and o.pathname in usedlist:
-                                print reuse_err % \
-                                    (o.pathname, imppkg, self.name,
-                                        usedlist[o.pathname][1].name)
+                                print reuse_err % (
+                                        o.pathname, 
+                                        self.name, 
+                                        imppkg, 
+                                        svr4pkgpaths[imppkg], 
+                                        usedlist[o.pathname][1].name,
+                                        usedlist[o.pathname][0], 
+                                        svr4pkgpaths[usedlist[o.pathname][0]])
                         elif o.type != "i":
 
-				if o.type in "dx" and imppkg not in hollow_pkgs:
-					self.nonhollow_dirs[o.pathname] = True
-					
+                                if o.type in "dx" and imppkg not in hollow_pkgs:
+                                        self.nonhollow_dirs[o.pathname] = True
+                                        
                                 usedlist[o.pathname] = (imppkg, self)
                                 self.check_perms(o)
                                 self.files.append(o)
@@ -131,9 +138,9 @@ class pkg(object):
         def import_file(self, file, line):
                 imppkgname = self.imppkg.pkginfo["PKG"]
 
-		if "SUNW_PKG_HOLLOW" in self.imppkg.pkginfo and \
-		    self.impkpkg.pkginfo["SUNW_PKG_HOLLOW"].lower() == "true":
-			hollow_pkgs[imppkgname] = True
+                if "SUNW_PKG_HOLLOW" in self.imppkg.pkginfo and \
+                    self.impkpkg.pkginfo["SUNW_PKG_HOLLOW"].lower() == "true":
+                        hollow_pkgs[imppkgname] = True
 
                 if file in usedlist:
                         t = [
@@ -143,9 +150,14 @@ class pkg(object):
                         ][0].type
                         if t in "fv":
                                 assert imppkgname == usedlist[file][0]
-                                raise RuntimeError, reuse_err % \
-                                    (file, imppkgname, self.name,
-                                        usedlist[file][1].name)
+                                raise RuntimeError, reuse_err % (
+                                        file, 
+                                        self.name, 
+                                        imppkg, 
+                                        svr4pkgpaths[imppkg], 
+                                        usedlist[file][1].name,
+                                        usedlist[file][0], 
+                                        svr4pkgpaths[usedlist[file][0]])
 
                 usedlist[file] = (imppkgname, self)
                 o = [
@@ -156,18 +168,13 @@ class pkg(object):
                 # There should be only one file with a given pathname in a
                 # single package.
                 if len(o) != 1:
-			print "ERROR: %s %s" % (imppkgname, file)
-			assert len(o) == 1
-			
+                        print "ERROR: %s %s" % (imppkgname, file)
+                        assert len(o) == 1
+                        
                 if line:
-                        t = {
-                            "f": "file", "e": "file", "v": "file",
-                            "d": "dir", "x": "dir",
-                            "s": "link",
-                            "l": "hardlink"
-                        }[o[0].type]
                         a = actions.fromstr(
-                            "%s path=%s %s" % (t, o[0].pathname, line))
+                            "%s path=%s %s" % (self.convert_type(o[0].type), o[0].pathname, 
+                            line))
                         for attr in a.attrs:
                                 if attr == "owner":
                                         o[0].owner = a.attrs[attr]
@@ -178,6 +185,36 @@ class pkg(object):
                 self.check_perms(o[0])
                 self.files.extend(o)
 
+        def convert_type(self, type):
+                return {
+                        "f": "file", "e": "file", "v": "file",
+                        "d": "dir", "x": "dir",
+                        "s": "link",
+                        "l": "hardlink"
+                        }[type]
+
+        def file_to_action(self, f):
+
+                if f.type in "dx":
+                        action = actions.directory.DirectoryAction(
+                            None, mode = f.mode, owner = f.owner,
+                            group = f.group, path = f.pathname)
+                elif f.type in "efv":
+                        action = actions.file.FileAction(
+                            None, mode = f.mode, owner = f.owner,
+                            group = f.group, path = f.pathname)
+                elif f.type == "s":
+                        action = actions.link.LinkAction(None,
+                            target = f.target, path = f.pathname)
+                elif f.type == "l":
+                        (pkg.name, f.pathname, f.target)
+                        action = actions.hardlink.HardLinkAction(None,
+                            target = f.target, path = f.pathname)
+                else:
+                        print "unknown type %s - path %s" % ( f.type, f.pathname)
+
+                return action
+        
         def check_perms(self, manifest):
                 if manifest.type not in "fevdxbc":
                         return
@@ -208,8 +245,61 @@ class pkg(object):
                         print "Updating attributes on '%s' in '%s' with '%s'" % \
                             (file, curpkg.name, line)
 
-                a = actions.fromstr("file path=%s %s" % (file, line))
+                a = actions.fromstr(("%s path=%s %s" % (self.convert_type(f.type), 
+                    file, line)).rstrip())
                 o[0].changed_attrs = a.attrs
+
+        # apply a chattr to wildcarded files/dirs 
+        # also allows package specification, wildcarding, regexp edit
+
+        def chattr_glob(self, glob, line):
+                args = line.split()
+                if args[0] == "from": 
+                        args.pop(0)
+                        pkgglob = args.pop(0)
+                        line = " ".join(args)
+                else:
+                        pkgglob = "*"
+
+                if args[0] == "edit": # we're doing regexp edit of attr
+                        edit = True
+                        args.pop(0)
+                        target = args.pop(0)
+                        regexp = re.compile(args.pop(0))
+                        replace = args.pop(0)
+                        line = " ".join(args)
+                else:
+                        edit = False
+
+                o = [
+                        f
+                        for f in self.files
+                        if fnmatch.fnmatchcase(f.pathname, glob) and
+                            fnmatch.fnmatchcase(
+                                usedlist[f.pathname][0], pkgglob)
+                     ]
+
+                chattr_line = line
+
+                for f in o:
+                        file = f.pathname
+                        
+                        if edit:
+                                a = self.file_to_action(f)
+                                old_value = a.attrs[target]
+                                new_value = regexp.sub(replace, old_value)
+                                if old_value == new_value:
+                                        continue
+
+                                chattr_line = "%s=%s %s" % (target, new_value, line)
+			chattr_line = chattr_line.rstrip()
+                        if show_debug:
+                                print "Updating attributes on '%s' in '%s' with '%s'" % \
+                                    (file, curpkg.name, chattr_line)
+                        s = "%s path=%s %s" % (self.convert_type(f.type), file, chattr_line)
+			a = actions.fromstr(s)
+			f.changed_attrs = a.attrs
+                
 
 def sysv_to_new_name(pkgname):
         return "pkg:/" + os.path.basename(pkgname)
@@ -287,22 +377,22 @@ def publish_pkg(pkg):
                             target = f.target, path = f.pathname)
                         pkg.depend += process_link_dependencies(
                             f.pathname, f.target)
-		else:
-			continue
-		#
-		# If the originating package was hollow, tag this file
-		# as being global zone only.
-		#
-		if f.type not in "dx" and \
-		    usedlist[f.pathname][0] in hollow_pkgs:
-			action.attrs["opensolaris.zone"] = "global"
+                else:
+                        continue
+                #
+                # If the originating package was hollow, tag this file
+                # as being global zone only.
+                #
+                if f.type not in "dx" and \
+                    usedlist[f.pathname][0] in hollow_pkgs:
+                        action.attrs["opensolaris.zone"] = "global"
 
-		if f.type in "dx" and \
-		    usedlist[f.pathname][0] in hollow_pkgs and \
-		    f.pathname not in pkg.nonhollow_dirs:
-			action.attrs["opensolaris.zone"] = "global"
+                if f.type in "dx" and \
+                    usedlist[f.pathname][0] in hollow_pkgs and \
+                    f.pathname not in pkg.nonhollow_dirs:
+                        action.attrs["opensolaris.zone"] = "global"
 
-		t.add(cfg, id, action)
+                t.add(cfg, id, action)
 
         # Group the files in a (new) package based on what (old) package they
         # came from, so that we can iterate through all files in a single (old)
@@ -340,12 +430,14 @@ def publish_pkg(pkg):
                 bundle = SolarisPackageDirBundle(svr4pkgpaths[pkgname])
                 pathdict = dict((f.pathname, f) for f in g)
                 for f in bundle:
-                        if f.attrs["path"] in pathdict:
-				if pkgname in hollow_pkgs:
-					f.attrs["opensolaris.zone"] = "global"
+                        if f.name == "license":
+                                t.add(cfg, id, f)
+                        elif f.attrs["path"] in pathdict:
+                                if pkgname in hollow_pkgs:
+                                        f.attrs["opensolaris.zone"] = "global"
                                 path = f.attrs["path"]
-				if pathdict[path].type in "ev":
-					f.attrs["preserve"] = "true"
+                                if pathdict[path].type in "ev":
+                                        f.attrs["preserve"] = "true"
                                 f.attrs["owner"] = pathdict[path].owner
                                 f.attrs["group"] = pathdict[path].group
                                 f.attrs["mode"] = pathdict[path].mode
@@ -665,7 +757,7 @@ editable_files = {}
 hollow_pkgs = {}
 
 
-reuse_err = "Tried to put file '%s' from package '%s' into\n    '%s' as well as '%s': file dropped"
+reuse_err = "Conflict in path %s: IPS %s SVR4 %s from %s with IPS %s SVR4 %s from %s"
 
 print "First pass:", datetime.now()
 
@@ -697,13 +789,13 @@ while True:
                 curpkg.version = lexer.get_token()
 
         elif token == "import":
-		package_name = lexer.get_token()
-		next = lexer.get_token()
-		if next != "exclude":
-			line = ""
+                package_name = lexer.get_token()
+                next = lexer.get_token()
+                if next != "exclude":
+                        line = ""
                         lexer.push_token(next)
-		else:
-			line = lexer.instream.readline().strip()
+                else:
+                        line = lexer.instream.readline().strip()
 
                 curpkg.import_pkg(package_name, line)
 
@@ -763,6 +855,16 @@ while True:
                             fname, e
                         raise
 
+        elif token == "chattr_glob":
+                glob = lexer.get_token()
+                line = lexer.instream.readline().strip()
+                try:
+                        curpkg.chattr_glob(glob, line)
+                except Exception, e:
+                        print "Can't change attributes on '%s': no matches in the package" % \
+                            glob, e
+                        raise
+
         elif in_multiline_import:
                 next = lexer.get_token()
                 if next == "with":
@@ -780,7 +882,7 @@ while True:
                         print "ERROR(import_file):", e
                         raise
         else:
-		raise "Error: unknown token '%s' (%s:%s)" % \
+                raise "Error: unknown token '%s' (%s:%s)" % \
                     (token, lexer.infile, lexer.lineno)
 
 seenpkgs = set(i[0] for i in usedlist.values())
@@ -794,11 +896,11 @@ print "Files you seem to have forgotten:\n  " + "\n  ".join(
 print "\n\nDuplicate Editables files list:\n"
 
 if editable_files:
-	length = 2 + max(len(p) for p in editable_files)
-	for paths in editable_files:
-		if len(editable_files[paths]) > 1:
-			print ("%s:" % paths).ljust(length - 1) + \
-			    ("\n".ljust(length)).join("%s (from %s)" % (l[1].name, l[0])
+        length = 2 + max(len(p) for p in editable_files)
+        for paths in editable_files:
+                if len(editable_files[paths]) > 1:
+                        print ("%s:" % paths).ljust(length - 1) + \
+                            ("\n".ljust(length)).join("%s (from %s)" % (l[1].name, l[0])
                             for l in editable_files[paths])
 
 

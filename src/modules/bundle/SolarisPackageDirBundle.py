@@ -77,9 +77,12 @@ class SolarisPackageDirBundle(object):
                                 continue
 
                         # These are the only valid file types in SysV packages
-                        if p.type in "ifevbcdxpls":
+                        if p.type in "fevbcdxpls":
                                 yield self.action(p, os.path.join(self.filename,
                                     "reloc", r(p.pathname, p.type)))
+			elif p.type == "i":
+				yield self.action(p, os.path.join(self.filename,
+				    "install", r(p.pathname, p.type)))
 
         def action(self, mapline, data):
                 if mapline.type in "fev":
@@ -96,6 +99,10 @@ class SolarisPackageDirBundle(object):
                 elif mapline.type == "l":
                         return hardlink.HardLinkAction(path=mapline.pathname,
                             target=mapline.target)
+		elif mapline.type == "i" and mapline.pathname == "copyright":
+			return license.LicenseAction(data, 
+			    license="%s.copyright" % self.pkgname,
+			    path=mapline.pathname)
                 else:
                         return unknown.UnknownAction(path=mapline.pathname)
 

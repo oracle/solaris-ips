@@ -147,6 +147,7 @@ def image_update(img, args):
                 img.list_install(pkg_list, verbose = verbose,
                     noexecute = noexecute)
         except RuntimeError, e:
+		print >> sys.stderr, _("image_update failed: %s") % e
                 sys.exit(1)
 
 def install(img, args):
@@ -168,6 +169,7 @@ def install(img, args):
                         verbose = True
                 elif opt == "-b":
                         filelist.FileList.maxfiles = int(arg)
+
                 elif opt == "-f":
                         filters += [ arg ]
 
@@ -182,6 +184,7 @@ def install(img, args):
                 img.list_install(pkg_list, filters = filters, verbose = verbose,
                     noexecute = noexecute)
         except RuntimeError, e:
+		print >> sys.stderr, _("install failed: %s") % e
                 sys.exit(1)
 
 def uninstall(img, args):
