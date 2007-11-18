@@ -27,6 +27,7 @@ import unittest
 import tempfile
 import os
 import types
+import itertools
 
 import pkg as pkg
 import pkg.manifest as manifest
@@ -116,7 +117,7 @@ file fff555ff9 mode=0555 owner=sch group=staff path=/usr/bin/i386/sort isa=i386
 	def test_diffs2(self):
 		self.m1.set_content(self.m1_contents)
 		self.m2.set_content(self.m2_contents)
-		diffs = self.m2.difference(self.m1)
+		diffs = self.m2.combined_difference(self.m1)
 
 	#
 	# Do the most obvious thing: build two manifests
@@ -127,17 +128,17 @@ file fff555ff9 mode=0555 owner=sch group=staff path=/usr/bin/i386/sort isa=i386
 		self.m1.set_content(self.diverse_contents)
 		self.m2.set_content(self.diverse_contents)
 
-		diffs = self.m2.difference(self.m1)
+		diffs = self.m2.combined_difference(self.m1)
 		self.assertEqual(len(diffs), 0)
 
-		diffs = self.m1.difference(self.m2)
+		diffs = self.m1.combined_difference(self.m2)
 		self.assertEqual(len(diffs), 0)
 		
 	def test_diffs4(self):
 		""" ASSERT: Building m' from diff(m, null) should yield m """
 
 		self.m2.set_content(self.m2_contents)
-		diffs = self.m2.difference(manifest.null)
+		diffs = self.m2.combined_difference(manifest.null)
 
 		new_contents = ""
 		for d in diffs:
@@ -147,7 +148,7 @@ file fff555ff9 mode=0555 owner=sch group=staff path=/usr/bin/i386/sort isa=i386
 		#print new_contents
 		mtmp.set_content(new_contents)
 
-		diffs = self.m2.difference(mtmp)
+		diffs = self.m2.combined_difference(mtmp)
                 self.assertEqual(len(diffs), 0)
 
 	def test_diffs5(self):
@@ -158,7 +159,7 @@ file fff555ff9 mode=0555 owner=sch group=staff path=/usr/bin/i386/sort isa=i386
 
 		#print self.m2.display_differences(self.m1)
 
-		diffs = self.m2.difference(self.m1)
+		diffs = self.m2.combined_difference(self.m1)
 		self.assertEqual(len(diffs), 1)
 
 	def test_diffs6(self):
@@ -169,7 +170,7 @@ file fff555ff9 mode=0555 owner=sch group=staff path=/usr/bin/i386/sort isa=i386
 		self.m2.set_content(
 		    "file 12345 mode=0755 owner=root group=sys path=/bin")
 
-		diffs = self.m2.difference(self.m1)
+		diffs = self.m2.combined_difference(self.m1)
 		#
 		# Expect to see a directory going away, and a file being
 		# added
@@ -201,7 +202,7 @@ file fff555ff9 mode=0555 owner=sch group=staff path=/usr/bin/i386/sort isa=i386
 	    link path=bin/change-link target=change opensolaris.zone=nonglobal
 		    """)
 
-		diffs = self.m2.difference(self.m1)
+		diffs = self.m2.combined_difference(self.m1)
 		#
 		# Expect to see a directory -> directory, file -> file, etc.
 		# 3 of the 4 things above should have changed.
@@ -223,7 +224,7 @@ file fff555ff9 mode=0555 owner=sch group=staff path=/usr/bin/i386/sort isa=i386
 		    file 00000002 mode=0444 owner=root group=sys path=b
 		    """)
 
-		diffs = self.m2.difference(self.m1)
+		diffs = self.m2.combined_difference(self.m1)
 		#
 		# Expect to see b change.
 		#
@@ -238,8 +239,8 @@ file fff555ff9 mode=0555 owner=sch group=staff path=/usr/bin/i386/sort isa=i386
 		self.m1.set_content(self.diverse_contents)
 		self.m2.set_content("")
 
-		diffs = self.m2.difference(self.m1)
-		diffs2 = self.m1.difference(self.m2)
+		diffs = self.m2.combined_difference(self.m1)
+		diffs2 = self.m1.combined_difference(self.m2)
 
 		#
 		# Expect to see something -> None differences
@@ -268,7 +269,7 @@ file fff555ff9 mode=0555 owner=sch group=staff path=/usr/bin/i386/sort isa=i386
 		    hardlink target=new path=b
 		    """)
 
-		diffs = self.m2.difference(self.m1)
+		diffs = self.m2.combined_difference(self.m1)
 		#
 		# Expect to see differences in which "target" flips from "old"
 		# to "new"

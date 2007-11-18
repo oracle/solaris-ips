@@ -29,7 +29,7 @@ import shutil
 import time
 import urllib
 import cPickle
-from itertools import groupby
+from itertools import groupby, chain
 
 import pkg.actions as actions
 import pkg.fmri as fmri
@@ -121,8 +121,12 @@ class Manifest(object):
                 return r
 
         def difference(self, origin):
-                """Return a list of action pairs representing origin and
-                destination actions."""
+                """Return three lists of action pairs representing origin and
+                destination actions.  The first list contains the pairs
+                representing additions, the second list contains the pairs
+                representing updates, and the third list contains the pairs
+                represnting removals.  All three lists are in the order in which
+                they should be executed."""
                 # XXX Do we need to find some way to assert that the keys are
                 # all unique?
 
@@ -160,6 +164,11 @@ class Manifest(object):
 
                 return (added, changed, removed)
 
+        def combined_difference(self, origin):
+                """Where difference() returns three lists, combined_difference()
+                returns a single list of the concatenation of th three."""
+                return list(chain(*self.difference(origin)))
+
         def humanized_differences(self, other):
                 """Output expects that self is newer than other.  Use of sets
                 requires that we convert the action objects into some marshalled
@@ -167,9 +176,9 @@ class Manifest(object):
                 object pointers, rather than the contents."""
 
                 l = self.difference(other)
-		out = ""
+                out = ""
 
-                for src, dest in l:
+                for src, dest in chain(*l):
                         if not src:
                                 out += "+ %s\n" % str(dest)
                         elif not dest:
