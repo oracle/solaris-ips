@@ -62,11 +62,9 @@ class Manifest(object):
         package version on both the client and the repository.  Both purposes
         utilize the same storage format.
 
-        The serialized structure of a manifest is an unordered list of package
-        attributes, followed by an unordered list of actions (such as files to
-        install).
+        The serialized structure of a manifest is an unordered list of actions.
 
-        The special action, "set", represents an attribute setting.
+        The special action, "set", represents a package attribute.
 
         The reserved attribute, "fmri", represents the package and version
         described by this manifest.  It is available as a string via the
@@ -77,8 +75,6 @@ class Manifest(object):
         base_directory          Default base directory, for non-user images.
         fmri                    Package FMRI.
         isa                     Package is intended for a list of ISAs.
-        licenses                Package contains software available under a list
-                                of license terms.
         platform                Package is intended for a list of platforms.
         relocatable             Suitable for User Image.
 
@@ -103,17 +99,12 @@ class Manifest(object):
                 self.fmri = None
 
                 self.actions = []
-                self.attributes = {}
-                return
 
         def __str__(self):
                 r = ""
 
                 if self.fmri != None:
                         r = r + "set fmri = %s\n" % self.fmri
-
-                for att in sorted(self.attributes.keys()):
-                        r = r + "set %s = %s\n" % (att, self.attributes[att])
 
                 for act in self.actions:
                         r = r + "%s\n" % act
@@ -288,5 +279,30 @@ class Manifest(object):
 
                 cPickle.dump(self.search_dict(), file,
                     protocol = cPickle.HIGHEST_PROTOCOL)
+
+        def get(self, key, default):
+                if key not in self:
+                        return default
+                return self[key]
+
+        def __getitem__(self, key):
+                """Return the value for the package attribute 'key'.  If no such
+                attribute is found, return 'default'.  If multiple attributes
+                are found, return the first."""
+                values = [
+                    a.attrs["value"]
+                    for a in self.actions
+                    if a.name == "set" and a.attrs["name"] == key
+                ]
+
+                if values:
+                        return values[0]
+                return default
+
+        def __contains__(self, key):
+                for a in self.actions:
+                        if a.name == "set" and a.attrs["name"] == key:
+                                return True
+                return False
 
 null = Manifest()

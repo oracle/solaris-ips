@@ -386,16 +386,7 @@ def info(img, args):
 
 def info_one(manifest, short, verbose):
         authority, name, version = manifest.fmri.tuple()
-        try:
-                # XXX Extracting package metadata needs to be simpler than this.
-                # That might start to turn Manifest into a "package" object (but
-                # not of the "Package" class).  Is that okay?
-                summary = [
-                    a.attrs["value"]
-                    for a in manifest.actions
-                    if a.name == "set" and a.attrs["name"] == "description"][0]
-        except IndexError:
-                summary = ""
+        summary = manifest.get("description", "")
 
         if short:
                 print "%-12s%s" % (name, summary)

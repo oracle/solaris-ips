@@ -522,9 +522,24 @@ def publish_pkg(pkg):
                     description = pkg.desc)
                 t.add(cfg, id, action)
 
-        if pkg.srcpkgs:
-                action = actions.attribute.AttributeAction(None,
-                    srcpkgs = pkg.srcpkgs)
+        for p in pkg.srcpkgs:
+                try:
+                        sp = svr4pkgsseen[p]
+                except KeyError:
+                        continue
+
+                wanted_attrs = (
+                    "PKG", "NAME", "ARCH", "VERSION", "CATEGORY",
+                    "VENDOR", "DESC", "HOTLINE"
+                )
+                attrs = dict(
+                    (k.lower(), v)
+                    for k, v in sp.pkginfo.iteritems()
+                    if k in wanted_attrs
+                )
+
+                action = actions.legacy.LegacyAction(None, **attrs)
+
                 print "    %s add %s" % (pkg.name, action)
                 t.add(cfg, id, action)
 
