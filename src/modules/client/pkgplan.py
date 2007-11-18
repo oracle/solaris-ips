@@ -24,6 +24,7 @@
 # Use is subject to license terms.
 
 import errno
+import itertools
 import os
 
 import pkg.manifest as manifest
@@ -50,7 +51,7 @@ class PkgPlan(object):
         def __str__(self):
                 s = "%s -> %s\n" % (self.origin_fmri, self.destination_fmri)
 
-                for src, dest in self.actions:
+                for src, dest in itertools.chain(*self.actions):
                         s += "  %s -> %s\n" % (src, dest)
 
                 return s
@@ -159,7 +160,7 @@ class PkgPlan(object):
                                 if e.errno != errno.ENOENT:
                                         raise
 
-                for src, dest in self.actions:
+                for src, dest in itertools.chain(*self.actions):
                         if dest:
                                 dest.preinstall(self, src)
                         else:
@@ -205,19 +206,42 @@ class PkgPlan(object):
                 # It might be nice to have a single action.execute() method, but
                 # I can't think of an example where it would make especially
                 # good sense (i.e., where "remove" is as similar to "upgrade" as
-                # is "install").
-                for src, dest in self.actions:
-                        if dest:
-                                try:
-                                        dest.install(self, src)
-                                except Exception, e:
-                                        print "Action install failed for '%s' (%s):\n  %s: %s" % \
-                                            (dest.attrs.get(dest.key_attr, id(dest)),
-                                            self.destination_fmri.get_pkg_stem(),
-                                            e.__class__.__name__, e)
-                                        raise
-                        else:
+                # is "install").  We could accomplish this by having a
+                # NoneAction, whose execute() method would call the remove()
+                # method of the passed-in src action.
+
+                # Execute installs
+                for src, dest in self.actions[0]:
+                        try:
+                                dest.install(self, src)
+                        except Exception, e:
+                                print "Action install failed for '%s' (%s):\n  %s: %s" % \
+                                    (dest.attrs.get(dest.key_attr, id(dest)),
+                                    self.destination_fmri.get_pkg_stem(),
+                                    e.__class__.__name__, e)
+                                raise
+
+                # Execute updates
+                for src, dest in self.actions[1]:
+                        try:
+                                dest.install(self, src)
+                        except Exception, e:
+                                print "Action upgrade failed for '%s' (%s):\n  %s: %s" % \
+                                    (dest.attrs.get(dest.key_attr, id(dest)),
+                                    self.destination_fmri.get_pkg_stem(),
+                                    e.__class__.__name__, e)
+                                raise
+
+                # Execute removals
+                for src, dest in self.actions[2]:
+                        try:
                                 src.remove(self)
+                        except Exception, e:
+                                print "Action removal failed for '%s' (%s):\n  %s: %s" % \
+                                    (src.attrs.get(src.key_attr, id(src)),
+                                    self.origin_fmri.get_pkg_stem(),
+                                    e.__class__.__name__, e)
+                                raise
 
         def postexecute(self):
                 """Perform actions required after installation or removal of a package.
@@ -227,7 +251,7 @@ class PkgPlan(object):
                 at such a time.
                 """
                 # record that package states are consistent
-                for src, dest in self.actions:
+                for src, dest in itertools.chain(*self.actions):
                         if dest:
                                 dest.postinstall(self, src)
                         else:

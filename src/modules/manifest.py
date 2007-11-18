@@ -154,11 +154,11 @@ class Manifest(object):
                 # singlesort = lambda x: x[0] or x[1]
                 addsort = lambda x: x[1]
                 remsort = lambda x: x[0]
-                removed.sort(key = remsort)
+                removed.sort(key = remsort, reverse = True)
                 added.sort(key = addsort)
                 changed.sort(key = addsort)
 
-                return removed + added + changed
+                return (added, changed, removed)
 
         def humanized_differences(self, other):
                 """Output expects that self is newer than other.  Use of sets
