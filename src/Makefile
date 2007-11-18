@@ -84,6 +84,7 @@ PYMODS = \
 	modules/misc.py \
 	modules/pkgtarfile.py \
 	modules/smf.py \
+	modules/subprocess_method.py \
 	modules/sysvpkg.py \
 	modules/version.py
 PYCMODS = $(PYMODS:%.py=%.pyc)

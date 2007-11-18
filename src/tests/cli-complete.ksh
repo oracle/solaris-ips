@@ -166,8 +166,16 @@ if ! pkg search /lib/libc.so.1; then
 	fail pkg search failed
 fi
 
-if ! pkg search blah; then
+if ! pkg search -r /lib/libc.so.1; then
+	fail remote pkg search failed
+fi
+
+if pkg search blah; then
 	fail pkg search failed
+fi
+
+if pkg search -r blah; then
+	fail remote pkg search failed
 fi
 
 if ! pkg uninstall foo; then

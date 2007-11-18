@@ -45,6 +45,7 @@
 import getopt
 import gettext
 import httplib
+import itertools
 import os
 import re
 import sha
@@ -79,7 +80,7 @@ Install subcommands:
         pkg info [-sv] pkg_fmri_pattern [pkg_fmri_pattern ... ]
         pkg list [-o attribute ...] [-s sort_key] [-t action_type ... ]
             pkg_fmri_pattern [pkg_fmri_pattern ...]
-        pkg search token
+        pkg search [-lr] [-s server] token
         pkg status [-auv] [pkg_fmri_pattern ...]
 
         pkg image-create [-FPUz] [--full|--partial|--user] [--zone]
@@ -289,8 +290,54 @@ def unfreeze(img, args):
 def search(img, args):
         """Search through the reverse index databases for the given token."""
 
-        for k, v in img.search(args):
-                print k, v
+        opts, pargs = getopt.getopt(args, "lrs:")
+
+        local = remote = False
+        servers = []
+        for opt, arg in opts:
+                if opt == "-l":
+                        local = True
+                if opt == "-r":
+                        remote = True
+                elif opt == "-s":
+                        if not arg.startswith("http://") and \
+                            not arg.startswith("https://"):
+                                arg = "http://" + arg
+                        remote = True
+                        servers.append({"origin": arg})
+
+        if not local and not remote:
+                local = True
+
+        if not pargs:
+                usage()
+
+        searches = []
+        if local:
+                searches.append(img.local_search(pargs))
+        if remote:
+                searches.append(img.remote_search(pargs, servers))
+
+        # By default assume we don't find anything.
+        retcode = 1
+
+        try:
+                for k, v in itertools.chain(*searches):
+                        retcode = 0
+                        print k, v
+        except RuntimeError, failed:
+                print "Some servers failed to respond:"
+                for auth, err in failed.args[0]:
+                        if isinstance(err, urllib2.HTTPError):
+                                print "    %s: %s (%d)" % \
+                                    (auth["origin"], err.msg, err.code)
+                        elif isinstance(err, urllib2.URLError):
+                                print "    %s: %s" % \
+                                    (auth["origin"], err.args[0][1])
+
+                retcode = 4
+
+        return retcode
 
 def info(img, args):
         """Display information about the package.
@@ -604,7 +651,7 @@ def main_func():
                 elif subcommand == "unfreeze":
                         unfreeze(img, pargs)
                 elif subcommand == "search":
-                        search(img, pargs)
+                        return search(img, pargs)
                 elif subcommand == "info":
                         info(img, pargs)
                 elif subcommand == "list":

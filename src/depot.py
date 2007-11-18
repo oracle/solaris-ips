@@ -84,6 +84,33 @@ def versions_0(scfg, request):
         ) + "\n"
         request.wfile.write(versions)
 
+def search_0(scfg, request):
+        try:
+                token = urllib.unquote(request.path.split("/", 3)[3])
+        except IndexError:
+                request.send_response(400)
+                return
+
+        if not token:
+                request.send_response(400)
+                return
+
+        if not scfg.search_available():
+                request.send_response(503, "Search temporarily unavailable")
+                return
+
+        try:
+                res = scfg.catalog.search(token)
+        except KeyError:
+                request.send_response(404)
+                return
+
+        request.send_response(200)
+        request.send_header("Content-type", "text/plain")
+        request.end_headers()
+        for l in res:
+                request.wfile.write("%s %s\n" % (l[0], l[1]))
+
 def catalog_0(scfg, request):
         scfg.inc_catalog()
 
@@ -319,7 +346,7 @@ class pkgHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                 try:
                         exec op_call
                 except:
-                        request.log_error("Internal failure:\n%s",
+                        self.log_error("Internal failure:\n%s",
                             traceback.format_exc())
                         # XXX op_call may already have spit some data out to the
                         # client, in which case this response just corrupts that

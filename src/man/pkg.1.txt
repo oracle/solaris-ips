@@ -14,7 +14,7 @@ SYNOPSIS
      /usr/bin/pkg list [-o attribute ...] [-s sort_key] [-t action_type ... ]
          pkg_fmri_pattern [pkg_fmri_pattern ...]
      /usr/bin/pkg status [-auv] [pkg_fmri_pattern ...]
-     /usr/bin/pkg search token
+     /usr/bin/pkg search [-lr] [-s server] token
 
      /usr/bin/pkg refresh
 
@@ -106,10 +106,20 @@ SUBCOMMANDS
 	  The special attribute names ":name" and ":key" correspond to the
 	  action name and the value of its key attribute, respectively.
 
-     search token
-          Search the installed packages for the token "token", and display
-	  the FMRIs in which the token was found.  Which tokens are indexed
-	  are action-dependent, but may include content hashes and pathnames.
+     search [-lr] [-s server] token
+          Search for the token "token", and display the FMRIs in which the token
+          was found.  Which tokens are indexed are action-dependent, but may
+          include content hashes and pathnames.
+
+          By default, and with -l, search the image's installed packages.
+
+          With -r, search the servers corresponding to the image's authorities.
+
+          With -s, search the named servers.  This may be specified multiple
+          times.
+
+          Both -l and -r (or -s) may be specified together, in which case both
+          local and remote searches will be performed.
 
      status [-auv] [pkg_fmri_pattern ...]
           Report on the state of packages in the current image.  With

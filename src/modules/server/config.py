@@ -183,3 +183,5 @@ Number of files served by flist: %d
         def inc_flist_files(self):
                 self.flist_files += 1
 
+        def search_available(self):
+                return self.catalog.search_available()

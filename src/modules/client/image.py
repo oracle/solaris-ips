@@ -706,9 +706,8 @@ class Image(object):
                         print fmt_str % (pf, self.get_pkg_state_by_fmri(p),
                             upgradable, frozen, incorporated, excludes)
 
-        def search(self, args):
+        def local_search(self, args):
                 """Search the image for the token in args[0]."""
-
                 idxdir = os.path.join(self.imgdir, "pkg")
 
                 # Convert a full directory path to the FMRI it represents.
@@ -744,6 +743,32 @@ class Image(object):
                         for k, v in d.items():
                                 if args[0] in v:
                                         yield k, idx_to_fmri(index)
+
+        def remote_search(self, args, servers = None):
+                """Search for the token in args[0] on the servers in 'servers'.
+                If 'servers' is empty or None, search on all known servers."""
+                failed = []
+
+                if not servers:
+                        servers = self.gen_authorities()
+
+                for auth in servers:
+                        try:
+                                res, v = versioned_urlopen(auth["origin"],
+                                    "search", [0], urllib.quote(args[0], ""))
+                        except urllib2.HTTPError, e:
+                                if e.code != 404:
+                                        failed.append((auth, e))
+                                continue
+                        except urllib2.URLError, e:
+                                failed.append((auth, e))
+                                continue
+
+                        for l in res.read().splitlines():
+                                yield l.split(" ", 2)[:2]
+
+                if failed:
+                        raise RuntimeError, failed
 
         def list_install(self, pkg_list, filters = [], verbose = False,
             noexecute = False):

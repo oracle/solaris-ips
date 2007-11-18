@@ -310,6 +310,10 @@ class Transaction(object):
                         os.rename("%s/manifest" % self.dir, "%s/%s" %
                             (pkgdir, urllib.quote(str(fmri.version), "")))
 
+                # update search index
+                cfg.catalog.update_searchdb([os.path.join(
+                    cfg.pkg_root, fmri.get_dir_path()).rsplit(os.path.sep, 1)])
+
                 # Move each file to file_root, with appropriate directory
                 # structure.
                 for f in os.listdir(self.dir):

@@ -30,9 +30,14 @@ import time
 import urllib
 import tempfile
 import errno
+import dbm
+import signal
+import threading
 
 import pkg.fmri as fmri
 import pkg.version as version
+import pkg.manifest as manifest
+from pkg.subprocess_method import Mopen, PIPE
 
 class CatalogException(Exception):
         def __init__(self, args=None):
@@ -90,6 +95,17 @@ class Catalog(object):
                 self.catalog_root = cat_root
                 self.attrs = {}
                 self.auth = authority
+                self.searchdb_update_handle = None
+                self._search_available = False
+                self.deferred_searchdb_updates = []
+                # We need to lock the search database against multiple
+                # simultaneous updates from separate threads closing
+                # publication transactions.
+                self.searchdb_lock = threading.Lock()
+                self.pkg_root = pkg_root
+                if self.pkg_root:
+                        self.searchdb_file = os.path.dirname(self.pkg_root) + \
+                            "/search"
 
                 self.attrs["npkgs"] = 0
 
@@ -98,8 +114,8 @@ class Catalog(object):
 
                 catpath = os.path.normpath(os.path.join(cat_root, "catalog"))
 
-                if pkg_root is not None and not os.path.exists(catpath):
-                        self.build_catalog(pkg_root)
+                if pkg_root is not None:
+                        self.build_catalog()
                         self.set_time()
                         self.save_attrs()
 
@@ -150,26 +166,278 @@ class Catalog(object):
 
                 return ret
 
-        def build_catalog(self, pkg_root):
-                """Walk the on-disk package data and build (or rebuild)
-                the package catalog."""
-                tree = os.walk(pkg_root)
+        def _fmri_from_path(self, pkg, vers):
+                """Helper method that takes the full path to the package
+                directory and the name of the manifest file, and returns an FMRI
+                constructed from the information in those components."""
+
+                v = version.Version(urllib.unquote(vers), None)
+                f = fmri.PkgFmri(urllib.unquote(os.path.basename(pkg)), None)
+                f.version = v
+                return f
+
+        def build_catalog(self):
+                """Walk the on-disk package data and build (or rebuild) the
+                package catalog and search database."""
+                try:
+                        idx_mtime = \
+                            os.stat(self.searchdb_file + ".pag").st_mtime
+                except OSError, e:
+                        if e.errno != errno.ENOENT:
+                                raise
+                        idx_mtime = 0
+
+                try:
+                        cat_mtime = os.stat(os.path.join(
+                            self.catalog_root, "catalog")).st_mtime
+                except OSError, e:
+                        if e.errno != errno.ENOENT:
+                                raise
+                        cat_mtime = 0
+
+                fmri_list = []
 
                 # XXX eschew os.walk in favor of another os.listdir here?
+                tree = os.walk(self.pkg_root)
                 for pkg in tree:
-                        if pkg[0] == pkg_root:
+                        if pkg[0] == self.pkg_root:
                                 continue
 
                         for e in os.listdir(pkg[0]):
-                                e = urllib.unquote(e)
-                                v = version.Version(e, None)
-                                f = fmri.PkgFmri(urllib.unquote(
-                                        os.path.basename(pkg[0])), None)
-                                f.version = v
+                                ver_mtime = os.stat(os.path.join(
+                                    self.pkg_root, pkg[0], e)).st_mtime
 
-                                self.add_fmri(f)
+                                # XXX force a rebuild despite mtimes?
+                                # XXX queue this and fork later?
+                                if ver_mtime > cat_mtime:
+                                        f = self._fmri_from_path(pkg[0], e)
 
-                                print f
+                                        self.add_fmri(f)
+                                        print f
+
+                                # XXX force a rebuild despite mtimes?
+                                # If the database doesn't exist, don't bother
+                                # building the list; we'll just build it all.
+                                if ver_mtime > idx_mtime > 0:
+                                        fmri_list.append((pkg[0], e))
+
+                # If we have no updates to make to the search database but it
+                # already exists, just make it available.  If we do have updates
+                # to make (including possibly building it from scratch), fork it
+                # off into another process; when that's done, we'll mark it
+                # available.
+                if not fmri_list and idx_mtime > 0:
+                        self.searchdb = dbm.open(self.searchdb_file, "w")
+                        self._search_available = True
+                else:
+                        signal.signal(signal.SIGCHLD, self.child_handler)
+                        self.searchdb_update_handle = \
+                            Mopen(self.update_searchdb, [fmri_list], {},
+                                stderr = PIPE)
+
+        def child_handler(self, sig, frame):
+                """Handler method for the SIGCLD signal.  Checks to see if the
+                search database update child has finished, and enables searching
+                if it finished successfully, or logs an error if it didn't."""
+                if not self.searchdb_update_handle:
+                        return
+
+                rc = self.searchdb_update_handle.poll()
+                if rc == 0:
+                        self.searchdb = dbm.open(self.searchdb_file, "w")
+                        self._search_available = True
+                        self.searchdb_update_handle = None
+                        if self.deferred_searchdb_updates:
+                                self.update_searchdb(
+                                    self.deferred_searchdb_updates)
+                elif rc > 0:
+                        # XXX This should be logged instead
+                        print "ERROR building search database:"
+                        print self.searchdb_update_handle.stderr.read()
+
+        def update_searchdb(self, fmri_list):
+                """Update the search database with the FMRIs passed in via
+                'fmri_list'.  If 'fmri_list' is empty or None, then rebuild the
+                database from scratch.  'fmri_list' should be a list of tuples
+                where the first element is the full path to the package name in
+                pkg_root and the second element is the version string."""
+
+                # If we're in the process of updating the database in our
+                # separate process, and this particular update until that's
+                # done.
+                if self.searchdb_update_handle:
+                        self.deferred_searchdb_updates += fmri_list
+                        return
+
+                self.searchdb_lock.acquire()
+
+                new = False
+                if fmri_list:
+                        if not self.searchdb:
+                                self.searchdb = \
+                                    dbm.open(self.searchdb_file, "c")
+
+                        if not self.searchdb.has_key("indir_num"):
+                                self.searchdb["indir_num"] = "0"
+                else:
+                        # new = True
+                        self.searchdb = dbm.open(self.searchdb_file, "n")
+                        self.searchdb["indir_num"] = "0"
+                        # XXX We should probably iterate over the catalog, for
+                        # cases where manifests have stuck around, but have been
+                        # moved to historical and removed from the catalog.
+                        fmri_list = (
+                            (os.path.join(self.pkg_root, pkg), ver)
+                            for pkg in os.listdir(self.pkg_root)
+                            for ver in os.listdir(
+                                os.path.join(self.pkg_root, pkg))
+                        )
+
+                for pkg, vers in fmri_list:
+                        mfst_path = os.path.join(pkg, vers)
+                        mfst = manifest.Manifest()
+                        mfst_file = file(mfst_path)
+                        mfst.set_content(mfst_file.read())
+                        mfst_file.close()
+
+                        f = self._fmri_from_path(pkg, vers)
+
+                        self.update_index(f, mfst.search_dict())
+
+                self.searchdb_lock.release()
+
+                print "Number of tokens:", self.searchdb["indir_num"]
+                # If we rebuilt the database from scratch ... XXX why would we
+                # want to do this?
+                # if new:
+                #         self.searchdb.close()
+                #         self.searchdb = None
+                self._search_available = True
+
+        # Five digits of a base-62 number represents a little over 900 million.
+        # Assuming 1 million tokens used in a WOS build (current imports use
+        # just short of 500k, but we don't have all the l10n packages, and may
+        # not have all the search tokens we want) and keeping every nightly
+        # build gives us 2.5 years before we run out of token space.  We're
+        # likely to garbage collect manifests and rebuild the db before then.
+        #
+        # XXX We're eventually going to run into conflicts with real tokens
+        # here.  This is unlikely until we hit, say "alias", which is a ways
+        # off, but we should still look at solving this.
+        idx_tok_len = 5
+
+        def next_token(self):
+                alphabet = "abcdefghijklmnopqrstuvwxyz"
+                k = "0123456789" + alphabet + alphabet.upper()
+
+                num = int(self.searchdb["indir_num"])
+
+                s = ""
+                for i in range(1, self.idx_tok_len + 1):
+                        junk, tail = divmod(num, 62 ** i)
+                        idx, junk = divmod(tail, 62 ** (i - 1))
+                        s = k[idx] + s
+
+                # XXX Do we want to log warnings as we approach index capacity?
+                self.searchdb["indir_num"] = \
+                    str(int(self.searchdb["indir_num"]) + 1)
+
+                return s
+
+        def update_index(self, fmri, search_dict):
+                """Update the search database with the data from the manifest
+                for 'fmri', which has been collected into 'search_dict'"""
+                # self.searchdb: token -> (type, fmri, action)
+                # XXX search_dict doesn't have action info, but should
+
+                # Don't update the database if it already has this FMRI's
+                # indices.
+                if self.searchdb.has_key(str(fmri)):
+                        return
+
+                self.searchdb[str(fmri)] = "True"
+                for tok_type in search_dict.keys():
+                        for tok in search_dict[tok_type]:
+                                # XXX The database files are so damned huge (if
+                                # holey) because we have zillions of copies of
+                                # the full fmri strings.  We might want to
+                                # indirect these as well.
+                                s = "%s %s" % (tok_type, fmri)
+                                s_ptr = self.next_token()
+                                self.searchdb[s_ptr] = s
+
+                                self.update_chain(tok, s_ptr)
+
+        def update_chain(self, token, data_token):
+                """Because of the size limitations of the underlying database
+                records, not only do we have to store pointers to the actual
+                search data, but once the pointer records fill up, we have to
+                chain those records up to spillover records.  This method adds
+                the pointer to the data to the end of the last link in the
+                chain, overflowing as necessary.  The search token is passed in
+                as 'token', and the pointer to the actual data which should be
+                returned is passed in as 'data_token'."""
+
+                while True:
+                        try:
+                                cur = self.searchdb[token]
+                        except KeyError:
+                                cur = ""
+                        l = len(cur)
+
+                        # According to the ndbm man page, the total length of
+                        # key and value must be less than 1024.  Seems like the
+                        # actual value is 1018, probably due to some padding or
+                        # accounting bytes or something.  The 2 is for the space
+                        # separator and the plus-sign for the extension token.
+                        # XXX The comparison should be against 1017, but that
+                        # crahes in the if clause below trying to append the
+                        # extension token.  Dunno why.
+                        if len(token) + l + self.idx_tok_len + 2 > 1000:
+                                # If we're adding the first element in the next
+                                # link of the chain, add the extension token to
+                                # the end of this link, and put the token
+                                # pointing to the data at the beginning of the
+                                # next link.
+                                if cur[-(self.idx_tok_len + 1)] != "+":
+                                        nindir_tok = "+" + self.next_token()
+                                        self.searchdb[token] += " " + nindir_tok
+                                        self.searchdb[nindir_tok] = data_token
+                                        break # from while True; we're done
+                                # If we find an extension token, start looking
+                                # at the next chain link.
+                                else:
+                                        token = cur[-(self.idx_tok_len + 1):]
+                                        continue
+
+                        # If we get here, it's safe to append the data token to
+                        # the current link, and get out.
+                        if cur:
+                                self.searchdb[token] += " " + data_token
+                        else:
+                                self.searchdb[token] = data_token
+                        break
+
+        def search(self, token):
+                """Search through the search database for 'token'.  Return a
+                list of token type / fmri pairs."""
+                ret = []
+
+                while True:
+                        # For each indirect token in the search token's value,
+                        # add its value to the return list.  If we see a chain
+                        # token, switch to its value and continue.  If we fall
+                        # out of the loop without seeing a chain token, we can
+                        # return.
+                        for tok in self.searchdb[token].split():
+                                if tok[0] == "+":
+                                        token = tok
+                                        break
+                                else:
+                                        ret.append(
+                                            self.searchdb[tok].split(" ", 1))
+                        else:
+                                return ret
 
         def get_matching_fmris(self, patterns, matcher = None,
             constraint = None, counthash = None):
@@ -369,6 +637,9 @@ class Catalog(object):
 
         def set_time(self):
                 self.attrs["Last-Modified"] = time.strftime("%Y%m%dT%H%M%SZ")
+
+        def search_available(self):
+                return self._search_available
 
 
 # In order to avoid a fine from the Department of Redundancy Department,
