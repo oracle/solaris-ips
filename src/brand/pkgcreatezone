@@ -103,7 +103,7 @@ fi
 
 zoneroot=$zonepath/root
 
-printf "\n$m_image" $zoneroot/root
+printf "\n$m_image" $zoneroot
 pkg image-create -z -F -a "$authority" $zoneroot || fail_fatal $f_img
 printf "$m_done\n"
 
