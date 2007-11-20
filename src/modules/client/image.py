@@ -310,7 +310,6 @@ class Image(object):
                         try:
                                 f = file("%s/filters" % fmri_dir_path, "r")
                         except IOError, e:
-                                print e
                                 if e.errno != errno.ENOENT:
                                         raise
                         else:
