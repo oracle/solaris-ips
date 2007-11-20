@@ -246,10 +246,13 @@ def close_0(scfg, request):
         # Pull transaction ID from headers.
         trans_id = request.path.split("/", 3)[-1]
 
-        # XXX KeyError?
-        t = scfg.in_flight_trans[trans_id]
-        t.close(request)
-        del scfg.in_flight_trans[trans_id]
+        try:
+                t = scfg.in_flight_trans[trans_id]
+        except KeyError:
+                request.send_response(404, "Transaction ID not found")
+        else:
+                t.close(request)
+                del scfg.in_flight_trans[trans_id]
 
 def abandon_0(scfg, request):
         if scfg.is_read_only():
@@ -259,9 +262,13 @@ def abandon_0(scfg, request):
         # Pull transaction ID from headers.
         trans_id = request.path.split("/", 3)[-1]
 
-        t = scfg.in_flight_trans[trans_id]
-        t.abandon(request)
-        del scfg.in_flight_trans[trans_id]
+        try:
+                t = scfg.in_flight_trans[trans_id]
+        except KeyError:
+                request.send_response(404, "Transaction ID not found")
+        else:
+                t.abandon(request)
+                del scfg.in_flight_trans[trans_id]
 
 def add_0(scfg, request):
         if scfg.is_read_only():
@@ -270,8 +277,12 @@ def add_0(scfg, request):
 
         trans_id, type = request.path.split("/", 4)[-2:]
 
-        t = scfg.in_flight_trans[trans_id]
-        t.add_content(request, type)
+        try:
+                t = scfg.in_flight_trans[trans_id]
+        except KeyError:
+                request.send_response(404, "Transaction ID not found")
+        else:
+                t.add_content(request, type)
 
 if "PKG_REPO" in os.environ:
         scfg = config.SvrConfig(os.environ["PKG_REPO"], "pkg.sun.com")

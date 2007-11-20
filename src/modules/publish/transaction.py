@@ -114,9 +114,19 @@ class Transaction(object):
                         c, v = versioned_urlopen(config.install_uri, "add",
                             [0], "%s/%s" % (trans_id, type), data = data,
                             headers = headers)
-                except (httplib.BadStatusLine, RuntimeError):
-                        return 500
+                except httplib.BadStatusLine:
+                        return 500, "Bad status line from server", None
+                except RuntimeError, e:
+                        return 404, e[0], None
                 except urllib2.HTTPError, e:
-                        return e.code
+                        return e.code, e.msg, None
+                except urllib2.URLError, e:
+                        if e.reason[0] == 32: # Broken pipe
+                                # XXX Guess: the libraries don't ever collect
+                                # this information.  This might also be "Version
+                                # not supported".
+                                return 404, "Transaction ID not found", None
+                        else:
+                                return 500, e.reason[1], None
 
-                return c.code
+                return c.code, c.msg, None

@@ -159,11 +159,15 @@ def trans_add(config, args):
                 action = pkg.actions.fromlist(args[0], args[1:])
 
         t = trans.Transaction()
-        status = t.add(config, trans_id, action)
+        status, msg, body = t.add(config, trans_id, action)
 
         if status / 100 == 4 or status / 100 == 5:
+                if msg:
+                        msg = ": " + msg
+                else:
+                        msg = ""
                 print >> sys.stderr, \
-                    _("pkgsend: server failed (status %s)") % status
+                    _("pkgsend: server failed (status %s)%s") % (status, msg)
                 sys.exit(1)
 
 def trans_delete(config, args):
