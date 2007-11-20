@@ -96,6 +96,7 @@ class Catalog(object):
                 self.attrs = {}
                 self.auth = authority
                 self.searchdb_update_handle = None
+                self.searchdb = None
                 self._search_available = False
                 self.deferred_searchdb_updates = []
                 # We need to lock the search database against multiple
@@ -144,7 +145,8 @@ class Catalog(object):
                         if entry == pkgstr:
                                 pfile.close()
                                 raise CatalogException, \
-                                    "Package is already in the catalog"
+                                    "Package %s is already in the catalog" % \
+                                    fmri
 
                 pfile.write(pkgstr)
                 pfile.close()
@@ -306,7 +308,6 @@ class Catalog(object):
 
                 self.searchdb_lock.release()
 
-                print "Number of tokens:", self.searchdb["indir_num"]
                 # If we rebuilt the database from scratch ... XXX why would we
                 # want to do this?
                 # if new:
