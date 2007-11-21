@@ -251,10 +251,10 @@ def main_func():
         # XXX /usr/lib/locale is OpenSolaris-specific.
         gettext.install("pkgsend", "/usr/lib/locale")
 
-	try:
-		repo = os.environ["PKG_REPO"]
-	except KeyError:
-		repo_url = "http://localhost:10000"
+        try:
+                repo_url = os.environ["PKG_REPO"]
+        except KeyError:
+                repo_url = "http://localhost:10000"
 
         try:
                 opts, pargs = getopt.getopt(sys.argv[1:], "s:")
