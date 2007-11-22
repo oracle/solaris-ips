@@ -31,6 +31,7 @@ ROOTPKGWEB = $(ROOTSHARE)
 WEBCOMPONENTS = \
 	$(ROOTPKGWEB)/pkg-block-icon.png \
 	$(ROOTPKGWEB)/pkg-block-logo.png \
+	$(ROOTPKGWEB)/robots.txt \
 	$(ROOTPKGWEB)/pkg.css
 
 all := TARGET = all
@@ -47,6 +48,7 @@ link:
 	mkdir -p /usr/share/lib/pkg
 	ln -sf $(PWD)/pkg-block-icon.png /usr/share/lib/pkg/pkg-block-icon.png
 	ln -sf $(PWD)/pkg-block-logo.png /usr/share/lib/pkg/pkg-block-logo.png
+	ln -sf $(PWD)/robots.txt /usr/share/lib/pkg/robots.txt
 	ln -sf $(PWD)/pkg.css /usr/share/lib/pkg/pkg.css
 
 link-clean:

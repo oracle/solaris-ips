@@ -60,6 +60,13 @@ EXAMPLES
      # svcadm refresh application/pkg/server:default
      # svcadm restart application/pkg/server:default
 
+ENVIRONMENT VARIABLES
+     PKG_DEPOT_CONTENT          Specifies the directory containing static
+                                content served by the depot. The files listed
+                                below under FILES should be present in this
+                                directory, although their content may differ
+                                from the supplied default content.
+
 EXIT STATUS
      The following exit values are returned:
 
@@ -73,6 +80,21 @@ FILES
      /var/pkg/repo              Default repository location; modify
                                 application/repo_root to select an
                                 alternate location.
+
+     /usr/share/lib/pkg         Default directory containing static content
+                                served by the depot.
+
+     /usr/share/lib/pkg/pkg.css Cascading stylesheet.
+
+     /usr/share/lib/pkg/pkg-block-logo.png
+                                Package depot logo.
+
+     /usr/share/lib/pkg/pkg-block-icon.png
+                                Icon for the package depot server.
+
+     /usr/share/lib/pkg/robots.txt
+                                Default robots.txt file which disallows all
+                                crawling of the repository.
 
 ATTRIBUTES
      See attributes(5) for descriptions of the  following  attri-

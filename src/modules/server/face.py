@@ -24,44 +24,70 @@
 
 """face - dynamic index page for image packaging server"""
 
+import os
+
+from errno import ENOENT
+from httplib import OK, NOT_FOUND, INTERNAL_SERVER_ERROR
+
 # XXX Use small templating module?
 
 # Non-HTML GET functions
 
 content_root = "/usr/share/lib/pkg"
 
+#
+# Return the contents of a static file.
+# Note that if filename is an absolute path, this will be used.
+# Otherwise, the content root (PKG_DEPOT_CONTENT) directory will
+# be prepended to the filename.
+# If the static file cannot be found, an HTTP 404 (not found) error
+# is returned. Any other errors in the open return an HTTP 500
+# (internal server error).
+#
+# XXX Should we cache these files in memory as they are only small?
+#
+def send_static(img, request, filename, content_type):
+        '''Open a given file and write the contents to the
+           HTTP response stream'''
+        rfile = None
+        try:
+                try:
+                        _filename = os.path.join(content_root, filename)
+                        rfile = open(_filename, 'rb')
+                        data = rfile.read()
+                        rfile.close()
+                except IOError, ioe:
+                        if ioe.errno == ENOENT:
+                                # Not found: return a 404 error
+                                unknown(img, request)
+                        else:
+                                # Otherwise push it up the stack
+                                raise
+                else:
+                        request.send_response(OK)
+                        request.send_header('Content-Type', content_type)
+                        request.send_header('Content-Length', len(data))
+                        request.end_headers()
+
+                        request.wfile.write(data)
+        except:
+                if rfile:
+                        rfile.close()
+                error(img, request)
+                raise
+
+
 def css(img, request):
-        request.send_response(200)
-        request.send_header('Content-type', 'text/css')
-        request.end_headers()
-
-        css = open("%s/pkg.css" % content_root)
-
-        request.wfile.write(css.read())
-
-        css.close()
+        send_static(img, request, "pkg.css", 'text/css')
 
 def icon(img, request):
-        request.send_response(200)
-        request.send_header('Content-type', 'image/png')
-        request.end_headers()
-
-        icon = open("%s/pkg-block-icon.png" % content_root)
-
-        request.wfile.write(icon.read())
-
-        icon.close()
+        send_static(img, request, "pkg-block-icon.png", 'image/png')
 
 def logo(img, request):
-        request.send_response(200)
-        request.send_header('Content-type', 'image/png')
-        request.end_headers()
+        send_static(img, request, "pkg-block-logo.png", 'image/png')
 
-        logo = open("%s/pkg-block-logo.png" % content_root)
-
-        request.wfile.write(logo.read())
-
-        logo.close()
+def robots(img, request):
+        send_static(img, request, "robots.txt", 'text/plain')
 
 # HTML GET functions
 
@@ -76,7 +102,7 @@ def head(request, title = "pkg - image packaging system"):
 """ % title)
 
 def unknown(img, request):
-        request.send_response(404)
+        request.send_response(NOT_FOUND)
         request.send_header('Content-type', 'text/html')
         request.end_headers()
         head(request)
@@ -91,7 +117,7 @@ def unknown(img, request):
     <div class="yui-b">
      <pre>
 """)
-        request.wfile.write('''404 GET URI %s ; headers %s''' %
+        request.wfile.write('''404 GET URI %s ; headers:\n%s''' %
             (request.path, request.headers))
         request.wfile.write("""\
      </pre>
@@ -101,10 +127,10 @@ def unknown(img, request):
  </div>
 </body>
 </html>
-""" % request.path)
+""")
 
 def error(img, request):
-        request.send_response(500)
+        request.send_response(INTERNAL_SERVER_ERROR)
         request.send_header('Content-type', 'text/html')
         request.end_headers()
         head(request)
@@ -165,13 +191,16 @@ def index(img, request):
 
 pages = {
         "/" : index,
-        "/index.html" : index,
-        "/icon" :     icon,
-        "/logo" :     logo,
-        "/css" :      css
+        "/index.html" :  index,
+        "/icon" :        icon,
+        "/favicon.ico" : icon,
+        "/logo" :        logo,
+        "/css" :         css,
+        "/robots.txt" :  robots
 }
 
 def set_content_root(path):
+        global content_root
         content_root = path
 
 def match(request):
