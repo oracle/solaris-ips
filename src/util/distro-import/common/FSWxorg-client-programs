@@ -2,4 +2,8 @@ package FSWxorg-client-programs
 import FSWxorg-client-programs
 add dir path=usr/openwin/bin mode=0755 owner=root group=bin
 add link path=usr/openwin/bin/xauth target=../../X11/bin/xauth
+from SUNWxwplt import
+usr/X11/bin/constype
+end import
+add link path=usr/X target=./X11
 end package

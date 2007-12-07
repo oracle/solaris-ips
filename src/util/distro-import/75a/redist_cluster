@@ -784,6 +784,7 @@ include common/loc/SUNWweuos
 include common/loc/SUNWweuow
 include common/slim_cd
 include i386/BRCMbnx
+include i386/NVDAgraphics
 include i386/SUNWaac
 include i386/SUNWad810
 include i386/SUNWadixp

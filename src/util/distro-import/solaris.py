@@ -522,26 +522,27 @@ def publish_pkg(pkg):
                     description = pkg.desc)
                 t.add(cfg, id, action)
 
-        for p in pkg.srcpkgs:
-                try:
-                        sp = svr4pkgsseen[p]
-                except KeyError:
-                        continue
+	if pkg.name != "SUNWipkg":
+		for p in pkg.srcpkgs:
+			try:
+				sp = svr4pkgsseen[p]
+			except KeyError:
+				continue
 
-                wanted_attrs = (
-                    "PKG", "NAME", "ARCH", "VERSION", "CATEGORY",
-                    "VENDOR", "DESC", "HOTLINE"
-                )
-                attrs = dict(
-                    (k.lower(), v)
-                    for k, v in sp.pkginfo.iteritems()
-                    if k in wanted_attrs
-                )
+			wanted_attrs = (
+				"PKG", "NAME", "ARCH", "VERSION", "CATEGORY",
+				"VENDOR", "DESC", "HOTLINE"
+				)
+			attrs = dict(
+				(k.lower(), v)
+				for k, v in sp.pkginfo.iteritems()
+				if k in wanted_attrs
+				)
 
-                action = actions.legacy.LegacyAction(None, **attrs)
+			action = actions.legacy.LegacyAction(None, **attrs)
 
-                print "    %s add %s" % (pkg.name, action)
-                t.add(cfg, id, action)
+			print "    %s add %s" % (pkg.name, action)
+			t.add(cfg, id, action)
 
         if undeps:
                 print "Missing dependencies:", list(undeps)
