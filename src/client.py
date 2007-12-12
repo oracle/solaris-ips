@@ -73,7 +73,7 @@ Usage:
         pkg [options] command [cmd_options] [operands]
 
 Install subcommands:
-        pkg refresh
+        pkg refresh [--full]
         pkg install [-nv] pkg_fmri
         pkg uninstall [-nrv] pkg_fmri
 
@@ -105,18 +105,25 @@ def catalog_refresh(img, args):
         """Update image's catalogs."""
 
         # XXX will need to show available content series for each package
-
-        if len(args) != 0:
-                print >> sys.stderr, \
-                    _("pkg: refresh subcommand takes no arguments")
+        full_refresh = False
+        try:
+                opts, pargs = getopt.getopt(args, None, ["full"])
+                for opt, arg in opts:
+                        if opt == "--full":
+                                full_refresh = True
+        except getopt.GetoptError, e:
+                print "pkg: refresh: illegal option -- %s" % e.opt
                 usage()
 
         # Ensure Image directory structure is valid.
         if not os.path.isdir("%s/catalog" % img.imgdir):
                 img.mkdirs()
 
+        # Loading catalogs allows us to perform incremental update
+        img.load_catalogs()
+
         try:
-                img.retrieve_catalogs()
+                img.retrieve_catalogs(full_refresh)
         except RuntimeError, failures:
                 total, succeeded = failures.args[1:3]
                 print _("pkg: %s/%s catalogs successfully updated:") % \

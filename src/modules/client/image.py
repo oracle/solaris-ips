@@ -36,6 +36,7 @@ import urlparse
 # import uuid           # XXX interesting 2.5 module
 
 import pkg.catalog as catalog
+import pkg.updatelog as updatelog
 import pkg.fmri as fmri
 import pkg.manifest as manifest
 import pkg.version as version
@@ -462,32 +463,50 @@ class Image(object):
 
                 return dependents
 
-        def retrieve_catalogs(self):
+        def retrieve_catalogs(self, full_refresh = False):
                 failed = []
                 total = 0
                 succeeded = 0
+                ts = 0
 
                 for auth in self.gen_authorities():
                         total += 1
-                        # XXX Mirror selection and retrieval policy?
 
+                        if auth["prefix"] in self.catalogs:
+                                cat = self.catalogs[auth["prefix"]]
+                                ts = cat.last_modified()
+
+                        if ts and not full_refresh:
+                                hdr = {'If-Modified-Since': ts}
+                        else:
+                                hdr = {}
+
+                        # XXX Mirror selection and retrieval policy?
                         try:
                                 c, v = versioned_urlopen(auth["origin"],
-                                    "catalog", [0])
+                                    "catalog", [0], headers = hdr)
+                        except urllib2.HTTPError, e:
+                                # Server returns 304 if catalog is up to date
+                                if e.code == 304:
+                                        succeeded += 1
+                                else:
+                                        failed.append((auth, e))
+                                continue
+
                         except urllib2.URLError, e:
                                 failed.append((auth, e))
                                 continue
-
+ 
                         # root for this catalog
                         croot = "%s/catalog/%s" % (self.imgdir, auth["prefix"])
 
                         try:
-                                catalog.recv(c, croot)
+                                updatelog.recv(c, croot, ts)
                         except IOError, e:
                                 failed.append((auth, e))
                         else:
                                 succeeded += 1
-
+             
                 if failed:
                         raise RuntimeError, (failed, total, succeeded)
 

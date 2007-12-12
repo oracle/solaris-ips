@@ -114,15 +114,12 @@ def search_0(scfg, request):
 def catalog_0(scfg, request):
         scfg.inc_catalog()
 
-        request.send_response(200)
-        request.send_header('Content-type', 'text/plain')
-        request.end_headers()
         # Try to guard against a non-existent catalog.  The catalog open will
         # raise an exception, and only the attributes will have been sent.  But
         # because we've sent data already (never mind the response header), we
         # can't raise an exception here, or a 500 header will get sent as well.
         try:
-                scfg.catalog.send(request.wfile)
+                scfg.updatelog.send(request)
         except:
                 request.log_error("Internal failure:\n%s",
                     traceback.format_exc())
@@ -161,11 +158,10 @@ def manifest_0(scfg, request):
 def filelist_0(scfg, request):
         """Request data contains application/x-www-form-urlencoded entries
         with the requested filenames."""
-        hdrs = request.headers
         # If the sender doesn't specify the content length, reject this request.
         # Calling read() with no size specified will force the server to block
         # until the client sends EOF, an undesireable situation
-        size = int(hdrs.getheader("Content-Length"))
+        size = int(request.headers.getheader("Content-Length", "0"))
         if size == 0:
                 request.send_response(411)
                 return

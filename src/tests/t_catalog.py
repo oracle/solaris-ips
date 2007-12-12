@@ -26,9 +26,12 @@
 import unittest
 import shutil
 import tempfile
+import os
+import datetime
 
 import pkg.fmri as fmri
 import pkg.catalog as catalog
+import pkg.updatelog as updatelog
 
 class TestCatalog(unittest.TestCase):
         def setUp(self):
@@ -115,6 +118,223 @@ class TestEmptyCatalog(unittest.TestCase):
 
         def testsend(self):
                 self.c.send(self.nullf)
+
+class TestUpdateLog(unittest.TestCase):
+        def setUp(self):
+		self.cpath = tempfile.mkdtemp()
+                self.c = catalog.Catalog(self.cpath)
+		self.upath = tempfile.mkdtemp()
+                self.ul = updatelog.UpdateLog(self.upath, self.c)
+                self.npkgs = 0
+
+                for f in [
+                    fmri.PkgFmri("pkg:/test@1.0,5.11-1:20000101T120000Z", None),
+                    fmri.PkgFmri("pkg:/test@1.0,5.11-1:20000101T120010Z", None),
+                    fmri.PkgFmri("pkg:/test@1.0,5.11-1.1:20000101T120020Z", None),
+                    fmri.PkgFmri("pkg:/test@1.0,5.11-1.2:20000101T120030Z", None),
+                    fmri.PkgFmri("pkg:/test@1.0,5.11-2:20000101T120040Z", None),
+                    fmri.PkgFmri("pkg:/test@1.1,5.11-1:20000101T120040Z", None),
+                    fmri.PkgFmri("pkg:/apkg@1.0,5.11-1:20000101T120040Z", None),
+                    fmri.PkgFmri("pkg:/zpkg@1.0,5.11-1:20000101T120040Z", None)
+                ]:
+                        self.ul.add_package(f)
+                        self.npkgs += 1
+
+                delta = datetime.timedelta(seconds = 1)
+                self.ts1 = self.ul.first_update - delta
+                self.ts2 = datetime.datetime.now()
+
+
+	def tearDown(self):
+		shutil.rmtree(self.upath)
+		shutil.rmtree(self.cpath)
+
+        def testnohist(self):
+                self.failIf(self.ul.enough_history(self.ts1))
+                self.assert_(self.ul.enough_history(self.ts2))
+
+        def testnotuptodate(self):
+                self.assert_(self.ul.up_to_date(self.ts2))
+                self.failIf(self.ul.up_to_date(self.ts1))
+
+        def testoneupdate(self):
+                # Create new catalog
+                cnp = tempfile.mkdtemp()
+                cfd, cfpath = tempfile.mkstemp()
+                cfp = os.fdopen(cfd, "w")
+
+                # send original catalog
+                self.c.send(cfp)
+                cfp.close()
+                # recv the sent catalog
+                cfp = file(cfpath, "r")
+                catalog.recv(cfp, cnp)
+                # Cleanup cfp
+                cfp.close()
+                cfp = None
+                cfd = None
+                os.remove(cfpath)
+                cfpath = None
+
+                # Instantiate Catalog object based upon recd. catalog
+                cnew = catalog.Catalog(cnp)
+
+                # Verify original packages present
+                cf = fmri.PkgFmri("pkg:/test@1.0,5.10-1:20070101T120000Z")
+                cl = cnew.get_matching_fmris(cf, None)
+
+                self.assert_(len(cl) == 4)
+
+                # Add new FMRI
+                fnew = fmri.PkgFmri("pkg:/test@1.0,5.11-3:20000101T120040Z")
+                self.ul.add_package(fnew)
+
+                # Send an update
+                cfd, cfpath = tempfile.mkstemp()
+                cfp = os.fdopen(cfd, "w")
+
+                lastmod = catalog.ts_to_datetime(cnew.last_modified())
+                self.ul._send_updates(lastmod, cfp)
+                cfp.close()
+
+                # Recv the update
+                cfp = file(cfpath, "r")
+                updatelog.UpdateLog._recv_updates(cfp, cnp, cnew.last_modified())
+                cfp.close()
+                cfp = None
+                cfd = None
+                os.remove(cfpath)
+                cfpath = None
+
+                # Reload the catalog
+                cnew = catalog.Catalog(cnp)
+
+                # Verify new package present
+                cf = fmri.PkgFmri("pkg:/test@1.0,5.11-3:20000101T120040Z")
+                cl = cnew.get_matching_fmris(cf, None)
+
+                self.assert_(len(cl) == 2)
+
+                # Cleanup new catalog
+                shutil.rmtree(cnp)
+
+        def testsequentialupdate(self):
+                # Create new catalog
+                cnp = tempfile.mkdtemp()
+                cfd, cfpath = tempfile.mkstemp()
+                cfp = os.fdopen(cfd, "w")
+
+                # send original catalog
+                self.c.send(cfp)
+                cfp.close()
+                # recv the sent catalog
+                cfp = file(cfpath, "r")
+                catalog.recv(cfp, cnp)
+                # Cleanup cfp
+                cfp.close()
+                cfp = None
+                cfd = None
+                os.remove(cfpath)
+                cfpath = None
+
+                # Instantiate Catalog object based upon recd. catalog
+                cnew = catalog.Catalog(cnp)
+
+                # Verify original packages present
+                cf = fmri.PkgFmri("pkg:/test@1.0,5.10-1:20070101T120000Z")
+                cl = cnew.get_matching_fmris(cf, None)
+
+                self.assert_(len(cl) == 4)
+
+                # Add new FMRI
+                fnew = fmri.PkgFmri("pkg:/bpkg@1.0,5.11-3:20000101T120040Z")
+                self.ul.add_package(fnew)
+
+                # Send an update
+                cfd, cfpath = tempfile.mkstemp()
+                cfp = os.fdopen(cfd, "w")
+
+                lastmod = catalog.ts_to_datetime(cnew.last_modified())
+                self.ul._send_updates(lastmod, cfp)
+                cfp.close()
+
+                # Recv the update
+                cfp = file(cfpath, "r")
+                updatelog.UpdateLog._recv_updates(cfp, cnp, cnew.last_modified())
+                cfp.close()
+                cfp = None
+                cfd = None
+                os.remove(cfpath)
+                cfpath = None
+
+                # Reload the catalog
+                cnew = catalog.Catalog(cnp)
+
+                # Verify new package present
+                cf = fmri.PkgFmri("pkg:/bpkg@1.0,5.11-3:20000101T120040Z")
+                cl = cnew.get_matching_fmris(cf, None)
+
+                self.assert_(len(cl) == 1)
+
+                # Add a pair of FMRIs
+                f2 = fmri.PkgFmri("pkg:/cpkg@1.0,5.11-3:20000101T120040Z")
+                f3 = fmri.PkgFmri("pkg:/dpkg@1.0,5.11-3:20000101T120040Z")
+                self.ul.add_package(f2)
+                self.ul.add_package(f3)
+
+                # Send another update
+                cfd, cfpath = tempfile.mkstemp()
+                cfp = os.fdopen(cfd, "w")
+
+                lastmod = catalog.ts_to_datetime(cnew.last_modified())
+                self.ul._send_updates(lastmod, cfp)
+                cfp.close()
+
+                # Recv the update
+                cfp = file(cfpath, "r")
+                updatelog.UpdateLog._recv_updates(cfp, cnp, cnew.last_modified())
+                cfp.close()
+                cfp = None
+                cfd = None
+                os.remove(cfpath)
+                cfpath = None
+
+                # Reload catalog
+                cnew = catalog.Catalog(cnp)
+
+                # Verify New packages present
+                cf = fmri.PkgFmri("pkg:/cpkg@1.0,5.11-3:20000101T120040Z")
+                cl = cnew.get_matching_fmris(cf, None)
+
+                self.assert_(len(cl) == 1)
+
+                cf = fmri.PkgFmri("pkg:/dpkg@1.0,5.11-3:20000101T120040Z")
+                cl = cnew.get_matching_fmris(cf, None)
+
+                self.assert_(len(cl) == 1)
+
+                # Cleanup new catalog
+                shutil.rmtree(cnp)
+
+        def testrolllogfiles(self):
+                # Write files with out-of-date timestamps into the updatelog
+                # directory
+
+                for i in range(2001010100, 2001010111, 1):
+                        f = file(os.path.join(self.upath, "%s" % i), "w")
+                        f.close()
+
+                # Reload UpdateLog with maxfiles set to 1
+                self.ul = updatelog.UpdateLog(self.upath, self.c, 1)
+
+                # Adding a package should open a new logfile, and remove the
+                # extra old ones
+                cf = fmri.PkgFmri("pkg:/cpkg@1.0,5.11-3:20000101T120040Z")
+                self.ul.add_package(cf)
+
+                # Check that only one file remains in the directory
+                dl = os.listdir(self.upath)
+                self.assert_(len(dl) == 1)
 
 if __name__ == "__main__":
         unittest.main()

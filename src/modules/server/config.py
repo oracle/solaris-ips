@@ -32,6 +32,7 @@ import urllib
 import shutil
 
 import pkg.catalog as catalog
+import pkg.updatelog as updatelog
 import pkg.fmri as fmri
 
 import pkg.server.transaction as trans
@@ -101,11 +102,14 @@ class SvrConfig(object):
                                 os.makedirs(self.pkg_root)
                         if not os.path.exists(self.cat_root):
                                 os.makedirs(self.cat_root)
+                        if not os.path.exists(self.update_root):
+                                os.makedirs(self.update_root)
 
                 if os.path.exists(self.trans_root) and \
                     os.path.exists(self.file_root) and \
                     os.path.exists(self.pkg_root) and \
-                    os.path.exists(self.cat_root):
+                    os.path.exists(self.cat_root) and \
+                    os.path.exists(self.update_root):
                         return
 
                 raise RuntimeError, emsg
@@ -116,6 +120,7 @@ class SvrConfig(object):
                 self.file_root = "%s/file" % self.repo_root
                 self.pkg_root = "%s/pkg" % self.repo_root
                 self.cat_root = "%s/catalog" % self.repo_root
+                self.update_root = "%s/updatelog" % self.repo_root
 
         def set_read_only(self):
                 self.read_only = True
@@ -143,12 +148,19 @@ class SvrConfig(object):
                 self.catalog = catalog.Catalog(self.cat_root,
                     pkg_root = self.pkg_root)
 
+                # UpdateLog allows server to issue incremental catalog updates
+                self.updatelog = updatelog.UpdateLog(self.update_root,
+                    self.catalog)
+
         def destroy_catalog(self):
                 """Destroy the catalog.  This is generally done before we
                 re-create a new catalog."""
 
                 if os.path.exists(self.cat_root):
                         shutil.rmtree(self.cat_root)
+
+                if os.path.exists(self.update_root):
+                        shutil.rmtree(self.update_root)
 
         def get_status(self):
                 """Display simple server status."""

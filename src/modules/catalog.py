@@ -33,6 +33,7 @@ import errno
 import dbm
 import signal
 import threading
+import datetime
 
 import pkg.fmri as fmri
 import pkg.version as version
@@ -117,8 +118,6 @@ class Catalog(object):
 
                 if pkg_root is not None:
                         self.build_catalog()
-                        self.set_time()
-                        self.save_attrs()
 
                 self.load_attrs()
 
@@ -153,8 +152,10 @@ class Catalog(object):
 
                 self.attrs["npkgs"] += 1
 
-                self.set_time()
-                self.save_attrs()
+                ts = datetime.datetime.now()
+                self.set_time(ts)
+
+                return ts
 
         def attrs_as_lines(self):
                 """Takes the list of in-memory attributes and returns
@@ -546,6 +547,11 @@ class Catalog(object):
 
                 pfile.close()
 
+        def last_modified(self):
+                """Return the time at which the catalog was last modified."""
+
+                return self.attrs.get("Last-Modified", None)
+
         def load_attrs(self, filenm = "attrs"):
                 """Load attributes from the catalog file into the in-memory
                 attributes dictionary"""
@@ -565,6 +571,7 @@ class Catalog(object):
 
                 afile.close()
 
+                # convert npkgs to integer value
                 if "npkgs" in self.attrs:
                         self.attrs["npkgs"] = int(self.attrs["npkgs"])
 
@@ -575,7 +582,7 @@ class Catalog(object):
 
         @staticmethod
         def recv(filep, path):
-                """A class method that takes a file-like object and
+                """A static method that takes a file-like object and
                 a path.  This is the other half of catalog.send().  It
                 reads a stream as an incoming catalog and lays it down
                 on disk."""
@@ -636,8 +643,18 @@ class Catalog(object):
 
                 cfile.close()
 
-        def set_time(self):
-                self.attrs["Last-Modified"] = time.strftime("%Y%m%dT%H%M%SZ")
+        def set_time(self, ts = None):
+                """Set time to timestamp if supplied by caller.  Otherwise
+                use the system time."""
+
+                if ts and isinstance(ts, str):
+                        self.attrs["Last-Modified"] = ts
+                elif ts and isinstance(ts, datetime.datetime):
+                        self.attrs["Last-Modified"] = ts.isoformat()
+                else:
+                        self.attrs["Last-Modified"] = timestamp()
+
+                self.save_attrs()
 
         def search_available(self):
                 return self._search_available
@@ -646,3 +663,30 @@ class Catalog(object):
 # In order to avoid a fine from the Department of Redundancy Department,
 # allow these methods to be invoked without explictly naming the Catalog class.
 recv = Catalog.recv
+
+# Method used by Catalog and UpdateLog.  Since UpdateLog needs to know
+# about Catalog, keep it in Catalog to avoid circular dependency problems.
+def timestamp():
+        """Return an integer timestamp that can be used for comparisons."""
+
+        tobj = datetime.datetime.now()                
+        tstr = tobj.isoformat()
+
+        return tstr
+
+def ts_to_datetime(ts):
+        """Take timestamp ts in string isoformat, and convert it to a datetime
+        object."""
+
+        year = int(ts[0:4])
+        month = int(ts[5:7])
+        day = int(ts[8:10])
+        hour = int(ts[11:13])
+        min = int(ts[14:16])
+        sec = int(ts[17:19])
+        usec = int(ts[20:26])
+
+        dt = datetime.datetime(year, month, day, hour, min, sec, usec)
+
+        return dt
+

@@ -282,7 +282,7 @@ class Transaction(object):
                 # PUBLISHED due to the package's arrival.
 
                 self.publish_package()
-                self.cfg.catalog.add_fmri(self.fmri, self.critical)
+                self.cfg.updatelog.add_package(self.fmri, self.critical)
 
                 return ("%s" % self.fmri, "PUBLISHED")
 
