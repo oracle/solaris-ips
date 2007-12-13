@@ -1,0 +1,5 @@
+package SUNWisns
+import SUNWisns
+import SUNWisnsadm
+import SUNWisnsr
+end package

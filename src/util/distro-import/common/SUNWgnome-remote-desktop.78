@@ -1,0 +1,5 @@
+package SUNWgnome-remote-desktop
+import SUNWgnome-remote-desktop
+import SUNWgnome-remote-desktop-root
+drop usr/share/man/man1/vncviewer.1
+end package

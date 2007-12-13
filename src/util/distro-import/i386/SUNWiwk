@@ -1,0 +1,4 @@
+package SUNWiwk
+import SUNWiwk
+add driver name=iwk alias=pciex8086,4229 alias=pciex8086,4230
+end package

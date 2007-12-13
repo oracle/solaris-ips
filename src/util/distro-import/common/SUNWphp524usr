@@ -1,0 +1,5 @@
+package SUNWphp524usr
+import SUNWphp524usr
+import SUNWphp524root
+version 5.2.4
+end package

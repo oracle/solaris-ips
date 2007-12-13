@@ -1,0 +1,5 @@
+package SUNWphp524-pgsql
+import SUNWphp524-pgsql
+import SUNWphp524-pgsql-root
+version 5.2.4
+end package

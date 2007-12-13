@@ -1,0 +1,5 @@
+package SUNWvscan
+import SUNWvscanu
+import SUNWvscanr
+add driver name=vscan perms="* 0640 root sys"
+end package

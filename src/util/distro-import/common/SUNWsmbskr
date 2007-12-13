@@ -1,0 +1,4 @@
+package SUNWsmbskr
+import SUNWsmbskr
+add driver name=smbsrv perms="* 0666 root sys"
+end package

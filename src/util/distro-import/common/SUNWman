@@ -2720,5 +2720,4 @@ add link path=usr/share/man/man9s/modlinkage.9s target=../missing.man
 add link path=usr/share/man/man9s/modlstrmod.9s target=../missing.man
 add link path=usr/share/man/man9s/tuple.9s target=../missing.man
 # END NON-REDISTRIBUTABLE
-end import
 end package

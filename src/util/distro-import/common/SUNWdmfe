@@ -1,0 +1,4 @@
+package SUNWdmfe
+import SUNWdmfe
+add driver name=dmfe alias=pci128h,9102 alias=pci108e,9102 alias=pci1282,9102
+end package

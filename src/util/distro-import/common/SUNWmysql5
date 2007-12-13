@@ -1,0 +1,5 @@
+package SUNWmysql5
+import SUNWmysql5u
+import SUNWmysql5r
+version 5.0.45
+end package

@@ -105,7 +105,7 @@ CFLAGS=		-g -v
 
 LINTFLAGS=	-axsm
 
-default:	75a/slim_import
+default:	79/slim_import
 
 cluster.import:	$(WOS_PKGS)/.clustertoc Makefile
 	./clustertoc2import.py $(WOS_PKGS)/.clustertoc | \

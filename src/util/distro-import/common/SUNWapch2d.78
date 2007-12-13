@@ -1,0 +1,10 @@
+#
+# As there isn't currently a way to delete packages on upgrade, create an
+# empty package which will cause the previous contents of the package to
+# be deleted when the newer package is installed.
+#
+# SUNWapch2d was EOFed in snv_78.
+#
+package SUNWapch2d
+version 2.2.3
+end package

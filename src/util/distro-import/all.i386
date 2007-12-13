@@ -1,7 +1,6 @@
 include i386/BRCMbnx
 include i386/CADP160
 include i386/HPFC
-include i386/NVDAgraphics
 include i386/SK98sol
 include i386/SKfp
 include i386/SUNWaac
@@ -12,7 +11,6 @@ include i386/SUNWadpu320
 include i386/SUNWagp
 include i386/SUNWagph
 include i386/SUNWahci
-include i386/SUNWamd8111s
 include i386/SUNWamr
 include i386/SUNWatheros
 include i386/SUNWaudd
@@ -45,7 +43,6 @@ include i386/SUNWnvsata
 include i386/SUNWnxge
 include i386/SUNWocf
 include i386/SUNWopenssl
-include i386/SUNWos86r
 include i386/SUNWpamsc
 include i386/SUNWpcmci
 include i386/SUNWpd
@@ -109,8 +106,6 @@ include common/SUNWadmr
 include common/SUNWant
 include common/SUNWapbas
 include common/SUNWapch
-include common/SUNWapch2
-include common/SUNWapch2d
 include common/SUNWapchd
 include common/SUNWapcj
 include common/SUNWapct
@@ -267,8 +262,6 @@ include common/SUNWgccruntime
 include common/SUNWgcmn
 include common/SUNWgd2
 include common/SUNWgdb
-include common/SUNWggrp
-include common/SUNWgimpprint
 include common/SUNWgksu
 include common/SUNWglt
 include common/SUNWgm4
@@ -283,7 +276,6 @@ include common/SUNWgnome-a11y-speech-freetts
 include common/SUNWgnome-applets
 include common/SUNWgnome-archive-mgr
 include common/SUNWgnome-audio
-include common/SUNWgnome-base-libs
 include common/SUNWgnome-base-libs-java
 include common/SUNWgnome-calculator
 include common/SUNWgnome-camera
@@ -303,7 +295,6 @@ include common/SUNWgnome-dialog
 include common/SUNWgnome-dictionary
 include common/SUNWgnome-disk-analyzer
 include common/SUNWgnome-display-mgr
-include common/SUNWgnome-doc-utils
 include common/SUNWgnome-dtlogin-integration
 include common/SUNWgnome-file-mgr
 include common/SUNWgnome-fonts
@@ -320,7 +311,6 @@ include common/SUNWgnome-img-organizer
 include common/SUNWgnome-internet-applets
 include common/SUNWgnome-intranet-applets
 include common/SUNWgnome-keyring-manager
-include common/SUNWgnome-libs
 include common/SUNWgnome-log-viewer
 include common/SUNWgnome-media
 include common/SUNWgnome-media-apps
@@ -336,7 +326,6 @@ include common/SUNWgnome-print
 include common/SUNWgnome-ps-viewer
 include common/SUNWgnome-python-desktop
 include common/SUNWgnome-python-libs
-include common/SUNWgnome-remote-desktop
 include common/SUNWgnome-screenshot
 include common/SUNWgnome-search-tool
 include common/SUNWgnome-session
@@ -365,7 +354,6 @@ include common/SUNWgnu-idn
 include common/SUNWgnu-which
 include common/SUNWgnutls
 include common/SUNWgpch
-include common/SUNWgscr
 include common/SUNWgsfot
 include common/SUNWgsfst
 include common/SUNWgss
@@ -378,7 +366,6 @@ include common/SUNWgzip
 include common/SUNWhal
 include common/SUNWhermon
 include common/SUNWhiu8
-include common/SUNWhpijs
 include common/SUNWhwdata
 include common/SUNWi13rf
 include common/SUNWi15rf
@@ -452,7 +439,6 @@ include common/SUNWjavadb-core
 include common/SUNWjavadb-demo
 include common/SUNWjavadb-docs
 include common/SUNWjavadb-javadoc
-include common/SUNWjaxp
 include common/SUNWjdmk-base
 include common/SUNWjdsrm
 include common/SUNWjdsver
@@ -530,7 +516,6 @@ include common/SUNWmd
 include common/SUNWmda
 include common/SUNWmdbdm
 include common/SUNWmddr
-include common/SUNWmercurial
 include common/SUNWmfdev
 include common/SUNWmfman
 include common/SUNWmfrun
@@ -548,7 +533,6 @@ include common/SUNWmyspell-dictionary-en
 include common/SUNWmysql
 include common/SUNWmysqlt
 include common/SUNWnca
-include common/SUNWncft
 include common/SUNWneon
 include common/SUNWnfsc
 include common/SUNWnfsckr
@@ -571,7 +555,6 @@ include common/SUNWpcan
 include common/SUNWpcelx
 include common/SUNWpcmcu
 include common/SUNWpcmem
-include common/SUNWpcre
 include common/SUNWpcsclite
 include common/SUNWpcser
 include common/SUNWpcwl
@@ -597,24 +580,9 @@ include common/SUNWpng
 include common/SUNWpolkit
 include common/SUNWpool
 include common/SUNWpoold
-include common/SUNWpostgr
-include common/SUNWpostgr-82-client
-include common/SUNWpostgr-82-contrib
-include common/SUNWpostgr-82-devel
-include common/SUNWpostgr-82-docs
 include common/SUNWpostgr-82-jdbc
-include common/SUNWpostgr-82-libs
-include common/SUNWpostgr-82-pl
-include common/SUNWpostgr-82-server
-include common/SUNWpostgr-82-server-data-root
 include common/SUNWpostgr-82-tcl
-include common/SUNWpostgr-contrib
-include common/SUNWpostgr-docs
 include common/SUNWpostgr-jdbc
-include common/SUNWpostgr-libs
-include common/SUNWpostgr-pl
-include common/SUNWpostgr-server
-include common/SUNWpostgr-server-data
 include common/SUNWpostgr-tcl
 include common/SUNWpostrun
 include common/SUNWppm
@@ -637,7 +605,6 @@ include common/SUNWpsutils
 include common/SUNWqlcu
 include common/SUNWqos
 include common/SUNWqosu
-include common/SUNWquagga
 include common/SUNWrcap
 include common/SUNWrcmdc
 include common/SUNWrcmds
@@ -676,12 +643,10 @@ include common/SUNWserweb
 include common/SUNWses
 include common/SUNWsfdoc
 include common/SUNWsfinf
-include common/SUNWsfman
 include common/SUNWsfwdemo
 include common/SUNWsfwhea
 include common/SUNWslp
 include common/SUNWsmapi
-include common/SUNWsmba
 include common/SUNWsmcmd
 include common/SUNWsmdoc
 include common/SUNWsmedia
@@ -760,7 +725,6 @@ include common/SUNWtcpdS
 include common/SUNWtcsh
 include common/SUNWtecla
 include common/SUNWter
-include common/SUNWtexi
 include common/SUNWtftp
 include common/SUNWthunderbird
 include common/SUNWthunderbird-calendar
@@ -838,11 +802,8 @@ include common/SUNWxorg-server
 include common/SUNWxorg-tsol-module
 include common/SUNWxorg-xkb
 include common/SUNWxprint-server
-include common/SUNWxrgrt
-include common/SUNWxrpcrt
 include common/SUNWxscreensaver-hacks
 include common/SUNWxscreensaver-hacks-gl
-include common/SUNWxsrt
 include common/SUNWxsun-keytables
 include common/SUNWxsun-server
 include common/SUNWxwacx
