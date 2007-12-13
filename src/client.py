@@ -130,7 +130,10 @@ def catalog_refresh(img, args):
                     (succeeded, total)
 
                 for auth, err in failures.args[0]:
-                        if isinstance(err, urllib2.URLError):
+                        if isinstance(err, urllib2.HTTPError):
+                                print >> sys.stderr, "   %s: %s - %s" % \
+                                    (err.filename, err.code, err.msg)
+                        elif isinstance(err, urllib2.URLError):
                                 if err.args[0][0] == 8:
                                         print >> sys.stderr, "    %s: %s" % \
                                             (urlparse.urlsplit(auth["origin"])[1].split(":")[0],

@@ -43,6 +43,7 @@
 
 import BaseHTTPServer
 import SocketServer
+import socket
 import errno
 import getopt
 import os
@@ -386,6 +387,7 @@ vops = {}
 
 if __name__ == "__main__":
         port = 80
+        unprivport = 10000
 
         if "PKG_DEPOT_CONTENT" in os.environ:
                 face.set_content_root(os.environ["PKG_DEPOT_CONTENT"])
@@ -414,5 +416,18 @@ if __name__ == "__main__":
 
         vops = set_ops()
 
-        server = ThreadingHTTPServer(('', port), pkgHandler)
+        try:
+                server = ThreadingHTTPServer(('', port), pkgHandler)
+        except socket.error, e:
+                if e.args[0] != errno.EACCES:
+                        raise
+
+                server = ThreadingHTTPServer(('', unprivport), pkgHandler)
+                print >> sys.stderr, \
+                     "Insufficient privilege to bind to port %d." % port
+                print >> sys.stderr, \
+                    "Bound server to port %d instead." % unprivport
+                print >> sys.stderr, \
+                    "Use the -p option to pick another port, if desired."
+
         server.serve_forever()

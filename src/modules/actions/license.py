@@ -49,15 +49,20 @@ class LicenseAction(generic.Action):
                 generic.Action.__init__(self, data, **attrs)
                 self.hash = "NOHASH"
 
+        def preinstall(self, pkgplan, orig):
+                # set attrs["path"] so filelist can handle this action
+                self.attrs["path"] = os.path.normpath(os.path.join(
+                    pkgplan.image.imgdir, "pkg",
+                    pkgplan.destination_fmri.get_dir_path(),
+                    "license." + self.attrs["license"]))
+
         def install(self, pkgplan, orig):
                 """Client-side method that installs the license."""
                 mode = 0444
                 owner = 0
                 group = 0
 
-                path = os.path.normpath(os.path.join(pkgplan.image.imgdir,
-                    "pkg", pkgplan.destination_fmri.get_dir_path(),
-                    "license." + self.attrs["license"]))
+                path = self.attrs["path"]
 
                 stream = self.data()
                 lfile = file(path, "wb")
@@ -75,6 +80,12 @@ class LicenseAction(generic.Action):
                 except OSError, e:
                         if e.errno != errno.EPERM:
                                 raise
+
+        def needsdata(self, orig):
+                if not orig or orig.hash != self.hash:
+                        return True
+
+                return False
 
         def remove(self, pkgplan):
                 path = os.path.normpath(os.path.join(pkgplan.image.imgdir,
