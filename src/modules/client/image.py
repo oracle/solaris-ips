@@ -656,73 +656,53 @@ class Image(object):
 
                 return self.groups[name]
 
-        def display_inventory(self, args):
-                """XXX Reimplement if we carve out the inventory as a has-a
-                object from image."""
+        def gen_inventory(self, patterns, all_known=False):
+                """Iterating the package inventory, yielding per-package info.
 
-                all_known = False
-                verbose = False
-                upgradable_only = False
+                Yielded data are of the form package,dict, where dict is:
+                  state  : package installation state
+                  frozen,
+                  incorporated,
+                  excludes,
+                  upgradable : Booleans indicating the aforementioned flags.
+                """
+                pkgs_known = []
+                badpats = []
 
-                opts, pargs = getopt.getopt(args, "auv")
-
-                for opt, arg in opts:
-                        if opt == "-a":
-                                all_known = True
-                        if opt == "-u":
-                                upgradable_only = True
-                        if opt == "-v":
-                                verbose = True
-
-                if verbose:
-                        fmt_str = "%-64s %-10s %c%c%c%c"
-                else:
-                        fmt_str = "%-50s %-10s %c%c%c%c"
-
-                proot = "%s/pkg" % self.imgdir
-
-                if len(pargs):
-                        pkgs_known = [ m
-                            for p in pargs
-                            for m in self.get_matching_fmris(p) ]
-
+                if patterns:
+                        for p in patterns:
+                                try:
+                                        for m in self.get_matching_fmris(p):
+                                                pkgs_known.append(m)
+                                except KeyError:
+                                        badpats.append(p)
                 elif all_known:
                         pkgs_known = [ pf for pf in
                             sorted(self.gen_known_package_fmris()) ]
-
                 else:
                         pkgs_known = self.list_installed_pkgs()
 
-                if len(pkgs_known) == 0:
-                        if len(pargs):
-                                print "pkg: no matching packages installed"
-                        else:
-                                print "pkg: no packages installed"
-                        return
-
-                print fmt_str % ("FMRI", "STATE", "U", "F", "I", "X")
-
-                counthash = {}
-                self.get_matching_fmris(pkgs_known, counthash = counthash)
+                if pkgs_known:
+                        counthash = {}
+                        self.get_matching_fmris(pkgs_known,
+                                                counthash = counthash)
 
                 for p in pkgs_known:
-                        upgradable = "-"
-                        frozen = "-"
-                        incorporated = "-"
-                        excludes = "-"
-
                         if counthash[p] > 1:
-                                upgradable = "u"
-                        elif upgradable_only:
-                                continue
-
-                        if not verbose:
-                                pf = p.get_short_fmri()
+                                upgradable = True
                         else:
-                                pf = p.get_fmri(self.get_default_authority())
+                                upgradable = False
 
-                        print fmt_str % (pf, self.get_pkg_state_by_fmri(p),
-                            upgradable, frozen, incorporated, excludes)
+                        inventory = {
+                                "state": self.get_pkg_state_by_fmri(p),
+                                "frozen": False,
+                                "incorporated": False,
+                                "excludes": False,
+                                "upgradable": upgradable}
+                        yield p, inventory
+
+                if badpats:
+                        raise RuntimeError, badpats
 
         def local_search(self, args):
                 """Search the image for the token in args[0]."""

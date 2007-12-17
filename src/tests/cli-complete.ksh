@@ -14,8 +14,8 @@
 # When distributing Covered Code, include this CDDL HEADER in each
 # file and include the License file at usr/src/OPENSOLARIS.LICENSE.
 # If applicable, add the following below this CDDL HEADER, with the
-# fields enclosed by brackets "[[]]" replaced with your own identifying
-# information: Portions Copyright [[yyyy]] [name of copyright owner]
+# fields enclosed by brackets "[]" replaced with your own identifying
+# information: Portions Copyright [yyyy] [name of copyright owner]
 #
 # CDDL HEADER END
 #
@@ -371,16 +371,8 @@ fi
 pkg refresh
 expect_exit 0 $?
 
-#
-# XXX currently broken, bugid:
-# 60 'pkg status does_not_exist' throws a traceback
-#
-begin_expect_test_fails 60
-
 pkg status -a shouldnotexist
 expect_exit 1 $?
-
-end_expect_test_fails
 
 end_assert
 # }}}1
@@ -477,8 +469,8 @@ if ! pkg uninstall bar foo; then
 	fail pkg uninstall bar foo failed
 fi
 
-if ! pkg status; then
-	fail pkg status failed
+if pkg status; then
+	fail pkg status succeeded in an empty image
 fi
 
 find $IMAGE_DIR
@@ -606,14 +598,10 @@ new_assert "client correctly handles errors on bad pkgsends"
 #
 new_test "client handles rejection from depot following bogus transaction"
 
-begin_expect_test_fails 89
-
 PKG_TRANS_ID="foobarbaz"
 pkgsend -s $REPO_URL add file /lib/libc.so.1 mode=0555 owner=root group=bin \
 	path=/lib/libc.so.1
 expect_exit 1 $?
-
-end_expect_test_fails
 
 end_assert
 # }}}1

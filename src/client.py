@@ -152,8 +152,64 @@ def catalog_refresh(img, args):
                 return 0
 
 def inventory_display(img, args):
+        all_known = False
+        verbose = False
+        upgradable_only = False
+
+        opts, pargs = getopt.getopt(args, "auv")
+
+        for opt, arg in opts:
+                if opt == "-a":
+                        all_known = True
+                elif opt == "-u":
+                        upgradable_only = True
+                elif opt == "-v":
+                        verbose = True
+
+        if verbose:
+                fmt_str = "%-64s %-10s %c%c%c%c"
+        else:
+                fmt_str = "%-50s %-10s %c%c%c%c"
+
         img.load_catalogs()
-        img.display_inventory(args)
+
+        try:
+                found = False
+                for pkg, state in img.gen_inventory(pargs, all_known):
+                        if upgradable_only and not state["upgradable"]:
+                                continue
+
+                        if not found:
+                                print fmt_str % ("FMRI", "STATE", "U", "F",
+                                                 "I", "X")
+                                found = True 
+                
+                        if not verbose:
+                                pf = pkg.get_short_fmri()
+                        else:
+                                pf = pkg.get_fmri(img.get_default_authority())
+
+                        print fmt_str % (pf, state["state"],
+                                         state["upgradable"] and "u" or "-",
+                                         state["frozen"] and "f" or "-",
+                                         state["incorporated"] and "i" or "-",
+                                         state["excludes"] and "x" or "-")
+                if not found:
+                        if not pargs:
+                                print >> sys.stderr, \
+                                    _("pkg: no packages installed")
+                        return 1                        
+                return 0
+        except RuntimeError, e:
+                if not found:
+                        print >> sys.stderr, \
+                            _("pkg: no matching packages installed")
+                        return 1
+
+                for pat in e.args[0]:
+                        print >> sys.stderr, \
+                            _("pkg: no packages matching '%s' installed") % pat
+                return 1
 
 def image_update(img, args):
         """Attempt to take all installed packages specified to latest
@@ -183,7 +239,9 @@ def image_update(img, args):
                     noexecute = noexecute)
         except RuntimeError, e:
 		print >> sys.stderr, _("image_update failed: %s") % e
-                sys.exit(1)
+                return 1
+
+        return 0
 
 def install(img, args):
         """Attempt to take package specified to INSTALLED state.  The operands
@@ -219,8 +277,9 @@ def install(img, args):
                 img.list_install(pkg_list, filters = filters, verbose = verbose,
                     noexecute = noexecute)
         except RuntimeError, e:
-		print >> sys.stderr, _("install failed: %s") % e
-                sys.exit(1)
+                print >> sys.stderr, _("install failed: %s") % e
+                return 1
+        return 0
 
 def uninstall(img, args):
         """Attempt to take package specified to DELETED state."""
@@ -241,6 +300,8 @@ def uninstall(img, args):
         img.load_catalogs()
 
         ip = imageplan.ImagePlan(img, recursive_removal)
+
+        error = 0
 
         for ppat in pargs:
                 rpat = re.sub("\*", ".*", ppat)
@@ -287,15 +348,17 @@ def uninstall(img, args):
         if not noexecute:
                 ip.execute()
 
+        return error
+
 def freeze(img, args):
         """Attempt to take package specified to FROZEN state, with given
         restrictions.  Package must have been in the INSTALLED state."""
-        return
+        return 0
 
 def unfreeze(img, args):
         """Attempt to return package specified to INSTALLED state from FROZEN
         state."""
-        return
+        return 0
 
 def search(img, args):
         """Search through the reverse index databases for the given token."""
@@ -376,7 +439,7 @@ def info(img, args):
         except KeyError:
                 print >> sys.stderr, \
                     _("pkg: no matching packages found in catalog")
-                return
+                return 1
 
         fmris = [
             m
@@ -385,7 +448,7 @@ def info(img, args):
         ]
 
         if not fmris:
-                return
+                return 0
 
         manifests = ( img.get_manifest(f, filtered = True) for f in fmris )
 
@@ -393,6 +456,8 @@ def info(img, args):
                 if not short and i > 0:
                         print
                 info_one(m, short, verbose)
+
+        return 0
 
 def info_one(manifest, short, verbose):
         authority, name, version = manifest.fmri.tuple()
@@ -439,7 +504,7 @@ def list_contents(img, args):
                 matches = img.get_matching_fmris(pargs)
         except KeyError:
                 print _("pkg: no matching packages found in catalog")
-                return
+                return 1
 
         fmris = [
             m
@@ -463,7 +528,7 @@ def list_contents(img, args):
                         sort_attrs = attrs[:1]
 
         if not fmris:
-                return
+                return 0
 
         manifests = ( img.get_manifest(f, filtered = True) for f in fmris )
 
@@ -541,6 +606,8 @@ def list_contents(img, args):
         print (fmt % tuple(headers)).rstrip()
         for line in sorted(lines, key = key_extract):
                 print (fmt % tuple(line)).rstrip()
+
+        return 0
 
 def image_create(img, args):
         """Create an image of the requested kind, at the given path.  Load
@@ -637,26 +704,23 @@ def main_func():
                 if subcommand == "refresh":
                         return catalog_refresh(img, pargs)
                 elif subcommand == "status":
-                        inventory_display(img, pargs)
+                        return inventory_display(img, pargs)
                 elif subcommand == "image-update":
-                        image_update(img, pargs)
+                        return image_update(img, pargs)
                 elif subcommand == "install":
-                        install(img, pargs)
+                        return install(img, pargs)
                 elif subcommand == "uninstall":
-                        try:
-                                uninstall(img, pargs)
-                        except KeyboardInterrupt:
-                                pass
+                        return uninstall(img, pargs)
                 elif subcommand == "freeze":
-                        freeze(img, pargs)
+                        return freeze(img, pargs)
                 elif subcommand == "unfreeze":
-                        unfreeze(img, pargs)
+                        return unfreeze(img, pargs)
                 elif subcommand == "search":
                         return search(img, pargs)
                 elif subcommand == "info":
-                        info(img, pargs)
+                        return info(img, pargs)
                 elif subcommand == "list":
-                        list_contents(img, pargs)
+                        return list_contents(img, pargs)
                 else:
                         print >> sys.stderr, \
                             _("pkg: unknown subcommand '%s'") % subcommand
@@ -666,8 +730,6 @@ def main_func():
                 print >> sys.stderr, \
                     _("pkg: illegal %s option -- %s") % (subcommand, e.opt)
                 usage()
-
-        return 0
 
 
 #
@@ -679,6 +741,9 @@ if __name__ == "__main__":
 		ret = main_func()
 	except SystemExit, e:
 		raise e
+	except KeyboardInterrupt:
+		print "Interrupted"
+		sys.exit(1)
 	except:
 		traceback.print_exc()
 		sys.exit(99)

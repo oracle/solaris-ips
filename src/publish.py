@@ -127,7 +127,7 @@ def trans_close(config, args):
                 try:
                         trans_id = os.environ["PKG_TRANS_ID"]
                 except KeyError:
-                        print >> stderr, _("No transaction ID specified")
+                        print >> sys.stderr, _("No transaction ID specified")
                         sys.exit(1)
 
         t = trans.Transaction()
