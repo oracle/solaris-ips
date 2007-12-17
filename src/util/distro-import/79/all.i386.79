@@ -99,7 +99,6 @@ include i386/SUNWamd8111s.76
 include i386/SUNWcakrx
 include i386/SUNWcarx
 include i386/SUNWcpr
-include i386/SUNWiwk
 include i386/SUNWlibvirt
 include i386/SUNWos86r.78
 include i386/SUNWurlgrabber

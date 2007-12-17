@@ -844,7 +844,6 @@ include i386/SUNWgrubS
 include i386/SUNWhea
 include i386/SUNWipw
 include i386/SUNWiwi
-include i386/SUNWiwk
 include i386/SUNWj6rt
 include i386/SUNWj6rtx
 include i386/SUNWkvm
@@ -1494,7 +1493,6 @@ idepend SUNWitos
 idepend SUNWitws2
 idepend SUNWiupdatemgru
 idepend SUNWiwi
-idepend SUNWiwk
 idepend SUNWixgb
 idepend SUNWixplt
 idepend SUNWj6cfg
