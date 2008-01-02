@@ -58,7 +58,11 @@ class UpdateLog(object):
 
         The UpdateLog must have an associated catalog; however,
         Catalogs are not required to have an UpdateLog.  The UpdateLog
-        allows catalogs to support incremental updates."""
+        allows catalogs to support incremental updates.
+        
+        The catalog format is a + or -, an isoformat timestamp, and a catalog
+        entry in server-side format.  They must be in order and separated by
+        spaces."""
 
         def __init__(self, update_root, catalog, maxfiles = 336):
                 """Create an instance of the UpdateLog.  "update_root" is
@@ -215,6 +219,7 @@ class UpdateLog(object):
                 added = 0
                 npkgs = 0
                 add_lines = []
+                unknown_lines = []
                 attrs = {}
 
                 for s in filep:
@@ -222,8 +227,23 @@ class UpdateLog(object):
                         if len(l) < 4:
                                 continue
 
-                        # Build list of entires to add
-                        if l[0] == "+":
+                        elif l[2] not in catalog.known_prefixes:
+                                # Add unknown line directly to catalog.
+                                # This can be post-processed later, when it
+                                # becomes known.
+                                #
+                                # XXX Notify user that unknown entry was added?
+                                ts = catalog.ts_to_datetime(l[1])
+                                if ts > cts:
+                                        if ts > mts:
+                                                mts = ts
+                                        str = "%s %s\n" % (l[2], l[3])
+                                        unknown_lines.append(str)
+
+                        elif l[0] == "+":
+                                # This is a known entry type.
+                                # Create a list of FMRIs to add, since
+                                # additional inspection is required
                                 ts = catalog.ts_to_datetime(l[1])
                                 if ts > cts:
                                         if ts > mts:
@@ -249,6 +269,8 @@ class UpdateLog(object):
                 # Write the new entries to the catalog
                 catf.seek(0, 2)
                 catf.writelines(add_lines)
+                if len(unknown_lines) > 0:
+                        catf.writelines(unknown_lines)
                 catf.close()
 
                 # Now re-write npkgs and Last-Modified in attributes file

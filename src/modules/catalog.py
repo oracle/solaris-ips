@@ -120,6 +120,7 @@ class Catalog(object):
                         self.build_catalog()
 
                 self.load_attrs()
+                self.check_prefix()
 
         def add_fmri(self, fmri, critical = False):
                 """Add a package, named by the fmri, to the catalog.
@@ -157,6 +158,16 @@ class Catalog(object):
 
                 return ts
 
+        def added_prefix(self, p):
+                """Perform any catalog transformations necessary if
+                prefix p is found in the catalog.  Previously, we didn't
+                know how to handle this prefix and now we do.  If we
+                need to transform the entry from server to client form,
+                make sure that happens here."""
+
+                # Nothing to do now.
+                pass
+
         def attrs_as_lines(self):
                 """Takes the list of in-memory attributes and returns
                 a list of strings, each string naming an attribute."""
@@ -178,6 +189,46 @@ class Catalog(object):
                 f = fmri.PkgFmri(urllib.unquote(os.path.basename(pkg)), None)
                 f.version = v
                 return f
+
+        def check_prefix(self):
+                """If this version of the catalog knows about new prefixes,
+                check the on disk catalog to see if we can perform any
+                transformations based upon previously unknown catalog formats.
+
+                This routine will add a catalog attribute if it doesn't exist,
+                otherwise it checks this attribute against a hard-coded
+                version-specific tuple to see if new methods were added.
+
+                If new methods were added, it will call an additional routine
+                that updates the on-disk catalog, if necessary."""
+
+
+                # If a prefixes attribute doesn't exist, write one and get on
+                # with it.
+                if not "prefix" in self.attrs:
+                        self.attrs["prefix"] = "".join(known_prefixes)
+                        self.save_attrs()
+                        return
+
+                # Prefixes attribute does exist.  Check if it has changed.
+                pfx_set = set(self.attrs["prefix"])
+
+                # Nothing to do if prefixes haven't changed
+                if pfx_set == known_prefixes:
+                        return
+
+                # If known_prefixes contains a prefix not in pfx_set,
+                # add the prefix and perform a catalog transform.
+                new = known_prefixes.difference(pfx_set)
+                if new:
+                        for p in new:
+                                self.added_prefix(p)
+
+                        pfx_set.update(new)
+
+                        # Write out updated prefixes list
+                        self.attrs["prefix"] = "".join(pfx_set)
+                        self.save_attrs()
 
         def build_catalog(self):
                 """Walk the on-disk package data and build (or rebuild) the
@@ -484,8 +535,14 @@ class Catalog(object):
                                 raise
 
                 for entry in pfile:
+                        if not entry[1].isspace() or \
+                            not entry[0] in known_prefixes:
+                                continue
+
                         try:
                                 cv, pkg, cat_name, cat_version = entry.split()
+                                if cv not in tuple("CV") or pkg != "pkg":
+                                        continue
                         except ValueError:
                                 # Handle old two-column catalog file, mostly in
                                 # use on server.
@@ -532,9 +589,13 @@ class Catalog(object):
                                 raise
 
                 for entry in pfile:
+                        if not entry[1].isspace() or \
+                            not entry[0] in known_prefixes:
+                                continue
+
                         try:
                                 cv, pkg, cat_name, cat_version = entry.split()
-                                if pkg == "pkg":
+                                if cv in tuple("CV") and pkg == "pkg":
                                         yield fmri.PkgFmri("%s@%s" %
                                             (cat_name, cat_version),
                                             authority = self.auth)
@@ -542,8 +603,9 @@ class Catalog(object):
                                 # Handle old two-column catalog file, mostly in
                                 # use on server.
                                 cv, cat_fmri = entry.split()
-                                yield fmri.PkgFmri(cat_fmri,
-                                    authority = self.auth)
+                                if cv in tuple("CV"):
+                                        yield fmri.PkgFmri(cat_fmri,
+                                            authority = self.auth)
 
                 pfile.close()
 
@@ -596,7 +658,11 @@ class Catalog(object):
                     os.path.join(path, "catalog")), "w+")
 
                 for s in filep:
-                        if s.startswith("S "):
+                        if not s[1].isspace():
+                                continue
+                        elif not s[0] in known_prefixes:
+                                catf.write(s)
+                        elif s.startswith("S "):
                                 attrf.write(s)
                         else:
                                 # XXX Need to be able to handle old and new
@@ -663,6 +729,9 @@ class Catalog(object):
 # In order to avoid a fine from the Department of Redundancy Department,
 # allow these methods to be invoked without explictly naming the Catalog class.
 recv = Catalog.recv
+
+# Prefixes that this catalog knows how to handle
+known_prefixes = frozenset("CSV")
 
 # Method used by Catalog and UpdateLog.  Since UpdateLog needs to know
 # about Catalog, keep it in Catalog to avoid circular dependency problems.
