@@ -19,8 +19,11 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
+
+"""Interfaces and implementation for the Catalog object, as well as functions
+that operate on lists of package FMRIs."""
 
 import os
 import re
@@ -112,7 +115,7 @@ class Catalog(object):
                 self.attrs["npkgs"] = 0
 
                 if not os.path.exists(cat_root):
-                        os.makedirs(cat_root) 
+                        os.makedirs(cat_root)
 
                 catpath = os.path.normpath(os.path.join(cat_root, "catalog"))
 
@@ -503,19 +506,16 @@ class Catalog(object):
                 package name which was matched."""
 
                 cat_auth = self.auth
-
-                if not matcher:
-                        matcher = fmri.fmri_match
+                tuples = {}
 
                 if not isinstance(patterns, list):
                         patterns = [ patterns ]
 
-                # 'pattern' may be a partially or fully decorated fmri; we want
-                # to extract its name and version to match separately against
-                # the catalog.
+                # 'patterns' may be partially or fully decorated fmris; we want
+                # to extract their names and versions to match separately
+                # against the catalog.
+                #
                 # XXX "5.11" here needs to be saner
-                tuples = {}
-
                 for pattern in patterns:
                         if isinstance(pattern, fmri.PkgFmri):
                                 tuples[pattern] = pattern.tuple()
@@ -523,16 +523,17 @@ class Catalog(object):
                                 tuples[pattern] = \
                                     fmri.PkgFmri(pattern, "5.11").tuple()
 
-                ret = []
+                pkgs = []
 
                 try:
                         pfile = file(os.path.normpath(
                             os.path.join(self.catalog_root, "catalog")), "r")
                 except IOError, e:
                         if e.errno == errno.ENOENT:
-                                return ret
+                                return pkgs
                         else:
                                 raise
+
 
                 for entry in pfile:
                         if not entry[1].isspace() or \
@@ -547,31 +548,18 @@ class Catalog(object):
                                 # Handle old two-column catalog file, mostly in
                                 # use on server.
                                 cv, cat_fmri = entry.split()
-                                pkg = "pkg"
-                                cat_auth, cat_name, cat_version = \
-                                    fmri.PkgFmri(cat_fmri, "5.11",
-                                        authority = self.auth).tuple()
+                                pkgs.append(fmri.PkgFmri(cat_fmri, "5.11",
+                                        authority = self.auth))
+                                continue
 
-                        for pattern in patterns:
-                                pat_auth, pat_name, pat_version = tuples[pattern]
-                                if pkg == "pkg" and \
-                                    (pat_auth == cat_auth or not pat_auth) and \
-                                    matcher(cat_name, pat_name):
-                                        pkgfmri = fmri.PkgFmri("%s@%s" %
-                                            (cat_name, cat_version),
-                                            authority = cat_auth)
-                                        if not pat_version or \
-                                            pkgfmri.version.is_successor(
-                                            pat_version, constraint) or \
-                                            pkgfmri.version == pat_version:
-                                                    if counthash is not None:
-                                                            if pattern in counthash:
-                                                                    counthash[pattern] += 1
-                                                            else:
-                                                                    counthash[pattern] = 1
-                                                    ret.append(pkgfmri)
+                        pkgs.append(fmri.PkgFmri("%s@%s" %
+                            (cat_name, cat_version), "5.11",
+                            authority = self.auth))
 
                 pfile.close()
+
+                ret = extract_matching_fmris(pkgs, cat_auth, patterns, matcher,
+                    constraint, counthash)
 
                 return sorted(ret, reverse = True)
 
@@ -759,3 +747,57 @@ def ts_to_datetime(ts):
 
         return dt
 
+
+def extract_matching_fmris(pkgs, cat_auth, patterns, matcher = None,
+    constraint = None, counthash = None):
+        """Iterate through the given list of PkgFmri objects,
+        looking for packages matching 'pattern', based on the function
+        in 'matcher' and the versioning constraint described by
+        'constraint'.  If 'matcher' is None, uses fmri subset matching
+        as the default.  Returns a sorted list of PkgFmri objects,
+        newest versions first.  If 'counthash' is a dictionary, instead
+        store the number of matched fmris for each package name which
+        was matched."""
+
+        if not matcher:
+                matcher = fmri.fmri_match
+
+        if not isinstance(patterns, list):
+                patterns = [ patterns ]
+
+        # 'pattern' may be a partially or fully decorated fmri; we want
+        # to extract its name and version to match separately against
+        # the catalog.
+        # XXX "5.11" here needs to be saner
+        tuples = {}
+
+        for pattern in patterns:
+                if isinstance(pattern, fmri.PkgFmri):
+                        tuples[pattern] = pattern.tuple()
+                else:
+                        assert pattern != None
+                        tuples[pattern] = \
+                            fmri.PkgFmri(pattern, "5.11").tuple()
+
+        ret = []
+
+        for p in pkgs:
+                cat_auth, cat_name, cat_version = p.tuple()
+
+                for pattern in patterns:
+                        pat_auth, pat_name, pat_version = tuples[pattern]
+                        if (pat_auth == cat_auth or not pat_auth) and \
+                            matcher(cat_name, pat_name):
+                                if not pat_version or \
+                                    p.version.is_successor(
+                                    pat_version, constraint) or \
+                                    p.version == pat_version:
+                                        if counthash is not None:
+                                                if pattern in counthash:
+                                                        counthash[pattern] += 1
+                                                else:
+                                                        counthash[pattern] = 1
+
+                                        ret.append(p)
+
+        return sorted(ret, reverse = True)

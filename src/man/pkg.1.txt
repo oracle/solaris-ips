@@ -11,9 +11,9 @@ SYNOPSIS
      /usr/bin/pkg uninstall [-nrv] pkg_fmri
 
      /usr/bin/pkg info [-sv] pkg_fmri_pattern [pkg_fmri_pattern ...]
-     /usr/bin/pkg list [-o attribute ...] [-s sort_key] [-t action_type ... ]
-         pkg_fmri_pattern [pkg_fmri_pattern ...]
-     /usr/bin/pkg status [-auv] [pkg_fmri_pattern ...]
+     /usr/bin/pkg list [-aH] [-o attribute ...] [-s sort_key]
+         [-t action_type ... ] [pkg_fmri_pattern ...]
+     /usr/bin/pkg status [-aHuv] [pkg_fmri_pattern ...]
      /usr/bin/pkg search [-lr] [-s server] token
 
      /usr/bin/pkg refresh
@@ -80,14 +80,15 @@ SUBCOMMANDS
           uninstall any packages which are dependent on the initial
 	  package.
 
-     info [-sv] pkg_fmri_pattern [pkg_fmri_pattern ...]
+     info [-sv] [pkg_fmri_pattern ...]
           Display information about packages in a human-readable form.
 	  With -s, display a one-line short-form giving the package name
 	  and description.  With -v, be extra verbose.  Multiple FMRI
-	  patterns may be specified.
+	  patterns may be specified; with no patterns, display
+	  information on all installed packages in the image.
 
-     list [-o attribute ...] [-s sort_key] [-t action_type ... ]
-              pkg_fmri_pattern [pkg_fmri_pattern ...]
+     list [-aH] [-o attribute ...] [-s sort_key] [-t action_type ... ]
+              [pkg_fmri_pattern ...]
 	  Display the contents (action attributes) of packages in the
 	  current image.  By default, only the path attribute is displayed,
 	  but the attribute set may be determined with the -o option.  The
@@ -101,7 +102,12 @@ SUBCOMMANDS
 
 	  The -t option limits the action types which will be displayed.
 
-	  Multiple FMRI patterns may be specified.
+	  The -H option causes the headers to be omitted.
+
+	  With no arguments, the output includes all installed packages.
+	  Alternatively, multiple FMRI patterns may be specified, which
+	  restricts the display to the contents of the matching
+	  packages.
 
 	  The special attribute names ":name" and ":key" correspond to the
 	  action name and the value of its key attribute, respectively.
@@ -121,12 +127,14 @@ SUBCOMMANDS
           Both -l and -r (or -s) may be specified together, in which case both
           local and remote searches will be performed.
 
-     status [-auv] [pkg_fmri_pattern ...]
+     status [-aHuv] [pkg_fmri_pattern ...]
           Report on the state of packages in the current image.  With
           -a, report on all packages known, whether installed or not;
           without -a, report only based on installed packages in the
           image.  With -u, report only packages with newer versions
           available.  With -v, report full package FMRIs.
+
+	  The -H option causes the headers to be omitted.
 
 EXAMPLES
      Example 1:  Create a new, full image, with authority example.com,

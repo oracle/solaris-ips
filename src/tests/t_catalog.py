@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 import unittest
@@ -35,7 +35,7 @@ import pkg.updatelog as updatelog
 
 class TestCatalog(unittest.TestCase):
         def setUp(self):
-		self.cpath = tempfile.mkdtemp()
+                self.cpath = tempfile.mkdtemp()
                 self.c = catalog.Catalog(self.cpath)
                 self.npkgs = 0
 
@@ -52,8 +52,8 @@ class TestCatalog(unittest.TestCase):
                         self.c.add_fmri(f)
                         self.npkgs += 1
 
-	def tearDown(self):
-		shutil.rmtree(self.cpath)
+        def tearDown(self):
+                shutil.rmtree(self.cpath)
 
         def testnpkgs(self):
                 self.assert_(self.npkgs == self.c.npkgs())
@@ -90,13 +90,13 @@ class TestCatalog(unittest.TestCase):
 
 class TestEmptyCatalog(unittest.TestCase):
         def setUp(self):
-		self.cpath = tempfile.mkdtemp()
+                self.cpath = tempfile.mkdtemp()
                 self.c = catalog.Catalog(self.cpath)
                 # XXX How do we do this on Windows?
                 self.nullf = file("/dev/null", "w")
 
-	def tearDown(self):
-		shutil.rmtree(self.cpath)
+        def tearDown(self):
+                shutil.rmtree(self.cpath)
                 self.nullf.close()
 
         def testmatchingfmris(self):
@@ -121,9 +121,9 @@ class TestEmptyCatalog(unittest.TestCase):
 
 class TestUpdateLog(unittest.TestCase):
         def setUp(self):
-		self.cpath = tempfile.mkdtemp()
+                self.cpath = tempfile.mkdtemp()
                 self.c = catalog.Catalog(self.cpath)
-		self.upath = tempfile.mkdtemp()
+                self.upath = tempfile.mkdtemp()
                 self.ul = updatelog.UpdateLog(self.upath, self.c)
                 self.npkgs = 0
 
@@ -145,9 +145,9 @@ class TestUpdateLog(unittest.TestCase):
                 self.ts2 = datetime.datetime.now()
 
 
-	def tearDown(self):
-		shutil.rmtree(self.upath)
-		shutil.rmtree(self.cpath)
+        def tearDown(self):
+                shutil.rmtree(self.upath)
+                shutil.rmtree(self.cpath)
 
         def testnohist(self):
                 self.failIf(self.ul.enough_history(self.ts1))

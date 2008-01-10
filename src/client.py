@@ -19,20 +19,20 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 # pkg - package system client utility
 #
 # We use urllib2 for GET and POST operations, but httplib for PUT and DELETE
 # operations.
-
+#
 # The client is going to maintain an on-disk cache of its state, so that startup
 # assembly of the graph is reduced.
-
+#
 # Client graph is of the entire local catalog.  As operations progress, package
 # states will change.
-
+#
 # Deduction operation allows the compilation of the local component of the
 # catalog, only if an authoritative repository can identify critical files.
 #
@@ -78,10 +78,10 @@ Install subcommands:
         pkg uninstall [-nrv] pkg_fmri
 
         pkg info [-sv] pkg_fmri_pattern [pkg_fmri_pattern ... ]
-        pkg list [-o attribute ...] [-s sort_key] [-t action_type ... ]
+        pkg list [-H] [-o attribute ...] [-s sort_key] [-t action_type ... ]
             pkg_fmri_pattern [pkg_fmri_pattern ...]
         pkg search [-lr] [-s server] token
-        pkg status [-auv] [pkg_fmri_pattern ...]
+        pkg status [-aHuv] [pkg_fmri_pattern ...]
 
         pkg image-create [-FPUz] [--full|--partial|--user] [--zone]
             [--authority prefix=url] dir
@@ -153,14 +153,18 @@ def catalog_refresh(img, args):
 
 def inventory_display(img, args):
         all_known = False
-        verbose = False
+        display_headers = True
         upgradable_only = False
+        verbose = False
 
-        opts, pargs = getopt.getopt(args, "auv")
+
+        opts, pargs = getopt.getopt(args, "aHuv")
 
         for opt, arg in opts:
                 if opt == "-a":
                         all_known = True
+                elif opt == "-H":
+                        display_headers = False
                 elif opt == "-u":
                         upgradable_only = True
                 elif opt == "-v":
@@ -180,10 +184,11 @@ def inventory_display(img, args):
                                 continue
 
                         if not found:
-                                print fmt_str % ("FMRI", "STATE", "U", "F",
-                                                 "I", "X")
-                                found = True 
-                
+                                if display_headers:
+                                        print fmt_str % ("FMRI", "STATE", "U",
+                                            "F", "I", "X")
+                                found = True
+
                         if not verbose:
                                 pf = pkg.get_short_fmri()
                         else:
@@ -198,7 +203,7 @@ def inventory_display(img, args):
                         if not pargs:
                                 print >> sys.stderr, \
                                     _("pkg: no packages installed")
-                        return 1                        
+                        return 1
                 return 0
         except RuntimeError, e:
                 if not found:
@@ -210,6 +215,7 @@ def inventory_display(img, args):
                         print >> sys.stderr, \
                             _("pkg: no packages matching '%s' installed") % pat
                 return 1
+                img.display_inventory(args)
 
 def image_update(img, args):
         """Attempt to take all installed packages specified to latest
@@ -238,7 +244,7 @@ def image_update(img, args):
                 img.list_install(pkg_list, verbose = verbose,
                     noexecute = noexecute)
         except RuntimeError, e:
-		print >> sys.stderr, _("image_update failed: %s") % e
+                print >> sys.stderr, _("image_update failed: %s") % e
                 return 1
 
         return 0
@@ -284,8 +290,6 @@ def install(img, args):
 def uninstall(img, args):
         """Attempt to take package specified to DELETED state."""
 
-        # XXX Move uninstall logic to pkg.client.image.
-
         opts, pargs = getopt.getopt(args, "nrv")
 
         noexecute = recursive_removal = verbose = False
@@ -315,16 +319,12 @@ def uninstall(img, args):
                         error = 1
                         continue
 
-                pnames = dict(
-                    (m, 1)
-                    for m in matches
-                    if img.is_installed(m)
-                )
+                pnames = [ m for m in matches if img.is_installed(m) ]
 
                 if len(pnames) > 1:
                         print >> sys.stderr, \
                             _("pkg: '%s' matches multiple packages") % ppat
-                        for k in pnames.keys():
+                        for k in pnames:
                                 print "\t%s" % k
                         continue
 
@@ -333,7 +333,7 @@ def uninstall(img, args):
                             _("pkg: '%s' matches no installed packages") % ppat
                         continue
 
-                ip.propose_fmri_removal(pnames.keys()[0])
+                ip.propose_fmri_removal(pnames[0])
 
         if verbose:
                 print _("Before evaluation:")
@@ -433,19 +433,17 @@ def info(img, args):
 
         img.load_catalogs()
 
-        # XXX Want to show info for all packages if no args given.
-        try:
-                matches = img.get_matching_fmris(pargs)
-        except KeyError:
-                print >> sys.stderr, \
-                    _("pkg: no matching packages found in catalog")
-                return 1
+        if len(pargs) == 0:
+                fmris = [ x for x in img.gen_installed_pkgs() ]
+        else:
+                try:
+                        matches = img.get_matching_fmris(pargs)
+                except KeyError:
+                        print >> sys.stderr, \
+                            _("pkg: no matching packages found in catalog")
+                        return 1
 
-        fmris = [
-            m
-            for m in matches
-            if img.is_installed(m)
-        ]
+                fmris = [ m for m in matches if img.is_installed(m) ]
 
         if not fmris:
                 return 0
@@ -476,19 +474,27 @@ def info_one(manifest, short, verbose):
                 print "Summary:", summary
 
 def list_contents(img, args):
-        """List package contents."""
+        """List package contents.
+
+        If no arguments are given, display for all locally installed packages.
+        With -H omit headers and use a tab-delimited format; with -o select
+        attributes to display; with -s, specify attributes to sort on; with -t,
+        specify which action types to list."""
 
         # XXX Need remote-info option, to request equivalent information
         # from repository.
 
-        opts, pargs = getopt.getopt(args, "o:s:t:")
+        opts, pargs = getopt.getopt(args, "Ho:s:t:")
 
+        display_headers = True
         verbose = False
         attrs = []
         sort_attrs = []
         action_types = []
         for opt, arg in opts:
-                if opt == "-o":
+                if opt == "-H":
+                        display_headers = False
+                elif opt == "-o":
                         attrs.extend(arg.split(","))
                 elif opt == "-s":
                         sort_attrs.append(arg)
@@ -497,20 +503,22 @@ def list_contents(img, args):
 
         img.load_catalogs()
 
-        # XXX Want to list contents of all packages if no args given.
-        # XXX Maybe want to make get_matching_fmris() return only installed
-        # fmris, if asked.
-        try:
-                matches = img.get_matching_fmris(pargs)
-        except KeyError:
-                print _("pkg: no matching packages found in catalog")
+        if len(pargs) == 0:
+                fmris = [ x for x in img.gen_installed_pkgs() ]
+        else:
+                # XXX Maybe want to make get_matching_fmris() return only
+                # installed fmris, if asked.
+                try:
+                        matches = img.get_matching_fmris(pargs)
+                except KeyError:
+                        print _("pkg: no matching packages found in catalog")
                 return 1
 
-        fmris = [
-            m
-            for m in matches
-            if img.is_installed(m)
-        ]
+                fmris = [
+                    m
+                    for m in matches
+                    if img.is_installed(m)
+                ]
 
         if not attrs:
                 # XXX Possibly have multiple exclusive attributes per column?
@@ -532,13 +540,15 @@ def list_contents(img, args):
 
         manifests = ( img.get_manifest(f, filtered = True) for f in fmris )
 
-        lines = []
         # widths is a list of tuples of column width and justification.  Start
         # with the widths of the column headers, excluding any dotted prefixes.
         JUST_UNKN = 0
         JUST_LEFT = -1
         JUST_RIGHT = 1
-        widths = [ (len(attr) - attr.find(".") - 1, JUST_UNKN) for attr in attrs ]
+        widths = [ (len(attr) - attr.find(".") - 1, JUST_UNKN)
+            for attr in attrs ]
+        lines = []
+
         for manifest in manifests:
                 for action in manifest.actions:
                         if action_types and action.name not in action_types:
@@ -601,9 +611,15 @@ def list_contents(img, args):
         # Now that we know all the widths, multiply them by the justification
         # values to get positive or negative numbers to pass to the %-expander.
         widths = [ e[0] * e[1] for e in widths ]
-        fmt = ("%%%ss " * len(widths)) % tuple(widths)
-        headers = [a[a.find(".") + 1:].upper() for a in attrs]
-        print (fmt % tuple(headers)).rstrip()
+        if display_headers:
+                fmt = ("%%%ss " * len(widths)) % tuple(widths)
+                headers = [a[a.find(".") + 1:].upper() for a in attrs]
+
+                print (fmt % tuple(headers)).rstrip()
+        else:
+                fmt = "%s\t" * len(widths)
+                fmt.rstrip("\t")
+
         for line in sorted(lines, key = key_extract):
                 print (fmt % tuple(line)).rstrip()
 
@@ -626,19 +642,24 @@ def image_create(img, args):
         auth_name = None
         auth_url = None
 
-	opts, pargs = getopt.getopt(args, "FPUza:")
+        opts, pargs = getopt.getopt(args, "FPUza:",
+            ["full", "partial", "user", "zone", "authority="])
 
         for opt, arg in opts:
-                if opt == "-F":
+                if opt == "-F" or opt == "--full":
                         type = image.IMG_ENTIRE
-                if opt == "-P":
+                if opt == "-P" or opt == "--partial":
                         type = image.IMG_PARTIAL
-                if opt == "-U":
+                if opt == "-U" or opt == "--user":
                         type = image.IMG_USER
-                if opt == "-z":
+                if opt == "-z" or opt == "--zone":
                         is_zone = True
-                if opt == "-a":
+                if opt == "-a" or opt == "--authority":
                         auth_name, auth_url = arg.split("=", 1)
+
+        if len(pargs) != 1:
+                print >> sys.stderr, _("pkg: image-create requires a single image directory path")
+                usage()
 
         img.set_attrs(type, pargs[0], is_zone, auth_name, auth_url)
 
@@ -672,14 +693,14 @@ def main_func():
         # XXX Handle PKG_SERVER environment variable.
 
         if subcommand == "image-create":
-		try:
-			ret = image_create(img, pargs)
-		except getopt.GetoptError, e:
-			print >> sys.stderr, \
+                try:
+                        ret = image_create(img, pargs)
+                except getopt.GetoptError, e:
+                        print >> sys.stderr, \
                             _("pkg: illegal %s option -- %s") % \
                             (subcommand, e.opt)
                         usage()
-		return ret
+                return ret
 
         for opt, arg in opts:
                 if opt == "-R":
@@ -737,14 +758,14 @@ def main_func():
 # so that we can more easily detect these in testing of the CLI commands.
 #
 if __name__ == "__main__":
-	try:
-		ret = main_func()
-	except SystemExit, e:
-		raise e
-	except KeyboardInterrupt:
-		print "Interrupted"
-		sys.exit(1)
-	except:
-		traceback.print_exc()
-		sys.exit(99)
-	sys.exit(ret)
+        try:
+                ret = main_func()
+        except SystemExit, e:
+                raise e
+        except KeyboardInterrupt:
+                print "Interrupted"
+                sys.exit(1)
+        except:
+                traceback.print_exc()
+                sys.exit(99)
+        sys.exit(ret)

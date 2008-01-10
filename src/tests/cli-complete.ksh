@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 # cli-complete.ksh - basic sanity test exercising all basic pkg(1) operations
@@ -378,7 +378,7 @@ end_assert
 # }}}1
 
 new_assert "Send package bar@1.1, dependent on foo@1.2.  Install bar@1.0." \
-    "Upgrade image."
+    "List all packages.  Upgrade image."
 # {{{1
 
 find $IMAGE_DIR
@@ -389,8 +389,8 @@ if ! pkg refresh; then
 	fail pkg refresh failed
 fi
 
-if ! pkg status -a; then
-	fail pkg status -a failed
+if ! pkg status -aH; then
+	fail pkg status -aH failed
 fi
 
 if ! pkg install -v bar@1.0; then
@@ -441,7 +441,9 @@ if ! pkgsend -s $REPO_URL close; then
 	fail pkgsend close failed
 fi
 
-find $IMAGE_DIR
+if ! pkg list -H; then
+	fail pkg list -H failed
+fi
 
 if ! pkg status; then
 	fail pkg status failed

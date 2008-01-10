@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 import ConfigParser
@@ -244,7 +244,7 @@ class Image(object):
 
                 # XXX Do we want to recognize regex (some) metacharacters and
                 # switch automatically to the regex matcher?
-                
+
                 # XXX If the patterns contain an authority, we could reduce the
                 # number of catalogs searched by only looking at catalogs whose
                 # authorities match FMRIs in the pattern.
@@ -263,8 +263,13 @@ class Image(object):
                         m.extend(c.get_matching_fmris(patterns, matcher,
                             constraint, counthash))
 
+                ips = [ ip for ip in self.gen_installed_pkgs() if ip not in m ]
+
+                m.extend(catalog.extract_matching_fmris(ips, cat, patterns,
+                    matcher, constraint, counthash))
+
                 if not m:
-                        raise KeyError, "packages matching '%s' not found in catalog" \
+                        raise KeyError, "packages matching '%s' not found in catalog or image" \
                             % patterns
 
                 return m
@@ -518,13 +523,20 @@ class Image(object):
                         self.catalogs[auth["prefix"]] = c
 
         def gen_known_package_fmris(self):
+                """Generate the list of known packages, being the union of the
+                   catalogs and the installed image."""
+
+                li = [ x for x in self.gen_installed_pkgs() ]
+
+                # Generate those packages in the set of catalogs.
                 for c in self.catalogs.values():
                         for pf in c.fmris():
+                                if pf in li:
+                                        li.remove(pf)
                                 yield pf
 
-        def list_installed_pkgs(self):
+        def gen_installed_pkgs(self):
                 proot = "%s/pkg" % self.imgdir
-                ret = []
 
                 for pd in sorted(os.listdir(proot)):
                         for vd in sorted(os.listdir("%s/%s" % (proot, pd))):
@@ -535,14 +547,12 @@ class Image(object):
                                 auth = fp.readline()
                                 fp.close()
                                 fmristr = urllib.unquote("%s@%s" % (pd, vd))
-                                ret.append(fmri.PkgFmri(fmristr,
-                                    authority = auth))
 
-                return ret
+                                yield fmri.PkgFmri(fmristr, authority = auth)
 
         def getpwnam(self, name):
                 """Do a name lookup in the image's password database.
-                
+
                 Keep a cached copy in memory for fast lookups, and fall back to
                 the current environment if the password database isn't
                 available.
@@ -601,7 +611,7 @@ class Image(object):
 
         def getgrnam(self, name):
                 """Do a name lookup in the image's group database.
-                
+
                 Keep a cached copy in memory for fast lookups, and fall back to
                 the current environment if the group database isn't available.
                 """
@@ -672,15 +682,22 @@ class Image(object):
                 if patterns:
                         for p in patterns:
                                 try:
-                                        for m in self.get_matching_fmris(p):
-                                                pkgs_known.append(m)
+                                        pkgs_known.extend([ m
+                                            for m in self.get_matching_fmris(p)
+                                            ])
                                 except KeyError:
                                         badpats.append(p)
+
+                        pkgs_known.extend(
+                                [ x for x in self.gen_installed_pkgs()
+                                for p in patterns
+                                if fmri.fmri_match(x.get_pkg_stem(), p)
+                                and not p in pkgs_known ] )
                 elif all_known:
                         pkgs_known = [ pf for pf in
                             sorted(self.gen_known_package_fmris()) ]
                 else:
-                        pkgs_known = self.list_installed_pkgs()
+                        pkgs_known = sorted(self.gen_installed_pkgs())
 
                 if pkgs_known:
                         counthash = {}
@@ -692,7 +709,6 @@ class Image(object):
                                 upgradable = True
                         else:
                                 upgradable = False
-
                         inventory = {
                                 "state": self.get_pkg_state_by_fmri(p),
                                 "frozen": False,
