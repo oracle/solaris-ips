@@ -487,4 +487,9 @@ add dir path=usr/share/icons/redglass mode=0755 owner=root group=other
 add dir path=usr/share/icons/redglass/cursors mode=0755 owner=root group=other
 add dir path=usr/share/icons/whiteglass mode=0755 owner=root group=other
 add dir path=usr/share/icons/whiteglass/cursors mode=0755 owner=root group=other
+# fix broken group 
+chattr usr/lib/pkgconfig group=other
+chattr usr/lib/amd64/pkgconfig group=other
+# fix broken mode
+chattr usr/X11/share/X11/locale/iso8859-11 mode=0755
 end package

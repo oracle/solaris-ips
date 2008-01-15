@@ -52,3 +52,7 @@ class AttributeAction(generic.Action):
                 else:
                         assert len(attrs) == 2
                         assert set(attrs.keys()) == set([ "name", "value" ])
+	
+	def verify(self, img, **args):
+		""" since there's no install method, this class is always installed correctly"""
+		return []

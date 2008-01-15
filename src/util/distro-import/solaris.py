@@ -96,7 +96,7 @@ class pkg(object):
                         # XXX This decidedly ignores "e"-type files.
 
                         if o.type in "fv" and o.pathname in usedlist:
-                                print reuse_err % (
+                                s = reuse_err % (
                                         o.pathname, 
                                         self.name, 
                                         imppkg, 
@@ -104,11 +104,13 @@ class pkg(object):
                                         usedlist[o.pathname][1].name,
                                         usedlist[o.pathname][0], 
                                         svr4pkgpaths[usedlist[o.pathname][0]])
+				print s
+				raise RuntimeError, s
                         elif o.type != "i":
 
                                 if o.type in "dx" and imppkg not in hollow_pkgs:
                                         self.nonhollow_dirs[o.pathname] = True
-                                        
+
                                 usedlist[o.pathname] = (imppkg, self)
                                 self.check_perms(o)
                                 self.files.append(o)
@@ -239,15 +241,17 @@ class pkg(object):
                 if not o:
                         raise RuntimeError, "No file '%s' in package '%s'" % \
                             (file, curpkg.name)
-                # It's probably a file, but all we care about are the
-                # attributes.
-                if show_debug:
-                        print "Updating attributes on '%s' in '%s' with '%s'" % \
-                            (file, curpkg.name, line)
 
-                a = actions.fromstr(("%s path=%s %s" % (self.convert_type(f.type), 
-                    file, line)).rstrip())
-                o[0].changed_attrs = a.attrs
+		# It's probably a file, but all we care about are the
+                # attributes.
+
+		for f in o:
+			a = actions.fromstr(("%s path=%s %s" % (self.convert_type(f.type), 
+								file, line)).rstrip())
+			if show_debug:
+				print "Updating attributes on '%s' in '%s' with '%s'" % \
+				    (f.pathname, curpkg.name, a)
+			f.changed_attrs = a.attrs
 
         # apply a chattr to wildcarded files/dirs 
         # also allows package specification, wildcarding, regexp edit
@@ -360,29 +364,48 @@ def publish_pkg(pkg):
         # Publish non-file objects first: they're easy.
         for f in pkg.files:
                 if f.type in "dx":
-                        print "    %s add dir %s %s %s %s" % \
-                            (pkg.name, f.mode, f.owner, f.group, f.pathname)
                         action = actions.directory.DirectoryAction(
                             None, mode = f.mode, owner = f.owner,
                             group = f.group, path = f.pathname)
+			if hasattr(f, "changed_attrs"):
+				action.attrs.update(f.changed_attrs)
+			print "    %s add dir %s %s %s %s" % (
+				pkg.name,
+				action.attrs["mode"], 
+				action.attrs["owner"], 
+				action.attrs["group"], 
+				action.attrs["path"]
+				)
                 elif f.type == "s":
-                        print "    %s add link %s %s" % \
-                            (pkg.name, f.pathname, f.target)
                         action = actions.link.LinkAction(None,
                             target = f.target, path = f.pathname)
+			if hasattr(f, "changed_attrs"):
+				action.attrs.update(f.changed_attrs)
+                        print "    %s add link %s %s" % (
+				pkg.name, 
+				action.attrs["path"],
+				action.attrs["target"]
+				)
                 elif f.type == "l":
-                        print "    %s add hardlink %s %s" % \
-                            (pkg.name, f.pathname, f.target)
                         action = actions.hardlink.HardLinkAction(None,
                             target = f.target, path = f.pathname)
+			if hasattr(f, "changed_attrs"):
+				action.attrs.update(f.changed_attrs)
                         pkg.depend += process_link_dependencies(
-                            f.pathname, f.target)
+                            action.attrs["path"], action.attrs["target"])
+                        print "    %s add hardlink %s %s" % (
+				pkg.name,
+				action.attrs["path"],
+				action.attrs["target"]
+				)
                 else:
-                        continue
+		       continue
+
                 #
                 # If the originating package was hollow, tag this file
                 # as being global zone only.
                 #
+
                 if f.type not in "dx" and \
                     usedlist[f.pathname][0] in hollow_pkgs:
                         action.attrs["opensolaris.zone"] = "global"
@@ -431,6 +454,10 @@ def publish_pkg(pkg):
                 pathdict = dict((f.pathname, f) for f in g)
                 for f in bundle:
                         if f.name == "license":
+				# add transaction id so that every version
+				# of a pkg will have a unique license to prevent
+				# license from disappearing on upgrade
+				f.attrs["transaction_id"] = "%s" % id
                                 t.add(cfg, id, f)
                         elif f.attrs["path"] in pathdict:
                                 if pkgname in hollow_pkgs:
@@ -449,6 +476,7 @@ def publish_pkg(pkg):
                                             pathdict[path].changed_attrs)
                                         # chattr may have produced two path values
                                         f.attrs["path"] = f.attrlist("path")[-1]
+
                                 print "    %s add file %s %s %s %s%s" % \
                                     (pkg.name, f.attrs["mode"],
                                         f.attrs["owner"], f.attrs["group"],

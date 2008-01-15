@@ -33,7 +33,7 @@ directory-type packaging object."""
 import os
 import sha
 import errno
-
+from stat import *
 import generic
 
 class DirectoryAction(generic.Action):
@@ -95,6 +95,38 @@ class DirectoryAction(generic.Action):
                                 if e.errno != errno.EPERM:
                                         raise
 
+	def verify(self, img, **args):
+		""" make sure directory is correctly installed"""
+
+                mode = int(self.attrs["mode"], 8)
+                owner = img.getpwnam(self.attrs["owner"]).pw_uid
+                group = img.getgrnam(self.attrs["group"]).gr_gid
+
+		path = os.path.normpath(os.path.sep.join((img.get_root(),
+					self.attrs["path"])))
+		try:
+			stat = os.lstat(path)
+		except OSError, e:
+			if e.errno == ENOENT:
+				return ["Directory %s missing" % self.attrs["path"]]
+			return ["Unexpected exception: %s" % e]
+
+		errors = []
+
+		if not S_ISDIR(stat[ST_MODE]):
+			errors.append("%s is not a directory" % self.attrs["path"])
+
+		if stat[ST_UID] != owner:
+			errors.append("owner=%s" % img.getpwuid(stat[ST_UID]).pw_name)
+		if stat[ST_GID] != group:
+			errors.append("group=%s" % img.getgrgid(stat[ST_GID]).gr_name)
+
+
+		if S_IMODE(stat[ST_MODE]) != mode:
+			errors.append("mode=0%.3o" % S_IMODE(stat[ST_MODE]))
+
+		return errors
+		
         def remove(self, pkgplan):
                 path = os.path.normpath(os.path.sep.join(
                     (pkgplan.image.get_root(), self.attrs["path"])))

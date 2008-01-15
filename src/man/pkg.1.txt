@@ -10,6 +10,7 @@ SYNOPSIS
      /usr/bin/pkg install [-nv] pkg_fmri
      /usr/bin/pkg uninstall [-nrv] pkg_fmri
 
+     /usr/bin/pkh verify [-fv] [pkg_fmri_pattern ...]
      /usr/bin/pkg info [-sv] pkg_fmri_pattern [pkg_fmri_pattern ...]
      /usr/bin/pkg list [-aH] [-o attribute ...] [-s sort_key]
          [-t action_type ... ] [pkg_fmri_pattern ...]
@@ -27,8 +28,9 @@ DESCRIPTION
      locations for packages to be installed, and install packages into
      those images.
 
-     pkg can also uninstall packages, refresh the package catalogs, and
-     query the image for various tokens.
+     pkg can also uninstall packages, refresh the package catalogs,
+     validate package installation in an image and query the image for 
+     various tokens
 
      Images can be of three types:  full images, capable of providing a
      complete system; partial images, which are linked to a full image
@@ -133,6 +135,12 @@ SUBCOMMANDS
           without -a, report only based on installed packages in the
           image.  With -u, report only packages with newer versions
           available.  With -v, report full package FMRIs.
+
+     verify [-fv] [pkg_fmri_pattern ...]
+          Validate the installation of packages in the current image.
+          With -v, do more verbose reporting. With -f, fully validate the
+          contents of files agains the hash values in the package
+          manifests, as well as checking for file and directory presence.
 
 	  The -H option causes the headers to be omitted.
 

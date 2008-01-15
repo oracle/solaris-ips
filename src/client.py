@@ -82,7 +82,7 @@ Install subcommands:
             pkg_fmri_pattern [pkg_fmri_pattern ...]
         pkg search [-lr] [-s server] token
         pkg status [-aHuv] [pkg_fmri_pattern ...]
-
+        pkg verify [-vf] [pkg_fmri_pattern ...]
         pkg image-create [-FPUz] [--full|--partial|--user] [--zone]
             [--authority prefix=url] dir
         pkg image-update [-nv]
@@ -216,6 +216,51 @@ def inventory_display(img, args):
                             _("pkg: no packages matching '%s' installed") % pat
                 return 1
                 img.display_inventory(args)
+
+def verify_image(self, args):
+        opts, pargs = getopt.getopt(args, "vf")
+
+	forever = verbose = False
+
+	for opt, arg in opts:
+		if opt == "-v":
+			verbose = True
+		elif opt == "-f":
+			forever = True
+
+	if not pargs:
+		pkgs = set((a for a in self.gen_installed_pkgs())) 
+	else:		
+		# XXX consider moving this generator into image class
+		# need better fmri matching here
+		pkgs = set((p
+		    for a in pargs
+		    for p in self.gen_installed_pkgs()
+		    if a in str(p)
+		))								
+		if not pkgs:
+			print "No packages match"
+			return 1
+
+	any_errors = False
+
+	for p in pkgs:
+		pkgerr = False
+		for error in img.verify(p, verbose=verbose, forever=forever):
+			if not pkgerr:
+				print "package %s NOT installed correctly:" % p
+				pkgerr = True
+			print "\tIncorrectly installed action <%s>: Error(s): %s" % \
+			    (error[0], error[1])
+		if verbose and not pkgerr:
+			print "package %s installed correctly." % p 
+
+		any_errors = any_errors or pkgerr
+
+	if any_errors:
+		return 1
+	return 0
+
 
 def image_update(img, args):
         """Attempt to take all installed packages specified to latest
@@ -370,7 +415,7 @@ def search(img, args):
         for opt, arg in opts:
                 if opt == "-l":
                         local = True
-                if opt == "-r":
+                elif opt == "-r":
                         remote = True
                 elif opt == "-s":
                         if not arg.startswith("http://") and \
@@ -742,6 +787,8 @@ def main_func():
                         return info(img, pargs)
                 elif subcommand == "list":
                         return list_contents(img, pargs)
+		elif subcommand == "verify":
+			return verify_image(img, pargs)
                 else:
                         print >> sys.stderr, \
                             _("pkg: unknown subcommand '%s'") % subcommand

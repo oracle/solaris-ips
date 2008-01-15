@@ -5,9 +5,9 @@ e none boot/solaris/devicedb/master 0644 root sys
 f none boot/solaris/filelist.ramdisk 0644 root sys
 e none etc/X11/gdm/custom.conf 0644 root sys
 e none etc/devlink.tab 0644 root sys
-f none etc/driver_aliases 0644 root sys
+e none etc/driver_aliases 0644 root sys
 e none etc/inet/hosts 0444 root sys
-f none etc/name_to_major 0644 root sys
+e none etc/name_to_major 0644 root sys
 e none etc/nsswitch.conf 0644 root sys
 e none etc/pam.conf 0644 root sys
 e none etc/passwd 0644 root sys

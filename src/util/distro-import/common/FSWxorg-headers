@@ -184,4 +184,7 @@ drop usr/lib/pkgconfig/xf86miscproto.pc
 drop usr/lib/pkgconfig/xf86vidmodeproto.pc
 drop usr/lib/pkgconfig/xorg-server.pc
 import FSWxorg-headers
+# fix broken group 
+chattr usr/lib/pkgconfig group=other
+chattr usr/lib/amd64/pkgconfig group=other
 end package

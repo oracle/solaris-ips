@@ -33,8 +33,9 @@ packaging object."""
 import os
 import errno
 import sha
-
+from stat import *
 import generic
+import pkg.elf as elf
 
 class FileAction(generic.Action):
         """Class representing a file-type packaging object."""
@@ -124,6 +125,59 @@ class FileAction(generic.Action):
                 # This is safe even if temp == final_path.
                 os.rename(temp, final_path)
 
+	def verify(self, img, **args):
+		""" verify that file is present and if preserve attribute
+		not present, that hashes match"""
+                path = self.attrs["path"]
+                mode = int(self.attrs["mode"], 8)
+                owner = img.getpwnam(self.attrs["owner"]).pw_uid
+                group = img.getgrnam(self.attrs["group"]).gr_gid
+
+                path = os.path.normpath(os.path.sep.join(
+                    (img.get_root(), path)))
+
+		try:
+			stat = os.lstat(path)
+		except OSError, e:
+			if e.errno == ENOENT:
+				return ["File %s missing" % self.attrs["path"]]
+			return ["Unexpected exception: %s" % e]
+
+		errors = []
+
+		if not S_ISREG(stat[ST_MODE]):
+			errors.append("%s is not a regular file" % self.attrs["path"])
+		if stat[ST_UID] != owner:
+			errors.append("owner=%s" % img.getpwuid(stat[ST_UID]).pw_name)
+		if stat[ST_GID] != group:
+			errors.append("group=%s" % img.getgrgid(stat[ST_GID]).gr_name)
+		if S_IMODE(stat[ST_MODE]) != mode:
+			errors.append("mode=0%.3o" % S_IMODE(stat[ST_MODE]))
+
+		if "preserve" not in self.attrs and \
+		    "pkg.size" in self.attrs and    \
+		    stat[ST_SIZE] != int(self.attrs["pkg.size"]):
+			errors.append("pkg.size=%d" % stat[ST_SIZE])
+
+		if "preserve" not in self.attrs and args["forever"] == True:
+			try:
+				if "elfhash" in self.attrs:
+					elfhash = elf.get_dynamic(path)["hash"]
+					if elfhash != self.attrs["elfhash"]:
+						errors.append("elfhash=%s" % elfhash)
+
+				# not an elf file -> try normal hash
+				else:
+					f = file(path)
+					data = f.read()
+					f.close()
+					hashvalue = sha.new(data).hexdigest()
+					if hashvalue != self.hash:
+						errors.append("hash=%s" % hashvalue)
+			except OSError, e:
+				errors.append("Unexpected exception %s" % e)
+		return errors
+
         # If we're not upgrading, or the file contents have changed,
         # retrieve the file and write it to a temporary location.
         # For ELF files, only write the new file if the elfhash changed.
@@ -142,7 +196,12 @@ class FileAction(generic.Action):
                 path = os.path.normpath(os.path.sep.join(
                     (pkgplan.image.get_root(), self.attrs["path"])))
 
-                os.unlink(path)
+		try:
+			os.unlink(path)
+		except OSError,e:
+			if e.errno != errno.ENOENT:
+				raise
+
 
         def different(self, other):
                 # Override the generic different() method to ignore the file

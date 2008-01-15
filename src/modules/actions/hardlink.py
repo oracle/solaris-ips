@@ -31,7 +31,7 @@ This module contains the HardLinkAction class, which represents a hardlink-type
 packaging object."""
 
 import os
-
+from stat import *
 import link
 
 class HardLinkAction(link.LinkAction):
@@ -65,3 +65,32 @@ class HardLinkAction(link.LinkAction):
                             (pkgplan.image.get_root(), target)))
 
                 os.link(target, path)
+
+	def verify(self, img, **args):
+		path = self.attrs["path"]
+                target = self.attrs["target"]
+
+                path = os.path.normpath(os.path.sep.join(
+                    (img.get_root(), path)))
+
+                if not os.path.exists(path):
+			return "No such path %s" % self.attrs["path"]
+
+                if target[0] != "/":
+                        target = os.path.normpath(
+                            os.path.join(os.path.split(path)[0], target))
+                else:
+                        target = os.path.normpath(os.path.sep.join(
+                            (img.get_root(), target)))
+
+		if not os.path.exists(target):
+			return ["Target %s doesn't exist", self.attrs["target"]]
+
+		try:
+			if os.stat(path)[ST_INO] != os.stat(target)[ST_INO]:
+				return ["Path and Target inodes not the same"]
+
+		except OSError, e:
+			return ["Unexected exception: %s" % e]
+
+		return []

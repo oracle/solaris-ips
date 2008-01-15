@@ -192,6 +192,56 @@ class DriverAction(generic.Action):
                                     "return code %s" % \
                                     (self.name, self.attrs["name"], retcode)
 
+	def verify(self, img, **args):
+		""" verify that driver is installed w/ correct aliases, etc"""
+		errors = []
+
+		name = self.attrs["name"]
+
+		try:
+			n2mf = file(os.path.normpath(os.path.sep.join(
+			    (img.get_root(), "etc/name_to_major"))))
+		except OSError, e:
+			error.append("etc/name_to_major: %s" % e)
+
+                # Check to see if the driver has been installed.
+                
+		major = [
+                    line.rstrip()
+                    for line in n2mf
+                    if line.split()[0] == name
+                ]
+		n2mf.close()
+
+		if not major:
+			errors.append("%s not in etc/name_to_major" % self.attrs["name"])
+		elif len(major) > 1:
+			errors.append("more than one instance of %s in etc/name_to_major" \
+			    % self.attrs["name"])
+
+		# Check to see if the driver has the right aliases
+		try:
+			daf = file(os.path.normpath(os.path.sep.join(
+			    (img.get_root(), "etc/driver_aliases"))))
+		except OSError, e:
+			errors.append("etc/driver_aliases: %s" % e)
+
+		else:
+			aliases = [
+			    line.split()[1].strip('"')
+			    for line in daf
+			    if line.split()[0] == name
+			]
+			daf.close()
+			if set(aliases) != set(self.attrlist("alias")):
+				for a in set(aliases) - set(self.attrlist("alias")):
+					errors.append("extra alias %s found in etc/aliases file" % a)
+				for a in set(self.attrlist("alias")) - set(aliases):
+					errors.append("missing alias %s in etc/aliases file" % a)
+				errors.append(" ".join([ "alias=%s" % a for a in aliases ]))
+		# XXX finish class, privs, policy, etc
+		return errors
+
         def remove(self, pkgplan):
                 args = (
                     self.rem_drv,

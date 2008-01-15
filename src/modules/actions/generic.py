@@ -337,6 +337,10 @@ class Action(object):
                         if e.errno != errno.EPERM:
                                 raise
 
+	def verify(self, img, **args):
+		"""returns True if correctly installed in the given image"""
+		return ["verify method for action type %s unimplemented" % self.name]
+
         def needsdata(self, orig):
                 """Returns True if the action transition requires a
                 datastream."""
@@ -344,7 +348,7 @@ class Action(object):
 
         def attrlist(self, name):
                 """return list containing value of named attribute."""
-	        value = self.attrs[name]
+	        value = self.attrs.get(name, [])
 		if isinstance(value, list):
 		        return value
                 else:

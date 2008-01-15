@@ -86,15 +86,41 @@ class LegacyAction(generic.Action):
                         pfile.write("%s=%s\n" % (k, v))
                 pfile.close()
 
-                file(os.path.join(pkgplan.image.get_root(),
-                    "var/sadm/install/contents"), "w").close()
+		# the svr4 pkg commands need contents file to work, but the
+		# needed directories are in the SUNWpkgcmds package....
+		# Since this file is always of zero length, we can let this
+		# fail until those directories (and the commands that
+		# need them) appear.
+
+		try:
+			file(os.path.join(pkgplan.image.get_root(),
+			    "var/sadm/install/contents"), "w").close()
+		except IOError, e:
+			if e.errno != errno.ENOENT:
+				raise
 
                 os.chmod(pkginfo, 0644)
+
+       	def verify(self, img, **args):
+                pkgdir = os.path.join(img.get_root(), "var/sadm/pkg",
+                    self.attrs["pkg"])
+
+		# XXX this could be a better check & exactly validate pkginfo contents
+
+                if not os.path.isdir(pkgdir):
+			return ["Missing directory var/sadm/pkg/%s" %
+			    self.attrs["pkg"]]
+                pkginfo = os.path.join(pkgdir, "pkginfo")
+
+		if not os.path.isfile(os.path.join(pkgdir, "pkginfo")):
+			return ["Missing file var/sadm/pkg/%s/pkginfo" %
+			    self.attrs["pkg"]]
+		return []
 
         def remove(self, pkgplan):
                 # Don't remove the dummy package if another package thinks it
                 # owns part of it.
-                for k, fmri in pkgplan.image.search([self.attrs["pkg"]]):
+                for k, fmri in pkgplan.image.local_search([self.attrs["pkg"]]):
                         if k == "legacy_pkg" and \
                             fmri != pkgplan.destination_fmri:
                                 return
