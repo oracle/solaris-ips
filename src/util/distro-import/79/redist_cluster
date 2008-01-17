@@ -921,7 +921,6 @@ idepend SUNWaconf
 idepend SUNWad810
 idepend SUNWadixp
 idepend SUNWadmap
-idepend SUNWadmc
 idepend SUNWadmlib-sysid
 idepend SUNWadmr
 idepend SUNWadpu320
@@ -2069,7 +2068,6 @@ idepend SUNWaccu
 idepend SUNWad810
 idepend SUNWadixp
 idepend SUNWadmap
-idepend SUNWadmc
 idepend SUNWadmlib-sysid
 idepend SUNWadmr
 idepend SUNWadpu320
