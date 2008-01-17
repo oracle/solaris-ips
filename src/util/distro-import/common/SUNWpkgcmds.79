@@ -1,0 +1,3 @@
+package SUNWpkgcmds
+import SUNWpackaging
+end package

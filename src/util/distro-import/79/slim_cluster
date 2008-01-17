@@ -17,7 +17,6 @@ include common/SUNWTk
 include common/SUNWa2ps
 include common/SUNWacc
 include common/SUNWadmap
-include common/SUNWadmc
 include common/SUNWadmlib-sysid
 include common/SUNWadmr
 include common/SUNWafe
@@ -167,7 +166,7 @@ include common/SUNWgssc
 include common/SUNWgssdh
 include common/SUNWgssk
 include common/SUNWgtar
-include common/SUNWgui-install
+include common/SUNWgui-install.79
 include common/SUNWgzip
 include common/SUNWhal
 include common/SUNWhpijs.77
@@ -255,7 +254,7 @@ include common/SUNWperl-authen-pam
 include common/SUNWperl584core
 include common/SUNWperl584usr
 include common/SUNWpilot-link
-include common/SUNWpkgcmds
+include common/SUNWpkgcmds.79
 include common/SUNWpm
 include common/SUNWpng
 include common/SUNWpolkit
@@ -439,7 +438,6 @@ idepend SUNWaccu
 idepend SUNWad810
 idepend SUNWadixp
 idepend SUNWadmap
-idepend SUNWadmc
 idepend SUNWadmlib-sysid
 idepend SUNWadmr
 idepend SUNWadpu320
@@ -676,7 +674,7 @@ idepend SUNWgssc
 idepend SUNWgssdh
 idepend SUNWgssk
 idepend SUNWgtar
-idepend SUNWgui-install
+idepend SUNWinstall
 idepend SUNWgzip
 idepend SUNWhal
 idepend SUNWhalr
@@ -806,8 +804,7 @@ idepend SUNWperl584usr
 idepend SUNWpiclr
 idepend SUNWpiclu
 idepend SUNWpilot-link
-idepend SUNWpkgcmdsr
-idepend SUNWpkgcmdsu
+idepend SUNWpackaging
 idepend SUNWpmr
 idepend SUNWpmu
 idepend SUNWpng

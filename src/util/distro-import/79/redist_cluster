@@ -23,7 +23,7 @@ include common/SUNWa2ps
 include common/SUNWacc
 include common/SUNWaconf
 include common/SUNWadmap
-include common/SUNWadmc
+include common/SUNWadmc.79
 include common/SUNWadmlib-sysid
 include common/SUNWadmr
 include common/SUNWafe
@@ -258,7 +258,7 @@ include common/SUNWgssdh
 include common/SUNWgssk
 include common/SUNWgtar
 include common/SUNWgtkperf
-include common/SUNWgui-install
+include common/SUNWgui-install.79
 include common/SUNWgzip
 include common/SUNWhal
 include common/SUNWhermon
@@ -1411,7 +1411,7 @@ idepend SUNWgssdh
 idepend SUNWgssk
 idepend SUNWgtar
 idepend SUNWgtkperf
-idepend SUNWgui-install
+idepend SUNWinstall
 idepend SUNWgzip
 idepend SUNWhadis
 idepend SUNWhadma
@@ -2306,7 +2306,7 @@ idepend SUNWgssc
 idepend SUNWgssdh
 idepend SUNWgssk
 idepend SUNWgtar
-idepend SUNWgui-install
+idepend SUNWinstall
 idepend SUNWgzip
 idepend SUNWhal
 idepend SUNWhalr

@@ -1,5 +1,6 @@
 include all.i386
 include common/SUNWIPython
+include common/SUNWadmc.79
 include common/SUNWafe
 include common/SUNWapch2.78
 include common/SUNWapch22
@@ -28,6 +29,7 @@ include common/SUNWgnome-libs.76
 include common/SUNWgnome-remote-desktop.78
 include common/SUNWgnu-idn
 include common/SUNWgscr.77
+include common/SUNWgui-install.79
 include common/SUNWhpijs.77
 include common/SUNWisns
 include common/SUNWjaxp.78
@@ -51,6 +53,7 @@ include common/SUNWphp524core
 include common/SUNWphp524doc
 include common/SUNWphp524man
 include common/SUNWphp524usr
+include common/SUNWpkgcmds.79
 include common/SUNWpmdbdpg
 include common/SUNWpmdbi
 include common/SUNWpostgr-82-client.79
@@ -98,6 +101,7 @@ include i386/NVDAgraphics.76
 include i386/SUNWamd8111s.76
 include i386/SUNWcakrx
 include i386/SUNWcarx
+include i386/SUNWckr.77
 include i386/SUNWcpr
 include i386/SUNWlibvirt
 include i386/SUNWos86r.78
