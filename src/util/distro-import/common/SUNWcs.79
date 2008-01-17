@@ -1,0 +1,35 @@
+package SUNWcs
+import SUNWcsu
+# BEGIN NON-REDISTRIBUTABLE
+drop usr/bin/ksh
+drop usr/bin/pfksh
+drop usr/bin/rksh
+add link path=usr/bin/rksh target=rksh93
+# END NON-REDISTRIBUTABLE
+# hack until clofi integrates into nevada
+drop usr/sbin/lofiadm
+from SUNWclofi import
+usr/sbin/lofiadm
+end import
+import SUNWcsr
+drop var/svc/profile/generic_open.xml
+drop var/svc/profile/generic_limited_net.xml
+drop etc/inet/hosts
+drop etc/nsswitch.conf
+from ./SUNWfixes import
+# until the necessary actions are available
+etc/inet/services
+etc/security/auth_attr
+etc/security/prof_attr
+# switch to gdm
+var/svc/profile/generic_open.xml
+var/svc/profile/generic_limited_net.xml
+# customizations for indiana
+etc/inet/hosts
+etc/nsswitch.conf
+etc/user_attr
+etc/security/exec_attr
+root
+usr/bin/ksh
+end import
+end package

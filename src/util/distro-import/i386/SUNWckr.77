@@ -1,0 +1,17 @@
+package SUNWckr
+import SUNWckr
+# BEGIN NON-REDISTRIBUTABLE
+drop kernel/drv/amd64/bmc
+drop kernel/drv/bmc
+drop kernel/drv/bmc.conf
+# END NON-REDISTRIBUTABLE
+# XXX until new clofi hits nevada
+drop kernel/drv/amd64/lofi
+drop kernel/drv/lofi
+from SUNWclofi import
+kernel/drv/amd64/lofi
+kernel/drv/lofi
+chattr kernel/drv/amd64/lofi opensolaris.zone=global
+chattr kernel/drv/lofi opensolaris.zone=global
+end import
+end package

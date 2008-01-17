@@ -1,0 +1,10 @@
+package SUNWcsd
+import SUNWcsd
+drop etc/driver_aliases
+drop etc/name_to_major
+from ./SUNWfixes import
+etc/devlink.tab
+etc/driver_aliases
+etc/name_to_major
+end import
+end package

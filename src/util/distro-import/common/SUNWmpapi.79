@@ -1,0 +1,7 @@
+package SUNWmpapi
+import SUNWmpapi
+import SUNWmpapir
+from ./SUNWfixes import
+etc/mpapi.conf
+end import
+end package

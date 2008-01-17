@@ -1,0 +1,7 @@
+package SUNWimac
+import SUNWimac
+import SUNWimacr
+from ./SUNWfixes import
+etc/ima.conf
+end import
+end package

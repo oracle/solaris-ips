@@ -1,0 +1,7 @@
+package SUNWcfcl
+import SUNWcfcl
+import SUNWcfclr
+from ./SUNWfixes import
+etc/hba.conf
+end import
+end package
