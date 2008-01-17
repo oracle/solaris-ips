@@ -69,6 +69,7 @@ CACHED_FILES=					\
 	boot/grub/menu.lst			\
 	boot/grub/splash.xpm.gz			\
 	etc/inet/hosts				\
+	lib/svc/method/sshd			\
 	var/svc/profile/generic_limited_net.xml \
 	var/svc/profile/generic_open.xml
 
@@ -214,7 +215,7 @@ proto:	Makefile
 	mkdir -p proto/etc/inet
 	mkdir -p proto/etc/security
 	mkdir -p proto/etc/svc
-	mkdir -p proto/lib
+	mkdir -p proto/lib/svc/method
 	mkdir -p proto/usr/bin
 	mkdir -p proto/usr/jdk/instances/jdk1.6.0/jre
 	mkdir -p proto/usr/share/man
