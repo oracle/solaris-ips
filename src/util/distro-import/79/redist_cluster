@@ -76,7 +76,7 @@ include common/SUNWcdrw
 include common/SUNWcea
 include common/SUNWced
 include common/SUNWcedu
-include common/SUNWcfcl
+include common/SUNWcfcl.79
 include common/SUNWcfpl
 include common/SUNWchxge
 include common/SUNWciu8
@@ -84,8 +84,8 @@ include common/SUNWcnetr
 include common/SUNWcns
 include common/SUNWcpcu
 include common/SUNWcpp
-include common/SUNWcs
-include common/SUNWcsd
+include common/SUNWcs.79
+include common/SUNWcsd.79
 include common/SUNWcsdhcm
 include common/SUNWcsl
 include common/SUNWcsmauth
@@ -278,7 +278,7 @@ include common/SUNWidnu
 include common/SUNWii
 include common/SUNWiiim
 include common/SUNWima
-include common/SUNWimac
+include common/SUNWimac.79
 include common/SUNWimagick
 include common/SUNWiniu8
 include common/SUNWintgige
@@ -358,7 +358,7 @@ include common/SUNWmibii
 include common/SUNWmkcd
 include common/SUNWmlib
 include common/SUNWmp
-include common/SUNWmpapi
+include common/SUNWmpapi.79
 include common/SUNWmpathadm
 include common/SUNWmpsvplr
 include common/SUNWmusicbrainz
@@ -832,7 +832,7 @@ include i386/SUNWcakr
 include i386/SUNWcakrx
 include i386/SUNWcar
 include i386/SUNWcarx
-include i386/SUNWckr
+include i386/SUNWckr.77
 include i386/SUNWcpc
 include i386/SUNWcpr
 include i386/SUNWdfb
@@ -896,6 +896,8 @@ idepend FSWxorg-fonts
 idepend FSWxorg-headers
 idepend FSWxwpft
 idepend FSWxwrtl
+idepend NVDAgraphics
+idepend NVDAgraphicsr
 idepend SUNW1394
 idepend SUNW1394h
 idepend SUNWDTraceToolkit

@@ -6,7 +6,11 @@ f none boot/solaris/filelist.ramdisk 0644 root sys
 e none etc/X11/gdm/custom.conf 0644 root sys
 e none etc/devlink.tab 0644 root sys
 e none etc/driver_aliases 0644 root sys
+e preserve etc/hba.conf 0644 root bin
+e preserve etc/ima.conf 0644 root bin
 e none etc/inet/hosts 0444 root sys
+e none etc/inet/services 0444 root sys
+e preserve etc/mpapi.conf 0644 root bin
 e none etc/name_to_major 0644 root sys
 e none etc/nsswitch.conf 0644 root sys
 e none etc/pam.conf 0644 root sys
@@ -21,8 +25,8 @@ f none etc/svc/global_repo.db 0600 root sys
 f none etc/svc/nonglobal_repo.db 0600 root sys
 e none etc/user_attr 0644 root sys
 e none etc/user_attr.cdonly 0644 root sys
-d none root 0700 root root
 f none lib/libc.so.1 0755 root bin
+d none root 0700 root root
 f none usr/bin/ksh 0755 root bin
 f none usr/jdk/instances/jdk1.6.0/LICENSE 0644 root bin
 f none usr/jdk/instances/jdk1.6.0/README.html 0644 root bin

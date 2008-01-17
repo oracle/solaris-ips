@@ -34,14 +34,14 @@ include common/SUNWbrltty
 include common/SUNWbtool
 include common/SUNWbzip
 include common/SUNWced
-include common/SUNWcfcl
+include common/SUNWcfcl.79
 include common/SUNWcfpl
 include common/SUNWchxge
 include common/SUNWcnetr
 include common/SUNWcpcu
 include common/SUNWcpp
-include common/SUNWcs
-include common/SUNWcsd
+include common/SUNWcs.79
+include common/SUNWcsd.79
 include common/SUNWcsl
 include common/SUNWdbus
 include common/SUNWdbus-bindings
@@ -180,7 +180,7 @@ include common/SUNWicdc
 include common/SUNWidnl
 include common/SUNWii
 include common/SUNWima
-include common/SUNWimac
+include common/SUNWimac.79
 include common/SUNWimagick
 include common/SUNWintgige
 include common/SUNWipf
@@ -228,7 +228,7 @@ include common/SUNWman
 include common/SUNWmd
 include common/SUNWmkcd
 include common/SUNWmlib
-include common/SUNWmpapi
+include common/SUNWmpapi.79
 include common/SUNWmpathadm
 include common/SUNWmpsvplr
 include common/SUNWmusicbrainz
@@ -377,7 +377,7 @@ include i386/SUNWcakr
 include i386/SUNWcakrx
 include i386/SUNWcar
 include i386/SUNWcarx
-include i386/SUNWckr
+include i386/SUNWckr.77
 include i386/SUNWcpc
 include i386/SUNWdrmr
 include i386/SUNWfreetype2

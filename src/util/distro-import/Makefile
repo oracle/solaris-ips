@@ -51,10 +51,15 @@ TMPPKGS=SUNWfixes
 #
 ELIDED_FILES= \
 	boot/solaris/devicedb/master	\
+	etc/devlink.tab			\
+	etc/hba.conf			\
+	etc/ima.conf			\
+	etc/inet/services		\
+	etc/mpapi.conf			\
 	etc/security/auth_attr		\
-	etc/security/prof_attr		\
 	etc/security/exec_attr		\
-	etc/devlink.tab
+	etc/security/prof_attr		\
+	etc/user_attr
 
 #
 # these files get placed into proto area from per-build cached versions
@@ -63,7 +68,6 @@ CACHED_FILES=					\
 	$(ELIDED_FILES)				\
 	boot/grub/menu.lst			\
 	boot/grub/splash.xpm.gz			\
-	etc/user_attr				\
 	etc/inet/hosts				\
 	var/svc/profile/generic_limited_net.xml \
 	var/svc/profile/generic_open.xml
