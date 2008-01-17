@@ -396,18 +396,10 @@ class Image(object):
                 assert len(pkgs_inst) <= 1
 
                 auth = self.installed_file_authority(pkgs_inst[0][1])
+                if not auth:
+                        auth = self.get_default_authority()
 
                 return fmri.PkgFmri(pkgs_inst[0][0], authority = auth)
-
-        def gen_installed_pkgs(self):
-                idir = "%s/pkg" % self.imgdir
-
-                for pd in os.listdir(idir):
-                        for vd in os.listdir("%s/%s" % (idir, pd)):
-                                if os.path.exists("%s/%s/%s/installed" %
-                                    (idir, pd, vd)):
-                                        yield fmri.PkgFmri(urllib.unquote(
-                                            "%s@%s" % (pd, vd)))
 
         def get_pkg_state_by_fmri(self, pfmri):
                 """Given pfmri, determine the local state of the package."""
@@ -424,9 +416,7 @@ class Image(object):
                 if fmri.authority:
                         return
 
-                adict = self.cfg_cache.authorities
-                da = adict[self.get_default_authority()]
-                fmri.set_authority(da["prefix"])
+                fmri.set_authority(self.get_default_authority())
 
         def has_version_installed(self, fmri):
                 """Check that the version given in the FMRI or a successor is
@@ -554,9 +544,11 @@ class Image(object):
                                 path = "%s/%s/%s/installed" % (proot, pd, vd)
                                 if not os.path.exists(path):
                                         continue
-                                fp = file(path, "r")
-                                auth = fp.readline()
-                                fp.close()
+
+                                auth = self.installed_file_authority(path)
+                                if not auth:
+                                        auth = self.get_default_authority()
+
                                 fmristr = urllib.unquote("%s@%s" % (pd, vd))
 
                                 yield fmri.PkgFmri(fmristr, authority = auth)
