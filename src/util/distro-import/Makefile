@@ -20,26 +20,21 @@
 #
 
 #
-# Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
 # Needs to point to filesystem on Solaris install dvd
 # replace as needed with a local solaris install image
 
-WOS_PKGS=/net/netinstall.sfbay/export/nv/x/$(BUILDID)/Solaris_11/Product
-SLIM_PATH=/net/indiana-build.central/export/slim_stage
-GNOME_PKGS=$(SLIM_PATH)/GNOME/latest
-INSTALL_PKGS=$(SLIM_PATH)/INSTALL/latest
-SLIM_PKGS=$(SLIM_PATH)/SLIM_PKGS/latest
-FOX_PKGS=$(SLIM_PATH)/FOX/latest
+WOS_PKGS=/net/netinstall.sfbay/export/nv/x/79a/Solaris_11/Product
+NONWOS_PKGS=/net/paradise.sfbay/export/integrate_dock/nv/nv_indianaprev2/i386
+TEST_PKGS=
 REPO=http://localhost:10000
 JUST_THESE_PKGS=
 
-ALL_PKGS=$(GNOME_PKGS) \
-	 $(INSTALL_PKGS) \
-	 $(SLIM_PKGS) \
-	 $(FOX_PKGS) \
+ALL_PKGS=$(TEST_PKGS) \
+	 $(NONWOS_PKGS) \
 	 $(WOS_PKGS)
 
 TMPPKGS=SUNWfixes
