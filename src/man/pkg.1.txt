@@ -11,7 +11,7 @@ SYNOPSIS
      /usr/bin/pkg uninstall [-nrv] pkg_fmri
 
      /usr/bin/pkh verify [-fv] [pkg_fmri_pattern ...]
-     /usr/bin/pkg info [-sv] pkg_fmri_pattern [pkg_fmri_pattern ...]
+     /usr/bin/pkg info [-msv] pkg_fmri_pattern [pkg_fmri_pattern ...]
      /usr/bin/pkg list [-aH] [-o attribute ...] [-s sort_key]
          [-t action_type ... ] [pkg_fmri_pattern ...]
      /usr/bin/pkg status [-aHuv] [pkg_fmri_pattern ...]
@@ -82,12 +82,15 @@ SUBCOMMANDS
           uninstall any packages which are dependent on the initial
 	  package.
 
-     info [-sv] [pkg_fmri_pattern ...]
+     info [-msv] [pkg_fmri_pattern ...]
           Display information about packages in a human-readable form.
 	  With -s, display a one-line short-form giving the package name
 	  and description.  With -v, be extra verbose.  Multiple FMRI
 	  patterns may be specified; with no patterns, display
 	  information on all installed packages in the image.
+
+	  The -m option displays the raw package contents in manifest
+	  form.
 
      list [-aH] [-o attribute ...] [-s sort_key] [-t action_type ... ]
               [pkg_fmri_pattern ...]

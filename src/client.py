@@ -77,7 +77,7 @@ Install subcommands:
         pkg install [-nv] pkg_fmri
         pkg uninstall [-nrv] pkg_fmri
 
-        pkg info [-sv] pkg_fmri_pattern [pkg_fmri_pattern ... ]
+        pkg info [-msv] pkg_fmri_pattern [pkg_fmri_pattern ... ]
         pkg list [-H] [-o attribute ...] [-s sort_key] [-t action_type ... ]
             pkg_fmri_pattern [pkg_fmri_pattern ...]
         pkg search [-lr] [-s server] token
@@ -220,46 +220,46 @@ def inventory_display(img, args):
 def verify_image(self, args):
         opts, pargs = getopt.getopt(args, "vf")
 
-	forever = verbose = False
+        forever = verbose = False
 
-	for opt, arg in opts:
-		if opt == "-v":
-			verbose = True
-		elif opt == "-f":
-			forever = True
+        for opt, arg in opts:
+                if opt == "-v":
+                        verbose = True
+                elif opt == "-f":
+                        forever = True
 
-	if not pargs:
-		pkgs = set((a for a in self.gen_installed_pkgs())) 
-	else:		
-		# XXX consider moving this generator into image class
-		# need better fmri matching here
-		pkgs = set((p
-		    for a in pargs
-		    for p in self.gen_installed_pkgs()
-		    if a in str(p)
-		))								
-		if not pkgs:
-			print "No packages match"
-			return 1
+        if not pargs:
+                pkgs = set((a for a in self.gen_installed_pkgs()))
+        else:
+                # XXX consider moving this generator into image class
+                # need better fmri matching here
+                pkgs = set((p
+                    for a in pargs
+                    for p in self.gen_installed_pkgs()
+                    if a in str(p)
+                ))
+                if not pkgs:
+                        print "No packages match"
+                        return 1
 
-	any_errors = False
+        any_errors = False
 
-	for p in pkgs:
-		pkgerr = False
-		for error in img.verify(p, verbose=verbose, forever=forever):
-			if not pkgerr:
-				print "package %s NOT installed correctly:" % p
-				pkgerr = True
-			print "\tIncorrectly installed action <%s>: Error(s): %s" % \
-			    (error[0], error[1])
-		if verbose and not pkgerr:
-			print "package %s installed correctly." % p 
+        for p in pkgs:
+                pkgerr = False
+                for error in img.verify(p, verbose=verbose, forever=forever):
+                        if not pkgerr:
+                                print "package %s NOT installed correctly:" % p
+                                pkgerr = True
+                        print "\tIncorrectly installed action <%s>: Error(s): %s" % \
+                            (error[0], error[1])
+                if verbose and not pkgerr:
+                        print "package %s installed correctly." % p
 
-		any_errors = any_errors or pkgerr
+                any_errors = any_errors or pkgerr
 
-	if any_errors:
-		return 1
-	return 0
+        if any_errors:
+                return 1
+        return 0
 
 
 def image_update(img, args):
@@ -467,11 +467,13 @@ def info(img, args):
         # XXX Need remote-info option, to request equivalent information
         # from repository.
 
-        opts, pargs = getopt.getopt(args, "sv")
+        opts, pargs = getopt.getopt(args, "msv")
 
-        verbose = short = False
+        verbose = short = manifest_raw = False
         for opt, arg in opts:
-                if opt == "-s":
+                if opt == "-m":
+                        manifest_raw = True
+                elif opt == "-s":
                         short = True
                 elif opt == "-v":
                         verbose = True # XXX -vv ?
@@ -498,11 +500,15 @@ def info(img, args):
         for i, m in enumerate(manifests):
                 if not short and i > 0:
                         print
-                info_one(m, short, verbose)
+                info_one(m, short, verbose, manifest_raw)
 
         return 0
 
-def info_one(manifest, short, verbose):
+def info_one(manifest, short, verbose, show_raw_manifest):
+        if show_raw_manifest:
+                print str(manifest),
+                return
+
         authority, name, version = manifest.fmri.tuple()
         summary = manifest.get("description", "")
 
@@ -787,8 +793,8 @@ def main_func():
                         return info(img, pargs)
                 elif subcommand == "list":
                         return list_contents(img, pargs)
-		elif subcommand == "verify":
-			return verify_image(img, pargs)
+                elif subcommand == "verify":
+                        return verify_image(img, pargs)
                 else:
                         print >> sys.stderr, \
                             _("pkg: unknown subcommand '%s'") % subcommand
