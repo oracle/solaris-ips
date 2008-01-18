@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -191,6 +191,16 @@ class Action(object):
                 return " ".join([str] + stringattrs + listattrs)
 
         def __cmp__(self, other):
+                """Compare actions for ordering.  Directories must precede all
+                filesystem-modifying actions; hardlinks must follow all
+                filesystem-modifying actions."""
+
+                # XXX The current ordering suggests that there are three
+                # classes:  non-filesystem modifying, filesystem-modifying, and
+                # post-filesystem-modifying actions.  This ordering might be
+                # useful, since informational actions, like properties (set) and
+                # dependencies (depend) would be at the head of the output.
+
                 types = pkg.actions.types
 
                 # Sort directories by path
@@ -211,13 +221,16 @@ class Action(object):
                         return 1
                 elif type(self) != types["hardlink"] == type(other):
                         return -1
-                # Resort to the default comparison
+                # Compare in type-name order, falling back to id order.
                 else:
+                        r = cmp(self.name, other.name)
+                        if r != 0:
+                                return r
                         return cmp(id(self), id(other))
 
         def different(self, other):
                 """Returns True if other represents a non-ignorable change from self.
-                
+
                 By default, this means two actions are different if any of their
                 attributes are different.  Subclasses should override this
                 behavior when appropriate.
@@ -246,7 +259,7 @@ class Action(object):
 
                 See pkg.client.pkgplan.make_indices for more information about
                 the reverse index database.
-                
+
                 This method returns a dictionary mapping attribute names to
                 their values.  This is not simply the action attribute
                 dictionary, 'attrs', as not necessarily all of these attributes
@@ -292,25 +305,25 @@ class Action(object):
                         if not os.path.isdir(os.path.join("/", *pathlist[:i + 1])):
                                 break
                 else:
-			# XXX Because the filelist codepath may create directories with
-			# incorrect permissions (see pkgtarfile.py), we need to correct
-			# those permissions here.  Note that this solution relies on all
-			# intermediate directories being explicitly created by the
-			# packaging system; otherwise intermediate directories will  not
-			# get their permissions corrected.
+                        # XXX Because the filelist codepath may create directories with
+                        # incorrect permissions (see pkgtarfile.py), we need to correct
+                        # those permissions here.  Note that this solution relies on all
+                        # intermediate directories being explicitly created by the
+                        # packaging system; otherwise intermediate directories will  not
+                        # get their permissions corrected.
 
-			stat = os.stat(path)
-	                mode = kw.get("mode", stat.st_mode)
-			uid = kw.get("uid", stat.st_uid)
-			gid = kw.get("gid", stat.st_gid)
-			try:
-				if mode != stat.st_mode:
-					os.chmod(path, mode)
-				if uid != stat.st_uid or gid != stat.st_gid:         
-					os.chown(path, uid, gid)
-			except  OSError, e:
-				if e.errno != errno.EPERM:
-                                        raise			
+                        stat = os.stat(path)
+                        mode = kw.get("mode", stat.st_mode)
+                        uid = kw.get("uid", stat.st_uid)
+                        gid = kw.get("gid", stat.st_gid)
+                        try:
+                                if mode != stat.st_mode:
+                                        os.chmod(path, mode)
+                                if uid != stat.st_uid or gid != stat.st_gid:
+                                        os.chown(path, uid, gid)
+                        except  OSError, e:
+                                if e.errno != errno.EPERM:
+                                        raise
                         return
 
                 stat = os.stat(os.path.join("/", *pathlist[:i]))
@@ -337,9 +350,9 @@ class Action(object):
                         if e.errno != errno.EPERM:
                                 raise
 
-	def verify(self, img, **args):
-		"""returns True if correctly installed in the given image"""
-		return ["verify method for action type %s unimplemented" % self.name]
+        def verify(self, img, **args):
+                """returns True if correctly installed in the given image"""
+                return ["verify method for action type %s unimplemented" % self.name]
 
         def needsdata(self, orig):
                 """Returns True if the action transition requires a
@@ -348,9 +361,9 @@ class Action(object):
 
         def attrlist(self, name):
                 """return list containing value of named attribute."""
-	        value = self.attrs.get(name, [])
-		if isinstance(value, list):
-		        return value
+                value = self.attrs.get(name, [])
+                if isinstance(value, list):
+                        return value
                 else:
                         return [ value ]
 
