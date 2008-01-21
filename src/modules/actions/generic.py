@@ -285,6 +285,19 @@ class Action(object):
 
                 return indices
 
+        def distinguished_name(self):
+                """ Return the distinguishing name for this action,
+                    preceded by the type of the distinguishing name.  For
+                    example, for a file action, 'path' might be the
+                    key_attr.  So, the distinguished name might be
+                    "path: usr/lib/libc.so.1".
+                """
+
+                if self.key_attr == None:
+                        return str(self)
+                return "%s: %s" % \
+                    (self.name, self.attrs.get(self.key_attr, "???"))
+
         @staticmethod
         def makedirs(path, **kw):
                 """Make directory specified by 'path' with given permissions, as

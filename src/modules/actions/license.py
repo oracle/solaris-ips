@@ -87,24 +87,25 @@ class LicenseAction(generic.Action):
 
                 return False
 
-	def verify(self, img, pkg_fmri, **args):
+        def verify(self, img, pkg_fmri, **args):
                 path = os.path.normpath(os.path.join(img.imgdir,
                     "pkg", pkg_fmri.get_dir_path(),
                     "license." + self.attrs["license"]))
 
-		try:
-			f = file(path)
-			data = f.read()
-			f.close()
-		except OSError, e:
-			if e.errno == ENOENT:
-				return ["License file %s missing" % path]
-			return ["Unexpected exception %s" % e]
-		if args["forever"] == True:
-			hashvalue = sha.new(data).hexdigest()
-			if hashvalue != self.hash:
-				return ["hash=%s" % hashvalue]
-		return []
+                try:
+                        f = file(path)
+                        data = f.read()
+                        f.close()
+                except IOError, e:
+                        if e.errno == errno.ENOENT:
+                                return ["License file %s does not exist" % path]
+                        return ["Unexpected exception %s" % e]
+                if args["forever"] == True:
+                        hashvalue = sha.new(data).hexdigest()
+                        if hashvalue != self.hash:
+                                return ["Hash: %s should be %s" % \
+                                    (hashvalue, self.hash)]
+                return []
 
 
         def remove(self, pkgplan):
@@ -113,7 +114,7 @@ class LicenseAction(generic.Action):
                     "license." + self.attrs["license"]))
 
                 try:
-			os.unlink(path)
-		except OSError,e:
-			if e.errno != errno.ENOENT:
-				raise
+                        os.unlink(path)
+                except OSError,e:
+                        if e.errno != errno.ENOENT:
+                                raise

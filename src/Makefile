@@ -120,6 +120,7 @@ PYCLIENTMODS = \
 	modules/client/imageconfig.py \
 	modules/client/imageplan.py \
 	modules/client/pkgplan.py \
+	modules/client/progress.py \
 	modules/client/retrieve.py
 PYCCLIENTMODS = $(PYCLIENTMODS:%.py=%.pyc)
 

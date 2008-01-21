@@ -54,23 +54,38 @@ class FileList(object):
         performance.  This is because the FileList asks for the files to be
         sent in groups, instead of individual HTTP GET's.
 
-        The caller may limit the maximum number of entries in a FileList
-        by specifying maxents when the object is constructed.  If the caller
-        sets maxents to 0, the size of the list is assumed to be infinite."""
+        The caller may limit the maximum number of bytes of content in a
+        FileList by specifying maxbytes when the object is constructed.
+        If the caller sets maxbytes to 0, the size of the list is assumed
+        to be infinite."""
 
-        maxfiles = 64
+        #
+        # This value can be tuned by external callers to adjust the
+        # default "maxbytes" value for a file list.  This value should be
+        # tuned to the lowest value which provides "good enough" performance;
+        # tuning beyond 1MB has not in our experiments thus far yielded more
+        # than a token speedup-- at the expense of interactivity.
+        #
+        maxbytes_default = 1024 * 1024
 
-        def __init__(self, image, fmri, maxents=None):
+        def __init__(self, image, fmri, maxbytes=None):
                 """
                 Create a FileList object for the specified image and pkgplan.
                 """
 
                 self.image = image
                 self.fmri = fmri
-                self.maxents = maxents
-                if self.maxents is None:
-                        self.maxents = self.maxfiles
                 self.fhash = { }
+
+                if maxbytes is None:
+                        self.maxbytes = FileList.maxbytes_default
+                else:
+                        self.maxbytes = maxbytes
+
+                self.actual_bytes = 0
+                self.actual_nfiles = 0
+                self.effective_bytes = 0
+                self.effective_nfiles = 0
 
         def add_action(self, action):
                 """Add the specified action to the filelist.  The action
@@ -78,6 +93,7 @@ class FileList(object):
 
                 if not hasattr(action, "hash"):
                         raise FileListException, "Invalid action type"
+
                 if self.is_full():
                         raise FileListException, "FileList full"
 
@@ -87,12 +103,21 @@ class FileList(object):
                 # already have a key in the dictionary, get the list and append
                 # the action to it.  Otherwise, create a new list with the first
                 # action.
-
                 if hashval in self.fhash:
                         l = self.fhash[hashval]
                         l.append(action)
                 else:
                         self.fhash[hashval] = [ action ]
+                        self.actual_nfiles += 1
+                        self.actual_bytes += int(action.attrs.get("pkg.size", "0"))
+
+                # Regardless of whether files map to the same hash, we
+                # also track the total (effective) size and number of entries
+                # in the flist, for reporting purposes.
+                self.effective_nfiles += 1
+                self.effective_bytes += int(action.attrs.get("pkg.size", "0"))
+
+        # XXX detect missing size and warn
 
         def get_files(self):
                 """Instruct the FileList object to download the files
@@ -180,10 +205,16 @@ class FileList(object):
                 """Returns true if the FileList object has filled its
                 allocated slots and can no longer accept new actions."""
 
-                if self.maxents > 0 and len(self.fhash) >= self.maxents:
+                if self.maxbytes > 0 and self.actual_bytes >= self.maxbytes:
                         return True
 
                 return False
+
+        def get_nbytes(self):
+                return self.effective_bytes
+
+        def get_nfiles(self):
+                return self.effective_nfiles
 
         @staticmethod
         def _make_opener(filepath):
@@ -192,7 +223,6 @@ class FileList(object):
                         os.unlink(filepath)
                         return f
                 return opener                                
-
 
 
 class FileListException(exceptions.Exception):

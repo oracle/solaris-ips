@@ -66,6 +66,7 @@ import pkg.version as version
 import pkg.client.image as image
 import pkg.client.imageplan as imageplan
 import pkg.client.filelist as filelist
+import pkg.client.progress as progress
 
 def usage():
         print >> sys.stderr, _("""\
@@ -74,18 +75,18 @@ Usage:
 
 Install subcommands:
         pkg refresh [--full]
-        pkg install [-nv] pkg_fmri
-        pkg uninstall [-nrv] pkg_fmri
+        pkg install [-nvq] pkg_fmri
+        pkg uninstall [-nrvq] pkg_fmri
 
         pkg info [-msv] pkg_fmri_pattern [pkg_fmri_pattern ... ]
         pkg list [-H] [-o attribute ...] [-s sort_key] [-t action_type ... ]
             pkg_fmri_pattern [pkg_fmri_pattern ...]
         pkg search [-lr] [-s server] token
         pkg status [-aHuv] [pkg_fmri_pattern ...]
-        pkg verify [-vf] [pkg_fmri_pattern ...]
+        pkg verify [-fHqv] [pkg_fmri_pattern ...]
         pkg image-create [-FPUz] [--full|--partial|--user] [--zone]
             [--authority prefix=url] dir
-        pkg image-update [-nv]
+        pkg image-update [-nvq]
 
 Options:
         --server, -s
@@ -120,7 +121,7 @@ def catalog_refresh(img, args):
                 img.mkdirs()
 
         # Loading catalogs allows us to perform incremental update
-        img.load_catalogs()
+        img.load_catalogs(get_tracker())
 
         try:
                 img.retrieve_catalogs(full_refresh)
@@ -175,7 +176,7 @@ def inventory_display(img, args):
         else:
                 fmt_str = "%-50s %-10s %c%c%c%c"
 
-        img.load_catalogs()
+        img.load_catalogs(get_tracker())
 
         try:
                 found = False
@@ -217,25 +218,49 @@ def inventory_display(img, args):
                 return 1
                 img.display_inventory(args)
 
-def verify_image(self, args):
-        opts, pargs = getopt.getopt(args, "vf")
+def get_tracker(quiet = False):
+        if quiet:
+                progresstracker = progress.QuietProgressTracker()
+        else:
+                try:
+                        progresstracker = progress.TerseCommandLineProgressTracker()
+                except:
+                        progresstracker = progress.CommandLineProgressTracker()
+        return progresstracker
 
-        forever = verbose = False
+
+def verify_image(img, args):
+        opts, pargs = getopt.getopt(args, "vfqH")
+
+        quiet = forever = verbose = False
+        display_headers = True
 
         for opt, arg in opts:
+                if opt == "-H":
+                        display_headers = False
                 if opt == "-v":
                         verbose = True
                 elif opt == "-f":
                         forever = True
+                elif opt == "-q":
+                        quiet = True
+                        display_headers = False
+
+        if verbose and quiet:
+                print >> sys.stderr, "verify: -v and -q may not be combined"
+                usage()
+                return 2
+
+        progresstracker = get_tracker(quiet)
 
         if not pargs:
-                pkgs = set((a for a in self.gen_installed_pkgs()))
+                pkgs = set((a for a in img.gen_installed_pkgs()))
         else:
                 # XXX consider moving this generator into image class
                 # need better fmri matching here
                 pkgs = set((p
                     for a in pargs
-                    for p in self.gen_installed_pkgs()
+                    for p in img.gen_installed_pkgs()
                     if a in str(p)
                 ))
                 if not pkgs:
@@ -244,19 +269,38 @@ def verify_image(self, args):
 
         any_errors = False
 
+
+        header = False
         for p in pkgs:
                 pkgerr = False
-                for error in img.verify(p, verbose=verbose, forever=forever):
+                for error in img.verify(p, progresstracker,
+                    verbose=verbose, forever=forever):
+                        #
+                        # Eventually this code should probably
+                        # move into the progresstracker
+                        #
                         if not pkgerr:
-                                print "package %s NOT installed correctly:" % p
+                                if display_headers and not header:
+                                        print "%-50s %7s" % ("PACKAGE", "STATUS")
+                                        header = True
+
+                                if not quiet:
+                                        print "%-50s %7s" % (p.get_pkg_stem(), "ERROR")
                                 pkgerr = True
-                        print "\tIncorrectly installed action <%s>: Error(s): %s" % \
-                            (error[0], error[1])
+
+                        if not quiet:
+                                print "\t%s" % error[0]
+                                for x in error[1]:
+                                        print "\t\t%s" % x
                 if verbose and not pkgerr:
-                        print "package %s installed correctly." % p
+                        if display_headers and not header:
+                                print "%-50s %7s" % ("PACKAGE", "STATUS")
+                                header = True
+                        print "%-50s %7s" % (p.get_pkg_stem(), "OK")
 
                 any_errors = any_errors or pkgerr
 
+        progresstracker.verify_done()
         if any_errors:
                 return 1
         return 0
@@ -270,9 +314,9 @@ def image_update(img, args):
         # XXX Are filters appropriate for an image update?
         # XXX Leaf package refinements.
 
-        opts, pargs = getopt.getopt(args, "b:nv")
+        opts, pargs = getopt.getopt(args, "b:nvq")
 
-        strict = noexecute = verbose = False
+        quiet = strict = noexecute = verbose = False
         filters = []
         for opt, arg in opts:
                 if opt == "-n":
@@ -280,13 +324,17 @@ def image_update(img, args):
                 elif opt == "-v":
                         verbose = True
                 elif opt == "-b":
-                        filelist.FileList.maxfiles = int(arg)
+                        filelist.FileList.maxbytes_default = int(arg)
+                elif opt == "-q":
+                        quiet = True
 
-        img.load_catalogs()
+        progresstracker = get_tracker(quiet)
+
+        img.load_catalogs(progresstracker)
 
         pkg_list = [ ipkg.get_pkg_stem() for ipkg in img.gen_installed_pkgs() ]
         try:
-                img.list_install(pkg_list, verbose = verbose,
+                img.list_install(pkg_list, progresstracker, verbose = verbose,
                     noexecute = noexecute)
         except RuntimeError, e:
                 print >> sys.stderr, _("image_update failed: %s") % e
@@ -300,9 +348,9 @@ def install(img, args):
 
         # XXX Authority-catalog issues.
 
-        opts, pargs = getopt.getopt(args, "Snvb:f:")
+        opts, pargs = getopt.getopt(args, "Snvb:f:q")
 
-        strict = noexecute = verbose = False
+        quiet = strict = noexecute = verbose = False
         filters = []
         for opt, arg in opts:
                 if opt == "-S":
@@ -312,21 +360,22 @@ def install(img, args):
                 elif opt == "-v":
                         verbose = True
                 elif opt == "-b":
-                        filelist.FileList.maxfiles = int(arg)
-
+                        filelist.FileList.maxbytes_default = int(arg)
                 elif opt == "-f":
                         filters += [ arg ]
+                elif opt == "-q":
+                        quiet = True
 
-        img.load_catalogs()
+        progresstracker = get_tracker(quiet)
 
-        ip = imageplan.ImagePlan(img, filters = filters)
+        img.load_catalogs(progresstracker)
 
         pkg_list = [ pat.replace("*", ".*").replace("?", ".")
             for pat in pargs ]
 
         try:
-                img.list_install(pkg_list, filters = filters, verbose = verbose,
-                    noexecute = noexecute)
+                img.list_install(pkg_list, progresstracker, filters = filters,
+                    verbose = verbose, noexecute = noexecute)
         except RuntimeError, e:
                 print >> sys.stderr, _("install failed: %s") % e
                 return 1
@@ -335,9 +384,9 @@ def install(img, args):
 def uninstall(img, args):
         """Attempt to take package specified to DELETED state."""
 
-        opts, pargs = getopt.getopt(args, "nrv")
+        opts, pargs = getopt.getopt(args, "nrvq")
 
-        noexecute = recursive_removal = verbose = False
+        quiet = noexecute = recursive_removal = verbose = False
         for opt, arg in opts:
                 if opt == "-n":
                         noexecute = True
@@ -345,10 +394,14 @@ def uninstall(img, args):
                         recursive_removal = True
                 elif opt == "-v":
                         verbose = True
+                elif opt == "-q":
+                        quiet = True
 
-        img.load_catalogs()
+        progresstracker = get_tracker(quiet)
 
-        ip = imageplan.ImagePlan(img, recursive_removal)
+        img.load_catalogs(progresstracker)
+
+        ip = imageplan.ImagePlan(img, progresstracker, recursive_removal)
 
         error = 0
 
@@ -478,7 +531,7 @@ def info(img, args):
                 elif opt == "-v":
                         verbose = True # XXX -vv ?
 
-        img.load_catalogs()
+        img.load_catalogs(get_tracker())
 
         if len(pargs) == 0:
                 fmris = [ x for x in img.gen_installed_pkgs() ]
@@ -552,7 +605,7 @@ def list_contents(img, args):
                 elif opt == "-t":
                         action_types.extend(arg.split(","))
 
-        img.load_catalogs()
+        img.load_catalogs(get_tracker())
 
         if len(pargs) == 0:
                 fmris = [ x for x in img.gen_installed_pkgs() ]

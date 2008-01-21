@@ -43,6 +43,7 @@ import pkg.version as version
 import pkg.client.imageconfig as imageconfig
 import pkg.client.imageplan as imageplan
 import pkg.client.retrieve as retrieve
+import pkg.client.progress as progress
 
 from pkg.misc import versioned_urlopen
 
@@ -111,10 +112,10 @@ class Image(object):
                 self.filter_tags = {}
 
                 self.users = {}
-		self.uids = {}
+                self.uids = {}
                 self.users_lastupdate = 0
                 self.groups = {}
-		self.gids = {}
+                self.gids = {}
                 self.groups_lastupdate = 0
 
                 self.catalogs = {}
@@ -276,14 +277,18 @@ class Image(object):
 
                 return m
 
-	def verify(self, fmri, **args):
-		""" generator that returns any errors in installed pkgs
-		as tuple of action, list of errors"""
+        def verify(self, fmri, progresstracker, **args):
+                """ generator that returns any errors in installed pkgs
+                as tuple of action, list of errors"""
 
-		for act in self.get_manifest(fmri, filtered = True).actions:
-			errors = act.verify(self, pkg_fmri=fmri, **args)
-			if errors:
-				yield (act, errors)
+                for act in self.get_manifest(fmri, filtered = True).actions:
+                        errors = act.verify(self, pkg_fmri=fmri, **args)
+                        progresstracker.verify_add_progress(fmri)
+                        actname = act.distinguished_name()
+                        if errors:
+                                progresstracker.verify_yield_error(actname,
+                                    errors)
+                                yield (actname, errors)
 
         def has_manifest(self, fmri):
                 mpath = fmri.get_dir_path()
@@ -488,7 +493,7 @@ class Image(object):
                                 hdr = {}
 
                         # XXX Mirror selection and retrieval policy?
-			try:
+                        try:
                                 c, v = versioned_urlopen(auth["origin"],
                                     "catalog", [0], headers = hdr)
                         except urllib2.HTTPError, e:
@@ -516,12 +521,14 @@ class Image(object):
                 if failed:
                         raise RuntimeError, (failed, total, succeeded)
 
-        def load_catalogs(self):
+        def load_catalogs(self, progresstracker):
                 for auth in self.gen_authorities():
                         croot = "%s/catalog/%s" % (self.imgdir, auth["prefix"])
 
+                        progresstracker.catalog_start(auth["prefix"])
                         c = catalog.Catalog(croot, authority = auth["prefix"])
                         self.catalogs[auth["prefix"]] = c
+                        progresstracker.catalog_done()
 
         def gen_known_package_fmris(self):
                 """Generate the list of known packages, being the union of the
@@ -580,14 +587,14 @@ class Image(object):
                 # checked, all its entries will already be in our cache, so we
                 # won't find the name.
                 if passwd_stamp > self.users_lastupdate:
-			self.load_passwd(passwd_file)
+                        self.load_passwd(passwd_file)
 
-		try:
-			return self.users[name]
-		except:
-			raise KeyError, "getpwnam(): name not found: %s" % name
+                try:
+                        return self.users[name]
+                except:
+                        raise KeyError, "getpwnam(): name not found: %s" % name
 
-	def getpwuid(self, uid):
+        def getpwuid(self, uid):
                 """Do a uid lookup in the image's password database.
                 
                 Keep a cached copy in memory for fast lookups, and fall back to
@@ -614,19 +621,19 @@ class Image(object):
                 # checked, all its entries will already be in our cache, so we
                 # won't find the name.
                 if passwd_stamp > self.users_lastupdate:
-			self.load_passwd(passwd_file)
+                        self.load_passwd(passwd_file)
 
-		try:
-			return self.uids[uid]
-		except:
-			raise KeyError, "getpwuid(): name not found: %d" % uid
+                try:
+                        return self.uids[uid]
+                except:
+                        raise KeyError, "getpwuid(): name not found: %d" % uid
 
-	def load_passwd(self, passwd_file):
+        def load_passwd(self, passwd_file):
 
-		self.users.clear()
-		self.uids.clear()
+                self.users.clear()
+                self.uids.clear()
 
-		passwd_stamp = os.stat(passwd_file).st_mtime
+                passwd_stamp = os.stat(passwd_file).st_mtime
                 f = file(passwd_file)
 
                 for line in f:
@@ -636,7 +643,7 @@ class Image(object):
                         pw_entry = pwd.struct_passwd(arr)
 
                         self.users[pw_entry.pw_name] = pw_entry
-			self.uids[pw_entry.pw_uid] = pw_entry
+                        self.uids[pw_entry.pw_uid] = pw_entry
 
                 self.users_lastupdate = passwd_stamp
 
@@ -653,7 +660,7 @@ class Image(object):
                 if self.type == IMG_USER:
                         return grp.getgrnam(name)
 
-		# check if we need to reload cache
+                # check if we need to reload cache
                 group_file = os.path.join(self.root, "etc/group")
 
                 try:
@@ -666,13 +673,13 @@ class Image(object):
                         return grp.getgrnam(name)
 
                 if group_stamp >= self.groups_lastupdate:
-			self.load_groups(group_file)
-		try:
-			return self.groups[name]
-		except:
-			raise KeyError, "getgrnam(): name not found: %s" % name
+                        self.load_groups(group_file)
+                try:
+                        return self.groups[name]
+                except:
+                        raise KeyError, "getgrnam(): name not found: %s" % name
 
-	def getgrgid(self, gid):
+        def getgrgid(self, gid):
                 """Do a gid lookup in the image's group database.
                 
                 Keep a cached copy in memory for fast lookups, and fall back to
@@ -683,7 +690,7 @@ class Image(object):
                 if self.type == IMG_USER:
                         return grp.getgrgid(gid)
 
-		# check if we need to reload cache
+                # check if we need to reload cache
                 group_file = os.path.join(self.root, "etc/group")
 
                 try:
@@ -696,24 +703,24 @@ class Image(object):
                         return grp.getgrgid(gid)
 
                 if group_stamp >= self.groups_lastupdate:
-			self.load_groups(group_file)
-		try:
-			return self.gids[gid]
-		except:
-			raise KeyError, "getgrgid(): gid not found: %d" % gid
+                        self.load_groups(group_file)
+                try:
+                        return self.gids[gid]
+                except:
+                        raise KeyError, "getgrgid(): gid not found: %d" % gid
 
-	def load_groups(self, group_file):
-		self.groups.clear()
-		self.gids.clear()
-		group_stamp = os.stat(group_file).st_mtime
+        def load_groups(self, group_file):
+                self.groups.clear()
+                self.gids.clear()
+                group_stamp = os.stat(group_file).st_mtime
                 f = file(group_file)
                 for line in f:
                         arr = line.rstrip().split(":")
                         arr[2] = int(arr[2])
                         gr_entry = grp.struct_group(arr)
-			
+                        
                         self.groups[gr_entry.gr_name] = gr_entry
-			self.gids[gr_entry.gr_gid] = gr_entry
+                        self.gids[gr_entry.gr_gid] = gr_entry
 
                 self.group_lastupdate = group_stamp
 
@@ -837,10 +844,10 @@ class Image(object):
                 if failed:
                         raise RuntimeError, failed
 
-        def list_install(self, pkg_list, filters = [], verbose = False,
+        def list_install(self, pkg_list, progress, filters = [], verbose = False,
             noexecute = False):
                 error = 0
-                ip = imageplan.ImagePlan(self, filters = filters)
+                ip = imageplan.ImagePlan(self, progress, filters = filters)
 
                 for p in pkg_list:
                         try:

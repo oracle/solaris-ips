@@ -95,38 +95,44 @@ class DirectoryAction(generic.Action):
                                 if e.errno != errno.EPERM:
                                         raise
 
-	def verify(self, img, **args):
-		""" make sure directory is correctly installed"""
+        def verify(self, img, **args):
+                """ make sure directory is correctly installed"""
 
                 mode = int(self.attrs["mode"], 8)
                 owner = img.getpwnam(self.attrs["owner"]).pw_uid
                 group = img.getgrnam(self.attrs["group"]).gr_gid
 
-		path = os.path.normpath(os.path.sep.join((img.get_root(),
-					self.attrs["path"])))
-		try:
-			stat = os.lstat(path)
-		except OSError, e:
-			if e.errno == ENOENT:
-				return ["Directory %s missing" % self.attrs["path"]]
-			return ["Unexpected exception: %s" % e]
+                path = os.path.normpath(os.path.sep.join((img.get_root(),
+                                        self.attrs["path"])))
+                try:
+                        stat = os.lstat(path)
+                except OSError, e:
+                        if e.errno == errno.ENOENT:
+                                return ["Directory does not exist"]
+                        if e.errno == errno.EACCES:
+                                return ["Skipping: Permission denied"]
+                        return ["Unexpected exception: %s" % e]
 
-		errors = []
+                errors = []
 
-		if not S_ISDIR(stat[ST_MODE]):
-			errors.append("%s is not a directory" % self.attrs["path"])
+                if not S_ISDIR(stat[ST_MODE]):
+                        errors.append("Not a directory")
 
-		if stat[ST_UID] != owner:
-			errors.append("owner=%s" % img.getpwuid(stat[ST_UID]).pw_name)
-		if stat[ST_GID] != group:
-			errors.append("group=%s" % img.getgrgid(stat[ST_GID]).gr_name)
+                if stat[ST_UID] != owner:
+                        errors.append("Owner: '%s' should be '%s'" % \
+                            (img.getpwuid(stat[ST_UID]).pw_name,
+                            img.getpwuid(owner).pw_name))
+                if stat[ST_GID] != group:
+                        errors.append("Group: '%s' should be '%s'" % \
+                            (img.getgrgid(stat[ST_GID]).gr_name,
+                            img.getgrgid(group).gr_name))
 
+                if S_IMODE(stat[ST_MODE]) != mode:
+                        errors.append("Mode: 0%.3o should be 0%.3o" % \
+                            (S_IMODE(stat[ST_MODE]), mode))
 
-		if S_IMODE(stat[ST_MODE]) != mode:
-			errors.append("mode=0%.3o" % S_IMODE(stat[ST_MODE]))
-
-		return errors
-		
+                return errors
+                
         def remove(self, pkgplan):
                 path = os.path.normpath(os.path.sep.join(
                     (pkgplan.image.get_root(), self.attrs["path"])))

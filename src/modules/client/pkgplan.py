@@ -27,8 +27,10 @@ import errno
 import itertools
 import os
 
+import pkg.actions.file as pkgfile
 import pkg.manifest as manifest
 import pkg.client.filelist as filelist
+import pkg.client.progress as progress
 
 class PkgPlan(object):
         """A package plan takes two package FMRIs and an Image, and produces the
@@ -38,15 +40,19 @@ class PkgPlan(object):
         If the destination FMRI is None, the package is removed.
         """
 
-        def __init__(self, image):
+        def __init__(self, image, progtrack):
                 self.origin_fmri = None
                 self.destination_fmri = None
                 self.origin_mfst = manifest.null
                 self.destination_mfst = manifest.null
 
                 self.image = image
+                self.progtrack = progtrack
 
                 self.actions = []
+
+                self.xfersize = -1
+                self.xferfiles = -1
 
         def __str__(self):
                 s = "%s -> %s\n" % (self.origin_fmri, self.destination_fmri)
@@ -87,7 +93,11 @@ class PkgPlan(object):
                 return True
 
         def get_actions(self):
-                return []
+                raise NotImplementedError()
+
+        def get_nactions(self):
+                return len(self.actions[0]) + len(self.actions[1]) + \
+                    len(self.actions[2])
 
         def evaluate(self, filters = []):
                 """Determine the actions required to transition the package."""
@@ -138,6 +148,34 @@ class PkgPlan(object):
                 self.actions = self.destination_mfst.difference(
                     self.origin_mfst)
 
+        def get_xferstats(self):
+                if self.xfersize != -1:
+                        return (self.xferfiles, self.xfersize)
+
+                self.xfersize = 0
+                self.xferfiles = 0
+                for src, dest in itertools.chain(*self.actions):
+                        if dest and dest.needsdata(src):
+                                self.xfersize += \
+                                    int(dest.attrs.get("pkg.size", 0))
+                                self.xferfiles += 1
+
+                return (self.xferfiles, self.xfersize)
+
+        def will_xfer(self):
+                nf, nb = self.get_xferstats()
+                if nf > 0:
+                        return True
+                else:
+                        return False
+
+        def get_xfername(self):
+                if self.destination_fmri:
+                        return self.destination_fmri.get_name()
+                if self.origin_fmri:
+                        return self.origin_fmri.get_name()
+                return None
+
         def preexecute(self):
                 """Perform actions required prior to installation or removal of a package.
 
@@ -147,6 +185,9 @@ class PkgPlan(object):
                 """
                 flist = None
                 flist_supported = True
+
+                if flist_supported:
+                        self.progtrack.download_start_pkg(self.get_xfername())
 
                 # retrieval step
                 if self.destination_fmri == None:
@@ -171,6 +212,7 @@ class PkgPlan(object):
                                 if flist and flist.is_full():
                                         try:
                                                 flist.get_files()
+                                                self.progtrack.download_add_progress(flist.get_nfiles(), flist.get_nbytes())
                                         except filelist.FileListException:
                                                 flist_supported = False
                                                 flist = None
@@ -190,9 +232,13 @@ class PkgPlan(object):
                 if flist:
                         try:
                                 flist.get_files()
+                                self.progtrack.download_add_progress(flist.get_nfiles(), flist.get_nbytes())
                         except filelist.FileListException:
                                 pass
                         flist = None
+
+                if flist_supported:
+                        self.progtrack.download_end_pkg()
 
         def execute(self):
                 """Perform actions for installation or removal of a package.
@@ -210,10 +256,14 @@ class PkgPlan(object):
                 # NoneAction, whose execute() method would call the remove()
                 # method of the passed-in src action.
 
+                self.progtrack.actions_start_pkg(self.origin_fmri,
+                    self.destination_fmri)
+
                 # Execute installs
                 for src, dest in self.actions[0]:
                         try:
                                 dest.install(self, src)
+                                self.progtrack.actions_add_progress()
                         except Exception, e:
                                 print "Action install failed for '%s' (%s):\n  %s: %s" % \
                                     (dest.attrs.get(dest.key_attr, id(dest)),
@@ -225,8 +275,9 @@ class PkgPlan(object):
                 for src, dest in self.actions[1]:
                         try:
                                 dest.install(self, src)
+                                self.progtrack.actions_add_progress()
                         except Exception, e:
-                                print "Action upgrade failed for '%s' (%s):\n  %s: %s" % \
+                                print "Action upgrade failed for '%s' (%s):\n %s: %s" % \
                                     (dest.attrs.get(dest.key_attr, id(dest)),
                                     self.destination_fmri.get_pkg_stem(),
                                     e.__class__.__name__, e)
@@ -236,12 +287,15 @@ class PkgPlan(object):
                 for src, dest in self.actions[2]:
                         try:
                                 src.remove(self)
+                                self.progtrack.actions_add_progress()
                         except Exception, e:
                                 print "Action removal failed for '%s' (%s):\n  %s: %s" % \
                                     (src.attrs.get(src.key_attr, id(src)),
                                     self.origin_fmri.get_pkg_stem(),
                                     e.__class__.__name__, e)
                                 raise
+
+                self.progtrack.actions_done_pkg()
 
         def postexecute(self):
                 """Perform actions required after installation or removal of a package.
@@ -286,3 +340,4 @@ class PkgPlan(object):
                                     for filter, code in self.destination_filters
                                 ])
                                 f.close()
+

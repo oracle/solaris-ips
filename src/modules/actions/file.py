@@ -125,9 +125,9 @@ class FileAction(generic.Action):
                 # This is safe even if temp == final_path.
                 os.rename(temp, final_path)
 
-	def verify(self, img, **args):
-		""" verify that file is present and if preserve attribute
-		not present, that hashes match"""
+        def verify(self, img, **args):
+                """ verify that file is present and if preserve attribute
+                not present, that hashes match"""
                 path = self.attrs["path"]
                 mode = int(self.attrs["mode"], 8)
                 owner = img.getpwnam(self.attrs["owner"]).pw_uid
@@ -136,47 +136,62 @@ class FileAction(generic.Action):
                 path = os.path.normpath(os.path.sep.join(
                     (img.get_root(), path)))
 
-		try:
-			stat = os.lstat(path)
-		except OSError, e:
-			if e.errno == ENOENT:
-				return ["File %s missing" % self.attrs["path"]]
-			return ["Unexpected exception: %s" % e]
+                try:
+                        stat = os.lstat(path)
+                except OSError, e:
+                        if e.errno == errno.ENOENT:
+                                return ["File does not exist"]
+                        if e.errno == errno.EACCES:
+                                return ["Skipping: Permission denied"]
+                        return ["Unexpected OSError: %s" % e]
 
-		errors = []
+                errors = []
 
-		if not S_ISREG(stat[ST_MODE]):
-			errors.append("%s is not a regular file" % self.attrs["path"])
-		if stat[ST_UID] != owner:
-			errors.append("owner=%s" % img.getpwuid(stat[ST_UID]).pw_name)
-		if stat[ST_GID] != group:
-			errors.append("group=%s" % img.getgrgid(stat[ST_GID]).gr_name)
-		if S_IMODE(stat[ST_MODE]) != mode:
-			errors.append("mode=0%.3o" % S_IMODE(stat[ST_MODE]))
+                if not S_ISREG(stat[ST_MODE]):
+                        errors.append("%s is not a regular file" % self.attrs["path"])
+                if stat[ST_UID] != owner:
+                        errors.append("Owner: '%s' should be '%s'" % \
+                            (img.getpwuid(stat[ST_UID]).pw_name,
+                             img.getpwuid(owner).pw_name))
+                if stat[ST_GID] != group:
+                        errors.append("Group: '%s' should be '%s'" % \
+                            (img.getgrgid(stat[ST_GID]).gr_name,
+                             img.getgrgid(group).gr_name))
+                if S_IMODE(stat[ST_MODE]) != mode:
+                        errors.append("Mode: 0%.3o should be 0%.3o" % \
+                            (S_IMODE(stat[ST_MODE]), mode))
 
-		if "preserve" not in self.attrs and \
-		    "pkg.size" in self.attrs and    \
-		    stat[ST_SIZE] != int(self.attrs["pkg.size"]):
-			errors.append("pkg.size=%d" % stat[ST_SIZE])
+                if "preserve" not in self.attrs and \
+                    "pkg.size" in self.attrs and    \
+                    stat[ST_SIZE] != int(self.attrs["pkg.size"]):
+                        errors.append("Size: %d bytes should be %d" % \
+                            (stat[ST_SIZE], int(self.attrs["pkg.size"])))
 
-		if "preserve" not in self.attrs and args["forever"] == True:
-			try:
-				if "elfhash" in self.attrs:
-					elfhash = elf.get_dynamic(path)["hash"]
-					if elfhash != self.attrs["elfhash"]:
-						errors.append("elfhash=%s" % elfhash)
+                if "preserve" not in self.attrs and args["forever"] == True:
+                        try:
+                                if "elfhash" in self.attrs:
+                                        elfhash = elf.get_dynamic(path)["hash"]
+                                        if elfhash != self.attrs["elfhash"]:
+                                                errors.append("Elfhash: %s should be %s" % \
+                                                    (elfhash, self.attrs["elfhash"]))
 
-				# not an elf file -> try normal hash
-				else:
-					f = file(path)
-					data = f.read()
-					f.close()
-					hashvalue = sha.new(data).hexdigest()
-					if hashvalue != self.hash:
-						errors.append("hash=%s" % hashvalue)
-			except OSError, e:
-				errors.append("Unexpected exception %s" % e)
-		return errors
+                                # not an elf file -> try normal hash
+                                else:
+                                        f = file(path)
+                                        data = f.read()
+                                        f.close()
+                                        hashvalue = sha.new(data).hexdigest()
+                                        if hashvalue != self.hash:
+                                                errors.append("Hash: %s should be %s" % \
+                                                    (hashvalue, self.hash))
+                        except (OSError, IOError), e:
+                                if e.errno == errno.EACCES:
+                                        errors.append("Skipping: Permission Denied" % e)
+                                else:
+                                        errors.append("Unexpected Error %s" % e)
+                        except Exception, e:
+                                errors.append("Unexpected Exception: %s" % e)
+                return errors
 
         # If we're not upgrading, or the file contents have changed,
         # retrieve the file and write it to a temporary location.
@@ -196,11 +211,11 @@ class FileAction(generic.Action):
                 path = os.path.normpath(os.path.sep.join(
                     (pkgplan.image.get_root(), self.attrs["path"])))
 
-		try:
-			os.unlink(path)
-		except OSError,e:
-			if e.errno != errno.ENOENT:
-				raise
+                try:
+                        os.unlink(path)
+                except OSError,e:
+                        if e.errno != errno.ENOENT:
+                                raise
 
 
         def different(self, other):

@@ -71,6 +71,12 @@ class PkgFmri(object):
         def set_authority(self, authority):
                 self.authority = authority
 
+        def get_name(self):
+                return self.pkg_name
+
+        def set_name(self, name):
+                self.pkg_name = name
+
         def set_timestamp(self, new_ts):
                 self.version.set_timestamp(new_ts)
 

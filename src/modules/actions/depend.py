@@ -53,21 +53,19 @@ class DependencyAction(generic.Action):
         def __init__(self, data=None, **attrs):
                 generic.Action.__init__(self, data, **attrs)
 
-	def verify(self, img, **args):
-		# XXX maybe too loose w/ early versions
-		if self.attrs["type"] != "require":
-			return ["unknown type=%s" % self.attrs["type"]]
+        def verify(self, img, **args):
+                # XXX maybe too loose w/ early versions
+                if self.attrs["type"] != "require":
+                        return ["unknown type=%s" % self.attrs["type"]]
 
-		fm = fmri.PkgFmri(self.attrs["fmri"], img.attrs["Build-Release"])
+                fm = fmri.PkgFmri(self.attrs["fmri"], img.attrs["Build-Release"])
 
-		try:
-			actual = img.get_version_installed(fm)
-		except LookupError:
-			return ["Missing dependency %s" % fm]
-		except:
-			raise
-		else:
-			return []
+                try:
+                        actual = img.get_version_installed(fm)
+                except LookupError:
+                        return ["Dependency %s is not installed" % fm]
+                else:
+                        return []
 
         def generate_indices(self):
                 # XXX Probably need to do something for other types, too.

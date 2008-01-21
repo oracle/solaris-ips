@@ -31,6 +31,7 @@ import pkg.fmri as fmri
 
 import pkg.client.pkgplan as pkgplan
 import pkg.client.retrieve as retrieve # XXX inventory??
+import pkg.client.progress as progress
 
 from pkg.client.filter import compile_filter
 
@@ -61,10 +62,11 @@ class ImagePlan(object):
         "pkg delete fmri; pkg install fmri@v(n - 1)", then we'd better have a
         plan to identify when this operation is safe or unsafe."""
 
-        def __init__(self, image, recursive_removal = False, filters = []):
+        def __init__(self, image, progtrack, recursive_removal = False, filters = []):
                 self.image = image
                 self.state = UNEVALUATED
                 self.recursive_removal = recursive_removal
+                self.progtrack = progtrack
 
                 self.target_fmris = []
                 self.target_rem_fmris = []
@@ -217,7 +219,7 @@ class ImagePlan(object):
                         self.target_fmris.append(cf)
                         self.evaluate_fmri(cf)
 
-                pp = pkgplan.PkgPlan(self.image)
+                pp = pkgplan.PkgPlan(self.image, self.progtrack)
 
                 try:
                         pp.propose_destination(pfmri, m)
@@ -252,7 +254,7 @@ Cannot remove '%s' due to the following packages that directly depend on it:"""\
 
                 m = self.image.get_manifest(pfmri)
 
-                pp = pkgplan.PkgPlan(self.image)
+                pp = pkgplan.PkgPlan(self.image, self.progtrack)
 
                 try:
                         pp.propose_removal(pfmri, m)
@@ -281,12 +283,16 @@ Cannot remove '%s' due to the following packages that directly depend on it:"""\
         def evaluate(self):
                 assert self.state == UNEVALUATED
 
+                self.progtrack.evaluate_start()
+
                 # Operate on a copy, as it will be modified in flight.
                 for f in self.target_fmris[:]:
                         self.evaluate_fmri(f)
 
                 for f in self.target_rem_fmris[:]:
                         self.evaluate_fmri_removal(f)
+
+                self.progtrack.evaluate_done()
 
                 self.state = EVALUATED_OK
 
@@ -295,8 +301,30 @@ Cannot remove '%s' due to the following packages that directly depend on it:"""\
                 plan."""
                 assert self.state == EVALUATED_OK
 
+                npkgs = 0
+                nfiles = 0
+                nbytes = 0
+                nactions = 0
+                for p in self.pkg_plans:
+                        nf, nb = p.get_xferstats()
+                        nbytes += nb
+                        nfiles += nf
+                        nactions += p.get_nactions()
+
+                        # It's not perfectly accurate but we count a download
+                        # even if the package will do zero data transfer.  This
+                        # makes the pkg stats consistent between download and
+                        # install.
+                        npkgs += 1
+
+                self.progtrack.download_set_goal(npkgs, nfiles, nbytes)
+
                 for p in self.pkg_plans:
                         p.preexecute()
+
+                self.progtrack.download_done()
+
+                self.progtrack.actions_set_goal(npkgs, nactions)
 
                 for p in self.pkg_plans:
                         # per-package image operations (further snapshots)
