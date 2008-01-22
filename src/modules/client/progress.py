@@ -323,7 +323,7 @@ class CommandLineProgressTracker(ProgressTracker):
 
 
 
-class FancyUNIXCommandLineProgressTracker(ProgressTracker):
+class FancyUNIXProgressTracker(ProgressTracker):
         """ This progress tracker is designed for UNIX-like OS's--
             those which have UNIX-like terminal semantics.  It attempts
             to load the 'curses' package.  If that or other terminal-liveness
@@ -337,7 +337,7 @@ class FancyUNIXCommandLineProgressTracker(ProgressTracker):
                 self.last_print_time = 0
 
                 try:
-                        from curses import setupterm, tigetstr
+                        import curses
                         if not os.isatty(sys.stdout.fileno()):
                                 raise ProgressTrackerException()
 

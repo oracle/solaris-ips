@@ -223,8 +223,9 @@ def get_tracker(quiet = False):
                 progresstracker = progress.QuietProgressTracker()
         else:
                 try:
-                        progresstracker = progress.TerseCommandLineProgressTracker()
-                except:
+                        progresstracker = \
+			    progress.FancyUNIXProgressTracker()
+                except progress.ProgressTrackerException:
                         progresstracker = progress.CommandLineProgressTracker()
         return progresstracker
 
