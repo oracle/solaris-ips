@@ -31,7 +31,7 @@ test-verbose := TEST_LOG=/dev/stdout
 
 # Invoke all known modules with tests.
 # XXX Invoke the bundle tests.
-test: api-test cli-test leak-test two-depot-test
+test: api-test cli-test leak-test two-depot-test upgrade-test
 
 api-test:
 	@echo "Logging to $(TEST_LOG)"
@@ -52,6 +52,12 @@ two-depot-test: cli-test
 leak-test: two-depot-test
 	# workaround: memleaks doesn't run cleanly at this time
 	-$(KSH) $(TEST_DEBUG) memleaks.ksh >> $(TEST_LOG)
+
+upgrade-test: 
+	@echo "Logging to $(TEST_LOG)"
+	@echo "Should be run as root"
+	$(KSH) $(TEST_DEBUG) upgrade.ksh >> $(TEST_LOG)
+
 
 test-verbose: test
 
