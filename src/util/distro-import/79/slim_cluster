@@ -330,6 +330,7 @@ include common/SUNWuprl
 include common/SUNWusb
 include common/SUNWusbs
 include common/SUNWusbvc
+include common/SUNWvim
 include common/SUNWwbsup
 include common/SUNWwget
 include common/SUNWwlan
@@ -910,6 +911,7 @@ idepend SUNWusb
 idepend SUNWusbs
 idepend SUNWusbvc
 idepend SUNWvia823x
+idepend SUNWvim
 idepend SUNWwbsup
 idepend SUNWwgetr
 idepend SUNWwgetu

@@ -2541,6 +2541,7 @@ idepend SUNWusb
 idepend SUNWusbs
 idepend SUNWusbvc
 idepend SUNWvia823x
+idepend SUNWvim
 idepend SUNWwbsup
 idepend SUNWwgetr
 idepend SUNWwgetu

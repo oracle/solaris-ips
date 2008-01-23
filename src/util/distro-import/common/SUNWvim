@@ -1,4 +1,10 @@
 package SUNWvim
 import SUNWvim
 version 7.1.145
+add link path=usr/bin/ex target=vim
+add link path=usr/bin/vi target=vim
+add link path=usr/bin/view target=vim
+add link path=usr/share/man/man1/ex.1 target=vim.1
+add link path=usr/share/man/man1/vi.1 target=vim.1
+add link path=usr/share/man/man1/view.1 target=vim.1
 end package

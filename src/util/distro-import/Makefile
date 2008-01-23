@@ -84,6 +84,7 @@ FIXFILES=					\
 	etc/user_attr.cdonly			\
 	lib/libc.so.1				\
 	usr/bin/ksh				\
+	usr/has/bin/vi				\
 	usr/jdk/instances/jdk1.6.0/LICENSE	\
 	usr/jdk/instances/jdk1.6.0/README.html	\
 	usr/jdk/instances/jdk1.6.0/jre/LICENSE	\
@@ -194,6 +195,9 @@ proto/etc/shadow:	proto Makefile
 	'/^root/{ print "root:wqy8hz4xKqw4o:13817::::::";continue} {print $$0}';	\
 	echo "jack:9Nd/cwBcNWFZg:13817::::::") > $@
 
+proto/usr/has/bin/vi:	proto Makefile
+	./get_file_from_pkg.py $(WOS_PKGS)/SUNWcsu usr/bin/edit > $@
+
 $(JDKFILES:%=proto/usr/jdk/instances/jdk1.6.0/%):	proto  DLJ/$(@F)
 	cp DLJ/$(@F) $@
 
@@ -215,6 +219,7 @@ proto:	Makefile
 	mkdir -p proto/usr/jdk/instances/jdk1.6.0/jre
 	mkdir -p proto/usr/share/man
 	mkdir -p proto/var/svc/profile
+	mkdir -p proto/usr/has/bin
 
 %/$(TMPPKGS):
 	$(MAKE) BUILDID=$(@D) $(@F)
