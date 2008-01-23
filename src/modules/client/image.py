@@ -23,16 +23,13 @@
 # Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
-import ConfigParser
 import cPickle
 import errno
-import getopt
 import os
 import grp
 import pwd
 import urllib
 import urllib2
-import urlparse
 # import uuid           # XXX interesting 2.5 module
 
 import pkg.catalog as catalog
@@ -43,7 +40,6 @@ import pkg.version as version
 import pkg.client.imageconfig as imageconfig
 import pkg.client.imageplan as imageplan
 import pkg.client.retrieve as retrieve
-import pkg.client.progress as progress
 
 from pkg.misc import versioned_urlopen
 

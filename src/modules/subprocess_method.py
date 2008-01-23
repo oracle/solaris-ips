@@ -18,7 +18,6 @@ import types
 import traceback
 
 import select
-import errno
 import fcntl
 import pickle
 

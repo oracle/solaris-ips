@@ -26,7 +26,6 @@
 #
 
 
-import sys
 import os
 import tarfile
 

@@ -44,24 +44,15 @@
 
 import getopt
 import gettext
-import httplib
 import itertools
 import os
 import re
-import sha
 import sys
 import traceback
-import urllib
 import urllib2
 import urlparse
 
 import pkg.arch as arch
-import pkg.catalog as catalog
-import pkg.config as config
-import pkg.dependency as dependency
-import pkg.fmri as fmri
-import pkg.manifest as manifest
-import pkg.version as version
 
 import pkg.client.image as image
 import pkg.client.imageplan as imageplan

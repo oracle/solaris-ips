@@ -34,7 +34,6 @@ empty."""
 
 import os
 import errno
-import datetime
 
 import generic
 

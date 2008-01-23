@@ -28,7 +28,6 @@
 import os
 import stat
 import tarfile
-import tempfile
 
 from pkg.actions import *
 

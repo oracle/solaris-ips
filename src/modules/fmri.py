@@ -23,11 +23,10 @@
 # Use is subject to license terms.
 #
 
-import exceptions
 import re
 import urllib
 
-from version import Version, DotSequence
+from version import Version
 
 class PkgFmri(object):
         """The authority is the anchor of a package namespace.  Clients can

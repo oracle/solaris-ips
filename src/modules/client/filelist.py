@@ -25,20 +25,13 @@
 # Use is subject to license terms.
 #
 
-import sys
 import os
 import exceptions
 import urllib
-import urllib2
-import urlparse
-import tarfile
 import shutil
-import errno
 
 import pkg.client.image
-import pkg.actions as actions
 import pkg.actions.generic as generic
-import pkg.fmri as fmri
 import pkg.pkgtarfile as ptf
 from pkg.misc import versioned_urlopen
 

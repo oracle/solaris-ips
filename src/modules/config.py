@@ -25,8 +25,6 @@
 # Use is subject to license terms.
 #
 
-import os
-
 # Shared client configuration
 
 class ParentRepo(object):

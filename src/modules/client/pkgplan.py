@@ -27,10 +27,8 @@ import errno
 import itertools
 import os
 
-import pkg.actions.file as pkgfile
 import pkg.manifest as manifest
 import pkg.client.filelist as filelist
-import pkg.client.progress as progress
 
 class PkgPlan(object):
         """A package plan takes two package FMRIs and an Image, and produces the

@@ -24,15 +24,10 @@
 
 import bisect
 import os
-import sha
-import shutil
-import time
-import urllib
 import cPickle
 from itertools import groupby, chain
 
 import pkg.actions as actions
-import pkg.fmri as fmri
 import pkg.client.retrieve as retrieve
 import pkg.client.filter as filter
 

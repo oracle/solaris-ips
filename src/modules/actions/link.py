@@ -31,7 +31,6 @@ This module contains the LinkAction class, which represents a link-type
 packaging object."""
 
 import os
-import sha
 
 import generic
 

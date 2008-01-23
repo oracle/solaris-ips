@@ -25,7 +25,6 @@
 # Use is subject to license terms.
 #
 
-import gzip
 import os
 import stat
 

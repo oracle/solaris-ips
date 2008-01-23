@@ -48,20 +48,14 @@ import errno
 import getopt
 import os
 import re
-import sha
-import shutil
 import sys
-import time
 import urllib
 import tarfile
 import cgi
 import traceback
 
-import pkg.catalog as catalog
-import pkg.dependency as dependency
 import pkg.fmri as fmri
 import pkg.misc as misc
-import pkg.version as version
 
 import pkg.server.face as face
 import pkg.server.config as config

@@ -23,15 +23,10 @@
 # Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
-import os
-import urllib
-
-import pkg.catalog as catalog
 import pkg.fmri as fmri
 
 import pkg.client.pkgplan as pkgplan
 import pkg.client.retrieve as retrieve # XXX inventory??
-import pkg.client.progress as progress
 
 from pkg.client.filter import compile_filter
 

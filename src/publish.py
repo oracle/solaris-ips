@@ -48,9 +48,6 @@ import traceback
 
 import pkg.bundle
 import pkg.config as config
-import pkg.dependency as dependency
-import pkg.fmri as fmri
-import pkg.version as version
 
 import pkg.publish.transaction as trans
 

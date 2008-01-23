@@ -23,19 +23,12 @@
 # Use is subject to license terms.
 #
 
-import sys
 import os
 import re
-import sha
-import shutil
 import time
-import urllib
-import tempfile
-import errno
 import datetime
 
 import pkg.fmri as fmri
-import pkg.version as version
 import pkg.catalog as catalog
 
 class UpdateLogException(Exception):

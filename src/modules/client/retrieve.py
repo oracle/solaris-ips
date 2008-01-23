@@ -24,9 +24,6 @@
 #
 
 import os
-import sys
-import urllib
-import urlparse
 
 from pkg.misc import versioned_urlopen
 

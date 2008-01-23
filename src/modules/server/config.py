@@ -28,12 +28,10 @@
 import errno
 import os
 import statvfs
-import urllib
 import shutil
 
 import pkg.catalog as catalog
 import pkg.updatelog as updatelog
-import pkg.fmri as fmri
 
 import pkg.server.transaction as trans
 

@@ -27,12 +27,6 @@
 
 import sys
 import os
-import exceptions
-import urllib
-import urllib2
-import urlparse
-import shutil
-import errno
 import time
 
 class ProgressTracker(object):

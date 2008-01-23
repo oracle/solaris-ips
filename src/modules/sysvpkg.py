@@ -40,7 +40,6 @@ datastream.
 import errno
 import gzip
 import os
-import string
 import sys
 
 from pkg.cpiofile import CpioFile

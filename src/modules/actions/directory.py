@@ -31,7 +31,6 @@ This module contains the DirectoryAction class, which represents a
 directory-type packaging object."""
 
 import os
-import sha
 import errno
 from stat import *
 import generic

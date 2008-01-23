@@ -33,7 +33,6 @@ packaging object.
 
 import os
 import subprocess
-import sys
 
 import generic
 

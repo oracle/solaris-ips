@@ -27,11 +27,7 @@ that operate on lists of package FMRIs."""
 
 import os
 import re
-import sha
-import shutil
-import time
 import urllib
-import tempfile
 import errno
 import dbm
 import signal

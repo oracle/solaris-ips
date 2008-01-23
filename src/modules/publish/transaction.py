@@ -32,9 +32,7 @@ import httplib
 import os
 import urllib
 import urllib2
-import urlparse
 
-import pkg.actions
 from pkg.misc import versioned_urlopen
 
 class Transaction(object):

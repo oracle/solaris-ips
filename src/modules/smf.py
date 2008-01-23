@@ -23,7 +23,6 @@
 # Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
-import sys
 import xml.dom.minidom as minidom
 import xml.dom as dom
 
