@@ -32,6 +32,11 @@ REPO_PORT=${REPO_PORT:-8000}
 REPO_DIR=$TEMPDIR/repo.$$
 REPO_URL=http://localhost:$REPO_PORT
 
+#
+# Prevent PKG_IMAGE settings from leaking in from the user environment
+#
+unset PKG_IMAGE
+
 restore_dir=$PWD
 
 ROOT=$PWD/../../proto/root_$(uname -p)

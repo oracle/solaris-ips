@@ -40,6 +40,11 @@ REPO2_DIR=$TEMPDIR/repo.2.$$
 REPO2_URL=http://localhost:$REPO2_PORT
 IMAGE_DIR=$TEMPDIR/image.$$
 
+#
+# Prevent PKG_IMAGE settings from leaking in from the user environment
+#
+unset PKG_IMAGE
+
 restore_dir=$PWD
 
 ROOT=$PWD/../../proto/root_$(uname -p)

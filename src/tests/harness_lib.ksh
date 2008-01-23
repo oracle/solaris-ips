@@ -66,6 +66,7 @@ new_test() {
 	ttest="$*"
 	texpect_falure=
 	tdid_fail=
+	print "TEST: $ttest"
 }
 
 end_assert () {

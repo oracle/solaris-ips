@@ -37,6 +37,11 @@ REPO_DIR=$TEMPDIR/repo.$$
 REPO_URL=http://localhost:$REPO_PORT
 IMAGE_DIR=$TEMPDIR/image.$$
 
+#
+# Prevent PKG_IMAGE settings from leaking in from the user environment
+#
+unset PKG_IMAGE
+
 restore_dir=$PWD
 
 ROOT=$PWD/../../proto/root_$(uname -p)
@@ -65,51 +70,72 @@ end_assert
 # }}}1
 
 
+new_assert "pkg status should fail in an empty image"
+# {{{1
+
+pkg image-create -F -a test=$REPO_URL $IMAGE_DIR
+expect_exit 0 $?
+
+cd $IMAGE_DIR
+
+pkg status
+expect_exit 1 $?
+
+end_assert
+# }}}1
+
+
 new_assert "Send empty package foo@1.0, install and uninstall."
 # {{{1
 
+new_test "pkgsend open, close should succeed"
 trans_id=$(pkgsend -s $REPO_URL open foo@1.0,5.11-0)
-if [[ $? != 0 ]]; then
-	fail pkgsend open failed
-fi
+expect_exit 0 $?
 
 eval $trans_id
 
-if ! pkgsend -s $REPO_URL close; then
-	fail pkgsend close failed
-fi
+pkgsend -s $REPO_URL close
+expect_exit 0 $?
 
-if ! pkg image-create -F -a test=$REPO_URL $IMAGE_DIR; then
-	fail pkg image-create failed
-fi
+new_test "image-create should succeed"
+pkg image-create -F -a test=$REPO_URL $IMAGE_DIR
+expect_exit 0 $?
 
 find $IMAGE_DIR
 
 cd $IMAGE_DIR
 
-if ! pkg status -a; then
-	fail pkg status -a failed
-fi
+new_test "pkg status -a should succeed"
+pkg status -a
+expect_exit 0 $?
 
-if ! pkg install foo; then
-	fail pkg install foo failed
-fi
-
-find $IMAGE_DIR
-
-if ! pkg status; then
-	fail pkg status failed
-fi
-
-if ! pkg uninstall foo; then
-	fail pkg uninstall foo failed
-fi
+new_test "pkg install foo should succeed"
+pkg install foo
+expect_exit 0 $?
 
 find $IMAGE_DIR
 
-if ! pkg status -a; then
-	fail pkg status -a failed
-fi
+new_test "pkg status should succeed"
+pkg status
+expect_exit 0 $?
+
+new_test "pkg verify should succeed"
+pkg verify
+expect_exit 0 $?
+
+new_test "pkg uninstall foo should succeed"
+pkg uninstall foo
+expect_exit 0 $?
+
+new_test "pkg verify should succeed"
+pkg verify
+expect_exit 0 $?
+
+find $IMAGE_DIR
+
+new_test "pkg status -a should succeed"
+pkg status -a
+expect_exit 0 $?
 
 end_assert
 # }}}1
@@ -119,25 +145,21 @@ new_assert "Send package foo@1.1, containing a directory and a file, install," \
     "search, and uninstall."
 # {{{1
 
+new_test "pkgsend open, add file, add dir, close should succeed"
 trans_id=$(pkgsend -s $REPO_URL open foo@1.1,5.11-0)
-if [[ $? != 0 ]]; then
-	fail pkgsend open failed
-fi
+expect_exit 0 $?
 
 eval $trans_id
 
-if ! pkgsend -s $REPO_URL add dir mode=0755 owner=root group=bin path=/lib; then
-	fail pkgsend add dir failed
-fi
+pkgsend -s $REPO_URL add dir mode=0755 owner=root group=bin path=/lib
+expect_exit 0 $?
 
-if ! pkgsend -s $REPO_URL add file /lib/libc.so.1 mode=0555 owner=root group=bin \
-	path=/lib/libc.so.1; then
-	fail pkgsend add file failed
-fi
+pkgsend -s $REPO_URL add file /lib/libc.so.1 mode=0555 owner=root group=bin \
+	path=/lib/libc.so.1
+expect_exit 0 $?
 
-if ! pkgsend -s $REPO_URL close; then
-	fail pkgsend close failed
-fi
+pkgsend -s $REPO_URL close
+expect_exit 0 $?
 
 if ! pkg image-create -F -a test=$REPO_URL $IMAGE_DIR; then
 	fail pkg image-create failed
@@ -148,45 +170,50 @@ find $IMAGE_DIR
 
 cd $IMAGE_DIR
 
-if ! pkg status -a; then
-	fail pkg status -a failed
-fi
+new_test "pkg status -a, install foo, verify should succeed"
+pkg status -a
+expect_exit 0 $?
 
-if ! pkg install foo; then
-	fail pkg install foo failed
-fi
+pkg install foo
+expect_exit 0 $?
 
-find $IMAGE_DIR
-
-if ! pkg status; then
-	fail pkg status failed
-fi
-
-if ! pkg search /lib/libc.so.1; then
-	fail pkg search failed
-fi
-
-if ! pkg search -r /lib/libc.so.1; then
-	fail remote pkg search failed
-fi
-
-if pkg search blah; then
-	fail pkg search failed
-fi
-
-if pkg search -r blah; then
-	fail remote pkg search failed
-fi
-
-if ! pkg uninstall foo; then
-	fail pkg uninstall foo failed
-fi
+pkg verify foo
+expect_exit 0 $?
 
 find $IMAGE_DIR
 
-if ! pkg status -a; then
-	fail pkg status -a failed
-fi
+pkg status
+expect_exit 0 $?
+
+new_test "pkg search for a file in the package should succeed"
+pkg search /lib/libc.so.1
+expect_exit 0 $?
+
+new_test "pkg search -r should succeed"
+pkg search -r /lib/libc.so.1
+expect_exit 0 $?
+
+new_test "pkg search for a bogus file should fail"
+pkg search blah
+expect_exit 1 $?
+
+new_test "pkg search -r for a bogus file should fail"
+pkg search -r blah 
+expect_exit 1 $?
+
+new_test "pkg uninstall foo should succeed"
+pkg uninstall foo
+expect_exit 0 $?
+
+find $IMAGE_DIR
+
+new_test "pkg status -a should succeed"
+pkg status -a
+expect_exit 0 $?
+
+new_test "pkg verify should succeed"
+pkg verify
+expect_exit 0 $?
 
 end_assert
 # }}}1
@@ -195,178 +222,194 @@ end_assert
 new_assert "Install foo@1.0, upgrade to foo@1.1, uninstall."
 # {{{1
 
-if ! pkg image-create -F -a test=$REPO_URL $IMAGE_DIR; then
-	fail pkgsend close failed
-fi
+new_test "pkg image-create should succeed"
+pkg image-create -F -a test=$REPO_URL $IMAGE_DIR
+expect_exit 0 $?
 
 find $IMAGE_DIR
 
 cd $IMAGE_DIR
 
-if ! pkg status -a; then
-	fail pkg status -a failed
-fi
+pkg status -a
+expect_exit 0 $?
 
-if ! pkg install foo@1.0; then
-	fail pkg install foo failed
-fi
+new_test "pkg install foo@1.0 should succeed"
+pkg install foo@1.0
+expect_exit 0 $?
 
-if ! pkg status | grep foo@1.0 > /dev/null; then
-	fail pkg install foo@1.0 didn\'t install version 1.0
-fi
+new_test "check that version 1.0 was installed"
+pkg status | grep foo@1.0 > /dev/null
+expect_exit 0 $?
 
-find $IMAGE_DIR
-
-if ! pkg status; then
-	fail pkg status failed
-fi
-
-if ! pkg install foo@1.1; then
-	fail pkg install foo \(1.0 -\> 1.1\) failed
-fi
-
-if ! pkg status | grep foo@1.1 > /dev/null; then
-	fail pkg install foo@1.1 didn\'t install version 1.1
-fi
+new_test "check that version 1.1 was not installed"
+pkg status | grep foo@1.1 > /dev/null
+expect_exit 1 $?
 
 find $IMAGE_DIR
 
-if ! pkg uninstall foo; then
-	fail pkg status failed
-fi
+pkg status
+expect_exit 0 $?
+
+new_test "install version 1.1 (i.e. upgrade from 1.0 -> 1.1)"
+pkg install foo@1.1
+expect_exit 0 $?
+
+pkg status | grep foo@1.1 > /dev/null
+expect_exit 0 $?
+
+pkg verify
+expect_exit 0 $?
 
 find $IMAGE_DIR
 
-if ! pkg status -a; then
-	fail pkg status -a failed
-fi
+new_test "pkg uninstall, status -a, verify should succeed"
+pkg uninstall foo
+expect_exit 0 $?
+
+find $IMAGE_DIR
+
+pkg status -a
+expect_exit 0 $?
+
+pkg verify
+expect_exit 0 $?
 
 end_assert
 # }}}1
+
 
 
 new_assert "Add bar@1.0, dependent on foo@1.0, install, uninstall."
 # {{{1
 
+new_test "pkgsend bar@1.0"
 trans_id=$(pkgsend -s $REPO_URL open bar@1.0,5.11-0)
-if [[ $? != 0 ]]; then
-	fail pkgsend open failed
-fi
+expect_exit 0 $?
 
 eval $trans_id
 
-if ! pkgsend -s $REPO_URL add depend type=require fmri=pkg:/foo@1.0; then
-	fail pkgsend add depend require failed
-fi
+new_test "pkgsend bar@1.0: add depend"
+pkgsend -s $REPO_URL add depend type=require fmri=pkg:/foo@1.0
+expect_exit 0 $?
 
-if ! pkgsend -s $REPO_URL add dir mode=0755 owner=root group=bin path=/bin; then
-	fail pkgsend add dir failed
-fi
+new_test "pkgsend bar@1.0: add dir"
+pkgsend -s $REPO_URL add dir mode=0755 owner=root group=bin path=/bin
+expect_exit 0 $?
 
-if ! pkgsend -s $REPO_URL add file /bin/cat mode=0555 owner=root group=bin \
-	path=/bin/cat; then
-	fail pkgsend add file failed
-fi
+new_test "pkgsend bar@1.0: add file"
+pkgsend -s $REPO_URL add file /bin/cat mode=0555 owner=root group=bin \
+    path=/bin/cat
+expect_exit 0 $?
 
-if ! pkgsend -s $REPO_URL close; then
-	fail pkgsend close failed
-fi
+pkgsend -s $REPO_URL close
+expect_exit 0 $?
 
-if ! pkg image-create -F -a test=$REPO_URL $IMAGE_DIR; then
-	fail pkgsend close failed
-fi
+new_test "create image"
+pkg image-create -F -a test=$REPO_URL $IMAGE_DIR
+expect_exit 0 $?
 
 find $IMAGE_DIR
 
 cd $IMAGE_DIR
 
-if ! pkg status -a; then
-	fail pkg status -a failed
-fi
+new_test "check status, install bar@1.0"
+pkg status -a
+expect_exit 0 $?
 
-if ! pkg install bar@1.0; then
-	fail pkg install bar failed
-fi
-
-find $IMAGE_DIR
-
-if ! pkg status; then
-	fail pkg status failed
-fi
+pkg install bar@1.0
+expect_exit 0 $?
 
 find $IMAGE_DIR
 
-if ! pkg uninstall -v bar foo; then
-	fail pkg uninstall failed
-fi
+pkg status
+expect_exit 0 $?
+
+pkg verify
+expect_exit 0 $?
+
+new_test "uninstall bar and foo"
+pkg uninstall -v bar foo
+expect_exit 0 $?
 
 find $IMAGE_DIR
 
-if ! pkg status -a; then
-	fail pkg status -a failed
-fi
+new_test "check status and verify"
+pkg status | grep bar@ > /dev/null
+expect_exit 1 $?
+
+pkg status | grep foo@ > /dev/null
+expect_exit 1 $?
+
+pkg verify
+expect_exit 0 $?
 
 end_assert
 # }}}1
+
 
 
 new_assert "Install bar@1.0, dependent on foo@1.0, uninstall recursively."
 # {{{1
 
-if ! pkg image-create -F -a test=$REPO_URL $IMAGE_DIR; then
-	fail pkg image-create failed
-fi
+new_test "create image"
+pkg image-create -F -a test=$REPO_URL $IMAGE_DIR
+expect_exit 0 $?
 
 find $IMAGE_DIR
 
 cd $IMAGE_DIR
 
-if ! pkg status -a; then
-	fail pkg status -a failed
-fi
-
-if ! pkg install bar@1.0; then
-	fail pkg install bar failed
-fi
+new_test "install bar@1.0"
+pkg install bar@1.0
+expect_exit 0 $?
 
 find $IMAGE_DIR
 
-if ! pkg status; then
-	fail pkg status failed
-fi
+new_test "check to see that foo and bar were installed"
+pkg status | grep foo > /dev/null
+expect_exit 0 $?
+pkg status | grep bar > /dev/null
+expect_exit 0 $?
+
+pkg verify
+expect_exit 0 $?
 
 find $IMAGE_DIR
 
-if ! pkg uninstall -vr bar; then
-	fail pkg uninstall -vr failed
-fi
+pkg uninstall -vr bar
+expect_exit 0 $?
+
+
+# http://defect.opensolaris.org/bz/show_bug.cgi?id=387
+begin_expect_test_fails 387
+new_test "check to see that foo and bar were uninstalled"
+pkg status | grep foo > /dev/null
+expect_exit 1 $?
+pkg status | grep bar > /dev/null
+expect_exit 1 $?
+end_expect_test_fails 
 
 find $IMAGE_DIR
-
-if ! pkg status -a; then
-	fail pkg status -a failed
-fi
 
 end_assert
 # }}}1
 
+
 new_assert "Send package shouldnotexist@1.0, then abandon the transaction"
 # {{{1
 
+new_test "Open shouldnotexist@1.0"
 trans_id=$(pkgsend -s $REPO_URL open shouldnotexist@1.0,5.11-0)
-if [[ $? != 0 ]]; then
-	fail pkgsend open failed
-fi
+expect_exit 0 $?
 
 eval $trans_id
 
-if ! pkgsend -s $REPO_URL add dir mode=0755 owner=root group=bin path=/bin; then
-	fail pkgsend add dir failed
-fi
+new_test "Send dir"
+pkgsend -s $REPO_URL add dir mode=0755 owner=root group=bin path=/bin
+expect_exit 0 $?
 
-if ! pkgsend -s $REPO_URL close -A; then
-	fail pkgsend close failed
-fi
+pkgsend -s $REPO_URL close -A
+expect_exit 0 $?
 
 pkg refresh
 expect_exit 0 $?
@@ -377,6 +420,8 @@ expect_exit 1 $?
 end_assert
 # }}}1
 
+
+
 new_assert "Send package bar@1.1, dependent on foo@1.2.  Install bar@1.0." \
     "List all packages.  Upgrade image."
 # {{{1
@@ -385,100 +430,78 @@ find $IMAGE_DIR
 
 cd $IMAGE_DIR
 
-if ! pkg refresh; then
-	fail pkg refresh failed
-fi
+new_test "pkg refresh, status -aH"
+pkg refresh
+expect_exit 0 $?
 
-if ! pkg status -aH; then
-	fail pkg status -aH failed
-fi
+pkg status -aH
+expect_exit 0 $?
 
-if ! pkg install -v bar@1.0; then
-	fail pkg install bar failed
-fi
+new_test "pkg install bar@1.0"
+pkg install -v bar@1.0
+expect_exit 0 $?
 
+new_test "pkgsend foo@1.2"
 trans_id=$(pkgsend -s $REPO_URL open foo@1.2,5.11-0)
-if [[ $? != 0 ]]; then
-	fail pkgsend open failed
-fi
-
+expect_exit 0 $?
 eval $trans_id
 
-if ! pkgsend -s $REPO_URL add dir mode=0755 owner=root group=bin path=/lib; then
-	fail pkgsend add dir failed
-fi
+pkgsend -s $REPO_URL add dir mode=0755 owner=root group=bin path=/lib
+expect_exit 0 $?
+pkgsend -s $REPO_URL add file /lib/libc.so.1 mode=0555 owner=root group=bin \
+    path=/lib/libc.so.1
+expect_exit 0 $?
+pkgsend -s $REPO_URL close
+expect_exit 0 $?
 
-if ! pkgsend -s $REPO_URL add file /lib/libc.so.1 mode=0555 owner=root group=bin \
-	path=/lib/libc.so.1; then
-	fail pkgsend add file failed
-fi
 
-if ! pkgsend -s $REPO_URL close; then
-	fail pkgsend close failed
-fi
-
+new_test "pkgsend bar@1.1"
 trans_id=$(pkgsend -s $REPO_URL open bar@1.1,5.11-0)
-if [[ $? != 0 ]]; then
-	fail pkgsend open failed
-fi
-
+expect_exit 0 $?
 eval $trans_id
 
-if ! pkgsend -s $REPO_URL add depend type=require fmri=pkg:/foo@1.2; then
-	fail pkgsend add depend require failed
-fi
+pkgsend -s $REPO_URL add depend type=require fmri=pkg:/foo@1.2
+expect_exit 0 $?
+pkgsend -s $REPO_URL add dir mode=0755 owner=root group=bin path=/bin
+expect_exit 0 $?
+pkgsend -s $REPO_URL add file /bin/cat mode=0555 owner=root group=bin \
+    path=/bin/cat
+expect_exit 0 $?
+pkgsend -s $REPO_URL close
+expect_exit 0 $?
 
-if ! pkgsend -s $REPO_URL add dir mode=0755 owner=root group=bin path=/bin; then
-	fail pkgsend add dir failed
-fi
+new_test "list, check status, refresh"
+pkg list -H
+expect_exit 0 $?
+pkg status
+expect_exit 0 $?
+pkg refresh
+expect_exit 0 $?
 
-if ! pkgsend -s $REPO_URL add file /bin/cat mode=0555 owner=root group=bin \
-	path=/bin/cat; then
-	fail pkgsend add file failed
-fi
-
-if ! pkgsend -s $REPO_URL close; then
-	fail pkgsend close failed
-fi
-
-if ! pkg list -H; then
-	fail pkg list -H failed
-fi
-
-if ! pkg status; then
-	fail pkg status failed
-fi
-
-if ! pkg refresh; then
-	fail pkg refresh failed
-fi
-
-if ! pkg status; then
-	fail pkg status failed
-fi
-
-if ! pkg image-update -v; then
-	fail pkg image-update failed
-fi
+new_test "status, image-update -v, verify"
+pkg status
+expect_exit 0 $?
+pkg image-update -v
+expect_exit 0 $?
+pkg verify
+expect_exit 0 $?
 
 find $IMAGE_DIR
 
-if ! pkg status -a; then
-	fail pkg status -a failed
-fi
+new_test "status -a, uninstall bar foo, verify"
+pkg status -a
+expect_exit 0 $?
 
-if ! pkg uninstall bar foo; then
-	fail pkg uninstall bar foo failed
-fi
+pkg uninstall bar foo
+expect_exit 0 $?
 
-if pkg status; then
-	fail pkg status succeeded in an empty image
-fi
-
-find $IMAGE_DIR
+pkg verify
+expect_exit 0 $?
 
 end_assert
 # }}}1
+
+
 
 new_assert "bad command line options should result in error status 2"
 # {{{1
