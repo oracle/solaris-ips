@@ -297,8 +297,11 @@ Cannot remove '%s' due to the following packages that directly depend on it:"""\
                 self.state = EVALUATED_OK
 
         def execute(self):
-                """Invoke the evaluated image plan, constructing each package
-                plan."""
+                """Invoke the evaluated image plan
+                preexecute, execute and postexecute
+                execute actions need to be sorted across packages
+                """
+                
                 assert self.state == EVALUATED_OK
 
                 npkgs = 0
@@ -324,11 +327,56 @@ Cannot remove '%s' due to the following packages that directly depend on it:"""\
 
                 self.progtrack.download_done()
 
-                self.progtrack.actions_set_goal(npkgs, nactions)
+		# do removals first so that file migrating from pkg to
+		# pkg work correctly.  Updates are handled next; then
+		# installs of new files.
 
-                for p in self.pkg_plans:
-                        # per-package image operations (further snapshots)
-                        p.execute()
+
+		# generate list of removal actions, sort and execute
+
+                actions = [ (p, src, dest)
+                            for p in self.pkg_plans
+                            for src, dest in p.gen_removal_actions()
+                            ]
+                actions.sort(key = lambda obj:obj[1])
+
+                self.progtrack.actions_set_goal("Removal Phase", len(actions))
+                for p, src, dest in actions:
+                        p.execute_removal(src, dest)
+			self.progtrack.actions_add_progress()
+                self.progtrack.actions_done()
+
+		# generate list of update actions, sort and execute
+
+                actions = [ (p, src, dest)
+                            for p in self.pkg_plans
+                            for src, dest in p.gen_update_actions()
+                            ]
+                actions.sort(key = lambda obj:obj[2])
+
+                self.progtrack.actions_set_goal("Update Phase", len(actions))
+
+                for p, src, dest in actions:
+                        p.execute_update(src, dest)
+			self.progtrack.actions_add_progress()
+                self.progtrack.actions_done()
+
+		# generate list of install actions, sort and execute
+
+                actions = [ (p, src, dest)
+                            for p in self.pkg_plans
+                            for src, dest in p.gen_install_actions()
+                            ]
+                actions.sort(key = lambda obj:obj[2])
+
+                self.progtrack.actions_set_goal("Install Phase", len(actions))
+
+                for p, src, dest in actions:
+                        p.execute_install(src, dest)
+			self.progtrack.actions_add_progress()
+                self.progtrack.actions_done()
+
+		# hand postexecute phase
 
                 for p in self.pkg_plans:
                         p.postexecute()

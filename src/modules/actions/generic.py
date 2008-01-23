@@ -221,7 +221,8 @@ class Action(object):
                         return 1
                 elif type(self) != types["hardlink"] == type(other):
                         return -1
-                # Compare in type-name order, falling back to id order.
+		# XXX since hardlinks aren't sorted by path & target, links to links
+		# will not work
                 else:
                         r = cmp(self.name, other.name)
                         if r != 0:

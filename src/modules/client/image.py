@@ -121,6 +121,7 @@ class Image(object):
                 self.catalogs = {}
 
                 self.attrs = {}
+                self.link_actions = {}
 
                 self.attrs["Policy-Require-Optional"] = False
                 self.attrs["Policy-Pursue-Latest"] = True
@@ -290,6 +291,30 @@ class Image(object):
                                     errors)
                                 yield (actname, errors)
 
+        def gen_installed_actions(self):
+                """ generates actions in installed image """
+
+                for fmri in self.gen_installed_pkgs():
+                        for act in self.get_manifest(fmri, filtered = True).actions:                        
+                                yield act
+
+        def get_link_actions(self):
+                """ return a dictionary of hardlink action lists indexed by 
+                target """
+                if self.link_actions:
+                        return self.link_actions
+
+                d = {} 
+                for act in self.gen_installed_actions():
+                        if act.name == "hardlink":
+                                t = act.get_target_path()
+                                if t in d:
+                                        d[t].append(act)
+                                else:
+                                        d[t] = [act]
+                self.link_actions = d
+                return d
+ 
         def has_manifest(self, fmri):
                 mpath = fmri.get_dir_path()
 

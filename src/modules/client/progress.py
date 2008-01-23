@@ -68,11 +68,9 @@ class ProgressTracker(object):
                 self.dl_cur_pkg = "None"
 
                 self.act_cur_nactions = 0
-                self.act_cur_npkgs = 0
                 self.act_goal_nactions = 0
-                self.act_goal_npkgs = 0
-                self.act_origin_fmri = None
-                self.act_destination_fmri = None
+		self.act_phase = "None"
+		self.act_phase_last = "None"
 
                 self.debug = False
                 self.last_printed = 0 # when did we last emit status?
@@ -135,20 +133,10 @@ class ProgressTracker(object):
         def download_get_progress(self):
                 return (self.cur_files, self.cur_nbytes)
 
-        def actions_set_goal(self, npkgs, nactions):
-                self.act_goal_npkgs = npkgs
+        def actions_set_goal(self, phase, nactions):
+                self.act_phase = phase
                 self.act_goal_nactions = nactions
-
-        def actions_start_pkg(self, origin_fmri, destination_fmri):
-                self.act_origin_fmri = origin_fmri
-                self.act_destination_fmri = destination_fmri
-                if self.act_goal_npkgs > 0:
-                        self.act_output_start_pkg()
-
-        def actions_done_pkg(self):
-                self.act_cur_npkgs += 1
-                if self.act_goal_npkgs > 0:
-                        self.act_output_done_pkg()
+		self.act_cur_nactions = 0
 
         def actions_add_progress(self):
                 self.act_cur_nactions += 1
@@ -195,12 +183,6 @@ class ProgressTracker(object):
         def act_output(self):
                 raise NotImplementedError("act_output() not implemented in superclass")
 
-        def act_output_start_pkg(self):
-                raise NotImplementedError("act_output_start_pkg() not implemented in superclass")
-
-        def act_output_done_pkg(self):
-                raise NotImplementedError("act_output_done_pkg() not implemented in superclass")
-
         def act_output_done(self):
                 raise NotImplementedError("act_output_done() not implemented in superclass")
 
@@ -240,15 +222,7 @@ class QuietProgressTracker(ProgressTracker):
 
         def dl_output_done(self): return
 
-        def act_output_start_pkg(self): return
-
         def act_output(self): return
-
-        def act_output_done_pkg(self): return
-
-        def act_output_done(self): return
-
-        def act_output_done_pkg(self): return
 
         def act_output_done(self): return
 
@@ -299,26 +273,13 @@ class CommandLineProgressTracker(ProgressTracker):
                 sys.stdout.flush()
 
         def act_output(self):
+		if self.act_phase != self.act_phase_last:
+			print "%s ... " % self.act_phase,
+			self.act_phase_last = self.act_phase
                 return
 
-        def act_output_start_pkg(self):
-                orig = self.act_origin_fmri
-                dest = self.act_destination_fmri
-
-                if orig == None and dest != None:
-                        print "Install: %s ... " % dest.get_name(),
-                if orig != None and dest == None:
-                        print "Remove: %s ... " % orig.get_name(),
-                if orig != None and dest != None:
-                        print "Upgrade: %s ... " % dest.get_name(),
-                sys.stdout.flush()
-
-        def act_output_done_pkg(self):
-                print "Done"
-                sys.stdout.flush()
-
         def act_output_done(self):
-                print
+                print "Done"
                 sys.stdout.flush()
 
 
@@ -383,11 +344,14 @@ class FancyUNIXProgressTracker(ProgressTracker):
                         self.spinner += 1
                         if self.spinner >= len(self.spinner_chars):
                                 self.spinner = 0
-                        print "Verifying... %c" % self.spinner_chars[self.spinner],
+                        print "%-50s..... %c%c" % \
+			    (self.ver_cur_fmri.get_pkg_stem(), 
+			     self.spinner_chars[self.spinner],
+			     self.spinner_chars[self.spinner]),
                         print self.cr,
                         sys.stdout.flush()
                 else:
-                        print "%40s" % "",
+                        print "%80s" % "",
                         sys.stdout.flush()
                         self.last_print_time = 0
 
@@ -422,9 +386,6 @@ class FancyUNIXProgressTracker(ProgressTracker):
                 sys.stdout.flush()
 
         def act_output(self, force = False):
-                orig = self.act_origin_fmri
-                dest = self.act_destination_fmri
-
                 if force or (time.time() - self.last_print_time) >= 0.05:
                         self.last_print_time = time.time()
                 else:
@@ -433,36 +394,20 @@ class FancyUNIXProgressTracker(ProgressTracker):
                 # The first time, emit header.
                 if not self.act_started:
                         self.act_started = True
-                        print "%-40s %7s %11s  %s" %  \
-                            ("PACKAGE", "PKGS", "ACTIONS", "OPERATION")
+			print "%-40s %11s" % ("PHASE", "ACTIONS")
                 else:
                         print self.cr,
 
-                if orig == None and dest != None:
-                        operation = "Installing"
-                        cur_pkg = dest.get_name()
-                if orig != None and dest == None:
-                        operation = "Removing"
-                        cur_pkg = orig.get_name()
-                if orig != None and dest != None:
-                        operation = "Upgrading"
-                        cur_pkg = orig.get_name()
-
-                print "%-40s %7s %11s  %s" % \
-                    (cur_pkg,
-                    "%d/%d" % (self.act_cur_npkgs, self.act_goal_npkgs),
-                    "%d/%d" % (self.act_cur_nactions, self.act_goal_nactions),
-                    operation),
+                print "%-40s %11s" % \
+                    (
+			self.act_phase,
+			"%d/%d" % (self.act_cur_nactions, self.act_goal_nactions)
+		     ),
 
                 sys.stdout.flush()
 
-        def act_output_start_pkg(self):
-                self.act_output(force = True)
-
-        def act_output_done_pkg(self):
-                self.act_output(force = True)
-
         def act_output_done(self):
+		self.act_output(force=True)
                 print
                 sys.stdout.flush()
 

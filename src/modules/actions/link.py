@@ -61,35 +61,35 @@ class LinkAction(generic.Action):
 
                 os.symlink(target, path)
 
-	def verify(self, img, **args):
-		"""client-side method to verify install of self"""
+        def verify(self, img, **args):
+                """client-side method to verify install of self"""
                 path = self.attrs["path"]
                 target = self.attrs["target"]
 
                 path = os.path.normpath(os.path.sep.join(
                     (img.get_root(), path)))
-		
-		try:
-			if not os.path.islink(path):
-				raise Exception
-		except Exception, e:
-			return ["%s is not symbolic link" % self.attrs["path"]]
+                
+                try:
+                        if not os.path.islink(path):
+                                raise Exception
+                except Exception, e:
+                        return ["%s is not symbolic link" % self.attrs["path"]]
 
-		atarget = os.readlink(path)
+                atarget = os.readlink(path)
 
-		if target != atarget:
-			return ["target=%s" % atarget]
+                if target != atarget:
+                        return ["target=%s" % atarget]
 
-		return []
+                return []
 
         def remove(self, pkgplan):
                 path = os.path.normpath(os.path.sep.join(
                     (pkgplan.image.get_root(), self.attrs["path"])))
-		try:
-			os.unlink(path)
-		except OSError,e:
-			if e.errno != errno.ENOENT:
-				raise
+                try:
+                        os.unlink(path)
+                except OSError,e:
+                        if e.errno != errno.ENOENT:
+                                raise
 
         def generate_indices(self):
                 return {

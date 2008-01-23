@@ -135,10 +135,13 @@ class Manifest(object):
 
                 added = [(None, sdict[i]) for i in sset - oset]
                 removed = [(odict[i], None) for i in oset - sset]
+		# XXX for now, we force license actions to always be
+		# different to insure that existing license files for
+		# new versions are always installed
                 changed = [
                     (odict[i], sdict[i])
                     for i in oset & sset
-                    if odict[i].different(sdict[i])
+                    if odict[i].different(sdict[i]) or i[0] == "license"
                 ]
 
                 # XXX Do changed actions need to be sorted at all?  This is
@@ -176,7 +179,7 @@ class Manifest(object):
                                 out += "- %s\n" + str(src)
                         else:
                                 out += "%s -> %s\n" % (src, dest)
-		return out
+                return out
 
         def filter(self, filters):
                 """Filter out actions from the manifest based on filters."""

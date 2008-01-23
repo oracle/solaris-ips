@@ -131,7 +131,7 @@ class DirectoryAction(generic.Action):
                         errors.append("Mode: 0%.3o should be 0%.3o" % \
                             (S_IMODE(stat[ST_MODE]), mode))
 
-                return errors
+		return errors
                 
         def remove(self, pkgplan):
                 path = os.path.normpath(os.path.sep.join(

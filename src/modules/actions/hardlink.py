@@ -42,11 +42,29 @@ class HardLinkAction(link.LinkAction):
         def __init__(self, data=None, **attrs):
                 link.LinkAction.__init__(self, data, **attrs)
 
+        def get_target_path(self):
+                """ return a path for target that is relative to image"""
+                
+                target = self.attrs["target"]
+
+		# paths are either relative to path or absolute
+		# both need to be passed through os.path.normpath to isure
+		# that all ".." are removed to constrain target to image
+
+                if target[0] != "/":
+			path = self.attrs["path"]
+                        target = os.path.normpath(
+                            os.path.join(os.path.split(path)[0], target))
+                else:
+                        target = os.path.normpath(target)[1:]
+
+                return target
+                
         def install(self, pkgplan, orig):
                 """Client-side method that installs a hard link."""
 
                 path = self.attrs["path"]
-                target = self.attrs["target"]
+                target = self.get_target_path()
 
                 path = os.path.normpath(os.path.sep.join(
                     (pkgplan.image.get_root(), path)))
@@ -54,43 +72,33 @@ class HardLinkAction(link.LinkAction):
                 if os.path.exists(path):
                         os.unlink(path)
 
-                # If the target has a relative path, we need to construct its
-                # absolute path.  If the target has an absolute path, make sure
-                # it's constrained to the image root.
-                if target[0] != "/":
-                        target = os.path.normpath(
-                            os.path.join(os.path.split(path)[0], target))
-                else:
-                        target = os.path.normpath(os.path.sep.join(
-                            (pkgplan.image.get_root(), target)))
+		target = os.path.normpath(os.path.sep.join(
+		    (pkgplan.image.get_root(), target)))
 
                 os.link(target, path)
 
-	def verify(self, img, **args):
-		path = self.attrs["path"]
-                target = self.attrs["target"]
+        def verify(self, img, **args):
+                path = self.attrs["path"]
+                target = self.get_target_path()
 
                 path = os.path.normpath(os.path.sep.join(
                     (img.get_root(), path)))
 
                 if not os.path.exists(path):
-			return "No such path %s" % self.attrs["path"]
+                        return "No such path %s" % self.attrs["path"]
 
-                if target[0] != "/":
-                        target = os.path.normpath(
-                            os.path.join(os.path.split(path)[0], target))
-                else:
-                        target = os.path.normpath(os.path.sep.join(
-                            (img.get_root(), target)))
+		target = os.path.normpath(os.path.sep.join(
+		    (img.get_root(), target)))
 
-		if not os.path.exists(target):
-			return ["Target %s doesn't exist", self.attrs["target"]]
+                if not os.path.exists(target):
+                        return ["Target %s doesn't exist", self.attrs["target"]]
 
-		try:
-			if os.stat(path)[ST_INO] != os.stat(target)[ST_INO]:
-				return ["Path and Target inodes not the same"]
+                try:
+                        if os.stat(path)[ST_INO] != os.stat(target)[ST_INO]:
+                                return ["Path and Target (%s) inodes not the same" % \
+						self.get_target_path()]
 
-		except OSError, e:
-			return ["Unexected exception: %s" % e]
+                except OSError, e:
+                        return ["Unexected exception: %s" % e]
 
-		return []
+                return []

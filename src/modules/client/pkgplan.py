@@ -148,6 +148,18 @@ class PkgPlan(object):
                 self.actions = self.destination_mfst.difference(
                     self.origin_mfst)
 
+                # over the list of update actions, check for any that are the
+                # target of hardlink actions, and add the renewal of those hardlinks
+                # to the install set
+                link_actions = self.image.get_link_actions()
+
+                # iterate over copy since we're appending to list
+
+                for a in self.actions[1][:]:
+                        if a[1].name == "file" and a[1].attrs["path"] in link_actions:
+                                la = link_actions[a[1].attrs["path"]]
+                                self.actions[1].extend([(a, a) for a in la])
+
         def get_xferstats(self):
                 if self.xfersize != -1:
                         return (self.xferfiles, self.xfersize)
@@ -175,7 +187,7 @@ class PkgPlan(object):
                 if self.origin_fmri:
                         return self.origin_fmri.get_name()
                 return None
-
+                
         def preexecute(self):
                 """Perform actions required prior to installation or removal of a package.
 
@@ -240,63 +252,51 @@ class PkgPlan(object):
                 if flist_supported:
                         self.progtrack.download_end_pkg()
 
-        def execute(self):
-                """Perform actions for installation or removal of a package.
-
-                This method executes each action's remove() or install()
-                methods.
-                """
-
-                # record that we are in an intermediate state
-
-                # It might be nice to have a single action.execute() method, but
-                # I can't think of an example where it would make especially
-                # good sense (i.e., where "remove" is as similar to "upgrade" as
-                # is "install").  We could accomplish this by having a
-                # NoneAction, whose execute() method would call the remove()
-                # method of the passed-in src action.
-
-                self.progtrack.actions_start_pkg(self.origin_fmri,
-                    self.destination_fmri)
-
-                # Execute installs
+        def gen_install_actions(self):
                 for src, dest in self.actions[0]:
-                        try:
-                                dest.install(self, src)
-                                self.progtrack.actions_add_progress()
-                        except Exception, e:
-                                print "Action install failed for '%s' (%s):\n  %s: %s" % \
-                                    (dest.attrs.get(dest.key_attr, id(dest)),
-                                    self.destination_fmri.get_pkg_stem(),
-                                    e.__class__.__name__, e)
-                                raise
-
-                # Execute updates
-                for src, dest in self.actions[1]:
-                        try:
-                                dest.install(self, src)
-                                self.progtrack.actions_add_progress()
-                        except Exception, e:
-                                print "Action upgrade failed for '%s' (%s):\n %s: %s" % \
-                                    (dest.attrs.get(dest.key_attr, id(dest)),
-                                    self.destination_fmri.get_pkg_stem(),
-                                    e.__class__.__name__, e)
-                                raise
-
-                # Execute removals
+                        yield src, dest
+        
+        def gen_removal_actions(self):
                 for src, dest in self.actions[2]:
-                        try:
-                                src.remove(self)
-                                self.progtrack.actions_add_progress()
-                        except Exception, e:
-                                print "Action removal failed for '%s' (%s):\n  %s: %s" % \
-                                    (src.attrs.get(src.key_attr, id(src)),
-                                    self.origin_fmri.get_pkg_stem(),
-                                    e.__class__.__name__, e)
-                                raise
+                        yield src, dest
+        
+        def gen_update_actions(self):
+                for src, dest in self.actions[1]:
+                        yield src, dest
 
-                self.progtrack.actions_done_pkg()
+        def execute_install(self, src, dest):
+                """ perform action for installation of package"""
+                try:
+                        dest.install(self, src)
+                except Exception, e:
+                        print "Action install failed for '%s' (%s):\n  %s: %s" % \
+                            (dest.attrs.get(dest.key_attr, id(dest)),
+                             self.destination_fmri.get_pkg_stem(),
+                             e.__class__.__name__, e)
+                        raise
 
+        def execute_update(self, src, dest):
+                """ handle action updates"""
+                try:
+                        dest.install(self, src)
+                except Exception, e:
+                        print "Action upgrade failed for '%s' (%s):\n %s: %s" % \
+                             (dest.attrs.get(dest.key_attr, id(dest)),
+                             self.destination_fmri.get_pkg_stem(),
+                             e.__class__.__name__, e)
+                        raise
+
+        def execute_removal(self, src, dest):
+                """ handle action removals"""
+                try:
+                        src.remove(self)
+                except Exception, e:
+                        print "Action removal failed for '%s' (%s):\n  %s: %s" % \
+                            (src.attrs.get(src.key_attr, id(src)),
+                             self.origin_fmri.get_pkg_stem(),
+                             e.__class__.__name__, e)
+                        raise
+ 
         def postexecute(self):
                 """Perform actions required after installation or removal of a package.
 

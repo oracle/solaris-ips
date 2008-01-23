@@ -161,8 +161,11 @@ class FileAction(generic.Action):
                         errors.append("Mode: 0%.3o should be 0%.3o" % \
                             (S_IMODE(stat[ST_MODE]), mode))
 
+		# avoid checking pkg.size if elfhash present;
+		# different size files may have the same elfhash
                 if "preserve" not in self.attrs and \
                     "pkg.size" in self.attrs and    \
+		    "elfhash" not in self.attrs and \
                     stat[ST_SIZE] != int(self.attrs["pkg.size"]):
                         errors.append("Size: %d bytes should be %d" % \
                             (stat[ST_SIZE], int(self.attrs["pkg.size"])))
