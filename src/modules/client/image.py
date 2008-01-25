@@ -291,16 +291,16 @@ class Image(object):
                 """ generates actions in installed image """
 
                 for fmri in self.gen_installed_pkgs():
-                        for act in self.get_manifest(fmri, filtered = True).actions:                        
+                        for act in self.get_manifest(fmri, filtered = True).actions:
                                 yield act
 
         def get_link_actions(self):
-                """ return a dictionary of hardlink action lists indexed by 
+                """ return a dictionary of hardlink action lists indexed by
                 target """
                 if self.link_actions:
                         return self.link_actions
 
-                d = {} 
+                d = {}
                 for act in self.gen_installed_actions():
                         if act.name == "hardlink":
                                 t = act.get_target_path()
@@ -310,7 +310,7 @@ class Image(object):
                                         d[t] = [act]
                 self.link_actions = d
                 return d
- 
+
         def has_manifest(self, fmri):
                 mpath = fmri.get_dir_path()
 
@@ -528,7 +528,7 @@ class Image(object):
                         except urllib2.URLError, e:
                                 failed.append((auth, e))
                                 continue
- 
+
                         # root for this catalog
                         croot = "%s/catalog/%s" % (self.imgdir, auth["prefix"])
 
@@ -538,7 +538,7 @@ class Image(object):
                                 failed.append((auth, e))
                         else:
                                 succeeded += 1
-             
+
                 if failed:
                         raise RuntimeError, (failed, total, succeeded)
 
@@ -617,7 +617,7 @@ class Image(object):
 
         def getpwuid(self, uid):
                 """Do a uid lookup in the image's password database.
-                
+
                 Keep a cached copy in memory for fast lookups, and fall back to
                 the current environment if the password database isn't
                 available.
@@ -702,7 +702,7 @@ class Image(object):
 
         def getgrgid(self, gid):
                 """Do a gid lookup in the image's group database.
-                
+
                 Keep a cached copy in memory for fast lookups, and fall back to
                 the current environment if the group database isn't available.
                 """
@@ -739,7 +739,7 @@ class Image(object):
                         arr = line.rstrip().split(":")
                         arr[2] = int(arr[2])
                         gr_entry = grp.struct_group(arr)
-                        
+
                         self.groups[gr_entry.gr_name] = gr_entry
                         self.gids[gr_entry.gr_gid] = gr_entry
 
@@ -773,7 +773,7 @@ class Image(object):
                                 [ x for x in self.gen_installed_pkgs()
                                 for p in patterns
                                 if fmri.fmri_match(x.get_pkg_stem(), p)
-                                and not p in pkgs_known ] )
+                                and not x in pkgs_known ] )
                 elif all_known:
                         pkgs_known = [ pf for pf in
                             sorted(self.gen_known_package_fmris()) ]
@@ -916,5 +916,4 @@ pkg: no package matching '%s' could be found in current catalog
                         ip.execute()
 
 if __name__ == "__main__":
-        # XXX Need to construct a trivial image and catalog.
         pass

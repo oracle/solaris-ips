@@ -600,7 +600,7 @@ def list_contents(img, args):
                         matches = img.get_matching_fmris(pargs)
                 except KeyError:
                         print _("pkg: no matching packages found in catalog")
-                return 1
+                        return 1
 
                 fmris = [
                     m
