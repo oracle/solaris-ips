@@ -34,6 +34,7 @@ may use to decompress their data payloads."""
 import os
 import sha
 import zlib
+import errno
 
 import pkg.actions
 

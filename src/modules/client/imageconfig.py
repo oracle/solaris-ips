@@ -55,8 +55,10 @@ class ImageConfig(object):
                 cp = ConfigParser.SafeConfigParser()
 
                 r = cp.read(path)
-                if r[0] != path:
-                        raise ParseError
+		if len(r) == 0:
+                        raise RuntimeError("Couldn't read configuration %s" % path)
+
+                assert r[0] == path
 
                 for s in cp.sections():
                         if re.match("authority_.*", s):

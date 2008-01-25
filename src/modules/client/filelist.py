@@ -26,12 +26,9 @@
 #
 
 import os
-import exceptions
 import urllib
 import shutil
 
-import pkg.client.image
-import pkg.actions.generic as generic
 import pkg.pkgtarfile as ptf
 from pkg.misc import versioned_urlopen
 
@@ -146,10 +143,10 @@ class FileList(object):
                         path = act.attrs["path"]
                         imgroot = self.image.get_root()
                         # get directory and basename
-                        dir, base = os.path.split(path)
+                        dirname, base = os.path.split(path)
                         # reconstruct path without basename
                         path = os.path.normpath(os.path.join(
-                            imgroot, dir))
+                            imgroot, dirname))
 
                         # Since the file hash value identifies the content, and
                         # not the file or package itself, generate temporary
@@ -180,9 +177,9 @@ class FileList(object):
                         # appropriate to maintain uniqueness
                         for action in l:
                                 path = action.attrs["path"]
-                                dir, base = os.path.split(path)
+                                dirname, base = os.path.split(path)
                                 cpdir = os.path.normpath(os.path.join(
-                                    imgroot, dir))
+                                    imgroot, dirname))
                                 cppath = os.path.normpath(os.path.join(
                                     cpdir, "." + pkgnm + "-" + base \
                                     + "-" + hashval))
@@ -218,6 +215,7 @@ class FileList(object):
                 return opener                                
 
 
-class FileListException(exceptions.Exception):
+class FileListException(Exception):
         def __init__(self, args=None):
+		Exception.__init__(self)
                 self.args = args

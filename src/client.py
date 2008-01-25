@@ -52,8 +52,6 @@ import traceback
 import urllib2
 import urlparse
 
-import pkg.arch as arch
-
 import pkg.client.image as image
 import pkg.client.imageplan as imageplan
 import pkg.client.filelist as filelist
@@ -69,7 +67,7 @@ Install subcommands:
         pkg install [-nvq] pkg_fmri
         pkg uninstall [-nrvq] pkg_fmri
 
-        pkg info [-msv] pkg_fmri_pattern [pkg_fmri_pattern ... ]
+        pkg info [-ms] pkg_fmri_pattern [pkg_fmri_pattern ... ]
         pkg list [-H] [-o attribute ...] [-s sort_key] [-t action_type ... ]
             pkg_fmri_pattern [pkg_fmri_pattern ...]
         pkg search [-lr] [-s server] token
@@ -308,8 +306,7 @@ def image_update(img, args):
 
         opts, pargs = getopt.getopt(args, "b:nvq")
 
-        quiet = strict = noexecute = verbose = False
-        filters = []
+        quiet = noexecute = verbose = False
         for opt, arg in opts:
                 if opt == "-n":
                         noexecute = True
@@ -342,12 +339,10 @@ def install(img, args):
 
         opts, pargs = getopt.getopt(args, "Snvb:f:q")
 
-        quiet = strict = noexecute = verbose = False
+        quiet = noexecute = verbose = False
         filters = []
         for opt, arg in opts:
-                if opt == "-S":
-                        strict = True
-                elif opt == "-n":
+                if opt == "-n":
                         noexecute = True
                 elif opt == "-v":
                         verbose = True
@@ -514,14 +509,12 @@ def info(img, args):
 
         opts, pargs = getopt.getopt(args, "msv")
 
-        verbose = short = manifest_raw = False
+        short = manifest_raw = False
         for opt, arg in opts:
                 if opt == "-m":
                         manifest_raw = True
                 elif opt == "-s":
                         short = True
-                elif opt == "-v":
-                        verbose = True # XXX -vv ?
 
         img.load_catalogs(get_tracker())
 
@@ -545,11 +538,11 @@ def info(img, args):
         for i, m in enumerate(manifests):
                 if not short and i > 0:
                         print
-                info_one(m, short, verbose, manifest_raw)
+                info_one(m, short, manifest_raw)
 
         return 0
 
-def info_one(manifest, short, verbose, show_raw_manifest):
+def info_one(manifest, short, show_raw_manifest):
         if show_raw_manifest:
                 print str(manifest),
                 return
@@ -583,7 +576,6 @@ def list_contents(img, args):
         opts, pargs = getopt.getopt(args, "Ho:s:t:")
 
         display_headers = True
-        verbose = False
         attrs = []
         sort_attrs = []
         action_types = []
@@ -732,8 +724,7 @@ def image_create(img, args):
 
         # XXX Long options support
 
-        type = image.IMG_USER
-        filter_tags = arch.get_isainfo()
+        imgtype = image.IMG_USER
         is_zone = False
         auth_name = None
         auth_url = None
@@ -743,11 +734,11 @@ def image_create(img, args):
 
         for opt, arg in opts:
                 if opt == "-F" or opt == "--full":
-                        type = image.IMG_ENTIRE
+                        imgtype = image.IMG_ENTIRE
                 if opt == "-P" or opt == "--partial":
-                        type = image.IMG_PARTIAL
+                        imgtype = image.IMG_PARTIAL
                 if opt == "-U" or opt == "--user":
-                        type = image.IMG_USER
+                        imgtype = image.IMG_USER
                 if opt == "-z" or opt == "--zone":
                         is_zone = True
                 if opt == "-a" or opt == "--authority":
@@ -757,7 +748,7 @@ def image_create(img, args):
                 print >> sys.stderr, _("pkg: image-create requires a single image directory path")
                 usage()
 
-        img.set_attrs(type, pargs[0], is_zone, auth_name, auth_url)
+        img.set_attrs(imgtype, pargs[0], is_zone, auth_name, auth_url)
 
         try:
                 img.retrieve_catalogs()
@@ -767,9 +758,9 @@ def image_create(img, args):
 
         return 0
 
-img = image.Image()
-
 def main_func():
+	img = image.Image()
+
         # XXX /usr/lib/locale is OpenSolaris-specific.
         gettext.install("pkg", "/usr/lib/locale")
 
@@ -800,19 +791,19 @@ def main_func():
 
         for opt, arg in opts:
                 if opt == "-R":
-                        dir = arg
+                        mydir = arg
 
-        if "dir" not in locals():
+        if "mydir" not in locals():
                 try:
-                        dir = os.environ["PKG_IMAGE"]
+                        mydir = os.environ["PKG_IMAGE"]
                 except KeyError:
-                        dir = os.getcwd()
+                        mydir = os.getcwd()
 
         try:
-                img.find_root(dir)
+                img.find_root(mydir)
         except AssertionError:
                 print >> sys.stderr, \
-                    _("'%s' is not an install image") % dir
+                    _("'%s' is not an install image") % mydir
                 return 1
 
         img.load_config()

@@ -48,10 +48,20 @@ mirrors:
 		self.ic = imageconfig.ImageConfig()
 
         def tearDown(self):
-                os.remove(self.sample_conf)
+		try:
+			os.remove(self.sample_conf)
+		except:
+			pass
 
 	def test_read(self):
 		self.ic.read(self.sample_conf)
+
+	def test_missing_conffile(self):
+		#
+		#  See what happens if the conf file is missing.
+		#
+		os.remove(self.sample_conf)
+		self.assertRaises(RuntimeError, self.ic.read, self.sample_conf)
 
 # XXX more test cases needed.
 

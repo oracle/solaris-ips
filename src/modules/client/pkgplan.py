@@ -52,6 +52,9 @@ class PkgPlan(object):
                 self.xfersize = -1
                 self.xferfiles = -1
 
+                self.origin_filters = []
+                self.destination_filters = []
+
         def __str__(self):
                 s = "%s -> %s\n" % (self.origin_fmri, self.destination_fmri)
 
@@ -62,18 +65,18 @@ class PkgPlan(object):
 
         def set_origin(self, fmri):
                 self.origin_fmri = fmri
-                self.origin_mfst = manifest.retrieve(fmri)
+       #XXX this is busted, can't work         self.origin_mfst = manifest.retrieve(fmri)
 
-        def propose_destination(self, fmri, manifest):
+        def propose_destination(self, fmri, mfst):
                 self.destination_fmri = fmri
-                self.destination_mfst = manifest
+                self.destination_mfst = mfst
 
                 if self.image.install_file_present(fmri):
                         raise RuntimeError, "already installed"
 
-        def propose_removal(self, fmri, manifest):
+        def propose_removal(self, fmri, mfst):
                 self.origin_fmri = fmri
-                self.origin_mfst = manifest
+                self.origin_mfst = mfst
 
                 if not self.image.install_file_present(fmri):
                         raise RuntimeError, "not installed"
@@ -334,8 +337,8 @@ class PkgPlan(object):
                                     self.destination_fmri.get_dir_path()), "w")
 
                                 f.writelines([
-                                    filter + "\n"
-                                    for filter, code in self.destination_filters
+                                    myfilter + "\n"
+                                    for myfilter, code in self.destination_filters
                                 ])
                                 f.close()
 

@@ -125,7 +125,7 @@ class ProgressTracker(object):
                 assert self.dl_cur_nbytes == self.dl_goal_nbytes
 
         def download_get_progress(self):
-                return (self.cur_files, self.cur_nbytes)
+                return (self.dl_cur_npkgs, self.dl_cur_nfiles, self.dl_cur_nbytes)
 
         def actions_set_goal(self, phase, nactions):
                 self.act_phase = phase
@@ -162,7 +162,7 @@ class ProgressTracker(object):
         def eval_output_done(self):
                 raise NotImplementedError("eval_output_done() not implemented in superclass")
 
-        def ver_output(self, fmri):
+        def ver_output(self):
                 raise NotImplementedError("ver_output() not implemented in superclass")
 
         def ver_output_error(self, actname, errors):
@@ -237,7 +237,7 @@ class CommandLineProgressTracker(ProgressTracker):
             and so is appropriate for sending through a pipe.  This code
             is intended to be platform neutral. """
 
-        def __init__(self, verbose = False):
+        def __init__(self):
                 ProgressTracker.__init__(self)
                 self.dl_last_printed_pkg = None
 
@@ -285,7 +285,7 @@ class FancyUNIXProgressTracker(ProgressTracker):
             tests fail, it gives up: the client should pick some other more
             suitable tracker.  (Probably CommandLineProgressTracker). """
 
-        def __init__(self, verbose = False):
+        def __init__(self):
                 ProgressTracker.__init__(self)
 
                 self.act_started = False
@@ -303,11 +303,12 @@ class FancyUNIXProgressTracker(ProgressTracker):
                 self.dl_started = False
                 self.spinner = 0
                 self.spinner_chars = "/-\|"
+		self.cat_curstrlen = 0
 
         def cat_output_start(self):
-                str = "Fetching catalog '%s'..." % (self.cat_cur_catalog)
-                self.cat_curstrlen = len(str)
-                print "%s" % str,
+                catstr = "Fetching catalog '%s'..." % (self.cat_cur_catalog)
+                self.cat_curstrlen = len(catstr)
+                print "%s" % catstr,
                 sys.stdout.flush()
 
         def cat_output_done(self):
@@ -317,9 +318,9 @@ class FancyUNIXProgressTracker(ProgressTracker):
                 sys.stdout.flush()
 
         def eval_output_start(self):
-                str = "Creating Plan"
-                self.cat_curstrlen = len(str)
-                print "%s" % str,
+                s = "Creating Plan"
+                self.cat_curstrlen = len(s)
+                print "%s" % s,
                 sys.stdout.flush()
 
         def eval_output_done(self):
