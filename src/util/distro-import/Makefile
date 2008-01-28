@@ -27,7 +27,7 @@
 # Needs to point to filesystem on Solaris install dvd
 # replace as needed with a local solaris install image
 
-WOS_PKGS=/net/netinstall.sfbay/export/nv/x/79a/Solaris_11/Product
+WOS_PKGS=/net/netinstall.sfbay/export/nv/x/$(BUILDID)/Solaris_11/Product
 NONWOS_PKGS=/net/paradise.sfbay/export/integrate_dock/nv/nv_indianaprev2/i386
 TEST_PKGS=
 REPO=http://localhost:10000
@@ -84,6 +84,7 @@ FIXFILES=					\
 	etc/user_attr.cdonly			\
 	lib/libc.so.1				\
 	usr/bin/ksh				\
+	usr/has/bin/sh				\
 	usr/has/bin/vi				\
 	usr/jdk/instances/jdk1.6.0/LICENSE	\
 	usr/jdk/instances/jdk1.6.0/README.html	\
@@ -106,7 +107,7 @@ CFLAGS=		-g -v
 
 LINTFLAGS=	-axsm
 
-default:	79/slim_import
+default:	79b/slim_import
 
 cluster.import:	$(WOS_PKGS)/.clustertoc Makefile
 	./clustertoc2import.py $(WOS_PKGS)/.clustertoc | \
@@ -194,6 +195,9 @@ proto/etc/shadow:	proto Makefile
 	(./get_file_from_pkg.py $(WOS_PKGS)/SUNWcsr etc/shadow | nawk -F:		\
 	'/^root/{ print "root:wqy8hz4xKqw4o:13817::::::";continue} {print $$0}';	\
 	echo "jack:9Nd/cwBcNWFZg:13817::::::") > $@
+
+proto/usr/has/bin/sh:	proto Makefile
+	./get_file_from_pkg.py $(WOS_PKGS)/SUNWcsr sbin/sh > $@
 
 proto/usr/has/bin/vi:	proto Makefile
 	./get_file_from_pkg.py $(WOS_PKGS)/SUNWcsu usr/bin/edit > $@

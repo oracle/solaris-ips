@@ -17,6 +17,8 @@ include common/SUNWdsd
 include common/SUNWdtts
 include common/SUNWdttshelp
 include common/SUNWfilebench
+include common/SUNWfontconfig-docs.79
+include common/SUNWfreetype2.79
 include common/SUNWggrp.76
 include common/SUNWgimpprint.77
 include common/SUNWgnome-a11y-poke-root
@@ -26,7 +28,7 @@ include common/SUNWgnome-devel-docs
 include common/SUNWgnome-doc-utils.76
 include common/SUNWgnome-img-viewer.75
 include common/SUNWgnome-libs.76
-include common/SUNWgnome-remote-desktop.78
+include common/SUNWgnome-remote-desktop
 include common/SUNWgnu-idn
 include common/SUNWgscr.77
 include common/SUNWgui-install.79
@@ -38,6 +40,7 @@ include common/SUNWlibdaemon
 include common/SUNWlibevent
 include common/SUNWlibtool
 include common/SUNWltdl
+include common/SUNWman.79
 include common/SUNWmercurial.79
 include common/SUNWmgts
 include common/SUNWmxfe
@@ -73,6 +76,7 @@ include common/SUNWpostgr-server.76
 include common/SUNWpostgr.76
 include common/SUNWquagga.76
 include common/SUNWruby18
+include common/SUNWscp.79
 include common/SUNWsfman.77
 include common/SUNWsmba.79
 include common/SUNWsmbs
@@ -90,7 +94,8 @@ include common/SUNWvim
 include common/SUNWvncviewer
 include common/SUNWvscan
 include common/SUNWxcursor-themes
-include common/SUNWxorg-headers.73
+include common/SUNWxorg-headers.79
+include common/SUNWxorg-server.79
 include common/SUNWxorg-tsol-module
 include common/SUNWxrgrt.78
 include common/SUNWxrpcrt.78

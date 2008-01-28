@@ -1,12 +1,12 @@
-include common/FSWfontconfig-devel-docs
+include common/FSWfontconfig-devel-docs.79
 include common/FSWxorg-client-docs
-include common/FSWxorg-client-programs
+include common/FSWxorg-client-programs.79
 include common/FSWxorg-clientlibs
-include common/FSWxorg-data
+include common/FSWxorg-data.79
 include common/FSWxorg-devel-docs
 include common/FSWxorg-fonts
 include common/FSWxwpft
-include common/FSWxwrtl
+include common/FSWxwrtl.79
 include common/SUNW1394
 include common/SUNWDTraceToolkit
 include common/SUNWPython
@@ -45,7 +45,9 @@ include common/SUNWcsl
 include common/SUNWdbus
 include common/SUNWdbus-bindings
 include common/SUNWdistro-license
+include common/SUNWdmfe
 include common/SUNWdoc
+include common/SUNWdsd
 include common/SUNWdtrc
 include common/SUNWdtrp
 include common/SUNWesu
@@ -68,8 +70,9 @@ include common/SUNWflac
 include common/SUNWflexruntime
 include common/SUNWfmd
 include common/SUNWfontconfig
-include common/SUNWfontconfig-docs
+include common/SUNWfontconfig-docs.79
 include common/SUNWfppd
+include common/SUNWfreetype2.79
 include common/SUNWfss
 include common/SUNWftp
 include common/SUNWfwdc
@@ -105,6 +108,7 @@ include common/SUNWgnome-dialog
 include common/SUNWgnome-dictionary
 include common/SUNWgnome-disk-analyzer
 include common/SUNWgnome-display-mgr
+include common/SUNWgnome-doc-utils.76
 include common/SUNWgnome-dtstart
 include common/SUNWgnome-file-mgr
 include common/SUNWgnome-fonts
@@ -135,7 +139,7 @@ include common/SUNWgnome-print
 include common/SUNWgnome-ps-viewer
 include common/SUNWgnome-python-desktop
 include common/SUNWgnome-python-libs
-include common/SUNWgnome-remote-desktop.78
+include common/SUNWgnome-remote-desktop
 include common/SUNWgnome-screenshot
 include common/SUNWgnome-search-tool
 include common/SUNWgnome-session
@@ -194,6 +198,7 @@ include common/SUNWislcc
 include common/SUNWiso-codes
 include common/SUNWixgb
 include common/SUNWjpg
+include common/SUNWjre-config-plugin
 include common/SUNWjss
 include common/SUNWkey
 include common/SUNWkrb
@@ -220,10 +225,11 @@ include common/SUNWlldap
 include common/SUNWloc
 include common/SUNWlp-cmds
 include common/SUNWlpr-cmds
+include common/SUNWltdl
 include common/SUNWluxop
 include common/SUNWlxml
 include common/SUNWlxsl
-include common/SUNWman
+include common/SUNWman.79
 include common/SUNWmd
 include common/SUNWmkcd
 include common/SUNWmlib
@@ -248,6 +254,7 @@ include common/SUNWpcan
 include common/SUNWpcelx
 include common/SUNWpcmcu
 include common/SUNWpcmem
+include common/SUNWpcre.77
 include common/SUNWpcser
 include common/SUNWpcwl
 include common/SUNWperl-authen-pam
@@ -296,6 +303,7 @@ include common/SUNWsfinf
 include common/SUNWsfman.77
 include common/SUNWslim-utils
 include common/SUNWsmapi
+include common/SUNWsmba.79
 include common/SUNWsmedia
 include common/SUNWsndm
 include common/SUNWsolnm
@@ -337,6 +345,7 @@ include common/SUNWwlan
 include common/SUNWwpa
 include common/SUNWwsr2
 include common/SUNWxcu4
+include common/SUNWxcursor-themes
 include common/SUNWxge
 include common/SUNWxorg-cfg
 include common/SUNWxorg-client-docs
@@ -346,7 +355,8 @@ include common/SUNWxorg-compatlinks
 include common/SUNWxorg-devel-docs
 include common/SUNWxorg-doc
 include common/SUNWxorg-graphics-ddx
-include common/SUNWxorg-server
+include common/SUNWxorg-server.79
+include common/SUNWxorg-xkb
 include common/SUNWxscreensaver-hacks
 include common/SUNWxscreensaver-hacks-gl
 include common/SUNWxwdv
@@ -361,6 +371,7 @@ include common/SUNWzone
 include common/SUNWzsh
 include common/slim_cd
 include i386/BRCMbnx
+include i386/NVDAgraphics.76
 include i386/SUNWaac
 include i386/SUNWad810
 include i386/SUNWadixp
@@ -379,11 +390,12 @@ include i386/SUNWcar
 include i386/SUNWcarx
 include i386/SUNWckr.77
 include i386/SUNWcpc
+include i386/SUNWcpr
 include i386/SUNWdrmr
-include i386/SUNWfreetype2
 include i386/SUNWgrub
 include i386/SUNWipw
 include i386/SUNWiwi
+include i386/SUNWj6rt
 include i386/SUNWkvm
 include i386/SUNWlsimega
 include i386/SUNWlx
@@ -405,6 +417,7 @@ include i386/SUNWrmodr
 include i386/SUNWrtls
 include i386/SUNWrtw
 include i386/SUNWsi3124
+include i386/SUNWsmagt
 include i386/SUNWvia823x
 include i386/SUNWwpi
 include i386/SUNWxorg-mesa
@@ -424,6 +437,8 @@ idepend FSWxorg-devel-docs
 idepend FSWxorg-fonts
 idepend FSWxwpft
 idepend FSWxwrtl
+idepend NVDAgraphics
+idepend NVDAgraphicsr
 idepend SUNW1394
 idepend SUNWDTraceToolkit
 idepend SUNWPython
@@ -483,6 +498,7 @@ idepend SUNWcnetr
 idepend SUNWcpc
 idepend SUNWcpcu
 idepend SUNWcpp
+idepend SUNWcpr
 idepend SUNWcsd
 idepend SUNWcsl
 idepend SUNWcslr
@@ -492,8 +508,11 @@ idepend SUNWdbus
 idepend SUNWdbus-bindings
 idepend SUNWdbus-root
 idepend SUNWdistro-license
+idepend SUNWdmfe
 idepend SUNWdoc
 idepend SUNWdrmr
+idepend SUNWdsdr
+idepend SUNWdsdu
 idepend SUNWdtrc
 idepend SUNWdtrp
 idepend SUNWesu
@@ -579,6 +598,7 @@ idepend SUNWgnome-disk-analyzer
 idepend SUNWgnome-disk-analyzer-root
 idepend SUNWgnome-display-mgr
 idepend SUNWgnome-display-mgr-root
+idepend SUNWgnome-doc-utils
 idepend SUNWgnome-dtstart
 idepend SUNWgnome-file-mgr
 idepend SUNWgnome-file-mgr-root
@@ -675,7 +695,6 @@ idepend SUNWgssc
 idepend SUNWgssdh
 idepend SUNWgssk
 idepend SUNWgtar
-idepend SUNWinstall
 idepend SUNWgzip
 idepend SUNWhal
 idepend SUNWhalr
@@ -694,6 +713,7 @@ idepend SUNWimac
 idepend SUNWimacr
 idepend SUNWimagick
 idepend SUNWimar
+idepend SUNWinstall
 idepend SUNWintgige
 idepend SUNWipfr
 idepend SUNWipfu
@@ -712,7 +732,9 @@ idepend SUNWislcc
 idepend SUNWiso-codes
 idepend SUNWiwi
 idepend SUNWixgb
+idepend SUNWj6rt
 idepend SUNWjpg
+idepend SUNWjre-config-plugin
 idepend SUNWjss
 idepend SUNWkey
 idepend SUNWkrbr
@@ -743,6 +765,7 @@ idepend SUNWloc
 idepend SUNWlp-cmds
 idepend SUNWlpr-cmds
 idepend SUNWlsimega
+idepend SUNWltdl
 idepend SUNWluxop
 idepend SUNWlxml
 idepend SUNWlxml-python
@@ -788,6 +811,7 @@ idepend SUNWopenssl-libraries
 idepend SUNWopenssl-man
 idepend SUNWopensslr
 idepend SUNWos86r
+idepend SUNWpackaging
 idepend SUNWpapi
 idepend SUNWpcan
 idepend SUNWpcelx
@@ -795,6 +819,7 @@ idepend SUNWpcmci
 idepend SUNWpcmcu
 idepend SUNWpcmem
 idepend SUNWpcr
+idepend SUNWpcre
 idepend SUNWpcser
 idepend SUNWpcu
 idepend SUNWpcwl
@@ -805,7 +830,6 @@ idepend SUNWperl584usr
 idepend SUNWpiclr
 idepend SUNWpiclu
 idepend SUNWpilot-link
-idepend SUNWpackaging
 idepend SUNWpmr
 idepend SUNWpmu
 idepend SUNWpng
@@ -865,7 +889,10 @@ idepend SUNWsfdoc
 idepend SUNWsfinf
 idepend SUNWsfman
 idepend SUNWsi3124
+idepend SUNWsmagt
 idepend SUNWsmapi
+idepend SUNWsmbar
+idepend SUNWsmbau
 idepend SUNWsmedia
 idepend SUNWsmediar
 idepend SUNWsndmr
@@ -922,6 +949,7 @@ idepend SUNWwpau
 idepend SUNWwpi
 idepend SUNWwsr2
 idepend SUNWxcu4
+idepend SUNWxcursor-themes
 idepend SUNWxge
 idepend SUNWxorg-cfg
 idepend SUNWxorg-client-docs
@@ -933,6 +961,7 @@ idepend SUNWxorg-doc
 idepend SUNWxorg-graphics-ddx
 idepend SUNWxorg-mesa
 idepend SUNWxorg-server
+idepend SUNWxorg-xkb
 idepend SUNWxscreensaver-hacks
 idepend SUNWxscreensaver-hacks-gl
 idepend SUNWxsvc

@@ -1,5 +1,6 @@
 include all.i386
 include common/SUNWIPython
+include common/SUNWadmc
 include common/SUNWafe
 include common/SUNWapch2
 include common/SUNWapch2d
@@ -11,6 +12,7 @@ include common/SUNWcurl
 include common/SUNWdsd
 include common/SUNWdtts
 include common/SUNWdttshelp
+include common/SUNWfontconfig-docs
 include common/SUNWggrp
 include common/SUNWgimpprint
 include common/SUNWgnome-a11y-poke-root
@@ -27,10 +29,12 @@ include common/SUNWhpijs
 include common/SUNWjaxp
 include common/SUNWjds-registration.72
 include common/SUNWlibdaemon
+include common/SUNWman
 include common/SUNWmercurial
 include common/SUNWmxfe
 include common/SUNWncft
 include common/SUNWpcre
+include common/SUNWpkgcmds
 include common/SUNWpostgr
 include common/SUNWpostgr-82-client
 include common/SUNWpostgr-82-contrib
@@ -47,6 +51,7 @@ include common/SUNWpostgr-pl
 include common/SUNWpostgr-server
 include common/SUNWpostgr-server-data
 include common/SUNWquagga
+include common/SUNWscp
 include common/SUNWsfman
 include common/SUNWsmba
 include common/SUNWtexi
@@ -58,6 +63,7 @@ include common/SUNWtgnome-tstripe
 include common/SUNWtgnome-xagent
 include common/SUNWxcursor-themes
 include common/SUNWxorg-headers.73
+include common/SUNWxorg-server
 include common/SUNWxorg-tsol-module
 include common/SUNWxrgrt
 include common/SUNWxrpcrt
@@ -67,6 +73,8 @@ include i386/NVDAgraphics
 include i386/SUNWamd8111s
 include i386/SUNWcakrx
 include i386/SUNWcarx
+include i386/SUNWckr
+include i386/SUNWfreetype2
 include i386/SUNWlibvirt
 include i386/SUNWos86r
 include i386/SUNWurlgrabber

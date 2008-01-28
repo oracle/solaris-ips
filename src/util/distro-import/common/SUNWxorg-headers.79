@@ -1,0 +1,6 @@
+package SUNWxorg-headers
+import SUNWxorg-headers exclude usr/X11/include/xorg/exevents.h
+# fix broken group 
+chattr usr/lib/pkgconfig group=other
+chattr usr/lib/amd64/pkgconfig group=other
+end package

@@ -29,8 +29,9 @@ f none lib/libc.so.1 0755 root bin
 f none lib/svc/method/sshd 0555 root bin
 d none root 0700 root root
 f none usr/bin/ksh 0755 root bin
-f none usr/has/bin/vi 0755 root bin
 l none usr/has/bin/ex=vi
+f none usr/has/bin/sh 0755 root root
+f none usr/has/bin/vi 0755 root bin
 l none usr/has/bin/view=vi
 f none usr/jdk/instances/jdk1.6.0/LICENSE 0644 root bin
 f none usr/jdk/instances/jdk1.6.0/README.html 0644 root bin

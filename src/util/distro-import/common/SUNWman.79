@@ -4,6 +4,13 @@ drop usr/share/man/man.cf
 from ./SUNWfixes import
 usr/share/man/man.cf
 end import
+# Replace BSD vi with vim.
+drop usr/share/man/man1/ex.1
+drop usr/share/man/man1/vi.1
+drop usr/share/man/man1/view.1
+# Use the 32-bit ksh93 as a replacement /bin/sh
+drop usr/share/man/man1/sh.1
+add link path=usr/share/man/man1/sh.1 target=ksh93.1
 # BEGIN NON-REDISTRIBUTABLE
 drop usr/share/man/man1/alias.1
 drop usr/share/man/man1/answerbook2.1
@@ -47,7 +54,6 @@ drop usr/share/man/man1/egrep.1
 drop usr/share/man/man1/elfsign.1
 drop usr/share/man/man1/env.1
 drop usr/share/man/man1/error.1
-drop usr/share/man/man1/ex.1
 drop usr/share/man/man1/expand.1
 drop usr/share/man/man1/expr.1
 drop usr/share/man/man1/fgrep.1
@@ -130,7 +136,6 @@ drop usr/share/man/man1/rpm2cpio.1
 drop usr/share/man/man1/runat.1
 drop usr/share/man/man1/rup.1
 drop usr/share/man/man1/sed.1
-drop usr/share/man/man1/sh.1
 drop usr/share/man/man1/sleep.1
 drop usr/share/man/man1/snmpstatus.1
 drop usr/share/man/man1/sort.1
@@ -165,7 +170,6 @@ drop usr/share/man/man1/unifdef.1
 drop usr/share/man/man1/uniq.1
 drop usr/share/man/man1/unix2dos.1
 drop usr/share/man/man1/uptime.1
-drop usr/share/man/man1/vi.1
 drop usr/share/man/man1/w.1
 drop usr/share/man/man1/wait.1
 drop usr/share/man/man1/wc.1
@@ -1407,7 +1411,6 @@ add link path=usr/share/man/man1/egrep.1 target=../missing.man
 add link path=usr/share/man/man1/elfsign.1 target=../missing.man
 add link path=usr/share/man/man1/env.1 target=../missing.man
 add link path=usr/share/man/man1/error.1 target=../missing.man
-add link path=usr/share/man/man1/ex.1 target=../missing.man
 add link path=usr/share/man/man1/expand.1 target=../missing.man
 add link path=usr/share/man/man1/expr.1 target=../missing.man
 add link path=usr/share/man/man1/fgrep.1 target=../missing.man
@@ -1490,7 +1493,6 @@ add link path=usr/share/man/man1/rpm2cpio.1 target=../missing.man
 add link path=usr/share/man/man1/runat.1 target=../missing.man
 add link path=usr/share/man/man1/rup.1 target=../missing.man
 add link path=usr/share/man/man1/sed.1 target=../missing.man
-add link path=usr/share/man/man1/sh.1 target=../missing.man
 add link path=usr/share/man/man1/sleep.1 target=../missing.man
 add link path=usr/share/man/man1/snmpstatus.1 target=../missing.man
 add link path=usr/share/man/man1/sort.1 target=../missing.man
@@ -1525,7 +1527,6 @@ add link path=usr/share/man/man1/unifdef.1 target=../missing.man
 add link path=usr/share/man/man1/uniq.1 target=../missing.man
 add link path=usr/share/man/man1/unix2dos.1 target=../missing.man
 add link path=usr/share/man/man1/uptime.1 target=../missing.man
-add link path=usr/share/man/man1/vi.1 target=../missing.man
 add link path=usr/share/man/man1/w.1 target=../missing.man
 add link path=usr/share/man/man1/wait.1 target=../missing.man
 add link path=usr/share/man/man1/wc.1 target=../missing.man

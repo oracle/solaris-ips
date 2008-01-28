@@ -7,10 +7,10 @@ drop usr/bin/rksh
 add link path=usr/bin/rksh target=rksh93
 # END NON-REDISTRIBUTABLE
 # /usr/has
-add dir path=usr/has mode=0755 owner=root group=sys
-add dir path=usr/has/bin mode=0755 owner=root group=sys
-add dir path=usr/has/man mode=0755 owner=root group=sys
-add dir path=usr/has/man/man1 mode=0755 owner=root group=sys
+add dir path=usr/has mode=0755 owner=root group=bin
+add dir path=usr/has/bin mode=0755 owner=root group=bin
+add dir path=usr/has/man mode=0755 owner=root group=bin
+add dir path=usr/has/man/man1 mode=0755 owner=root group=bin
 # Replace BSD vi with vim
 drop usr/bin/ex
 drop usr/bin/vi
@@ -18,6 +18,10 @@ drop usr/bin/view
 add link path=usr/has/man/man1/vi.1 target=../../../share/man/missing.man
 add link path=usr/has/man/man1/ex.1 target=../../../share/man/missing.man
 add link path=usr/has/man/man1/view.1 target=../../../share/man/missing.man
+# Use the 32-bit ksh93 as a replacement /bin/sh
+drop usr/bin/pfsh
+add link path=usr/bin/pfsh target=../has/bin/sh
+add link path=usr/has/man/man1/sh.1 target=../../../share/man/missing.man
 # hack until clofi integrates into nevada
 drop usr/sbin/lofiadm
 from SUNWclofi import
@@ -28,6 +32,11 @@ drop var/svc/profile/generic_open.xml
 drop var/svc/profile/generic_limited_net.xml
 drop etc/inet/hosts
 drop etc/nsswitch.conf
+# Use the 32-bit ksh93 as a replacement /bin/sh
+drop sbin/pfsh
+drop sbin/sh
+add link path=sbin/pfsh target=../usr/has/bin/sh
+add link path=sbin/sh target=../usr/bin/i86/ksh93
 from ./SUNWfixes import
 # until the necessary actions are available
 etc/inet/services
@@ -39,11 +48,12 @@ var/svc/profile/generic_limited_net.xml
 # customizations for indiana
 etc/inet/hosts
 etc/nsswitch.conf
-etc/user_attr
 etc/security/exec_attr
+etc/user_attr
 root
 usr/bin/ksh
 usr/has/bin/ex
+usr/has/bin/sh
 usr/has/bin/vi
 usr/has/bin/view
 end import

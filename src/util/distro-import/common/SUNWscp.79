@@ -1,0 +1,7 @@
+package SUNWscp
+import SUNWscpu exclude usr/ucb/ex usr/ucb/vi usr/ucb/view
+import SUNWscpr
+add link path=usr/ucb/ex target=../bin/edit
+add link path=usr/ucb/vi target=../bin/edit
+add link path=usr/ucb/view target=../bin/edit
+end package

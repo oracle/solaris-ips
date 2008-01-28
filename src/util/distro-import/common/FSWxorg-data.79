@@ -1,0 +1,8 @@
+package FSWxorg-data
+import FSWxorg-data
+# fix broken group 
+chattr usr/lib/pkgconfig group=other
+chattr usr/lib/amd64/pkgconfig group=other
+# fix broken mode
+chattr usr/X11/share/X11/locale/iso8859-11 mode=0755
+end package

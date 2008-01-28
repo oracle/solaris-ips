@@ -19,12 +19,10 @@ include i386/SUNWbge
 include i386/SUNWcadp
 include i386/SUNWcakr
 include i386/SUNWcar
-include i386/SUNWckr
 include i386/SUNWcpc
 include i386/SUNWcqhpc
 include i386/SUNWdfb
 include i386/SUNWdrmr
-include i386/SUNWfreetype2
 include i386/SUNWgcc
 include i386/SUNWgrub
 include i386/SUNWgrubS
@@ -97,7 +95,6 @@ include common/SUNWacc
 include common/SUNWaclg
 include common/SUNWaconf
 include common/SUNWadmap
-include common/SUNWadmc
 include common/SUNWadmfr
 include common/SUNWadmfw
 include common/SUNWadmj
@@ -125,7 +122,6 @@ include common/SUNWasjdoc
 include common/SUNWasman
 include common/SUNWaspell
 include common/SUNWaspell-en
-include common/SUNWastdev
 include common/SUNWasut
 include common/SUNWatfs
 include common/SUNWauda
@@ -190,7 +186,6 @@ include common/SUNWdhcsb
 include common/SUNWdmgt
 include common/SUNWdoc
 include common/SUNWdpl
-include common/SUNWdsd
 include common/SUNWdtab
 include common/SUNWdtbas
 include common/SUNWdtcor
@@ -216,7 +211,6 @@ include common/SUNWdtmaz
 include common/SUNWdtrc
 include common/SUNWdtrp
 include common/SUNWdtscm
-include common/SUNWdttshelp
 include common/SUNWdtwm
 include common/SUNWdvdrw
 include common/SUNWemlxs
@@ -248,7 +242,6 @@ include common/SUNWflexlex
 include common/SUNWflexruntime
 include common/SUNWfmd
 include common/SUNWfontconfig
-include common/SUNWfontconfig-docs
 include common/SUNWfppd
 include common/SUNWfsexam
 include common/SUNWfsmgt
@@ -350,7 +343,6 @@ include common/SUNWgnu-automake-110
 include common/SUNWgnu-automake-19
 include common/SUNWgnu-coreutils
 include common/SUNWgnu-diffutils
-include common/SUNWgnu-idn
 include common/SUNWgnu-which
 include common/SUNWgnutls
 include common/SUNWgpch
@@ -502,7 +494,6 @@ include common/SUNWlvmg
 include common/SUNWlvmr
 include common/SUNWlxml
 include common/SUNWlxsl
-include common/SUNWman
 include common/SUNWmc
 include common/SUNWmcc
 include common/SUNWmccom
@@ -566,7 +557,6 @@ include common/SUNWperl584man
 include common/SUNWperl584usr
 include common/SUNWpiclh
 include common/SUNWpilot-link
-include common/SUNWpkgcmds
 include common/SUNWpl5m
 include common/SUNWpl5p
 include common/SUNWpl5u
@@ -634,7 +624,6 @@ include common/SUNWscm
 include common/SUNWscn-base
 include common/SUNWscnprm
 include common/SUNWscnsom
-include common/SUNWscp
 include common/SUNWscplp
 include common/SUNWscsa1394
 include common/SUNWsensor
@@ -798,8 +787,6 @@ include common/SUNWxorg-compatlinks
 include common/SUNWxorg-devel-docs
 include common/SUNWxorg-doc
 include common/SUNWxorg-graphics-ddx
-include common/SUNWxorg-server
-include common/SUNWxorg-tsol-module
 include common/SUNWxorg-xkb
 include common/SUNWxprint-server
 include common/SUNWxscreensaver-hacks
@@ -832,7 +819,6 @@ include common/SUNWxwslb
 include common/SUNWxwsrc
 include common/SUNWxwsrv
 include common/SUNWxwsvr
-include common/SUNWxwts
 include common/SUNWxwxft
 include common/SUNWyp
 include common/SUNWzfs
