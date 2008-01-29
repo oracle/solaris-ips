@@ -53,7 +53,7 @@ prototype: FRC
 			$$5 = "root"; \
 			$$6 = "bin"; \
 		} \
-		$$3 ~ /^(etc(\/zones)?|usr(\/share(\/lib)?)?|var(\/svc(\/manifest)?)?)$$/ { \
+		$$3 ~ /^(etc(\/zones)?|usr(\/share(\/lib)?)?|var(\/svc(\/manifest(\/application(\/pkg-server.xml)?)?)?)?)$$/ { \
 			$$6 = "sys"; \
 		} \
 		{ \
