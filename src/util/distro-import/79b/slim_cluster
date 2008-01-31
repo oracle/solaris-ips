@@ -1,4 +1,3 @@
-include common/FSWfontconfig-devel-docs.79
 include common/FSWxorg-client-docs
 include common/FSWxorg-client-programs.79
 include common/FSWxorg-clientlibs
@@ -418,6 +417,7 @@ include i386/SUNWrtls
 include i386/SUNWrtw
 include i386/SUNWsi3124
 include i386/SUNWsmagt
+include i386/SUNWsprot
 include i386/SUNWvia823x
 include i386/SUNWwpi
 include i386/SUNWxorg-mesa
@@ -428,7 +428,6 @@ description "slim install cluster"
 version 0.1
 depend SUNWipkg
 idepend BRCMbnx
-idepend FSWfontconfig-devel-docs
 idepend FSWxorg-client-docs
 idepend FSWxorg-client-programs
 idepend FSWxorg-clientlibs
@@ -899,6 +898,7 @@ idepend SUNWsndmr
 idepend SUNWsndmu
 idepend SUNWsolnm
 idepend SUNWspeex
+idepend SUNWsprot
 idepend SUNWspsvr
 idepend SUNWspsvu
 idepend SUNWsshcu

@@ -891,7 +891,6 @@ description "redistributable cluster"
 version 0.1
 depend SUNWipkg
 idepend BRCMbnx
-idepend FSWfontconfig-devel-docs
 idepend FSWxorg-client-docs
 idepend FSWxorg-client-programs
 idepend FSWxorg-clientlibs
@@ -2048,7 +2047,6 @@ description "slim install cluster"
 version 0.1
 depend SUNWipkg
 idepend BRCMbnx
-idepend FSWfontconfig-devel-docs
 idepend FSWxorg-client-docs
 idepend FSWxorg-client-programs
 idepend FSWxorg-clientlibs
@@ -2519,6 +2517,7 @@ idepend SUNWsndmr
 idepend SUNWsndmu
 idepend SUNWsolnm
 idepend SUNWspeex
+idepend SUNWsprot
 idepend SUNWspsvr
 idepend SUNWspsvu
 idepend SUNWsshcu

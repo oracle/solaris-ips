@@ -1,4 +1,3 @@
 package FSWxorg-fonts
 import FSWxorg-fonts
-chattr usr/X11/lib/X11/fonts group=bin
 end package

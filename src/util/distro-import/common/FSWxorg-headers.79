@@ -1,6 +1,3 @@
 package FSWxorg-headers
 import FSWxorg-headers
-# fix broken group 
-chattr usr/lib/pkgconfig group=other
-chattr usr/lib/amd64/pkgconfig group=other
 end package
