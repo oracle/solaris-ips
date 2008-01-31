@@ -1,0 +1,30 @@
+package openoffice
+import openofficeorg-base
+import openofficeorg-calc
+import openofficeorg-core01
+import openofficeorg-core02
+import openofficeorg-core03
+import openofficeorg-core04
+import openofficeorg-core05
+import openofficeorg-core06
+import openofficeorg-core07
+import openofficeorg-core08
+import openofficeorg-core09
+import openofficeorg-core10
+import openofficeorg-desktop-integratn
+import openofficeorg-draw
+import openofficeorg-emailmerge
+import openofficeorg-gnome-integration
+import openofficeorg-graphicfilter
+import openofficeorg-headless
+import openofficeorg-impress
+import openofficeorg-javafilter
+import openofficeorg-math
+import openofficeorg-onlineupdate
+import openofficeorg-pyuno
+import openofficeorg-testtool
+import openofficeorg-writer
+import openofficeorg-xsltfilter
+chattr_glob * edit path openoffice.org2.3 openoffice.org
+chattr_glob * edit target openoffice.org2.3 openoffice.org
+end package

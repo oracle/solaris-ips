@@ -9,8 +9,10 @@ SYNOPSIS
 
      /usr/bin/pkgsend open [-en] pkg_fmri
      /usr/bin/pkgsend add action arguments
-     /usr/bin/pkgsend send bundlefile ...
+     /usr/bin/pkgsend import bundlefile ...
      /usr/bin/pkgsend close [-A]
+
+     /usr/bin/pkgsend send bundlefile ...
 
 DESCRIPTION
      pkgsend allows the publication of new packages and new package
@@ -40,6 +42,9 @@ SUBCOMMANDS
           Add a resource associated with an action to the current
           transaction.  Requires transaction context.  See ACTIONS
           below.
+
+     import bundlefile ...
+          Add each given bundle file into the current transaction
 
      close [-A]
           Close current transaction.  With -A, abandon the current

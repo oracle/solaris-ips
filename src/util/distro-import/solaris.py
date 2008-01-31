@@ -80,7 +80,8 @@ class pkg(object):
                 # already present.
                 for o in p.manifest:
                         if o.pathname in excludes:
-                                print "excluding %s from %s" % (o.pathname, imppkg)
+                                print "excluding %s from %s" % \
+                                    (o.pathname, imppkg)
                                 continue
 
                         if o.pathname in elided_files:
@@ -89,9 +90,11 @@ class pkg(object):
 
                         if o.type == "e":
                                    if o.pathname not in editable_files:
-                                        editable_files[o.pathname] = [(imppkg, self)]
+                                        editable_files[o.pathname] = \
+                                            [(imppkg, self)]
                                    else :
-                                        editable_files[o.pathname].append((imppkg, self))
+                                        editable_files[o.pathname].append(\
+                                            (imppkg, self))
 
                         # XXX This decidedly ignores "e"-type files.
 
@@ -104,8 +107,8 @@ class pkg(object):
                                         usedlist[o.pathname][1].name,
                                         usedlist[o.pathname][0], 
                                         svr4pkgpaths[usedlist[o.pathname][0]])
-				print s
-				raise RuntimeError, s
+                                print s
+                                raise RuntimeError, s
                         elif o.type != "i":
 
                                 if o.type in "dx" and imppkg not in hollow_pkgs:
@@ -141,7 +144,7 @@ class pkg(object):
                 imppkgname = self.imppkg.pkginfo["PKG"]
 
                 if "SUNW_PKG_HOLLOW" in self.imppkg.pkginfo and \
-                    self.impkpkg.pkginfo["SUNW_PKG_HOLLOW"].lower() == "true":
+                    self.imppkg.pkginfo["SUNW_PKG_HOLLOW"].lower() == "true":
                         hollow_pkgs[imppkgname] = True
 
                 if file in usedlist:
@@ -155,8 +158,8 @@ class pkg(object):
                                 raise RuntimeError, reuse_err % (
                                         file, 
                                         self.name, 
-                                        imppkg, 
-                                        svr4pkgpaths[imppkg], 
+                                        self.imppkg, 
+                                        svr4pkgpaths[self.imppkg], 
                                         usedlist[file][1].name,
                                         usedlist[file][0], 
                                         svr4pkgpaths[usedlist[file][0]])
@@ -172,11 +175,16 @@ class pkg(object):
                 if len(o) != 1:
                         print "ERROR: %s %s" % (imppkgname, file)
                         assert len(o) == 1
-                        
+
                 if line:
                         a = actions.fromstr(
-                            "%s path=%s %s" % (self.convert_type(o[0].type), o[0].pathname, 
-                            line))
+                            "%s path=%s %s" % \
+                                    (
+                                        self.convert_type(o[0].type), 
+                                        o[0].pathname, 
+                                        line
+                                        )
+                            )
                         for attr in a.attrs:
                                 if attr == "owner":
                                         o[0].owner = a.attrs[attr]
@@ -209,11 +217,11 @@ class pkg(object):
                         action = actions.link.LinkAction(None,
                             target = f.target, path = f.pathname)
                 elif f.type == "l":
-                        (pkg.name, f.pathname, f.target)
                         action = actions.hardlink.HardLinkAction(None,
                             target = f.target, path = f.pathname)
                 else:
-                        print "unknown type %s - path %s" % ( f.type, f.pathname)
+                        print "unknown type %s - path %s" % \
+                            ( f.type, f.pathname)
 
                 return action
         
@@ -223,13 +231,13 @@ class pkg(object):
 
                 if manifest.owner == "?":
                         manifest.owner = "root"
-                        print "File %s in pkg %s owned by '?': mapping to %s" % \
-                            (manifest.pathname, self.name, manifest.owner)
+                        print "File %s in pkg %s owned by '?': mapping to %s" \
+                            % (manifest.pathname, self.name, manifest.owner)
 
                 if manifest.group == "?":
                         manifest.group = "bin"
-                        print "File %s in pkg %s of group '?': mapping to %s" % \
-                            (manifest.pathname, self.name, manifest.group)
+                        print "File %s in pkg %s of group '?': mapping to %s" \
+                            % (manifest.pathname, self.name, manifest.group)
                 if manifest.mode == "?":
                         manifest.mode = "0444"
                         print "File %s in pkg %s mode '?': mapping to %s" % \
@@ -242,16 +250,17 @@ class pkg(object):
                         raise RuntimeError, "No file '%s' in package '%s'" % \
                             (file, curpkg.name)
 
-		# It's probably a file, but all we care about are the
+                # It's probably a file, but all we care about are the
                 # attributes.
 
-		for f in o:
-			a = actions.fromstr(("%s path=%s %s" % (self.convert_type(f.type), 
-								file, line)).rstrip())
-			if show_debug:
-				print "Updating attributes on '%s' in '%s' with '%s'" % \
-				    (f.pathname, curpkg.name, a)
-			f.changed_attrs = a.attrs
+                for f in o:
+                        a = actions.fromstr(("%s path=%s %s" % 
+                            (self.convert_type(f.type), file, line)).rstrip())
+                        if show_debug:
+                                print "Updating attributes on " + \
+                                    "'%s' in '%s' with '%s'" % \
+                                    (f.pathname, curpkg.name, a)
+                        f.changed_attrs = a.attrs
 
         # apply a chattr to wildcarded files/dirs 
         # also allows package specification, wildcarding, regexp edit
@@ -290,19 +299,25 @@ class pkg(object):
                         
                         if edit:
                                 a = self.file_to_action(f)
-                                old_value = a.attrs[target]
-                                new_value = regexp.sub(replace, old_value)
-                                if old_value == new_value:
+                                if target in a.attrs:
+                                        old_value = a.attrs[target]
+                                        new_value = regexp.sub(replace, \
+                                            old_value)
+                                        if old_value == new_value:
+                                                continue
+                                        chattr_line = "%s=%s %s" % \
+                                            (target, new_value, line)
+                                else:
                                         continue
-
-                                chattr_line = "%s=%s %s" % (target, new_value, line)
-			chattr_line = chattr_line.rstrip()
+                        chattr_line = chattr_line.rstrip()
                         if show_debug:
-                                print "Updating attributes on '%s' in '%s' with '%s'" % \
+                                print "Updating attributes on " + \
+                                    "'%s' in '%s' with '%s'" % \
                                     (file, curpkg.name, chattr_line)
-                        s = "%s path=%s %s" % (self.convert_type(f.type), file, chattr_line)
-			a = actions.fromstr(s)
-			f.changed_attrs = a.attrs
+                        s = "%s path=%s %s" % (self.convert_type(f.type), \
+                           file, chattr_line)
+                        a = actions.fromstr(s)
+                        f.changed_attrs = a.attrs
                 
 
 def sysv_to_new_name(pkgname):
@@ -345,8 +360,8 @@ def publish_pkg(pkg):
         t = trans.Transaction()
 
         if nopublish:
-                # Give t some bogus methods so that it won't actually touch the
-                # server, and just return reasonable information.
+                # Give t some bogus methods so that it won't actually touch
+                # the server, and just return reasonable information.
                 t.open = lambda a, b: (200, 1000)
                 t.add = lambda a, b, c: None
                 t.close = lambda a, b, c: (200, {
@@ -357,9 +372,11 @@ def publish_pkg(pkg):
 
         cfg = config.ParentRepo(def_repo, [def_repo])
         print "    open %s@%s" % (sysv_to_new_name(pkg.name), pkg.version)
-        status, id = t.open(cfg, "%s@%s" % (sysv_to_new_name(pkg.name), pkg.version))
+        status, id = t.open(cfg, \
+            "%s@%s" % (sysv_to_new_name(pkg.name), pkg.version))
         if status / 100 in (4, 5) or not id:
-                raise RuntimeError, "failed to open transaction for %s" % pkg.name
+                raise RuntimeError, "failed to open transaction for %s" % \
+                    pkg.name
 
         # Publish non-file objects first: they're easy.
         for f in pkg.files:
@@ -367,39 +384,48 @@ def publish_pkg(pkg):
                         action = actions.directory.DirectoryAction(
                             None, mode = f.mode, owner = f.owner,
                             group = f.group, path = f.pathname)
-			if hasattr(f, "changed_attrs"):
-				action.attrs.update(f.changed_attrs)
-			print "    %s add dir %s %s %s %s" % (
-				pkg.name,
-				action.attrs["mode"], 
-				action.attrs["owner"], 
-				action.attrs["group"], 
-				action.attrs["path"]
-				)
+                        if hasattr(f, "changed_attrs"):
+                                action.attrs.update(f.changed_attrs)
+                                # chattr may have produced two path values
+                                action.attrs["path"] = \
+                                    action.attrlist("path")[-1]
+                        print "    %s add dir %s %s %s %s" % (
+                                pkg.name,
+                                action.attrs["mode"], 
+                                action.attrs["owner"], 
+                                action.attrs["group"], 
+                                action.attrs["path"]
+                                )
                 elif f.type == "s":
                         action = actions.link.LinkAction(None,
                             target = f.target, path = f.pathname)
-			if hasattr(f, "changed_attrs"):
-				action.attrs.update(f.changed_attrs)
+                        if hasattr(f, "changed_attrs"):
+                                action.attrs.update(f.changed_attrs)
+                                # chattr may have produced two path values
+                                action.attrs["path"] = \
+                                    action.attrlist("path")[-1]
                         print "    %s add link %s %s" % (
-				pkg.name, 
-				action.attrs["path"],
-				action.attrs["target"]
-				)
+                                pkg.name, 
+                                action.attrs["path"],
+                                action.attrs["target"]
+                                )
                 elif f.type == "l":
                         action = actions.hardlink.HardLinkAction(None,
                             target = f.target, path = f.pathname)
-			if hasattr(f, "changed_attrs"):
-				action.attrs.update(f.changed_attrs)
+                        if hasattr(f, "changed_attrs"):
+                                action.attrs.update(f.changed_attrs)
+                                # chattr may have produced two path values
+                                action.attrs["path"] = \
+                                    action.attrlist("path")[-1]
                         pkg.depend += process_link_dependencies(
                             action.attrs["path"], action.attrs["target"])
                         print "    %s add hardlink %s %s" % (
-				pkg.name,
-				action.attrs["path"],
-				action.attrs["target"]
-				)
+                                pkg.name,
+                                action.attrs["path"],
+                                action.attrs["target"]
+                                )
                 else:
-		       continue
+                       continue
 
                 #
                 # If the originating package was hollow, tag this file
@@ -454,10 +480,10 @@ def publish_pkg(pkg):
                 pathdict = dict((f.pathname, f) for f in g)
                 for f in bundle:
                         if f.name == "license":
-				# add transaction id so that every version
-				# of a pkg will have a unique license to prevent
-				# license from disappearing on upgrade
-				f.attrs["transaction_id"] = "%s" % id
+                                # add transaction id so that every version
+                                # of a pkg will have a unique license to prevent
+                                # license from disappearing on upgrade
+                                f.attrs["transaction_id"] = "%s" % id
                                 t.add(cfg, id, f)
                         elif f.attrs["path"] in pathdict:
                                 if pkgname in hollow_pkgs:
@@ -474,7 +500,7 @@ def publish_pkg(pkg):
                                 if hasattr(pathdict[path], "changed_attrs"):
                                         f.attrs.update(
                                             pathdict[path].changed_attrs)
-                                        # chattr may have produced two path values
+                                        # chattr may have produced two values
                                         f.attrs["path"] = f.attrlist("path")[-1]
 
                                 print "    %s add file %s %s %s %s%s" % \
@@ -496,8 +522,9 @@ def publish_pkg(pkg):
                                 deps, u = process_dependencies(tmp, path)
                                 pkg.depend += deps
                                 if u:
-                                        print "%s has missing dependencies: %s" % \
-                                            (path, u)
+                                        print \
+                                            "%s has missing dependencies: %s" \
+                                            % (path, u)
                                 undeps |= set(u)
                                 os.unlink(tmp)              
 
@@ -505,7 +532,7 @@ def publish_pkg(pkg):
 
         missing_cnt = 0
 
-        for p in set(pkg.idepend):              # over set of svr4 deps, append ipkgs
+        for p in set(pkg.idepend): # over set of svr4 deps, append ipkgs
                 if p in destpkgs:
                         pkg.depend.extend(destpkgs[p]) 
                 else:
@@ -519,7 +546,8 @@ def publish_pkg(pkg):
                 # Don't make a package depend on itself.
                 if p[:len(pkg.name)] == pkg.name:
                         continue
-                # enhance unqualified dependencies to include current pkg version
+                # enhance unqualified dependencies to include current 
+                # pkg version
                 if "@" not in p and p in pkgdict:
                         p = "%s@%s" % (p, pkgdict[p].version)
 
@@ -550,27 +578,27 @@ def publish_pkg(pkg):
                     description = pkg.desc)
                 t.add(cfg, id, action)
 
-	if pkg.name != "SUNWipkg":
-		for p in pkg.srcpkgs:
-			try:
-				sp = svr4pkgsseen[p]
-			except KeyError:
-				continue
+        if pkg.name != "SUNWipkg":
+                for p in pkg.srcpkgs:
+                        try:
+                                sp = svr4pkgsseen[p]
+                        except KeyError:
+                                continue
 
-			wanted_attrs = (
-				"PKG", "NAME", "ARCH", "VERSION", "CATEGORY",
-				"VENDOR", "DESC", "HOTLINE"
-				)
-			attrs = dict(
-				(k.lower(), v)
-				for k, v in sp.pkginfo.iteritems()
-				if k in wanted_attrs
-				)
+                        wanted_attrs = (
+                                "PKG", "NAME", "ARCH", "VERSION", "CATEGORY",
+                                "VENDOR", "DESC", "HOTLINE"
+                                )
+                        attrs = dict(
+                                (k.lower(), v)
+                                for k, v in sp.pkginfo.iteritems()
+                                if k in wanted_attrs
+                                )
 
-			action = actions.legacy.LegacyAction(None, **attrs)
+                        action = actions.legacy.LegacyAction(None, **attrs)
 
-			print "    %s add %s" % (pkg.name, action)
-			t.add(cfg, id, action)
+                        print "    %s add %s" % (pkg.name, action)
+                        t.add(cfg, id, action)
 
         if undeps:
                 print "Missing dependencies:", list(undeps)
@@ -593,8 +621,11 @@ def process_link_dependencies(path, target):
         if target in usedlist:
                 if show_debug:
                         print "hardlink %s -> %s makes %s depend on %s" % \
-                            (path, orig_target,
-                                usedlist[path][1].name, usedlist[target][1].name)
+                            (
+                                path, orig_target,
+                                usedlist[path][1].name, 
+                                usedlist[target][1].name
+                                )
                 return ["%s@%s" % (usedlist[target][1].name,
                     usedlist[target][1].version)]
         else:
@@ -626,7 +657,8 @@ def process_dependencies(file, path):
         if path.startswith("kernel") or path.startswith("usr/kernel") or \
             (path.startswith("platform") and path.split("/")[2] == "kernel"):
                 if rp:
-                        print "RUNPATH set for kernel module (%s): %s" % (path, rp)
+                        print "RUNPATH set for kernel module (%s): %s" % \
+                            (path, rp)
                 # Default kernel search path
                 rp.extend(("/kernel", "/usr/kernel"));
                 # What subdirectory should we look in for 64-bit kernel modules?
@@ -665,7 +697,10 @@ def process_dependencies(file, path):
                                 # /platform, since we don't know where under
                                 # /platform to look.
                                 head, tail = os.path.split(d)
-                                deppath = os.path.join(p, head, kernel64, tail)[1:]
+                                deppath = os.path.join(p, 
+                                                       head, 
+                                                       kernel64, 
+                                                       tail)[1:]
                         else:
                                 # This is a hack for when a runpath uses the 64
                                 # symlink to the actual 64-bit directory.
@@ -685,13 +720,19 @@ def process_dependencies(file, path):
                                 dep_pkgs += [ "%s@%s" %
                                     (usedlist[deppath][1].name,
                                     usedlist[deppath][1].version) ]
-                                depend_list.append((deppath, usedlist[deppath][1].name))
+                                depend_list.append(
+                                        (
+                                                deppath, 
+                                                usedlist[deppath][1].name
+                                                )
+                                        )
                                 break
                 else:
                         undeps += [ d ]
 
         if show_debug:
-                print "%s makes %s depend on %s" % (path, usedlist[path][1].name, depend_list)
+                print "%s makes %s depend on %s" % \
+                    (path, usedlist[path][1].name, depend_list)
 
         return dep_pkgs, undeps
 
@@ -801,7 +842,8 @@ editable_files = {}
 hollow_pkgs = {}
 
 
-reuse_err = "Conflict in path %s: IPS %s SVR4 %s from %s with IPS %s SVR4 %s from %s"
+reuse_err = \
+    "Conflict in path %s: IPS %s SVR4 %s from %s with IPS %s SVR4 %s from %s"
 
 print "First pass:", datetime.now()
 
@@ -895,8 +937,8 @@ while True:
                 try:
                         curpkg.chattr(fname, line)
                 except Exception, e:
-                        print "Can't change attributes on '%s': not in the package" % \
-                            fname, e
+                        print "Can't change attributes on " + \
+                            "'%s': not in the package" % fname, e
                         raise
 
         elif token == "chattr_glob":
@@ -905,7 +947,8 @@ while True:
                 try:
                         curpkg.chattr_glob(glob, line)
                 except Exception, e:
-                        print "Can't change attributes on '%s': no matches in the package" % \
+                        print "Can't change attributes on " + \
+                            "'%s': no matches in the package" % \
                             glob, e
                         raise
 
@@ -944,8 +987,8 @@ if editable_files:
         for paths in editable_files:
                 if len(editable_files[paths]) > 1:
                         print ("%s:" % paths).ljust(length - 1) + \
-                            ("\n".ljust(length)).join("%s (from %s)" % (l[1].name, l[0])
-                            for l in editable_files[paths])
+                            ("\n".ljust(length)).join("%s (from %s)" % \
+                            (l[1].name, l[0]) for l in editable_files[paths])
 
 
 # Second pass: iterate over the existing package objects, gathering dependencies
@@ -957,7 +1000,10 @@ print "New packages:\n"
 # XXX Sort these.  Preferably topologically, if possible, alphabetically
 # otherwise (for a rough progress gauge).
 if args[1:]:
-        newpkgs = set(pkgdict[name] for name in pkgdict.keys() if name in args[1:])
+        newpkgs = set(pkgdict[name] 
+                      for name in pkgdict.keys() 
+                      if name in args[1:]
+                      )
 else:
         newpkgs = set(pkgdict.values())
 for p in sorted(newpkgs):

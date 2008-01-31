@@ -61,8 +61,10 @@ Usage:
 Packager subcommands:
         pkgsend open [-en] pkg_fmri
         pkgsend add action arguments
-        pkgsend send bundlefile
+        pkgsend include bundlefile
         pkgsend close [-A]
+
+        pkgsend send bundlefile
 
 Options:
         -s repo_url     destination repository server URL prefix
@@ -167,6 +169,36 @@ def trans_add(config, args):
                     _("pkgsend: server failed (status %s)%s") % (status, msg)
                 sys.exit(1)
 
+def trans_import(config, args):
+	try:
+                trans_id = os.environ["PKG_TRANS_ID"]
+        except KeyError:
+                print >> sys.stderr, \
+                    _("No transaction ID specified in $PKG_TRANS_ID")
+                sys.exit(1)
+		
+	for filename in args:
+		bundle = pkg.bundle.make_bundle(filename)
+		t = trans.Transaction()
+		errstr = "pkgsend: server failed (status %s)%s"
+
+		for action in bundle:
+			try:
+				status, msg, body = t.add(config, trans_id, 
+				    action)
+				if status / 100 == 4 or status / 100 == 5:
+					if msg:
+						msg = ": " + msg
+					else:
+						msg = ""
+						print >> sys.stderr, \
+						    _(errstr) % (status, msg)
+						sys.exit(1)
+			except TypeError, e:
+				print "warning:", e
+
+
+	
 def trans_delete(config, args):
         return
 
@@ -279,6 +311,8 @@ def main_func():
 			trans_close(pcfg, pargs)
 		elif subcommand == "add":
 			trans_add(pcfg, pargs)
+		elif subcommand == "import":
+			trans_import(pcfg, pargs)
 		elif subcommand == "send":
 			send_bundles(pcfg, pargs)
 		else:

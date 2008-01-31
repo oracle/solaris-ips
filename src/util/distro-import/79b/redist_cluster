@@ -817,6 +817,7 @@ include common/loc/SUNWthunderbirdl10n-zh-CN
 include common/loc/SUNWthunderbirdl10n-zh-TW
 include common/loc/SUNWweuos
 include common/loc/SUNWweuow
+include common/openoffice
 include common/slim_cd
 include i386/BRCMbnx
 include i386/NVDAgraphics.76
