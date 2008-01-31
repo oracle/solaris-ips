@@ -544,7 +544,7 @@ def publish_pkg(pkg):
 
         for p in set(pkg.depend) - set(pkg.undepend):
                 # Don't make a package depend on itself.
-                if p[:len(pkg.name)] == pkg.name:
+                if p.split("@")[0] == pkg.name:
                         continue
                 # enhance unqualified dependencies to include current 
                 # pkg version

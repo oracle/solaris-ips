@@ -14,4 +14,7 @@ add link path=usr/bin/sparc-pc-solaris2.11-gcc target=../sfw/bin/sparc-pc-solari
 add link path=usr/bin/sparc-pc-solaris2.11-gcc-3.4.3 target=../sfw/bin/sparc-pc-solaris2.11-gcc-3.4.3
 add link path=usr/gnu/bin/cc target=../../sfw/bin/gcc
 add link path=usr/gnu/bin/cpp target=../../sfw/bin/cpp
+depend SUNWbinutils
+depend SUNWarc
+depend SUNWgccruntime
 end package
