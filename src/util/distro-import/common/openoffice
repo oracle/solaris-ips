@@ -25,6 +25,8 @@ import openofficeorg-pyuno
 import openofficeorg-testtool
 import openofficeorg-writer
 import openofficeorg-xsltfilter
+add dir path=opt/openoffice.org mode=0755 owner=root group=bin
+add link path=etc/openoffice.org target=../opt/openoffice.org
 chattr_glob * edit path openoffice.org2.3 openoffice.org
 chattr_glob * edit target openoffice.org2.3 openoffice.org
 end package
