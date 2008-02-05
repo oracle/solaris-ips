@@ -213,7 +213,7 @@ def get_tracker(quiet = False):
         else:
                 try:
                         progresstracker = \
-			    progress.FancyUNIXProgressTracker()
+                            progress.FancyUNIXProgressTracker()
                 except progress.ProgressTrackerException:
                         progresstracker = progress.CommandLineProgressTracker()
         return progresstracker
@@ -327,9 +327,11 @@ def image_update(img, args):
                     noexecute = noexecute)
         except RuntimeError, e:
                 print >> sys.stderr, _("image_update failed: %s") % e
-                return 1
-
-        return 0
+                ret_code = 1
+        else:
+                ret_code = 0
+        img.cleanup_downloads()
+        return ret_code
 
 def install(img, args):
         """Attempt to take package specified to INSTALLED state.  The operands
@@ -365,8 +367,11 @@ def install(img, args):
                     verbose = verbose, noexecute = noexecute)
         except RuntimeError, e:
                 print >> sys.stderr, _("install failed: %s") % e
-                return 1
-        return 0
+                ret_code = 1
+        else:
+                ret_code = 0
+        img.cleanup_downloads()
+        return ret_code
 
 def uninstall(img, args):
         """Attempt to take package specified to DELETED state."""
@@ -759,7 +764,7 @@ def image_create(img, args):
         return 0
 
 def main_func():
-	img = image.Image()
+        img = image.Image()
 
         # XXX /usr/lib/locale is OpenSolaris-specific.
         gettext.install("pkg", "/usr/lib/locale")

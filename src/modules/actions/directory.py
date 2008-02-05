@@ -139,7 +139,8 @@ class DirectoryAction(generic.Action):
                 try:
                         os.rmdir(path)
                 except OSError, e:
-                        if e.errno != errno.EEXIST:
+                        if e.errno != errno.EEXIST and \
+		            e.errno != errno.ENOENT:
                                 raise
 
         def generate_indices(self):

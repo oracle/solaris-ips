@@ -135,6 +135,9 @@ class FileList(object):
                         raise FileListException, "No server-side support" 
 
                 tar_stream = ptf.PkgTarFile.open(mode = "r|", fileobj = f)
+
+                filelist_download_dir = self.image.get_download_dir()
+                            
                 for info in tar_stream:
                         hashval = info.name
                         pkgnm = self.fmri.get_dir_path(True)
@@ -146,7 +149,8 @@ class FileList(object):
                         dirname, base = os.path.split(path)
                         # reconstruct path without basename
                         path = os.path.normpath(os.path.join(
-                            imgroot, dirname))
+                            filelist_download_dir,
+                            dirname))
 
                         # Since the file hash value identifies the content, and
                         # not the file or package itself, generate temporary
@@ -179,13 +183,15 @@ class FileList(object):
                                 path = action.attrs["path"]
                                 dirname, base = os.path.split(path)
                                 cpdir = os.path.normpath(os.path.join(
-                                    imgroot, dirname))
+                                    filelist_download_dir,
+                                    dirname))
                                 cppath = os.path.normpath(os.path.join(
                                     cpdir, "." + pkgnm + "-" + base \
                                     + "-" + hashval))
                                 if not os.path.exists(cpdir):
                                         os.makedirs(cpdir)
-                                shutil.copy(extract_path, cppath)
+                                # we can use hardlink here
+                                os.link(extract_path, cppath)
                                 action.data = self._make_opener(cppath)
 
                 tar_stream.close()
@@ -214,8 +220,7 @@ class FileList(object):
                         return f
                 return opener                                
 
-
 class FileListException(Exception):
         def __init__(self, args=None):
-		Exception.__init__(self)
+                Exception.__init__(self)
                 self.args = args

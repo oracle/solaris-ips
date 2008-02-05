@@ -30,6 +30,7 @@ import grp
 import pwd
 import urllib
 import urllib2
+import shutil
 # import uuid           # XXX interesting 2.5 module
 
 import pkg.catalog as catalog
@@ -40,6 +41,7 @@ import pkg.version as version
 import pkg.client.imageconfig as imageconfig
 import pkg.client.imageplan as imageplan
 import pkg.client.retrieve as retrieve
+import pkg.client.filelist as filelist
 
 from pkg.misc import versioned_urlopen
 
@@ -864,6 +866,18 @@ class Image(object):
 
                 if failed:
                         raise RuntimeError, failed
+
+        def get_download_dir(self):
+                return os.path.normpath(os.path.join(
+                                self.root,
+                                self.imgdir,
+                                str(os.getpid())))
+
+        def cleanup_downloads(self):
+                shutil.rmtree(self.get_download_dir(), True)
+                              
+                    
+                    
 
         def list_install(self, pkg_list, progress, filters = [], verbose = False,
             noexecute = False):

@@ -322,26 +322,26 @@ Cannot remove '%s' due to the following packages that directly depend on it:"""\
 
                 self.progtrack.download_done()
 
-		# do removals first so that file migrating from pkg to
-		# pkg work correctly.  Updates are handled next; then
-		# installs of new files.
+                # do removals first so that file migrating from pkg to
+                # pkg work correctly.  Updates are handled next; then
+                # installs of new files.
 
 
-		# generate list of removal actions, sort and execute
+                # generate list of removal actions, sort and execute
 
                 actions = [ (p, src, dest)
                             for p in self.pkg_plans
                             for src, dest in p.gen_removal_actions()
                             ]
-                actions.sort(key = lambda obj:obj[1])
+                actions.sort(key = lambda obj:obj[1], reverse=True)
 
                 self.progtrack.actions_set_goal("Removal Phase", len(actions))
                 for p, src, dest in actions:
                         p.execute_removal(src, dest)
-			self.progtrack.actions_add_progress()
+                        self.progtrack.actions_add_progress()
                 self.progtrack.actions_done()
 
-		# generate list of update actions, sort and execute
+                # generate list of update actions, sort and execute
 
                 actions = [ (p, src, dest)
                             for p in self.pkg_plans
@@ -353,10 +353,10 @@ Cannot remove '%s' due to the following packages that directly depend on it:"""\
 
                 for p, src, dest in actions:
                         p.execute_update(src, dest)
-			self.progtrack.actions_add_progress()
+                        self.progtrack.actions_add_progress()
                 self.progtrack.actions_done()
 
-		# generate list of install actions, sort and execute
+                # generate list of install actions, sort and execute
 
                 actions = [ (p, src, dest)
                             for p in self.pkg_plans
@@ -368,10 +368,10 @@ Cannot remove '%s' due to the following packages that directly depend on it:"""\
 
                 for p, src, dest in actions:
                         p.execute_install(src, dest)
-			self.progtrack.actions_add_progress()
+                        self.progtrack.actions_add_progress()
                 self.progtrack.actions_done()
 
-		# hand postexecute phase
+                # hand postexecute phase
 
                 for p in self.pkg_plans:
                         p.postexecute()
