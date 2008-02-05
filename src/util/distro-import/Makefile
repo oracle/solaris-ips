@@ -170,7 +170,7 @@ proto/usr/share/man/missing.man:	proto	missing.man
 
 proto/etc/release:	proto
 	./get_file_from_pkg.py $(WOS_PKGS)/SUNWsolnm etc/release | head -1 | \
-	sed 's/.*Edition /                   OpenSolaris Developer Preview /' \
+	sed 's/.*snv_/                  OpenSolaris Developer Preview 2 snv_/' \
 	> $@
 	cat release.figlet >> $@
 

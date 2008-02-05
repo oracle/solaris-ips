@@ -21,4 +21,6 @@
 ^src/util/distro-import/cluster.import$
 ^src/util/distro-import/ksh-wrapper$
 ^src/util/distro-import/proto/
+^src/util/distro-import/redist_cluster$
+^src/util/distro-import/slim_cluster$
 ^webrev

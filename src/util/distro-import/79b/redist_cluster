@@ -1,6 +1,6 @@
 include common/FSWfontconfig-devel-docs.79
 include common/FSWxorg-client-docs
-include common/FSWxorg-client-programs.79
+include common/FSWxorg-client-programs
 include common/FSWxorg-clientlibs
 include common/FSWxorg-data.79
 include common/FSWxorg-devel-docs
