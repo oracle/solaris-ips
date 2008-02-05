@@ -58,6 +58,9 @@ class FileAction(generic.Action):
                 final_path = os.path.normpath(os.path.sep.join(
                     (pkgplan.image.get_root(), path)))
 
+		if not os.path.exists(os.path.dirname(final_path)):
+			self.makedirs(os.path.dirname(final_path), mode=755)
+				
                 # If we're upgrading, extract the attributes from the old file.
                 if orig:
                         omode = int(orig.attrs["mode"], 8)
