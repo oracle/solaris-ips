@@ -362,7 +362,7 @@ include common/SUNWxwdv
 include common/SUNWxwplr
 include common/SUNWxwsvr
 include common/SUNWxwxft
-include common/SUNWzfs
+include common/SUNWzfs.79
 include common/SUNWzfskr
 include common/SUNWzip
 include common/SUNWzlib

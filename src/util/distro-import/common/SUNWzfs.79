@@ -1,0 +1,4 @@
+package SUNWzfs
+import SUNWzfsu
+import SUNWzfsr
+end package
