@@ -279,23 +279,31 @@ class Manifest(object):
                     protocol = cPickle.HIGHEST_PROTOCOL)
 
         def get(self, key, default):
-                if key not in self:
+                try:
+                        return self[key]
+                except KeyError:
                         return default
-                return self[key]
 
         def __getitem__(self, key):
-                """Return the value for the package attribute 'key'.  If no such
-                attribute is found, return 'default'.  If multiple attributes
-                are found, return the first."""
-                values = [
-                    a.attrs["value"]
-                    for a in self.actions
-                    if a.name == "set" and a.attrs["name"] == key
-                ]
+                """Return the value for the package attribute 'key'.  If
+                multiple attributes exist, return the first.  Raises KeyError if
+                the attribute is not found."""
+                try:
+                        values = [
+                            a.attrs["value"]
+                            for a in self.actions
+                            if a.name == "set" and a.attrs["name"] == key
+                        ]
+                except KeyError:
+                        # This hides the fact that we had busted attribute
+                        # actions in the manifest, but that's probably not so
+                        # bad.
+                        raise KeyError, key
 
                 if values:
                         return values[0]
-                return default
+
+                raise KeyError, key
 
         def __contains__(self, key):
                 for a in self.actions:

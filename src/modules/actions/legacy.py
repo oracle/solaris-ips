@@ -63,7 +63,7 @@ class LegacyAction(generic.Action):
 
                 svr4attrs = {
                     "pkg": self.attrs["pkg"],
-                    "name": manifest["description"],
+                    "name": manifest.get("description", "none provided"),
                     "arch": "i386",
                     "version": pkgplan.destination_fmri.version,
                     "category": "system",
