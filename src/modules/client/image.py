@@ -405,7 +405,7 @@ class Image(object):
                 os.unlink("%s/pkg/%s/installed" % (self.imgdir,
                     fmri.get_dir_path()))
 
-        def get_version_installed(self, pfmri):
+        def _get_version_installed(self, pfmri):
                 pd = pfmri.get_pkg_stem()
                 pdir = "%s/pkg/%s" % (self.imgdir,
                     pfmri.get_dir_path(stemonly = True))
@@ -416,10 +416,10 @@ class Image(object):
                             for vd in os.listdir(pdir)
                             if os.path.exists("%s/%s/installed" % (pdir, vd)) ]
                 except OSError:
-                        raise LookupError, "no packages ever installed"
+                        return None
 
                 if len(pkgs_inst) == 0:
-                        raise LookupError, "no packages installed"
+                        return None
 
                 assert len(pkgs_inst) <= 1
 
@@ -448,17 +448,55 @@ class Image(object):
 
         def has_version_installed(self, fmri):
                 """Check that the version given in the FMRI or a successor is
-                installed in the current image."""
+                installed in the current image.  Return the FMRI of the
+                version that is installed."""
 
-                try:
-                        v = self.get_version_installed(fmri)
-                except LookupError:
-                        return False
+                v = self._get_version_installed(fmri)
 
-                if v.is_successor(fmri):
+                if v and self.fmri_is_successor(v, fmri):
                         return True
+                else:
+                        # Get the catalog for the correct authority
+                        try:
+                                cat = self.catalogs[fmri.authority]
+                        except KeyError:
+                                return False
+
+                        # If fmri has been renamed, get the list of newer
+                        # packages that are equivalent to fmri.
+                        rpkgs = cat.rename_newer_pkgs(fmri)
+                        for f in rpkgs:
+
+                                v = self._get_version_installed(f)
+
+                                if v and self.fmri_is_successor(v, fmri):
+                                        return True
 
                 return False
+
+        def older_version_installed(self, fmri):
+                """This method is used by the package plan to determine if an
+                older version of the package is installed.  This takes
+                the destination fmri and checks if an older package exists.
+                This looks first under the existing name, and then sees
+                if an older version is installed under another name.  This
+                allows upgrade correctly locate the src fmri, if one exists."""
+
+                v = self._get_version_installed(fmri)
+
+                if v:
+                        return v
+                else:
+                        cat = self.catalogs[fmri.authority]
+
+                        rpkgs = cat.rename_older_pkgs(fmri)
+                        for f in rpkgs:
+                                v = self._get_version_installed(f)
+                                if v and self.fmri_is_successor(fmri, v):
+                                        return v
+
+                return None
+                
 
         def is_installed(self, fmri):
                 """Check that the exact version given in the FMRI is installed
@@ -467,9 +505,8 @@ class Image(object):
                 # All FMRIs passed to is_installed shall have an authority
                 assert fmri.authority
 
-                try:
-                        v = self.get_version_installed(fmri)
-                except LookupError:
+                v = self._get_version_installed(fmri)
+                if not v:
                         return False
 
                 return v == fmri
@@ -487,7 +524,7 @@ class Image(object):
                 for v in os.listdir(thedir):
                         f = fmri.PkgFmri(pfmri.get_pkg_stem() + "@" + v,
                             self.attrs["Build-Release"])
-                        if pfmri.is_successor(f):
+                        if self.fmri_is_successor(pfmri, f):
                                 dependents = [
                                     urllib.unquote(d)
                                     for d in os.listdir(os.path.join(thedir, v))
@@ -552,6 +589,52 @@ class Image(object):
                         c = catalog.Catalog(croot, authority = auth["prefix"])
                         self.catalogs[auth["prefix"]] = c
                         progresstracker.catalog_done()
+
+        def fmri_is_same_pkg(self, fmri, pfmri):
+                """Determine whether fmri and pfmri share the same package
+                name, even if they're not equivalent versions.  This
+                also checks if two packages with different names are actually
+                the same because of a rename operation."""
+
+                # If authorities don't match, this can't be a successor
+                if fmri.authority != pfmri.authority:
+                        return False
+
+                # Get the catalog for the correct authority
+                cat = self.catalogs[fmri.authority]
+
+                # If the catalog has a rename record that names fmri as a
+                # destination, it's possible that pfmri could be the same pkg by
+                # rename.
+                
+                if fmri.is_same_pkg(pfmri):
+                        return True
+                else:
+                        return cat.rename_is_same_pkg(fmri, pfmri)
+
+        def fmri_is_successor(self, fmri, pfmri):
+                """Since the catalog keeps track of renames, it's no longer
+                sufficient to rely on the FMRI class to determine whether a
+                package is a successor.  This routine takes two FMRIs, and
+                if they have the same authority, checks if they've been
+                renamed.  If a rename has occurred, this runs the is_successor
+                routine from the catalog.  Otherwise, this runs the standard
+                fmri.is_successor() code."""
+
+                # If authorities don't match, this can't be a successor
+                if fmri.authority != pfmri.authority:
+                        return False
+
+                # Get the catalog for the correct authority
+                cat = self.catalogs[fmri.authority]
+
+                # If the catalog has a rename record that names fmri as a
+                # destination, it's possible that pfmri could be a successor by
+                # rename.
+                if fmri.is_successor(pfmri):
+                        return True
+                else:
+                        return cat.rename_is_successor(fmri, pfmri)
 
         def gen_known_package_fmris(self):
                 """Generate the list of known packages, being the union of the

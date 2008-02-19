@@ -89,8 +89,8 @@ class ImagePlan(object):
 
         def is_proposed_fmri(self, fmri):
                 for pf in self.target_fmris:
-                        if fmri.is_same_pkg(pf):
-                                if not fmri.is_successor(pf):
+                        if self.image.fmri_is_same_pkg(fmri, pf):
+                                if not self.image.fmri_is_successor(fmri, pf):
                                         return True
                                 else:
                                         return False
@@ -98,13 +98,8 @@ class ImagePlan(object):
 
         def is_proposed_rem_fmri(self, fmri):
                 for pf in self.target_rem_fmris:
-                        if fmri.is_same_pkg(pf):
+                        if self.image.fmri_is_same_pkg(fmri, pf):
                                 return True
-                                # XXX is this the right test?
-                                if not fmri.is_successor(pf):
-                                        return True
-                                else:
-                                        return False
                 return False
 
         def propose_fmri(self, fmri):
@@ -119,10 +114,9 @@ class ImagePlan(object):
                 # Add fmri to target list only if it (or a successor) isn't
                 # there already.
                 for i, p in enumerate(self.target_fmris):
-                        if fmri.is_same_pkg(p):
-                                if fmri.is_successor(p):
-                                        self.target_fmris[i] = fmri
-                                        break
+                        if self.image.fmri_is_successor(fmri, p):
+                                self.target_fmris[i] = fmri
+                                break
                 else:
                         self.target_fmris.append(fmri)
 
@@ -135,10 +129,9 @@ class ImagePlan(object):
                         return
 
                 for i, p in enumerate(self.target_rem_fmris):
-                        if fmri.is_same_pkg(p):
-                                if fmri.is_successor(p):
-                                        self.target_rem_fmris[i] = fmri
-                                        break
+                        if self.image.fmri_is_successor(fmri, p):
+                                self.target_rem_fmris[i] = fmri
+                                break
                 else:
                         self.target_rem_fmris.append(fmri)
 
@@ -211,7 +204,7 @@ class ImagePlan(object):
                         cf = mvs[0]
 
                         # XXX LOG "adding dependency %s" % pfmri
-                        self.target_fmris.append(cf)
+                        self.propose_fmri(cf)
                         self.evaluate_fmri(cf)
 
                 pp = pkgplan.PkgPlan(self.image, self.progtrack)

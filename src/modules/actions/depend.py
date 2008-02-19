@@ -60,9 +60,7 @@ class DependencyAction(generic.Action):
 
                 fm = fmri.PkgFmri(self.attrs["fmri"], img.attrs["Build-Release"])
 
-                try:
-                        actual = img.get_version_installed(fm)
-                except LookupError:
+                if not img.has_version_installed(fm):
                         return ["Dependency %s is not installed" % fm]
                 else:
                         return []

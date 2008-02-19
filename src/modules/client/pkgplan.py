@@ -81,18 +81,6 @@ class PkgPlan(object):
                 if not self.image.install_file_present(fmri):
                         raise RuntimeError, "not installed"
 
-        def is_valid(self):
-                if self.origin_fmri == None:
-                        return True
-
-                if not self.origin_fmri.is_same_pkg(self.destination_fmri):
-                        return False
-
-                if self.origin_fmri > self.destination_fmri:
-                        return False
-
-                return True
-
         def get_actions(self):
                 raise NotImplementedError()
 
@@ -109,13 +97,11 @@ class PkgPlan(object):
                 # don't have to check?
                 f = None
                 if not self.origin_fmri:
-                        try:
-                                f = self.image.get_version_installed(
-                                    self.destination_fmri)
+                        f = self.image.older_version_installed(
+                            self.destination_fmri)
+                        if f:
                                 self.origin_fmri = f
                                 self.origin_mfst = self.image.get_manifest(f)
-                        except LookupError:
-                                pass
 
                 self.destination_filters = filters
 

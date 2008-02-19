@@ -105,8 +105,37 @@ class UpdateLog(object):
                 else:
                         type = "V"
 
+                # The format for catalog C and V records is described
+                # in the docstrings for the Catalog class.
+
                 logstr = "+ %s %s %s\n" % \
                     (ts.isoformat(), type, fmri.get_fmri(anarchy = True))
+
+                self.logfd.write(logstr)
+                self.logfd.flush()
+
+                self.last_update = ts
+
+                return ts
+
+        def rename_package(self, srcname, srcvers, destname, destvers):
+                """Record that package oldname has been renamed to newname,
+                effective as of version vers."""
+
+                # Record rename in catalog
+                ts, rr = self.catalog.rename_package(srcname, srcvers, destname,
+                    destvers)
+
+                # Now add rename record to updatelog
+                self._check_logs()
+
+                if not self.logfd:
+                        self._begin_log()
+
+                # The format for a catalog rename record is described
+                # in the docstring for the RenameRecord class.
+
+                logstr = "+ %s %s\n" % (ts.isoformat(), rr)
 
                 self.logfd.write(logstr)
                 self.logfd.flush()
@@ -129,8 +158,9 @@ class UpdateLog(object):
 
                 self.logfd = file(os.path.join(self.rootdir, filenm), "a")
 
-                self.logfiles.append(filenm)
-                self.curfiles += 1
+                if filenm not in self.logfiles:
+                        self.logfiles.append(filenm)
+                        self.curfiles += 1
 
                 if not self.first_update:
                         self.first_update = ftime
@@ -158,6 +188,7 @@ class UpdateLog(object):
                         self.curfiles -= 1 
 
                 del self.logfiles[0:excess]
+
                 self.first_update = datetime.datetime(*time.strptime(
                     self.logfiles[0], "%Y%m%d%H")[0:6])
 
@@ -216,7 +247,7 @@ class UpdateLog(object):
                 attrs = {}
 
                 for s in filep:
-                        l = s.split(None, 4)
+                        l = s.split(None, 3)
                         if len(l) < 4:
                                 continue
 
@@ -241,18 +272,33 @@ class UpdateLog(object):
                                 if ts > cts:
                                         if ts > mts:
                                                 mts = ts
-                                        f = fmri.PkgFmri(l[3])
-                                        str = "%s %s %s %s\n" % \
-                                            (l[2], "pkg", f.pkg_name, f.version)
-                                        add_lines.append(str)
-                                        added += 1
+
+                                        # The format for C and V records
+                                        # is described in the Catalog's
+                                        # docstring.
+                                        if l[2] in tuple("CV"):
+                                                f = fmri.PkgFmri(l[3])
+                                                str = "%s %s %s %s\n" % \
+                                                    (l[2], "pkg", f.pkg_name,
+                                                    f.version)
+                                                add_lines.append(str)
+                                                added += 1
+                                        # The format for R records is
+                                        # described in the docstring for
+                                        # RenameRecords
+                                        elif l[2] == "R":
+                                                sf, sv, rf, rv = l[3].split()
+                                                str = "%s %s %s %s %s\n" % \
+                                                    (l[2], sf, sv, rf, rv)
+                                                add_lines.append(str)
 
                 # Verify that they aren't already in the catalog
                 catf = file(os.path.normpath(
                     os.path.join(path, "catalog")), "a+")
                 catf.seek(0)
                 for c in catf:
-                        npkgs += 1
+                        if c[0] in tuple("CV"):
+                                npkgs += 1
                         if c in add_lines:
                                 catf.close()
                                 raise UpdateLogException, \

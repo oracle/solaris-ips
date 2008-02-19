@@ -56,6 +56,7 @@ import traceback
 
 import pkg.fmri as fmri
 import pkg.misc as misc
+import pkg.catalog as catalog
 
 import pkg.server.face as face
 import pkg.server.config as config
@@ -180,6 +181,51 @@ def filelist_0(scfg, request):
                 scfg.inc_flist_files()
 
         tar_stream.close()
+
+def rename_0(scfg, request):
+        # If the sender doesn't specify the content length, reject this request.
+        # Calling read() with no size specified will force the server to block
+        # until the client sends EOF, an undesireable situation
+        size = int(request.headers.getheader("Content-Length", "0"))
+        if size == 0:
+                request.send_response(411)
+                return
+
+        rfile = request.rfile
+        rename_dict = cgi.parse_qs(rfile.read(size))
+
+        try:
+                src_fmri = fmri.PkgFmri(rename_dict['Src-FMRI'][0], None)
+        except KeyError:
+                request.send_response(400, "No source FMRI present.")
+                return
+        except ValueError:
+                request.send_response(400, "Invalid source FMRI.")
+                return
+
+        try:
+                dest_fmri = fmri.PkgFmri(rename_dict['Dest-FMRI'][0], None)
+        except KeyError:
+                request.send_response(400, "No destination FMRI present.")
+                return
+        except ValueError:
+                request.send_response(400, "Invalid destination FMRI.")
+                return
+
+        try:
+               scfg.updatelog.rename_package(src_fmri.pkg_name,
+                   str(src_fmri.version), dest_fmri.pkg_name,
+                   str(dest_fmri.version))
+        except catalog.CatalogException, e:
+                request.send_response(404, e.args)
+                return
+        except catalog.RenameException, e:
+                request.send_response(404, e.args)
+                return
+
+        scfg.inc_renamed()
+        request.send_response(200)
+
 
 def file_0(scfg, request):
         """The request is the SHA-1 hash name for the file."""

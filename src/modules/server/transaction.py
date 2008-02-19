@@ -81,6 +81,11 @@ class Transaction(object):
                 self.fmri = fmri.PkgFmri(self.pkg_name, self.client_release)
                 self.fmri.set_timestamp(self.open_time)
 
+                # Check that the new FMRI's version is valid.  I.e. the package
+                # has not been renamed or frozen for the new version.
+                if not self.cfg.catalog.valid_new_fmri(self.fmri):
+                        return 400
+
                 trans_basename = self.get_basename()
                 self.dir = "%s/%s" % (self.cfg.trans_root, trans_basename)
                 os.makedirs(self.dir)

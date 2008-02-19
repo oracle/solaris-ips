@@ -43,6 +43,10 @@ class CatalogException(Exception):
         def __init__(self, args=None):
                 self.args = args
 
+class RenameException(Exception):
+        def __init__(self, args=None):
+                self.args = args
+
 class Catalog(object):
         """A Catalog is the representation of the package FMRIs available to
         this client or repository.  Both purposes utilize the same storage
@@ -95,6 +99,7 @@ class Catalog(object):
                 self.catalog_root = cat_root
                 self.attrs = {}
                 self.auth = authority
+                self.renamed = None
                 self.searchdb_update_handle = None
                 self.searchdb = None
                 self._search_available = False
@@ -128,6 +133,14 @@ class Catalog(object):
                 if fmri.version == None:
                         raise CatalogException, \
                             "Unversioned FMRI not supported: %s" % fmri
+
+                # Callers should verify that the FMRI they're going to add is
+                # valid; however, this check is here in case they're
+                # lackadaisical
+                if not self.valid_new_fmri(fmri):
+                        raise CatalogException, \
+                            "Existing renames make adding FMRI %s invalid." \
+                            % fmri
 
                 if critical:
                         pkgstr = "C %s\n" % fmri.get_fmri(anarchy = True)
@@ -537,8 +550,11 @@ class Catalog(object):
                                 continue
 
                         try:
+                                if entry[0] not in tuple("CV"):
+                                        continue
+
                                 cv, pkg, cat_name, cat_version = entry.split()
-                                if cv not in tuple("CV") or pkg != "pkg":
+                                if pkg != "pkg":
                                         continue
                         except ValueError:
                                 # Handle old two-column catalog file, mostly in
@@ -578,8 +594,11 @@ class Catalog(object):
                                 continue
 
                         try:
+                                if entry[0] not in tuple("CV"):
+                                        continue
+
                                 cv, pkg, cat_name, cat_version = entry.split()
-                                if cv in tuple("CV") and pkg == "pkg":
+                                if pkg == "pkg":
                                         yield fmri.PkgFmri("%s@%s" %
                                             (cat_name, cat_version),
                                             authority = self.auth)
@@ -587,11 +606,44 @@ class Catalog(object):
                                 # Handle old two-column catalog file, mostly in
                                 # use on server.
                                 cv, cat_fmri = entry.split()
-                                if cv in tuple("CV"):
-                                        yield fmri.PkgFmri(cat_fmri,
-                                            authority = self.auth)
+                                yield fmri.PkgFmri(cat_fmri,
+                                    authority = self.auth)
 
                 pfile.close()
+
+        def fmri_renamed_dest(self, fmri):
+                """Returns a list of RenameRecords where fmri is listed as the
+                 destination package."""
+
+                # Don't bother doing this if no FMRI is present
+                if not fmri:
+                        return
+
+                # Load renamed packages, if needed
+                if self.renamed is None:
+                        self._load_renamed()
+
+                for rr in self.renamed:
+                        if rr.destname == fmri.pkg_name and \
+                            fmri.version >= rr.destversion:
+                                yield rr
+
+        def fmri_renamed_src(self, fmri):
+                """Returns a list of RenameRecords where fmri is listed as
+                the source package."""
+
+                # Don't bother doing this if no FMRI is present
+                if not fmri:
+                        return
+
+                # Load renamed packages, if needed
+                if self.renamed is None:
+                        self._load_renamed()
+
+                for rr in self.renamed:
+                        if rr.srcname == fmri.pkg_name and \
+                            fmri.version < rr.srcversion:
+                                yield rr
 
         def last_modified(self):
                 """Return the time at which the catalog was last modified."""
@@ -621,6 +673,27 @@ class Catalog(object):
                 if "npkgs" in self.attrs:
                         self.attrs["npkgs"] = int(self.attrs["npkgs"])
 
+        def _load_renamed(self):
+                """Load the catalog's rename records into self.renamed"""
+
+                self.renamed = []
+
+                try:
+                        pfile = file(os.path.normpath(
+                            os.path.join(self.catalog_root, "catalog")), "r")
+                except IOError, e:
+                        if e.errno == errno.ENOENT:
+                                return
+                        else:
+                                raise
+
+                self.renamed = [
+                    RenamedPackage(*entry.split()[1:]) for entry in pfile
+                    if entry[0] == "R"
+                ]
+
+                pfile.close()
+
         def npkgs(self):
                 """Returns the number of packages in the catalog."""
 
@@ -648,6 +721,8 @@ class Catalog(object):
                                 catf.write(s)
                         elif s.startswith("S "):
                                 attrf.write(s)
+                        elif s.startswith("R "):
+                                catf.write(s)
                         else:
                                 # XXX Need to be able to handle old and new
                                 # format catalogs.
@@ -657,6 +732,132 @@ class Catalog(object):
 
                 attrf.close()
                 catf.close()
+
+        def rename_package(self, srcname, srcvers, destname, destvers):
+                """Record that the name of package oldname has been changed
+                to newname as of version vers.  Returns a timestamp
+                of when the catalog was modified and a RenamedPackage
+                object that describes the rename."""
+
+                rr = RenamedPackage(srcname, srcvers, destname, destvers)
+
+                # Check that the destination (new) package is already in the
+                # catalog.  Also check that the old package does not exist at
+                # the version that is being renamed.
+                if rr.new_fmri():
+                        newfm = self.get_matching_fmris(rr.new_fmri())
+                        if len(newfm) < 1:
+                                raise CatalogException, \
+                                    "Destination FMRI %s must be in catalog" % \
+                                    rr.new_fmri()
+
+                oldfm = self.get_matching_fmris(rr.old_fmri())
+                if len(oldfm) > 0:
+                        raise CatalogException, \
+                            "Src FMRI %s must not be in catalog" % \
+                            rr.old_fmri()
+
+                # Load renamed packages, if needed
+                if self.renamed is None:
+                        self._load_renamed()
+
+                # Check that rename record isn't already in catalog
+                if rr in self.renamed:
+                        raise CatalogException, \
+                            "Rename %s is already in the catalog" % rr
+
+                # Keep renames acyclic.  Check that the destination of this
+                # rename isn't the source of another rename.
+                if rr.new_fmri() and \
+                    self.rename_is_predecessor(rr.new_fmri(), rr.old_fmri()):
+                        raise RenameException, \
+                            "Can't rename %s. Causes cycle in rename graph." \
+                            % rr.srcname
+
+                pathstr = os.path.normpath(os.path.join(self.catalog_root,
+                    "catalog"))
+                pfile = file(pathstr, "a+")
+                pfile.write("%s\n" % rr)
+                pfile.close()
+
+                self.renamed.append(rr)
+
+                ts = datetime.datetime.now()
+                self.set_time(ts)
+
+                return (ts, rr)
+
+        def rename_is_same_pkg(self, fmri, pfmri):
+                """Returns true if fmri and pfmri are the same package because
+                of a rename operation."""
+
+                for s in self.fmri_renamed_src(fmri):
+                        if s.destname == pfmri.pkg_name:
+                                return True
+                        elif s.new_fmri() and \
+                            self.rename_is_same_pkg(s.new_fmri(), pfmri):
+                                return True
+
+                for d in self.fmri_renamed_dest(fmri):
+                        if d.srcname == pfmri.pkg_name:
+                                return True
+                        elif self.rename_is_same_pkg(d.old_fmri(), pfmri):
+                                return True
+
+                return False
+
+        def rename_is_successor(self, fmri, pfmri):
+                """Returns true if fmri is a successor to pfmri by way
+                of a rename operation."""
+
+                for d in self.fmri_renamed_dest(fmri):
+                        if d.srcname == pfmri.pkg_name and \
+                            pfmri.version <= d.srcversion:
+                                return True
+                        else:
+                                return self.rename_is_successor(d.old_fmri(),
+                                    pfmri)
+
+                return False
+
+        def rename_is_predecessor(self, fmri, pfmri):
+                """Returns true if fmri is a predecessor to pfmri by
+                a rename operation."""
+
+                for s in self.fmri_renamed_src(fmri):
+                        if s.destname == pfmri.pkg_name and \
+                            s.destversion < pfmri.version:
+                                return True
+                        elif s.new_fmri():
+                                return self.rename_is_predecessor(s.new_fmri(),
+                                    pfmri)
+
+                return False
+
+        def rename_newer_pkgs(self, fmri):
+                """Returns a list of packages that are newer than fmri."""
+
+                pkgs = []
+
+                for s in self.fmri_renamed_src(fmri):
+                        if s.new_fmri():
+                                pkgs.append(s.new_fmri())
+                                nl = self.rename_newer_pkgs(s.new_fmri())
+                                pkgs.extend(nl)
+
+                return pkgs
+
+        def rename_older_pkgs(self, fmri):
+                """Returns a list of packages that are older than fmri."""
+
+                pkgs = []
+
+                for d in self.fmri_renamed_dest(fmri):
+                        pkgs.append(d.old_fmri())
+                        ol = self.rename_older_pkgs(d.old_fmri())
+                        pkgs.extend(ol) 
+
+                return pkgs
 
         def save_attrs(self, filenm = "attrs"):
                 """Save attributes from the in-memory catalog to a file
@@ -709,13 +910,29 @@ class Catalog(object):
         def search_available(self):
                 return self._search_available
 
+        def valid_new_fmri(self, fmri):
+                """Check that the fmri supplied as an argument would be
+                valid to add to the catalog.  This checks to make sure that
+                rename/freeze operations would not prohibit the caller
+                from adding this FMRI."""
+
+                if self.renamed is None:
+                        self._load_renamed()
+
+                for rr in self.renamed:
+                        if rr.srcname == fmri.pkg_name and \
+                            fmri.version >= rr.srcversion:
+                                return False
+
+                return True
+
 
 # In order to avoid a fine from the Department of Redundancy Department,
 # allow these methods to be invoked without explictly naming the Catalog class.
 recv = Catalog.recv
 
 # Prefixes that this catalog knows how to handle
-known_prefixes = frozenset("CSV")
+known_prefixes = frozenset("CSVR")
 
 # Method used by Catalog and UpdateLog.  Since UpdateLog needs to know
 # about Catalog, keep it in Catalog to avoid circular dependency problems.
@@ -797,3 +1014,111 @@ def extract_matching_fmris(pkgs, cat_auth, patterns, matcher = None,
                                         ret.append(p)
 
         return sorted(ret, reverse = True)
+
+class RenamedPackage(object):
+        """An in-memory representation of a rename object.  This object records
+        information about a package that has had its name changed.
+
+        Renaming a package presents a number of challenges.  The packaging
+        system must still be able to recognize and decode dependencies on
+        packages with the old name.  In order for this to work correctly, the
+        rename record must contain both the old and new name of the package.  It
+        is also undesireable to have a renamed package receive subsequent
+        versions.  However, it still should be possible to publish bugfixes to
+        the old package lineage.  This means that we must also record
+        versioning information at the time a package is renamed.
+
+        This versioning information allows us to determine which portions
+        of the version and namespace are allowed to add new versions.
+
+        If a package is re-named to the NULL package at a specific version,
+        this is equivalent to freezing the package.  No further updates to
+        the version history may be made under that name. (NULL is never open)
+
+        The rename catalog format is as follows:
+
+        R <srcname> <srcversion> <destname> <destversion>
+        """
+
+        def __init__(self, srcname, srcversion, destname, destversion):
+                """Create a RenamedPackage object.  Srcname is the original
+                name of the package, destname is the name this package
+                will take after the operation is successful.
+
+
+                Versionstr is the version at which this change takes place.  No
+                versions >= version of srcname will be permitted."""
+
+                if destname == "NULL":
+                        self.destname = None
+                        destversion = None
+                else:
+                        self.destname = destname
+
+                self.srcname = srcname
+
+                if not srcversion and not destversion:
+                        raise RenameException, \
+                            "Must supply a source or destination version"
+                elif not srcversion:
+                        self.srcversion = version.Version(destversion, None)
+                        self.destversion = self.srcversion
+                elif not destversion:
+                        self.srcversion = version.Version(srcversion, None)
+                        self.destversion = self.srcversion
+                else:
+                        self.destversion = version.Version(destversion, None)
+                        self.srcversion = version.Version(srcversion, None)
+
+        def __str__(self):
+                if not self.destname:
+                        return "R %s %s NULL NULL" % (self.srcname,
+                            self.srcversion)
+
+                return "R %s %s %s %s" % (self.srcname, self.srcversion,
+                    self.destname, self.destversion)
+
+        def __eq__(self, other):
+                """Implementing our own == function allows us to properly
+                check whether a rename object is in a list of renamed
+                objects."""
+
+                if not isinstance(other, RenamedPackage):
+                        return False
+
+                if self.srcname != other.srcname:
+                        return False
+
+                if self.destname != other.destname:
+                        return False
+
+                if self.srcversion != other.srcversion:
+                        return False
+
+                if self.destversion != other.destversion:
+                        return False
+
+                return True
+
+        def new_fmri(self):
+                """Return a FMRI that represents the destination name and
+                version of the renamed package."""
+
+                if not self.destname:
+                        return None
+
+                fmstr = "pkg:/%s@%s" % (self.destname, self.destversion)
+
+                fm = fmri.PkgFmri(fmstr, None)
+
+                return fm
+
+        def old_fmri(self):
+                """Return a FMRI that represents the most recent version
+                of the package had it not been renamed."""
+
+                fmstr = "pkg:/%s@%s" % (self.srcname, self.srcversion)
+
+                fm = fmri.PkgFmri(fmstr, None)
+
+                return fm

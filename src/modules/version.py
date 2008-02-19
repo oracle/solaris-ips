@@ -231,6 +231,9 @@ class Version(object):
                 then that version is less than the other.  The same applies to
                 the branch and timestamp components.
                 """
+                if other == None:
+                        return False
+
                 if self.release and other.release:
                         if self.release < other.release:
                                 return True
@@ -268,6 +271,9 @@ class Version(object):
                 then that version is less than the other.  The same applies to
                 the branch and timestamp components.
                 """
+                if other == None:
+                        return False
+
                 if self.release and other.release:
                         if self.release > other.release:
                                 return True

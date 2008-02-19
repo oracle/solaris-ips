@@ -66,6 +66,7 @@ class SvrConfig(object):
                 self.file_requests = 0
                 self.flist_requests = 0
                 self.flist_files = 0
+                self.pkgs_renamed = 0
 
         def init_dirs(self):
                 root_needed = False
@@ -172,9 +173,11 @@ Number of manifests served: %d
 Number of files served: %d
 Number of flists requested: %d
 Number of files served by flist: %d
+Number of packages renamed: %d
 """ % (self.catalog.npkgs(), len(self.in_flight_trans),
                 self.catalog_requests, self.manifest_requests,
-                self.file_requests, self.flist_requests, self.flist_files)
+                self.file_requests, self.flist_requests, self.flist_files,
+                self.pkgs_renamed)
 
                 return ret
 
@@ -192,6 +195,9 @@ Number of files served by flist: %d
 
         def inc_flist_files(self):
                 self.flist_files += 1
+
+        def inc_renamed(self):
+                self.pkgs_renamed += 1
 
         def search_available(self):
                 return self.catalog.search_available()

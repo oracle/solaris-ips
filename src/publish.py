@@ -65,6 +65,7 @@ Packager subcommands:
         pkgsend close [-A]
 
         pkgsend send bundlefile
+        pkgsend rename src_fmri dest_fmri
 
 Options:
         -s repo_url     destination repository server URL prefix
@@ -167,6 +168,19 @@ def trans_add(config, args):
                         msg = ""
                 print >> sys.stderr, \
                     _("pkgsend: server failed (status %s)%s") % (status, msg)
+                sys.exit(1)
+
+def trans_rename(config, args):
+        t = trans.Transaction()
+        status, msg, body = t.rename(config, args[0], args[1])
+
+        if status / 100 == 4 or status / 100 == 5:
+                if msg:
+                        msg = ": " + msg
+                else:
+                        msg = ""
+                print >> sys.stderr, \
+                    _("pkgsend: rename failed (status %s)%s") % (status, msg)
                 sys.exit(1)
 
 def trans_import(config, args):
@@ -315,6 +329,8 @@ def main_func():
 			trans_import(pcfg, pargs)
 		elif subcommand == "send":
 			send_bundles(pcfg, pargs)
+		elif subcommand == "rename":
+                        trans_rename(pcfg, pargs)
 		else:
 			print >> sys.stderr, \
                             _("pkgsend: unknown subcommand '%s'") % subcommand

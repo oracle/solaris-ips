@@ -128,3 +128,30 @@ class Transaction(object):
                                 return 500, e.reason[1], None
 
                 return c.code, c.msg, None
+
+        def rename(self, config, src_fmri, dest_fmri):
+                """Issue a POST to rename src_fmri to dest_fmri."""
+
+                req_dict = { 'Src-FMRI': src_fmri, 'Dest-FMRI': dest_fmri }
+
+                req_str = urllib.urlencode(req_dict)
+
+                try:
+                        c, v = versioned_urlopen(config.install_uri, "rename",
+                            [0], data = req_str)
+                except httplib.BadStatusLine:
+                        return 500, "Bad status line from server", None
+                except RuntimeError, e:
+                        return 404, e[0], None
+                except urllib2.HTTPError, e:
+                        return e.code, e.msg, None
+                except urllib2.URLError, e:
+                        if e.reason[0] == 32: # Broken pipe
+                                # XXX Guess: the libraries don't ever collect
+                                # this information.
+                                return 404, "Version not supported", None
+                        else:
+                                return 500, e.reason[1], None
+
+                return c.code, c.msg, None
+

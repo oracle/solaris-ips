@@ -502,6 +502,82 @@ end_assert
 # }}}1
 
 
+new_assert "Send package rar@1.0, dependent on moo@1.1.  Rename moo to zoo." \
+    "Install zoo and then rar.  Verify that zoo satisfied dependency for moo."
+# {{{1
+
+new_test "pkg refresh, status -aH"
+pkg refresh
+expect_exit 0 $?
+
+pkg status -aH
+expect_exit 0 $?
+
+new_test "pkgsend moo@1.1"
+trans_id=$(pkgsend -s $REPO_URL open moo@1.1,5.11-0)
+expect_exit 0 $?
+eval $trans_id
+pkgsend -s $REPO_URL close
+expect_exit 0 $?
+
+new_test "pkgsend zoo@1.0"
+trans_id=$(pkgsend -s $REPO_URL open zoo@1.0,5.11-0)
+expect_exit 0 $?
+eval $trans_id
+pkgsend -s $REPO_URL close
+expect_exit 0 $?
+
+new_test "pkgsend rename moo@1.2 zoo@1.0"
+pkgsend -s $REPO_URL rename moo@1.2,5.11-0 zoo@1.0,5.11-0
+expect_exit 0 $?
+
+new_test "pkgsend rar@1.0"
+trans_id=$(pkgsend -s $REPO_URL open rar@1.0,5.11-0)
+expect_exit 0 $?
+eval $trans_id
+pkgsend -s $REPO_URL add depend type=require fmri=pkg:/moo@1.1
+expect_exit 0 $?
+pkgsend -s $REPO_URL close
+expect_exit 0 $?
+
+new_test "pkg refresh, status -aH"
+pkg refresh
+expect_exit 0 $?
+
+pkg status -aH
+expect_exit 0 $?
+
+new_test "pkg install zoo@1.0"
+pkg install -v zoo
+expect_exit 0 $?
+
+new_test "pkg install rar@1.0"
+pkg install -v rar
+expect_exit 0 $?
+
+new_test "check to see that zoo and rar were installed"
+pkg status | grep zoo > /dev/null
+expect_exit 0 $?
+pkg status | grep rar > /dev/null
+expect_exit 0 $?
+
+new_test "check to see that moo was NOT installed"
+pkg status | grep moo > /dev/null
+expect_exit 1 $?
+
+new_test "status -a, uninstall rar zoo, verify"
+pkg status -a
+expect_exit 0 $?
+
+pkg uninstall rar zoo
+expect_exit 0 $?
+
+pkg verify
+expect_exit 0 $?
+
+end_assert
+# }}}1
+
 
 new_assert "bad command line options should result in error status 2"
 # {{{1

@@ -119,6 +119,173 @@ class TestEmptyCatalog(unittest.TestCase):
         def testsend(self):
                 self.c.send(self.nullf)
 
+class TestCatalogRename(unittest.TestCase):
+        def setUp(self):
+		self.cpath = tempfile.mkdtemp()
+                self.c = catalog.Catalog(self.cpath)
+                self.npkgs = 0
+
+                for f in [
+                    fmri.PkgFmri("pkg:/test@1.0,5.11-2:20000101T120040Z", None),
+                    fmri.PkgFmri("pkg:/test@1.1,5.11-1:20000101T120040Z", None),
+                    fmri.PkgFmri("pkg:/test@1.1,5.11-2:20000101T120040Z", None),
+                ]:
+                        self.c.add_fmri(f)
+                        self.npkgs += 1
+
+	def tearDown(self):
+		shutil.rmtree(self.cpath)
+
+        def testFMRIValidator(self):
+                fa = fmri.PkgFmri("pkg:/Foo@1.2,5.11-1:20000101T120040Z", None)
+                self.c.add_fmri(fa)
+                self.npkgs += 1
+
+                ts, rr = self.c.rename_package("test",
+                    "1.2,5.11-1:20000101T120040Z", "Foo",
+                    "1.2,5.11-1:20000101T120040Z")
+
+                f1 = fmri.PkgFmri("pkg:/test@1.1,5.11-3:20000101T120040Z", None)
+                f2 = fmri.PkgFmri("pkg:/Foo@1.3,5.11-1:20000101T120040Z", None)
+                f3 = fmri.PkgFmri("pkg:/test@1.2,5.11-1:20000101T120040Z", None)
+
+                self.assert_(self.c.valid_new_fmri(f1))
+                self.assert_(self.c.valid_new_fmri(f2))
+                self.failIf(self.c.valid_new_fmri(f3))
+
+        def testMissingDest(self):
+                self.assertRaises(catalog.CatalogException,
+                    self.c.rename_package, "test",
+                    "1.2,5.11-1:20000101T120040Z", "Foo",
+                    "1.2,5.11-1:20000101T120040Z")
+
+        def testPresentSrc(self):
+                fa = fmri.PkgFmri("pkg:/test@1.2,5.11-1:20000101T120040Z", None)
+                self.c.add_fmri(fa)
+                self.npkgs += 1
+
+                self.assertRaises(catalog.CatalogException,
+                    self.c.rename_package, "test",
+                    "1.2,5.11-1:20000101T120040Z", "Foo",
+                    "1.2,5.11-1:20000101T120040Z")
+
+        def testDuplicateRename(self):
+                fa = fmri.PkgFmri("pkg:/Foo@1.2,5.11-1:20000101T120040Z", None)
+                self.c.add_fmri(fa)
+                self.npkgs += 1
+
+                ts, rr = self.c.rename_package("test",
+                    "1.2,5.11-1:20000101T120040Z", "Foo",
+                    "1.2,5.11-1:20000101T120040Z")
+
+                self.assertRaises(catalog.CatalogException,
+                    self.c.rename_package, "test",
+                    "1.2,5.11-1:20000101T120040Z", "Foo",
+                    "1.2,5.11-1:20000101T120040Z")
+
+        def testRenameConstraints(self):
+                added_fmris = [
+                    fmri.PkgFmri("pkg:/Foo@1.2,5.11-1:20000101T120040Z", None),
+                    fmri.PkgFmri("pkg:/Moo@1.1,5.11-1:20000101T120040Z", None),
+                    fmri.PkgFmri("pkg:/Woo@1.1,5.11-1:20000101T120040Z", None),
+                ]
+ 
+                for f in added_fmris:
+                        self.c.add_fmri(f)
+                        self.npkgs += 1
+
+                ts, rr = self.c.rename_package("test",
+                    "1.2,5.11-1:20000101T120040Z", "Foo",
+                    "1.2,5.11-1:20000101T120040Z")
+
+                self.assert_(self.c.fmri_renamed_dest(added_fmris[0]))
+
+                ts, rr = self.c.rename_package("Foo",
+                    "1.3,5.11-1:20000101T120040Z", "Moo",
+                    "1.1,5.11-1:20000101T120040Z")
+
+                self.assert_(self.c.fmri_renamed_dest(added_fmris[1]))
+
+                ts, rr = self.c.rename_package("Moo",
+                    "1.2,5.11-1:20000101T120040Z", "Woo",
+                    "1.1,5.11-1:20000101T120040Z")
+
+                self.assert_(self.c.fmri_renamed_dest(added_fmris[2]))
+
+                self.assertRaises(catalog.RenameException,
+                    self.c.rename_package, "Moo",
+                    "1.2,5.11-1:20000101T120040Z", "Foo",
+                    "1.2,5.11-1:20000101T120040Z")
+
+                newfmris = [
+                    fmri.PkgFmri("pkg:/Foo@1.1,5.11-1:20000101T120040Z", None),
+                    fmri.PkgFmri("pkg:/Moo@1.0,5.11-1:20000101T120040Z", None),
+                    fmri.PkgFmri("pkg:/Moo@1.1,5.11-2:20000101T120040Z", None),
+                    fmri.PkgFmri("pkg:/Woo@1.2,5.11-1:20000101T120040Z", None),
+                ]
+
+                for f in newfmris:
+                        self.c.add_fmri(f)
+                        self.npkgs += 1
+
+                # Make sure successors are correctly identified.
+                tfmri = newfmris[3]
+                self.assert_(self.c.rename_is_successor(tfmri, newfmris[2]))
+                self.assert_(self.c.rename_is_successor(tfmri, newfmris[1]))
+                self.assert_(self.c.rename_is_successor(tfmri, newfmris[0]))
+
+                tfmri = newfmris[2]
+                self.assert_(self.c.rename_is_successor(tfmri, newfmris[0]))
+
+                # Note that this is a successor by version number, but not
+                # by rename.
+                self.failIf(self.c.rename_is_successor(tfmri, newfmris[1]))
+
+                self.failIf(self.c.rename_is_successor(tfmri, newfmris[2]))
+                self.failIf(self.c.rename_is_successor(tfmri, newfmris[3]))
+
+                rec = self.c.fmri_renamed_dest(newfmris[1])
+                lrec = [f for f in rec]
+                self.failIf(len(lrec) > 0)
+
+                rec = self.c.fmri_renamed_dest(newfmris[0])
+                lrec = [f for f in rec]
+                self.failIf(len(lrec) > 0)
+
+                # Check that we can correctly identify predecessors, too
+                tfmri = newfmris[3]
+                self.assert_(self.c.rename_is_predecessor(newfmris[2], tfmri))
+                self.assert_(self.c.rename_is_predecessor(newfmris[0], tfmri))
+                self.failIf(self.c.rename_is_predecessor(tfmri, newfmris[0]))
+
+                # Test that test@1.0 finds 3 renames that would be newer
+                tfmri = fmri.PkgFmri("pkg:/test@1.0,5.11-2:20000101T120040Z",
+                    None) 
+                pkgs = self.c.rename_newer_pkgs(tfmri)
+                self.assert_(len(pkgs) == 3)
+
+                # Verify that the packages that have been renamed can be
+                # considered equivalent by rename_is_same_pkg
+                self.assert_(self.c.rename_is_same_pkg(added_fmris[0],
+                        added_fmris[1]))
+                self.assert_(self.c.rename_is_same_pkg(added_fmris[0],
+                        added_fmris[2]))
+                self.assert_(self.c.rename_is_same_pkg(added_fmris[1],
+                        added_fmris[0]))
+                self.assert_(self.c.rename_is_same_pkg(added_fmris[1],
+                        added_fmris[2]))
+                self.assert_(self.c.rename_is_same_pkg(added_fmris[2],
+                        added_fmris[0]))
+                self.assert_(self.c.rename_is_same_pkg(added_fmris[2],
+                        added_fmris[1]))
+                self.assert_(self.c.rename_is_same_pkg(newfmris[3],
+                        newfmris[0]))
+
+                # Make sure rename_is_same_pkg doesn't return false positive
+                tfmri = fmri.PkgFmri("pkg:/zpkg@1.0,5.11-1:20000101T120040Z",
+                    None)
+                self.failIf(self.c.rename_is_same_pkg(tfmri, added_fmris[1]))
+
 class TestUpdateLog(unittest.TestCase):
         def setUp(self):
                 self.cpath = tempfile.mkdtemp()
