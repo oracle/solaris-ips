@@ -91,56 +91,6 @@ Environment:
 #        pkg image-unset name
 #        pkg image-get [name ...]
 
-def catalog_refresh(img, args):
-        """Update image's catalogs."""
-
-        # XXX will need to show available content series for each package
-        full_refresh = False
-        try:
-                opts, pargs = getopt.getopt(args, None, ["full"])
-                for opt, arg in opts:
-                        if opt == "--full":
-                                full_refresh = True
-        except getopt.GetoptError, e:
-                print "pkg: refresh: illegal option -- %s" % e.opt
-                usage()
-
-        # Ensure Image directory structure is valid.
-        if not os.path.isdir("%s/catalog" % img.imgdir):
-                img.mkdirs()
-
-        # Loading catalogs allows us to perform incremental update
-        img.load_catalogs(get_tracker())
-
-        try:
-                img.retrieve_catalogs(full_refresh)
-        except RuntimeError, failures:
-                total, succeeded = failures.args[1:3]
-                print _("pkg: %s/%s catalogs successfully updated:") % \
-                    (succeeded, total)
-
-                for auth, err in failures.args[0]:
-                        if isinstance(err, urllib2.HTTPError):
-                                print >> sys.stderr, "   %s: %s - %s" % \
-                                    (err.filename, err.code, err.msg)
-                        elif isinstance(err, urllib2.URLError):
-                                if err.args[0][0] == 8:
-                                        print >> sys.stderr, "    %s: %s" % \
-                                            (urlparse.urlsplit(auth["origin"])[1].split(":")[0],
-                                            err.args[0][1])
-                                else:
-                                        print >> sys.stderr, "    %s: %s" % \
-                                            (auth["origin"], err.args[0][1])
-                        elif isinstance(err, IOError):
-                                print >> sys.stderr, "   ", err
-
-                if succeeded == 0:
-                        return 1
-                else:
-                        return 3
-        else:
-                return 0
-
 def inventory_display(img, args):
         all_known = False
         display_headers = True
@@ -718,6 +668,59 @@ def list_contents(img, args):
 
         return 0
 
+def display_catalog_failures(failures):
+        total, succeeded = failures.args[1:3]
+        print _("pkg: %s/%s catalogs successfully updated:") % \
+            (succeeded, total)
+
+        for auth, err in failures.args[0]:
+                if isinstance(err, urllib2.HTTPError):
+                        print >> sys.stderr, "   %s: %s - %s" % \
+                            (err.filename, err.code, err.msg)
+                elif isinstance(err, urllib2.URLError):
+                        if err.args[0][0] == 8:
+                                print >> sys.stderr, "    %s: %s" % \
+                                    (urlparse.urlsplit(auth["origin"])[1].split(":")[0],
+                                    err.args[0][1])
+                        else:
+                                print >> sys.stderr, "    %s: %s" % \
+                                    (auth["origin"], err.args[0][1])
+                elif isinstance(err, IOError):
+                        print >> sys.stderr, "   ", err
+
+        return succeeded
+
+def catalog_refresh(img, args):
+        """Update image's catalogs."""
+
+        # XXX will need to show available content series for each package
+        full_refresh = False
+        try:
+                opts, pargs = getopt.getopt(args, None, ["full"])
+                for opt, arg in opts:
+                        if opt == "--full":
+                                full_refresh = True
+        except getopt.GetoptError, e:
+                print "pkg: refresh: illegal option -- %s" % e.opt
+                usage()
+
+        # Ensure Image directory structure is valid.
+        if not os.path.isdir("%s/catalog" % img.imgdir):
+                img.mkdirs()
+
+        # Loading catalogs allows us to perform incremental update
+        img.load_catalogs(get_tracker())
+
+        try:
+                img.retrieve_catalogs(full_refresh)
+        except RuntimeError, failures:
+                if display_catalog_failures(failures) == 0:
+                        return 1
+                else:
+                        return 3
+        else:
+                return 0
+
 def image_create(img, args):
         """Create an image of the requested kind, at the given path.  Load
         catalog for initial authority for convenience.
@@ -757,11 +760,13 @@ def image_create(img, args):
 
         try:
                 img.retrieve_catalogs()
-        except urllib2.URLError, e:
-                print >> sys.stderr, "pkg:", e.reason[1]
-                return 1
-
-        return 0
+        except RuntimeError, failures:
+                if display_catalog_failures(failures) == 0:
+                        return 1
+                else:
+                        return 3
+        else:
+                return 0
 
 def main_func():
         img = image.Image()

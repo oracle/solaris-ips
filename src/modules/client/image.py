@@ -496,7 +496,6 @@ class Image(object):
                                         return v
 
                 return None
-                
 
         def is_installed(self, fmri):
                 """Check that the exact version given in the FMRI is installed

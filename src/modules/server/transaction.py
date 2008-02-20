@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 import errno
@@ -90,9 +90,9 @@ class Transaction(object):
                 self.dir = "%s/%s" % (self.cfg.trans_root, trans_basename)
                 os.makedirs(self.dir)
 
-		#
-		# always create a minimal manifest
-		#
+                #
+                # always create a minimal manifest
+                #
                 tfile = file("%s/manifest" % self.dir, "a")
                 print >>tfile,  "# %s, client release %s" % (self.pkg_name, \
                     self.client_release)

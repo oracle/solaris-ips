@@ -707,4 +707,15 @@ expect_exit 1 $?
 end_assert
 # }}}1
 
+new_assert "create image on non-existent server"
+# {{{1
+
+new_test "create image from non-existent server"
+
+pkg image-create -F -a example.com=http://example.com:10000 $TEMPDIR/failed-image
+expect_exit 1 $?
+
+end_assert
+# }}}1
+
 exit 0
