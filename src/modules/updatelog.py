@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -27,6 +27,7 @@ import os
 import re
 import time
 import datetime
+import httplib
 
 import pkg.fmri as fmri
 import pkg.catalog as catalog
@@ -354,7 +355,7 @@ class UpdateLog(object):
                 
                 # Incremental catalog updates
                 if ts and self.up_to_date(ts):
-                        request.send_response(304)
+                        request.send_response(httplib.NOT_MODIFIED)
                         request.send_header('Content-type', 'text/plain')
                         request.send_header('Last-Modified',
                             self.catalog.last_modified())
@@ -362,7 +363,7 @@ class UpdateLog(object):
                         request.end_headers()
                         return
                 elif ts and self.enough_history(ts):
-                        request.send_response(200)
+                        request.send_response(httplib.OK)
                         request.send_header('Content-type', 'text/plain')
                         request.send_header('Last-Modified',
                             self.catalog.last_modified())
@@ -372,7 +373,7 @@ class UpdateLog(object):
                         return
                 else:
                         # Not enough history, or full catalog requested
-                        request.send_response(200)
+                        request.send_response(httplib.OK)
                         request.send_header('Content-type', 'text/plain')
                         request.send_header('X-Catalog-Type', 'full')
                         request.end_headers()

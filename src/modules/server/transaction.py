@@ -31,6 +31,7 @@ import shutil
 import socket
 import time
 import urllib
+import httplib
 
 import pkg.fmri as fmri
 import pkg.elf as elf
@@ -66,7 +67,7 @@ class Transaction(object):
                 hdrs = request.headers
                 self.client_release = hdrs.getheader("Client-Release", None)
                 if self.client_release == None:
-                        return 400
+                        return httplib.BAD_REQUEST
                 # If client_release is not defined, then this request is
                 # invalid.
 
@@ -84,7 +85,7 @@ class Transaction(object):
                 # Check that the new FMRI's version is valid.  I.e. the package
                 # has not been renamed or frozen for the new version.
                 if not self.cfg.catalog.valid_new_fmri(self.fmri):
-                        return 400
+                        return httplib.BAD_REQUEST
 
                 trans_basename = self.get_basename()
                 self.dir = "%s/%s" % (self.cfg.trans_root, trans_basename)
@@ -110,7 +111,7 @@ class Transaction(object):
                 # if not found, create package
                 # set package state to TRANSACTING
 
-                return 200
+                return httplib.OK
 
         def reopen(self, cfg, trans_dir):
                 """The reopen() method is invoked on server restart, to
@@ -159,7 +160,7 @@ class Transaction(object):
                 except:
                         print "pkg.depotd: couldn't remove transaction %s" % trans_id
 
-                request.send_response(200)
+                request.send_response(httplib.OK)
                 request.send_header('Package-FMRI', pkg_fmri)
                 request.send_header('State', pkg_state)
                 return
@@ -171,9 +172,9 @@ class Transaction(object):
                 # state transition from TRANSACTING to ABANDONED
                 try:
                         shutil.rmtree("%s/%s" % (self.cfg.trans_root, trans_id))
-                        request.send_response(200)
+                        request.send_response(httplib.OK)
                 except:
-                        request.send_response(404)
+                        request.send_response(httplib.NOT_FOUND)
 
         def add_content(self, request, type):
                 """XXX We're currently taking the file from the HTTP request
@@ -256,7 +257,7 @@ class Transaction(object):
                 tfile.close()
 
                 try:
-                        request.send_response(200)
+                        request.send_response(httplib.OK)
                 except socket.error, e:
                         # If the client breaks the connection here, that's
                         # probably okay.  Everything's consistent on our end,

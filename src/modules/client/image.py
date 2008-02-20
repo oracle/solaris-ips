@@ -31,6 +31,7 @@ import pwd
 import urllib
 import urllib2
 import shutil
+import httplib
 # import uuid           # XXX interesting 2.5 module
 
 import pkg.catalog as catalog
@@ -556,8 +557,9 @@ class Image(object):
                                 c, v = versioned_urlopen(auth["origin"],
                                     "catalog", [0], headers = hdr)
                         except urllib2.HTTPError, e:
-                                # Server returns 304 if catalog is up to date
-                                if e.code == 304:
+                                # Server returns NOT_MODIFIED if catalog is up
+                                # to date
+                                if e.code == httplib.NOT_MODIFIED:
                                         succeeded += 1
                                 else:
                                         failed.append((auth, e))
@@ -936,7 +938,7 @@ class Image(object):
                                 res, v = versioned_urlopen(auth["origin"],
                                     "search", [0], urllib.quote(args[0], ""))
                         except urllib2.HTTPError, e:
-                                if e.code != 404:
+                                if e.code != httplib.NOT_FOUND:
                                         failed.append((auth, e))
                                 continue
                         except urllib2.URLError, e:

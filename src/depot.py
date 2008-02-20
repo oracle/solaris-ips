@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -53,6 +53,7 @@ import urllib
 import tarfile
 import cgi
 import traceback
+import httplib
 
 import pkg.fmri as fmri
 import pkg.misc as misc
@@ -71,7 +72,7 @@ Usage: /usr/lib/pkg.depotd [--readonly] [--rebuild] [-d repo_dir] [-p port]
         sys.exit(2)
 
 def versions_0(scfg, request):
-        request.send_response(200)
+        request.send_response(httplib.OK)
         request.send_header('Content-type', 'text/plain')
         request.end_headers()
         versions = "\n".join(
@@ -84,24 +85,24 @@ def search_0(scfg, request):
         try:
                 token = urllib.unquote(request.path.split("/", 3)[3])
         except IndexError:
-                request.send_response(400)
+                request.send_response(httplib.BAD_REQUEST)
                 return
 
         if not token:
-                request.send_response(400)
+                request.send_response(httplib.BAD_REQUEST)
                 return
 
         if not scfg.search_available():
-                request.send_response(503, "Search temporarily unavailable")
+                request.send_response(httplib.SERVICE_UNAVAILABLE, "Search temporarily unavailable")
                 return
 
         try:
                 res = scfg.catalog.search(token)
         except KeyError:
-                request.send_response(404)
+                request.send_response(httplib.NOT_FOUND)
                 return
 
-        request.send_response(200)
+        request.send_response(httplib.OK)
         request.send_header("Content-type", "text/plain")
         request.end_headers()
         for l in res:
@@ -113,7 +114,8 @@ def catalog_0(scfg, request):
         # Try to guard against a non-existent catalog.  The catalog open will
         # raise an exception, and only the attributes will have been sent.  But
         # because we've sent data already (never mind the response header), we
-        # can't raise an exception here, or a 500 header will get sent as well.
+        # can't raise an exception here, or an INTERNAL_SERVER_ERROR header
+        # will get sent as well.
         try:
                 scfg.updatelog.send(request)
         except:
@@ -138,15 +140,15 @@ def manifest_0(scfg, request):
                 file = open("%s/%s" % (scfg.pkg_root, f.get_dir_path()), "r")
         except IOError, e:
                 if e.errno == errno.ENOENT:
-                        request.send_response(404)
+                        request.send_response(httplib.NOT_FOUND)
                 else:
                         request.log_error("Internal failure:\n%s",
                             traceback.format_exc())
-                        request.send_response(500)
+                        request.send_response(httplib.INTERNAL_SERVER_RROR)
                 return
         data = file.read()
 
-        request.send_response(200)
+        request.send_response(httplib.OK)
         request.send_header('Content-type', 'text/plain')
         request.end_headers()
         request.wfile.write(data)
@@ -159,7 +161,7 @@ def filelist_0(scfg, request):
         # until the client sends EOF, an undesireable situation
         size = int(request.headers.getheader("Content-Length", "0"))
         if size == 0:
-                request.send_response(411)
+                request.send_response(httplib.LENGTH_REQUIRED)
                 return
 
         rfile = request.rfile
@@ -167,7 +169,7 @@ def filelist_0(scfg, request):
 
         scfg.inc_flist()
 
-        request.send_response(200)
+        request.send_response(httplib.OK)
         request.send_header("Content-type", "application/data")
         request.end_headers()
 
@@ -188,7 +190,7 @@ def rename_0(scfg, request):
         # until the client sends EOF, an undesireable situation
         size = int(request.headers.getheader("Content-Length", "0"))
         if size == 0:
-                request.send_response(411)
+                request.send_response(httplib.LENGTH_REQUIRED)
                 return
 
         rfile = request.rfile
@@ -197,19 +199,19 @@ def rename_0(scfg, request):
         try:
                 src_fmri = fmri.PkgFmri(rename_dict['Src-FMRI'][0], None)
         except KeyError:
-                request.send_response(400, "No source FMRI present.")
+                request.send_response(httplib.BAD_REQUEST, "No source FMRI present.")
                 return
         except ValueError:
-                request.send_response(400, "Invalid source FMRI.")
+                request.send_response(httplib.BAD_REQUEST, "Invalid source FMRI.")
                 return
 
         try:
                 dest_fmri = fmri.PkgFmri(rename_dict['Dest-FMRI'][0], None)
         except KeyError:
-                request.send_response(400, "No destination FMRI present.")
+                request.send_response(httplib.BAD_REQUEST, "No destination FMRI present.")
                 return
         except ValueError:
-                request.send_response(400, "Invalid destination FMRI.")
+                request.send_response(httplib.BAD_REQUEST, "Invalid destination FMRI.")
                 return
 
         try:
@@ -217,14 +219,14 @@ def rename_0(scfg, request):
                    str(src_fmri.version), dest_fmri.pkg_name,
                    str(dest_fmri.version))
         except catalog.CatalogException, e:
-                request.send_response(404, e.args)
+                request.send_response(httplib.NOT_FOUND, e.args)
                 return
         except catalog.RenameException, e:
-                request.send_response(404, e.args)
+                request.send_response(httplib.NOT_FOUND, e.args)
                 return
 
         scfg.inc_renamed()
-        request.send_response(200)
+        request.send_response(httplib.OK)
 
 
 def file_0(scfg, request):
@@ -238,16 +240,16 @@ def file_0(scfg, request):
                     scfg.file_root, misc.hash_file_name(fhash))))
         except IOError, e:
                 if e.errno == errno.ENOENT:
-                        request.send_response(404)
+                        request.send_response(httplib.NOT_FOUND)
                 else:
                         request.log_error("Internal failure:\n%s",
                             traceback.format_exc())
-                        request.send_response(500)
+                        request.send_response(httplib.INTERNAL_SERVER_RROR)
                 return
 
         data = file.read()
 
-        request.send_response(200)
+        request.send_response(httplib.OK)
         request.send_header("Content-type", "application/data")
         request.end_headers()
         request.wfile.write(data)
@@ -256,28 +258,28 @@ def open_0(scfg, request):
         # XXX Authentication will be handled by virtue of possessing a signed
         # certificate (or a more elaborate system).
         if scfg.is_read_only():
-                request.send_error(403, "Read-only server")
+                request.send_error(httplib.FORBIDDEN, "Read-only server")
                 return
 
         t = trans.Transaction()
 
         ret = t.open(scfg, request)
-        if ret == 200:
+        if ret == httplib.OK:
                 scfg.in_flight_trans[t.get_basename()] = t
 
-                request.send_response(200)
+                request.send_response(httplib.OK)
                 request.send_header('Content-type', 'text/plain')
                 request.send_header('Transaction-ID', t.get_basename())
                 request.end_headers()
-        elif ret == 400:
-                request.send_response(400)
+        elif ret == httplib.BAD_REQUEST:
+                request.send_response(httplib.BAD_REQUEST)
         else:
-                request.send_response(500)
+                request.send_response(httplib.INTERNAL_SERVER_RROR)
 
 
 def close_0(scfg, request):
         if scfg.is_read_only():
-                request.send_error(403, "Read-only server")
+                request.send_error(httplib.FORBIDDEN, "Read-only server")
                 return
 
         # Pull transaction ID from headers.
@@ -286,14 +288,14 @@ def close_0(scfg, request):
         try:
                 t = scfg.in_flight_trans[trans_id]
         except KeyError:
-                request.send_response(404, "Transaction ID not found")
+                request.send_response(httplib.NOT_FOUND, "Transaction ID not found")
         else:
                 t.close(request)
                 del scfg.in_flight_trans[trans_id]
 
 def abandon_0(scfg, request):
         if scfg.is_read_only():
-                request.send_error(403, "Read-only server")
+                request.send_error(httplib.FORBIDDEN, "Read-only server")
                 return
 
         # Pull transaction ID from headers.
@@ -302,14 +304,14 @@ def abandon_0(scfg, request):
         try:
                 t = scfg.in_flight_trans[trans_id]
         except KeyError:
-                request.send_response(404, "Transaction ID not found")
+                request.send_response(httplib.NOT_FOUND, "Transaction ID not found")
         else:
                 t.abandon(request)
                 del scfg.in_flight_trans[trans_id]
 
 def add_0(scfg, request):
         if scfg.is_read_only():
-                request.send_error(403, "Read-only server")
+                request.send_error(httplib.FORBIDDEN, "Read-only server")
                 return
 
         trans_id, type = request.path.split("/", 4)[-2:]
@@ -317,7 +319,7 @@ def add_0(scfg, request):
         try:
                 t = scfg.in_flight_trans[trans_id]
         except KeyError:
-                request.send_response(404, "Transaction ID not found")
+                request.send_response(httplib.NOT_FOUND, "Transaction ID not found")
         else:
                 t.add_content(request, type)
 
@@ -365,13 +367,13 @@ class pkgHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                 try:
                         version = int(reqarr[1])
                 except IndexError, e:
-                        self.send_response(400)
+                        self.send_response(httplib.BAD_REQUEST)
                         self.send_header("Content-type", "text/plain")
                         self.end_headers()
                         self.wfile.write("Missing version\n")
                         return
                 except ValueError, e:
-                        self.send_response(400)
+                        self.send_response(httplib.BAD_REQUEST)
                         self.send_header("Content-type", "text/plain")
                         self.end_headers()
                         self.wfile.write("Non-integer version\n")
@@ -381,7 +383,7 @@ class pkgHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                 if op_method not in globals():
                         # If we get here, we know that 'operation' is supported.
                         # Assume 'version' is not supported for that operation.
-                        self.send_response(404, "Version not supported")
+                        self.send_response(httplib.NOT_FOUND, "Version not supported")
                         self.send_header("Content-type", "text/plain")
                         self.end_headers()
 
@@ -400,20 +402,20 @@ class pkgHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                         # client, in which case this response just corrupts that
                         # datastream.  I don't know of any way to tell whether
                         # data has already been sent.
-                        self.send_response(500)
+                        self.send_response(httplib.INTERNAL_SERVER_RROR)
 
         def do_POST(self):
                 self.do_GET()
 
         def do_PUT(self):
-                self.send_response(200)
+                self.send_response(httplib.OK)
                 self.send_header('Content-type', 'text/plain')
                 self.end_headers()
                 self.wfile.write('''PUT URI %s ; headers %s''' %
                     (self.path, self.headers))
 
         def do_DELETE(self):
-                self.send_response(200)
+                self.send_response(httplib.OK)
                 self.send_header('Content-type', 'text/plain')
                 self.end_headers()
                 self.wfile.write('''URI %s ; headers %s''' %

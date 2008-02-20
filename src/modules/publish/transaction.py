@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -56,7 +56,7 @@ class Transaction(object):
                             [0], urllib.quote(self.pkg_name, ""),
                             headers = {"Client-Release": os.uname()[2]})
                 except (httplib.BadStatusLine, RuntimeError):
-                        return 500, None
+                        return httplib.INTERNAL_SERVER_ERROR, None
                 except urllib2.HTTPError, e:
                         return e.code, None
 
@@ -77,7 +77,7 @@ class Transaction(object):
                 try:
                         c, v = versioned_urlopen(repo, op, [0], trans_id)
                 except (httplib.BadStatusLine, RuntimeError):
-                        return 500, None
+                        return httplib.INTERNAL_SERVER_ERROR, None
                 except urllib2.HTTPError, e:
                         return e.code, None
 
@@ -113,9 +113,9 @@ class Transaction(object):
                             [0], "%s/%s" % (trans_id, type), data = data,
                             headers = headers)
                 except httplib.BadStatusLine:
-                        return 500, "Bad status line from server", None
+                        return httplib.INTERNAL_SERVER_ERROR, "Bad status line from server", None
                 except RuntimeError, e:
-                        return 404, e[0], None
+                        return httplib.NOT_FOUND, e[0], None
                 except urllib2.HTTPError, e:
                         return e.code, e.msg, None
                 except urllib2.URLError, e:
@@ -123,9 +123,9 @@ class Transaction(object):
                                 # XXX Guess: the libraries don't ever collect
                                 # this information.  This might also be "Version
                                 # not supported".
-                                return 404, "Transaction ID not found", None
+                                return httplib.NOT_FOUND, "Transaction ID not found", None
                         else:
-                                return 500, e.reason[1], None
+                                return httplib.INTERNAL_SERVER_ERROR, e.reason[1], None
 
                 return c.code, c.msg, None
 
@@ -140,18 +140,18 @@ class Transaction(object):
                         c, v = versioned_urlopen(config.install_uri, "rename",
                             [0], data = req_str)
                 except httplib.BadStatusLine:
-                        return 500, "Bad status line from server", None
+                        return httplib.INTERNAL_SERVER_ERROR, "Bad status line from server", None
                 except RuntimeError, e:
-                        return 404, e[0], None
+                        return httplib.NOT_FOUND, e[0], None
                 except urllib2.HTTPError, e:
                         return e.code, e.msg, None
                 except urllib2.URLError, e:
                         if e.reason[0] == 32: # Broken pipe
                                 # XXX Guess: the libraries don't ever collect
                                 # this information.
-                                return 404, "Version not supported", None
+                                return httplib.NOT_FOUND, "Version not supported", None
                         else:
-                                return 500, e.reason[1], None
+                                return httplib.INTERNAL_SERVER_ERROR, e.reason[1], None
 
                 return c.code, c.msg, None
 

@@ -21,13 +21,14 @@
 #
 
 #
-# Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 import os
 import urllib
 import urllib2
 import urlparse
+import httplib
 
 def hash_file_name(f):
         """Return the two-level path fragment for the given filename, which is
@@ -73,10 +74,10 @@ def versioned_urlopen(base_uri, operation, versions = [], tail = None,
                 try:
                         c = url_opener(req)
                 except urllib2.HTTPError, e:
-                        if e.code != 404 or e.msg != "Version not supported":
+                        if e.code != httplib.NOT_FOUND or e.msg != "Version not supported":
                                 raise
                         continue
-                # XXX catch BadStatusLine and convert to 500?
+                # XXX catch BadStatusLine and convert to INTERNAL_SERVER_ERROR?
 
                 return c, version
         else:

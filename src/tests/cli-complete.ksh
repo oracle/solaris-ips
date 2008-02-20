@@ -650,11 +650,11 @@ eval $trans_id
 
 # Bad command line option to close
 new_test close -Q is bogus
-pkgsend close -Q 2>&1
+pkgsend -s $REPO_URL close -Q 2>&1
 expect_exit 2 $?
 
 # should work
-pkgsend close -A 2>&1
+pkgsend -s $REPO_URL close -A 2>&1
 expect_exit 0 $?
 
 end_assert
@@ -675,7 +675,7 @@ expect_exit 0 $?
 eval "$res"
 expect_exit 0 $?
 
-pkgsend close -A 2>&1
+pkgsend -s $REPO_URL close -A 2>&1
 expect_exit 0 $?
 
 new_test "pkgsend open -n should emit an integer"
@@ -685,7 +685,7 @@ echo $res
 echo $res | egrep '^[0-9]+'
 expect_exit 0 $?
 
-PKG_TRANS_ID="$res" pkgsend close -A 2>&1
+PKG_TRANS_ID="$res" pkgsend -s $REPO_URL close -A 2>&1
 expect_exit 0 $?
 
 end_assert

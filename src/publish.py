@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -74,6 +74,16 @@ Environment:
         PKG_REPO""")
         sys.exit(2)
 
+def _check_status(operation, status, msg = None):
+        if status / 100 == 4 or status / 100 == 5:
+                if msg:
+                        msg = ": " + msg
+                else:
+                        msg = ""
+                print >> sys.stderr, \
+                    _("pkgsend: %s failed (status %s)%s") % (operation, status, msg)
+                sys.exit(1)
+
 def trans_open(config, args):
 
 	opts, pargs = getopt.getopt(args, "en")
@@ -93,11 +103,7 @@ def trans_open(config, args):
         t = trans.Transaction()
 
         status, id = t.open(config, pargs[0])
-
-        if status / 100 == 4 or status / 100 == 5:
-                print >> sys.stderr, \
-                    _("pkgsend: server failed (status %s)") % status
-                sys.exit(1)
+        _check_status('open', status)
 
         if id == None:
                 print >> sys.stderr, \
@@ -160,28 +166,12 @@ def trans_add(config, args):
 
         t = trans.Transaction()
         status, msg, body = t.add(config, trans_id, action)
-
-        if status / 100 == 4 or status / 100 == 5:
-                if msg:
-                        msg = ": " + msg
-                else:
-                        msg = ""
-                print >> sys.stderr, \
-                    _("pkgsend: server failed (status %s)%s") % (status, msg)
-                sys.exit(1)
+        _check_status('add', status, msg)
 
 def trans_rename(config, args):
         t = trans.Transaction()
         status, msg, body = t.rename(config, args[0], args[1])
-
-        if status / 100 == 4 or status / 100 == 5:
-                if msg:
-                        msg = ": " + msg
-                else:
-                        msg = ""
-                print >> sys.stderr, \
-                    _("pkgsend: rename failed (status %s)%s") % (status, msg)
-                sys.exit(1)
+        _check_status('rename', status, msg)
 
 def trans_import(config, args):
 	try:
@@ -194,20 +184,12 @@ def trans_import(config, args):
 	for filename in args:
 		bundle = pkg.bundle.make_bundle(filename)
 		t = trans.Transaction()
-		errstr = "pkgsend: server failed (status %s)%s"
 
 		for action in bundle:
 			try:
 				status, msg, body = t.add(config, trans_id, 
 				    action)
-				if status / 100 == 4 or status / 100 == 5:
-					if msg:
-						msg = ": " + msg
-					else:
-						msg = ""
-						print >> sys.stderr, \
-						    _(errstr) % (status, msg)
-						sys.exit(1)
+                                _check_status('import', status, msg)
 			except TypeError, e:
 				print "warning:", e
 
@@ -280,6 +262,7 @@ def send_bundle(config, filename):
 
         t = trans.Transaction()
         status, id = t.open(config, bundle.pkgname + "@0-1")
+        _check_status('send', status)
 
         for action in bundle:
                 try:

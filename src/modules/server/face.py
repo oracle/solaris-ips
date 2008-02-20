@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 """face - dynamic index page for image packaging server"""
@@ -27,7 +27,7 @@
 import os
 
 from errno import ENOENT
-from httplib import OK, NOT_FOUND, INTERNAL_SERVER_ERROR
+import httplib
 
 # XXX Use small templating module?
 
@@ -40,9 +40,9 @@ content_root = "/usr/share/lib/pkg"
 # Note that if filename is an absolute path, this will be used.
 # Otherwise, the content root (PKG_DEPOT_CONTENT) directory will
 # be prepended to the filename.
-# If the static file cannot be found, an HTTP 404 (not found) error
-# is returned. Any other errors in the open return an HTTP 500
-# (internal server error).
+# If the static file cannot be found, an HTTP NOT_FOUND error
+# is returned. Any other errors in the open return an HTTP
+# INTERNAL_SERVER_ERROR.
 #
 # XXX Should we cache these files in memory as they are only small?
 #
@@ -58,13 +58,13 @@ def send_static(img, request, filename, content_type):
                         rfile.close()
                 except IOError, ioe:
                         if ioe.errno == ENOENT:
-                                # Not found: return a 404 error
+                                # Not found: return a NOT_FOUND error
                                 unknown(img, request)
                         else:
                                 # Otherwise push it up the stack
                                 raise
                 else:
-                        request.send_response(OK)
+                        request.send_response(httplib.OK)
                         request.send_header('Content-Type', content_type)
                         request.send_header('Content-Length', len(data))
                         request.end_headers()
@@ -102,7 +102,7 @@ def head(request, title = "pkg - image packaging system"):
 """ % title)
 
 def unknown(img, request):
-        request.send_response(NOT_FOUND)
+        request.send_response(httplib.NOT_FOUND)
         request.send_header('Content-type', 'text/html')
         request.end_headers()
         head(request)
@@ -117,8 +117,8 @@ def unknown(img, request):
     <div class="yui-b">
      <pre>
 """)
-        request.wfile.write('''404 GET URI %s ; headers:\n%s''' %
-            (request.path, request.headers))
+        request.wfile.write('''%d GET URI %s ; headers:\n%s''' %
+            (httplib.NOT_FOUND, request.path, request.headers))
         request.wfile.write("""\
      </pre>
     </div>
@@ -130,7 +130,7 @@ def unknown(img, request):
 """)
 
 def error(img, request):
-        request.send_response(INTERNAL_SERVER_ERROR)
+        request.send_response(httplib.INTERNAL_SERVER_ERROR)
         request.send_header('Content-type', 'text/html')
         request.end_headers()
         head(request)
@@ -155,7 +155,7 @@ face.response() for %s
 """ % request.path)
 
 def index(img, request):
-        request.send_response(200)
+        request.send_response(httplib.OK)
         request.send_header('Content-type', 'text/html')
         request.end_headers()
         head(request)
