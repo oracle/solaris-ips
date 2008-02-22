@@ -144,7 +144,7 @@ def manifest_0(scfg, request):
                 else:
                         request.log_error("Internal failure:\n%s",
                             traceback.format_exc())
-                        request.send_response(httplib.INTERNAL_SERVER_RROR)
+                        request.send_response(httplib.INTERNAL_SERVER_ERROR)
                 return
         data = file.read()
 
@@ -244,7 +244,7 @@ def file_0(scfg, request):
                 else:
                         request.log_error("Internal failure:\n%s",
                             traceback.format_exc())
-                        request.send_response(httplib.INTERNAL_SERVER_RROR)
+                        request.send_response(httplib.INTERNAL_SERVER_ERROR)
                 return
 
         data = file.read()
@@ -274,7 +274,7 @@ def open_0(scfg, request):
         elif ret == httplib.BAD_REQUEST:
                 request.send_response(httplib.BAD_REQUEST)
         else:
-                request.send_response(httplib.INTERNAL_SERVER_RROR)
+                request.send_response(httplib.INTERNAL_SERVER_ERROR)
 
 
 def close_0(scfg, request):
@@ -402,7 +402,7 @@ class pkgHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                         # client, in which case this response just corrupts that
                         # datastream.  I don't know of any way to tell whether
                         # data has already been sent.
-                        self.send_response(httplib.INTERNAL_SERVER_RROR)
+                        self.send_response(httplib.INTERNAL_SERVER_ERROR)
 
         def do_POST(self):
                 self.do_GET()
