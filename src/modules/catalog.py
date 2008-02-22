@@ -339,7 +339,7 @@ class Catalog(object):
 
                 new = False
                 if fmri_list:
-                        if not self.searchdb:
+                        if self.searchdb is None:
                                 self.searchdb = \
                                     dbm.open(self.searchdb_file, "c")
 
