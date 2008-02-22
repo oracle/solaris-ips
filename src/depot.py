@@ -199,19 +199,31 @@ def rename_0(scfg, request):
         try:
                 src_fmri = fmri.PkgFmri(rename_dict['Src-FMRI'][0], None)
         except KeyError:
-                request.send_response(httplib.BAD_REQUEST, "No source FMRI present.")
+                request.send_response(httplib.BAD_REQUEST,
+                    "No source FMRI present.")
                 return
         except ValueError:
-                request.send_response(httplib.BAD_REQUEST, "Invalid source FMRI.")
+                request.send_response(httplib.BAD_REQUEST,
+                    "Invalid source FMRI.")
+                return
+        except AssertionError:
+                request.send_response(httplib.BAD_REQUEST,
+                    "Source FMRI must contain build string.")
                 return
 
         try:
                 dest_fmri = fmri.PkgFmri(rename_dict['Dest-FMRI'][0], None)
         except KeyError:
-                request.send_response(httplib.BAD_REQUEST, "No destination FMRI present.")
+                request.send_response(httplib.BAD_REQUEST,
+                    "No destination FMRI present.")
                 return
         except ValueError:
-                request.send_response(httplib.BAD_REQUEST, "Invalid destination FMRI.")
+                request.send_response(httplib.BAD_REQUEST,
+                    "Invalid destination FMRI.")
+                return
+        except AssertionError:
+                request.send_response(httplib.BAD_REQUEST,
+                    "Destination FMRI must contain build string.")
                 return
 
         try:
