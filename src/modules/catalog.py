@@ -33,6 +33,7 @@ import dbm
 import signal
 import threading
 import datetime
+import sys
 
 import pkg.fmri as fmri
 import pkg.version as version
@@ -293,8 +294,26 @@ class Catalog(object):
                 # off into another process; when that's done, we'll mark it
                 # available.
                 if not fmri_list and idx_mtime > 0:
-                        self.searchdb = dbm.open(self.searchdb_file, "w")
-                        self._search_available = True
+                        try:
+                                self.searchdb = \
+                                    dbm.open(self.searchdb_file, "w")
+
+                                self._search_available = True
+                        except dbm.error, e:
+                                print >> sys.stderr, \
+                                    "Failed to open search database", \
+                                    "for writing: %s (errno=%s)" % \
+                                    (e.args[1], e.args[0])
+                                try:
+                                        self.searchdb = \
+                                            dbm.open(self.searchdb_file, "r")
+
+                                        self._search_available = True
+                                except dbm.error, e:
+                                        print >> sys.stderr, \
+                                            "Failed to open search " + \
+                                            "database: %s (errno=%s)" % \
+                                            (e.args[1], e.args[0])
                 else:
                         signal.signal(signal.SIGCHLD, self.child_handler)
                         self.searchdb_update_handle = \
@@ -310,9 +329,30 @@ class Catalog(object):
 
                 rc = self.searchdb_update_handle.poll()
                 if rc == 0:
-                        self.searchdb = dbm.open(self.searchdb_file, "w")
-                        self._search_available = True
-                        self.searchdb_update_handle = None
+                        try:
+                                self.searchdb = \
+                                    dbm.open(self.searchdb_file, "w")
+
+                                self._search_available = True
+                        except dbm.error, e:
+                                print >> sys.stderr, \
+                                    "Failed to open search database", \
+                                    "for writing: %s (errno=%s)" % \
+                                    (e.args[1], e.args[0])
+                                try:
+                                        self.searchdb = \
+                                            dbm.open(self.searchdb_file, "r")
+
+                                        self._search_available = True
+                                        self.searchdb_update_handle = None
+                                        return
+                                except dbm.error, e:
+                                        print >> sys.stderr, \
+                                            "Failed to open search " + \
+                                            "database: %s (errno=%s)" % \
+                                            (e.args[1], e.args[0])
+                                        return
+
                         if self.deferred_searchdb_updates:
                                 self.update_searchdb(
                                     self.deferred_searchdb_updates)
@@ -340,14 +380,33 @@ class Catalog(object):
                 new = False
                 if fmri_list:
                         if self.searchdb is None:
-                                self.searchdb = \
-                                    dbm.open(self.searchdb_file, "c")
+                                try:
+                                        self.searchdb = \
+                                            dbm.open(self.searchdb_file, "c")
+                                except dbm.error, e:
+                                        # Since we're here explicitly to update
+                                        # the database, if we fail, there's
+                                        # nothing more to do.
+                                        print >> sys.stderr, \
+                                            "Failed to open search database", \
+                                            "for writing: %s (errno=%s)" % \
+                                            (e.args[1], e.args[0])
+                                        return 1
 
                         if not self.searchdb.has_key("indir_num"):
                                 self.searchdb["indir_num"] = "0"
                 else:
                         # new = True
-                        self.searchdb = dbm.open(self.searchdb_file, "n")
+                        try:
+                                self.searchdb = \
+                                    dbm.open(self.searchdb_file, "n")
+                        except dbm.error, e:
+                                print >> sys.stderr, \
+                                    "Failed to open search database", \
+                                    "for writing: %s (errno=%s)" % \
+                                    (e.args[1], e.args[0])
+                                return 1
+
                         self.searchdb["indir_num"] = "0"
                         # XXX We should probably iterate over the catalog, for
                         # cases where manifests have stuck around, but have been
