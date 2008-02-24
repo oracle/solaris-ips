@@ -361,22 +361,7 @@ class Catalog(object):
                         print "ERROR building search database:"
                         print self.searchdb_update_handle.stderr.read()
 
-        def update_searchdb(self, fmri_list):
-                """Update the search database with the FMRIs passed in via
-                'fmri_list'.  If 'fmri_list' is empty or None, then rebuild the
-                database from scratch.  'fmri_list' should be a list of tuples
-                where the first element is the full path to the package name in
-                pkg_root and the second element is the version string."""
-
-                # If we're in the process of updating the database in our
-                # separate process, and this particular update until that's
-                # done.
-                if self.searchdb_update_handle:
-                        self.deferred_searchdb_updates += fmri_list
-                        return
-
-                self.searchdb_lock.acquire()
-
+        def __update_searchdb_unlocked(self, fmri_list):
                 new = False
                 if fmri_list:
                         if self.searchdb is None:
@@ -429,7 +414,26 @@ class Catalog(object):
 
                         self.update_index(f, mfst.search_dict())
 
-                self.searchdb_lock.release()
+        def update_searchdb(self, fmri_list):
+                """Update the search database with the FMRIs passed in via
+                'fmri_list'.  If 'fmri_list' is empty or None, then rebuild the
+                database from scratch.  'fmri_list' should be a list of tuples
+                where the first element is the full path to the package name in
+                pkg_root and the second element is the version string."""
+
+                # If we're in the process of updating the database in our
+                # separate process, and this particular update until that's
+                # done.
+                if self.searchdb_update_handle:
+                        self.deferred_searchdb_updates += fmri_list
+                        return
+
+                self.searchdb_lock.acquire()
+
+                try:
+                        self.__update_searchdb_unlocked(fmri_list)
+                finally:
+                        self.searchdb_lock.release()
 
                 # If we rebuilt the database from scratch ... XXX why would we
                 # want to do this?
