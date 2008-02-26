@@ -454,7 +454,9 @@ class Image(object):
 
                 v = self._get_version_installed(fmri)
 
-                if fmri.authority == None:
+                if v and fmri.authority == None:
+                        fmri.authority = v.authority
+                elif fmri.authority == None:
                         fmri.authority = self.get_default_authority()
 
                 if v and self.fmri_is_successor(v, fmri):
@@ -487,6 +489,8 @@ class Image(object):
                 allows upgrade correctly locate the src fmri, if one exists."""
 
                 v = self._get_version_installed(fmri)
+
+                assert fmri.authority
 
                 if v:
                         return v
