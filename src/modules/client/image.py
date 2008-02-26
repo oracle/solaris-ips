@@ -454,6 +454,9 @@ class Image(object):
 
                 v = self._get_version_installed(fmri)
 
+                if fmri.authority == None:
+                        fmri.authority = self.get_default_authority()
+
                 if v and self.fmri_is_successor(v, fmri):
                         return True
                 else:

@@ -193,6 +193,8 @@ def verify_image(img, args):
 
         progresstracker = get_tracker(quiet)
 
+        img.load_catalogs(progresstracker)
+
         if not pargs:
                 pkgs = set((a for a in img.gen_installed_pkgs()))
         else:

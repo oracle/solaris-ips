@@ -61,21 +61,29 @@ class DotSequence(object):
                 return ".".join(map(str, self.sequence))
 
         def __ne__(self, other):
+                if other == None:
+                        return True
                 if self.sequence != other.sequence:
                         return True
                 return False
 
         def __eq__(self, other):
+                if other == None:
+                        return False
                 if self.sequence == other.sequence:
                         return True
                 return False
 
         def __lt__(self, other):
+                if other == None:
+                        return False
                 if self.sequence < other.sequence:
                         return True
                 return False
 
         def __gt__(self, other):
+                if other == None:
+                        return False
                 if self.sequence > other.sequence:
                         return True
                 return False
