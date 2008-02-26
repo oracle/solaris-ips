@@ -25,8 +25,9 @@
 """face - dynamic index page for image packaging server"""
 
 import os
+import socket
 
-from errno import ENOENT
+from errno import ENOENT, EPIPE
 import httplib
 
 # XXX Use small templating module?
@@ -211,6 +212,12 @@ def match(request):
 def respond(img, request):
         if request.path in pages.keys():
                 page = pages[request.path]
-                page(img, request)
+                try:
+                        page(img, request)
+                except socket.error, e:
+			if e[0] != EPIPE:
+                        	request.log_error("Failed to serve %s: %s" % \
+				    (request.path, e[1]))
+				raise
         else:
                 error(img, request)

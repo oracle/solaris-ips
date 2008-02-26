@@ -92,8 +92,7 @@ class TestEmptyCatalog(unittest.TestCase):
         def setUp(self):
                 self.cpath = tempfile.mkdtemp()
                 self.c = catalog.Catalog(self.cpath)
-                # XXX How do we do this on Windows?
-                self.nullf = file("/dev/null", "w")
+		self.nullf = file(os.devnull, "w")
 
         def tearDown(self):
                 shutil.rmtree(self.cpath)

@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 import unittest
@@ -51,7 +51,7 @@ class TestFilter(unittest.TestCase):
 		filters = []
 		match = 0
 		nomatch = 0
-		#print "\n------"
+
 		for f in in_filters:
 			expr, comp_expr = filter.compile_filter(f)
 			filters.append((expr, comp_expr))
@@ -59,12 +59,10 @@ class TestFilter(unittest.TestCase):
 		for a in self.actions:
 			d = a.attrs
 			res = filter.apply_filters(a, filters)
-			#print "%-5s" % res, d
 			if res:
 				match += 1
 			else:
 				nomatch += 1
-		#print "------%d %d\n" % (match, nomatch)
 		return match
 
 	def doFilterStr(self, in_filters):

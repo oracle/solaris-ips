@@ -78,6 +78,7 @@ PYMODS = \
 	modules/config.py \
 	modules/cpiofile.py \
 	modules/dependency.py \
+	modules/depotcontroller.py \
 	modules/elf.so \
 	modules/fmri.py \
 	modules/manifest.py \

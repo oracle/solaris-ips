@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 import unittest
@@ -211,7 +211,7 @@ class TestSMF(unittest.TestCase):
 #		     'provides':
 #			 ['svc:/pkg/test:i1', 'svc:/pkg/test:i2']})
 
-# XXX not sure what the desire behavior is here.
+# XXX not sure what the desired behavior is here.
 #	def test_get_info_3(self):
 #		info = smf.get_info("/this/does/not/exist")
 

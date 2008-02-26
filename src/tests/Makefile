@@ -31,11 +31,11 @@ test-verbose := TEST_LOG=/dev/stdout
 
 # Invoke all known modules with tests.
 # XXX Invoke the bundle tests.
-test: api-test cli-test leak-test two-depot-test upgrade-test
+test: api-test cli-test leak-test two-depot-test
 
 api-test:
 	@echo "Logging to $(TEST_LOG)"
-	$(PYTHON) api-complete.py >> $(TEST_LOG)
+	$(TEST_DEBUG) $(PYTHON) api-complete.py >> $(TEST_LOG)
 
 #
 # If we keep the dependencies sane, then orthogonal sets
@@ -43,7 +43,7 @@ api-test:
 #
 cli-test:
 	@echo "Logging to $(TEST_LOG)"
-	$(KSH) $(TEST_DEBUG) cli-complete.ksh >> $(TEST_LOG)
+	$(TEST_DEBUG) $(PYTHON) cli-complete.py >> $(TEST_LOG)
 
 two-depot-test: cli-test
 	@echo "Logging to $(TEST_LOG)"
@@ -52,11 +52,6 @@ two-depot-test: cli-test
 leak-test: two-depot-test
 	# workaround: memleaks doesn't run cleanly at this time
 	-$(KSH) $(TEST_DEBUG) memleaks.ksh >> $(TEST_LOG)
-
-upgrade-test: 
-	@echo "Logging to $(TEST_LOG)"
-	@echo "Should be run as root"
-	$(KSH) $(TEST_DEBUG) upgrade.ksh >> $(TEST_LOG)
 
 
 test-verbose: test
