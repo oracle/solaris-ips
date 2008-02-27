@@ -29,8 +29,72 @@ import sys
 import subprocess
 import shutil
 import errno
+import platform
 
-import pkg.depotcontroller as dc
+g_proto_area=""
+
+def setup_environment(path_to_proto):
+	""" Set up environment for doing testing.
+
+	    We set PYTHONPATH and PATH so that they reference the proto
+	    area.
+
+	    path_to_proto should be a relative path indicating a path
+	    to proto area of the workspace.  So, if your test case is
+	    three levels deep: ex. src/tests/cli/foo.py, this should be
+	    "../../../proto"
+
+	    This function looks at argv[0] to compute the ultimate
+	    path to the proto area; this is nice because you can then
+	    invoke test cases like normal commands; i.e.:
+	    "python cli/t_my_test_case.py" will just work.
+
+	"""
+
+	global g_proto_area
+
+	if os.uname()[0] == "SunOS":
+		proc = platform.processor()
+	elif os.uname()[0] == "Linux":
+		proc = platform.machine()
+	else:
+		print "Unable to determine appropriate proto area location."
+		print "This is a porting problem."
+		sys.exit(1)
+
+	# Figure out from where we're invoking the command
+	cmddir, cmdname = os.path.split(sys.argv[0])
+	cmddir = os.path.realpath(cmddir)
+
+	if "ROOT" in os.environ:
+		g_proto_area = os.environ["ROOT"]
+	else:
+		g_proto_area = "%s/%s/root_%s" % (cmddir, path_to_proto, proc)
+
+	# Clean up relative ../../, etc. out of path to proto
+	g_proto_area = os.path.realpath(g_proto_area)
+
+	pkgs = "%s/usr/lib/python2.4/vendor-packages" % g_proto_area
+	bins = "%s/usr/bin" % g_proto_area
+
+	print "NOTE: Adding %s to PYTHONPATH" % pkgs
+	sys.path.insert(1, pkgs)
+
+	#
+	# Because subprocesses must also source from the proto area,
+	# we need to set PYTHONPATH in the environment as well as
+	# in sys.path.
+	#
+	if "PYTHONPATH" in os.environ:
+		pypath = os.pathsep + os.environ["PYTHONPATH"]
+	else:
+		pypath = ""
+	os.environ["PYTHONPATH"] = "." + os.pathsep + pkgs + pypath
+
+	print "NOTE: Adding '%s' to head of PATH" % bins
+	os.environ["PATH"] = bins + os.pathsep + os.environ["PATH"]
+
+
 
 topdivider = \
 ",---------------------------------------------------------------------\n"
@@ -313,11 +377,19 @@ class pkg5TestCase(unittest.TestCase):
 class SingleDepotTestCase(pkg5TestCase):
 
         def setUp(self):
+		# Note that this must be deferred until after PYTHONPATH
+		# is set up.
+		import pkg.depotcontroller as dc
+
                 pkg5TestCase.setUp(self)
 
                 self.debug("setup: %s" % self.id())
 
                 self.dc = dc.DepotController()
+
+		# Make sure the depot runs from the proto area
+		self.dc.set_depotd_path(g_proto_area + "/usr/lib/pkg.depotd")
+
                 self.__depotdir = os.path.join(self.get_test_prefix(), "depot")
                 depot_logdir = os.path.join(self.get_test_prefix(),
 		    "depot_logdir")

@@ -24,9 +24,17 @@
 # Use is subject to license terms.
 
 import os
-import sys
 import platform
 import unittest
+import sys
+
+# To get our test utilities module, we must first prepend "." to
+# Python's lookup path.
+sys.path.insert(0, ".")
+import cli.testutils
+
+if __name__ == "__main__":
+	cli.testutils.setup_environment("../../proto")
 
 all_suite=None
 
@@ -46,41 +54,27 @@ def maketests():
 	import cli.t_upgrade
 	import cli.t_rename
 
-	all_suite.addTest(unittest.makeSuite(cli.t_depotcontroller.TestDepotController, 'test'))
-	all_suite.addTest(unittest.makeSuite(cli.t_image_create.TestImageCreate, 'test'))
-	all_suite.addTest(unittest.makeSuite(cli.t_image_create.TestImageCreateNoDepot, 'test'))
-	all_suite.addTest(unittest.makeSuite(cli.t_depot.TestDepot, 'test'))
-	all_suite.addTest(unittest.makeSuite(cli.t_pkg_install_basics.TestPkgInstallBasics, 'test'))
-	all_suite.addTest(unittest.makeSuite(cli.t_pkgsend.TestPkgSend, 'test'))
-	all_suite.addTest(unittest.makeSuite(cli.t_pkg_status.TestPkgStatus, 'test'))
-	all_suite.addTest(unittest.makeSuite(cli.t_commandline.TestCommandLine, 'test'))
-	all_suite.addTest(unittest.makeSuite(cli.t_upgrade.TestUpgrade, 'test'))
-	all_suite.addTest(unittest.makeSuite(cli.t_rename.TestRename, 'test'))
+	tests = [
+	    cli.t_depotcontroller.TestDepotController,
+	    cli.t_image_create.TestImageCreate,
+	    cli.t_image_create.TestImageCreateNoDepot,
+	    cli.t_depot.TestDepot,
+	    cli.t_pkg_install_basics.TestPkgInstallBasics,
+	    cli.t_pkgsend.TestPkgSend,
+	    cli.t_pkg_status.TestPkgStatus,
+	    cli.t_commandline.TestCommandLine,
+	    cli.t_upgrade.TestUpgrade,
+	    cli.t_rename.TestRename ]
+
+	for t in tests:
+		all_suite.addTest(unittest.makeSuite(t, 'test'))
+
 
 if __name__ == "__main__":
 
 	if os.getuid() != 0:
 		print >> sys.stderr, "WARNING: You don't seem to be root." \
 		    " Tests may fail."
-
-	cwd = os.getcwd()
-	if os.uname()[0] == "SunOS":
-		proc = platform.processor()
-	elif os.uname()[0] == "Linux":
-		proc = platform.machine()
-	else:
-		print "Unable to determine appropriate proto area location."
-		print "This is a porting problem."
-		sys.exit(1)
-
-	proto = "%s/../../proto/root_%s/usr/lib/python2.4/vendor-packages" % \
-	    (cwd, proc)
-
-	print "NOTE: Adding %s to head of PYTHONPATH" % proto
-	sys.path.insert(0, proto)
-	print "NOTE: Adding '.' to head of PYTHONPATH"
-	sys.path.insert(0, ".")
-	print "DEBUG: Set TEST_DEBUG=1 for verbose output"
 
 	all_suite = unittest.TestSuite()
 	maketests()

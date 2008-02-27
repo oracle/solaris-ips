@@ -46,19 +46,23 @@ def maketests():
         import api.t_smf
         import api.t_version
 
-        all_suite.addTest(unittest.makeSuite(api.t_catalog.TestCatalog, 'test'))
-        all_suite.addTest(unittest.makeSuite(api.t_catalog.TestEmptyCatalog,
-            'test'))
-        all_suite.addTest(unittest.makeSuite(api.t_catalog.TestCatalogRename, 'test'))
-        all_suite.addTest(unittest.makeSuite(api.t_catalog.TestUpdateLog, 'test'))
-        all_suite.addTest(unittest.makeSuite(api.t_elf.TestElf, 'test'))
-        all_suite.addTest(unittest.makeSuite(api.t_filter.TestFilter, 'test'))
-        all_suite.addTest(unittest.makeSuite(api.t_fmri.TestFMRI, 'test'))
-        all_suite.addTest(unittest.makeSuite(api.t_imageconfig.TestImageConfig, 'test'))
-        all_suite.addTest(unittest.makeSuite(api.t_manifest.TestManifest, 'test'))
-        all_suite.addTest(unittest.makeSuite(api.t_misc.TestMisc, 'test'))
-        all_suite.addTest(unittest.makeSuite(api.t_smf.TestSMF, 'test'))
-        all_suite.addTest(unittest.makeSuite(api.t_version.TestVersion, 'test'))
+	tests = [
+	    api.t_catalog.TestCatalog,
+	    api.t_catalog.TestEmptyCatalog,
+	    api.t_catalog.TestCatalogRename,
+	    api.t_catalog.TestUpdateLog,
+	    api.t_elf.TestElf,
+	    api.t_filter.TestFilter,
+	    api.t_fmri.TestFMRI,
+	    api.t_imageconfig.TestImageConfig,
+	    api.t_manifest.TestManifest,
+	    api.t_misc.TestMisc,
+	    api.t_smf.TestSMF,
+	    api.t_version.TestVersion ]
+
+        for t in tests:
+                all_suite.addTest(unittest.makeSuite(t, 'test'))
+
 
 if __name__ == "__main__":
 
@@ -72,13 +76,14 @@ if __name__ == "__main__":
                 print "This is a porting problem."
                 sys.exit(1)
 
-        proto = "%s/../../proto/root_%s/usr/lib/python2.4/vendor-packages" % \
-            (cwd, proc)
+	proto = "%s/../../proto/root_%s" % (cwd, proc)
+	pkgs = "%s/usr/lib/python2.4/vendor-packages" % proto
+	bins = "%s/usr/bin" % proto
 
-        print "NOTE: Adding %s to head of PYTHONPATH" % proto
-        sys.path.insert(0, proto)
-        print "NOTE: Adding '.' to head of PYTHONPATH"
-        sys.path.insert(0, ".")
+	print "NOTE: Adding %s to head of PYTHONPATH" % pkgs
+	sys.path.insert(1, pkgs)
+	print "NOTE: Adding '%s' to head of PATH" % bins
+	os.environ["PATH"] = bins + os.pathsep + os.environ["PATH"]
 
         all_suite = unittest.TestSuite()
         maketests()

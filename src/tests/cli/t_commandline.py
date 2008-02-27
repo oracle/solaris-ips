@@ -23,10 +23,12 @@
 # Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
+import testutils
+if __name__ == "__main__":
+	testutils.setup_environment("../../../proto")
+
 import unittest
 import os
-
-import testutils
 
 class TestCommandLine(testutils.pkg5TestCase):
 

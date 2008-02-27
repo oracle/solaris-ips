@@ -23,9 +23,12 @@
 # Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
+import testutils
+if __name__ == "__main__":
+	testutils.setup_environment("../../../proto")
+
 import unittest
 import os
-import testutils
 import shutil
 
 import pkg.depotcontroller as dc
@@ -37,6 +40,8 @@ class TestDepotController(testutils.pkg5TestCase):
 
                 self.__dc = dc.DepotController()
                 self.__pid = os.getpid()
+		self.__dc.set_depotd_path(testutils.g_proto_area + \
+		    "/usr/lib/pkg.depotd")
 
                 depotpath = os.path.join(self.get_test_prefix(), "depot")
                 logpath = os.path.join(self.get_test_prefix(), self.id())
