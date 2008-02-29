@@ -44,25 +44,40 @@ class PkgFmri(object):
                 """XXX pkg:/?pkg_name@version not presently supported."""
                 fmri = fmri.rstrip()
 
-                try:
-                        veridx = fmri.rindex("@")
+                veridx, nameidx = PkgFmri.gen_fmri_indexes(fmri)
+
+                if veridx:
                         self.version = Version(fmri[veridx + 1:], build_release)
-                except ValueError:
+                else:
                         self.version = veridx = None
 
                 self.authority = authority
                 if fmri.startswith("pkg://"):
-                        nameidx = fmri.index("/", 6) + 1
                         self.authority = fmri[6:nameidx - 1]
-                elif fmri.startswith("pkg:/"):
-                        nameidx = 5
-                else:
-                        nameidx = 0
 
                 if veridx:
                         self.pkg_name = fmri[nameidx:veridx]
                 else:
                         self.pkg_name = fmri[nameidx:]
+
+        @staticmethod
+        def gen_fmri_indexes(fmri):
+                """Return a tuple of offsets, used to extract different
+                components of the FMRI."""
+
+                try:
+                        veridx = fmri.rindex("@")
+                except ValueError:
+                        veridx = None
+
+                if fmri.startswith("pkg://"):
+                        nameidx = fmri.index("/", 6) + 1
+                elif fmri.startswith("pkg:/"):
+                        nameidx = 5
+                else:
+                        nameidx = 0
+
+                return (veridx, nameidx)
 
         def get_authority(self):
                 return self.authority
@@ -235,3 +250,16 @@ def exact_name_match(pkg_name, pattern):
         """Returns true if 'pattern' matches 'pkg_name' exactly."""
         return pkg_name == pattern
 
+def extract_pkg_name(fmri):
+        """Given a string that can be converted to a FMRI.  Return the
+        substring that is the FMRI's pkg_name."""
+        fmri = fmri.rstrip()
+
+        veridx, nameidx = PkgFmri.gen_fmri_indexes(fmri)
+
+        if veridx:
+                pkg_name = fmri[nameidx:veridx]
+        else:
+                pkg_name = fmri[nameidx:]
+
+        return pkg_name

@@ -145,7 +145,7 @@ class SvrConfig(object):
                 instance of the catalog with this depot."""
 
                 self.catalog = catalog.Catalog(self.cat_root,
-                    pkg_root = self.pkg_root)
+                    pkg_root = self.pkg_root, read_only = self.read_only)
 
                 # UpdateLog allows server to issue incremental catalog updates
                 self.updatelog = updatelog.UpdateLog(self.update_root,
