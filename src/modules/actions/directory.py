@@ -91,7 +91,8 @@ class DirectoryAction(generic.Action):
                         try:
                                 os.chown(path, owner, group)
                         except OSError, e:
-                                if e.errno != errno.EPERM:
+                                if e.errno != errno.EPERM and \
+                                    e.errno != errno.ENOSYS:
                                         raise
 
         def verify(self, img, **args):
@@ -130,7 +131,7 @@ class DirectoryAction(generic.Action):
                         errors.append("Mode: 0%.3o should be 0%.3o" % \
                             (S_IMODE(stat[ST_MODE]), mode))
 
-		return errors
+                return errors
                 
         def remove(self, pkgplan):
                 path = os.path.normpath(os.path.sep.join(
@@ -140,7 +141,7 @@ class DirectoryAction(generic.Action):
                         os.rmdir(path)
                 except OSError, e:
                         if e.errno != errno.EEXIST and \
-		            e.errno != errno.ENOENT:
+                            e.errno != errno.ENOENT:
                                 raise
 
         def generate_indices(self):

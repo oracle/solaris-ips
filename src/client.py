@@ -320,9 +320,13 @@ def install(img, args):
         except RuntimeError, e:
                 print >> sys.stderr, _("install failed: %s") % e
                 ret_code = 1
+        except:
+                img.cleanup_downloads()
+                raise
         else:
                 ret_code = 0
-        img.cleanup_downloads()
+
+        img.cleanup_downloads()   
         return ret_code
 
 def uninstall(img, args):

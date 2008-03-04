@@ -51,8 +51,10 @@ class LicenseAction(generic.Action):
 
         def preinstall(self, pkgplan, orig):
                 # set attrs["path"] so filelist can handle this action
+                # No leading / chars allowed
                 self.attrs["path"] = os.path.normpath(os.path.join(
-                    pkgplan.image.imgdir, "pkg",
+                    pkgplan.image.img_prefix,
+                    "pkg",
                     pkgplan.destination_fmri.get_dir_path(),
                     "license." + self.attrs["license"]))
 
@@ -65,6 +67,13 @@ class LicenseAction(generic.Action):
                 path = self.attrs["path"]
 
                 stream = self.data()
+
+                path = os.path.normpath(os.path.sep.join(
+                    (pkgplan.image.get_root(), path)))
+ 
+                if not os.path.exists(os.path.dirname(path)):
+                        self.makedirs(os.path.dirname(path), mode=755)
+                
                 lfile = file(path, "wb")
                 # XXX Should throw an exception if shasum doesn't match
                 # self.hash

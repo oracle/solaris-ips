@@ -107,6 +107,7 @@ class Image(object):
                 self.type = None
                 self.root = None
                 self.imgdir = None
+                self.img_prefix = None
                 self.repo_uris = []
                 self.filter_tags = {}
 
@@ -134,7 +135,8 @@ class Image(object):
                                 # tags and repo URIs.
                                 self.type = IMG_USER
                                 self.root = d
-                                self.imgdir = "%s/%s" % (d, img_user_prefix)
+                                self.img_prefix = img_user_prefix
+                                self.imgdir = "%s/%s" % (d, self.img_prefix)
                                 self.attrs["Build-Release"] = "5.11"
                                 return
                         elif os.path.isdir("%s/%s" % (d, img_root_prefix)):
@@ -144,7 +146,8 @@ class Image(object):
                                 # image is a partial image.
                                 self.type = IMG_ENTIRE
                                 self.root = d
-                                self.imgdir = "%s/%s" % (d, img_root_prefix)
+                                self.img_prefix = img_root_prefix
+                                self.imgdir = "%s/%s" % (d, self.img_prefix)
                                 self.attrs["Build-Release"] = "5.11"
                                 return
 
@@ -186,10 +189,10 @@ class Image(object):
                 self.type = type
                 self.root = root
                 if self.type == IMG_USER:
-                        self.imgdir = self.root + "/" + img_user_prefix
+                        self.img_prefix = img_user_prefix
                 else:
-                        self.imgdir = self.root + "/" + img_root_prefix
-
+                        self.img_prefix = img_root_prefix
+                self.imgdir = os.path.join(self.root, self.img_prefix) 
                 self.mkdirs()
 
                 self.cfg_cache = imageconfig.ImageConfig()
@@ -960,8 +963,8 @@ class Image(object):
 
         def get_download_dir(self):
                 return os.path.normpath(os.path.join(
-                                self.root,
                                 self.imgdir,
+                                "download",
                                 str(os.getpid())))
 
         def cleanup_downloads(self):

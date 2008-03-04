@@ -222,8 +222,8 @@ class Action(object):
                         return 1
                 elif type(self) != types["hardlink"] == type(other):
                         return -1
-		# XXX since hardlinks aren't sorted by path & target, links to links
-		# will not work
+                # XXX since hardlinks aren't sorted by path & target, links to links
+                # will not work
                 else:
                         r = cmp(self.name, other.name)
                         if r != 0:
@@ -337,7 +337,8 @@ class Action(object):
                                 if uid != stat.st_uid or gid != stat.st_gid:
                                         os.chown(path, uid, gid)
                         except  OSError, e:
-                                if e.errno != errno.EPERM:
+                                if e.errno != errno.EPERM and \
+                                    e.errno != errno.ENOSYS:
                                         raise
                         return
 
