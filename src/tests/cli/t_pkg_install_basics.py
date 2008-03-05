@@ -81,11 +81,8 @@ class TestPkgInstallBasics(testutils.SingleDepotTestCase):
 
 
         def test_basics_2(self):
-                """ KNOWN BUG 680: Please fix me!
-		    Send package foo@1.1, containing a directory and a file,
-                    install, search, and uninstall.
-
-		    See http://defect.opensolaris.org/bz/show_bug.cgi?id=680 """
+                """ Send package foo@1.1, containing a directory and a file,
+                    install, search, and uninstall. """
 
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.foo10)
@@ -97,12 +94,8 @@ class TestPkgInstallBasics(testutils.SingleDepotTestCase):
                 self.pkg("verify")
                 self.pkg("status")
 
-		#
-		# XXX this is where we're failing.
-		#
                 self.pkg("search /lib/libc.so.1")
-                self.pkg("search -r /lib/libc.so.1", exit = 0,
-		    comment = self.test_basics_2.__doc__)
+                self.pkg("search -r /lib/libc.so.1")
                 self.pkg("search blah", exit = 1)
                 self.pkg("search -r blah", exit = 1)
 
