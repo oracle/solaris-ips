@@ -370,6 +370,7 @@ class Catalog(object):
                                     dbm.open(self.searchdb_file, "w")
 
                                 self._search_available = True
+                                self.searchdb_update_handle = None
                         except dbm.error, e:
                                 print >> sys.stderr, \
                                     "Failed to open search database", \
