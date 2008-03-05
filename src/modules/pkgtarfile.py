@@ -37,6 +37,11 @@ class PkgTarFile(tarfile.TarFile):
         XXX - Push these changes upstream to Python maintainers?
         """
 
+        def __init__(self, name=None, mode="r", fileobj=None, errorlevel=2):
+
+                tarfile.TarFile.__init__(self, name, mode, fileobj)
+                self.errorlevel = errorlevel
+
         def extract_to(self, member, path="", filename=""):
                 """Extract a member from the TarFile archive.  This
                 method allows you to specify a new filename and path, using

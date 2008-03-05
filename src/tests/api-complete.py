@@ -43,6 +43,7 @@ def maketests():
         import api.t_imageconfig
         import api.t_manifest
         import api.t_misc
+        import api.t_pkgtarfile
         import api.t_smf
         import api.t_version
 
@@ -57,6 +58,7 @@ def maketests():
 	    api.t_imageconfig.TestImageConfig,
 	    api.t_manifest.TestManifest,
 	    api.t_misc.TestMisc,
+            api.t_pkgtarfile.TestPkgTarFile,
 	    api.t_smf.TestSMF,
 	    api.t_version.TestVersion ]
 
