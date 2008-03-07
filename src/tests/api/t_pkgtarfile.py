@@ -62,11 +62,17 @@ class TestPkgTarFile(unittest.TestCase):
 
         def testerrorlevelIsCorrect(self):
                 p = pkgtarfile.PkgTarFile(self.tarfile, 'r')
+
+                if os.getuid() == 0:
+                        self.assert_(p.errorlevel == 2)
+                        p.close()
+                        return
+
                 extractpath = os.path.join(self.tpath, "foo/bar")
                 os.makedirs(extractpath)
                 os.chmod(extractpath, 0555)
                 self.assertRaises(IOError, p.extract, "foo/bar/baz",
-                    extractpath)
+                    self.tpath)
                 p.close()
                 os.chmod(extractpath, 777)
 
