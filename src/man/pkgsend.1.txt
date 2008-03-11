@@ -66,26 +66,60 @@ ENVIRONMENT VARIABLES
 ACTIONS
      Each resource within a package must be associated with an action.
      See pkg(5) for a complete list of actions.
-     
-     If an action has an associated payload, the path to the payload must
-     be the first argument after the action name.  All other attributes are
-     specified as "name=value", and may be given in any order.  Typically,
-     only an action's key attribute is required, though not all actions may
-     work properly without a fuller set of attributes.
 
-     depend type=<depend_type> fmri=<pkg_fmri>
+     If an action has an associated payload, the path to the payload
+     must be the first argument after the action name.  (At present, the
+     file and license actions have payloads.)  All other attributes are
+     specified as a list of name-value pairs, and may be given in any
+     order.  An action must always have a key attribute; however, some
+     actions may require additional attributes to work correctly.
+     Arbitrary attributes, beyond those defined for a given action, may
+     be included in the action .  Such attributes are expected to follow
+     defined conventions such that they carry appropriate meaning or
+     avoid collision with attributes from other action providers.
+
+     depend type=<depend_type> fmri=<pkg_fmri> [ property_list ]
           Make this package version dependent on the give package FMRI.
           Valid depend_types are require and optional.
 
      dir mode=<mode> owner=<userid> group=<groupid> path=<path> \
-       [name=value ...]
+       [ property_list ]
           Deliver a directory with the listed attributes into the
           transaction.
 
+     driver name=<name> perms=<perms> class=<class> alias=<alias>
+       [ property_list ]
+          Deliver driver configuration with the listed attributes into
+          the transaction.  Multiple alias entries may be given to
+          record multiple device aliases.
+
      file src_path mode=<mode> owner=<userid> group=<groupid> \
-        path=<path> [name=value ...]
+        path=<path> [ property_list ]
           Deliver a file with the listed attributes into the
           transaction.
+
+     hardlink path=<path> target=<target> [ property_list ]
+          Deliver a link with given path, pointing to the given
+          target.
+
+     legacy category=<category> desc=<description> hotline=<hotline> \
+       name=<name> pkg=<legacy_pkg> vendor=<vendor> version=<version> \
+       [ property_list ]
+          Deliver sufficient metadata, as given by the various fields,
+          to represent a System V package with name given by legacy_pkg.
+
+     license src_path license=<license_name> \
+       [ property_list ]
+          Deliver, into the image packaging metadata, the license file
+          at src_path, labelled by the given license value.
+
+     link path=<path> target=<target> [ property_list ]
+          Deliver a symbolic link with given path, pointing to the given
+          target.
+
+     set name=<name> value=<value> [ property_list ]
+          Deliver a "package property" defined by the given name and
+          value.
 
 EXAMPLES
      Example 1:  Create a trivial package.

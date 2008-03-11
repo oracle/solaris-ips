@@ -79,7 +79,7 @@ DESCRIPTION
             file action's key attribute.
 
      mode   The access permissions (in numeric form) of the file.  These
-	    are simple permissions only, not ACLs.
+            are simple permissions only, not ACLs.
 
      owner  The name of the user which owns the file.
 
@@ -133,7 +133,7 @@ DESCRIPTION
              link action's key attribute.
 
      target  The target of the symlink; the filesystem object to which the
-	     link resolves.
+             link resolves.
 
   Hardlink actions
      The 'hardlink' action represents a hard link.  It has the same
@@ -151,7 +151,7 @@ DESCRIPTION
 
      alias   This represents an alias for the driver.  There may be more
              than one alias attribute for any given driver.  There are no
-	     special quoting rules necessary.
+             special quoting rules necessary.
 
      class   This represents a driver class.  There may be more than one
              class attribute for any given driver.
@@ -160,8 +160,8 @@ DESCRIPTION
              device nodes.
 
      policy  This specifies additional security policy for the device.
-	     There may be more than one policy attribute for any given
-	     driver.
+             There may be more than one policy attribute for any given
+             driver.
 
      privs   This specifies privileges used by the driver.  There may be
              more than one privs attribute for any given driver.
@@ -171,27 +171,75 @@ DESCRIPTION
      may depend on another package because the first requires functionality
      in the second for the functionality in the first to work, or even to
      install.  Dependencies may be optional.
-     
+
      The following attributes are recognized:
 
      type  The type of the dependency.  If the value is 'require', then the
            dependency is required.  A package cannot be installed if any of
-	   its required dependencies cannot be satisfied.
+           its required dependencies cannot be satisfied.
 
-	   If the value is 'optional', then the dependency is optional.
-	   Optional dependencies are followed or not depending on image
-	   policy (see 'Policy' below).
+           If the value is 'optional', then the dependency is optional.
+           Optional dependencies are followed or not depending on image
+           policy (see 'Policy' below).
 
-	   If the value is 'exclude', then the package is non-functional if
-	   the dependent package is present on the system.
+           If the value is 'exclude', then the package is non-functional if
+           the dependent package is present on the system.
 
-	   If the value is 'incorporate', then the dependency is required,
-	   but in addition, the version of the dependent package is
-	   constrained.  See 'Constraints and Freezing' below.
+           If the value is 'incorporate', then the dependency is required,
+           but in addition, the version of the dependent package is
+           constrained.  See 'Constraints and Freezing' below.
 
      fmri  The FMRI representing the depended-upon package.
 
      There is no key attribute for depend actions.
+
+  License actions
+    The 'license' action represents a license or other informational
+    file associated with the package contents.  A package may deliver
+    licenses, disclaimers, or other guidance to the package installer
+    through the use of the license action.  The payload of the license
+    action will be delivered into the image metadata directory
+    associated with the package.
+
+    The following attributes are recognized:
+
+    license  The keyword identifying the license type, for use in
+             filter and query operations.
+
+    The 'license' attribute is the key attribute for the license action.
+
+  Legacy actions
+    The 'legacy' action represents package data used by a legacy
+    packaging system.  The attributes associated with this action are
+    added into the legacy system's databases in order that the tools
+    querying those databases might operate as if the legacy package were
+    actually installed.  In particular, this should be sufficient to
+    convince the legacy system that the package named by the 'pkg'
+    attribute is installed on the system, so that it may be used to
+    satisfy dependencies.
+
+    The following attributes, named in accordance with the parameters on
+    pkginfo(4), are recognized:
+
+    category  The value for the CATEGORY parameter.  The default value
+              is "system".
+
+    desc      The value for the DESC parameter.
+
+    hotline   The value for the HOTLINE parameter.
+
+    name      The value for the NAME parameter.  The default value is
+              "none provided".
+
+    pkg       The abbreviation for the package being installed.  The
+              default value is the name from the package's FMRI.
+
+    vendor    The value for the VENDOR parameter.
+
+    version   The value for the VERSION parameter.  The default value is
+              the version from the package's FMRI.
+
+    The 'pkg' attribute is the key attribute for the legacy action.
 
   Set actions
      The 'set' action represents a package-level attribute, such as the
@@ -228,7 +276,7 @@ ATTRIBUTES
     |_____________________________|_____________________________|
 
 SEE ALSO
-     pkg(1), pkgsend(1), pkg.depotd(1M), attributes(5)
+     pkg(1), pkgsend(1), pkg.depotd(1M), pkginfo(4), attributes(5)
 
 NOTES
      The image packaging system is an under-development feature.
