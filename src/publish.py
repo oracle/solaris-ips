@@ -157,12 +157,20 @@ def trans_add(config, args):
                 sys.exit(1)
 
         if args[0] in ("file", "license"):
-                action = pkg.actions.fromlist(args[0], args[2:])
+                try:
+                        action = pkg.actions.fromlist(args[0], args[2:])
+                except ValueError, e:
+                        print >> sys.stderr, e[0]
+                        sys.exit(1)
                 def opener():
                         return open(args[1])
                 action.data = opener
         else:
-                action = pkg.actions.fromlist(args[0], args[1:])
+                try:
+                        action = pkg.actions.fromlist(args[0], args[1:])
+                except ValueError, e:
+                        print >> sys.stderr, e[0]
+                        sys.exit(1)
 
         t = trans.Transaction()
         status, msg, body = t.add(config, trans_id, action)

@@ -75,6 +75,8 @@ del f, modname, module, nvlist, classes, c, cls
 
 def fromstr(str):
         """Create an action instance based on a str() representation of an action.
+
+        Raises KeyError if the action type is unknown.
         """
         type, str = str.split(" ", 1)
 
@@ -116,8 +118,18 @@ def fromstr(str):
         return fromlist(type, nlist, hash)
 
 def fromlist(type, args, hash = None):
+        """Create an action instance based on a sequence of "key=value" strings.
+
+        Raises ValueError if the attribute strings are malformed.
+        """
         # Create a list of key/value lists
         args = [kv.split("=", 1) for kv in args]
+        # Find malformed actions (key or value missing)
+        noeq = [e[0] for e in args if len(e) != 2]
+        if noeq:
+                raise ValueError(
+                    "Malformed action string (missing '=') in key or value: " +
+                    ", ".join(noeq))
         # Remove attribute duplication
         attrset = set(zip(*args)[0])
         # Put values belonging to the same attribute into individual lists
