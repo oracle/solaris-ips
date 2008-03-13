@@ -44,6 +44,7 @@ all_suite=None
 # system stuff must happen *after* that code runs.
 #
 def maketests():
+	import cli.t_actions
 	import cli.t_depot
 	import cli.t_depotcontroller
 	import cli.t_image_create

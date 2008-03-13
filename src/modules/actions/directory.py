@@ -45,6 +45,9 @@ class DirectoryAction(generic.Action):
         def __init__(self, data=None, **attrs):
                 generic.Action.__init__(self, data, **attrs)
 
+	def compare(self, other):
+		return cmp(self.attrs["path"], other.attrs["path"])
+
         def install(self, pkgplan, orig):
                 """Client-side method that installs a directory."""
                 path = self.attrs["path"]

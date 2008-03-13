@@ -251,6 +251,78 @@ DESCRIPTION
 
      value  The value given to the attribute.
 
+  Group actions
+     The 'group' action define a unix group as defined in group(4).  No support
+     is present for group passwords.  Groups defined with this action initially
+     have no user-list; users may be added with the 'user' action.  The following
+     attributes are recognized:
+
+     groupname   The value for the name of the group.
+     gid         The groups unique numerical id.  The default value is the first
+                 free group under 100.
+
+  User actions
+     The 'usr' action defines a Unix user as defined in /etc/passwd, /etc/shadow,
+     /etc/group and /etc/ftpd/ftpusers files.  Users defined with this attribute
+     have entries added to the appropriate files.
+
+     The following attributes are recognized:
+
+     username    The unique name of the user
+
+     password    The encryped password of the user.  Default value is '*LK*'. See
+                 shadow(4).
+
+     uid	 The unique uid of the user. Default value is first free value
+                 under 100. 
+
+     group       The name of the users primary group.  Must be 
+                 found in /etc/group
+
+     gcos-field  The value of the gecos field in /etc/passwd.  Default value is 
+                 username.
+
+     home-dir	 The user's home directory.  Default value is '/'.
+
+     login-shell The user's default shell.  Default value is empty.
+
+
+     group-list  secondary groups to which the user belongs.  See group(4).
+
+     ftpuser     Can be set to "true" or "false".  Determines whether
+                 user is allowed to use ftp.  See ftpusers(4).
+
+     lastchng	 The number of days between January 1, 1970,  and
+                 the  date  that  the password was last modified.  
+		 Default value is empty.  See shadow(4).
+
+     min         The minimum  number  of  days  required  between
+                 password changes. This field must be set to 0 or
+                 above to enable password aging.  Default value is
+                 empty. See shadow(4).
+
+     max         The maximum  number  of  days  the  password  is
+                 valid.  Default value is empty.  See shadow(4).
+
+     warn        The number of days before password expires  that
+                 the user is warned.  See shadow(4).
+
+     inactive    The number of days  of  inactivity  allowed  for
+                 that  user.  This  is  counted  on a per-machine
+                 basis; the information about the last  login  is
+                 taken  from  the  machine's  lastlog  file.  See 
+                 shadow(4).
+
+     expire      An absolute date expressed as the number of days
+                 since  the  Unix  Epoch  (January 1, 1970). When
+                 this number is reached the login can  no  longer
+                 be  used.  For example, an expire value of 13514
+                 specifies a login expiration of January 1, 2007.
+                 See shadow(4).
+
+     flag        set to empty. See shadow(4).
+		       
+
   Constraints and Freezing
      TBD
 

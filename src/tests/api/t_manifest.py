@@ -71,6 +71,7 @@ file fff555ff9 mode=0555 owner=sch group=staff path=/usr/bin/i386/sort isa=i386
 dir owner=root path=usr/bin group=bin mode=0755
 link path=usr/lib/amd64/libjpeg.so target=libjpeg.so.62.0.0
 hardlink path=usr/bin/amd64/rksh93 target=ksh93 opensolaris.zone=global
+group groupname=testgroup gid=10
 """
 
 		self.m4_contents = """\
@@ -245,14 +246,14 @@ file fff555ff9 mode=0555 owner=sch group=staff path=/usr/bin/i386/sort isa=i386
 		#
 		# Expect to see something -> None differences
 		#
-		self.assertEqual(len(diffs), 6)
+		self.assertEqual(len(diffs), 7)
 		for d in diffs:
 			self.assertEqual(type(d[1]), types.NoneType)
 
 		#
 		# Expect to see None -> something differences
 		#
-		self.assertEqual(len(diffs2), 6)
+		self.assertEqual(len(diffs2), 7)
 		for d in diffs2:
 			self.assertEqual(type(d[0]), types.NoneType)
 			self.assertNotEqual(type(d[1]), types.NoneType)

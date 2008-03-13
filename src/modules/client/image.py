@@ -209,6 +209,9 @@ class Image(object):
 
                 self.cfg_cache.write("%s/cfg_cache" % self.imgdir)
 
+	def is_liveroot(self):
+		return self.root == "/"
+
         def get_root(self):
                 return self.root
 

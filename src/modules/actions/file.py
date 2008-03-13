@@ -59,7 +59,7 @@ class FileAction(generic.Action):
                     (pkgplan.image.get_root(), path)))
 
 		if not os.path.exists(os.path.dirname(final_path)):
-			self.makedirs(os.path.dirname(final_path), mode=755)
+			self.makedirs(os.path.dirname(final_path), mode=0755)
 				
                 # If we're upgrading, extract the attributes from the old file.
                 if orig:

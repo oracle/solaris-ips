@@ -75,6 +75,7 @@ PYMODS = \
 	modules/Queue25.py \
 	modules/arch.so \
 	modules/catalog.py \
+	modules/cfgfiles.py \
 	modules/config.py \
 	modules/cpiofile.py \
 	modules/dependency.py \
@@ -99,11 +100,14 @@ PYACTIONMODS = \
 	modules/actions/driver.py \
 	modules/actions/file.py \
 	modules/actions/generic.py \
+	modules/actions/group.py \
 	modules/actions/hardlink.py \
 	modules/actions/legacy.py \
 	modules/actions/license.py \
 	modules/actions/link.py \
-	modules/actions/unknown.py
+	modules/actions/unknown.py \
+	modules/actions/user.py
+
 PYCACTIONMODS = $(PYACTIONMODS:%.py=%.pyc)
 
 PYSERVERMODS = \

@@ -124,6 +124,35 @@ class Action(object):
         # that all attributes of the action are distinguishing.
         key_attr = None
 
+        # the following establishes the sort order between action types.
+	# Directories must precede all
+	# filesystem-modifying actions; hardlinks must follow all
+	# filesystem-modifying actions.  Note that usr/group actions
+	# preceed file actions; this implies that /etc/group and /etc/passwd
+	# file ownership needs to be part of initial contents of those files
+
+	orderdict = {}
+	unknown = 0
+
+	def loadorderdict(self):
+		self.orderdict.update(
+			{
+				pkg.actions.types["set"]      : 0,
+				pkg.actions.types["depend"]   : 1,
+				pkg.actions.types["refresh"]  : 2,
+				pkg.actions.types["group"]    : 3,
+				pkg.actions.types["user"]     : 4,
+				pkg.actions.types["dir"]      : 5,
+				pkg.actions.types["file"]     : 6,
+				pkg.actions.types["hardlink"] : 7,
+				pkg.actions.types["link"]     : 8,
+				pkg.actions.types["driver"]   : 9,
+				pkg.actions.types["unknown"]  : 10
+				
+			})
+
+		self.unknown = self.orderdict[pkg.actions.types["unknown"]]
+
         def __init__(self, data=None, **attrs):
                 """Action constructor.
 
@@ -137,6 +166,10 @@ class Action(object):
 
                 Any remaining named arguments will be treated as attributes.
                 """
+
+		if not self.orderdict:
+			self.loadorderdict()
+
                 self.attrs = attrs
 
                 if isinstance(data, str):
@@ -188,47 +221,30 @@ class Action(object):
                     for k in self.attrs
                     if isinstance(self.attrs[k], list)
                 ]
+		# arrange to stringify consistently
+
+		stringattrs.sort()
+		listattrs.sort()
 
                 return " ".join([str] + stringattrs + listattrs)
 
         def __cmp__(self, other):
-                """Compare actions for ordering.  Directories must precede all
-                filesystem-modifying actions; hardlinks must follow all
-                filesystem-modifying actions."""
+                """Compare actions for ordering.  Ordering between
+		different types is done w/ orderdict (initialized above)
+		unless no special handling is needed"""
 
-                # XXX The current ordering suggests that there are three
-                # classes:  non-filesystem modifying, filesystem-modifying, and
-                # post-filesystem-modifying actions.  This ordering might be
-                # useful, since informational actions, like properties (set) and
-                # dependencies (depend) would be at the head of the output.
+		if type(self) == type(other):
+			return self.compare(other) # often subclassed
 
-                types = pkg.actions.types
+		res = cmp(self.orderdict.get(type(self), self.unknown),
+			  self.orderdict.get(type(other), self.unknown))
 
-                # Sort directories by path
-                if type(self) == types["dir"] == type(other):
-                        return cmp(self.attrs["path"], other.attrs["path"])
-                # Directories come before anything else
-                elif type(self) == types["dir"] != type(other):
-                        return -1
-                elif type(self) != types["dir"] == type(other):
-                        return 1
-                # Hard links come after files.
-                # XXX We order them after everything, though, so that they
-                # really do show up after files.  Otherwise they could get
-                # sorted only through comparisons with things that don't care
-                # how they're sorted with regard to files, and they could end up
-                # before the files they need to be before.  :(
-                elif type(self) == types["hardlink"] != type(other):
-                        return 1
-                elif type(self) != types["hardlink"] == type(other):
-                        return -1
-                # XXX since hardlinks aren't sorted by path & target, links to links
-                # will not work
-                else:
-                        r = cmp(self.name, other.name)
-                        if r != 0:
-                                return r
-                        return cmp(id(self), id(other))
+		if not res:
+			res = cmp(self.name, other.name) # sort by action name
+		return res
+
+	def compare(self, other):
+		return cmp(id(self), id(other))
 
         def different(self, other):
                 """Returns True if other represents a non-ignorable change from self.
@@ -255,6 +271,18 @@ class Action(object):
                                 return True
 
                 return False
+
+	def differences(self, other):
+		"""Returns a list of attributes that have different values
+		between other and self"""
+		sset = set(self.attrs.keys())
+                oset = set(other.attrs.keys())
+		l = list(sset.symmetric_difference(oset))
+		l.extend([ k
+			   for k in sset.intersection(oset)
+			   if self.attrs[k] != other.attrs[k]
+			   ])
+		return (l)
 
         def generate_indices(self):
                 """Generate for the reverse index database data for this action.
