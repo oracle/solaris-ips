@@ -35,14 +35,10 @@ f_interrupted=$(gettext "Installation cancelled due to interrupt.")
 
 m_image=$(gettext     "      Image: Preparing at %s ...")
 m_catalog=$(gettext   "    Catalog: Retrieving from %s ...")
-m_core=$(gettext      " Installing: Core Packages ...")
-m_coreu=$(gettext     " Installing: Core Utilities ...")
-m_pkg=$(gettext       " Installing: pkg(5) Utilities ...")
-m_diag=$(gettext      " Installing: Diagnostic Tools ...")
-m_shells=$(gettext    " Installing: Shells ...")
-m_ns=$(gettext        " Installing: Name Services ...")
-m_man=$(gettext       " Installing: man(1) Command ...")
+m_core=$(gettext      " Installing: (output follows)\n")
 m_smf=$(gettext	      "Postinstall: Copying SMF seed repository ...")
+m_brokenness=$(gettext "Postinstall: Working around http://defect.opensolaris.org/bz/show_bug.cgi?id=681")
+m_more_brokenness=$(gettext "Postinstall: Working around http://defect.opensolaris.org/bz/show_bug.cgi?id=741")
 m_mannote=$(gettext   "       Note: Man pages can be obtained by installing SUNWman")
 m_complete=$(gettext  "       Done: Installation completed in %s seconds.")
 m_postnote=$(gettext  " Next Steps: Boot the zone, then log into the zone console")
@@ -110,59 +106,100 @@ printf "$m_done\n"
 PKG_IMAGE="$zoneroot"
 export PKG_IMAGE
 
-printf "$m_catalog" "$authority"
-pkg refresh || fail_fatal "$f_refresh"
+printf "$m_catalog" `echo $authority | cut -d= -f 2`
+pkg refresh > /dev/null 2>&1 || fail_fatal "$f_refresh"
 if [[ $? -ne 0 ]]; then
 	print "Failed to retrieve catalog"
 	exit 1
 fi
 printf "$m_done\n"
 
-printf "$m_core"
-pkg install SUNWcsd || fail_incomplete "$f_pkg"
-pkg install SUNWcs SUNWcsl || fail_incomplete "$f_pkg"
-printf "$m_done\n"
+printf "$m_core\n"
+pkg install -q SUNWcsd || fail_incomplete "$f_pkg"
 
-printf "$m_coreu"
-pkg install SUNWesu SUNWadmr SUNWadmap SUNWbzip SUNWgzip || fail_incomplete "$f_pkg"
-printf "$m_done\n"
+pkglist=""
+pkglist="$pkglist SUNWesu SUNWadmr SUNWadmap SUNWbzip SUNWgzip"
 
 #
 # Workaround: in our test repo, SUNWipkg has no dependencies
 # so we must supply it python.
 #
-printf "$m_pkg"
-pkg install SUNWPython SUNWipkg || fail_incomplete "$f_pkg"
-printf "$m_done\n"
+pkglist="$pkglist SUNWPython SUNWipkg"
 
 #
 # Get some diagnostic tools, truss, dtrace, etc.
 #
-printf "$m_diag"
-pkg install SUNWtoo SUNWdtrc SUNWrcmdc SUNWbip || fail_incomplete "$f_pkg"
-printf "$m_done\n"
+pkglist="$pkglist SUNWtoo SUNWdtrc SUNWrcmdc SUNWbip"
 
 #
-# Get some sensible shells
+# Get at least one sensible shell, and vi
 #
-printf "$m_shells"
-pkg install SUNWbash SUNWzsh SUNWtcsh || fail_incomplete "$f_pkg"
-printf "$m_done\n"
+pkglist="$pkglist SUNWbash SUNWvim"
+
+#
+# Get ssh and sshd.
+#
+pkglist="$pkglist SUNWsshcu SUNWssh SUNWsshd"
 
 #
 # Get some name services.
 #
-printf "$m_ns"
-pkg install SUNWnis SUNWlldap || fail_incomplete "$f_pkg"
-printf "$m_done\n"
+pkglist="$pkglist SUNWnis SUNWlldap"
 
 #
 # Get man(1) but not the man pages
 #
-printf "$m_man"
-pkg install SUNWdoc || fail_incomplete "$f_pkg"
+pkglist="$pkglist SUNWdoc"
+
+# Do the install
+pkg install $pkglist || fail_incomplete "$f_pkg"
+
+printf "\n$m_mannote\n"
+
+printf "$m_smf"
+ln -s ns_files.xml $zoneroot/var/svc/profile/name_service.xml
+ln -s generic_limited_net.xml $zoneroot/var/svc/profile/generic.xml
+ln -s inetd_generic.xml $zoneroot/var/svc/profile/inetd_services.xml
+ln -s platform_none.xml $zoneroot/var/svc/profile/platform.xml
+
+# This was formerly done in i.manifest
+cp $zoneroot/lib/svc/seed/nonglobal.db $zoneroot/etc/svc/repository.db
 printf "$m_done\n"
-print "$m_mannote\n"
+
+
+printf "$m_brokenness\n"
+#
+# Remove "jack" user.
+#
+sed '/^jack:.*Default\ User.*$/D' $zoneroot/etc/passwd \
+        > $zoneroot/etc/passwd.new && \
+    mv -f $zoneroot/etc/passwd.new $zoneroot/etc/passwd
+
+
+#
+# Set root from a role back to... not a role.  Grr.
+#
+sed 's/^root::::type=role;/root::::/' $zoneroot/etc/user_attr \
+	> $zoneroot/etc/user_attr.new && \
+    mv -f $zoneroot/etc/user_attr.new $zoneroot/etc/user_attr
+
+#
+# Make sure sysidtools run; we manually poke in the SSH action
+# so that we get an SSH key.  Yes, this is seriously borken.
+#
+printf "$m_more_brokenness\n"
+/usr/sbin/sysidconfig -b $zoneroot -a /lib/svc/method/sshd
+touch $zoneroot/etc/.UNCONFIGURED
+
+#
+# Make sure sysidtool configures ssh keys
+#
+
+printf "$m_complete\n\n" ${SECONDS}
+printf "$m_postnote\n"
+printf "$m_postnote2\n"
+
+exit $ZONE_SUBPROC_OK
 
 # XXX leaving this out for now.  Reconsider later.
 #
@@ -179,27 +216,5 @@ print "$m_mannote\n"
 #pkg install SUNWgnome-terminal || fail_incomplete "$f_pkg"
 #pkg install SUNWgnome-display-mgr || fail_incomplete "$f_pkg"
 
-
-#print "Setting up SMF profile links"
 # This was formerly done in SUNWcsr/postinstall
-printf "$m_smf"
-ln -s ns_files.xml $zoneroot/var/svc/profile/name_service.xml
-ln -s generic_limited_net.xml $zoneroot/var/svc/profile/generic.xml
-ln -s inetd_generic.xml $zoneroot/var/svc/profile/inetd_services.xml
-ln -s platform_none.xml $zoneroot/var/svc/profile/platform.xml
 
-## This was formerly done in i.manifest
-cp $zoneroot/lib/svc/seed/nonglobal.db $zoneroot/etc/svc/repository.db
-printf "$m_done\n"
-
-
-#
-# Make sure sysidtools run
-#
-touch $zoneroot/etc/.UNCONFIGURED
-
-printf "$m_complete\n\n" ${SECONDS}
-printf "$m_postnote\n"
-printf "$m_postnote2\n"
-
-exit $ZONE_SUBPROC_OK

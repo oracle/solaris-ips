@@ -63,10 +63,6 @@ class PkgPlan(object):
 
                 return s
 
-        def set_origin(self, fmri):
-                self.origin_fmri = fmri
-       #XXX this is busted, can't work         self.origin_mfst = manifest.retrieve(fmri)
-
         def propose_destination(self, fmri, mfst):
                 self.destination_fmri = fmri
                 self.destination_mfst = mfst
