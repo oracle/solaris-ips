@@ -139,7 +139,6 @@ class Action(object):
 			{
 				pkg.actions.types["set"]      : 0,
 				pkg.actions.types["depend"]   : 1,
-				pkg.actions.types["refresh"]  : 2,
 				pkg.actions.types["group"]    : 3,
 				pkg.actions.types["user"]     : 4,
 				pkg.actions.types["dir"]      : 5,
