@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 from StringIO import StringIO
@@ -28,60 +28,103 @@ import tokenize
 import token
 
 def compile_filter(filter):
-        def q(tup):
+        def f_get(tup):
                 if tup[0] == token.NAME:
                         return "NAME", tup[0], tup[1]
+                elif tup[0] == token.NUMBER:
+                        return "NUMBER", tup[0], tup[1]
                 else:
                         return tup[1], tup[0], tup[1]
         tok_stream = [
-            q(i)
+            f_get(i)
             for i in tokenize.generate_tokens(StringIO(filter).readline)
         ]
 
-        s = ""
-        attr = ""
+        f_str = ""
+        expr = ""
         want_attr = True
-        next_tok = ("(", "NAME")
+        next_tok = ("(", "NAME", "NUMBER")
         for tok_str, tok_type, tok in tok_stream:
-                # print "%02s %-15s: %s" % (tok_type, tok, s)
-
                 if tok_str not in next_tok:
                         raise RuntimeError, \
-                            "'%s' is not an allowable token %s" % \
-                            (tok_str, next_tok)
+                            "'%s' is not an allowable token. Expected one of" \
+                                " the following %s after: %s" % \
+                            (tok_str, next_tok, f_str)
 
-                if tok_type == token.NAME:
+                if tok_type == token.NAME or tok_type == token.NUMBER:
+                        # If the parser has found either of these token types
+                        # just append them and look for the next token.
+                        expr += tok
                         if want_attr:
-                                attr += tok
-                                next_tok = (".", "=")
+                                next_tok = ("NAME", "NUMBER", ".", "=")
                         else:
-                                s += "'%s') == '%s'" % (tok, tok)
-                                next_tok = ("&", "|", ")", "")
-                                want_attr = True
+                                next_tok = ("NAME", "NUMBER", ".", "&", "|",
+                                        ")", "")
+                        continue
+                elif tok_type == token.ENDMARKER:
+                        if not expr == "":
+                                # The parser has encountered the end of the
+                                # filter string (encountered a newline). Thus,
+                                # the expression portion of the filter can be
+                                # generated if we have something to add.
+                                f_str += "'%s') == '%s'" % (expr, expr)
+                        else:
+                                # End of line, but nothing to add.
+                                continue
                 elif tok_type == token.OP:
                         if tok == "=":
-                                s += "d.get('%s', " % attr
-                                next_tok = ("NAME",)
-                                want_attr = False
-                                attr = ""
-                        elif tok == "&":
-                                s += " and "
-                                next_tok = ("NAME", "(")
-                        elif tok == "|":
-                                s += " or "
-                                next_tok = ("NAME", "(")
-                        elif tok == "(":
-                                s += "("
-                                next_tok = ("NAME", "(")
-                        elif tok == ")":
-                                s += ")"
-                                next_tok = ("&", "|", ")", "")
-                        elif tok == ".":
-                                if want_attr:
-                                        attr += "."
-                                next_tok = ("NAME",)
+                                # The assignment operator acts as the
+                                # terminator for parsing attributes.
+                                f_str += "d.get('%s', " % (expr)
 
-        return s, compile(s, "<filter string>", "eval")
+                                # Now setup the parser to look for a value. It
+                                # can only be composed of text and/or numeric
+                                # tokens. Then look for the next token.
+                                expr = ""
+                                want_attr = False
+                                next_tok = ("NAME", "NUMBER")
+                                continue
+                        elif tok == "(":
+                                # If the parser finds this token, it just needs
+                                # to be appended, and the next token found.
+                                expr = ""
+                                f_str += "("
+                                next_tok = ("(", "NAME", "NUMBER")
+                                continue
+                        elif tok == ".":
+                                # If the parser finds this token, the value just
+                                # needs to be appended and the next token found.
+                                expr += "."
+                                next_tok = ("NAME", "NUMBER")
+                                continue
+
+                        if not expr == "":
+                                # The remaining tokens to be parsed act as
+                                # terminating operators. As a result, the
+                                # expression portion of the filter needs to be
+                                # generated first before continuing if we have
+                                # something to add.
+                                f_str += "'%s') == '%s'" % (expr, expr)
+
+                        # Now append any conditions to the filter or terminate
+                        # this portion of it.
+                        if tok == "&":
+                                f_str += " and "
+                                next_tok = ("NAME", "NUMBER", "(")
+                                want_attr = True
+                        elif tok == "|":
+                                f_str += " or "
+                                next_tok = ("NAME", "NUMBER", "(")
+                                want_attr = True
+                        elif tok == ")":
+                                f_str += ")"
+                                next_tok = ("&", "|", ")", "")
+                                want_attr = False
+
+                        # Finally, prepare for the next cycle.
+                        expr = ""
+
+        return f_str, compile(f_str, "<filter string>", "eval")
 
 def apply_filters(action, filters):
         """Apply the filter chain to the action, returning the True if it's
@@ -100,7 +143,7 @@ def apply_filters(action, filters):
         # Evaluate each filter in turn.  If a filter eliminates the action, we
         # need check no further.  If no filters eliminate the action, return
         # True.
-        for filter, code in filters:
+        for f_entry, code in filters:
                 if not eval(code, {"d": action.attrs}):
                         return False
         return True
@@ -114,6 +157,13 @@ if __name__ == "__main__":
         file path=/usr/bin/ls arch=i386 debug=false
         file path=/usr/bin/ls arch=sparc debug=true
         file path=/usr/bin/ls arch=sparc debug=false
+        file path=/usr/bin/hostname arch=386 version=0.9
+        file path=/usr/bin/hostname arch=sparc version=9
+        file path=/usr/bin/hostid arch=386 version=0.9.9
+        file path=/usr/bin/hostid arch=sparc version=9.9
+        file path=/usr/sbin/6to4relay arch=386 version=0.a6.b5.c4.d3.e2.f1
+        file path=/usr/sbin/6to4relay arch=sparcv9 version=0.6.5.4.3.2.1
+        file path=/usr/bin/i386 386=true
         file path=/var/svc/manifest/intrd.xml opensolaris.zone=global
         file path=/path/to/french/text doc=true locale=fr
         file path=/path/to/swedish/text doc=true locale=sv
