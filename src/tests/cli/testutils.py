@@ -251,15 +251,15 @@ class pkg5TestCase(unittest.TestCase):
 	def get_debugbuf(self):
 		return self.__debug_buf
 
-        def image_create(self, repourl):
-		assert self.__img_path
-		assert self.__img_path != "" and self.__img_path != "/"
+        def image_create(self, repourl, prefix = "test"):
+                assert self.__img_path
+                assert self.__img_path != "" and self.__img_path != "/"
 
                 self.image_destroy()
                 os.mkdir(self.__img_path)
-                cmdline = "pkg image-create -F -a test=%s %s" % \
-                    (repourl, self.__img_path)
-		self.debugcmd(cmdline)
+                cmdline = "pkg image-create -F -a %s=%s %s" % \
+                    (prefix, repourl, self.__img_path)
+                self.debugcmd(cmdline)
 
                 p = subprocess.Popen(cmdline, shell = True,
                     stdout = subprocess.PIPE,

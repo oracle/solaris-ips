@@ -581,6 +581,9 @@ class Image(object):
                         except urllib2.URLError, e:
                                 failed.append((auth, e))
                                 continue
+                        except ValueError, e:
+                                failed.append((auth, e))
+                                continue
 
                         # root for this catalog
                         croot = "%s/catalog/%s" % (self.imgdir, auth["prefix"])

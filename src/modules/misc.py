@@ -51,6 +51,8 @@ def versioned_urlopen(base_uri, operation, versions = [], tail = None,
         # Ignore http_proxy for localhost case, by overriding
         # default proxy behaviour of urlopen().
         netloc = urlparse.urlparse(base_uri)[1]
+        if not netloc:
+                raise ValueError, "Malformed URL: %s" % base_uri
         if urllib.splitport(netloc)[0] == "localhost":
                 # XXX cache this opener?
                 proxy_handler = urllib2.ProxyHandler({})

@@ -39,6 +39,22 @@ class TestImageCreate(testutils.SingleDepotTestCase):
                 self.image_create(durl)
                 self.pkg("verify")
 
+        def test_766(self):
+                """Bug 766: image-create without authority prefix specified."""
+
+                durl = self.dc.get_depot_url()
+
+                pkgsend_data = """
+                open foo@0.0
+                close
+                """
+                self.pkgsend_bulk(durl, pkgsend_data)
+
+                self.image_create(durl, "")
+
+                self.assertRaises(testutils.UnexpectedExitCodeException, \
+                    self.pkg, "install foo")
+
 
 class TestImageCreateNoDepot(testutils.pkg5TestCase):
         def test_bad_image_create(self):
@@ -54,6 +70,25 @@ class TestImageCreateNoDepot(testutils.pkg5TestCase):
 		self.assertRaises(testutils.UnexpectedExitCodeException, \
 		    self.image_create, durl)
 
+        def test_765(self):
+                """Bug 765: malformed authority URL."""
+
+                durl = "bar=baz"
+                self.assertRaises(testutils.UnexpectedExitCodeException, \
+                    self.image_create, durl)
+
+        def test_763a(self):
+                """Bug 763, traceback 1: no -a option given to image-create."""
+
+                self.assertRaises(testutils.UnexpectedExitCodeException, \
+                    self.pkg, "image-create foo")
+
+        def test_763c(self):
+                """Bug 763, traceback 3: -a given to image-create, but no
+                authority specified."""
+
+                self.assertRaises(testutils.UnexpectedExitCodeException, \
+                    self.pkg, "image-create -a foo")
 
 if __name__ == "__main__":
         unittest.main()

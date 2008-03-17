@@ -19,7 +19,7 @@ SYNOPSIS
 
      /usr/bin/pkg refresh
 
-     /usr/bin/pkg image-create [-FPUz] [-a prefix=url] dir
+     /usr/bin/pkg image-create [-FPUz] -a prefix=url dir
      /usr/bin/pkg image-update [-nv]
 
 DESCRIPTION
@@ -45,14 +45,14 @@ DESCRIPTION
 SUBCOMMANDS
      The following subcommands are supported:
 
-     image-create [-FPUz] [-a prefix=url] dir
+     image-create [-FPUz] -a prefix=url dir
           Create, at location given by dir, an image suitable for
           package operations.  The default image type is user, as given
           by the -U option.  The image type may be set to a full image
           (-F) or to a partial image (-P) linked to the full image
           enclosing the given dir path.
 
-          A preferred authority may be set using the -a option.  An
+          A preferred authority must be set using the -a option.  An
           attempt to retrieve the catalog associated with this authority
           will be made following the initial creation operations.
 

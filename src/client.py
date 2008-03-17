@@ -51,6 +51,7 @@ import sys
 import traceback
 import urllib2
 import urlparse
+import errno
 
 import pkg.client.image as image
 import pkg.client.imageplan as imageplan
@@ -74,7 +75,7 @@ Install subcommands:
         pkg status [-aHuv] [pkg_fmri_pattern ...]
         pkg verify [-fHqv] [pkg_fmri_pattern ...]
         pkg image-create [-FPUz] [--full|--partial|--user] [--zone]
-            [--authority prefix=url] dir
+            -a <prefix>=<url> dir
         pkg image-update [-nvq]
 
 Options:
@@ -691,7 +692,7 @@ def display_catalog_failures(failures):
                         else:
                                 print >> sys.stderr, "    %s: %s" % \
                                     (auth["origin"], err.args[0][1])
-                elif isinstance(err, IOError):
+                else:
                         print >> sys.stderr, "   ", err
 
         return succeeded
@@ -756,13 +757,35 @@ def image_create(img, args):
                 if opt == "-z" or opt == "--zone":
                         is_zone = True
                 if opt == "-a" or opt == "--authority":
-                        auth_name, auth_url = arg.split("=", 1)
+                        try:
+                                auth_name, auth_url = arg.split("=", 1)
+                        except ValueError:
+                                print >> sys.stderr, \
+                                    _("pkg: image-create requires authority "
+                                        "argument to be of the form "
+                                        "'<prefix>=<url>'.")
+                                usage()
 
         if len(pargs) != 1:
                 print >> sys.stderr, _("pkg: image-create requires a single image directory path")
                 usage()
 
-        img.set_attrs(imgtype, pargs[0], is_zone, auth_name, auth_url)
+        if not auth_name and not auth_url:
+                print >> sys.stderr, _("pkg: image-create requires an authority argument")
+                usage()
+
+        if not auth_name or not auth_url:
+                print >> sys.stderr, \
+                    _("pkg: image-create requires authority argument to be of "
+                        "the form '<prefix>=<url>'.")
+                usage()
+
+        try:
+                img.set_attrs(imgtype, pargs[0], is_zone, auth_name, auth_url)
+        except OSError, e:
+                print >> sys.stderr, _("pkg: cannot create image at %s: %s") % \
+                    (pargs[0], e.args[1])
+                return 1
 
         try:
                 img.retrieve_catalogs()
