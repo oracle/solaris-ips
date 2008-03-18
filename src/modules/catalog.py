@@ -1070,8 +1070,18 @@ class Catalog(object):
                 """Save attributes from the in-memory catalog to a file
                 specified by filenm."""
 
-                afile = file(os.path.normpath(
-                    os.path.join(self.catalog_root, filenm)), "w+")
+                try:
+                        afile = file(os.path.normpath(
+                            os.path.join(self.catalog_root, filenm)), "w+")
+                except IOError, e:
+                        # This may get called in a situation where
+                        # the user does not have write access to the attrs
+                        # file.
+                        if e.errno == errno.EACCES:
+                                return
+                        else:
+                                raise
+
                 for a in self.attrs.keys():
                         s = "S %s: %s\n" % (a, self.attrs[a])
                         afile.write(s)
