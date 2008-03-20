@@ -97,7 +97,10 @@ class DriverAction(generic.Action):
                             ",".join(self.attrlist("perms"))
                         )
                 if "policy" in self.attrs:
-                        args += ( "-p", self.attrs["policy"] )
+                        args += (
+                            "-p",
+                            " ".join(self.attrlist("policy"))
+                        )
                 if "privs" in self.attrs:
                         args += (
                             "-P",
@@ -167,12 +170,19 @@ class DriverAction(generic.Action):
                 if rem_perms:
                         rem_args += ( "-P", ",".join(rem_privs) )
 
-                npolicy = self.attrs.get("policy", "")
-                opolicy = orig.attrs.get("policy", "")
+                npolicy = self.attrs.get("policy", [])
+                opolicy = orig.attrs.get("policy", [])
+                if isinstance(npolicy, str):
+                        npolicy = [ npolicy ]
+                if isinstance(opolicy, str):
+                        opolicy = [ opolicy ]
+                add_policy = set(npolicy) - set(opolicy)
+                rem_policy = set(opolicy) - set(npolicy)
+
                 if npolicy:
-                        add_args += ( "-p", npolicy )
+                        add_args += ( "-p", " ".join(add_policy) )
                 if opolicy:
-                        rem_args += ( "-p", opolicy )
+                        rem_args += ( "-p", " ".join(rem_policy) )
 
                 add_args += (self.attrs["name"], )
                 rem_args += (self.attrs["name"], )
