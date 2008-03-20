@@ -1,4 +1,4 @@
 package SUNWsmbskr
 import SUNWsmbskr
-add driver name=smbsrv perms="* 0666 root sys"
+add driver name=smbsrv perms="* 0640 root sys"
 end package

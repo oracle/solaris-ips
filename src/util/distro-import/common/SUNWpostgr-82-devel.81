@@ -1,0 +1,4 @@
+package SUNWpostgr-82-devel
+import SUNWpostgr-82-devel
+version 8.2.6
+end package

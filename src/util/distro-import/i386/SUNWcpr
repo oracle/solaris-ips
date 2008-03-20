@@ -1,3 +1,4 @@
 package SUNWcpr
 import SUNWcpr.i
+add driver name=srn
 end package

@@ -10,7 +10,8 @@ drop kernel/drv/pcn.conf
 # END NON-REDISTRIBUTABLE
 add driver name=pci_pci alias=pciclass,060400 alias=pciclass,060401 alias=pci1011,1 alias=pci1011,21 alias=pci1014,22
 add driver name=ncrs class=scsi alias=pci1000,1 alias=pci1000,2 alias=pci1000,3 alias=pci1000,4 alias=pci1000,6 alias=pci1000,c alias=pci1000,f alias=pci1000,8f
-add driver name=iprb alias=pci8086,1029 alias=pci8086,1229 alias=pci8086,1229.8086.1009 alias=pci8086,1229.8086.100c alias=pci8086,1229.8086.1012 alias=pci8086,1229.8086.1013 alias=pci8086,1229.8086.1015 alias=pci8086,1229.8086.1016 alias=pci8086,1229.8086.1017 alias=pci8086,1030 alias=pci8086,1031 alias=pci8086,1032 alias=pci8086,1038 alias=pci8086,1039 alias=pci8086,103d alias=pci8086,1050 alias=pci8086,1059 alias=pci8086,1068 alias=pci8086,1069 alias=pci8086,1092 alias=pci8086,2449 alias=pci8086,27dc
+add driver name=iprb perms="* 0666 root sys" alias=pci8086,1029 alias=pci8086,1229 alias=pci8086,1229.8086.1009 alias=pci8086,1229.8086.100c alias=pci8086,1229.8086.1012 alias=pci8086,1229.8086.1013 alias=pci8086,1229.8086.1015 alias=pci8086,1229.8086.1016 alias=pci8086,1229.8086.1017 alias=pci8086,1030 alias=pci8086,1031 alias=pci8086,1032 alias=pci8086,1038 alias=pci8086,1039 alias=pci8086,103d alias=pci8086,1050 alias=pci8086,1059 alias=pci8086,1068 alias=pci8086,1069 alias=pci8086,1092 alias=pci8086,2449 alias=pci8086,27dc policy="read_priv_set=net_rawaccess write_priv_set=net_rawaccess"
+add driver name=clone perms="iprb 0666 root sys"
 # BEGIN NON-REDISTRIBUTABLE
 # add driver name=spwr alias=pci10b8,5
 drop kernel/drv/spwr

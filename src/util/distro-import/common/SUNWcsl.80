@@ -1,0 +1,6 @@
+package SUNWcsl
+import SUNWcsl
+import SUNWcslr
+add link path=usr/lib/libwrap.so target=../sfw/lib/libwrap.so
+add link path=usr/lib/libwrap.so.1 target=../sfw/lib/libwrap.so.1
+end package

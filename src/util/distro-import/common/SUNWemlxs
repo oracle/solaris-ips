@@ -1,4 +1,4 @@
 package SUNWemlxs
 import SUNWemlxs
-add driver name=emlxs class=fibre-channel perms="* 0600 root sys" alias=pci10df,fc00 alias=pci10df,f800 alias=pci10df,f900 alias=pci10df,f980 alias=pci10df,fa00 alias=pci10df,fd00 alias=pci10df,f0a5 alias=pci10df,fc10 alias=pci10df,fc20 alias=pci10df,fe00 alias=pciex10df,fc20 alias=pciex10df,fe00 alias=lpfs
+add driver name=emlxs class=fibre-channel perms="* 0600 root sys" alias=pci10df,fc00 alias=pci10df,f800 alias=pci10df,f900 alias=pci10df,f980 alias=pci10df,fa00 alias=pci10df,fd00 alias=pci10df,f0a5 alias=pci10df,fc10 alias=pci10df,fc20 alias=pci10df,fe00 alias=pciex10df,f100 alias=pciex10df,f111 alias=pciex10df,f112 alias=pciex10df,fc20 alias=pciex10df,fc40 alias=pciex10df,fe00 alias=pciex10df,fe05 alias=lpfs
 end package

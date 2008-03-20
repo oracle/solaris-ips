@@ -2,6 +2,7 @@ include all.i386
 include common/SUNWIPython
 include common/SUNWadmc.79
 include common/SUNWafe
+include common/SUNWant
 include common/SUNWapch2.78
 include common/SUNWapch22
 include common/SUNWapch22d
@@ -9,7 +10,9 @@ include common/SUNWapch22m-php5
 include common/SUNWapch2d.78
 include common/SUNWastdev
 include common/SUNWavahi-bridge-dsd
+include common/SUNWcs.79
 include common/SUNWcsdhcm
+include common/SUNWcsl
 include common/SUNWcsos
 include common/SUNWcurl
 include common/SUNWdmfe
@@ -19,6 +22,8 @@ include common/SUNWdttshelp
 include common/SUNWfilebench
 include common/SUNWfontconfig-docs.79
 include common/SUNWfreetype2.79
+include common/SUNWftp
+include common/SUNWgdb
 include common/SUNWggrp.76
 include common/SUNWgimpprint.77
 include common/SUNWgnome-a11y-poke-root
@@ -26,11 +31,14 @@ include common/SUNWgnome-base-libs.76
 include common/SUNWgnome-crash-report
 include common/SUNWgnome-devel-docs
 include common/SUNWgnome-doc-utils.76
+include common/SUNWgnome-help-viewer
 include common/SUNWgnome-img-viewer.75
 include common/SUNWgnome-libs.76
+include common/SUNWgnome-media-mp3
 include common/SUNWgnome-remote-desktop
 include common/SUNWgnu-idn
 include common/SUNWgscr.77
+include common/SUNWgtar
 include common/SUNWgui-install.79
 include common/SUNWhpijs.77
 include common/SUNWisns
@@ -44,6 +52,7 @@ include common/SUNWman.79
 include common/SUNWmercurial.79
 include common/SUNWmgts
 include common/SUNWmxfe
+include common/SUNWmysql
 include common/SUNWmysql5
 include common/SUNWmysql5test
 include common/SUNWncft.76
@@ -75,6 +84,7 @@ include common/SUNWpostgr-server-data.76
 include common/SUNWpostgr-server.76
 include common/SUNWpostgr.76
 include common/SUNWquagga.76
+include common/SUNWrge
 include common/SUNWruby18
 include common/SUNWscp.79
 include common/SUNWsfman.77
@@ -90,6 +100,8 @@ include common/SUNWtgnome-tsoljdsselmgr
 include common/SUNWtgnome-tstripe
 include common/SUNWtgnome-xagent
 include common/SUNWtsmc
+include common/SUNWuedg
+include common/SUNWuprl
 include common/SUNWvim
 include common/SUNWvncviewer
 include common/SUNWvscan
@@ -103,13 +115,17 @@ include common/SUNWxsrt.78
 include common/SUNWxvnc
 include common/SUNWxwts
 include i386/NVDAgraphics.76
+include i386/SUNWaac
 include i386/SUNWamd8111s.76
+include i386/SUNWcakr
 include i386/SUNWcakrx
 include i386/SUNWcarx
 include i386/SUNWckr.77
 include i386/SUNWcpr
 include i386/SUNWlibvirt
+include i386/SUNWnxge
 include i386/SUNWos86r.78
+include i386/SUNWqlc
 include i386/SUNWurlgrabber
 include i386/SUNWvirtinst
 include i386/SUNWxvm

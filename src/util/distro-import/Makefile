@@ -28,7 +28,7 @@
 # replace as needed with a local solaris install image
 
 WOS_PKGS=/net/netinstall.sfbay/export/nv/x/$(BUILDID)/Solaris_11/Product
-NONWOS_PKGS=/net/paradise.sfbay/export/integrate_dock/nv/nv_indianaprev2/i386
+NONWOS_PKGS=/net/paradise.sfbay/export/integrate_dock/nv/nv_indiana1/i386
 TEST_PKGS=
 REPO=http://localhost:10000
 JUST_THESE_PKGS=
@@ -65,6 +65,7 @@ CACHED_FILES=					\
 	boot/grub/splash.xpm.gz			\
 	etc/inet/hosts				\
 	lib/svc/method/sshd			\
+	lib/svc/method/svc-dlmgmtd		\
 	var/svc/profile/generic_limited_net.xml \
 	var/svc/profile/generic_open.xml
 
@@ -107,7 +108,18 @@ CFLAGS=		-g -v
 
 LINTFLAGS=	-axsm
 
-default:	79b/slim_import
+#
+# Starting in build 80, filelist.ramdisk began moving between various
+# packages.
+#
+FILELIST_RAMDISK_PKG_$(BUILDID)	= SUNWckr
+FILELIST_RAMDISK_PKG_79b	= SUNWcakr.i
+FILELIST_RAMDISK_PKG_75a	= SUNWcakr.i
+FILELIST_RAMDISK_PKG_74		= SUNWcakr.i
+FILELIST_RAMDISK_PKG_72		= SUNWcakr.i
+FILELIST_RAMDISK_PKG_71		= SUNWcakr.i
+
+default:	84/slim_import
 
 cluster.import:	$(WOS_PKGS)/.clustertoc Makefile
 	./clustertoc2import.py $(WOS_PKGS)/.clustertoc | \
@@ -140,9 +152,9 @@ proto/etc/power.conf:	proto Makefile
 	./get_file_from_pkg.py	$(WOS_PKGS)/SUNWpmr etc/power.conf | nawk \
 	'/^autoshutdown/{gsub("unconfigured","default");} {print $$0}' > $@
 
-
 proto/boot/solaris/filelist.ramdisk:	proto
-	(./get_file_from_pkg.py $(WOS_PKGS)/SUNWcakr.i boot/solaris/filelist.ramdisk; \
+	(./get_file_from_pkg.py $(WOS_PKGS)/$(FILELIST_RAMDISK_PKG_$(BUILDID)) \
+	    boot/solaris/filelist.ramdisk; \
 	echo etc/zfs/zpool.cache) > $@
 
 proto/etc/pam.conf:	proto
@@ -202,10 +214,10 @@ proto/usr/has/bin/sh:	proto Makefile
 proto/usr/has/bin/vi:	proto Makefile
 	./get_file_from_pkg.py $(WOS_PKGS)/SUNWcsu usr/bin/edit > $@
 
-$(JDKFILES:%=proto/usr/jdk/instances/jdk1.6.0/%):	proto  DLJ/$(@F)
+$(JDKFILES:%=proto/usr/jdk/instances/jdk1.6.0/%):	proto DLJ/$(@F)
 	cp DLJ/$(@F) $@
 
-$(JREFILES:%=proto/usr/jdk/instances/jdk1.6.0/jre/%):	proto  DLJ/$(@F)
+$(JREFILES:%=proto/usr/jdk/instances/jdk1.6.0/jre/%):	proto DLJ/$(@F)
 	cp DLJ/$(@F) $@
 
 $(CACHED_FILES:%=proto/%):	proto $(BUILDID)/$(@F) Makefile

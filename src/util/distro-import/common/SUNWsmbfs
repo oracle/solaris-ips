@@ -1,0 +1,4 @@
+package SUNWsmbfs
+import SUNWsmbfsu
+import SUNWsmbfsr
+end package

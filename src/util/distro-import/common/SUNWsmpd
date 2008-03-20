@@ -1,0 +1,4 @@
+package SUNWsmpd
+import SUNWsmpd
+add driver name=smp perms="* 0644 root sys"
+end package

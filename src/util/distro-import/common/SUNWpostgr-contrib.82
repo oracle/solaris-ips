@@ -1,0 +1,4 @@
+package SUNWpostgr-contrib
+import SUNWpostgr-contrib
+version 8.1.11
+end package

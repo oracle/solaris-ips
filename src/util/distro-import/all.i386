@@ -3,7 +3,6 @@ include i386/CADP160
 include i386/HPFC
 include i386/SK98sol
 include i386/SKfp
-include i386/SUNWaac
 include i386/SUNWad810
 include i386/SUNWadixp
 include i386/SUNWadp
@@ -17,7 +16,6 @@ include i386/SUNWaudd
 include i386/SUNWaudiohd
 include i386/SUNWbge
 include i386/SUNWcadp
-include i386/SUNWcakr
 include i386/SUNWcar
 include i386/SUNWcpc
 include i386/SUNWcqhpc
@@ -38,7 +36,6 @@ include i386/SUNWmdb
 include i386/SUNWmv88sx
 include i386/SUNWnge
 include i386/SUNWnvsata
-include i386/SUNWnxge
 include i386/SUNWocf
 include i386/SUNWopenssl
 include i386/SUNWpamsc
@@ -50,7 +47,6 @@ include i386/SUNWpmi
 include i386/SUNWpsdcr
 include i386/SUNWpsdir
 include i386/SUNWpsh
-include i386/SUNWqlc
 include i386/SUNWralink
 include i386/SUNWrmodr
 include i386/SUNWrtls
@@ -100,7 +96,6 @@ include common/SUNWadmfw
 include common/SUNWadmj
 include common/SUNWadmlib-sysid
 include common/SUNWadmr
-include common/SUNWant
 include common/SUNWapbas
 include common/SUNWapch
 include common/SUNWapchd
@@ -167,9 +162,7 @@ include common/SUNWcnetr
 include common/SUNWcns
 include common/SUNWcpcu
 include common/SUNWcpp
-include common/SUNWcs
 include common/SUNWcsd
-include common/SUNWcsl
 include common/SUNWcsmauth
 include common/SUNWcstl
 include common/SUNWctlu
@@ -247,14 +240,12 @@ include common/SUNWfsexam
 include common/SUNWfsmgt
 include common/SUNWfss
 include common/SUNWftdu
-include common/SUNWftp
 include common/SUNWfwdc
 include common/SUNWfwdcu
 include common/SUNWfwflash
 include common/SUNWgccruntime
 include common/SUNWgcmn
 include common/SUNWgd2
-include common/SUNWgdb
 include common/SUNWgksu
 include common/SUNWglt
 include common/SUNWgm4
@@ -296,7 +287,6 @@ include common/SUNWgnome-fun-applets
 include common/SUNWgnome-games
 include common/SUNWgnome-gtksourceview
 include common/SUNWgnome-gui-test
-include common/SUNWgnome-help-viewer
 include common/SUNWgnome-hex-editor
 include common/SUNWgnome-im-client
 include common/SUNWgnome-img-editor
@@ -307,7 +297,6 @@ include common/SUNWgnome-keyring-manager
 include common/SUNWgnome-log-viewer
 include common/SUNWgnome-media
 include common/SUNWgnome-media-apps
-include common/SUNWgnome-media-mp3
 include common/SUNWgnome-media-player
 include common/SUNWgnome-meeting
 include common/SUNWgnome-menu-editor
@@ -352,7 +341,6 @@ include common/SUNWgss
 include common/SUNWgssc
 include common/SUNWgssdh
 include common/SUNWgssk
-include common/SUNWgtar
 include common/SUNWgtkperf
 include common/SUNWgzip
 include common/SUNWhal
@@ -521,7 +509,6 @@ include common/SUNWmpathadm
 include common/SUNWmpsvplr
 include common/SUNWmusicbrainz
 include common/SUNWmyspell-dictionary-en
-include common/SUNWmysql
 include common/SUNWmysqlt
 include common/SUNWnca
 include common/SUNWneon
@@ -601,7 +588,6 @@ include common/SUNWrcmds
 include common/SUNWrdc
 include common/SUNWrds
 include common/SUNWrealplayer
-include common/SUNWrge
 include common/SUNWrmodu
 include common/SUNWrmui
 include common/SUNWrmvolmgr
@@ -738,7 +724,6 @@ include common/SUNWucbt
 include common/SUNWudapl
 include common/SUNWudaplt
 include common/SUNWudf
-include common/SUNWuedg
 include common/SUNWugen
 include common/SUNWugenu
 include common/SUNWuiu8
@@ -748,7 +733,6 @@ include common/SUNWukspfw
 include common/SUNWulcf
 include common/SUNWunzip
 include common/SUNWupdatemgr
-include common/SUNWuprl
 include common/SUNWusb
 include common/SUNWusbccid
 include common/SUNWusbs
