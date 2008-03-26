@@ -31,6 +31,7 @@ import tempfile
 import shutil
 import tarfile
 import unittest
+import pkg.portable as portable
 import pkg.pkgtarfile as pkgtarfile
 
 class TestPkgTarFile(unittest.TestCase):
@@ -43,10 +44,8 @@ class TestPkgTarFile(unittest.TestCase):
                 filename = "baz"
                 create_path = os.path.join(filepath, filename)
                 os.makedirs(filepath)
-                rfp = file("/dev/urandom", "rb")
                 wfp = file(create_path, "wb")
-                buf = rfp.read(8192)
-                rfp.close()
+                buf = os.urandom(8192)
                 wfp.write(buf)
                 wfp.close()
 
@@ -63,7 +62,7 @@ class TestPkgTarFile(unittest.TestCase):
         def testerrorlevelIsCorrect(self):
                 p = pkgtarfile.PkgTarFile(self.tarfile, 'r')
 
-                if os.getuid() == 0:
+                if portable.is_admin():
                         self.assert_(p.errorlevel == 2)
                         p.close()
                         return

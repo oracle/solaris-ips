@@ -34,7 +34,10 @@ import httplib
 
 # Non-HTML GET functions
 
-content_root = "/usr/share/lib/pkg"
+try:
+        content_root = os.path.join(os.environ['PKG_HOME'], 'share/lib/pkg')
+except KeyError:
+        content_root = '/usr/share/lib/pkg'
 
 #
 # Return the contents of a static file.

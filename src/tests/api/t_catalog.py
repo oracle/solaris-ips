@@ -28,6 +28,7 @@ import shutil
 import tempfile
 import os
 import datetime
+import time
 
 import pkg.fmri as fmri
 import pkg.catalog as catalog
@@ -312,6 +313,10 @@ class TestUpdateLog(unittest.TestCase):
 
 
         def tearDown(self):
+                # python does not guarantee that destructors will
+                # ever be called, so we explicitly call it here to
+                # clean up the UpdateLog's internal state files.
+                del(self.ul)
                 shutil.rmtree(self.upath)
                 shutil.rmtree(self.cpath)
 
@@ -350,7 +355,10 @@ class TestUpdateLog(unittest.TestCase):
                 cl = cnew.get_matching_fmris(cf, None)
 
                 self.assert_(len(cl) == 4)
-
+                # a sleep here is needed on Windows to make sure that the time
+                # of the update is different from the time of the original catalog
+                time.sleep(0.5)
+                
                 # Add new FMRI
                 fnew = fmri.PkgFmri("pkg:/test@1.0,5.11-3:20000101T120040Z")
                 self.ul.add_package(fnew)
@@ -411,7 +419,10 @@ class TestUpdateLog(unittest.TestCase):
                 cl = cnew.get_matching_fmris(cf, None)
 
                 self.assert_(len(cl) == 4)
-
+                # a sleep here is needed on Windows to make sure that the time
+                # of the update is different from the time of the original catalog
+                time.sleep(0.5)
+                
                 # Add new FMRI
                 fnew = fmri.PkgFmri("pkg:/bpkg@1.0,5.11-3:20000101T120040Z")
                 self.ul.add_package(fnew)
@@ -441,7 +452,10 @@ class TestUpdateLog(unittest.TestCase):
                 cl = cnew.get_matching_fmris(cf, None)
 
                 self.assert_(len(cl) == 1)
-
+                # a sleep here is needed on Windows to make sure that the time
+                # of the update is different from the time of the original catalog
+                time.sleep(0.5)
+                
                 # Add a pair of FMRIs
                 f2 = fmri.PkgFmri("pkg:/cpkg@1.0,5.11-3:20000101T120040Z")
                 f3 = fmri.PkgFmri("pkg:/dpkg@1.0,5.11-3:20000101T120040Z")
@@ -471,7 +485,7 @@ class TestUpdateLog(unittest.TestCase):
                 # Verify New packages present
                 cf = fmri.PkgFmri("pkg:/cpkg@1.0,5.11-3:20000101T120040Z")
                 cl = cnew.get_matching_fmris(cf, None)
-
+                
                 self.assert_(len(cl) == 1)
 
                 cf = fmri.PkgFmri("pkg:/dpkg@1.0,5.11-3:20000101T120040Z")

@@ -840,7 +840,7 @@ def main_func():
 
         try:
                 img.find_root(mydir)
-        except AssertionError:
+        except ValueError:
                 print >> sys.stderr, \
                     _("'%s' is not an install image") % mydir
                 return 1

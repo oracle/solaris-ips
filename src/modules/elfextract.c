@@ -19,7 +19,7 @@
  * CDDL HEADER END
  */
 /*
- * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 #include <libelf.h>
@@ -33,8 +33,22 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <strings.h>
+#include <string.h>
 #include <assert.h>
+#if defined (__SVR4) && defined (__sun)
+/* Solaris has a built-in SHA-1 library interface */
 #include <sha1.h>
+#else
+/*
+ * All others can use OpenSSL, but OpenSSL's method signatures
+ * are slightly different
+ */
+#include <openssl/sha.h>
+#define SHA1_CTX SHA_CTX
+#define SHA1Update SHA1_Update
+#define SHA1Init SHA1_Init
+#define SHA1Final SHA1_Final
+#endif
 
 #include <liblist.h>
 #include <elfextract.h>
@@ -67,8 +81,13 @@ pkg_string_from_arch(int arch)
 	case EM_SPARCV9:
 		return ("sparc");
 	case EM_386:
+#if defined (__SVR4) && defined (__sun)
+/* Solaris calls x86_64 "amd64", and recognizes 486 */
 	case EM_486:
 	case EM_AMD64:
+#else
+	case EM_X86_64:
+#endif
 		return ("i386");
 	case EM_PPC:
 	case EM_PPC64:
@@ -114,7 +133,7 @@ getident(int fd)
 
 	if ((id = malloc(EI_NIDENT)) == NULL)
 		return (NULL);
-
+	
 	if (lseek(fd, 0, SEEK_SET) == -1) {
 		assert(0);
 		free(id);
@@ -343,14 +362,22 @@ getdynamic(int fd)
 			dynstr = shdr.sh_link;
 			break;
 
+#ifdef SHT_SUNW_verdef
 		case SHT_SUNW_verdef:
+#else
+		case SHT_GNU_verdef:
+#endif
 			if (!(data_verdef = elf_getdata(scn, NULL)))
 				goto bad;
 
 			verdefnum = shdr.sh_info;
 			break;
 
+#ifdef SHT_SUNW_verneed
 		case SHT_SUNW_verneed:
+#else
+		case SHT_GNU_verneed:
+#endif
 			if (!(data_verneed = elf_getdata(scn, NULL)))
 				goto bad;
 
@@ -408,11 +435,11 @@ getdynamic(int fd)
 	}
 
 	for (t = 0; t < vernum; t++) {
+		liblist_t *veraux = NULL;
 		if (ev)
 			cp += ev->vn_next;
 		ev = (GElf_Verneed*)cp;
 
-		liblist_t *veraux = NULL;
 		if (!(veraux = liblist_alloc()))
 			goto bad;
 

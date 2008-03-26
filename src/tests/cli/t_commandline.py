@@ -30,10 +30,15 @@ if __name__ == "__main__":
 import unittest
 import os
 
-class TestCommandLine(testutils.pkg5TestCase):
+class TestCommandLine(testutils.SingleDepotTestCase):
 
         def test_pkg_bogus_opts(self):
                 """ pkg bogus option checks """
+
+                # create a image to avoid non-existant image messages
+                durl = self.dc.get_depot_url()
+                self.image_create(durl)
+
                 self.pkg("-@", exit=2)
                 self.pkg("status -@", exit=2)
                 self.pkg("list -@", exit=2)
@@ -45,12 +50,16 @@ class TestCommandLine(testutils.pkg5TestCase):
 
         def test_pkg_missing_args(self):
                 """ pkg: Lack of needed arguments should yield complaint """
+                # create a image to avoid non-existant image messages
+                durl = self.dc.get_depot_url()
+                self.image_create(durl)
+
                 self.pkg("-s status", exit=2)
                 self.pkg("-R status", exit=2)
                 self.pkg("list -o", exit=2)
                 self.pkg("list -s", exit=2)
                 self.pkg("list -t", exit=2)
-                
+
 
         def test_pkgsend_bogus_opts(self):
                 """ pkgsend bogus option checks """

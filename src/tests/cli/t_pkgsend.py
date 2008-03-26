@@ -55,7 +55,7 @@ class TestPkgSend(testutils.SingleDepotTestCase):
                 os.environ["PKG_TRANS_ID"] = "foobarbaz"
                 
                 self.pkgsend(durl,
-                    "add file /lib/libc.so.1 path=/lib/libc.so.1", exit=1)
+                    "add file /bin/ls path=/bin/ls", exit=1)
 
 
 

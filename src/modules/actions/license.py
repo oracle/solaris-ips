@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -37,6 +37,7 @@ import errno
 import sha
 
 import generic
+import pkg.portable as portable
 
 class LicenseAction(generic.Action):
         """Class representing a license packaging object."""
@@ -70,10 +71,10 @@ class LicenseAction(generic.Action):
 
                 path = os.path.normpath(os.path.sep.join(
                     (pkgplan.image.get_root(), path)))
- 
+
                 if not os.path.exists(os.path.dirname(path)):
                         self.makedirs(os.path.dirname(path), mode=755)
-                
+
                 lfile = file(path, "wb")
                 # XXX Should throw an exception if shasum doesn't match
                 # self.hash
@@ -85,7 +86,7 @@ class LicenseAction(generic.Action):
                 os.chmod(path, mode)
 
                 try:
-                        os.chown(path, owner, group)
+                        portable.chown(path, owner, group)
                 except OSError, e:
                         if e.errno != errno.EPERM:
                                 raise

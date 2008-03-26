@@ -57,6 +57,7 @@ ROOTDIRS = \
 	$(ROOTPYTHONPKG)/client \
 	$(ROOTPYTHONPKG)/actions \
 	$(ROOTPYTHONPKG)/bundle \
+	$(ROOTPYTHONPKG)/portable \
 	$(ROOTMANIFEST) \
 	$(ROOTSHARE) \
 	$(ROOTMAN1) \
@@ -141,6 +142,13 @@ PYBUNDLEMODS = \
 	modules/bundle/SolarisPackageDirBundle.py
 PYCBUNDLEMODS = $(PYBUNDLEMODS:%.py=%.pyc)
 
+PYPORTABLEMODS = \
+	modules/portable/__init__.py \
+	modules/portable/util.py \
+	modules/portable/os_unix.py \
+	modules/portable/os_sunos.py
+PYCPORTABLEMODS = $(PYPORTABLEMODS:%.py=%.pyc)
+
 ROOTPYMODS = $(PYMODS:modules/%=$(ROOTPYTHONPKG)/%)
 ROOTPYACTIONMODS = \
 	$(PYACTIONMODS:modules/actions/%=$(ROOTPYTHONPKG)/actions/%)
@@ -152,6 +160,8 @@ ROOTPYCLIENTMODS = \
 	$(PYCLIENTMODS:modules/client/%=$(ROOTPYTHONPKG)/client/%)
 ROOTPYBUNDLEMODS = \
 	$(PYBUNDLEMODS:modules/bundle/%=$(ROOTPYTHONPKG)/bundle/%)
+ROOTPYPORTABLEMODS = \
+	$(PYPORTABLEMODS:modules/portable/%=$(ROOTPYTHONPKG)/portable/%)
 
 ROOTPYCALLMODS = \
 	$(ROOTPYMODS:%.py=%.pyc) \
@@ -159,7 +169,8 @@ ROOTPYCALLMODS = \
 	$(ROOTPYSERVERMODS:%.py=%.pyc) \
 	$(ROOTPYPUBLISHMODS:%.py=%.pyc) \
 	$(ROOTPYCLIENTMODS:%.py=%.pyc) \
-	$(ROOTPYBUNDLEMODS:%.py=%.pyc)
+	$(ROOTPYBUNDLEMODS:%.py=%.pyc) \
+	$(ROOTPYPORTABLEMODS:%.py=%.pyc)
 
 ROOTPKGMANIFEST = $(ROOTMANIFEST)/pkg-server.xml
 
@@ -175,6 +186,7 @@ ROOTCOMPONENTS = \
 	$(ROOTPYCLIENTMODS) \
 	$(ROOTPYACTIONMODS) \
 	$(ROOTPYBUNDLEMODS) \
+	$(ROOTPYPORTABLEMODS) \
 	$(ROOTPYCALLMODS) \
 	$(ROOTPKGMANIFEST)
 
@@ -199,7 +211,8 @@ clean:
 clobber: clean
 	rm -fr $(ROOT)
 	rm -f $(PYCMODS) $(PYCACTIONMODS) $(PYCSERVERMODS) \
-	$(PYCPUBLISHMODS) $(PYCCLIENTMODS) $(PYCBUNDLEMODS)
+	$(PYCPUBLISHMODS) $(PYCCLIENTMODS) $(PYCBUNDLEMODS) \
+	$(PYCPORTABLEMODS)
 	@cd modules; pwd; $(MAKE) $(TARGET)
 	@cd man; pwd; $(MAKE) $(TARGET)
 	@cd web; pwd; $(MAKE) $(TARGET)
@@ -270,6 +283,9 @@ $(ROOTPYTHONPKG)/client/%: modules/client/%
 
 $(ROOTPYTHONPKG)/bundle/%: modules/bundle/%
 	rm -f $@; install -f $(ROOTPYTHONPKG)/bundle -m 0444 $<
+
+$(ROOTPYTHONPKG)/portable/%: modules/portable/%
+	rm -f $@; install -f $(ROOTPYTHONPKG)/portable -m 0444 $<
 
 $(ROOTPYTHONPKG)/%.so: modules/%.so
 	rm -f $@; install -f $(ROOTPYTHONPKG) -m 0555 $<

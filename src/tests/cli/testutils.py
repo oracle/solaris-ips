@@ -53,10 +53,16 @@ def setup_environment(path_to_proto):
 
 	global g_proto_area
 
-	if os.uname()[0] == "SunOS":
-		proc = platform.processor()
-	elif os.uname()[0] == "Linux":
-		proc = platform.machine()
+        osname = platform.uname()[0].lower()
+        proc = 'unknown'
+        if osname == 'sunos':
+                proc = platform.processor()
+        elif osname == 'linux':
+                proc = "linux_" + platform.machine()
+        elif osname == 'windows':
+                proc = osname
+        elif osname == 'darwin':
+                proc = osname
 	else:
 		print "Unable to determine appropriate proto area location."
 		print "This is a porting problem."

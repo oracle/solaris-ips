@@ -36,7 +36,7 @@ class TestUpgrade(testutils.SingleDepotTestCase):
             open amber@1.0,5.11-0
             add dir mode=0755 owner=root group=bin path=/lib
             add dir mode=0755 owner=root group=bin path=/etc
-            add file /lib/libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.so.1
+            add file /tmp/libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.so.1
             add link path=/lib/libc.symlink target=/lib/libc.so.1
             add hardlink path=/lib/libc.hardlink target=/lib/libc.so.1
             add file /tmp/amber1 mode=0444 owner=root group=bin path=/etc/amber1
@@ -49,7 +49,7 @@ class TestUpgrade(testutils.SingleDepotTestCase):
             open bronze@1.0,5.11-0
             add dir mode=0755 owner=root group=bin path=/usr
             add dir mode=0755 owner=root group=bin path=/usr/bin
-            add file /usr/bin/sh mode=0555 owner=root group=bin path=/usr/bin/sh
+            add file /tmp/sh mode=0555 owner=root group=bin path=/usr/bin/sh
             add link path=/usr/bin/jsh target=./sh
             add hardlink path=/lib/libc.bronze target=/lib/libc.so.1
             add file /tmp/bronze1 mode=0444 owner=root group=bin path=/etc/bronze1
@@ -63,7 +63,7 @@ class TestUpgrade(testutils.SingleDepotTestCase):
             open amber@2.0,5.11-0
             add dir mode=0755 owner=root group=bin path=/usr
             add dir mode=0755 owner=root group=bin path=/usr/bin
-            add file /lib/libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.so.1
+            add file /tmp/libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.so.1
             add link path=/lib/libc.symlink target=/lib/libc.so.1
             add hardlink path=/lib/libc.amber target=/lib/libc.bronze
             add hardlink path=/lib/libc.hardlink target=/lib/libc.so.1
@@ -78,8 +78,8 @@ class TestUpgrade(testutils.SingleDepotTestCase):
             open bronze@2.0,5.11-0
             add dir mode=0755 owner=root group=bin path=/etc
             add dir mode=0755 owner=root group=bin path=/lib
-            add file /usr/bin/sh mode=0555 owner=root group=bin path=/usr/bin/sh
-            add file /usr/lib/libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.bronze
+            add file /tmp/sh mode=0555 owner=root group=bin path=/usr/bin/sh
+            add file /tmp/libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.bronze
             add link path=/usr/bin/jsh target=./sh
             add hardlink path=/lib/libc.bronze2.0.hardlink target=/lib/libc.so.1
             add file /tmp/bronze1 mode=0444 owner=root group=bin path=/etc/bronze1
@@ -91,7 +91,8 @@ class TestUpgrade(testutils.SingleDepotTestCase):
         misc_files = [ "/tmp/amber1", "/tmp/amber2",
                     "/tmp/bronze1", "/tmp/bronze2",
                     "/tmp/copyright1", "/tmp/copyright2",
-                    "/tmp/copyright3", "/tmp/copyright4" ]
+                    "/tmp/copyright3", "/tmp/copyright4",
+                    "/tmp/libc.so.1", "/tmp/sh"]
 
         def setUp(self):
                 testutils.SingleDepotTestCase.setUp(self)

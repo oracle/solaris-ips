@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -35,7 +35,12 @@ import errno
 import sha
 from stat import *
 import generic
-import pkg.elf as elf
+import pkg.portable as portable
+try:
+        import pkg.elf as elf
+        haveelf = True
+except ImportError:
+        haveelf = False
 
 class FileAction(generic.Action):
         """Class representing a file-type packaging object."""
@@ -52,22 +57,22 @@ class FileAction(generic.Action):
                 """Client-side method that installs a file."""
                 path = self.attrs["path"]
                 mode = int(self.attrs["mode"], 8)
-                owner = pkgplan.image.getpwnam(self.attrs["owner"]).pw_uid
-                group = pkgplan.image.getgrnam(self.attrs["group"]).gr_gid
+                owner = pkgplan.image.get_user_by_name(self.attrs["owner"])
+                group = pkgplan.image.get_group_by_name(self.attrs["group"])
 
                 final_path = os.path.normpath(os.path.sep.join(
                     (pkgplan.image.get_root(), path)))
 
 		if not os.path.exists(os.path.dirname(final_path)):
 			self.makedirs(os.path.dirname(final_path), mode=0755)
-				
+
                 # If we're upgrading, extract the attributes from the old file.
                 if orig:
                         omode = int(orig.attrs["mode"], 8)
-                        oowner = pkgplan.image.getpwnam(
-                            orig.attrs["owner"]).pw_uid
-                        ogroup = pkgplan.image.getgrnam(
-                            orig.attrs["group"]).gr_gid
+                        oowner = pkgplan.image.get_user_by_name(
+                            orig.attrs["owner"])
+                        ogroup = pkgplan.image.get_group_by_name(
+                            orig.attrs["group"])
                         ohash = orig.hash
 
                 # If the action has been marked with a preserve attribute, and
@@ -107,6 +112,10 @@ class FileAction(generic.Action):
                         tfile.close()
                         stream.close()
 
+                        # Call cleanup callable, which deletes the underlying
+                        # temporary file created above.
+                        if self.cleanup != None:
+                                self.cleanup()
                         # XXX Should throw an exception if shasum doesn't match
                         # self.hash
                 else:
@@ -115,7 +124,7 @@ class FileAction(generic.Action):
                 os.chmod(temp, mode)
 
                 try:
-                        os.chown(temp, owner, group)
+                        portable.chown(temp, owner, group)
                 except OSError, e:
                         if e.errno != errno.EPERM:
                                 raise
@@ -123,18 +132,18 @@ class FileAction(generic.Action):
                 # XXX There's a window where final_path doesn't exist, but we
                 # probably don't care.
                 if "old_path" in locals():
-                        os.rename(final_path, old_path)
+                        portable.rename(final_path, old_path)
 
                 # This is safe even if temp == final_path.
-                os.rename(temp, final_path)
+                portable.rename(temp, final_path)
 
         def verify(self, img, **args):
                 """ verify that file is present and if preserve attribute
                 not present, that hashes match"""
                 path = self.attrs["path"]
                 mode = int(self.attrs["mode"], 8)
-                owner = img.getpwnam(self.attrs["owner"]).pw_uid
-                group = img.getgrnam(self.attrs["group"]).gr_gid
+                owner = img.get_user_by_name(self.attrs["owner"])
+                group = img.get_group_by_name(self.attrs["group"])
 
                 path = os.path.normpath(os.path.sep.join(
                     (img.get_root(), path)))
@@ -154,12 +163,12 @@ class FileAction(generic.Action):
                         errors.append("%s is not a regular file" % self.attrs["path"])
                 if stat[ST_UID] != owner:
                         errors.append("Owner: '%s' should be '%s'" % \
-                            (img.getpwuid(stat[ST_UID]).pw_name,
-                             img.getpwuid(owner).pw_name))
+                            (img.get_name_by_uid(stat[ST_UID]),
+                             img.get_name_by_uid(owner)))
                 if stat[ST_GID] != group:
                         errors.append("Group: '%s' should be '%s'" % \
-                            (img.getgrgid(stat[ST_GID]).gr_name,
-                             img.getgrgid(group).gr_name))
+                            (img.get_name_by_gid(stat[ST_GID]),
+                             img.get_name_by_gid(group)))
                 if S_IMODE(stat[ST_MODE]) != mode:
                         errors.append("Mode: 0%.3o should be 0%.3o" % \
                             (S_IMODE(stat[ST_MODE]), mode))
@@ -176,10 +185,13 @@ class FileAction(generic.Action):
                 if "preserve" not in self.attrs and args["forever"] == True:
                         try:
                                 if "elfhash" in self.attrs:
-                                        elfhash = elf.get_dynamic(path)["hash"]
-                                        if elfhash != self.attrs["elfhash"]:
-                                                errors.append("Elfhash: %s should be %s" % \
-                                                    (elfhash, self.attrs["elfhash"]))
+                                        if haveelf:
+                                                elfhash = elf.get_dynamic(path)["hash"]
+                                                if elfhash != self.attrs["elfhash"]:
+                                                        errors.append("Elfhash: %s should be %s" % \
+                                                            (elfhash, self.attrs["elfhash"]))
+                                        else:
+                                                errors.append("Elfhash: unable to verify due to missing elf module")
 
                                 # not an elf file -> try normal hash
                                 else:
@@ -218,6 +230,8 @@ class FileAction(generic.Action):
                     (pkgplan.image.get_root(), self.attrs["path"])))
 
                 try:
+                        # Make file writable so it can be deleted
+                        os.chmod(path, S_IWRITE|S_IREAD)
                         os.unlink(path)
                 except OSError,e:
                         if e.errno != errno.ENOENT:

@@ -19,7 +19,7 @@
  * CDDL HEADER END
  */
 /*
- * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 
@@ -28,7 +28,21 @@
 #include <sys/uio.h>
 #include <fcntl.h>
 #include <unistd.h>
+
+#if defined (__SVR4) && defined (__sun)
+/* Solaris has a built-in SHA-1 library interface */
 #include <sha1.h>
+#else
+/*
+ * All others can use OpenSSL, but OpenSSL's method names
+ * are slightly different
+ */
+#include <openssl/sha.h>
+#define SHA1_CTX SHA_CTX
+#define SHA1Update SHA1_Update
+#define SHA1Init SHA1_Init
+#define SHA1Final SHA1_Final
+#endif
 #include <elf.h>
 #include <gelf.h>
 
@@ -36,7 +50,6 @@
 #include <elfextract.h>
 
 #include <Python.h>
-
 
 static void
 pythonify_ver_liblist_cb(libnode_t *n, void *info, void *info2)

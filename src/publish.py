@@ -163,7 +163,7 @@ def trans_add(config, args):
                         print >> sys.stderr, e[0]
                         sys.exit(1)
                 def opener():
-                        return open(args[1])
+                        return open(args[1], "rb")
                 action.data = opener
         else:
                 try:

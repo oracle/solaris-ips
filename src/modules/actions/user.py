@@ -34,7 +34,11 @@ a new user."""
 import os
 import errno
 import generic
-from pkg.cfgfiles import *
+try:
+        from pkg.cfgfiles import *
+        have_cfgfiles = True
+except ImportError:
+        have_cfgfiles = False
 
 class UserAction(generic.Action):
         """Class representing a user packaging object."""
@@ -86,7 +90,7 @@ class UserAction(generic.Action):
                 cur_attrs = pw.getuser(username)
                 if "gid" in cur_attrs:
                         cur_attrs["group"] = \
-                            image.getgrgid(int(cur_attrs["gid"])).gr_name
+                            image.get_name_by_gid(int(cur_attrs["gid"]))
 
                 grps = gr.getgroups(username)
                 if grps:
@@ -105,13 +109,17 @@ class UserAction(generic.Action):
                    update any attrs that changed from orig
                    unless the on-disk stuff was changed"""
 
+                if not have_cfgfiles:
+                        # the user action is ignored if cfgfiles is not available
+                        return
+                        
                 username = self.attrs["username"]
                 
                 try:
                         pw, gr, ftp, cur_attrs = \
                             self.readstate(pkgplan.image, username, lock=True)
                         
-                        self.attrs["gid"] = pkgplan.image.getgrnam(self.attrs["group"]).gr_gid
+                        self.attrs["gid"] = pkgplan.image.get_group_by_name(self.attrs["group"])
 
                         orig_attrs = {}
                         if orig:
@@ -141,6 +149,10 @@ class UserAction(generic.Action):
 
         def verify(self, img, **args):
                 """" verify user action installation """
+                if not have_cfgfiles:
+                        # the user action is ignored if cfgfiles is not available
+                        return []
+
                 username = self.attrs["username"]
 
                 pw, gr, ftp, cur_attrs = self.readstate(img, username)
@@ -155,6 +167,9 @@ class UserAction(generic.Action):
                                 
         def remove(self, pkgplan):
                 """client-side method that removes this user"""
+                if not have_cfgfiles:
+                        # the user action is ignored if cfgfiles is not available
+                        return
                 
                 root = pkgplan.image.get_root()
                 try:

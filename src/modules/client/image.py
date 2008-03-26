@@ -26,8 +26,6 @@
 import cPickle
 import errno
 import os
-import grp
-import pwd
 import urllib
 import urllib2
 import shutil
@@ -43,6 +41,7 @@ import pkg.client.imageconfig as imageconfig
 import pkg.client.imageplan as imageplan
 import pkg.client.retrieve as retrieve
 import pkg.client.filelist as filelist
+import pkg.portable as portable
 
 from pkg.misc import versioned_urlopen
 
@@ -110,14 +109,6 @@ class Image(object):
                 self.img_prefix = None
                 self.repo_uris = []
                 self.filter_tags = {}
-
-                self.users = {}
-                self.uids = {}
-                self.users_lastupdate = 0
-                self.groups = {}
-                self.gids = {}
-                self.groups_lastupdate = 0
-
                 self.catalogs = {}
 
                 self.attrs = {}
@@ -127,19 +118,22 @@ class Image(object):
                 self.attrs["Policy-Pursue-Latest"] = True
 
         def find_root(self, d):
-                # Ascend from current working directory to find first
+                # Ascend from the given directory d to find first
                 # encountered image.
+                startd = d
+                # eliminate problem if relative path such as "." is passed in
+                d = os.path.realpath(d)
                 while True:
-                        if os.path.isdir("%s/%s" % (d, img_user_prefix)):
+                        if os.path.isdir(os.path.join(d, img_user_prefix)):
                                 # XXX Look at image file to determine filter
                                 # tags and repo URIs.
                                 self.type = IMG_USER
                                 self.root = d
                                 self.img_prefix = img_user_prefix
-                                self.imgdir = "%s/%s" % (d, self.img_prefix)
+                                self.imgdir = os.path.join(d, self.img_prefix)
                                 self.attrs["Build-Release"] = "5.11"
                                 return
-                        elif os.path.isdir("%s/%s" % (d, img_root_prefix)):
+                        elif os.path.isdir(os.path.join(d, img_root_prefix)):
                                 # XXX Look at image file to determine filter
                                 # tags and repo URIs.
                                 # XXX Look at image file to determine if this
@@ -147,14 +141,20 @@ class Image(object):
                                 self.type = IMG_ENTIRE
                                 self.root = d
                                 self.img_prefix = img_root_prefix
-                                self.imgdir = "%s/%s" % (d, self.img_prefix)
+                                self.imgdir = os.path.join(d, self.img_prefix)
                                 self.attrs["Build-Release"] = "5.11"
                                 return
 
-                        assert d != "/"
-
                         # XXX follow symlinks or not?
+                        oldpath = d
                         d = os.path.normpath(os.path.join(d, os.path.pardir))
+
+                        # Make sure we are making progress and aren't in an
+                        # infinite loop.
+                        #
+                        # (XXX - Need to deal with symlinks here too)
+                        if d == oldpath:
+                                raise ValueError, "directory %s not contained within an image" % startd
 
         def load_config(self):
                 """Load this image's cached configuration from the default
@@ -623,7 +623,7 @@ class Image(object):
                 # If the catalog has a rename record that names fmri as a
                 # destination, it's possible that pfmri could be the same pkg by
                 # rename.
-                
+
                 if fmri.is_same_pkg(pfmri):
                         return True
                 else:
@@ -683,171 +683,22 @@ class Image(object):
 
                                 yield fmri.PkgFmri(fmristr, authority = auth)
 
-        def getpwnam(self, name):
-                """Do a name lookup in the image's password database.
+        def get_user_by_name(self, name):
+                return portable.get_user_by_name(name, self.root, 
+                                                 self.type != IMG_USER)
 
-                Keep a cached copy in memory for fast lookups, and fall back to
-                the current environment if the password database isn't
-                available.
-                """
-
+        def get_name_by_uid(self, uid):
                 # XXX What to do about IMG_PARTIAL?
-                if self.type == IMG_USER:
-                        return pwd.getpwnam(name)
+                return portable.get_name_by_uid(uid, self.root, 
+                                                self.type != IMG_USER)
 
-                passwd_file = os.path.join(self.root, "etc/passwd")
+        def get_group_by_name(self, name):
+                return portable.get_group_by_name(name, self.root, 
+                                                  self.type != IMG_USER)
 
-                try:
-                        passwd_stamp = os.stat(passwd_file).st_mtime
-                except OSError, e:
-                        if e.errno != errno.ENOENT:
-                                raise
-                        # If the password file doesn't exist, bootstrap
-                        # ourselves from the current environment.
-                        return pwd.getpwnam(name)
-
-                # If the timestamp on the file isn't newer than the last time we
-                # checked, all its entries will already be in our cache, so we
-                # won't find the name.
-                if passwd_stamp > self.users_lastupdate:
-                        self.load_passwd(passwd_file)
-
-                try:
-                        return self.users[name]
-                except:
-                        raise KeyError, "getpwnam(): name not found: %s" % name
-
-        def getpwuid(self, uid):
-                """Do a uid lookup in the image's password database.
-
-                Keep a cached copy in memory for fast lookups, and fall back to
-                the current environment if the password database isn't
-                available.
-                """
-
-                # XXX What to do about IMG_PARTIAL?
-                if self.type == IMG_USER:
-                        return pwd.getpwuid(uid)
-
-                passwd_file = os.path.join(self.root, "etc/passwd")
-
-                try:
-                        passwd_stamp = os.stat(passwd_file).st_mtime
-                except OSError, e:
-                        if e.errno != errno.ENOENT:
-                                raise
-                        # If the password file doesn't exist, bootstrap
-                        # ourselves from the current environment.
-                        return pwd.getpwuid(uid)
-
-                # If the timestamp on the file isn't newer than the last time we
-                # checked, all its entries will already be in our cache, so we
-                # won't find the name.
-                if passwd_stamp > self.users_lastupdate:
-                        self.load_passwd(passwd_file)
-
-                try:
-                        return self.uids[uid]
-                except:
-                        raise KeyError, "getpwuid(): name not found: %d" % uid
-
-        def load_passwd(self, passwd_file):
-
-                self.users.clear()
-                self.uids.clear()
-
-                passwd_stamp = os.stat(passwd_file).st_mtime
-                f = file(passwd_file)
-
-                for line in f:
-                        arr = line.rstrip().split(":")
-                        arr[2] = int(arr[2])
-                        arr[3] = int(arr[3])
-                        pw_entry = pwd.struct_passwd(arr)
-
-                        self.users[pw_entry.pw_name] = pw_entry
-                        self.uids[pw_entry.pw_uid] = pw_entry
-
-                self.users_lastupdate = passwd_stamp
-
-                f.close()
-
-        def getgrnam(self, name):
-                """Do a name lookup in the image's group database.
-
-                Keep a cached copy in memory for fast lookups, and fall back to
-                the current environment if the group database isn't available.
-                """
-
-                # XXX What to do about IMG_PARTIAL?
-                if self.type == IMG_USER:
-                        return grp.getgrnam(name)
-
-                # check if we need to reload cache
-                group_file = os.path.join(self.root, "etc/group")
-
-                try:
-                        group_stamp = os.stat(group_file).st_mtime
-                except OSError, e:
-                        if e.errno != errno.ENOENT:
-                                raise
-                        # If the group file doesn't exist, bootstrap ourselves
-                        # from the current environment.
-                        return grp.getgrnam(name)
-
-                if group_stamp >= self.groups_lastupdate:
-                        self.load_groups(group_file)
-                try:
-                        return self.groups[name]
-                except:
-                        raise KeyError, "getgrnam(): name not found: %s" % name
-
-        def getgrgid(self, gid):
-                """Do a gid lookup in the image's group database.
-
-                Keep a cached copy in memory for fast lookups, and fall back to
-                the current environment if the group database isn't available.
-                """
-
-                # XXX What to do about IMG_PARTIAL?
-                if self.type == IMG_USER:
-                        return grp.getgrgid(gid)
-
-                # check if we need to reload cache
-                group_file = os.path.join(self.root, "etc/group")
-
-                try:
-                        group_stamp = os.stat(group_file).st_mtime
-                except OSError, e:
-                        if e.errno != errno.ENOENT:
-                                raise
-                        # If the group file doesn't exist, bootstrap ourselves
-                        # from the current environment.
-                        return grp.getgrgid(gid)
-
-                if group_stamp >= self.groups_lastupdate:
-                        self.load_groups(group_file)
-                try:
-                        return self.gids[gid]
-                except:
-                        raise KeyError, "getgrgid(): gid not found: %d" % gid
-
-        def load_groups(self, group_file):
-                self.groups.clear()
-                self.gids.clear()
-                group_stamp = os.stat(group_file).st_mtime
-                f = file(group_file)
-                for line in f:
-                        arr = line.rstrip().split(":")
-                        arr[2] = int(arr[2])
-                        gr_entry = grp.struct_group(arr)
-
-                        self.groups[gr_entry.gr_name] = gr_entry
-                        self.gids[gr_entry.gr_gid] = gr_entry
-
-                self.group_lastupdate = group_stamp
-
-                f.close()
+        def get_name_by_gid(self, gid):
+                return portable.get_name_by_gid(gid, self.root, 
+                                                self.type != IMG_USER)
 
         def gen_inventory(self, patterns, all_known=False):
                 """Iterating the package inventory, yielding per-package info.
@@ -975,9 +826,9 @@ class Image(object):
 
         def cleanup_downloads(self):
                 shutil.rmtree(self.get_download_dir(), True)
-                              
-                    
-                    
+
+
+
 
         def list_install(self, pkg_list, progress, filters = [], verbose = False,
             noexecute = False):

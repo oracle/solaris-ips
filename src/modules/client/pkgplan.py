@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 import errno
@@ -109,7 +109,7 @@ class PkgPlan(object):
                                 f = file("%s/pkg/%s/filters" % \
                                     (self.image.imgdir,
                                     self.origin_fmri.get_dir_path()), "r")
-                        except IOError, e:
+                        except EnvironmentError, e:
                                 if e.errno != errno.ENOENT:
                                         raise
                         else:
@@ -170,7 +170,7 @@ class PkgPlan(object):
                 if self.origin_fmri:
                         return self.origin_fmri.get_name()
                 return None
-                
+
         def preexecute(self):
                 """Perform actions required prior to installation or removal of a package.
 
@@ -192,7 +192,7 @@ class PkgPlan(object):
                                 os.unlink("%s/pkg/%s/filters" % (
                                     self.image.imgdir,
                                     self.origin_fmri.get_dir_path()))
-                        except OSError, e:
+                        except EnvironmentError, e:
                                 if e.errno != errno.ENOENT:
                                         raise
 
@@ -238,11 +238,11 @@ class PkgPlan(object):
         def gen_install_actions(self):
                 for src, dest in self.actions[0]:
                         yield src, dest
-        
+
         def gen_removal_actions(self):
                 for src, dest in self.actions[2]:
                         yield src, dest
-        
+
         def gen_update_actions(self):
                 for src, dest in self.actions[1]:
                         yield src, dest
@@ -279,7 +279,7 @@ class PkgPlan(object):
                              self.origin_fmri.get_pkg_stem(),
                              e.__class__.__name__, e)
                         raise
- 
+
         def postexecute(self):
                 """Perform actions required after installation or removal of a package.
 
@@ -304,7 +304,7 @@ class PkgPlan(object):
                                 os.unlink("%s/pkg/%s/filters" % (
                                     self.image.imgdir,
                                     self.origin_fmri.get_dir_path()))
-                        except OSError, e:
+                        except EnvironmentError, e:
                                 if e.errno != errno.ENOENT:
                                         raise
 

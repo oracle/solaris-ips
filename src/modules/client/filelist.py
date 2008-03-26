@@ -28,8 +28,10 @@
 import os
 import urllib
 import shutil
+import stat
 
 import pkg.pkgtarfile as ptf
+import pkg.portable as portable
 from pkg.misc import versioned_urlopen
 
 class FileList(object):
@@ -39,7 +41,7 @@ class FileList(object):
 
         The FileList is responsible for downloading the files needed by the
         PkgPlan from the repository. Once downloaded, the FileList generates
-        the appropriate opener for the actions that it processed.  By
+        the appropriate opener and closer for the actions that it processed.  By
         downloading files in a group, it is possible to achieve better
         performance.  This is because the FileList asks for the files to be
         sent in groups, instead of individual HTTP GET's.
@@ -137,7 +139,7 @@ class FileList(object):
                 tar_stream = ptf.PkgTarFile.open(mode = "r|", fileobj = f)
 
                 filelist_download_dir = self.image.get_download_dir()
-                            
+
                 for info in tar_stream:
                         hashval = info.name
                         pkgnm = self.fmri.get_dir_path(True)
@@ -160,8 +162,9 @@ class FileList(object):
                         # action.
                         filename =  "." + pkgnm + "-" + base + "-" + hashval
 
-                        # Set the perms of the temporary file.
-                        info.mode = 0400
+                        # Set the perms of the temporary file. The file must
+                        # be writable so that the mod time can be changed on Windows
+                        info.mode = 0600
                         info.uname = "root"
                         info.gname = "root"
 
@@ -172,9 +175,13 @@ class FileList(object):
                         # after being extracted
                         extract_path = os.path.normpath(os.path.join(
                             path, filename))
-                       
+
                         # assign opener
                         act.data = self._make_opener(extract_path)
+
+                        # assign cleanup callable, responsible for deleting the
+                        # temporary file holding the action's data.
+                        act.cleanup = self._make_cleaner(extract_path)
 
                         # If there are more actions in the list, copy the
                         # extracted file to their paths, changing names as
@@ -191,9 +198,9 @@ class FileList(object):
                                 if not os.path.exists(cpdir):
                                         os.makedirs(cpdir)
                                 # we can use hardlink here
-                                os.link(extract_path, cppath)
+                                portable.link(extract_path, cppath)
                                 action.data = self._make_opener(cppath)
-
+                                action.cleanup = self._make_cleaner(cppath)
                 tar_stream.close()
                 f.close()
 
@@ -216,11 +223,22 @@ class FileList(object):
         def _make_opener(filepath):
                 def opener():
                         f = open(filepath, "rb")
-                        os.unlink(filepath)
                         return f
                 return opener                                
 
+        @staticmethod
+        def _make_cleaner(filepath):
+                def cleaner():
+                        try:
+                               # Make file writable so it can be deleted
+                               os.chmod(filepath, stat.S_IWRITE|stat.S_IREAD)
+                               os.unlink(filepath)
+                        except EnvironmentError, e:
+                                print "EnvError in cleaner", e
+                                pass
+                return cleaner                                
+
 class FileListException(Exception):
         def __init__(self, args=None):
-                Exception.__init__(self)
+		Exception.__init__(self)
                 self.args = args

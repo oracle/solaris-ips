@@ -20,12 +20,16 @@
 # CDDL HEADER END
 #
 
-# Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 depot_start () {
 	print -u2 "Redirecting all repository logging to stdout"
-	$ROOT/usr/lib/pkg.depotd -p $REPO_PORT -d $REPO_DIR 2>&1 &
+        if [ -n "$PYEXE" ];  then
+            $PYEXE $ROOT/usr/lib/depot.py -p $REPO_PORT -d $REPO_DIR 2>&1 &
+        else
+            $ROOT/usr/lib/pkg.depotd -p $REPO_PORT -d $REPO_DIR 2>&1 &
+        fi
 	DEPOT_PID=$!
 	sleep 1
 }

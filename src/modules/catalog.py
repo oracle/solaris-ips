@@ -29,7 +29,7 @@ import os
 import re
 import urllib
 import errno
-import dbm
+import anydbm as dbm
 import signal
 import threading
 import datetime
@@ -39,7 +39,6 @@ import cPickle
 import pkg.fmri as fmri
 import pkg.version as version
 import pkg.manifest as manifest
-from pkg.subprocess_method import Mopen, PIPE
 
 class CatalogException(Exception):
         def __init__(self, args=None):
@@ -351,10 +350,22 @@ class Catalog(object):
                                             "database: %s (errno=%s)" % \
                                             (e.args[1], e.args[0])
                 else:
-                        signal.signal(signal.SIGCHLD, self.child_handler)
-                        self.searchdb_update_handle = \
-                            Mopen(self.update_searchdb, [fmri_list], {},
-                                stderr = PIPE)
+                        if os.name == 'posix':
+                                from pkg.subprocess_method import Mopen, PIPE
+                                try: 
+                                        signal.signal(signal.SIGCHLD, self.child_handler)
+                                        self.searchdb_update_handle = \
+                                            Mopen(self.update_searchdb, [fmri_list], {},
+                                                stderr = PIPE)
+                                except ValueError:
+                                        # if we are in a subthread already, the signal method 
+                                        # will not work
+                                        self.update_searchdb(fmri_list)
+                        else:
+                                # on non-unix, where there is no convenient
+                                # way to fork subprocesses, just update the
+                                # searchdb inline.
+                                self.update_searchdb(fmri_list)
 
         def child_handler(self, sig, frame):
                 """Handler method for the SIGCLD signal.  Checks to see if the
@@ -1171,7 +1182,11 @@ def ts_to_datetime(ts):
         hour = int(ts[11:13])
         min = int(ts[14:16])
         sec = int(ts[17:19])
-        usec = int(ts[20:26])
+        # usec is not in the string if 0
+        try:
+            usec = int(ts[20:26])
+        except ValueError:
+            usec = 0
 
         dt = datetime.datetime(year, month, day, hour, min, sec, usec)
 

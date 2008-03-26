@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -34,11 +34,6 @@ import pkg.catalog as catalog
 import pkg.updatelog as updatelog
 
 import pkg.server.transaction as trans
-
-# OpenSolaris:  statvfs(2) flags field
-ST_RDONLY = 0x01
-ST_NOSUID = 0x02
-ST_NOTRUNC = 0x04
 
 # depot Server Configuration
 
@@ -69,27 +64,16 @@ class SvrConfig(object):
                 self.pkgs_renamed = 0
 
         def init_dirs(self):
-                root_needed = False
 
-                try:
-                        vfs = os.statvfs(self.repo_root)
-                except OSError, e:
-                        if e.errno == errno.ENOENT:
-                                root_needed = True
-                        else:
-                                raise
-
-                if root_needed:
+                if not os.path.exists(self.repo_root):
                         try:
                                 os.makedirs(self.repo_root)
                         except OSError, e:
                                 raise
 
-                        vfs = os.statvfs(self.repo_root)
-
                 emsg = "repository directories incomplete"
 
-                if vfs[statvfs.F_FLAG] & ST_RDONLY != 0:
+                if not os.access(self.repo_root, os.W_OK):
                         self.set_read_only()
                         emsg = "repository directories read-only and incomplete"
                 else:

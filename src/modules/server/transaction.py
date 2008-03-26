@@ -34,10 +34,15 @@ import urllib
 import httplib
 
 import pkg.fmri as fmri
-import pkg.elf as elf
 import pkg.misc as misc
+import pkg.portable as portable
 
 import pkg.actions
+try:
+        import pkg.elf as elf
+        haveelf = True
+except ImportError:
+        haveelf = False
 
 class Transaction(object):
         """A Transaction is a server-side object used to represent the set of
@@ -206,7 +211,7 @@ class Transaction(object):
                         rfile = request.rfile
                 # XXX Ugly special case to handle empty files.
                 elif type == "file":
-                        rfile = "/dev/null"
+                        rfile = os.devnull
                 action = pkg.actions.types[type](rfile, **attrs)
 
                 # XXX Once actions are labelled with critical nature.
@@ -222,7 +227,7 @@ class Transaction(object):
 
                         # Extract ELF information
                         # XXX This needs to be modularized.
-                        if data[:4] == "\x7fELF":
+                        if haveelf and data[:4] == "\x7fELF":
                                 elf_name = "%s/.temp" % self.dir
                                 elf_file = open(elf_name, "wb")
                                 elf_file.write(data)
@@ -313,12 +318,12 @@ class Transaction(object):
                 # mv manifest to pkg_name / version
                 # A package may have no files, so there needn't be a manifest.
                 if os.path.exists("%s/manifest" % self.dir):
-                        os.rename("%s/manifest" % self.dir, "%s/%s" %
+                        portable.rename("%s/manifest" % self.dir, "%s/%s" %
                             (pkgdir, urllib.quote(str(fmri.version), "")))
 
                 # update search index
                 cfg.catalog.update_searchdb([os.path.join(
-                    cfg.pkg_root, fmri.get_dir_path()).rsplit(os.path.sep, 1)])
+                    cfg.pkg_root, fmri.get_dir_path()).rsplit('/', 1)])
 
                 # Move each file to file_root, with appropriate directory
                 # structure.
@@ -327,7 +332,7 @@ class Transaction(object):
                         src_path = "%s/%s" % (self.dir, f)
                         dst_path = "%s/%s" % (cfg.file_root, path)
                         try:
-                                os.rename(src_path, dst_path)
+                                portable.rename(src_path, dst_path)
                         except OSError, e:
                                 # XXX We might want to be more careful with this
                                 # exception, and only try makedirs() if rename()
@@ -345,7 +350,7 @@ class Transaction(object):
                                 except OSError, e:
                                         if e.errno != errno.EEXIST:
                                                 raise
-                                os.rename(src_path, dst_path)
+                                portable.rename(src_path, dst_path)
 
         def accept_incomplete(self):
                 """Transaction fails consistency criteria, and can be published.

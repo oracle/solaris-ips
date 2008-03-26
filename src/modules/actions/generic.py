@@ -37,6 +37,7 @@ import zlib
 import errno
 
 import pkg.actions
+import pkg.portable as portable
 
 def gunzip_from_stream(gz, outfile):
         """Decompress a gzipped input stream into an output stream.
@@ -147,7 +148,7 @@ class Action(object):
 				pkg.actions.types["link"]     : 8,
 				pkg.actions.types["driver"]   : 9,
 				pkg.actions.types["unknown"]  : 10
-				
+
 			})
 
 		self.unknown = self.orderdict[pkg.actions.types["unknown"]]
@@ -163,6 +164,10 @@ class Action(object):
                 will be substituted with a callable that will return the object.
                 If it is a callable, it will not be replaced at all.
 
+                For file-like 'data' arguments, The internal 'cleanup'
+                attribute will be set to a callable which will delete the
+                underlying file after the data is processed.
+
                 Any remaining named arguments will be treated as attributes.
                 """
 
@@ -173,14 +178,19 @@ class Action(object):
 
                 if isinstance(data, str):
                         def file_opener():
-                                return open(data)
+                                return open(data, "rb")
                         self.data = file_opener
+                        def file_cleanup():
+                                os.unlink(data)
+                        self.cleanup = file_cleanup
                 elif not callable(data) and data != None:
                         def data_opener():
                                 return data
                         self.data = data_opener
+                        self.cleanup = None
                 else:
                         self.data = data
+                        self.cleanup = None
 
         def __str__(self):
                 """Serialize the action into manifest form.
@@ -243,7 +253,7 @@ class Action(object):
 		return res
 
 	def compare(self, other):
-		return cmp(id(self), id(other))
+                        return cmp(id(self), id(other))
 
         def different(self, other):
                 """Returns True if other represents a non-ignorable change from self.
@@ -339,12 +349,19 @@ class Action(object):
                 existing directory.  The leaf directory will also inherit any
                 permissions not explicitly set."""
 
-                pathlist = path.split("/")
-                pathlist[0] = "/"
+                # generate the components of the path.  The first
+                # element will be empty since all absolute paths
+                # always start with a root specifier.
+                pathlist = portable.split_path(path)
+
+                # Fill in the first path with the root of the filesystem
+                # (this ends up being something like C:\ on windows systems,
+                # and "/" on unix.
+                pathlist[0] = portable.get_root(path)
 
                 g = enumerate(pathlist)
                 for i, e in g:
-                        if not os.path.isdir(os.path.join("/", *pathlist[:i + 1])):
+                        if not os.path.isdir(os.path.join(*pathlist[:i + 1])):
                                 break
                 else:
                         # XXX Because the filelist codepath may create directories with
@@ -362,20 +379,20 @@ class Action(object):
                                 if mode != stat.st_mode:
                                         os.chmod(path, mode)
                                 if uid != stat.st_uid or gid != stat.st_gid:
-                                        os.chown(path, uid, gid)
+                                        portable.chown(path, uid, gid)
                         except  OSError, e:
                                 if e.errno != errno.EPERM and \
                                     e.errno != errno.ENOSYS:
                                         raise
                         return
 
-                stat = os.stat(os.path.join("/", *pathlist[:i]))
+                stat = os.stat(os.path.join(*pathlist[:i]))
                 for i, e in g:
-                        p = os.path.join("/", *pathlist[:i])
+                        p = os.path.join(*pathlist[:i])
                         os.mkdir(p, stat.st_mode)
                         os.chmod(p, stat.st_mode)
                         try:
-                                os.chown(p, stat.st_uid, stat.st_gid)
+                                portable.chown(p, stat.st_uid, stat.st_gid)
                         except OSError, e:
                                 if e.errno != errno.EPERM:
                                         raise
@@ -388,7 +405,7 @@ class Action(object):
                 os.mkdir(path, mode)
                 os.chmod(path, mode)
                 try:
-                        os.chown(path, uid, gid)
+                        portable.chown(path, uid, gid)
                 except OSError, e:
                         if e.errno != errno.EPERM:
                                 raise

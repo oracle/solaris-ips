@@ -39,27 +39,44 @@ class TestPkgInstallBasics(testutils.SingleDepotTestCase):
         foo11 = """
             open foo@1.1,5.11-0
             add dir mode=0755 owner=root group=bin path=/lib
-            add file /lib/libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.so.1
+            add file /tmp/libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.so.1
             close """
 
         foo12 = """
             open foo@1.2,5.11-0
-            add file /lib/libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.so.1
+            add file /tmp/libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.so.1
             close """
 
         bar10 = """
             open bar@1.0,5.11-0
             add depend type=require fmri=pkg:/foo@1.0
             add dir mode=0755 owner=root group=bin path=/bin
-            add file /bin/cat mode=0555 owner=root group=bin path=/bin/cat
+            add file /tmp/cat mode=0555 owner=root group=bin path=/bin/cat
             close """
-                
+
         bar11 = """
             open bar@1.1,5.11-0
             add depend type=require fmri=pkg:/foo@1.2
             add dir mode=0755 owner=root group=bin path=/bin
-            add file /bin/cat mode=0555 owner=root group=bin path=/bin/cat
+            add file /tmp/cat mode=0555 owner=root group=bin path=/bin/cat
             close """
+
+        misc_files = [ "/tmp/libc.so.1", "/tmp/cat" ]
+
+        def setUp(self):
+                testutils.SingleDepotTestCase.setUp(self)
+                for p in self.misc_files:
+                        f = open(p, "w")
+                        # write the name of the file into the file, so that
+                        # all files have differing contents
+                        f.write(p)
+                        f.close
+                        self.debug("wrote %s" % p)
+
+        def tearDown(self):
+                testutils.SingleDepotTestCase.tearDown(self)
+                for p in self.misc_files:
+                        os.remove(p)
 
         def test_basics_1(self):
                 """ Send empty package foo@1.0, install and uninstall """

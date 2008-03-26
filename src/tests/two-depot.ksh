@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 # cli-complete.ksh - basic sanity test exercising all basic pkg(1) operations
@@ -47,7 +47,20 @@ unset PKG_IMAGE
 
 restore_dir=$PWD
 
-ROOT=$PWD/../../proto/root_$(uname -p)
+osname=`python -c "import platform; print platform.uname()[0].lower()"`
+proc="unknown"
+if [ "$osname" = "sunos" ] ; then
+    proc=`python -c "import platform; print platform.processor()"`
+elif [ "$osname" == "linux" ] ; then
+    proc="linux_"`python -c "import platform; print platform.machine()"`
+elif [ "$osname" == "windows" ]; then
+    proc=$osname
+elif [ "$osname" == "darwin" ]; then
+    proc=$osname
+fi
+
+
+ROOT=$PWD/../../proto/root_$proc
 
 export PKG_DEPOT_CONTENT=$ROOT/usr/share/lib/pkg
 export PYTHONPATH=$ROOT/usr/lib/python2.4/vendor-packages/
@@ -60,11 +73,20 @@ print -u2 -- \
 
 depots_start () {
 	print -u2 "Redirecting all repository logging to stdout"
-	$ROOT/usr/lib/pkg.depotd -p $REPO1_PORT -d $REPO1_DIR 2>&1 &
+	if [ -n "$PYEXE" ]; then
+    	$PYEXE $ROOT/usr/lib/depot.py -p $REPO1_PORT -d $REPO1_DIR 2>&1 &
+    else
+    	$ROOT/usr/lib/pkg.depotd -p $REPO1_PORT -d $REPO1_DIR 2>&1 &
+    fi
 	DEPOT1_PID=$!
-	$ROOT/usr/lib/pkg.depotd -p $REPO2_PORT -d $REPO2_DIR 2>&1 &
+	
+	if [ -n "$PYEXE" ]; then
+    	$PYEXE $ROOT/usr/lib/depot.py -p $REPO2_PORT -d $REPO2_DIR 2>&1 &
+	else
+    	$ROOT/usr/lib/pkg.depotd -p $REPO2_PORT -d $REPO2_DIR 2>&1 &
+    fi
 	DEPOT2_PID=$!
-	sleep 1
+	sleep 2
 }
 
 depots_cleanup () {

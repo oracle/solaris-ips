@@ -34,6 +34,7 @@ import urllib
 import urllib2
 
 from pkg.misc import versioned_urlopen
+import pkg.portable.util as os_util
 
 class Transaction(object):
 
@@ -54,7 +55,7 @@ class Transaction(object):
                 try:
                         c, v = versioned_urlopen(self.cfg.install_uri, "open",
                             [0], urllib.quote(self.pkg_name, ""),
-                            headers = {"Client-Release": os.uname()[2]})
+                            headers = {"Client-Release": os_util.get_os_release()})
                 except (httplib.BadStatusLine, RuntimeError):
                         return httplib.INTERNAL_SERVER_ERROR, None
                 except urllib2.HTTPError, e:

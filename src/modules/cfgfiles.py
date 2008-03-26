@@ -25,6 +25,9 @@
 # Use is subject to license terms.
 #
 
+# NOTE: This module is inherently posix specific.  Care is taken in the modules
+# that use this module to not use it on other operating systems.
+
 import os
 import fcntl
 import re

@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 import os
@@ -30,6 +30,21 @@ import unittest
 
 all_suite=None
 
+osname = platform.uname()[0].lower()
+arch = 'unknown'
+if osname == 'sunos':
+    arch = platform.processor()
+elif osname == 'linux':
+    arch = "linux_" + platform.machine()
+elif osname == 'windows':
+    arch = osname
+elif osname == 'darwin':
+    arch = osname
+
+ostype = os.name
+if ostype == '':
+    ostype = 'unknown'
+
 #
 # This is wrapped in a function because __main__ below alters
 # PYTHONPATH to reference the proto area; so imports of packaging
@@ -37,13 +52,13 @@ all_suite=None
 #
 def maketests():
         import api.t_catalog
-        import api.t_elf
         import api.t_filter
         import api.t_fmri
         import api.t_imageconfig
         import api.t_manifest
         import api.t_misc
         import api.t_pkgtarfile
+        import api.t_plat
         import api.t_smf
         import api.t_version
 
@@ -52,13 +67,13 @@ def maketests():
 	    api.t_catalog.TestEmptyCatalog,
 	    api.t_catalog.TestCatalogRename,
 	    api.t_catalog.TestUpdateLog,
-	    api.t_elf.TestElf,
 	    api.t_filter.TestFilter,
 	    api.t_fmri.TestFMRI,
 	    api.t_imageconfig.TestImageConfig,
 	    api.t_manifest.TestManifest,
 	    api.t_misc.TestMisc,
             api.t_pkgtarfile.TestPkgTarFile,
+            api.t_plat.TestPlat,
 	    api.t_smf.TestSMF,
 	    api.t_version.TestVersion ]
 
@@ -67,30 +82,28 @@ def maketests():
 
 
 if __name__ == "__main__":
+        try:
+                import t_elf
+                all_suite.addTest(unittest.makeSuite(t_elf.TestElf, 'test'))
+        except ImportError, e:
+                # some platforms do not have support for reading ELF files, so
+                # skip those tests if we cannot import the elf test.
+                print("NOTE: Skipping ELF tests: " + e.__str__())
 
         cwd = os.getcwd()
-        if os.uname()[0] == "SunOS":
-                proc = platform.processor()
-        elif os.uname()[0] == "Linux":
-                proc = platform.machine()
-        else:
-                print "Unable to determine appropriate proto area location."
-                print "This is a porting problem."
-                sys.exit(1)
 
-	proto = "%s/../../proto/root_%s" % (cwd, proc)
+	proto = "%s/../../proto/root_%s" % (cwd, arch)
 	pkgs = "%s/usr/lib/python2.4/vendor-packages" % proto
-	bins = "%s/usr/bin" % proto
-
+        bins = "%s/usr/bin" % proto
 	print "NOTE: Adding %s to head of PYTHONPATH" % pkgs
 	sys.path.insert(1, pkgs)
 	print "NOTE: Adding '%s' to head of PATH" % bins
 	os.environ["PATH"] = bins + os.pathsep + os.environ["PATH"]
 
-        all_suite = unittest.TestSuite()
-        maketests()
-        runner = unittest.TextTestRunner()
-        res = runner.run(all_suite)
+	all_suite = unittest.TestSuite()
+	maketests()
+	runner = unittest.TextTestRunner()
+	res = runner.run(all_suite)
         if res.failures:
-                sys.exit(1)
-        sys.exit(0)
+		sys.exit(1)
+	sys.exit(0)

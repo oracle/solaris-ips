@@ -34,8 +34,11 @@ a new user."""
 import os
 import errno
 import generic
-from pkg.cfgfiles import *
-
+try:
+        from pkg.cfgfiles import *
+        have_cfgfiles = True
+except ImportError:
+        have_cfgfiles = False
 
 class GroupAction(generic.Action):
         """Class representing a group packaging object.
@@ -59,6 +62,10 @@ class GroupAction(generic.Action):
         def install(self, pkgplan, orig):
                 """client-side method that adds the group
                    use gid from disk if different"""
+                if not have_cfgfiles:
+                        # the group action is ignored if cfgfiles is not available
+                        return
+
                 groupname = self.attrs["groupname"]
 
                 template = self.extract(["groupname", "gid"])
@@ -74,6 +81,9 @@ class GroupAction(generic.Action):
 
         def verify(self, img, **args):
                 """" verify user action installation """
+                if not have_cfgfiles:
+                        # the user action is ignored if cfgfiles is not available
+                        return []
 
                 gr = GroupFile(img.get_root())
 
@@ -86,6 +96,9 @@ class GroupAction(generic.Action):
                                 
         def remove(self, pkgplan):
                 """client-side method that removes this group"""
+                if not have_cfgfiles:
+                        # the user action is ignored if cfgfiles is not available
+                        return
                 gr = GroupFile(pkgplan.image.get_root())
                 cur_attrs = gr.getvalue(self.attrs)
                 # groups need to be first added, last removed

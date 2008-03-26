@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 import unittest
@@ -290,12 +290,12 @@ file fff555ff9 mode=0555 owner=sch group=staff path=/usr/bin/i386/sort isa=i386
 		# XXX dp: "duplicates" is an odd name for this routine.
 
 		self.m1.set_content("""\
-dir mode=0755 owner=root group=sys path=/bin
-dir mode=0755 owner=root group=sys path=/bin
-dir mode=0755 owner=root group=sys path=/bin
-dir mode=0755 owner=root group=sys path=/usr
-dir mode=0755 owner=root group=root path=/usr
-dir mode=0755 owner=bin group=sys path=/usr
+dir mode=0755 owner=root group=sys path=bin
+dir mode=0755 owner=root group=sys path=bin
+dir mode=0755 owner=root group=sys path=bin
+dir mode=0755 owner=root group=sys path=usr
+dir mode=0755 owner=root group=root path=usr
+dir mode=0755 owner=bin group=sys path=usr
 			""")
 
 		acount = 0

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -34,6 +34,7 @@ import os
 import errno
 from stat import *
 import generic
+import pkg.portable as portable
 
 class DirectoryAction(generic.Action):
         """Class representing a directory-type packaging object."""
@@ -52,21 +53,21 @@ class DirectoryAction(generic.Action):
                 """Client-side method that installs a directory."""
                 path = self.attrs["path"]
                 mode = int(self.attrs["mode"], 8)
-                owner = pkgplan.image.getpwnam(self.attrs["owner"]).pw_uid
-                group = pkgplan.image.getgrnam(self.attrs["group"]).gr_gid
+                owner = pkgplan.image.get_user_by_name(self.attrs["owner"])
+                group = pkgplan.image.get_group_by_name(self.attrs["group"])
 
                 if orig:
                         omode = int(orig.attrs["mode"], 8)
-                        oowner = pkgplan.image.getpwnam(
-                            orig.attrs["owner"]).pw_uid
-                        ogroup = pkgplan.image.getgrnam(
-                            orig.attrs["group"]).gr_gid
+                        oowner = pkgplan.image.get_user_by_name(
+                            orig.attrs["owner"])
+                        ogroup = pkgplan.image.get_group_by_name(
+                            orig.attrs["group"])
 
                 path = os.path.normpath(os.path.sep.join(
                     (pkgplan.image.get_root(), path)))
 
                 # XXX Hack!  (See below comment.)
-                if os.getuid() != 0:
+                if not portable.is_admin():
                         mode |= 0200
 
                 if not orig:
@@ -92,7 +93,7 @@ class DirectoryAction(generic.Action):
 
                 if not orig or oowner != owner or ogroup != group:
                         try:
-                                os.chown(path, owner, group)
+                                portable.chown(path, owner, group)
                         except OSError, e:
                                 if e.errno != errno.EPERM and \
                                     e.errno != errno.ENOSYS:
@@ -102,8 +103,8 @@ class DirectoryAction(generic.Action):
                 """ make sure directory is correctly installed"""
 
                 mode = int(self.attrs["mode"], 8)
-                owner = img.getpwnam(self.attrs["owner"]).pw_uid
-                group = img.getgrnam(self.attrs["group"]).gr_gid
+                owner = img.get_user_by_name(self.attrs["owner"])
+                group = img.get_group_by_name(self.attrs["group"])
 
                 path = os.path.normpath(os.path.sep.join((img.get_root(),
                                         self.attrs["path"])))
@@ -123,19 +124,19 @@ class DirectoryAction(generic.Action):
 
                 if stat[ST_UID] != owner:
                         errors.append("Owner: '%s' should be '%s'" % \
-                            (img.getpwuid(stat[ST_UID]).pw_name,
-                            img.getpwuid(owner).pw_name))
+                            (img.get_name_by_uid(stat[ST_UID]),
+                            img.get_name_by_uid(owner)))
                 if stat[ST_GID] != group:
                         errors.append("Group: '%s' should be '%s'" % \
-                            (img.getgrgid(stat[ST_GID]).gr_name,
-                            img.getgrgid(group).gr_name))
+                            (img.get_name_by_gid(stat[ST_GID]),
+                            img.get_name_by_gid(group)))
 
                 if S_IMODE(stat[ST_MODE]) != mode:
                         errors.append("Mode: 0%.3o should be 0%.3o" % \
                             (S_IMODE(stat[ST_MODE]), mode))
 
-                return errors
-                
+		return errors
+
         def remove(self, pkgplan):
                 path = os.path.normpath(os.path.sep.join(
                     (pkgplan.image.get_root(), self.attrs["path"])))
@@ -144,7 +145,8 @@ class DirectoryAction(generic.Action):
                         os.rmdir(path)
                 except OSError, e:
                         if e.errno != errno.EEXIST and \
-                            e.errno != errno.ENOENT:
+                           e.errno != errno.ENOTEMPTY and \
+                           e.errno != errno.EACCES : # this happens on Windows
                                 raise
 
         def generate_indices(self):
