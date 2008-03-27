@@ -96,7 +96,7 @@ def get_name_by_gid(gid, dirpath, use_file):
                 return grp.getgrgid(gid).gr_name
         try: 
                 load_groups(dirpath)
-                return groups[dirpath][gid].gr_name
+                return gids[dirpath][gid].gr_name
         except OSError, e:
                 if e.errno != errno.ENOENT:
                         raise
@@ -111,7 +111,7 @@ def get_name_by_uid(uid, dirpath, use_file):
                 return pwd.getpwuid(uid).pw_name
         try: 
                 load_passwd(dirpath)
-                return users[dirpath][uid].pw_name
+                return uids[dirpath][uid].pw_name
         except OSError, e:
                 if e.errno != errno.ENOENT:
                         raise
