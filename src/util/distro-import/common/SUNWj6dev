@@ -6,4 +6,19 @@ from ./SUNWfixes import
 usr/jdk/instances/jdk1.6.0/LICENSE
 usr/jdk/instances/jdk1.6.0/README.html
 end import
+add link path=usr/bin/HtmlConverter target=../java/bin/HtmlConverter
+add link path=usr/bin/appletviewer target=../java/bin/appletviewer
+add link path=usr/bin/apt target=../java/bin/apt
+add link path=usr/bin/extcheck target=../java/bin/extcheck
+add link path=usr/bin/idlj target=../java/bin/idlj
+add link path=usr/bin/jar target=../java/bin/jar
+add link path=usr/bin/jarsigner target=../java/bin/jarsigner
+add link path=usr/bin/javac target=../java/bin/javac
+add link path=usr/bin/javadoc target=../java/bin/javadoc
+add link path=usr/bin/javah target=../java/bin/javah
+add link path=usr/bin/javap target=../java/bin/javap
+add link path=usr/bin/jdb target=../java/bin/jdb
+add link path=usr/bin/native2ascii target=../java/bin/native2ascii
+add link path=usr/bin/rmic target=../java/bin/rmic
+add link path=usr/bin/serialver target=../java/bin/serialver
 end package

@@ -3,14 +3,14 @@ include common/SUNWIPython
 include common/SUNWadmc
 include common/SUNWafe
 include common/SUNWant
+include common/SUNWapch
 include common/SUNWapch2
 include common/SUNWapch2d
+include common/SUNWapchd
 include common/SUNWastdev
 include common/SUNWavahi-bridge-dsd
 include common/SUNWcs
-include common/SUNWcsdhcm
 include common/SUNWcsl
-include common/SUNWcsos
 include common/SUNWcurl
 include common/SUNWdsd
 include common/SUNWdtts
@@ -34,6 +34,7 @@ include common/SUNWgnu-idn
 include common/SUNWgscr
 include common/SUNWgtar
 include common/SUNWhpijs
+include common/SUNWiiim
 include common/SUNWjaxp
 include common/SUNWjds-registration.72
 include common/SUNWlibdaemon
@@ -64,6 +65,7 @@ include common/SUNWrge
 include common/SUNWscp
 include common/SUNWsfman
 include common/SUNWsmba
+include common/SUNWtcat
 include common/SUNWtexi
 include common/SUNWtgnome-tsol-libs
 include common/SUNWtgnome-tsoljdsdevmgr
@@ -84,6 +86,7 @@ include common/SUNWxwts
 include i386/NVDAgraphics
 include i386/SUNWaac
 include i386/SUNWamd8111s
+include i386/SUNWbge
 include i386/SUNWcakr
 include i386/SUNWcakrx
 include i386/SUNWcarx

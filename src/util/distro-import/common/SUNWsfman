@@ -1,5 +1,9 @@
 package SUNWsfman
 import SUNWsfman
+add dir path=usr/gnu mode=0755 owner=root group=bin
+add dir path=usr/gnu/share mode=0755 owner=root group=sys
+add dir path=usr/gnu/share/man mode=0755 owner=root group=bin
+add dir path=usr/gnu/share/man/man1 mode=0755 owner=root group=bin
 add link path=usr/gnu/share/man/man1/addr2line.1 target=../../../../sfw/share/man/man1/gaddr2line.1
 add link path=usr/gnu/share/man/man1/ar.1 target=../../../../sfw/share/man/man1/gar.1
 add link path=usr/gnu/share/man/man1/as.1 target=../../../../sfw/share/man/man1/gas.1

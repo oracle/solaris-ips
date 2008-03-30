@@ -4,6 +4,8 @@ version 2.5
 add link path=usr/bin/gegrep target=../sfw/bin/gegrep
 add link path=usr/bin/gfgrep target=../sfw/bin/gfgrep
 add link path=usr/bin/ggrep target=../sfw/bin/ggrep
+add dir path=usr/gnu mode=0755 owner=root group=bin
+add dir path=usr/gnu/bin mode=0755 owner=root group=bin
 add link path=usr/gnu/bin/egrep target=../../sfw/bin/gegrep
 add link path=usr/gnu/bin/fgrep target=../../sfw/bin/gfgrep
 add link path=usr/gnu/bin/grep target=../../sfw/bin/ggrep

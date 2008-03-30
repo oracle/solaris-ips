@@ -37,7 +37,7 @@ drop sbin/pfsh
 drop sbin/sh
 add link path=sbin/pfsh target=../usr/has/bin/sh
 add link path=sbin/sh target=../usr/bin/i86/ksh93
-# XXX workaround for 6664536
+# XXX workaround for 6664536 and 6674548
 drop lib/svc/method/svc-dlmgmtd
 from ./SUNWfixes import
 # until the necessary actions are available
@@ -58,7 +58,7 @@ usr/has/bin/ex
 usr/has/bin/sh
 usr/has/bin/vi
 usr/has/bin/view
-# XXX workaround for 6664536
+# XXX workaround for 6664536 and 6674548
 lib/svc/method/svc-dlmgmtd
 end import
 # include etc/ftpd/ftpusers in base package

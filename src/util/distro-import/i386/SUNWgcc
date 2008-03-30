@@ -12,9 +12,12 @@ add link path=usr/bin/i386-pc-solaris2.11-c++ target=../sfw/bin/i386-pc-solaris2
 add link path=usr/bin/i386-pc-solaris2.11-g++ target=../sfw/bin/i386-pc-solaris2.11-g++
 add link path=usr/bin/i386-pc-solaris2.11-gcc target=../sfw/bin/i386-pc-solaris2.11-gcc
 add link path=usr/bin/i386-pc-solaris2.11-gcc-3.4.3 target=../sfw/bin/i386-pc-solaris2.11-gcc-3.4.3
+add dir path=usr/gnu mode=0755 owner=root group=bin
+add dir path=usr/gnu/bin mode=0755 owner=root group=bin
 add link path=usr/gnu/bin/cc target=../../sfw/bin/gcc
 add link path=usr/gnu/bin/cpp target=../../sfw/bin/cpp
-depend SUNWbinutils
 depend SUNWarc
+depend SUNWbinutils
 depend SUNWgccruntime
+depend SUNWhea
 end package

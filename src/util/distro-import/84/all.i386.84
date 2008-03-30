@@ -4,17 +4,17 @@ include common/SUNWaac.81
 include common/SUNWadmc.79
 include common/SUNWafe
 include common/SUNWant.82
+include common/SUNWapch
 include common/SUNWapch2.78
 include common/SUNWapch22
 include common/SUNWapch22d
 include common/SUNWapch22m-php5
 include common/SUNWapch2d.78
+include common/SUNWapchd
 include common/SUNWastdev
 include common/SUNWavahi-bridge-dsd
 include common/SUNWcs.84
-include common/SUNWcsdhcm
 include common/SUNWcsl.80
-include common/SUNWcsos
 include common/SUNWcurl
 include common/SUNWdmfe
 include common/SUNWdsd
@@ -46,6 +46,7 @@ include common/SUNWgtar.81
 include common/SUNWgui-install.79
 include common/SUNWhpijs.77
 include common/SUNWigb
+include common/SUNWiiim
 include common/SUNWisns
 include common/SUNWjaxp.78
 include common/SUNWjds-registration.72
@@ -107,6 +108,7 @@ include common/SUNWsmbskr
 include common/SUNWsmpd
 include common/SUNWsquid.81
 include common/SUNWstosreg
+include common/SUNWtcat
 include common/SUNWtexi.77
 include common/SUNWtgnome-tsol-libs
 include common/SUNWtgnome-tsoljdsdevmgr
@@ -132,6 +134,7 @@ include common/SUNWxwts
 include i386/NVDAgraphics.81
 include i386/SUNWamd8111s.76
 include i386/SUNWatigfx
+include i386/SUNWbge
 include i386/SUNWcakr.80
 include i386/SUNWcakrx
 include i386/SUNWcarx

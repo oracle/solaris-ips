@@ -14,7 +14,6 @@ include i386/SUNWamr
 include i386/SUNWatheros
 include i386/SUNWaudd
 include i386/SUNWaudiohd
-include i386/SUNWbge
 include i386/SUNWcadp
 include i386/SUNWcar
 include i386/SUNWcpc
@@ -97,8 +96,6 @@ include common/SUNWadmj
 include common/SUNWadmlib-sysid
 include common/SUNWadmr
 include common/SUNWapbas
-include common/SUNWapch
-include common/SUNWapchd
 include common/SUNWapcj
 include common/SUNWapct
 include common/SUNWapdc
@@ -366,7 +363,6 @@ include common/SUNWidnd
 include common/SUNWidnl
 include common/SUNWidnu
 include common/SUNWii
-include common/SUNWiiim
 include common/SUNWima
 include common/SUNWimac
 include common/SUNWimagick
@@ -422,7 +418,6 @@ include common/SUNWjavadb-javadoc
 include common/SUNWjdmk-base
 include common/SUNWjdsrm
 include common/SUNWjdsver
-include common/SUNWjfp
 include common/SUNWjhdem
 include common/SUNWjhdev
 include common/SUNWjhdoc
@@ -436,8 +431,6 @@ include common/SUNWjre-config
 include common/SUNWjre-config-plugin
 include common/SUNWjsnmp
 include common/SUNWjss
-include common/SUNWjwnc
-include common/SUNWjwns
 include common/SUNWjxmft
 include common/SUNWkdc
 include common/SUNWkey
@@ -558,8 +551,10 @@ include common/SUNWpolkit
 include common/SUNWpool
 include common/SUNWpoold
 include common/SUNWpostgr-82-jdbc
+include common/SUNWpostgr-82-l10n-jaS
 include common/SUNWpostgr-82-tcl
 include common/SUNWpostgr-jdbc
+include common/SUNWpostgr-l10n-jaS
 include common/SUNWpostgr-tcl
 include common/SUNWpostrun
 include common/SUNWppm
@@ -694,7 +689,6 @@ include common/SUNWsvn-perl
 include common/SUNWsvn-python
 include common/SUNWswmt
 include common/SUNWtavor
-include common/SUNWtcat
 include common/SUNWtcpd
 include common/SUNWtcpdS
 include common/SUNWtcsh

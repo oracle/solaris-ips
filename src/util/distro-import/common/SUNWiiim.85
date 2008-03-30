@@ -1,0 +1,4 @@
+package SUNWiiim
+import SUNWiiimf
+import SUNWiiimf-root
+end package

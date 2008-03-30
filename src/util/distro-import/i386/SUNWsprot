@@ -1,9 +1,3 @@
 package SUNWsprot
 import SUNWsprot
-# BEGIN NON-REDISTRIBUTABLE
-drop usr/bin/as
-drop usr/ccs/bin/as
-drop usr/ccs/lib/cm4defs
-drop usr/lib/cm4defs
-# END NON-REDISTRIBUTABLE
 end package
