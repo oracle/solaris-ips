@@ -1,0 +1,43 @@
+
+PSARC/2008/190
+pkg(5): image packaging system
+
+CASE OUTLINE
+
+- introduction and overview
+	- multiplatform aspects
+- client use
+- pkg states
+- developer / operator use
+- transaction states
+- security model
+
+- pkg
+	- use of SSL
+	- relationship with libbe, ZFS
+- pkgsend / pkgrecv
+	- authentication
+- pkg.depotd
+	- reverse proxy
+	- horizontal use
+
+- image relationships
+	- partial images
+	- user images, unlinked
+	- user images, linked
+- depot relationships
+	- client to depot
+	- depot to depot
+
+- protocol / network format
+	- client side REST API
+	- publication side REST API
+- on-disk format
+- repo format
+- image format
+
+- actions
+- smf(5) configuration transition
+- app configuration
+
+- migration and compatibility

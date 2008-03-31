@@ -1,162 +1,138 @@
 
-pkg
-Packages and Groups
+PSARC/2008/190
+pkg(5): image packaging system
 
-  It would be nice to have a package FMRI, which would be something like
+PACKAGES AND GROUPS
 
-  pkg://repo/pkg_name@version
+1.  Definitions
 
-  This namespace might be populated with "manifest" and other metadata
-  endpoints, as well as the SHA-1 names of the package's included files.
-  It also seems like pkg_name could then be split into a category and a
-  basename.
+    To be consistent with the system, following the introduction of the
+    fault management architecture, each package is named by an FMRI in
+    the "pkg:" scheme.  That is, we have
 
-  Packages need a limited set of operations on individual files to
-  manipulate the configuration.  The current class actions are given in
-  Appendix A.  It appears that if "manifest" and "rbac" were supported,
-  along with some management of editable files (preserve, renamenew,
-  initd, renameold), then the remaining operations could be deferred to
-  image instantiation.
+    pkg://authority/pkg_name@version
 
-  "Groups" are really just packages that include other packages, in
-  addition to files.  However, and similar to smf(5), groups are named
-  with a particular convention:  "base/minimal", "base/user",
-  "base/developer", "base/server" are a potential set of interesting
-  package groups that would be suitable for installation images.  A
-  second set of groups are the smaller sets of related software, like
-  "stack/developer/java-me" or "stack/server/php-mysql".  (It may be
-  more appropriate to label these as "feature/", although I had hoped to
-  keep the feature/ space for future work in smf(5).)
+    The authority is generally expected to be a forward or reverse
+    domain name identifying the publisher from which a package can be
+    retrieved.  Authorities which cannot be determined to be a domain
+    name are legitimate, but optional functionality, like automatic
+    server discovery for a particular authority, may fail to work.
+    In the examples that follow, we use "opensolaris.org" as a generic
+    authority.
 
-  A package inclusion looks like
+    The pkg_name, like service names, can be split into a category,
+    subcategories, and a basename.  This namespace might be populated
+    with "manifest" and other metadata endpoints, as well as the SHA-1
+    names of the package's included files.  (Although the direct access
+    to properties of the svc FMRI scheme has been rarely used.)
 
-  pkg FMRI [freeze|branch|any]
+    A "group package" is a package that depends upon (minimum versions
+    of) other packages, as well as optionally delivering files or other
+    actions.  An "incorporation" is a group package that places forward
+    constraints upon the versions of the packages it depends upon, which
+    restricts the interval of valid package versions to one the author
+    of the incorporation believes functional.
 
-  where the key to the behaviour is how the version is specified, and
-  any keywords that modify version interpretation.
+2.  Namespace
 
-Appendix A.  Current class actions on Solaris NV.
+2.1.  Single namespace, separate authorities
 
-$ grep -v none /tmp/summary | egrep 1\ \[ef\]\  | cut -d \  -f 3 | sort | uniq -c | sort -nr
- 152 manifest
- 129 preserve
-  45 renamenew
-  32 rbac
-  30 initd
-  30 fontsdir
-  17 fontsalias
-  16 appservenv
-  10 ttmapsdir
-  10 encodingsdir
-   8 renameold
-   6 build
-   5 tiservices
-   5 master
-   5 asenv
-   4 smfyes
-   4 services
-   4 immodules
-   4 fontsupr
-   4 fontsscale
-   4 fontenc
-   3 OWconfig
-   2 smfno
-   2 smf
-   2 sendmail
-   2 sed
-   2 owfontpath
-   2 fonttmap
-   2 devlink
-   2 append
-   1 ypnicknames
-   1 vfstab
-   1 ttysrch
-   1 ttydefs
-   1 ttmapkoi8
-   1 ttmap13
-   1 syslogconf
-   1 svmpreserve
-   1 sshdconfig
-   1 sock2path
-   1 shadow
-   1 sdconf
-   1 scsivhciconf
-   1 scsa2usbconf
-   1 sampleslist
-   1 rOWconfig
-   1 qlc
-   1 publickey
-   1 powerconf
-   1 policyconf
-   1 pkcs11confbase
-   1 passwd
-   1 papersize
-   1 pamconf
-   1 opensslcnf
-   1 nsswitch
-   1 nscd
-   1 nfssecconf
-   1 netconfig
-   1 ncalogd
-   1 ncakmod
-   1 nametomajor
-   1 minorperm
-   1 mailxrc
-   1 mach
-   1 logindevperm
-   1 logadmconf
-   1 localprofile
-   1 locallogin
-   1 krbconf
-   1 keytable
-   1 kclasses
-   1 kcfconfbase
-   1 iuap
-   1 iscsiconf
-   1 ipsecalgsbase
-   1 initupdate
-   1 inittab
-   1 init
-   1 inetdconf
-   1 ibnexconf
-   1 hosts
-   1 group
-   1 ftpusers
-   1 ftpaccess
-   1 fstypes
-   1 fpconf
-   1 fonttmap9
-   1 fonttmap7
-   1 fonttmap5
-   1 fonttmap4
-   1 fonttmap2
-   1 fonttmap15
-   1 fontenc9
-   1 fontenc7
-   1 fontenc5
-   1 fontenc4
-   1 fontenc13
-   1 etcsystem
-   1 etcrpc
-   1 etcremote
-   1 etcprofile
-   1 EtcDefLu
-   1 drvalias
-   1 dialers
-   1 dhcpinittab
-   1 devpolicy
-   1 devlinktab
-   1 defsu
-   1 defrpcnisd
-   1 defpasswd
-   1 defnfs
-   1 deflogin
-   1 definit
-   1 cronroot
-   1 configmapconf
-   1 bootenvrc
-   1 automaster
-   1 ataconf
-   1 adpconf
-   1 AddNoUpdate
+    The primary design point of the package namespace is to allow
+    multiple package producers to co-exist in a single namespace, so
+    that images can switch between equivalent components from different
+    producers.
+
+2.2.  Domain-name-based escape
+
+    At any point in the category hierarchy, a safe namespace can be
+    created by using the forward or reverse domain name, either as a
+    subcategory or as a comma-led prefix to a subcategory or package
+    base name.  (This scheme is similar to FMRI namespace escapes in
+    smf(5), although we are eliminating use of stock symbol prefixes.)
+
+    For instance, when example.com wishes to publish the "whiskers"
+    package without reference to a larger namespace convention it can
+    use any of the following examples
+
+    pkg://opensolaris.org/.../example.com/whiskers
+    pkg://opensolaris.org/.../com.example/whiskers
+
+    pkg://opensolaris.org/.../example.com,whiskers
+    pkg://opensolaris.org/.../com.example,whiskers
+
+    pkg://opensolaris.org/.../example.com,software/whiskers
+    pkg://opensolaris.org/.../com.example,software/whiskers
+
+    and so forth.
+
+2.2.  Locally reserved namespace
+
+    The top-level "site" category is reserved for use by the entity that
+    administrates the server.  Neither the organizations producing the
+    operating system nor those providing additional software components
+    may use the site category.
+
+    The top-level "vendor" category is reserved for use by organizations
+    providing additional.  The leading subcategory must be a domain.
+    That is, if example.com wishes to publish the "whiskers" package in
+    the vendor category, it would use a package name like
+
+    pkg://opensolaris.org/vendor/example.com/whiskers
+
+2.3.  Additional reserved namespace
+
+    The top-level "cluster", "feature", "group", "metacluster", and
+    "service" categories are all reserved for future use.
+
+    Inception note: some or all of these reservations may be eliminated
+    or reduced when the single namespace convention reaches its final
+    form.
+
+2.4.  Single namespace conventions
+
+2.4.1.  Discussion
+
+    Packaging systems and distributions appear to have explicit
+    categories, subcategories, and potentially larger groups; some
+    distributions have explicit fields for these values, others use
+    tagging or multi-valued fields, which allows them to classify
+    certain packages multiply.  For the FMRI namespace case, the system
+    is similar to a packaging system with multiple, single-valued,
+    category fields.
+
+    There appear to be two standard approaches to categorizing packages:
+
+    1.  By what primary class of thing a package delivers.
+
+    2.  By what area of functionality a package's contents address.
+
+    In the first approach, we get strict top-level categories like
+    "application", "driver", "library", and "system" or "kernel", as
+    well as potentially overlapping categories like "utility" and
+    "tool".  Use of the leading subcategory is limited, and generally
+    given to the subsystem involved.  A relatively detailed worked
+    example of the X11 subsystem under this scheme is given in
+
+    http://mail.opensolaris.org/pipermail/pkg-discuss/2008-February/001838.html
+
+    In the second, we would also see categories like these, but leading
+    subcategory is much more likely to classify according to
+    functionality, so that we would see "application/mail",
+    "application/web", "application/compiler", and so forth.  Most
+    network packaging systems appear to classify in this fashion.
+
+    An appealing variation of the second form is to rotate all of the
+    non-"application" packages under a "system" mega-category, such that
+    all of the leaf packages (with the possible exception of device
+    drivers) are exposed at the category level.  Table 1 shows some
+    example transformations under this scheme.
+
+    FROM			TO
+    application/web/firefox	web/firefox
+    application/compiler/gcc4	compiler/gcc4
+    library/c			system/library/c 
+    kernel/generic		system/kernel/generic
+
+    Table 1:  Rotating non-application categories under system.
+
 
