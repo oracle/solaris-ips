@@ -2621,6 +2621,7 @@ idepend SUNWopenssl-libraries
 idepend SUNWopenssl-man
 idepend SUNWopensslr
 idepend SUNWos86r
+idepend SUNWp7zip
 idepend SUNWpackaging
 idepend SUNWpapi
 idepend SUNWpcan
@@ -2649,6 +2650,7 @@ idepend SUNWpoold
 idepend SUNWpoolr
 idepend SUNWpostrun
 idepend SUNWpostrun-root
+idepend SUNWppm
 idepend SUNWpppd
 idepend SUNWpppdr
 idepend SUNWpppdt

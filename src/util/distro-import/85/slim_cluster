@@ -251,6 +251,7 @@ include common/SUNWnis
 include common/SUNWnmap
 include common/SUNWntp
 include common/SUNWogg-vorbis
+include common/SUNWp7zip
 include common/SUNWpapi
 include common/SUNWpc
 include common/SUNWpcan
@@ -271,6 +272,7 @@ include common/SUNWpolkit
 include common/SUNWpool
 include common/SUNWpoold
 include common/SUNWpostrun
+include common/SUNWppm
 include common/SUNWpppd
 include common/SUNWpppdt
 include common/SUNWpppg
@@ -823,6 +825,7 @@ idepend SUNWopenssl-libraries
 idepend SUNWopenssl-man
 idepend SUNWopensslr
 idepend SUNWos86r
+idepend SUNWp7zip
 idepend SUNWpackaging
 idepend SUNWpapi
 idepend SUNWpcan
@@ -851,6 +854,7 @@ idepend SUNWpoold
 idepend SUNWpoolr
 idepend SUNWpostrun
 idepend SUNWpostrun-root
+idepend SUNWppm
 idepend SUNWpppd
 idepend SUNWpppdr
 idepend SUNWpppdt
