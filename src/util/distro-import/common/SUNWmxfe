@@ -1,5 +1,4 @@
 package SUNWmxfe
 import SUNWmxfe
-add driver name=mxfe perms="* 0666 root sys" alias=pci11ad,c115 alias=pci10d9,531 alias=pci10d9,512 alias=pci11fc,9881
-add driver name=clone perms="mxfe 0666 root sys"
+add driver name=mxfe perms="* 0666 root sys" clone_perms="0666 root sys" alias=pci11ad,c115 alias=pci10d9,531 alias=pci10d9,512 alias=pci11fc,9881
 end package

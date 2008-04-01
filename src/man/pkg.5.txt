@@ -145,26 +145,29 @@ DESCRIPTION
      actions.  The following attributes are recognized (see add_drv(1m) for
      more information):
 
-     name    The name of the driver.  This is usually, but not always, the
-             filename of the driver binary.  This is the driver action's
-             key attribute.
+     name         The name of the driver.  This is usually, but not always,
+                  the filename of the driver binary.  This is the driver
+                  action's key attribute.
 
-     alias   This represents an alias for the driver.  There may be more
-             than one alias attribute for any given driver.  There are no
-             special quoting rules necessary.
+     alias        This represents an alias for the driver.  There may be
+                  more than one alias attribute for any given driver.
+                  There are no special quoting rules necessary.
 
-     class   This represents a driver class.  There may be more than one
-             class attribute for any given driver.
+     class        This represents a driver class.  There may be more than
+                  one class attribute for any given driver.
 
-     perms   This represents the filesystem permissions for the driver's
-             device nodes.
+     perms        This represents the filesystem permissions for the
+                  driver's device nodes.
 
-     policy  This specifies additional security policy for the device.
-             There may be more than one policy attribute for any given
-             driver.
+     clone_perms  This represents the filesystem permissions for the
+                  "clone" driver's minor nodes for this driver.
 
-     privs   This specifies privileges used by the driver.  There may be
-             more than one privs attribute for any given driver.
+     policy       This specifies additional security policy for the device.
+                  There may be more than one policy attribute for any given
+                  driver.
+
+     privs        This specifies privileges used by the driver.  There may
+                  be more than one privs attribute for any given driver.
 
   Depend actions
      The 'depend' action represents an inter-package dependency.  A package

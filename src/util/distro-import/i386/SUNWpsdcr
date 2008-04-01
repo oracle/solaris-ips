@@ -1,5 +1,7 @@
 package SUNWpsdcr
 import SUNWpsdcr
 add driver name=ecpp perms="* 0666 root sys" alias=lp
-add driver name=asy alias=pci11c1,480
+# By rights, we should also have perms="*,cu 0600 uucp uucp" here, too, but
+# because update_drv can't handle commas in minor_perm specs, we can't.
+add driver name=asy perms="* 0666 root sys" alias=pci11c1,480
 end package

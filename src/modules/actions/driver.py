@@ -40,7 +40,6 @@ class DriverAction(generic.Action):
         """Class representing a driver-type packaging object."""
 
         name = "driver"
-        attributes = ("name", "alias", "class", "perms", "policy", "privs")
         key_attr = "name"
 
         # XXX This is a gross hack to let us test the action without having to
@@ -72,11 +71,17 @@ class DriverAction(generic.Action):
                 ]
 
                 # In the case where the the packaging system thinks the driver
-                # is installed and the driver database doesn't or vice versa,
-                # complain.
-                if (major and not orig) or (orig and not major):
-                        print "packaging system and driver database disagree", \
-                            "on whether '%s' is installed" % self.attrs["name"]
+                # is installed and the driver database doesn't, do a fresh
+                # install instead of an update.  If the system thinks the driver
+                # is installed but the packaging has no previous knowledge of
+                # it, read the driver files to construct what *should* have been
+                # there, and proceed.
+                #
+                # XXX Log that this occurred.
+                if major and not orig:
+                        orig = self.__get_image_data(image, self.attrs["name"])
+                elif orig and not major:
+                        orig = None
 
                 if orig:
                         return self.update_install(image, orig)
@@ -89,8 +94,10 @@ class DriverAction(generic.Action):
                             " ".join([ '"%s"' % x for x in self.attrlist("alias") ])
                         )
                 if "class" in self.attrs:
-                        for eachclass in self.attrlist("class"):
-                                args += ( "-c", eachclass )
+                        args += (
+                            "-c",
+                            " ".join(self.attrlist("class"))
+                        )
                 if "perms" in self.attrs:
                         args += (
                             "-m",
@@ -111,108 +118,224 @@ class DriverAction(generic.Action):
 
                 retcode = subprocess.call(args)
                 if retcode != 0:
-
                         print "%s (%s) install failed with return code %s" % \
                             (self.name, self.attrs["name"], retcode)
                         print "command run was ", args
 
+                for cp in self.attrlist("clone_perms"):
+                        # If we're given three fields, assume the minor node
+                        # name is the same as the driver name.
+                        if len(cp.split()) == 3:
+                                cp = self.attrs["name"] + " " + cp
+                        args = (
+                            self.update_drv, "-b", image.get_root(), "-a",
+                            "-m", cp, "clone"
+                        )
+                        retcode = subprocess.call(args)
+                        if retcode != 0:
+                                print "%s (%s) clone permission update " \
+                                    "failed with return code %s" % \
+                                    (self.name, self.attrs["name"], retcode)
+                                print "command run was ", args
+
         def update_install(self, image, orig):
-                add_args = ( self.update_drv, "-b", image.get_root(), "-a" )
-                rem_args = ( self.update_drv, "-b", image.get_root(), "-d" )
+                add_base = ( self.update_drv, "-b", image.get_root(), "-a" )
+                rem_base = ( self.update_drv, "-b", image.get_root(), "-d" )
 
-                nalias = self.attrs.get("alias", [])
-                oalias = orig.attrs.get("alias", [])
-                # If there's only one alias, we'll get a string back unenclosed
-                # in a list, so we need enlist it.
-                if isinstance(nalias, str):
-                        nalias = [ nalias ]
-                if isinstance(oalias, str):
-                        oalias = [ oalias ]
-                add_alias = set(nalias) - set(oalias)
-                rem_alias = set(oalias) - set(nalias)
+                nalias = set(self.attrlist("alias"))
+                oalias = set(orig.attrlist("alias"))
+                add_alias = nalias - oalias
+                rem_alias = oalias - nalias
 
-                if add_alias:
-                        add_args += (
-                            "-i",
-                            " ".join([ '"%s"' % x for x in add_alias ])
-                        )
-                if rem_alias:
-                        rem_args += (
-                            "-i",
-                            " ".join([ '"%s"' % x for x in rem_alias ])
-                        )
+                nclass = set(self.attrlist("class"))
+                oclass = set(orig.attrlist("class"))
+                add_class = nclass - oclass
+                rem_class = oclass - nclass
 
-                nperms = self.attrs.get("perms", [])
-                operms = orig.attrs.get("perms", [])
-                if isinstance(nperms, str):
-                        nperms = [ nperms ]
-                if isinstance(operms, str):
-                        operms = [ operms ]
-                add_perms = set(nperms) - set(operms)
-                rem_perms = set(operms) - set(nperms)
+                nperms = set(self.attrlist("perms"))
+                operms = set(orig.attrlist("perms"))
+                add_perms = nperms - operms
+                rem_perms = operms - nperms
 
-                if add_perms:
-                        add_args += ( "-m", ",".join(add_perms) )
-                if rem_perms:
-                        rem_args += ( "-m", ",".join(rem_perms) )
+                nprivs = set(self.attrlist("privs"))
+                oprivs = set(orig.attrlist("privs"))
+                add_privs = nprivs - oprivs
+                rem_privs = oprivs - nprivs
 
-                nprivs = self.attrs.get("privs", [])
-                oprivs = orig.attrs.get("privs", [])
-                if isinstance(nprivs, str):
-                        nprivs = [ nprivs ]
-                if isinstance(oprivs, str):
-                        oprivs = [ oprivs ]
-                add_privs = set(nprivs) - set(oprivs)
-                rem_privs = set(oprivs) - set(nprivs)
+                npolicy = set(self.attrlist("policy"))
+                opolicy = set(orig.attrlist("policy"))
+                add_policy = npolicy - opolicy
+                rem_policy = opolicy - npolicy
 
-                if add_privs:
-                        add_args += ( "-P", ",".join(add_privs) )
-                if rem_perms:
-                        rem_args += ( "-P", ",".join(rem_privs) )
+                nclone = set(self.attrlist("clone_perms"))
+                oclone = set(orig.attrlist("clone_perms"))
+                add_clone = nclone - oclone
+                rem_clone = oclone - nclone
 
-                npolicy = self.attrs.get("policy", [])
-                opolicy = orig.attrs.get("policy", [])
-                if isinstance(npolicy, str):
-                        npolicy = [ npolicy ]
-                if isinstance(opolicy, str):
-                        opolicy = [ opolicy ]
-                add_policy = set(npolicy) - set(opolicy)
-                rem_policy = set(opolicy) - set(npolicy)
-
-                if npolicy:
-                        add_args += ( "-p", " ".join(add_policy) )
-                if opolicy:
-                        rem_args += ( "-p", " ".join(rem_policy) )
-
-                add_args += (self.attrs["name"], )
-                rem_args += (self.attrs["name"], )
-
-                if len(add_args) > 5:
-                        retcode = subprocess.call(add_args)
+                for i in add_alias:
+                        args = add_base + ("-i", '"%s"' % i, self.attrs["name"])
+                        retcode = subprocess.call(args)
                         if retcode != 0:
-                                print "%s (%s) upgrade (add) failed with " \
-                                    "return code %s" % \
-                                    (self.name, self.attrs["name"], retcode)
+                                print "%s (%s) upgrade (addition of alias " \
+                                    "'%s') failed with return code %s" % \
+                                    (self.name, self.attrs["name"], i, retcode)
+                                print "command run was ", args
 
-                if len(rem_args) > 5:
-                        retcode = subprocess.call(rem_args)
+                for i in rem_alias:
+                        args = rem_base + ("-i", '"%s"' % i, self.attrs["name"])
+                        retcode = subprocess.call(args)
                         if retcode != 0:
-                                print "%s (%s) upgrade (remove) failed with " \
-                                    "return code %s" % \
-                                    (self.name, self.attrs["name"], retcode)
+                                print "%s (%s) upgrade (removal of alias " \
+                                    "'%s') failed with return code %s" % \
+                                    (self.name, self.attrs["name"], i, retcode)
+                                print "command run was ", args
 
-        def verify(self, img, **args):
-                """ verify that driver is installed w/ correct aliases, etc"""
-                errors = []
-                major = None
+                # update_drv doesn't do anything with classes, so we have to
+                # futz with driver_classes by hand.
+                def update_classes(add_class, rem_class):
+                        dcp = os.path.normpath(os.path.join(
+                            image.get_root(), "etc/driver_classes"))
 
-                name = self.attrs["name"]
+                        try:
+                                dcf = file(dcp, "r")
+                                lines = dcf.readlines()
+                                dcf.close()
+                        except IOError, e:
+                                e.args += ("reading",)
+                                raise
 
+                        for i, l in enumerate(lines):
+                                arr = l.split()
+                                if len(arr) == 2 and \
+                                    arr[0] == self.attrs["name"] and \
+                                    arr[1] in rem_class:
+                                        del lines[i]
+
+                        for i in add_class:
+                                lines += ["%s\t%s\n" % (self.attrs["name"], i)]
+
+                        try:
+                                dcf = file(dcp, "w")
+                                dcf.writelines(lines)
+                                dcf.close()
+                        except IOError, e:
+                                e.args += ("writing",)
+                                raise
+
+                if add_class or rem_class:
+                        try:
+                                update_classes(add_class, rem_class)
+                        except IOError, e:
+                                print "%s (%s) upgrade (classes modification) " \
+                                    "failed %s etc/driver_classes with error: " \
+                                    "%s (%s)" % (self.name, self.attrs["name"],
+                                        e[1], e[0], e[2])
+                                print "tried to add %s and remove %s" % \
+                                    (add_class, rem_class)
+
+                # For perms, we do removes first because of a busted starting
+                # point in build 79, where smbsrv has perms of both "* 666" and
+                # "* 640".  The actions move us from 666 to 640, but if we add
+                # first, the 640 overwrites the 666 in the file, and then the
+                # deletion of 666 complains and fails.
+                #
+                # We can get around it by removing the 666 first, and then
+                # adding the 640, which overwrites the existing 640.
+                #
+                # XXX Need to think if there are any cases where this might be
+                # the wrong order, and whether the other attributes should be
+                # done in this order, too.
+                for i in rem_perms:
+                        args = rem_base + ("-m", i, self.attrs["name"])
+                        retcode = subprocess.call(args)
+                        if retcode != 0:
+                                print "%s (%s) upgrade (removal of minor " \
+                                    "perm '%s') failed with return code %s" % \
+                                    (self.name, self.attrs["name"], i, retcode)
+                                print "command run was ", args
+
+                for i in add_perms:
+                        args = add_base + ("-m", i, self.attrs["name"])
+                        retcode = subprocess.call(args)
+                        if retcode != 0:
+                                print "%s (%s) upgrade (addition of minor " \
+                                    "perm '%s') failed with return code %s" % \
+                                    (self.name, self.attrs["name"], i, retcode)
+                                print "command run was ", args
+
+                for i in add_privs:
+                        args = add_base + ("-P", i, self.attrs["name"])
+                        retcode = subprocess.call(args)
+                        if retcode != 0:
+                                print "%s (%s) upgrade (addition of privilege " \
+                                    "'%s') failed with return code %s" % \
+                                    (self.name, self.attrs["name"], i, retcode)
+                                print "command run was ", args
+
+                for i in rem_privs:
+                        args = rem_base + ("-P", i, self.attrs["name"])
+                        retcode = subprocess.call(args)
+                        if retcode != 0:
+                                print "%s (%s) upgrade (removal of privilege " \
+                                    "'%s') failed with return code %s" % \
+                                    (self.name, self.attrs["name"], i, retcode)
+                                print "command run was ", args
+
+                for i in add_policy:
+                        args = add_base + ("-p", i, self.attrs["name"])
+                        retcode = subprocess.call(args)
+                        if retcode != 0:
+                                print "%s (%s) upgrade (addition of policy " \
+                                    "'%s') failed with return code %s" % \
+                                    (self.name, self.attrs["name"], i, retcode)
+                                print "command run was ", args
+
+                for i in rem_policy:
+                        args = rem_base + ("-p", i, self.attrs["name"])
+                        retcode = subprocess.call(args)
+                        if retcode != 0:
+                                print "%s (%s) upgrade (removal of policy " \
+                                    "'%s') failed with return code %s" % \
+                                    (self.name, self.attrs["name"], i, retcode)
+                                print "command run was ", args
+
+                for i in rem_clone:
+                        if len(i.split()) == 3:
+                                i = self.attrs["name"] + " " + i
+                        args = rem_base + ("-m", i, "clone")
+                        retcode = subprocess.call(args)
+                        if retcode != 0:
+                                print "%s (%s) upgrade (remove clone permis" \
+                                    "sion '%s') failed with return code %s" % \
+                                    (self.name, self.attrs["name"], i, retcode)
+                                print "command run was ", args
+
+                for i in add_clone:
+                        if len(i.split()) == 3:
+                                i = self.attrs["name"] + " " + i
+                        args = add_base + ("-m", i, "clone")
+                        retcode = subprocess.call(args)
+                        if retcode != 0:
+                                print "%s (%s) upgrade (add clone permission " \
+                                    "'%s') failed with return code %s" % \
+                                    (self.name, self.attrs["name"], i, retcode)
+                                print "command run was ", args
+
+        @classmethod
+        def __get_image_data(cls, img, name, collect_errs = False):
+                """Construct a driver action from image information.
+
+                Setting 'collect_errs' to True will collect all caught
+                exceptions and return them in a tuple with the action.
+                """
+
+                errors = [ ]
+
+                # See if it's installed
                 try:
-                        n2mf = file(os.path.normpath(os.path.sep.join(
-                            (img.get_root(), "etc/name_to_major"))))
-                        # Check to see if the driver has been installed.
-                        
+                        n2mf = file(os.path.normpath(os.path.join(
+                            img.get_root(), "etc/name_to_major")))
+
                         major = [
                             line.rstrip()
                             for line in n2mf
@@ -220,35 +343,222 @@ class DriverAction(generic.Action):
                         ]
                         n2mf.close()
                 except IOError, e:
-                        errors.append("etc/name_to_major: %s" % e)
-                        return errors
+                        e.args += ("etc/name_to_major",)
+                        if collect_errs:
+                                errors.append(e)
+                        else:
+                                raise
 
                 if not major:
-                        errors.append("etc/name_to_major: '%s' entry not present" % self.attrs["name"])
-                elif len(major) > 1:
-                        errors.append("etc/name_to_major: more than one entry for '%s' is present" \
-                            % self.attrs["name"])
+                        if collect_errs:
+                                return None, []
+                        else:
+                                return None
 
-                # Check to see if the driver has the right aliases
+                if len(major) > 1:
+                        try:
+                                raise RuntimeError, \
+                                    "More than one entry for driver '%s' in " \
+                                    "/etc/name_to_major" % name
+                        except RuntimeError, e:
+                                if collect_errs:
+                                        errors.append(e)
+                                else:
+                                        raise
+
+                act = cls()
+                act.attrs["name"] = name
+
+                # Grab aliases
                 try:
-                        daf = file(os.path.normpath(os.path.sep.join(
-                            (img.get_root(), "etc/driver_aliases"))))
+                        daf = file(os.path.normpath(os.path.join(
+                            img.get_root(), "etc/driver_aliases")))
                 except IOError, e:
-                        errors.append("etc/driver_aliases: %s" % e)
+                        e.args += ("etc/driver_aliases",)
+                        if collect_errs:
+                                errors.append(e)
+                        else:
+                                raise
                 else:
-                        aliases = [
+                        act.attrs["alias"] = [
                             line.split()[1].strip('"')
                             for line in daf
                             if line.split()[0] == name
                         ]
                         daf.close()
-                        if set(aliases) != set(self.attrlist("alias")):
-                                for a in set(aliases) - set(self.attrlist("alias")):
-                                        errors.append("extra alias %s found in etc/aliases file" % a)
-                                for a in set(self.attrlist("alias")) - set(aliases):
-                                        errors.append("missing alias %s in etc/aliases file" % a)
-                                errors.append(" ".join([ "alias=%s" % a for a in aliases ]))
-                # XXX finish class, privs, policy, etc
+
+                # Grab classes
+                try:
+                        dcf = file(os.path.normpath(os.path.join(
+                            img.get_root(), "etc/driver_classes")))
+                except IOError, e:
+                        e.args += ("etc/driver_classes",e)
+                        if collect_errs:
+                                errors.append(e)
+                        else:
+                                raise
+                else:
+                        act.attrs["class"] = [ ]
+                        for line in dcf:
+                                larr = line.rstrip().split()
+                                if len(larr) == 2 and larr[0] == name:
+                                        act.attrs["class"].append(larr[1])
+                        dcf.close()
+
+                # Grab minor node permissions
+                try:
+                        dmf = file(os.path.normpath(os.path.join(
+                            img.get_root(), "etc/minor_perm")))
+                except IOError, e:
+                        e.args += ("etc/minor_perm")
+                        if collect_errs:
+                                errors.append(e)
+                        else:
+                                raise
+                else:
+                        act.attrs["perms"] = [ ]
+                        act.attrs["clone_perms"] = [ ]
+                        for line in dmf:
+                                maj, perm = line.rstrip().split(":", 1)
+                                if maj == name:
+                                        act.attrs["perms"].append(perm)
+                                # Although some clone_perms might by rights
+                                # belong to a driver whose name is not the minor
+                                # name here, there's no way to figure that out.
+                                elif maj == "clone" and perm.split()[0] == name:
+                                        act.attrs["clone_perms"].append(
+                                            " ".join(perm.split()[1:]))
+                        dmf.close()
+
+                # Grab device policy
+                try:
+                        dpf = file(os.path.normpath(os.path.join(
+                            img.get_root(), "etc/security/device_policy")))
+                except IOError, e:
+                        e.args += ("etc/security/device_policy",)
+                        if collect_errs:
+                                errors.append(e)
+                        else:
+                                raise
+                else:
+                        act.attrs["policy"] = [ ]
+                        for line in dpf:
+                                fields = line.rstrip().split()
+                                n = ""
+                                try:
+                                        n, c = fields[0].split(":", 1)
+                                        # Canonicalize a "*" minorspec to empty
+                                        if c == "*":
+                                                del fields[0]
+                                        else:
+                                                fields[0] = c
+                                except ValueError:
+                                        n = fields[0]
+                                        del fields[0]
+                                except IndexError:
+                                        pass
+
+                                if n == name:
+                                        act.attrs["policy"].append(
+                                            " ".join(fields)
+                                        )
+                        dpf.close()
+
+                # Grab device privileges
+                try:
+                        dpf = file(os.path.normpath(os.path.join(
+                            img.get_root(), "etc/security/extra_privs")))
+                except IOError, e:
+                        e.args += ("etc/security/extra_privs",)
+                        if collect_errs:
+                                errors.append(e)
+                        else:
+                                raise
+                else:
+                        act.attrs["privs"] = [
+                            line.rstrip().split(":", 1)[1]
+                            for line in dpf
+                            if line.split(":", 1)[0] == name
+                        ]
+                        dpf.close()
+
+                if collect_errs:
+                        return act, errors
+                else:
+                        return act
+
+        def verify(self, img, **args):
+                """Verify that the driver is installed as specified."""
+
+                name = self.attrs["name"]
+
+                onfs, errors = \
+                    self.__get_image_data(img, name, collect_errs = True)
+
+                for i, err in enumerate(errors):
+                        if err.isinstance(IOError):
+                                errors[i] = "%s: %s" % (err.args[2], err)
+                        elif err.isinstance(RuntimeError):
+                                errors[i] = "etc/name_to_major: more than " \
+                                    "one entry for '%s' is present" % name
+
+                if not onfs:
+                        errors[0:0] = [
+                            "etc/name_to_major: '%s' entry not present" % name
+                        ]
+                        return errors
+
+                onfs_aliases = set(onfs.attrlist("alias"))
+                mfst_aliases = set(self.attrlist("alias"))
+                for a in onfs_aliases - mfst_aliases:
+                        errors.append("extra alias '%s' found in "
+                            "etc/driver_aliases" % a)
+                for a in mfst_aliases - onfs_aliases:
+                        errors.append("alias '%s' missing from "
+                        "etc/driver_aliases" % a)
+
+                onfs_classes = set(onfs.attrlist("class"))
+                mfst_classes = set(self.attrlist("class"))
+                for a in onfs_classes - mfst_classes:
+                        errors.append("extra class '%s' found in "
+                            "etc/driver_classes" % a)
+                for a in mfst_classes - onfs_classes:
+                        errors.append("class '%s' missing from "
+                            "etc/driver_classes" % a)
+
+                onfs_perms = set(onfs.attrlist("perms"))
+                mfst_perms = set(self.attrlist("perms"))
+                for a in onfs_perms - mfst_perms:
+                        errors.append("extra minor node permission '%s' found "
+                            "in etc/minor_perm" % a)
+                for a in mfst_perms - onfs_perms:
+                        errors.append("minor node permission '%s' missing "
+                            "from etc/minor_perm" % a)
+
+                onfs_policy = set(onfs.attrlist("policy"))
+                # Canonicalize "*" minorspecs to empty
+                policylist = list(self.attrlist("policy"))
+                for i, p in enumerate(policylist):
+                        f = p.split()
+                        if f[0] == "*":
+                                policylist[i] = " ".join(f[1:])
+                mfst_policy = set(policylist)
+                for a in onfs_policy - mfst_policy:
+                        errors.append("extra device policy '%s' found in "
+                            "etc/security/device_policy" % a)
+                for a in mfst_policy - onfs_policy:
+                        errors.append("device policy '%s' missing from "
+                            "etc/security/device_policy" % a)
+
+                onfs_privs = set(onfs.attrlist("privs"))
+                mfst_privs = set(self.attrlist("privs"))
+                for a in onfs_privs - mfst_privs:
+                        errors.append("extra device privilege '%s' found in "
+                            "etc/security/extra_privs" % a)
+                for a in mfst_privs - onfs_privs:
+                        errors.append("device privilege '%s' missing from "
+                            "etc/security/extra_privs" % a)
+
                 return errors
 
         def remove(self, pkgplan):
@@ -263,6 +573,22 @@ class DriverAction(generic.Action):
                 if retcode != 0:
                         print "%s (%s) removal failed with return code %s" % \
                             (self.name, self.attrs["name"], retcode)
+                        print "command run was ", args
+
+                for cp in self.attrlist("clone_perms"):
+                        if len(cp.split()) == 3:
+                                cp = self.attrs["name"] + " " + cp
+                        args = (
+                            self.update_drv, "-b", image.get_root(), "-d",
+                            "-m", cp, "clone"
+                        )
+                        retcode = subprocess.call(args)
+                        if retcode != 0:
+                                print "%s (%s) clone permission update " \
+                                    "failed with return code %s" % \
+                                    (self.name, self.attrs["name"], retcode)
+                                print "command run was ", args
+
 
         def generate_indices(self):
                 ret = {}

@@ -85,7 +85,7 @@ class HardLinkAction(link.LinkAction):
                     (img.get_root(), path)))
 
                 if not os.path.exists(path):
-                        return "No such path %s" % self.attrs["path"]
+                        return ["No such path %s" % self.attrs["path"]]
 
 		target = os.path.normpath(os.path.sep.join(
 		    (img.get_root(), target)))

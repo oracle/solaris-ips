@@ -1,4 +1,4 @@
 package SUNWchxge
 import SUNWchxge
-add driver name=chxge alias=pci1425,7 alias=pci1425,a
+add driver name=chxge perms="* 0666 root sys" clone_perms="0666 root sys" alias=pci1425,7 alias=pci1425,a
 end package

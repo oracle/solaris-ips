@@ -1,4 +1,4 @@
 package SUNWrtw
 import SUNWrtw
-add driver name=rtw alias=pci10ec,8180
+add driver name=rtw perms="* 0666 root sys" clone_perms="0666 root sys" alias=pci10ec,8180
 end package

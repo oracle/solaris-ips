@@ -1,4 +1,4 @@
 package SUNWipw
 import SUNWipw
-add driver name=ipw alias=pci8086,1043
+add driver name=ipw perms="* 0666 root sys" clone_perms="0666 root sys" alias=pci8086,1043
 end package
