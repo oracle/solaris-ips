@@ -77,7 +77,7 @@ include common/SUNWphp524core
 include common/SUNWphp524doc
 include common/SUNWphp524man
 include common/SUNWphp524usr
-include common/SUNWpkgcmds.79
+include common/SUNWpkgcmds
 include common/SUNWpmdbdpg
 include common/SUNWpmdbi
 include common/SUNWpostgr-82-client.81

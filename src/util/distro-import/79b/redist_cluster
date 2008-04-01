@@ -406,7 +406,7 @@ include common/SUNWphp524man
 include common/SUNWphp524usr
 include common/SUNWpiclh
 include common/SUNWpilot-link
-include common/SUNWpkgcmds.79
+include common/SUNWpkgcmds
 include common/SUNWpl5m
 include common/SUNWpl5p
 include common/SUNWpl5u
@@ -1693,7 +1693,6 @@ idepend SUNWopensslr
 idepend SUNWos86r
 idepend SUNWosdem
 idepend SUNWp7zip
-idepend SUNWpackaging
 idepend SUNWpapi
 idepend SUNWpcan
 idepend SUNWpcelx
@@ -1726,6 +1725,8 @@ idepend SUNWpiclr
 idepend SUNWpiclu
 idepend SUNWpilot-link
 idepend SUNWpilot-link-devel
+idepend SUNWpkgcmdsr
+idepend SUNWpkgcmdsu
 idepend SUNWpl5m
 idepend SUNWpl5p
 idepend SUNWpl5u
@@ -2455,7 +2456,6 @@ idepend SUNWopenssl-libraries
 idepend SUNWopenssl-man
 idepend SUNWopensslr
 idepend SUNWos86r
-idepend SUNWpackaging
 idepend SUNWpapi
 idepend SUNWpcan
 idepend SUNWpcelx
@@ -2474,6 +2474,8 @@ idepend SUNWperl584usr
 idepend SUNWpiclr
 idepend SUNWpiclu
 idepend SUNWpilot-link
+idepend SUNWpkgcmdsr
+idepend SUNWpkgcmdsu
 idepend SUNWpmr
 idepend SUNWpmu
 idepend SUNWpng

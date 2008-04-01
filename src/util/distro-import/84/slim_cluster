@@ -262,7 +262,7 @@ include common/SUNWperl-authen-pam
 include common/SUNWperl584core
 include common/SUNWperl584usr
 include common/SUNWpilot-link
-include common/SUNWpkgcmds.79
+include common/SUNWpkgcmds
 include common/SUNWpm
 include common/SUNWpng
 include common/SUNWpolkit
@@ -819,7 +819,6 @@ idepend SUNWopenssl-libraries
 idepend SUNWopenssl-man
 idepend SUNWopensslr
 idepend SUNWos86r
-idepend SUNWpackaging
 idepend SUNWpapi
 idepend SUNWpcan
 idepend SUNWpcelx
@@ -838,6 +837,8 @@ idepend SUNWperl584usr
 idepend SUNWpiclr
 idepend SUNWpiclu
 idepend SUNWpilot-link
+idepend SUNWpkgcmdsr
+idepend SUNWpkgcmdsu
 idepend SUNWpmr
 idepend SUNWpmu
 idepend SUNWpng
