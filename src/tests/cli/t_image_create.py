@@ -50,10 +50,8 @@ class TestImageCreate(testutils.SingleDepotTestCase):
                 """
                 self.pkgsend_bulk(durl, pkgsend_data)
 
-                self.image_create(durl, "")
-
-                self.assertRaises(testutils.UnexpectedExitCodeException, \
-                    self.pkg, "install foo")
+                self.assertRaises(testutils.UnexpectedExitCodeException,
+                    self.image_create, durl, "")
 
 
 class TestImageCreateNoDepot(testutils.pkg5TestCase):
