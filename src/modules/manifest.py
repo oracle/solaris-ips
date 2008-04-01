@@ -30,6 +30,7 @@ from itertools import groupby, chain
 import pkg.actions as actions
 import pkg.client.retrieve as retrieve
 import pkg.client.filter as filter
+from pkg.actions.attribute import AttributeAction
 
 # The type member is used for the ordering of actions.
 ACTION_DIR = 10
@@ -99,7 +100,7 @@ class Manifest(object):
                 r = ""
 
                 if self.fmri != None:
-                        r = r + "set fmri = %s\n" % self.fmri
+                        r = r + "set name=fmri value=%s\n" % self.fmri
 
                 for act in sorted(self.actions):
                         r = r + "%s\n" % act
@@ -304,6 +305,16 @@ class Manifest(object):
                         return values[0]
 
                 raise KeyError, key
+
+        def __setitem__(self, key, value):
+                """Set the value for the package attribute 'key' to 'value'."""
+                for a in self.actions:
+                        if a.name == "set" and a.attrs["name"] == key:
+                                a.attrs["value"] = value
+                                return
+
+                new_attr = AttributeAction(None, name=key, value=value)
+                self.actions.append(new_attr)
 
         def __contains__(self, key):
                 for a in self.actions:

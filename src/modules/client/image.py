@@ -234,7 +234,13 @@ class Image(object):
                 if authority == None:
                         authority = self.cfg_cache.preferred_authority
 
-                o = self.cfg_cache.authorities[authority]["origin"]
+                try:
+                        o = self.cfg_cache.authorities[authority]["origin"]
+                except KeyError:
+                        # If the authority that we're trying to get no longer
+                        # exists, fall back to preferred authority.
+                        authority = self.cfg_cache.preferred_authority
+                        o = self.cfg_cache.authorities[authority]["origin"]
 
                 return o.rstrip("/")
 
@@ -274,7 +280,7 @@ class Image(object):
 
                 ips = [ ip for ip in self.gen_installed_pkgs() if ip not in m ]
 
-                m.extend(catalog.extract_matching_fmris(ips, cat, patterns,
+                m.extend(catalog.extract_matching_fmris(ips, patterns,
                     matcher, constraint, counthash))
 
                 if not m:
@@ -330,24 +336,40 @@ class Image(object):
 
                 return False
 
-        def get_manifest(self, fmri, filtered = False):
+        def _fetch_manifest(self, fmri, filtered):
+                """Perform steps necessary to get manifest from remote host
+                and write resulting contents to disk."""
+
                 m = manifest.Manifest()
 
                 fmri_dir_path = os.path.join(self.imgdir, "pkg",
                     fmri.get_dir_path())
                 mpath = os.path.join(fmri_dir_path, "manifest")
 
-                # If the manifest isn't there, download and retry.
-                try:
-                        mcontent = file(mpath).read()
-                except IOError, e:
-                        if e.errno != errno.ENOENT:
-                                raise
-                        retrieve.get_manifest(self, fmri)
-                        mcontent = file(mpath).read()
+                # Get manifest from remote host
+                retrieve.get_manifest(self, fmri)
+
+                mfile = file(mpath, "r")
+                mcontent = mfile.read()
+                mfile.close()
 
                 m.set_fmri(self, fmri)
                 m.set_content(mcontent)
+
+                # Write the originating authority into the manifest.
+                # Manifests prior to this change won't contain this information.
+                # In that case, the client attempts to re-download the manifest
+                # from the depot.
+                if not fmri.has_authority():
+                        m["authority"] = self.get_default_authority()
+                else:
+                        m["authority"] = fmri.get_authority()
+
+                # Save manifest with authority information
+                mcontent = str(m)
+                mfile = file(mpath, "w+")
+                mfile.write(mcontent)
+                mfile.close()
 
                 # Pickle the manifest's indices, for searching
                 try:
@@ -375,13 +397,77 @@ class Image(object):
 
                 return m
 
+        def _valid_manifest(self, fmri, manifest):
+                """Check authority attached to manifest.  Make sure
+                it matches authority specified in FMRI."""
+
+                authority = fmri.get_authority()
+                if not authority:
+                        authority = self.get_default_authority()
+
+                if not "authority" in manifest:
+                        return False
+
+                if manifest["authority"] != authority:
+                        return False
+
+                return True
+
+        def get_manifest(self, fmri, filtered = False):
+                """Find on-disk manifest and create in-memory Manifest
+                object."""
+
+                m = manifest.Manifest()
+
+                fmri_dir_path = os.path.join(self.imgdir, "pkg",
+                    fmri.get_dir_path())
+                mpath = os.path.join(fmri_dir_path, "manifest")
+
+                # If the manifest isn't there, download.
+                if not os.path.exists(mpath):
+                        m = self._fetch_manifest(fmri, filtered)
+                else:
+                        mcontent = file(mpath).read()
+                        m.set_fmri(self, fmri)
+                        m.set_content(mcontent)
+
+                # If the manifest isn't from the correct authority, or
+                # no authority is attached to the manifest, download a new one.
+                if not self._valid_manifest(fmri, m):
+                        try:
+                                m = self._fetch_manifest(fmri, filtered)
+                        except NameError:
+                                # In thise case, the client has failed to
+                                # download a new manifest with the same name.
+                                # We can either give up or drive on.  It makes
+                                # the most sense to do the best we can with what
+                                # we have.  Keep the old manifest and drive on.
+                                pass
+
+                return m
+
         @staticmethod
         def installed_file_authority(filepath):
                 """Find the pkg's installed file named by filepath.
                 Return the authority that installed this package."""
 
-                f = file(filepath, "r")
-                auth = f.readline()
+                f = file(filepath, "r+")
+
+                flines = f.readlines()
+                newauth = None
+
+                try:
+                        version, auth = flines
+                except ValueError:
+                        auth = flines[0]
+                        auth = auth.strip()
+                        newauth = "%s_%s" % (fmri.PREF_AUTH_PFX, auth)
+
+                if newauth:
+                        f.seek(0)
+                        f.writelines(["VERSION_1\n", newauth])
+                        auth = newauth
+
                 f.close()
 
                 return auth
@@ -401,7 +487,7 @@ class Image(object):
                 f = file("%s/pkg/%s/installed" % (self.imgdir,
                     fmri.get_dir_path()), "w")
 
-                f.write(fmri.authority)
+                f.writelines(["VERSION_1\n", fmri.get_authority_str()])
                 f.close()
 
         def remove_install_file(self, fmri):
@@ -448,10 +534,33 @@ class Image(object):
                 """If the FMRI supplied as an argument does not have
                 an authority, set it to the image's preferred authority."""
 
-                if fmri.authority:
+                if fmri.has_authority():
                         return
 
-                fmri.set_authority(self.get_default_authority())
+                fmri.set_authority(self.get_default_authority(), True)
+
+        def get_catalog(self, fmri, exception = False):
+                """Given a FMRI, look at the authority and return the
+                correct catalog for this image."""
+
+                # If FMRI has no authority, or is default authority,
+                # then return the catalog for the preferred authority
+                if not fmri.has_authority() or fmri.preferred_authority():
+                        cat = self.catalogs[self.get_default_authority()]
+                else:
+                        try:
+                                cat = self.catalogs[fmri.get_authority()]
+                        except KeyError:
+                                # If the authority that installed this package
+                                # has vanished, pick the default authority
+                                # instead.
+                                if exception:
+                                        raise
+                                else:
+                                        cat = self.catalogs[\
+                                            self.get_default_authority()]
+
+                return cat
 
         def has_version_installed(self, fmri):
                 """Check that the version given in the FMRI or a successor is
@@ -460,17 +569,16 @@ class Image(object):
 
                 v = self._get_version_installed(fmri)
 
-                if v and fmri.authority == None:
-                        fmri.authority = v.authority
-                elif fmri.authority == None:
-                        fmri.authority = self.get_default_authority()
+                if v and not fmri.has_authority():
+                        fmri.set_authority(v.get_authority_str())
+                elif not fmri.has_authority():
+                        fmri.set_authority(self.get_default_authority(), True)
 
                 if v and self.fmri_is_successor(v, fmri):
                         return True
                 else:
-                        # Get the catalog for the correct authority
                         try:
-                                cat = self.catalogs[fmri.authority]
+                                cat = self.get_catalog(fmri, exception = True)
                         except KeyError:
                                 return False
 
@@ -496,12 +604,12 @@ class Image(object):
 
                 v = self._get_version_installed(fmri)
 
-                assert fmri.authority
+                assert fmri.has_authority()
 
                 if v:
                         return v
                 else:
-                        cat = self.catalogs[fmri.authority]
+                        cat = self.get_catalog(fmri)
 
                         rpkgs = cat.rename_older_pkgs(fmri)
                         for f in rpkgs:
@@ -516,7 +624,7 @@ class Image(object):
                 in the current image."""
 
                 # All FMRIs passed to is_installed shall have an authority
-                assert fmri.authority
+                assert fmri.has_authority()
 
                 v = self._get_version_installed(fmri)
                 if not v:
@@ -601,35 +709,40 @@ class Image(object):
         def load_catalogs(self, progresstracker):
                 for auth in self.gen_authorities():
                         croot = "%s/catalog/%s" % (self.imgdir, auth["prefix"])
-
                         progresstracker.catalog_start(auth["prefix"])
-                        c = catalog.Catalog(croot, authority = auth["prefix"])
+                        if auth["prefix"] == self.cfg_cache.preferred_authority:
+                                authpfx = "%s_%s" % (fmri.PREF_AUTH_PFX,
+                                    auth["prefix"])
+                                c = catalog.Catalog(croot, authority = authpfx)
+                        else:
+                                c = catalog.Catalog(croot,
+                                    authority = auth["prefix"])
                         self.catalogs[auth["prefix"]] = c
                         progresstracker.catalog_done()
 
-        def fmri_is_same_pkg(self, fmri, pfmri):
+        def fmri_is_same_pkg(self, cfmri, pfmri):
                 """Determine whether fmri and pfmri share the same package
                 name, even if they're not equivalent versions.  This
                 also checks if two packages with different names are actually
                 the same because of a rename operation."""
 
                 # If authorities don't match, this can't be a successor
-                if fmri.authority != pfmri.authority:
+                if not fmri.is_same_authority(cfmri.authority, pfmri.authority):
                         return False
 
                 # Get the catalog for the correct authority
-                cat = self.catalogs[fmri.authority]
+                cat = self.get_catalog(cfmri)
 
                 # If the catalog has a rename record that names fmri as a
                 # destination, it's possible that pfmri could be the same pkg by
                 # rename.
 
-                if fmri.is_same_pkg(pfmri):
+                if cfmri.is_same_pkg(pfmri):
                         return True
                 else:
-                        return cat.rename_is_same_pkg(fmri, pfmri)
+                        return cat.rename_is_same_pkg(cfmri, pfmri)
 
-        def fmri_is_successor(self, fmri, pfmri):
+        def fmri_is_successor(self, cfmri, pfmri):
                 """Since the catalog keeps track of renames, it's no longer
                 sufficient to rely on the FMRI class to determine whether a
                 package is a successor.  This routine takes two FMRIs, and
@@ -639,19 +752,19 @@ class Image(object):
                 fmri.is_successor() code."""
 
                 # If authorities don't match, this can't be a successor
-                if fmri.authority != pfmri.authority:
+                if not fmri.is_same_authority(cfmri.authority, pfmri.authority):
                         return False
 
                 # Get the catalog for the correct authority
-                cat = self.catalogs[fmri.authority]
+                cat = self.get_catalog(cfmri)
 
                 # If the catalog has a rename record that names fmri as a
                 # destination, it's possible that pfmri could be a successor by
                 # rename.
-                if fmri.is_successor(pfmri):
+                if cfmri.is_successor(pfmri):
                         return True
                 else:
-                        return cat.rename_is_successor(fmri, pfmri)
+                        return cat.rename_is_successor(cfmri, pfmri)
 
         def gen_known_package_fmris(self):
                 """Generate the list of known packages, being the union of the
@@ -830,8 +943,18 @@ class Image(object):
 
 
 
-        def list_install(self, pkg_list, progress, filters = [], verbose = False,
-            noexecute = False):
+        def list_install(self, pkg_list, progress, filters = [],
+            verbose = False, noexecute = False):
+                """Take a list of packages, specified in pkg_list, and attempt
+                to install them on the system.
+
+                This method checks all authorities for a package match;
+                however, it defaults to choosing the preferred authority
+                when an ambiguous package name is specified.  If the user
+                wishes to install a package from a non-preferred authority,
+                the full FMRI that contains an authority should be used
+                to name the package."""
+
                 error = 0
                 ip = imageplan.ImagePlan(self, progress, filters = filters)
 
@@ -848,8 +971,16 @@ pkg: no package matching '%s' could be found in current catalog
                                 continue
 
                         pnames = {}
+                        pmatch = []
+                        npnames = {}
+                        npmatch = []
                         for m in matches:
-                                pnames[m.get_pkg_stem()] = 1
+                                if m.preferred_authority():
+                                        pnames[m.get_pkg_stem()] = 1
+                                        pmatch.append(m)
+                                else:
+                                        npnames[m.get_pkg_stem()] = 1
+                                        npmatch.append(m)
 
                         if len(pnames.keys()) > 1:
                                 # XXX Module directly printing.
@@ -859,10 +990,21 @@ pkg: no package matching '%s' could be found in current catalog
                                         print "\t%s" % k
                                 error = 1
                                 continue
+                        elif len(pnames.keys()) < 1 and len(npnames.keys()) > 1:
+                                # XXX Module directly printing.
+                                print \
+                                    _("pkg: '%s' matches multiple packages") % p
+                                for k in npnames.keys():
+                                        print "\t%s" % k
+                                error = 1
+                                continue
 
                         # matches is a list reverse sorted by version, so take
                         # the first; i.e., the latest.
-                        ip.propose_fmri(matches[0])
+                        if len(pmatch) > 0:
+                                ip.propose_fmri(pmatch[0])
+                        else:
+                                ip.propose_fmri(npmatch[0]) 
 
                 if error != 0:
                         raise RuntimeError, "Unable to assemble image plan"

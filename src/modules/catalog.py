@@ -625,7 +625,6 @@ class Catalog(object):
                 dictionary, instead store the number of matched fmris for each
                 package name which was matched."""
 
-                cat_auth = self.auth
                 tuples = {}
                 names_matched = set()
 
@@ -659,7 +658,7 @@ class Catalog(object):
 
                 pkgs = self._list_fmris_matched(names_matched)
 
-                ret = extract_matching_fmris(pkgs, cat_auth, patterns, matcher,
+                ret = extract_matching_fmris(pkgs, patterns, matcher,
                     constraint, counthash)
 
                 return sorted(ret, reverse = True)
@@ -1193,7 +1192,7 @@ def ts_to_datetime(ts):
         return dt
 
 
-def extract_matching_fmris(pkgs, cat_auth, patterns, matcher = None,
+def extract_matching_fmris(pkgs, patterns, matcher = None,
     constraint = None, counthash = None):
         """Iterate through the given list of PkgFmri objects,
         looking for packages matching 'pattern', based on the function
@@ -1231,8 +1230,8 @@ def extract_matching_fmris(pkgs, cat_auth, patterns, matcher = None,
 
                 for pattern in patterns:
                         pat_auth, pat_name, pat_version = tuples[pattern]
-                        if (pat_auth == cat_auth or not pat_auth) and \
-                            matcher(cat_name, pat_name):
+                        if (fmri.is_same_authority(pat_auth, cat_auth) or not \
+                            pat_auth) and matcher(cat_name, pat_name):
                                 if not pat_version or \
                                     p.version.is_successor(
                                     pat_version, constraint) or \
@@ -1243,6 +1242,8 @@ def extract_matching_fmris(pkgs, cat_auth, patterns, matcher = None,
                                                 else:
                                                         counthash[pattern] = 1
 
+                                        if pat_auth:
+                                                p.set_authority(pat_auth)
                                         ret.append(p)
 
         return sorted(ret, reverse = True)

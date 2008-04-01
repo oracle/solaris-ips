@@ -28,6 +28,13 @@ import urllib
 
 from version import Version
 
+# In order to keep track of what authority is presently the preferred authority,
+# a prefix is included ahead of the name of the authority.  If this prefix is
+# present, the authority is considered to be the current preferred authority for
+# the image.  This is where we define the prefix, since it's used primarily in
+# the FMRI.  PREF_AUTH_PFX => preferred authority prefix.
+PREF_AUTH_PFX = "_PRE"
+
 class PkgFmri(object):
         """The authority is the anchor of a package namespace.  Clients can
         choose to take packages from multiple authorities, and specify a default
@@ -80,10 +87,54 @@ class PkgFmri(object):
                 return (veridx, nameidx)
 
         def get_authority(self):
+                """Return the name of the authority that is contained
+                within this FMRI.  This strips off extraneous data
+                that may be attached to the authority.  The output
+                is suitable as a key into the authority["prefix"] table."""
+
+                # Strip off preferred authority prefix, if it exists.
+                if self.authority and self.authority.startswith(PREF_AUTH_PFX):
+                        r = self.authority.rsplit('_', 1)
+                        a = r[len(r) - 1]
+                        return a
+
+                # Otherwise just return the authority
                 return self.authority
 
-        def set_authority(self, authority):
-                self.authority = authority
+        def set_authority(self, authority, preferred = False):
+                """Set the FMRI's authority.  If this is a preferred
+                authority, set preferred to True."""
+
+                if preferred and not authority.startswith(PREF_AUTH_PFX):
+                        self.authority = "%s_%s" % (PREF_AUTH_PFX, authority)
+                else:
+                        self.authority = authority
+
+        def has_authority(self):
+                """Returns true if the FMRI has an authority."""
+
+                if self.authority:
+                        return True
+
+                return False
+
+        def preferred_authority(self):
+                """Returns true if this FMRI's authority is the preferred
+                authority."""
+
+                if not self.authority or \
+                    self.authority.startswith(PREF_AUTH_PFX):
+                        return True
+
+                return False
+
+        def get_authority_str(self):
+                """Return the bare string that specifies everything about
+                the authority.  This should only be used by code that
+                must write out (or restore) the complete authority
+                information to disk."""
+
+                return self.authority
 
         def get_name(self):
                 return self.pkg_name
@@ -100,7 +151,8 @@ class PkgFmri(object):
         def get_pkg_stem(self, default_authority = None, anarchy = False):
                 """Return a string representation of the FMRI without a specific
                 version.  Anarchy returns a stem without any authority."""
-                if not self.authority or anarchy:
+                if not self.authority or \
+                    self.authority.startswith(PREF_AUTH_PFX) or anarchy:
                         return "pkg:/%s" % self.pkg_name
 
                 return "pkg://%s/%s" % (self.authority, self.pkg_name)
@@ -109,10 +161,10 @@ class PkgFmri(object):
                 """Return a string representation of the FMRI without a specific
                 version."""
                 authority = self.authority
-                if authority == None:
+                if not authority:
                         authority = default_authority
 
-                if authority == None:
+                if not authority or authority.startswith(PREF_AUTH_PFX):
                         return "pkg:/%s@%s" % (self.pkg_name,
                             self.version.get_short_version())
 
@@ -126,7 +178,8 @@ class PkgFmri(object):
                 if authority == None:
                         authority = default_authority
 
-                if not authority or anarchy:
+                if not authority or authority.startswith(PREF_AUTH_PFX) \
+                    or anarchy:
                         if self.version == None:
                                 return "pkg:/%s" % self.pkg_name
 
@@ -153,7 +206,8 @@ class PkgFmri(object):
                         return -1
 
                 if self.authority and other.authority:
-                        if self.authority != other.authority:
+                        if not is_same_authority(self.authority,
+                             other.authority):
                                 return cmp(self.authority, other.authority)
 
                 if self.pkg_name == other.pkg_name:
@@ -198,7 +252,7 @@ class PkgFmri(object):
 
                 XXX Authority versus package name.
                 """
-                if self.authority != other.authority:
+                if not is_same_authority(self.authority, other.authority):
                         return False
 
                 if self.pkg_name == other.pkg_name:
@@ -207,7 +261,7 @@ class PkgFmri(object):
                 return False
 
         def tuple(self):
-                return self.authority, self.pkg_name, self.version
+                return self.get_authority(), self.pkg_name, self.version
 
         def is_name_match(self, fmristr):
                 """True if the regular expression given in fmristr matches the
@@ -224,7 +278,7 @@ class PkgFmri(object):
                 if not self.pkg_name == fmri.pkg_name:
                         return False
 
-                if self.authority != fmri.authority:
+                if not is_same_authority(self.authority, fmri.authority):
                         return False
 
                 if fmri.version == None:
@@ -263,3 +317,30 @@ def extract_pkg_name(fmri):
                 pkg_name = fmri[nameidx:]
 
         return pkg_name
+
+def is_same_authority(auth1, auth2):
+        """Compare two authorities.  Return true if they are the same, false
+        otherwise."""
+
+        # Cope with authorities that are None
+        if not auth1 and not auth2:
+                return True
+        elif not auth1 or not auth2:
+                return False
+
+        # Check if the authorities are preferred.  If they are, match.
+        r1 = auth1.rsplit('_', 1)
+        r2 = auth2.rsplit('_', 1)
+
+        if PREF_AUTH_PFX in r1 and PREF_AUTH_PFX in r2:
+                return True
+
+        # extract the authority suffix
+        a1 = r1[len(r1) - 1]
+        a2 = r2[len(r2) - 1]
+
+        # Do authorities match?
+        if a1 == a2:
+                return True
+
+        return False

@@ -25,6 +25,7 @@
 
 import ConfigParser
 import re
+import pkg.fmri as fmri
 
 class ImageConfig(object):
         """An ImageConfig object is a collection of configuration information:
@@ -66,7 +67,13 @@ class ImageConfig(object):
                                 # mirrors
                                 a = {}
 
-                                k = a["prefix"] = cp.get(s, "prefix")
+                                k = cp.get(s, "prefix")
+
+                                if k.startswith(fmri.PREF_AUTH_PFX):
+                                        raise RuntimeError(
+                                            "Invalid Authority name: %s" % k)
+
+                                a["prefix"] = k
                                 a["origin"] = cp.get(s, "origin")
                                 a["mirrors"] = cp.get(s, "mirrors")
 

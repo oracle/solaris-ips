@@ -57,6 +57,7 @@ import pkg.client.image as image
 import pkg.client.imageplan as imageplan
 import pkg.client.filelist as filelist
 import pkg.client.progress as progress
+import pkg.fmri as fmri
 
 def usage():
         print >> sys.stderr, _("""\
@@ -778,6 +779,12 @@ def image_create(img, args):
                 print >> sys.stderr, \
                     _("pkg: image-create requires authority argument to be of "
                         "the form '<prefix>=<url>'.")
+                usage()
+
+        if auth_name.startswith(fmri.PREF_AUTH_PFX):
+                print >> sys.stderr, \
+                    _("pkg: image-create requires that a prefix not match: %s"
+                        % fmri.PREF_AUTH_PFX)
                 usage()
 
         try:

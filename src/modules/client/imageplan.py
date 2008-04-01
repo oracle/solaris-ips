@@ -136,10 +136,6 @@ class ImagePlan(object):
                         self.target_rem_fmris.append(fmri)
 
         def evaluate_fmri(self, pfmri):
-                # [image] do we have this manifest?
-                if not self.image.has_manifest(pfmri):
-                        retrieve.get_manifest(self.image, pfmri)
-
                 m = self.image.get_manifest(pfmri)
 
                 # [manifest] examine manifest for dependencies
