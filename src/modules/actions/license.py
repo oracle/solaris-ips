@@ -35,6 +35,7 @@ installed on the system in the package's directory."""
 import os
 import errno
 import sha
+from stat import *
 
 import generic
 import pkg.portable as portable
@@ -124,6 +125,8 @@ class LicenseAction(generic.Action):
                     "license." + self.attrs["license"]))
 
                 try:
+                        # Make file writable so it can be deleted
+                        os.chmod(path, S_IWRITE|S_IREAD)
                         os.unlink(path)
                 except OSError,e:
                         if e.errno != errno.ENOENT:
