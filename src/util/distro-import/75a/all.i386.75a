@@ -9,6 +9,7 @@ include common/SUNWapch2d
 include common/SUNWapchd
 include common/SUNWastdev
 include common/SUNWavahi-bridge-dsd
+include common/SUNWciu8
 include common/SUNWcs
 include common/SUNWcsl
 include common/SUNWcurl
@@ -33,10 +34,13 @@ include common/SUNWgnome-remote-desktop
 include common/SUNWgnu-idn
 include common/SUNWgscr
 include common/SUNWgtar
+include common/SUNWhiu8
 include common/SUNWhpijs
 include common/SUNWiiim
+include common/SUNWiniu8
 include common/SUNWjaxp
 include common/SUNWjds-registration.72
+include common/SUNWkiu8
 include common/SUNWlibdaemon
 include common/SUNWman
 include common/SUNWmercurial
@@ -73,8 +77,10 @@ include common/SUNWtgnome-tsoljdslabel
 include common/SUNWtgnome-tsoljdsselmgr
 include common/SUNWtgnome-tstripe
 include common/SUNWtgnome-xagent
+include common/SUNWtiu8
 include common/SUNWuedg
 include common/SUNWuprl
+include common/SUNWuxlcf
 include common/SUNWxcursor-themes
 include common/SUNWxorg-headers.73
 include common/SUNWxorg-server

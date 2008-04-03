@@ -1,0 +1,5 @@
+package SUNWruby18
+import SUNWruby18u
+import SUNWruby18r
+version 1.8.6
+end package

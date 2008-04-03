@@ -1,0 +1,9 @@
+#
+# As there isn't currently a way to delete packages on upgrade, create an
+# empty package which will cause the previous contents of the package to
+# be deleted when the newer package is installed.
+#
+# SUNWeu8os was EOFed in snv_86.
+#
+package SUNWeu8os
+end package

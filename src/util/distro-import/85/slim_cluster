@@ -186,6 +186,7 @@ include common/SUNWii
 include common/SUNWima
 include common/SUNWimac.79
 include common/SUNWimagick
+include common/SUNWinstall-libs
 include common/SUNWintgige
 include common/SUNWipf
 include common/SUNWipkg
@@ -380,7 +381,7 @@ include common/SUNWzone
 include common/SUNWzsh
 include common/slim_cd
 include i386/BRCMbnx
-include i386/NVDAgraphics.76
+include i386/NVDAgraphics.81
 include i386/SUNWad810
 include i386/SUNWadixp
 include i386/SUNWadpu320
@@ -726,6 +727,7 @@ idepend SUNWimacr
 idepend SUNWimagick
 idepend SUNWimar
 idepend SUNWinstall
+idepend SUNWinstall-libs
 idepend SUNWintgige
 idepend SUNWipfr
 idepend SUNWipfu
@@ -826,8 +828,6 @@ idepend SUNWopenssl-man
 idepend SUNWopensslr
 idepend SUNWos86r
 idepend SUNWp7zip
-idepend SUNWpkgcmdsr
-idepend SUNWpkgcmdsu
 idepend SUNWpapi
 idepend SUNWpcan
 idepend SUNWpcelx
@@ -846,6 +846,8 @@ idepend SUNWperl584usr
 idepend SUNWpiclr
 idepend SUNWpiclu
 idepend SUNWpilot-link
+idepend SUNWpkgcmdsr
+idepend SUNWpkgcmdsu
 idepend SUNWpmr
 idepend SUNWpmu
 idepend SUNWpng

@@ -300,6 +300,7 @@ include common/SUNWima
 include common/SUNWimac.79
 include common/SUNWimagick
 include common/SUNWiniu8
+include common/SUNWinstall-libs
 include common/SUNWintgige
 include common/SUNWipc
 include common/SUNWipf
@@ -1588,6 +1589,7 @@ idepend SUNWiniu8
 idepend SUNWinleu
 idepend SUNWinplt
 idepend SUNWinstall
+idepend SUNWinstall-libs
 idepend SUNWintgige
 idepend SUNWipc
 idepend SUNWipfh
@@ -2523,6 +2525,7 @@ idepend SUNWimacr
 idepend SUNWimagick
 idepend SUNWimar
 idepend SUNWinstall
+idepend SUNWinstall-libs
 idepend SUNWintgige
 idepend SUNWipfr
 idepend SUNWipfu

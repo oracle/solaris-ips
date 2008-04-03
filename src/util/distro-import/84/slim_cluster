@@ -376,7 +376,7 @@ include common/SUNWzone
 include common/SUNWzsh
 include common/slim_cd
 include i386/BRCMbnx
-include i386/NVDAgraphics.76
+include i386/NVDAgraphics.81
 include i386/SUNWad810
 include i386/SUNWadixp
 include i386/SUNWadpu320

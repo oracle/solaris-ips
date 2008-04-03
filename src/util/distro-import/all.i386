@@ -154,7 +154,6 @@ include common/SUNWcedu
 include common/SUNWcfcl
 include common/SUNWcfpl
 include common/SUNWchxge
-include common/SUNWciu8
 include common/SUNWcnetr
 include common/SUNWcns
 include common/SUNWcpcu
@@ -342,7 +341,6 @@ include common/SUNWgtkperf
 include common/SUNWgzip
 include common/SUNWhal
 include common/SUNWhermon
-include common/SUNWhiu8
 include common/SUNWhwdata
 include common/SUNWi13rf
 include common/SUNWi15rf
@@ -366,7 +364,6 @@ include common/SUNWii
 include common/SUNWima
 include common/SUNWimac
 include common/SUNWimagick
-include common/SUNWiniu8
 include common/SUNWinst
 include common/SUNWinstall-patch-utils-root
 include common/SUNWintgige
@@ -434,7 +431,6 @@ include common/SUNWjss
 include common/SUNWjxmft
 include common/SUNWkdc
 include common/SUNWkey
-include common/SUNWkiu8
 include common/SUNWkoi8f
 include common/SUNWkrb
 include common/SUNWkxmft
@@ -698,7 +694,6 @@ include common/SUNWtftp
 include common/SUNWthunderbird
 include common/SUNWthunderbird-calendar
 include common/SUNWtidy
-include common/SUNWtiu8
 include common/SUNWtls
 include common/SUNWtlsd
 include common/SUNWtlsu
@@ -732,7 +727,6 @@ include common/SUNWusbccid
 include common/SUNWusbs
 include common/SUNWusbu
 include common/SUNWusbvc
-include common/SUNWuxlcf
 include common/SUNWvld
 include common/SUNWvldu
 include common/SUNWvts
