@@ -25,13 +25,15 @@ add link path=usr/has/man/man1/sh.1 target=../../../share/man/missing.man
 # XXX until new clofi hits nevada
 drop usr/sbin/lofiadm
 from SUNWclofi import
+usr/lib/lzma.so
 usr/sbin/lofiadm
 end import
 import SUNWcsr
-drop var/svc/profile/generic_open.xml
-drop var/svc/profile/generic_limited_net.xml
 drop etc/inet/hosts
 drop etc/nsswitch.conf
+drop lib/svc/method/fs-usr
+drop var/svc/profile/generic_limited_net.xml
+drop var/svc/profile/generic_open.xml
 # Use the 32-bit ksh93 as a replacement /bin/sh
 drop sbin/pfsh
 drop sbin/sh
@@ -50,6 +52,7 @@ etc/inet/hosts
 etc/nsswitch.conf
 etc/security/exec_attr
 etc/user_attr
+lib/svc/method/fs-usr
 root
 usr/bin/ksh
 usr/has/bin/ex

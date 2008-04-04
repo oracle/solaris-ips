@@ -25,6 +25,7 @@ f none etc/svc/global_repo.db 0600 root sys
 f none etc/svc/nonglobal_repo.db 0600 root sys
 e none etc/user_attr 0644 root sys
 e none etc/user_attr.cdonly 0644 root sys
+f none lib/svc/method/fs-usr 0555 root bin
 f none lib/svc/method/sshd 0555 root bin
 f none lib/svc/method/svc-dlmgmtd 0555 root bin
 d none root 0700 root root

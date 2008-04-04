@@ -64,6 +64,7 @@ CACHED_FILES=					\
 	boot/grub/menu.lst			\
 	boot/grub/splash.xpm.gz			\
 	etc/inet/hosts				\
+	lib/svc/method/fs-usr			\
 	lib/svc/method/sshd			\
 	lib/svc/method/svc-dlmgmtd		\
 	var/svc/profile/generic_limited_net.xml \
