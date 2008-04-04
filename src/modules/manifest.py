@@ -265,18 +265,26 @@ class Manifest(object):
                 action_dict = {}
                 for a in self.actions:
                         for k, v in a.generate_indices().iteritems():
+                                # The value might be a list if an indexed action
+                                # attribute is multivalued, such as driver
+                                # aliases.
+                                t = (a.name, a.attrs.get(a.key_attr))
                                 if isinstance(v, list):
-                                        if k in action_dict:
-                                                action_dict[k].update(
-                                                    dict((i, True) for i in v))
-                                        else:
-                                                action_dict[k] = \
-                                                    dict((i, True) for i in v)
+                                       if k in action_dict:
+                                               action_dict[k].update(
+                                                   dict((i, t) for i in v))
+                                       else:
+                                               action_dict[k] = \
+                                                   dict((i, t) for i in v)
                                 else:
+                                        # XXX if there's more than one k,v pair
+                                        # in the manifest, only one will get
+                                        # recorded.  basename,gmake is one
+                                        # example.
                                         if k in action_dict:
-                                                action_dict[k][v] = True
+                                                action_dict[k][v] = t
                                         else:
-                                                action_dict[k] = { v: True }
+                                                action_dict[k] = { v: t }
                 return action_dict
 
         def pickle(self, file):

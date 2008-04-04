@@ -499,9 +499,13 @@ def search(img, args):
         retcode = 1
 
         try:
-                for k, v in itertools.chain(*searches):
+                for index, fmri, action, value in itertools.chain(*searches):
                         retcode = 0
-                        print k, v
+                        if action and value:
+                                print index, action, value, fmri
+                        else:
+                                print index, fmri
+
         except RuntimeError, failed:
                 print "Some servers failed to respond:"
                 for auth, err in failed.args[0]:

@@ -523,8 +523,7 @@ class Catalog(object):
         def update_index(self, fmri, search_dict):
                 """Update the search database with the data from the manifest
                 for 'fmri', which has been collected into 'search_dict'"""
-                # self.searchdb: token -> (type, fmri, action)
-                # XXX search_dict doesn't have action info, but should
+                # self.searchdb: token -> (type, fmri, action name, key value)
 
                 # Don't update the database if it already has this FMRI's
                 # indices.
@@ -538,9 +537,17 @@ class Catalog(object):
                                 # holey) because we have zillions of copies of
                                 # the full fmri strings.  We might want to
                                 # indirect these as well.
-                                s = "%s %s" % (tok_type, fmri)
+                                action, keyval = search_dict[tok_type][tok]
+                                s = "%s %s %s %s" % \
+                                   (tok_type, fmri, action, keyval)
                                 s_ptr = self.next_token()
-                                self.searchdb[s_ptr] = s
+                                try:
+                                        self.searchdb[s_ptr] = s
+                                except:
+                                        print >> sys.stderr, "Couldn't add " \
+                                            "'%s' (s_ptr = %s) to search " \
+                                            "database" % (s, s_ptr)
+                                        continue
 
                                 self.update_chain(tok, s_ptr)
 

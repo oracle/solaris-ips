@@ -906,7 +906,17 @@ class Image(object):
 
                         for k, v in d.items():
                                 if args[0] in v:
-                                        yield k, idx_to_fmri(index)
+                                        # Yield the index name (such as
+                                        # "basename", the fmri, and then
+                                        # the "match results" which
+                                        # include the action name and
+                                        # the value of the key attribute
+                                        try:
+                                                yield k, idx_to_fmri(index), \
+                                                    v[args[0]][0], v[args[0]][1]
+                                        except TypeError:
+                                                yield k, idx_to_fmri(index), \
+                                                    "", ""
 
         def remote_search(self, args, servers = None):
                 """Search for the token in args[0] on the servers in 'servers'.
@@ -929,8 +939,11 @@ class Image(object):
                                 continue
 
                         for l in res.read().splitlines():
-                                yield l.split(" ", 2)[:2]
-
+                                fields = l.split()
+                                if len(fields) < 4:
+                                       yield fields[:2] + [ "", "" ]
+                                else:
+                                       yield fields[:4]
                 if failed:
                         raise RuntimeError, failed
 
