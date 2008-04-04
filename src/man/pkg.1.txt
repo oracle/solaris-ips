@@ -7,14 +7,14 @@ NAME
 SYNOPSIS
      /usr/bin/pkg [options] command [cmd_options] [operands]
 
-     /usr/bin/pkg install [-nv] pkg_fmri
-     /usr/bin/pkg uninstall [-nrv] pkg_fmri
+     /usr/bin/pkg install [-nv] pkg_fmri ...
+     /usr/bin/pkg uninstall [-nrv] pkg_fmri ...
 
-     /usr/bin/pkh verify [-fv] [pkg_fmri_pattern ...]
-     /usr/bin/pkg info [-msv] pkg_fmri_pattern [pkg_fmri_pattern ...]
-     /usr/bin/pkg list [-aH] [-o attribute ...] [-s sort_key]
+     /usr/bin/pkg verify [-fv] [pkg_fmri_pattern ...]
+     /usr/bin/pkg info pkg_fmri_pattern [pkg_fmri_pattern ...]
+     /usr/bin/pkg contents [-aH] [-o attribute ...] [-s sort_key]
          [-t action_type ... ] [pkg_fmri_pattern ...]
-     /usr/bin/pkg status [-aHuv] [pkg_fmri_pattern ...]
+     /usr/bin/pkg list [-aHuv] [pkg_fmri_pattern ...]
      /usr/bin/pkg search [-lr] [-s server] token
 
      /usr/bin/pkg refresh
@@ -70,8 +70,8 @@ SUBCOMMANDS
           Retrieve updated catalogs for each authority registered within
           the image.
 
-     install [-nv] pkg_fmri
-     uninstall [-nrv] pkg_fmri 
+     install [-nv] pkg_fmri ...
+     uninstall [-nrv] pkg_fmri ...
           Install or remove the package specified by pkg_fmri or
           matching pkg_fmri as a substring.  With the -n option, execute
           the requested operation but make no persistent changes to the
@@ -82,17 +82,12 @@ SUBCOMMANDS
           uninstall any packages which are dependent on the initial
 	  package.
 
-     info [-msv] [pkg_fmri_pattern ...]
+     info [pkg_fmri_pattern ...]
           Display information about packages in a human-readable form.
-	  With -s, display a one-line short-form giving the package name
-	  and description.  With -v, be extra verbose.  Multiple FMRI
-	  patterns may be specified; with no patterns, display
-	  information on all installed packages in the image.
+          Multiple FMRI patterns may be specified; with no patterns,
+          display information on all installed packages in the image.
 
-	  The -m option displays the raw package contents in manifest
-	  form.
-
-     list [-aH] [-o attribute ...] [-s sort_key] [-t action_type ... ]
+     contents [-Hm] [-o attribute ...] [-s sort_key] [-t action_type ... ]
               [pkg_fmri_pattern ...]
 	  Display the contents (action attributes) of packages in the
 	  current image.  By default, only the path attribute is displayed,
@@ -100,7 +95,8 @@ SUBCOMMANDS
 	  -o option may be specified multiple times, or multiple attributes
 	  may specified as the argument to one -o option by separating the
 	  attribute names with commas.  Only actions which have the
-	  requested attributes will be displayed.
+	  requested attributes will be displayed.  The -m option may
+          also be used, as a shorthand for '-o action.raw'.
 
 	  The -s option specifies the attribute by which the listing should
 	  be sorted.
@@ -114,8 +110,34 @@ SUBCOMMANDS
 	  restricts the display to the contents of the matching
 	  packages.
 
-	  The special attribute names ":name" and ":key" correspond to the
-	  action name and the value of its key attribute, respectively.
+	  Several special "pseudo" attribute names are available for
+          convenience:
+          
+          action.name           Corresponds to the name of the action.
+                                For example, for a file action, this is
+                                "file"
+
+          action.key            Corresponds to the value of the action's
+                                key attribute.  For example, for a file
+                                action, this is the path to the file.
+
+          action.raw            Corresponds to the complete contents of
+                                the action as represented in the package
+                                manifest.  This corresponds to the
+                                lines of output of 'pkg contents -m'
+
+          pkg.name              Corresponds to the name of the package
+                                containing the action, such as "SUNWcs"
+
+          pkg.shortfmri         Corresponds to the short form FMRI of
+                                the package containing the action, such
+                                as pkg://opensolaris.org/SUNWzone@0.5.11-0.79
+
+          pkg.authority         Corresponds to the authority of the
+                                the package containing the action, such
+                                as "opensolaris.org"
+
+
 
      search [-lr] [-s server] token
           Search for the token "token", and display the FMRIs in which the token
@@ -132,17 +154,19 @@ SUBCOMMANDS
           Both -l and -r (or -s) may be specified together, in which case both
           local and remote searches will be performed.
 
-     status [-aHuv] [pkg_fmri_pattern ...]
+     list [-aHsuv] [pkg_fmri_pattern ...]
           Report on the state of packages in the current image.  With
           -a, report on all packages known, whether installed or not;
           without -a, report only based on installed packages in the
-          image.  With -u, report only packages with newer versions
-          available.  With -v, report full package FMRIs.
+          image.  With -s, display a one-line short-form giving the
+          package name and description.  With -u, report only packages
+          with newer versions available.  With -v, report full package
+          FMRIs.
 
      verify [-fv] [pkg_fmri_pattern ...]
           Validate the installation of packages in the current image.
           With -v, do more verbose reporting. With -f, fully validate the
-          contents of files agains the hash values in the package
+          contents of files against the hash values in the package
           manifests, as well as checking for file and directory presence.
 
 	  The -H option causes the headers to be omitted.
@@ -166,8 +190,8 @@ EXAMPLES
      is available for all actions, will display a line for all actions,
      which is not desired here.
 
-     $ pkg list -t dir,file,link,hardlink -o :name,mode,pkg.size,path,target zfs
-     :NAME MODE   SIZE PATH                                      TARGET
+     $ pkg contents -t dir,file,link,hardlink -o action.name,mode,pkg.size,path,target zfs
+     NAME  MODE   SIZE PATH                                      TARGET
      dir   0755        etc
      dir   0755        etc/fs
      dir   0755        etc/fs/zfs

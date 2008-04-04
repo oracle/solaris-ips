@@ -50,7 +50,7 @@ def maketests():
 	import cli.t_image_create
 	import cli.t_pkg_install_basics
 	import cli.t_pkgsend
-	import cli.t_pkg_status
+	import cli.t_pkg_list
 	import cli.t_commandline
 	import cli.t_upgrade
 	import cli.t_rename
@@ -62,7 +62,7 @@ def maketests():
 	    cli.t_depot.TestDepot,
 	    cli.t_pkg_install_basics.TestPkgInstallBasics,
 	    cli.t_pkgsend.TestPkgSend,
-	    cli.t_pkg_status.TestPkgStatus,
+	    cli.t_pkg_list.TestPkgList,
 	    cli.t_commandline.TestCommandLine,
 	    cli.t_upgrade.TestUpgrade,
 	    cli.t_rename.TestRename ]

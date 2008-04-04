@@ -145,8 +145,11 @@ class PkgFmri(object):
         def set_timestamp(self, new_ts):
                 self.version.set_timestamp(new_ts)
 
-        def get_timestamp(self, new_ts):
+        def get_timestamp(self):
                 return self.version.get_timestamp()
+
+        def get_version(self):
+                return self.version.get_short_version()
 
         def get_pkg_stem(self, default_authority = None, anarchy = False):
                 """Return a string representation of the FMRI without a specific

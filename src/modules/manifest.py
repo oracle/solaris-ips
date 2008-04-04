@@ -94,6 +94,8 @@ class Manifest(object):
                 self.img = None
                 self.fmri = None
 
+                self.size = 0
+
                 self.actions = []
 
         def __str__(self):
@@ -219,6 +221,9 @@ class Manifest(object):
 
         def set_content(self, str):
                 """str is the text representation of the manifest"""
+		assert self.actions == []
+
+		self.size = 0
 
                 # So we could build up here the type/key_attr dictionaries like
                 # sdict and odict in difference() above, and have that be our
@@ -245,6 +250,8 @@ class Manifest(object):
                         if hasattr(action, "hash"):
                                 action.data = \
                                     self.make_opener(self.img, self.fmri, action)
+
+			self.size += int(action.attrs.get("pkg.size", "0"))
 
                         if not self.actions:
                                 self.actions.append(action)

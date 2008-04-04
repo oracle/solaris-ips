@@ -187,8 +187,8 @@ if ! pkg refresh; then
 	fail pkg refresh failed
 fi
 
-if ! pkg status -a; then
-	fail pkg status -a failed
+if ! pkg list -a; then
+	fail pkg list -a failed
 fi
 
 end_assert
@@ -203,8 +203,8 @@ fi
 
 find $IMAGE_DIR
 
-if ! pkg status; then
-	fail pkg status failed
+if ! pkg list; then
+	fail pkg list failed
 fi
 
 if ! pkg uninstall moo; then
@@ -225,8 +225,8 @@ fi
 
 find $IMAGE_DIR
 
-if ! pkg status; then
-	fail pkg status failed
+if ! pkg list; then
+	fail pkg list failed
 fi
 
 if ! pkg uninstall bar; then
@@ -241,8 +241,8 @@ end_assert
 new_assert "Install and uninstall pkg foo@1.0 from authority 1"
 # {{{1
 
-if ! pkg status -a; then
-	fail pkg status -a failed
+if ! pkg list -a; then
+	fail pkg list -a failed
 fi
 
 # This should fail, and require that we specify the authority
@@ -258,8 +258,8 @@ fi
 
 find $IMAGE_DIR
 
-if ! pkg status; then
-	fail pkg status failed
+if ! pkg list; then
+	fail pkg list failed
 fi
 
 if ! pkg uninstall pkg://test1/foo; then

@@ -80,8 +80,8 @@ class TestRename(testutils.SingleDepotTestCase):
 		self.pkg("install bar")
 		self.pkg("verify")
 
-		self.pkg("status | grep foo@", exit=1)
-		self.pkg("status | grep bar@", exit=0)
+		self.pkg("list foo", exit=1)
+		self.pkg("list bar", exit=0)
 
 	def test_rename3(self):
 		""" Rename to pkg previously opened without a build string """
@@ -121,16 +121,16 @@ class TestRename(testutils.SingleDepotTestCase):
                 self.pkgsend(durl, "close")
 
                 self.pkg("refresh")
-                self.pkg("status -aH")
+                self.pkg("list -aH")
 		self.pkg("install -v zoo")
 		self.pkg("install -v rar")
 
 		# Check that zoo and rar were installed
-                self.pkg("status | grep zoo@")
-                self.pkg("status | grep rar@")
+                self.pkg("list zoo")
+                self.pkg("list rar")
 
 		# Check that moo was not installed
-                self.pkg("status | grep moo@", exit=1)
+                self.pkg("list moo", exit=1)
 
                 self.pkg("verify")
 

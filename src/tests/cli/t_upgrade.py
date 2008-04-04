@@ -126,8 +126,8 @@ class TestUpgrade(testutils.SingleDepotTestCase):
 
                 self.pkg("install bronze")
 
-                self.pkg("status | grep amber@")
-                self.pkg("status | grep bronze@")
+                self.pkg("list amber")
+                self.pkg("list bronze")
                 self.pkg("verify")
 
                 # Now send 2.0 versions of packages.
@@ -149,10 +149,10 @@ class TestUpgrade(testutils.SingleDepotTestCase):
                 self.pkg("image-update")
 
                 # Try to verify that it worked.
-                self.pkg("status")
-                self.pkg("status -a")
-                self.pkg("status | grep amber@2.0")
-                self.pkg("status | grep bronze@2.0")
+                self.pkg("list")
+                self.pkg("list -a")
+                self.pkg("list amber@2.0")
+                self.pkg("list bronze@2.0")
                 self.pkg("verify -v")
 
 

@@ -85,12 +85,12 @@ class TestPkgInstallBasics(testutils.SingleDepotTestCase):
                 self.pkgsend_bulk(durl, self.foo10)
                 self.image_create(durl)
 
-                self.pkg("status -a")
-                self.pkg("status", exit=1)
+                self.pkg("list -a")
+                self.pkg("list", exit=1)
 
                 self.pkg("install foo")
 
-                self.pkg("status")
+                self.pkg("list")
                 self.pkg("verify")
 
                 self.pkg("uninstall foo")
@@ -106,10 +106,10 @@ class TestPkgInstallBasics(testutils.SingleDepotTestCase):
                 self.pkgsend_bulk(durl, self.foo11)
                 self.image_create(durl)
 
-                self.pkg("status -a")
+                self.pkg("list -a")
                 self.pkg("install foo")
                 self.pkg("verify")
-                self.pkg("status")
+                self.pkg("list")
 
                 self.pkg("search /lib/libc.so.1")
                 self.pkg("search -r /lib/libc.so.1")
@@ -118,7 +118,7 @@ class TestPkgInstallBasics(testutils.SingleDepotTestCase):
 
                 self.pkg("uninstall foo")
                 self.pkg("verify")
-                self.pkg("status -a")
+                self.pkg("list -a")
                 self.pkg("verify")
 
 
@@ -131,15 +131,16 @@ class TestPkgInstallBasics(testutils.SingleDepotTestCase):
                 self.image_create(durl)
 
                 self.pkg("install foo@1.0")
-                self.pkg("status | grep foo@1.0")
-                self.pkg("status | grep foo@1.1", exit = 1)
+                self.pkg("list foo@1.0")
+                self.pkg("list foo@1.1", exit = 1)
 
                 self.pkg("install foo@1.1")
-                self.pkg("status | grep foo@1.1")
+                self.pkg("list foo@1.1")
+                self.pkg("list foo@1.0", exit = 0)
                 self.pkg("verify")
 
                 self.pkg("uninstall foo")
-                self.pkg("status -a")
+                self.pkg("list -a")
                 self.pkg("verify")
 
 
@@ -153,15 +154,15 @@ class TestPkgInstallBasics(testutils.SingleDepotTestCase):
                 self.pkgsend_bulk(durl, self.bar10)
                 self.image_create(durl)
 
-                self.pkg("status -a")
+                self.pkg("list -a")
                 self.pkg("install bar@1.0")
-                self.pkg("status")
+                self.pkg("list")
                 self.pkg("verify")
                 self.pkg("uninstall -v bar foo")
 
                 # foo and bar should not be installed at this point
-                self.pkg("status | grep bar@", exit = 1)
-                self.pkg("status | grep foo@", exit = 1)
+                self.pkg("list bar", exit = 1)
+                self.pkg("list foo", exit = 1)
                 self.pkg("verify")
 
 
@@ -181,17 +182,17 @@ class TestPkgInstallBasics(testutils.SingleDepotTestCase):
                 self.pkgsend_bulk(durl, self.foo12)
                 self.pkgsend_bulk(durl, self.bar11)
 
-                self.pkg("list -H")
-                self.pkg("status")
+                self.pkg("contents -H")
+                self.pkg("list")
                 self.pkg("refresh")
 
-                self.pkg("status")
+                self.pkg("list")
                 self.pkg("verify")
                 self.pkg("image-update -v")
                 self.pkg("verify")
 
-                self.pkg("status | grep foo@1.2")
-                self.pkg("status | grep bar@1.1")
+                self.pkg("list foo@1.2")
+                self.pkg("list bar@1.1")
 
                 self.pkg("uninstall bar foo")
                 self.pkg("verify")
@@ -215,8 +216,8 @@ class TestPkgInstallBasics(testutils.SingleDepotTestCase):
                 # bar depends on foo.  foo and bar should both
                 # be removed by this action.
                 self.pkg("uninstall -vr bar")
-                self.pkg("status | grep bar@", exit = 1)
-                self.pkg("status | grep foo@", exit = 1,
+                self.pkg("list bar", exit = 1)
+                self.pkg("list foo", exit = 1,
                    comment = self.test_bug_387.__doc__)
 
 

@@ -45,7 +45,7 @@ class TestPkgSend(testutils.SingleDepotTestCase):
                 self.image_create(durl)
                 self.pkg("refresh")
 
-                self.pkg("status -a shouldnotexist", exit = 1)
+                self.pkg("list -a shouldnotexist", exit = 1)
 
         def test_bug_89(self):
                 """ Client must correctly handle errors on bad pkgsends

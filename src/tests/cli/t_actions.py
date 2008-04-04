@@ -87,12 +87,12 @@ class TestPkgActions(testutils.SingleDepotTestCase):
                 self.pkgsend_bulk(durl, self.basics0)
                 self.image_create(durl)
 
-                self.pkg("status -a")
-                self.pkg("status", exit=1)
+                self.pkg("list -a")
+                self.pkg("list", exit=1)
 
                 self.pkg("install basics")
 
-                self.pkg("status")
+                self.pkg("list")
                 self.pkg("verify")
 
                 self.pkg("uninstall basics")
@@ -120,13 +120,13 @@ class TestPkgActions(testutils.SingleDepotTestCase):
 
 		self.pkg("install usertest")
                 self.pkg("verify")
-		self.pkg("info -m usertest")
+		self.pkg("contents -m usertest")
 
                 self.pkgsend_bulk(durl, self.usertest11)
                 self.pkg("refresh")
 		self.pkg("install usertest")
                 self.pkg("verify")
-		self.pkg("info -m usertest")
+		self.pkg("contents -m usertest")
 
                 self.pkg("uninstall usertest")
                 self.pkg("verify")

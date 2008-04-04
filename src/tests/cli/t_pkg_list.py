@@ -30,13 +30,13 @@ if __name__ == "__main__":
 import unittest
 import os
 
-class TestPkgStatus(testutils.SingleDepotTestCase):
+class TestPkgList(testutils.SingleDepotTestCase):
 
         def test_empty_image(self):
-                """ pkg status should fail in an empty image """
+                """ pkg list should fail in an empty image """
 
                 self.image_create(self.dc.get_depot_url())
-                self.pkg("status", exit=1)
+                self.pkg("list", exit=1)
 
 
 if __name__ == "__main__":

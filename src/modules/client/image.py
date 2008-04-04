@@ -829,9 +829,12 @@ class Image(object):
                 if patterns:
                         for p in patterns:
                                 try:
-                                        pkgs_known.extend([ m
-                                            for m in self.get_matching_fmris(p)
-                                            ])
+					# XXX dp: not sure if this is
+					# right with respect to the code
+					# 6 or 7 lines further below.
+					for m in self.get_matching_fmris(p):
+						if all_known or self.is_installed(m):
+							pkgs_known.extend([ m ])
                                 except KeyError:
                                         badpats.append(p)
 

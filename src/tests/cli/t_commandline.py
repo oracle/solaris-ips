@@ -40,8 +40,9 @@ class TestCommandLine(testutils.SingleDepotTestCase):
                 self.image_create(durl)
 
                 self.pkg("-@", exit=2)
-                self.pkg("status -@", exit=2)
                 self.pkg("list -@", exit=2)
+                self.pkg("list -v -s", exit=2)
+                self.pkg("contents -@", exit=2)
                 self.pkg("image-update -@", exit=2)
                 self.pkg("image-create -@", exit=2)
                 self.pkg("image-create --bozo", exit=2)
@@ -56,9 +57,9 @@ class TestCommandLine(testutils.SingleDepotTestCase):
 
                 self.pkg("-s status", exit=2)
                 self.pkg("-R status", exit=2)
-                self.pkg("list -o", exit=2)
-                self.pkg("list -s", exit=2)
-                self.pkg("list -t", exit=2)
+                self.pkg("contents -o", exit=2)
+                self.pkg("contents -s", exit=2)
+                self.pkg("contents -t", exit=2)
 
 
         def test_pkgsend_bogus_opts(self):
