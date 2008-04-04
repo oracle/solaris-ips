@@ -119,7 +119,8 @@ class LegacyAction(generic.Action):
         def remove(self, pkgplan):
                 # Don't remove the dummy package if another package thinks it
                 # owns part of it.
-                for k, fmri in pkgplan.image.local_search([self.attrs["pkg"]]):
+                for k, fmri, action, value in \
+                    pkgplan.image.local_search([self.attrs["pkg"]]):
                         if k == "legacy_pkg" and \
                             fmri != pkgplan.destination_fmri:
                                 return
