@@ -78,42 +78,41 @@ def fromstr(str):
 
         Raises KeyError if the action type is unknown.
         """
-        type, str = str.split(" ", 1)
 
+        list = str.split(' ')
+        type = list.pop(0)
         if type not in types:
-                raise KeyError, "Action '%s'" % type
+                raise KeyError, "Bad action type '%s' in action '%s'" % \
+                    (type, str)
 
         # That is, if the first attribute is a hash
-        if 0 < str.find(" ") < str.find("="):
-                hash, str = str.split(" ", 1)
+        if list[0].find("=") == -1:
+                hash = list.pop(0)
         else:
                 hash = None
-
-        # Split the string on spaces, then reconstruct and dequote quoted
-        # values.
-        list = str.split(" ")
 
         # Simple state machine to reconnect the elements that shouldn't have
         # been split.  Put the results into a new list since we can't modify the
         # list we're iterating over.
         state = 0
-        count = 0
         nlist = []
+        n = ""
         for i in list:
                 if '="' in i:
-                        start = count
                         n = i.replace('="', '=')
                         state = 1
                 elif i.endswith('"'):
                         n += " " + i[:-1]
                         nlist += [ n ]
+                        n = ""
                         state = 0
                 elif state == 1:
                         n += " " + i
-                else:
+                elif i:
                         nlist += [ i ]
 
-                count += 1
+        if n != "":
+                raise ValueError("Unmatched \" in action '%s'" % str)
 
         return fromlist(type, nlist, hash)
 
@@ -122,29 +121,38 @@ def fromlist(type, args, hash = None):
 
         Raises ValueError if the attribute strings are malformed.
         """
-        # Create a list of key/value lists
-        args = [kv.split("=", 1) for kv in args]
-        # Find malformed actions (key or value missing)
-        noeq = [e[0] for e in args if len(e) != 2]
-        if noeq:
-                raise ValueError(
-                    "Malformed action string (missing '=') in key or value: " +
-                    ", ".join(noeq))
-        # Remove attribute duplication
-        attrset = set(zip(*args)[0])
-        # Put values belonging to the same attribute into individual lists
-        vallist = [[j[1] for j in args if j[0] == i] for i in attrset]
-        # Create a dict from the two lists
-        attrs = dict(zip(attrset, vallist))
 
-        # Convert any single-valued attributes to simple strings.
-        # attrs = dict(
-        #     [ (k, v) for k, v in attrs.iteritems() if len(v) > 1 ] +
-        #     [ (k, v[0]) for k, v in attrs.iteritems() if len(v) == 1 ]
-        # )
-        for a in attrs:
-                if len(attrs[a]) == 1:
-                        attrs[a] = attrs[a][0]
+        attrs = {}
+
+        saw_error = False
+        try:
+                for a, v in [kv.split("=", 1) for kv in args]:
+                        if v == '' or a == '':
+                                saw_error = True
+                                raise ValueError(
+                                    "Malformed action attribute: '%s=%s'" %
+                                    (a, v))
+
+                        # This is by far the common case-- an attribute with
+                        # a single value.
+                        if a not in attrs:
+                                attrs[a] = v
+                        else:
+                                av = attrs[a]
+                                if isinstance(av, list):
+                                        attrs[a].append(v)
+                                else:
+                                        attrs[a] = [ av, v ]
+        except ValueError, v:
+                if saw_error:
+                        raise
+
+                #
+                # We're only here if the for: statement above throws a
+                # ValueError.  That can happen if split yields a single element,
+                # which is possible if e.g. an attribute lacks an =.
+                #
+                raise ValueError("Malformed action string: %s", args)
 
         action = types[type](**attrs)
         if hash:
