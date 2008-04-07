@@ -52,6 +52,7 @@ import traceback
 import urllib2
 import urlparse
 import errno
+import socket
 
 import pkg.client.image as image
 import pkg.client.imageplan as imageplan
@@ -507,14 +508,18 @@ def search(img, args):
                                 print index, fmri
 
         except RuntimeError, failed:
-                print "Some servers failed to respond:"
+                print >> sys.stderr, "Some servers failed to respond:"
                 for auth, err in failed.args[0]:
                         if isinstance(err, urllib2.HTTPError):
-                                print "    %s: %s (%d)" % \
+                                print >> sys.stderr, "    %s: %s (%d)" % \
                                     (auth["origin"], err.msg, err.code)
                         elif isinstance(err, urllib2.URLError):
-                                print "    %s: %s" % \
-                                    (auth["origin"], err.args[0][1])
+                                if isinstance(err.args[0], socket.timeout):
+                                        print >> sys.stderr, "    %s: %s" % \
+                                            (auth["origin"], "timeout")
+                                else:
+                                        print >> sys.stderr, "    %s: %s" % \
+                                            (auth["origin"], err.args[0][1])
 
                 retcode = 4
 
@@ -784,8 +789,12 @@ def display_catalog_failures(failures):
                                     (urlparse.urlsplit(auth["origin"])[1].split(":")[0],
                                     err.args[0][1])
                         else:
-                                print >> sys.stderr, "    %s: %s" % \
-                                    (auth["origin"], err.args[0][1])
+                                if isinstance(err.args[0], socket.timeout):
+                                        print >> sys.stderr, "    %s: %s" % \
+                                            (auth["origin"], "timeout")
+                                else:
+                                        print >> sys.stderr, "    %s: %s" % \
+                                            (auth["origin"], err.args[0][1])
                 else:
                         print >> sys.stderr, "   ", err
 
@@ -905,6 +914,9 @@ def main_func():
 
         subcommand = pargs[0]
         del pargs[0]
+
+        socket.setdefaulttimeout(
+            int(os.environ.get("PKG_CLIENT_TIMEOUT", "30"))) # in seconds
 
         # XXX Handle PKG_SERVER environment variable.
 
