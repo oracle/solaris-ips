@@ -58,6 +58,7 @@ import pkg.client.image as image
 import pkg.client.imageplan as imageplan
 import pkg.client.filelist as filelist
 import pkg.client.progress as progress
+import pkg.client.bootenv as bootenv
 import pkg.fmri as fmri
 
 def usage(usage_error = None):
@@ -330,18 +331,28 @@ def image_update(img, args):
                 elif opt == "-q":
                         quiet = True
 
+        try:
+                be = bootenv.BootEnv(img.get_root())
+        except RuntimeError:
+                be = bootenv.BootEnvNull(img.get_root())
+
         progresstracker = get_tracker(quiet)
 
         img.load_catalogs(progresstracker)
 
         pkg_list = [ ipkg.get_pkg_stem() for ipkg in img.gen_installed_pkgs() ]
+
+        be.init_image_recovery(img)
+
         try:
                 img.list_install(pkg_list, progresstracker, verbose = verbose,
                     noexecute = noexecute)
         except RuntimeError, e:
                 error(_("image_update failed: %s") % e)
+                be.restore_image()
                 ret_code = 1
         else:
+                be.activate_image()
                 ret_code = 0
         img.cleanup_downloads()
         return ret_code
@@ -368,6 +379,11 @@ def install(img, args):
                 elif opt == "-q":
                         quiet = True
 
+        try:
+                be = bootenv.BootEnv(img.get_root())
+        except RuntimeError:
+                be = bootenv.BootEnvNull(img.get_root())
+                
         progresstracker = get_tracker(quiet)
 
         img.load_catalogs(progresstracker)
@@ -380,11 +396,14 @@ def install(img, args):
                     verbose = verbose, noexecute = noexecute)
         except RuntimeError, e:
                 error(_("install failed: %s") % e)
+                be.restore_install_uninstall()
                 ret_code = 1
         except:
+                be.restore_install_uninstall()
                 img.cleanup_downloads()
                 raise
         else:
+                be.activate_install_uninstall()
                 ret_code = 0
 
         img.cleanup_downloads()   
@@ -408,6 +427,11 @@ def uninstall(img, args):
 
         progresstracker = get_tracker(quiet)
 
+        try:
+                be = bootenv.BootEnv(img.get_root())
+        except RuntimeError:
+                be = bootenv.BootEnvNull(img.get_root())
+               
         img.load_catalogs(progresstracker)
 
         ip = imageplan.ImagePlan(img, progresstracker, recursive_removal)
@@ -453,6 +477,10 @@ def uninstall(img, args):
 
         if not noexecute:
                 ip.execute()
+                if ip.state == imageplan.EXECUTED_OK:
+                        be.activate_install_uninstall()
+                else:
+                        be.restore_install_uninstall()
 
         return err
 

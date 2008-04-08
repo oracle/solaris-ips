@@ -120,6 +120,7 @@ PYCSERVERMODS = $(PYSERVERMODS:%.py=%.pyc)
 
 PYCLIENTMODS = \
 	modules/client/__init__.py \
+	modules/client/bootenv.py \
 	modules/client/filelist.py \
 	modules/client/filter.py \
 	modules/client/image.py \
