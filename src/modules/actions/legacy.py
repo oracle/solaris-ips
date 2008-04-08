@@ -110,7 +110,7 @@ class LegacyAction(generic.Action):
 
                 os.chmod(pkginfo, 0644)
 
-               def verify(self, img, **args):
+	def verify(self, img, **args):
                 pkgdir = os.path.join(img.get_root(), "var/sadm/pkg",
                     self.attrs["pkg"])
 
