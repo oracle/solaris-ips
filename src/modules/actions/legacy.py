@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -34,7 +34,7 @@ empty."""
 
 import os
 import errno
-
+from stat import *
 import generic
 
 class LegacyAction(generic.Action):
@@ -46,94 +46,104 @@ class LegacyAction(generic.Action):
         def __init__(self, data=None, **attrs):
                 generic.Action.__init__(self, data, **attrs)
 
+        def directory_references(self):
+                return [os.path.normpath(os.path.join("var/sadm/pkg", self.attrs["pkg"]))]
+
         def install(self, pkgplan, orig):
-                """Client-side method that installs the dummy package files."""
+                """Client-side method that installs the dummy package files.  
+                Use per-pkg hardlinks to create reference count for pkginfo file"""
 
                 pkgdir = os.path.join(pkgplan.image.get_root(), "var/sadm/pkg",
                     self.attrs["pkg"])
 
-                # Since the whole idea of this action is a complete hack anyway,
-                # if it's already there, just skip it.
-                if os.path.isdir(pkgdir):
-                        return
-
-                os.makedirs(pkgdir, 0755)
-
-                manifest = pkgplan.destination_mfst
-
-                svr4attrs = {
-                    "pkg": self.attrs["pkg"],
-                    "name": manifest.get("description", "none provided"),
-                    "arch": "i386",
-                    "version": pkgplan.destination_fmri.version,
-                    "category": "system",
-                    "vendor": None, 
-                    "desc": None, 
-                    "hotline": None
-                }
-
-                attrs = (
-                    (a.upper(), b)
-                    for a in svr4attrs
-                    for b in ( self.attrs.get(a, svr4attrs[a]), )
-                    if b
-                )
+                if not os.path.isdir(pkgdir):
+                        os.makedirs(pkgdir, 0755)
 
                 pkginfo = os.path.join(pkgdir, "pkginfo")
-                pfile = file(pkginfo, "w")
-                for k, v in attrs:
-                        pfile.write("%s=%s\n" % (k, v))
-                pfile.close()
+                
+                if not os.path.isfile(pkginfo):
+                        manifest = pkgplan.destination_mfst
+                        svr4attrs = {
+                            "pkg": self.attrs["pkg"],
+                            "name": manifest.get("description", "none provided"),
+                            "arch": "i386",
+                            "version": pkgplan.destination_fmri.version,
+                            "category": "system",
+                            "vendor": None, 
+                            "desc": None, 
+                            "hotline": None
+                            }
 
-		# the svr4 pkg commands need contents file to work, but the
-		# needed directories are in the SUNWpkgcmds package....
-		# Since this file is always of zero length, we can let this
-		# fail until those directories (and the commands that
-		# need them) appear.
+                        attrs = (
+                            (a.upper(), b)
+                            for a in svr4attrs
+                            for b in ( self.attrs.get(a, svr4attrs[a]), )
+                            if b
+                            )
 
-		try:
-			file(os.path.join(pkgplan.image.get_root(),
-			    "var/sadm/install/contents"), "w").close()
-		except IOError, e:
-			if e.errno != errno.ENOENT:
-				raise
+                        pfile = file(pkginfo, "w")
+                        for k, v in attrs:
+                                pfile.write("%s=%s\n" % (k, v))
+                        pfile.close()
+
+                # create hardlink to pkginfo file for this pkg; may be
+                # there already on upgrade
+
+                linkfile = os.path.join(pkgdir, 
+                    "pkginfo." + pkgplan.destination_fmri.get_url_path())
+
+                if not os.path.isfile(linkfile):
+                        os.link(pkginfo, linkfile)
+
+                # the svr4 pkg commands need contents file to work, but the
+                # needed directories are in the SUNWpkgcmds package....
+                # Since this file is always of zero length, we can let this
+                # fail until those directories (and the commands that
+                # need them) appear.
+
+                try:
+                        file(os.path.join(pkgplan.image.get_root(),
+                            "var/sadm/install/contents"), "w").close()
+                except IOError, e:
+                        if e.errno != errno.ENOENT:
+                                raise
 
                 os.chmod(pkginfo, 0644)
 
-       	def verify(self, img, **args):
+               def verify(self, img, **args):
                 pkgdir = os.path.join(img.get_root(), "var/sadm/pkg",
                     self.attrs["pkg"])
 
-		# XXX this could be a better check & exactly validate pkginfo contents
+                # XXX this could be a better check & exactly validate pkginfo contents
 
                 if not os.path.isdir(pkgdir):
-			return ["Missing directory var/sadm/pkg/%s" %
-			    self.attrs["pkg"]]
+                        return ["Missing directory var/sadm/pkg/%s" %
+                            self.attrs["pkg"]]
                 pkginfo = os.path.join(pkgdir, "pkginfo")
 
-		if not os.path.isfile(os.path.join(pkgdir, "pkginfo")):
-			return ["Missing file var/sadm/pkg/%s/pkginfo" %
-			    self.attrs["pkg"]]
-		return []
+                if not os.path.isfile(os.path.join(pkgdir, "pkginfo")):
+                        return ["Missing file var/sadm/pkg/%s/pkginfo" %
+                            self.attrs["pkg"]]
+                return []
 
         def remove(self, pkgplan):
-                # Don't remove the dummy package if another package thinks it
-                # owns part of it.
-                for k, fmri, action, value in \
-                    pkgplan.image.local_search([self.attrs["pkg"]]):
-                        if k == "legacy_pkg" and \
-                            fmri != pkgplan.destination_fmri:
-                                return
 
+                # pkg directory is removed via implicit directory removal
+                
                 pkgdir = os.path.join(pkgplan.image.get_root(), "var/sadm/pkg",
                     self.attrs["pkg"])
 
-                os.unlink(os.path.join(pkgdir, "pkginfo"))
-                try:
-                        os.rmdir(pkgdir)
-                except OSError, e:
-                        if e.errno != errno.EEXIST:
-                                raise
+                linkfile = os.path.join(pkgdir, 
+                    "pkginfo." + pkgplan.origin_fmri.get_url_path())
+                
+                if os.stat(linkfile)[ST_NLINK] == 2:
+                        try:
+                                os.unlink(os.path.join(pkgdir, "pkginfo"))
+                        except OSError, e:
+                                if e.errno not in (errno.EEXIST, errno.ENOENT):   
+                                        #          can happen if all refs deleted
+                                        raise    # in same pkg invocation
+                os.unlink(linkfile)
 
         def generate_indices(self):
                 return {

@@ -20,14 +20,14 @@
 # CDDL HEADER END
 #
 
-# Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 import pkg.fmri as fmri
-
+import os.path
 import pkg.client.pkgplan as pkgplan
 import pkg.client.retrieve as retrieve # XXX inventory??
-
+import pkg.version as version
 from pkg.client.filter import compile_filter
 
 UNEVALUATED = 0
@@ -67,6 +67,8 @@ class ImagePlan(object):
                 self.target_rem_fmris = []
                 self.pkg_plans = []
 
+                self.directories = None
+
                 ifilters = [
                     "%s = %s" % (k, v)
                     for k, v in image.cfg_cache.filters.iteritems()
@@ -87,6 +89,11 @@ class ImagePlan(object):
                         s = s + "%s\n" % pp
                 return s
 
+        def display(self):
+                for pp in self.pkg_plans:
+                        print "%s -> %s" % (pp.origin_fmri, pp.destination_fmri)
+
+ 
         def is_proposed_fmri(self, fmri):
                 for pf in self.target_fmris:
                         if self.image.fmri_is_same_pkg(fmri, pf):
@@ -111,6 +118,12 @@ class ImagePlan(object):
                 #   do any of them eliminate this fmri version?
                 #     discard
 
+                #
+                # update so that we meet any optional dependencies
+                #
+
+                fmri = self.image.apply_optional_dependencies(fmri)
+                
                 # Add fmri to target list only if it (or a successor) isn't
                 # there already.
                 for i, p in enumerate(self.target_fmris):
@@ -121,6 +134,14 @@ class ImagePlan(object):
                         self.target_fmris.append(fmri)
 
                 return
+
+        def older_version_proposed(self, fmri):
+                # returns true if older version of this fmri has been
+                # proposed already                
+                for p in self.target_fmris:
+                        if self.image.fmri_is_successor(fmri, p):
+                                return True
+                return False
 
         # XXX Need to make sure that the same package isn't being added and
         # removed in the same imageplan.
@@ -135,7 +156,36 @@ class ImagePlan(object):
                 else:
                         self.target_rem_fmris.append(fmri)
 
+        def gen_new_installed_pkgs(self):
+                """ generates all the actions in the new set of installed pkgs"""
+                assert self.state == EVALUATED_OK
+                fmri_set = set(self.image.gen_installed_pkgs())
+
+                for p in self.pkg_plans:
+                        p.update_pkg_set(fmri_set)
+
+                for fmri in fmri_set:
+                        yield fmri
+
+        def get_directories(self):
+                """ return set of all directories in target image """
+                # always consider var and var/pkg fixed in image....
+                # XXX should be fixed for user images
+                if self.directories == None:
+                        dirs = set(["var/pkg", "var/sadm/install"])
+                        dirs.update(
+                            [ 
+                                d
+                                for fmri in self.gen_new_installed_pkgs()
+                                for act in self.image.get_manifest(fmri, filtered = True).actions
+                                for d in act.directory_references()
+                        ])
+                        self.directories = self.image.expanddirs(dirs)
+
+                return self.directories
+
         def evaluate_fmri(self, pfmri):
+
                 m = self.image.get_manifest(pfmri)
 
                 # [manifest] examine manifest for dependencies
@@ -143,12 +193,15 @@ class ImagePlan(object):
                         if a.name != "depend":
                                 continue
 
+                        type = a.attrs["type"]
+
                         f = fmri.PkgFmri(a.attrs["fmri"],
                             self.image.attrs["Build-Release"])
         
                         self.image.fmri_set_default_authority(f)
 
-                        if self.image.has_version_installed(f):
+                        if self.image.has_version_installed(f) and \
+                                    type != "exclude":
                                 continue
 
                         # XXX This alone only prevents infinite recursion when a
@@ -167,12 +220,21 @@ class ImagePlan(object):
 
                         required = True
                         excluded = False
-
-                        if a.attrs["type"] == "optional" and \
+                        if type == "optional" and \
                             not self.image.attrs["Policy-Require-Optional"]:
                                 required = False
-                        elif a.attrs["type"] == "exclude":
+                        elif type == "transfer" and \
+                            not self.image.older_version_installed(f):
+                                required = False
+                        elif type == "exclude":
                                 excluded = True
+                        elif type == "incorporate":
+                                self.image.update_optional_dependency(f)
+                                if self.image.older_version_installed(f) or \
+                                    self.older_version_proposed(f):
+                                        required = True
+                                else:
+                                        required = False
 
                         if not required:
                                 continue
@@ -193,16 +255,24 @@ class ImagePlan(object):
 
                         # XXX Do we want implicit freezing based on the portions
                         # of a version present?
-                        mvs = self.image.get_matching_fmris(a.attrs["fmri"])
+                        mvs = self.image.get_matching_fmris(a.attrs["fmri"], 
+                            constraint = version.CONSTRAINT_AUTO)
 
-                        # fmris in mvs are sorted with latest version first, so
-                        # take the first entry.
+                        # fmris in mvs are sorted with latest version first, 
+                        # so take the newest entry that still matches fmri
+                        # within the above constraint
                         cf = mvs[0]
 
                         # XXX LOG "adding dependency %s" % pfmri
+
+                        #print "adding dependency %s" % cf
+
                         self.propose_fmri(cf)
                         self.evaluate_fmri(cf)
 
+        def add_pkg_plan(self, pfmri):
+                """add a pkg plan to imageplan for fully evaluated frmi"""
+                m = self.image.get_manifest(pfmri)
                 pp = pkgplan.PkgPlan(self.image, self.progtrack)
 
                 try:
@@ -216,6 +286,7 @@ class ImagePlan(object):
                 self.pkg_plans.append(pp)
 
         def evaluate_fmri_removal(self, pfmri):
+                # prob. needs breaking up as well 
                 assert self.image.has_manifest(pfmri)
 
                 dependents = self.image.get_dependents(pfmri)
@@ -273,13 +344,17 @@ Cannot remove '%s' due to the following packages that directly depend on it:"""\
                 for f in self.target_fmris[:]:
                         self.evaluate_fmri(f)
 
+                for f in self.target_fmris:
+                        self.add_pkg_plan(f)
+
                 for f in self.target_rem_fmris[:]:
                         self.evaluate_fmri_removal(f)
+
 
                 self.progtrack.evaluate_done()
 
                 self.state = EVALUATED_OK
-
+                
         def execute(self):
                 """Invoke the evaluated image plan
                 preexecute, execute and postexecute
@@ -311,10 +386,17 @@ Cannot remove '%s' due to the following packages that directly depend on it:"""\
 
                 self.progtrack.download_done()
 
-                # do removals first so that file migrating from pkg to
-                # pkg work correctly.  Updates are handled next; then
-                # installs of new files.
-
+                #
+                # now we're ready to start install.  At this point we
+                # should do a merge between removals and installs so that
+                # any actions moving from pkg to pkg are seen as updates rather
+                # than removal and re-install, since these two have separate
+                # semanticas.
+                #
+                # General install method is removals, updates and then 
+                # installs.  User and group installs are moved to be ahead of
+                # updates so that a package that adds a new user can specify
+                # that owner for existing files.
 
                 # generate list of removal actions, sort and execute
 
@@ -322,6 +404,7 @@ Cannot remove '%s' due to the following packages that directly depend on it:"""\
                             for p in self.pkg_plans
                             for src, dest in p.gen_removal_actions()
                             ]
+
                 actions.sort(key = lambda obj:obj[1], reverse=True)
 
                 self.progtrack.actions_set_goal("Removal Phase", len(actions))
@@ -332,35 +415,48 @@ Cannot remove '%s' due to the following packages that directly depend on it:"""\
 
                 # generate list of update actions, sort and execute
 
-                actions = [ (p, src, dest)
+                update_actions = [ (p, src, dest)
                             for p in self.pkg_plans
                             for src, dest in p.gen_update_actions()
                             ]
-                actions.sort(key = lambda obj:obj[2])
 
-                self.progtrack.actions_set_goal("Update Phase", len(actions))
+                install_actions = [ (p, src, dest)
+                            for p in self.pkg_plans
+                            for src, dest in p.gen_install_actions()
+                            ]
 
-                for p, src, dest in actions:
+                # move any user/group actions into modify list to 
+                # permit package to add user/group and change existing
+                # files to that user/group in a single update
+                # iterate over copy since we're modify install_actions
+                
+                for a in install_actions[:]:
+                        if a[2].name == "user" or a[2].name == "group":
+                                update_actions.append(a)
+                                install_actions.remove(a)
+
+                update_actions.sort(key = lambda obj:obj[2])
+
+                self.progtrack.actions_set_goal("Update Phase", len(update_actions))
+
+                for p, src, dest in update_actions:
                         p.execute_update(src, dest)
                         self.progtrack.actions_add_progress()
+
                 self.progtrack.actions_done()
 
                 # generate list of install actions, sort and execute
 
-                actions = [ (p, src, dest)
-                            for p in self.pkg_plans
-                            for src, dest in p.gen_install_actions()
-                            ]
-                actions.sort(key = lambda obj:obj[2])
+                install_actions.sort(key = lambda obj:obj[2])
 
-                self.progtrack.actions_set_goal("Install Phase", len(actions))
+                self.progtrack.actions_set_goal("Install Phase", len(install_actions))
 
-                for p, src, dest in actions:
+                for p, src, dest in install_actions:
                         p.execute_install(src, dest)
                         self.progtrack.actions_add_progress()
                 self.progtrack.actions_done()
 
-                # hand postexecute phase
+                # handle any postexecute operations
 
                 for p in self.pkg_plans:
                         p.postexecute()

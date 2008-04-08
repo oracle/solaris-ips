@@ -139,7 +139,7 @@ def list_inventory(img, args):
         elif summary:
                 fmt_str = "%-30s %s"
         else:
-		fmt_str = "%-45s %-15s %-10s %s"
+                fmt_str = "%-45s %-15s %-10s %s"
 
         img.load_catalogs(progress.NullProgressTracker())
 
@@ -170,10 +170,10 @@ def list_inventory(img, args):
                             state["incorporated"] and "i" or "-",
                             state["excludes"] and "x" or "-")
 
-			if pkg.preferred_authority():
-				auth = ""
-			else:
-				auth = " (" + pkg.get_authority() + ")"
+                        if pkg.preferred_authority():
+                                auth = ""
+                        else:
+                                auth = " (" + pkg.get_authority() + ")"
 
                         if verbose:
                                 pf = pkg.get_fmri(img.get_default_authority())
@@ -222,11 +222,11 @@ def get_tracker(quiet = False):
 
 
 def installed_fmris_from_args(image, args):
-	""" Helper function to translate client command line arguments
-	    into a list of installed fmris.  Used by info, contents, verify.
+        """ Helper function to translate client command line arguments
+            into a list of installed fmris.  Used by info, contents, verify.
 
-	    XXX consider moving into image class
-	"""
+            XXX consider moving into image class
+        """
         if not args:
                 fmris = list(image.gen_installed_pkgs())
         else:
@@ -237,7 +237,7 @@ def installed_fmris_from_args(image, args):
                         return 1, []
 
                 fmris = [ m for m in matches if image.is_installed(m) ]
-	return 0, fmris
+        return 0, fmris
 
 
 def verify_image(img, args):
@@ -264,12 +264,12 @@ def verify_image(img, args):
 
         img.load_catalogs(progresstracker)
 
-	err, fmris = installed_fmris_from_args(img, pargs)
-	if err != 0:
-		return err
+        err, fmris = installed_fmris_from_args(img, pargs)
+        if err != 0:
+                return err
         if not fmris:
                 return 0
-	
+        
 
         any_errors = False
 
@@ -445,10 +445,11 @@ def uninstall(img, args):
                 print ip
 
         ip.evaluate()
+        img.imageplan = ip
 
         if verbose:
                 print _("After evaluation:")
-                print ip
+                ip.display()
 
         if not noexecute:
                 ip.execute()
@@ -532,26 +533,26 @@ def info(img, args):
         # XXX Need remote-info option, to request equivalent information
         # from repository.
 
-	opts, pargs = getopt.getopt(args, "")
+        opts, pargs = getopt.getopt(args, "")
 
         img.load_catalogs(progress.NullProgressTracker())
 
-	err, fmris = installed_fmris_from_args(img, pargs)
-	if err != 0:
-		return err
+        err, fmris = installed_fmris_from_args(img, pargs)
+        if err != 0:
+                return err
         if not fmris:
                 return 0
-	
+        
         manifests = ( img.get_manifest(f, filtered = True) for f in fmris )
 
         for i, m in enumerate(manifests):
                 if i > 0:
                         print
 
-		authority, name, version = m.fmri.tuple()
-		summary = m.get("description", "")
-		if authority == img.get_default_authority():
-			authority += _(" (preferred)")
+                authority, name, version = m.fmri.tuple()
+                summary = m.get("description", "")
+                if authority == img.get_default_authority():
+                        authority += _(" (preferred)")
 
                 print "          Name:", name
                 print "       Summary:", summary
@@ -664,8 +665,8 @@ def display_contents_results(actionlist, attrs, sort_attrs, action_types,
         if display_headers:
                 headers = []
                 for i, attr in enumerate(attrs):
-                	headers.append(str(attr.upper()))
-                	widths[i] = \
+                        headers.append(str(attr.upper()))
+                        widths[i] = \
                             (max(widths[i][0], len(attr)), widths[i][1])
 
                 # Now that we know all the widths, multiply them by the
@@ -719,12 +720,12 @@ def list_contents(img, args):
                         display_raw = True
 
         if display_raw:
-		display_headers = False
-		attrs = [ "action.raw" ]
+                display_headers = False
+                attrs = [ "action.raw" ]
 
-		if set(("-H", "-o", "-t")). \
-		    intersection(set([x[0] for x in opts])):
-			usage(_("contents: -m and %s may not be specified at the same time") % opt)
+                if set(("-H", "-o", "-t")). \
+                    intersection(set([x[0] for x in opts])):
+                        usage(_("contents: -m and %s may not be specified at the same time") % opt)
 
 
         for a in attrs:
@@ -736,9 +737,9 @@ def list_contents(img, args):
 
         img.load_catalogs(progress.NullProgressTracker())
 
-	err, fmris = installed_fmris_from_args(img, pargs)
-	if err != 0:
-		return err
+        err, fmris = installed_fmris_from_args(img, pargs)
+        if err != 0:
+                return err
         if not fmris:
                 return 0
 

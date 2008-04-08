@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -55,6 +55,9 @@ class LinkAction(generic.Action):
 
                 path = os.path.normpath(os.path.sep.join(
                     (pkgplan.image.get_root(), path)))
+
+                if not os.path.exists(os.path.dirname(path)):
+                        self.makedirs(os.path.dirname(path), mode=0755)
 
                 if os.path.lexists(path):
                         os.unlink(path)

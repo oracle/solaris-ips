@@ -46,8 +46,11 @@ class DirectoryAction(generic.Action):
         def __init__(self, data=None, **attrs):
                 generic.Action.__init__(self, data, **attrs)
 
-	def compare(self, other):
-		return cmp(self.attrs["path"], other.attrs["path"])
+        def compare(self, other):
+                return cmp(self.attrs["path"], other.attrs["path"])
+
+        def directory_references(self):
+                return [os.path.normpath(self.attrs["path"])]
 
         def install(self, pkgplan, orig):
                 """Client-side method that installs a directory."""
@@ -135,19 +138,25 @@ class DirectoryAction(generic.Action):
                         errors.append("Mode: 0%.3o should be 0%.3o" % \
                             (S_IMODE(stat[ST_MODE]), mode))
 
-		return errors
+                return errors
 
         def remove(self, pkgplan):
-                path = os.path.normpath(os.path.sep.join(
-                    (pkgplan.image.get_root(), self.attrs["path"])))
-
-                try:
-                        os.rmdir(path)
-                except OSError, e:
-                        if e.errno != errno.EEXIST and \
-                           e.errno != errno.ENOTEMPTY and \
-                           e.errno != errno.EACCES : # this happens on Windows
-                                raise
+                localpath = os.path.normpath(self.attrs["path"])
+                if localpath not in pkgplan.image.imageplan.get_directories():
+                        path = os.path.normpath(os.path.sep.join(
+                            (pkgplan.image.get_root(), self.attrs["path"])))
+                        try:
+                                os.rmdir(path)
+                        except OSError, e:
+                                if e.errno == errno.ENOENT:
+                                        pass
+                                elif e.errno == errno.EEXIST or \
+                                            e.errno == errno.ENOTEMPTY:
+                                        # cannot remove directory since it's
+                                        # not empty...
+                                        pkgplan.image.salvagedir(localpath)
+                                elif e.errno != errno.EACCES: # this happens on Windows
+                                        raise
 
         def generate_indices(self):
                 return {

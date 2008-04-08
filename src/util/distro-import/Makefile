@@ -265,6 +265,11 @@ redist_import:	$(BUILDID)/redist_cluster $(TMPPKGS)
 %/redist_import:
 	$(MAKE) BUILDID=$(@:%/redist_import=%) redist_import
 
+%/entire:
+	$(MAKE) BUILDID=$(@:%/entire=%) entire
+
+entire: $(BUILDID)/entire.incorporation
+	PKG_REPO=$(REPO) ./import_manifest_file entire@0.5.11,5.11-0.$(BUILDID) $(BUILDID)/entire.incorporation
 clean:
 	rm -f $(OBJS)
 	rm -rf proto

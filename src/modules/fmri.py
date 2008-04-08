@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -118,6 +118,12 @@ class PkgFmri(object):
 
                 return False
 
+        def has_version(self):
+                """Returns True if the FMRI has a version"""
+                if self.version:
+                        return True
+                return False
+
         def preferred_authority(self):
                 """Returns true if this FMRI's authority is the preferred
                 authority."""
@@ -196,7 +202,10 @@ class PkgFmri(object):
 
         def __str__(self):
                 """Return as specific an FMRI representation as possible."""
-                return self.get_fmri(None)
+                return self.get_fmri()
+
+        def __hash__(self):
+                return hash(str(self))
 
         def __cmp__(self, other):
                 if not other:
@@ -292,7 +301,6 @@ class PkgFmri(object):
 
                 if self.version < fmri.version:
                         return False
-
                 return True
 
 def fmri_match(pkg_name, pattern):

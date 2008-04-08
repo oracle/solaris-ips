@@ -25,12 +25,27 @@
 
 import testutils
 if __name__ == "__main__":
-	testutils.setup_environment("../../../proto")
+        testutils.setup_environment("../../../proto")
 
 import os
 import unittest
 
 class TestUpgrade(testutils.SingleDepotTestCase):
+
+        incorp10 = """
+            open incorp@1.0,5.11-0
+            add depend type=incorporate fmri=pkg:/amber@1.0
+            add depend type=incorporate fmri=pkg:/bronze@1.0
+            close
+        """
+
+        incorp20 = """
+            open incorp@2.0,5.11-0
+            add depend type=incorporate fmri=pkg:/amber@2.0
+            add depend type=incorporate fmri=pkg:/bronze@2.0
+            close
+        """
+
 
         amber10 = """
             open amber@1.0,5.11-0
@@ -54,6 +69,7 @@ class TestUpgrade(testutils.SingleDepotTestCase):
             add hardlink path=/lib/libc.bronze target=/lib/libc.so.1
             add file /tmp/bronze1 mode=0444 owner=root group=bin path=/etc/bronze1
             add file /tmp/bronze2 mode=0444 owner=root group=bin path=/etc/bronze2
+            add file /tmp/bronzeA1 mode=0444 owner=root group=bin path=/A/B/C/D/E/F/bronzeA1
             add depend fmri=pkg:/amber@1.0 type=require
             add license /tmp/copyright2 license=copyright
             close
@@ -85,10 +101,12 @@ class TestUpgrade(testutils.SingleDepotTestCase):
             add file /tmp/bronze1 mode=0444 owner=root group=bin path=/etc/bronze1
             add file /tmp/bronze2 mode=0444 owner=root group=bin path=/etc/amber2
             add license /tmp/copyright3 license=copyright
+            add file /tmp/bronzeA2 mode=0444 owner=root group=bin path=/A1/B2/C3/D4/E5/F6/bronzeA2
             close 
         """
 
         misc_files = [ "/tmp/amber1", "/tmp/amber2",
+                    "/tmp/bronzeA1",  "/tmp/bronzeA2",
                     "/tmp/bronze1", "/tmp/bronze2",
                     "/tmp/copyright1", "/tmp/copyright2",
                     "/tmp/copyright3", "/tmp/copyright4",
@@ -120,15 +138,9 @@ class TestUpgrade(testutils.SingleDepotTestCase):
 
                 # Send 1.0 versions of packages.
                 durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.incorp10)
                 self.pkgsend_bulk(durl, self.amber10)
                 self.pkgsend_bulk(durl, self.bronze10)
-                self.image_create(durl)
-
-                self.pkg("install bronze")
-
-                self.pkg("list amber")
-                self.pkg("list bronze")
-                self.pkg("verify")
 
                 # Now send 2.0 versions of packages.
                 #
@@ -141,11 +153,20 @@ class TestUpgrade(testutils.SingleDepotTestCase):
                 # Bronze's 1.0 hardlink to amber's libc goes away and is replaced
                 # with a file of the same name.  Amber hardlinks to that.
                 #
+                self.pkgsend_bulk(durl, self.incorp20)
                 self.pkgsend_bulk(durl, self.amber20)
                 self.pkgsend_bulk(durl, self.bronze20)
 
+
+                self.image_create(durl)
+                self.pkg("install incorp@1.0")
+                self.pkg("install bronze")
+
+                self.pkg("list amber@1.0")
+                self.pkg("list bronze@1.0")
+                self.pkg("verify -v")
+
                 # Now image-update to get new versions of amber and bronze
-                self.pkg("refresh")
                 self.pkg("image-update")
 
                 # Try to verify that it worked.
@@ -154,6 +175,15 @@ class TestUpgrade(testutils.SingleDepotTestCase):
                 self.pkg("list amber@2.0")
                 self.pkg("list bronze@2.0")
                 self.pkg("verify -v")
+                # make sure old implicit directories for bronzeA1 were removed
+                self.assert_(not os.path.isdir(os.path.join(self.get_img_path(), "A")))                
+                # Remove packages
+                self.pkg("uninstall amber bronze")
+                self.pkg("verify -v")
+
+                # make sure all directories are gone save /var in test image
+                print os.listdir(self.get_img_path())
+                self.assert_(os.listdir(self.get_img_path()) ==  ["var"])
 
 
 if __name__ == "__main__":

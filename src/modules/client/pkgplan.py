@@ -29,6 +29,7 @@ import os
 
 import pkg.manifest as manifest
 import pkg.client.filelist as filelist
+import pkg.actions.directory as directory
 
 class PkgPlan(object):
         """A package plan takes two package FMRIs and an Image, and produces the
@@ -84,6 +85,16 @@ class PkgPlan(object):
                 return len(self.actions[0]) + len(self.actions[1]) + \
                     len(self.actions[2])
 
+        def update_pkg_set(self, fmri_set):
+                """ updates a set of installed fmris to reflect
+                proposed new state"""
+
+                if self.origin_fmri:
+                        fmri_set.discard(self.origin_fmri)
+
+                if self.destination_fmri:
+                        fmri_set.add(self.destination_fmri)
+                        
         def evaluate(self, filters = []):
                 """Determine the actions required to transition the package."""
                 # if origin unset, determine if we're dealing with an previously
@@ -130,6 +141,28 @@ class PkgPlan(object):
 
                 self.actions = self.destination_mfst.difference(
                     self.origin_mfst)
+
+                # figure out how many implicit directories disappear in this
+                # transition and add directory remove actions.  These won't
+                # do anything unless no pkgs reference that directory in
+                # new state....
+
+                tmpset = set()
+
+                for a in self.origin_mfst.actions:
+                        tmpset.update(a.directory_references())
+
+                absent_dirs = self.image.expanddirs(tmpset)
+
+                tmpset = set()
+
+                for a in self.destination_mfst.actions:
+                        tmpset.update(a.directory_references())
+
+                absent_dirs.difference_update(self.image.expanddirs(tmpset))
+
+                for a in absent_dirs:
+                        self.actions[2].append([directory.DirectoryAction(path=a), None])
 
                 # over the list of update actions, check for any that are the
                 # target of hardlink actions, and add the renewal of those hardlinks

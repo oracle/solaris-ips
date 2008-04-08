@@ -60,8 +60,9 @@ Usage:
 
 Packager subcommands:
         pkgsend open [-en] pkg_fmri
-        pkgsend add action arguments
-        pkgsend include bundlefile
+        pkgsend add action arguments 
+        pkgsend include file-of-action-statements
+        pkgsend import bundlefile
         pkgsend close [-A]
 
         pkgsend send bundlefile
@@ -86,7 +87,7 @@ def _check_status(operation, status, msg = None):
 
 def trans_open(config, args):
 
-	opts, pargs = getopt.getopt(args, "en")
+        opts, pargs = getopt.getopt(args, "en")
 
         eval_form = True
         for opt, arg in opts:
@@ -121,13 +122,13 @@ def trans_close(config, args):
         abandon = False
         trans_id = None
 
-	opts, pargs = getopt.getopt(args, "At:")
+        opts, pargs = getopt.getopt(args, "At:")
 
-	for opt, arg in opts:
-		if opt == "-A":
-			abandon = True
-		if opt == "-t":
-			trans_id = arg
+        for opt, arg in opts:
+                if opt == "-A":
+                        abandon = True
+                if opt == "-t":
+                        trans_id = arg
 
         if trans_id == None:
                 try:
@@ -181,28 +182,73 @@ def trans_rename(config, args):
         status, msg, body = t.rename(config, args[0], args[1])
         _check_status('rename', status, msg)
 
-def trans_import(config, args):
-	try:
+def trans_include(config, fargs):
+
+        try:
                 trans_id = os.environ["PKG_TRANS_ID"]
         except KeyError:
                 print >> sys.stderr, \
                     _("No transaction ID specified in $PKG_TRANS_ID")
                 sys.exit(1)
-		
-	for filename in args:
-		bundle = pkg.bundle.make_bundle(filename)
-		t = trans.Transaction()
 
-		for action in bundle:
-			try:
-				status, msg, body = t.add(config, trans_id, 
-				    action)
+        t = trans.Transaction()
+        for filename in fargs:
+                f = file(filename)
+                for line in f:
+                        line = line.strip() # 
+                        if not line or line[0] == '#':
+                                continue
+                        args = line.split() 
+                        if args[0] in ("file", "license"):
+                                try:
+                                        # ignore local pathname
+                                        line = line.replace(args[1], "NOHASH", 1)
+                                        action = pkg.actions.fromstr(line)
+                                except ValueError, e:
+                                        print >> sys.stderr, e[0]
+                                        sys.exit(1)
+
+                                def opener():
+                                        return open(args[1], "rb")
+                                action.data = opener
+
+                        else:
+                                try:
+                                        action = pkg.actions.fromstr(line)
+                                except ValueError, e:
+                                        print >> sys.stderr, e[0]
+                                        sys.exit(1)
+
+                        # cleanup any leading / in path to prevent problems
+                        if "path" in action.attrs:
+                                np = action.attrs["path"].lstrip(os.path.sep)
+                                action.attrs["path"] = np
+
+                        status, msg, body = t.add(config, trans_id, action)
+                        _check_status('add', status, msg)
+
+def trans_import(config, args):
+        try:
+                trans_id = os.environ["PKG_TRANS_ID"]
+        except KeyError:
+                print >> sys.stderr, \
+                    _("No transaction ID specified in $PKG_TRANS_ID")
+                sys.exit(1)
+                
+        for filename in args:
+                bundle = pkg.bundle.make_bundle(filename)
+                t = trans.Transaction()
+
+                for action in bundle:
+                        try:
+                                status, msg, body = t.add(config, trans_id, 
+                                    action)
                                 _check_status('import', status, msg)
-			except TypeError, e:
-				print "warning:", e
+                        except TypeError, e:
+                                print "warning:", e
 
 
-	
+        
 def trans_delete(config, args):
         return
 
@@ -309,27 +355,29 @@ def main_func():
         subcommand = pargs[0]
         del pargs[0]
 
-	try:
-		if subcommand == "open":
-			trans_open(pcfg, pargs)
-		elif subcommand == "close":
-			trans_close(pcfg, pargs)
-		elif subcommand == "add":
-			trans_add(pcfg, pargs)
-		elif subcommand == "import":
-			trans_import(pcfg, pargs)
-		elif subcommand == "send":
-			send_bundles(pcfg, pargs)
-		elif subcommand == "rename":
+        try:
+                if subcommand == "open":
+                        trans_open(pcfg, pargs)
+                elif subcommand == "close":
+                        trans_close(pcfg, pargs)
+                elif subcommand == "add":
+                        trans_add(pcfg, pargs)
+                elif subcommand == "import":
+                        trans_import(pcfg, pargs)
+                elif subcommand == "include":
+                        trans_include(pcfg, pargs)
+                elif subcommand == "send":
+                        send_bundles(pcfg, pargs)
+                elif subcommand == "rename":
                         trans_rename(pcfg, pargs)
-		else:
-			print >> sys.stderr, \
+                else:
+                        print >> sys.stderr, \
                             _("pkgsend: unknown subcommand '%s'") % subcommand
-			usage()
-	except getopt.GetoptError, e:
+                        usage()
+        except getopt.GetoptError, e:
                 print >> sys.stderr, \
                     _("pkgsend: illegal %s option -- %s") % (subcommand, e.opt)
-		usage()
+                usage()
 
         sys.exit(0)
 
@@ -341,11 +389,11 @@ def main_func():
 #
 if __name__ == "__main__":
 
-	try:
-		ret = main_func()
-	except SystemExit, e:
-		raise e
-	except:
-		traceback.print_exc()
-		sys.exit(99)
-	sys.exit(ret)
+        try:
+                ret = main_func()
+        except SystemExit, e:
+                raise e
+        except:
+                traceback.print_exc()
+                sys.exit(99)
+        sys.exit(ret)

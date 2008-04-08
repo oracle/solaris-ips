@@ -133,9 +133,9 @@ class Manifest(object):
 
                 added = [(None, sdict[i]) for i in sset - oset]
                 removed = [(odict[i], None) for i in oset - sset]
-		# XXX for now, we force license actions to always be
-		# different to insure that existing license files for
-		# new versions are always installed
+                # XXX for now, we force license actions to always be
+                # different to insure that existing license files for
+                # new versions are always installed
                 changed = [
                     (odict[i], sdict[i])
                     for i in oset & sset
@@ -179,6 +179,14 @@ class Manifest(object):
                                 out += "%s -> %s\n" % (src, dest)
                 return out
 
+        def get_dependencies(self):
+                """ generate list of dependencies in this manifest """
+                return [
+                           a.parse(self.img)
+                           for a in self.actions
+                           if a.name == "depend"
+                ]
+
         def filter(self, filters):
                 """Filter out actions from the manifest based on filters."""
 
@@ -221,9 +229,9 @@ class Manifest(object):
 
         def set_content(self, str):
                 """str is the text representation of the manifest"""
-		assert self.actions == []
+                assert self.actions == []
 
-		self.size = 0
+                self.size = 0
 
                 # So we could build up here the type/key_attr dictionaries like
                 # sdict and odict in difference() above, and have that be our
@@ -251,7 +259,7 @@ class Manifest(object):
                                 action.data = \
                                     self.make_opener(self.img, self.fmri, action)
 
-			self.size += int(action.attrs.get("pkg.size", "0"))
+                        self.size += int(action.attrs.get("pkg.size", "0"))
 
                         if not self.actions:
                                 self.actions.append(action)

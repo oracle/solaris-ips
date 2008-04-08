@@ -28,13 +28,17 @@ import errno
 import os
 import urllib
 import urllib2
-import shutil
 import httplib
+import shutil
+import sys
+import time
+import types
+ 
 # import uuid           # XXX interesting 2.5 module
 
 import pkg.catalog as catalog
 import pkg.updatelog as updatelog
-import pkg.fmri as fmri
+import pkg.fmri
 import pkg.manifest as manifest
 import pkg.version as version
 import pkg.client.imageconfig as imageconfig
@@ -112,10 +116,16 @@ class Image(object):
                 self.catalogs = {}
 
                 self.attrs = {}
-                self.link_actions = {}
+                self.link_actions = None
 
                 self.attrs["Policy-Require-Optional"] = False
                 self.attrs["Policy-Pursue-Latest"] = True
+
+                self.imageplan = None # valid after evaluation succceds
+                
+                # contains a dictionary w/ key = pkgname, value is miminum
+                # frmi.XXX  Needs rewrite using graph follower
+                self.optional_dependencies = {}
 
         def find_root(self, d):
                 # Ascend from the given directory d to find first
@@ -209,8 +219,8 @@ class Image(object):
 
                 self.cfg_cache.write("%s/cfg_cache" % self.imgdir)
 
-	def is_liveroot(self):
-		return self.root == "/"
+        def is_liveroot(self):
+                return self.root == "/"
 
         def get_root(self):
                 return self.root
@@ -312,7 +322,7 @@ class Image(object):
         def get_link_actions(self):
                 """ return a dictionary of hardlink action lists indexed by
                 target """
-                if self.link_actions:
+                if self.link_actions != None:
                         return self.link_actions
 
                 d = {}
@@ -520,7 +530,7 @@ class Image(object):
                 if not auth:
                         auth = self.get_default_authority()
 
-                return fmri.PkgFmri(pkgs_inst[0][0], authority = auth)
+                return pkg.fmri.PkgFmri(pkgs_inst[0][0], authority = auth)
 
         def get_pkg_state_by_fmri(self, pfmri):
                 """Given pfmri, determine the local state of the package."""
@@ -564,8 +574,7 @@ class Image(object):
 
         def has_version_installed(self, fmri):
                 """Check that the version given in the FMRI or a successor is
-                installed in the current image.  Return the FMRI of the
-                version that is installed."""
+                installed in the current image."""
 
                 v = self._get_version_installed(fmri)
 
@@ -643,7 +652,7 @@ class Image(object):
                         return []
 
                 for v in os.listdir(thedir):
-                        f = fmri.PkgFmri(pfmri.get_pkg_stem() + "@" + v,
+                        f = pkg.fmri.PkgFmri(pfmri.get_pkg_stem() + "@" + v,
                             self.attrs["Build-Release"])
                         if self.fmri_is_successor(pfmri, f):
                                 dependents = [
@@ -711,7 +720,7 @@ class Image(object):
                         croot = "%s/catalog/%s" % (self.imgdir, auth["prefix"])
                         progresstracker.catalog_start(auth["prefix"])
                         if auth["prefix"] == self.cfg_cache.preferred_authority:
-                                authpfx = "%s_%s" % (fmri.PREF_AUTH_PFX,
+                                authpfx = "%s_%s" % (pkg.fmri.PREF_AUTH_PFX,
                                     auth["prefix"])
                                 c = catalog.Catalog(croot, authority = authpfx)
                         else:
@@ -727,7 +736,7 @@ class Image(object):
                 the same because of a rename operation."""
 
                 # If authorities don't match, this can't be a successor
-                if not fmri.is_same_authority(cfmri.authority, pfmri.authority):
+                if not pkg.fmri.is_same_authority(cfmri.authority, pfmri.authority):
                         return False
 
                 # Get the catalog for the correct authority
@@ -752,7 +761,7 @@ class Image(object):
                 fmri.is_successor() code."""
 
                 # If authorities don't match, this can't be a successor
-                if not fmri.is_same_authority(cfmri.authority, pfmri.authority):
+                if not pkg.fmri.is_same_authority(cfmri.authority, pfmri.authority):
                         return False
 
                 # Get the catalog for the correct authority
@@ -794,7 +803,55 @@ class Image(object):
 
                                 fmristr = urllib.unquote("%s@%s" % (pd, vd))
 
-                                yield fmri.PkgFmri(fmristr, authority = auth)
+                                yield pkg.fmri.PkgFmri(fmristr, authority = auth)
+
+        def strtofmri(self, myfmri):
+                ret = pkg.fmri.PkgFmri(myfmri, 
+                    self.attrs["Build-Release"],
+                    authority = self.get_default_authority())
+                return ret
+
+        def update_optional_dependency(self, inputfmri):
+                """Updates pkgname to min fmri mapping if fmri is newer"""
+
+                myfmri = inputfmri
+
+                if isinstance(myfmri, str):
+                        name = pkg.fmri.extract_pkg_name(myfmri)
+                        myfmri = self.strtofmri(myfmri)
+                else:
+                        name = myfmri.get_name()
+                        self.fmri_set_default_authority(myfmri)
+
+                ofmri = self.optional_dependencies.get(name, None)
+                if not ofmri or self.fmri_is_successor(ofmri, myfmri):
+                               self.optional_dependencies[name] = myfmri
+
+        def apply_optional_dependencies(self, myfmri):
+                """Updates an fmri if optional dependencies require a newer version.
+                Doesn't handle catalog renames... to ease programming for now,
+                unversioned fmris are returned upgraded"""
+
+                if isinstance(myfmri, str):
+                        name = pkg.fmri.extract_pkg_name(myfmri)
+                        myfmri = self.strtofmri(myfmri)
+                else:
+                        name = myfmri.get_name()
+
+                minfmri = self.optional_dependencies.get(name, None)
+                if not minfmri:
+                        return myfmri
+
+                if not myfmri.has_version() or self.fmri_is_successor(minfmri, myfmri):
+                        return minfmri
+                return myfmri
+
+        def load_optional_dependencies(self):
+                for fmri in self.gen_installed_pkgs():
+                        deps = self.get_manifest(fmri, filtered = True).get_dependencies()
+                        for required, min_fmri, max_fmri in deps:
+                                if required == False:
+                                        self.update_optional_dependency(min_fmri)
 
         def get_user_by_name(self, name):
                 return portable.get_user_by_name(name, self.root, 
@@ -829,19 +886,19 @@ class Image(object):
                 if patterns:
                         for p in patterns:
                                 try:
-					# XXX dp: not sure if this is
-					# right with respect to the code
-					# 6 or 7 lines further below.
-					for m in self.get_matching_fmris(p):
-						if all_known or self.is_installed(m):
-							pkgs_known.extend([ m ])
+                                        # XXX dp: not sure if this is
+                                        # right with respect to the code
+                                        # 6 or 7 lines further below.
+                                        for m in self.get_matching_fmris(p):
+                                                if all_known or self.is_installed(m):
+                                                        pkgs_known.extend([ m ])
                                 except KeyError:
                                         badpats.append(p)
 
                         pkgs_known.extend(
                                 [ x for x in self.gen_installed_pkgs()
                                 for p in patterns
-                                if fmri.fmri_match(x.get_pkg_stem(), p)
+                                if pkg.fmri.fmri_match(x.get_pkg_stem(), p)
                                 and not x in pkgs_known ] )
                 elif all_known:
                         pkgs_known = [ pf for pf in
@@ -876,7 +933,7 @@ class Image(object):
 
                 # Convert a full directory path to the FMRI it represents.
                 def idx_to_fmri(index):
-                        return fmri.PkgFmri(urllib.unquote(os.path.dirname(
+                        return pkg.fmri.PkgFmri(urllib.unquote(os.path.dirname(
                             index[len(idxdir) + 1:]).replace("/", "@")), None)
 
                 indices = (
@@ -956,9 +1013,34 @@ class Image(object):
         def cleanup_downloads(self):
                 shutil.rmtree(self.get_download_dir(), True)
 
+        def salvagedir(self, path):
+                """Called when directory contains something and it's not supposed
+                to because it's being deleted. XXX Need to work out a better error
+                passback mechanism. Path is rooted in /...."""
+                
+                salvagedir = os.path.normpath(
+                    os.path.join(self.imgdir, "lost+found",
+                                 path + "-" + time.strftime("%Y-%m-%d+%H:%M:%S")))        
 
+                os.makedirs(salvagedir)
+                shutil.move(os.path.normpath(os.path.join(self.root, path)), salvagedir)
+                # XXX need a better way to do this.
+                print >> sys.stderr, \
+                    "\nWarning - directory %s not empty - contents preserved in %s" % \
+                    (path, salvagedir)
 
-
+        def expanddirs(self, dirs):
+                """ given a set of directories, return expanded set that includes 
+                all components"""
+                out = set()
+                for d in dirs:
+                        p = d
+                        while p != "":
+                                out.add(p)
+                                p = os.path.dirname(p)
+                return out
+                        
+                
         def list_install(self, pkg_list, progress, filters = [],
             verbose = False, noexecute = False):
                 """Take a list of packages, specified in pkg_list, and attempt
@@ -974,9 +1056,12 @@ class Image(object):
                 error = 0
                 ip = imageplan.ImagePlan(self, progress, filters = filters)
 
+                self.load_optional_dependencies()
+
                 for p in pkg_list:
                         try:
-                                matches = self.get_matching_fmris(p,
+                                conp = self.apply_optional_dependencies(p)
+                                matches = self.get_matching_fmris(conp,
                                     constraint = version.CONSTRAINT_AUTO)
                         except KeyError:
                                 # XXX Module directly printing.
@@ -1030,10 +1115,11 @@ pkg: no package matching '%s' could be found in current catalog
                         print ip
 
                 ip.evaluate()
+                self.imageplan = ip 
 
                 if verbose:
                         print _("After evaluation:")
-                        print ip
+                        ip.display()
 
                 if not noexecute:
                         ip.execute()

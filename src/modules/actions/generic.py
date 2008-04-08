@@ -136,21 +136,22 @@ class Action(object):
 	unknown = 0
 
 	def loadorderdict(self):
-		self.orderdict.update(
-			{
-				pkg.actions.types["set"]      : 0,
-				pkg.actions.types["depend"]   : 1,
-				pkg.actions.types["group"]    : 3,
-				pkg.actions.types["user"]     : 4,
-				pkg.actions.types["dir"]      : 5,
-				pkg.actions.types["file"]     : 6,
-				pkg.actions.types["hardlink"] : 7,
-				pkg.actions.types["link"]     : 8,
-				pkg.actions.types["driver"]   : 9,
-				pkg.actions.types["unknown"]  : 10
-
-			})
-
+		ol = [
+			"set",
+			"depend",
+			"group",
+			"user",
+			"dir",
+			"file",
+			"hardlink",
+			"link",
+			"driver",
+			"unknown",
+			"legacy"
+			]
+		self.orderdict.update(dict((
+		    (pkg.actions.types[t], i) for i, t in enumerate(ol)
+		    )))
 		self.unknown = self.orderdict[pkg.actions.types["unknown"]]
 
         def __init__(self, data=None, **attrs):
@@ -426,6 +427,12 @@ class Action(object):
                         return value
                 else:
                         return [ value ]
+
+	def directory_references(self):
+		""" returns references to paths in action"""
+		if "path" in self.attrs:
+			return [os.path.dirname(os.path.normpath(self.attrs["path"]))]
+		return []
 
         def preinstall(self, pkgplan, orig):
                 """Client-side method that performs pre-install actions."""

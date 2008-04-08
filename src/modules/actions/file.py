@@ -63,8 +63,8 @@ class FileAction(generic.Action):
                 final_path = os.path.normpath(os.path.sep.join(
                     (pkgplan.image.get_root(), path)))
 
-		if not os.path.exists(os.path.dirname(final_path)):
-			self.makedirs(os.path.dirname(final_path), mode=0755)
+                if not os.path.exists(os.path.dirname(final_path)):
+                        self.makedirs(os.path.dirname(final_path), mode=0755)
 
                 # If we're upgrading, extract the attributes from the old file.
                 if orig:
@@ -173,11 +173,11 @@ class FileAction(generic.Action):
                         errors.append("Mode: 0%.3o should be 0%.3o" % \
                             (S_IMODE(stat[ST_MODE]), mode))
 
-		# avoid checking pkg.size if elfhash present;
-		# different size files may have the same elfhash
+                # avoid checking pkg.size if elfhash present;
+                # different size files may have the same elfhash
                 if "preserve" not in self.attrs and \
                     "pkg.size" in self.attrs and    \
-		    "elfhash" not in self.attrs and \
+                    "elfhash" not in self.attrs and \
                     stat[ST_SIZE] != int(self.attrs["pkg.size"]):
                         errors.append("Size: %d bytes should be %d" % \
                             (stat[ST_SIZE], int(self.attrs["pkg.size"])))
@@ -223,7 +223,7 @@ class FileAction(generic.Action):
                         return True
 
                 return False
-
+                
 
         def remove(self, pkgplan):
                 path = os.path.normpath(os.path.sep.join(
