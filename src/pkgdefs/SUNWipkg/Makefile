@@ -18,7 +18,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -38,7 +38,8 @@ prototype: FRC
 	rm -f prototype
 	(cd $(ROOT); pkgproto .) | \
 		nawk 'BEGIN { \
-			print "i pkginfo" \
+			print "i pkginfo"; \
+			print "i copyright" \
 		} \
 		$$1 == "d" { \
 			$$4 = "755" \
