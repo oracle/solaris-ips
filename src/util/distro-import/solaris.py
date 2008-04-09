@@ -446,12 +446,17 @@ def publish_pkg(pkg):
         # Group the files in a (new) package based on what (old) package they
         # came from, so that we can iterate through all files in a single (old)
         # package (and, therefore, in a single bzip2 archive) before moving on
-        # to the next.
+        # to the next.  Because groupby() needs its input pre-sorted by group
+        # and we want to maintain the order that the files come out of the cpio
+        # archives, we coalesce the groups with the groups dictionary.
         def fn(key):
                 return usedlist[key.pathname][0]
-        groups = []
+        groups = {}
         for k, g in groupby((f for f in pkg.files if f.type in "fev"), fn):
-                groups.append(list(g))
+                if k in groups:
+                        groups[k].extend(g)
+                else:
+                        groups[k] = list(g)
 
         def otherattrs(action):
                 s = " ".join(
@@ -473,7 +478,7 @@ def publish_pkg(pkg):
         }
 
         undeps = set()
-        for g in groups:
+        for g in groups.values():
                 pkgname = usedlist[g[0].pathname][0]
                 print "pulling files from archive in package", pkgname
                 bundle = SolarisPackageDirBundle(svr4pkgpaths[pkgname])
@@ -484,6 +489,9 @@ def publish_pkg(pkg):
                                 # of a pkg will have a unique license to prevent
                                 # license from disappearing on upgrade
                                 f.attrs["transaction_id"] = "%s" % id
+                                # The "path" attribute is confusing and
+                                # unnecessary for licenses.
+                                del f.attrs["path"]
                                 t.add(cfg, id, f)
                         elif f.attrs["path"] in pathdict:
                                 if pkgname in hollow_pkgs:
