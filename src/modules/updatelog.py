@@ -209,7 +209,7 @@ class UpdateLog(object):
                 return True
 
         @staticmethod
-        def recv(c, path, ts):
+        def recv(c, path, ts, auth):
                 """Take a connection object and a catalog path.  This method
                 receives a catalog from the server.  If it is an incremental
                 update, it is processed by the updatelog.  If it is a full
@@ -223,7 +223,7 @@ class UpdateLog(object):
                 if update_type == 'incremental':
                         UpdateLog._recv_updates(c, path, ts)
                 else:
-                        catalog.recv(c, path)
+                        catalog.recv(c, path, auth)
 
 
         @staticmethod

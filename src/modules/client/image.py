@@ -40,6 +40,7 @@ import pkg.catalog as catalog
 import pkg.updatelog as updatelog
 import pkg.fmri
 import pkg.manifest as manifest
+import pkg.misc as misc
 import pkg.version as version
 import pkg.client.imageconfig as imageconfig
 import pkg.client.imageplan as imageplan
@@ -195,7 +196,8 @@ class Image(object):
                 if not os.path.isdir(self.imgdir + "/index"):
                         os.makedirs(self.imgdir + "/index")
 
-        def set_attrs(self, type, root, is_zone, auth_name, auth_url):
+        def set_attrs(self, type, root, is_zone, auth_name, auth_url,
+            ssl_key = None, ssl_cert = None):
                 self.type = type
                 self.root = root
                 if self.type == IMG_USER:
@@ -212,8 +214,11 @@ class Image(object):
 
                 self.cfg_cache.authorities[auth_name] = {}
                 self.cfg_cache.authorities[auth_name]["prefix"] = auth_name
-                self.cfg_cache.authorities[auth_name]["origin"] = auth_url
-                self.cfg_cache.authorities[auth_name]["mirrors"] = None
+                self.cfg_cache.authorities[auth_name]["origin"] = \
+                    misc.url_affix_trailing_slash(auth_url)
+                self.cfg_cache.authorities[auth_name]["mirrors"] = []
+                self.cfg_cache.authorities[auth_name]["ssl_key"] = ssl_key
+                self.cfg_cache.authorities[auth_name]["ssl_cert"] = ssl_cert
 
                 self.cfg_cache.preferred_authority = auth_name
 
@@ -254,8 +259,91 @@ class Image(object):
 
                 return o.rstrip("/")
 
+        def get_ssl_credentials(self, authority = None):
+                """Return a tuple containing (ssl_key, ssl_cert) for
+                the specified authority."""
+
+                if authority == None:
+                        authority = self.cfg_cache.preferred_authority
+
+                try:
+                        authent = self.cfg_cache.authorities[authority]
+                except KeyError:
+                        authority = self.cfg_cache.preferred_authority
+                        authent = self.cfg_cache.authorities[authority]
+
+                return (authent["ssl_key"], authent["ssl_cert"])
+
         def get_default_authority(self):
                 return self.cfg_cache.preferred_authority
+
+        def has_authority(self, auth_name):
+                return auth_name in self.cfg_cache.authorities
+
+        def delete_authority(self, auth_name):
+                if not self.has_authority(auth_name):
+                        raise KeyError, "no such authority '%s'" % auth_name
+
+                self.cfg_cache.delete_authority(auth_name)
+                self.cfg_cache.write("%s/cfg_cache" % self.imgdir)
+
+        def get_authority(self, auth_name):
+                if not self.has_authority(auth_name):
+                        raise KeyError, "no such authority '%s'" % auth_name
+
+                return self.cfg_cache.authorities[auth_name]
+
+        def split_authority(self, auth):
+                prefix = auth["prefix"]
+                update_dt = None
+
+                try:
+                        cat = self.catalogs[prefix]
+                except KeyError:
+                        cat = None
+
+                if cat:
+                        update_dt = cat.last_modified()
+                        if update_dt:
+                                update_dt = catalog.ts_to_datetime(update_dt)
+
+                return (prefix, auth["origin"], auth["ssl_key"],
+                    auth["ssl_cert"], update_dt)
+
+        def set_preferred_authority(self, auth_name):
+                if not self.has_authority(auth_name):
+                        raise KeyError, "no such authority '%s'" % auth_name
+                self.cfg_cache.preferred_authority = auth_name
+                self.cfg_cache.write("%s/cfg_cache" % self.imgdir)
+
+        def set_authority(self, auth_name, origin_url = None, ssl_key = None,
+            ssl_cert = None, mirrors = []):
+
+                auths = self.cfg_cache.authorities
+
+                if auth_name in auths:
+                        # If authority already exists, only update non-NULL
+                        # values passed to set_authority
+                        if origin_url:
+                                auths[auth_name]["origin"] = \
+                                    misc.url_affix_trailing_slash(origin_url)
+                        if ssl_key:
+                                auths[auth_name]["ssl_key"] = ssl_key
+                        if ssl_cert:
+                                auths[auth_name]["ssl_cert"] = ssl_cert
+                        if mirrors:
+                                auths[auth_name]["mirrors"] = mirrors
+
+                else:
+                        auths[auth_name] = {}
+                        auths[auth_name]["prefix"] = auth_name
+                        auths[auth_name]["origin"] = \
+                            misc.url_affix_trailing_slash(origin_url)
+                        auths[auth_name]["mirrors"] = mirrors
+                        auths[auth_name]["ssl_key"] = ssl_key
+                        auths[auth_name]["ssl_cert"] = ssl_cert
+
+                self.cfg_cache.write("%s/cfg_cache" % self.imgdir)
 
         def get_matching_fmris(self, patterns, matcher = None,
             constraint = None, counthash = None):
@@ -461,7 +549,17 @@ class Image(object):
                 """Find the pkg's installed file named by filepath.
                 Return the authority that installed this package."""
 
-                f = file(filepath, "r+")
+                read_only = False
+
+                try:
+                        f = file(filepath, "r+")
+                except IOError, e:
+                        if e.errno == errno.EACCES or e.errno == errno.EROFS:
+                                read_only = True
+                        else:
+                                raise
+                if read_only:
+                        f = file(filepath, "r")
 
                 flines = f.readlines()
                 newauth = None
@@ -469,11 +567,19 @@ class Image(object):
                 try:
                         version, auth = flines
                 except ValueError:
+                        # If we get a ValueError, we've encoutered an
+                        # installed file of a previous format.  If we want
+                        # upgrade to work in this situation, it's necessary
+                        # to assume that the package was installed from
+                        # the preferred authority.  Here, we set up
+                        # the authority to record that.
                         auth = flines[0]
                         auth = auth.strip()
                         newauth = "%s_%s" % (fmri.PREF_AUTH_PFX, auth)
 
-                if newauth:
+                if newauth and not read_only:
+                        # This is where we actually update the installed
+                        # file with the new authority.
                         f.seek(0)
                         f.writelines(["VERSION_1\n", newauth])
                         auth = newauth
@@ -668,6 +774,8 @@ class Image(object):
                 failed = []
                 total = 0
                 succeeded = 0
+                cat = None
+                full_refresh = False
                 ts = 0
 
                 for auth in self.gen_authorities():
@@ -677,15 +785,25 @@ class Image(object):
                                 cat = self.catalogs[auth["prefix"]]
                                 ts = cat.last_modified()
 
+                                # Although we may have a catalog with a
+                                # timestamp, the user may have changed the
+                                # origin URL for the authority.  If this has
+                                # occurred, we need to perform a full refresh.
+                                if cat.origin() != auth["origin"]:
+                                        full_refresh = True
+
                         if ts and not full_refresh:
                                 hdr = {'If-Modified-Since': ts}
                         else:
                                 hdr = {}
 
+                        ssl_tuple = self.get_ssl_credentials(auth["prefix"])
+
                         # XXX Mirror selection and retrieval policy?
                         try:
                                 c, v = versioned_urlopen(auth["origin"],
-                                    "catalog", [0], headers = hdr)
+                                    "catalog", [0], ssl_creds = ssl_tuple,
+                                    headers = hdr)
                         except urllib2.HTTPError, e:
                                 # Server returns NOT_MODIFIED if catalog is up
                                 # to date
@@ -706,7 +824,7 @@ class Image(object):
                         croot = "%s/catalog/%s" % (self.imgdir, auth["prefix"])
 
                         try:
-                                updatelog.recv(c, croot, ts)
+                                updatelog.recv(c, croot, ts, auth)
                         except IOError, e:
                                 failed.append((auth, e))
                         else:
@@ -984,9 +1102,12 @@ class Image(object):
                         servers = self.gen_authorities()
 
                 for auth in servers:
+                        ssl_tuple = self.get_ssl_credentials(auth["prefix"])
+
                         try:
                                 res, v = versioned_urlopen(auth["origin"],
-                                    "search", [0], urllib.quote(args[0], ""))
+                                    "search", [0], urllib.quote(args[0], ""),
+                                     ssl_creds = ssl_tuple)
                         except urllib2.HTTPError, e:
                                 if e.code != httplib.NOT_FOUND:
                                         failed.append((auth, e))

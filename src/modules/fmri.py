@@ -339,16 +339,26 @@ def is_same_authority(auth1, auth2):
         elif not auth1 or not auth2:
                 return False
 
+        matchstr = "%s_" % PREF_AUTH_PFX
+
         # Check if the authorities are preferred.  If they are, match.
-        r1 = auth1.rsplit('_', 1)
-        r2 = auth2.rsplit('_', 1)
-
-        if PREF_AUTH_PFX in r1 and PREF_AUTH_PFX in r2:
+        
+        r1 = auth1.startswith(matchstr)
+        r2 = auth2.startswith(matchstr) 
+        
+        if r1 and r2:
                 return True
-
+       
         # extract the authority suffix
-        a1 = r1[len(r1) - 1]
-        a2 = r2[len(r2) - 1]
+        if r1:
+                a1 = auth1[len(matchstr):]
+        else:
+                a1 = auth1
+
+        if r2:
+                a2 = auth2[len(matchstr):]
+        else:
+                a2 = auth2
 
         # Do authorities match?
         if a1 == a2:

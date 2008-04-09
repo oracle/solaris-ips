@@ -19,8 +19,14 @@ SYNOPSIS
 
      /usr/bin/pkg refresh
 
-     /usr/bin/pkg image-create [-FPUz] -a prefix=url dir
+     /usr/bin/pkg image-create [-FPUz] [-k ssl_key] [-c ssl_cert]
+         -a authority=origin_url dir
      /usr/bin/pkg image-update [-nv]
+
+     /usr/bin/pkg set-authority [-P] [-k ssl_key] [-c ssl_cert]
+         [-O origin_url] authority
+     /usr/bin/pkg unset-authority authority ...
+     /usr/bin/pkg authority [authname]
 
 DESCRIPTION
      pkg is the retrieval client for the image packaging system.  With a
@@ -29,7 +35,7 @@ DESCRIPTION
      those images.
 
      pkg can also uninstall packages, refresh the package catalogs,
-     validate package installation in an image and query the image for 
+     validate package installation in an image and query the image for
      various tokens
 
      Images can be of three types:  full images, capable of providing a
@@ -45,7 +51,8 @@ DESCRIPTION
 SUBCOMMANDS
      The following subcommands are supported:
 
-     image-create [-FPUz] -a prefix=url dir
+     image-create [-FPUz] [-k ssl_key] [-c ssl_cert]
+       -a authority=origin_url dir
           Create, at location given by dir, an image suitable for
           package operations.  The default image type is user, as given
           by the -U option.  The image type may be set to a full image
@@ -56,15 +63,19 @@ SUBCOMMANDS
           attempt to retrieve the catalog associated with this authority
           will be made following the initial creation operations.
 
+          For authorities using client SSL authentication, a client key
+          and client certificate may be registered via the -c and -k
+          options.
+
           If the image is to be run within nonglobal zone context, then
           the -z option can be used to set an appropriate filter.
 
      image-update [-nv]
           Update all installed packages in the current image to the
-	  latest available version.  With the -n option, execute the
-	  requested operation but make no persistent changes to the
-	  image.  With the -v option, issue verbose progress messages
-	  during the requested operation.
+          latest available version.  With the -n option, execute the
+          requested operation but make no persistent changes to the
+          image.  With the -v option, issue verbose progress messages
+          during the requested operation.
 
      refresh
           Retrieve updated catalogs for each authority registered within
@@ -80,7 +91,7 @@ SUBCOMMANDS
 
           In the case of uninstall, the -r option will recursively
           uninstall any packages which are dependent on the initial
-	  package.
+          package.
 
      info [pkg_fmri_pattern ...]
           Display information about packages in a human-readable form.
@@ -89,30 +100,30 @@ SUBCOMMANDS
 
      contents [-Hm] [-o attribute ...] [-s sort_key] [-t action_type ... ]
               [pkg_fmri_pattern ...]
-	  Display the contents (action attributes) of packages in the
-	  current image.  By default, only the path attribute is displayed,
-	  but the attribute set may be determined with the -o option.  The
-	  -o option may be specified multiple times, or multiple attributes
-	  may specified as the argument to one -o option by separating the
-	  attribute names with commas.  Only actions which have the
-	  requested attributes will be displayed.  The -m option may
+          Display the contents (action attributes) of packages in the
+          current image.  By default, only the path attribute is displayed,
+          but the attribute set may be determined with the -o option.  The
+          -o option may be specified multiple times, or multiple attributes
+          may specified as the argument to one -o option by separating the
+          attribute names with commas.  Only actions which have the
+          requested attributes will be displayed.  The -m option may
           also be used, as a shorthand for '-o action.raw'.
 
-	  The -s option specifies the attribute by which the listing should
-	  be sorted.
+          The -s option specifies the attribute by which the listing should
+          be sorted.
 
-	  The -t option limits the action types which will be displayed.
+          The -t option limits the action types which will be displayed.
 
-	  The -H option causes the headers to be omitted.
+          The -H option causes the headers to be omitted.
 
-	  With no arguments, the output includes all installed packages.
-	  Alternatively, multiple FMRI patterns may be specified, which
-	  restricts the display to the contents of the matching
-	  packages.
+          With no arguments, the output includes all installed packages.
+          Alternatively, multiple FMRI patterns may be specified, which
+          restricts the display to the contents of the matching
+          packages.
 
-	  Several special "pseudo" attribute names are available for
+          Several special "pseudo" attribute names are available for
           convenience:
-          
+
           action.name           Corresponds to the name of the action.
                                 For example, for a file action, this is
                                 "file"
@@ -169,7 +180,25 @@ SUBCOMMANDS
           contents of files against the hash values in the package
           manifests, as well as checking for file and directory presence.
 
-	  The -H option causes the headers to be omitted.
+          The -H option causes the headers to be omitted.
+
+     set-authority [-P] [-k ssl_key] [-c ssl_cert] [-O origin_url] authority
+          Update an existing authority or add an additional package
+          authority.  With -P, set the specified authority as the
+          preferred authority.  With -c and -k, specify client SSL
+          certificate and key respectively.  The -O option sets the URL
+          prefix for the origin packaging repository for the authority.
+
+     unset-authority authority ...
+          Remove the configuration associated with the given authority
+          or authorities.
+
+     authority [-H] [authname]
+          Display authority information.  With no arguments, display the
+          list of configured authorities, and their origin URLs.  If a
+          specific authority is requested, display the configuration
+          values associated with that authority.  With -H, omit the
+          headers from the listing.
 
 EXAMPLES
      Example 1:  Create a new, full image, with authority example.com,
@@ -191,19 +220,19 @@ EXAMPLES
      which is not desired here.
 
      $ pkg contents -t dir,file,link,hardlink -o action.name,mode,pkg.size,path,target zfs
-     NAME  MODE   SIZE PATH                                      TARGET
+     NAME  MODE   SIZE PATH                                TARGET
      dir   0755        etc
      dir   0755        etc/fs
      dir   0755        etc/fs/zfs
-     link              etc/fs/zfs/mount                          ../../../sbin/zfs
-     link              etc/fs/zfs/umount                         ../../../sbin/zfs
+     link              etc/fs/zfs/mount                    ../../../sbin/zfs
+     link              etc/fs/zfs/umount                   ../../../sbin/zfs
      dir   0755        etc/zfs
      dir   0755        lib
      dir   0755        lib/amd64
-     link              lib/amd64/libzfs.so                       libzfs.so.1
+     link              lib/amd64/libzfs.so                 libzfs.so.1
      file  0755 469616 lib/amd64/libzfs.so.1
      file  0644  62057 lib/amd64/llib-lzfs.ln
-     link              lib/libzfs.so                             libzfs.so.1
+     link              lib/libzfs.so                       libzfs.so.1
      [ ... ]
 
      Example 4:  Search the package database for the token "bge".
@@ -255,9 +284,12 @@ NOTES
      The image packaging system is an under-development feature.
      Command names, invocation, formats, and operations are all subject
      to change.  Development is hosted in the OpenSolaris community
-     at
+     at:
 
      http://opensolaris.org/os/project/pkg/
 
      At present, user images are not restricted to relocatable
      packages--but they will be.
+
+     Although HTTPS servers may validate client SSL certificates, the
+     client does not currently validate the server's.

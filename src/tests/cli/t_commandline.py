@@ -29,6 +29,7 @@ if __name__ == "__main__":
 
 import unittest
 import os
+import tempfile
 
 class TestCommandLine(testutils.SingleDepotTestCase):
 
@@ -48,6 +49,8 @@ class TestCommandLine(testutils.SingleDepotTestCase):
                 self.pkg("image-create --bozo", exit=2)
                 self.pkg("install -@ foo", exit=2)
                 self.pkg("uninstall -@ foo", exit=2)
+                self.pkg("set-authority -@ test3", exit=2)
+                self.pkg("authority -@ test5", exit=2)
 
         def test_pkg_missing_args(self):
                 """ pkg: Lack of needed arguments should yield complaint """
@@ -60,6 +63,10 @@ class TestCommandLine(testutils.SingleDepotTestCase):
                 self.pkg("contents -o", exit=2)
                 self.pkg("contents -s", exit=2)
                 self.pkg("contents -t", exit=2)
+                self.pkg("set-authority -k", exit=2)
+                self.pkg("set-authority -c", exit=2)
+                self.pkg("set-authority -O", exit=2)
+                self.pkg("unset-authority", exit=2)
 
 
         def test_pkgsend_bogus_opts(self):
@@ -68,7 +75,47 @@ class TestCommandLine(testutils.SingleDepotTestCase):
                 self.pkgsend(durl, "-@ open foo@1.0,5.11-0", exit=2)
                 self.pkgsend(durl, "close -@", exit=2)
 
+        def test_authority_add_remove(self):
+                """pkg: add and remove an authority"""
+                durl = self.dc.get_depot_url()
+                self.image_create(durl)
 
+                self.pkg("set-authority -O http://test1 test1")
+                self.pkg("authority | grep test")
+                self.pkg("set-authority -P -O http://test2 test2")
+                self.pkg("authority | grep test2")
+                self.pkg("unset-authority test1")
+                self.pkg("authority | grep test1", exit=1)
+                self.pkg("unset-authority test2", exit=1)
+
+        def test_authority_bad_opts(self):
+                """pkg: more insidious option abuse for set-authority"""
+                durl = self.dc.get_depot_url()
+                self.image_create(durl)
+
+                key_fh, key_path = tempfile.mkstemp()
+                cert_fh, cert_path = tempfile.mkstemp()
+
+                self.pkg(
+                    "set-authority -O http://test1 test1 -O http://test2 test2",
+                     exit=2)
+
+                self.pkg("set-authority -O http://test1 test1")
+                self.pkg("set-authority -O http://test2 test2")
+
+                self.pkg("set-authority -k %s test1" % key_path)
+                os.close(key_fh)
+                os.unlink(key_path)
+                self.pkg("set-authority -k %s test2" % key_path, exit=1)
+
+                self.pkg("set-authority -c %s test1" % cert_path)
+                os.close(cert_fh)
+                os.unlink(cert_path)
+                self.pkg("set-authority -c %s test2" % cert_path, exit=1)
+
+                self.pkg("authority test1")
+                self.pkg("authority test3", exit=1)
+                self.pkg("authority -H | grep URL", exit=1)
 
 
 if __name__ == "__main__":

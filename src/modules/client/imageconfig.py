@@ -20,16 +20,21 @@
 # CDDL HEADER END
 #
 
-# Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 import ConfigParser
 import re
 import pkg.fmri as fmri
+import pkg.misc as misc
 
 class ImageConfig(object):
         """An ImageConfig object is a collection of configuration information:
         URLs, authorities, policies, etc. that allow an Image to operate."""
+
+        # XXX The SSL ssl_key attribute asserts that there is one
+        # ssl_key per authority.  This may be insufficiently general:  we
+        # may need one ssl_key per mirror.
 
         # XXX Use of ConfigParser is convenient and at most speculative--and
         # definitely not interface.
@@ -56,7 +61,7 @@ class ImageConfig(object):
                 cp = ConfigParser.SafeConfigParser()
 
                 r = cp.read(path)
-		if len(r) == 0:
+                if len(r) == 0:
                         raise RuntimeError("Couldn't read configuration %s" % path)
 
                 assert r[0] == path
@@ -76,6 +81,18 @@ class ImageConfig(object):
                                 a["prefix"] = k
                                 a["origin"] = cp.get(s, "origin")
                                 a["mirrors"] = cp.get(s, "mirrors")
+                                try:
+                                        a["ssl_key"] = cp.get(s, "ssl_key")
+                                except ConfigParser.NoOptionError:
+                                        a["ssl_key"] = None
+
+                                try:
+                                        a["ssl_cert"] = cp.get(s, "ssl_cert")
+                                except ConfigParser.NoOptionError:
+                                        a["ssl_cert"] = None
+
+                                a["origin"] = \
+                                    misc.url_affix_trailing_slash(a["origin"])
 
                                 self.authorities[k] = a
 
@@ -120,11 +137,18 @@ class ImageConfig(object):
                             self.authorities[a]["origin"])
                         cp.set(section, "mirrors",
                             str(self.authorities[a]["mirrors"]))
+                        cp.set(section, "ssl_key",
+                            str(self.authorities[a]["ssl_key"]))
+                        cp.set(section, "ssl_cert",
+                            str(self.authorities[a]["ssl_cert"]))
 
                 # XXX Child images
 
                 f = open(path, "w")
                 cp.write(f)
+
+        def delete_authority(self, auth):
+                del self.authorities[auth]
 
 if __name__ == "__main__":
         # XXX Need to construct a trivial configuration, load it, and verify

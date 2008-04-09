@@ -30,13 +30,21 @@ import urllib2
 import urlparse
 import httplib
 
+import pkg.urlhelpers as urlhelpers
+
 def hash_file_name(f):
         """Return the two-level path fragment for the given filename, which is
         assumed to be a content hash of at least 8 distinct characters."""
         return os.path.join("%s" % f[0:2], "%s" % f[2:8], "%s" % f)
 
+def url_affix_trailing_slash(u):
+        if u[-1] != '/':
+                u = u + '/'
+
+        return u
+
 def versioned_urlopen(base_uri, operation, versions = [], tail = None,
-    data = None, headers = {}):
+    data = None, headers = {}, ssl_creds = None):
         """Open the best URI for an operation given a set of versions.
 
         Both the client and the server may support multiple versions of
@@ -51,12 +59,19 @@ def versioned_urlopen(base_uri, operation, versions = [], tail = None,
         # Ignore http_proxy for localhost case, by overriding
         # default proxy behaviour of urlopen().
         netloc = urlparse.urlparse(base_uri)[1]
+
         if not netloc:
                 raise ValueError, "Malformed URL: %s" % base_uri
+
         if urllib.splitport(netloc)[0] == "localhost":
                 # XXX cache this opener?
                 proxy_handler = urllib2.ProxyHandler({})
                 opener_dir = urllib2.build_opener(proxy_handler)
+                url_opener = opener_dir.open
+        elif ssl_creds and ssl_creds != (None, None):
+                cert_handler = urlhelpers.HTTPSCertHandler(
+                    key_file = ssl_creds[0], cert_file = ssl_creds[1])
+                opener_dir = urllib2.build_opener(cert_handler)
                 url_opener = opener_dir.open
         else:
                 url_opener = urllib2.urlopen

@@ -919,8 +919,13 @@ class Catalog(object):
 
                 return self.attrs["npkgs"] 
 
+        def origin(self):
+                """Returns the URL of the catalog's origin."""
+
+                return self.attrs.get("origin", None)
+
         @staticmethod
-        def recv(filep, path):
+        def recv(filep, path, auth=None):
                 """A static method that takes a file-like object and
                 a path.  This is the other half of catalog.send().  It
                 reads a stream as an incoming catalog and lays it down
@@ -949,6 +954,11 @@ class Catalog(object):
                                 f = fmri.PkgFmri(s[2:])
                                 catf.write("%s %s %s %s\n" %
                                     (s[0], "pkg", f.pkg_name, f.version))
+
+                # Write the authority's origin into our attributes
+                if auth:
+                        origstr = "S origin: %s\n" % auth["origin"]
+                        attrf.write(origstr)
 
                 attrf.close()
                 catf.close()

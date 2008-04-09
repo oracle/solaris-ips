@@ -89,6 +89,7 @@ PYMODS = \
 	modules/smf.py \
 	modules/subprocess_method.py \
 	modules/sysvpkg.py \
+	modules/urlhelpers.py \
 	modules/updatelog.py \
 	modules/version.py
 PYCMODS = $(PYMODS:%.py=%.pyc)

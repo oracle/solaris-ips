@@ -176,12 +176,12 @@ fi
 
 #Add second authority
 
-echo "[authority_test2]" >> $IMAGE_DIR/var/pkg/cfg_cache
-echo "origin = $REPO2_URL" >> $IMAGE_DIR/var/pkg/cfg_cache
-echo "prefix = test2" >> $IMAGE_DIR/var/pkg/cfg_cache
-echo "mirrors = None" >> $IMAGE_DIR/var/pkg/cfg_cache
-
 cd $IMAGE_DIR
+
+if ! pkg set-authority -O $REPO2_URL test2; then
+	fail pkg set-authority failed
+fi
+
 
 if ! pkg refresh; then
 	fail pkg refresh failed
@@ -245,12 +245,13 @@ if ! pkg list -a; then
 	fail pkg list -a failed
 fi
 
-# This should fail, and require that we specify the authority
+# This should succeed now that we choose the preferred authority in
+# ambiguous cases
 
 pkg install foo
-expect_exit 1 $?
+expect_exit 0 $?
 
-# This should pass now that an authority has been specified
+# This should also pass when an authority has been specified
 
 if ! pkg install pkg://test1/foo; then
 	fail pkg install foo failed

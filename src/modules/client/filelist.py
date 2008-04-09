@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -123,6 +123,7 @@ class FileList(object):
 
                 authority, pkg_name, version = self.fmri.tuple()
                 url_prefix = self.image.get_url_by_authority(authority)
+                ssl_tuple = self.image.get_ssl_credentials(authority)
 
                 for i, k in enumerate(self.fhash.keys()):
                         fstr = "File-Name-%s" % i
@@ -132,7 +133,7 @@ class FileList(object):
 
                 try:
                         f, v = versioned_urlopen(url_prefix, "filelist", [0],
-                            data = req_str)
+                            data = req_str, ssl_creds = ssl_tuple)
                 except RuntimeError:
                         raise FileListException, "No server-side support" 
 

@@ -87,7 +87,12 @@ Advanced subcommands:
         pkg contents [-H] [-o attribute ...] [-s sort_key] [-t action_type ... ]
             pkg_fmri_pattern [...]
         pkg image-create [-FPUz] [--full|--partial|--user] [--zone]
-            -a <prefix>=<url> dir
+            [-k ssl_key] [-c ssl_cert] -a <prefix>=<url> dir
+
+        pkg set-authority [-P] [-k ssl_key] [-c ssl_cert]
+            [-O origin_url] authority
+        pkg unset-authority authority ...
+        pkg authority [-H] [authname]
 
 Options:
         --server, -s
@@ -859,6 +864,128 @@ def catalog_refresh(img, args):
         else:
                 return 0
 
+def authority_set(img, args):
+        """pkg set-authority [-P] [-k ssl_key] [-c ssl_cert]
+            [-O origin_url] authority"""
+
+        preferred = False
+        ssl_key = None
+        ssl_cert = None
+        origin_url = None
+
+        opts, pargs = getopt.getopt(args, "Pk:c:O:")
+        for opt, arg in opts:
+                if opt == "-P":
+                        preferred = True
+                if opt == "-k":
+                        ssl_key = arg
+                if opt == "-c":
+                        ssl_cert = arg
+                if opt == "-O":
+                        origin_url = arg
+
+        if len(pargs) != 1:
+                usage(
+                    _("pkg: set-authority: one and only one authority may be set"))
+
+        auth = pargs[0]
+
+        if ssl_key:
+                ssl_key = os.path.abspath(ssl_key)
+                if not os.path.exists(ssl_key):
+                        error(_("set-authority: SSL key file '%s' does not exist" \
+                            ) % ssl_key)
+                        return 1
+
+        if ssl_cert:
+                ssl_cert = os.path.abspath(ssl_cert)
+                if not os.path.exists(ssl_cert):
+                        error(_("set-authority: SSL key cert '%s' does not exist" \
+                            ) % ssl_cert)
+                        return 1
+
+        if not img.has_authority(auth) and origin_url == None:
+                error(_("set-authority: must define origin URL for new authority"))
+                return 1
+
+        img.set_authority(auth, origin_url = origin_url, ssl_key = ssl_key,
+            ssl_cert = ssl_cert)
+
+        if preferred:
+                img.set_preferred_authority(auth)
+
+        return 0
+
+def authority_unset(img, args):
+        """pkg unset-authority authority ..."""
+
+        # is this an existing authority in our image?
+        # if so, delete it
+        # if not, error
+        preferred_auth = img.get_default_authority()
+
+        if len(args) == 0:
+                usage()
+
+        for a in args:
+                if not img.has_authority(a):
+                        error(_("unset-authority: no such authority: %s") \
+                            % a)
+                        return 1
+
+                if a == preferred_auth:
+                        error(_("unset-authority: removal of preferred authority not allowed."))
+                        return 1
+
+                img.delete_authority(a)
+
+        return 0
+
+def authority_list(img, args):
+        """pkg authorities"""
+        omit_headers = False
+        preferred_authority = img.get_default_authority()
+
+        opts, pargs = getopt.getopt(args, "H")
+        for opt, arg in opts:
+                if opt == "-H":
+                        omit_headers = True
+
+        if len(pargs) == 0:
+                if not omit_headers:
+                        print "%-35s %s" % ("AUTHORITY", "URL")
+                for a in img.gen_authorities():
+                        # summary list
+                        pfx, url, ssl_key, ssl_cert, dt = img.split_authority(a)
+                        if pfx == preferred_authority:
+                                pfx += " (preferred)"
+                        print "%-35s %s" % (pfx, url)
+        else:
+                img.load_catalogs(get_tracker())
+
+                for a in pargs:
+                        if not img.has_authority(a):
+                                error(_("authority: no such authority: %s") \
+                                    % a)
+                                return 1
+
+                        # detailed print
+                        auth = img.get_authority(a)
+                        pfx, url, ssl_key, ssl_cert, dt = \
+                            img.split_authority(auth)
+
+                        if dt:
+                                dt = dt.ctime()
+
+                        print ""
+                        print "      Authority:", pfx
+                        print "     Origin URL:", url
+                        print "        SSL Key:", ssl_key
+                        print "       SSL Cert:", ssl_cert
+                        print "Catalog Updated:", dt
+
+        return 0
+
 def image_create(img, args):
         """Create an image of the requested kind, at the given path.  Load
         catalog for initial authority for convenience.
@@ -872,10 +999,12 @@ def image_create(img, args):
 
         imgtype = image.IMG_USER
         is_zone = False
+        ssl_key = None
+        ssl_cert = None
         auth_name = None
         auth_url = None
 
-        opts, pargs = getopt.getopt(args, "FPUza:",
+        opts, pargs = getopt.getopt(args, "FPUza:k:c:",
             ["full", "partial", "user", "zone", "authority="])
 
         for opt, arg in opts:
@@ -887,6 +1016,10 @@ def image_create(img, args):
                         imgtype = image.IMG_USER
                 if opt == "-z" or opt == "--zone":
                         is_zone = True
+                if opt == "-k":
+                        ssl_key = arg
+                if opt == "-c":
+                        ssl_cert = arg
                 if opt == "-a" or opt == "--authority":
                         try:
                                 auth_name, auth_url = arg.split("=", 1)
@@ -897,6 +1030,20 @@ def image_create(img, args):
 
         if len(pargs) != 1:
                 usage(_("image-create requires a single image directory path"))
+
+        if ssl_key:
+                ssl_key = os.path.abspath(ssl_key)
+                if not os.path.exists(ssl_key):
+                        print _("pkg: set-authority: SSL key file '%s' does not exist"
+                            ) % ssl_key
+                        return 1
+
+        if ssl_cert:
+                ssl_cert = os.path.abspath(ssl_cert)
+                if not os.path.exists(ssl_cert):
+                        print _("pkg: set-authority: SSL key cert '%s' does not exist"
+                            ) % ssl_cert
+                        return 1
 
         if not auth_name and not auth_url:
                 usage("image-create requires an authority argument")
@@ -911,7 +1058,8 @@ def image_create(img, args):
                         % fmri.PREF_AUTH_PFX)
 
         try:
-                img.set_attrs(imgtype, pargs[0], is_zone, auth_name, auth_url)
+                img.set_attrs(imgtype, pargs[0], is_zone, auth_name, auth_url,
+                    ssl_key = ssl_key, ssl_cert = ssl_cert)
         except OSError, e:
                 error(_("cannot create image at %s: %s") % \
                     (pargs[0], e.args[1]))
@@ -998,6 +1146,12 @@ def main_func():
                         return list_contents(img, pargs)
                 elif subcommand == "verify":
                         return verify_image(img, pargs)
+                elif subcommand == "set-authority":
+                        return authority_set(img, pargs)
+                elif subcommand == "unset-authority":
+                        return authority_unset(img, pargs)
+                elif subcommand == "authority":
+                        return authority_list(img, pargs)
                 else:
                         usage(_("unknown subcommand '%s'") % subcommand)
 

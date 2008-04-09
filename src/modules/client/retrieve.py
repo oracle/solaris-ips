@@ -19,11 +19,13 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
 import os
+import socket
+import urllib2
 
 from pkg.misc import versioned_urlopen
 
@@ -36,9 +38,17 @@ def get_datastream(img, fmri, hash):
         authority, pkg_name, version = fmri.tuple()
 
         url_prefix = img.get_url_by_authority(authority)
+        ssl_tuple = img.get_ssl_credentials(authority)
 
         try:
-                f, v = versioned_urlopen(url_prefix, "file", [0], hash)
+                f, v = versioned_urlopen(url_prefix, "file", [0], hash,
+                           ssl_creds = ssl_tuple)
+        except urllib2.URLError, e:
+                if len(e.args) == 1 and isinstance(e.args[0], socket.sslerror):
+                        raise RuntimeError, e
+
+                raise NameError, "could not retrieve file '%s' from '%s'" % \
+                    (hash, url_prefix)
         except:
                 raise NameError, "could not retrieve file '%s' from '%s'" % \
                     (hash, url_prefix)
@@ -51,10 +61,17 @@ def get_manifest(img, fmri):
         authority, pkg_name, version = fmri.tuple()
 
         url_prefix = img.get_url_by_authority(authority)
+        ssl_tuple = img.get_ssl_credentials(authority)
 
         try:
                 m, v = versioned_urlopen(url_prefix, "manifest", [0],
-                    fmri.get_url_path())
+                    fmri.get_url_path(), ssl_creds = ssl_tuple)
+        except urllib2.URLError, e:
+                if len(e.args) == 1 and isinstance(e.args[0], socket.sslerror):
+                        raise RuntimeError, e
+
+                raise NameError, "could not retrieve manifest '%s' from '%s'" % \
+                    (hash, url_prefix)
         except:
                 raise NameError, "could not retrieve manifest '%s' from '%s'" % \
                     (fmri.get_url_path(), url_prefix)

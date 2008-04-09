@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 import os
@@ -43,6 +43,8 @@ Display-Copyrights: False
 prefix: sfbay.sun.com
 origin: http://zruty.sfbay:10001
 mirrors:
+ssl_key:
+ssl_cert:
 """)
                 f.close()
 		self.ic = imageconfig.ImageConfig()
