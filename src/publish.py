@@ -379,7 +379,7 @@ def main_func():
                     _("pkgsend: illegal %s option -- %s") % (subcommand, e.opt)
                 usage()
 
-        sys.exit(0)
+        return 0
 
 
 

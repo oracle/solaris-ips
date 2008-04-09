@@ -579,8 +579,8 @@ class DriverAction(generic.Action):
                         if len(cp.split()) == 3:
                                 cp = self.attrs["name"] + " " + cp
                         args = (
-                            self.update_drv, "-b", image.get_root(), "-d",
-                            "-m", cp, "clone"
+                            self.update_drv, "-b", pkgplan.image.get_root(),
+                            "-d", "-m", cp, "clone"
                         )
                         retcode = subprocess.call(args)
                         if retcode != 0:

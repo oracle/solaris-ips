@@ -192,18 +192,6 @@ class SolarisPackage(object):
 		self.deps = self.readDependFile()
 		self.manifest = self.readPkgmapFile()
 
-        def makePkgVersion(self):
-                """A factory method to spit out a PkgVersion object.
-                """
-                # XXX need a better version here, and the package should be a
-                # pkg: FMRI.
-                pv = PkgVersion(self.pkginfo["PKG"], self.pkginfo["VERSION"])
-
-                pv.set_contents(self.manifest)
-                pv.set_dependencies(self.deps)
-
-                return pv
-
 	def readDependFile(self):
                 # XXX This is obviously bogus, but the dependency information is
                 # in the main archive, which we haven't read in the constructor

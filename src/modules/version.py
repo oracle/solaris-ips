@@ -108,7 +108,7 @@ class DotSequence(object):
                 return False
 
         def is_same_minor(self, other):
-                if not is_same_major(self, other):
+                if not self.is_same_major(other):
                         return False
 
                 if self.sequence[1] == other.sequence[1]:
@@ -209,7 +209,7 @@ class Version(object):
         def set_timestamp(self, timestamp):
                 self.datetime = datetime.datetime.fromtimestamp(timestamp)
 
-        def get_datetime(self):
+        def get_timestamp(self):
                 return self.datetime
 
         def __ne__(self, other):

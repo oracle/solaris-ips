@@ -328,7 +328,7 @@ class Mopen(object):
 if __name__ == "__main__":
 
         def test(max, foo = ""):
-                import timedanek
+                import time
                 for i in xrange(0, max):
                         print "%s%d" % (foo, i)
                         time.sleep(1)

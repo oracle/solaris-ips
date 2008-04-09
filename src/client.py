@@ -595,7 +595,7 @@ def info(img, args):
                 print "       Version:", version.release
                 print " Build Release:", version.build_release
                 print "        Branch:", version.branch
-                print "Packaging Date:", version.get_datetime().ctime()
+                print "Packaging Date:", version.get_timestamp().ctime()
                 if m.size > (1024 * 1024):
                         print "          Size: %.1f MB" % \
                             (m.size / float(1024 * 1024))

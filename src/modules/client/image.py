@@ -575,7 +575,7 @@ class Image(object):
                         # the authority to record that.
                         auth = flines[0]
                         auth = auth.strip()
-                        newauth = "%s_%s" % (fmri.PREF_AUTH_PFX, auth)
+                        newauth = "%s_%s" % (pkg.fmri.PREF_AUTH_PFX, auth)
 
                 if newauth and not read_only:
                         # This is where we actually update the installed
