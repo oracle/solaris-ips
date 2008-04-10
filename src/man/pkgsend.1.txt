@@ -10,6 +10,7 @@ SYNOPSIS
      /usr/bin/pkgsend open [-en] pkg_fmri
      /usr/bin/pkgsend add action arguments
      /usr/bin/pkgsend import bundlefile ...
+     /usr/bin/pkgsend include manifest ...
      /usr/bin/pkgsend close [-A]
 
      /usr/bin/pkgsend send bundlefile ...
@@ -44,7 +45,18 @@ SUBCOMMANDS
           below.
 
      import bundlefile ...
-          Add each given bundle file into the current transaction
+	  Add each given bundlefile (such as a SVr4 package) into the
+	  current transaction.
+
+     include manifest ...
+          Add resources associated with the multiple actions present in
+	  each manifest file to the current transaction.  Each line in the
+	  file should be the string representation of an action.  In
+	  particular, the "add" token as described above should not be
+	  present, nor should there be open and close tokens representing
+	  transaction boundaries.  For those actions with datastreams, the
+	  path to the file containing the data should be the second word on
+	  the line.
 
      close [-A]
           Close current transaction.  With -A, abandon the current

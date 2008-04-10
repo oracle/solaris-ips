@@ -61,8 +61,8 @@ Usage:
 Packager subcommands:
         pkgsend open [-en] pkg_fmri
         pkgsend add action arguments 
-        pkgsend include file-of-action-statements
-        pkgsend import bundlefile
+        pkgsend import bundlefile ...
+        pkgsend include manifest ...
         pkgsend close [-A]
 
         pkgsend send bundlefile
