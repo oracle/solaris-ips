@@ -126,33 +126,33 @@ class Action(object):
         key_attr = None
 
         # the following establishes the sort order between action types.
-	# Directories must precede all
-	# filesystem-modifying actions; hardlinks must follow all
-	# filesystem-modifying actions.  Note that usr/group actions
-	# preceed file actions; this implies that /etc/group and /etc/passwd
-	# file ownership needs to be part of initial contents of those files
+        # Directories must precede all
+        # filesystem-modifying actions; hardlinks must follow all
+        # filesystem-modifying actions.  Note that usr/group actions
+        # preceed file actions; this implies that /etc/group and /etc/passwd
+        # file ownership needs to be part of initial contents of those files
 
-	orderdict = {}
-	unknown = 0
+        orderdict = {}
+        unknown = 0
 
-	def loadorderdict(self):
-		ol = [
-			"set",
-			"depend",
-			"group",
-			"user",
-			"dir",
-			"file",
-			"hardlink",
-			"link",
-			"driver",
-			"unknown",
-			"legacy"
-			]
-		self.orderdict.update(dict((
-		    (pkg.actions.types[t], i) for i, t in enumerate(ol)
-		    )))
-		self.unknown = self.orderdict[pkg.actions.types["unknown"]]
+        def loadorderdict(self):
+                ol = [
+                        "set",
+                        "depend",
+                        "group",
+                        "user",
+                        "dir",
+                        "file",
+                        "hardlink",
+                        "link",
+                        "driver",
+                        "unknown",
+                        "legacy"
+                        ]
+                self.orderdict.update(dict((
+                    (pkg.actions.types[t], i) for i, t in enumerate(ol)
+                    )))
+                self.unknown = self.orderdict[pkg.actions.types["unknown"]]
 
         def __init__(self, data=None, **attrs):
                 """Action constructor.
@@ -172,10 +172,16 @@ class Action(object):
                 Any remaining named arguments will be treated as attributes.
                 """
 
-		if not self.orderdict:
-			self.loadorderdict()
+                if not self.orderdict:
+                        self.loadorderdict()
+                self.ord = self.orderdict.get(type(self), self.unknown)
 
                 self.attrs = attrs
+
+                if data == None:
+                        self.data = None
+                        self.cleanup = None
+                        return
 
                 if isinstance(data, str):
                         def file_opener():
@@ -184,12 +190,13 @@ class Action(object):
                         def file_cleanup():
                                 os.unlink(data)
                         self.cleanup = file_cleanup
-                elif not callable(data) and data != None:
+                elif not callable(data):
                         def data_opener():
                                 return data
                         self.data = data_opener
                         self.cleanup = None
                 else:
+                        # Data is not None, and is callable
                         self.data = data
                         self.cleanup = None
 
@@ -198,8 +205,7 @@ class Action(object):
 
                 The form is the name, followed by the hash, if it exists,
                 followed by attributes in the form 'key=value'.  All fields are
-                space-separated, which for now means that no tokens may have
-                spaces (though they may have '=' signs).
+                space-separated; fields with spaces in the values are quoted.
 
                 Note that an object with a datastream may have been created in
                 such a way that the hash field is not populated, or not
@@ -207,6 +213,7 @@ class Action(object):
                 that at the time that __str__() is called, the hash is properly
                 computed.  This may need to be done externally.
                 """
+
                 str = self.name
                 if hasattr(self, "hash"):
                         str += " " + self.hash
@@ -217,44 +224,35 @@ class Action(object):
                         else:
                                 return s
 
-                stringattrs = [
-                    "%s=%s" % (k, q(self.attrs[k]))
-                    for k in self.attrs
-                    if not isinstance(self.attrs[k], list)
-                ]
+                # Sort so that we get consistent action attribute ordering.
+                # We pay a performance penalty to do so, but it seems worth it.
+                for k in sorted(self.attrs.keys()):
+                        v = self.attrs[k]
+                        if isinstance(v, list):
+                            str += " " + " ".join([
+                                "%s=%s" % (k, q(lmt))
+                                for lmt in v
+                            ])
+                        elif " " in v:
+                                str += " " + k + "=\"" + v + "\""
+                        else:
+                                str += " " + k + "=" + v
 
-                listattrs = [
-                    " ".join([
-                        "%s=%s" % (k, q(lmt))
-                        for lmt in self.attrs[k]
-                    ])
-                    for k in self.attrs
-                    if isinstance(self.attrs[k], list)
-                ]
-		# arrange to stringify consistently
-
-		stringattrs.sort()
-		listattrs.sort()
-
-                return " ".join([str] + stringattrs + listattrs)
+                return str
 
         def __cmp__(self, other):
-                """Compare actions for ordering.  Ordering between
-		different types is done w/ orderdict (initialized above)
-		unless no special handling is needed"""
+                """Compare actions for ordering.  The ordinality of a
+                   given action is computed and stored at action
+                   initialization."""
 
-		if type(self) == type(other):
-			return self.compare(other) # often subclassed
+                res = cmp(self.ord, other.ord)
+                if res == 0:
+                        return self.compare(other) # often subclassed
 
-		res = cmp(self.orderdict.get(type(self), self.unknown),
-			  self.orderdict.get(type(other), self.unknown))
+                return res
 
-		if not res:
-			res = cmp(self.name, other.name) # sort by action name
-		return res
-
-	def compare(self, other):
-                        return cmp(id(self), id(other))
+        def compare(self, other):
+                return cmp(id(self), id(other))
 
         def different(self, other):
                 """Returns True if other represents a non-ignorable change from self.
@@ -282,17 +280,17 @@ class Action(object):
 
                 return False
 
-	def differences(self, other):
-		"""Returns a list of attributes that have different values
-		between other and self"""
-		sset = set(self.attrs.keys())
+        def differences(self, other):
+                """Returns a list of attributes that have different values
+                between other and self"""
+                sset = set(self.attrs.keys())
                 oset = set(other.attrs.keys())
-		l = list(sset.symmetric_difference(oset))
-		l.extend([ k
-			   for k in sset.intersection(oset)
-			   if self.attrs[k] != other.attrs[k]
-			   ])
-		return (l)
+                l = list(sset.symmetric_difference(oset))
+                l.extend([ k
+                           for k in sset.intersection(oset)
+                           if self.attrs[k] != other.attrs[k]
+                           ])
+                return (l)
 
         def generate_indices(self):
                 """Generate for the reverse index database data for this action.
@@ -428,11 +426,11 @@ class Action(object):
                 else:
                         return [ value ]
 
-	def directory_references(self):
-		""" returns references to paths in action"""
-		if "path" in self.attrs:
-			return [os.path.dirname(os.path.normpath(self.attrs["path"]))]
-		return []
+        def directory_references(self):
+                """ returns references to paths in action"""
+                if "path" in self.attrs:
+                        return [os.path.dirname(os.path.normpath(self.attrs["path"]))]
+                return []
 
         def preinstall(self, pkgplan, orig):
                 """Client-side method that performs pre-install actions."""

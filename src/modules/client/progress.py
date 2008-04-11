@@ -63,8 +63,8 @@ class ProgressTracker(object):
 
                 self.act_cur_nactions = 0
                 self.act_goal_nactions = 0
-		self.act_phase = "None"
-		self.act_phase_last = "None"
+                self.act_phase = "None"
+                self.act_phase_last = "None"
 
                 self.debug = False
                 self.last_printed = 0 # when did we last emit status?
@@ -78,6 +78,9 @@ class ProgressTracker(object):
 
         def evaluate_start(self):
                 self.eval_output_start()
+
+        def evaluate_progress(self):
+                self.eval_output_progress()
 
         def evaluate_done(self):
                 self.eval_output_done()
@@ -130,7 +133,7 @@ class ProgressTracker(object):
         def actions_set_goal(self, phase, nactions):
                 self.act_phase = phase
                 self.act_goal_nactions = nactions
-		self.act_cur_nactions = 0
+                self.act_cur_nactions = 0
 
         def actions_add_progress(self):
                 self.act_cur_nactions += 1
@@ -158,6 +161,9 @@ class ProgressTracker(object):
 
         def eval_output_start(self):
                 raise NotImplementedError("eval_output_start() not implemented in superclass")
+
+        def eval_output_progress(self):
+                raise NotImplementedError("eval_output_progress() not implemented in superclass")
 
         def eval_output_done(self):
                 raise NotImplementedError("eval_output_done() not implemented in superclass")
@@ -206,6 +212,8 @@ class QuietProgressTracker(ProgressTracker):
 
         def eval_output_start(self): return
 
+        def eval_output_progress(self): return
+
         def eval_output_done(self): return
 
         def ver_output(self): return
@@ -247,6 +255,8 @@ class CommandLineProgressTracker(ProgressTracker):
 
         def eval_output_start(self): return
 
+        def eval_output_progress(self): return
+
         def eval_output_done(self): return
 
         def ver_output(self): return
@@ -267,9 +277,9 @@ class CommandLineProgressTracker(ProgressTracker):
                 sys.stdout.flush()
 
         def act_output(self):
-		if self.act_phase != self.act_phase_last:
-			print "%s ... " % self.act_phase,
-			self.act_phase_last = self.act_phase
+                if self.act_phase != self.act_phase_last:
+                        print "%s ... " % self.act_phase,
+                        self.act_phase_last = self.act_phase
                 return
 
         def act_output_done(self):
@@ -303,7 +313,7 @@ class FancyUNIXProgressTracker(ProgressTracker):
                 self.dl_started = False
                 self.spinner = 0
                 self.spinner_chars = "/-\|"
-		self.cat_curstrlen = 0
+                self.cat_curstrlen = 0
 
         def cat_output_start(self):
                 catstr = "Fetching catalog '%s'..." % (self.cat_cur_catalog)
@@ -323,11 +333,26 @@ class FancyUNIXProgressTracker(ProgressTracker):
                 print "%s" % s,
                 sys.stdout.flush()
 
+        def eval_output_progress(self):
+                if (time.time() - self.last_print_time) >= 0.10:
+                        self.last_print_time = time.time()
+                else:
+                        return
+                self.spinner += 1
+                if self.spinner >= len(self.spinner_chars):
+                        self.spinner = 0
+                print self.cr,
+                s = "Creating Plan %c" % self.spinner_chars[self.spinner]
+                self.cat_curstrlen = len(s)
+                print "%s" % s,
+                sys.stdout.flush()
+
         def eval_output_done(self):
                 print self.cr,
                 print ("%" + str(self.cat_curstrlen) + "s") % "",
                 print self.cr,
                 sys.stdout.flush()
+                self.last_print_time = 0
 
         def ver_output(self):
                 print self.cr,
@@ -340,9 +365,9 @@ class FancyUNIXProgressTracker(ProgressTracker):
                         if self.spinner >= len(self.spinner_chars):
                                 self.spinner = 0
                         print "%-50s..... %c%c" % \
-			    (self.ver_cur_fmri.get_pkg_stem(), 
-			     self.spinner_chars[self.spinner],
-			     self.spinner_chars[self.spinner]),
+                            (self.ver_cur_fmri.get_pkg_stem(), 
+                             self.spinner_chars[self.spinner],
+                             self.spinner_chars[self.spinner]),
                         print self.cr,
                         sys.stdout.flush()
                 else:
@@ -389,20 +414,20 @@ class FancyUNIXProgressTracker(ProgressTracker):
                 # The first time, emit header.
                 if not self.act_started:
                         self.act_started = True
-			print "%-40s %11s" % ("PHASE", "ACTIONS")
+                        print "%-40s %11s" % ("PHASE", "ACTIONS")
                 else:
                         print self.cr,
 
                 print "%-40s %11s" % \
                     (
-			self.act_phase,
-			"%d/%d" % (self.act_cur_nactions, self.act_goal_nactions)
-		     ),
+                        self.act_phase,
+                        "%d/%d" % (self.act_cur_nactions, self.act_goal_nactions)
+                     ),
 
                 sys.stdout.flush()
 
         def act_output_done(self):
-		self.act_output(force=True)
+                self.act_output(force=True)
                 print
                 sys.stdout.flush()
 

@@ -29,45 +29,61 @@ import pkg.actions as action
 
 class TestActions(unittest.TestCase):
 
-	def test_action_parser(self):
-		action.fromstr("file 12345 name=foo")
-		action.fromstr("file 12345 name=foo attr=bar")
-		action.fromstr("file 12345 name=foo attr=bar attr=bar")
+        def test_action_parser(self):
+                action.fromstr("file 12345 name=foo")
+                action.fromstr("file 12345 name=foo attr=bar")
+                action.fromstr("file 12345 name=foo attr=bar attr=bar")
 
-		action.fromstr("file 12345 name=foo     attr=bar")
-		action.fromstr("file 12345 name=foo     attr=bar   ")
-		action.fromstr("file 12345 name=foo     attr=bar   ")
+                action.fromstr("file 12345 name=foo     attr=bar")
+                action.fromstr("file 12345 name=foo     attr=bar   ")
+                action.fromstr("file 12345 name=foo     attr=bar   ")
 
-		action.fromstr("file 12345 name=\"foo bar\"  attr=\"bar baz\"")
-		action.fromstr("file 12345 name=\"foo bar\"  attr=\"bar baz\"")
+                action.fromstr("file 12345 name=\"foo bar\"  attr=\"bar baz\"")
+                action.fromstr("file 12345 name=\"foo bar\"  attr=\"bar baz\"")
 
-	def test_action_errors(self):
-		# bogus action
-		self.assertRaises(KeyError, action.fromstr, "moop")
+                action.fromstr("driver alias=pci1234,56 alias=pci4567,89 class=scsi name=lsimega")
 
-		# bad quoting
-		self.assertRaises(ValueError, action.fromstr,
-		     "file 12345 name=\"foo bar")
+        def test_action_tostr(self):
+                str(action.fromstr("file 12345 name=foo"))
+                str(action.fromstr("file 12345 name=foo attr=bar"))
+                str(action.fromstr("file 12345 name=foo attr=bar attr=bar"))
 
-		self.assertRaises(ValueError, action.fromstr,
-		     "file 12345 \"name=foo bar")
+                str(action.fromstr("file 12345 name=foo     attr=bar"))
+                str(action.fromstr("file 12345 name=foo     attr=bar   "))
+                str(action.fromstr("file 12345 name=foo     attr=bar   "))
 
-		#self.assertRaises(ValueError, action.fromstr,
-		#    "file 12345 na\"me=foo bar")
+                str(action.fromstr("file 12345 name=\"foo bar\"  attr=\"bar baz\""))
+                str(action.fromstr("file 12345 name=\"foo bar\"  attr=\"bar baz\""))
 
-		#self.assertRaises(ValueError, action.fromstr,
-		#    "file 12345 name=foo\"bar")
+                str(action.fromstr("driver alias=pci1234,56 alias=pci4567,89 class=scsi name=lsimega"))
 
-		self.assertRaises(ValueError, action.fromstr, "file 1234 =\"\"")
+        def test_action_errors(self):
+                # bogus action
+                self.assertRaises(KeyError, action.fromstr, "moop")
 
-		# bogus attributes
-		self.assertRaises(ValueError, action.fromstr, "file =")
-		self.assertRaises(ValueError, action.fromstr, "file 1234 broken")
-		self.assertRaises(ValueError, action.fromstr, "file 1234 broken=")
-		self.assertRaises(ValueError, action.fromstr, "file 1234 =")
-		self.assertRaises(ValueError, action.fromstr, "file 1234 ==")
-		self.assertRaises(ValueError, action.fromstr, "file 1234 ===")
-		pass
+                # bad quoting
+                self.assertRaises(ValueError, action.fromstr,
+                     "file 12345 name=\"foo bar")
+
+                self.assertRaises(ValueError, action.fromstr,
+                     "file 12345 \"name=foo bar")
+
+                #self.assertRaises(ValueError, action.fromstr,
+                #    "file 12345 na\"me=foo bar")
+
+                #self.assertRaises(ValueError, action.fromstr,
+                #    "file 12345 name=foo\"bar")
+
+                self.assertRaises(ValueError, action.fromstr, "file 1234 =\"\"")
+
+                # bogus attributes
+                self.assertRaises(ValueError, action.fromstr, "file =")
+                self.assertRaises(ValueError, action.fromstr, "file 1234 broken")
+                self.assertRaises(ValueError, action.fromstr, "file 1234 broken=")
+                self.assertRaises(ValueError, action.fromstr, "file 1234 =")
+                self.assertRaises(ValueError, action.fromstr, "file 1234 ==")
+                self.assertRaises(ValueError, action.fromstr, "file 1234 ===")
+                pass
 
 
 if __name__ == "__main__":

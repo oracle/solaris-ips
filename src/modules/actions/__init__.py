@@ -77,12 +77,13 @@ def fromstr(str):
         """Create an action instance based on a str() representation of an action.
 
         Raises KeyError if the action type is unknown.
+        Raises ValueError if the action has other syntactic problems.
         """
 
         list = str.split(' ')
         type = list.pop(0)
         if type not in types:
-                raise KeyError, "Bad action type '%s' in action '%s'" % \
+                raise KeyError, "Unknown action type '%s' in action '%s'" % \
                     (type, str)
 
         # That is, if the first attribute is a hash
@@ -130,8 +131,7 @@ def fromlist(type, args, hash = None):
                         if v == '' or a == '':
                                 saw_error = True
                                 raise ValueError(
-                                    "Malformed action attribute: '%s=%s'" %
-                                    (a, v))
+                                    "Malformed action attribute: '%s=%s'" % (a, v))
 
                         # This is by far the common case-- an attribute with
                         # a single value.
@@ -152,7 +152,8 @@ def fromlist(type, args, hash = None):
                 # ValueError.  That can happen if split yields a single element,
                 # which is possible if e.g. an attribute lacks an =.
                 #
-                raise ValueError("Malformed action string: %s", args)
+                raise ValueError("Malformed action: '%s %s'" % (type,
+                    " ".join(args)))
 
         action = types[type](**attrs)
         if hash:

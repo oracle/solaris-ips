@@ -22,7 +22,6 @@
 # Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
-import bisect
 import os
 import cPickle
 from itertools import groupby, chain
@@ -95,19 +94,26 @@ class Manifest(object):
                 self.fmri = None
 
                 self.size = 0
-
                 self.actions = []
 
         def __str__(self):
                 r = ""
-
                 if self.fmri != None:
-                        r = r + "set name=fmri value=%s\n" % self.fmri
+                        r += "set name=fmri value=%s\n" % self.fmri
 
                 for act in sorted(self.actions):
-                        r = r + "%s\n" % act
-
+                        r += "%s\n" % act
                 return r
+
+        def tostr_unsorted(self):
+                r = ""
+                if self.fmri != None:
+                        r += "set name=fmri value=%s\n" % self.fmri
+                
+                for act in self.actions:
+                        r += "%s\n" % act
+                return r
+                
 
         def difference(self, origin):
                 """Return three lists of action pairs representing origin and
@@ -158,7 +164,7 @@ class Manifest(object):
 
         def combined_difference(self, origin):
                 """Where difference() returns three lists, combined_difference()
-                returns a single list of the concatenation of th three."""
+                returns a single list of the concatenation of the three."""
                 return list(chain(*self.difference(origin)))
 
         def humanized_differences(self, other):
@@ -231,8 +237,6 @@ class Manifest(object):
                 """str is the text representation of the manifest"""
                 assert self.actions == []
 
-                self.size = 0
-
                 # So we could build up here the type/key_attr dictionaries like
                 # sdict and odict in difference() above, and have that be our
                 # main datastore, rather than the simple list we have now.  If
@@ -247,9 +251,8 @@ class Manifest(object):
 
                         try:
                                 action = actions.fromstr(l)
-                        except KeyError:
-                                raise SyntaxError, \
-                                    "unknown action '%s'" % l.split()[0]
+                        except (KeyError, ValueError), e:
+                                raise SyntaxError, "%s: %s" % (self.fmri, e[0])
 
                         if action.attrs.has_key("path"):
                                 np = action.attrs["path"].lstrip(os.path.sep)
@@ -260,11 +263,7 @@ class Manifest(object):
                                     self.make_opener(self.img, self.fmri, action)
 
                         self.size += int(action.attrs.get("pkg.size", "0"))
-
-                        if not self.actions:
-                                self.actions.append(action)
-                        else:
-                                bisect.insort(self.actions, action)
+                        self.actions.append(action)                               
 
                 return
 
@@ -295,12 +294,37 @@ class Manifest(object):
                                                 action_dict[k] = { v: t }
                 return action_dict
 
-        def pickle(self, file):
-                """Pickle the indices of the manifest's actions to the 'file'.
+        def store(self, mfst_path, pkl_path):
+                """ Store the manifest contents and the pickled index
+                    of the manifest (used for searching) to disk.
                 """
 
-                cPickle.dump(self.search_dict(), file,
-                    protocol = cPickle.HIGHEST_PROTOCOL)
+                try:
+                        mfile = file(mfst_path, "w")
+                except IOError:
+                        os.makedirs(os.path.dirname(mfst_path))
+                        mfile = file(mfst_path, "w")
+
+                #
+                # We specifically avoid sorting manifests before writing
+                # them to disk-- there's really no point in doing so, since
+                # we'll sort actions globally during packaging operations.
+                #
+                mfile.write(self.tostr_unsorted())
+                mfile.close()
+                
+                try:
+                        pfile = open(pkl_path, "wb")
+                except IOError, e:
+                        return
+
+                try:
+                        cPickle.dump(self.search_dict(), pfile,
+                            protocol = cPickle.HIGHEST_PROTOCOL)
+                        pfile.close()
+                except (IOError, e):
+                        os.unlink(pkl_path)
+                        pass
 
         def get(self, key, default):
                 try:

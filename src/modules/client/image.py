@@ -118,6 +118,7 @@ class Image(object):
 
                 self.attrs = {}
                 self.link_actions = None
+                self.installed_pkg_cache = None
 
                 self.attrs["Policy-Require-Optional"] = False
                 self.attrs["Policy-Pursue-Latest"] = True
@@ -439,19 +440,17 @@ class Image(object):
                 and write resulting contents to disk."""
 
                 m = manifest.Manifest()
+                m.set_fmri(self, fmri)
 
                 fmri_dir_path = os.path.join(self.imgdir, "pkg",
                     fmri.get_dir_path())
                 mpath = os.path.join(fmri_dir_path, "manifest")
+                ipath = os.path.join(fmri_dir_path, "index")
 
-                # Get manifest from remote host
-                retrieve.get_manifest(self, fmri)
-
-                mfile = file(mpath, "r")
-                mcontent = mfile.read()
-                mfile.close()
-
-                m.set_fmri(self, fmri)
+                # Get manifest as a string from the remote host, then build
+                # it up into an in-memory manifest, then write the finished
+                # representation to disk.
+                mcontent = retrieve.get_manifest(self, fmri)
                 m.set_content(mcontent)
 
                 # Write the originating authority into the manifest.
@@ -463,19 +462,7 @@ class Image(object):
                 else:
                         m["authority"] = fmri.get_authority()
 
-                # Save manifest with authority information
-                mcontent = str(m)
-                mfile = file(mpath, "w+")
-                mfile.write(mcontent)
-                mfile.close()
-
-                # Pickle the manifest's indices, for searching
-                try:
-                        pfile = file(os.path.join(fmri_dir_path, "index"), "wb")
-                        m.pickle(pfile)
-                        pfile.close()
-                except IOError, e:
-                        pass
+                m.store(mpath, ipath)
 
                 if filtered:
                         filters = []
@@ -907,8 +894,15 @@ class Image(object):
                                 yield pf
 
         def gen_installed_pkgs(self):
+                if self.installed_pkg_cache is not None:
+                        return iter(self.installed_pkg_cache)
+                else:
+                        return self.gen_installed_pkgs_forreal()
+
+        def gen_installed_pkgs_forreal(self):
                 proot = "%s/pkg" % self.imgdir
 
+                self.installed_pkg_cache = []
                 for pd in sorted(os.listdir(proot)):
                         for vd in sorted(os.listdir("%s/%s" % (proot, pd))):
                                 path = "%s/%s/%s/installed" % (proot, pd, vd)
@@ -920,8 +914,9 @@ class Image(object):
                                         auth = self.get_default_authority()
 
                                 fmristr = urllib.unquote("%s@%s" % (pd, vd))
-
-                                yield pkg.fmri.PkgFmri(fmristr, authority = auth)
+                                f = pkg.fmri.PkgFmri(fmristr, authority = auth)
+                                self.installed_pkg_cache.append(f)
+                                yield f
 
         def strtofmri(self, myfmri):
                 ret = pkg.fmri.PkgFmri(myfmri, 

@@ -23,7 +23,6 @@
 # Use is subject to license terms.
 #
 
-import os
 import socket
 import urllib2
 
@@ -56,7 +55,8 @@ def get_datastream(img, fmri, hash):
         return f
 
 def get_manifest(img, fmri):
-        """Calculate URI and retrieve."""
+        """ Calculate URI and retrieve manifest.  Return it as a buffer to
+            the caller. """
 
         authority, pkg_name, version = fmri.tuple()
 
@@ -76,13 +76,4 @@ def get_manifest(img, fmri):
                 raise NameError, "could not retrieve manifest '%s' from '%s'" % \
                     (fmri.get_url_path(), url_prefix)
 
-        data = m.read()
-        local_mpath = "%s/pkg/%s/manifest" % (img.imgdir, fmri.get_dir_path())
-
-        try:
-                mfile = file(local_mpath, "w")
-                print >>mfile, data
-        except IOError, e:
-                os.makedirs(os.path.dirname(local_mpath))
-                mfile = file(local_mpath, "w")
-                print >>mfile, data
+        return m.read()

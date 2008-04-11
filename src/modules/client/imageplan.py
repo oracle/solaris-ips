@@ -186,6 +186,7 @@ class ImagePlan(object):
 
         def evaluate_fmri(self, pfmri):
 
+                self.progtrack.evaluate_progress()
                 m = self.image.get_manifest(pfmri)
 
                 # [manifest] examine manifest for dependencies
@@ -342,14 +343,16 @@ Cannot remove '%s' due to the following packages that directly depend on it:"""\
 
                 # Operate on a copy, as it will be modified in flight.
                 for f in self.target_fmris[:]:
+                        self.progtrack.evaluate_progress()
                         self.evaluate_fmri(f)
 
                 for f in self.target_fmris:
                         self.add_pkg_plan(f)
+                        self.progtrack.evaluate_progress()
 
                 for f in self.target_rem_fmris[:]:
                         self.evaluate_fmri_removal(f)
-
+                        self.progtrack.evaluate_progress()
 
                 self.progtrack.evaluate_done()
 
