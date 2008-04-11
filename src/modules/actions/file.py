@@ -137,6 +137,18 @@ class FileAction(generic.Action):
                 # This is safe even if temp == final_path.
                 portable.rename(temp, final_path)
 
+		# XXX .pyc files are causing problems because they're not enough
+		# newer than the .py files.... if we just installed a .pyc
+		# file, move its modification time into the future to prevent
+		# python commands running as root from updating these files
+		# because they look out of date... the right fix is to fix
+		# Solaris python to look at the entire timestamp.... pending.
+		# in the mean time, this "accomodation" has to be made to
+		# prevent pkg verify errors.
+		if final_path.endswith(".pyc"):
+			t = os.stat(final_path)[ST_MTIME] + 5 # magic
+			os.utime(final_path, (t, t))
+
         def verify(self, img, **args):
                 """ verify that file is present and if preserve attribute
                 not present, that hashes match"""

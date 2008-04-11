@@ -97,10 +97,7 @@ class ImagePlan(object):
         def is_proposed_fmri(self, fmri):
                 for pf in self.target_fmris:
                         if self.image.fmri_is_same_pkg(fmri, pf):
-                                if not self.image.fmri_is_successor(fmri, pf):
-                                        return True
-                                else:
-                                        return False
+                                return not self.image.fmri_is_successor(fmri, pf)
                 return False
 
         def is_proposed_rem_fmri(self, fmri):
@@ -123,7 +120,7 @@ class ImagePlan(object):
                 #
 
                 fmri = self.image.apply_optional_dependencies(fmri)
-                
+
                 # Add fmri to target list only if it (or a successor) isn't
                 # there already.
                 for i, p in enumerate(self.target_fmris):

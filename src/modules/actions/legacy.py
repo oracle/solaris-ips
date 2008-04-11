@@ -86,13 +86,13 @@ class LegacyAction(generic.Action):
                                 pfile.write("%s=%s\n" % (k, v))
                         pfile.close()
 
-                # create hardlink to pkginfo file for this pkg; may be
-                # there already on upgrade
+                # create another hardlink to pkginfo file if
+                # this is not just an upgrade; we use this to make
+                # uninstall easier
 
-                linkfile = os.path.join(pkgdir, 
-                    "pkginfo." + pkgplan.destination_fmri.get_url_path())
-
-                if not os.path.isfile(linkfile):
+                if not orig:
+                        linkfile = os.path.join(pkgdir, 
+                            "pkginfo.%d" % (os.stat(pkginfo)[ST_NLINK] + 1))
                         os.link(pkginfo, linkfile)
 
                 # the svr4 pkg commands need contents file to work, but the
@@ -110,7 +110,7 @@ class LegacyAction(generic.Action):
 
                 os.chmod(pkginfo, 0644)
 
-	def verify(self, img, **args):
+        def verify(self, img, **args):
                 pkgdir = os.path.join(img.get_root(), "var/sadm/pkg",
                     self.attrs["pkg"])
 
@@ -133,17 +133,20 @@ class LegacyAction(generic.Action):
                 pkgdir = os.path.join(pkgplan.image.get_root(), "var/sadm/pkg",
                     self.attrs["pkg"])
 
-                linkfile = os.path.join(pkgdir, 
-                    "pkginfo." + pkgplan.origin_fmri.get_url_path())
-                
-                if os.stat(linkfile)[ST_NLINK] == 2:
-                        try:
-                                os.unlink(os.path.join(pkgdir, "pkginfo"))
-                        except OSError, e:
-                                if e.errno not in (errno.EEXIST, errno.ENOENT):   
-                                        #          can happen if all refs deleted
-                                        raise    # in same pkg invocation
-                os.unlink(linkfile)
+                pkginfo = os.path.join(pkgdir, "pkginfo")
+
+                if os.path.isfile(pkginfo):
+                        link_count = os.stat(pkginfo)[ST_NLINK]
+                        linkfile = os.path.join(pkgdir,
+                            "pkginfo.%d" % (link_count))
+                        
+                        if os.path.isfile(linkfile):
+                                os.unlink(linkfile)
+
+				# do this conditionally to be kinder
+				# to installations done w/ older versions
+				if link_count == 2: # last one
+					os.unlink(pkginfo)
 
         def generate_indices(self):
                 return {

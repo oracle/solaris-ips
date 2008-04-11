@@ -937,7 +937,7 @@ class Image(object):
                         self.fmri_set_default_authority(myfmri)
 
                 ofmri = self.optional_dependencies.get(name, None)
-                if not ofmri or self.fmri_is_successor(ofmri, myfmri):
+                if not ofmri or self.fmri_is_successor(myfmri, ofmri):
                                self.optional_dependencies[name] = myfmri
 
         def apply_optional_dependencies(self, myfmri):
@@ -955,7 +955,7 @@ class Image(object):
                 if not minfmri:
                         return myfmri
 
-                if not myfmri.has_version() or self.fmri_is_successor(minfmri, myfmri):
+                if self.fmri_is_successor(minfmri, myfmri):
                         return minfmri
                 return myfmri
 

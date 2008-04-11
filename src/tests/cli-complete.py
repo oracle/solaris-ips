@@ -45,6 +45,7 @@ all_suite=None
 #
 def maketests():
 	import cli.t_actions
+	import cli.t_circular_dependencies
 	import cli.t_depot
 	import cli.t_depotcontroller
 	import cli.t_image_create
@@ -65,6 +66,7 @@ def maketests():
 	    cli.t_pkg_list.TestPkgList,
 	    cli.t_commandline.TestCommandLine,
 	    cli.t_upgrade.TestUpgrade,
+	    cli.t_circular_dependencies.TestCircularDependencies,
 	    cli.t_rename.TestRename ]
 
 	for t in tests:

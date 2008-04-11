@@ -287,6 +287,8 @@ class PkgFmri(object):
                 return self.pkg_name == fmri.pkg_name
 
         def is_successor(self, fmri):
+                """ returns True if self > fmri """
+
                 if not self.pkg_name == fmri.pkg_name:
                         return False
 
@@ -294,10 +296,10 @@ class PkgFmri(object):
                         return False
 
                 if fmri.version == None:
-                        return False
+                        return True
 
                 if self.version == None:
-                        return True
+                        return False
 
                 if self.version < fmri.version:
                         return False
