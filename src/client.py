@@ -76,7 +76,7 @@ Usage:
 Basic subcommands:
         pkg install [-nvq] package...
         pkg uninstall [-nrvq] package...
-        pkg list [-aHSuv] [package...]
+        pkg list [-aHsuv] [package...]
         pkg image-update [-nvq]
         pkg refresh [--full]
 
@@ -138,7 +138,7 @@ def list_inventory(img, args):
                         verbose = True
 
         if summary and verbose:
-                usage(_("-S and -v may not be combined"))               
+                usage(_("-s and -v may not be combined"))               
 
         if verbose:
                 fmt_str = "%-64s %-10s %s"

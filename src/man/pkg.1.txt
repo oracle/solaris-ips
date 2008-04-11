@@ -14,7 +14,7 @@ SYNOPSIS
      /usr/bin/pkg info pkg_fmri_pattern [pkg_fmri_pattern ...]
      /usr/bin/pkg contents [-aH] [-o attribute ...] [-s sort_key]
          [-t action_type ... ] [pkg_fmri_pattern ...]
-     /usr/bin/pkg list [-aHuv] [pkg_fmri_pattern ...]
+     /usr/bin/pkg list [-aHsuv] [pkg_fmri_pattern ...]
      /usr/bin/pkg search [-lr] [-s server] token
 
      /usr/bin/pkg refresh
