@@ -58,6 +58,25 @@ class DriverAction(generic.Action):
         def __init__(self, data=None, **attrs):
                 generic.Action.__init__(self, data, **attrs)
 
+        @staticmethod
+        def __call(args, fmt, fmtargs):
+                proc = subprocess.Popen(args, stdout = subprocess.PIPE,
+                    stderr = subprocess.STDOUT)
+                buf = proc.stdout.read()
+                ret = proc.wait()
+
+                if ret != 0:
+                        fmtargs["retcode"] = ret
+                        # XXX Module printing
+                        print
+                        fmt += " failed with return code %(retcode)s"
+                        print _(fmt) % fmtargs
+                        print ("command run was:"), " ".join(args)
+                        print ("command output was:")
+                        print "-" * 60
+                        print buf,
+                        print "-" * 60
+
         def install(self, pkgplan, orig):
                 image = pkgplan.image
                 n2m = os.path.normpath(os.path.sep.join(
@@ -116,11 +135,8 @@ class DriverAction(generic.Action):
 
                 args += ( self.attrs["name"], )
 
-                retcode = subprocess.call(args)
-                if retcode != 0:
-                        print "%s (%s) install failed with return code %s" % \
-                            (self.name, self.attrs["name"], retcode)
-                        print "command run was ", args
+                self.__call(args, "driver (%(name)s) install",
+                    {"name": self.attrs["name"]})
 
                 for cp in self.attrlist("clone_perms"):
                         # If we're given three fields, assume the minor node
@@ -131,12 +147,8 @@ class DriverAction(generic.Action):
                             self.update_drv, "-b", image.get_root(), "-a",
                             "-m", cp, "clone"
                         )
-                        retcode = subprocess.call(args)
-                        if retcode != 0:
-                                print "%s (%s) clone permission update " \
-                                    "failed with return code %s" % \
-                                    (self.name, self.attrs["name"], retcode)
-                                print "command run was ", args
+                        self.__call(args, "driver (%(name)s) clone permission "
+                            "update", {"name": self.attrs["name"]})
 
         def update_install(self, image, orig):
                 add_base = ( self.update_drv, "-b", image.get_root(), "-a" )
@@ -174,21 +186,15 @@ class DriverAction(generic.Action):
 
                 for i in add_alias:
                         args = add_base + ("-i", '"%s"' % i, self.attrs["name"])
-                        retcode = subprocess.call(args)
-                        if retcode != 0:
-                                print "%s (%s) upgrade (addition of alias " \
-                                    "'%s') failed with return code %s" % \
-                                    (self.name, self.attrs["name"], i, retcode)
-                                print "command run was ", args
+                        self.__call(args, "driver (%(name)s) upgrade (addition "
+                            "of alias '%(alias)s')",
+                            {"name": self.attrs["name"], "alias": i})
 
                 for i in rem_alias:
                         args = rem_base + ("-i", '"%s"' % i, self.attrs["name"])
-                        retcode = subprocess.call(args)
-                        if retcode != 0:
-                                print "%s (%s) upgrade (removal of alias " \
-                                    "'%s') failed with return code %s" % \
-                                    (self.name, self.attrs["name"], i, retcode)
-                                print "command run was ", args
+                        self.__call(args, "driver (%(name)s) upgrade (removal "
+                            "of alias '%(alias)s')",
+                            {"name": self.attrs["name"], "alias": i})
 
                 # update_drv doesn't do anything with classes, so we have to
                 # futz with driver_classes by hand.
@@ -247,79 +253,55 @@ class DriverAction(generic.Action):
                 # done in this order, too.
                 for i in rem_perms:
                         args = rem_base + ("-m", i, self.attrs["name"])
-                        retcode = subprocess.call(args)
-                        if retcode != 0:
-                                print "%s (%s) upgrade (removal of minor " \
-                                    "perm '%s') failed with return code %s" % \
-                                    (self.name, self.attrs["name"], i, retcode)
-                                print "command run was ", args
+                        self.__call(args, "driver (%(name)s) upgrade (removal "
+                            "of minor perm '%(perm)s')",
+                            {"name": self.attrs["name"], "perm": i})
 
                 for i in add_perms:
                         args = add_base + ("-m", i, self.attrs["name"])
-                        retcode = subprocess.call(args)
-                        if retcode != 0:
-                                print "%s (%s) upgrade (addition of minor " \
-                                    "perm '%s') failed with return code %s" % \
-                                    (self.name, self.attrs["name"], i, retcode)
-                                print "command run was ", args
+                        self.__call(args, "driver (%(name)s) upgrade (addition "
+                            "of minor perm '%(perm)s')",
+                            {"name": self.attrs["name"], "perm": i})
 
                 for i in add_privs:
                         args = add_base + ("-P", i, self.attrs["name"])
-                        retcode = subprocess.call(args)
-                        if retcode != 0:
-                                print "%s (%s) upgrade (addition of privilege " \
-                                    "'%s') failed with return code %s" % \
-                                    (self.name, self.attrs["name"], i, retcode)
-                                print "command run was ", args
+                        self.__call(args, "driver (%(name)s) upgrade (addition "
+                            "of privilege '%(priv)s')",
+                            {"name": self.attrs["name"], "priv": i})
 
                 for i in rem_privs:
                         args = rem_base + ("-P", i, self.attrs["name"])
-                        retcode = subprocess.call(args)
-                        if retcode != 0:
-                                print "%s (%s) upgrade (removal of privilege " \
-                                    "'%s') failed with return code %s" % \
-                                    (self.name, self.attrs["name"], i, retcode)
-                                print "command run was ", args
+                        self.__call(args, "driver (%(name)s) upgrade (removal "
+                            "of privilege '%(priv)s')",
+                            {"name": self.attrs["name"], "priv": i})
 
                 for i in add_policy:
                         args = add_base + ("-p", i, self.attrs["name"])
-                        retcode = subprocess.call(args)
-                        if retcode != 0:
-                                print "%s (%s) upgrade (addition of policy " \
-                                    "'%s') failed with return code %s" % \
-                                    (self.name, self.attrs["name"], i, retcode)
-                                print "command run was ", args
+                        self.__call(args, "driver (%(name)s) upgrade (addition "
+                            "of policy '%(policy)s')",
+                            {"name": self.attrs["name"], "policy": i})
 
                 for i in rem_policy:
                         args = rem_base + ("-p", i, self.attrs["name"])
-                        retcode = subprocess.call(args)
-                        if retcode != 0:
-                                print "%s (%s) upgrade (removal of policy " \
-                                    "'%s') failed with return code %s" % \
-                                    (self.name, self.attrs["name"], i, retcode)
-                                print "command run was ", args
+                        self.__call(args, "driver (%(name)s) upgrade (removal "
+                            "of policy '%(policy)s')",
+                            {"name": self.attrs["name"], "policy": i})
 
                 for i in rem_clone:
                         if len(i.split()) == 3:
                                 i = self.attrs["name"] + " " + i
                         args = rem_base + ("-m", i, "clone")
-                        retcode = subprocess.call(args)
-                        if retcode != 0:
-                                print "%s (%s) upgrade (remove clone permis" \
-                                    "sion '%s') failed with return code %s" % \
-                                    (self.name, self.attrs["name"], i, retcode)
-                                print "command run was ", args
+                        self.__call(args, "driver (%(name)s) upgrade (removal "
+                            "of clone permission '%(perm)s')",
+                            {"name": self.attrs["name"], "perm": i})
 
                 for i in add_clone:
                         if len(i.split()) == 3:
                                 i = self.attrs["name"] + " " + i
                         args = add_base + ("-m", i, "clone")
-                        retcode = subprocess.call(args)
-                        if retcode != 0:
-                                print "%s (%s) upgrade (add clone permission " \
-                                    "'%s') failed with return code %s" % \
-                                    (self.name, self.attrs["name"], i, retcode)
-                                print "command run was ", args
+                        self.__call(args, "driver (%(name)s) upgrade (addition "
+                            "of clone permission '%(perm)s')",
+                            {"name": self.attrs["name"], "perm": i})
 
         @classmethod
         def __get_image_data(cls, img, name, collect_errs = False):
@@ -569,11 +551,8 @@ class DriverAction(generic.Action):
                     self.attrs["name"]
                 )
 
-                retcode = subprocess.call(args)
-                if retcode != 0:
-                        print "%s (%s) removal failed with return code %s" % \
-                            (self.name, self.attrs["name"], retcode)
-                        print "command run was ", args
+                self.__call(args, "driver (%(name)s) removal",
+                    {"name": self.attrs["name"]})
 
                 for cp in self.attrlist("clone_perms"):
                         if len(cp.split()) == 3:
@@ -582,12 +561,8 @@ class DriverAction(generic.Action):
                             self.update_drv, "-b", pkgplan.image.get_root(),
                             "-d", "-m", cp, "clone"
                         )
-                        retcode = subprocess.call(args)
-                        if retcode != 0:
-                                print "%s (%s) clone permission update " \
-                                    "failed with return code %s" % \
-                                    (self.name, self.attrs["name"], retcode)
-                                print "command run was ", args
+                        self.__call(args, "driver (%(name)s) clone permission "
+                            "update", {"name": self.attrs["name"]})
 
 
         def generate_indices(self):
