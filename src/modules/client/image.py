@@ -49,10 +49,7 @@ import pkg.client.filelist as filelist
 import pkg.portable as portable
 
 from pkg.misc import versioned_urlopen
-
-IMG_ENTIRE = 0
-IMG_PARTIAL = 1
-IMG_USER = 2
+from pkg.client.imagetypes import *
 
 img_user_prefix = ".org.opensolaris,pkg"
 img_root_prefix = "var/pkg"
@@ -790,7 +787,7 @@ class Image(object):
                         try:
                                 c, v = versioned_urlopen(auth["origin"],
                                     "catalog", [0], ssl_creds = ssl_tuple,
-                                    headers = hdr)
+                                    headers = hdr, imgtype = self.type)
                         except urllib2.HTTPError, e:
                                 # Server returns NOT_MODIFIED if catalog is up
                                 # to date
@@ -1102,7 +1099,7 @@ class Image(object):
                         try:
                                 res, v = versioned_urlopen(auth["origin"],
                                     "search", [0], urllib.quote(args[0], ""),
-                                     ssl_creds = ssl_tuple)
+                                     ssl_creds = ssl_tuple, imgtype = self.type)
                         except urllib2.HTTPError, e:
                                 if e.code != httplib.NOT_FOUND:
                                         failed.append((auth, e))

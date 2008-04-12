@@ -47,6 +47,9 @@ ROOTMAN5 = $(ROOT)/usr/share/man/cat5
 
 LINKPYTHONPKG = /usr/lib/python2.4/vendor-packages/pkg
 
+VERSION:sh = hg id -i
+FILEVERSION = sed -n -e '/^VERSION/s/.*"\([^"]*\)"/\1/p' $@ 2> /dev/null || true
+
 ROOTDIRS = \
 	$(ROOT) \
 	$(ROOTUSRBIN) \
@@ -127,6 +130,7 @@ PYCLIENTMODS = \
 	modules/client/image.py \
 	modules/client/imageconfig.py \
 	modules/client/imageplan.py \
+	modules/client/imagetypes.py \
 	modules/client/pkgplan.py \
 	modules/client/progress.py \
 	modules/client/retrieve.py
@@ -271,6 +275,17 @@ $(ROOTUSRBIN)/%: %
 $(ROOTUSRLIB)/%: %
 	rm -f $@; install -f $(ROOT)/usr/lib -m 0555 $<
 
+$(ROOTPYTHONPKG)/__init__.py: FRC
+	if [ "$(VERSION)" != "$(FILEVERSION:sh)" ]; then \
+		rm -f $@; \
+		cat modules/__init__.py | \
+			sed -e '/^VERSION/s/"[^"]*"/"$(VERSION)"/' > $@; \
+		chmod 0444 $@; \
+	fi
+
+$(ROOTPYTHONPKG)/__init__.pyc: $(ROOTPYTHONPKG)/__init__.py
+	python -m py_compile $(ROOTPYTHONPKG)/__init__.py
+
 $(ROOTPYTHONPKG)/actions/%: modules/actions/%
 	rm -f $@; install -f $(ROOTPYTHONPKG)/actions -m 0444 $<
 
@@ -306,3 +321,5 @@ pkgsend: publish.py
 
 pkg.depotd: depot.py
 	cp depot.py pkg.depotd
+
+FRC:

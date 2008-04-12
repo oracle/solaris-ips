@@ -41,7 +41,7 @@ def get_datastream(img, fmri, hash):
 
         try:
                 f, v = versioned_urlopen(url_prefix, "file", [0], hash,
-                           ssl_creds = ssl_tuple)
+                           ssl_creds = ssl_tuple, imgtype = img.type)
         except urllib2.URLError, e:
                 if len(e.args) == 1 and isinstance(e.args[0], socket.sslerror):
                         raise RuntimeError, e
@@ -65,7 +65,8 @@ def get_manifest(img, fmri):
 
         try:
                 m, v = versioned_urlopen(url_prefix, "manifest", [0],
-                    fmri.get_url_path(), ssl_creds = ssl_tuple)
+                    fmri.get_url_path(), ssl_creds = ssl_tuple,
+                    imgtype = img.type)
         except urllib2.URLError, e:
                 if len(e.args) == 1 and isinstance(e.args[0], socket.sslerror):
                         raise RuntimeError, e

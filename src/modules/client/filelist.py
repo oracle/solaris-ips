@@ -133,7 +133,8 @@ class FileList(object):
 
                 try:
                         f, v = versioned_urlopen(url_prefix, "filelist", [0],
-                            data = req_str, ssl_creds = ssl_tuple)
+                            data = req_str, ssl_creds = ssl_tuple,
+                            imgtype = self.image.type)
                 except RuntimeError:
                         raise FileListException, "No server-side support" 
 

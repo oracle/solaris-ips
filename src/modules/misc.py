@@ -20,7 +20,6 @@
 # CDDL HEADER END
 #
 
-#
 # Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
@@ -29,8 +28,12 @@ import urllib
 import urllib2
 import urlparse
 import httplib
+import platform
 
 import pkg.urlhelpers as urlhelpers
+import pkg.portable as portable
+from pkg.client.imagetypes import img_type_names, IMG_NONE
+from pkg import VERSION
 
 def hash_file_name(f):
         """Return the two-level path fragment for the given filename, which is
@@ -43,8 +46,12 @@ def url_affix_trailing_slash(u):
 
         return u
 
+_client_version = "pkg/%s (%s %s; %s %s; %%s)" % \
+    (VERSION, portable.util.get_canonical_os_name(), platform.machine(),
+    portable.util.get_os_release(), platform.version())
+
 def versioned_urlopen(base_uri, operation, versions = [], tail = None,
-    data = None, headers = {}, ssl_creds = None):
+    data = None, headers = {}, ssl_creds = None, imgtype = IMG_NONE):
         """Open the best URI for an operation given a set of versions.
 
         Both the client and the server may support multiple versions of
@@ -84,6 +91,8 @@ def versioned_urlopen(base_uri, operation, versions = [], tail = None,
                         uri = urlparse.urljoin(base_uri, "%s/%s" % \
                             (operation, version))
 
+                headers["User-Agent"] = \
+                    _client_version % img_type_names[imgtype]
                 req = urllib2.Request(url = uri, headers = headers)
                 if data is not None:
                         req.add_data(data)
