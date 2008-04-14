@@ -384,6 +384,9 @@ def install(img, args):
                 elif opt == "-q":
                         quiet = True
 
+        if not pargs:
+                usage(_("install: at least one package name required"))
+
         try:
                 be = bootenv.BootEnv(img.get_root())
         except RuntimeError:
