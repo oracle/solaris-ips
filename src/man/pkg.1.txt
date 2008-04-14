@@ -7,26 +7,26 @@ NAME
 SYNOPSIS
      /usr/bin/pkg [options] command [cmd_options] [operands]
 
-     /usr/bin/pkg install [-nv] pkg_fmri ...
-     /usr/bin/pkg uninstall [-nrv] pkg_fmri ...
+     /usr/bin/pkg install [-nvq] pkg_fmri ...
+     /usr/bin/pkg uninstall [-nrvq] pkg_fmri ...
 
-     /usr/bin/pkg verify [-fv] [pkg_fmri_pattern ...]
+     /usr/bin/pkg verify [-fHvq] [pkg_fmri_pattern ...]
      /usr/bin/pkg info pkg_fmri_pattern [pkg_fmri_pattern ...]
      /usr/bin/pkg contents [-Hm] [-o attribute ...] [-s sort_key]
          [-t action_type ... ] [pkg_fmri_pattern ...]
      /usr/bin/pkg list [-aHsuv] [pkg_fmri_pattern ...]
      /usr/bin/pkg search [-lr] [-s server] token
 
-     /usr/bin/pkg refresh
+     /usr/bin/pkg refresh [--full]
 
-     /usr/bin/pkg image-create [-FPUz] [-k ssl_key] [-c ssl_cert]
-         -a authority=origin_url dir
-     /usr/bin/pkg image-update [-nv]
+     /usr/bin/pkg image-create [-FPUz] [--full|--partial|--user] [--zone]
+         [-k ssl_key] [-c ssl_cert] -a authority=origin_url dir
+     /usr/bin/pkg image-update [-nvq]
 
      /usr/bin/pkg set-authority [-P] [-k ssl_key] [-c ssl_cert]
          [-O origin_url] authority
      /usr/bin/pkg unset-authority authority ...
-     /usr/bin/pkg authority [authname]
+     /usr/bin/pkg authority [-H] [authname ...]
 
 DESCRIPTION
      pkg is the retrieval client for the image packaging system.  With a
@@ -51,38 +51,38 @@ DESCRIPTION
 SUBCOMMANDS
      The following subcommands are supported:
 
-     image-create [-FPUz] [-k ssl_key] [-c ssl_cert]
-       -a authority=origin_url dir
-          Create, at location given by dir, an image suitable for
-          package operations.  The default image type is user, as given
-          by the -U option.  The image type may be set to a full image
-          (-F) or to a partial image (-P) linked to the full image
-          enclosing the given dir path.
+     image-create [-FPUz] [--full|--partial|--user] [--zone] [-k ssl_key]
+       [-c ssl_cert] -a authority=origin_url dir
+          Create, at location given by dir, an image suitable for package
+          operations.  The default image type is user, as given by the -U
+          (--user) option.  The image type may be set to a full image (-F
+          or --full) or to a partial image (-P or --partial) linked to the
+          full image enclosing the given dir path.
 
           A preferred authority must be set using the -a option.  An
           attempt to retrieve the catalog associated with this authority
           will be made following the initial creation operations.
 
-          For authorities using client SSL authentication, a client key
-          and client certificate may be registered via the -c and -k
-          options.
+          For authorities using client SSL authentication, a client key and
+          client certificate may be registered via the -c and -k options.
 
           If the image is to be run within nonglobal zone context, then
-          the -z option can be used to set an appropriate filter.
+          the -z (--zone) option can be used to set an appropriate filter.
 
-     image-update [-nv]
+     image-update [-nvq]
           Update all installed packages in the current image to the
           latest available version.  With the -n option, execute the
           requested operation but make no persistent changes to the
           image.  With the -v option, issue verbose progress messages
-          during the requested operation.
+          during the requested operation.  With the -q option, be
+          completely silent.
 
-     refresh
-          Retrieve updated catalogs for each authority registered within
-          the image.
+     refresh [--full]
+          Retrieve updates to the catalogs for each authority registered
+          within the image.  With --full, retrieve the full catalogs.
 
-     install [-nv] pkg_fmri ...
-     uninstall [-nrv] pkg_fmri ...
+     install [-nvq] pkg_fmri ...
+     uninstall [-nrvq] pkg_fmri ...
           Install or remove the package specified by pkg_fmri or
           matching pkg_fmri as a substring.  With the -n option, execute
           the requested operation but make no persistent changes to the
