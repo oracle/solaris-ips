@@ -1,5 +1,5 @@
 package SUNWsndm
 import SUNWsndmu
 import SUNWsndmr
-version 8.14.1
+version 8.14.2
 end package

@@ -1,0 +1,16 @@
+package SUNWcamow
+import SUNWcamow exclude usr/openwin
+drop usr/openwin/share
+drop usr/openwin/share/locale
+drop usr/openwin/share/locale/es_CR.ISO8859-1
+drop usr/openwin/share/locale/es_CR.UTF-8
+drop usr/openwin/share/locale/es_GT.ISO8859-1
+drop usr/openwin/share/locale/es_GT.UTF-8
+drop usr/openwin/share/locale/es_NI.ISO8859-1
+drop usr/openwin/share/locale/es_NI.UTF-8
+drop usr/openwin/share/locale/es_PA.ISO8859-1
+drop usr/openwin/share/locale/es_PA.UTF-8
+drop usr/openwin/share/locale/es_SV.ISO8859-1
+drop usr/openwin/share/locale/es_SV.UTF-8
+chattr_glob * edit path usr/openwin/lib usr/X11/share/X11
+end package

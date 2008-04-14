@@ -1,3 +1,4 @@
 package SUNWttf-arphic-ukai
-import SUNWttf-arphic-ukai
+import SUNWttf-arphic-ukai exclude usr/openwin
+chattr_glob * edit path usr/openwin usr/X11
 end package

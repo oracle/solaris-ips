@@ -7,6 +7,8 @@ include common/SUNWapch
 include common/SUNWapch2
 include common/SUNWapch2d
 include common/SUNWapchd
+include common/SUNWaspell
+include common/SUNWaspell-en
 include common/SUNWastdev
 include common/SUNWavahi-bridge-dsd
 include common/SUNWciu8
@@ -16,6 +18,8 @@ include common/SUNWcurl
 include common/SUNWdsd
 include common/SUNWdtts
 include common/SUNWdttshelp
+include common/SUNWeuxwe
+include common/SUNWfontconfig
 include common/SUNWfontconfig-docs
 include common/SUNWftp
 include common/SUNWgdb
@@ -26,6 +30,7 @@ include common/SUNWgnome-base-libs
 include common/SUNWgnome-crash-report
 include common/SUNWgnome-devel-docs
 include common/SUNWgnome-doc-utils
+include common/SUNWgnome-fonts
 include common/SUNWgnome-help-viewer
 include common/SUNWgnome-img-viewer.75
 include common/SUNWgnome-libs
@@ -44,6 +49,7 @@ include common/SUNWkiu8
 include common/SUNWlibdaemon
 include common/SUNWman
 include common/SUNWmercurial
+include common/SUNWmp
 include common/SUNWmxfe
 include common/SUNWmysql
 include common/SUNWncft
@@ -69,6 +75,7 @@ include common/SUNWrge
 include common/SUNWscp
 include common/SUNWsfman
 include common/SUNWsmba
+include common/SUNWsolnm
 include common/SUNWtcat
 include common/SUNWtexi
 include common/SUNWtgnome-tsol-libs
@@ -82,13 +89,24 @@ include common/SUNWuedg
 include common/SUNWuprl
 include common/SUNWuxlcf
 include common/SUNWxcursor-themes
+include common/SUNWxi18n
 include common/SUNWxorg-headers.73
 include common/SUNWxorg-server
 include common/SUNWxorg-tsol-module
 include common/SUNWxrgrt
 include common/SUNWxrpcrt
 include common/SUNWxsrt
+include common/SUNWxsun-keytables
+include common/SUNWxwdem
+include common/SUNWxwfsw
+include common/SUNWxwice
+include common/SUNWxwplr
+include common/SUNWxwplt
+include common/SUNWxwrtl
+include common/SUNWxwslb
+include common/SUNWxwsvr
 include common/SUNWxwts
+include common/SUNWxwxft
 include i386/NVDAgraphics
 include i386/SUNWaac
 include i386/SUNWamd8111s
@@ -104,6 +122,7 @@ include i386/SUNWos86r
 include i386/SUNWqlc
 include i386/SUNWurlgrabber
 include i386/SUNWvirtinst
+include i386/SUNWxorg-mesa
 include i386/SUNWxvm
 include i386/SUNWxvmdom
 include i386/SUNWxvmhvm

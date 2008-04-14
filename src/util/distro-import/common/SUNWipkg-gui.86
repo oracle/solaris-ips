@@ -1,0 +1,4 @@
+package SUNWipkg-gui
+import SUNWipkg-gui
+import SUNWipkg-gui-data
+end package

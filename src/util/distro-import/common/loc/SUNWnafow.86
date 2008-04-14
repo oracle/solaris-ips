@@ -1,0 +1,8 @@
+package SUNWnafow
+import SUNWnafow exclude usr/openwin
+drop usr/openwin/share
+drop usr/openwin/share/locale
+drop usr/openwin/share/locale/ar
+drop usr/openwin/share/locale/ar_EG.UTF-8
+chattr_glob * edit path usr/openwin/lib usr/X11/share/X11
+end package

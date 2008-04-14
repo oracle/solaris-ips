@@ -1,0 +1,21 @@
+package SUNWneuow
+import SUNWneuow exclude usr/openwin
+drop usr/openwin/share
+drop usr/openwin/share/locale
+drop usr/openwin/share/locale/da_DK.ISO8859-1
+drop usr/openwin/share/locale/da_DK.ISO8859-15
+drop usr/openwin/share/locale/da_DK.UTF-8
+drop usr/openwin/share/locale/fi_FI.ISO8859-1
+drop usr/openwin/share/locale/fi_FI.ISO8859-15
+drop usr/openwin/share/locale/fi_FI.UTF-8
+drop usr/openwin/share/locale/is_IS.ISO8859-1
+drop usr/openwin/share/locale/is_IS.UTF-8
+drop usr/openwin/share/locale/nb_NO.UTF-8
+drop usr/openwin/share/locale/nn_NO.UTF-8
+drop usr/openwin/share/locale/no_NO.ISO8859-1@bokmal
+drop usr/openwin/share/locale/no_NO.ISO8859-1@nynorsk
+drop usr/openwin/share/locale/sv_SE.ISO8859-1
+drop usr/openwin/share/locale/sv_SE.ISO8859-15
+drop usr/openwin/share/locale/sv_SE.UTF-8
+chattr_glob * edit path usr/openwin/lib usr/X11/share/X11
+end package

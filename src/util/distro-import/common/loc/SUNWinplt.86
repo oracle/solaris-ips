@@ -1,0 +1,7 @@
+package SUNWinplt
+import SUNWinplt exclude usr/openwin
+drop usr/openwin/share/locale/hi_IN.UTF-8
+drop usr/openwin/share/locale/ta_IN.UTF-8
+drop usr/openwin/share/locale/te_IN.UTF-8
+chattr_glob * edit path usr/openwin/lib usr/X11/share/X11
+end package

@@ -1,3 +1,4 @@
 package SUNWttf-arphic-uming
-import SUNWttf-arphic-uming
+import SUNWttf-arphic-uming exclude usr/openwin
+chattr_glob * edit path usr/openwin usr/X11
 end package

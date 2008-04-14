@@ -1,0 +1,11 @@
+package SUNWjxplt
+import SUNWjxplt exclude usr/openwin
+drop usr/openwin/share
+drop usr/openwin/share/locale
+drop usr/openwin/share/locale/C
+drop usr/openwin/share/locale/ja
+drop usr/openwin/share/locale/ja_JP.PCK
+drop usr/openwin/share/locale/ja_JP.UTF-8
+drop usr/openwin/share/locale/ja_JP.eucJP
+chattr_glob * edit path usr/openwin/lib usr/X11/share/X11
+end package

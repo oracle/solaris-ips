@@ -1,3 +1,4 @@
 package SUNWswmt
 import SUNWswmt
+import SUNWinstall-patch-utils-root
 end package

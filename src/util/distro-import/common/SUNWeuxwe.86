@@ -1,0 +1,4 @@
+package SUNWeuxwe
+import SUNWeuxwe exclude usr/openwin
+chattr_glob * edit path usr/openwin/lib usr/X11/share/X11
+end package

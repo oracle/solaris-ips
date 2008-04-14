@@ -1,3 +1,4 @@
 package SUNWttf-ipafont
-import SUNWttf-ipafont
+import SUNWttf-ipafont exclude usr/openwin
+chattr_glob * edit path usr/openwin usr/X11
 end package

@@ -1,0 +1,13 @@
+package SUNWxwice
+import SUNWxwice exclude usr/openwin
+# Obsolete - replaced by /usr/openwin -> X11 symlink
+drop usr/openwin/bin
+drop usr/openwin/bin/iceauth
+drop usr/openwin/lib
+drop usr/openwin/lib/64
+drop usr/openwin/lib/libICE.so
+drop usr/openwin/lib/libICE.so.6
+drop usr/openwin/lib/sparcv9
+drop usr/openwin/lib/sparcv9/libICE.so
+drop usr/openwin/lib/sparcv9/libICE.so.6
+end package

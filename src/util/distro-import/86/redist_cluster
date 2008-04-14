@@ -1,13 +1,13 @@
 include common/FSWfontconfig-devel-docs.79
-include common/FSWxorg-client-docs
-include common/FSWxorg-client-programs
-include common/FSWxorg-clientlibs
-include common/FSWxorg-data.79
-include common/FSWxorg-devel-docs
+include common/FSWxorg-client-docs.86
+include common/FSWxorg-client-programs.86
+include common/FSWxorg-clientlibs.86
+include common/FSWxorg-data.86
+include common/FSWxorg-devel-docs.86
 include common/FSWxorg-fonts
-include common/FSWxorg-headers.79
-include common/FSWxwpft
-include common/FSWxwrtl.79
+include common/FSWxorg-headers.86
+include common/FSWxwpft.86
+include common/FSWxwrtl.86
 include common/SUNW1394
 include common/SUNW1394h
 include common/SUNWDTraceToolkit
@@ -43,8 +43,8 @@ include common/SUNWapchd.85
 include common/SUNWapct
 include common/SUNWarbel
 include common/SUNWarc
-include common/SUNWaspell
-include common/SUNWaspell-en
+include common/SUNWaspell-en.86
+include common/SUNWaspell.86
 include common/SUNWastdev
 include common/SUNWatfs
 include common/SUNWauda
@@ -107,6 +107,7 @@ include common/SUNWcvs
 include common/SUNWdbus
 include common/SUNWdbus-bindings
 include common/SUNWdcaf
+include common/SUNWddu
 include common/SUNWdfbh
 include common/SUNWdhcm
 include common/SUNWdhcs
@@ -121,7 +122,7 @@ include common/SUNWdtrc
 include common/SUNWdtrp
 include common/SUNWdvdrw
 include common/SUNWesu
-include common/SUNWeuxwe
+include common/SUNWeuxwe.86
 include common/SUNWevolution
 include common/SUNWevolution-data-server
 include common/SUNWevolution-exchange
@@ -144,10 +145,10 @@ include common/SUNWflac
 include common/SUNWflexlex
 include common/SUNWflexruntime
 include common/SUNWfmd
-include common/SUNWfontconfig
-include common/SUNWfontconfig-docs.79
+include common/SUNWfontconfig-docs.86
+include common/SUNWfontconfig.86
 include common/SUNWfppd
-include common/SUNWfreetype2.79
+include common/SUNWfreetype2.85
 include common/SUNWfsexam
 include common/SUNWfss
 include common/SUNWftdu
@@ -203,7 +204,7 @@ include common/SUNWgnome-display-mgr
 include common/SUNWgnome-doc-utils.76
 include common/SUNWgnome-dtstart
 include common/SUNWgnome-file-mgr
-include common/SUNWgnome-fonts
+include common/SUNWgnome-fonts.86
 include common/SUNWgnome-freedb-libs
 include common/SUNWgnome-fun-applets
 include common/SUNWgnome-games
@@ -309,8 +310,7 @@ include common/SUNWipc
 include common/SUNWipf
 include common/SUNWipfh
 include common/SUNWipkg
-include common/SUNWipkg-gui
-include common/SUNWipkg-gui-data
+include common/SUNWipkg-gui.86
 include common/SUNWipmi
 include common/SUNWipoib
 include common/SUNWippcore
@@ -392,7 +392,7 @@ include common/SUNWmercurial.79
 include common/SUNWmibii
 include common/SUNWmkcd
 include common/SUNWmlib
-include common/SUNWmp
+include common/SUNWmp.86
 include common/SUNWmpapi.79
 include common/SUNWmpathadm
 include common/SUNWmpsvplr
@@ -562,7 +562,7 @@ include common/SUNWsmmgr
 include common/SUNWsmpd
 include common/SUNWsndm
 include common/SUNWsolaris-devel-docs
-include common/SUNWsolnm
+include common/SUNWsolnm.86
 include common/SUNWspeex
 include common/SUNWspnego
 include common/SUNWspsv
@@ -577,6 +577,7 @@ include common/SUNWsvn
 include common/SUNWsvn-java
 include common/SUNWsvn-perl
 include common/SUNWsvn-python
+include common/SUNWswmt
 include common/SUNWtavor
 include common/SUNWtcat.85
 include common/SUNWtcpd
@@ -641,7 +642,7 @@ include common/SUNWxcursor-themes
 include common/SUNWxdg-user-dirs
 include common/SUNWxdg-utils
 include common/SUNWxge
-include common/SUNWxi18n
+include common/SUNWxi18n.86
 include common/SUNWxorg-cfg
 include common/SUNWxorg-client-docs
 include common/SUNWxorg-client-programs
@@ -651,18 +652,23 @@ include common/SUNWxorg-devel-docs
 include common/SUNWxorg-doc
 include common/SUNWxorg-graphics-ddx
 include common/SUNWxorg-headers.79
-include common/SUNWxorg-server.79
+include common/SUNWxorg-server.86
 include common/SUNWxorg-tsol-module
 include common/SUNWxorg-xkb
 include common/SUNWxscreensaver-hacks
 include common/SUNWxscreensaver-hacks-gl
-include common/SUNWxsun-keytables
-include common/SUNWxvnc
+include common/SUNWxsun-keytables.86
+include common/SUNWxvnc.86
+include common/SUNWxwdem.86
 include common/SUNWxwdv
+include common/SUNWxwfsw.86
 include common/SUNWxwhl
-include common/SUNWxwplr
-include common/SUNWxwsvr
-include common/SUNWxwxft
+include common/SUNWxwinc.86
+include common/SUNWxwman.86
+include common/SUNWxwopt.86
+include common/SUNWxwplr.86
+include common/SUNWxwpmn.86
+include common/SUNWxwsvr.86
 include common/SUNWyp
 include common/SUNWzfs.79
 include common/SUNWzfskr
@@ -671,15 +677,15 @@ include common/SUNWzlib
 include common/SUNWzone
 include common/SUNWzsh
 include common/loc/SUNWauaos.86
-include common/loc/SUNWauaow
+include common/loc/SUNWauaow.86
 include common/loc/SUNWcadis
 include common/loc/SUNWcadma
 include common/loc/SUNWcamos.86
-include common/loc/SUNWcamow
+include common/loc/SUNWcamow.86
 include common/loc/SUNWcbrg
 include common/loc/SUNWcdhcm
 include common/loc/SUNWceuos.86
-include common/loc/SUNWceuow
+include common/loc/SUNWceuow.86
 include common/loc/SUNWcladm
 include common/loc/SUNWcleue
 include common/loc/SUNWcos
@@ -698,11 +704,11 @@ include common/loc/SUNWdews2
 include common/loc/SUNWdladm
 include common/loc/SUNWdpprou
 include common/loc/SUNWdupdatemgru
-include common/loc/SUNWdxplt
+include common/loc/SUNWdxplt.86
 include common/loc/SUNWebrg
 include common/loc/SUNWedhcm
 include common/loc/SUNWeeuos.86
-include common/loc/SUNWeeuow
+include common/loc/SUNWeeuow.86
 include common/loc/SUNWeladm
 include common/loc/SUNWepprou
 include common/loc/SUNWesdis
@@ -713,7 +719,7 @@ include common/loc/SUNWesws2
 include common/loc/SUNWeu8os.86
 include common/loc/SUNWeuluf.86
 include common/loc/SUNWeupdatemgru
-include common/loc/SUNWexplt
+include common/loc/SUNWexplt.86
 include common/loc/SUNWfbrg
 include common/loc/SUNWfdhcm
 include common/loc/SUNWfirefoxl10n-de-DE
@@ -737,7 +743,7 @@ include common/loc/SUNWfriso1.86
 include common/loc/SUNWfros
 include common/loc/SUNWfrws2
 include common/loc/SUNWfupdatemgru
-include common/loc/SUNWfxplt
+include common/loc/SUNWfxplt.86
 include common/loc/SUNWgetting-started-l10n-de
 include common/loc/SUNWgetting-started-l10n-es
 include common/loc/SUNWgetting-started-l10n-fr
@@ -768,11 +774,7 @@ include common/loc/SUNWgnome-l10ndocument-it
 include common/loc/SUNWgnome-l10ndocument-ja
 include common/loc/SUNWgnome-l10ndocument-ko
 include common/loc/SUNWgnome-l10ndocument-ptBR
-#
-# XXX content from the Indiana version of SUNWgnome-l10ndocument-extra
-# conflicts with this currently so don't include it for now.
-#
-# include common/loc/SUNWgnome-l10ndocument-rtl
+include common/loc/SUNWgnome-l10ndocument-rtl
 include common/loc/SUNWgnome-l10ndocument-sv
 include common/loc/SUNWgnome-l10ndocument-zhCN
 include common/loc/SUNWgnome-l10ndocument-zhHK
@@ -788,11 +790,7 @@ include common/loc/SUNWgnome-l10nmessages-ja
 include common/loc/SUNWgnome-l10nmessages-ko
 include common/loc/SUNWgnome-l10nmessages-pl
 include common/loc/SUNWgnome-l10nmessages-ptBR
-#
-# XXX content from the Indiana version of SUNWgnome-l10nmessages-extra
-# conflicts with this currently so don't include it for now.
-#
-# include common/loc/SUNWgnome-l10nmessages-rtl
+include common/loc/SUNWgnome-l10nmessages-rtl
 include common/loc/SUNWgnome-l10nmessages-ru
 include common/loc/SUNWgnome-l10nmessages-sv
 include common/loc/SUNWgnome-l10nmessages-zhCN
@@ -809,13 +807,13 @@ include common/loc/SUNWhos
 include common/loc/SUNWhpprou
 include common/loc/SUNWhupdatemgru
 include common/loc/SUNWhwsr2
-include common/loc/SUNWi13cs
-include common/loc/SUNWi15cs
+include common/loc/SUNWi13cs.86
+include common/loc/SUNWi15cs.86
 include common/loc/SUNWi1cs.86
-include common/loc/SUNWi2cs
-include common/loc/SUNWi5cs
-include common/loc/SUNWi7cs
-include common/loc/SUNWi9cs
+include common/loc/SUNWi2cs.86
+include common/loc/SUNWi5cs.86
+include common/loc/SUNWi7cs.86
+include common/loc/SUNWi9cs.86
 include common/loc/SUNWibrg
 include common/loc/SUNWidhcm
 include common/loc/SUNWiiimf-in-indicle
@@ -834,7 +832,7 @@ include common/loc/SUNWiiimf-zhTW-twle-open
 include common/loc/SUNWiladm
 include common/loc/SUNWindt
 include common/loc/SUNWinleu
-include common/loc/SUNWinplt
+include common/loc/SUNWinplt.86
 include common/loc/SUNWipprou
 include common/loc/SUNWitdis
 include common/loc/SUNWitdma
@@ -842,7 +840,7 @@ include common/loc/SUNWitiso1.86
 include common/loc/SUNWitos
 include common/loc/SUNWitws2
 include common/loc/SUNWiupdatemgru
-include common/loc/SUNWixplt
+include common/loc/SUNWixplt.86
 include common/loc/SUNWj6jmp
 include common/loc/SUNWjadis
 include common/loc/SUNWjadma
@@ -854,7 +852,7 @@ include common/loc/SUNWjpprou
 include common/loc/SUNWjtsu
 include common/loc/SUNWjupdatemgru
 include common/loc/SUNWjws2
-include common/loc/SUNWjxplt
+include common/loc/SUNWjxplt.86
 include common/loc/SUNWkadis
 include common/loc/SUNWkadma
 include common/loc/SUNWkbrg
@@ -956,7 +954,7 @@ include common/loc/SUNWlang-zhTW
 include common/loc/SUNWlang-zhTW-extra
 include common/loc/SUNWlocaledefsrc
 include common/loc/SUNWmeaos.86
-include common/loc/SUNWmeaow
+include common/loc/SUNWmeaow.86
 include common/loc/SUNWmyspell-dictionary-cs
 include common/loc/SUNWmyspell-dictionary-de
 include common/loc/SUNWmyspell-dictionary-es
@@ -969,19 +967,19 @@ include common/loc/SUNWmyspell-dictionary-ptBR
 include common/loc/SUNWmyspell-dictionary-ru
 include common/loc/SUNWmyspell-dictionary-sv
 include common/loc/SUNWnafos.86
-include common/loc/SUNWnafow
+include common/loc/SUNWnafow.86
 include common/loc/SUNWnamos.86
-include common/loc/SUNWnamow
+include common/loc/SUNWnamow.86
 include common/loc/SUNWneuos.86
-include common/loc/SUNWneuow
+include common/loc/SUNWneuow.86
 include common/loc/SUNWpostgr-82-l10n-ja
 include common/loc/SUNWpostgr-l10n-ja
 include common/loc/SUNWsamos.86
-include common/loc/SUNWsamow
+include common/loc/SUNWsamow.86
 include common/loc/SUNWsbrg
 include common/loc/SUNWsdhcm
 include common/loc/SUNWseuos.86
-include common/loc/SUNWseuow
+include common/loc/SUNWseuow.86
 include common/loc/SUNWsladm
 include common/loc/SUNWspprou
 include common/loc/SUNWstardict
@@ -990,7 +988,7 @@ include common/loc/SUNWsvdis
 include common/loc/SUNWsvdma
 include common/loc/SUNWsviso1.86
 include common/loc/SUNWsvos
-include common/loc/SUNWsxplt
+include common/loc/SUNWsxplt.86
 include common/loc/SUNWthunderbirdl10n-de-DE
 include common/loc/SUNWthunderbirdl10n-es-ES
 include common/loc/SUNWthunderbirdl10n-extra
@@ -1009,7 +1007,7 @@ include common/loc/SUNWttf-arphic-ukai
 include common/loc/SUNWttf-arphic-uming
 include common/loc/SUNWttf-ipafont
 include common/loc/SUNWweuos.86
-include common/loc/SUNWweuow
+include common/loc/SUNWweuow.86
 include common/openoffice
 include common/slim_cd
 include i386/BRCMbnx
@@ -1055,7 +1053,7 @@ include i386/SUNWnge
 include i386/SUNWnvsata
 include i386/SUNWnxge.82
 include i386/SUNWopenssl
-include i386/SUNWos86r.78
+include i386/SUNWos86r.86
 include i386/SUNWpcmci
 include i386/SUNWpd
 include i386/SUNWpicl
@@ -1074,27 +1072,24 @@ include i386/SUNWurlgrabber
 include i386/SUNWvia823x
 include i386/SUNWvirtinst
 include i386/SUNWwpi
-include i386/SUNWxorg-mesa
+include i386/SUNWxorg-mesa.86
 include i386/SUNWxsvc
-include i386/SUNWxvm
-include i386/SUNWxvmdom
-include i386/SUNWxvmhvm
+include i386/SUNWxvm.86
+include i386/SUNWxvmdom.86
+include i386/SUNWxvmhvm.86
 include i386/SUNWxvmpv
+include i386/SUNWxwice.86
+include i386/SUNWxwplt.86
+include i386/SUNWxwrtl.86
+include i386/SUNWxwslb.86
+include i386/SUNWxwxft.86
 package redistributable
 cluster redistributable
 description "redistributable cluster"
 version 0.1
 depend SUNWipkg
 idepend BRCMbnx
-idepend FSWxorg-client-docs
-idepend FSWxorg-client-programs
-idepend FSWxorg-clientlibs
-idepend FSWxorg-data
-idepend FSWxorg-devel-docs
 idepend FSWxorg-fonts
-idepend FSWxorg-headers
-idepend FSWxwpft
-idepend FSWxwrtl
 idepend NVDAgraphics
 idepend NVDAgraphicsr
 idepend SUNW1394
@@ -1146,9 +1141,6 @@ idepend SUNWapct
 idepend SUNWarbel
 idepend SUNWarc
 idepend SUNWarcr
-idepend SUNWaspell
-idepend SUNWaspell-devel
-idepend SUNWaspell-en
 idepend SUNWastdev
 idepend SUNWatfsr
 idepend SUNWatfsu
@@ -1266,6 +1258,7 @@ idepend SUNWdbus-root
 idepend SUNWdcaf
 idepend SUNWdcar
 idepend SUNWddhcm
+idepend SUNWddu
 idepend SUNWdedis
 idepend SUNWdedma
 idepend SUNWdeos
@@ -1526,11 +1519,7 @@ idepend SUNWgnome-l10ndocument-it
 idepend SUNWgnome-l10ndocument-ja
 idepend SUNWgnome-l10ndocument-ko
 idepend SUNWgnome-l10ndocument-ptBR
-#
-# XXX content from the Indiana version of SUNWgnome-l10ndocument-extra
-# conflicts with this currently so don't include it for now.
-#
-# idepend SUNWgnome-l10ndocument-rtl
+idepend SUNWgnome-l10ndocument-rtl
 idepend SUNWgnome-l10ndocument-sv
 idepend SUNWgnome-l10ndocument-zhCN
 idepend SUNWgnome-l10ndocument-zhHK
@@ -1546,11 +1535,7 @@ idepend SUNWgnome-l10nmessages-ja
 idepend SUNWgnome-l10nmessages-ko
 idepend SUNWgnome-l10nmessages-pl
 idepend SUNWgnome-l10nmessages-ptBR
-#
-# XXX content from the Indiana version of SUNWgnome-l10nmessages-extra
-# conflicts with this currently so don't include it for now.
-#
-# idepend SUNWgnome-l10nmessages-rtl
+idepend SUNWgnome-l10nmessages-rtl
 idepend SUNWgnome-l10nmessages-ru
 idepend SUNWgnome-l10nmessages-sv
 idepend SUNWgnome-l10nmessages-zhCN
@@ -1705,7 +1690,6 @@ idepend SUNWiiimf-in-indicle
 idepend SUNWiiimf-ja-anthy
 idepend SUNWiiimf-ko-hangul
 idepend SUNWiiimf-ko-kole
-idepend SUNWiiimf-root
 idepend SUNWiiimf-th-thaile
 idepend SUNWiiimf-zhCN-cle-core
 idepend SUNWiiimf-zhCN-cle-open
@@ -1729,6 +1713,7 @@ idepend SUNWinplt
 idepend SUNWinstall
 idepend SUNWinstall-l10n
 idepend SUNWinstall-libs
+idepend SUNWinstall-patch-utils-root
 idepend SUNWintgige
 idepend SUNWipc
 idepend SUNWipfh
@@ -2291,6 +2276,7 @@ idepend SUNWsvn-java
 idepend SUNWsvn-perl
 idepend SUNWsvn-python
 idepend SUNWsvos
+idepend SUNWswmt
 idepend SUNWsxplt
 idepend SUNWtavor
 idepend SUNWtcatr
@@ -2407,7 +2393,6 @@ idepend SUNWxorg-tsol-module
 idepend SUNWxorg-xkb
 idepend SUNWxscreensaver-hacks
 idepend SUNWxscreensaver-hacks-gl
-idepend SUNWxsun-keytables
 idepend SUNWxsvc
 idepend SUNWxvmdomr
 idepend SUNWxvmdomu
@@ -2417,8 +2402,18 @@ idepend SUNWxvmpv
 idepend SUNWxvmr
 idepend SUNWxvmu
 idepend SUNWxvnc
+idepend SUNWxwdem
 idepend SUNWxwdv
+idepend SUNWxwfsw
+idepend SUNWxwice
+idepend SUNWxwinc
+idepend SUNWxwman
+idepend SUNWxwopt
 idepend SUNWxwplr
+idepend SUNWxwplt
+idepend SUNWxwpmn
+idepend SUNWxwrtl
+idepend SUNWxwslb
 idepend SUNWxwsvr
 idepend SUNWxwxft
 idepend SUNWypr
@@ -2464,14 +2459,7 @@ description "slim install cluster"
 version 0.1
 depend SUNWipkg
 idepend BRCMbnx
-idepend FSWxorg-client-docs
-idepend FSWxorg-client-programs
-idepend FSWxorg-clientlibs
-idepend FSWxorg-data
-idepend FSWxorg-devel-docs
 idepend FSWxorg-fonts
-idepend FSWxwpft
-idepend FSWxwrtl
 idepend NVDAgraphics
 idepend NVDAgraphicsr
 idepend SUNW1394
@@ -2523,6 +2511,7 @@ idepend SUNWcakr
 idepend SUNWcakrx
 idepend SUNWcar
 idepend SUNWcarx
+idepend SUNWccsm
 idepend SUNWced
 idepend SUNWcfcl
 idepend SUNWcfclr
@@ -2531,6 +2520,14 @@ idepend SUNWcfplr
 idepend SUNWchxge
 idepend SUNWckr
 idepend SUNWcnetr
+idepend SUNWcompiz
+idepend SUNWcompiz-fusion-extra
+idepend SUNWcompiz-fusion-extra-root
+idepend SUNWcompiz-fusion-main
+idepend SUNWcompiz-fusion-main-root
+idepend SUNWcompiz-root
+idepend SUNWcompizconfig-gconf
+idepend SUNWcompizconfig-python
 idepend SUNWcpc
 idepend SUNWcpcu
 idepend SUNWcpp
@@ -2543,6 +2540,7 @@ idepend SUNWcsu
 idepend SUNWdbus
 idepend SUNWdbus-bindings
 idepend SUNWdbus-root
+idepend SUNWddu
 idepend SUNWdistro-license
 idepend SUNWdmfe
 idepend SUNWdoc
@@ -2698,11 +2696,7 @@ idepend SUNWgnome-l10nmessages-ja
 idepend SUNWgnome-l10nmessages-ko
 idepend SUNWgnome-l10nmessages-pl
 idepend SUNWgnome-l10nmessages-ptBR
-#
-# XXX content from the Indiana version of SUNWgnome-l10nmessages-extra
-# conflicts with this currently so don't include it for now.
-#
-# idepend SUNWgnome-l10nmessages-rtl
+idepend SUNWgnome-l10nmessages-rtl
 idepend SUNWgnome-l10nmessages-ru
 idepend SUNWgnome-l10nmessages-sv
 idepend SUNWgnome-l10nmessages-zhCN
@@ -2807,6 +2801,7 @@ idepend SUNWimar
 idepend SUNWinstall
 idepend SUNWinstall-l10n
 idepend SUNWinstall-libs
+idepend SUNWinstall-patch-utils-root
 idepend SUNWintgige
 idepend SUNWipfr
 idepend SUNWipfu
@@ -2886,6 +2881,8 @@ idepend SUNWlibC
 idepend SUNWlibanthy
 idepend SUNWlibanthy-root
 idepend SUNWlibchewing
+idepend SUNWlibcompizconfig
+idepend SUNWlibcompizconfig-root
 idepend SUNWlibcroco
 idepend SUNWlibdaemon
 idepend SUNWlibexif
@@ -2901,6 +2898,7 @@ idepend SUNWlibpopt
 idepend SUNWlibrsvg
 idepend SUNWlibsasl
 idepend SUNWlibsdl
+idepend SUNWlibsexy
 idepend SUNWlibtheora
 idepend SUNWlibusb
 idepend SUNWlibusbugen
@@ -3034,6 +3032,7 @@ idepend SUNWscsa1394
 idepend SUNWservicetagr
 idepend SUNWservicetagu
 idepend SUNWses
+idepend SUNWsexy-python
 idepend SUNWsfdoc
 idepend SUNWsfe
 idepend SUNWsfinf
@@ -3059,6 +3058,7 @@ idepend SUNWsshdu
 idepend SUNWsshr
 idepend SUNWsshu
 idepend SUNWstosreg
+idepend SUNWswmt
 idepend SUNWtavor
 idepend SUNWtcpd
 idepend SUNWtcsh
@@ -3133,8 +3133,18 @@ idepend SUNWxorg-xkb
 idepend SUNWxscreensaver-hacks
 idepend SUNWxscreensaver-hacks-gl
 idepend SUNWxsvc
+idepend SUNWxvmpv
+idepend SUNWxvnc
+idepend SUNWxwdem
 idepend SUNWxwdv
+idepend SUNWxwfsw
+idepend SUNWxwice
+idepend SUNWxwman
+idepend SUNWxwopt
 idepend SUNWxwplr
+idepend SUNWxwplt
+idepend SUNWxwpmn
+idepend SUNWxwrtl
 idepend SUNWxwsvr
 idepend SUNWxwxft
 idepend SUNWzfskr

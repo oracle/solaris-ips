@@ -1,5 +1,5 @@
 package SUNWcs
-import SUNWcsu
+import SUNWcsu exclude usr/openwin
 # BEGIN NON-REDISTRIBUTABLE
 drop usr/bin/ksh
 drop usr/bin/pfksh

@@ -1,0 +1,9 @@
+package SUNWmeaow
+import SUNWmeaow exclude usr/openwin
+drop usr/openwin/share
+drop usr/openwin/share/locale
+drop usr/openwin/share/locale/ar_SA.UTF-8
+drop usr/openwin/share/locale/he
+drop usr/openwin/share/locale/he_IL.UTF-8
+chattr_glob * edit path usr/openwin/lib usr/X11/share/X11
+end package
