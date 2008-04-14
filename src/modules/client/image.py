@@ -257,12 +257,24 @@ class Image(object):
 
                 return o.rstrip("/")
 
-        def get_ssl_credentials(self, authority = None):
-                """Return a tuple containing (ssl_key, ssl_cert) for
-                the specified authority."""
+        def get_ssl_credentials(self, authority = None, origin = None):
+                """Return a tuple containing (ssl_key, ssl_cert) for the
+                specified authority prefix.  If the authority isn't specified,
+                attempt to determine the authority by the given origin.  If
+                neither is specified, use the preferred authority.
+                """
 
-                if authority == None:
-                        authority = self.cfg_cache.preferred_authority
+                if authority is None:
+                        if origin is None:
+                                authority = self.cfg_cache.preferred_authority
+                        else:
+                                auths = self.cfg_cache.authorities
+                                for pfx, auth in auths.iteritems():
+                                        if auth["origin"] == origin:
+                                                authority = pfx
+                                                break
+                                else:
+                                        return None
 
                 try:
                         authent = self.cfg_cache.authorities[authority]
@@ -1094,7 +1106,9 @@ class Image(object):
                         servers = self.gen_authorities()
 
                 for auth in servers:
-                        ssl_tuple = self.get_ssl_credentials(auth["prefix"])
+                        ssl_tuple = self.get_ssl_credentials(
+                            authority = auth.get("prefix", None),
+                            origin = auth["origin"])
 
                         try:
                                 res, v = versioned_urlopen(auth["origin"],
