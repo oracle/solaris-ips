@@ -12,7 +12,7 @@ SYNOPSIS
 
      /usr/bin/pkg verify [-fv] [pkg_fmri_pattern ...]
      /usr/bin/pkg info pkg_fmri_pattern [pkg_fmri_pattern ...]
-     /usr/bin/pkg contents [-aH] [-o attribute ...] [-s sort_key]
+     /usr/bin/pkg contents [-Hm] [-o attribute ...] [-s sort_key]
          [-t action_type ... ] [pkg_fmri_pattern ...]
      /usr/bin/pkg list [-aHsuv] [pkg_fmri_pattern ...]
      /usr/bin/pkg search [-lr] [-s server] token
@@ -104,8 +104,8 @@ SUBCOMMANDS
           current image.  By default, only the path attribute is displayed,
           but the attribute set may be determined with the -o option.  The
           -o option may be specified multiple times, or multiple attributes
-          may specified as the argument to one -o option by separating the
-          attribute names with commas.  Only actions which have the
+          may be specified as the argument to one -o option by separating
+          the attribute names with commas.  Only actions which have the
           requested attributes will be displayed.  The -m option may
           also be used, as a shorthand for '-o action.raw'.
 

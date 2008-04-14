@@ -84,7 +84,7 @@ Advanced subcommands:
         pkg info [pkg_fmri_pattern ...]
         pkg search [-lr] [-s server] token
         pkg verify [-fHqv] [pkg_fmri_pattern ...]
-        pkg contents [-H] [-o attribute ...] [-s sort_key] [-t action_type ... ]
+        pkg contents [-Hm] [-o attribute ...] [-s sort_key] [-t action_type ... ]
             pkg_fmri_pattern [...]
         pkg image-create [-FPUz] [--full|--partial|--user] [--zone]
             [-k ssl_key] [-c ssl_cert] -a <prefix>=<url> dir
