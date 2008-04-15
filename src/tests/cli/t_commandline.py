@@ -52,6 +52,13 @@ class TestCommandLine(testutils.SingleDepotTestCase):
                 self.pkg("set-authority -@ test3", exit=2)
                 self.pkg("authority -@ test5", exit=2)
 
+        def test_pkg_vq_1153(self):
+                """ test that -v and -q are mutually exclusive """
+                self.pkg("verify -vq", exit=2)
+                self.pkg("install -vq foo", exit=2)
+                self.pkg("uninstall -vq foo", exit=2)
+                self.pkg("image-update -vq", exit=2)
+
         def test_pkg_missing_args(self):
                 """ pkg: Lack of needed arguments should yield complaint """
                 # create a image to avoid non-existant image messages

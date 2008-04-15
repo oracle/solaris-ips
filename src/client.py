@@ -336,6 +336,9 @@ def image_update(img, args):
                 elif opt == "-q":
                         quiet = True
 
+        if verbose and quiet:
+                usage(_("image-update: -v and -q may not be combined"))
+
         try:
                 be = bootenv.BootEnv(img.get_root())
         except RuntimeError:
@@ -387,6 +390,9 @@ def install(img, args):
         if not pargs:
                 usage(_("install: at least one package name required"))
 
+        if verbose and quiet:
+                usage(_("install: -v and -q may not be combined"))
+
         try:
                 be = bootenv.BootEnv(img.get_root())
         except RuntimeError:
@@ -432,6 +438,9 @@ def uninstall(img, args):
                         verbose = True
                 elif opt == "-q":
                         quiet = True
+
+        if verbose and quiet:
+                usage(_("uninstall: -v and -q may not be combined"))
 
         progresstracker = get_tracker(quiet)
 
@@ -592,6 +601,8 @@ def info(img, args):
 
                 print "          Name:", name
                 print "       Summary:", summary
+                # XXX Hard wired for now.
+                print "         State: Installed"
 
                 # XXX even more info on the authority would be nice?
                 print "     Authority:", authority
