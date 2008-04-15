@@ -88,5 +88,20 @@ class TestImageCreateNoDepot(testutils.pkg5TestCase):
                 self.assertRaises(testutils.UnexpectedExitCodeException, \
                     self.pkg, "image-create -a foo")
 
+        def test_bad_authority_options(self):
+                """More tests that abuse the authority prefix and URL."""
+
+                self.assertRaises(testutils.UnexpectedExitCodeException, \
+                    self.pkg, "image-create -a $%^8=http://test1")
+
+                self.assertRaises(testutils.UnexpectedExitCodeException, \
+                    self.pkg, "image-create -a test1=http://$%^8")
+
+                self.assertRaises(testutils.UnexpectedExitCodeException, \
+                    self.pkg, "image-create -a test1=http://test1:abcde")
+
+                self.assertRaises(testutils.UnexpectedExitCodeException, \
+                    self.pkg, "image-create -a test1=ftp://test1")
+
 if __name__ == "__main__":
         unittest.main()

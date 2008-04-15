@@ -29,6 +29,7 @@ import urllib2
 import urlparse
 import httplib
 import platform
+import re
 
 import pkg.urlhelpers as urlhelpers
 import pkg.portable as portable
@@ -111,3 +112,43 @@ def versioned_urlopen(base_uri, operation, versions = [], tail = None,
                 raise RuntimeError, \
                     "%s doesn't speak a known version of %s operation" % \
                     (base_uri, operation)
+
+
+_hostname_re = re.compile("^[a-zA-Z0-9](?:[a-zA-Z0-9\-]*[a-zA-Z0-9]+\.?)*$")
+_invalid_host_chars = re.compile(".*[^a-zA-Z0-9\-\.]+")
+_valid_proto = ["http", "https"]
+
+def valid_auth_prefix(prefix):
+        """Verify that the authority prefix only contains valid characters."""
+
+        # This is a workaround for the the hostname_re being slow when
+        # it comes to finding invalid characters in the prefix string.
+
+        if _invalid_host_chars.match(prefix):
+                # prefix bad chars
+                return False
+
+        if _hostname_re.match(prefix):
+                return True
+
+        return False
+
+def valid_auth_url(url):
+        """Verify that the authority URL contains only valid characters."""
+
+        # First split the URL and check if the scheme is one we support
+        o = urlparse.urlsplit(url)
+
+        if not o[0] in _valid_proto:
+                return False
+
+        # Next verify that the network location is valid
+        host, port = urllib.splitport(o[1])
+
+        if not host or _invalid_host_chars.match(host):
+                return False
+
+        if _hostname_re.match(host):
+                return True
+
+        return False

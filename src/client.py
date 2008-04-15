@@ -60,6 +60,7 @@ import pkg.client.filelist as filelist
 import pkg.client.progress as progress
 import pkg.client.bootenv as bootenv
 import pkg.fmri as fmri
+import pkg.misc as misc
 
 def usage(usage_error = None):
         """ Emit a usage message and optionally prefix it with a more
@@ -339,13 +340,22 @@ def image_update(img, args):
         if verbose and quiet:
                 usage(_("image-update: -v and -q may not be combined"))
 
+        progresstracker = get_tracker(quiet)
+        img.load_catalogs(progresstracker)
+
+        try:
+                img.retrieve_catalogs()
+        except RuntimeError, failures:
+                if display_catalog_failures(failures) == 0:
+                        return 1
+                else:
+                        return 3
         try:
                 be = bootenv.BootEnv(img.get_root())
         except RuntimeError:
                 be = bootenv.BootEnvNull(img.get_root())
 
-        progresstracker = get_tracker(quiet)
-
+        # Reload catalog.  This picks up the update from retrieve_catalogs.
         img.load_catalogs(progresstracker)
 
         pkg_list = [ ipkg.get_pkg_stem() for ipkg in img.gen_installed_pkgs() ]
@@ -853,13 +863,10 @@ def catalog_refresh(img, args):
 
         # XXX will need to show available content series for each package
         full_refresh = False
-        try:
-                opts, pargs = getopt.getopt(args, None, ["full"])
-                for opt, arg in opts:
-                        if opt == "--full":
-                                full_refresh = True
-        except getopt.GetoptError, e:
-                usage("refresh: illegal option -- %s" % e.opt)
+        opts, pargs = getopt.getopt(args, "", ["full"])
+        for opt, arg in opts:
+                if opt == "--full":
+                        full_refresh = True
 
         # Ensure Image directory structure is valid.
         if not os.path.isdir("%s/catalog" % img.imgdir):
@@ -918,8 +925,17 @@ def authority_set(img, args):
                             ) % ssl_cert)
                         return 1
 
+
         if not img.has_authority(auth) and origin_url == None:
                 error(_("set-authority: must define origin URL for new authority"))
+                return 1
+
+        elif not img.has_authority(auth) and not misc.valid_auth_prefix(auth):
+                error(_("set-authority: authority name has invalid characters"))
+                return 1
+
+        if origin_url and not misc.valid_auth_url(origin_url):
+                error(_("set-authority: authority URL is invalid"))
                 return 1
 
         img.set_authority(auth, origin_url = origin_url, ssl_key = ssl_key,
@@ -1067,9 +1083,17 @@ def image_create(img, args):
                     "the form '<prefix>=<url>'."))
 
         if auth_name.startswith(fmri.PREF_AUTH_PFX):
-                print >> sys.stderr, \
-                    _("pkg: image-create requires that a prefix not match: %s"
-                        % fmri.PREF_AUTH_PFX)
+                error(_("image-create requires that a prefix not match: %s"
+                        % fmri.PREF_AUTH_PFX))
+                return 1
+
+        if not misc.valid_auth_prefix(auth_name):
+                error(_("image-create: authority prefix has invalid characters"))
+                return 1
+
+        if not misc.valid_auth_url(auth_url):
+                error(_("image-create: authority URL is invalid"))
+                return 1 
 
         try:
                 img.set_attrs(imgtype, pargs[0], is_zone, auth_name, auth_url,

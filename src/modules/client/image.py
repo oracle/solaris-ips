@@ -771,7 +771,6 @@ class Image(object):
                 total = 0
                 succeeded = 0
                 cat = None
-                full_refresh = False
                 ts = 0
 
                 for auth in self.gen_authorities():

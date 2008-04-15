@@ -54,6 +54,9 @@ class TestCommandLine(testutils.SingleDepotTestCase):
 
         def test_pkg_vq_1153(self):
                 """ test that -v and -q are mutually exclusive """
+                durl = self.dc.get_depot_url()
+                self.image_create(durl)
+
                 self.pkg("verify -vq", exit=2)
                 self.pkg("install -vq foo", exit=2)
                 self.pkg("uninstall -vq foo", exit=2)
@@ -74,7 +77,7 @@ class TestCommandLine(testutils.SingleDepotTestCase):
                 self.pkg("set-authority -c", exit=2)
                 self.pkg("set-authority -O", exit=2)
                 self.pkg("unset-authority", exit=2)
-
+                self.pkg("refresh -F", exit=2)
 
         def test_pkgsend_bogus_opts(self):
                 """ pkgsend bogus option checks """
@@ -124,6 +127,18 @@ class TestCommandLine(testutils.SingleDepotTestCase):
                 self.pkg("authority test3", exit=1)
                 self.pkg("authority -H | grep URL", exit=1)
 
+        def test_authority_validation(self):
+                """Verify that we catch poorly formed auth prefixes and URL"""
+                durl = self.dc.get_depot_url()
+                self.image_create(durl)
+
+                self.pkg("set-authority -O http://test1 test1")
+
+                self.pkg("set-authority -O http://test2 $%^8", exit=1)
+                self.pkg("set-authority -O http://test2 8^$%", exit=1)
+                self.pkg("set-authority -O http://*^5$% test2", exit=1)
+                self.pkg("set-authority -O http://test1:abcde test2", exit=1)
+                self.pkg("set-authority -O ftp://test2 test2", exit=1)
 
 if __name__ == "__main__":
         unittest.main()
