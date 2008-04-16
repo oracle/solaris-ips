@@ -32,6 +32,7 @@ import stat
 
 import pkg.pkgtarfile as ptf
 import pkg.portable as portable
+import pkg.fmri
 from pkg.misc import versioned_urlopen
 
 class FileList(object):
@@ -122,6 +123,7 @@ class FileList(object):
                 req_dict = { }
 
                 authority, pkg_name, version = self.fmri.tuple()
+                authority = pkg.fmri.strip_auth_pfx(authority)
                 url_prefix = self.image.get_url_by_authority(authority)
                 ssl_tuple = self.image.get_ssl_credentials(authority)
 

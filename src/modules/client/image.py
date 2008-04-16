@@ -542,8 +542,7 @@ class Image(object):
 
                 return m
 
-        @staticmethod
-        def installed_file_authority(filepath):
+        def installed_file_authority(self, filepath):
                 """Find the pkg's installed file named by filepath.
                 Return the authority that installed this package."""
 
@@ -583,6 +582,10 @@ class Image(object):
                         auth = newauth
 
                 f.close()
+
+                if not auth:
+                        auth = "%s_%s" % (pkg.fmri.PREF_AUTH_PFX,
+                            self.get_default_authority())
 
                 return auth
 
@@ -631,8 +634,6 @@ class Image(object):
                 assert len(pkgs_inst) <= 1
 
                 auth = self.installed_file_authority(pkgs_inst[0][1])
-                if not auth:
-                        auth = self.get_default_authority()
 
                 return pkg.fmri.PkgFmri(pkgs_inst[0][0], authority = auth)
 
@@ -918,19 +919,18 @@ class Image(object):
                                 if not os.path.exists(path):
                                         continue
 
-                                auth = self.installed_file_authority(path)
-                                if not auth:
-                                        auth = self.get_default_authority()
-
                                 fmristr = urllib.unquote("%s@%s" % (pd, vd))
+                                auth = self.installed_file_authority(path)
                                 f = pkg.fmri.PkgFmri(fmristr, authority = auth)
+
                                 self.installed_pkg_cache.append(f)
                                 yield f
 
         def strtofmri(self, myfmri):
                 ret = pkg.fmri.PkgFmri(myfmri, 
-                    self.attrs["Build-Release"],
-                    authority = self.get_default_authority())
+                    self.attrs["Build-Release"])
+                self.fmri_set_default_authority(ret)
+                    
                 return ret
 
         def update_optional_dependency(self, inputfmri):

@@ -674,8 +674,9 @@ def info(img, args):
                         print
 
                 authority, name, version = m.fmri.tuple()
+                authority = fmri.strip_auth_pfx(authority)
                 summary = m.get("description", "")
-                if authority == img.get_default_authority():
+                if m.fmri.preferred_authority():
                         authority += _(" (preferred)")
 
                 print "          Name:", name

@@ -280,7 +280,7 @@ class PkgFmri(object):
                 return False
 
         def tuple(self):
-                return self.get_authority(), self.pkg_name, self.version
+                return self.get_authority_str(), self.pkg_name, self.version
 
         def is_name_match(self, fmristr):
                 """True if the regular expression given in fmristr matches the
@@ -337,6 +337,16 @@ def extract_pkg_name(fmri):
                 pkg_name = fmri[nameidx:]
 
         return pkg_name
+
+def strip_auth_pfx(auth):
+        """Strip the PREF_AUTH_PFX off of an authority."""
+        if auth.startswith(PREF_AUTH_PFX_):
+                str = auth[len(PREF_AUTH_PFX_):]
+        else:
+                str = auth
+
+        return str
+        
 
 def is_same_authority(auth1, auth2):
         """Compare two authorities.  Return true if they are the same, false

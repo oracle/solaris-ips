@@ -26,6 +26,7 @@
 import socket
 import urllib2
 
+import pkg.fmri
 from pkg.misc import versioned_urlopen
 
 # client/retrieve.py - collected methods for retrieval of pkg components
@@ -35,7 +36,7 @@ def get_datastream(img, fmri, hash):
         """Retrieve a file handle based on a package fmri and a file hash."""
 
         authority, pkg_name, version = fmri.tuple()
-
+        authority = pkg.fmri.strip_auth_pfx(authority)
         url_prefix = img.get_url_by_authority(authority)
         ssl_tuple = img.get_ssl_credentials(authority)
 
@@ -62,7 +63,7 @@ def get_manifest(img, fmri):
             the caller. """
 
         authority, pkg_name, version = fmri.tuple()
-
+        authority = pkg.fmri.strip_auth_pfx(authority)
         url_prefix = img.get_url_by_authority(authority)
         ssl_tuple = img.get_ssl_credentials(authority)
 
