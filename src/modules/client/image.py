@@ -444,9 +444,11 @@ class Image(object):
 
                 return False
 
-        def _fetch_manifest(self, fmri, filtered):
+        def _fetch_manifest(self, fmri):
                 """Perform steps necessary to get manifest from remote host
-                and write resulting contents to disk."""
+                and write resulting contents to disk.  Helper routine for
+                get_manifest.  Does not filter the results, caller must do
+                that.  """
 
                 m = manifest.Manifest()
                 m.set_fmri(self, fmri)
@@ -473,22 +475,6 @@ class Image(object):
 
                 m.store(mpath, ipath)
 
-                if filtered:
-                        filters = []
-                        try:
-                                f = file("%s/filters" % fmri_dir_path, "r")
-                        except IOError, e:
-                                if e.errno != errno.ENOENT:
-                                        raise
-                        else:
-                                filters = [
-                                    (l.strip(), compile(
-                                        l.strip(), "<filter string>", "eval"))
-                                    for l in f.readlines()
-                                ]
-
-                        m.filter(filters)
-
                 return m
 
         def _valid_manifest(self, fmri, manifest):
@@ -509,7 +495,7 @@ class Image(object):
 
         def get_manifest(self, fmri, filtered = False):
                 """Find on-disk manifest and create in-memory Manifest
-                object."""
+                object, applying appropriate filters as needed."""
 
                 m = manifest.Manifest()
 
@@ -519,7 +505,7 @@ class Image(object):
 
                 # If the manifest isn't there, download.
                 if not os.path.exists(mpath):
-                        m = self._fetch_manifest(fmri, filtered)
+                        m = self._fetch_manifest(fmri)
                 else:
                         mcontent = file(mpath).read()
                         m.set_fmri(self, fmri)
@@ -529,7 +515,7 @@ class Image(object):
                 # no authority is attached to the manifest, download a new one.
                 if not self._valid_manifest(fmri, m):
                         try:
-                                m = self._fetch_manifest(fmri, filtered)
+                                m = self._fetch_manifest(fmri)
                         except NameError:
                                 # In thise case, the client has failed to
                                 # download a new manifest with the same name.
@@ -537,6 +523,22 @@ class Image(object):
                                 # the most sense to do the best we can with what
                                 # we have.  Keep the old manifest and drive on.
                                 pass
+
+		# XXX perhaps all of the below should live in Manifest.filter()?
+                if filtered:
+			filters = []
+			try:
+				f = file("%s/filters" % fmri_dir_path, "r")
+			except IOError, e:
+				if e.errno != errno.ENOENT:
+					raise
+			else:
+				filters = [
+				    (l.strip(), compile(
+					l.strip(), "<filter string>", "eval"))
+				    for l in f.readlines()
+				]
+			m.filter(filters)
 
                 return m
 
@@ -852,17 +854,16 @@ class Image(object):
                 if not pkg.fmri.is_same_authority(cfmri.authority, pfmri.authority):
                         return False
 
-                # Get the catalog for the correct authority
-                cat = self.get_catalog(cfmri)
-
                 # If the catalog has a rename record that names fmri as a
                 # destination, it's possible that pfmri could be the same pkg by
                 # rename.
-
                 if cfmri.is_same_pkg(pfmri):
                         return True
-                else:
-                        return cat.rename_is_same_pkg(cfmri, pfmri)
+
+                # Get the catalog for the correct authority
+                cat = self.get_catalog(cfmri)
+		return cat.rename_is_same_pkg(cfmri, pfmri)
+
 
         def fmri_is_successor(self, cfmri, pfmri):
                 """Since the catalog keeps track of renames, it's no longer
@@ -1021,19 +1022,30 @@ class Image(object):
                                 for p in patterns
                                 if pkg.fmri.fmri_match(x.get_pkg_stem(), p)
                                 and not x in pkgs_known ] )
-                elif all_known:
-                        pkgs_known = [ pf for pf in
-                            sorted(self.gen_known_package_fmris()) ]
                 else:
                         pkgs_known = sorted(self.gen_installed_pkgs())
 
-                if pkgs_known:
-                        counthash = {}
-                        self.get_matching_fmris(pkgs_known,
-                                                counthash = counthash)
+		counthash = {}
+		if pkgs_known:
+			#
+			# Walk the installed packages looking for those
+			# which have upgrades available.
+			#
+			self.get_matching_fmris(pkgs_known,
+			    counthash = counthash)
+
+		#
+		# If needed, merge in the rest of the known packages; we don't	
+		# compute upgradability for those, since it's very expensive.
+		#
+		if all_known and not patterns:
+                        pkgs_all_known = [ pf for pf in
+                            self.gen_known_package_fmris() ]
+			pkgs_known += pkgs_all_known
+			pkgs_known = sorted(set(pkgs_known))
 
                 for p in pkgs_known:
-                        if counthash[p] > 1:
+                        if counthash.get(p, 0) > 1:
                                 upgradable = True
                         else:
                                 upgradable = False
@@ -1165,12 +1177,13 @@ class Image(object):
                                 out.add(p)
                                 p = os.path.dirname(p)
                 return out
-                        
-                
-        def list_install(self, pkg_list, progress, filters = [],
+
+
+        def make_install_plan(self, pkg_list, progress, filters = [],
             verbose = False, noexecute = False):
                 """Take a list of packages, specified in pkg_list, and attempt
-                to install them on the system.
+                to assemble an appropriate image plan.  This is a helper
+		routine for some common operations in the client.
 
                 This method checks all authorities for a package match;
                 however, it defaults to choosing the preferred authority
@@ -1245,10 +1258,7 @@ pkg: no package matching '%s' could be found in current catalog
 
                 if verbose:
                         print _("After evaluation:")
-                        ip.display()
-
-                if not noexecute:
-                        ip.execute()
+                        print ip.display()
 
 if __name__ == "__main__":
         pass

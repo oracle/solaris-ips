@@ -350,30 +350,51 @@ def image_update(img, args):
                         return 1
                 else:
                         return 3
-        try:
-                be = bootenv.BootEnv(img.get_root())
-        except RuntimeError:
-                be = bootenv.BootEnvNull(img.get_root())
 
         # Reload catalog.  This picks up the update from retrieve_catalogs.
         img.load_catalogs(progresstracker)
 
         pkg_list = [ ipkg.get_pkg_stem() for ipkg in img.gen_installed_pkgs() ]
 
+        try:
+                img.make_install_plan(pkg_list, progresstracker, verbose = verbose,
+                    noexecute = noexecute)
+        except RuntimeError, e:
+                error(_("image-update failed: %s") % e)
+
+        assert img.imageplan
+
+        if img.imageplan.nothingtodo():
+                print _("No updates available for this image.")
+                return 0
+
+        if noexecute:
+                return 0
+
+        try:
+                be = bootenv.BootEnv(img.get_root())
+        except RuntimeError:
+                be = bootenv.BootEnvNull(img.get_root())
+
         be.init_image_recovery(img)
 
         try:
-                img.list_install(pkg_list, progresstracker, verbose = verbose,
-                    noexecute = noexecute)
+                img.imageplan.execute()
+                be.activate_image()
+                ret_code = 0
         except RuntimeError, e:
                 error(_("image_update failed: %s") % e)
                 be.restore_image()
                 ret_code = 1
-        else:
-                be.activate_image()
-                ret_code = 0
+        except Exception, e:
+                error(_("An unexpected error happened during image-update: %s") % e)
+                be.restore_image()
+                img.cleanup_downloads()
+                raise
+
         img.cleanup_downloads()
         return ret_code
+
 
 def install(img, args):
         """Attempt to take package specified to INSTALLED state.  The operands
@@ -403,11 +424,6 @@ def install(img, args):
         if verbose and quiet:
                 usage(_("install: -v and -q may not be combined"))
 
-        try:
-                be = bootenv.BootEnv(img.get_root())
-        except RuntimeError:
-                be = bootenv.BootEnvNull(img.get_root())
-                
         progresstracker = get_tracker(quiet)
 
         img.load_catalogs(progresstracker)
@@ -416,22 +432,47 @@ def install(img, args):
             for pat in pargs ]
 
         try:
-                img.list_install(pkg_list, progresstracker, filters = filters,
+                img.make_install_plan(pkg_list, progresstracker, filters = filters,
                     verbose = verbose, noexecute = noexecute)
         except RuntimeError, e:
                 error(_("install failed: %s") % e)
+                return 1
+
+        assert img.imageplan
+
+        #
+        # The result of make_install_plan is that an imageplan is now filled out
+        # for the image.
+        #
+        if img.imageplan.nothingtodo():
+                print _("Nothing to install in this image (is this package already installed?)")
+                return 0
+
+        if noexecute:
+                return 0
+
+        try:
+                be = bootenv.BootEnv(img.get_root())
+        except RuntimeError:
+                be = bootenv.BootEnvNull(img.get_root())
+
+        try:
+                img.imageplan.execute()
+                be.activate_install_uninstall()
+                ret_code = 0
+        except RuntimeError, e:
+                error(_("installation failed: %s") % e)
                 be.restore_install_uninstall()
                 ret_code = 1
-        except:
+        except Exception, e:
+                error(_("An unexpected error happened during installation: %s") % e)
                 be.restore_install_uninstall()
                 img.cleanup_downloads()
                 raise
-        else:
-                be.activate_install_uninstall()
-                ret_code = 0
 
         img.cleanup_downloads()   
         return ret_code
+
 
 def uninstall(img, args):
         """Attempt to take package specified to DELETED state."""
@@ -454,11 +495,6 @@ def uninstall(img, args):
 
         progresstracker = get_tracker(quiet)
 
-        try:
-                be = bootenv.BootEnv(img.get_root())
-        except RuntimeError:
-                be = bootenv.BootEnvNull(img.get_root())
-               
         img.load_catalogs(progresstracker)
 
         ip = imageplan.ImagePlan(img, progresstracker, recursive_removal)
@@ -482,14 +518,19 @@ def uninstall(img, args):
                         error(_("'%s' matches multiple packages") % ppat)
                         for k in pnames:
                                 print "\t%s" % k
+                        err = 1
                         continue
 
                 if len(pnames) < 1:
                         error(_("'%s' matches no installed packages") % \
                             ppat)
+                        err = 1
                         continue
 
                 ip.propose_fmri_removal(pnames[0])
+
+        if err == 1:
+                return err
 
         if verbose:
                 print _("Before evaluation:")
@@ -502,12 +543,31 @@ def uninstall(img, args):
                 print _("After evaluation:")
                 ip.display()
 
-        if not noexecute:
+        assert not ip.nothingtodo()
+
+        if noexecute:
+                return 0
+
+	try:
+		be = bootenv.BootEnv(img.get_root())
+	except RuntimeError:
+		be = bootenv.BootEnvNull(img.get_root())
+               
+	try:
                 ip.execute()
-                if ip.state == imageplan.EXECUTED_OK:
-                        be.activate_install_uninstall()
-                else:
-                        be.restore_install_uninstall()
+        except RuntimeError, e:
+                error(_("installation failed: %s") % e)
+                be.restore_install_uninstall()
+                ret_code = 1
+	except:
+                error(_("An unexpected error happened during uninstallation: %s") % e)
+		be.restore_install_uninstall()
+		raise
+
+	if ip.state == imageplan.EXECUTED_OK:
+		be.activate_install_uninstall()
+	else:
+		be.restore_install_uninstall()
 
         return err
 
@@ -556,12 +616,21 @@ def search(img, args):
         retcode = 1
 
         try:
-                for index, fmri, action, value in itertools.chain(*searches):
+                first = True
+                for index, mfmri, action, value in itertools.chain(*searches):
                         retcode = 0
+                        if first:
+                                if action and value:
+                                        print "%-10s %-9s %-25s %s" % ("INDEX",
+                                            "ACTION", "VALUE", "PACKAGE")
+                                else:
+                                        print "%-10s %s" % ("INDEX", "PACKAGE")
+                                first = False
                         if action and value:
-                                print index, action, value, fmri
+                                print "%-10s %-9s %-25s %s" % (index, action,
+                                    value, fmri.PkgFmri(str(mfmri)).get_short_fmri())
                         else:
-                                print index, fmri
+                                print "%-10s %s" % (index, mfmri)
 
         except RuntimeError, failed:
                 print >> sys.stderr, "Some servers failed to respond:"
@@ -753,7 +822,7 @@ def list_contents(img, args):
         # XXX Need remote-info option, to request equivalent information
         # from repository.
 
-        opts, pargs = getopt.getopt(args, "Ho:s:t:m")
+        opts, pargs = getopt.getopt(args, "Ho:s:t:mf")
 
         valid_special_attrs = [ "action.name", "action.key", "action.raw",
             "pkg.name", "pkg.fmri", "pkg.shortfmri", "pkg.authority",
@@ -761,6 +830,7 @@ def list_contents(img, args):
 
         display_headers = True
         display_raw = False
+        display_nofilters = False
         attrs = []
         sort_attrs = []
         action_types = []
@@ -775,6 +845,9 @@ def list_contents(img, args):
                         action_types.extend(arg.split(","))
                 elif opt == "-m":
                         display_raw = True
+                elif opt == "-f":
+                        # Undocumented, for now.
+                        display_nofilters = True
 
         if display_raw:
                 display_headers = False
@@ -820,7 +893,8 @@ def list_contents(img, args):
                 else:
                         sort_attrs = attrs[:1]
 
-        manifests = ( img.get_manifest(f, filtered = True) for f in fmris )
+        filt = not display_nofilters
+        manifests = ( img.get_manifest(f, filtered = filt) for f in fmris )
 
         actionlist = [ (m, a)
                     for m in manifests

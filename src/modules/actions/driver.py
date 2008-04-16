@@ -374,7 +374,7 @@ class DriverAction(generic.Action):
                         dcf = file(os.path.normpath(os.path.join(
                             img.get_root(), "etc/driver_classes")))
                 except IOError, e:
-                        e.args += ("etc/driver_classes",e)
+                        e.args += ("etc/driver_classes",)
                         if collect_errs:
                                 errors.append(e)
                         else:
@@ -392,7 +392,7 @@ class DriverAction(generic.Action):
                         dmf = file(os.path.normpath(os.path.join(
                             img.get_root(), "etc/minor_perm")))
                 except IOError, e:
-                        e.args += ("etc/minor_perm")
+                        e.args += ("etc/minor_perm",)
                         if collect_errs:
                                 errors.append(e)
                         else:
@@ -478,9 +478,9 @@ class DriverAction(generic.Action):
                     self.__get_image_data(img, name, collect_errs = True)
 
                 for i, err in enumerate(errors):
-                        if err.isinstance(IOError):
+                        if isinstance(err, IOError):
                                 errors[i] = "%s: %s" % (err.args[2], err)
-                        elif err.isinstance(RuntimeError):
+                        elif isinstance(err, RuntimeError):
                                 errors[i] = "etc/name_to_major: more than " \
                                     "one entry for '%s' is present" % name
 

@@ -66,6 +66,10 @@ class BootEnv(object):
 
                 self.beList = be.beList()
 
+                # Happens e.g. in zones (at least, for now)
+                if not self.beList:
+                        raise RuntimeError, "nobootenvironments"
+
                 # Need to find the name of the BE we're operating on in order
                 # to create a snapshot and/or a clone of the BE.
 

@@ -35,6 +35,13 @@ from version import Version
 # the FMRI.  PREF_AUTH_PFX => preferred authority prefix.
 PREF_AUTH_PFX = "_PRE"
 
+#
+# For is_same_authority(), we need a version of this constant with the
+# trailing _ attached.
+#
+PREF_AUTH_PFX_ = PREF_AUTH_PFX + "_"
+
+
 class PkgFmri(object):
         """The authority is the anchor of a package namespace.  Clients can
         choose to take packages from multiple authorities, and specify a default
@@ -333,37 +340,26 @@ def extract_pkg_name(fmri):
 
 def is_same_authority(auth1, auth2):
         """Compare two authorities.  Return true if they are the same, false
-        otherwise."""
+           otherwise. """
+	#
+	# This code is performance sensitive.  Ensure that you benchmark
+	# changes to it.
+	#
 
-        # Cope with authorities that are None
-        if not auth1 and not auth2:
+	# Fastest path for most common case.
+	if auth1 == auth2:
+		return True
+
+	if auth1 == None:
+		auth1 = ""
+	if auth2 == None:
+		auth2 = ""
+
+	# String concatenation and string equality are both pretty fast.
+	if ((PREF_AUTH_PFX_ + auth1) == auth2) or \
+	    (auth1 == (PREF_AUTH_PFX_ + auth2)):
+		return True
+        if auth1.startswith(PREF_AUTH_PFX_) and auth2.startswith(PREF_AUTH_PFX_):
                 return True
-        elif not auth1 or not auth2:
-                return False
+	return False
 
-        matchstr = "%s_" % PREF_AUTH_PFX
-
-        # Check if the authorities are preferred.  If they are, match.
-        
-        r1 = auth1.startswith(matchstr)
-        r2 = auth2.startswith(matchstr) 
-        
-        if r1 and r2:
-                return True
-       
-        # extract the authority suffix
-        if r1:
-                a1 = auth1[len(matchstr):]
-        else:
-                a1 = auth1
-
-        if r2:
-                a2 = auth2[len(matchstr):]
-        else:
-                a2 = auth2
-
-        # Do authorities match?
-        if a1 == a2:
-                return True
-
-        return False

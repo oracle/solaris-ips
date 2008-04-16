@@ -46,14 +46,14 @@ class TestUpgrade(testutils.SingleDepotTestCase):
             close
         """
 
-	incorpA = """
+        incorpA = """
             open incorpA@1.0,5.11-0
             add depend type=incorporate fmri=pkg:/amber@1.0
             add depend type=incorporate fmri=pkg:/bronze@1.0
             close
         """
 
-	incorpB =  """
+        incorpB =  """
             open incorpB@1.0,5.11-0
             add depend type=incorporate fmri=pkg:/amber@2.0
             add depend type=incorporate fmri=pkg:/bronze@2.0
@@ -115,7 +115,7 @@ class TestUpgrade(testutils.SingleDepotTestCase):
             add file /tmp/bronze2 mode=0444 owner=root group=bin path=/etc/amber2
             add license /tmp/copyright3 license=copyright
             add file /tmp/bronzeA2 mode=0444 owner=root group=bin path=/A1/B2/C3/D4/E5/F6/bronzeA2
-	    add depend fmri=pkg:/amber@2.0 type=require
+            add depend fmri=pkg:/amber@2.0 type=require
             close 
         """
 
@@ -156,7 +156,17 @@ class TestUpgrade(testutils.SingleDepotTestCase):
                 self.pkgsend_bulk(durl, self.amber10)
                 self.pkgsend_bulk(durl, self.bronze10)
 
-                # Now send 2.0 versions of packages.
+                self.image_create(durl)
+                self.pkg("install incorp@1.0")
+                self.pkg("install bronze")
+
+                self.pkg("list amber@1.0")
+                self.pkg("list bronze@1.0")
+                self.pkg("verify -v")
+
+                #
+                # Now send 2.0 versions of packages.  image-update will (should)
+                # implicitly refresh.
                 #
                 # In version 2.0, several things happen:
                 #
@@ -170,15 +180,6 @@ class TestUpgrade(testutils.SingleDepotTestCase):
                 self.pkgsend_bulk(durl, self.incorp20)
                 self.pkgsend_bulk(durl, self.amber20)
                 self.pkgsend_bulk(durl, self.bronze20)
-
-
-                self.image_create(durl)
-                self.pkg("install incorp@1.0")
-                self.pkg("install bronze")
-
-                self.pkg("list amber@1.0")
-                self.pkg("list bronze@1.0")
-                self.pkg("verify -v")
 
                 # Now image-update to get new versions of amber and bronze
                 self.pkg("image-update")
@@ -198,16 +199,15 @@ class TestUpgrade(testutils.SingleDepotTestCase):
                 # make sure all directories are gone save /var in test image
                 self.assert_(os.listdir(self.get_img_path()) ==  ["var"])
 
-	def test_upgrade2(self):
-		
+        def test_upgrade2(self):
+                """ Basic test for incorporations """
 
                 # Send all pkgs
-
                 durl = self.dc.get_depot_url()
-		self.pkgsend_bulk(durl, self.incorpA)
+                self.pkgsend_bulk(durl, self.incorpA)
                 self.pkgsend_bulk(durl, self.amber10)
                 self.pkgsend_bulk(durl, self.bronze10)
-		self.pkgsend_bulk(durl, self.incorpB)
+                self.pkgsend_bulk(durl, self.incorpB)
                 self.pkgsend_bulk(durl, self.amber20)
                 self.pkgsend_bulk(durl, self.bronze20)
 
@@ -215,8 +215,8 @@ class TestUpgrade(testutils.SingleDepotTestCase):
                 self.pkg("install incorpA")
                 self.pkg("install incorpB")
                 self.pkg("install bronze")
-		self.pkg("list bronze@2.0")
+                self.pkg("list bronze@2.0")
                 self.pkg("verify -v")
-		
+                
 if __name__ == "__main__":
         unittest.main()

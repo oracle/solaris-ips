@@ -47,6 +47,7 @@
 	<postinstall></postinstall>
 
 	<privilege set="default" name="contract_event" />
+	<privilege set="default" name="contract_identity" />
 	<privilege set="default" name="contract_observer" />
 	<privilege set="default" name="file_chown" />
 	<privilege set="default" name="file_chown_self" />

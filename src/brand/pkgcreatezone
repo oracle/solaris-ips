@@ -72,9 +72,20 @@ int_code=$ZONE_SUBPROC_NOTCOMPLETE
 
 trap trap_cleanup INT
 
-authority="opensolaris.org=http://pkg.opensolaris.org"
 zonename=""
 zonepath=""
+
+#
+# If there's a preferred authority set for the system, set that as our
+# default.  Otherwise use opensolaris.org.
+#
+authority="opensolaris.org=http://pkg.opensolaris.org"
+if [[ -x /usr/bin/pkg ]]; then
+	sysauth=`LC_ALL=C /usr/bin/pkg authority | grep preferred | awk '{printf "%s=%s", $1, $3}'`
+	if [[ $? -eq 0 && -n "$sysauth" ]]; then
+		authority=$sysauth
+	fi
+fi
 
 # Setup i18n output
 TEXTDOMAIN="SUNW_OST_OSCMD"
@@ -145,6 +156,12 @@ pkglist="$pkglist SUNWsshcu SUNWssh SUNWsshd"
 # Get some name services.
 #
 pkglist="$pkglist SUNWnis SUNWlldap"
+
+#
+# Get nfs client and autofs; it's a pain not to have them.
+#
+pkglist="$pkglist SUNWnfsc SUNWnfsckr SUNWatfs"
+
 
 #
 # Get man(1) but not the man pages

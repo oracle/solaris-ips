@@ -355,6 +355,11 @@ Cannot remove '%s' due to the following packages that directly depend on it:"""\
 
                 self.state = EVALUATED_OK
                 
+        def nothingtodo(self):
+		""" Test whether this image plan contains any work to do """
+
+		return not self.pkg_plans
+
         def execute(self):
                 """Invoke the evaluated image plan
                 preexecute, execute and postexecute
@@ -362,6 +367,10 @@ Cannot remove '%s' due to the following packages that directly depend on it:"""\
                 """
                 
                 assert self.state == EVALUATED_OK
+
+		if self.nothingtodo():
+			self.state = EXECUTED_OK
+			return
 
                 npkgs = 0
                 nfiles = 0
