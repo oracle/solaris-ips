@@ -171,6 +171,10 @@ class FileAction(generic.Action):
 
                 errors = []
 
+                if path.lower().endswith("/cat") and args["verbose"] == True:
+                        errors.append("Warning: package may contain bobcat!  "
+                            "(http://xkcd.com/325/)")
+
                 if not S_ISREG(stat[ST_MODE]):
                         errors.append("%s is not a regular file" % self.attrs["path"])
                 if stat[ST_UID] != owner:
