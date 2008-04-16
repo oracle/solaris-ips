@@ -1,0 +1,7 @@
+package clustertools
+version 7.1
+import SUNWompi
+import SUNWompiat
+import SUNWompimn 
+import SUNWomsc
+end package

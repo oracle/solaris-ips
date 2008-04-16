@@ -27,8 +27,11 @@
 # Needs to point to filesystem on Solaris install dvd
 # replace as needed with a local solaris install image
 
+
 WOS_PKGS=/net/netinstall.sfbay/export/nv/x/$(BUILDID)/Solaris_11/Product
-NONWOS_PKGS=/net/paradise.sfbay/export/integrate_dock/nv/nv_indiana1/i386
+NONWOS_PKGS=/net/paradise.sfbay/export/integrate_dock/nv/nv_indiana1/all \
+            /net/paradise.sfbay/export/integrate_dock/nv/nv_indiana1/i386
+
 TEST_PKGS=
 REPO=http://localhost:10000
 JUST_THESE_PKGS=
@@ -38,6 +41,8 @@ ALL_PKGS=$(TEST_PKGS) \
 	 $(WOS_PKGS)
 
 TMPPKGS=SUNWfixes
+EXTRA_OPTIONS=
+SOLARIS.PY=./solaris.py $(EXTRA_OPTIONS)
 
 #
 # always remove the following (editable) files from packages we bulk import;
@@ -108,6 +113,16 @@ SRCS=	$(OBJS:%.o=%.c)
 CFLAGS=		-g -v
 
 LINTFLAGS=	-axsm
+
+UNBUNDLED_TARGETS=\
+ClusterTools.import\
+Studio.import\
+NetBeans.import
+
+BUILDS= 75a\
+	79b\
+	86
+
 
 #
 # Starting in build 80, filelist.ramdisk began moving between various
@@ -246,21 +261,21 @@ proto:	Makefile
 
 import:	cluster.import $(TMPPKGS)
 	rm -f all.i386.$(BUILDID); ln -s $(BUILDID)/all.i386.$(BUILDID)
-	./solaris.py -s $(REPO) -w $(WOS_PKGS) $(ELIDED_FILES:%=-D %) all.i386.$(BUILDID)
+	$(SOLARIS.PY) -s $(REPO) -w $(WOS_PKGS) $(ELIDED_FILES:%=-D %) all.i386.$(BUILDID)
 
 %/import:
 	$(MAKE) BUILDID=$(@:%/import=%) import
 
 slim_import:	$(BUILDID)/slim_cluster $(TMPPKGS)
 	rm -f slim_cluster; ln -s $(BUILDID)/slim_cluster slim_cluster
-	./solaris.py -s $(REPO) $(ALL_PKGS:%=-w %) $(ELIDED_FILES:%=-D %) slim_cluster $(JUST_THESE_PKGS)
+	$(SOLARIS.PY) -s $(REPO) $(ALL_PKGS:%=-w %) $(ELIDED_FILES:%=-D %) $(JUST_THESE_PKGS:%=-j %) slim_cluster 
 
 %/slim_import:
 	$(MAKE) BUILDID=$(@:%/slim_import=%) slim_import
 
 redist_import:	$(BUILDID)/redist_cluster $(TMPPKGS)
 	rm -f redist_cluster; ln -s $(BUILDID)/redist_cluster redist_cluster
-	./solaris.py -s $(REPO) $(ALL_PKGS:%=-w %) $(ELIDED_FILES:%=-D %) redist_cluster $(JUST_THESE_PKGS)
+	$(SOLARIS.PY) -s $(REPO) $(ALL_PKGS:%=-w %) $(ELIDED_FILES:%=-D %) $(JUST_THESE_PKGS:%=-j %) redist_cluster 
 
 %/redist_import:
 	$(MAKE) BUILDID=$(@:%/redist_import=%) redist_import
@@ -270,6 +285,21 @@ redist_import:	$(BUILDID)/redist_cluster $(TMPPKGS)
 
 entire: $(BUILDID)/entire.incorporation
 	PKG_REPO=$(REPO) ./import_manifest_file entire@0.5.11,5.11-0.$(BUILDID) $(BUILDID)/entire.incorporation
+
+$(UNBUNDLED_TARGETS:%=$(BUILDS)/%):
+	$(MAKE) BUILDID=$(@D) $(@F)
+
+$(UNBUNDLED_TARGETS): unbundleds/$$(@:%.import=%)
+	rm -f redist_cluster; ln -s $(BUILDID)/redist_cluster redist_cluster
+	$(SOLARIS.PY) -s $(REPO) $(ALL_PKGS:%=-w %) $(ELIDED_FILES:%=-D %) `./package_names.py unbundleds/$(@:%.import=%)`  unbundleds/$(@:%.import=%) redist_cluster
+
+
+%/SUNWipkg:
+	$(MAKE) BUILDID=$(@D) $(@F)
+
+SUNWipkg:
+	PKG_REPO=$(REPO) ./publish_ips pkg:/SUNWipkg@0.5.11,5.11-0.`echo $(BUILDID) | tr '[a-z]' ' '`
+
 clean:
 	rm -f $(OBJS)
 	rm -rf proto

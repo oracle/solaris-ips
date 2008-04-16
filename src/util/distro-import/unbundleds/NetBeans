@@ -1,0 +1,111 @@
+package netbeans
+version 6.0.1
+depend SUNWnetbeans-ide
+depend SUNWnetbeans-javaee
+depend SUNWnetbeans-javase
+depend SUNWnetbeans-ruby
+depend SUNWnetbeans-cpp
+depend SUNWlibnb-apisupport1
+depend SUNWlibnb-cnd1
+depend SUNWlibnb-enterprise4
+depend SUNWlibnb-ide8
+#depend SUNWlibnb-identity1
+depend SUNWlibnb-java1
+depend SUNWlibnb-platform7
+depend SUNWlibnb-profiler2
+depend SUNWlibnb-ruby1
+#depend SUNWlibnb-soa1
+#depend SUNWlibnb-uml4
+depend SUNWlibnb-visualweb1
+depend SUNWlibnb-xml1
+end package
+
+package SUNWnetbeans-ide
+version 6.0.1
+import SUNWnetbeans-ide
+end package
+
+package SUNWnetbeans-javaee
+version 6.0.1
+import SUNWnetbeans-javaee
+end package
+
+package SUNWnetbeans-javase
+version 6.0.1
+import SUNWnetbeans-javase
+end package
+
+package SUNWnetbeans-ruby
+version 6.0.1
+import SUNWnetbeans-ruby
+end package
+
+package SUNWnetbeans-cpp
+version 6.0.1
+import SUNWnetbeans-cpp
+end package
+
+package SUNWlibnb-apisupport1
+version 6.0.1
+import SUNWlibnb-apisupport1
+end package
+
+package SUNWlibnb-cnd1
+version 6.0.1
+import SUNWlibnb-cnd1
+end package
+
+package SUNWlibnb-enterprise4
+version 6.0.1
+import SUNWlibnb-enterprise4
+end package
+
+package SUNWlibnb-ide8
+version 6.0.1
+import SUNWlibnb-ide8
+end package
+
+#package SUNWlibnb-identity1
+#version 6.0.1
+#import SUNWlibnb-identity1
+#end package
+
+package SUNWlibnb-java1
+version 6.0.1
+import SUNWlibnb-java1
+end package
+
+package SUNWlibnb-platform7
+version 6.0.1
+import SUNWlibnb-platform7
+end package
+
+package SUNWlibnb-profiler2
+version 6.0.1
+import SUNWlibnb-profiler2
+end package
+
+package SUNWlibnb-ruby1
+version 6.0.1
+import SUNWlibnb-ruby1
+end package
+
+#package SUNWlibnb-soa1
+#version 6.0.1
+#import SUNWlibnb-soa1
+#end package
+
+#package SUNWlibnb-uml4
+#version 6.0.1
+#import SUNWlibnb-uml4p
+#end package
+
+package SUNWlibnb-visualweb1
+version 6.0.1
+import SUNWlibnb-visualweb1
+end package
+
+package SUNWlibnb-xml1
+version 6.0.1
+import SUNWlibnb-xml1
+end package

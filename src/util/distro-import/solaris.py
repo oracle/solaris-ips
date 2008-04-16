@@ -121,8 +121,8 @@ class pkg(object):
                 if not self.version:
                         self.version = "%s-%s" % (def_vers, def_branch)
                 if not self.desc:
-                        self.desc = p.pkginfo["NAME"]
-
+                        self.desc = zap_strings(p.pkginfo["NAME"], description_detritus)
+			
                 # This is how we'd import dependencies, but we'll use
                 # file-specific dependencies only, since these tend to be
                 # broken.
@@ -744,6 +744,19 @@ def process_dependencies(file, path):
 
         return dep_pkgs, undeps
 
+def zap_strings(input, strings):
+	""" takes an input string and a list of strings to be removed, ignoring case"""
+	for s in strings:
+		ls = s.lower()
+		while True:
+			li = input.lower()
+			i = li.find(ls)
+			if i < 0:
+				break
+			input = input[0:i] + input[i + len(ls):]
+	return input
+
+	
 def_vers = "0.5.11"
 def_branch = ""
 def_wos_path = ["/net/netinstall.eng/export/nv/x/latest/Solaris_11/Product"]
@@ -756,9 +769,19 @@ wos_path = []
 # note that we ignore these if specifically included.
 #
 elided_files = {}
+#
+# if user uses -j, just_these_pkgs becomes list of pkgs to process
+# allowing other arguments to be read in as files...
+#
+just_these_pkgs = []
+#
+# strings to rip out of descriptions (case insensitve)
+#
+description_detritus = [", (usr)", ", (root)", " (usr)", " (root)",
+" (/usr)", " - / filesystem", ",root(/)"]
 
 try:
-        opts, args = getopt.getopt(sys.argv[1:], "D:b:dns:v:w:")
+        opts, args = getopt.getopt(sys.argv[1:], "D:b:dns:v:w:j:")
 except getopt.GetoptError, e:
         print "unknown option", e.opt
         sys.exit(1)
@@ -778,6 +801,8 @@ for opt, arg in opts:
                 wos_path.append(arg)
         elif opt == "-D":
                 elided_files[arg] = True
+	elif opt == "-j": # means we're using the new argument form...
+		just_these_pkgs.append(arg)
 
 if not def_branch:
         try:
@@ -806,10 +831,12 @@ if not args:
 if not wos_path:
         wos_path = def_wos_path
 
-infile = file(args[0])
-lexer = shlex.shlex(infile, args[0], True)
-lexer.whitespace_split = True
-lexer.source = "include"
+if just_these_pkgs:
+	filelist = args
+else:
+	filelist = args[0]
+	just_these_pkgs = args[1:]
+
 
 in_multiline_import = False
 
@@ -855,130 +882,142 @@ reuse_err = \
 
 print "First pass:", datetime.now()
 
+
 # First pass: don't actually publish anything, because we're not collecting
 # dependencies here.
-while True:
-        token = lexer.get_token()
 
-        if not token:
-                break
+lexer = None
 
-        if token == "package":
-                curpkg = start_package(lexer.get_token())
+for mf in filelist:
 
-        elif token == "end":
-                endarg = lexer.get_token()
-                if endarg == "package":
-                        try:
-                                end_package(curpkg)
-                        except Exception, e:
-                                print "ERROR(end_pkg):", e
+	lexer = shlex.shlex(file(mf), mf, True)
+	lexer.whitespace_split = True		 
+	lexer.source = "include"
 
-                        curpkg = None
-                if endarg == "import":
-                        in_multiline_import = False
-                        curpkg.imppkg = None
+	print "Processing %s" % lexer.infile
 
-        elif token == "version":
-                curpkg.version = lexer.get_token()
+	while True:
+		token = lexer.get_token()
 
-        elif token == "import":
-                package_name = lexer.get_token()
-                next = lexer.get_token()
-                if next != "exclude":
-                        line = ""
-                        lexer.push_token(next)
-                else:
-                        line = lexer.instream.readline().strip()
+		if not token:
+			break
 
-                curpkg.import_pkg(package_name, line)
+		if token == "package":
+			curpkg = start_package(lexer.get_token())
 
-        elif token == "from":
-                pkgspec = lexer.get_token()
-                p = SolarisPackage(pkg_path(pkgspec))
-                curpkg.imppkg = p
-                spkgname = p.pkginfo["PKG"]
-                svr4pkgpaths[spkgname] = pkg_path(pkgspec)
-                svr4pkgsseen[spkgname] = p;
-                curpkg.add_svr4_src(spkgname)
+		elif token == "end":
+			endarg = lexer.get_token()
+			if endarg == "package":
+				try:
+					end_package(curpkg)
+				except Exception, e:
+					print "ERROR(end_pkg):", e
 
-                junk = lexer.get_token()
-                assert junk == "import"
-                in_multiline_import = True
+				curpkg = None
+			if endarg == "import":
+				in_multiline_import = False
+				curpkg.imppkg = None
 
-        elif token == "description":
-                curpkg.desc = lexer.get_token()
+		elif token == "version":
+			curpkg.version = lexer.get_token()
 
-        elif token == "depend":
-                curpkg.depend.append(lexer.get_token())
+		elif token == "import":
+			package_name = lexer.get_token()
+			next = lexer.get_token()
+			if next != "exclude":
+				line = ""
+				lexer.push_token(next)
+			else:
+				line = lexer.instream.readline().strip()
 
-        elif token == "cluster":
-                curpkg.add_svr4_src(lexer.get_token())
+			curpkg.import_pkg(package_name, line)
 
-        elif token == "idepend":
-                curpkg.idepend.append(lexer.get_token())
+		elif token == "from":
+			pkgspec = lexer.get_token()
+			p = SolarisPackage(pkg_path(pkgspec))
+			curpkg.imppkg = p
+			spkgname = p.pkginfo["PKG"]
+			svr4pkgpaths[spkgname] = pkg_path(pkgspec)
+			svr4pkgsseen[spkgname] = p;
+			curpkg.add_svr4_src(spkgname)
 
-        elif token == "undepend":
-                curpkg.undepend.append(lexer.get_token())
+			junk = lexer.get_token()
+			assert junk == "import"
+			in_multiline_import = True
 
-        elif token == "add":
-                curpkg.extra.append(lexer.instream.readline().strip())
+		elif token == "description":
+			curpkg.desc = lexer.get_token()
 
-        elif token == "drop":
-                f = lexer.get_token()
-                l = [o for o in curpkg.files if o.pathname == f]
-                if not l:
-                        print "Cannot drop '%s' from '%s': not found" % \
-                            (f, curpkg.name)
-                else:
-                        del curpkg.files[curpkg.files.index(l[0])]
-                        # XXX The problem here is that if we do this on a shared
-                        # file (directory, etc), then it's missing from usedlist
-                        # entirely, since we don't keep around *all* packages
-                        # delivering a shared file, just the last seen.  This
-                        # probably doesn't matter much.
-                        del usedlist[f]
+		elif token == "depend":
+			curpkg.depend.append(lexer.get_token())
 
-        elif token == "chattr":
-                fname = lexer.get_token()
-                line = lexer.instream.readline().strip()
-                try:
-                        curpkg.chattr(fname, line)
-                except Exception, e:
-                        print "Can't change attributes on " + \
-                            "'%s': not in the package" % fname, e
-                        raise
+		elif token == "cluster":
+			curpkg.add_svr4_src(lexer.get_token())
 
-        elif token == "chattr_glob":
-                glob = lexer.get_token()
-                line = lexer.instream.readline().strip()
-                try:
-                        curpkg.chattr_glob(glob, line)
-                except Exception, e:
-                        print "Can't change attributes on " + \
-                            "'%s': no matches in the package" % \
-                            glob, e
-                        raise
+		elif token == "idepend":
+			curpkg.idepend.append(lexer.get_token())
 
-        elif in_multiline_import:
-                next = lexer.get_token()
-                if next == "with":
-                        # I can't imagine this is supported, but there's no
-                        # other way to read the rest of the line without a whole
-                        # lot more pain.
-                        line = lexer.instream.readline().strip()
-                else:
-                        lexer.push_token(next)
-                        line = ""
+		elif token == "undepend":
+			curpkg.undepend.append(lexer.get_token())
 
-                try:
-                        curpkg.import_file(token, line)
-                except Exception, e:
-                        print "ERROR(import_file):", e
-                        raise
-        else:
-                raise "Error: unknown token '%s' (%s:%s)" % \
-                    (token, lexer.infile, lexer.lineno)
+		elif token == "add":
+			curpkg.extra.append(lexer.instream.readline().strip())
+
+		elif token == "drop":
+			f = lexer.get_token()
+			l = [o for o in curpkg.files if o.pathname == f]
+			if not l:
+				print "Cannot drop '%s' from '%s': not found" % \
+				    (f, curpkg.name)
+			else:
+				del curpkg.files[curpkg.files.index(l[0])]
+				# XXX The problem here is that if we do this on a shared
+				# file (directory, etc), then it's missing from usedlist
+				# entirely, since we don't keep around *all* packages
+				# delivering a shared file, just the last seen.  This
+				# probably doesn't matter much.
+				del usedlist[f]
+
+		elif token == "chattr":
+			fname = lexer.get_token()
+			line = lexer.instream.readline().strip()
+			try:
+				curpkg.chattr(fname, line)
+			except Exception, e:
+				print "Can't change attributes on " + \
+				    "'%s': not in the package" % fname, e
+				raise
+
+		elif token == "chattr_glob":
+			glob = lexer.get_token()
+			line = lexer.instream.readline().strip()
+			try:
+				curpkg.chattr_glob(glob, line)
+			except Exception, e:
+				print "Can't change attributes on " + \
+				    "'%s': no matches in the package" % \
+				    glob, e
+				raise
+
+		elif in_multiline_import:
+			next = lexer.get_token()
+			if next == "with":
+				# I can't imagine this is supported, but there's no
+				# other way to read the rest of the line without a whole
+				# lot more pain.
+				line = lexer.instream.readline().strip()
+			else:
+				lexer.push_token(next)
+				line = ""
+
+			try:
+				curpkg.import_file(token, line)
+			except Exception, e:
+				print "ERROR(import_file):", e
+				raise
+		else:
+			raise "Error: unknown token '%s' (%s:%s)" % \
+			    (token, lexer.infile, lexer.lineno)
 
 seenpkgs = set(i[0] for i in usedlist.values())
 
@@ -1007,10 +1046,10 @@ print "Second pass:", datetime.now()
 print "New packages:\n"
 # XXX Sort these.  Preferably topologically, if possible, alphabetically
 # otherwise (for a rough progress gauge).
-if args[1:]:
+if just_these_pkgs:
         newpkgs = set(pkgdict[name] 
                       for name in pkgdict.keys() 
-                      if name in args[1:]
+                      if name in just_these_pkgs
                       )
 else:
         newpkgs = set(pkgdict.values())
