@@ -22,9 +22,9 @@ include common/SUNWavahi-bridge-dsd
 include common/SUNWcairomm
 include common/SUNWccsm
 include common/SUNWciu8.86
-include common/SUNWcompiz
 include common/SUNWcompiz-fusion-extra
 include common/SUNWcompiz-fusion-main
+include common/SUNWcompiz.86
 include common/SUNWcompizconfig-gconf
 include common/SUNWcompizconfig-python
 include common/SUNWcs.86
@@ -79,6 +79,7 @@ include common/SUNWinstall-l10n
 include common/SUNWinstall-libs
 include common/SUNWipkg-gui.86
 include common/SUNWisns
+include common/SUNWjavadb
 include common/SUNWjaxp.78
 include common/SUNWjds-registration.72
 include common/SUNWkiu8.86
@@ -197,6 +198,7 @@ include common/SUNWxwplr.86
 include common/SUNWxwpmn.86
 include common/SUNWxwsvr.86
 include common/SUNWxwts
+include common/SUNWzone.86
 include i386/NVDAgraphics.81
 include i386/SUNWamd8111s.76
 include i386/SUNWatigfx

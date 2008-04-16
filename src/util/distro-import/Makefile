@@ -69,6 +69,8 @@ CACHED_FILES=					\
 	boot/grub/menu.lst			\
 	boot/grub/splash.xpm.gz			\
 	etc/inet/hosts				\
+	etc/zones/SUNWblank.xml			\
+	etc/zones/SUNWdefault.xml		\
 	lib/svc/method/fs-usr			\
 	lib/svc/method/sshd			\
 	lib/svc/method/svc-dlmgmtd		\
@@ -246,6 +248,7 @@ proto:	Makefile
 	mkdir -p proto/etc/inet
 	mkdir -p proto/etc/security
 	mkdir -p proto/etc/svc
+	mkdir -p proto/etc/zones
 	mkdir -p proto/lib/svc/method
 	mkdir -p proto/usr/bin
 	mkdir -p proto/usr/jdk/instances/jdk1.6.0/jre

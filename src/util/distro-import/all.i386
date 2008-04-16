@@ -399,12 +399,6 @@ include common/SUNWjai-imageio
 include common/SUNWjato
 include common/SUNWjatodmo
 include common/SUNWjatodoc
-include common/SUNWjavadb-client
-include common/SUNWjavadb-common
-include common/SUNWjavadb-core
-include common/SUNWjavadb-demo
-include common/SUNWjavadb-docs
-include common/SUNWjavadb-javadoc
 include common/SUNWjdmk-base
 include common/SUNWjdsrm
 include common/SUNWjdsver
@@ -779,6 +773,5 @@ include common/SUNWzfsg
 include common/SUNWzfskr
 include common/SUNWzip
 include common/SUNWzlib
-include common/SUNWzone
 include common/SUNWzsh
 include cluster.import

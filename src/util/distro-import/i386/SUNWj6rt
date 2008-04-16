@@ -18,6 +18,7 @@ add link path=usr/bin/rmid target=../java/bin/rmid
 add link path=usr/bin/rmiregistry target=../java/bin/rmiregistry
 add link path=usr/bin/servertool target=../java/bin/servertool
 add link path=usr/bin/tnameserv target=../java/bin/tnameserv
-add link path=usr/java target=jdk/instances/jdk1.6.0
-add link path=usr/jdk/latest target=instances/jdk1.6.0
+add link path=usr/java target=jdk/jdk1.6.0_04
+add link path=usr/jdk/jdk1.6.0_04 target=instances/jdk1.6.0
+add link path=usr/jdk/latest target=jdk1.6.0_04
 end package

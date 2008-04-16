@@ -1,0 +1,10 @@
+package SUNWzone
+import SUNWzoneu
+import SUNWzoner
+drop etc/zones/SUNWblank.xml
+drop etc/zones/SUNWdefault.xml
+from SUNWfixes import
+etc/zones/SUNWblank.xml
+etc/zones/SUNWdefault.xml
+end import
+end package

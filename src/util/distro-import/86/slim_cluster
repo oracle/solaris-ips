@@ -38,9 +38,9 @@ include common/SUNWcfcl.79
 include common/SUNWcfpl
 include common/SUNWchxge
 include common/SUNWcnetr
-include common/SUNWcompiz
 include common/SUNWcompiz-fusion-extra
 include common/SUNWcompiz-fusion-main
+include common/SUNWcompiz.86
 include common/SUNWcompizconfig-gconf
 include common/SUNWcompizconfig-python
 include common/SUNWcpcu
@@ -395,7 +395,7 @@ include common/SUNWzfs.79
 include common/SUNWzfskr
 include common/SUNWzip
 include common/SUNWzlib
-include common/SUNWzone
+include common/SUNWzone.86
 include common/SUNWzsh
 include common/loc/SUNWfirefoxl10n-de-DE
 include common/loc/SUNWfirefoxl10n-es-ES

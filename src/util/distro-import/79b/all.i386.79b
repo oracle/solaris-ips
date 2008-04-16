@@ -51,6 +51,12 @@ include common/SUNWhpijs.77
 include common/SUNWiiim
 include common/SUNWiniu8
 include common/SUNWisns
+include common/SUNWjavadb-client
+include common/SUNWjavadb-common
+include common/SUNWjavadb-core
+include common/SUNWjavadb-demo
+include common/SUNWjavadb-docs
+include common/SUNWjavadb-javadoc
 include common/SUNWjaxp.78
 include common/SUNWjds-registration.72
 include common/SUNWkiu8
@@ -140,6 +146,7 @@ include common/SUNWxwslb
 include common/SUNWxwsvr
 include common/SUNWxwts
 include common/SUNWxwxft
+include common/SUNWzone
 include i386/NVDAgraphics.76
 include i386/SUNWaac
 include i386/SUNWamd8111s.76

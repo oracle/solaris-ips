@@ -1,0 +1,8 @@
+package SUNWjavadb
+import SUNWjavadb-client
+import SUNWjavadb-common
+import SUNWjavadb-core
+import SUNWjavadb-demo
+import SUNWjavadb-docs
+import SUNWjavadb-javadoc
+end package
