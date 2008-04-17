@@ -123,8 +123,8 @@ class Transaction(object):
                 reestablish the status of inflight transactions."""
 
                 self.cfg = cfg
-                self.open_time, self.esc_pkg_name = re.split("_",
-                    os.path.basename(trans_dir))
+                self.open_time, self.esc_pkg_name = \
+                    os.path.basename(trans_dir).split("_", 1)
                 self.open_time = int(self.open_time)
                 self.pkg_name = urllib.unquote(self.esc_pkg_name)
 
