@@ -143,7 +143,8 @@ class UserAction(generic.Action):
                         gr.writefile()
                         ftp.writefile()
                 except:
-                        pw.unlockfile()
+                        if "pw" in locals():
+                                pw.unlockfile()
                         raise
                 pw.unlockfile()
 
