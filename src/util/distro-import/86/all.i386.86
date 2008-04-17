@@ -109,6 +109,7 @@ include common/SUNWmysql5test
 include common/SUNWncft.76
 include common/SUNWndmp
 include common/SUNWnetcat
+include common/SUNWopensolaris-welcome
 include common/SUNWp7zip
 include common/SUNWpcre.77
 include common/SUNWpgadmin3.84

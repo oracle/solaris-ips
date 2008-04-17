@@ -414,6 +414,7 @@ include common/SUNWnmap
 include common/SUNWntp
 include common/SUNWogg-vorbis
 include common/SUNWopenjade
+include common/SUNWopensolaris-welcome
 include common/SUNWopensp
 include common/SUNWosdem
 include common/SUNWp7zip
@@ -1685,6 +1686,7 @@ idepend SUNWiiimf-in-indicle
 idepend SUNWiiimf-ja-anthy
 idepend SUNWiiimf-ko-hangul
 idepend SUNWiiimf-ko-kole
+idepend SUNWiiimf-root
 idepend SUNWiiimf-th-thaile
 idepend SUNWiiimf-zhCN-cle-core
 idepend SUNWiiimf-zhCN-cle-open
@@ -2032,6 +2034,7 @@ idepend SUNWogg-vorbis-devel
 idepend SUNWopenjade
 idepend SUNWopenjade-devel
 idepend SUNWopenjade-root
+idepend SUNWopensolaris-welcome
 idepend SUNWopensp
 idepend SUNWopensp-devel
 idepend SUNWopensp-root
@@ -2943,6 +2946,7 @@ idepend SUNWntpu
 idepend SUNWnvsata
 idepend SUNWnxge
 idepend SUNWogg-vorbis
+idepend SUNWopensolaris-welcome
 idepend SUNWopenssl-commands
 idepend SUNWopenssl-libraries
 idepend SUNWopenssl-man

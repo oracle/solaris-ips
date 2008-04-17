@@ -263,6 +263,7 @@ include common/SUNWnis
 include common/SUNWnmap
 include common/SUNWntp
 include common/SUNWogg-vorbis
+include common/SUNWopensolaris-welcome
 include common/SUNWp7zip
 include common/SUNWpapi
 include common/SUNWpc
@@ -1060,6 +1061,7 @@ idepend SUNWntpu
 idepend SUNWnvsata
 idepend SUNWnxge
 idepend SUNWogg-vorbis
+idepend SUNWopensolaris-welcome
 idepend SUNWopenssl-commands
 idepend SUNWopenssl-libraries
 idepend SUNWopenssl-man
