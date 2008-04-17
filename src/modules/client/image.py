@@ -979,18 +979,30 @@ class Image(object):
                 return portable.get_user_by_name(name, self.root, 
                                                  self.type != IMG_USER)
 
-        def get_name_by_uid(self, uid):
+        def get_name_by_uid(self, uid, returnuid = False):
                 # XXX What to do about IMG_PARTIAL?
-                return portable.get_name_by_uid(uid, self.root, 
-                                                self.type != IMG_USER)
+                try:
+                        return portable.get_name_by_uid(uid, self.root, 
+                            self.type != IMG_USER)
+                except KeyError:
+                        if returnuid:
+                                return uid
+                        else:
+                                raise
 
         def get_group_by_name(self, name):
                 return portable.get_group_by_name(name, self.root, 
                                                   self.type != IMG_USER)
 
-        def get_name_by_gid(self, gid):
-                return portable.get_name_by_gid(gid, self.root, 
-                                                self.type != IMG_USER)
+        def get_name_by_gid(self, gid, returngid = False):
+                try:
+                        return portable.get_name_by_gid(gid, self.root, 
+                            self.type != IMG_USER)
+                except KeyError:
+                        if returngid:
+                                return gid
+                        else:
+                                raise
 
         def gen_inventory(self, patterns, all_known=False):
                 """Iterating the package inventory, yielding per-package info.

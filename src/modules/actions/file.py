@@ -179,12 +179,12 @@ class FileAction(generic.Action):
                         errors.append("%s is not a regular file" % self.attrs["path"])
                 if stat[ST_UID] != owner:
                         errors.append("Owner: '%s' should be '%s'" % \
-                            (img.get_name_by_uid(stat[ST_UID]),
-                             img.get_name_by_uid(owner)))
+                            (img.get_name_by_uid(stat[ST_UID], True),
+                             img.get_name_by_uid(owner, True)))
                 if stat[ST_GID] != group:
                         errors.append("Group: '%s' should be '%s'" % \
-                            (img.get_name_by_gid(stat[ST_GID]),
-                             img.get_name_by_gid(group)))
+                            (img.get_name_by_gid(stat[ST_GID], True),
+                             img.get_name_by_gid(group, True)))
                 if S_IMODE(stat[ST_MODE]) != mode:
                         errors.append("Mode: 0%.3o should be 0%.3o" % \
                             (S_IMODE(stat[ST_MODE]), mode))
