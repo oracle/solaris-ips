@@ -50,10 +50,13 @@ class SolarisPackageDirBundle(object):
                 def j(path):
                         return os.path.join(self.pkg.basedir, path)
 
+                faspac_contents = set()
+
                 for klass in faspac:
                         cf = CpioFile.open(os.path.join(
                             self.filename, "archive", klass + ".bz2"))
                         for ci in cf:
+                                faspac_contents.add(j(ci.name))
                                 yield self.action(pkgmap[j(ci.name)],
                                     ci.extractfile())
 
@@ -73,7 +76,11 @@ class SolarisPackageDirBundle(object):
                 for p in self.pkg.manifest:
                         # Just do the files that remain.  Only regular file
                         # types end up compressed; so skip them and only them.
-                        if p.type in "fev" and p.klass in faspac:
+                        # Files with special characters in their names may not
+                        # end up in the faspac archive, so we still need to emit
+                        # the ones that aren't.
+                        if p.type in "fev" and p.klass in faspac and \
+                            p.pathname in faspac_contents:
                                 continue
 
                         # These are the only valid file types in SysV packages
