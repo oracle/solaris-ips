@@ -788,7 +788,7 @@ except getopt.GetoptError, e:
 
 for opt, arg in opts:
         if opt == "-b":
-                def_branch = arg
+                def_branch = arg.rstrip("abcdefghijklmnopqrstuvwxyz")
         elif opt == "-d":
                 show_debug = True
         elif opt == "-n":
@@ -803,19 +803,6 @@ for opt, arg in opts:
                 elided_files[arg] = True
 	elif opt == "-j": # means we're using the new argument form...
 		just_these_pkgs.append(arg)
-
-if not def_branch:
-        try:
-                pkgpath = pkg_path("SUNWsolnm")
-                release_file = pkgpath + "/reloc/etc/release"
-                if os.path.isfile(release_file):
-                        rf = file(release_file)
-                        l = rf.readline()
-                        idx = l.index("nv_") + 3
-                        def_branch = "0." + l[idx:idx+2]
-                        rf.close()        
-        except:
-                pass
 
 if not def_branch:
         print "need a branch id (build number)"
@@ -834,7 +821,7 @@ if not wos_path:
 if just_these_pkgs:
 	filelist = args
 else:
-	filelist = args[0]
+	filelist = args[0:1]
 	just_these_pkgs = args[1:]
 
 

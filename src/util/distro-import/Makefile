@@ -42,7 +42,7 @@ ALL_PKGS=$(TEST_PKGS) \
 
 TMPPKGS=SUNWfixes
 EXTRA_OPTIONS=
-SOLARIS.PY=./solaris.py $(EXTRA_OPTIONS)
+SOLARIS.PY=./solaris.py -b $(BUILDID) $(EXTRA_OPTIONS)
 
 #
 # always remove the following (editable) files from packages we bulk import;
