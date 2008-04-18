@@ -473,7 +473,11 @@ class Image(object):
                 else:
                         m["authority"] = fmri.get_authority()
 
-                m.store(mpath, ipath)
+                try:
+                        m.store(mpath, ipath)
+                except OSError, e:
+                        if e.errno not in (errno.EROFS, errno.EACCES):
+                                raise
 
                 return m
 
