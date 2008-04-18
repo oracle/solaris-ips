@@ -102,5 +102,5 @@ depend SUNWlibm
 depend SUNWmlib
 depend SUNWsprot
 depend SUNWtoo
-depend SUNWxcu4t
+#depend SUNWxcu4t
 end package

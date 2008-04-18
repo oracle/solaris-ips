@@ -929,7 +929,6 @@ class Image(object):
         def strtofmri(self, myfmri):
                 ret = pkg.fmri.PkgFmri(myfmri, 
                     self.attrs["Build-Release"])
-                self.fmri_set_default_authority(ret)
                     
                 return ret
 
@@ -943,7 +942,6 @@ class Image(object):
                         myfmri = self.strtofmri(myfmri)
                 else:
                         name = myfmri.get_name()
-                        self.fmri_set_default_authority(myfmri)
 
                 ofmri = self.optional_dependencies.get(name, None)
                 if not ofmri or self.fmri_is_successor(myfmri, ofmri):
