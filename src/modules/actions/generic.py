@@ -28,8 +28,7 @@
 """module describing a generic packaging object
 
 This module contains the Action class, which represents a generic packaging
-object.  It also contains a helper function, gunzip_from_stream(), which actions
-may use to decompress their data payloads."""
+object."""
 
 import os
 import sha
@@ -37,72 +36,8 @@ import zlib
 import errno
 
 import pkg.actions
+import pkg.client.retrieve as retrieve
 import pkg.portable as portable
-
-def gunzip_from_stream(gz, outfile):
-        """Decompress a gzipped input stream into an output stream.
-
-        The argument 'gz' is an input stream of a gzipped file (XXX make it do
-        either a gzipped file or raw zlib compressed data), and 'outfile' is is
-        an output stream.  gunzip_from_stream() decompresses data from 'gz' and
-        writes it to 'outfile', and returns the hexadecimal SHA-1 sum of that
-        data.
-        """
-
-        FHCRC = 2
-        FEXTRA = 4
-        FNAME = 8
-        FCOMMENT = 16
-
-        # Read the header
-        magic = gz.read(2)
-        if magic != "\037\213":
-                raise IOError, "Not a gzipped file"
-        method = ord(gz.read(1))
-        if method != 8:
-                raise IOError, "Unknown compression method"
-        flag = ord(gz.read(1))
-        gz.read(6) # Discard modtime, extraflag, os
-
-        # Discard an extra field
-        if flag & FEXTRA:
-                xlen = ord(gz.read(1))
-                xlen = xlen + 256 * ord(gz.read(1))
-                gz.read(xlen)
-
-        # Discard a null-terminated filename
-        if flag & FNAME:
-                while True:
-                        s = gz.read(1)
-                        if not s or s == "\000":
-                                break
-
-        # Discard a null-terminated comment
-        if flag & FCOMMENT:
-                while True:
-                        s = gz.read(1)
-                        if not s or s == "\000":
-                                break
-
-        # Discard a 16-bit CRC
-        if flag & FHCRC:
-                gz.read(2)
-
-        shasum = sha.new()
-        dcobj = zlib.decompressobj(-zlib.MAX_WBITS)
-
-        while True:
-                buf = gz.read(64 * 1024)
-                if buf == "":
-                        ubuf = dcobj.flush()
-                        shasum.update(ubuf)
-                        outfile.write(ubuf)
-                        break
-                ubuf = dcobj.decompress(buf)
-                shasum.update(ubuf)
-                outfile.write(ubuf)
-
-        return shasum.hexdigest()
 
 class Action(object):
         """Class representing a generic packaging object.
@@ -408,6 +343,18 @@ class Action(object):
                 except OSError, e:
                         if e.errno != errno.EPERM:
                                 raise
+
+        def get_remote_opener(self, img, fmri):
+                """Return an opener for the action's datastream which pulls from
+                the server.  The caller may have to decompress the datastream."""
+
+                if not hasattr(self, "hash"):
+                        return None
+
+                def opener():
+                        return retrieve.get_datastream(img, fmri, self.hash)
+
+                return opener
 
         def verify(self, img, **args):
                 """returns True if correctly installed in the given image"""

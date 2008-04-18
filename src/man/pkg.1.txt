@@ -11,8 +11,8 @@ SYNOPSIS
      /usr/bin/pkg uninstall [-nrvq] pkg_fmri ...
 
      /usr/bin/pkg verify [-fHvq] [pkg_fmri_pattern ...]
-     /usr/bin/pkg info pkg_fmri_pattern [pkg_fmri_pattern ...]
-     /usr/bin/pkg contents [-Hm] [-o attribute ...] [-s sort_key]
+     /usr/bin/pkg info [-lr] [--license] [pkg_fmri_pattern ...]
+     /usr/bin/pkg contents [-Hmr] [-o attribute ...] [-s sort_key]
          [-t action_type ... ] [pkg_fmri_pattern ...]
      /usr/bin/pkg list [-aHsuv] [pkg_fmri_pattern ...]
      /usr/bin/pkg search [-lr] [-s server] token
@@ -93,12 +93,21 @@ SUBCOMMANDS
           uninstall any packages which are dependent on the initial
           package.
 
-     info [pkg_fmri_pattern ...]
+     info [-lr] [--license] [pkg_fmri_pattern ...]
           Display information about packages in a human-readable form.
           Multiple FMRI patterns may be specified; with no patterns,
           display information on all installed packages in the image.
 
-     contents [-Hm] [-o attribute ...] [-s sort_key] [-t action_type ... ]
+          With -l, use the data available from locally installed packages.
+          This is the default.
+
+          With -r, retrieve the data from the servers.  Note that you must
+          specify one or more package patterns in this case.
+
+          With --license, print out the license text(s) for the package.
+          This may be combined with -l or -r.
+
+     contents [-Hmr] [-o attribute ...] [-s sort_key] [-t action_type ... ]
               [pkg_fmri_pattern ...]
           Display the contents (action attributes) of packages in the
           current image.  By default, only the path attribute is displayed,
@@ -116,10 +125,13 @@ SUBCOMMANDS
 
           The -H option causes the headers to be omitted.
 
+          The -r option retrieves the requested data from the server, for
+          use in cases when the package is not already installed.
+
           With no arguments, the output includes all installed packages.
           Alternatively, multiple FMRI patterns may be specified, which
-          restricts the display to the contents of the matching
-          packages.
+          restricts the display to the contents of the matching packages.
+          When using -r, one or more pkg_fmri_patterns must be specified.
 
           Several special "pseudo" attribute names are available for
           convenience:

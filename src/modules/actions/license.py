@@ -38,6 +38,7 @@ import sha
 from stat import *
 
 import generic
+import pkg.misc as misc
 import pkg.portable as portable
 
 class LicenseAction(generic.Action):
@@ -79,7 +80,7 @@ class LicenseAction(generic.Action):
                 lfile = file(path, "wb")
                 # XXX Should throw an exception if shasum doesn't match
                 # self.hash
-                shasum = generic.gunzip_from_stream(stream, lfile)
+                shasum = misc.gunzip_from_stream(stream, lfile)
 
                 lfile.close()
                 stream.close()
@@ -131,3 +132,16 @@ class LicenseAction(generic.Action):
                 except OSError,e:
                         if e.errno != errno.ENOENT:
                                 raise
+
+        def get_local_opener(self, img, fmri):
+                """Return an opener for the license text from the local disk."""
+
+                path = os.path.normpath(os.path.join(img.imgdir, "pkg",
+                    fmri.get_dir_path(), "license." + self.attrs["license"]))
+
+                def opener():
+                        # XXX Do we check to make sure that what's there is what
+                        # we think is there (i.e., re-hash)?
+                        return file(path, "rb")
+
+                return opener

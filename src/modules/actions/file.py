@@ -35,6 +35,7 @@ import errno
 import sha
 from stat import *
 import generic
+import pkg.misc as misc
 import pkg.portable as portable
 try:
         import pkg.elf as elf
@@ -107,7 +108,7 @@ class FileAction(generic.Action):
 
                         stream = self.data()
                         tfile = file(temp, "wb")
-                        shasum = generic.gunzip_from_stream(stream, tfile)
+                        shasum = misc.gunzip_from_stream(stream, tfile)
 
                         tfile.close()
                         stream.close()

@@ -972,8 +972,10 @@ class Image(object):
 
         def load_optional_dependencies(self):
                 for fmri in self.gen_installed_pkgs():
-                        deps = self.get_manifest(fmri, filtered = True).get_dependencies()
-                        for required, min_fmri, max_fmri in deps:
+                        mfst = self.get_manifest(fmri, filtered = True)
+
+                        for dep in mfst.gen_actions_by_type("depend"):
+                                required, min_fmri, max_fmri = dep.parse(self)
                                 if required == False:
                                         self.update_optional_dependency(min_fmri)
 

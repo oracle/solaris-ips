@@ -82,10 +82,10 @@ Basic subcommands:
         pkg refresh [--full]
 
 Advanced subcommands:
-        pkg info [pkg_fmri_pattern ...]
+        pkg info [-lr] [--license] [pkg_fmri_pattern ...]
         pkg search [-lr] [-s server] token
         pkg verify [-fHqv] [pkg_fmri_pattern ...]
-        pkg contents [-Hm] [-o attribute ...] [-s sort_key] [-t action_type ... ]
+        pkg contents [-Hmr] [-o attribute ...] [-s sort_key] [-t action_type ... ]
             pkg_fmri_pattern [...]
         pkg image-create [-FPUz] [--full|--partial|--user] [--zone]
             [-k ssl_key] [-c ssl_cert] -a <prefix>=<url> dir
@@ -650,39 +650,127 @@ def search(img, args):
 
         return retcode
 
+def info_license(img, mfst, remote):
+        fmri = mfst.fmri
+
+        for i, license in enumerate(mfst.gen_actions_by_type("license")):
+                if i > 0:
+                        print
+
+                if remote:
+                        misc.gunzip_from_stream(
+                            license.get_remote_opener(img, fmri)(), sys.stdout)
+                else:
+                        print license.get_local_opener(img, fmri)().read()[:-1]
+
 def info(img, args):
         """Display information about a package or packages.
         """
 
-        # XXX Need remote-info option, to request equivalent information
-        # from repository.
+        display_license = False
+        info_local = False
+        info_remote = False
 
-        opts, pargs = getopt.getopt(args, "")
+        opts, pargs = getopt.getopt(args, "lr", ["license"])
+        for opt, arg in opts:
+                if opt == "-l":
+                        info_local = True
+                elif opt == "-r":
+                        info_remote = True
+                elif opt == "--license":
+                        display_license = True
+
+        if not info_local and not info_remote:
+                info_local = True
+        elif info_local and info_remote:
+                usage(_("info: -l and -r may not be combined"))
+
+        if info_remote and not pargs:
+                usage(_("info: must request remote info for specific packages"))
 
         img.load_catalogs(progress.NullProgressTracker())
 
-        err, fmris = installed_fmris_from_args(img, pargs)
-        if err != 0:
-                return err
-        if not fmris:
-                return 0
-        
+        if info_local:
+                err, fmris = installed_fmris_from_args(img, pargs)
+                if err != 0:
+                        return err
+                if not fmris:
+                        print _("""\
+pkg: no packages matching the patterns you specified are installed
+on the system.  Specify -r to retrieve requested information from the
+repository.""")
+        elif info_remote:
+                fmris = []
+
+                # XXX This loop really needs not to be copied from
+                # Image.make_install_plan()!
+                for p in pargs:
+                        try:
+                                matches = img.get_matching_fmris(p)
+                        except KeyError:
+                                print _("""\
+pkg: no package matching '%s' could be found in current catalog
+     suggest relaxing pattern, refreshing and/or examining catalogs""") % p
+                                error = 1
+                                continue
+
+                        pnames = {}
+                        pmatch = []
+                        npnames = {}
+                        npmatch = []
+                        for m in matches:
+                                if m.preferred_authority():
+                                        pnames[m.get_pkg_stem()] = 1
+                                        pmatch.append(m)
+                                else:
+                                        npnames[m.get_pkg_stem()] = 1
+                                        npmatch.append(m)
+
+                        if len(pnames.keys()) > 1:
+                                print \
+                                    _("pkg: '%s' matches multiple packages") % p
+                                for k in pnames.keys():
+                                        print "\t%s" % k
+                                error = 1
+                                continue
+                        elif len(pnames.keys()) < 1 and len(npnames.keys()) > 1:
+                                print \
+                                    _("pkg: '%s' matches multiple packages") % p
+                                for k in npnames.keys():
+                                        print "\t%s" % k
+                                error = 1
+                                continue
+
+                        # matches is a list reverse sorted by version, so take
+                        # the first; i.e., the latest.
+                        if len(pmatch) > 0:
+                                fmris.append(pmatch[0])
+                        else:
+                                fmris.append(npmatch[0]) 
+
         manifests = ( img.get_manifest(f, filtered = True) for f in fmris )
 
         for i, m in enumerate(manifests):
                 if i > 0:
                         print
 
+                if display_license:
+                        info_license(img, m, info_remote)
+                        continue
+
                 authority, name, version = m.fmri.tuple()
                 authority = fmri.strip_auth_pfx(authority)
                 summary = m.get("description", "")
                 if m.fmri.preferred_authority():
                         authority += _(" (preferred)")
+                if img.is_installed(m.fmri):
+                        state = _("Installed")
+                else:
+                        state = _("Not installed")
 
                 print "          Name:", name
                 print "       Summary:", summary
-                # XXX Hard wired for now.
-                print "         State: Installed"
+                print "         State:", state
 
                 # XXX even more info on the authority would be nice?
                 print "     Authority:", authority
@@ -700,8 +788,6 @@ def info(img, args):
                 print "          FMRI:", m.fmri
                 # XXX need to properly humanize the manifest.size
                 # XXX add license/copyright info here?
-
-
 
 def display_contents_results(actionlist, attrs, sort_attrs, action_types,
     display_headers):
@@ -810,8 +896,6 @@ def display_contents_results(actionlist, attrs, sort_attrs, action_types,
         for line in sorted(lines, key = key_extract):
                 print (fmt % tuple(line)).rstrip()
 
-
-
 def list_contents(img, args):
         """List package contents.
 
@@ -823,7 +907,7 @@ def list_contents(img, args):
         # XXX Need remote-info option, to request equivalent information
         # from repository.
 
-        opts, pargs = getopt.getopt(args, "Ho:s:t:mf")
+        opts, pargs = getopt.getopt(args, "Ho:s:t:mfr")
 
         valid_special_attrs = [ "action.name", "action.key", "action.raw",
             "pkg.name", "pkg.fmri", "pkg.shortfmri", "pkg.authority",
@@ -832,6 +916,8 @@ def list_contents(img, args):
         display_headers = True
         display_raw = False
         display_nofilters = False
+        remote = False
+        local = False
         attrs = []
         sort_attrs = []
         action_types = []
@@ -844,11 +930,18 @@ def list_contents(img, args):
                         sort_attrs.append(arg)
                 elif opt == "-t":
                         action_types.extend(arg.split(","))
+                elif opt == "-r":
+                        remote = True
                 elif opt == "-m":
                         display_raw = True
                 elif opt == "-f":
                         # Undocumented, for now.
                         display_nofilters = True
+
+        if not remote and not local:
+                local = True
+        elif local and remote:
+                usage(_("contents: -l and -r may not be combined"))
 
         if display_raw:
                 display_headers = False
@@ -868,11 +961,60 @@ def list_contents(img, args):
 
         img.load_catalogs(progress.NullProgressTracker())
 
-        err, fmris = installed_fmris_from_args(img, pargs)
-        if err != 0:
-                return err
-        if not fmris:
-                return 0
+        if local:
+                err, fmris = installed_fmris_from_args(img, pargs)
+                if err != 0:
+                        return err
+                if not fmris:
+                        return 0
+        elif remote:
+                fmris = []
+
+                # XXX This loop really needs not to be copied from
+                # Image.make_install_plan()!
+                for p in pargs:
+                        try:
+                                matches = img.get_matching_fmris(p)
+                        except KeyError:
+                                print _("""\
+pkg: no package matching '%s' could be found in current catalog
+     suggest relaxing pattern, refreshing and/or examining catalogs""") % p
+                                error = 1
+                                continue
+
+                        pnames = {}
+                        pmatch = []
+                        npnames = {}
+                        npmatch = []
+                        for m in matches:
+                                if m.preferred_authority():
+                                        pnames[m.get_pkg_stem()] = 1
+                                        pmatch.append(m)
+                                else:
+                                        npnames[m.get_pkg_stem()] = 1
+                                        npmatch.append(m)
+
+                        if len(pnames.keys()) > 1:
+                                print \
+                                    _("pkg: '%s' matches multiple packages") % p
+                                for k in pnames.keys():
+                                        print "\t%s" % k
+                                error = 1
+                                continue
+                        elif len(pnames.keys()) < 1 and len(npnames.keys()) > 1:
+                                print \
+                                    _("pkg: '%s' matches multiple packages") % p
+                                for k in npnames.keys():
+                                        print "\t%s" % k
+                                error = 1
+                                continue
+
+                        # matches is a list reverse sorted by version, so take
+                        # the first; i.e., the latest.
+                        if len(pmatch) > 0:
+                                fmris.append(pmatch[0])
+                        else:
+                                fmris.append(npmatch[0]) 
 
         #
         # If the user specifies no specific attrs, and no specific
@@ -903,9 +1045,6 @@ def list_contents(img, args):
 
         display_contents_results(actionlist, attrs, sort_attrs, action_types,
             display_headers)
-
-        
-        
 
 def display_catalog_failures(failures):
         total, succeeded = failures.args[1:3]

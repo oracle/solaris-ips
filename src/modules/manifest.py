@@ -23,6 +23,7 @@
 # Use is subject to license terms.
 
 import os
+import errno
 import cPickle
 from itertools import groupby, chain
 
@@ -185,13 +186,10 @@ class Manifest(object):
                                 out += "%s -> %s\n" % (src, dest)
                 return out
 
-        def get_dependencies(self):
-                """ generate list of dependencies in this manifest """
-                return [
-                           a.parse(self.img)
-                           for a in self.actions
-                           if a.name == "depend"
-                ]
+        def gen_actions_by_type(self, type):
+                """Generate actions in the manifest of type "type"."""
+
+                return (a for a in self.actions if a.name == type)
 
         def filter(self, filters):
                 """Filter out actions from the manifest based on filters."""
@@ -302,7 +300,11 @@ class Manifest(object):
                 try:
                         mfile = file(mfst_path, "w")
                 except IOError:
-                        os.makedirs(os.path.dirname(mfst_path))
+                        try:
+                                os.makedirs(os.path.dirname(mfst_path))
+                        except OSError, e:
+                                if e.errno != errno.EEXIST:
+                                        raise
                         mfile = file(mfst_path, "w")
 
                 #

@@ -72,14 +72,14 @@ def get_manifest(img, fmri):
                     fmri.get_url_path(), ssl_creds = ssl_tuple,
                     imgtype = img.type)
         except urllib2.HTTPError, e:
-                raise NameError, "could not retrieve file '%s' from '%s'" % \
-                    (hash, url_prefix)
+                raise NameError, "could not retrieve manifest '%s' from '%s'" % \
+                    (fmri.get_url_path(), url_prefix)
         except urllib2.URLError, e:
                 if len(e.args) == 1 and isinstance(e.args[0], socket.sslerror):
                         raise RuntimeError, e
 
                 raise NameError, "could not retrieve manifest '%s' from '%s'" % \
-                    (hash, url_prefix)
+                    (fmri.get_url_path(), url_prefix)
         except:
                 raise NameError, "could not retrieve manifest '%s' from '%s'" % \
                     (fmri.get_url_path(), url_prefix)

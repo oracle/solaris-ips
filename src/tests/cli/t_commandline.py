@@ -140,5 +140,42 @@ class TestCommandLine(testutils.SingleDepotTestCase):
                 self.pkg("set-authority -O http://test1:abcde test2", exit=1)
                 self.pkg("set-authority -O ftp://test2 test2", exit=1)
 
+        def test_info_local_remote(self):
+                """pkg: check that info behaves for local and remote cases."""
+
+                pkg1 = """
+                    open jade@1.0,5.11-0
+                    add dir mode=0755 owner=root group=bin path=/bin
+                    close
+                """
+
+                pkg2 = """
+                    open turquoise@1.0,5.11-0
+                    add dir mode=0755 owner=root group=bin path=/bin
+                    close
+                """
+
+                durl = self.dc.get_depot_url()
+
+                self.pkgsend_bulk(durl, pkg1)
+                self.pkgsend_bulk(durl, pkg2)
+
+                self.image_create(durl)
+
+                # Install one package and verify
+                self.pkg("install jade")
+                self.pkg("verify -v")
+                
+                # Check local info
+                self.pkg("info jade | grep 'State: Installed'")
+                self.pkg("info turquoise | grep 'no packages matching'")
+                self.pkg("info emerald", exit = 1)
+                self.pkg("info emerald 2>&1 | grep 'no matching packages'")
+
+                # Check remote info
+                self.pkg("info -r jade | grep 'State: Installed'")
+                self.pkg("info -r turquoise| grep 'State: Not installed'")
+                self.pkg("info -r emerald | grep 'no package matching'")
+
 if __name__ == "__main__":
         unittest.main()
