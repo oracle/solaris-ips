@@ -32,6 +32,7 @@ import SUNWcsr
 drop etc/inet/hosts
 drop etc/nsswitch.conf
 drop lib/svc/method/fs-usr
+drop var/svc/manifest/system/coreadm.xml
 drop var/svc/profile/generic_limited_net.xml
 drop var/svc/profile/generic_open.xml
 # Use the 32-bit ksh93 as a replacement /bin/sh
@@ -40,6 +41,8 @@ drop sbin/sh
 add link path=sbin/pfsh target=../usr/has/bin/sh
 add link path=sbin/sh target=../usr/bin/i86/ksh93
 from ./SUNWfixes import
+lib/svc/method/svc-coreadm
+var/svc/manifest/system/coreadm.xml
 # until the necessary actions are available
 etc/inet/services
 etc/security/auth_attr

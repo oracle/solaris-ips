@@ -73,7 +73,11 @@ CACHED_FILES=					\
 	etc/zones/SUNWdefault.xml		\
 	lib/svc/method/fs-usr			\
 	lib/svc/method/sshd			\
+	lib/svc/method/svc-coreadm		\
 	lib/svc/method/svc-dlmgmtd		\
+	usr/lib/vp-services			\
+	usr/lib/vp-shares			\
+	var/svc/manifest/system/coreadm.xml	\
 	var/svc/profile/generic_limited_net.xml \
 	var/svc/profile/generic_open.xml
 
@@ -101,6 +105,8 @@ FIXFILES=					\
 	usr/jdk/instances/jdk1.6.0/jre/README	\
 	usr/share/man/man.cf			\
 	usr/share/man/missing.man		\
+	usr/share/applications/services.desktop	\
+	usr/share/applications/shares.desktop	\
 	$(CACHED_FILES)
 
 JDKFILES = LICENSE README.html
@@ -213,6 +219,16 @@ proto/usr/share/man/man.cf:	proto
 proto/usr/bin/ksh:	proto $(PROG)
 	cp $(PROG) $@
 
+proto/usr/share/applications/shares.desktop: proto
+	./get_file_from_pkg.py $(WOS_PKGS)/SUNWgnome-system-tools \
+	usr/share/applications/shares.desktop | \
+	./desktop_exec.sh /usr/lib/vp-shares > $@
+
+proto/usr/share/applications/services.desktop: proto
+	./get_file_from_pkg.py $(WOS_PKGS)/SUNWgnome-system-tools \
+	usr/share/applications/services.desktop | \
+	./desktop_exec.sh /usr/lib/vp-services > $@
+
 #
 # change root's default shell, homedir and add jack user
 #
@@ -253,8 +269,11 @@ proto:	Makefile
 	mkdir -p proto/usr/bin
 	mkdir -p proto/usr/jdk/instances/jdk1.6.0/jre
 	mkdir -p proto/usr/share/man
+	mkdir -p proto/var/svc/manifest/system
 	mkdir -p proto/var/svc/profile
 	mkdir -p proto/usr/has/bin
+	mkdir -p proto/usr/lib
+	mkdir -p proto/usr/share/applications
 
 %/$(TMPPKGS):
 	$(MAKE) BUILDID=$(@D) $(@F)
