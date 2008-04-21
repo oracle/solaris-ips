@@ -559,7 +559,7 @@ def uninstall(img, args):
                 error(_("installation failed: %s") % e)
                 be.restore_install_uninstall()
                 ret_code = 1
-	except:
+	except Exception, e:
                 error(_("An unexpected error happened during uninstallation: %s") % e)
 		be.restore_install_uninstall()
 		raise
