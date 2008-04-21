@@ -225,6 +225,10 @@ class Image(object):
         def is_liveroot(self):
                 return self.root == "/"
 
+        def is_zone(self):
+		zone = self.cfg_cache.filters.get("opensolaris.zone", "")
+		return zone == "nonglobal"
+
         def get_root(self):
                 return self.root
 

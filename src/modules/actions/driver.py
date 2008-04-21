@@ -79,6 +79,10 @@ class DriverAction(generic.Action):
 
         def install(self, pkgplan, orig):
                 image = pkgplan.image
+
+		if image.is_zone():
+			return
+
                 n2m = os.path.normpath(os.path.sep.join(
                     (image.get_root(), "etc/name_to_major")))
 
@@ -103,7 +107,7 @@ class DriverAction(generic.Action):
                         orig = None
 
                 if orig:
-                        return self.update_install(image, orig)
+                        return self.__update_install(image, orig)
 
                 args = ( self.add_drv, "-n", "-b", image.get_root() )
 
@@ -150,7 +154,7 @@ class DriverAction(generic.Action):
                         self.__call(args, "driver (%(name)s) clone permission "
                             "update", {"name": self.attrs["name"]})
 
-        def update_install(self, image, orig):
+        def __update_install(self, image, orig):
                 add_base = ( self.update_drv, "-b", image.get_root(), "-a" )
                 rem_base = ( self.update_drv, "-b", image.get_root(), "-d" )
 
@@ -472,6 +476,9 @@ class DriverAction(generic.Action):
         def verify(self, img, **args):
                 """Verify that the driver is installed as specified."""
 
+		if img.is_zone():
+			return []
+
                 name = self.attrs["name"]
 
                 onfs, errors = \
@@ -544,10 +551,15 @@ class DriverAction(generic.Action):
                 return errors
 
         def remove(self, pkgplan):
+		image = pkgplan.image
+
+		if image.is_zone():
+			return
+
                 args = (
                     self.rem_drv,
                     "-b",
-                    pkgplan.image.get_root(),
+                    image.get_root(),
                     self.attrs["name"]
                 )
 
@@ -558,7 +570,7 @@ class DriverAction(generic.Action):
                         if len(cp.split()) == 3:
                                 cp = self.attrs["name"] + " " + cp
                         args = (
-                            self.update_drv, "-b", pkgplan.image.get_root(),
+                            self.update_drv, "-b", image.get_root(),
                             "-d", "-m", cp, "clone"
                         )
                         self.__call(args, "driver (%(name)s) clone permission "

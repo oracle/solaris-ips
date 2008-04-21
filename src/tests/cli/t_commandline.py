@@ -68,6 +68,8 @@ class TestCommandLine(testutils.SingleDepotTestCase):
                 durl = self.dc.get_depot_url()
                 self.image_create(durl)
 
+                self.pkg("install", exit=2)
+                self.pkg("uninstall", exit=2)
                 self.pkg("-s status", exit=2)
                 self.pkg("-R status", exit=2)
                 self.pkg("contents -o", exit=2)
@@ -78,6 +80,8 @@ class TestCommandLine(testutils.SingleDepotTestCase):
                 self.pkg("set-authority -O", exit=2)
                 self.pkg("unset-authority", exit=2)
                 self.pkg("refresh -F", exit=2)
+                self.pkg("search", exit=2)
+                self.pkg("image-create", exit=2)
 
         def test_pkgsend_bogus_opts(self):
                 """ pkgsend bogus option checks """

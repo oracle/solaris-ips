@@ -200,7 +200,10 @@ def list_inventory(img, args):
 
                 if not found:
                         if not pargs:
-                                error(_("no matching packages installed"))
+				if upgradable_only:
+					error(_("no installed packages have available updates"))
+                        	else:
+					error(_("no matching packages installed"))
                         return 1
                 return 0
 
@@ -489,6 +492,9 @@ def uninstall(img, args):
                         verbose = True
                 elif opt == "-q":
                         quiet = True
+
+	if not pargs:
+                usage(_("uninstall: at least one package name required"))
 
         if verbose and quiet:
                 usage(_("uninstall: -v and -q may not be combined"))

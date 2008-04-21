@@ -129,7 +129,7 @@ printf "$m_core\n"
 pkg install -q SUNWcsd || fail_incomplete "$f_pkg"
 
 pkglist=""
-pkglist="$pkglist SUNWesu SUNWadmr SUNWadmap SUNWbzip SUNWgzip"
+pkglist="$pkglist SUNWcnetr SUNWesu SUNWadmr SUNWadmap SUNWbzip SUNWgzip"
 
 #
 # Workaround: in our test repo, SUNWipkg has no dependencies
@@ -160,7 +160,7 @@ pkglist="$pkglist SUNWnis SUNWlldap"
 #
 # Get nfs client and autofs; it's a pain not to have them.
 #
-pkglist="$pkglist SUNWnfsc SUNWnfsckr SUNWatfs"
+pkglist="$pkglist SUNWnfsc SUNWatfs"
 
 
 #

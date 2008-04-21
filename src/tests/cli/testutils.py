@@ -37,7 +37,8 @@ def setup_environment(path_to_proto):
 	""" Set up environment for doing testing.
 
 	    We set PYTHONPATH and PATH so that they reference the proto
-	    area.
+	    area, and clear packaging related environment variables
+	    (every variable prefixed with PKG_).
 
 	    path_to_proto should be a relative path indicating a path
 	    to proto area of the workspace.  So, if your test case is
@@ -99,6 +100,12 @@ def setup_environment(path_to_proto):
 
 	print "NOTE: Adding '%s' to head of PATH" % bins
 	os.environ["PATH"] = bins + os.pathsep + os.environ["PATH"]
+
+	# Use "keys"; otherwise we'll change dictionary size during iteration.
+	for k in os.environ.keys():
+		if k.startswith("PKG_"):
+			print "NOTE: Clearing '%s' from environment" % k
+			del os.environ[k]
 
 
 
