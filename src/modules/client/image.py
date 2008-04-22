@@ -479,7 +479,7 @@ class Image(object):
 
                 try:
                         m.store(mpath, ipath)
-                except OSError, e:
+                except EnvironmentError, e:
                         if e.errno not in (errno.EROFS, errno.EACCES):
                                 raise
 
