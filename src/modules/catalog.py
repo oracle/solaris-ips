@@ -699,8 +699,15 @@ class Catalog(object):
                                             authority = self.auth)
                         except ValueError:
                                 # Handle old two-column catalog file, mostly in
-                                # use on server.
-                                cv, cat_fmri = entry.split()
+                                # use on server.  If *this* doesn't work, we
+                                # have a corrupt catalog.
+                                try:
+                                        cv, cat_fmri = entry.split()
+                                except ValueError:
+                                        raise RuntimeError, \
+                                            "corrupt catalog entry for " \
+                                            "authority '%s': %s" % \
+                                            (self.auth, entry)
                                 yield fmri.PkgFmri(cat_fmri,
                                     authority = self.auth)
 
@@ -770,8 +777,15 @@ class Catalog(object):
                                         continue
                         except ValueError:
                                 # Handle old two-column catalog file, mostly in
-                                # use on server.
-                                cv, cat_fmri = entry.split()
+                                # use on server.  If *this* doesn't work, we
+                                # have a corrupt catalog.
+                                try:
+                                        cv, cat_fmri = entry.split()
+                                except ValueError:
+                                        raise RuntimeError, \
+                                            "corrupt catalog entry for " \
+                                            "authority '%s': %s" % \
+                                            (self.auth, entry)
                                 cat_name = fmri.extract_pkg_name(cat_fmri)
                                 if cat_name not in pkg_names:
                                         continue
@@ -843,8 +857,14 @@ class Catalog(object):
                                         continue
                         except ValueError:
                                 # Handle old two-column catalog file, mostly in
-                                # use on server.
-                                cv, cat_fmri = entry.split()
+                                # use on server.  If *this* doesn't work, we
+                                # have a corrupt catalog.
+                                try:
+                                        cv, cat_fmri = entry.split()
+                                except ValueError:
+                                        raise RuntimeError, \
+                                            "corrupt catalog entry in file " \
+                                            "'%s': %s" % (ppath, entry)
                                 cat_name = fmri.extract_pkg_name(cat_fmri)
 
                         pkg_names.add(cat_name)
