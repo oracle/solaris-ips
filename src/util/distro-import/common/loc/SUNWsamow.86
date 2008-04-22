@@ -1,26 +1,7 @@
+#
+# As there isn't currently a way to delete packages on upgrade, create an
+# empty package which will cause the previous contents of the package to
+# be deleted when the newer package is installed.
+#
 package SUNWsamow
-import SUNWsamow exclude usr/openwin
-drop usr/openwin/share
-drop usr/openwin/share/locale
-drop usr/openwin/share/locale/es_AR.ISO8859-1
-drop usr/openwin/share/locale/es_AR.UTF-8
-drop usr/openwin/share/locale/es_BO.ISO8859-1
-drop usr/openwin/share/locale/es_BO.UTF-8
-drop usr/openwin/share/locale/es_CL.ISO8859-1
-drop usr/openwin/share/locale/es_CL.UTF-8
-drop usr/openwin/share/locale/es_CO.ISO8859-1
-drop usr/openwin/share/locale/es_CO.UTF-8
-drop usr/openwin/share/locale/es_EC.ISO8859-1
-drop usr/openwin/share/locale/es_EC.UTF-8
-drop usr/openwin/share/locale/es_PE.ISO8859-1
-drop usr/openwin/share/locale/es_PE.UTF-8
-drop usr/openwin/share/locale/es_PY.ISO8859-1
-drop usr/openwin/share/locale/es_PY.UTF-8
-drop usr/openwin/share/locale/es_UY.ISO8859-1
-drop usr/openwin/share/locale/es_UY.UTF-8
-drop usr/openwin/share/locale/es_VE.ISO8859-1
-drop usr/openwin/share/locale/es_VE.UTF-8
-drop usr/openwin/share/locale/pt_BR.ISO8859-1
-drop usr/openwin/share/locale/pt_BR.UTF-8
-chattr_glob * edit path usr/openwin/lib usr/X11/share/X11
 end package

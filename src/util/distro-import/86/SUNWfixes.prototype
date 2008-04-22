@@ -41,12 +41,13 @@ f none usr/jdk/instances/jdk1.6.0/LICENSE 0644 root bin
 f none usr/jdk/instances/jdk1.6.0/README.html 0644 root bin
 f none usr/jdk/instances/jdk1.6.0/jre/LICENSE 0644 root bin
 f none usr/jdk/instances/jdk1.6.0/jre/README 0644 root bin
+f none usr/jdk/instances/jdk1.6.0/jre/lib/fontconfig.properties 0644 root bin
 f none usr/lib/vp-services 0555 root bin
 f none usr/lib/vp-shares 0555 root bin
 f none usr/share/applications/services.desktop 0644 root bin
 f none usr/share/applications/shares.desktop 0644 root bin
 f none usr/share/man/man.cf 0644 root bin
 f none usr/share/man/missing.man 0444 root bin
+f manifest var/svc/manifest/system/coreadm.xml 444 root sys
 f none var/svc/profile/generic_limited_net.xml 0444 root sys
 f none var/svc/profile/generic_open.xml 0444 root sys
-f manifest var/svc/manifest/system/coreadm.xml 444 root sys

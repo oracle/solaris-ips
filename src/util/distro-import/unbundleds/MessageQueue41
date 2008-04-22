@@ -1,0 +1,11 @@
+package mq41
+version 4.1
+description "Message Queue 4.1"
+import SUNWiqdoc
+import SUNWiqfs
+import SUNWiqjx
+import SUNWiqr
+import SUNWiqu
+import SUNWiquc
+import SUNWiqum
+end package

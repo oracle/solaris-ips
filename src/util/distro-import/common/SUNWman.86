@@ -1,0 +1,14 @@
+package SUNWman
+import SUNWman
+drop usr/share/man/man.cf
+from ./SUNWfixes import
+usr/share/man/man.cf
+end import
+# Replace BSD vi with vim.
+drop usr/share/man/man1/ex.1
+drop usr/share/man/man1/vi.1
+drop usr/share/man/man1/view.1
+# Use the 32-bit ksh93 as a replacement /bin/sh
+drop usr/share/man/man1/sh.1
+add link path=usr/share/man/man1/sh.1 target=ksh93.1
+end package

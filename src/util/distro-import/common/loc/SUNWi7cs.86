@@ -1,4 +1,7 @@
+#
+# As there isn't currently a way to delete packages on upgrade, create an
+# empty package which will cause the previous contents of the package to
+# be deleted when the newer package is installed.
+#
 package SUNWi7cs
-import SUNWi7cs exclude usr/openwin
-chattr_glob * edit path usr/openwin/lib usr/X11/share/X11
 end package

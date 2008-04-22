@@ -2,10 +2,13 @@ package SUNWj6rt
 import SUNWj6rt
 drop usr/jdk/instances/jdk1.6.0/jre/LICENSE
 drop usr/jdk/instances/jdk1.6.0/jre/README
+drop usr/jdk/instances/jdk1.6.0/jre/lib/fontconfig.bfc
+drop usr/jdk/instances/jdk1.6.0/jre/lib/fontconfig.properties.src
 drop usr/jdk/instances/jdk1.6.0/jre/lib/sparc/motif21/libmawt.so
 from ./SUNWfixes import
 usr/jdk/instances/jdk1.6.0/jre/LICENSE
 usr/jdk/instances/jdk1.6.0/jre/README
+usr/jdk/instances/jdk1.6.0/jre/lib/fontconfig.properties
 end import
 add link path=usr/bin/ControlPanel target=../java/jre/bin/ControlPanel
 add link path=usr/bin/java target=../java/bin/java
@@ -18,6 +21,7 @@ add link path=usr/bin/rmid target=../java/bin/rmid
 add link path=usr/bin/rmiregistry target=../java/bin/rmiregistry
 add link path=usr/bin/servertool target=../java/bin/servertool
 add link path=usr/bin/tnameserv target=../java/bin/tnameserv
-add link path=usr/java target=jdk/instances/jdk1.6.0
-add link path=usr/jdk/latest target=instances/jdk1.6.0
+add link path=usr/java target=jdk/jdk1.6.0_04
+add link path=usr/jdk/jdk1.6.0_04 target=instances/jdk1.6.0
+add link path=usr/jdk/latest target=jdk1.6.0_04
 end package

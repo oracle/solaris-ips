@@ -1,0 +1,21 @@
+package glassfishv2
+description "GlassFish Java EE 5 Application Server"
+import SUNWasac exclude usr/appserver/bin/asadmin
+import SUNWascmn
+import SUNWasman
+import SUNWasr
+import SUNWasu exclude usr/appserver/lib/install/templates/asadminenv.conf
+import SUNWasut exclude usr/appserver/bin/asupgrade
+depend SUNWant
+depend SUNWj6cfg
+depend SUNWj6dev
+depend SUNWj6dmo
+depend SUNWj6dmx
+depend SUNWj6dvx
+depend SUNWj6jmp
+depend SUNWj6man
+depend SUNWj6rt
+depend SUNWj6rtx
+depend SUNWjavadb
+depend mq41
+end package

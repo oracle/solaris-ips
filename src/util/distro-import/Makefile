@@ -64,21 +64,22 @@ ELIDED_FILES= \
 #
 # these files get placed into proto area from per-build cached versions
 #
-CACHED_FILES=					\
-	$(ELIDED_FILES)				\
-	boot/grub/menu.lst			\
-	boot/grub/splash.xpm.gz			\
-	etc/inet/hosts				\
-	etc/zones/SUNWblank.xml			\
-	etc/zones/SUNWdefault.xml		\
-	lib/svc/method/fs-usr			\
-	lib/svc/method/sshd			\
-	lib/svc/method/svc-coreadm		\
-	lib/svc/method/svc-dlmgmtd		\
-	usr/lib/vp-services			\
-	usr/lib/vp-shares			\
-	var/svc/manifest/system/coreadm.xml	\
-	var/svc/profile/generic_limited_net.xml \
+CACHED_FILES=								\
+	$(ELIDED_FILES)							\
+	boot/grub/menu.lst						\
+	boot/grub/splash.xpm.gz						\
+	etc/inet/hosts							\
+	etc/zones/SUNWblank.xml						\
+	etc/zones/SUNWdefault.xml					\
+	lib/svc/method/fs-usr						\
+	lib/svc/method/sshd						\
+	lib/svc/method/svc-coreadm					\
+	lib/svc/method/svc-dlmgmtd					\
+	usr/jdk/instances/jdk1.6.0/jre/lib/fontconfig.properties	\
+	usr/lib/vp-services						\
+	usr/lib/vp-shares						\
+	var/svc/manifest/system/coreadm.xml				\
+	var/svc/profile/generic_limited_net.xml				\
 	var/svc/profile/generic_open.xml
 
 FIXFILES=					\
@@ -122,10 +123,14 @@ CFLAGS=		-g -v
 
 LINTFLAGS=	-axsm
 
-UNBUNDLED_TARGETS=\
-ClusterTools.import\
-Studio.import\
-NetBeans.import
+UNBUNDLED_TARGETS=		\
+	ClusterTools.import	\
+	GlassFishV2.import	\
+	MessageQueue41.import	\
+	NetBeans.import		\
+	OpenOffice.import	\
+	Studio.import		\
+	Webstackui.import
 
 BUILDS= 75a\
 	79b\
@@ -267,13 +272,14 @@ proto:	Makefile
 	mkdir -p proto/etc/zones
 	mkdir -p proto/lib/svc/method
 	mkdir -p proto/usr/bin
+	mkdir -p proto/usr/has/bin
 	mkdir -p proto/usr/jdk/instances/jdk1.6.0/jre
+	mkdir -p proto/usr/jdk/instances/jdk1.6.0/jre/lib
+	mkdir -p proto/usr/lib
+	mkdir -p proto/usr/share/applications
 	mkdir -p proto/usr/share/man
 	mkdir -p proto/var/svc/manifest/system
 	mkdir -p proto/var/svc/profile
-	mkdir -p proto/usr/has/bin
-	mkdir -p proto/usr/lib
-	mkdir -p proto/usr/share/applications
 
 %/$(TMPPKGS):
 	$(MAKE) BUILDID=$(@D) $(@F)

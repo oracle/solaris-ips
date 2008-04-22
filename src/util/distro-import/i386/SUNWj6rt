@@ -2,10 +2,13 @@ package SUNWj6rt
 import SUNWj6rt
 drop usr/jdk/instances/jdk1.6.0/jre/LICENSE
 drop usr/jdk/instances/jdk1.6.0/jre/README
+drop usr/jdk/instances/jdk1.6.0/jre/lib/fontconfig.bfc
+drop usr/jdk/instances/jdk1.6.0/jre/lib/fontconfig.properties.src
 drop usr/jdk/instances/jdk1.6.0/jre/lib/i386/motif21/libmawt.so
 from ./SUNWfixes import
 usr/jdk/instances/jdk1.6.0/jre/LICENSE
 usr/jdk/instances/jdk1.6.0/jre/README
+usr/jdk/instances/jdk1.6.0/jre/lib/fontconfig.properties
 end import
 add link path=usr/bin/ControlPanel target=../java/jre/bin/ControlPanel
 add link path=usr/bin/java target=../java/bin/java
