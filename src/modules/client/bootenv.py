@@ -81,25 +81,27 @@ class BootEnv(object):
                         # '/' which also causes BootEnv to manage '/' as well.
                         # This should be fixed before this class is ever
                         # instantiated.
-                        #
-                        # Another issue is that a BE could have a mountpoint
-                        # property of "legacy". We only need to check when '/'
-                        # is legacy since an alternate root with a mountpoint
-                        # property of legacy won't be mounted. We accomplish
-                        # this by checking that "active" == True and
-                        # root == '/'.
-                        
-                        is_active = beVals.get("active")
+
                         be_name = beVals.get("orig_be_name")
 
-                        if not be_name and not beVals.get("mounted"):
-                                continue
-                                
-                        if beVals.get("mountpoint") != root and not is_active:
+                        # If we're not looking at a boot env entry or an
+                        # entry that is not mounted then continue.
+                        if not be_name or not beVals.get("mounted"):
                                 continue
 
-                        if root == '/' and is_active:
-                                self.is_live_BE = True
+                        # Check if we're operating on the live BE.
+                        # If so it must also be active. If we are not
+                        # operating on the live BE, then verify
+                        # that the mountpoint of the BE matches
+                        # the -R argument passed in by the user.
+                        if root == '/':
+                                if not beVals.get("active"):
+                                        continue
+                                else:
+                                        self.is_live_BE = True
+                        else:
+                                if beVals.get("mountpoint") != root:
+                                        continue
 
                         # Set the needed BE components so snapshots
                         # and clones can be managed.
