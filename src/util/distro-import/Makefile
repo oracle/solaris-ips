@@ -298,12 +298,16 @@ slim_import:	$(BUILDID)/slim_cluster $(TMPPKGS)
 redist_import:	$(BUILDID)/redist_cluster $(TMPPKGS)
 	rm -f redist_cluster; ln -s $(BUILDID)/redist_cluster redist_cluster
 	$(SOLARIS.PY) -s $(REPO) $(ALL_PKGS:%=-w %) $(ELIDED_FILES:%=-D %) $(JUST_THESE_PKGS:%=-j %) redist_cluster 
+	$(MAKE) $(BUILDID)/entire
 
 %/redist_import:
 	$(MAKE) BUILDID=$(@:%/redist_import=%) redist_import
 
 %/entire:
 	$(MAKE) BUILDID=$(@:%/entire=%) entire
+
+$(BUILDID)/entire.incorporation: FRC
+	./build_entire_incorporation $(BUILDID) > $@
 
 entire: $(BUILDID)/entire.incorporation
 	PKG_REPO=$(REPO) ./import_manifest_file entire@0.5.11,5.11-0.$(BUILDID) $(BUILDID)/entire.incorporation
@@ -333,3 +337,5 @@ lint:
 	$(LINT) $(LINTFLAGS) $(SRCS)
 
 .KEEP_STATE:
+
+FRC:
