@@ -87,6 +87,9 @@ def versioned_urlopen(base_uri, operation, versions = [], tail = None,
                 url_opener = urllib2.urlopen
 
         for version in versions:
+                if base_uri[-1] != '/':
+                        base_uri += '/'
+
                 if tail:
                         uri = urlparse.urljoin(base_uri, "%s/%s/%s" % \
                             (operation, version, tail))
