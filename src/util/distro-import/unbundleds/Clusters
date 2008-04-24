@@ -18,7 +18,7 @@ depend SUNWsvn
 depend SUNWsvn-java
 depend glassfishv2
 depend netbeans
-depend sunstudio
+depend sunstudioexpress
 end package
 
 package ss-dev
@@ -43,7 +43,7 @@ depend SUNWlibtool
 depend SUNWmercurial
 depend SUNWsprot
 depend SUNWsvn
-depend sunstudio
+depend sunstudioexpress
 end package
 
 package gcc-dev
@@ -79,7 +79,7 @@ depend SUNWmercurial
 depend SUNWsprot
 depend SUNWsvn
 depend clustertools
-depend sunstudio
+depend sunstudioexpress
 end package
 
 package amp-dev
