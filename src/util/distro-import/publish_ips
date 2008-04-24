@@ -26,7 +26,6 @@
 #
 export PATH=../../../proto/root_`uname -p`/usr/bin:$PATH
 export PYTHONPATH=../../../proto/root_`uname -p`/usr/lib/python2.4/vendor-packages
-export PACKAGEPATH=../../../packages/i386
 eval `pkgsend open $1`
-pkgsend import $PACKAGEPATH/SUNWipkg
+pkgsend import $2
 pkgsend close

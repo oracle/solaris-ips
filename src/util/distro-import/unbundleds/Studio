@@ -80,6 +80,7 @@ import SPROsysprp
 #import SPROtdemo
 import SPROudchk
 import SPROutool
+chattr_glob * edit path SUNWspro SunStudioExpress
 # manually added dependencies
 depend SUNWj6cfg
 depend SUNWj6dev

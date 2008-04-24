@@ -24,4 +24,5 @@
 ^src/util/distro-import/proto/
 ^src/util/distro-import/redist_cluster$
 ^src/util/distro-import/slim_cluster$
+^src/util/distro-import/86/entire.incorporation
 ^webrev

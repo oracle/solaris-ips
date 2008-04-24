@@ -132,6 +132,9 @@ UNBUNDLED_TARGETS=		\
 	Studio.import		\
 	Webstackui.import
 
+UNBUNDLED_CLUSTERS=		\
+	Clusters.import
+
 BUILDS= 75a\
 	79b\
 	86
@@ -318,19 +321,29 @@ $(BUILDID)/entire.incorporation: FRC
 entire: $(BUILDID)/entire.incorporation
 	PKG_REPO=$(REPO) ./import_manifest_file entire@0.5.11,5.11-0.$(BUILDID) $(BUILDID)/entire.incorporation
 
-$(UNBUNDLED_TARGETS:%=$(BUILDS)/%):
+$(UNBUNDLED_TARGETS:%=$(BUILDS)/%) $(UNBUNDLED_CLUSTERS:%=$(BUILDS)/%):
 	$(MAKE) BUILDID=$(@D) $(@F)
 
 $(UNBUNDLED_TARGETS): unbundleds/$$(@:%.import=%)
 	rm -f redist_cluster; ln -s $(BUILDID)/redist_cluster redist_cluster
 	$(SOLARIS.PY) -s $(REPO) $(ALL_PKGS:%=-w %) $(ELIDED_FILES:%=-D %) `./package_names.py unbundleds/$(@:%.import=%)`  unbundleds/$(@:%.import=%) redist_cluster
 
+$(UNBUNDLED_CLUSTERS): unbundleds/$$(@:%.import=%)
+	rm -f redist_cluster; ln -s $(BUILDID)/redist_cluster redist_cluster
+	$(SOLARIS.PY) -s $(REPO) $(ALL_PKGS:%=-w %) $(ELIDED_FILES:%=-D %) `./package_names.py unbundleds/$(@:%.import=%)`  unbundleds/$(@:%.import=%) $(UNBUNDLED_TARGETS:%.import=unbundleds/%) redist_cluster
+
+%/all_unbundleds:
+	$(MAKE) BUILDID=$(@D) $(@F)
+
+all_unbundleds:	$(UNBUNDLED_TARGETS:%=$(BUILDID)/%)
+	$(MAKE) $(BUILDID)/$(UNBUNDLED_CLUSTERS)
+
 
 %/SUNWipkg:
 	$(MAKE) BUILDID=$(@D) $(@F)
 
 SUNWipkg:
-	PKG_REPO=$(REPO) ./publish_ips pkg:/SUNWipkg@0.5.11,5.11-0.`echo $(BUILDID) | tr '[a-z]' ' '`
+	PKG_REPO=$(REPO) ./publish_ips pkg:/SUNWipkg@0.5.11,5.11-0.`echo $(BUILDID) | tr '[a-z]' ' '` ../../../packages/i386/SUNWipkg
 
 clean:
 	rm -f $(OBJS)
