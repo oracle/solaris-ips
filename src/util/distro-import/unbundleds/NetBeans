@@ -18,51 +18,111 @@ depend SUNWlibnb-ruby1
 #depend SUNWlibnb-uml4
 depend SUNWlibnb-visualweb1
 depend SUNWlibnb-xml1
+chattr_glob * edit mode 0777 0755 
+chattr_glob * edit mode 0666 0644
 end package
 
 package SUNWnetbeans-ide
 version 6.0.1
 import SUNWnetbeans-ide
+depend SUNWj6rt
+depend SUNWj6dev
+chattr_glob * edit mode 0777 0755 
+chattr_glob * edit mode 0666 0644
 end package
 
 package SUNWnetbeans-javaee
 version 6.0.1
 import SUNWnetbeans-javaee
+depend SUNWj6rt
+depend SUNWj6dev
+depend SUNWlibnb-apisupport1
+depend SUNWlibnb-enterprise4
+depend SUNWlibnb-ide8
+depend SUNWlibnb-java1
+depend SUNWlibnb-platform7
+depend SUNWlibnb-profiler2
+depend SUNWlibnb-visualweb1
+depend SUNWlibnb-xml1
+chattr_glob * edit mode 0777 0755 
+chattr_glob * edit mode 0666 0644
 end package
 
 package SUNWnetbeans-javase
 version 6.0.1
 import SUNWnetbeans-javase
+depend SUNWj6rt
+depend SUNWj6dev
+depend SUNWlibnb-apisupport1
+depend SUNWlibnb-ide8
+depend SUNWlibnb-java1
+depend SUNWlibnb-platform7
+depend SUNWlibnb-profiler2
+chattr_glob * edit mode 0777 0755 
+chattr_glob * edit mode 0666 0644
 end package
 
 package SUNWnetbeans-ruby
 version 6.0.1
 import SUNWnetbeans-ruby
+depend SUNWj6rt
+depend SUNWj6dev
+depend SUNWlibnb-ide8
+depend SUNWlibnb-platform7
+depend SUNWlibnb-ruby1
+chattr_glob * edit mode 0777 0755 
+chattr_glob * edit mode 0666 0644
 end package
 
 package SUNWnetbeans-cpp
 version 6.0.1
+depend SUNWlibnb-cnd1
+depend SUNWlibnb-ide8
+depend SUNWlibnb-platform7
 import SUNWnetbeans-cpp
+chattr_glob * edit mode 0777 0755 
+chattr_glob * edit mode 0666 0644
 end package
 
 package SUNWlibnb-apisupport1
 version 6.0.1
 import SUNWlibnb-apisupport1
+depend SUNWnetbeans-ide
+depend SUNWlibnb-platform7
+depend SUNWlibnb-ide8
+depend SUNWlibnb-java1
+chattr_glob * edit mode 0777 0755 
+chattr_glob * edit mode 0666 0644
 end package
 
 package SUNWlibnb-cnd1
 version 6.0.1
 import SUNWlibnb-cnd1
+depend SUNWnetbeans-ide
+depend SUNWlibnb-platform7
+depend SUNWlibnb-ide8
+chattr_glob * edit mode 0777 0755 
+chattr_glob * edit mode 0666 0644
 end package
 
 package SUNWlibnb-enterprise4
 version 6.0.1
 import SUNWlibnb-enterprise4
+depend SUNWnetbeans-ide
+depend SUNWlibnb-platform7
+depend SUNWlibnb-ide8
+depend SUNWlibnb-java1
+chattr_glob * edit mode 0777 0755 
+chattr_glob * edit mode 0666 0644
 end package
 
 package SUNWlibnb-ide8
 version 6.0.1
 import SUNWlibnb-ide8
+depend SUNWnetbeans-ide
+depend SUNWlibnb-platform7
+chattr_glob * edit mode 0777 0755 
+chattr_glob * edit mode 0666 0644
 end package
 
 #package SUNWlibnb-identity1
@@ -73,21 +133,40 @@ end package
 package SUNWlibnb-java1
 version 6.0.1
 import SUNWlibnb-java1
+depend SUNWnetbeans-ide
+depend SUNWlibnb-platform7
+depend SUNWlibnb-ide8
+chattr_glob * edit mode 0777 0755 
+chattr_glob * edit mode 0666 0644
 end package
 
 package SUNWlibnb-platform7
 version 6.0.1
 import SUNWlibnb-platform7
+depend SUNWnetbeans-ide
+chattr_glob * edit mode 0777 0755 
+chattr_glob * edit mode 0666 0644
 end package
 
 package SUNWlibnb-profiler2
 version 6.0.1
 import SUNWlibnb-profiler2
+depend SUNWnetbeans-ide
+depend SUNWlibnb-platform7
+depend SUNWlibnb-ide8
+depend SUNWlibnb-java1
+chattr_glob * edit mode 0777 0755 
+chattr_glob * edit mode 0666 0644
 end package
 
 package SUNWlibnb-ruby1
 version 6.0.1
 import SUNWlibnb-ruby1
+depend SUNWnetbeans-ide
+depend SUNWlibnb-platform7
+depend SUNWlibnb-ide8
+chattr_glob * edit mode 0777 0755 
+chattr_glob * edit mode 0666 0644
 end package
 
 #package SUNWlibnb-soa1
@@ -103,9 +182,22 @@ end package
 package SUNWlibnb-visualweb1
 version 6.0.1
 import SUNWlibnb-visualweb1
+depend SUNWnetbeans-ide
+depend SUNWlibnb-platform7
+depend SUNWlibnb-ide8
+depend SUNWlibnb-java1
+depend SUNWlibnb-enterprise4
+chattr_glob * edit mode 0777 0755 
+chattr_glob * edit mode 0666 0644
 end package
 
 package SUNWlibnb-xml1
 version 6.0.1
 import SUNWlibnb-xml1
+depend SUNWnetbeans-ide
+depend SUNWlibnb-platform7
+depend SUNWlibnb-ide8
+depend SUNWlibnb-java1
+chattr_glob * edit mode 0777 0755 
+chattr_glob * edit mode 0666 0644
 end package

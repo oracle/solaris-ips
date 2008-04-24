@@ -1,4 +1,8 @@
 package sunstudio
+depend sunstudioexpress
+end package
+
+package sunstudioexpress
 description "Sun Studio Express - C, C++, & Fortran compilers and Tools"
 version 0.2008.05
 import SPROcc
