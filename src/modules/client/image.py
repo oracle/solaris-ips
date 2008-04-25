@@ -578,22 +578,28 @@ class Image(object):
                         # to assume that the package was installed from
                         # the preferred authority.  Here, we set up
                         # the authority to record that.
-                        auth = flines[0]
-                        auth = auth.strip()
-                        newauth = "%s_%s" % (pkg.fmri.PREF_AUTH_PFX, auth)
+                        if flines:
+                                auth = flines[0]
+                                auth = auth.strip()
+                                newauth = "%s_%s" % (pkg.fmri.PREF_AUTH_PFX,
+                                    auth)
+                        else:
+                                newauth = "%s_%s" % (pkg.fmri.PREF_AUTH_PFX,
+                                    self.get_default_authority())
+
+                        # Exception handler is only part of this code that
+                        # sets newauth
+                        auth = newauth
 
                 if newauth and not read_only:
                         # This is where we actually update the installed
                         # file with the new authority.
                         f.seek(0)
                         f.writelines(["VERSION_1\n", newauth])
-                        auth = newauth
 
                 f.close()
 
-                if not auth:
-                        auth = "%s_%s" % (pkg.fmri.PREF_AUTH_PFX,
-                            self.get_default_authority())
+                assert auth
 
                 return auth
 
