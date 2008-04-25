@@ -35,6 +35,8 @@
 #include <strings.h>
 #include <string.h>
 #include <assert.h>
+#include <netinet/in.h>
+#include <inttypes.h>
 #if defined (__SVR4) && defined (__sun)
 /* Solaris has a built-in SHA-1 library interface */
 #include <sha1.h>
@@ -345,9 +347,20 @@ getdynamic(int fd)
 			goto bad;
 
 		if (hashsection(name)) {
-			if (shdr.sh_type == SHT_NOBITS)
-				SHA1Update(&shc, &shdr.sh_size,
-				    sizeof (shdr.sh_size));
+			if (shdr.sh_type == SHT_NOBITS) {
+				/*
+				 * We can't just push shdr.sh_size into
+				 * SHA1Update(), as its raw bytes will be
+				 * different on x86 than they are on sparc.
+				 * Convert to network byte-order first.
+				 */
+				uint64_t n = shdr.sh_size;
+				uint64_t mask = 0xffffffff00000000ULL;
+				uint32_t top = htonl((uint32_t)((n & mask) >> 32));
+				uint32_t bot = htonl((uint32_t)n);
+				SHA1Update(&shc, &top, sizeof (top));
+				SHA1Update(&shc, &bot, sizeof (bot));
+			}
 			else
 				readhash(fd, &shc, shdr.sh_offset,
 				    shdr.sh_size);
