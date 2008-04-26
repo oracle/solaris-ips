@@ -74,8 +74,8 @@ class LinkAction(generic.Action):
                 
                 try:
                         if not os.path.islink(path):
-                                raise Exception
-                except Exception, e:
+                                return ["%s is not symbolic link" % self.attrs["path"]]
+                except EnvironmentError, e:
                         return ["%s is not symbolic link" % self.attrs["path"]]
 
                 atarget = os.readlink(path)

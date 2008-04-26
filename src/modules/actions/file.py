@@ -219,11 +219,14 @@ class FileAction(generic.Action):
                                         if hashvalue != self.hash:
                                                 errors.append("Hash: %s should be %s" % \
                                                     (hashvalue, self.hash))
-                        except (OSError, IOError), e:
+                        except EnvironmentError, e:
                                 if e.errno == errno.EACCES:
                                         errors.append("Skipping: Permission Denied" % e)
                                 else:
                                         errors.append("Unexpected Error %s" % e)
+                        except KeyboardInterrupt:
+                                # This is not really unexpected...
+                                raise
                         except Exception, e:
                                 errors.append("Unexpected Exception: %s" % e)
                 return errors
