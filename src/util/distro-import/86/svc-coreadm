@@ -23,7 +23,7 @@
 # Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
-# ident	"@(#)svc-coreadm	1.3	08/04/04 SMI"
+# ident	"@(#)svc-coreadm	1.4	08/04/25 SMI"
 #
 # Start/refresh method script for the coreadm service.
 #
@@ -40,10 +40,10 @@ read_conf() {
 	s/^\([^=]*_ENABLED=\)yes/\1true/
 	s/^\([^=]*_ENABLED=\)no/\1false/
 	s,^,$preamble,
-	s/COREADM_GLOB_PATTERN=\(.*\)$/global_pattern = astring: \"\1\"/p
-	s/COREADM_GLOB_CONTENT=\(.*\)$/global_content = astring: \"\1\"/p
-	s/COREADM_INIT_PATTERN=\(.*\)$/init_pattern = astring: \"\1\"/p
-	s/COREADM_INIT_CONTENT=\(.*\)$/init_content = astring: \"\1\"/p
+	s/COREADM_GLOB_PATTERN=\(.*\)$/global_pattern = astring: '\"\1\"'/p
+	s/COREADM_GLOB_CONTENT=\(.*\)$/global_content = astring: '\"\1\"'/p
+	s/COREADM_INIT_PATTERN=\(.*\)$/init_pattern = astring: '\"\1\"'/p
+	s/COREADM_INIT_CONTENT=\(.*\)$/init_content = astring: '\"\1\"'/p
 	s/COREADM_GLOB_ENABLED=/global_enabled = boolean: /p
 	s/COREADM_PROC_ENABLED=/process_enabled = boolean: /p
 	s/COREADM_GLOB_SETID_ENABLED=/global_setid_enabled = boolean: /p
