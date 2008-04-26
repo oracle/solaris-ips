@@ -28,6 +28,9 @@ SYNOPSIS
      /usr/bin/pkg unset-authority authority ...
      /usr/bin/pkg authority [-H] [authname ...]
 
+     /usr/bin/pkg version
+     /usr/bin/pkg help
+
 DESCRIPTION
      pkg is the retrieval client for the image packaging system.  With a
      valid configuration, pkg can be invoked to create images, target
@@ -47,6 +50,13 @@ DESCRIPTION
      pkg(1) attempts to determine, based on its working directory, in
      what image it has been invoked.  If no image metadata can be found
      in the parent directories, the invocation will fail.
+
+OPTIONS
+     The following option is supported:
+
+     -R dir
+          Operate on the image rooted at dir, rather than the one discovered
+          automatically.
 
 SUBCOMMANDS
      The following subcommands are supported:
@@ -186,11 +196,13 @@ SUBCOMMANDS
           with newer versions available.  With -v, report full package
           FMRIs.
 
-     verify [-fv] [pkg_fmri_pattern ...]
+     verify [-fHqv] [pkg_fmri_pattern ...]
           Validate the installation of packages in the current image.
-          With -v, do more verbose reporting. With -f, fully validate the
-          contents of files against the hash values in the package
-          manifests, as well as checking for file and directory presence.
+          With -v, do more verbose reporting.  With -q, print nothing, but
+          return failure if there are any verification problems.  With -f,
+          fully validate the contents of files against the hash values in
+          the package manifests, as well as checking for file and directory
+          presence.
 
           The -H option causes the headers to be omitted.
 
@@ -212,6 +224,14 @@ SUBCOMMANDS
           values associated with that authority.  With -H, omit the
           headers from the listing.
 
+     version
+          Display a unique string identifying the version of pkg(1).  This
+          string is not guaranteed to be comparable in any fashion between
+          versions.
+
+     help
+          Display a usage message.
+
 EXAMPLES
      Example 1:  Create a new, full image, with authority example.com,
      stored at /aux0/example_root
@@ -224,14 +244,14 @@ EXAMPLES
 
      $ pkg install application/widget
 
-     Example 3:  List the contents of the zfs package.  Display the action
-     name, the mode of the file (if defined), the size (if defined), the
-     path, and the target (if a link).  Limit the action to types dir,
-     file, link, and hardlink, since specifying the :name attribute, which
-     is available for all actions, will display a line for all actions,
-     which is not desired here.
+     Example 3:  List the contents of the SUNWzfs package.  Display the
+     action name, the mode of the file (if defined), the size (if defined),
+     the path, and the target (if a link).  Limit the action to types dir,
+     file, link, and hardlink, since specifying the action.name attribute,
+     which is available for all actions, will display a line for all
+     actions, which is not desired here.
 
-     $ pkg contents -t dir,file,link,hardlink -o action.name,mode,pkg.size,path,target zfs
+     $ pkg contents -t dir,file,link,hardlink -o action.name,mode,pkg.size,path,target SUNWzfs
      NAME  MODE   SIZE PATH                                TARGET
      dir   0755        etc
      dir   0755        etc/fs
@@ -250,11 +270,12 @@ EXAMPLES
      Example 4:  Search the package database for the token "bge".
 
      $ pkg search bge
-     basename pkg:/driver/bge/0.5.11,5.11-0.72:20071001T101343Z
-     driver_name pkg:/driver/bge/0.5.11,5.11-0.72:20071001T101343Z
+     INDEX          ACTION    VALUE             PACKAGE
+     basename       file      kernel/drv/bge    pkg:/SUNWbge@0.5.11-0.79
+     driver_name    driver    bge               pkg:/SUNWbge@0.5.11-0.79
 
-     The token shows up both as a basename and as a driver name in the
-     package driver/bge.
+     The token shows up in the package SUNWbge both as the basename for the
+     file action representing /kernel/drv/bge and as a driver name.
 
 EXIT STATUS
      The following exit values are returned:

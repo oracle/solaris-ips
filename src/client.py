@@ -62,6 +62,7 @@ import pkg.client.bootenv as bootenv
 import pkg.fmri as fmri
 import pkg.misc as misc
 import pkg.version
+import pkg
 
 def usage(usage_error = None):
         """ Emit a usage message and optionally prefix it with a more
@@ -81,6 +82,8 @@ Basic subcommands:
         pkg list [-aHsuv] [package...]
         pkg image-update [-nvq]
         pkg refresh [--full]
+        pkg version
+        pkg help
 
 Advanced subcommands:
         pkg info [-lr] [--license] [pkg_fmri_pattern ...]
@@ -97,11 +100,9 @@ Advanced subcommands:
         pkg authority [-H] [authname]
 
 Options:
-        --server, -s
-        --image, -R
+        -R dir
 
 Environment:
-        PKG_SERVER
         PKG_IMAGE""")
         sys.exit(2)
 
@@ -1347,7 +1348,7 @@ def main_func():
         gettext.install("pkg", "/usr/lib/locale")
 
         try:
-                opts, pargs = getopt.getopt(sys.argv[1:], "s:R:")
+                opts, pargs = getopt.getopt(sys.argv[1:], "R:")
         except getopt.GetoptError, e:
                 usage(_("illegal global option -- %s") % e.opt)
 
@@ -1360,8 +1361,6 @@ def main_func():
         socket.setdefaulttimeout(
             int(os.environ.get("PKG_CLIENT_TIMEOUT", "30"))) # in seconds
 
-        # XXX Handle PKG_SERVER environment variable.
-
         if subcommand == "image-create":
                 try:
                         ret = image_create(img, pargs)
@@ -1369,6 +1368,14 @@ def main_func():
                         usage(_("illegal %s option -- %s") % \
                             (subcommand, e.opt))
                 return ret
+        elif subcommand == "version":
+                print pkg.VERSION
+                return 0
+        elif subcommand == "help":
+                try:
+                        usage()
+                except SystemExit:
+                        return 0
 
         for opt, arg in opts:
                 if opt == "-R":
