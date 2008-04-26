@@ -1,5 +1,10 @@
 package clustertools
 version 7.1
+depend clustertools_7.1
+end package
+
+package clustertools_7.1
+version 7.1
 import SUNWompi
 import SUNWompiat
 import SUNWompimn 

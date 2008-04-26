@@ -61,6 +61,7 @@ import pkg.client.progress as progress
 import pkg.client.bootenv as bootenv
 import pkg.fmri as fmri
 import pkg.misc as misc
+import pkg.version
 
 def usage(usage_error = None):
         """ Emit a usage message and optionally prefix it with a more
@@ -200,10 +201,10 @@ def list_inventory(img, args):
 
                 if not found:
                         if not pargs:
-				if upgradable_only:
-					error(_("no installed packages have available updates"))
-                        	else:
-					error(_("no matching packages installed"))
+                                if upgradable_only:
+                                        error(_("no installed packages have available updates"))
+                                else:
+                                        error(_("no matching packages installed"))
                         return 1
                 return 0
 
@@ -381,12 +382,16 @@ def image_update(img, args):
 
         be.init_image_recovery(img)
 
+        if img.is_liveroot():
+                error(_("image-update cannot be done on live image"))
+                return 1
+
         try:
                 img.imageplan.execute()
                 be.activate_image()
                 ret_code = 0
         except RuntimeError, e:
-                error(_("image_update failed: %s") % e)
+                error(_("image-update failed: %s") % e)
                 be.restore_image()
                 ret_code = 1
         except Exception, e:
@@ -493,7 +498,7 @@ def uninstall(img, args):
                 elif opt == "-q":
                         quiet = True
 
-	if not pargs:
+        if not pargs:
                 usage(_("uninstall: at least one package name required"))
 
         if verbose and quiet:
@@ -554,26 +559,26 @@ def uninstall(img, args):
         if noexecute:
                 return 0
 
-	try:
-		be = bootenv.BootEnv(img.get_root())
-	except RuntimeError:
-		be = bootenv.BootEnvNull(img.get_root())
+        try:
+                be = bootenv.BootEnv(img.get_root())
+        except RuntimeError:
+                be = bootenv.BootEnvNull(img.get_root())
                
-	try:
+        try:
                 ip.execute()
         except RuntimeError, e:
                 error(_("installation failed: %s") % e)
                 be.restore_install_uninstall()
                 ret_code = 1
-	except Exception, e:
+        except Exception, e:
                 error(_("An unexpected error happened during uninstallation: %s") % e)
-		be.restore_install_uninstall()
-		raise
+                be.restore_install_uninstall()
+                raise
 
-	if ip.state == imageplan.EXECUTED_OK:
-		be.activate_install_uninstall()
-	else:
-		be.restore_install_uninstall()
+        if ip.state == imageplan.EXECUTED_OK:
+                be.activate_install_uninstall()
+        else:
+                be.restore_install_uninstall()
 
         return err
 
@@ -712,7 +717,8 @@ repository.""")
                 # Image.make_install_plan()!
                 for p in pargs:
                         try:
-                                matches = img.get_matching_fmris(p)
+                                matches = img.get_matching_fmris(p,
+                                    constraint = pkg.version.CONSTRAINT_AUTO)
                         except KeyError:
                                 print _("""\
 pkg: no package matching '%s' could be found in current catalog
@@ -980,7 +986,8 @@ def list_contents(img, args):
                 # Image.make_install_plan()!
                 for p in pargs:
                         try:
-                                matches = img.get_matching_fmris(p)
+                                matches = img.get_matching_fmris(p,
+                                    constraint = pkg.version.CONSTRAINT_AUTO)
                         except KeyError:
                                 print _("""\
 pkg: no package matching '%s' could be found in current catalog

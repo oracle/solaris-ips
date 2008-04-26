@@ -369,7 +369,7 @@ class Version(object):
                                 branch_match = True
 
                         if self.datetime and other.datetime:
-                                if other.datetime < self.datetime:
+                                if other.datetime == self.datetime:
                                         date_match = True
                         elif not other.datetime:
                                 date_match = True
