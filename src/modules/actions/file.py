@@ -234,9 +234,8 @@ class FileAction(generic.Action):
         def needsdata(self, orig):
                 bothelf = orig and "elfhash" in orig.attrs and "elfhash" in self.attrs
                 if not orig or \
-                    (bothelf and orig.attrs["elfhash"] !=
-                        self.attrs["elfhash"]) or \
-                    (not bothelf and orig.hash != self.hash):
+                    (orig.hash != self.hash and (not bothelf or
+                        orig.attrs["elfhash"] != self.attrs["elfhash"])):
                         return True
 
                 return False
