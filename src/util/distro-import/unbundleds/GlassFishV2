@@ -1,11 +1,11 @@
 package glassfishv2
 description "GlassFish Java EE 5 Application Server"
-import SUNWasac exclude usr/appserver/bin/asadmin
+import SUNWasac
 import SUNWascmn
 import SUNWasman
 import SUNWasr
-import SUNWasu exclude usr/appserver/lib/install/templates/asadminenv.conf
-import SUNWasut exclude usr/appserver/bin/asupgrade
+import SUNWasu
+import SUNWasut
 depend SUNWant
 depend SUNWj6cfg
 depend SUNWj6dev

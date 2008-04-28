@@ -1,3 +1,10 @@
 package webstackui
 import SUNWwebstackui
+depend SUNWapch22d
+depend SUNWapch22m-php5
+depend SUNWj6rt
+depend SUNWmysql5
+depend SUNWphp524
+depend SUNWphp524doc
+depend SUNWphp524man
 end package

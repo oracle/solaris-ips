@@ -1638,6 +1638,7 @@ depend SUNWlibrsvg
 depend SUNWlibsasl
 depend SUNWlibsdl
 depend SUNWlibsexy
+depend SUNWlibsmbclient
 depend SUNWlibtheora
 depend SUNWlibtool
 depend SUNWlibusb

@@ -12,7 +12,6 @@ depend SUNWj6man
 depend SUNWj6rt
 depend SUNWj6rtx
 depend SUNWmercurial
-depend SUNWmysql-base
 depend SUNWmysql5
 depend SUNWsvn
 depend SUNWsvn-java
@@ -93,11 +92,8 @@ depend SUNWapch22m-jk
 depend SUNWapch22m-php5
 depend SUNWapch22m-security
 depend SUNWcvs
-depend SUNWcvs
 depend SUNWmemcached
 depend SUNWmercurial
-depend SUNWmercurial
-depend SUNWmysql-base
 depend SUNWmysql5
 depend SUNWphp524
 depend SUNWphp524-mysql
@@ -106,7 +102,6 @@ depend SUNWphp524doc
 depend SUNWphp524man
 depend SUNWpython-twisted
 depend SUNWsquid
-depend SUNWsvn
 depend SUNWsvn
 depend SUNWtcat
 depend netbeans
