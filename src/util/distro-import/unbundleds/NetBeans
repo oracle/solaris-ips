@@ -27,6 +27,14 @@ version 6.0.1
 import SUNWnetbeans-ide
 depend SUNWj6rt
 depend SUNWj6dev
+depend SUNWnetbeans-desktop
+chattr_glob * edit mode 0777 0755 
+chattr_glob * edit mode 0666 0644
+end package
+
+package SUNWnetbeans-desktop
+version 6.0.1
+import SUNWnetbeans-desktop
 chattr_glob * edit mode 0777 0755 
 chattr_glob * edit mode 0666 0644
 end package

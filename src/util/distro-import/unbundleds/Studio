@@ -1,4 +1,5 @@
 package sunstudio
+version 0.2008.05
 depend sunstudioexpress
 end package
 
@@ -14,7 +15,6 @@ import SPROctsrc
 import SPROdbx
 import SPROdbxui
 import SPROdbxx
-#import SPROdemo
 import SPROdlight
 import SPROdmake
 import SPROdwrfb
@@ -60,6 +60,7 @@ import SPROmrsbe
 import SPROmrstd
 import SPROmrtcv
 import SPROnbss
+import SPROpl
 import SPROplg
 import SPROpls
 import SPROplsx
@@ -82,11 +83,20 @@ import SPROstl4y
 import SPROsunms
 import SPROsvc
 import SPROsysprp
-#import SPROtdemo
 import SPROudchk
 import SPROutool
+# relocate entire package to /opt/SunStudioExpress
+#
 chattr_glob * edit path SUNWspro SunStudioExpress
 # manually added dependencies
+#depend SUNWxcu4t
+depend SUNWarc
+depend SUNWcar
+depend SUNWcpp
+depend SUNWcs
+depend SUNWcsd
+depend SUNWesu
+depend SUNWhea
 depend SUNWj6cfg
 depend SUNWj6dev
 depend SUNWj6dmo
@@ -95,18 +105,10 @@ depend SUNWj6dvx
 depend SUNWj6man
 depend SUNWj6rt
 depend SUNWj6rtx
-depend SUNWarc
-depend SUNWcar
-depend SUNWcpp
-depend SUNWcs
-depend SUNWcsd
-depend SUNWesu
-depend SUNWhea
 depend SUNWkvm
 depend SUNWlibC
 depend SUNWlibm
 depend SUNWmlib
 depend SUNWsprot
 depend SUNWtoo
-#depend SUNWxcu4t
 end package
