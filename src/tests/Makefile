@@ -18,12 +18,12 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
 KSH=/usr/bin/ksh
-PYTHON = /usr/bin/python
+PYTHON=/usr/bin/python
 
 TEST_LOG:sh=echo /tmp/$$.ipkg-test.log
 test-verbose := TEST_DEBUG=-x
@@ -31,7 +31,7 @@ test-verbose := TEST_LOG=/dev/stdout
 
 # Invoke all known modules with tests.
 # XXX Invoke the bundle tests.
-test: api-test cli-test leak-test two-depot-test
+test: api-test cli-test leak-test
 
 api-test:
 	@echo "Logging to $(TEST_LOG)"
@@ -45,11 +45,7 @@ cli-test:
 	@echo "Logging to $(TEST_LOG)"
 	$(TEST_DEBUG) $(PYTHON) cli-complete.py >> $(TEST_LOG)
 
-two-depot-test: cli-test
-	@echo "Logging to $(TEST_LOG)"
-	$(KSH) $(TEST_DEBUG) two-depot.ksh >> $(TEST_LOG)
-
-leak-test: two-depot-test
+leak-test: cli-test
 	# workaround: memleaks doesn't run cleanly at this time
 	-$(KSH) $(TEST_DEBUG) memleaks.ksh >> $(TEST_LOG)
 

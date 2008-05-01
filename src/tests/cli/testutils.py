@@ -386,68 +386,95 @@ class pkg5TestCase(unittest.TestCase):
                         self.pkgsend(depot_url, "close -A", exit=0)
                         raise
 
+        def start_depot(self, port, depotdir, logpath):
+                """ Convenience routine to help subclasses start
+                    depots.  Returns a depotcontroller. """
 
-class SingleDepotTestCase(pkg5TestCase):
+                # Note that this must be deferred until after PYTHONPATH
+                # is set up.
+                import pkg.depotcontroller as depotcontroller
 
-        def setUp(self):
-		# Note that this must be deferred until after PYTHONPATH
-		# is set up.
-		import pkg.depotcontroller as dc
+                self.debug("start_depot: depot listening on port %d" % port)
+                self.debug("start_depot: depot data in %s" % depotdir)
+                self.debug("start_depot: depot logging to %s" % logpath)
+
+                dc = depotcontroller.DepotController()
+                dc.set_depotd_path(g_proto_area + "/usr/lib/pkg.depotd")
+                dc.set_repodir(depotdir)
+                dc.set_logpath(logpath)
+                dc.set_port(port)
+                dc.start()
+                return dc
+                
+
+class ManyDepotTestCase(pkg5TestCase):
+
+        def setUp(self, ndepots):
+                # Note that this must be deferred until after PYTHONPATH
+                # is set up.
+                import pkg.depotcontroller as depotcontroller
 
                 pkg5TestCase.setUp(self)
 
                 self.debug("setup: %s" % self.id())
+                self.debug("starting %d depot(s)" % ndepots)
+                self.dcs = {}
 
-                self.dc = dc.DepotController()
+                for i in range(1, ndepots + 1):
+                        depotdir = \
+                            os.path.join(self.get_test_prefix(), "depot%d" % i)
 
-		# Make sure the depot runs from the proto area
-		self.dc.set_depotd_path(g_proto_area + "/usr/lib/pkg.depotd")
+                        depot_logdir = os.path.join(self.get_test_prefix(),
+                            "depot_logdir%d" % i)
+                        depot_logfile = os.path.join(depot_logdir, self.id())
 
-                self.__depotdir = os.path.join(self.get_test_prefix(), "depot")
-                depot_logdir = os.path.join(self.get_test_prefix(),
-		    "depot_logdir")
-                depot_logfile = os.path.join(depot_logdir, self.id())
+                        for dir in (depotdir, depot_logdir):
+                                try:
+                                        os.makedirs(dir, 0755)
+                                except OSError, e:
+                                        if e.errno != errno.EEXIST:
+                                                raise e
 
-		for dir in (self.__depotdir, depot_logdir):
-			try:
-				os.makedirs(dir, 0755)
-			except OSError, e:
-				if e.errno != errno.EEXIST:
-					raise e
+                        # We pick an arbitrary base port.  This could be more
+                        # automated in the future.
+                        self.dcs[i] = self.start_depot(12000 + i,
+                            depotdir, depot_logfile)
 
-                self.dc.set_repodir(self.__depotdir)
-                self.dc.set_logpath(depot_logfile)
-
-                self.debug("setup: depot data in %s" % self.__depotdir)
-                self.debug("setup: depot logging to %s" % depot_logfile)
-
-                self.dc.set_port(12000)
-                self.dc.start()
-
-	def check_traceback(self):
-		""" Scan the depot logfile looking for tracebacks.
-
-		    Raise a DepotTracebackException if one is seen.
-		"""
-
-                self.debug("check for depot tracebacks")
-		logfile = open(self.dc.get_logpath(), "r")
-		output = logfile.read()
-		for line in output.splitlines():
-			if line.startswith("Traceback"):
-				raise DepotTracebackException(self.dc.get_logpath(), output)
+        def check_traceback(self, logpath):
+                """ Scan logpath looking for tracebacks.
+                    Raise a DepotTracebackException if one is seen.
+                """
+                self.debug("check for depot tracebacks in %s" % logpath)
+                logfile = open(logpath, "r")
+                output = logfile.read()
+                for line in output.splitlines():
+                        if line.startswith("Traceback"):
+                                raise DepotTracebackException(logpath, output)
 
         def tearDown(self):
                 self.debug("teardown: %s" % self.id())
-		try:
-			self.check_traceback()
-		finally:
-			pkg5TestCase.tearDown(self)
 
-			self.dc.kill()
-			self.dc = None
-			shutil.rmtree(self.__depotdir)
+                for i in sorted(self.dcs.keys()):
+                        dc = self.dcs[i]
+                        dir = dc.get_repodir()
+                        try:
+                                self.check_traceback(dc.get_logpath())
+                        finally:
+                                dc.kill()
+                                shutil.rmtree(dir)
+
+                self.dcs = None
+                pkg5TestCase.tearDown(self)
 
 
-if __name__ == "__main__":
-        unittest.main()
+class SingleDepotTestCase(ManyDepotTestCase):
+
+        def setUp(self):
+                
+                # Note that this must be deferred until after PYTHONPATH
+                # is set up.
+                import pkg.depotcontroller as depotcontroller
+
+                ManyDepotTestCase.setUp(self, 1)
+                self.dc = self.dcs[1]
+

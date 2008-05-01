@@ -382,7 +382,6 @@ class test_func(Command):
 
                 if ostype == 'posix':
                     subprocess.call([sys.executable, "cli-complete.py"], stdout=testlogfp)
-                    subprocess.call(["/bin/ksh", "two-depot.ksh"], stdout=testlogfp)
                 if osname == 'sunos':
                     subprocess.call(["/bin/ksh", "memleaks.ksh"], stdout=testlogfp)
                 testlogfp.close()

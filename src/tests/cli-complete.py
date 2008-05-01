@@ -55,6 +55,7 @@ def maketests():
 	import cli.t_commandline
 	import cli.t_upgrade
 	import cli.t_rename
+	import cli.t_twodepot
 
 	tests = [
 	    cli.t_depotcontroller.TestDepotController,
@@ -67,7 +68,8 @@ def maketests():
 	    cli.t_commandline.TestCommandLine,
 	    cli.t_upgrade.TestUpgrade,
 	    cli.t_circular_dependencies.TestCircularDependencies,
-	    cli.t_rename.TestRename ]
+	    cli.t_rename.TestRename,
+	    cli.t_twodepot.TestTwoDepots ]
 
 	for t in tests:
 		all_suite.addTest(unittest.makeSuite(t, 'test'))
