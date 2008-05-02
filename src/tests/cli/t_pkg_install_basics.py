@@ -61,6 +61,27 @@ class TestPkgInstallBasics(testutils.SingleDepotTestCase):
             add file /tmp/cat mode=0555 owner=root group=bin path=/bin/cat
             close """
 
+        bar12 = """
+            open bar@1.2,5.11-0
+            add depend type=require fmri=pkg:/foo@1.0
+            add dir mode=0755 owner=root group=bin path=/bin
+            add file /tmp/cat mode=0555 owner=root group=bin path=/bin/cat
+            close """
+
+        baz10 = """
+            open baz@1.0,5.11-0
+            add depend type=require fmri=pkg:/foo@1.0
+            add dir mode=0755 owner=root group=bin path=/bin
+            add file /tmp/cat mode=0555 owner=root group=bin path=/bin/cat
+            close """
+
+        deep10 = """
+            open deep@1.0,5.11-0
+            add depend type=require fmri=pkg:/bar@1.0
+            add dir mode=0755 owner=root group=bin path=/bin
+            add file /tmp/cat mode=0555 owner=root group=bin path=/bin/cat
+            close """
+        
         misc_files = [ "/tmp/libc.so.1", "/tmp/cat" ]
 
         def setUp(self):
@@ -219,6 +240,56 @@ class TestPkgInstallBasics(testutils.SingleDepotTestCase):
                 self.pkg("list bar", exit = 1)
                 self.pkg("list foo", exit = 1,
                    comment = self.test_bug_387.__doc__)
+
+        def test_basics_5(self):
+                """ Add bar@1.1, install bar@1.0. """
+
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.bar11)
+                self.image_create(durl)
+
+                self.pkg("install bar@1.0", exit = 1)
+
+        def test_bug_1338(self):
+                """ Add bar@1.1, dependent on foo@1.2, install bar@1.1. """
+                
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.bar11)
+                self.image_create(durl)
+
+                self.pkg("install bar@1.1", exit = 1)
+                
+        def test_bug_1338_2(self):
+                """ Add bar@1.1, dependent on foo@1.2, and baz@1.0, dependent
+                    on foo@1.0, install baz@1.0 and bar@1.1. """
+                
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.bar11)
+                self.pkgsend_bulk(durl, self.baz10)
+                self.image_create(durl)
+
+                self.pkg("install baz@1.0 bar@1.1", exit = 1)
+
+        def test_bug_1338_3(self):
+                """ Add deep@1.0, bar@1.0. Deep@1.0 depends on bar@1.0 which
+                    depends on foo@1.0, install deep@1.0. """
+                
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.bar10)
+                self.pkgsend_bulk(durl, self.deep10)
+                self.image_create(durl)
+
+                self.pkg("install deep@1.0", exit = 1)
+
+        def test_bug_1338_4(self):
+                """ Add deep@1.0. Deep@1.0 depends on bar@1.0 which depends on
+                    foo@1.0, install deep@1.0. """
+                
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.deep10)
+                self.image_create(durl)
+
+                self.pkg("install deep@1.0", exit = 1)
 
 
 if __name__ == "__main__":

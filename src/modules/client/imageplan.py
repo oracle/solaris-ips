@@ -338,11 +338,22 @@ Cannot remove '%s' due to the following packages that directly depend on it:"""\
 
                 self.progtrack.evaluate_start()
 
+                outstring = ""
+                
                 # Operate on a copy, as it will be modified in flight.
                 for f in self.target_fmris[:]:
                         self.progtrack.evaluate_progress()
-                        self.evaluate_fmri(f)
+                        try:
+                                self.evaluate_fmri(f)
+                        except KeyError, e:
+                                outstring += "Attemping to install %s causes:\n\t%s\n" % \
+                                    (f.get_name(), e)
 
+                if outstring:
+                        raise RuntimeError("No packages were installed because "
+                            "package dependencies could not be satisfied\n" +
+                            outstring)                        
+                                
                 for f in self.target_fmris:
                         self.add_pkg_plan(f)
                         self.progtrack.evaluate_progress()
@@ -356,9 +367,9 @@ Cannot remove '%s' due to the following packages that directly depend on it:"""\
                 self.state = EVALUATED_OK
                 
         def nothingtodo(self):
-		""" Test whether this image plan contains any work to do """
+                """ Test whether this image plan contains any work to do """
 
-		return not self.pkg_plans
+                return not self.pkg_plans
 
         def execute(self):
                 """Invoke the evaluated image plan
@@ -368,9 +379,9 @@ Cannot remove '%s' due to the following packages that directly depend on it:"""\
                 
                 assert self.state == EVALUATED_OK
 
-		if self.nothingtodo():
-			self.state = EXECUTED_OK
-			return
+                if self.nothingtodo():
+                        self.state = EXECUTED_OK
+                        return
 
                 npkgs = 0
                 nfiles = 0
