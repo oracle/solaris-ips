@@ -108,6 +108,19 @@ depend netbeans
 depend webstackui
 end package
 
+package amp
+description "Cluster containing an AMP (Apache, MySQL, PHP) deployment kit"
+depend SUNWapch22
+depend SUNWapch22m-dtrace
+depend SUNWapch22m-fcgid
+depend SUNWapch22m-php5
+depend SUNWapch22m-security
+depend SUNWmysql5
+depend SUNWphp524
+depend SUNWphp524-mysql
+depend SUNWphp524man
+end package
+
 package ruby-dev
 description "Ruby Development cluster"
 depend SUNWcvs
