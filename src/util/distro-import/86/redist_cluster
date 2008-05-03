@@ -8,6 +8,7 @@ include common/FSWxorg-fonts
 include common/FSWxorg-headers.86
 include common/FSWxwpft.86
 include common/FSWxwrtl.86
+include common/OSOLvpanels
 include common/SUNW1394
 include common/SUNW1394h
 include common/SUNWDTraceToolkit
@@ -1091,6 +1092,7 @@ description "redistributable cluster"
 version 0.1
 depend BRCMbnx
 depend FSWxorg-fonts
+depend OSOLvpanels
 depend NVDAgraphics
 depend SUNW1394
 depend SUNW1394h

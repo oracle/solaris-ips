@@ -1,3 +1,5 @@
 package SUNWcacaowsvr
 import SUNWcacaowsvr
+depend SUNWaclg
+depend SUNWcacaort
 end package

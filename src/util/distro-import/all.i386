@@ -73,6 +73,7 @@ include common/IPLTnls
 include common/IPLTnspr
 include common/IPLTnss
 include common/IPLTpldap
+include common/OSOLvpanels
 include common/SUNW1251f
 include common/SUNW1394
 include common/SUNW1394h
