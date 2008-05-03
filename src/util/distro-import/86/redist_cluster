@@ -22,6 +22,7 @@ include common/SUNWTk
 include common/SUNWa2ps
 include common/SUNWaac.81
 include common/SUNWacc
+include common/SUNWaclg
 include common/SUNWaconf
 include common/SUNWadmap
 include common/SUNWadmc.79
@@ -1105,6 +1106,7 @@ depend SUNWTk
 depend SUNWa2ps
 depend SUNWaac
 depend SUNWacc
+depend SUNWaclg
 depend SUNWaconf
 depend SUNWad810
 depend SUNWadixp
