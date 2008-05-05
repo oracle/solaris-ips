@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 #
-# Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -33,8 +33,8 @@ f_img=$(gettext "failed to create image")
 f_pkg=$(gettext "failed to install package")
 f_interrupted=$(gettext "Installation cancelled due to interrupt.")
 
+m_authority=$(gettext   "  Authority: Using %s.")
 m_image=$(gettext     "      Image: Preparing at %s ...")
-m_catalog=$(gettext   "    Catalog: Retrieving from %s ...")
 m_core=$(gettext      " Installing: (output follows)\n")
 m_smf=$(gettext	      "Postinstall: Copying SMF seed repository ...")
 m_brokenness=$(gettext "Postinstall: Working around http://defect.opensolaris.org/bz/show_bug.cgi?id=681")
@@ -110,20 +110,13 @@ fi
 
 zoneroot=$zonepath/root
 
+printf "$m_authority" `echo $authority | cut -d= -f 2`
 printf "\n$m_image" $zoneroot
 pkg image-create -z -F -a "$authority" $zoneroot || fail_fatal $f_img
 printf "$m_done\n"
 
 PKG_IMAGE="$zoneroot"
 export PKG_IMAGE
-
-printf "$m_catalog" `echo $authority | cut -d= -f 2`
-pkg refresh > /dev/null 2>&1 || fail_fatal "$f_refresh"
-if [[ $? -ne 0 ]]; then
-	print "Failed to retrieve catalog"
-	exit 1
-fi
-printf "$m_done\n"
 
 printf "$m_core\n"
 pkg install -q SUNWcsd || fail_incomplete "$f_pkg"
@@ -132,8 +125,7 @@ pkglist=""
 pkglist="$pkglist SUNWcnetr SUNWesu SUNWadmr SUNWadmap SUNWbzip SUNWgzip"
 
 #
-# Workaround: in our test repo, SUNWipkg has no dependencies
-# so we must supply it python.
+# Workaround: For now, SUNWipkg has no dependencies so we must supply it python.
 #
 pkglist="$pkglist SUNWPython SUNWipkg"
 
@@ -180,7 +172,11 @@ ln -s inetd_generic.xml $zoneroot/var/svc/profile/inetd_services.xml
 ln -s platform_none.xml $zoneroot/var/svc/profile/platform.xml
 
 # This was formerly done in i.manifest
-cp $zoneroot/lib/svc/seed/nonglobal.db $zoneroot/etc/svc/repository.db
+repfile=$zoneroot/etc/svc/repository.db
+cp $zoneroot/lib/svc/seed/nonglobal.db $repfile
+chmod 0600 $repfile
+chown root:sys $repfile
+
 printf "$m_done\n"
 
 
@@ -188,17 +184,15 @@ printf "$m_brokenness\n"
 #
 # Remove "jack" user.
 #
-sed '/^jack:.*Default\ User.*$/D' $zoneroot/etc/passwd \
-        > $zoneroot/etc/passwd.new && \
-    mv -f $zoneroot/etc/passwd.new $zoneroot/etc/passwd
-
+print "/^jack:/d\nw" | ed -s $zoneroot/etc/passwd
+chmod u+w $zoneroot/etc/shadow
+print "/^jack:/d\nw" | ed -s $zoneroot/etc/shadow
+chmod u-w $zoneroot/etc/shadow
 
 #
 # Set root from a role back to... not a role.  Grr.
 #
-sed 's/^root::::type=role;/root::::/' $zoneroot/etc/user_attr \
-	> $zoneroot/etc/user_attr.new && \
-    mv -f $zoneroot/etc/user_attr.new $zoneroot/etc/user_attr
+print "s/^root::::type=role;/root::::/\nw" | ed -s $zoneroot/etc/user_attr
 
 #
 # Make sure sysidtools run; we manually poke in the SSH action
@@ -208,30 +202,9 @@ printf "$m_more_brokenness\n"
 /usr/sbin/sysidconfig -b $zoneroot -a /lib/svc/method/sshd
 touch $zoneroot/etc/.UNCONFIGURED
 
-#
-# Make sure sysidtool configures ssh keys
-#
 
 printf "$m_complete\n\n" ${SECONDS}
 printf "$m_postnote\n"
 printf "$m_postnote2\n"
 
 exit $ZONE_SUBPROC_OK
-
-# XXX leaving this out for now.  Reconsider later.
-#
-# Core X and GNOME -- I add these because it's easy to overlook that
-# you need fonts, and the result is that fontconfig dumps core a lot.
-#
-#printf $m_corex
-#pkg install SUNWfontconfig FSWxorg-fonts || fail_incomplete "$f_pkg"
-#pkg install SUNWxorg-client-programs SUNWgnome-fonts || fail_incomplete "$f_pkg"
-#pkg install SUNWgnome-base-libs SUNWgnome-panel || fail_incomplete "$f_pkg"
-##
-## workaround for lack of xterm, and add GDM since it's nice to have it.
-##
-#pkg install SUNWgnome-terminal || fail_incomplete "$f_pkg"
-#pkg install SUNWgnome-display-mgr || fail_incomplete "$f_pkg"
-
-# This was formerly done in SUNWcsr/postinstall
-
