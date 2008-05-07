@@ -118,7 +118,11 @@ def catalog_0(scfg, request):
         # will get sent as well.
         try:
                 scfg.updatelog.send(request)
-        except:
+        except Exception, e:
+                if isinstance(e, socket.error) and \
+                    e.args[0] == errno.EPIPE:
+                        return
+
                 request.log_error("Internal failure:\n%s",
                     traceback.format_exc())
 
@@ -407,7 +411,11 @@ class pkgHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
                 try:
                         exec op_call
-                except:
+                except Exception, e:
+                        if isinstance(e, socket.error) and \
+                            e.args[0] == errno.EPIPE:
+                                return
+
                         self.log_error("Internal failure:\n%s",
                             traceback.format_exc())
                         # XXX op_call may already have spit some data out to the
