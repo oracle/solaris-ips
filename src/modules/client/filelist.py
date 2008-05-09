@@ -33,7 +33,7 @@ import stat
 import pkg.pkgtarfile as ptf
 import pkg.portable as portable
 import pkg.fmri
-from pkg.misc import versioned_urlopen
+from pkg.misc import versioned_urlopen, hash_file_name
 
 class FileList(object):
         """A FileList maintains mappings between files and Actions.
@@ -151,20 +151,6 @@ class FileList(object):
                         act = l.pop()
                         path = act.attrs["path"]
                         imgroot = self.image.get_root()
-                        # get directory and basename
-                        dirname, base = os.path.split(path)
-                        # reconstruct path without basename
-                        path = os.path.normpath(os.path.join(
-                            filelist_download_dir,
-                            dirname))
-
-                        # Since the file hash value identifies the content, and
-                        # not the file or package itself, generate temporary
-                        # file names that are unique by package and file name.
-                        # This ensures that each opener gets access to a unique
-                        # file name that hasn't been manipulated by another
-                        # action.
-                        filename =  "." + pkgnm + "-" + base + "-" + hashval
 
                         # Set the perms of the temporary file. The file must
                         # be writable so that the mod time can be changed on Windows
@@ -172,39 +158,23 @@ class FileList(object):
                         info.uname = "root"
                         info.gname = "root"
 
-                        # XXX catch IOError if tar stream closes inadvertently?
-                        tar_stream.extract_to(info, path, filename)
-
-                        # extract path is where the file now lives
+                        # extract path is where the file lives
                         # after being extracted
                         extract_path = os.path.normpath(os.path.join(
-                            path, filename))
+                                filelist_download_dir, pkgnm, hash_file_name(hashval)))
+                        (dir, fname) = os.path.split(extract_path)
+                        
+                        # XXX catch IOError if tar stream closes inadvertently?
+                        tar_stream.extract_to(info, dir, fname)
 
                         # assign opener
                         act.data = self._make_opener(extract_path)
-
-                        # assign cleanup callable, responsible for deleting the
-                        # temporary file holding the action's data.
-                        act.cleanup = self._make_cleaner(extract_path)
 
                         # If there are more actions in the list, copy the
                         # extracted file to their paths, changing names as
                         # appropriate to maintain uniqueness
                         for action in l:
-                                path = action.attrs["path"]
-                                dirname, base = os.path.split(path)
-                                cpdir = os.path.normpath(os.path.join(
-                                    filelist_download_dir,
-                                    dirname))
-                                cppath = os.path.normpath(os.path.join(
-                                    cpdir, "." + pkgnm + "-" + base \
-                                    + "-" + hashval))
-                                if not os.path.exists(cpdir):
-                                        os.makedirs(cpdir)
-                                # we can use hardlink here
-                                portable.link(extract_path, cppath)
-                                action.data = self._make_opener(cppath)
-                                action.cleanup = self._make_cleaner(cppath)
+                                action.data = self._make_opener(extract_path)
                 tar_stream.close()
                 f.close()
 

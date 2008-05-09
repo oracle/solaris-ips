@@ -1184,7 +1184,7 @@ class Image(object):
                 
                 salvagedir = os.path.normpath(
                     os.path.join(self.imgdir, "lost+found",
-                                 path + "-" + time.strftime("%Y-%m-%d+%H:%M:%S")))        
+                                 path + "-" + time.strftime("%Y%m%dT%H%M%SZ")))
 
                 os.makedirs(salvagedir)
                 shutil.move(os.path.normpath(os.path.join(self.root, path)), salvagedir)

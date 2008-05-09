@@ -33,6 +33,7 @@ packaging object."""
 import os
 import errno
 import sha
+import tempfile
 from stat import *
 import generic
 import pkg.misc as misc
@@ -103,20 +104,14 @@ class FileAction(generic.Action):
                 # XXX This needs to be modularized.
                 # XXX This needs to be controlled by policy.
                 if self.needsdata(orig): 
-                        temp = os.path.normpath(os.path.sep.join(
-                            (pkgplan.image.get_root(), path + "." + self.hash)))
-
+                        tfilefd, temp = tempfile.mkstemp(dir = os.path.dirname(final_path))
                         stream = self.data()
-                        tfile = file(temp, "wb")
+                        tfile = os.fdopen(tfilefd, "wb");
                         shasum = misc.gunzip_from_stream(stream, tfile)
 
                         tfile.close()
                         stream.close()
 
-                        # Call cleanup callable, which deletes the underlying
-                        # temporary file created above.
-                        if self.cleanup != None:
-                                self.cleanup()
                         # XXX Should throw an exception if shasum doesn't match
                         # self.hash
                 else:

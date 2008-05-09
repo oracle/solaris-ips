@@ -86,6 +86,11 @@ class MultiPlatformAPIChecker(BaseChecker):
         'thread.stack_size', 'time.tzset', 'fcntl.fcntl', 'fcntl.ioctl',
         'fcntl.flock', 'fcntl.lockf',
     ]
+    
+    # The list of package prefixes that are allowed to call VERBOTEN APIs
+    ALLOWED = [
+        'pkg.portable',
+    ]
 
     #
     # Messages to show when checking detects an error
@@ -147,7 +152,15 @@ class MultiPlatformAPIChecker(BaseChecker):
                 alias = fullname         
             self.imported_modules.update({alias: fullname})
 
+    def _is_allowed(self, node):
+        for p in self.ALLOWED:
+            if node.root().name.startswith(p):
+                return True
+        return False
+
     def _check_verboten_import(self, node, name):
+        if self._is_allowed(node):
+            return
         if name in self.VERBOTEN:
             self.add_message('E0900', args=(name), node=node)
 
@@ -160,6 +173,8 @@ class MultiPlatformAPIChecker(BaseChecker):
         return name
 
     def _check_verboten_call(self,node, name):
+        if self._is_allowed(node):
+            return
         name = self._unalias(name)
         for i,e in enumerate(name):
             fullname = '.'.join(name[:i + 1])

@@ -100,10 +100,6 @@ class Action(object):
                 will be substituted with a callable that will return the object.
                 If it is a callable, it will not be replaced at all.
 
-                For file-like 'data' arguments, The internal 'cleanup'
-                attribute will be set to a callable which will delete the
-                underlying file after the data is processed.
-
                 Any remaining named arguments will be treated as attributes.
                 """
 
@@ -115,25 +111,19 @@ class Action(object):
 
                 if data == None:
                         self.data = None
-                        self.cleanup = None
                         return
 
                 if isinstance(data, str):
                         def file_opener():
                                 return open(data, "rb")
                         self.data = file_opener
-                        def file_cleanup():
-                                os.unlink(data)
-                        self.cleanup = file_cleanup
                 elif not callable(data):
                         def data_opener():
                                 return data
                         self.data = data_opener
-                        self.cleanup = None
                 else:
                         # Data is not None, and is callable
                         self.data = data
-                        self.cleanup = None
 
         def __str__(self):
                 """Serialize the action into manifest form.
@@ -165,9 +155,9 @@ class Action(object):
                         v = self.attrs[k]
                         if isinstance(v, list):
                             str += " " + " ".join([
-                                "%s=%s" % (k, q(lmt))
+                        "%s=%s" % (k, q(lmt))
                                 for lmt in v
-                            ])
+                    ])
                         elif " " in v:
                                 str += " " + k + "=\"" + v + "\""
                         else:
@@ -187,7 +177,7 @@ class Action(object):
                 return res
 
         def compare(self, other):
-                return cmp(id(self), id(other))
+                        return cmp(id(self), id(other))
 
         def different(self, other):
                 """Returns True if other represents a non-ignorable change from self.

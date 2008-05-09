@@ -28,7 +28,11 @@ Most if not all of the os_unix methods apply on Darwin. The methods
 below override the definitions from os_unix
 """
 
-from os_unix import *
+from os_unix import \
+    get_isainfo, get_release, get_platform, get_group_by_name, \
+    get_user_by_name, get_name_by_gid, get_name_by_uid, is_admin, get_username, \
+    chown, rename, link, split_path, get_root
+
 import macostools
 
 def copyfile(src, dst):

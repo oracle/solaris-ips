@@ -25,13 +25,16 @@ import sys
 import platform
 import shutil
 import code
+import re
 import subprocess
+import string
 import tempfile
 
 from distutils.core import setup, Extension
 from distutils.cmd import Command
 from distutils.command.install import install as _install
 from distutils.command.build import build as _build
+from distutils.command.build_py import build_py as _build_py
 from distutils.command.bdist import bdist as _bdist
 from distutils.command.clean import clean as _clean
 
@@ -341,6 +344,30 @@ class build_func(_build):
             _build.initialize_options(self)
             self.build_base = build_dir
 
+def get_hg_version():
+        try:
+                p = subprocess.Popen(['hg', 'id', '-i'], stdout=subprocess.PIPE)
+                return p.communicate()[0].strip()
+        except OSError:
+                print >>stderr, "ERROR: unable to obtain mercurial version"
+                return "unknown"
+    
+class build_py_func(_build_py):
+        # override the build_module method to do VERSION substitution on pkg/__init__.py
+        def build_module (self, module, module_file, package):
+                if module == "__init__" and package == "pkg":
+                        mcontent = file(module_file).read()
+                        v = 'VERSION = "%s"' % get_hg_version()
+                        mcontent = re.sub('(?m)^VERSION[^"]*"([^"]*)"', v, mcontent)
+                        tmpfd, tmp_file = tempfile.mkstemp()
+                        os.write(tmpfd, mcontent)
+                        os.close(tmpfd)
+                        print "doing version substitution: ", v
+                        rv = _build_py.build_module(self, module, tmp_file, package)
+                        os.unlink(tmp_file)
+                        return rv
+                return _build_py.build_module(self, module, module_file, package)
+
 class clean_func(_clean):
         def initialize_options(self):            
             _clean.initialize_options(self)
@@ -405,6 +432,7 @@ cmdclasses={
             'linkclean' : link_clean_func,
             'install' : install_func,
             'build' : build_func,
+            'build_py' : build_py_func,
             'bdist' : dist_func,
             'lint' : lint_func,
             'clean' : clean_func,
@@ -412,9 +440,8 @@ cmdclasses={
             'test' : test_func,
            }
 
-if ostype == 'posix':
-    # all unix builds of IPS should have manpages
-    data_files +=   [
+# all builds of IPS should have manpages
+data_files +=   [
                     (man1_dir, man1_files),
                     (man1m_dir, man1m_files),
                     (man5_dir, man5_files),
