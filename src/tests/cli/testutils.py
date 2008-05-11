@@ -34,25 +34,25 @@ import platform
 g_proto_area=""
 
 def setup_environment(path_to_proto):
-	""" Set up environment for doing testing.
+        """ Set up environment for doing testing.
 
-	    We set PYTHONPATH and PATH so that they reference the proto
-	    area, and clear packaging related environment variables
-	    (every variable prefixed with PKG_).
+            We set PYTHONPATH and PATH so that they reference the proto
+            area, and clear packaging related environment variables
+            (every variable prefixed with PKG_).
 
-	    path_to_proto should be a relative path indicating a path
-	    to proto area of the workspace.  So, if your test case is
-	    three levels deep: ex. src/tests/cli/foo.py, this should be
-	    "../../../proto"
+            path_to_proto should be a relative path indicating a path
+            to proto area of the workspace.  So, if your test case is
+            three levels deep: ex. src/tests/cli/foo.py, this should be
+            "../../../proto"
 
-	    This function looks at argv[0] to compute the ultimate
-	    path to the proto area; this is nice because you can then
-	    invoke test cases like normal commands; i.e.:
-	    "python cli/t_my_test_case.py" will just work.
+            This function looks at argv[0] to compute the ultimate
+            path to the proto area; this is nice because you can then
+            invoke test cases like normal commands; i.e.:
+            "python cli/t_my_test_case.py" will just work.
 
-	"""
+        """
 
-	global g_proto_area
+        global g_proto_area
 
         osname = platform.uname()[0].lower()
         proc = 'unknown'
@@ -64,48 +64,48 @@ def setup_environment(path_to_proto):
                 proc = osname
         elif osname == 'darwin':
                 proc = osname
-	else:
-		print "Unable to determine appropriate proto area location."
-		print "This is a porting problem."
-		sys.exit(1)
+        else:
+                print "Unable to determine appropriate proto area location."
+                print "This is a porting problem."
+                sys.exit(1)
 
-	# Figure out from where we're invoking the command
-	cmddir, cmdname = os.path.split(sys.argv[0])
-	cmddir = os.path.realpath(cmddir)
+        # Figure out from where we're invoking the command
+        cmddir, cmdname = os.path.split(sys.argv[0])
+        cmddir = os.path.realpath(cmddir)
 
-	if "ROOT" in os.environ:
-		g_proto_area = os.environ["ROOT"]
-	else:
-		g_proto_area = "%s/%s/root_%s" % (cmddir, path_to_proto, proc)
+        if "ROOT" in os.environ:
+                g_proto_area = os.environ["ROOT"]
+        else:
+                g_proto_area = "%s/%s/root_%s" % (cmddir, path_to_proto, proc)
 
-	# Clean up relative ../../, etc. out of path to proto
-	g_proto_area = os.path.realpath(g_proto_area)
+        # Clean up relative ../../, etc. out of path to proto
+        g_proto_area = os.path.realpath(g_proto_area)
 
-	pkgs = "%s/usr/lib/python2.4/vendor-packages" % g_proto_area
-	bins = "%s/usr/bin" % g_proto_area
+        pkgs = "%s/usr/lib/python2.4/vendor-packages" % g_proto_area
+        bins = "%s/usr/bin" % g_proto_area
 
-	print "NOTE: Adding %s to PYTHONPATH" % pkgs
-	sys.path.insert(1, pkgs)
+        print "NOTE: Adding %s to PYTHONPATH" % pkgs
+        sys.path.insert(1, pkgs)
 
-	#
-	# Because subprocesses must also source from the proto area,
-	# we need to set PYTHONPATH in the environment as well as
-	# in sys.path.
-	#
-	if "PYTHONPATH" in os.environ:
-		pypath = os.pathsep + os.environ["PYTHONPATH"]
-	else:
-		pypath = ""
-	os.environ["PYTHONPATH"] = "." + os.pathsep + pkgs + pypath
+        #
+        # Because subprocesses must also source from the proto area,
+        # we need to set PYTHONPATH in the environment as well as
+        # in sys.path.
+        #
+        if "PYTHONPATH" in os.environ:
+                pypath = os.pathsep + os.environ["PYTHONPATH"]
+        else:
+                pypath = ""
+        os.environ["PYTHONPATH"] = "." + os.pathsep + pkgs + pypath
 
-	print "NOTE: Adding '%s' to head of PATH" % bins
-	os.environ["PATH"] = bins + os.pathsep + os.environ["PATH"]
+        print "NOTE: Adding '%s' to head of PATH" % bins
+        os.environ["PATH"] = bins + os.pathsep + os.environ["PATH"]
 
-	# Use "keys"; otherwise we'll change dictionary size during iteration.
-	for k in os.environ.keys():
-		if k.startswith("PKG_"):
-			print "NOTE: Clearing '%s' from environment" % k
-			del os.environ[k]
+        # Use "keys"; otherwise we'll change dictionary size during iteration.
+        for k in os.environ.keys():
+                if k.startswith("PKG_"):
+                        print "NOTE: Clearing '%s' from environment" % k
+                        del os.environ[k]
 
 
 
@@ -120,55 +120,55 @@ def format_comment(comment):
                 comm = ""
                 for line in comment.splitlines():
                         line = line.strip()
-			if line == "":
-				continue
+                        if line == "":
+                                continue
                         comm += "  " + line + "\n"
                 return comm + "\n"
-	else:
-		return "<no comment>\n\n"
+        else:
+                return "<no comment>\n\n"
 
 def format_output(command, output):
-	str = "  Output Follows:\n"
+        str = "  Output Follows:\n"
         str += topdivider
-	if command is not None:
-		str += "| $ " + command + "\n"
+        if command is not None:
+                str += "| $ " + command + "\n"
 
-	if output is None or output == "":
-		str += "| <no output>\n"
-	else:
-		for line in output.split("\n"):
-			str += "| " + line.rstrip() + "\n"
+        if output is None or output == "":
+                str += "| <no output>\n"
+        else:
+                for line in output.split("\n"):
+                        str += "| " + line.rstrip() + "\n"
         str += botdivider
         return str
 
 def format_debug(output):
-	str = "  Debug Buffer Follows:\n"
+        str = "  Debug Buffer Follows:\n"
         str += topdivider
 
-	if output is None or output == "":
-		str += "| <no debug buffer>\n"
-	else:
-		for line in output.split("\n"):
-			str += "| " + line.rstrip() + "\n"
+        if output is None or output == "":
+                str += "| <no debug buffer>\n"
+        else:
+                for line in output.split("\n"):
+                        str += "| " + line.rstrip() + "\n"
         str += botdivider
         return str
 
 class DepotTracebackException(Exception):
-	def __init__(self, logfile, output):
+        def __init__(self, logfile, output):
                 Exception.__init__(self)
-		self.__logfile = logfile
-		self.__output = output
+                self.__logfile = logfile
+                self.__output = output
 
         def __str__(self):
                 str = "During this test, a depot Traceback was detected.\n"
-		str += "Log file: %s.\n" % self.__logfile
-		str += "Log file output is:\n"
-		str += format_output(None, self.__output)
+                str += "Log file: %s.\n" % self.__logfile
+                str += "Log file output is:\n"
+                str += format_output(None, self.__output)
                 return str
 
 class TracebackException(Exception):
         def __init__(self, command, output = None, comment = None,
-	    debug = None):
+            debug = None):
                 Exception.__init__(self)
                 self.__command = command
                 self.__output = output
@@ -181,15 +181,15 @@ class TracebackException(Exception):
 
                 str = ""
                 str += format_comment(self.__comment)
-		str += format_output(self.__command, self.__output)
-		if self.__debug is not None and self.__debug != "":
-			str += format_debug(self.__debug)
+                str += format_output(self.__command, self.__output)
+                if self.__debug is not None and self.__debug != "":
+                        str += format_debug(self.__debug)
                 return str
 
 class UnexpectedExitCodeException(Exception):
 
         def __init__(self, command, expected, got, output = None,
-	    comment = None, debug = None):
+            comment = None, debug = None):
                 Exception.__init__(self)
                 self.__command = command
                 self.__output = output
@@ -203,14 +203,14 @@ class UnexpectedExitCodeException(Exception):
                         return (Exception.__str__(self))
 
                 str = ""
-		str += format_comment(self.__comment)
+                str += format_comment(self.__comment)
 
                 str += "  Expected exit status: %d.  Got: %d." % \
                     (self.__expected, self.__got)
 
-		str += format_output(self.__command, self.__output)
-		if self.__debug is not None and self.__debug != "":
-			str += format_debug(self.__debug)
+                str += format_output(self.__command, self.__output)
+                if self.__debug is not None and self.__debug != "":
+                        str += format_debug(self.__debug)
                 return str
 
 
@@ -225,44 +225,44 @@ class pkg5TestCase(unittest.TestCase):
                 self.__image_dir = None
                 self.pid = os.getpid()
 
-		# XXX Windows portability issue
-		self.__test_prefix = "/tmp/ips.test.%d" % self.pid
-		self.__img_path = os.path.join(self.__test_prefix, "image")
+                # XXX Windows portability issue
+                self.__test_prefix = "/tmp/ips.test.%d" % self.pid
+                self.__img_path = os.path.join(self.__test_prefix, "image")
                 os.environ["PKG_IMAGE"] = self.__img_path
 
                 if "TEST_DEBUG" in os.environ:
                         self.__debug = True
                 else:
                         self.__debug = False
-		self.__debug_buf = ""
+                self.__debug_buf = ""
 
         def tearDown(self):
                 self.image_destroy()
 
-	def get_img_path(self):
-		return self.__img_path
+        def get_img_path(self):
+                return self.__img_path
 
-	def get_test_prefix(self):
-		return self.__test_prefix
+        def get_test_prefix(self):
+                return self.__test_prefix
 
         def debug(self, s):
                 if self.__debug:
                         print >> sys.stderr, s
-		self.__debug_buf += s
-		if not s.endswith("\n"):
-			self.__debug_buf += "\n"
+                self.__debug_buf += s
+                if not s.endswith("\n"):
+                        self.__debug_buf += "\n"
 
         def debugcmd(self, cmdline):
-		self.debug("$ %s" % cmdline)
+                self.debug("$ %s" % cmdline)
 
         def debugresult(self, retcode, output):
-		if output.strip() != "":
-			self.debug(output.strip())
-		if retcode != 0:
-			self.debug("[returned %d]" % retcode)
+                if output.strip() != "":
+                        self.debug(output.strip())
+                if retcode != 0:
+                        self.debug("[returned %d]" % retcode)
 
-	def get_debugbuf(self):
-		return self.__debug_buf
+        def get_debugbuf(self):
+                return self.__debug_buf
 
         def image_create(self, repourl, prefix = "test"):
                 assert self.__img_path
@@ -279,11 +279,11 @@ class pkg5TestCase(unittest.TestCase):
                     stderr = subprocess.STDOUT)
                 retcode = p.wait()
                 output = p.stdout.read()
-		self.debugresult(retcode, output)
+                self.debugresult(retcode, output)
 
                 if retcode == 99:
                         raise TracebackException(cmdline, output,
-			    debug=self.get_debugbuf())
+                            debug=self.get_debugbuf())
                 if retcode != 0:
                         raise UnexpectedExitCodeException(cmdline, 0,
                             retcode, output, debug=self.get_debugbuf())
@@ -303,7 +303,7 @@ class pkg5TestCase(unittest.TestCase):
         def pkg(self, command, exit = 0, comment = ""):
 
                 cmdline = "pkg %s" % command
-		self.debugcmd(cmdline)
+                self.debugcmd(cmdline)
 
                 p = subprocess.Popen(cmdline, shell = True,
                     stdout = subprocess.PIPE,
@@ -311,22 +311,22 @@ class pkg5TestCase(unittest.TestCase):
 
                 output = p.stdout.read()
                 retcode = p.wait()
-		self.debugresult(retcode, output)
+                self.debugresult(retcode, output)
 
                 if retcode == 99:
                         raise TracebackException(cmdline, output, comment,
-			    debug=self.get_debugbuf())
+                            debug=self.get_debugbuf())
                 elif retcode != exit:
                         raise UnexpectedExitCodeException(cmdline,
                             exit, retcode, output, comment,
-			    debug=self.get_debugbuf())
+                            debug=self.get_debugbuf())
 
                 return retcode
 
         def pkgsend(self, depot_url, command, exit = 0, comment = ""):
 
                 cmdline = "pkgsend -s %s %s" % (depot_url, command)
-		self.debugcmd(cmdline)
+                self.debugcmd(cmdline)
 
                 # XXX may need to be smarter.
                 if command.startswith("open "):
@@ -335,16 +335,16 @@ class pkg5TestCase(unittest.TestCase):
 
                         out, err = p.communicate()
                         retcode = p.wait()
-			self.debugresult(retcode, out)
+                        self.debugresult(retcode, out)
                         if retcode == 0:
                                 out = out.rstrip()
-				assert out.startswith("export PKG_TRANS_ID=")
-				arr = out.split("=")
-				assert arr
-				out = arr[1]
-				os.environ["PKG_TRANS_ID"] = out
+                                assert out.startswith("export PKG_TRANS_ID=")
+                                arr = out.split("=")
+                                assert arr
+                                out = arr[1]
+                                os.environ["PKG_TRANS_ID"] = out
 
-			# retcode != 0 will be handled below
+                        # retcode != 0 will be handled below
 
                 else:
                         p = subprocess.Popen(cmdline,
@@ -354,14 +354,14 @@ class pkg5TestCase(unittest.TestCase):
 
                         output = p.stdout.read()
                         retcode = p.wait()
-			self.debugresult(retcode, output)
+                        self.debugresult(retcode, output)
 
-			if retcode == 0 and command.startswith("close "):
-				os.environ["PKG_TRANS_ID"] = ""
+                        if retcode == 0 and command.startswith("close "):
+                                os.environ["PKG_TRANS_ID"] = ""
 
                 if retcode == 99:
                         raise TracebackException(cmdline, output, comment,
-			    debug=self.get_debugbuf())
+                            debug=self.get_debugbuf())
 
                 if retcode != exit:
                         raise UnexpectedExitCodeException(cmdline, exit,
@@ -450,6 +450,15 @@ class ManyDepotTestCase(pkg5TestCase):
                 for line in output.splitlines():
                         if line.startswith("Traceback"):
                                 raise DepotTracebackException(logpath, output)
+
+        def restart_depots(self):
+                self.debug("restarting %d depot(s)" % len(self.dcs))
+                for i in sorted(self.dcs.keys()):
+                        dc = self.dcs[i]
+                        self.debug("stopping depot at url: %s" % dc.get_depot_url())
+                        dc.stop()
+                        self.debug("starting depot at url: %s" % dc.get_depot_url())
+                        dc.start()
 
         def tearDown(self):
                 self.debug("teardown: %s" % self.id())

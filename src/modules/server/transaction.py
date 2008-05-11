@@ -132,7 +132,7 @@ class Transaction(object):
                 # client release on the initial open of the transaction.
                 self.fmri = fmri.PkgFmri(self.pkg_name, None)
 
-                self.dir = ("%s/%s", self.cfg.trans_root, self.get_basename())
+                self.dir = "%s/%s" % (self.cfg.trans_root, self.get_basename())
 
         def close(self, request):
                 def split_trans_id(id):
