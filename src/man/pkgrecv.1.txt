@@ -1,0 +1,81 @@
+User Commands                                            pkgrecv(1)
+
+
+NAME
+     pkgrecv - image packaging system content retrieval utility
+
+SYNOPSIS
+     /usr/bin/pkgrecv [-d directory] -s server pkg...
+
+     /usr/bin/pkgrecv -s server -n
+
+DESCRIPTION
+     pkgrecv allows the user to download the contents of a package
+     from a server.  The contents are retrieved in a format that can
+     easily be input to pkgsend(1) when used with the 'include'
+     subcommand.
+
+OPTIONS
+     The following options are supported:
+
+     -s repo_url    The URL prefix of the server.
+
+     -d directory   The directory where pkg content should be placed.
+     		    The default location is the current working
+		    directory.
+
+     -n             Instead of downloading packages, list the most recent 
+                    versions of the packages available at the specified
+		    server.
+
+EXAMPLES
+     Example 1:  List newest packages available from server test
+
+     $ pkgrecv -s http://test -n
+     pkg:/SUNWlibC@0.5.11,5.11-0.79:20080221T125720Z
+     pkg:/SUNWfreetype2@0.5.11,5.11-0.79:20080221T123955Z
+     pkg:/SUNWlibm@0.5.11,5.11-0.79:20080221T125728Z
+     pkg:/SUNWliboil@0.5.11,5.11-0.79:20080221T125730Z
+
+     Example 2: Receive the SUNWlibC, SUNWfreetype, and SUNWlibm
+     packages from example 1
+
+     $ pkgrecv -s http://test SUNWlibC@0.5.11,5.11-0.79:20080221T125720Z
+     SUNWfreetype2@0.5.11,5.11-0.79:20080221T123955Z
+     SUNWlibm@0.5.11,5.11-0.79:20080221T125728Z
+
+
+EXIT STATUS
+     The following exit values are returned:
+
+     0     Everything worked.
+
+     1     Something bad happened.
+
+     2     Invalid command line options were specified.
+
+FILES
+
+ATTRIBUTES
+     See attributes(5) for descriptions of the  following  attri-
+     butes:
+     ____________________________________________________________
+    |       ATTRIBUTE TYPE        |       ATTRIBUTE VALUE       |
+    |_____________________________|_____________________________|
+    | Availability                |                             |
+    |_____________________________|_____________________________|
+
+SEE ALSO
+     pkgsend(1), attributes(5), pkg(5)
+
+NOTES
+     The image packaging system is an under-development feature.
+     Command names, invocation, formats, and operations are all subject
+     to change.  Development is hosted in the OpenSolaris community
+     at
+
+     http://opensolaris.org/os/project/pkg/
+
+     Other package bundle formats can be created.  Other forms of
+     package publication, via the underlying Python API or via the web
+     API, are also possible.

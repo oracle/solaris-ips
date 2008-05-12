@@ -62,7 +62,7 @@ Packager subcommands:
         pkgsend open [-en] pkg_fmri
         pkgsend add action arguments 
         pkgsend import bundlefile ...
-        pkgsend include manifest ...
+        pkgsend include [-d basedir] manifest ...
         pkgsend close [-A]
 
         pkgsend send bundlefile
@@ -184,6 +184,14 @@ def trans_rename(config, args):
 
 def trans_include(config, fargs):
 
+        basedir = None
+
+        opts, pargs = getopt.getopt(fargs, "d:")
+
+        for opt, arg in opts:
+                if opt == "-d":
+                        basedir = arg
+
         try:
                 trans_id = os.environ["PKG_TRANS_ID"]
         except KeyError:
@@ -192,7 +200,7 @@ def trans_include(config, fargs):
                 sys.exit(1)
 
         t = trans.Transaction()
-        for filename in fargs:
+        for filename in pargs:
                 f = file(filename)
                 for line in f:
                         line = line.strip() # 
@@ -208,8 +216,15 @@ def trans_include(config, fargs):
                                         print >> sys.stderr, e[0]
                                         sys.exit(1)
 
+                                if basedir:
+                                        fullpath = args[1].lstrip(os.path.sep)
+                                        fullpath = os.path.join(basedir,
+                                            fullpath)
+                                else:
+                                        fullpath = args[1]
+
                                 def opener():
-                                        return open(args[1], "rb")
+                                        return open(fullpath, "rb")
                                 action.data = opener
 
                         else:

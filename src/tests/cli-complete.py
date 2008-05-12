@@ -54,6 +54,7 @@ def maketests():
 	import cli.t_pkg_list
 	import cli.t_commandline
 	import cli.t_upgrade
+        import cli.t_recv
 	import cli.t_rename
 	import cli.t_twodepot
 
@@ -68,6 +69,7 @@ def maketests():
 	    cli.t_commandline.TestCommandLine,
 	    cli.t_upgrade.TestUpgrade,
 	    cli.t_circular_dependencies.TestCircularDependencies,
+            cli.t_recv.TestPkgRecv,
 	    cli.t_rename.TestRename,
 	    cli.t_twodepot.TestTwoDepots ]
 

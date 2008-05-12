@@ -323,6 +323,33 @@ class pkg5TestCase(unittest.TestCase):
 
                 return retcode
 
+        def pkgrecv(self, server_url, command, exit = 0, out = False,
+            comment = ""):
+
+                cmdline = "pkgrecv -s %s %s" % (server_url, command)
+                self.debugcmd(cmdline)
+
+                p = subprocess.Popen(cmdline, shell = True,
+                    stdout = subprocess.PIPE,
+                    stderr = subprocess.STDOUT)
+
+                output = p.stdout.read()
+                retcode = p.wait()
+                self.debugresult(retcode, output)
+
+                if retcode == 99:
+                        raise TracebackException(cmdline, output, comment,
+			    debug = self.get_debugbuf())
+                elif retcode != exit:
+                        raise UnexpectedExitCodeException(cmdline,
+                            exit, retcode, output, comment,
+			    debug = self.get_debugbuf())
+
+                if out:
+                        return retcode, output
+
+                return retcode
+
         def pkgsend(self, depot_url, command, exit = 0, comment = ""):
 
                 cmdline = "pkgsend -s %s %s" % (depot_url, command)

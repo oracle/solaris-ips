@@ -133,7 +133,7 @@ class TestUpgrade(testutils.SingleDepotTestCase):
                         # write the name of the file into the file, so that
                         # all files have differing contents
                         f.write(p)
-                        f.close
+                        f.close()
                         self.debug("wrote %s" % p)
                 
         def tearDown(self):

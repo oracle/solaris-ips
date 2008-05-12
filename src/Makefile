@@ -23,6 +23,7 @@
 #
 
 # client.py -> /usr/bin/pkg
+# pull.py -> /usr/bin/pkgrecv
 # publish.py -> /usr/bin/pkgsend
 # depot.py -> /usr/lib/pkg.depotd
 #
@@ -67,10 +68,11 @@ ROOTDIRS = \
 	$(ROOTMAN1M) \
 	$(ROOTMAN5)
 
-PROGS = pkg pkgsend pkg.depotd
+PROGS = pkg pkgrecv pkgsend pkg.depotd
 
 ROOTPROGS = \
 	$(ROOT)/usr/bin/pkg \
+	$(ROOT)/usr/bin/pkgrecv \
 	$(ROOT)/usr/bin/pkgsend \
 	$(ROOT)/usr/lib/pkg.depotd
 
@@ -241,6 +243,7 @@ binary-modules:
 PWD:sh = pwd
 link:
 	ln -sf $(PWD)/client.py /usr/bin/pkg
+	ln -sf $(PWD)/pull.py /usr/bin/pkgrecv
 	ln -sf $(PWD)/publish.py /usr/bin/pkgsend
 	ln -sf $(PWD)/depot.py /usr/lib/pkg.depotd
 	ln -sf $(PWD)/modules /usr/lib/python2.4/vendor-packages/pkg
@@ -251,6 +254,7 @@ link:
 
 link-clean:
 	rm -f /usr/bin/pkg
+	rm -f /usr/bin/pkgrecv
 	rm -f /usr/bin/pkgsend
 	rm -f /usr/lib/pkg.depotd
 	rm -f /usr/lib/python2.4/vendor-packages/pkg
@@ -315,6 +319,9 @@ $(ROOTMANIFEST)/%: %
 
 pkg: client.py
 	cp client.py pkg
+
+pkgrecv: pull.py
+	cp pull.py pkgrecv
 
 pkgsend: publish.py
 	cp publish.py pkgsend

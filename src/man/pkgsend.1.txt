@@ -10,7 +10,7 @@ SYNOPSIS
      /usr/bin/pkgsend open [-en] pkg_fmri
      /usr/bin/pkgsend add action arguments
      /usr/bin/pkgsend import bundlefile ...
-     /usr/bin/pkgsend include manifest ...
+     /usr/bin/pkgsend include [-d basedir] manifest ...
      /usr/bin/pkgsend close [-A]
 
      /usr/bin/pkgsend send bundlefile ...
@@ -48,7 +48,7 @@ SUBCOMMANDS
 	  Add each given bundlefile (such as a SVr4 package) into the
 	  current transaction.
 
-     include manifest ...
+     include [-d basedir] manifest ...
           Add resources associated with the multiple actions present in
 	  each manifest file to the current transaction.  Each line in the
 	  file should be the string representation of an action.  In
@@ -57,6 +57,9 @@ SUBCOMMANDS
 	  transaction boundaries.  For those actions with datastreams, the
 	  path to the file containing the data should be the second word on
 	  the line.
+
+	  If the user specifies the -d option, basedir is prepended to
+	  the search path when locating files in the manifest. 
 
      close [-A]
           Close current transaction.  With -A, abandon the current
