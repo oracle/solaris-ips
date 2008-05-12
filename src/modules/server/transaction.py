@@ -76,7 +76,7 @@ class Transaction(object):
                 # If client_release is not defined, then this request is
                 # invalid.
 
-                m = re.match("^/open/\d+/(.*)", request.path)
+                m = re.match("^open/\d+/(.*)", request.path)
                 self.esc_pkg_name = m.group(1)
                 self.pkg_name = urllib.unquote(self.esc_pkg_name)
                 self.open_time = time.time()

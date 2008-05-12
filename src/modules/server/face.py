@@ -194,13 +194,13 @@ def index(img, request):
 </html>""")
 
 pages = {
-        "/" : index,
-        "/index.html" :  index,
-        "/icon" :        icon,
-        "/favicon.ico" : icon,
-        "/logo" :        logo,
-        "/css" :         css,
-        "/robots.txt" :  robots
+        "" : index,
+        "index.html" :  index,
+        "icon" :        icon,
+        "favicon.ico" : icon,
+        "logo" :        logo,
+        "css" :         css,
+        "robots.txt" :  robots
 }
 
 def set_content_root(path):

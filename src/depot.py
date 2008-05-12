@@ -83,7 +83,7 @@ def versions_0(scfg, request):
 
 def search_0(scfg, request):
         try:
-                token = urllib.unquote(request.path.split("/", 3)[3])
+                token = urllib.unquote(request.path.split("/", 2)[2])
         except IndexError:
                 request.send_response(httplib.BAD_REQUEST)
                 return
@@ -135,7 +135,7 @@ def manifest_0(scfg, request):
         scfg.inc_manifest()
 
         # Parse request into FMRI component and decode.
-        pfmri = urllib.unquote(request.path.split("/", 3)[-1])
+        pfmri = urllib.unquote(request.path.split("/", 2)[-1])
 
         f = fmri.PkgFmri(pfmri, None)
 
@@ -249,7 +249,7 @@ def file_0(scfg, request):
         """The request is the SHA-1 hash name for the file."""
         scfg.inc_file()
 
-        fhash = request.path.split("/", 3)[-1]
+        fhash = request.path.split("/", 2)[-1]
 
         try:
                 file = open(os.path.normpath(os.path.join(
@@ -299,7 +299,7 @@ def close_0(scfg, request):
                 return
 
         # Pull transaction ID from headers.
-        trans_id = request.path.split("/", 3)[-1]
+        trans_id = request.path.split("/", 2)[-1]
 
         try:
                 t = scfg.in_flight_trans[trans_id]
@@ -315,7 +315,7 @@ def abandon_0(scfg, request):
                 return
 
         # Pull transaction ID from headers.
-        trans_id = request.path.split("/", 3)[-1]
+        trans_id = request.path.split("/", 2)[-1]
 
         try:
                 t = scfg.in_flight_trans[trans_id]
@@ -330,7 +330,7 @@ def add_0(scfg, request):
                 request.send_error(httplib.FORBIDDEN, "Read-only server")
                 return
 
-        trans_id, type = request.path.split("/", 4)[-2:]
+        trans_id, type = request.path.split("/", 3)[-2:]
 
         try:
                 t = scfg.in_flight_trans[trans_id]
@@ -369,7 +369,10 @@ class pkgHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                 return host
 
         def do_GET(self):
-                reqarr = self.path.lstrip("/").split("/")
+                # Remove leading slashes from the path
+                self.path = self.path.lstrip("/")
+
+                reqarr = self.path.split("/")
                 operation = reqarr[0]
 
                 if operation not in vops:
