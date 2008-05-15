@@ -62,7 +62,9 @@ class TestPkgTarFile(unittest.TestCase):
         def testerrorlevelIsCorrect(self):
                 p = pkgtarfile.PkgTarFile(self.tarfile, 'r')
 
-                if portable.is_admin():
+                # "read-only" folders on Windows are not actually read-only so
+                # the test below doesn't cause the exception to be raised
+                if portable.is_admin() or portable.util.get_canonical_os_type() == "windows":
                         self.assert_(p.errorlevel == 2)
                         p.close()
                         return
