@@ -161,13 +161,13 @@ proto/etc/user_attr.cdonly: proto $(BUILDID)/user_attr
 	( cat $(BUILDID)/user_attr; \
 	  echo "jack::::profiles=Primary Administrator;roles=root") > $@
 
-proto/etc/driver_aliases:	proto $(BUILDID)/all.i386.$(BUILDID) cluster.import
+proto/etc/driver_aliases:	proto $(BUILDID)/all.i386 cluster.import
 	./get_file_from_pkg.py $(WOS_PKGS)/SUNWcsd etc/driver_aliases | \
-	./driver_names.py $(BUILDID)/all.i386.$(BUILDID) > $@
+	./driver_names.py $(INCLUDE_PATH_$(BUILDID)) $(BUILDID)/all.i386 > $@
 
-proto/etc/name_to_major:	proto $(BUILDID)/all.i386.$(BUILDID) cluster.import
+proto/etc/name_to_major:	proto $(BUILDID)/all.i386 cluster.import
 	./get_file_from_pkg.py $(WOS_PKGS)/SUNWcsd etc/name_to_major | \
-	./driver_names.py $(BUILDID)/all.i386.$(BUILDID) > $@
+	./driver_names.py $(INCLUDE_PATH_$(BUILDID)) $(BUILDID)/all.i386 > $@
 
 proto/etc/nsswitch.conf:	proto Makefile
 	./get_file_from_pkg.py	$(WOS_PKGS)/SUNWcsr etc/nsswitch.files > $@
@@ -290,23 +290,31 @@ proto:	Makefile
 %:	$(BUILDID)/%.prototype $(BUILDID)/%.pkginfo $(FIXFILES:%=proto/%)
 	pkgmk -b ./proto -r . -f $(BUILDID)/$@.prototype -d `pwd` -o
 
+INCLUDE_PATH_75a = 75a:73:72:71:00
+INCLUDE_PATH_79b = 79b:78:77:76:$(INCLUDE_PATH_75a)
+INCLUDE_PATH_84 = 84:83:82:81:80:$(INCLUDE_PATH_79b)
+INCLUDE_PATH_85 = 85:$(INCLUDE_PATH_84)
+INCLUDE_PATH_86 = 86:$(INCLUDE_PATH_85)
+
 import:	cluster.import $(TMPPKGS)
-	rm -f all.i386.$(BUILDID); ln -s $(BUILDID)/all.i386.$(BUILDID)
-	$(SOLARIS.PY) -s $(REPO) -w $(WOS_PKGS) $(ELIDED_FILES:%=-D %) all.i386.$(BUILDID)
+	$(SOLARIS.PY) -s $(REPO) -w $(WOS_PKGS) $(ELIDED_FILES:%=-D %) \
+		$(INCLUDE_PATH_$(BUILDID):%=-I %) $(BUILDID)/all.i386
 
 %/import:
 	$(MAKE) BUILDID=$(@:%/import=%) import
 
 slim_import:	$(BUILDID)/slim_cluster $(TMPPKGS)
-	rm -f slim_cluster; ln -s $(BUILDID)/slim_cluster slim_cluster
-	$(SOLARIS.PY) -s $(REPO) $(ALL_PKGS:%=-w %) $(ELIDED_FILES:%=-D %) $(JUST_THESE_PKGS:%=-j %) slim_cluster 
+	$(SOLARIS.PY) -s $(REPO) $(ALL_PKGS:%=-w %) $(ELIDED_FILES:%=-D %) \
+		$(JUST_THESE_PKGS:%=-j %) $(INCLUDE_PATH_$(BUILDID):%=-I %) \
+		$(BUILDID)/slim_cluster 
 
 %/slim_import:
 	$(MAKE) BUILDID=$(@:%/slim_import=%) slim_import
 
 redist_import:	$(BUILDID)/redist_cluster $(TMPPKGS)
-	rm -f redist_cluster; ln -s $(BUILDID)/redist_cluster redist_cluster
-	$(SOLARIS.PY) -s $(REPO) $(ALL_PKGS:%=-w %) $(ELIDED_FILES:%=-D %) $(JUST_THESE_PKGS:%=-j %) redist_cluster 
+	$(SOLARIS.PY) -s $(REPO) $(ALL_PKGS:%=-w %) $(ELIDED_FILES:%=-D %) \
+		$(JUST_THESE_PKGS:%=-j %) $(INCLUDE_PATH_$(BUILDID):%=-I %) \
+		$(BUILDID)/redist_cluster 
 	$(MAKE) $(BUILDID)/entire
 
 %/redist_import:

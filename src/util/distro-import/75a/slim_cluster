@@ -117,7 +117,7 @@ include common/SUNWgnome-help-viewer
 include common/SUNWgnome-im-client
 include common/SUNWgnome-img-editor
 include common/SUNWgnome-img-organizer
-include common/SUNWgnome-img-viewer.75
+include common/SUNWgnome-img-viewer
 include common/SUNWgnome-internet-applets
 include common/SUNWgnome-intranet-applets
 include common/SUNWgnome-keyring-manager

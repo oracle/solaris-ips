@@ -764,6 +764,7 @@ nopublish = False
 show_debug = False
 def_repo = "http://localhost:10000"
 wos_path = []
+include_path = []
 #
 # files (by path) we always delete for bulk imports
 # note that we ignore these if specifically included.
@@ -781,7 +782,7 @@ description_detritus = [", (usr)", ", (root)", " (usr)", " (root)",
 " (/usr)", " - / filesystem", ",root(/)"]
 
 try:
-        opts, args = getopt.getopt(sys.argv[1:], "D:b:dns:v:w:j:")
+        opts, args = getopt.getopt(sys.argv[1:], "D:I:b:dns:v:w:j:")
 except getopt.GetoptError, e:
         print "unknown option", e.opt
         sys.exit(1)
@@ -801,6 +802,8 @@ for opt, arg in opts:
                 wos_path.append(arg)
         elif opt == "-D":
                 elided_files[arg] = True
+        elif opt == "-I":
+                include_path.extend(arg.split(":"))
 	elif opt == "-j": # means we're using the new argument form...
 		just_these_pkgs.append(arg)
 
@@ -875,11 +878,20 @@ print "First pass:", datetime.now()
 
 lexer = None
 
+def sourcehook(filename):
+        for i in include_path:
+                f = os.path.join(i, filename)
+                if os.path.exists(f):
+                        return (f, open(f))
+
+        return filename, open(filename)
+
 for mf in filelist:
 
 	lexer = shlex.shlex(file(mf), mf, True)
 	lexer.whitespace_split = True		 
 	lexer.source = "include"
+	lexer.sourcehook = sourcehook
 
 	print "Processing %s" % lexer.infile
 

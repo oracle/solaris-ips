@@ -1,7 +1,0 @@
-include all.i386
-include common/SUNWgnome-a11y-base-libs
-include common/SUNWgnome-img-viewer.71
-include common/SUNWjds-registration.71
-include common/SUNWlibcdio
-include common/SUNWmip
-include common/SUNWxorg-headers.71

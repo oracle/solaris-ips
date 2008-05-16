@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 #
@@ -28,10 +28,16 @@
 # column
 #
 
-import sys
+import sys, os
 
 def scan_import_file(s):
-        file = open(s)
+        for i in include_path:
+                f = os.path.join(i, s)
+                if os.path.exists(f):
+                        file = open(f)
+                        break
+        else:
+                file = open(s)
 
         for line in file:
                 fields = line.split()
@@ -47,7 +53,9 @@ def scan_import_file(s):
 
 driver_names={}
 
-for arg in sys.argv[1:]:
+include_path = sys.argv[1].split(":")
+
+for arg in sys.argv[2:]:
         scan_import_file(arg)
 
 for line in sys.stdin:
