@@ -24,13 +24,13 @@
 # Use is subject to license terms.
 #
 
+#
 # Needs to point to filesystem on Solaris install dvd
 # replace as needed with a local solaris install image
-
-
+#
 WOS_PKGS=/net/netinstall.sfbay/export/nv/x/$(BUILDID)/Solaris_11/Product
-NONWOS_PKGS=/net/paradise.sfbay/export/integrate_dock/nv/nv_indiana1/all \
-            /net/paradise.sfbay/export/integrate_dock/nv/nv_indiana1/i386
+NONWOS_PKGS=/net/paradise.sfbay/export/integrate_dock/nv/nv_osol0811/all \
+            /net/paradise.sfbay/export/integrate_dock/nv/nv_osol0811/i386
 
 TEST_PKGS=
 REPO=http://localhost:10000
@@ -59,7 +59,8 @@ ELIDED_FILES= \
 	etc/security/auth_attr		\
 	etc/security/exec_attr		\
 	etc/security/prof_attr		\
-	etc/user_attr
+	etc/user_attr			\
+	kernel/drv/sd.conf
 
 #
 # these files get placed into proto area from per-build cached versions
@@ -135,10 +136,10 @@ UNBUNDLED_TARGETS=		\
 UNBUNDLED_CLUSTERS=		\
 	Clusters.import
 
-BUILDS= 75a\
-	79b\
-	86
-
+BUILDS=	75a			\
+	79b			\
+	86			\
+	89
 
 #
 # Starting in build 80, filelist.ramdisk began moving between various
@@ -151,7 +152,7 @@ FILELIST_RAMDISK_PKG_74		= SUNWcakr.i
 FILELIST_RAMDISK_PKG_72		= SUNWcakr.i
 FILELIST_RAMDISK_PKG_71		= SUNWcakr.i
 
-default:	86/slim_import
+default:	89/slim_import
 
 cluster.import:	$(WOS_PKGS)/.clustertoc Makefile
 	./clustertoc2import.py $(WOS_PKGS)/.clustertoc | \
@@ -273,6 +274,7 @@ proto:	Makefile
 	mkdir -p proto/etc/security
 	mkdir -p proto/etc/svc
 	mkdir -p proto/etc/zones
+	mkdir -p proto/kernel/drv
 	mkdir -p proto/lib/svc/method
 	mkdir -p proto/usr/bin
 	mkdir -p proto/usr/has/bin
@@ -295,6 +297,7 @@ INCLUDE_PATH_79b = 79b:78:77:76:$(INCLUDE_PATH_75a)
 INCLUDE_PATH_84 = 84:83:82:81:80:$(INCLUDE_PATH_79b)
 INCLUDE_PATH_85 = 85:$(INCLUDE_PATH_84)
 INCLUDE_PATH_86 = 86:$(INCLUDE_PATH_85)
+INCLUDE_PATH_89 = 89:88:87:$(INCLUDE_PATH_86)
 
 import:	cluster.import $(TMPPKGS)
 	$(SOLARIS.PY) -s $(REPO) -w $(WOS_PKGS) $(ELIDED_FILES:%=-D %) \

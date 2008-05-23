@@ -1,0 +1,5 @@
+package SUNWcups
+import SUNWcupsu
+import SUNWcupsr
+version 1.3.7
+end package

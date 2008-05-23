@@ -1,0 +1,4 @@
+package SUNWpostgr-83-client
+import SUNWpostgr-83-client
+version 8.3.1
+end package

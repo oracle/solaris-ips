@@ -1,0 +1,7 @@
+package SUNWlxml
+import SUNWlxml
+import SUNWlxml-devel
+import SUNWlxml-python
+import SUNWlxmlr
+version 2.6.31
+end package

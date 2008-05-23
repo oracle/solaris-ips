@@ -1,0 +1,4 @@
+package SUNWpostgr-83-tcl
+import SUNWpostgr-83-tcl
+version 1.5
+end package

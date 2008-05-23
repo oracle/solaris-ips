@@ -1,0 +1,5 @@
+package SUNWpostgr-server
+import SUNWpostgr-server
+import SUNWpostgr-server-data
+version 8.1.11
+end package

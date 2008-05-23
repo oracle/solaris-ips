@@ -1,0 +1,4 @@
+package SUNWtcpd
+import SUNWtcpd
+version 7.6
+end package

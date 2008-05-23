@@ -1,0 +1,4 @@
+package SUNWsqlite3tcl
+import SUNWsqlite3tcl
+version 3.5.4
+end package

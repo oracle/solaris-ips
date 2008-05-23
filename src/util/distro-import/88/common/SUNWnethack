@@ -1,0 +1,5 @@
+package SUNWnethack
+import SUNWnethack
+import SUNWnethackr
+version 3.4.3
+end package

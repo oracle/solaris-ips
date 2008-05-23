@@ -1,0 +1,4 @@
+package SUNWpostgr-jdbc
+import SUNWpostgr-jdbc
+version 8.3.603
+end package

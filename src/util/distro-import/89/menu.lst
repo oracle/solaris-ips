@@ -1,0 +1,19 @@
+#
+#pragma ident	"@(#)install_menu	1.1	05/04/15 SMI"
+#
+default=0
+timeout=30
+splashimage=/boot/grub/splash.xpm.gz
+foreground=ffffff
+background=444444
+title OpenSolaris 2008.05
+	kernel$ /platform/i86pc/kernel/$ISADIR/unix
+	module /boot/x86.microroot
+
+title OpenSolaris 2008.05 text console
+	kernel$ /platform/i86pc/kernel/$ISADIR/unix -B livemode=text
+	module /boot/x86.microroot
+
+title Boot from Hard Disk
+	rootnoverify (hd0)
+	chainloader +1

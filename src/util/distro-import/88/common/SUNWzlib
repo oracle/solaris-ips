@@ -1,0 +1,5 @@
+package SUNWzlib
+import SUNWzlib
+import SUNWzlibr
+version 1.2.3
+end package

@@ -1,0 +1,4 @@
+package SUNWvscan
+import SUNWvscanu
+import SUNWvscanr
+end package
