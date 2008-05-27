@@ -23,7 +23,7 @@
 # Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
-# ident	"@(#)prof_attr.txt	1.44	08/02/21 SMI"
+# ident	"@(#)prof_attr.txt	1.46	08/05/07 SMI"
 #
 
 #
@@ -34,12 +34,13 @@
 All:::Execute any command as the user or role:help=RtAll.html
 Apache 22 Administration::::auths=solaris.smf.manage.http/apache22,solaris.smf.value.http/apache22
 Application Server Management:::Administrator of Application Server:
-Audit Control:::Configure BSM auditing:auths=solaris.audit.config,solaris.jobs.admin,solaris.admin.logsvc.purge,solaris.admin.logsvc.read;help=RtAuditCtrl.html
-Audit Review:::Review BSM auditing logs:auths=solaris.audit.read;help=RtAuditReview.html
+Audit Control:::Configure Solaris Auditing:auths=solaris.audit.config,solaris.jobs.admin,solaris.admin.logsvc.purge,solaris.admin.logsvc.read;help=RtAuditCtrl.html
+Audit Review:::Review Solaris Auditing logs:auths=solaris.audit.read;help=RtAuditReview.html
 Basic Actions:::A minimum set of actions necessary to login through the Common Desktop Environment and perform simple operations.:help=RtBasicActions.html
 Basic Solaris User:::Automatically assigned rights:auths=solaris.profmgr.read,solaris.jobs.user,solaris.mail.mailq,solaris.device.mount.removable,solaris.admin.usermgr.read,solaris.admin.logsvc.read,solaris.admin.fsmgr.read,solaris.admin.serialmgr.read,solaris.admin.diskmgr.read,solaris.admin.procmgr.user,solaris.compsys.read,solaris.admin.printer.read,solaris.admin.prodreg.read,solaris.admin.dcmgr.read,solaris.snmp.read,solaris.project.read,solaris.admin.patchmgr.read,,solaris.network.hosts.read,solaris.admin.volmgr.read;profiles=All;help=RtDefault.html
+Brightness:::For authorized users to Control LCD Brightness:auths=solaris.system.power.brightness;help=RtSysPowerMgmtBrightness.html
 CUPS Administration::::auths=solaris.smf.manage.cups
-Console User:::Manage System as the Console User:help=RtConsUser.html
+Console User:::Manage System as the Console User:profiles=Suspend To RAM,Suspend To Disk,Brightness;auths=solaris.system.shutdown;help=RtConsUser.html
 Contract Observer:::Reliably observe any/all contract events:help=RtContractObserver.html
 Cron Management:::Manage at and cron jobs:auths=solaris.jobs.*,solaris.smf.manage.cron;help=RtCronMngmnt.html
 Crypto Management:::Cryptographic Framework Administration:help=RtCryptoMngmnt.html
@@ -48,7 +49,7 @@ DAT Administration:::Manage the DAT configuration:help=RtDatAdmin.html
 DHCP Management:::Manage the DHCP service:auths=solaris.dhcpmgr.*;help=RtDHCPMngmnt.html
 Desktop Configuration:::Configure graphical desktop software:auths=solaris.smf.manage.x11,solaris.smf.manage.font,solaris.smf.manage.dt.login
 Device Management:::Control Access to Removable Media:auths=solaris.device.*,solaris.admin.serialmgr.*;help=RtDeviceMngmnt.html
-Device Security:::Manage devices and Volume Manager:auths=solaris.device.*,solaris.admin.serialmgr.*,solaris.smf.manage.dt.login;help=RtDeviceSecurity.html
+Device Security:::Manage devices and Volume Manager:auths=solaris.device.*,solaris.smf.manage.dt.login,solaris.admin.serialmgr.*;help=RtDeviceSecurity.html
 FTP Management:::Manage the FTP server:help=RtFTPMngmnt.html
 File System Management:::Manage, mount, share file systems:profiles=SMB Management,VSCAN Management,SMBFS Management;auths=solaris.smf.manage.autofs,solaris.smf.manage.shares.*,solaris.smf.value.shares.*,solaris.admin.fsmgr.*,solaris.admin.diskmgr.*,solaris.admin.volmgr.*;help=RtFileSysMngmnt.html
 File System Security:::Manage file system security attributes:help=RtFileSysSecurity.html;auths=solaris.admin.fsmgr.*,solaris.admin.diskmgr.*,solaris.admin.volmgr.*
@@ -92,11 +93,17 @@ Rights Delegation:::Delegate ability to assign rights to users and roles:auths=s
 Rmvolmgr Management:::Manage Removable Volume Manager SMF service:auths=solaris.smf.manage.rmvolmgr;help=RtRmvolmgrMngmnt.html
 SMB Management:::Manage the SMB service:auths=solaris.smf.manage.smb,solaris.smf.value.smb,solaris.smf.read.smb;help=RtSMBMngmnt.html
 SMBFS Management:::Manage the SMB client:auths=solaris.smf.manage.smbfs,solaris.smf.value,solaris.smf.modify.application;help=RtSMBFSMngmnt.html
+STMF Administration:::Configure STMF service:auths=solaris.smf.modify.application
+STMF Management:::Start/Stop STMF service:auths=solaris.smf.manage.stmf
 Service Management:::Manage services:auths=solaris.smf.manage,solaris.smf.modify
 Service Operator:::Administer services:auths=solaris.smf.manage,solaris.smf.modify.framework
 Software Installation:::Add application software to the system:help=RtSoftwareInstall.html;auths=solaris.admin.prodreg.read,solaris.admin.prodreg.modify,solaris.admin.prodreg.delete,solaris.admin.dcmgr.admin,solaris.admin.dcmgr.read,solaris.admin.patchmgr.*,solaris.smf.manage.servicetags;profiles=ZFS File System Management
+Suspend To Disk:::For authorized users to Suspend to Disk:auths=solaris.system.power.suspend.disk;help=RtSysPowerMgmtSuspendToDisk.html
+Suspend To RAM:::For authorized users to Suspend to RAM:auths=solaris.system.power.suspend.ram;help=RtSysPowerMgmtSuspendToRAM.html
+Suspend:::For authorized users to Suspend system:auths=solaris.system.power.suspend.*;help=RtSysPowerMgmtSuspend.html
 System Administrator:::Can perform most non-security administrative tasks:profiles=Audit Review,Printer Management,Cron Management,Device Management,File System Management,Mail Management,Maintenance and Repair,Media Backup,Media Restore,Name Service Management,Network Management,Object Access Management,Process Management,Software Installation,User Management,Project Management,All;help=RtSysAdmin.html
 System Event Management:::Manage system events and system event channels:help=RtSysEvMngmnt.html
+System Power:::For authorized users to manage system power:auths=solaris.system.power.*;help=RtSysPowerMgmt.html
 User Management:::Manage users, groups, home directory:auths=solaris.profmgr.read,solaris.admin.usermgr.write,solaris.admin.usermgr.read;help=RtUserMngmnt.html
 User Security:::Manage passwords, clearances:auths=solaris.role.*,solaris.profmgr.*,solaris.label.range,solaris.admin.usermgr.*;help=RtUserSecurity.html
 VSCAN Management:::Manage the VSCAN service:auths=solaris.smf.manage.vscan,solaris.smf.value.vscan,solaris.smf.modify.application;help=RtVscanMngmnt.html

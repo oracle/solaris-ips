@@ -25,7 +25,7 @@
 #
 # authorizations. see auth_attr(4)
 #
-#ident	"@(#)auth_attr.txt	1.30	08/02/13 SMI"
+#ident	"@(#)auth_attr.txt	1.32	08/05/08 SMI"
 #
 solaris.:::All Solaris Authorizations::help=AllSolAuthsHeader.html
 solaris.admin.dcmgr.:::OS Server Manager::help=AuthDcmgrHeader.html
@@ -148,7 +148,7 @@ solaris.smf.manage.cde.tooltalk:::Manage Tooltalk Service States::help=ManageCDE
 solaris.smf.manage.cron:::Manage Cron Service States::help=SmfCronStates.html
 solaris.smf.manage.cups:::Manage CUPS service states::help=ManageCUPS.html
 solaris.smf.manage.dbus:::Manage D-BUS Service States::help=SmfDBUSStates.html
-solaris.smf.manage.discover.printers.snmp:::Manage Network Attached Device Discovery Service States::help=SmfNADDStates.html
+solaris.smf.manage.discovery.printers.snmp:::Manage Network Attached Device Discovery Service States::help=SmfNADDStates.html
 solaris.smf.manage.dt.:::Manage Desktop Service States::help=ManageDtHeader.html
 solaris.smf.manage.dt.login:::Manage Desktop Login Service States::help=ManageDtLogin.html
 solaris.smf.manage.font:::Manage Font Service States::
@@ -176,6 +176,7 @@ solaris.smf.manage.servicetags:::Manage Service Tags Service States::help=StStat
 solaris.smf.manage.smb:::Manage SMB Service States::help=SmfSMBStates.html
 solaris.smf.manage.smbfs:::Manage SMB Client States::help=SmfSMBFSStates.html
 solaris.smf.manage.ssh:::Manage Secure Shell Service States::help=SmfSshStates.html
+solaris.smf.manage.stmf:::Manage STMF Service States::help=SmfSTMFStates.html
 solaris.smf.manage.system-log:::Manage Syslog Service States::help=SmfSyslogStates.html
 solaris.smf.manage.tnctl:::Manage Refresh of Trusted Network Parameters::help=TNctl.html
 solaris.smf.manage.tnd:::Manage Trusted Network Daemon::help=TNDaemon.html
@@ -188,9 +189,11 @@ solaris.smf.modify.dependency:::Modify Service Dependencies::help=SmfModifyDepen
 solaris.smf.modify.framework:::Modify Framework Type Properties::help=SmfModifyFramework.html
 solaris.smf.modify.iscsitgt:::Add/Remove Values of ISCSI Target Service Properties::help=SmfValueIscsitgt.html
 solaris.smf.modify.method:::Modify Service Methods::help=SmfModifyMethod.html
+solaris.smf.modify.stmf:::Modify STMF Properties::help=SmfSTMFValue.html
 solaris.smf.read.iscsitgt:::Read ISCSI Target secrets::help=SmfValueIscsitgt.html
 solaris.smf.read.ndmp:::Read permission for protected SMF NDMP Service Properties::help=AuthReadNDMP.html
 solaris.smf.read.smb:::Read permission for protected SMF SMB Service Properties::help=AuthReadSMB.html
+solaris.smf.read.stmf:::Read STMF Provider Private Data::help=SmfSTMFRead.html
 solaris.smf.value.:::Change Values of SMF Service Properties::help=SmfValueHeader.html
 solaris.smf.value.cde.:::Change CDE Service Property Values::help=ValueCDEHeader.html
 solaris.smf.value.cde.calendar:::Change Calendar Service Property Values::help=ValueCDECalendar.html
@@ -198,7 +201,7 @@ solaris.smf.value.cde.login:::Change dtlogin Service Property Values::help=Value
 solaris.smf.value.cde.printinfo:::Change Printinfo Service Property Values::help=ValueCDEPrintinfo.html
 solaris.smf.value.cde.spc:::Change Spc Service Property Values::help=ValueCDESpc.html
 solaris.smf.value.cde.tooltalk:::Change Tooltalk Service Property Values::help=ValueCDETooltalk.html
-solaris.smf.value.discover.printers.snmp:::Manage Network Attached Device Discovery Service Properties::help=SmfValueNADD.html
+solaris.smf.value.discovery.printers.snmp:::Manage Network Attached Device Discovery Service Properties::help=SmfValueNADD.html
 solaris.smf.value.http/apache22:::Change Apache 22 value properties::
 solaris.smf.value.idmap:::Change Values of SMF Identity Mapping Service Properties::help=SmfValueIdmap.html
 solaris.smf.value.inetd:::Change values of SMF Inetd configuration paramaters::help=SmfValueInted.html
@@ -221,4 +224,9 @@ solaris.snmp.read:::Get SNMP Information::help=AuthSnmpRead.html
 solaris.snmp.write:::Set SNMP Information::help=AuthSnmpWrite.html
 solaris.system.:::Machine Administration::help=SysHeader.html
 solaris.system.date:::Set Date & Time::help=SysDate.html
+solaris.system.power.:::System Power Management::help=SysPowerMgmtHeader.html
+solaris.system.power.brightness:::Control LCD Brightness::help=SysPowerMgmtBrightness.html
+solaris.system.power.suspend.:::Suspend the System::help=SysPowerMgmtSuspend.html
+solaris.system.power.suspend.disk:::Suspend to Disk::help=SysPowerMgmtSuspendtoDisk.html 
+solaris.system.power.suspend.ram:::Suspend to RAM::help=SysPowerMgmtSuspendToRAM.html
 solaris.system.shutdown:::Shutdown the System::help=SysShutdown.html

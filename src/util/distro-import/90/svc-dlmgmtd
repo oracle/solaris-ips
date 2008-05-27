@@ -1,6 +1,4 @@
-#
-# Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+#!/sbin/sh
 #
 # CDDL HEADER START
 #
@@ -21,14 +19,29 @@
 #
 # CDDL HEADER END
 #
-# /etc/user_attr
+
 #
-# user attributes. see user_attr(4)
+# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Use is subject to license terms.
 #
-#pragma ident	"@(#)user_attr.txt	1.11	07/05/24 SMI"
-#
-adm::::profiles=Log Management
-dladm::::auths=solaris.smf.manage.wpa,solaris.smf.modify
-lp::::profiles=Printer Management
-postgres::::type=role;profiles=Postgres Administration,All
-root::::type=role;auths=solaris.*,solaris.grant;profiles=All;lock_after_retries=no;min_label=admin_low;clearance=admin_high
+# ident	"@(#)svc-dlmgmtd	1.1	08/01/22 SMI"
+
+. /lib/svc/share/smf_include.sh
+
+# The real daemon is not started in a non-global zone. But we need to
+# create a dummy background process to preserve contract lifetime.
+
+if smf_is_nonglobalzone; then
+	(while true ; do sleep 3600 ; done) & 
+	exit $SMF_EXIT_OK
+fi
+
+# Start the dlmgmtd daemon.
+/sbin/dlmgmtd
+status=$?
+ppriv -s A+file_dac_execute $(pgrep dlmgmtd)
+if [ $status = 0 ]; then
+	exit $SMF_EXIT_OK
+else
+	exit $SMF_EXIT_ERR_FATAL
+fi

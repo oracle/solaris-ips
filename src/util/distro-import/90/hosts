@@ -1,7 +1,3 @@
-#
-# Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
-#
 # CDDL HEADER START
 #
 # The contents of this file are subject to the terms of the
@@ -21,14 +17,12 @@
 #
 # CDDL HEADER END
 #
-# /etc/user_attr
+# Copyright 2006 Sun Microsystems, Inc.  All rights reserved.
+# Use is subject to license terms.
 #
-# user attributes. see user_attr(4)
+# ident	"@(#)hosts	1.7	06/08/01 SMI"
 #
-#pragma ident	"@(#)user_attr.txt	1.11	07/05/24 SMI"
+# Internet host table
 #
-adm::::profiles=Log Management
-dladm::::auths=solaris.smf.manage.wpa,solaris.smf.modify
-lp::::profiles=Printer Management
-postgres::::type=role;profiles=Postgres Administration,All
-root::::type=role;auths=solaris.*,solaris.grant;profiles=All;lock_after_retries=no;min_label=admin_low;clearance=admin_high
+::1		localhost
+127.0.0.1	localhost loghost opensolaris

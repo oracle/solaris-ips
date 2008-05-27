@@ -1,0 +1,5 @@
+package SUNWmutt
+import SUNWmutt
+import SUNWmuttr
+version 1.5.17
+end package

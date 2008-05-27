@@ -139,7 +139,8 @@ UNBUNDLED_CLUSTERS=		\
 BUILDS=	75a			\
 	79b			\
 	86			\
-	89
+	89			\
+	90
 
 #
 # Starting in build 80, filelist.ramdisk began moving between various
@@ -152,7 +153,7 @@ FILELIST_RAMDISK_PKG_74		= SUNWcakr.i
 FILELIST_RAMDISK_PKG_72		= SUNWcakr.i
 FILELIST_RAMDISK_PKG_71		= SUNWcakr.i
 
-default:	89/slim_import
+default:	90/slim_import
 
 cluster.import:	$(WOS_PKGS)/.clustertoc Makefile
 	./clustertoc2import.py $(WOS_PKGS)/.clustertoc | \
@@ -298,6 +299,7 @@ INCLUDE_PATH_84 = 84:83:82:81:80:$(INCLUDE_PATH_79b)
 INCLUDE_PATH_85 = 85:$(INCLUDE_PATH_84)
 INCLUDE_PATH_86 = 86:$(INCLUDE_PATH_85)
 INCLUDE_PATH_89 = 89:88:87:$(INCLUDE_PATH_86)
+INCLUDE_PATH_90 = 90:$(INCLUDE_PATH_89)
 
 import:	cluster.import $(TMPPKGS)
 	$(SOLARIS.PY) -s $(REPO) -w $(WOS_PKGS) $(ELIDED_FILES:%=-D %) \

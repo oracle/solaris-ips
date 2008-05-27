@@ -196,6 +196,8 @@ File System Management:solaris:cmd:::/usr/sbin/quotacheck:uid=0;gid=sys
 File System Management:solaris:cmd:::/usr/sbin/quotaoff:uid=0;gid=sys
 File System Management:solaris:cmd:::/usr/sbin/quotaon:uid=0;gid=sys
 File System Management:solaris:cmd:::/usr/sbin/raidctl:privs=sys_config,sys_devices;euid=0
+File System Management:solaris:cmd:::/usr/sbin/sbdadm:privs=sys_devices
+File System Management:solaris:cmd:::/usr/sbin/stmfadm:privs=sys_devices
 File System Management:suser:cmd:::/usr/bin/eject:euid=0
 File System Management:suser:cmd:::/usr/bin/mkdir:euid=0
 File System Management:suser:cmd:::/usr/bin/rmdir:euid=0
