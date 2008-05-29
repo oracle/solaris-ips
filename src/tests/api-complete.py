@@ -51,6 +51,7 @@ if ostype == '':
 # system stuff must happen *after* that code runs.
 #
 def maketests():
+        import api.t_action
         import api.t_catalog
         import api.t_filter
         import api.t_fmri
@@ -62,20 +63,21 @@ def maketests():
         import api.t_smf
         import api.t_version
 
-	tests = [
-	    api.t_catalog.TestCatalog,
-	    api.t_catalog.TestEmptyCatalog,
-	    api.t_catalog.TestCatalogRename,
-	    api.t_catalog.TestUpdateLog,
-	    api.t_filter.TestFilter,
-	    api.t_fmri.TestFMRI,
-	    api.t_imageconfig.TestImageConfig,
-	    api.t_manifest.TestManifest,
-	    api.t_misc.TestMisc,
+        tests = [
+            api.t_action.TestActions,
+            api.t_catalog.TestCatalog,
+            api.t_catalog.TestEmptyCatalog,
+            api.t_catalog.TestCatalogRename,
+            api.t_catalog.TestUpdateLog,
+            api.t_filter.TestFilter,
+            api.t_fmri.TestFMRI,
+            api.t_imageconfig.TestImageConfig,
+            api.t_manifest.TestManifest,
+            api.t_misc.TestMisc,
             api.t_pkgtarfile.TestPkgTarFile,
             api.t_plat.TestPlat,
-	    api.t_smf.TestSMF,
-	    api.t_version.TestVersion ]
+            api.t_smf.TestSMF,
+            api.t_version.TestVersion ]
 
         for t in tests:
                 all_suite.addTest(unittest.makeSuite(t, 'test'))
@@ -92,18 +94,19 @@ if __name__ == "__main__":
 
         cwd = os.getcwd()
 
-	proto = "%s/../../proto/root_%s" % (cwd, arch)
-	pkgs = "%s/usr/lib/python2.4/vendor-packages" % proto
+        proto = "%s/../../proto/root_%s" % (cwd, arch)
+        pkgs = "%s/usr/lib/python2.4/vendor-packages" % proto
         bins = "%s/usr/bin" % proto
-	print "NOTE: Adding %s to head of PYTHONPATH" % pkgs
-	sys.path.insert(1, pkgs)
-	print "NOTE: Adding '%s' to head of PATH" % bins
-	os.environ["PATH"] = bins + os.pathsep + os.environ["PATH"]
+        print "NOTE: Adding %s to head of PYTHONPATH" % pkgs
+        sys.path.insert(1, pkgs)
+        print "NOTE: Adding '%s' to head of PATH" % bins
+        os.environ["PATH"] = bins + os.pathsep + os.environ["PATH"]
 
-	all_suite = unittest.TestSuite()
-	maketests()
-	runner = unittest.TextTestRunner()
-	res = runner.run(all_suite)
+        all_suite = unittest.TestSuite()
+        maketests()
+        runner = unittest.TextTestRunner()
+        res = runner.run(all_suite)
         if res.failures:
-		sys.exit(1)
-	sys.exit(0)
+                sys.exit(1)
+        sys.exit(0)
+

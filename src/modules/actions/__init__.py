@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -101,7 +101,11 @@ def fromstr(str):
         for i in list:
                 if '="' in i:
                         n = i.replace('="', '=')
-                        state = 1
+                        if n.endswith('"'):
+                                nlist += [ n[:-1] ]
+                                n = ""
+                        else:
+                                state = 1
                 elif i.endswith('"'):
                         n += " " + i[:-1]
                         nlist += [ n ]

@@ -41,6 +41,18 @@ class TestActions(unittest.TestCase):
                 action.fromstr("file 12345 name=\"foo bar\"  attr=\"bar baz\"")
                 action.fromstr("file 12345 name=\"foo bar\"  attr=\"bar baz\"")
 
+                action.fromstr("file 12345 name=foo  value=barbaz")
+                action.fromstr("file 12345 name=foo  value=\"bar baz\"")
+                action.fromstr("file 12345 name=\"foo bar\"  value=baz")
+
+                action.fromstr("file 12345 name=foo  value=barbazquux")
+                action.fromstr("file 12345 name=foo  value=\"bar baz quux\"")
+                action.fromstr("file 12345 name=\"foo bar baz\"  value=quux")
+
+                action.fromstr("file 12345 name=\"foo\"  value=\"bar\"")
+                action.fromstr("file 12345 name=foo  value=\"bar\"")
+                action.fromstr("file 12345 name=\"foo\"  value=bar")
+
                 action.fromstr("driver alias=pci1234,56 alias=pci4567,89 class=scsi name=lsimega")
 
         def test_action_tostr(self):
@@ -54,6 +66,18 @@ class TestActions(unittest.TestCase):
 
                 str(action.fromstr("file 12345 name=\"foo bar\"  attr=\"bar baz\""))
                 str(action.fromstr("file 12345 name=\"foo bar\"  attr=\"bar baz\""))
+
+                str(action.fromstr("file 12345 name=foo  value=barbaz"))
+                str(action.fromstr("file 12345 name=foo  value=\"bar baz\""))
+                str(action.fromstr("file 12345 name=\"foo bar\"  value=baz"))
+
+                str(action.fromstr("file 12345 name=foo  value=barbazquux"))
+                str(action.fromstr("file 12345 name=foo  value=\"bar baz quux\""))
+                str(action.fromstr("file 12345 name=\"foo bar baz\"  value=quux"))
+
+                str(action.fromstr("file 12345 name=\"foo\"  value=\"bar\""))
+                str(action.fromstr("file 12345 name=foo  value=\"bar\""))
+                str(action.fromstr("file 12345 name=\"foo\"  value=bar"))
 
                 str(action.fromstr("driver alias=pci1234,56 alias=pci4567,89 class=scsi name=lsimega"))
 
