@@ -22,6 +22,9 @@
 # Use is subject to license terms.
 #
 
-install:
-	@cd SUNWipkg; pwd; $(MAKE) install
-	@cd SUNWpython-cherrypy; pwd; $(MAKE) install
+package SUNWpython-cherrypy
+import SUNWpython-cherrypy
+depend SUNWPython@2.4.4
+depend SUNWcsl@0.5.11
+version 3.0.3
+end package

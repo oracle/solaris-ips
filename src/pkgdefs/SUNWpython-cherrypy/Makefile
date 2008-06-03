@@ -22,20 +22,49 @@
 # Use is subject to license terms.
 #
 
+CP = CherryPy
+CPVER = 3.0.3
+CPARC = $(CP)-$(CPVER).tar.gz
+CPDIR = $(CP)-$(CPVER)
+CPURL = http://download.cherrypy.org/cherrypy/$(CPVER)/$(CPARC)
+
+TEST = test
+WGET = wget
+GUNZIP = gunzip
+TAR = tar
+
 MACH:sh = uname -p
 
 ROOT = ../../../proto/root_$(MACH)
+PKG = SUNWpython-cherrypy
 PKGARCHIVE = ../../../packages/$(MACH)
+PROTOLOC = $(ROOT)/usr/lib/python2.4/vendor-packages/cherrypy
 
-# by default create only the sysv package; failure of the IPS package to build
+# By default create only the sysv package; failure of the IPS package to build
 # may confuse without enlightening.
 install: sysv-pkg
 
 sysv-pkg: $(PKGARCHIVE) prototype
-	pkgmk -a $(MACH) -o -r $(ROOT) -d $(PKGARCHIVE)
+	[ -f $(PKGARCHIVE)/$(PKG)/pkgmap ] || pkgmk -a $(MACH) -o -r $(ROOT) -d $(PKGARCHIVE)
 
-prototype: FRC
-	rm -f prototype
+$(CPARC):
+	[ -f $(CPARC) ] || $(WGET) $(CPURL) || \
+	echo "Unable to retrieve $(CPARC).\n" \
+	"\nPlease retrieve the file and place it in:\n$(PWD)\n" || exit 1
+
+$(CPDIR): $(CPARC)
+	[ -d $(CPDIR) ] || gunzip -dc $(CPARC) | $(TAR) xf -
+
+$(PROTOLOC): $(CPDIR)
+	(cd $(CPDIR); \
+	python setup.py install -f --prefix=../$(ROOT)/usr; \
+	cd ..; \
+	rm -rf $(ROOT)/usr/lib/python2.4/vendor-packages/cherrypy; \
+	mkdir -p $(ROOT)/usr/lib/python2.4/vendor-packages; \
+	mv $(ROOT)/usr/lib/python2.4/site-packages/cherrypy $(PROTOLOC); \
+	rmdir $(ROOT)/usr/lib/python2.4/site-packages)
+
+prototype: $(PROTOLOC)
 	(cd $(ROOT); pkgproto .) | \
 		nawk 'BEGIN { \
 			print "i pkginfo"; \
@@ -47,26 +76,29 @@ prototype: FRC
 		$$1 == "f" { \
 			$$4 = "444" \
 		} \
-		$$1 == "f" && $$3 ~ /usr\/lib\/pkg.depotd|usr\/bin\/pkg(send)?|usr\/lib\/brand\/ipkg\/pkgcreatezone/ { \
-			$$4 = "755" \
-		} \
 		{ \
 			$$5 = "root"; \
 			$$6 = "bin"; \
 		} \
-		$$3 ~ /^(etc(\/zones)?|usr(\/share(\/lib)?)?|var(\/svc(\/manifest(\/application(\/pkg-server.xml)?)?)?)?)$$/ { \
-			$$6 = "sys"; \
-		} \
 		{ \
-			if ($$3 !~ /^usr\/lib\/python2.4\/vendor-packages\/cherrypy/) \
+			if ($$1 == "d" && $$3 ~ /^(usr(\/lib(\/python2.4(\/vendor-packages(\/cherrypy(\/.*)?)?)?)?)?)$$/) \
+			{ \
+				print \
+			} \
+			if ($$1 == "f" && $$3 ~ /^usr\/lib\/python2.4\/vendor-packages\/cherrypy/) \
 			{ \
 				print \
 			} \
 		}' > prototype
 
+clobber:
+	rm -f prototype
+	rm -rf $(CPDIR)
+	rm -rf $(PKGARCHIVE)/$(PKG)
+
 # This will only work if there's a server running, so allow failure.
 img-pkg: sysv-pkg
-	-../../util/distro-import/solaris.py -b 0.0 -w $(PKGARCHIVE) SUNWipkg.import
+	-../../util/distro-import/solaris.py -b 0.0 -w $(PKGARCHIVE) $(PKG).import
 
 $(PKGARCHIVE):
 	[ -d $(PKGARCHIVE) ] || mkdir -p $(PKGARCHIVE)

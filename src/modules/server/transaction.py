@@ -22,22 +22,23 @@
 # Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
+import cherrypy
 import errno
 import gzip
+import httplib
+import logging
 import os
 import re
 import sha
 import shutil
-import socket
 import time
 import urllib
-import httplib
 
+import pkg.actions
 import pkg.fmri as fmri
 import pkg.misc as misc
 import pkg.portable as portable
 
-import pkg.actions
 try:
         import pkg.elf as elf
         haveelf = True
@@ -66,19 +67,24 @@ class Transaction(object):
                 return "%d_%s" % (self.open_time,
                     urllib.quote("%s" % self.fmri, ""))
 
-        def open(self, cfg, request):
+        def open(self, cfg, *tokens):
                 self.cfg = cfg
 
-                hdrs = request.headers
-                self.client_release = hdrs.getheader("Client-Release", None)
+                request = cherrypy.request
+                self.client_release = request.headers.get("Client-Release",
+                    None)
                 if self.client_release == None:
+                        # If client_release is not defined, then this request is
+                        # invalid.
                         return httplib.BAD_REQUEST
-                # If client_release is not defined, then this request is
-                # invalid.
 
-                m = re.match("^open/\d+/(.*)", request.path)
-                self.esc_pkg_name = m.group(1)
-                self.pkg_name = urllib.unquote(self.esc_pkg_name)
+                try:
+                        self.pkg_name = tokens[0]
+                        # cherrypy decoded it, but we actually need it encoded.
+                        self.esc_pkg_name = urllib.quote("%s" % tokens[0], "")
+                except IndexError:
+                        return httplib.BAD_REQUEST
+
                 self.open_time = time.time()
 
                 # record transaction metadata:  opening_time, package, user
@@ -100,7 +106,7 @@ class Transaction(object):
                 # always create a minimal manifest
                 #
                 tfile = file("%s/manifest" % self.dir, "a")
-                print >>tfile,  "# %s, client release %s" % (self.pkg_name, \
+                print >> tfile,  "# %s, client release %s" % (self.pkg_name,
                     self.client_release)
                 tfile.close()
 
@@ -134,9 +140,11 @@ class Transaction(object):
 
                 self.dir = "%s/%s" % (self.cfg.trans_root, self.get_basename())
 
-        def close(self, request):
-                def split_trans_id(id):
-                        m = re.match("(\d+)_(.*)", id)
+        def close(self):
+                response = cherrypy.response
+
+                def split_trans_id(tid):
+                        m = re.match("(\d+)_(.*)", tid)
                         return m.group(1), urllib.unquote(m.group(2))
 
                 trans_id = self.get_basename()
@@ -163,25 +171,26 @@ class Transaction(object):
                 try:
                         shutil.rmtree("%s/%s" % (self.cfg.trans_root, trans_id))
                 except:
-                        print "pkg.depotd: couldn't remove transaction %s" % trans_id
+                        cherrypy.log(
+                            "pkg.depotd: couldn't remove transaction %s"
+                            % trans_id, severity = logging.CRITICAL,
+                            traceback = True)
 
-                request.send_response(httplib.OK)
-                request.send_header('Package-FMRI', pkg_fmri)
-                request.send_header('State', pkg_state)
+                response.headers['Package-FMRI'] = pkg_fmri
+                response.headers['State'] = pkg_state
                 return
 
-        def abandon(self, request):
+        def abandon(self):
                 trans_id = self.get_basename()
                 # XXX refine try/except
                 #
                 # state transition from TRANSACTING to ABANDONED
                 try:
                         shutil.rmtree("%s/%s" % (self.cfg.trans_root, trans_id))
-                        request.send_response(httplib.OK)
                 except:
-                        request.send_response(httplib.NOT_FOUND)
+                        raise cherrypy.HTTPError(httplib.NOT_FOUND)
 
-        def add_content(self, request, type):
+        def add_content(self, entry_type):
                 """XXX We're currently taking the file from the HTTP request
                 directly onto the heap, to make the hash computation convenient.
                 We then do the compression as a sequence of buffers.  To handle
@@ -189,10 +198,11 @@ class Transaction(object):
                 sequence of buffers as well, with intermediate storage to
                 disk."""
 
+                request = cherrypy.request
                 attrs = dict(
                     val.split("=", 1)
                     for hdr, val in request.headers.items()
-                    if hdr.startswith("x-ipkg-setattr")
+                    if hdr.lower().startswith("x-ipkg-setattr")
                 )
 
                 # If any attributes appear to be lists, make them lists.
@@ -200,7 +210,7 @@ class Transaction(object):
                         if attrs[a].startswith("[") and attrs[a].endswith("]"):
                                 attrs[a] = eval(attrs[a])
 
-                size = int(request.headers.getheader("Content-Length", "0"))
+                size = int(request.headers.get("Content-Length", 0))
 
                 # The request object always has a readable rfile, even if it'll
                 # return no data.  We check ahead of time to see if we'll get
@@ -210,12 +220,12 @@ class Transaction(object):
                 if size > 0:
                         rfile = request.rfile
                 # XXX Ugly special case to handle empty files.
-                elif type == "file":
+                elif entry_type == "file":
                         rfile = os.devnull
-                action = pkg.actions.types[type](rfile, **attrs)
+                action = pkg.actions.types[entry_type](rfile, **attrs)
 
                 # XXX Once actions are labelled with critical nature.
-                # if type in critical_actions:
+                # if entry_type in critical_actions:
                 #         self.critical = True
 
                 # Record the size of the payload, if there is one.
@@ -239,8 +249,8 @@ class Transaction(object):
                                 action.attrs["elfhash"] = elf_hash
                                 os.unlink(elf_name)
 
-                        hash = sha.new(data)
-                        fname = hash.hexdigest()
+                        fhash = sha.new(data)
+                        fname = fhash.hexdigest()
                         action.hash = fname
                         ofile = gzip.GzipFile("%s/%s" % (self.dir, fname), "wb")
 
@@ -258,17 +268,8 @@ class Transaction(object):
                         ofile.close()
 
                 tfile = file("%s/manifest" % self.dir, "a")
-                print >>tfile, action
+                print >> tfile, action
                 tfile.close()
-
-                try:
-                        request.send_response(httplib.OK)
-                except socket.error, e:
-                        # If the client breaks the connection here, that's
-                        # probably okay.  Everything's consistent on our end,
-                        # at least.
-                        if e.args[0] != errno.EPIPE:
-                                raise
 
                 return
 
@@ -312,7 +313,7 @@ class Transaction(object):
                 pkgdir = "%s/%s" % (cfg.pkg_root, urllib.quote(pkg_name, ""))
 
                 # If the directory isn't there, create it.
-                if not os.path.exists(pkgdir): 
+                if not os.path.exists(pkgdir):
                         os.makedirs(pkgdir)
 
                 # mv manifest to pkg_name / version

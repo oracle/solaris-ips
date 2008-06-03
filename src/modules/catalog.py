@@ -222,13 +222,14 @@ class Catalog(object):
 
                 ret = []
 
-                for k,v in self.attrs.items():
+                for k, v in self.attrs.items():
                         s = "S %s: %s\n" % (k, v)
                         ret.append(s)
 
                 return ret
 
-        def _fmri_from_path(self, pkg, vers):
+        @staticmethod
+        def _fmri_from_path(pkg, vers):
                 """Helper method that takes the full path to the package
                 directory and the name of the manifest file, and returns an FMRI
                 constructed from the information in those components."""
@@ -353,16 +354,17 @@ class Catalog(object):
                         if os.name == 'posix':
                                 from pkg.subprocess_method import Mopen, PIPE
                                 try: 
-                                        signal.signal(signal.SIGCHLD, self.child_handler)
+                                        signal.signal(signal.SIGCHLD,
+                                                self.child_handler)
                                         self.searchdb_update_handle = \
-                                            Mopen(self.update_searchdb, [fmri_list], {},
-                                                stderr = PIPE)
+                                            Mopen(self.update_searchdb,
+                                                [fmri_list], {}, stderr = PIPE)
                                 except ValueError:
-                                        # if we are in a subthread already, the signal method 
-                                        # will not work
+                                        # If we are in a subthread already,
+                                        # the signal method will not work.
                                         self.update_searchdb(fmri_list)
                         else:
-                                # on non-unix, where there is no convenient
+                                # On non-unix, where there is no convenient
                                 # way to fork subprocesses, just update the
                                 # searchdb inline.
                                 self.update_searchdb(fmri_list)
@@ -410,7 +412,6 @@ class Catalog(object):
                         print self.searchdb_update_handle.stderr.read()
 
         def __update_searchdb_unlocked(self, fmri_list):
-                new = False
                 if fmri_list:
                         if self.searchdb is None:
                                 try:
@@ -429,7 +430,6 @@ class Catalog(object):
                         if not self.searchdb.has_key("indir_num"):
                                 self.searchdb["indir_num"] = "0"
                 else:
-                        # new = True
                         try:
                                 self.searchdb = \
                                     dbm.open(self.searchdb_file, "n")
@@ -1139,24 +1139,33 @@ class Catalog(object):
                 """Send the contents of this catalog out to the filep
                 specified as an argument."""
 
-                # Send attributes first.
-                filep.writelines(self.attrs_as_lines())
+                def output():
+                        # Send attributes first.
+                        for line in self.attrs_as_lines():
+                                yield line
 
-                try:
-                        cfile = file(os.path.normpath(
-                            os.path.join(self.catalog_root, "catalog")), "r")
-                except IOError, e:
-                        # Missing catalog is fine; other errors need to be
-                        # reported.
-                        if e.errno == errno.ENOENT:
-                                return
-                        else:
-                                raise
+                        try:
+                                cfile = file(os.path.normpath(
+                                    os.path.join(self.catalog_root, "catalog")),
+                                    "r")
+                        except IOError, e:
+                                # Missing catalog is fine; other errors need to
+                                # be reported.
+                                if e.errno == errno.ENOENT:
+                                        return
+                                else:
+                                        raise
 
-                for e in cfile:
-                        filep.write(e)
+                        for e in cfile:
+                                yield e
 
-                cfile.close()
+                        cfile.close()
+
+                if filep:
+                        for line in output():
+                                filep.write(line)
+                else:
+                        return output()
 
         def set_time(self, ts = None):
                 """Set time to timestamp if supplied by caller.  Otherwise
@@ -1216,15 +1225,15 @@ def ts_to_datetime(ts):
         month = int(ts[5:7])
         day = int(ts[8:10])
         hour = int(ts[11:13])
-        min = int(ts[14:16])
+        minutes = int(ts[14:16])
         sec = int(ts[17:19])
         # usec is not in the string if 0
         try:
-            usec = int(ts[20:26])
+                usec = int(ts[20:26])
         except ValueError:
-            usec = 0
+                usec = 0
 
-        dt = datetime.datetime(year, month, day, hour, min, sec, usec)
+        dt = datetime.datetime(year, month, day, hour, minutes, sec, usec)
 
         return dt
 

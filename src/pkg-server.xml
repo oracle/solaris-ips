@@ -85,7 +85,7 @@
 	<exec_method
 		type='method'
 		name='start'
-		exec='/usr/lib/pkg.depotd -p %{pkg/port} -d %{pkg/inst_root}'
+		exec='/usr/lib/pkg.depotd -p %{pkg/port} -d %{pkg/inst_root} -t %{pkg/socket_timeout} -s %{pkg/threads}'
 		timeout_seconds='0' />
 
 	<exec_method
@@ -102,6 +102,8 @@
 		<propval name='port' type='count' value='80' />
 		<propval name='inst_root' type='astring'
 			value='/var/pkg/repo' />
+		<propval name='socket_timeout' type='count' value='60' />
+		<propval name='threads' type='count' value='10' />
 	</property_group>
 
 	<stability value='Unstable' />

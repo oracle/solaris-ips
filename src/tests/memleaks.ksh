@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 # memleaks.ksh - basic sanity test for depot; try to make sure it doesn't
@@ -41,7 +41,9 @@ restore_dir=$PWD
 
 ROOT=$PWD/../../proto/root_$(uname -p)
 
-export PYTHONPATH=$ROOT/usr/lib/python2.4/vendor-packages/
+# Add our proto area to the beginning of PYTHONPATH.  This ensures that the
+# developer's personal python lib will be used as needed.
+export PYTHONPATH=$ROOT/usr/lib/python2.4/vendor-packages/:$PYTHONPATH
 export PATH=$ROOT/usr/bin:$PATH
 
 print -u2 -- \

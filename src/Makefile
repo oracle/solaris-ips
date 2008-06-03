@@ -121,6 +121,8 @@ PYSERVERMODS = \
 	modules/server/__init__.py \
 	modules/server/config.py \
 	modules/server/face.py \
+	modules/server/depot.py \
+	modules/server/repository.py \
 	modules/server/transaction.py
 PYCSERVERMODS = $(PYSERVERMODS:%.py=%.pyc)
 

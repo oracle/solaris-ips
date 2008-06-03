@@ -23,12 +23,12 @@
 # Use is subject to license terms.
 #
 
-import os
+import datetime
 import errno
+import httplib
+import os
 import re
 import time
-import datetime
-import httplib
 
 import pkg.fmri as fmri
 import pkg.catalog as catalog
@@ -54,7 +54,7 @@ class UpdateLog(object):
         The UpdateLog must have an associated catalog; however,
         Catalogs are not required to have an UpdateLog.  The UpdateLog
         allows catalogs to support incremental updates.
-        
+
         The catalog format is a + or -, an isoformat timestamp, and a catalog
         entry in server-side format.  They must be in order and separated by
         spaces."""
@@ -103,15 +103,15 @@ class UpdateLog(object):
                         self._begin_log()
 
                 if critical:
-                        type = "C"
+                        entry_type = "C"
                 else:
-                        type = "V"
+                        entry_type = "V"
 
                 # The format for catalog C and V records is described
                 # in the docstrings for the Catalog class.
 
                 logstr = "+ %s %s %s\n" % \
-                    (ts.isoformat(), type, fmri.get_fmri(anarchy = True))
+                    (ts.isoformat(), entry_type, fmri.get_fmri(anarchy = True))
 
                 self.logfd.write(logstr)
                 self.logfd.flush()
@@ -187,7 +187,7 @@ class UpdateLog(object):
                 for r in to_remove:
                         filepath = os.path.join(self.rootdir, "%s" % r)
                         os.unlink(filepath)
-                        self.curfiles -= 1 
+                        self.curfiles -= 1
 
                 del self.logfiles[0:excess]
 
@@ -218,7 +218,6 @@ class UpdateLog(object):
                 Ts is the timestamp when the local copy of the catalog
                 was last modified."""
 
-                
                 update_type = c.info().getheader("X-Catalog-Type", "full")
 
                 if update_type == 'incremental':
@@ -264,8 +263,8 @@ class UpdateLog(object):
                                 if ts > cts:
                                         if ts > mts:
                                                 mts = ts
-                                        str = "%s %s\n" % (l[2], l[3])
-                                        unknown_lines.append(str)
+                                        line = "%s %s\n" % (l[2], l[3])
+                                        unknown_lines.append(line)
 
                         elif l[0] == "+":
                                 # This is a known entry type.
@@ -281,10 +280,10 @@ class UpdateLog(object):
                                         # docstring.
                                         if l[2] in tuple("CV"):
                                                 f = fmri.PkgFmri(l[3])
-                                                str = "%s %s %s %s\n" % \
+                                                line = "%s %s %s %s\n" % \
                                                     (l[2], "pkg", f.pkg_name,
                                                     f.version)
-                                                add_lines.append(str)
+                                                add_lines.append(line)
                                                 add_pkg_names.add(f.pkg_name)
                                                 added += 1
                                         # The format for R records is
@@ -292,9 +291,9 @@ class UpdateLog(object):
                                         # RenameRecords
                                         elif l[2] == "R":
                                                 sf, sv, rf, rv = l[3].split()
-                                                str = "%s %s %s %s %s\n" % \
+                                                line = "%s %s %s %s %s\n" % \
                                                     (l[2], sf, sv, rf, rv)
-                                                add_lines.append(str)
+                                                add_lines.append(line)
 
                 # Verify that they aren't already in the catalog
                 catf = file(os.path.normpath(
@@ -346,7 +345,7 @@ class UpdateLog(object):
                 except IOError, e:
                         if e.errno == errno.ENOENT:
                                 pkg_names = catalog.Catalog.build_pkg_names(
-                                    path) 
+                                    path)
                         else:
                                 raise
 
@@ -355,13 +354,13 @@ class UpdateLog(object):
 
                 return True
 
-        def send(self, request):
+        def send(self, request, response):
                 """This method takes a http request and sends a catalog
-                to the client.  If the client it capable of receiving an
+                to the client.  If the client is capable of receiving an
                 incremental update, we'll send that.  Otherwise, it calls
                 into the catalog to send a full copy."""
 
-                modified = request.headers.getheader("If-Modified-Since")
+                modified = request.headers.get("If-Modified-Since", None)
                 ts = None
 
                 if modified:
@@ -369,33 +368,24 @@ class UpdateLog(object):
                                 ts = catalog.ts_to_datetime(modified)
                         except ValueError:
                                 ts = None
-                
+
                 # Incremental catalog updates
+                response.headers['Content-type'] = 'text/plain'
                 if ts and self.up_to_date(ts):
-                        request.send_response(httplib.NOT_MODIFIED)
-                        request.send_header('Content-type', 'text/plain')
-                        request.send_header('Last-Modified',
-                            self.catalog.last_modified())
-                        request.send_header('X-Catalog-Type', 'incremental')
-                        request.end_headers()
+                        response.status = httplib.NOT_MODIFIED
+                        response.headers['Last-Modified'] = \
+                            self.catalog.last_modified()
+                        response.headers['X-Catalog-Type'] = 'incremental'
                         return
                 elif ts and self.enough_history(ts):
-                        request.send_response(httplib.OK)
-                        request.send_header('Content-type', 'text/plain')
-                        request.send_header('Last-Modified',
-                            self.catalog.last_modified())
-                        request.send_header('X-Catalog-Type', 'incremental')
-                        request.end_headers()
-                        self._send_updates(ts, request.wfile)
-                        return
+                        response.headers['Last-Modified'] = \
+                            self.catalog.last_modified()
+                        response.headers['X-Catalog-Type'] = 'incremental'
+                        return self._send_updates(ts, None)
                 else:
                         # Not enough history, or full catalog requested
-                        request.send_response(httplib.OK)
-                        request.send_header('Content-type', 'text/plain')
-                        request.send_header('X-Catalog-Type', 'full')
-                        request.end_headers()
-                        self.catalog.send(request.wfile)
-                        return
+                        response.headers['X-Catalog-Type'] = 'full'
+                        return self.catalog.send(None)
 
         def _send_updates(self, ts, filep):
                 """Look through the logs for updates that have occurred
@@ -417,26 +407,34 @@ class UpdateLog(object):
                 # that file, send updates newer than timestamp, and then send
                 # all newer files.  Otherwise, just send updates from the newer
                 # log files.
-                
+
                 if self.up_to_date(ts) or not self.enough_history(ts):
-                       return
+                        return
 
                 # Remove minutes, seconds, and microsec from timestamp
                 rts = datetime.datetime(ts.year, ts.month, ts.day, ts.hour)
                 assert rts < ts
 
-                # send data from logfiles newer or equal to rts
-                for lf in self.logfiles:
+                def output():
+                        # send data from logfiles newer or equal to rts
+                        for lf in self.logfiles:
 
-                        lf_time = datetime.datetime(
-                            *time.strptime(lf, "%Y%m%d%H")[0:6])
+                                lf_time = datetime.datetime(
+                                    *time.strptime(lf, "%Y%m%d%H")[0:6])
 
-                        if lf_time >= rts:
-                                fn = "%s" % lf
-                                logf = file(os.path.join(self.rootdir, fn), "r")
-                                for line in logf:
-                                        filep.write(line)
-                                logf.close()
+                                if lf_time >= rts:
+                                        fn = "%s" % lf
+                                        logf = file(os.path.join(self.rootdir,
+                                            fn), "r")
+                                        for line in logf:
+                                                yield line
+                                        logf.close()
+
+                if filep:
+                        for line in output():
+                                filep.write(line)
+                else:
+                        return output()
 
         def _setup_logfiles(self):
                 """Scans the directory containing the update log's files.

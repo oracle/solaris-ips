@@ -41,458 +41,176 @@
 # client, we should probably provide a query API to do same on the server, for
 # dumb clients (like a notification service).
 
-import BaseHTTPServer
-import SocketServer
-import socket
-import errno
+# The default authority for the depot.
+AUTH_DEFAULT = "opensolaris.org"
+# The default repository path.
+REPO_PATH_DEFAULT = "/var/pkg/repo"
+# The default port to serve data from.
+PORT_DEFAULT = 80
+# The minimum number of threads allowed.
+THREADS_MIN = 1
+# The default number of threads to start.
+THREADS_DEFAULT = 10
+# The maximum number of threads that can be started.
+THREADS_MAX = 100
+# The default server socket timeout in seconds. We want this to be longer than
+# the normal default of 10 seconds to accommodate clients with poor quality
+# connections.
+SOCKET_TIMEOUT_DEFAULT = 60
+# Whether modify operations should be allowed.
+READONLY_DEFAULT = False
+# Whether the repository catalog should be rebuilt on startup.
+REBUILD_DEFAULT = False
+
 import getopt
 import os
-import re
 import sys
-import urllib
-import tarfile
-import cgi
-import traceback
-import httplib
 
-import pkg.fmri as fmri
-import pkg.misc as misc
-import pkg.catalog as catalog
+try:
+        import cherrypy
+        version = cherrypy.__version__.split('.')
+        if map(int, version) < [3, 0, 3]:
+                raise ImportError
+        elif map(int, version) >= [3, 1, 0]:
+                raise ImportError
+except ImportError:
+        print """cherrypy 3.0.3 or greater (but less than 3.1.0) is """ \
+            """required to use this program."""
+        sys.exit(2)
 
 import pkg.server.face as face
 import pkg.server.config as config
-import pkg.server.transaction as trans
+import pkg.server.depot as depot
+import pkg.server.repository as repo
 
 def usage():
         print """\
 Usage: /usr/lib/pkg.depotd [--readonly] [--rebuild] [-d repo_dir] [-p port]
+           [-s threads] [-t socket_timeout]
+
         --readonly      Read-only operation; modifying operations disallowed
         --rebuild       Re-build the catalog from pkgs in depot
 """
         sys.exit(2)
 
-def versions_0(scfg, request):
-        request.send_response(httplib.OK)
-        request.send_header('Content-type', 'text/plain')
-        request.end_headers()
-        versions = "\n".join(
-            "%s %s" % (op, " ".join(vers))
-            for op, vers in vops.iteritems()
-        ) + "\n"
-        request.wfile.write(versions)
-
-def search_0(scfg, request):
-        try:
-                token = urllib.unquote(request.path.split("/", 2)[2])
-        except IndexError:
-                request.send_response(httplib.BAD_REQUEST)
-                return
-
-        if not token:
-                request.send_response(httplib.BAD_REQUEST)
-                return
-
-        if not scfg.search_available():
-                request.send_response(httplib.SERVICE_UNAVAILABLE, "Search temporarily unavailable")
-                return
-
-        try:
-                res = scfg.catalog.search(token)
-        except KeyError:
-                request.send_response(httplib.NOT_FOUND)
-                return
-
-        request.send_response(httplib.OK)
-        request.send_header("Content-type", "text/plain")
-        request.end_headers()
-        for l in res:
-                request.wfile.write("%s %s\n" % (l[0], l[1]))
-
-def catalog_0(scfg, request):
-        scfg.inc_catalog()
-
-        # Try to guard against a non-existent catalog.  The catalog open will
-        # raise an exception, and only the attributes will have been sent.  But
-        # because we've sent data already (never mind the response header), we
-        # can't raise an exception here, or an INTERNAL_SERVER_ERROR header
-        # will get sent as well.
-        try:
-                scfg.updatelog.send(request)
-        except Exception, e:
-                if isinstance(e, socket.error) and \
-                    e.args[0] == errno.EPIPE:
-                        return
-
-                request.log_error("Internal failure:\n%s",
-                    traceback.format_exc())
-
-def manifest_0(scfg, request):
-        """The request is an encoded pkg FMRI.  If the version is specified
-        incompletely, we return an error, as the client is expected to form
-        correct requests, based on its interpretation of the catalog and its
-        image policies."""
-
-        scfg.inc_manifest()
-
-        # Parse request into FMRI component and decode.
-        pfmri = urllib.unquote(request.path.split("/", 2)[-1])
-
-        f = fmri.PkgFmri(pfmri, None)
-
-        # Open manifest and send.
-        try:
-                file = open("%s/%s" % (scfg.pkg_root, f.get_dir_path()), "r")
-        except IOError, e:
-                if e.errno == errno.ENOENT:
-                        request.send_response(httplib.NOT_FOUND)
-                else:
-                        request.log_error("Internal failure:\n%s",
-                            traceback.format_exc())
-                        request.send_response(httplib.INTERNAL_SERVER_ERROR)
-                return
-        data = file.read()
-
-        request.send_response(httplib.OK)
-        request.send_header('Content-type', 'text/plain')
-        request.end_headers()
-        request.wfile.write(data)
-
-def filelist_0(scfg, request):
-        """Request data contains application/x-www-form-urlencoded entries
-        with the requested filenames."""
-        # If the sender doesn't specify the content length, reject this request.
-        # Calling read() with no size specified will force the server to block
-        # until the client sends EOF, an undesireable situation
-        size = int(request.headers.getheader("Content-Length", "0"))
-        if size == 0:
-                request.send_response(httplib.LENGTH_REQUIRED)
-                return
-
-        rfile = request.rfile
-        data_dict = cgi.parse_qs(rfile.read(size))
-
-        scfg.inc_flist()
-
-        request.send_response(httplib.OK)
-        request.send_header("Content-type", "application/data")
-        request.end_headers()
-
-        tar_stream = tarfile.open(mode = "w|", fileobj = request.wfile)
-
-        for v in data_dict.values():
-                filepath = os.path.normpath(os.path.join(
-                    scfg.file_root, misc.hash_file_name(v[0])))
-
-                tar_stream.add(filepath, v[0], False)
-                scfg.inc_flist_files()
-
-        tar_stream.close()
-
-def rename_0(scfg, request):
-        # If the sender doesn't specify the content length, reject this request.
-        # Calling read() with no size specified will force the server to block
-        # until the client sends EOF, an undesireable situation
-        size = int(request.headers.getheader("Content-Length", "0"))
-        if size == 0:
-                request.send_response(httplib.LENGTH_REQUIRED)
-                return
-
-        rfile = request.rfile
-        rename_dict = cgi.parse_qs(rfile.read(size))
-
-        try:
-                src_fmri = fmri.PkgFmri(rename_dict['Src-FMRI'][0], None)
-        except KeyError:
-                request.send_response(httplib.BAD_REQUEST,
-                    "No source FMRI present.")
-                return
-        except ValueError:
-                request.send_response(httplib.BAD_REQUEST,
-                    "Invalid source FMRI.")
-                return
-        except AssertionError:
-                request.send_response(httplib.BAD_REQUEST,
-                    "Source FMRI must contain build string.")
-                return
-
-        try:
-                dest_fmri = fmri.PkgFmri(rename_dict['Dest-FMRI'][0], None)
-        except KeyError:
-                request.send_response(httplib.BAD_REQUEST,
-                    "No destination FMRI present.")
-                return
-        except ValueError:
-                request.send_response(httplib.BAD_REQUEST,
-                    "Invalid destination FMRI.")
-                return
-        except AssertionError:
-                request.send_response(httplib.BAD_REQUEST,
-                    "Destination FMRI must contain build string.")
-                return
-
-        try:
-               scfg.updatelog.rename_package(src_fmri.pkg_name,
-                   str(src_fmri.version), dest_fmri.pkg_name,
-                   str(dest_fmri.version))
-        except catalog.CatalogException, e:
-                request.send_response(httplib.NOT_FOUND, e.args)
-                return
-        except catalog.RenameException, e:
-                request.send_response(httplib.NOT_FOUND, e.args)
-                return
-
-        scfg.inc_renamed()
-        request.send_response(httplib.OK)
-
-
-def file_0(scfg, request):
-        """The request is the SHA-1 hash name for the file."""
-        scfg.inc_file()
-
-        fhash = request.path.split("/", 2)[-1]
-
-        try:
-                file = open(os.path.normpath(os.path.join(
-                    scfg.file_root, misc.hash_file_name(fhash))))
-        except IOError, e:
-                if e.errno == errno.ENOENT:
-                        request.send_response(httplib.NOT_FOUND)
-                else:
-                        request.log_error("Internal failure:\n%s",
-                            traceback.format_exc())
-                        request.send_response(httplib.INTERNAL_SERVER_ERROR)
-                return
-
-        data = file.read()
-
-        request.send_response(httplib.OK)
-        request.send_header("Content-type", "application/data")
-        request.end_headers()
-        request.wfile.write(data)
-
-def open_0(scfg, request):
-        # XXX Authentication will be handled by virtue of possessing a signed
-        # certificate (or a more elaborate system).
-        if scfg.is_read_only():
-                request.send_error(httplib.FORBIDDEN, "Read-only server")
-                return
-
-        t = trans.Transaction()
-
-        ret = t.open(scfg, request)
-        if ret == httplib.OK:
-                scfg.in_flight_trans[t.get_basename()] = t
-
-                request.send_response(httplib.OK)
-                request.send_header('Content-type', 'text/plain')
-                request.send_header('Transaction-ID', t.get_basename())
-                request.end_headers()
-        elif ret == httplib.BAD_REQUEST:
-                request.send_response(httplib.BAD_REQUEST)
-        else:
-                request.send_response(httplib.INTERNAL_SERVER_ERROR)
-
-
-def close_0(scfg, request):
-        if scfg.is_read_only():
-                request.send_error(httplib.FORBIDDEN, "Read-only server")
-                return
-
-        # Pull transaction ID from headers.
-        trans_id = request.path.split("/", 2)[-1]
-
-        try:
-                t = scfg.in_flight_trans[trans_id]
-        except KeyError:
-                request.send_response(httplib.NOT_FOUND, "Transaction ID not found")
-        else:
-                t.close(request)
-                del scfg.in_flight_trans[trans_id]
-
-def abandon_0(scfg, request):
-        if scfg.is_read_only():
-                request.send_error(httplib.FORBIDDEN, "Read-only server")
-                return
-
-        # Pull transaction ID from headers.
-        trans_id = request.path.split("/", 2)[-1]
-
-        try:
-                t = scfg.in_flight_trans[trans_id]
-        except KeyError:
-                request.send_response(httplib.NOT_FOUND, "Transaction ID not found")
-        else:
-                t.abandon(request)
-                del scfg.in_flight_trans[trans_id]
-
-def add_0(scfg, request):
-        if scfg.is_read_only():
-                request.send_error(httplib.FORBIDDEN, "Read-only server")
-                return
-
-        trans_id, type = request.path.split("/", 3)[-2:]
-
-        try:
-                t = scfg.in_flight_trans[trans_id]
-        except KeyError:
-                request.send_response(httplib.NOT_FOUND, "Transaction ID not found")
-        else:
-                t.add_content(request, type)
-
-if "PKG_REPO" in os.environ:
-        scfg = config.SvrConfig(os.environ["PKG_REPO"], "pkg.sun.com")
-else:
-        scfg = config.SvrConfig("/var/pkg/repo", "pkg.sun.com")
-
-def set_ops():
-        vops = {}
-        for name in globals():
-                m = re.match("(.*)_(\d+)", name)
-
-                if not m:
-                        continue
-
-                op = m.group(1)
-                ver = m.group(2)
-
-                if op in vops:
-                        vops[op].append(ver)
-                else:
-                        vops[op] = [ ver ]
-
-        return vops
-
-class pkgHandler(BaseHTTPServer.BaseHTTPRequestHandler):
-
-        def address_string(self):
-                host, port = self.client_address[:2]
-                return host
-
-        def do_GET(self):
-                # Remove leading slashes from the path
-                self.path = self.path.lstrip("/")
-
-                reqarr = self.path.split("/")
-                operation = reqarr[0]
-
-                if operation not in vops:
-                        if face.match(self):
-                                face.respond(scfg, self)
-                        else:
-                                face.unknown(scfg, self)
-                        return
-
-                # Make sure that we have a integer protocol version
-                try:
-                        version = int(reqarr[1])
-                except IndexError, e:
-                        self.send_response(httplib.BAD_REQUEST)
-                        self.send_header("Content-type", "text/plain")
-                        self.end_headers()
-                        self.wfile.write("Missing version\n")
-                        return
-                except ValueError, e:
-                        self.send_response(httplib.BAD_REQUEST)
-                        self.send_header("Content-type", "text/plain")
-                        self.end_headers()
-                        self.wfile.write("Non-integer version\n")
-                        return
-
-                op_method = "%s_%s" % (operation, version)
-                if op_method not in globals():
-                        # If we get here, we know that 'operation' is supported.
-                        # Assume 'version' is not supported for that operation.
-                        self.send_response(httplib.NOT_FOUND, "Version not supported")
-                        self.send_header("Content-type", "text/plain")
-                        self.end_headers()
-
-                        vns = "Version '%s' not supported for operation '%s'\n"
-                        self.wfile.write(vns % (version, operation))
-                        return
-
-                op_call = op_method + "(scfg, self)"
-
-                try:
-                        exec op_call
-                except Exception, e:
-                        if isinstance(e, socket.error) and \
-                            e.args[0] == errno.EPIPE:
-                                return
-
-                        self.log_error("Internal failure:\n%s",
-                            traceback.format_exc())
-                        # XXX op_call may already have spit some data out to the
-                        # client, in which case this response just corrupts that
-                        # datastream.  I don't know of any way to tell whether
-                        # data has already been sent.
-                        self.send_response(httplib.INTERNAL_SERVER_ERROR)
-
-        def do_POST(self):
-                self.do_GET()
-
-        def do_PUT(self):
-                self.send_response(httplib.OK)
-                self.send_header('Content-type', 'text/plain')
-                self.end_headers()
-                self.wfile.write('''PUT URI %s ; headers %s''' %
-                    (self.path, self.headers))
-
-        def do_DELETE(self):
-                self.send_response(httplib.OK)
-                self.send_header('Content-type', 'text/plain')
-                self.end_headers()
-                self.wfile.write('''URI %s ; headers %s''' %
-                    (self.path, self.headers))
-
-class ThreadingHTTPServer(SocketServer.ThreadingMixIn,
-    BaseHTTPServer.HTTPServer):
-        pass
-
-vops = {}
+class OptionError(Exception):
+        """ Option exception. """
+
+        def __init__(self, args = None):
+                Exception.__init__(args)
+                self.args = args
 
 if __name__ == "__main__":
-        port = 80
-        unprivport = 10000
 
-        if "PKG_DEPOT_CONTENT" in os.environ:
-                face.set_content_root(os.environ["PKG_DEPOT_CONTENT"])
+        port = PORT_DEFAULT
+        threads = THREADS_DEFAULT
+        socket_timeout = SOCKET_TIMEOUT_DEFAULT
+        readonly = READONLY_DEFAULT
+        rebuild = REBUILD_DEFAULT
+
+        if "PKG_REPO" in os.environ:
+                repo_path = os.environ["PKG_REPO"]
+        else:
+                repo_path = REPO_PATH_DEFAULT
 
         try:
-                opts, pargs = getopt.getopt(sys.argv[1:], "d:np:",
+                parsed = set()
+                opts, pargs = getopt.getopt(sys.argv[1:], "d:np:s:t:",
                     ["readonly", "rebuild"])
                 for opt, arg in opts:
+                        if opt in parsed:
+                                raise OptionError, "Each option may only be " \
+                                    "specified once."
+                        else:
+                                parsed.add(opt)
+
                         if opt == "-n":
                                 sys.exit(0)
                         elif opt == "-d":
-                                scfg.set_repo_root(arg)
+                                repo_path = arg
                         elif opt == "-p":
                                 port = int(arg)
+                        elif opt == "-s":
+                                threads = int(arg)
+                                if threads < THREADS_MIN:
+                                        raise OptionError, \
+                                            "minimum value is %d" % THREADS_MIN
+                                if threads > THREADS_MAX:
+                                        raise OptionError, \
+                                            "maximum value is %d" % THREADS_MAX
+                        elif opt == "-t":
+                                socket_timeout = int(arg)
                         elif opt == "--readonly":
-                                scfg.set_read_only()
+                                readonly = True
                         elif opt == "--rebuild":
-                                scfg.destroy_catalog()
+                                rebuild = True
         except getopt.GetoptError, e:
-                print "pkg.depotd: illegal option -- %s" % e.opt
+                print "pkg.depotd: unknown option -- %s" % e.opt
+                usage()
+        except OptionError, e:
+                print "pkg.depotd: option: %s -- %s" % (opt, e)
+                usage()
+        except (ArithmeticError, ValueError):
+                print "pkg.depotd: illegal option value: %s specified " \
+                    "for option: %s" % (arg, opt)
                 usage()
 
-        scfg.init_dirs()
+        try:
+                face.set_content_root(os.environ["PKG_DEPOT_CONTENT"])
+        except KeyError:
+                pass
+
+        scfg = config.SvrConfig(repo_path, AUTH_DEFAULT)
+
+        if rebuild:
+                scfg.destroy_catalog()
+
+        if readonly:
+                scfg.set_read_only()
+
+        try:
+                scfg.init_dirs()
+        except EnvironmentError, e:
+                print "pkg.depotd: an error occurred while trying to " \
+                    "initialize the depot repository directory " \
+                    "structures:\n%s" % e
+                sys.exit(1)
+
         scfg.acquire_in_flight()
         scfg.acquire_catalog()
 
-        vops = set_ops()
+        root = cherrypy.Application(repo.Repository(scfg))
+        # We have to override cherrypy's default response_class so that we
+        # have access to the write() callable to stream data directly to the
+        # client.
+        root.wsgiapp.response_class = depot.DepotResponse
+
+        cherrypy.config.update({
+            "environment": "production",
+            "checker.on": True,
+            "log.screen": True,
+            "server.socket_port": port,
+            "server.thread_pool": threads,
+            "server.socket_timeout": socket_timeout
+        })
+
+        conf = {
+            "/robots.txt": {
+                "tools.staticfile.on": True,
+                "tools.staticfile.filename": os.path.join(face.content_root,
+                    "robots.txt")
+            },
+            "/static": {
+                "tools.staticdir.on": True,
+                "tools.staticdir.root": face.content_root,
+                "tools.staticdir.dir": ""
+            }
+        }
 
         try:
-                server = ThreadingHTTPServer(('', port), pkgHandler)
-        except socket.error, e:
-                if e.args[0] != errno.EACCES:
-                        raise
+                cherrypy.quickstart(root, config = conf)
+        except:
+                print "pkg.depotd: unknown error starting depot, illegal " \
+                    "option value specified?"
+                usage()
 
-                server = ThreadingHTTPServer(('', unprivport), pkgHandler)
-                print >> sys.stderr, \
-                     "Insufficient privilege to bind to port %d." % port
-                print >> sys.stderr, \
-                    "Bound server to port %d instead." % unprivport
-                print >> sys.stderr, \
-                    "Use the -p option to pick another port, if desired."
-
-        server.serve_forever()

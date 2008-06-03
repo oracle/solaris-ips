@@ -24,106 +24,48 @@
 
 """face - dynamic index page for image packaging server"""
 
-import os
-import socket
-
-from errno import ENOENT, EPIPE
 import httplib
+import os
 
 # XXX Use small templating module?
-
-# Non-HTML GET functions
 
 try:
         content_root = os.path.join(os.environ['PKG_HOME'], 'share/lib/pkg')
 except KeyError:
         content_root = '/usr/share/lib/pkg'
 
-#
-# Return the contents of a static file.
-# Note that if filename is an absolute path, this will be used.
-# Otherwise, the content root (PKG_DEPOT_CONTENT) directory will
-# be prepended to the filename.
-# If the static file cannot be found, an HTTP NOT_FOUND error
-# is returned. Any other errors in the open return an HTTP
-# INTERNAL_SERVER_ERROR.
-#
-# XXX Should we cache these files in memory as they are only small?
-#
-def send_static(img, request, filename, content_type):
-        '''Open a given file and write the contents to the
-           HTTP response stream'''
-        rfile = None
-        try:
-                try:
-                        _filename = os.path.join(content_root, filename)
-                        rfile = open(_filename, 'rb')
-                        data = rfile.read()
-                        rfile.close()
-                except IOError, ioe:
-                        if ioe.errno == ENOENT:
-                                # Not found: return a NOT_FOUND error
-                                unknown(img, request)
-                        else:
-                                # Otherwise push it up the stack
-                                raise
-                else:
-                        request.send_response(httplib.OK)
-                        request.send_header('Content-Type', content_type)
-                        request.send_header('Content-Length', len(data))
-                        request.end_headers()
-
-                        request.wfile.write(data)
-        except:
-                if rfile:
-                        rfile.close()
-                error(img, request)
-                raise
-
-
-def css(img, request):
-        send_static(img, request, "pkg.css", 'text/css')
-
-def icon(img, request):
-        send_static(img, request, "pkg-block-icon.png", 'image/png')
-
-def logo(img, request):
-        send_static(img, request, "pkg-block-logo.png", 'image/png')
-
-def robots(img, request):
-        send_static(img, request, "robots.txt", 'text/plain')
-
-# HTML GET functions
-
-def head(request, title = "pkg - image packaging system"):
-        request.wfile.write("""\
-<html>
+def head(title = "pkg - image packaging system"):
+        return ("""\
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+        "http://www.w3.org/TR/2002/REC-xhtml1-20020801/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
- <link rel="shortcut icon" type="image/png" href="/icon">
- <link rel="stylesheet" type="text/css" href="/css">
+ <link rel="shortcut icon" type="image/png" href="/static/pkg-block-icon.png"/>
+ <link rel="stylesheet" type="text/css" href="/static/pkg.css"/>
  <title>%s</title>
 </head>
 """ % title)
 
-def unknown(img, request):
-        request.send_response(httplib.NOT_FOUND)
-        request.send_header('Content-type', 'text/html')
-        request.end_headers()
-        head(request)
-        request.wfile.write("""\
+def unknown(img, request, response):
+
+        response.status = httplib.NOT_FOUND
+        output = head()
+        output += """\
 <body>
  <div id="doc4" class="yui-t5">
   <div id="hd">
-   <h1><img src="/logo" /> <code>pkg</code> server unknown page</h1>
+   <h1><img src="/static/pkg-block-logo.png" alt="logo"/> <code>pkg</code> server unknown page</h1>
   </div>
   <div id="bd">
    <div id="yui-main">
     <div class="yui-b">
      <pre>
-""")
-        request.wfile.write('''%d GET URI %s ; headers:\n%s''' %
-            (httplib.NOT_FOUND, request.path, request.headers))
-        request.wfile.write("""\
+"""
+
+        output += ('''%d GET URI %s ; headers:\n%s''' %
+            (httplib.NOT_FOUND, request.path_info, request.headers))
+
+        output += ("""\
      </pre>
     </div>
    </div>
@@ -133,16 +75,17 @@ def unknown(img, request):
 </html>
 """)
 
-def error(img, request):
-        request.send_response(httplib.INTERNAL_SERVER_ERROR)
-        request.send_header('Content-type', 'text/html')
-        request.end_headers()
-        head(request)
-        request.wfile.write("""\
+        return output
+
+def error(img, request, response):
+        response.status = httplib.INTERNAL_SERVER_ERROR
+
+        output = head()
+        output += """\
 <body>
  <div id="doc4" class="yui-t5">
   <div id="hd">
-   <h1><img src="/logo" /> <code>pkg</code> server internal error</h1>
+   <h1><img src="/static/pkg-block-logo.png" alt="logo"/> <code>pkg</code> server internal error</h1>
   </div>
   <div id="bd">
    <div id="yui-main">
@@ -156,18 +99,17 @@ face.response() for %s
  </div>
 </body>
 </html>
-""" % request.path)
+""" % request.path_info
 
-def index(img, request):
-        request.send_response(httplib.OK)
-        request.send_header('Content-type', 'text/html')
-        request.end_headers()
-        head(request)
-        request.wfile.write("""\
+        return output
+
+def index(img, request, response):
+        output = head()
+        output += ("""\
 <body>
  <div id="doc4" class="yui-t5">
   <div id="hd">
-   <h1><img src="/logo" /> <code>pkg</code> server ok</h1>
+   <h1><img src="/static/pkg-block-logo.png" alt="logo"/> <code>pkg</code> server ok</h1>
   </div>
   <div id="bd">
    <div id="yui-main">
@@ -175,16 +117,17 @@ def index(img, request):
      <h2>Statistics</h2>
      <pre>
 """)
-        request.wfile.write(img.get_status())
-        request.wfile.write("""\
+        output += (img.get_status())
+        output += ("""\
      </pre>
 
      <h2>Catalog</h2>
      <pre>
 """)
         for f in img.catalog.fmris():
-                request.wfile.write("%s\n" % f.get_fmri())
-        request.wfile.write("""\
+                output += ("%s\n" % f.get_fmri())
+
+        output += ("""\
      </pre>
     </div>
    </div>
@@ -193,34 +136,26 @@ def index(img, request):
 </body>
 </html>""")
 
+        return output
+
 pages = {
-        "" : index,
-        "index.html" :  index,
-        "icon" :        icon,
-        "favicon.ico" : icon,
-        "logo" :        logo,
-        "css" :         css,
-        "robots.txt" :  robots
+        "/" : index,
+        "/index.html" :  index
 }
 
 def set_content_root(path):
         global content_root
         content_root = path
 
-def match(request):
-        if request.path in pages.keys():
+def match(img, request, response):
+        if request.path_info in pages:
                 return True
         return False
 
-def respond(img, request):
-        if request.path in pages.keys():
-                page = pages[request.path]
-                try:
-                        page(img, request)
-                except socket.error, e:
-			if e[0] != EPIPE:
-                        	request.log_error("Failed to serve %s: %s" % \
-				    (request.path, e[1]))
-				raise
+def respond(img, request, response):
+        if request.path_info in pages:
+                page = pages[request.path_info]
+                return page(img, request, response)
         else:
-                error(img, request)
+                return error(img, request, response)
+

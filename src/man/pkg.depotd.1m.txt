@@ -5,7 +5,8 @@ NAME
      pkg.depotd - image packaging system depot server
 
 SYNOPSIS
-     /usr/lib/pkg.depotd [--readonly] [-d repo_dir] [-p port]
+     /usr/lib/pkg.depotd [--readonly] [--rebuild] [-d repo_dir] [-p port]
+         [-s threads] [-t socket_timeout]
 
 DESCRIPTION
      pkg.depotd is the depot server for the image packaging system.
@@ -17,37 +18,52 @@ DESCRIPTION
      purposes.
 
      The pkg.depot server is generally configured via the smf(5)
-     properties associated with its service instance.  Two properties
-     are currently recognized
+     properties associated with its service instance.  Four properties
+     are currently recognized:
 
-     application/port           (count) The port number on which this
-                                instance of should listen for incoming
+     pkg/port                   (count) The port number on which this
+                                instance should listen for incoming
                                 package requests.  The default value is
                                 80.
 
-     application/read_only      (boolean) Modifying operations, such as
-                                those initiated by pkgsend(1M) are
-                                disabled.  Retrieval operations are
-                                still available.
-
-     application/repo_dir       (astring) The file system path at which
+     pkg/inst_dir               (astring) The file system path at which
                                 this instance should find its repository
                                 data.  The default value is
                                 /var/pkg/repo.
+
+     pkg/socket_timeout         (count) The maximum number of seconds the
+                                server should wait for a response from a
+                                client before closing a connection. The
+                                default value is 60.
+
+     pkg/threads                (count) The number of threads that will
+                                be started to serve requests. The default
+                                value is 10.
 
 OPTIONS
      The following options alter the default behavior, if present, and
      will override the settings from the service instance when managed
      via an smf(5) restarter:
 
-     -d repo_dir                Overrides application/repo_dir with the
-                                value given by repo_dir.
+     -d repo_dir                Overrides pkg/repo_dir with the value
+                                given by repo_dir.
 
-     -p port                    Overrides application/port with the
-                                value given by port.
+     -p port                    Overrides pkg/port with the value given
+                                by port.
 
-     --readonly                 Overrides application/read_only to be
-                                true.
+     -s threads                 Overrides pkg/threads with the value
+                                given by threads.
+
+     -t socket_timeout          Overrides pkg/socket_timeout with the
+                                value given by socket_timeout.
+
+     --readonly                 Modifying operations, such as those
+                                initiated by pkgsend(1M) are disabled.
+                                Retrieval operations are still
+                                available.
+
+     --rebuild                  Any existing repository catalog will be
+                                destroyed and then recreated on startup.
 
 EXAMPLES
      Example 1:  Enabling the depot server.
