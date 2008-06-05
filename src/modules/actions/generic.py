@@ -155,9 +155,8 @@ class Action(object):
                         v = self.attrs[k]
                         if isinstance(v, list):
                             str += " " + " ".join([
-                        "%s=%s" % (k, q(lmt))
-                                for lmt in v
-                    ])
+                                "%s=%s" % (k, q(lmt)) for lmt in v
+                            ])
                         elif " " in v:
                                 str += " " + k + "=\"" + v + "\""
                         else:
@@ -177,7 +176,7 @@ class Action(object):
                 return res
 
         def compare(self, other):
-                        return cmp(id(self), id(other))
+                return cmp(id(self), id(other))
 
         def different(self, other):
                 """Returns True if other represents a non-ignorable change from self.

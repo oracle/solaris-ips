@@ -25,9 +25,11 @@
 # Use is subject to license terms.
 #
 
+import errno
 import sys
 import os
 import time
+from pkg.misc import msg, PipeError
 
 class ProgressTracker(object):
         """ This abstract class is used by the client to render and track
@@ -146,7 +148,7 @@ class ProgressTracker(object):
                 assert self.act_goal_nactions == self.act_cur_nactions
 
         def actions_get_progress(self):
-                print "not yet"
+                msg("not yet")
 
         #
         # This set of methods should be regarded as abstract *and* protected.
@@ -264,27 +266,47 @@ class CommandLineProgressTracker(ProgressTracker):
         def ver_output_error(self, actname, errors): return
 
         def dl_output(self):
-                # The first time, emit header.
-                if self.dl_cur_pkg != self.dl_last_printed_pkg:
-                        if self.dl_last_printed_pkg != None:
-                                print "Done"
-                        print "Download: %s ... " % (self.dl_cur_pkg),
-                        self.dl_last_printed_pkg = self.dl_cur_pkg
-                sys.stdout.flush()
+                try:
+                        # The first time, emit header.
+                        if self.dl_cur_pkg != self.dl_last_printed_pkg:
+                                if self.dl_last_printed_pkg != None:
+                                        print "Done"
+                                print "Download: %s ... " % (self.dl_cur_pkg),
+                                self.dl_last_printed_pkg = self.dl_cur_pkg
+                        sys.stdout.flush()
+                except IOError, e:
+                        if e.errno == errno.EPIPE:
+                                raise PipeError, e
+                        raise
 
         def dl_output_done(self):
-                print "Done"
-                sys.stdout.flush()
+                try:
+                        print "Done"
+                        sys.stdout.flush()
+                except IOError, e:
+                        if e.errno == errno.EPIPE:
+                                raise PipeError, e
+                        raise
 
         def act_output(self):
                 if self.act_phase != self.act_phase_last:
-                        print "%s ... " % self.act_phase,
+                        try:
+                                print "%s ... " % self.act_phase,
+                        except IOError, e:
+                                if e.errno == errno.EPIPE:
+                                        raise PipeError, e
+                                raise
                         self.act_phase_last = self.act_phase
                 return
 
         def act_output_done(self):
-                print "Done"
-                sys.stdout.flush()
+                try:
+                        print "Done"
+                        sys.stdout.flush()
+                except IOError, e:
+                        if e.errno == errno.EPIPE:
+                                raise PipeError, e
+                        raise
 
 
 
@@ -318,20 +340,35 @@ class FancyUNIXProgressTracker(ProgressTracker):
         def cat_output_start(self):
                 catstr = "Fetching catalog '%s'..." % (self.cat_cur_catalog)
                 self.cat_curstrlen = len(catstr)
-                print "%s" % catstr,
-                sys.stdout.flush()
+                try:
+                        print "%s" % catstr,
+                        sys.stdout.flush()
+                except IOError, e:
+                        if e.errno == errno.EPIPE:
+                                raise PipeError, e
+                        raise
 
         def cat_output_done(self):
-                print self.cr,
-                print ("%" + str(self.cat_curstrlen) + "s") % "",
-                print self.cr,
-                sys.stdout.flush()
+                try:
+                        print self.cr,
+                        print ("%" + str(self.cat_curstrlen) + "s") % "",
+                        print self.cr,
+                        sys.stdout.flush()
+                except IOError, e:
+                        if e.errno == errno.EPIPE:
+                                raise PipeError, e
+                        raise
 
         def eval_output_start(self):
                 s = "Creating Plan"
                 self.cat_curstrlen = len(s)
-                print "%s" % s,
-                sys.stdout.flush()
+                try:
+                        print "%s" % s,
+                        sys.stdout.flush()
+                except IOError, e:
+                        if e.errno == errno.EPIPE:
+                                raise PipeError, e
+                        raise
 
         def eval_output_progress(self):
                 if (time.time() - self.last_print_time) >= 0.10:
@@ -341,69 +378,100 @@ class FancyUNIXProgressTracker(ProgressTracker):
                 self.spinner += 1
                 if self.spinner >= len(self.spinner_chars):
                         self.spinner = 0
-                print self.cr,
-                s = "Creating Plan %c" % self.spinner_chars[self.spinner]
-                self.cat_curstrlen = len(s)
-                print "%s" % s,
-                sys.stdout.flush()
+                try:
+                        print self.cr,
+                        s = "Creating Plan %c" % self.spinner_chars[self.spinner]
+                        self.cat_curstrlen = len(s)
+                        print "%s" % s,
+                        sys.stdout.flush()
+                except IOError, e:
+                        if e.errno == errno.EPIPE:
+                                raise PipeError, e
+                        raise
 
         def eval_output_done(self):
-                print self.cr,
-                print ("%" + str(self.cat_curstrlen) + "s") % "",
-                print self.cr,
-                sys.stdout.flush()
+                try:
+                        print self.cr,
+                        print ("%" + str(self.cat_curstrlen) + "s") % "",
+                        print self.cr,
+                        sys.stdout.flush()
+                except IOError, e:
+                        if e.errno == errno.EPIPE:
+                                raise PipeError, e
+                        raise
                 self.last_print_time = 0
 
         def ver_output(self):
-                print self.cr,
-                if self.ver_cur_fmri != None:
-                        if (time.time() - self.last_print_time) >= 0.10:
-                                self.last_print_time = time.time()
-                        else:
-                                return
-                        self.spinner += 1
-                        if self.spinner >= len(self.spinner_chars):
-                                self.spinner = 0
-                        print "%-50s..... %c%c" % \
-                            (self.ver_cur_fmri.get_pkg_stem(), 
-                             self.spinner_chars[self.spinner],
-                             self.spinner_chars[self.spinner]),
+                try:
                         print self.cr,
-                        sys.stdout.flush()
-                else:
-                        print "%80s" % "",
-                        sys.stdout.flush()
-                        self.last_print_time = 0
+                        if self.ver_cur_fmri != None:
+                                if (time.time() - self.last_print_time) >= 0.10:
+                                        self.last_print_time = time.time()
+                                else:
+                                        return
+                                self.spinner += 1
+                                if self.spinner >= len(self.spinner_chars):
+                                        self.spinner = 0
+                                print "%-50s..... %c%c" % \
+                                    (self.ver_cur_fmri.get_pkg_stem(), 
+                                     self.spinner_chars[self.spinner],
+                                     self.spinner_chars[self.spinner]),
+                                print self.cr,
+                                sys.stdout.flush()
+                        else:
+                                print "%80s" % "",
+                                sys.stdout.flush()
+                                self.last_print_time = 0
+                except IOError, e:
+                        if e.errno == errno.EPIPE:
+                                raise PipeError, e
+                        raise
 
         def ver_output_error(self, actname, errors):
                 # for now we just get the "Verifying" progress
                 # thingy out of the way.
-                print "%40s" % "",
-                print self.cr,
-                sys.stdout.flush()
+                try:
+                        print "%40s" % "",
+                        print self.cr,
+                        sys.stdout.flush()
+                except IOError, e:
+                        if e.errno == errno.EPIPE:
+                                raise PipeError, e
+                        raise
 
         def dl_output(self):
-                # The first time, emit header.
-                if not self.dl_started:
-                        self.dl_started = True
-                        print "%-40s %7s %11s %13s" % ("DOWNLOAD", \
-                            "PKGS", "FILES", "XFER (MB)")
-                else:
-                        print self.cr,
-                print "%-40s %7s %11s %13s" % \
-                    (self.dl_cur_pkg,
-                    "%d/%d" % (self.dl_cur_npkgs, self.dl_goal_npkgs),
-                    "%d/%d" % (self.dl_cur_nfiles, self.dl_goal_nfiles),
-                    "%.2f/%.2f" % ((self.dl_cur_nbytes / 1024.0 / 1024.0),
-                       (self.dl_goal_nbytes / 1024.0 / 1024.0))),
-                sys.stdout.flush()
+                try:
+                        # The first time, emit header.
+                        if not self.dl_started:
+                                self.dl_started = True
+                                print "%-40s %7s %11s %13s" % ("DOWNLOAD", \
+                                    "PKGS", "FILES", "XFER (MB)")
+                        else:
+                                print self.cr,
+                        print "%-40s %7s %11s %13s" % \
+                            (self.dl_cur_pkg,
+                            "%d/%d" % (self.dl_cur_npkgs, self.dl_goal_npkgs),
+                            "%d/%d" % (self.dl_cur_nfiles, self.dl_goal_nfiles),
+                            "%.2f/%.2f" % \
+                                ((self.dl_cur_nbytes / 1024.0 / 1024.0),
+                                (self.dl_goal_nbytes / 1024.0 / 1024.0))),
+                        sys.stdout.flush()
+                except IOError, e:
+                        if e.errno == errno.EPIPE:
+                                raise PipeError, e
+                        raise
 
         def dl_output_done(self):
                 self.dl_cur_pkg = "Completed"
                 self.dl_output()
-                print
-                print
-                sys.stdout.flush()
+                try:
+                        print
+                        print
+                        sys.stdout.flush()
+                except IOError, e:
+                        if e.errno == errno.EPIPE:
+                                raise PipeError, e
+                        raise
 
         def act_output(self, force = False):
                 if force or (time.time() - self.last_print_time) >= 0.05:
@@ -411,23 +479,34 @@ class FancyUNIXProgressTracker(ProgressTracker):
                 else:
                         return
 
-                # The first time, emit header.
-                if not self.act_started:
-                        self.act_started = True
-                        print "%-40s %11s" % ("PHASE", "ACTIONS")
-                else:
-                        print self.cr,
+                try:
+                        # The first time, emit header.
+                        if not self.act_started:
+                                self.act_started = True
+                                print "%-40s %11s" % ("PHASE", "ACTIONS")
+                        else:
+                                print self.cr,
 
-                print "%-40s %11s" % \
-                    (
-                        self.act_phase,
-                        "%d/%d" % (self.act_cur_nactions, self.act_goal_nactions)
-                     ),
+                        print "%-40s %11s" % \
+                            (
+                                self.act_phase,
+                                "%d/%d" % (self.act_cur_nactions,
+                                    self.act_goal_nactions)
+                             ),
 
-                sys.stdout.flush()
+                        sys.stdout.flush()
+                except IOError, e:
+                        if e.errno == errno.EPIPE:
+                                raise PipeError, e
+                        raise
 
         def act_output_done(self):
                 self.act_output(force=True)
-                print
-                sys.stdout.flush()
+                try:
+                        print
+                        sys.stdout.flush()
+                except IOError, e:
+                        if e.errno == errno.EPIPE:
+                                raise PipeError, e
+                        raise
 

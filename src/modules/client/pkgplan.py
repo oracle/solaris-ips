@@ -30,6 +30,7 @@ import os
 import pkg.manifest as manifest
 import pkg.client.filelist as filelist
 import pkg.actions.directory as directory
+from pkg.misc import msg
 
 class PkgPlan(object):
         """A package plan takes two package FMRIs and an Image, and produces the
@@ -285,10 +286,10 @@ class PkgPlan(object):
                 try:
                         dest.install(self, src)
                 except Exception, e:
-                        print "Action install failed for '%s' (%s):\n  %s: %s" % \
+                        msg("Action install failed for '%s' (%s):\n  %s: %s" % \
                             (dest.attrs.get(dest.key_attr, id(dest)),
                              self.destination_fmri.get_pkg_stem(),
-                             e.__class__.__name__, e)
+                             e.__class__.__name__, e))
                         raise
 
         def execute_update(self, src, dest):
@@ -296,10 +297,10 @@ class PkgPlan(object):
                 try:
                         dest.install(self, src)
                 except Exception, e:
-                        print "Action upgrade failed for '%s' (%s):\n %s: %s" % \
+                        msg("Action upgrade failed for '%s' (%s):\n %s: %s" % \
                              (dest.attrs.get(dest.key_attr, id(dest)),
                              self.destination_fmri.get_pkg_stem(),
-                             e.__class__.__name__, e)
+                             e.__class__.__name__, e))
                         raise
 
         def execute_removal(self, src, dest):
@@ -307,10 +308,10 @@ class PkgPlan(object):
                 try:
                         src.remove(self)
                 except Exception, e:
-                        print "Action removal failed for '%s' (%s):\n  %s: %s" % \
+                        msg("Action removal failed for '%s' (%s):\n  %s: %s" % \
                             (src.attrs.get(src.key_attr, id(src)),
                              self.origin_fmri.get_pkg_stem(),
-                             e.__class__.__name__, e)
+                             e.__class__.__name__, e))
                         raise
 
         def postexecute(self):

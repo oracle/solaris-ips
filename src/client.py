@@ -51,7 +51,6 @@ import sys
 import traceback
 import urllib2
 import urlparse
-import errno
 import socket
 
 import pkg.client.image as image
@@ -64,15 +63,24 @@ import pkg.misc as misc
 import pkg.version
 import pkg
 
+from pkg.misc import msg, emsg, PipeError
+
+def error(error):
+        """ Emit an error message prefixed by the command name """
+
+        # This has to be a constant value as we can't reliably get our actual
+        # program name on all platforms.
+        emsg("pkg:" + error)
+
 def usage(usage_error = None):
         """ Emit a usage message and optionally prefix it with a more
             specific error message.  Causes program to exit. """
 
         pname = os.path.basename(sys.argv[0])
         if usage_error:
-                print >> sys.stderr, pname + ": " + usage_error
+                error(usage_error)
 
-        print >> sys.stderr, _("""\
+        emsg(_("""\
 Usage:
         pkg [options] command [cmd_options] [operands]
 
@@ -103,16 +111,8 @@ Options:
         -R dir
 
 Environment:
-        PKG_IMAGE""")
+        PKG_IMAGE"""))
         sys.exit(2)
-
-
-def error(error):
-        """ Emit an error message prefixed by the command name """
-
-        pname = os.path.basename(sys.argv[0])
-        print >> sys.stderr, pname + ": " + error
-
 
 # XXX Subcommands to implement:
 #        pkg image-set name value
@@ -161,16 +161,16 @@ def list_inventory(img, args):
                         if not found:
                                 if display_headers:
                                         if verbose:
-                                                print fmt_str % \
-                                                    ("FMRI", "STATE", "UFIX")
+                                                msg(fmt_str % \
+                                                    ("FMRI", "STATE", "UFIX"))
                                         elif summary:
-                                                print fmt_str % \
+                                                msg(fmt_str % \
                                                     ("NAME (AUTHORITY)",
-                                                    "SUMMARY")
+                                                    "SUMMARY"))
                                         else:
-                                                print fmt_str % \
+                                                msg(fmt_str % \
                                                     ("NAME (AUTHORITY)",
-                                                    "VERSION", "STATE", "UFIX")
+                                                    "VERSION", "STATE", "UFIX"))
                                 found = True
 
                         ufix = "%c%c%c%c" % \
@@ -186,18 +186,18 @@ def list_inventory(img, args):
 
                         if verbose:
                                 pf = pkg.get_fmri(img.get_default_authority())
-                                print "%-64s %-10s %s" % (pf, state["state"],
-                                    ufix)
+                                msg("%-64s %-10s %s" % (pf, state["state"],
+                                    ufix))
                         elif summary:
                                 pf = pkg.get_name() + auth
 
                                 m = img.get_manifest(pkg, filtered = True)
-                                print fmt_str % (pf, m.get("description", ""))
+                                msg(fmt_str % (pf, m.get("description", "")))
 
                         else:
                                 pf = pkg.get_name() + auth
-                                print fmt_str % (pf, pkg.get_version(),
-                                    state["state"], ufix)
+                                msg(fmt_str % (pf, pkg.get_version(),
+                                    state["state"], ufix))
 
 
                 if not found:
@@ -296,22 +296,22 @@ def verify_image(img, args):
                         #
                         if not pkgerr:
                                 if display_headers and not header:
-                                        print "%-50s %7s" % ("PACKAGE", "STATUS")
+                                        msg("%-50s %7s" % ("PACKAGE", "STATUS"))
                                         header = True
 
                                 if not quiet:
-                                        print "%-50s %7s" % (f.get_pkg_stem(), "ERROR")
+                                        msg("%-50s %7s" % (f.get_pkg_stem(), "ERROR"))
                                 pkgerr = True
 
                         if not quiet:
-                                print "\t%s" % err[0]
+                                msg("\t%s" % err[0])
                                 for x in err[1]:
-                                        print "\t\t%s" % x
+                                        msg("\t\t%s" % x)
                 if verbose and not pkgerr:
                         if display_headers and not header:
-                                print "%-50s %7s" % ("PACKAGE", "STATUS")
+                                msg("%-50s %7s" % ("PACKAGE", "STATUS"))
                                 header = True
-                        print "%-50s %7s" % (f.get_pkg_stem(), "OK")
+                        msg("%-50s %7s" % (f.get_pkg_stem(), "OK"))
 
                 any_errors = any_errors or pkgerr
 
@@ -370,7 +370,7 @@ def image_update(img, args):
         assert img.imageplan
 
         if img.imageplan.nothingtodo():
-                print _("No updates available for this image.")
+                msg(_("No updates available for this image."))
                 return 0
 
         if noexecute:
@@ -454,7 +454,8 @@ def install(img, args):
         # for the image.
         #
         if img.imageplan.nothingtodo():
-                print _("Nothing to install in this image (is this package already installed?)")
+                msg(_("Nothing to install in this image (is this package " \
+                    "already installed?)"))
                 return 0
 
         if noexecute:
@@ -529,7 +530,7 @@ def uninstall(img, args):
                 if len(pnames) > 1:
                         error(_("'%s' matches multiple packages") % ppat)
                         for k in pnames:
-                                print "\t%s" % k
+                                msg("\t%s" % k)
                         err = 1
                         continue
 
@@ -545,14 +546,14 @@ def uninstall(img, args):
                 return err
 
         if verbose:
-                print _("Before evaluation:")
-                print ip
+                msg(_("Before evaluation:"))
+                msg(ip)
 
         ip.evaluate()
         img.imageplan = ip
 
         if verbose:
-                print _("After evaluation:")
+                msg(_("After evaluation:"))
                 ip.display()
 
         assert not ip.nothingtodo()
@@ -633,30 +634,31 @@ def search(img, args):
                         retcode = 0
                         if first:
                                 if action and value:
-                                        print "%-10s %-9s %-25s %s" % ("INDEX",
-                                            "ACTION", "VALUE", "PACKAGE")
+                                        msg("%-10s %-9s %-25s %s" % ("INDEX",
+                                            "ACTION", "VALUE", "PACKAGE"))
                                 else:
-                                        print "%-10s %s" % ("INDEX", "PACKAGE")
+                                        msg("%-10s %s" % ("INDEX", "PACKAGE"))
                                 first = False
                         if action and value:
-                                print "%-10s %-9s %-25s %s" % (index, action,
-                                    value, fmri.PkgFmri(str(mfmri)).get_short_fmri())
+                                msg("%-10s %-9s %-25s %s" % (index, action,
+                                    value, fmri.PkgFmri(str(mfmri)
+                                    ).get_short_fmri()))
                         else:
-                                print "%-10s %s" % (index, mfmri)
+                                msg("%-10s %s" % (index, mfmri))
 
         except RuntimeError, failed:
-                print >> sys.stderr, "Some servers failed to respond:"
+                emsg("Some servers failed to respond:")
                 for auth, err in failed.args[0]:
                         if isinstance(err, urllib2.HTTPError):
-                                print >> sys.stderr, "    %s: %s (%d)" % \
-                                    (auth["origin"], err.msg, err.code)
+                                emsg("    %s: %s (%d)" % \
+                                    (auth["origin"], err.msg, err.code))
                         elif isinstance(err, urllib2.URLError):
                                 if isinstance(err.args[0], socket.timeout):
-                                        print >> sys.stderr, "    %s: %s" % \
-                                            (auth["origin"], "timeout")
+                                        emsg("    %s: %s" % \
+                                            (auth["origin"], "timeout"))
                                 else:
-                                        print >> sys.stderr, "    %s: %s" % \
-                                            (auth["origin"], err.args[0][1])
+                                        emsg("    %s: %s" % \
+                                            (auth["origin"], err.args[0][1]))
 
                 retcode = 4
 
@@ -667,13 +669,13 @@ def info_license(img, mfst, remote):
 
         for i, license in enumerate(mfst.gen_actions_by_type("license")):
                 if i > 0:
-                        print
+                        msg("")
 
                 if remote:
                         misc.gunzip_from_stream(
                             license.get_remote_opener(img, fmri)(), sys.stdout)
                 else:
-                        print license.get_local_opener(img, fmri)().read()[:-1]
+                        msg(license.get_local_opener(img, fmri)().read()[:-1])
 
 def info(img, args):
         """Display information about a package or packages.
@@ -707,10 +709,10 @@ def info(img, args):
                 if err != 0:
                         return err
                 if not fmris:
-                        print _("""\
+                        msg(_("""\
 pkg: no packages matching the patterns you specified are installed
 on the system.  Specify -r to retrieve requested information from the
-repository.""")
+repository."""))
         elif info_remote:
                 fmris = []
 
@@ -721,9 +723,9 @@ repository.""")
                                 matches = img.get_matching_fmris(p,
                                     constraint = pkg.version.CONSTRAINT_AUTO)
                         except KeyError:
-                                print _("""\
+                                msg(_("""\
 pkg: no package matching '%s' could be found in current catalog
-     suggest relaxing pattern, refreshing and/or examining catalogs""") % p
+     suggest relaxing pattern, refreshing and/or examining catalogs""") % p)
                                 error = 1
                                 continue
 
@@ -740,17 +742,17 @@ pkg: no package matching '%s' could be found in current catalog
                                         npmatch.append(m)
 
                         if len(pnames.keys()) > 1:
-                                print \
-                                    _("pkg: '%s' matches multiple packages") % p
+                                msg(_("pkg: '%s' matches multiple packages") % \
+                                    p)
                                 for k in pnames.keys():
-                                        print "\t%s" % k
+                                        msg("\t%s" % k)
                                 error = 1
                                 continue
                         elif len(pnames.keys()) < 1 and len(npnames.keys()) > 1:
-                                print \
-                                    _("pkg: '%s' matches multiple packages") % p
+                                msg(_("pkg: '%s' matches multiple packages") % \
+                                    p)
                                 for k in npnames.keys():
-                                        print "\t%s" % k
+                                        msg("\t%s" % k)
                                 error = 1
                                 continue
 
@@ -765,7 +767,7 @@ pkg: no package matching '%s' could be found in current catalog
 
         for i, m in enumerate(manifests):
                 if i > 0:
-                        print
+                        msg("")
 
                 if display_license:
                         info_license(img, m, info_remote)
@@ -781,24 +783,24 @@ pkg: no package matching '%s' could be found in current catalog
                 else:
                         state = _("Not installed")
 
-                print "          Name:", name
-                print "       Summary:", summary
-                print "         State:", state
+                msg("          Name:", name)
+                msg("       Summary:", summary)
+                msg("         State:", state)
 
                 # XXX even more info on the authority would be nice?
-                print "     Authority:", authority
-                print "       Version:", version.release
-                print " Build Release:", version.build_release
-                print "        Branch:", version.branch
-                print "Packaging Date:", version.get_timestamp().ctime()
+                msg("     Authority:", authority)
+                msg("       Version:", version.release)
+                msg(" Build Release:", version.build_release)
+                msg("        Branch:", version.branch)
+                msg("Packaging Date:", version.get_timestamp().ctime())
                 if m.size > (1024 * 1024):
-                        print "          Size: %.1f MB" % \
-                            (m.size / float(1024 * 1024))
+                        msg("          Size: %.1f MB" % \
+                            (m.size / float(1024 * 1024)))
                 elif m.size > 1024:
-                        print "          Size: %d kB" % (m.size / 1024)
+                        msg("          Size: %d kB" % (m.size / 1024))
                 else:
-                        print "          Size: %d B" % m.size
-                print "          FMRI:", m.fmri
+                        msg("          Size: %d B" % m.size)
+                msg("          FMRI:", m.fmri)
                 # XXX need to properly humanize the manifest.size
                 # XXX add license/copyright info here?
 
@@ -901,13 +903,13 @@ def display_contents_results(actionlist, attrs, sort_attrs, action_types,
                 widths = [ e[0] * e[1] for e in widths ]
                 fmt = ("%%%ss " * len(widths)) % tuple(widths)
 
-                print (fmt % tuple(headers)).rstrip()
+                msg((fmt % tuple(headers)).rstrip())
         else:
                 fmt = "%s\t" * len(widths)
                 fmt.rstrip("\t")
 
         for line in sorted(lines, key = key_extract):
-                print (fmt % tuple(line)).rstrip()
+                msg((fmt % tuple(line)).rstrip())
 
 def list_contents(img, args):
         """List package contents.
@@ -990,9 +992,9 @@ def list_contents(img, args):
                                 matches = img.get_matching_fmris(p,
                                     constraint = pkg.version.CONSTRAINT_AUTO)
                         except KeyError:
-                                print _("""\
+                                msg(_("""\
 pkg: no package matching '%s' could be found in current catalog
-     suggest relaxing pattern, refreshing and/or examining catalogs""") % p
+     suggest relaxing pattern, refreshing and/or examining catalogs""") % p)
                                 error = 1
                                 continue
 
@@ -1009,17 +1011,17 @@ pkg: no package matching '%s' could be found in current catalog
                                         npmatch.append(m)
 
                         if len(pnames.keys()) > 1:
-                                print \
-                                    _("pkg: '%s' matches multiple packages") % p
+                                msg(_("pkg: '%s' matches multiple packages") % \
+                                    p)
                                 for k in pnames.keys():
-                                        print "\t%s" % k
+                                        msg("\t%s" % k)
                                 error = 1
                                 continue
                         elif len(pnames.keys()) < 1 and len(npnames.keys()) > 1:
-                                print \
-                                    _("pkg: '%s' matches multiple packages") % p
+                                msg(_("pkg: '%s' matches multiple packages") % \
+                                    p)
                                 for k in npnames.keys():
-                                        print "\t%s" % k
+                                        msg("\t%s" % k)
                                 error = 1
                                 continue
 
@@ -1062,27 +1064,27 @@ pkg: no package matching '%s' could be found in current catalog
 
 def display_catalog_failures(failures):
         total, succeeded = failures.args[1:3]
-        print _("pkg: %s/%s catalogs successfully updated:") % \
-            (succeeded, total)
+        msg(_("pkg: %s/%s catalogs successfully updated:") % (succeeded, total))
 
         for auth, err in failures.args[0]:
                 if isinstance(err, urllib2.HTTPError):
-                        print >> sys.stderr, "   %s: %s - %s" % \
-                            (err.filename, err.code, err.msg)
+                        emsg("   %s: %s - %s" % \
+                            (err.filename, err.code, err.msg))
                 elif isinstance(err, urllib2.URLError):
                         if err.args[0][0] == 8:
-                                print >> sys.stderr, "    %s: %s" % \
-                                    (urlparse.urlsplit(auth["origin"])[1].split(":")[0],
-                                    err.args[0][1])
+                                emsg("    %s: %s" % \
+                                    (urlparse.urlsplit(
+                                        auth["origin"])[1].split(":")[0],
+                                    err.args[0][1]))
                         else:
                                 if isinstance(err.args[0], socket.timeout):
-                                        print >> sys.stderr, "    %s: %s" % \
-                                            (auth["origin"], "timeout")
+                                        emsg("    %s: %s" % \
+                                            (auth["origin"], "timeout"))
                                 else:
-                                        print >> sys.stderr, "    %s: %s" % \
-                                            (auth["origin"], err.args[0][1])
+                                        emsg("    %s: %s" % \
+                                            (auth["origin"], err.args[0][1]))
                 else:
-                        print >> sys.stderr, "   ", err
+                        emsg("   ", err)
 
         return succeeded
 
@@ -1211,13 +1213,13 @@ def authority_list(img, args):
 
         if len(pargs) == 0:
                 if not omit_headers:
-                        print "%-35s %s" % ("AUTHORITY", "URL")
+                        msg("%-35s %s" % ("AUTHORITY", "URL"))
                 for a in img.gen_authorities():
                         # summary list
                         pfx, url, ssl_key, ssl_cert, dt = img.split_authority(a)
                         if pfx == preferred_authority:
                                 pfx += " (preferred)"
-                        print "%-35s %s" % (pfx, url)
+                        msg("%-35s %s" % (pfx, url))
         else:
                 img.load_catalogs(get_tracker())
 
@@ -1235,12 +1237,12 @@ def authority_list(img, args):
                         if dt:
                                 dt = dt.ctime()
 
-                        print ""
-                        print "      Authority:", pfx
-                        print "     Origin URL:", url
-                        print "        SSL Key:", ssl_key
-                        print "       SSL Cert:", ssl_cert
-                        print "Catalog Updated:", dt
+                        msg("")
+                        msg("      Authority:", pfx)
+                        msg("     Origin URL:", url)
+                        msg("        SSL Key:", ssl_key)
+                        msg("       SSL Cert:", ssl_cert)
+                        msg("Catalog Updated:", dt)
 
         return 0
 
@@ -1292,15 +1294,15 @@ def image_create(img, args):
         if ssl_key:
                 ssl_key = os.path.abspath(ssl_key)
                 if not os.path.exists(ssl_key):
-                        print _("pkg: set-authority: SSL key file '%s' does not exist"
-                            ) % ssl_key
+                        msg(_("pkg: set-authority: SSL key file '%s' does not exist"
+                            ) % ssl_key)
                         return 1
 
         if ssl_cert:
                 ssl_cert = os.path.abspath(ssl_cert)
                 if not os.path.exists(ssl_cert):
-                        print _("pkg: set-authority: SSL key cert '%s' does not exist"
-                            ) % ssl_cert
+                        msg(_("pkg: set-authority: SSL key cert '%s' does not exist"
+                            ) % ssl_cert)
                         return 1
 
         if not auth_name and not auth_url:
@@ -1369,7 +1371,7 @@ def main_func():
                             (subcommand, e.opt))
                 return ret
         elif subcommand == "version":
-                print pkg.VERSION
+                msg(pkg.VERSION)
                 return 0
         elif subcommand == "help":
                 try:
@@ -1440,10 +1442,12 @@ if __name__ == "__main__":
                 ret = main_func()
         except SystemExit, e:
                 raise e
-        except KeyboardInterrupt:
-                print "Interrupted"
+        except (PipeError, KeyboardInterrupt):
+                # We don't want to display any messages here to prevent possible
+                # further broken pipe (EPIPE) errors.
                 sys.exit(1)
         except:
                 traceback.print_exc()
                 sys.exit(99)
         sys.exit(ret)
+

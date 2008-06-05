@@ -28,6 +28,7 @@ import code
 import re
 import subprocess
 import string
+import sys
 import tempfile
 
 from distutils.core import setup, Extension
@@ -349,7 +350,7 @@ def get_hg_version():
                 p = subprocess.Popen(['hg', 'id', '-i'], stdout=subprocess.PIPE)
                 return p.communicate()[0].strip()
         except OSError:
-                print >>stderr, "ERROR: unable to obtain mercurial version"
+                print >> sys.stderr, "ERROR: unable to obtain mercurial version"
                 return "unknown"
     
 class build_py_func(_build_py):

@@ -29,6 +29,7 @@ import pkg.client.pkgplan as pkgplan
 import pkg.client.retrieve as retrieve # XXX inventory??
 import pkg.version as version
 from pkg.client.filter import compile_filter
+from pkg.misc import msg
 
 UNEVALUATED = 0
 EVALUATED_OK = 1
@@ -91,7 +92,7 @@ class ImagePlan(object):
 
         def display(self):
                 for pp in self.pkg_plans:
-                        print "%s -> %s" % (pp.origin_fmri, pp.destination_fmri)
+                        msg("%s -> %s" % (pp.origin_fmri, pp.destination_fmri))
 
  
         def is_proposed_fmri(self, fmri):
@@ -263,7 +264,7 @@ class ImagePlan(object):
 
                         # XXX LOG "adding dependency %s" % pfmri
 
-                        #print "adding dependency %s" % cf
+                        #msg("adding dependency %s" % cf)
 
                         self.propose_fmri(cf)
                         self.evaluate_fmri(cf)
@@ -276,7 +277,7 @@ class ImagePlan(object):
                 try:
                         pp.propose_destination(pfmri, m)
                 except RuntimeError:
-                        print "pkg: %s already installed" % pfmri
+                        msg("pkg: %s already installed" % pfmri)
                         return
 
                 pp.evaluate(self.filters)
@@ -298,11 +299,11 @@ class ImagePlan(object):
                 if dependents and not self.recursive_removal:
                         # XXX Module function is printing, should raise or have
                         # complex return.
-                        print """\
+                        msg("""\
 Cannot remove '%s' due to the following packages that directly depend on it:"""\
-                        % pfmri
+                        % pfmri)
                         for d in dependents:
-                                print " ", fmri.PkgFmri(d, "")
+                                msg(" ", fmri.PkgFmri(d, ""))
                         return
 
                 m = self.image.get_manifest(pfmri)
@@ -312,7 +313,7 @@ Cannot remove '%s' due to the following packages that directly depend on it:"""\
                 try:
                         pp.propose_removal(pfmri, m)
                 except RuntimeError:
-                        print "pkg %s not installed" % pfmri
+                        msg("pkg %s not installed" % pfmri)
                         return
 
                 pp.evaluate()
@@ -320,10 +321,10 @@ Cannot remove '%s' due to the following packages that directly depend on it:"""\
                 for d in dependents:
                         rf = fmri.PkgFmri(d, None)
                         if self.is_proposed_rem_fmri(rf):
-                                print "%s is already proposed for removal" % rf
+                                msg("%s is already proposed for removal" % rf)
                                 continue
                         if not self.image.has_version_installed(rf):
-                                print "%s is not installed" % rf
+                                msg("%s is not installed" % rf)
                                 continue
                         self.target_rem_fmris.append(rf)
                         self.evaluate_fmri_removal(rf)

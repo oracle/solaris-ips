@@ -23,6 +23,7 @@
 # Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
+import errno
 import os
 import urllib
 import urllib2
@@ -31,6 +32,7 @@ import httplib
 import platform
 import re
 import sha
+import sys
 import zlib
 
 import pkg.urlhelpers as urlhelpers
@@ -222,3 +224,30 @@ def gunzip_from_stream(gz, outfile):
                 outfile.write(ubuf)
 
         return shasum.hexdigest()
+
+class PipeError(Exception):
+        """ Pipe exception. """
+
+        def __init__(self, args=None):
+                self.args = args
+
+def msg(*text):
+        """ Emit a message. """ 
+
+        try:
+                print ' '.join([str(l) for l in text])
+        except IOError, e:
+                if e.errno == errno.EPIPE:
+                        raise PipeError, e
+                raise
+
+def emsg(*text):
+        """ Emit a message to sys.stderr. """ 
+
+        try:
+                print >> sys.stderr, ' '.join([str(l) for l in text])
+        except IOError, e:
+                if e.errno == errno.EPIPE:
+                        raise PipeError, e
+                raise
+

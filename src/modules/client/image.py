@@ -33,7 +33,9 @@ import shutil
 import sys
 import time
 import types
- 
+
+from pkg.misc import msg, emsg
+
 # import uuid           # XXX interesting 2.5 module
 
 import pkg.catalog as catalog
@@ -1184,14 +1186,13 @@ class Image(object):
                 
                 salvagedir = os.path.normpath(
                     os.path.join(self.imgdir, "lost+found",
-                                 path + "-" + time.strftime("%Y%m%dT%H%M%SZ")))
+                    path + "-" + time.strftime("%Y%m%dT%H%M%SZ")))
 
                 os.makedirs(salvagedir)
                 shutil.move(os.path.normpath(os.path.join(self.root, path)), salvagedir)
                 # XXX need a better way to do this.
-                print >> sys.stderr, \
-                    "\nWarning - directory %s not empty - contents preserved in %s" % \
-                    (path, salvagedir)
+                emsg("\nWarning - directory %s not empty - contents preserved "
+                        "in %s" % (path, salvagedir))
 
         def expanddirs(self, dirs):
                 """ given a set of directories, return expanded set that includes 
@@ -1230,9 +1231,9 @@ class Image(object):
                                     constraint = version.CONSTRAINT_AUTO)
                         except KeyError:
                                 # XXX Module directly printing.
-                                print _("""\
+                                msg(_("""\
 pkg: no package matching '%s' could be found in current catalog
-     suggest relaxing pattern, refreshing and/or examining catalogs""") % p
+     suggest relaxing pattern, refreshing and/or examining catalogs""") % p)
                                 error = 1
                                 continue
 
@@ -1250,18 +1251,18 @@ pkg: no package matching '%s' could be found in current catalog
 
                         if len(pnames.keys()) > 1:
                                 # XXX Module directly printing.
-                                print \
-                                    _("pkg: '%s' matches multiple packages") % p
+                                msg(_("pkg: '%s' matches multiple packages") % \
+                                    p)
                                 for k in pnames.keys():
-                                        print "\t%s" % k
+                                        msg("\t%s" % k)
                                 error = 1
                                 continue
                         elif len(pnames.keys()) < 1 and len(npnames.keys()) > 1:
                                 # XXX Module directly printing.
-                                print \
-                                    _("pkg: '%s' matches multiple packages") % p
+                                msg(_("pkg: '%s' matches multiple packages") % \
+                                    p)
                                 for k in npnames.keys():
-                                        print "\t%s" % k
+                                        msg("\t%s" % k)
                                 error = 1
                                 continue
 
@@ -1276,15 +1277,15 @@ pkg: no package matching '%s' could be found in current catalog
                         raise RuntimeError, "Unable to assemble image plan"
 
                 if verbose:
-                        print _("Before evaluation:")
-                        print ip
+                        msg(_("Before evaluation:"))
+                        msg(ip)
 
                 ip.evaluate()
                 self.imageplan = ip 
 
                 if verbose:
-                        print _("After evaluation:")
-                        print ip.display()
+                        msg(_("After evaluation:"))
+                        msg(ip.display())
 
 if __name__ == "__main__":
         pass

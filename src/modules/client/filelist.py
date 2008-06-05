@@ -33,7 +33,7 @@ import stat
 import pkg.pkgtarfile as ptf
 import pkg.portable as portable
 import pkg.fmri
-from pkg.misc import versioned_urlopen, hash_file_name
+from pkg.misc import emsg, hash_file_name, versioned_urlopen
 
 class FileList(object):
         """A FileList maintains mappings between files and Actions.
@@ -161,7 +161,8 @@ class FileList(object):
                         # extract path is where the file lives
                         # after being extracted
                         extract_path = os.path.normpath(os.path.join(
-                                filelist_download_dir, pkgnm, hash_file_name(hashval)))
+                            filelist_download_dir, pkgnm,
+                            hash_file_name(hashval)))
                         (dir, fname) = os.path.split(extract_path)
                         
                         # XXX catch IOError if tar stream closes inadvertently?
@@ -208,7 +209,7 @@ class FileList(object):
                                os.chmod(filepath, stat.S_IWRITE|stat.S_IREAD)
                                os.unlink(filepath)
                         except EnvironmentError, e:
-                                print "EnvError in cleaner", e
+                                emsg("EnvError in cleaner", e)
                                 pass
                 return cleaner                                
 

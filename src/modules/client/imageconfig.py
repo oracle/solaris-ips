@@ -27,6 +27,7 @@ import ConfigParser
 import re
 import pkg.fmri as fmri
 import pkg.misc as misc
+from pkg.misc import msg
 
 class ImageConfig(object):
         """An ImageConfig object is a collection of configuration information:
@@ -156,4 +157,4 @@ if __name__ == "__main__":
         ic = ImageConfig()
         ic.read("tests/sampleconfig.conf")
 
-        print ic
+        msg(ic)

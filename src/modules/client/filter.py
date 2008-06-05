@@ -26,6 +26,7 @@
 from StringIO import StringIO
 import tokenize
 import token
+from pkg.misc import msg
 
 def compile_filter(filter):
         def f_get(tup):
@@ -183,9 +184,9 @@ if __name__ == "__main__":
         filters = []
         for filter in arg:
                 expr, comp_expr = compile_filter(filter)
-                print expr
+                msg(expr)
                 filters.append((expr, comp_expr))
 
         for a in actions:
                 d = a.attrs
-                print "%-5s" % apply_filters(a, filters), d
+                msg("%-5s" % apply_filters(a, filters), d)
