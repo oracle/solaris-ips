@@ -82,6 +82,7 @@ import pkg.server.face as face
 import pkg.server.config as config
 import pkg.server.depot as depot
 import pkg.server.repository as repo
+from pkg.misc import port_available 
 
 def usage():
         print """\
@@ -154,6 +155,12 @@ if __name__ == "__main__":
                 print "pkg.depotd: illegal option value: %s specified " \
                     "for option: %s" % (arg, opt)
                 usage()
+
+        available, msg = port_available(None, port)
+        if not available:
+                print "pkg.depotd: unable to bind to the specified port: " \
+                    " %d. Reason: %s" % (port, msg)
+                sys.exit(1)
 
         try:
                 face.set_content_root(os.environ["PKG_DEPOT_CONTENT"])

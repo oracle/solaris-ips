@@ -24,14 +24,15 @@
 # Use is subject to license terms.
 
 import errno
-import os
-import urllib
-import urllib2
-import urlparse
 import httplib
+import os
 import platform
 import re
 import sha
+import socket
+import urllib
+import urllib2
+import urlparse
 import sys
 import zlib
 
@@ -108,7 +109,8 @@ def versioned_urlopen(base_uri, operation, versions = [], tail = None,
                 try:
                         c = url_opener(req)
                 except urllib2.HTTPError, e:
-                        if e.code != httplib.NOT_FOUND or e.msg != "Version not supported":
+                        if e.code != httplib.NOT_FOUND or \
+                            e.msg != "Version not supported":
                                 raise
                         continue
                 # XXX catch BadStatusLine and convert to INTERNAL_SERVER_ERROR?
@@ -250,4 +252,59 @@ def emsg(*text):
                 if e.errno == errno.EPIPE:
                         raise PipeError, e
                 raise
+
+
+def port_available(host, port):
+        """Returns True if the indicated port is available to bind to; otherwise
+        returns False."""
+
+        port = int(port)
+        if host is None:
+                # None is the same as INADDR_ANY, which for our purposes, should
+                # be the hostname.
+                host = socket.gethostname()
+
+        try:
+                # Get the address family of our host (to allow for IPV6, etc.).
+                for entry in socket.getaddrinfo(host, port, socket.AF_UNSPEC,
+                    socket.SOCK_STREAM):
+                        family, socktype, proto, canonname, sockaddr = entry
+
+                        # First try to bind to the specified port to see if we
+                        # have an access problem or some other issue.
+                        sock = socket.socket(family, socktype, proto)
+                        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR,
+                            1)
+                        sock.bind((host, port))
+                        sock.close()
+
+                        # Now try to connect to the specified port to see if it
+                        # is already in use.
+                        sock = socket.socket(family, socktype, proto)
+
+                        # Some systems timeout rather than refuse a connection.
+                        # This avoids getting stuck on SYN_SENT for those
+                        # systems (such as certain firewalls).
+                        sock.settimeout(1.0)
+
+                        sock.connect((host, port))
+                        sock.close()
+                        sock = None
+
+                        # If we successfully connected...
+                        raise socket.error(errno.EBUSY,
+                            'Port already in use')
+
+        except socket.error, e:
+                errnum, msg = e
+
+                if sock:
+                        sock.close()
+
+                if errnum == errno.ECONNREFUSED:
+                        # If we could not connect to the port, we know it isn't
+                        # in use.
+                        return True, None
+
+                return False, msg
 
