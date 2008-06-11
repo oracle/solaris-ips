@@ -20,8 +20,8 @@
 ^src/pkg.depotd$
 ^src/pkgdefs/SUNWipkg/prototype$
 ^src/pkgdefs/SUNWpython-cherrypy/prototype$
-^src/pkgdefs/SUNWpython-cherrypy/.*.tar.gz$
-^src/pkgdefs/SUNWpython-cherrypy/CherryPy-.*$
+^src/*.tar.gz$
+^src/CherryPy-.*$
 ^src/pkgsend$
 ^src/util/distro-import/SUNWfixes/
 ^src/util/distro-import/cluster.import$

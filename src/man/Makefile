@@ -19,27 +19,14 @@
 # CDDL HEADER END
 #
 
-# Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
-
-MACH:sh = uname -p
-
-ROOT = ../../proto/root_${MACH}
-ROOTMAN = $(ROOT)/usr/share/man
-ROOTMAN1 = $(ROOTMAN)/cat1
-ROOTMAN1M = $(ROOTMAN)/cat1m
-ROOTMAN5 = $(ROOTMAN)/cat5
-
-MANPAGES = $(ROOTMAN1)/pkg.1 $(ROOTMAN1)/pkgrecv.1 $(ROOTMAN1)/pkgsend.1 $(ROOTMAN1M)/pkg.depotd.1m $(ROOTMAN5)/pkg.5
 
 all := TARGET = all
 link := TARGET = link
 link-clean := TARGET = link-clean
-install := TARGET = install
 
 all:
-
-install: $(MANPAGES)
 
 PWD:sh = pwd 
 link:
@@ -57,18 +44,3 @@ link-clean:
 	rm -f /usr/share/man/cat1m/pkg.depotd.1m
 	rm -f /usr/share/man/cat5/pkg.5
 
-clean:
-
-clobber: clean
-
-$(ROOTMAN1)/%: %.txt
-	cp $< $*
-	rm -f $@; install -f $(ROOTMAN1) -m 0444 $*
-
-$(ROOTMAN1M)/%: %.txt
-	cp $< $*
-	rm -f $@; install -f $(ROOTMAN1M) -m 0444 $*
-
-$(ROOTMAN5)/%: %.txt
-	cp $< $*
-	rm -f $@; install -f $(ROOTMAN5) -m 0444 $*

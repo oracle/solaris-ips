@@ -22,17 +22,6 @@
 # Use is subject to license terms.
 #
 
-CP = CherryPy
-CPVER = 3.0.3
-CPARC = $(CP)-$(CPVER).tar.gz
-CPDIR = $(CP)-$(CPVER)
-CPURL = http://download.cherrypy.org/cherrypy/$(CPVER)/$(CPARC)
-
-TEST = test
-WGET = wget
-GUNZIP = gunzip
-TAR = tar
-
 MACH:sh = uname -p
 
 ROOT = ../../../proto/root_$(MACH)
@@ -46,23 +35,6 @@ install: sysv-pkg
 
 sysv-pkg: $(PKGARCHIVE) prototype
 	[ -f $(PKGARCHIVE)/$(PKG)/pkgmap ] || pkgmk -a $(MACH) -o -r $(ROOT) -d $(PKGARCHIVE)
-
-$(CPARC):
-	[ -f $(CPARC) ] || $(WGET) $(CPURL) || \
-	echo "Unable to retrieve $(CPARC).\n" \
-	"\nPlease retrieve the file and place it in:\n$(PWD)\n" || exit 1
-
-$(CPDIR): $(CPARC)
-	[ -d $(CPDIR) ] || gunzip -dc $(CPARC) | $(TAR) xf -
-
-$(PROTOLOC): $(CPDIR)
-	(cd $(CPDIR); \
-	python setup.py install -f --prefix=../$(ROOT)/usr; \
-	cd ..; \
-	rm -rf $(ROOT)/usr/lib/python2.4/vendor-packages/cherrypy; \
-	mkdir -p $(ROOT)/usr/lib/python2.4/vendor-packages; \
-	mv $(ROOT)/usr/lib/python2.4/site-packages/cherrypy $(PROTOLOC); \
-	rmdir $(ROOT)/usr/lib/python2.4/site-packages)
 
 prototype: $(PROTOLOC)
 	(cd $(ROOT); pkgproto .) | \
@@ -96,7 +68,6 @@ prototype: $(PROTOLOC)
 
 clobber:
 	rm -f prototype
-	rm -rf $(CPDIR)
 	rm -rf $(PKGARCHIVE)/$(PKG)
 
 # This will only work if there's a server running, so allow failure.

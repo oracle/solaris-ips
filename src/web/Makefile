@@ -18,30 +18,15 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
-
-MACH:sh = uname -p
-
-ROOT = ../../proto/root_${MACH}
-ROOTSHARE = $(ROOT)/usr/share/lib/pkg
-ROOTPKGWEB = $(ROOTSHARE)
-
-WEBCOMPONENTS = \
-	$(ROOTPKGWEB)/pkg-block-icon.png \
-	$(ROOTPKGWEB)/pkg-block-logo.png \
-	$(ROOTPKGWEB)/robots.txt \
-	$(ROOTPKGWEB)/pkg.css
 
 all := TARGET = all
 link := TARGET = link
 link-clean := TARGET = link-clean
-install := TARGET = install
 
 all:
-
-install: $(WEBCOMPONENTS)
 
 PWD:sh = pwd 
 link:
@@ -53,11 +38,3 @@ link:
 
 link-clean:
 	rm -rf /usr/share/lib/pkg
-
-clean:
-
-clobber: clean
-	rm -f $(ROOTPKGWEB)
-
-$(ROOTPKGWEB)/%: %
-	rm -f $@; install -f $(ROOT)/usr/share/lib/pkg -m 0444 $<
