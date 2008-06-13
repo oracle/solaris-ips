@@ -969,7 +969,8 @@ class Image(object):
         def strtofmri(self, myfmri):
                 ret = pkg.fmri.PkgFmri(myfmri, 
                     self.attrs["Build-Release"])
-                    
+                self.fmri_set_default_authority(ret)
+
                 return ret
 
         def update_optional_dependency(self, inputfmri):
