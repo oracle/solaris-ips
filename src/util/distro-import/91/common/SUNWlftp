@@ -1,0 +1,5 @@
+package SUNWlftp
+import SUNWlftpr
+import SUNWlftpu
+version 3.6.3
+end package

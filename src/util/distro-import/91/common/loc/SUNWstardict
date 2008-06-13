@@ -1,0 +1,5 @@
+package SUNWstardict
+import SUNWstardict
+import SUNWstardict-root
+import SUNWstardict-sundicts
+end package

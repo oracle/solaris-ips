@@ -1,0 +1,3 @@
+package SUNWpython-cherrypy
+import ../../../packages/sparc/SUNWpython-cherrypy
+end package

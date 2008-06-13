@@ -1,0 +1,3 @@
+package SUNWipkg
+import ../../../packages/sparc/SUNWipkg
+end package

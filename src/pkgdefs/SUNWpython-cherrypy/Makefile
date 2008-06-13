@@ -80,6 +80,9 @@ prototype: $(PROTOLOC)
 			$$5 = "root"; \
 			$$6 = "bin"; \
 		} \
+		$$3 ~ /^usr$$/ { \
+			$$6 = "sys"; \
+		} \
 		{ \
 			if ($$1 == "d" && $$3 ~ /^(usr(\/lib(\/python2.4(\/vendor-packages(\/cherrypy(\/.*)?)?)?)?)?)$$/) \
 			{ \
