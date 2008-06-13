@@ -28,6 +28,7 @@ import urllib2
 
 import pkg.fmri
 from pkg.misc import versioned_urlopen
+from pkg.misc import TransferTimedOutException
 
 # client/retrieve.py - collected methods for retrieval of pkg components
 # from repositories
@@ -77,6 +78,8 @@ def get_manifest(img, fmri):
         except urllib2.URLError, e:
                 if len(e.args) == 1 and isinstance(e.args[0], socket.sslerror):
                         raise RuntimeError, e
+                elif len(e.args) == 1 and isinstance(e.args[0], socket.timeout):
+                        raise TransferTimedOutException
 
                 raise NameError, "could not retrieve manifest '%s' from '%s'" % \
                     (fmri.get_url_path(), url_prefix)

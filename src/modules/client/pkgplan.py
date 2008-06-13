@@ -206,17 +206,17 @@ class PkgPlan(object):
                 return None
 
         def preexecute(self):
-                """Perform actions required prior to installation or removal of a package.
+                """Perform actions required prior to installation or removal of
+                a package.
 
                 This method executes each action's preremove() or preinstall()
                 methods, as well as any package-wide steps that need to be taken
                 at such a time.
                 """
-                flist = None
-                flist_supported = True
+                flist = filelist.FileList(self.image, self.destination_fmri,
+                    self.progtrack)
 
-                if flist_supported:
-                        self.progtrack.download_start_pkg(self.get_xfername())
+                self.progtrack.download_start_pkg(self.get_xfername())
 
                 # retrieval step
                 if self.destination_fmri == None:
@@ -233,41 +233,14 @@ class PkgPlan(object):
                 for src, dest in itertools.chain(*self.actions):
                         if dest:
                                 dest.preinstall(self, src)
+                                if dest.needsdata(src):
+                                        flist.add_action(dest)
                         else:
                                 src.preremove(self)
 
-                        if dest and dest.needsdata(src) and flist_supported:
-
-                                if flist and flist.is_full():
-                                        try:
-                                                flist.get_files()
-                                                self.progtrack.download_add_progress(flist.get_nfiles(), flist.get_nbytes())
-                                        except filelist.FileListException:
-                                                flist_supported = False
-                                                flist = None
-                                                continue
-
-                                        flist = None
-
-                                if flist is None:
-                                        flist = filelist.FileList(
-                                                    self.image,
-                                                    self.destination_fmri)
-
-                                flist.add_action(dest)
-
-
-                # Get any remaining files
-                if flist:
-                        try:
-                                flist.get_files()
-                                self.progtrack.download_add_progress(flist.get_nfiles(), flist.get_nbytes())
-                        except filelist.FileListException:
-                                pass
-                        flist = None
-
-                if flist_supported:
-                        self.progtrack.download_end_pkg()
+                # Tell flist to get any remaining files
+                flist.flush()
+                self.progtrack.download_end_pkg()
 
         def gen_install_actions(self):
                 for src, dest in self.actions[0]:

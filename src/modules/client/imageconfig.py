@@ -43,6 +43,7 @@ class ImageConfig(object):
         def __init__(self):
                 self.authorities = {}
                 self.preferred_authority = None
+                self.flush_content_cache = False
                 self.filters = {}
 
                 self.children = []
@@ -51,6 +52,7 @@ class ImageConfig(object):
                 self.policies["require-optional"] = False
                 self.policies["pursue-latest"] = True
                 self.policies["display-copyrights"] = True
+                self.policies["flush-content-cache-on-success"] = False
 
         def __str__(self):
                 return "%s\n%s" % (self.authorities, self.policies)
@@ -112,6 +114,14 @@ class ImageConfig(object):
 
                 if "preferred-authority" in self.policies:
                         self.preferred_authority = self.policies["preferred-authority"]
+
+                if "flush-content-cache-on-success" in self.policies:
+                        policystr = self.policies["flush-content-cache-on-success"]
+
+                        if policystr == "True" or policystr == "true":
+                                self.flush_content_cache = True
+                        else:
+                                self.flush_content_cache = False
 
 
         def write(self, path):

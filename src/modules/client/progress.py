@@ -103,6 +103,15 @@ class ProgressTracker(object):
                 self.dl_goal_nfiles = nfiles
                 self.dl_goal_nbytes = nbytes
 
+        def download_adjust_goal(self, npkgs, nfiles, nbytes):
+                self.dl_goal_npkgs += npkgs
+                self.dl_goal_nfiles += nfiles
+                self.dl_goal_nbytes += nbytes
+
+                assert self.dl_goal_npkgs >= 0
+                assert self.dl_goal_nfiles >= 0
+                assert self.dl_goal_nbytes >= 0
+
         def download_start_pkg(self, pkgname):
                 self.dl_cur_pkg = pkgname
                 if self.dl_goal_nbytes != 0:

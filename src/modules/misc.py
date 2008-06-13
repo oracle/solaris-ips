@@ -308,3 +308,11 @@ def port_available(host, port):
 
                 return False, msg
 
+
+# Set the maximum number of timeouts before we giveup.  This can
+# be adjusted by setting the environment variable PKG_TIMEOUT_MAX
+MAX_TIMEOUT_COUNT = 4
+
+class TransferTimedOutException(Exception):
+        def __init__(self, args = None):
+                self.args = args

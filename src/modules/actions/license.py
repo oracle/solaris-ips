@@ -94,10 +94,8 @@ class LicenseAction(generic.Action):
                                 raise
 
         def needsdata(self, orig):
-                if not orig or orig.hash != self.hash:
-                        return True
-
-                return False
+                # We always want to download the license
+                return True
 
         def verify(self, img, pkg_fmri, **args):
                 path = os.path.normpath(os.path.join(img.imgdir,

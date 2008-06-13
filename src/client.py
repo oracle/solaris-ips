@@ -402,6 +402,9 @@ def image_update(img, args):
                 raise
 
         img.cleanup_downloads()
+        if ret_code == 0:
+                img.cleanup_cached_content()
+
         return ret_code
 
 
@@ -481,6 +484,9 @@ def install(img, args):
                 raise
 
         img.cleanup_downloads()   
+        if ret_code == 0:
+                img.cleanup_cached_content()
+
         return ret_code
 
 
@@ -1363,6 +1369,12 @@ def main_func():
         socket.setdefaulttimeout(
             int(os.environ.get("PKG_CLIENT_TIMEOUT", "30"))) # in seconds
 
+        # Override default MAX_TIMEOUT_COUNT if a value has been specified
+        # in the environment.
+        timeout_max = misc.MAX_TIMEOUT_COUNT
+        misc.MAX_TIMEOUT_COUNT = int(os.environ.get("PKG_TIMEOUT_MAX",
+            timeout_max))
+
         if subcommand == "image-create":
                 try:
                         ret = image_create(img, pargs)
@@ -1445,6 +1457,9 @@ if __name__ == "__main__":
         except (PipeError, KeyboardInterrupt):
                 # We don't want to display any messages here to prevent possible
                 # further broken pipe (EPIPE) errors.
+                sys.exit(1)
+        except misc.TransferTimedOutException:
+                msg(_("Maximum number of timeouts exceeded during download."))
                 sys.exit(1)
         except:
                 traceback.print_exc()

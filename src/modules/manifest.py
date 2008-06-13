@@ -28,7 +28,6 @@ import cPickle
 from itertools import groupby, chain
 
 import pkg.actions as actions
-import pkg.client.retrieve as retrieve
 import pkg.client.filter as filter
 from pkg.actions.attribute import AttributeAction
 
@@ -225,12 +224,6 @@ class Manifest(object):
                 self.img = img
                 self.fmri = fmri
 
-        @staticmethod
-        def make_opener(img, fmri, action):
-                def opener():
-                        return retrieve.get_datastream(img, fmri, action.hash)
-                return opener
-
         def set_content(self, str):
                 """str is the text representation of the manifest"""
                 assert self.actions == []
@@ -255,10 +248,6 @@ class Manifest(object):
                         if action.attrs.has_key("path"):
                                 np = action.attrs["path"].lstrip(os.path.sep)
                                 action.attrs["path"] = np
-
-                        if hasattr(action, "hash"):
-                                action.data = \
-                                    self.make_opener(self.img, self.fmri, action)
 
                         self.size += int(action.attrs.get("pkg.size", "0"))
                         self.actions.append(action)                               

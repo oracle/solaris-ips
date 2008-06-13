@@ -26,6 +26,7 @@
 import cPickle
 import errno
 import os
+import socket
 import urllib
 import urllib2
 import httplib
@@ -51,6 +52,7 @@ import pkg.client.filelist as filelist
 import pkg.portable as portable
 
 from pkg.misc import versioned_urlopen
+from pkg.misc import TransferTimedOutException
 from pkg.client.imagetypes import *
 
 img_user_prefix = ".org.opensolaris,pkg"
@@ -450,6 +452,23 @@ class Image(object):
 
                 return False
 
+        def _fetch_manifest_with_retries(self, fmri):
+                """Wrapper function around _fetch_manifest to handle some
+                exceptions and keep track of additional state."""
+
+                m = None
+                retry_count = misc.MAX_TIMEOUT_COUNT
+
+                while not m and retry_count > 0:
+                        try:
+                                m = self._fetch_manifest(fmri)
+                        except TransferTimedOutException:
+                                if retry_count > 0:
+                                        retry_count -= 1
+                                else:
+                                        raise
+                return m
+
         def _fetch_manifest(self, fmri):
                 """Perform steps necessary to get manifest from remote host
                 and write resulting contents to disk.  Helper routine for
@@ -467,8 +486,11 @@ class Image(object):
                 # Get manifest as a string from the remote host, then build
                 # it up into an in-memory manifest, then write the finished
                 # representation to disk.
-                mcontent = retrieve.get_manifest(self, fmri)
-                m.set_content(mcontent)
+                try:
+                        mcontent = retrieve.get_manifest(self, fmri)
+                        m.set_content(mcontent)
+                except socket.timeout:
+                        raise TransferTimedOutException
 
                 # Write the originating authority into the manifest.
                 # Manifests prior to this change won't contain this information.
@@ -515,7 +537,7 @@ class Image(object):
 
                 # If the manifest isn't there, download.
                 if not os.path.exists(mpath):
-                        m = self._fetch_manifest(fmri)
+                        m = self._fetch_manifest_with_retries(fmri)
                 else:
                         mcontent = file(mpath).read()
                         m.set_fmri(self, fmri)
@@ -525,7 +547,7 @@ class Image(object):
                 # no authority is attached to the manifest, download a new one.
                 if not self._valid_manifest(fmri, m):
                         try:
-                                m = self._fetch_manifest(fmri)
+                                m = self._fetch_manifest_with_retries(fmri)
                         except NameError:
                                 # In thise case, the client has failed to
                                 # download a new manifest with the same name.
@@ -840,6 +862,8 @@ class Image(object):
                         try:
                                 updatelog.recv(c, croot, ts, auth)
                         except IOError, e:
+                                failed.append((auth, e))
+                        except socket.timeout, e:
                                 failed.append((auth, e))
                         else:
                                 succeeded += 1
@@ -1161,23 +1185,49 @@ class Image(object):
                                 failed.append((auth, e))
                                 continue
 
-                        for l in res.read().splitlines():
-                                fields = l.split()
-                                if len(fields) < 4:
-                                       yield fields[:2] + [ "", "" ]
-                                else:
-                                       yield fields[:4]
+                        try:
+                                for l in res.read().splitlines():
+                                        fields = l.split()
+                                        if len(fields) < 4:
+                                               yield fields[:2] + [ "", "" ]
+                                        else:
+                                               yield fields[:4]
+                        except socket.timeout, e:
+                                failed.append((auth, e))
+                                continue
+
                 if failed:
                         raise RuntimeError, failed
 
-        def get_download_dir(self):
-                return os.path.normpath(os.path.join(
-                                self.imgdir,
-                                "download",
-                                str(os.getpid())))
+        def incoming_download_dir(self):
+                """Return the directory path for incoming downloads
+                that have yet to be completed.  Once a file has been
+                successfully downloaded, it is moved to the cached download
+                directory."""
+
+                return os.path.normpath(os.path.join(self.imgdir, "download",
+                    "incoming-%d" % os.getpid()))
+
+        def cached_download_dir(self):
+                """Return the directory path for cached content.
+                Files that have been successfully downloaded live here."""
+
+                return os.path.normpath(os.path.join(self.imgdir, "download"))
 
         def cleanup_downloads(self):
-                shutil.rmtree(self.get_download_dir(), True)
+                """Clean up any downloads that were in progress but that
+                did not successfully finish."""
+
+                shutil.rmtree(self.incoming_download_dir(), True)
+
+        def cleanup_cached_content(self):
+                """Delete the directory that stores all of our cached
+                downloaded content.  This may take a while for a large
+                directory hierarchy."""
+
+                if self.cfg_cache.flush_content_cache:
+                        msg("Deleting content cache")
+                        shutil.rmtree(self.cached_download_dir(), True)
 
         def salvagedir(self, path):
                 """Called when directory contains something and it's not supposed
