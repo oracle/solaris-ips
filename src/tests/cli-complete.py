@@ -59,6 +59,7 @@ def maketests():
 	import cli.t_twodepot
 
 	tests = [
+	    cli.t_actions.TestPkgActions,
 	    cli.t_depotcontroller.TestDepotController,
 	    cli.t_image_create.TestImageCreate,
 	    cli.t_image_create.TestImageCreateNoDepot,

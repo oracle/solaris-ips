@@ -1,8 +1,0 @@
-# ident	"@(#)ftpusers	1.6	06/11/21 SMI"
-#
-# List of users denied access to the FTP server, see ftpusers(4).
-#
-root
-bin
-sys
-adm
