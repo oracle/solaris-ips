@@ -47,11 +47,11 @@ import gettext
 import itertools
 import os
 import re
+import socket
 import sys
 import traceback
 import urllib2
 import urlparse
-import socket
 
 import pkg.client.image as image
 import pkg.client.imageplan as imageplan
@@ -60,23 +60,21 @@ import pkg.client.progress as progress
 import pkg.client.bootenv as bootenv
 import pkg.fmri as fmri
 import pkg.misc as misc
+from pkg.misc import msg, emsg, PipeError
 import pkg.version
 import pkg
 
-from pkg.misc import msg, emsg, PipeError
-
-def error(error):
+def error(text):
         """ Emit an error message prefixed by the command name """
 
         # This has to be a constant value as we can't reliably get our actual
         # program name on all platforms.
-        emsg("pkg:" + error)
+        emsg("pkg: " + text)
 
 def usage(usage_error = None):
         """ Emit a usage message and optionally prefix it with a more
             specific error message.  Causes program to exit. """
 
-        pname = os.path.basename(sys.argv[0])
         if usage_error:
                 error(usage_error)
 
@@ -203,9 +201,11 @@ def list_inventory(img, args):
                 if not found:
                         if not pargs:
                                 if upgradable_only:
-                                        error(_("no installed packages have available updates"))
+                                        error(_("no installed packages have " \
+                                            "available updates"))
                                 else:
-                                        error(_("no matching packages installed"))
+                                        error(_("no matching packages " \
+                                            "installed"))
                         return 1
                 return 0
 
@@ -217,8 +217,6 @@ def list_inventory(img, args):
                 for pat in e.args[0]:
                         error(_("no packages matching '%s' installed") % pat)
                 return 1
-                img.display_inventory(args)
-
 
 def get_tracker(quiet = False):
         if quiet:
@@ -233,22 +231,22 @@ def get_tracker(quiet = False):
 
 
 
-def installed_fmris_from_args(image, args):
+def installed_fmris_from_args(img, args):
         """ Helper function to translate client command line arguments
             into a list of installed fmris.  Used by info, contents, verify.
 
             XXX consider moving into image class
         """
         if not args:
-                fmris = list(image.gen_installed_pkgs())
+                fmris = list(img.gen_installed_pkgs())
         else:
                 try:
-                        matches = image.get_matching_fmris(args)
+                        matches = img.get_matching_fmris(args)
                 except KeyError:
                         error(_("no matching packages found in catalog"))
                         return 1, []
 
-                fmris = [ m for m in matches if image.is_installed(m) ]
+                fmris = [ m for m in matches if img.is_installed(m) ]
         return 0, fmris
 
 
@@ -300,7 +298,8 @@ def verify_image(img, args):
                                         header = True
 
                                 if not quiet:
-                                        msg("%-50s %7s" % (f.get_pkg_stem(), "ERROR"))
+                                        msg("%-50s %7s" % (f.get_pkg_stem(),
+                                            "ERROR"))
                                 pkgerr = True
 
                         if not quiet:
@@ -362,8 +361,8 @@ def image_update(img, args):
         pkg_list = [ ipkg.get_pkg_stem() for ipkg in img.gen_installed_pkgs() ]
 
         try:
-                img.make_install_plan(pkg_list, progresstracker, verbose = verbose,
-                    noexecute = noexecute)
+                img.make_install_plan(pkg_list, progresstracker,
+                    verbose = verbose, noexecute = noexecute)
         except RuntimeError, e:
                 error(_("image-update failed: %s") % e)
 
@@ -396,7 +395,8 @@ def image_update(img, args):
                 be.restore_image()
                 ret_code = 1
         except Exception, e:
-                error(_("An unexpected error happened during image-update: %s") % e)
+                error(_("An unexpected error happened during " \
+                    "image-update: %s") % e)
                 be.restore_image()
                 img.cleanup_downloads()
                 raise
@@ -444,8 +444,8 @@ def install(img, args):
             for pat in pargs ]
 
         try:
-                img.make_install_plan(pkg_list, progresstracker, filters = filters,
-                    verbose = verbose, noexecute = noexecute)
+                img.make_install_plan(pkg_list, progresstracker,
+                    filters = filters, verbose = verbose, noexecute = noexecute)
         except RuntimeError, e:
                 error(_("install failed: %s") % e)
                 return 1
@@ -478,7 +478,8 @@ def install(img, args):
                 be.restore_install_uninstall()
                 ret_code = 1
         except Exception, e:
-                error(_("An unexpected error happened during installation: %s") % e)
+                error(_("An unexpected error happened during " \
+                    "installation: %s") % e)
                 be.restore_install_uninstall()
                 img.cleanup_downloads()
                 raise
@@ -577,9 +578,10 @@ def uninstall(img, args):
         except RuntimeError, e:
                 error(_("installation failed: %s") % e)
                 be.restore_install_uninstall()
-                ret_code = 1
+                err = 1
         except Exception, e:
-                error(_("An unexpected error happened during uninstallation: %s") % e)
+                error(_("An unexpected error happened during " \
+                    "uninstallation: %s") % e)
                 be.restore_install_uninstall()
                 raise
 
@@ -671,17 +673,15 @@ def search(img, args):
         return retcode
 
 def info_license(img, mfst, remote):
-        fmri = mfst.fmri
-
         for i, license in enumerate(mfst.gen_actions_by_type("license")):
                 if i > 0:
                         msg("")
 
                 if remote:
                         misc.gunzip_from_stream(
-                            license.get_remote_opener(img, fmri)(), sys.stdout)
+                            license.get_remote_opener(img, mfst.fmri)(), sys.stdout)
                 else:
-                        msg(license.get_local_opener(img, fmri)().read()[:-1])
+                        msg(license.get_local_opener(img, mfst.fmri)().read()[:-1])
 
 def info(img, args):
         """Display information about a package or packages.
@@ -732,7 +732,6 @@ repository."""))
                                 msg(_("""\
 pkg: no package matching '%s' could be found in current catalog
      suggest relaxing pattern, refreshing and/or examining catalogs""") % p)
-                                error = 1
                                 continue
 
                         pnames = {}
@@ -752,14 +751,12 @@ pkg: no package matching '%s' could be found in current catalog
                                     p)
                                 for k in pnames.keys():
                                         msg("\t%s" % k)
-                                error = 1
                                 continue
                         elif len(pnames.keys()) < 1 and len(npnames.keys()) > 1:
                                 msg(_("pkg: '%s' matches multiple packages") % \
                                     p)
                                 for k in npnames.keys():
                                         msg("\t%s" % k)
-                                error = 1
                                 continue
 
                         # matches is a list reverse sorted by version, so take
@@ -877,7 +874,7 @@ def display_contents_results(actionlist, attrs, sort_attrs, action_types,
                                 widths[i] = \
                                     (max(widths[i][0], len(str(a))), just)
 
-                if line and [e for e in line if str(e) != ""]:
+                if line and [l for l in line if str(l) != ""]:
                         lines.append(line)
 
         sortidx = 0
@@ -968,10 +965,12 @@ def list_contents(img, args):
                 display_headers = False
                 attrs = [ "action.raw" ]
 
-                if set(("-H", "-o", "-t")). \
-                    intersection(set([x[0] for x in opts])):
-                        usage(_("contents: -m and %s may not be specified at the same time") % opt)
+                invalid = set(("-H", "-o", "-t")). \
+                    intersection(set([x[0] for x in opts]))
 
+                if len(invalid) > 0:
+                        usage(_("contents: -m and %s may not be specified " \
+                            "at the same time") % invalid.pop())
 
         for a in attrs:
                 if a.startswith("action.") and not a in valid_special_attrs:
@@ -1001,7 +1000,6 @@ def list_contents(img, args):
                                 msg(_("""\
 pkg: no package matching '%s' could be found in current catalog
      suggest relaxing pattern, refreshing and/or examining catalogs""") % p)
-                                error = 1
                                 continue
 
                         pnames = {}
@@ -1021,14 +1019,12 @@ pkg: no package matching '%s' could be found in current catalog
                                     p)
                                 for k in pnames.keys():
                                         msg("\t%s" % k)
-                                error = 1
                                 continue
                         elif len(pnames.keys()) < 1 and len(npnames.keys()) > 1:
                                 msg(_("pkg: '%s' matches multiple packages") % \
                                     p)
                                 for k in npnames.keys():
                                         msg("\t%s" % k)
-                                error = 1
                                 continue
 
                         # matches is a list reverse sorted by version, so take
@@ -1143,27 +1139,29 @@ def authority_set(img, args):
 
         if len(pargs) != 1:
                 usage(
-                    _("pkg: set-authority: one and only one authority may be set"))
+                    _("pkg: set-authority: one and only one authority " \
+                        "may be set"))
 
         auth = pargs[0]
 
         if ssl_key:
                 ssl_key = os.path.abspath(ssl_key)
                 if not os.path.exists(ssl_key):
-                        error(_("set-authority: SSL key file '%s' does not exist" \
-                            ) % ssl_key)
+                        error(_("set-authority: SSL key file '%s' does not " \
+                            "exist") % ssl_key)
                         return 1
 
         if ssl_cert:
                 ssl_cert = os.path.abspath(ssl_cert)
                 if not os.path.exists(ssl_cert):
-                        error(_("set-authority: SSL key cert '%s' does not exist" \
-                            ) % ssl_cert)
+                        error(_("set-authority: SSL key cert '%s' does not " \
+                            "exist") % ssl_cert)
                         return 1
 
 
         if not img.has_authority(auth) and origin_url == None:
-                error(_("set-authority: must define origin URL for new authority"))
+                error(_("set-authority: must define origin URL for new " \
+                    "authority"))
                 return 1
 
         elif not img.has_authority(auth) and not misc.valid_auth_prefix(auth):
@@ -1200,7 +1198,8 @@ def authority_unset(img, args):
                         return 1
 
                 if a == preferred_auth:
-                        error(_("unset-authority: removal of preferred authority not allowed."))
+                        error(_("unset-authority: removal of preferred " \
+                            "authority not allowed."))
                         return 1
 
                 img.delete_authority(a)
@@ -1300,15 +1299,15 @@ def image_create(img, args):
         if ssl_key:
                 ssl_key = os.path.abspath(ssl_key)
                 if not os.path.exists(ssl_key):
-                        msg(_("pkg: set-authority: SSL key file '%s' does not exist"
-                            ) % ssl_key)
+                        msg(_("pkg: set-authority: SSL key file '%s' does " \
+                            "not exist") % ssl_key)
                         return 1
 
         if ssl_cert:
                 ssl_cert = os.path.abspath(ssl_cert)
                 if not os.path.exists(ssl_cert):
-                        msg(_("pkg: set-authority: SSL key cert '%s' does not exist"
-                            ) % ssl_cert)
+                        msg(_("pkg: set-authority: SSL key cert '%s' does " \
+                            "not exist") % ssl_cert)
                         return 1
 
         if not auth_name and not auth_url:
@@ -1324,7 +1323,8 @@ def image_create(img, args):
                 return 1
 
         if not misc.valid_auth_prefix(auth_name):
-                error(_("image-create: authority prefix has invalid characters"))
+                error(_("image-create: authority prefix has invalid " \
+                    "characters"))
                 return 1
 
         if not misc.valid_auth_url(auth_url):
