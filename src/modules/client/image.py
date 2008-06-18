@@ -984,6 +984,10 @@ class Image(object):
                 else:
                         name = myfmri.get_name()
 
+                myfmri = self.get_matching_fmris(myfmri,
+                    constraint = version.CONSTRAINT_AUTO,
+                    matcher = pkg.fmri.exact_name_match)[0]
+
                 ofmri = self.optional_dependencies.get(name, None)
                 if not ofmri or self.fmri_is_successor(myfmri, ofmri):
                                self.optional_dependencies[name] = myfmri
