@@ -1172,8 +1172,12 @@ def authority_set(img, args):
                 error(_("set-authority: authority URL is invalid"))
                 return 1
 
-        img.set_authority(auth, origin_url = origin_url, ssl_key = ssl_key,
-            ssl_cert = ssl_cert)
+        try:
+                img.set_authority(auth, origin_url = origin_url,
+                        ssl_key = ssl_key, ssl_cert = ssl_cert)
+        except RuntimeError, e:
+                error(_("set-authority failed: %s") % e)
+                return 1
 
         if preferred:
                 img.set_preferred_authority(auth)

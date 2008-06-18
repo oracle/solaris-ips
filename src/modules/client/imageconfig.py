@@ -155,7 +155,11 @@ class ImageConfig(object):
 
                 # XXX Child images
 
-                f = open(path, "w")
+                try:
+                        f = open(path, "w")
+                except IOError, (errno, strerror):
+                        raise RuntimeError("unable to open %s for writing: %s" %
+                                (path, strerror))
                 cp.write(f)
 
         def delete_authority(self, auth):
