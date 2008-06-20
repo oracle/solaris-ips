@@ -58,7 +58,6 @@ class BootEnv(object):
         def __init__(self, root):
                 self.be_name = None
                 self.dataset = None
-                self.be_name_clone = None
                 self.clone_dir = None
                 self.is_live_BE = False
                 self.snapshot_name = None
@@ -123,9 +122,6 @@ class BootEnv(object):
                                 emsg(_("pkg: unable to create an auto "
                                     "snapshot. pkg recovery is disabled."))
                                 raise RuntimeError, "recoveryDisabled"
-
-                        self.be_name_clone = self.be_name + "_" + \
-                            self.snapshot_name
                         break
                         
                 else:
@@ -148,7 +144,7 @@ class BootEnv(object):
                         
                         # Do nothing with the returned snapshot name
                         # that is taken of the clone during beCopy.
-                        ret, self.be_name_clone, notUsed = be.beCopy()                        
+                        ret, self.be_name_clone, not_used = be.beCopy()
                         if ret != 0:
                                 emsg(_("pkg: unable to create BE %s") % \
                                     self.be_name_clone)
@@ -274,13 +270,10 @@ class BootEnv(object):
 
                 if self.is_live_BE:
                         # Create a new BE based on the previously taken
-                        # snapshot. Note that we need to create our own name
-                        # for the BE since be_copy can't create one based
-                        # off of a snapshot name.
+                        # snapshot.
 
-                        ret, notUsed, notUsed2 = \
-                            be.beCopy(self.be_name_clone, self.be_name, \
-                            self.snapshot_name)      
+                        ret, self.be_name_clone, not_used = \
+                            be.beCopy(None, self.be_name, self.snapshot_name)
                         if ret != 0:
                                  emsg(_("pkg: unable to create BE %s") % \
                                     self.be_name_clone)
@@ -291,10 +284,10 @@ class BootEnv(object):
                                 
                         emsg(_("The Boot Environment %s failed to be updated. "
                             "A snapshot was taken before the failed attempt "
-                            "and is mounted here %s. Use 'beadm activate %s "
-                            "and reboot if you wish to boot to this BE.") % \
-                            (self.be_name, self.clone_dir, self.be_name_clone))
-        
+                            "and is mounted here %s. Use 'beadm unmount %s' "
+                            "and then 'beadm activate %s' if you wish to boot "
+                            "to this BE.") % (self.be_name, self.clone_dir,
+                            self.be_name_clone, self.be_name_clone))
                 else:
                         if be.beRollback(self.be_name, self.snapshot_name) != 0:
                                  emsg("pkg: unable to rollback BE %s" % \
