@@ -31,9 +31,7 @@ import urllib
 import urllib2
 import httplib
 import shutil
-import sys
 import time
-import types
 
 from pkg.misc import msg, emsg
 
@@ -48,7 +46,6 @@ import pkg.version as version
 import pkg.client.imageconfig as imageconfig
 import pkg.client.imageplan as imageplan
 import pkg.client.retrieve as retrieve
-import pkg.client.filelist as filelist
 import pkg.portable as portable
 
 from pkg.misc import versioned_urlopen
@@ -102,10 +99,27 @@ class Image(object):
           $IROOT/state
                File containing image's opaque state.
 
+        All of these directories and files other than state are considered
+        essential for any image to be complete. To add a new essential file or
+        subdirectory, the following steps should be done.
+
+        If it's a directory, add it to the image_subdirs list below and it will
+        be created automatically. The programmer must fill the directory as
+        needed. If a file is added, the programmer is responsible for creating
+        that file during image creation at an appropriate place and time.
+
+        Once those steps have been carried out, the change should be added
+        to the test suite for image corruption (t_pkg_install_corrupt_image.py).
+        This will likely also involve a change to
+        SingleDepotTestCaseCorruptImage in testutils.py. Each of these files
+        outline what must be updated.
+
         XXX Root path probably can't be absolute, so that we can combine or
         reuse Image contents.
 
         XXX Image file format?  Image file manipulation API?"""
+
+        image_subdirs = ["catalog", "file", "pkg", "index"]
 
         def __init__(self):
                 self.cfg_cache = None
@@ -131,13 +145,24 @@ class Image(object):
                 self.optional_dependencies = {}
 
         def find_root(self, d):
+
+                def check_subdirs(sub_d, prefix):
+                        for n in self.image_subdirs:
+                                if not os.path.isdir(
+                                    os.path.join(sub_d, prefix, n)):
+                                        return False
+                        return True
+
                 # Ascend from the given directory d to find first
                 # encountered image.
                 startd = d
                 # eliminate problem if relative path such as "." is passed in
                 d = os.path.realpath(d)
                 while True:
-                        if os.path.isdir(os.path.join(d, img_user_prefix)):
+                        if os.path.isdir(os.path.join(d, img_user_prefix)) and \
+                            os.path.isfile(os.path.join(d, img_user_prefix,
+                                "cfg_cache")) and \
+                            check_subdirs(d, img_user_prefix):
                                 # XXX Look at image file to determine filter
                                 # tags and repo URIs.
                                 self.type = IMG_USER
@@ -146,7 +171,10 @@ class Image(object):
                                 self.imgdir = os.path.join(d, self.img_prefix)
                                 self.attrs["Build-Release"] = "5.11"
                                 return
-                        elif os.path.isdir(os.path.join(d, img_root_prefix)):
+                        elif os.path.isdir(os.path.join(d, img_root_prefix)) \
+                              and os.path.isfile(os.path.join(d,
+                              img_root_prefix,"cfg_cache")) and \
+                              check_subdirs(d, img_root_prefix):
                                 # XXX Look at image file to determine filter
                                 # tags and repo URIs.
                                 # XXX Look at image file to determine if this
@@ -189,14 +217,9 @@ class Image(object):
         # XXX mkdirs and set_attrs() need to be combined into a create
         # operation.
         def mkdirs(self):
-                if not os.path.isdir(self.imgdir + "/catalog"):
-                        os.makedirs(self.imgdir + "/catalog")
-                if not os.path.isdir(self.imgdir + "/file"):
-                        os.makedirs(self.imgdir + "/file")
-                if not os.path.isdir(self.imgdir + "/pkg"):
-                        os.makedirs(self.imgdir + "/pkg")
-                if not os.path.isdir(self.imgdir + "/index"):
-                        os.makedirs(self.imgdir + "/index")
+                for sd in self.image_subdirs:
+                        if not os.path.isdir(os.path.join(self.imgdir, sd)):
+                                os.makedirs(os.path.join(self.imgdir, sd))
 
         def set_attrs(self, type, root, is_zone, auth_name, auth_url,
             ssl_key = None, ssl_cert = None):

@@ -222,13 +222,13 @@ class PkgSendOpenException(Exception):
 
 class pkg5TestCase(unittest.TestCase):
         def setUp(self):
-                self.__image_dir = None
+                self.image_dir = None
                 self.pid = os.getpid()
 
                 # XXX Windows portability issue
                 self.__test_prefix = "/tmp/ips.test.%d" % self.pid
-                self.__img_path = os.path.join(self.__test_prefix, "image")
-                os.environ["PKG_IMAGE"] = self.__img_path
+                self.img_path = os.path.join(self.__test_prefix, "image")
+                os.environ["PKG_IMAGE"] = self.img_path
 
                 if "TEST_DEBUG" in os.environ:
                         self.__debug = True
@@ -240,7 +240,7 @@ class pkg5TestCase(unittest.TestCase):
                 self.image_destroy()
 
         def get_img_path(self):
-                return self.__img_path
+                return self.img_path
 
         def get_test_prefix(self):
                 return self.__test_prefix
@@ -265,13 +265,13 @@ class pkg5TestCase(unittest.TestCase):
                 return self.__debug_buf
 
         def image_create(self, repourl, prefix = "test"):
-                assert self.__img_path
-                assert self.__img_path != "" and self.__img_path != "/"
+                assert self.img_path
+                assert self.img_path != "/"
 
                 self.image_destroy()
-                os.mkdir(self.__img_path)
+                os.mkdir(self.img_path)
                 cmdline = "pkg image-create -F -a %s=%s %s" % \
-                    (prefix, repourl, self.__img_path)
+                    (prefix, repourl, self.img_path)
                 self.debugcmd(cmdline)
 
                 p = subprocess.Popen(cmdline, shell = True,
@@ -292,13 +292,13 @@ class pkg5TestCase(unittest.TestCase):
 
         def image_set(self, imgdir):
                 self.debug("image_set: %s" % imgdir)
-                self.__img_path = imgdir
-                os.environ["PKG_IMAGE"] = self.__img_path
+                self.img_path = imgdir
+                os.environ["PKG_IMAGE"] = self.img_path
 
         def image_destroy(self):
                 self.debug("image_destroy")
-                if os.path.exists(self.__img_path):
-                        shutil.rmtree(self.__img_path)
+                if os.path.exists(self.img_path):
+                        shutil.rmtree(self.img_path)
 
         def pkg(self, command, exit = 0, comment = ""):
 
@@ -513,4 +513,119 @@ class SingleDepotTestCase(ManyDepotTestCase):
 
                 ManyDepotTestCase.setUp(self, 1)
                 self.dc = self.dcs[1]
+
+
+class SingleDepotTestCaseCorruptImage(SingleDepotTestCase):
+        """ A class which allows manipulation of the image directory that
+        SingleDepotTestCase creates. Specifically, it supports removing one
+        or more of the files or subdirectories inside an image (catalog,
+        cfg_cache, etc...) in a controlled way.
+
+        To add a new directory or file to be corrupted, it will be necessary
+        to update corrupt_image_create to recognize a new option in config
+        and perform the appropriate action (removing the directory or file
+        for example).
+        """
+
+        def setUp(self):
+                self.backup_img_path = None
+                SingleDepotTestCase.setUp(self)
+
+        def tearDown(self):
+                self.__uncorrupt_img_path()
+                SingleDepotTestCase.tearDown(self)
+
+        def __uncorrupt_img_path(self):
+                """ Function which restores the img_path back to the original
+                level. """
+                if self.backup_img_path:
+                        self.img_path = self.backup_img_path
+                else:
+                        raise RuntimeError("Uncorrupting a image path that "
+                                           "was never corrupted.\n")
+
+        def corrupt_image_create(self, repourl, config, subdirs, prefix = "test",
+            destroy = True):
+                """ Creates two levels of directories under the original image
+                directory. In the first level (called bad), it builds a "corrupt
+                image" which means it builds subdirectories the subdirectories
+                speicified by subdirs (essentially determining whether a user
+                image or a full image will be built). It populates these
+                subdirectories with a partial image directory stucture as
+                speicified by config. As another subdirectory of bad, it
+                creates a subdirectory called final which represents the
+                directory the command was actually run from (which is why
+                img_path is set to that location). Exisintg image destruction
+                was made optional to allow testing of two images installed next
+                to each other (a user and full image created in the same
+                directory for example). """
+                if not self.backup_img_path:
+                        self.backup_img_path = self.img_path
+                self.img_path = os.path.join(self.img_path, "bad")
+                assert self.img_path
+                assert self.img_path and self.img_path != "/"
+
+                if destroy:
+                        self.image_destroy()
+
+                for s in subdirs:
+                        if s == "var/pkg":
+                                cmdline = "pkg image-create -F -a %s=%s %s" % \
+                                    (prefix, repourl, self.img_path)
+                        elif s == ".org.opensolaris,pkg":
+                                cmdline = "pkg image-create -U -a %s=%s %s" % \
+                                    (prefix, repourl, self.img_path)
+                        else:
+                                raise RuntimeError("Got unknown subdir option:"
+                                    "%s\n" % s)
+
+                        self.debugcmd(cmdline)
+
+                        # Run the command to actually create a good image
+                        p = subprocess.Popen(cmdline, shell = True,
+                                             stdout = subprocess.PIPE,
+                                             stderr = subprocess.STDOUT)
+                        retcode = p.wait()
+                        output = p.stdout.read()
+                        self.debugresult(retcode, output)
+
+                        if retcode == 99:
+                                raise TracebackException(cmdline, output,
+                                    debug=self.get_debugbuf())
+                        if retcode != 0:
+                                raise UnexpectedExitCodeException(cmdline, 0,
+                                    retcode, output, debug=self.get_debugbuf())
+
+                        tmpDir = os.path.join(self.img_path, s)
+
+                        # This is where the actual corruption of the
+                        # image takes place. A normal image was created
+                        # above and this goes in and removes critical
+                        # directories and files.
+                        if "catalog_absent" in config or \
+                           "catalog_empty" in config:
+                                shutil.rmtree(os.path.join(tmpDir, "catalog"))
+                        if "catalog_empty" in config:
+                                os.mkdir(os.path.join(tmpDir, "catalog"))
+                        if "cfg_cache_absent" in config:
+                                os.remove(os.path.join(tmpDir, "cfg_cache"))
+                        if "file_absent" in config:
+                                shutil.rmtree(os.path.join(tmpDir, "file"))
+                        if "pkg_absent" in config:
+                                shutil.rmtree(os.path.join(tmpDir, "pkg"))
+                        if "index_absent" in config:
+                                shutil.rmtree(os.path.join(tmpDir, "index"))
+
+                # Make find root start at final. (See the doc string for
+                # more explanation.)
+                self.img_path = os.path.join(self.img_path, "final")
+
+                os.mkdir(self.img_path)
+                os.environ["PKG_IMAGE"] = self.img_path
+
+
+
+
+if __name__ == "__main__":
+        unittest.main()
 
