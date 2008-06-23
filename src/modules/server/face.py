@@ -34,33 +34,45 @@ try:
 except KeyError:
         content_root = '/usr/share/lib/pkg'
 
-def head(title = "pkg - image packaging system"):
-        return ("""\
+def get_res_path(request, name):
+        uri = "%s/%s" % ('static', name)
+        # Calculate the depth of the current request path relative to our base
+        # uri. path_info always ends with a '/' -- so ignore it when calculating
+        # depth.
+        depth = (request.path_info.count('/') - 1)
+        return ('../' * depth) + uri
+
+PKG_LOGO = "pkg-block-logo.png"
+PKG_ICON = "pkg-block-icon.png"
+PKG_STYLE = "pkg.css"
+
+def head(request, title = "pkg - image packaging system"):
+        return """\
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
         "http://www.w3.org/TR/2002/REC-xhtml1-20020801/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
- <link rel="shortcut icon" type="image/png" href="/static/pkg-block-icon.png"/>
- <link rel="stylesheet" type="text/css" href="/static/pkg.css"/>
+ <link rel="shortcut icon" type="image/png" href="%s"/>
+ <link rel="stylesheet" type="text/css" href="%s"/>
  <title>%s</title>
 </head>
-""" % title)
+""" % (get_res_path(request, PKG_ICON), get_res_path(request, PKG_STYLE), title)
 
 def unknown(img, request, response):
 
         response.status = httplib.NOT_FOUND
-        output = head()
+        output = head(request)
         output += """\
 <body>
  <div id="doc4" class="yui-t5">
   <div id="hd">
-   <h1><img src="/static/pkg-block-logo.png" alt="logo"/> <code>pkg</code> server unknown page</h1>
+   <h1><img src="%s" alt="logo"/> <code>pkg</code> server unknown page: %s</h1>
   </div>
   <div id="bd">
    <div id="yui-main">
     <div class="yui-b">
      <pre>
-"""
+""" % (get_res_path(request, PKG_LOGO), request.path_info)
 
         output += ('''%d GET URI %s ; headers:\n%s''' %
             (httplib.NOT_FOUND, request.path_info, request.headers))
@@ -80,12 +92,12 @@ def unknown(img, request, response):
 def error(img, request, response):
         response.status = httplib.INTERNAL_SERVER_ERROR
 
-        output = head()
+        output = head(request)
         output += """\
 <body>
  <div id="doc4" class="yui-t5">
   <div id="hd">
-   <h1><img src="/static/pkg-block-logo.png" alt="logo"/> <code>pkg</code> server internal error</h1>
+   <h1><img src="%s" alt="logo"/> <code>pkg</code> server internal error</h1>
   </div>
   <div id="bd">
    <div id="yui-main">
@@ -99,24 +111,24 @@ face.response() for %s
  </div>
 </body>
 </html>
-""" % request.path_info
+""" % (get_res_path(request, PKG_LOGO), request.path_info)
 
         return output
 
 def index(img, request, response):
-        output = head()
+        output = head(request)
         output += ("""\
 <body>
  <div id="doc4" class="yui-t5">
   <div id="hd">
-   <h1><img src="/static/pkg-block-logo.png" alt="logo"/> <code>pkg</code> server ok</h1>
+   <h1><img src="%s" alt="logo"/> <code>pkg</code> server ok</h1>
   </div>
   <div id="bd">
    <div id="yui-main">
     <div class="yui-b">
      <h2>Statistics</h2>
      <pre>
-""")
+""") % (get_res_path(request, PKG_LOGO))
         output += (img.get_status())
         output += ("""\
      </pre>
@@ -124,6 +136,7 @@ def index(img, request, response):
      <h2>Catalog</h2>
      <pre>
 """)
+
         for f in img.catalog.fmris():
                 output += ("%s\n" % f.get_fmri())
 
