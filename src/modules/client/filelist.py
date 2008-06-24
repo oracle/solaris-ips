@@ -108,7 +108,7 @@ class FileList(object):
 
                         return
 
-                if self._is_full():
+                while self._is_full():
                         self._do_get_files()
 
                 self._add_action(action)
@@ -187,14 +187,14 @@ class FileList(object):
                 nfiles = self._get_nfiles()
                 nbytes = self._get_nbytes()
 
-                while files_extracted < 1 and retry_count > 0:
+                while files_extracted == 0:
                         try:
                                 fe = self._get_files()
                                 files_extracted += fe
                         except TransferTimedOutException:
-                                if retry_count > 0:
-                                        retry_count -= 1
-                                else:
+                                retry_count -= 1
+
+                                if retry_count <= 0:
                                         raise
 
                 nfiles -= self._get_nfiles()

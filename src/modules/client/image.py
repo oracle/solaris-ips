@@ -482,13 +482,13 @@ class Image(object):
                 m = None
                 retry_count = misc.MAX_TIMEOUT_COUNT
 
-                while not m and retry_count > 0:
+                while not m:
                         try:
                                 m = self._fetch_manifest(fmri)
                         except TransferTimedOutException:
-                                if retry_count > 0:
-                                        retry_count -= 1
-                                else:
+                                retry_count -= 1
+
+                                if retry_count <= 0:
                                         raise
                 return m
 
