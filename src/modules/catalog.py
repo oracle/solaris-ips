@@ -308,7 +308,7 @@ class Catalog(object):
 
                         for e in os.listdir(pkg[0]):
                                 ver_mtime = os.stat(os.path.join(
-                                    self.pkg_root, pkg[0], e)).st_mtime
+                                    pkg[0], e)).st_mtime
 
                                 # XXX force a rebuild despite mtimes?
                                 # XXX queue this and fork later?

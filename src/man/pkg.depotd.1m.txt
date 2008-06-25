@@ -18,16 +18,16 @@ DESCRIPTION
      purposes.
 
      The pkg.depot server is generally configured via the smf(5)
-     properties associated with its service instance.  Four properties
+     properties associated with its service.  Four properties
      are currently recognized:
 
-     pkg/port                   (count) The port number on which this
+     pkg/port                   (count) The port number on which the
                                 instance should listen for incoming
                                 package requests.  The default value is
                                 80.
 
-     pkg/inst_dir               (astring) The file system path at which
-                                this instance should find its repository
+     pkg/inst_root              (astring) The file system path at which
+                                the instance should find its repository
                                 data.  The default value is
                                 /var/pkg/repo.
 
@@ -45,7 +45,7 @@ OPTIONS
      will override the settings from the service instance when managed
      via an smf(5) restarter:
 
-     -d repo_dir                Overrides pkg/repo_dir with the value
+     -d repo_dir                Overrides pkg/inst_root with the value
                                 given by repo_dir.
 
      -p port                    Overrides pkg/port with the value given
@@ -68,13 +68,13 @@ OPTIONS
 EXAMPLES
      Example 1:  Enabling the depot server.
 
-     # svcadm enable application/pkg/server:default
+     # svcadm enable application/pkg/server
 
      Example 2:  Changing the listening port of the server.
 
-     # svccfg -s application/pkg/server:default set application/port = 9999
-     # svcadm refresh application/pkg/server:default
-     # svcadm restart application/pkg/server:default
+     # svccfg -s application/pkg/server setprop pkg/port = 10000
+     # svcadm refresh application/pkg/server
+     # svcadm restart application/pkg/server
 
 ENVIRONMENT VARIABLES
      PKG_DEPOT_CONTENT          Specifies the directory containing static
@@ -94,7 +94,7 @@ EXIT STATUS
 
 FILES
      /var/pkg/repo              Default repository location; modify
-                                application/repo_root to select an
+                                pkg/inst_root to select an
                                 alternate location.
 
      /usr/share/lib/pkg         Default directory containing static content
