@@ -43,19 +43,19 @@ class PkgPlan(object):
         def __init__(self, image, progtrack):
                 self.origin_fmri = None
                 self.destination_fmri = None
-                self.origin_mfst = manifest.null
-                self.destination_mfst = manifest.null
-
-                self.image = image
-                self.progtrack = progtrack
-
                 self.actions = []
 
-                self.xfersize = -1
-                self.xferfiles = -1
+                self.__origin_mfst = manifest.null
+                self.__destination_mfst = manifest.null
+                self.__legacy_info = {}
 
-                self.origin_filters = []
-                self.destination_filters = []
+                self.image = image
+                self.__progtrack = progtrack
+
+                self.__xfersize = -1
+                self.__xferfiles = -1
+
+                self.__destination_filters = []
 
         def __str__(self):
                 s = "%s -> %s\n" % (self.origin_fmri, self.destination_fmri)
@@ -67,14 +67,15 @@ class PkgPlan(object):
 
         def propose_destination(self, fmri, mfst):
                 self.destination_fmri = fmri
-                self.destination_mfst = mfst
+                self.__destination_mfst = mfst
+                self.__legacy_info["version"] = self.destination_fmri.version
 
                 if self.image.install_file_present(fmri):
                         raise RuntimeError, "already installed"
 
         def propose_removal(self, fmri, mfst):
                 self.origin_fmri = fmri
-                self.origin_mfst = mfst
+                self.__origin_mfst = mfst
 
                 if not self.image.install_file_present(fmri):
                         raise RuntimeError, "not installed"
@@ -109,13 +110,14 @@ class PkgPlan(object):
                             self.destination_fmri)
                         if f:
                                 self.origin_fmri = f
-                                self.origin_mfst = self.image.get_manifest(f)
+                                self.__origin_mfst = \
+				    self.image.get_manifest(f)
 
-                self.destination_filters = filters
+                self.__destination_filters = filters
 
                 # Try to load the filter used for the last install of the
                 # package.
-                self.origin_filters = []
+                origin_filters = []
                 if self.origin_fmri:
                         try:
                                 f = file("%s/pkg/%s/filters" % \
@@ -125,23 +127,23 @@ class PkgPlan(object):
                                 if e.errno != errno.ENOENT:
                                         raise
                         else:
-                                self.origin_filters = [
+                                origin_filters = [
                                     (l.strip(), compile(
                                         l.strip(), "<filter string>", "eval"))
                                     for l in f.readlines()
                                 ]
 
-                self.destination_mfst.filter(self.destination_filters)
-                self.origin_mfst.filter(self.origin_filters)
+                self.__destination_mfst.filter(self.__destination_filters)
+                self.__origin_mfst.filter(origin_filters)
 
                 # Assume that origin actions are unique, but make sure that
                 # destination ones are.
-                ddups = self.destination_mfst.duplicates()
+                ddups = self.__destination_mfst.duplicates()
                 if ddups:
                         raise RuntimeError, ["Duplicate actions", ddups]
 
-                self.actions = self.destination_mfst.difference(
-                    self.origin_mfst)
+                self.actions = self.__destination_mfst.difference(
+                    self.__origin_mfst)
 
                 # figure out how many implicit directories disappear in this
                 # transition and add directory remove actions.  These won't
@@ -150,46 +152,65 @@ class PkgPlan(object):
 
                 tmpset = set()
 
-                for a in self.origin_mfst.actions:
+                for a in self.__origin_mfst.actions:
                         tmpset.update(a.directory_references())
 
                 absent_dirs = self.image.expanddirs(tmpset)
 
                 tmpset = set()
 
-                for a in self.destination_mfst.actions:
+                for a in self.__destination_mfst.actions:
                         tmpset.update(a.directory_references())
 
                 absent_dirs.difference_update(self.image.expanddirs(tmpset))
 
                 for a in absent_dirs:
-                        self.actions[2].append([directory.DirectoryAction(path=a), None])
+                        self.actions[2].append(
+			    [directory.DirectoryAction(path=a), None])
 
-                # over the list of update actions, check for any that are the
-                # target of hardlink actions, and add the renewal of those hardlinks
-                # to the install set
+		# over the list of update actions, check for any that are the
+		# target of hardlink actions, and add the renewal of those
+		# hardlinks to the install set
                 link_actions = self.image.get_link_actions()
 
                 # iterate over copy since we're appending to list
 
                 for a in self.actions[1][:]:
-                        if a[1].name == "file" and a[1].attrs["path"] in link_actions:
+                        if a[1].name == "file" and \
+                            a[1].attrs["path"] in link_actions:
                                 la = link_actions[a[1].attrs["path"]]
                                 self.actions[1].extend([(a, a) for a in la])
 
-        def get_xferstats(self):
-                if self.xfersize != -1:
-                        return (self.xferfiles, self.xfersize)
+                # Stash information needed by legacy actions.
+                self.__legacy_info["description"] = \
+                    self.__destination_mfst.get("description", "none provided")
 
-                self.xfersize = 0
-                self.xferfiles = 0
+                #
+                # We cross a point of no return here, and throw away the origin
+                # and destination manifests.  This is really important for
+                # memory footprint.
+                #
+                self.__origin_mfst = None
+                self.__destination_mfst = None
+
+        def get_legacy_info(self):
+                """ Returns information needed by the legacy action to
+                    populate the SVR4 packaging info. """
+                return self.__legacy_info
+
+        def get_xferstats(self):
+                if self.__xfersize != -1:
+                        return (self.__xferfiles, self.__xfersize)
+
+                self.__xfersize = 0
+                self.__xferfiles = 0
                 for src, dest in itertools.chain(*self.actions):
                         if dest and dest.needsdata(src):
-                                self.xfersize += \
+                                self.__xfersize += \
                                     int(dest.attrs.get("pkg.size", 0))
-                                self.xferfiles += 1
+                                self.__xferfiles += 1
 
-                return (self.xferfiles, self.xfersize)
+                return (self.__xferfiles, self.__xfersize)
 
         def will_xfer(self):
                 nf, nb = self.get_xferstats()
@@ -214,9 +235,9 @@ class PkgPlan(object):
                 at such a time.
                 """
                 flist = filelist.FileList(self.image, self.destination_fmri,
-                    self.progtrack)
+                    self.__progtrack)
 
-                self.progtrack.download_start_pkg(self.get_xfername())
+                self.__progtrack.download_start_pkg(self.get_xfername())
 
                 # retrieval step
                 if self.destination_fmri == None:
@@ -240,7 +261,7 @@ class PkgPlan(object):
 
                 # Tell flist to get any remaining files
                 flist.flush()
-                self.progtrack.download_end_pkg()
+                self.__progtrack.download_end_pkg()
 
         def gen_install_actions(self):
                 for src, dest in self.actions[0]:
@@ -288,7 +309,7 @@ class PkgPlan(object):
                         raise
 
         def postexecute(self):
-                """Perform actions required after installation or removal of a package.
+                """Perform actions required after install or remove of a pkg.
 
                 This method executes each action's postremove() or postinstall()
                 methods, as well as any package-wide steps that need to be taken
@@ -320,14 +341,15 @@ class PkgPlan(object):
 
                         # Save the filters we used to install the package, so
                         # they can be referenced later.
-                        if self.destination_filters:
+                        if self.__destination_filters:
                                 f = file("%s/pkg/%s/filters" % \
                                     (self.image.imgdir,
                                     self.destination_fmri.get_dir_path()), "w")
 
                                 f.writelines([
                                     myfilter + "\n"
-                                    for myfilter, code in self.destination_filters
+                                    for myfilter, code in \
+				        self.__destination_filters
                                 ])
                                 f.close()
 

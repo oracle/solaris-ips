@@ -60,14 +60,14 @@ class LegacyAction(generic.Action):
                         os.makedirs(pkgdir, 0755)
 
                 pkginfo = os.path.join(pkgdir, "pkginfo")
-                
+
                 if not os.path.isfile(pkginfo):
-                        manifest = pkgplan.destination_mfst
+                        legacy_info = pkgplan.get_legacy_info()
                         svr4attrs = {
                             "pkg": self.attrs["pkg"],
-                            "name": manifest.get("description", "none provided"),
+                            "name": legacy_info["description"],
                             "arch": "i386",
-                            "version": pkgplan.destination_fmri.version,
+                            "version": legacy_info["version"],
                             "category": "system",
                             "vendor": None, 
                             "desc": None, 
@@ -143,10 +143,10 @@ class LegacyAction(generic.Action):
                         if os.path.isfile(linkfile):
                                 os.unlink(linkfile)
 
-				# do this conditionally to be kinder
-				# to installations done w/ older versions
-				if link_count == 2: # last one
-					os.unlink(pkginfo)
+                                # do this conditionally to be kinder
+                                # to installations done w/ older versions
+                                if link_count == 2: # last one
+                                        os.unlink(pkginfo)
 
         def generate_indices(self):
                 return {
