@@ -211,7 +211,7 @@ class Repository(object):
                         cherrypy.log("Internal failure:\n",
                             severity = logging.CRITICAL, traceback = True)
 
-        catalog_0._cp_config = { 'response.stream' : True }
+        catalog_0._cp_config = { 'response.stream': True }
 
         @cherrypy.expose
         def manifest_0(self, *tokens):
@@ -257,11 +257,9 @@ class Repository(object):
                         cherrypy.request.tar_stream = None
 
         @cherrypy.expose
-        @cherrypy.tools.response_headers(headers = \
-            [('Content-Type','application/data')])
         def filelist_0(self, *tokens, **params):
                 """ Request data contains application/x-www-form-urlencoded
-                    entries with the requested filenames. The resulting tar
+                    entries with the requested filenames.  The resulting tar
                     stream is output directly to the client. """
 
                 try:
@@ -269,13 +267,13 @@ class Repository(object):
 
                         # We pass the response object directly to tarfile
                         # since it has a write() callable which is all tarfile
-                        # needs to output the stream. This will write the bytes
+                        # needs to output the stream.  This will write the bytes
                         # to the client through our parent server process.
                         tar_stream = tarfile.open(mode = "w|",
                             fileobj = cherrypy.response)
 
                         # We can use the request object for storage of data
-                        # specific to this request. In this case, it allows us
+                        # specific to this request.  In this case, it allows us
                         # to provide our on_end_request function with access
                         # to the stream we are processing.
                         cherrypy.request.tar_stream = tar_stream
@@ -303,7 +301,17 @@ class Repository(object):
 
                 yield ""
 
-        filelist_0._cp_config = { 'response.stream' : True }
+	# We have to configure the headers either through the _cp_config
+	# namespace, or inside the function itself whenever we are using
+	# a streaming generator.  This is because headers have to be setup
+	# before the response even begins and the point at which @tools
+	# hooks in is too late.
+        filelist_0._cp_config = {
+		'response.stream': True,
+		'tools.response_headers.on': True,
+		'tools.response_headers.headers': [('Content-Type',
+		    'application/data')]
+	}
 
         @cherrypy.expose
         def rename_0(self, *tokens, **params):
@@ -347,7 +355,7 @@ class Repository(object):
 
         @cherrypy.expose
         def file_0(self, *tokens):
-                """ The request is the SHA-1 hash name for the file. The
+                """ The request is the SHA-1 hash name for the file.  The
                     contents of the file is output directly to the client. """
                 self.scfg.inc_file()
 
@@ -462,7 +470,7 @@ class Repository(object):
         # set the timeout higher since the default is five minutes; not really
         # enough for a slow connection to upload content.
         add_0._cp_config = {
-                'request.process_request_body' : False,
-                'response.timeout' : 3600,
+                'request.process_request_body': False,
+                'response.timeout': 3600,
         }
 
