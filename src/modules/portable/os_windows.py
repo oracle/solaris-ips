@@ -93,26 +93,105 @@ def chown(path, owner, group):
         """
         return
 
+# On Windows, rename to existing file is not allowed, so the
+# destination file must be deleted first. But if the destination file 
+# is locked, it cannot be deleted. Windows has 3 types of file locking
+# 
+# 1. Using share access controls that allow applications to specify 
+#    whole-file access sharing for read, write or delete;
+# 2. Using byte range locks to arbitrate read and write access to 
+#    regions within a single file; and
+# 3. By Windows file systems disallowing executing files from being 
+#    opened for write or delete access.
+#
+# The code here deals only with locks of type 3. If the lock on the open 
+# file is for a running executable, then the destination file can be renamed
+# and deleted later when the file is no longer in use. For a rename to a 
+# destination locked with type 1 or 2, rename throws an OSError exception.
+#
+# To accomplish the delayed delete, the file is renamed to a trash folder
+# within the image containing the file. A single image is assumed to be 
+# contained within a single file system, thus making the rename feasible. 
+# The empty_trash method is called at the end of rename to cleanup any 
+# trash files that were left from earlier calls to rename, typically by 
+# previous processes. The empty_trash method needs to be fast most of the 
+# time, so the real work is only done the first time a rename operation is 
+# done on an image. The image module cannot be imported when this module is
+# initialized because that leads to a circular dependency.  So it is imported
+# as needed.
+        
+trashname = "trash"
+cached_image = None
+
+def get_trashdir(path):
+        """
+        Use path to determine its image, and return the directory name of
+        the trash directory within that image. This method does not create
+        the directory. If path is not contained within an image, return None.
+        The image is cached in the module variable cached_image.
+        """
+        import pkg.client.image as image
+        global cached_image    
+        if not cached_image or not path.startswith(cached_image.get_root()):
+                cached_image = image.Image()
+                try:
+                        cached_image.find_root(os.path.dirname(path))
+                except ValueError:
+                        # if path is not within an image, revert to the 
+                        # initial state
+                        cached_image = None
+                        return None
+        trashdir = os.path.join(cached_image.imgdir, trashname)
+        return trashdir
+        
+def empty_trash(path):
+        """
+        Cleanup files that were left by previous calls to rename.  The path
+        is used to find the image where the files were left. 
+        """
+        # Either this is the first time, or the path is in a different image
+        # from what we have cached. 
+        global cached_image
+        if cached_image and path.startswith(cached_image.get_root()):
+                return
+        trashdir = get_trashdir(path)
+        if trashdir:
+                shutil.rmtree(trashdir, True)
+
+def move_to_trash(path):
+        """
+        Move the file to a trash folder within its containing image. If the 
+        file is not in an image, just return without moving it. If the file
+        cannot be removed, raise an OSError exception.
+        """
+        trashdir = get_trashdir(path)
+        if not trashdir:
+                return
+        if not os.path.exists(trashdir):
+                os.mkdir(trashdir)
+        tdir = tempfile.mkdtemp(dir = trashdir)
+        # this rename will raise an exception if the file is
+        # locked and cannot be renamed.
+        os.rename(path, os.path.join(tdir, os.path.basename(path)))
+
 def rename(src, dst):
         """
-        On Windows, rename to existing file is not allowed, so we
-        must delete destination first. but if file is open, unlink
-        schedules it for delete but does not delete it. rename
-        happens immediately even for open files, so we create
-        temporary file, delete it, rename destination to that name,
-        then delete that. then rename is safe to do.
+        Rename the src file to the dst name, deleting dst if necessary.
         """
         try:
                 os.rename(src, dst)
         except OSError, err:
-                if err == errno.ENOENT:
+                if err.errno != errno.EEXIST:
                         raise
-                fd, temp = tempfile.mkstemp(dir=os.path.dirname(dst) or '.')
-                os.close(fd)
-                os.unlink(temp)
-                os.rename(dst, temp)
-                os.unlink(temp)
+                try:
+                        os.unlink(dst)
+                except OSError:
+                        move_to_trash(dst)
+                # finally rename the file
                 os.rename(src, dst)
+        # this probably does not get rid of a file that was just moved to trash
+        # this is here to get rid of files from previous calls to rename
+        empty_trash(dst)
 
 def link(src, dst):
         copyfile(src, dst)
