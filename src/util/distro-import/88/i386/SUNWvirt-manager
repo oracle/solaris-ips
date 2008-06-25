@@ -2,4 +2,6 @@ package SUNWvirt-manager
 import SUNWvirt-manager
 import SUNWvirt-manager-root
 version 0.4.0
+depend SUNWurlgrabber
+depend SUNWvirtinst
 end package

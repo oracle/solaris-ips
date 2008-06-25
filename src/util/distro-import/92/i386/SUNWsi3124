@@ -1,0 +1,4 @@
+package SUNWsi3124
+import SUNWsi3124
+add driver name=si3124 perms="* 0644 root sys" class=scsi-self-identifying alias=pci1095,3124 alias=pci1095,3132
+end package

@@ -1,0 +1,6 @@
+package SUNWgnome-file-mgr
+import SUNWgnome-file-mgr
+import SUNWgnome-file-mgr-devel
+import SUNWgnome-file-mgr-root
+depend SUNWgnome-gvfs
+end package

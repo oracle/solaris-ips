@@ -1,0 +1,5 @@
+package SUNWgnome-character-map
+import SUNWgnome-character-map
+import SUNWgnome-character-map-devel
+import SUNWgnome-character-map-root
+end package

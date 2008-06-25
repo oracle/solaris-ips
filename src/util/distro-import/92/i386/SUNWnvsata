@@ -1,0 +1,4 @@
+package SUNWnvsata
+import SUNWnvsata
+add driver name=nv_sata perms="* 0644 root sys" class=scsi-self-identifying alias=pci10de,37f alias=pci10de,55 alias=pci10de,54
+end package

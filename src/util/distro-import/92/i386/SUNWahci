@@ -1,0 +1,4 @@
+package SUNWahci
+import SUNWahci
+add driver name=ahci perms="* 0644 root sys" class=scsi-self-identifying alias=pciclass,010601
+end package
