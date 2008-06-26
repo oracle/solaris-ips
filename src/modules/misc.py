@@ -265,6 +265,8 @@ def port_available(host, port):
                 host = socket.gethostname()
 
         try:
+                sock = None
+
                 # Get the address family of our host (to allow for IPV6, etc.).
                 for entry in socket.getaddrinfo(host, port, socket.AF_UNSPEC,
                     socket.SOCK_STREAM):
@@ -289,14 +291,17 @@ def port_available(host, port):
 
                         sock.connect((host, port))
                         sock.close()
-                        sock = None
 
                         # If we successfully connected...
                         raise socket.error(errno.EBUSY,
                             'Port already in use')
 
         except socket.error, e:
-                errnum, msg = e
+                errnum = e[0]
+                try:
+                        msg = e[1]
+                except IndexError:
+                        msg = e[0]
 
                 if sock:
                         sock.close()

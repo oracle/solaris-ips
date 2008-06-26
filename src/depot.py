@@ -97,9 +97,8 @@ Usage: /usr/lib/pkg.depotd [--readonly] [--rebuild] [-d repo_dir] [-p port]
 class OptionError(Exception):
         """ Option exception. """
 
-        def __init__(self, args = None):
-                Exception.__init__(args)
-                self.args = args
+        def __init__(self, *args):
+                Exception.__init__(self, *args)
 
 if __name__ == "__main__":
 
@@ -146,7 +145,7 @@ if __name__ == "__main__":
                         elif opt == "--rebuild":
                                 rebuild = True
         except getopt.GetoptError, e:
-                print "pkg.depotd: unknown option -- %s" % e.opt
+                print "pkg.depotd: %s" % e.msg
                 usage()
         except OptionError, e:
                 print "pkg.depotd: option: %s -- %s" % (opt, e)
