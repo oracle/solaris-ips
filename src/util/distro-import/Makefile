@@ -134,6 +134,7 @@ UNBUNDLED_TARGETS=		\
 	Webstackui.import
 
 UNBUNDLED_CLUSTERS=		\
+	LangSupport.import	\
 	Clusters.import
 
 BUILDS=	75a			\
@@ -343,11 +344,17 @@ $(UNBUNDLED_TARGETS:%=$(BUILDS)/%) $(UNBUNDLED_CLUSTERS:%=$(BUILDS)/%):
 
 $(UNBUNDLED_TARGETS): unbundleds/$$(@:%.import=%)
 	rm -f redist_cluster; ln -s $(BUILDID)/redist_cluster redist_cluster
-	$(SOLARIS.PY) -s $(REPO) $(ALL_PKGS:%=-w %) $(ELIDED_FILES:%=-D %) `./package_names.py unbundleds/$(@:%.import=%)`  unbundleds/$(@:%.import=%) redist_cluster
+	$(SOLARIS.PY) -s $(REPO) $(ALL_PKGS:%=-w %) $(ELIDED_FILES:%=-D %) \
+		`./package_names.py unbundleds/$(@:%.import=%)` \
+		$(INCLUDE_PATH_$(BUILDID):%=-I %) unbundleds/$(@:%.import=%) \
+		redist_cluster
 
 $(UNBUNDLED_CLUSTERS): unbundleds/$$(@:%.import=%)
 	rm -f redist_cluster; ln -s $(BUILDID)/redist_cluster redist_cluster
-	$(SOLARIS.PY) -s $(REPO) $(ALL_PKGS:%=-w %) $(ELIDED_FILES:%=-D %) `./package_names.py unbundleds/$(@:%.import=%)`  unbundleds/$(@:%.import=%) $(UNBUNDLED_TARGETS:%.import=unbundleds/%) redist_cluster
+	$(SOLARIS.PY) -s $(REPO) $(ALL_PKGS:%=-w %) $(ELIDED_FILES:%=-D %) \
+		`./package_names.py unbundleds/$(@:%.import=%)` \
+		$(INCLUDE_PATH_$(BUILDID):%=-I %) unbundleds/$(@:%.import=%) \
+		$(UNBUNDLED_TARGETS:%.import=unbundleds/%) redist_cluster
 
 %/all_unbundleds:
 	$(MAKE) BUILDID=$(@D) $(@F)

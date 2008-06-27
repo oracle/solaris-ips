@@ -45,6 +45,7 @@ include common/SUNWcups
 include common/SUNWdbus
 include common/SUNWdbus-bindings
 include common/SUNWddu
+include common/SUNWdesktop-cache
 include common/SUNWdistro-license-copyright
 include common/SUNWdmfe
 include common/SUNWdoc
@@ -652,6 +653,7 @@ depend SUNWdbus
 depend SUNWdbus-bindings
 depend SUNWdcopy
 depend SUNWddu
+depend SUNWdesktop-cache
 depend SUNWdistro-license-copyright
 depend SUNWdmfe
 depend SUNWdoc
