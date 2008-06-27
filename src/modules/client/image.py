@@ -1147,7 +1147,8 @@ class Image(object):
                 # Convert a full directory path to the FMRI it represents.
                 def idx_to_fmri(index):
                         return pkg.fmri.PkgFmri(urllib.unquote(os.path.dirname(
-                            index[len(idxdir) + 1:]).replace("/", "@")), None)
+                            index[len(idxdir) + 1:]).replace(os.path.sep, "@")),
+                            None)
 
                 indices = (
                     (os.path.join(dir, "index"), os.path.join(dir, "manifest"))
@@ -1266,7 +1267,9 @@ class Image(object):
                     os.path.join(self.imgdir, "lost+found",
                     path + "-" + time.strftime("%Y%m%dT%H%M%SZ")))
 
-                os.makedirs(salvagedir)
+                parent = os.path.dirname(salvagedir)
+                if not os.path.exists(parent):
+                        os.makedirs(parent)
                 shutil.move(os.path.normpath(os.path.join(self.root, path)), salvagedir)
                 # XXX need a better way to do this.
                 emsg("\nWarning - directory %s not empty - contents preserved "

@@ -74,8 +74,11 @@ class LicenseAction(generic.Action):
                 path = os.path.normpath(os.path.sep.join(
                     (pkgplan.image.get_root(), path)))
 
+                # make sure the directory exists and the file is writable
                 if not os.path.exists(os.path.dirname(path)):
-                        self.makedirs(os.path.dirname(path), mode=755)
+                        self.makedirs(os.path.dirname(path), mode=0755)
+                elif os.path.exists(path):
+                        os.chmod(path, 0644)
 
                 lfile = file(path, "wb")
                 # XXX Should throw an exception if shasum doesn't match
