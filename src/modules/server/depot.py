@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2.4
 #
 # copyright (c) 2004-2007, cherrypy team (team@cherrypy.org)
 # all rights reserved.

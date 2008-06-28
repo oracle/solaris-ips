@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2.4
 #
 # Originally licensed by Peter Atrand to PSF under a Contributor Agreement.
 # See http://www.python.org/2.4/license for licensing details.
@@ -7,7 +7,7 @@
 #
 # Copyright (c) 2003-2005 by Peter Astrand <astrand@lysator.liu.se>
 #
-# Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 
