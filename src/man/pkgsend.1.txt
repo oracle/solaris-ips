@@ -29,7 +29,7 @@ OPTIONS
      The following options alter the default behavior:
 
      -s repo_url    The URL prefix of the depot server.  The default
-                    value is "http://localhost:10000/
+                    value is "http://localhost:10000/"
 
 SUBCOMMANDS
      The following subcommands are supported:

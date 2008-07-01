@@ -26,7 +26,7 @@ SYNOPSIS
      /usr/bin/pkg set-authority [-P] [-k ssl_key] [-c ssl_cert]
          [-O origin_url] authority
      /usr/bin/pkg unset-authority authority ...
-     /usr/bin/pkg authority [-H] [authname ...]
+     /usr/bin/pkg authority [-HP] [authname ...]
 
      /usr/bin/pkg version
      /usr/bin/pkg help
@@ -217,12 +217,13 @@ SUBCOMMANDS
           Remove the configuration associated with the given authority
           or authorities.
 
-     authority [-H] [authname]
+     authority [-HP] [authname]
           Display authority information.  With no arguments, display the
           list of configured authorities, and their origin URLs.  If a
           specific authority is requested, display the configuration
           values associated with that authority.  With -H, omit the
-          headers from the listing.
+          headers from the listing.  With -P, display only the preferred
+          authority.
 
      version
           Display a unique string identifying the version of pkg(1).  This

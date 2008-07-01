@@ -103,7 +103,7 @@ Advanced subcommands:
         pkg set-authority [-P] [-k ssl_key] [-c ssl_cert]
             [-O origin_url] authority
         pkg unset-authority authority ...
-        pkg authority [-H] [authname]
+        pkg authority [-HP] [authname]
 
 Options:
         -R dir
@@ -1213,20 +1213,30 @@ def authority_unset(img, args):
 def authority_list(img, args):
         """pkg authorities"""
         omit_headers = False
+        preferred_only = False
         preferred_authority = img.get_default_authority()
 
-        opts, pargs = getopt.getopt(args, "H")
+        opts, pargs = getopt.getopt(args, "HP")
         for opt, arg in opts:
                 if opt == "-H":
                         omit_headers = True
+                if opt == "-P":
+                        preferred_only = True
 
         if len(pargs) == 0:
                 if not omit_headers:
                         msg("%-35s %s" % ("AUTHORITY", "URL"))
-                for a in img.gen_authorities():
+
+                if preferred_only:
+                        auths = [img.get_authority(preferred_authority)]
+                else:
+                        auths = img.gen_authorities()
+
+                for a in auths:
                         # summary list
                         pfx, url, ssl_key, ssl_cert, dt = img.split_authority(a)
-                        if pfx == preferred_authority:
+
+                        if not preferred_only and pfx == preferred_authority:
                                 pfx += " (preferred)"
                         msg("%-35s %s" % (pfx, url))
         else:
