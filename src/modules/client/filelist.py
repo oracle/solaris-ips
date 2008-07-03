@@ -215,9 +215,6 @@ class FileList(object):
                 tarinfo.uname = "root"
                 tarinfo.gname = "root"
 
-                if not os.path.exists(download_dir):
-                        os.makedirs(download_dir)
-
                 # XXX catch IOError if tar stream closes inadvertently?
                 tar_stream.extract_to(tarinfo, download_dir, hashval)
 
@@ -272,6 +269,17 @@ class FileList(object):
                 url_prefix = self.image.get_url_by_authority(authority)
                 ssl_tuple = self.image.get_ssl_credentials(authority)
 
+                download_dir = self.image.incoming_download_dir()
+                # Make sure the download directory is there before we start
+                # retrieving and extracting files.
+                try:
+                        if not os.path.exists(download_dir):
+                                os.makedirs(download_dir)
+                except OSError, (errno, errorstr):
+                        raise RuntimeError("unable to create " \
+                                "download directory %s: %s" % 
+                                (download_dir, errorstr))
+
                 for i, k in enumerate(self.fhash.keys()):
                         fstr = "File-Name-%s" % i
                         req_dict[fstr] = k
@@ -294,8 +302,6 @@ class FileList(object):
                                 raise TransferTimedOutException
                         else:
                                 raise
-
-                download_dir = self.image.incoming_download_dir()
 
                 # Exception handling here is a bit complicated.  The finally
                 # block makes sure we always close our file objects.  If we get
