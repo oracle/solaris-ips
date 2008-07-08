@@ -1,0 +1,4 @@
+package SUNWlibpcap
+import SUNWlibpcap
+version 0.9.8
+end package
