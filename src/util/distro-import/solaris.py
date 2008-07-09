@@ -100,12 +100,12 @@ class pkg(object):
 
                         if o.type in "fv" and o.pathname in usedlist:
                                 s = reuse_err % (
-                                        o.pathname, 
-                                        self.name, 
-                                        imppkg, 
-                                        svr4pkgpaths[imppkg], 
+                                        o.pathname,
+                                        self.name,
+                                        imppkg,
+                                        svr4pkgpaths[imppkg],
                                         usedlist[o.pathname][1].name,
-                                        usedlist[o.pathname][0], 
+                                        usedlist[o.pathname][0],
                                         svr4pkgpaths[usedlist[o.pathname][0]])
                                 print s
                                 raise RuntimeError, s
@@ -119,10 +119,10 @@ class pkg(object):
                                 self.files.append(o)
 
                 if not self.version:
-                        self.version = "%s-%s" % (def_vers, def_branch)
+                        self.version = "%s-%s" % (def_vers, get_branch(self.name))
                 if not self.desc:
                         self.desc = zap_strings(p.pkginfo["NAME"], description_detritus)
-			
+
                 # This is how we'd import dependencies, but we'll use
                 # file-specific dependencies only, since these tend to be
                 # broken.
@@ -156,12 +156,12 @@ class pkg(object):
                         if t in "fv":
                                 assert imppkgname == usedlist[file][0]
                                 raise RuntimeError, reuse_err % (
-                                        file, 
-                                        self.name, 
-                                        self.imppkg, 
-                                        svr4pkgpaths[self.imppkg], 
+                                        file,
+                                        self.name,
+                                        self.imppkg,
+                                        svr4pkgpaths[self.imppkg],
                                         usedlist[file][1].name,
-                                        usedlist[file][0], 
+                                        usedlist[file][0],
                                         svr4pkgpaths[usedlist[file][0]])
 
                 usedlist[file] = (imppkgname, self)
@@ -180,8 +180,8 @@ class pkg(object):
                         a = actions.fromstr(
                             "%s path=%s %s" % \
                                     (
-                                        self.convert_type(o[0].type), 
-                                        o[0].pathname, 
+                                        self.convert_type(o[0].type),
+                                        o[0].pathname,
                                         line
                                         )
                             )
@@ -224,7 +224,7 @@ class pkg(object):
                             ( f.type, f.pathname)
 
                 return action
-        
+
         def check_perms(self, manifest):
                 if manifest.type not in "fevdxbc":
                         return
@@ -254,7 +254,7 @@ class pkg(object):
                 # attributes.
 
                 for f in o:
-                        a = actions.fromstr(("%s path=%s %s" % 
+                        a = actions.fromstr(("%s path=%s %s" %
                             (self.convert_type(f.type), file, line)).rstrip())
                         if show_debug:
                                 print "Updating attributes on " + \
@@ -262,12 +262,12 @@ class pkg(object):
                                     (f.pathname, curpkg.name, a)
                         f.changed_attrs = a.attrs
 
-        # apply a chattr to wildcarded files/dirs 
+        # apply a chattr to wildcarded files/dirs
         # also allows package specification, wildcarding, regexp edit
 
         def chattr_glob(self, glob, line):
                 args = line.split()
-                if args[0] == "from": 
+                if args[0] == "from":
                         args.pop(0)
                         pkgglob = args.pop(0)
                         line = " ".join(args)
@@ -296,7 +296,7 @@ class pkg(object):
 
                 for f in o:
                         file = f.pathname
-                        
+
                         if edit:
                                 a = self.file_to_action(f)
                                 if target in a.attrs:
@@ -318,7 +318,7 @@ class pkg(object):
                            file, chattr_line)
                         a = actions.fromstr(s)
                         f.changed_attrs = a.attrs
-                
+
 
 def sysv_to_new_name(pkgname):
         return "pkg:/" + os.path.basename(pkgname)
@@ -330,7 +330,7 @@ def pkg_path(pkgname):
         name = os.path.basename(pkgname)
         if pkgname in pkgpaths:
                 return pkgpaths[name]
-        if "/" in pkgname: 
+        if "/" in pkgname:
                 pkgpaths[name] = os.path.realpath(pkgname)
                 return pkgname
         else:
@@ -346,17 +346,18 @@ def start_package(pkgname):
         return pkg(pkgname)
 
 def end_package(pkg):
+        pkg_branch = get_branch(pkg.name)
         if not pkg.version:
-                pkg.version = "%s-%s" % (def_vers, def_branch)
+                pkg.version = "%s-%s" % (def_vers, pkg_branch)
         elif "-" not in pkg.version:
-                pkg.version += "-%s" % def_branch
+                pkg.version += "-%s" % pkg_branch
 
         print "Package '%s'" % sysv_to_new_name(pkg.name)
         print "  Version:", pkg.version
         print "  Description:", pkg.desc
 
 def publish_pkg(pkg):
-        
+
         t = trans.Transaction()
 
         if nopublish:
@@ -365,7 +366,7 @@ def publish_pkg(pkg):
                 t.open = lambda a, b: (200, 1000)
                 t.add = lambda a, b, c: None
                 t.close = lambda a, b, c: (200, {
-                    "Package-FMRI": 
+                    "Package-FMRI":
                         "%s@%s" % (sysv_to_new_name(pkg.name), pkg.version),
                     "State": "PUBLISHED"
                 })
@@ -391,9 +392,9 @@ def publish_pkg(pkg):
                                     action.attrlist("path")[-1]
                         print "    %s add dir %s %s %s %s" % (
                                 pkg.name,
-                                action.attrs["mode"], 
-                                action.attrs["owner"], 
-                                action.attrs["group"], 
+                                action.attrs["mode"],
+                                action.attrs["owner"],
+                                action.attrs["group"],
                                 action.attrs["path"]
                                 )
                 elif f.type == "s":
@@ -405,7 +406,7 @@ def publish_pkg(pkg):
                                 action.attrs["path"] = \
                                     action.attrlist("path")[-1]
                         print "    %s add link %s %s" % (
-                                pkg.name, 
+                                pkg.name,
                                 action.attrs["path"],
                                 action.attrs["target"]
                                 )
@@ -534,7 +535,7 @@ def publish_pkg(pkg):
                                             "%s has missing dependencies: %s" \
                                             % (path, u)
                                 undeps |= set(u)
-                                os.unlink(tmp)              
+                                os.unlink(tmp)
 
         # Publish dependencies
 
@@ -542,7 +543,7 @@ def publish_pkg(pkg):
 
         for p in set(pkg.idepend): # over set of svr4 deps, append ipkgs
                 if p in destpkgs:
-                        pkg.depend.extend(destpkgs[p]) 
+                        pkg.depend.extend(destpkgs[p])
                 else:
                         print "pkg %s: SVR4 package %s not seen" % \
                             (pkg.name, p)
@@ -554,7 +555,7 @@ def publish_pkg(pkg):
                 # Don't make a package depend on itself.
                 if p.split("@")[0] == pkg.name:
                         continue
-                # enhance unqualified dependencies to include current 
+                # enhance unqualified dependencies to include current
                 # pkg version
                 if "@" not in p and p in pkgdict:
                         p = "%s@%s" % (p, pkgdict[p].version)
@@ -631,7 +632,7 @@ def process_link_dependencies(path, target):
                         print "hardlink %s -> %s makes %s depend on %s" % \
                             (
                                 path, orig_target,
-                                usedlist[path][1].name, 
+                                usedlist[path][1].name,
                                 usedlist[target][1].name
                                 )
                 return ["%s@%s" % (usedlist[target][1].name,
@@ -705,9 +706,9 @@ def process_dependencies(file, path):
                                 # /platform, since we don't know where under
                                 # /platform to look.
                                 head, tail = os.path.split(d)
-                                deppath = os.path.join(p, 
-                                                       head, 
-                                                       kernel64, 
+                                deppath = os.path.join(p,
+                                                       head,
+                                                       kernel64,
                                                        tail)[1:]
                         else:
                                 # This is a hack for when a runpath uses the 64
@@ -730,7 +731,7 @@ def process_dependencies(file, path):
                                     usedlist[deppath][1].version) ]
                                 depend_list.append(
                                         (
-                                                deppath, 
+                                                deppath,
                                                 usedlist[deppath][1].name
                                                 )
                                         )
@@ -745,18 +746,20 @@ def process_dependencies(file, path):
         return dep_pkgs, undeps
 
 def zap_strings(input, strings):
-	""" takes an input string and a list of strings to be removed, ignoring case"""
-	for s in strings:
-		ls = s.lower()
-		while True:
-			li = input.lower()
-			i = li.find(ls)
-			if i < 0:
-				break
-			input = input[0:i] + input[i + len(ls):]
-	return input
+        """ takes an input string and a list of strings to be removed, ignoring case"""
+        for s in strings:
+                ls = s.lower()
+                while True:
+                        li = input.lower()
+                        i = li.find(ls)
+                        if i < 0:
+                                break
+                        input = input[0:i] + input[i + len(ls):]
+        return input
 
-	
+def get_branch(name):
+        return branch_dict.get(name, def_branch)
+
 def_vers = "0.5.11"
 def_branch = ""
 def_wos_path = ["/net/netinstall.eng/export/nv/x/latest/Solaris_11/Product"]
@@ -765,6 +768,8 @@ show_debug = False
 def_repo = "http://localhost:10000"
 wos_path = []
 include_path = []
+branch_dict = {}
+
 #
 # files (by path) we always delete for bulk imports
 # note that we ignore these if specifically included.
@@ -782,7 +787,7 @@ description_detritus = [", (usr)", ", (root)", " (usr)", " (root)",
 " (/usr)", " - / filesystem", ",root(/)"]
 
 try:
-        opts, args = getopt.getopt(sys.argv[1:], "D:I:b:dns:v:w:j:")
+        opts, args = getopt.getopt(sys.argv[1:], "B:D:I:b:dns:v:w:j:")
 except getopt.GetoptError, e:
         print "unknown option", e.opt
         sys.exit(1)
@@ -804,8 +809,16 @@ for opt, arg in opts:
                 elided_files[arg] = True
         elif opt == "-I":
                 include_path.extend(arg.split(":"))
-	elif opt == "-j": # means we're using the new argument form...
-		just_these_pkgs.append(arg)
+        elif opt == "-j": # means we're using the new argument form...
+                just_these_pkgs.append(arg)
+        elif opt == "-B":
+                branch_file = file(arg)
+                for line in branch_file:
+                        if not line.startswith("#"):
+                                bfargs = line.split()
+                                if len(bfargs) == 2:
+                                        branch_dict[bfargs[0]] = bfargs[1]
+                branch_file.close()
 
 if not def_branch:
         print "need a branch id (build number)"
@@ -822,10 +835,10 @@ if not wos_path:
         wos_path = def_wos_path
 
 if just_these_pkgs:
-	filelist = args
+        filelist = args
 else:
-	filelist = args[0:1]
-	just_these_pkgs = args[1:]
+        filelist = args[0:1]
+        just_these_pkgs = args[1:]
 
 
 in_multiline_import = False
@@ -888,135 +901,135 @@ def sourcehook(filename):
 
 for mf in filelist:
 
-	lexer = shlex.shlex(file(mf), mf, True)
-	lexer.whitespace_split = True		 
-	lexer.source = "include"
-	lexer.sourcehook = sourcehook
+        lexer = shlex.shlex(file(mf), mf, True)
+        lexer.whitespace_split = True
+        lexer.source = "include"
+        lexer.sourcehook = sourcehook
 
-	print "Processing %s" % lexer.infile
+        print "Processing %s" % lexer.infile
 
-	while True:
-		token = lexer.get_token()
+        while True:
+                token = lexer.get_token()
 
-		if not token:
-			break
+                if not token:
+                        break
 
-		if token == "package":
-			curpkg = start_package(lexer.get_token())
+                if token == "package":
+                        curpkg = start_package(lexer.get_token())
 
-		elif token == "end":
-			endarg = lexer.get_token()
-			if endarg == "package":
-				try:
-					end_package(curpkg)
-				except Exception, e:
-					print "ERROR(end_pkg):", e
+                elif token == "end":
+                        endarg = lexer.get_token()
+                        if endarg == "package":
+                                try:
+                                        end_package(curpkg)
+                                except Exception, e:
+                                        print "ERROR(end_pkg):", e
 
-				curpkg = None
-			if endarg == "import":
-				in_multiline_import = False
-				curpkg.imppkg = None
+                                curpkg = None
+                        if endarg == "import":
+                                in_multiline_import = False
+                                curpkg.imppkg = None
 
-		elif token == "version":
-			curpkg.version = lexer.get_token()
+                elif token == "version":
+                        curpkg.version = lexer.get_token()
 
-		elif token == "import":
-			package_name = lexer.get_token()
-			next = lexer.get_token()
-			if next != "exclude":
-				line = ""
-				lexer.push_token(next)
-			else:
-				line = lexer.instream.readline().strip()
+                elif token == "import":
+                        package_name = lexer.get_token()
+                        next = lexer.get_token()
+                        if next != "exclude":
+                                line = ""
+                                lexer.push_token(next)
+                        else:
+                                line = lexer.instream.readline().strip()
 
-			curpkg.import_pkg(package_name, line)
+                        curpkg.import_pkg(package_name, line)
 
-		elif token == "from":
-			pkgspec = lexer.get_token()
-			p = SolarisPackage(pkg_path(pkgspec))
-			curpkg.imppkg = p
-			spkgname = p.pkginfo["PKG"]
-			svr4pkgpaths[spkgname] = pkg_path(pkgspec)
-			svr4pkgsseen[spkgname] = p;
-			curpkg.add_svr4_src(spkgname)
+                elif token == "from":
+                        pkgspec = lexer.get_token()
+                        p = SolarisPackage(pkg_path(pkgspec))
+                        curpkg.imppkg = p
+                        spkgname = p.pkginfo["PKG"]
+                        svr4pkgpaths[spkgname] = pkg_path(pkgspec)
+                        svr4pkgsseen[spkgname] = p;
+                        curpkg.add_svr4_src(spkgname)
 
-			junk = lexer.get_token()
-			assert junk == "import"
-			in_multiline_import = True
+                        junk = lexer.get_token()
+                        assert junk == "import"
+                        in_multiline_import = True
 
-		elif token == "description":
-			curpkg.desc = lexer.get_token()
+                elif token == "description":
+                        curpkg.desc = lexer.get_token()
 
-		elif token == "depend":
-			curpkg.depend.append(lexer.get_token())
+                elif token == "depend":
+                        curpkg.depend.append(lexer.get_token())
 
-		elif token == "cluster":
-			curpkg.add_svr4_src(lexer.get_token())
+                elif token == "cluster":
+                        curpkg.add_svr4_src(lexer.get_token())
 
-		elif token == "idepend":
-			curpkg.idepend.append(lexer.get_token())
+                elif token == "idepend":
+                        curpkg.idepend.append(lexer.get_token())
 
-		elif token == "undepend":
-			curpkg.undepend.append(lexer.get_token())
+                elif token == "undepend":
+                        curpkg.undepend.append(lexer.get_token())
 
-		elif token == "add":
-			curpkg.extra.append(lexer.instream.readline().strip())
+                elif token == "add":
+                        curpkg.extra.append(lexer.instream.readline().strip())
 
-		elif token == "drop":
-			f = lexer.get_token()
-			l = [o for o in curpkg.files if o.pathname == f]
-			if not l:
-				print "Cannot drop '%s' from '%s': not found" % \
-				    (f, curpkg.name)
-			else:
-				del curpkg.files[curpkg.files.index(l[0])]
-				# XXX The problem here is that if we do this on a shared
-				# file (directory, etc), then it's missing from usedlist
-				# entirely, since we don't keep around *all* packages
-				# delivering a shared file, just the last seen.  This
-				# probably doesn't matter much.
-				del usedlist[f]
+                elif token == "drop":
+                        f = lexer.get_token()
+                        l = [o for o in curpkg.files if o.pathname == f]
+                        if not l:
+                                print "Cannot drop '%s' from '%s': not found" % \
+                                    (f, curpkg.name)
+                        else:
+                                del curpkg.files[curpkg.files.index(l[0])]
+                                # XXX The problem here is that if we do this on a shared
+                                # file (directory, etc), then it's missing from usedlist
+                                # entirely, since we don't keep around *all* packages
+                                # delivering a shared file, just the last seen.  This
+                                # probably doesn't matter much.
+                                del usedlist[f]
 
-		elif token == "chattr":
-			fname = lexer.get_token()
-			line = lexer.instream.readline().strip()
-			try:
-				curpkg.chattr(fname, line)
-			except Exception, e:
-				print "Can't change attributes on " + \
-				    "'%s': not in the package" % fname, e
-				raise
+                elif token == "chattr":
+                        fname = lexer.get_token()
+                        line = lexer.instream.readline().strip()
+                        try:
+                                curpkg.chattr(fname, line)
+                        except Exception, e:
+                                print "Can't change attributes on " + \
+                                    "'%s': not in the package" % fname, e
+                                raise
 
-		elif token == "chattr_glob":
-			glob = lexer.get_token()
-			line = lexer.instream.readline().strip()
-			try:
-				curpkg.chattr_glob(glob, line)
-			except Exception, e:
-				print "Can't change attributes on " + \
-				    "'%s': no matches in the package" % \
-				    glob, e
-				raise
+                elif token == "chattr_glob":
+                        glob = lexer.get_token()
+                        line = lexer.instream.readline().strip()
+                        try:
+                                curpkg.chattr_glob(glob, line)
+                        except Exception, e:
+                                print "Can't change attributes on " + \
+                                    "'%s': no matches in the package" % \
+                                    glob, e
+                                raise
 
-		elif in_multiline_import:
-			next = lexer.get_token()
-			if next == "with":
-				# I can't imagine this is supported, but there's no
-				# other way to read the rest of the line without a whole
-				# lot more pain.
-				line = lexer.instream.readline().strip()
-			else:
-				lexer.push_token(next)
-				line = ""
+                elif in_multiline_import:
+                        next = lexer.get_token()
+                        if next == "with":
+                                # I can't imagine this is supported, but there's no
+                                # other way to read the rest of the line without a whole
+                                # lot more pain.
+                                line = lexer.instream.readline().strip()
+                        else:
+                                lexer.push_token(next)
+                                line = ""
 
-			try:
-				curpkg.import_file(token, line)
-			except Exception, e:
-				print "ERROR(import_file):", e
-				raise
-		else:
-			raise "Error: unknown token '%s' (%s:%s)" % \
-			    (token, lexer.infile, lexer.lineno)
+                        try:
+                                curpkg.import_file(token, line)
+                        except Exception, e:
+                                print "ERROR(import_file):", e
+                                raise
+                else:
+                        raise "Error: unknown token '%s' (%s:%s)" % \
+                            (token, lexer.infile, lexer.lineno)
 
 seenpkgs = set(i[0] for i in usedlist.values())
 
@@ -1046,8 +1059,8 @@ print "New packages:\n"
 # XXX Sort these.  Preferably topologically, if possible, alphabetically
 # otherwise (for a rough progress gauge).
 if just_these_pkgs:
-        newpkgs = set(pkgdict[name] 
-                      for name in pkgdict.keys() 
+        newpkgs = set(pkgdict[name]
+                      for name in pkgdict.keys()
                       if name in just_these_pkgs
                       )
 else:

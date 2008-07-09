@@ -35,3 +35,48 @@ will place those builds in the default repo (localhost:10000).
 
 make import doesn't do anything sensible anymore; you must specify
 the build as shown.
+
+07/09/2008
+----------
+
+Some explanantion of solaris.py's arguments would appear useful:
+
+solaris.py [-dn] -b defaultbranch [-B perpkgbranches] [-D elided-file]
+  [-w additional_pkg_search_path] [-I includefile] [-j pkg_to_process] 
+  [-v defaultversion]  -s repo file1 ...
+
+
+  -d   		     enable debug messages
+
+  -n   		     fake publication to speed debugging
+
+  -b branch	     specify default branch version for pkgs
+
+  -j pkgname   	     if specified, don't publish all pkgs, just
+     		     those named in -j arguments.  Other pkgs are
+		     still pre-processed and used to satisfy dependencies.
+
+
+  -v version	     specify default version for pkgs
+
+
+  -w path	     specify this directory as part of svr4 pkg
+     		     search path. May be used multiple times.
+
+  -B filename	     specify filename that contains lines of  the form
+
+     		     pkgname branch 
+               
+		     to permit per pkg branch assignments
+		     May be used multiple times.
+
+  -D elidedfile	     ignore this file if found in svr4 pkg
+		     May be used multiple times.
+     
+  -I path	     add this directory to default search path
+     		     for files included during pkg processing
+		     May be used multiple times.
+
+
+
+
