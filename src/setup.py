@@ -132,15 +132,15 @@ scripts = {
         }
 
 man1_files = [
-        'man/pkg.1.txt',
-        'man/pkgsend.1.txt',
-        'man/pkgrecv.1.txt',
+        'man/pkg.1',
+        'man/pkgsend.1',
+        'man/pkgrecv.1',
         ]
 man1m_files = [
-        'man/pkg.depotd.1m.txt'
+        'man/pkg.depotd.1m'
         ]
 man5_files = [
-        'man/pkg.5.txt'
+        'man/pkg.5'
         ]
 packages = [
         'pkg',
@@ -253,17 +253,10 @@ class install_func(_install):
                 placed in their install locations. 
                 Also, make sure that cherrypy is installed.
                 """
+                for f in man1_files + man1m_files + man5_files:
+                        file_util.copy_file(f + ".txt", f, update=1)
+
                 _install.run(self)
-                if ostype == 'posix':
-                        # only rename manpages if building for unix-derived OS
-                        for (d, files) in [(man1_dir, man1_files), (man1m_dir,
-                            man1m_files), (man5_dir, man5_files)]:
-                                for f in files:
-                                        src = util.change_root(self.root, 
-                                            os.path.join(d, os.path.basename(f)))
-                                        if src.endswith('.txt'):
-                                                dst = src[:-4]
-                                                os.rename(src, dst)
 
                 for d, files in scripts[osname].iteritems():
                         for (srcname, dstname) in files:
