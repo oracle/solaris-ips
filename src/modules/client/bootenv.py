@@ -58,6 +58,7 @@ class BootEnv(object):
         def __init__(self, root):
                 self.be_name = None
                 self.dataset = None
+                self.be_name_clone = None
                 self.clone_dir = None
                 self.is_live_BE = False
                 self.snapshot_name = None
@@ -148,10 +149,12 @@ class BootEnv(object):
                         if ret != 0:
                                 emsg(_("pkg: unable to create BE %s") % \
                                     self.be_name_clone)
+                                return
 
                         if be.beMount(self.be_name_clone, self.clone_dir) != 0:
                                  emsg(_("pkg: attempt to mount %s failed.") % \
-                                    self.be_name)
+                                    self.be_name_clone)
+                                 return
 
                         # Set the image to our new mounted BE. 
                         img.find_root(self.clone_dir)
@@ -275,12 +278,26 @@ class BootEnv(object):
                         ret, self.be_name_clone, not_used = \
                             be.beCopy(None, self.be_name, self.snapshot_name)
                         if ret != 0:
-                                 emsg(_("pkg: unable to create BE %s") % \
-                                    self.be_name_clone)
+                                # If the above beCopy() failed we will try it
+                                # without expecting the BE clone name to be
+                                # returned by libbe. We do this in case an old
+                                # version of libbe is on a system with
+                                # a new version of pkg.
+                                self.be_name_clone = self.be_name + "_" + \
+                                    self.snapshot_name
+
+                                ret, not_used, not_used2 = \
+                                    be.beCopy(self.be_name_clone, \
+                                    self.be_name, self.snapshot_name)
+                                if ret != 0:
+                                        emsg(_("pkg: unable to create BE %s") \
+                                           % self.be_name_clone)
+                                        return
 
                         if be.beMount(self.be_name_clone, self.clone_dir) != 0:
-                                 emsg(_("pkg: unable to mount BE %s on %s") % \
+                                emsg(_("pkg: unable to mount BE %s on %s") % \
                                     (self.be_name_clone, self.clone_dir))
+                                return
                                 
                         emsg(_("The Boot Environment %s failed to be updated. "
                             "A snapshot was taken before the failed attempt "
