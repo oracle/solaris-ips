@@ -25,6 +25,7 @@
 
 import unittest
 import pkg.version as version
+import datetime
 
 class TestVersion(unittest.TestCase):
         def setUp(self):
@@ -32,6 +33,9 @@ class TestVersion(unittest.TestCase):
                 self.d2 = version.DotSequence("1.1.3")
                 self.d3 = version.DotSequence("5.4")
                 self.d4 = version.DotSequence("5.6")
+                self.d5 = version.DotSequence("5.4.1")
+                self.d6 = version.DotSequence("5.5.1")
+                self.d7 = version.DotSequence("6.5.1")
 
                 self.v1 = version.Version("5.5.1-10:20051122T000000Z", "5.5.1")
                 self.v2 = version.Version("5.5.1-10:20070318T123456Z", "5.5.1")
@@ -42,43 +46,62 @@ class TestVersion(unittest.TestCase):
                 self.v7 = version.Version("5.10", "5.5.1")
                 self.v8 = version.Version("5.10.1", "5.5.1")
                 self.v9 = version.Version("5.11", "5.5.1")
+                self.v9same = version.Version("5.11", "5.5.1")
                 self.v10 = version.Version("0.1,5.11-1", None)
                 self.v11 = version.Version("0.1,5.11-1:20070710T120000Z", None)
                 self.v12 = version.Version("5.11-0.72:20070921T211008Z",
                     "0.5.11")
                 self.v13 = version.Version("5.11-0.72:20070922T160226Z",
                     "0.5.11")
-		self.v14 = version.Version("0.1,5.11", None)
-		self.v15 = version.Version("0.1,5.11:20071014T234545Z", None)
-		self.v16 = version.Version("0.2,5.11", None)
-		self.v17 = version.Version("0.2,5.11-1:20071029T131519Z", None)
+                self.v14 = version.Version("0.1,5.11", None)
+                self.v15 = version.Version("0.1,5.11:20071014T234545Z", None)
+                self.v16 = version.Version("0.2,5.11", None)
+                self.v17 = version.Version("0.2,5.11-1:20071029T131519Z", None)
+                self.v18 = version.Version("5", "5")
 
-        def testdotsequenceequality(self):
-                self.assert_(self.d1 == self.d2)
-
-	def teststr(self):
-		self.assert_(str(self.v1) == "5.5.1,5.5.1-10:20051122T000000Z")
-		self.assert_(str(self.v2) == "5.5.1,5.5.1-10:20070318T123456Z")
-		self.assert_(str(self.v3) == "5.5.1,5.5-10")
-		self.assert_(str(self.v4) == "5.5.1,5.4-6")
-		self.assert_(str(self.v5) == "5.6,1")
-		self.assert_(str(self.v6) == "5.7,5.4")
-		self.assert_(str(self.v7) == "5.10,5.5.1")
-		self.assert_(str(self.v8) == "5.10.1,5.5.1")
-		self.assert_(str(self.v9) == "5.11,5.5.1")
-		self.assert_(str(self.v10) == "0.1,5.11-1")
-		self.assert_(str(self.v11) == "0.1,5.11-1:20070710T120000Z")
-		self.assert_(
-		    str(self.v12) == "5.11,0.5.11-0.72:20070921T211008Z")
-		self.assert_(
-		    str(self.v13) == "5.11,0.5.11-0.72:20070922T160226Z")
-		self.assert_(str(self.v14) == "0.1,5.11")
-		self.assert_(str(self.v15) == "0.1,5.11:20071014T234545Z")
-		self.assert_(str(self.v16) == "0.2,5.11")
-		self.assert_(str(self.v17) == "0.2,5.11-1:20071029T131519Z")
-
-        def testdotsequencelt(self):
+        def testdotsequencecomparison(self):
                 self.assert_(self.d3 < self.d4)
+                self.assert_(self.d4 > self.d3)
+                self.assert_(not self.d1 < self.d2)
+                self.assert_(not self.d1 > self.d2)
+                self.assert_(None < self.d1)
+                self.assert_(self.d1 > None)
+                self.assert_(None != self.d1)
+                self.assert_(self.d1 != self.d3)
+                self.assert_(self.d1 == self.d2)
+                self.assert_(self.d1.is_same_major(self.d2))
+                self.assert_(self.d3.is_same_major(self.d4))
+                self.assert_(self.d1.is_same_minor(self.d2))
+                self.assert_(not self.d1.is_same_minor(self.d5))
+                self.assert_(not self.d3.is_same_minor(self.d4))
+                self.assert_(not self.d6.is_same_minor(self.d7))
+                self.assert_(self.d3.is_subsequence(self.d5))
+                self.assert_(not self.d3.is_subsequence(self.d6))
+                self.assert_(not self.d1.is_subsequence(self.d6))
+                self.assert_(not self.d6.is_subsequence(self.d1))
+                self.assert_(not self.d5.is_subsequence(self.d3))
+
+        def teststr(self):
+                self.assert_(str(self.v1) == "5.5.1,5.5.1-10:20051122T000000Z")
+                self.assert_(str(self.v2) == "5.5.1,5.5.1-10:20070318T123456Z")
+                self.assert_(str(self.v3) == "5.5.1,5.5-10")
+                self.assert_(str(self.v4) == "5.5.1,5.4-6")
+                self.assert_(str(self.v5) == "5.6,1")
+                self.assert_(str(self.v6) == "5.7,5.4")
+                self.assert_(str(self.v7) == "5.10,5.5.1")
+                self.assert_(str(self.v8) == "5.10.1,5.5.1")
+                self.assert_(str(self.v9) == "5.11,5.5.1")
+                self.assert_(str(self.v10) == "0.1,5.11-1")
+                self.assert_(str(self.v11) == "0.1,5.11-1:20070710T120000Z")
+                self.assert_(
+                    str(self.v12) == "5.11,0.5.11-0.72:20070921T211008Z")
+                self.assert_(
+                    str(self.v13) == "5.11,0.5.11-0.72:20070922T160226Z")
+                self.assert_(str(self.v14) == "0.1,5.11")
+                self.assert_(str(self.v15) == "0.1,5.11:20071014T234545Z")
+                self.assert_(str(self.v16) == "0.2,5.11")
+                self.assert_(str(self.v17) == "0.2,5.11-1:20071029T131519Z")
+                self.assert_(str(self.v18) == "5,5")
 
         def testversionlt(self):
                 self.assert_(self.v1 < self.v2)
@@ -92,6 +115,12 @@ class TestVersion(unittest.TestCase):
         def testversionlt4(self):
                 self.assert_(self.v7 < self.v8)
 
+        def testversionlt5(self):
+                self.assert_(not self.v7 < None)
+
+        def testversionlt6(self):
+                self.assert_(not self.v7 < self.v7)
+
         def testversiongt1(self):
                 self.assert_(self.v6 > self.v5)
 
@@ -104,11 +133,23 @@ class TestVersion(unittest.TestCase):
         def testversiongt4(self):
                 self.assert_(self.v13 > self.v12)
 
+        def testversiongt5(self):
+                self.assert_(self.v7 > None)
+
+        def testversiongt6(self):
+                self.assert_(not self.v7 > self.v7)
+
         def testversioneq(self):
                 self.assert_(not self.v9 == self.v8)
+                self.assert_(not self.v9 == None)
+                self.assert_(not None == self.v9)
+                self.assert_(self.v9 == self.v9same)
 
         def testversionne(self):
                 self.assert_(self.v9 != self.v8)
+                self.assert_(self.v9 != None)
+                self.assert_(None != self.v9)
+                self.assert_(not self.v9 != self.v9same)
 
         def testversionbuildcompat1(self):
                 self.assert_(not self.v9.compatible_with_build(self.d3))
@@ -136,21 +177,66 @@ class TestVersion(unittest.TestCase):
                 self.assert_(self.v8.is_successor(self.v7,
                     version.CONSTRAINT_RELEASE_MAJOR))
 
-	def testversionsuccessor6(self):
-		self.assert_(self.v10.is_successor(self.v14,
-		    version.CONSTRAINT_AUTO))
+        def testversionsuccessor6(self):
+                self.assert_(self.v10.is_successor(self.v14,
+                    version.CONSTRAINT_AUTO))
 
-	def testversionsuccessor7(self):
-		self.assert_(self.v15.is_successor(self.v14,
-		    version.CONSTRAINT_AUTO))
+        def testversionsuccessor7(self):
+                self.assert_(self.v15.is_successor(self.v14,
+                    version.CONSTRAINT_AUTO))
 
-	def testversionsuccessor8(self):
-		self.assert_(not self.v16.is_successor(self.v14,
-		    version.CONSTRAINT_AUTO))
+        def testversionsuccessor8(self):
+                self.assert_(not self.v16.is_successor(self.v14,
+                    version.CONSTRAINT_AUTO))
 
-	def testversionsuccessor9(self):
-		self.assert_(not self.v17.is_successor(self.v14,
-		    version.CONSTRAINT_AUTO))
+        def testversionsuccessor9(self):
+                self.assert_(not self.v17.is_successor(self.v14,
+                    version.CONSTRAINT_AUTO))
+
+        def testversionbaddots(self):
+                self.assertRaises(version.IllegalDotSequence,
+                    version.Version, "0.2.q.4,5.11-1", None)
+
+        def testversionbadtime1(self):
+                self.assertRaises(version.IllegalVersion,
+                    version.Version, "0.2,5.11-1:moomoomoomoomooZ", None)
+
+        def testversionbadtime2(self):
+                self.assertRaises(version.IllegalVersion,
+                    version.Version, "0.2,5.11-1:20070113T131519Q", None)
+
+        def testversionbadtime3(self):
+                self.assertRaises(version.IllegalVersion,
+                    version.Version, "0.2,5.11-1:29T131519Z", None)
+
+        def testversionbadtime4(self):
+                #bad month
+                self.assertRaises(version.IllegalVersion,
+                    version.Version, "0.2,5.11-1:20070013T112233Z", None)
+
+        def testversionbadtime5(self):
+                #bad day; no day 31 in feb
+                self.assertRaises(version.IllegalVersion,
+                    version.Version, "0.2,5.11-1:20070231T112233Z", None)
+
+        def testversionbadtime6(self):
+                #bad second
+                self.assertRaises(version.IllegalVersion,
+                    version.Version, "0.2,5.11-1:20070113T131672Z", None)
+
+        def testversiongettime(self):
+                self.assert_(self.v1.get_timestamp().year == 2005)
+                self.assert_(self.v1.get_timestamp().hour == 0)
+                self.assert_(self.v1.get_timestamp().hour == 0)
+                self.assert_(self.v1.get_timestamp().tzname() == None)
+                self.assert_(self.v3.get_timestamp() == None)
+
+        def testversionsettime(self):
+                d = datetime.datetime.utcnow()
+                # 'd' includes microseconds, so we trim those off.
+                d = d.replace(microsecond=0)
+                self.v1.set_timestamp(d)
+                self.assert_(self.v1.get_timestamp() == d)
 
 if __name__ == "__main__":
         unittest.main()

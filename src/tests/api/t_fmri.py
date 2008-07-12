@@ -25,6 +25,7 @@
 
 import unittest
 import pkg.fmri as fmri
+import pkg.version as version
 
 class TestFMRI(unittest.TestCase):
         def setUp(self):
@@ -47,6 +48,11 @@ class TestFMRI(unittest.TestCase):
                     "pkg://origin/SUNWxwssu@0.5.11,5.11-0.72:20070922T153047Z")
                 self.n9 = fmri.PkgFmri("sunos/coreutils@6.8,5.11-0",
                     authority = "opensolaris.org")
+                self.n10 = fmri.PkgFmri(
+                    "pkg://origin2/SUNWxwssu@0.5.11,5.11-0.72:20070922T153047Z")
+                # same as n10
+                self.n11 = fmri.PkgFmri(
+                    "pkg://origin2/SUNWxwssu@0.5.11,5.11-0.72:20070922T153047Z")
 
         def testfmricmp1(self):
                 self.assert_(self.n3.__cmp__(self.n3) == 0)
@@ -69,6 +75,14 @@ class TestFMRI(unittest.TestCase):
         def testfmrisuccessor4(self):
                 self.assert_(not self.n5.is_successor(self.n4))
 
+        def testfmrisuccessor5(self):
+                """ is_successor should return true on equality """
+                self.assert_(self.n5.is_successor(self.n5))
+
+        def testfmrisuccessor6(self):
+                """ fmris are the same except for authority """
+                self.assert_(not self.n10.is_successor(self.n8))
+
         def testfmrisimilar1(self):
                 self.assert_(self.n4.is_similar(self.n2))
 
@@ -77,6 +91,46 @@ class TestFMRI(unittest.TestCase):
 
         def testfmrisimilar3(self):
                 self.assert_(not self.n1.is_similar(self.n6))
+
+        def testfmrihasauthority(self):
+                self.assert_(self.n1.has_authority() == True)
+                self.assert_(self.n2.has_authority() == False)
+                self.assert_(self.n3.has_authority() == False)
+                self.assert_(self.n4.has_authority() == False)
+                self.assert_(self.n5.has_authority() == False)
+                self.assert_(self.n6.has_authority() == False)
+                self.assert_(self.n7.has_authority() == True)
+                self.assert_(self.n8.has_authority() == True)
+
+        def testfmrihasversion(self):
+                self.assert_(self.n1.has_version() == False)
+                self.assert_(self.n2.has_version() == False)
+                self.assert_(self.n3.has_version() == True)
+                self.assert_(self.n4.has_version() == True)
+                self.assert_(self.n5.has_version() == True)
+                self.assert_(self.n6.has_version() == False)
+
+        def testfmriissamepkg(self):
+                self.assert_(self.n7.is_same_pkg(self.n8))
+                self.assert_(not self.n7.is_same_pkg(self.n10))
+                self.assert_(not self.n7.is_same_pkg(self.n6))
+
+        def testbadfmri1(self):
+                # no 31st day in february
+                self.assertRaises(version.IllegalVersion, fmri.PkgFmri,
+                    "pkg://origin/SUNWxwssu@0.5.11,5.11-0.72:20070231T203926Z")
+
+        def testbadfmri2(self):
+                # missing version
+                self.assertRaises(version.IllegalVersion, fmri.PkgFmri,
+                    "pkg://origin/SUNWxwssu@")
+
+        def testfmrihash(self):
+                """ FMRIs override __hash__.  Test that this is working
+                    properly """
+                a = {}
+                a[self.n10] = 1
+                self.assert_(a[self.n11] == 1)
 
 if __name__ == "__main__":
         unittest.main()

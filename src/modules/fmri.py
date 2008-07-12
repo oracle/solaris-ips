@@ -79,9 +79,8 @@ class PkgFmri(object):
                 """Return a tuple of offsets, used to extract different
                 components of the FMRI."""
 
-                try:
-                        veridx = fmri.rindex("@")
-                except ValueError:
+                veridx = fmri.rfind("@")
+                if veridx == -1:
                         veridx = None
 
                 if fmri.startswith("pkg://"):
@@ -212,7 +211,19 @@ class PkgFmri(object):
                 return self.get_fmri()
 
         def __hash__(self):
-                return hash(str(self))
+                #
+                # __hash__ need not generate a unique hash value for all
+                # possible objects-- it must simply guarantee that two
+                # items which are equal (i.e. cmp(a,b) == 0) always hash to
+                # the same value.  When timestamps are available we use
+                # those, as a short and fairly unique string.  If not,
+                # we punt to the package name, the fastest-to-hash thing
+                # we have at our disposal.
+                #
+                if self.version and self.version.timestr:
+                        return hash(self.version.timestr)
+                else:
+                        return hash(self.pkg_name)
 
         def __cmp__(self, other):
                 if not other:
@@ -230,16 +241,7 @@ class PkgFmri(object):
                                 return cmp(self.authority, other.authority)
 
                 if self.pkg_name == other.pkg_name:
-                        if self.version and not other.version:
-                                return 1
-
-                        if other.version and not self.version:
-                                return -1
-
-                        if not self.version and not other.version:
-                                return 0
-
-                        return self.version.__cmp__(other.version)
+                        return cmp(self.version, other.version)
 
                 if self.pkg_name > other.pkg_name:
                         return 1
@@ -271,10 +273,11 @@ class PkgFmri(object):
 
                 XXX Authority versus package name.
                 """
-                if not is_same_authority(self.authority, other.authority):
+                # Fastest path for most common case.
+                if self.pkg_name != other.pkg_name:
                         return False
 
-                if self.pkg_name == other.pkg_name:
+                if is_same_authority(self.authority, other.authority):
                         return True
 
                 return False
@@ -288,28 +291,24 @@ class PkgFmri(object):
                 m = re.match(fmristr, self.pkg_name)
                 return m != None
 
-        def is_similar(self, fmri):
+        def is_similar(self, other):
                 """True if package names match exactly.  Not a pattern-based
                 query."""
-                return self.pkg_name == fmri.pkg_name
+                return self.pkg_name == other.pkg_name
 
-        def is_successor(self, fmri):
-                """ returns True if self > fmri """
+        def is_successor(self, other):
+                """ returns True if self >= other """
 
-                if not self.pkg_name == fmri.pkg_name:
+                # Fastest path for most common case.
+                if self.pkg_name != other.pkg_name:
                         return False
 
-                if not is_same_authority(self.authority, fmri.authority):
+                if self.version < other.version:
                         return False
 
-                if fmri.version == None:
-                        return True
-
-                if self.version == None:
+                if not is_same_authority(self.authority, other.authority):
                         return False
 
-                if self.version < fmri.version:
-                        return False
                 return True
 
 def fmri_match(pkg_name, pattern):
@@ -341,35 +340,35 @@ def extract_pkg_name(fmri):
 def strip_auth_pfx(auth):
         """Strip the PREF_AUTH_PFX off of an authority."""
         if auth.startswith(PREF_AUTH_PFX_):
-                str = auth[len(PREF_AUTH_PFX_):]
+                outstr = auth[len(PREF_AUTH_PFX_):]
         else:
-                str = auth
+                outstr = auth
 
-        return str
+        return outstr
         
 
 def is_same_authority(auth1, auth2):
         """Compare two authorities.  Return true if they are the same, false
            otherwise. """
-	#
-	# This code is performance sensitive.  Ensure that you benchmark
-	# changes to it.
-	#
+        #
+        # This code is performance sensitive.  Ensure that you benchmark
+        # changes to it.
+        #
 
-	# Fastest path for most common case.
-	if auth1 == auth2:
-		return True
+        # Fastest path for most common case.
+        if auth1 == auth2:
+                return True
 
-	if auth1 == None:
-		auth1 = ""
-	if auth2 == None:
-		auth2 = ""
+        if auth1 == None:
+                auth1 = ""
+        if auth2 == None:
+                auth2 = ""
 
-	# String concatenation and string equality are both pretty fast.
-	if ((PREF_AUTH_PFX_ + auth1) == auth2) or \
-	    (auth1 == (PREF_AUTH_PFX_ + auth2)):
-		return True
+        # String concatenation and string equality are both pretty fast.
+        if ((PREF_AUTH_PFX_ + auth1) == auth2) or \
+            (auth1 == (PREF_AUTH_PFX_ + auth2)):
+                return True
         if auth1.startswith(PREF_AUTH_PFX_) and auth2.startswith(PREF_AUTH_PFX_):
                 return True
-	return False
+        return False
 

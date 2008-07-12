@@ -28,6 +28,7 @@
 import datetime
 import exceptions
 import time
+import calendar
 
 CONSTRAINT_NONE = 0
 CONSTRAINT_AUTO = 50
@@ -43,85 +44,52 @@ CONSTRAINT_BRANCH_MINOR = 102
 CONSTRAINT_SEQUENCE = 300
 
 class IllegalDotSequence(exceptions.Exception):
-        def __init__(self, args=None):
-                self.args = args
+        def __init__(self, *args):
+                exceptions.Exception.__init__(self, *args)
 
-class DotSequence(object):
+class DotSequence(list):
         """A DotSequence is the typical "x.y.z" string used in software
         versioning.  We define the "major release" value and the "minor release"
         value as the first two numbers in the sequence."""
 
         def __init__(self, dotstring):
                 try:
-                        self.sequence = map(int, dotstring.split("."))
+                        list.__init__(self, map(int, dotstring.split(".")))
                 except ValueError:
                         raise IllegalDotSequence(dotstring)
 
         def __str__(self):
-                return ".".join(map(str, self.sequence))
-
-        def __ne__(self, other):
-                if other == None:
-                        return True
-                if self.sequence != other.sequence:
-                        return True
-                return False
-
-        def __eq__(self, other):
-                if other == None:
-                        return False
-                if self.sequence == other.sequence:
-                        return True
-                return False
-
-        def __lt__(self, other):
-                if other == None:
-                        return False
-                if self.sequence < other.sequence:
-                        return True
-                return False
-
-        def __gt__(self, other):
-                if other == None:
-                        return False
-                if self.sequence > other.sequence:
-                        return True
-                return False
+                return ".".join(map(str, self))
 
         def is_subsequence(self, other):
                 """Return true if self is a "subsequence" of other, meaning that
                 other and self have identical components, up to the length of
                 self's sequence."""
 
-                if len(self.sequence) > len(other.sequence):
+                if len(self) > len(other):
                         return False
 
-                for a, b in zip(self.sequence, other.sequence):
+                for a, b in zip(self, other):
                         if a != b:
                                 return False
-
                 return True
 
         def is_same_major(self, other):
-                if self.sequence[0] == other.sequence[0]:
-                        return True
-                return False
+                """ Test if DotSequences have the same major number """
+                return self[0] == other[0]
 
         def is_same_minor(self, other):
-                if not self.is_same_major(other):
-                        return False
+                """ Test if DotSequences have the same major and minor num """
+                return self[0] == other[0] and self[1] == other[1]
 
-                if self.sequence[1] == other.sequence[1]:
-                        return True
-                return False
 
 class IllegalVersion(exceptions.Exception):
-        def __init__(self, args=None):
-                self.args = args
+        def __init__(self, *args):
+                exceptions.Exception.__init__(self, *args)
 
 class Version(object):
         """Version format is release[,build_release]-branch:datetime, which we
-        decompose into three DotSequences and the datetime.  The text
+        decompose into three DotSequences and a date string.  Time
         representation is in the ISO8601-compliant form "YYYYMMDDTHHMMSSZ",
         referring to the UTC time associated with the version.  The release and
         branch DotSequences are interpreted normally, where v1 < v2 implies that
@@ -134,24 +102,28 @@ class Version(object):
         def __init__(self, version_string, build_string):
                 # XXX If illegally formatted, raise exception.
 
-                try:
-                        timeidx = version_string.index(":")
+                if not version_string:
+                        raise IllegalVersion, \
+                            "Version cannot be empty."
+
+                timeidx = version_string.find(":")
+                if timeidx != -1:
                         timestr = version_string[timeidx + 1:]
-                except ValueError:
+                else:
                         timeidx = None
                         timestr = None
 
-                try:
-                        branchidx = version_string.index("-")
+                branchidx = version_string.find("-")
+                if branchidx != -1:
                         branch = version_string[branchidx + 1:timeidx]
-                except ValueError:
+                else:
                         branchidx = timeidx
                         branch = None
 
-                try:
-                        buildidx = version_string.index(",")
+                buildidx = version_string.find(",")
+                if buildidx != -1:
                         build = version_string[buildidx + 1:branchidx]
-                except ValueError:
+                else:
                         buildidx = branchidx
                         build = None
 
@@ -172,15 +144,33 @@ class Version(object):
                         assert build_string is not None
                         self.build_release = DotSequence(build_string)
 
+                #
+                # In 99% of the cases in which we use date and time, it's solely
+                # for comparison.  Since the ISO date string lexicographically
+                # collates in date order, we just hold onto the string-
+                # converting it to anything else is expensive.
+                #
                 if timestr:
-                        if timestr.endswith("Z") and "T" in timestr:
-                                self.datetime = datetime.datetime(
-                                    *time.strptime(timestr, "%Y%m%dT%H%M%SZ")[0:6])
-                        else:
-                                self.datetime = datetime.datetime.fromtimestamp(
-                                    float(timestr))
+                        if len(timestr) != 16 or timestr[8] != "T" \
+                            or timestr[15] != "Z":
+                                raise IllegalVersion, \
+                                    "Time must be ISO8601 format."
+                        try:
+                                dateint = int(timestr[0:8])
+                                timeint = int(timestr[9:15])
+                                datetime.datetime(dateint / 10000,
+                                    (dateint / 100) % 100,
+                                    dateint % 100,
+                                    timeint / 10000,
+                                    (timeint / 100) % 100,
+                                    timeint % 100)
+                        except:
+                                raise IllegalVersion, \
+                                    "Time must be ISO8601 format."
+
+                        self.timestr = timestr
                 else:
-                        self.datetime = None
+                        self.timestr = None
 
                 # raise IllegalVersion
 
@@ -191,14 +181,12 @@ class Version(object):
                 return False
 
         def __str__(self):
-                branch_str = date_str = ""
+                outstr = str(self.release) + "," + str(self.build_release)
                 if self.branch:
-                        branch_str = "-%s" % self.branch
-                if self.datetime:
-                        date_str = ":%s" % \
-                            self.datetime.strftime("%Y%m%dT%H%M%SZ")
-                return "%s,%s%s%s" % (self.release, self.build_release,
-                    branch_str, date_str)
+                        outstr += "-" + str(self.branch)
+                if self.timestr:
+                        outstr += ":" + self.timestr
+                return outstr
 
         def get_short_version(self):
                 branch_str = ""
@@ -206,11 +194,16 @@ class Version(object):
                         branch_str = "-%s" % self.branch
                 return "%s%s" % (self.release, branch_str)
 
-        def set_timestamp(self, timestamp):
-                self.datetime = datetime.datetime.fromtimestamp(timestamp)
+        def set_timestamp(self, timestamp=datetime.datetime.utcnow()):
+                assert type(timestamp) == datetime.datetime
+                assert timestamp.tzname() == None or timestamp.tzname() == "UTC"
+                self.timestr = timestamp.strftime("%Y%m%dT%H%M%SZ")
 
         def get_timestamp(self):
-                return self.datetime
+                if not self.timestr:
+                        return None
+                t = time.strptime(self.timestr, "%Y%m%dT%H%M%SZ")
+                return datetime.datetime.utcfromtimestamp(calendar.timegm(t))
 
         def __ne__(self, other):
                 if other == None:
@@ -218,7 +211,7 @@ class Version(object):
 
                 if self.release == other.release and \
                     self.branch == other.branch and \
-                    self.datetime == other.datetime:
+                    self.timestr == other.timestr:
                         return False
                 return True
 
@@ -228,7 +221,7 @@ class Version(object):
 
                 if self.release == other.release and \
                     self.branch == other.branch and \
-                    self.datetime == other.datetime:
+                    self.timestr == other.timestr:
                         return True
                 return False
 
@@ -242,35 +235,17 @@ class Version(object):
                 if other == None:
                         return False
 
-                if self.release and other.release:
-                        if self.release < other.release:
-                                return True
-                        if self.release != other.release:
-                                return False
-                elif self.release and not other.release:
-                        return False
-                elif not self.release and other.release:
+                if self.release < other.release:
                         return True
-
-                if self.branch and other.branch:
-                        if self.branch < other.branch:
-                                return True
-                        if self.branch != other.branch:
-                                return False
-                elif self.branch and not other.branch:
+                if self.release != other.release:
                         return False
-                elif not self.branch and other.branch:
-                        return True
 
-                if self.datetime and other.datetime:
-                        if self.datetime < other.datetime:
-                                return True
-                elif self.datetime and not other.datetime:
+                if self.branch < other.branch:
+                        return True
+                if self.branch != other.branch:
                         return False
-                elif not self.datetime and other.datetime:
-                        return True
 
-                return False
+                return self.timestr < other.timestr
 
         def __gt__(self, other):
                 """Returns True if 'self' comes after 'other', and vice versa.
@@ -280,43 +255,26 @@ class Version(object):
                 the branch and timestamp components.
                 """
                 if other == None:
-                        return False
-
-                if self.release and other.release:
-                        if self.release > other.release:
-                                return True
-                        if self.release != other.release:
-                                return False
-                elif self.release and not other.release:
                         return True
-                elif not self.release and other.release:
-                        return False
 
-                if self.branch and other.branch:
-                        if self.branch > other.branch:
-                                return True
-                        if self.branch != other.branch:
-                                return False
-                elif self.branch and not other.branch:
+                if self.release > other.release:
                         return True
-                elif not self.branch and other.branch:
+                if self.release != other.release:
                         return False
 
-                if self.datetime and other.datetime:
-                        if self.datetime > other.datetime:
-                                return True
-                elif self.datetime and not other.datetime:
+                if self.branch > other.branch:
                         return True
-                elif not self.datetime and other.datetime:
+                if self.branch != other.branch:
                         return False
 
-                return False
+                return self.timestr > other.timestr
 
         def __cmp__(self, other):
                 if self < other:
                         return -1
                 if self > other:
                         return 1
+
                 if self.build_release < other.build_release:
                         return -1
                 if self.build_release > other.build_release:
@@ -368,10 +326,10 @@ class Version(object):
                         elif not other.branch:
                                 branch_match = True
 
-                        if self.datetime and other.datetime:
-                                if other.datetime == self.datetime:
+                        if self.timestr and other.timestr:
+                                if other.timestr == self.timestr:
                                         date_match = True
-                        elif not other.datetime:
+                        elif not other.timestr:
                                 date_match = True
 
                         return release_match and branch_match and date_match

@@ -32,6 +32,8 @@ import re
 import sha
 import shutil
 import time
+import datetime
+import calendar
 import urllib
 
 import pkg.actions
@@ -53,7 +55,7 @@ class Transaction(object):
 
         def __init__(self):
                 # XXX Need to use an FMRI object.
-                self.open_time = -1
+                self.open_time = None
                 self.pkg_name = ""
                 self.esc_pkg_name = ""
                 self.critical = False
@@ -64,7 +66,10 @@ class Transaction(object):
                 return
 
         def get_basename(self):
-                return "%d_%s" % (self.open_time,
+                assert self.open_time
+                # XXX should the timestamp be in ISO format?
+                return "%d_%s" % \
+                    (calendar.timegm(self.open_time.utctimetuple()),
                     urllib.quote("%s" % self.fmri, ""))
 
         def open(self, cfg, *tokens):
@@ -85,7 +90,7 @@ class Transaction(object):
                 except IndexError:
                         return httplib.BAD_REQUEST
 
-                self.open_time = time.time()
+                self.open_time = datetime.datetime.utcnow()
 
                 # record transaction metadata:  opening_time, package, user
 
@@ -129,9 +134,10 @@ class Transaction(object):
                 reestablish the status of inflight transactions."""
 
                 self.cfg = cfg
-                self.open_time, self.esc_pkg_name = \
+                open_time_str, self.esc_pkg_name = \
                     os.path.basename(trans_dir).split("_", 1)
-                self.open_time = int(self.open_time)
+                self.open_time = \
+                    datetime.datetime.utcfromtimestamp(int(open_time_str))
                 self.pkg_name = urllib.unquote(self.esc_pkg_name)
 
                 # This conversion should always work, because we encoded the
