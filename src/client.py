@@ -376,6 +376,13 @@ def image_update(img, args):
                 return 0
 
         try:
+                img.imageplan.preexecute()
+        except Exception, e:
+                error(_("\nAn unexpected error happened during " \
+                    "image-update:"))
+                img.cleanup_downloads()
+                raise
+        try:
                 be = bootenv.BootEnv(img.get_root())
         except RuntimeError:
                 be = bootenv.BootEnvNull(img.get_root())
@@ -395,7 +402,7 @@ def image_update(img, args):
                 be.restore_image()
                 ret_code = 1
         except Exception, e:
-                error(_("An unexpected error happened during " \
+                error(_("\nAn unexpected error happened during " \
                     "image-update: %s") % e)
                 be.restore_image()
                 img.cleanup_downloads()
@@ -463,6 +470,14 @@ def install(img, args):
 
         if noexecute:
                 return 0
+
+        try:
+                img.imageplan.preexecute()
+        except Exception, e:
+                error(_("\nAn unexpected error happened during " \
+                    "install:"))
+                img.cleanup_downloads()
+                raise
 
         try:
                 be = bootenv.BootEnv(img.get_root())
@@ -567,6 +582,13 @@ def uninstall(img, args):
 
         if noexecute:
                 return 0
+
+        try:
+                img.imageplan.preexecute()
+        except Exception, e:
+                error(_("\nAn unexpected error happened during " \
+                    "uninstall"))
+                raise
 
         try:
                 be = bootenv.BootEnv(img.get_root())

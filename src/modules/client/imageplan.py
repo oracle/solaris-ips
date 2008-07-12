@@ -34,8 +34,10 @@ from pkg.misc import msg
 UNEVALUATED = 0
 EVALUATED_OK = 1
 EVALUATED_ERROR = 2
-EXECUTED_OK = 3
-EXECUTED_ERROR = 4
+PREEXECUTED_OK = 3
+PREEXECUTED_ERROR = 4
+EXECUTED_OK = 5
+EXECUTED_ERROR = 6
 
 class ImagePlan(object):
         """An image plan takes a list of requested packages, an Image (and its
@@ -156,7 +158,7 @@ class ImagePlan(object):
 
         def gen_new_installed_pkgs(self):
                 """ generates all the actions in the new set of installed pkgs"""
-                assert self.state == EVALUATED_OK
+                assert self.state == PREEXECUTED_OK
                 fmri_set = set(self.image.gen_installed_pkgs())
 
                 for p in self.pkg_plans:
@@ -372,7 +374,7 @@ Cannot remove '%s' due to the following packages that directly depend on it:"""\
 
                 return not self.pkg_plans
 
-        def execute(self):
+        def preexecute(self):
                 """Invoke the evaluated image plan
                 preexecute, execute and postexecute
                 execute actions need to be sorted across packages
@@ -381,31 +383,43 @@ Cannot remove '%s' due to the following packages that directly depend on it:"""\
                 assert self.state == EVALUATED_OK
 
                 if self.nothingtodo():
-                        self.state = EXECUTED_OK
+                        self.state = PREEXECUTED_OK
                         return
 
                 npkgs = 0
                 nfiles = 0
                 nbytes = 0
                 nactions = 0
-                for p in self.pkg_plans:
-                        nf, nb = p.get_xferstats()
-                        nbytes += nb
-                        nfiles += nf
-                        nactions += p.get_nactions()
+                try:
+                        for p in self.pkg_plans:
+                                nf, nb = p.get_xferstats()
+                                nbytes += nb
+                                nfiles += nf
+                                nactions += p.get_nactions()
 
-                        # It's not perfectly accurate but we count a download
-                        # even if the package will do zero data transfer.  This
-                        # makes the pkg stats consistent between download and
-                        # install.
-                        npkgs += 1
+                                # It's not perfectly accurate but we count a download
+                                # even if the package will do zero data transfer.  This
+                                # makes the pkg stats consistent between download and
+                                # install.
+                                npkgs += 1
 
-                self.progtrack.download_set_goal(npkgs, nfiles, nbytes)
+                        self.progtrack.download_set_goal(npkgs, nfiles, nbytes)
 
-                for p in self.pkg_plans:
-                        p.preexecute()
+                        for p in self.pkg_plans:
+                                p.preexecute()
 
-                self.progtrack.download_done()
+                        self.progtrack.download_done()
+                except:
+                        self.state = PREEXECUTED_ERROR
+                        raise
+
+                self.state = PREEXECUTED_OK
+
+        def execute(self):
+                """Invoke the evaluated image plan
+                preexecute, execute and postexecute
+                execute actions need to be sorted across packages
+                """
 
                 #
                 # now we're ready to start install.  At this point we
@@ -420,6 +434,12 @@ Cannot remove '%s' due to the following packages that directly depend on it:"""\
                 # that owner for existing files.
 
                 # generate list of removal actions, sort and execute
+
+                assert self.state == PREEXECUTED_OK
+
+                if self.nothingtodo():
+                        self.state = EXECUTED_OK
+                        return
 
                 actions = [ (p, src, dest)
                             for p in self.pkg_plans
