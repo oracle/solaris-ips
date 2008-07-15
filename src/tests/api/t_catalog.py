@@ -61,33 +61,27 @@ class TestCatalog(unittest.TestCase):
 
         def testcatalogfmris1(self):
                 cf = fmri.PkgFmri("pkg:/test@1.0,5.10-1:20070101T120000Z")
-                cl = self.c.get_matching_fmris(cf, None)
+                cl = self.c.get_matching_fmris(cf)
 
                 self.assert_(len(cl) == 4)
 
         def testcatalogfmris2(self):
                 cf = fmri.PkgFmri("pkg:/test@1.0,5.11-1:20061231T120000Z")
-                cl = self.c.get_matching_fmris(cf, None)
+                cl = self.c.get_matching_fmris(cf)
 
                 self.assert_(len(cl) == 4)
 
         def testcatalogfmris3(self):
                 cf = fmri.PkgFmri("pkg:/test@1.0,5.11-2")
-                cl = self.c.get_matching_fmris(cf, None)
+                cl = self.c.get_matching_fmris(cf)
 
                 self.assert_(len(cl) == 2)
 
         def testcatalogfmris4(self):
                 cf = fmri.PkgFmri("pkg:/test@1.0,5.11-3")
-                cl = self.c.get_matching_fmris(cf, None)
+                cl = self.c.get_matching_fmris(cf)
 
                 self.assert_(len(cl) == 1)
-
-        def testcatalogregex1(self):
-                cl = self.c.get_matching_fmris("flob",
-                    matcher = fmri.regex_match)
-
-                self.assert_(len(cl) == 0)
 
 class TestEmptyCatalog(unittest.TestCase):
         def setUp(self):
@@ -101,7 +95,7 @@ class TestEmptyCatalog(unittest.TestCase):
 
         def testmatchingfmris(self):
                 cf = fmri.PkgFmri("pkg:/test@1.0,5.11-1:20061231T120000Z")
-                cl = self.c.get_matching_fmris(cf, None)
+                cl = self.c.get_matching_fmris(cf)
 
                 self.assert_(len(cl) == 0)
 
@@ -352,7 +346,7 @@ class TestUpdateLog(unittest.TestCase):
 
                 # Verify original packages present
                 cf = fmri.PkgFmri("pkg:/test@1.0,5.10-1:20070101T120000Z")
-                cl = cnew.get_matching_fmris(cf, None)
+                cl = cnew.get_matching_fmris(cf)
 
                 self.assert_(len(cl) == 4)
                 # a sleep here is needed on Windows to make sure that the time
@@ -385,7 +379,7 @@ class TestUpdateLog(unittest.TestCase):
 
                 # Verify new package present
                 cf = fmri.PkgFmri("pkg:/test@1.0,5.11-3:20000101T120040Z")
-                cl = cnew.get_matching_fmris(cf, None)
+                cl = cnew.get_matching_fmris(cf)
 
                 self.assert_(len(cl) == 2)
 
@@ -416,7 +410,7 @@ class TestUpdateLog(unittest.TestCase):
 
                 # Verify original packages present
                 cf = fmri.PkgFmri("pkg:/test@1.0,5.10-1:20070101T120000Z")
-                cl = cnew.get_matching_fmris(cf, None)
+                cl = cnew.get_matching_fmris(cf)
 
                 self.assert_(len(cl) == 4)
                 # a sleep here is needed on Windows to make sure that the time
@@ -449,7 +443,7 @@ class TestUpdateLog(unittest.TestCase):
 
                 # Verify new package present
                 cf = fmri.PkgFmri("pkg:/bpkg@1.0,5.11-3:20000101T120040Z")
-                cl = cnew.get_matching_fmris(cf, None)
+                cl = cnew.get_matching_fmris(cf)
 
                 self.assert_(len(cl) == 1)
                 # a sleep here is needed on Windows to make sure that the time
@@ -484,12 +478,12 @@ class TestUpdateLog(unittest.TestCase):
 
                 # Verify New packages present
                 cf = fmri.PkgFmri("pkg:/cpkg@1.0,5.11-3:20000101T120040Z")
-                cl = cnew.get_matching_fmris(cf, None)
+                cl = cnew.get_matching_fmris(cf)
                 
                 self.assert_(len(cl) == 1)
 
                 cf = fmri.PkgFmri("pkg:/dpkg@1.0,5.11-3:20000101T120040Z")
-                cl = cnew.get_matching_fmris(cf, None)
+                cl = cnew.get_matching_fmris(cf)
 
                 self.assert_(len(cl) == 1)
 

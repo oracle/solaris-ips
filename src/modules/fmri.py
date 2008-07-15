@@ -23,6 +23,7 @@
 # Use is subject to license terms.
 #
 
+import fnmatch
 import re
 import urllib
 
@@ -73,6 +74,9 @@ class PkgFmri(object):
                         self.pkg_name = fmri[nameidx:veridx]
                 else:
                         self.pkg_name = fmri[nameidx:]
+
+        def copy(self):
+                return PkgFmri(str(self))
 
         @staticmethod
         def gen_fmri_indexes(fmri):
@@ -210,6 +214,23 @@ class PkgFmri(object):
                 """Return as specific an FMRI representation as possible."""
                 return self.get_fmri()
 
+        def __repr__(self):
+                """Return as specific an FMRI representation as possible."""
+                if not self.authority:
+                        if not self.version:
+                                fmristr = "pkg:/%s" % self.pkg_name
+                        else:
+                                fmristr = "pkg:/%s@%s" % (self.pkg_name,
+                                    self.version)
+                elif not self.version:
+                        fmristr = "pkg://%s/%s" % (self.authority,
+                            self.pkg_name)
+                else:
+                        fmristr = "pkg://%s/%s@%s" % (self.authority,
+                            self.pkg_name, self.version)
+
+                return "<pkg.fmri.PkgFmri '%s' at %#x>" % (fmristr, id(self))
+
         def __hash__(self):
                 #
                 # __hash__ need not generate a unique hash value for all
@@ -326,6 +347,9 @@ class PkgFmri(object):
 def fmri_match(pkg_name, pattern):
         """Returns true if 'pattern' is a proper subset of 'pkg_name'."""
         return ("/" + pkg_name).endswith("/" + pattern)
+
+def glob_match(pkg_name, pattern):
+        return fnmatch.fnmatchcase(pkg_name, pattern)
 
 def regex_match(pkg_name, pattern):
         """Returns true if 'pattern' is a regular expression matching 'pkg_name'."""

@@ -157,7 +157,8 @@ class TestPkgInstallBasics(testutils.SingleDepotTestCase):
 
                 self.pkg("install foo@1.1")
                 self.pkg("list foo@1.1")
-                self.pkg("list foo@1.0", exit = 0)
+                self.pkg("list foo@1.0", exit = 1)
+                self.pkg("list foo@1")
                 self.pkg("verify")
 
                 self.pkg("uninstall foo")

@@ -309,16 +309,16 @@ class pkg5TestCase(unittest.TestCase):
                     stdout = subprocess.PIPE,
                     stderr = subprocess.STDOUT)
 
-                output = p.stdout.read()
+                self.output = p.stdout.read()
                 retcode = p.wait()
-                self.debugresult(retcode, output)
+                self.debugresult(retcode, self.output)
 
                 if retcode == 99:
-                        raise TracebackException(cmdline, output, comment,
+                        raise TracebackException(cmdline, self.output, comment,
                             debug=self.get_debugbuf())
                 elif retcode != exit:
                         raise UnexpectedExitCodeException(cmdline,
-                            exit, retcode, output, comment,
+                            exit, retcode, self.output, comment,
                             debug=self.get_debugbuf())
 
                 return retcode
@@ -333,20 +333,20 @@ class pkg5TestCase(unittest.TestCase):
                     stdout = subprocess.PIPE,
                     stderr = subprocess.STDOUT)
 
-                output = p.stdout.read()
+                self.output = p.stdout.read()
                 retcode = p.wait()
-                self.debugresult(retcode, output)
+                self.debugresult(retcode, self.output)
 
                 if retcode == 99:
-                        raise TracebackException(cmdline, output, comment,
+                        raise TracebackException(cmdline, self.output, comment,
 			    debug = self.get_debugbuf())
                 elif retcode != exit:
                         raise UnexpectedExitCodeException(cmdline,
-                            exit, retcode, output, comment,
+                            exit, retcode, self.output, comment,
 			    debug = self.get_debugbuf())
 
                 if out:
-                        return retcode, output
+                        return retcode, self.output
 
                 return retcode
 

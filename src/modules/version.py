@@ -188,6 +188,9 @@ class Version(object):
                         outstr += ":" + self.timestr
                 return outstr
 
+        def __repr__(self):
+                return "<pkg.fmri.Version '%s' at %#x>" % (self, id(self))
+
         def get_short_version(self):
                 branch_str = ""
                 if self.branch:

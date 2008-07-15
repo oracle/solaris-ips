@@ -29,15 +29,186 @@ if __name__ == "__main__":
 
 import unittest
 import os
+import re
+import shutil
+import difflib
 
-class TestPkgList(testutils.SingleDepotTestCase):
+class TestPkgList(testutils.ManyDepotTestCase):
+
+        foo1 = """
+            open foo@1,5.11-0
+            close """
+
+        foo10 = """
+            open foo@1.0,5.11-0
+            close """
+
+        foo11 = """
+            open foo@1.1,5.11-0
+            close """
+
+        foo12 = """
+            open foo@1.2,5.11-0
+            close """
+
+        foo121 = """
+            open foo@1.2.1,5.11-0
+            close """
+
+        food12 = """
+            open food@1.2,5.11-0
+            close """
+
+        def setUp(self):
+                testutils.ManyDepotTestCase.setUp(self, 2)
+
+                durl1 = self.dcs[1].get_depot_url()
+                self.pkgsend_bulk(durl1, self.foo1)
+                self.pkgsend_bulk(durl1, self.foo10)
+                self.pkgsend_bulk(durl1, self.foo11)
+                self.pkgsend_bulk(durl1, self.foo12)
+                self.pkgsend_bulk(durl1, self.foo121)
+                self.pkgsend_bulk(durl1, self.food12)
+
+                durl2 = self.dcs[2].get_depot_url()
+
+                # Ensure that the second repo's packages have exactly the same
+                # timestamps as those in the first ... by copying the repo over.
+                # If the repos need to have some contents which are different,
+                # send those changes after restarting depot 2.
+                self.dcs[2].stop()
+                d1dir = self.dcs[1].get_repodir()
+                d2dir = self.dcs[2].get_repodir()
+                shutil.rmtree(d2dir)
+                shutil.copytree(d1dir, d2dir)
+                self.dcs[2].start()
+
+                self.image_create(durl1, prefix = "test1")
+
+                self.pkg("set-authority -O " + durl2 + " test2")
+
+                self.pkg("refresh")
+
+        def reduceSpaces(self, string):
+                """Reduce runs of spaces down to a single space."""
+                return re.sub(" +", " ", string)
+
+        def assertEqualDiff(self, expected, actual):
+                self.assertEqual(expected, actual,
+                    "Actual output differed from expected output.\n" +
+                    "\n".join(difflib.unified_diff(
+                        expected.splitlines(), actual.splitlines(),
+                        "Expected output", "Actual output", lineterm="")))
+
+        def tearDown(self):
+                testutils.ManyDepotTestCase.tearDown(self)
 
         def test_empty_image(self):
                 """ pkg list should fail in an empty image """
 
-                self.image_create(self.dc.get_depot_url())
+                self.image_create(self.dcs[1].get_depot_url())
                 self.pkg("list", exit=1)
 
+        def test_list_1(self):
+                """List all "foo@1.0" from auth "test1"."""
+                self.pkg("list -aH pkg://test1/foo@1.0,5.11-0")
+                expected = \
+                    "foo 1.0-0 known u---\n"
+                output = self.reduceSpaces(self.output)
+                self.assertEqualDiff(expected, output)
+
+        def test_list_2(self):
+                """List all "foo@1.0", regardless of authority, with "pkg:/"
+                prefix."""
+                self.pkg("list -aH pkg:/foo@1.0,5.11-0")
+                expected = \
+                    "foo 1.0-0 known u---\n" \
+                    "foo (test2) 1.0-0 known u---\n"
+                output = self.reduceSpaces(self.output)
+                self.assertEqualDiff(expected, output)
+
+        def test_list_3(self):
+                """List all "foo@1.0", regardless of authority, without "pkg:/"
+                prefix."""
+                self.pkg("list -aH pkg:/foo@1.0,5.11-0")
+                expected = \
+                    "foo         1.0-0 known u---\n" \
+                    "foo (test2) 1.0-0 known u---\n"
+                output = self.reduceSpaces(self.output)
+                expected = self.reduceSpaces(expected)
+                self.assertEqualDiff(expected, output)
+
+        def test_list_4(self):
+                """List all versions of package foo, regardless of authority."""
+                self.pkg("list -aH foo")
+                expected = \
+                    "foo         1.2.1-0 known ----\n" \
+                    "foo (test2) 1.2.1-0 known ----\n" \
+                    "foo         1.2-0   known u---\n" \
+                    "foo (test2) 1.2-0   known u---\n" \
+                    "foo         1.1-0   known u---\n" \
+                    "foo (test2) 1.1-0   known u---\n" \
+                    "foo         1.0-0   known u---\n" \
+                    "foo (test2) 1.0-0   known u---\n" \
+                    "foo         1-0     known u---\n" \
+                    "foo (test2) 1-0     known u---\n"
+                output = self.reduceSpaces(self.output)
+                expected = self.reduceSpaces(expected)
+                self.assertEqualDiff(expected, output)
+
+        def test_list_5(self):
+                """Show foo@1.0 from both depots, but 1.1 only from test2."""
+                self.pkg("list -aH foo@1.0-0 pkg://test2/foo@1.1-0")
+                expected = \
+                    "foo (test2) 1.1-0 known u---\n" + \
+                    "foo         1.0-0 known u---\n" + \
+                    "foo (test2) 1.0-0 known u---\n"
+                output = self.reduceSpaces(self.output)
+                expected = self.reduceSpaces(expected)
+                self.assertEqualDiff(expected, output)
+
+        def test_list_6(self):
+                """Show versions 1.0 and 1.1 of foo only from authority test2."""
+                self.pkg("list -aH pkg://test2/foo")
+                expected = \
+                    "foo (test2) 1.2.1-0 known ----\n" + \
+                    "foo (test2) 1.2-0   known u---\n" + \
+                    "foo (test2) 1.1-0   known u---\n" + \
+                    "foo (test2) 1.0-0   known u---\n" + \
+                    "foo (test2) 1-0     known u---\n"
+                output = self.reduceSpaces(self.output)
+                expected = self.reduceSpaces(expected)
+                self.assertEqualDiff(expected, output)
+
+        def test_list_7(self):
+                """List all foo@1 from test1, but all foo@1.2(.x), and only list
+                the latter once."""
+                self.pkg("list -aH pkg://test1/foo@1 pkg:/foo@1.2")
+                expected = \
+                    "foo         1.2.1-0 known ----\n" + \
+                    "foo (test2) 1.2.1-0 known ----\n" + \
+                    "foo         1.2-0   known u---\n" + \
+                    "foo (test2) 1.2-0   known u---\n" + \
+                    "foo         1.1-0   known u---\n" + \
+                    "foo         1.0-0   known u---\n" + \
+                    "foo         1-0     known u---\n"
+                output = self.reduceSpaces(self.output)
+                expected = self.reduceSpaces(expected)
+                self.assertEqualDiff(expected, output)
+
+        def test_list_multi_name(self):
+                """Test for multiple name match listing."""
+                self.pkg("list -aH foo*@1.2")
+                expected = \
+                    "foo          1.2.1-0 known ----\n" + \
+                    "foo  (test2) 1.2.1-0 known ----\n" + \
+                    "foo          1.2-0   known u---\n" + \
+                    "foo  (test2) 1.2-0   known u---\n" + \
+                    "food         1.2-0   known ----\n" + \
+                    "food (test2) 1.2-0   known ----\n"
+                output = self.reduceSpaces(self.output)
+                expected = self.reduceSpaces(expected)
+                self.assertEqualDiff(expected, output)
 
 if __name__ == "__main__":
         unittest.main()

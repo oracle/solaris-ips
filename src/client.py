@@ -152,7 +152,7 @@ def list_inventory(img, args):
 
         try:
                 found = False
-                for pkg, state in img.gen_inventory(pargs, all_known):
+                for pkg, state in img.inventory(pargs, all_known):
                         if upgradable_only and not state["upgradable"]:
                                 continue
 
@@ -204,8 +204,7 @@ def list_inventory(img, args):
                                         error(_("no installed packages have " \
                                             "available updates"))
                                 else:
-                                        error(_("no matching packages " \
-                                            "installed"))
+                                        error(_("no packages installed"))
                         return 1
                 return 0
 
@@ -214,8 +213,10 @@ def list_inventory(img, args):
                         error(_("no matching packages installed"))
                         return 1
 
+                state = all_known and \
+                    image.PKG_STATE_KNOWN or image.PKG_STATE_INSTALLED
                 for pat in e.args[0]:
-                        error(_("no packages matching '%s' installed") % pat)
+                        error(_("no packages matching '%s' %s") % (pat, state))
                 return 1
 
 def get_tracker(quiet = False):
@@ -237,18 +238,15 @@ def installed_fmris_from_args(img, args):
 
             XXX consider moving into image class
         """
-        if not args:
-                fmris = list(img.gen_installed_pkgs())
-        else:
-                try:
-                        matches = img.get_matching_fmris(args)
-                except KeyError:
-                        error(_("no matching packages found in catalog"))
-                        return 1, []
+        found = []
+        notfound = []
+        try:
+                for m in img.inventory(args):
+                        found.append(m[0])
+        except RuntimeError, e:
+                notfound = e[0]
 
-                fmris = [ m for m in matches if img.is_installed(m) ]
-        return 0, fmris
-
+        return found, notfound
 
 def verify_image(img, args):
         opts, pargs = getopt.getopt(args, "vfqH")
@@ -274,12 +272,7 @@ def verify_image(img, args):
 
         img.load_catalogs(progresstracker)
 
-        err, fmris = installed_fmris_from_args(img, pargs)
-        if err != 0:
-                return err
-        if not fmris:
-                return 0
-        
+        fmris, notfound = installed_fmris_from_args(img, pargs)
 
         any_errors = False
 
@@ -314,7 +307,26 @@ def verify_image(img, args):
 
                 any_errors = any_errors or pkgerr
 
-        progresstracker.verify_done()
+        if fmris:
+                progresstracker.verify_done()
+
+        if notfound:
+                if fmris:
+                        emsg()
+                emsg(_("""\
+pkg: no packages matching the following patterns you specified are
+installed on the system.\n"""))
+                for p in notfound:
+                        emsg("        %s" % p)
+                if fmris:
+                        if any_errors:
+                                msg2 = "See above for\nverification failures."
+                        else:
+                                msg2 = "No packages failed\nverification."
+                        emsg(_("\nAll other patterns matched installed "
+                            "packages.  %s" % msg2))
+                any_errors = True
+
         if any_errors:
                 return 1
         return 0
@@ -541,28 +553,27 @@ def uninstall(img, args):
                 rpat = re.sub("\?", ".", rpat)
 
                 try:
-                        matches = img.get_matching_fmris(rpat)
-                except KeyError:
+                        matches = list(img.inventory([ rpat ]))
+                except RuntimeError:
                         error(_("'%s' not even in catalog!") % ppat)
                         err = 1
                         continue
 
-                pnames = [ m for m in matches if img.is_installed(m) ]
-
-                if len(pnames) > 1:
+                if len(matches) > 1:
                         error(_("'%s' matches multiple packages") % ppat)
-                        for k in pnames:
-                                msg("\t%s" % k)
+                        for k in matches:
+                                msg("\t%s" % k[0])
                         err = 1
                         continue
 
-                if len(pnames) < 1:
+                if len(matches) < 1:
                         error(_("'%s' matches no installed packages") % \
                             ppat)
                         err = 1
                         continue
 
-                ip.propose_fmri_removal(pnames[0])
+                # Propose the removal of the first (and only!) match.
+                ip.propose_fmri_removal(matches[0][0])
 
         if err == 1:
                 return err
@@ -732,35 +743,29 @@ def info(img, args):
 
         img.load_catalogs(progress.NullProgressTracker())
 
+        err = 0
+
         if info_local:
-                err, fmris = installed_fmris_from_args(img, pargs)
-                if err != 0:
-                        return err
-                if not fmris:
-                        msg(_("""\
-pkg: no packages matching the patterns you specified are installed
-on the system.  Specify -r to retrieve requested information from the
-repository."""))
+                fmris, notfound = installed_fmris_from_args(img, pargs)
         elif info_remote:
                 fmris = []
+                notfound = []
 
                 # XXX This loop really needs not to be copied from
                 # Image.make_install_plan()!
                 for p in pargs:
                         try:
-                                matches = img.get_matching_fmris(p,
-                                    constraint = pkg.version.CONSTRAINT_AUTO)
-                        except KeyError:
-                                msg(_("""\
-pkg: no package matching '%s' could be found in current catalog
-     suggest relaxing pattern, refreshing and/or examining catalogs""") % p)
+                                matches = list(img.inventory([ p ],
+                                    all_known = True))
+                        except RuntimeError:
+                                notfound.append(p)
                                 continue
 
                         pnames = {}
                         pmatch = []
                         npnames = {}
                         npmatch = []
-                        for m in matches:
+                        for m, state in matches:
                                 if m.preferred_authority():
                                         pnames[m.get_pkg_stem()] = 1
                                         pmatch.append(m)
@@ -828,6 +833,25 @@ pkg: no package matching '%s' could be found in current catalog
                 msg("          FMRI:", m.fmri)
                 # XXX need to properly humanize the manifest.size
                 # XXX add license/copyright info here?
+
+        if notfound:
+                err = 1
+                if fmris:
+                        emsg()
+                if info_local:
+                        emsg(_("""\
+pkg: no packages matching the following patterns you specified are
+installed on the system.  Try specifying -r to query remotely:"""))
+                elif info_remote:
+                        emsg(_("""\
+pkg: no packages matching the following patterns you specified were
+found in the catalog.  Try relaxing the patterns, refreshing, and/or
+examining the catalogs:"""))
+                emsg()
+                for p in notfound:
+                        emsg("        %s" % p)
+
+        return err
 
 def display_contents_results(actionlist, attrs, sort_attrs, action_types,
     display_headers):
@@ -1003,32 +1027,29 @@ def list_contents(img, args):
 
         img.load_catalogs(progress.NullProgressTracker())
 
+        err = 0
+
         if local:
-                err, fmris = installed_fmris_from_args(img, pargs)
-                if err != 0:
-                        return err
-                if not fmris:
-                        return 0
+                fmris, notfound = installed_fmris_from_args(img, pargs)
         elif remote:
                 fmris = []
+                notfound = []
 
                 # XXX This loop really needs not to be copied from
                 # Image.make_install_plan()!
                 for p in pargs:
                         try:
-                                matches = img.get_matching_fmris(p,
-                                    constraint = pkg.version.CONSTRAINT_AUTO)
-                        except KeyError:
-                                msg(_("""\
-pkg: no package matching '%s' could be found in current catalog
-     suggest relaxing pattern, refreshing and/or examining catalogs""") % p)
+                                matches = list(img.inventory([ p ],
+                                    all_known = True))
+                        except RuntimeError:
+                                notfound.append(p)
                                 continue
 
                         pnames = {}
                         pmatch = []
                         npnames = {}
                         npmatch = []
-                        for m in matches:
+                        for m, state in matches:
                                 if m.preferred_authority():
                                         pnames[m.get_pkg_stem()] = 1
                                         pmatch.append(m)
@@ -1083,8 +1104,28 @@ pkg: no package matching '%s' could be found in current catalog
                     for m in manifests
                     for a in m.actions ]
 
-        display_contents_results(actionlist, attrs, sort_attrs, action_types,
-            display_headers)
+        if fmris:
+                display_contents_results(actionlist, attrs, sort_attrs,
+                    action_types, display_headers)
+
+        if notfound:
+                err = 1
+                if fmris:
+                        emsg()
+                if local:
+                        emsg(_("""\
+pkg: no packages matching the following patterns you specified are
+installed on the system.  Try specifying -r to query remotely:"""))
+                elif info_remote:
+                        emsg(_("""\
+pkg: no packages matching the following patterns you specified were
+found in the catalog.  Try relaxing the patterns, refreshing, and/or
+examining the catalogs:"""))
+                emsg()
+                for p in notfound:
+                        emsg("        %s" % p)
+
+        return err
 
 def display_catalog_failures(failures):
         total, succeeded = failures.args[1:3]
@@ -1501,4 +1542,3 @@ if __name__ == "__main__":
                 traceback.print_exc()
                 sys.exit(99)
         sys.exit(ret)
-

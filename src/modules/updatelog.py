@@ -244,7 +244,6 @@ class UpdateLog(object):
                 added = 0
                 npkgs = 0
                 add_lines = []
-                add_pkg_names = set()
                 unknown_lines = []
                 attrs = {}
 
@@ -284,7 +283,6 @@ class UpdateLog(object):
                                                     (l[2], "pkg", f.pkg_name,
                                                     f.version)
                                                 add_lines.append(line)
-                                                add_pkg_names.add(f.pkg_name)
                                                 added += 1
                                         # The format for R records is
                                         # described in the docstring for
@@ -337,20 +335,6 @@ class UpdateLog(object):
                         afile.write(s)
 
                 afile.close()
-
-                # Update list of package names.  If it doesn't exist, rebuild it
-                # and then append the new packages.
-                try:
-                        pkg_names = catalog.Catalog.load_pkg_names(path)
-                except IOError, e:
-                        if e.errno == errno.ENOENT:
-                                pkg_names = catalog.Catalog.build_pkg_names(
-                                    path)
-                        else:
-                                raise
-
-                pkg_names.update(add_pkg_names)
-                catalog.Catalog.save_pkg_names(path, pkg_names)
 
                 return True
 

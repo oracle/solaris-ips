@@ -254,15 +254,12 @@ class ImagePlan(object):
                         #     -->
                         #     backtrack or reset??
 
-                        # XXX Do we want implicit freezing based on the portions
-                        # of a version present?
-                        mvs = self.image.get_matching_fmris(a.attrs["fmri"], 
-                            constraint = version.CONSTRAINT_AUTO)
-
-                        # fmris in mvs are sorted with latest version first, 
-                        # so take the newest entry that still matches fmri
-                        # within the above constraint
-                        cf = mvs[0]
+                        # This will be the newest version of the specified
+                        # dependency package, coming from the preferred
+                        # authority, if it's available there.
+                        cf = self.image.inventory([ a.attrs["fmri"] ],
+                            all_known = True, preferred = True,
+                            first_only = True).next()[0]
 
                         # XXX LOG "adding dependency %s" % pfmri
 

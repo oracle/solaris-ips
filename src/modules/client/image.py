@@ -55,6 +55,9 @@ from pkg.client.imagetypes import *
 img_user_prefix = ".org.opensolaris,pkg"
 img_root_prefix = "var/pkg"
 
+PKG_STATE_INSTALLED = "installed"
+PKG_STATE_KNOWN = "known"
+
 class Image(object):
         """An Image object is a directory tree containing the laid-down contents
         of a self-consistent graph of Packages.
@@ -129,8 +132,8 @@ class Image(object):
 
         XXX Image file format?  Image file manipulation API?"""
 
-        required_subdirs = [ "catalog", "file", "pkg", "index" ]
-        image_subdirs = required_subdirs + [ "state/installed" ]
+        required_subdirs = [ "catalog", "file", "pkg" ]
+        image_subdirs = required_subdirs + [ "index", "state/installed" ]
 
         def __init__(self):
                 self.cfg_cache = None
@@ -141,10 +144,11 @@ class Image(object):
                 self.repo_uris = []
                 self.filter_tags = {}
                 self.catalogs = {}
+                self._catalog = {}
+                self.pkg_states = None
 
                 self.attrs = {}
                 self.link_actions = None
-                self.installed_pkg_cache = None
 
                 self.attrs["Policy-Require-Optional"] = False
                 self.attrs["Policy-Pursue-Latest"] = True
@@ -397,48 +401,6 @@ class Image(object):
 
                 self.cfg_cache.write("%s/cfg_cache" % self.imgdir)
 
-        def get_matching_fmris(self, patterns, matcher = None,
-            constraint = None, counthash = None):
-                """Iterate through all catalogs, looking for packages matching
-                'pattern', based on the function in 'matcher' and the versioning
-                constraint described by 'constraint'.  If 'matcher' is None,
-                uses fmri subset matching as the default.  Returns a list of
-                (catalog, fmri) pairs.  If 'counthash' is a dictionary, instead
-                store the number of matched fmris for each package name which
-                was matched."""
-
-                # XXX Do we want to recognize regex (some) metacharacters and
-                # switch automatically to the regex matcher?
-
-                # XXX If the patterns contain an authority, we could reduce the
-                # number of catalogs searched by only looking at catalogs whose
-                # authorities match FMRIs in the pattern.
-
-                # Check preferred authority first, if package isn't found here,
-                # then check all authorities.
-
-                cat = self.catalogs[self.cfg_cache.preferred_authority]
-
-                m = cat.get_matching_fmris(patterns, matcher,
-                    constraint, counthash)
-
-                for k, c in self.catalogs.items():
-                        if k == self.cfg_cache.preferred_authority:
-                                continue
-                        m.extend(c.get_matching_fmris(patterns, matcher,
-                            constraint, counthash))
-
-                ips = [ ip for ip in self.gen_installed_pkgs() if ip not in m ]
-
-                m.extend(catalog.extract_matching_fmris(ips, patterns,
-                    matcher, constraint, counthash))
-
-                if not m:
-                        raise KeyError, "packages matching '%s' not found in catalog or image" \
-                            % patterns
-
-                return m
-
         def verify(self, fmri, progresstracker, **args):
                 """ generator that returns any errors in installed pkgs
                 as tuple of action, list of errors"""
@@ -661,12 +623,15 @@ class Image(object):
 
                 return auth
 
+        def _install_file(self, fmri):
+                """Returns the path to the "installed" file for a given fmri."""
+                return "%s/pkg/%s/installed" % (self.imgdir, fmri.get_dir_path())
+
         def install_file_present(self, fmri):
                 """Returns true if the package named by the fmri is installed
                 on the system.  Otherwise, returns false."""
 
-                return os.path.exists("%s/pkg/%s/installed" % (self.imgdir,
-                    fmri.get_dir_path()))
+                return os.path.exists(self._install_file(fmri))
 
         def add_install_file(self, fmri):
                 """Take an image and fmri. Write a file to disk that
@@ -678,14 +643,15 @@ class Image(object):
                 if not os.path.isdir("%s/state/installed" % self.imgdir):
                         self.update_installed_pkgs()
 
-                f = file("%s/pkg/%s/installed" % (self.imgdir,
-                    fmri.get_dir_path()), "w")
+                f = file(self._install_file(fmri), "w")
 
                 f.writelines(["VERSION_1\n", fmri.get_authority_str()])
                 f.close()
 
                 os.symlink("../../pkg/%s/installed" % fmri.get_dir_path(),
                     "%s/state/installed/%s" % (self.imgdir, fmri.get_link_path()))
+                self.pkg_states[urllib.unquote(fmri.get_link_path())] = \
+                    (PKG_STATE_INSTALLED, fmri)
 
         def remove_install_file(self, fmri):
                 """Take an image and a fmri.  Remove the file from disk
@@ -697,11 +663,15 @@ class Image(object):
                 if not os.path.isdir("%s/state/installed" % self.imgdir):
                         self.update_installed_pkgs()
 
-                os.unlink("%s/pkg/%s/installed" % (self.imgdir,
-                    fmri.get_dir_path()))
-
-                os.unlink("%s/state/installed/%s" % (self.imgdir,
-                    fmri.get_link_path()))
+                os.unlink(self._install_file(fmri))
+                try:
+                        os.unlink("%s/state/installed/%s" % (self.imgdir,
+                            fmri.get_link_path()))
+                except EnvironmentError, e:
+                        if e.errno != errno.ENOENT:
+                                raise
+                self.pkg_states[urllib.unquote(fmri.get_link_path())] = \
+                    (PKG_STATE_KNOWN, fmri)
 
         def update_installed_pkgs(self):
                 """Take the image's record of installed packages from the
@@ -709,31 +679,48 @@ class Image(object):
                 $META/pkg/stem/version directory, to the $META/state/installed
                 summary directory form."""
 
-                # Create the link forest in a temporary directory
-                os.makedirs("%s/state/installed.build" % self.imgdir)
+                tmpdir = "%s/state/installed.build" % self.imgdir
+
+                # Create the link forest in a temporary directory.  We should
+                # only execute this method once (if ever) in the lifetime of an
+                # image, but if the path already exists and makedirs() blows up,
+                # just be quiet if it's already a directory.  If it's not a
+                # directory or something else weird happens, re-raise.
+                try:
+                        os.makedirs(tmpdir)
+                except OSError, e:
+                        if e.errno != errno.EEXIST or \
+                            not os.path.isdir(tmpdir):
+                                raise
+                        return
 
                 proot = "%s/pkg" % self.imgdir
 
-                for pd in sorted(os.listdir(proot)):
-                        for vd in sorted(os.listdir("%s/%s" % (proot, pd))):
-                                path = "%s/%s/%s/installed" % (proot, pd, vd)
-                                if not os.path.exists(path):
-                                        continue
+                for pd, vd in (
+                    (p, v)
+                    for p in sorted(os.listdir(proot))
+                    for v in sorted(os.listdir("%s/%s" % (proot, p)))
+                    ):
+                        path = "%s/%s/%s/installed" % (proot, pd, vd)
+                        if not os.path.exists(path):
+                                continue
 
-                                fmristr = urllib.unquote("%s@%s" % (pd, vd))
-                                auth = self.installed_file_authority(path)
-                                f = pkg.fmri.PkgFmri(fmristr, authority = auth)
+                        fmristr = urllib.unquote("%s@%s" % (pd, vd))
+                        auth = self.installed_file_authority(path)
+                        f = pkg.fmri.PkgFmri(fmristr, authority = auth)
 
-                                os.symlink(path, "%s/state/installed.build/%s" %
-                                    (self.imgdir, f.get_link_path()))
+                        relpath = "../../pkg/%s/installed" % f.get_dir_path()
+                        os.symlink(relpath, "%s/%s" %
+                            (tmpdir, f.get_link_path()))
 
-                # Someone may have already created this directory
+                # Someone may have already created this directory.  Junk the
+                # directory we just populated if that's the case.
                 try:
-                        portable.rename("%s/state/installed.build" % 
-                            self.imgdir, "%s/state/installed" % self.imgdir)
+                        portable.rename(tmpdir, "%s/state/installed" % self.imgdir)
                 except EnvironmentError, e:
                         if e.errno != errno.EEXIST:
                                 raise
+                        shutil.rmtree(tmpdir)
 
         def _get_version_installed(self, pfmri):
                 pd = pfmri.get_pkg_stem()
@@ -760,10 +747,8 @@ class Image(object):
         def get_pkg_state_by_fmri(self, pfmri):
                 """Given pfmri, determine the local state of the package."""
 
-                if self.install_file_present(pfmri):
-                        return "installed"
-
-                return "known"
+                return self.pkg_states.get(pfmri.get_fmri(anarchy = True)[5:],
+                    (PKG_STATE_KNOWN, None))[0]
 
         def fmri_set_default_authority(self, fmri):
                 """If the FMRI supplied as an argument does not have
@@ -950,8 +935,75 @@ class Image(object):
                         else:
                                 succeeded += 1
 
+                self.cache_catalogs()
+
                 if failed:
                         raise RuntimeError, (failed, total, succeeded)
+
+        CATALOG_CACHE_VERSION = 1
+
+        def cache_catalogs(self):
+                """Read in all the catalogs and cache the data."""
+                cache = {}
+                for auth in self.gen_authorities():
+                        croot = "%s/catalog/%s" % (self.imgdir, auth["prefix"])
+                        # XXX Should I be removing pkg_names.pkl now that we're
+                        # not using it anymore?
+                        try:
+                                catalog.Catalog.read_catalog(cache,
+                                    croot, auth = auth["prefix"])
+                        except EnvironmentError, e:
+                                # If a catalog file is just missing, ignore it.
+                                # If there's a worse error, make sure the user
+                                # knows about it.
+                                if e.errno == errno.ENOENT:
+                                        pass
+                                else:
+                                        raise
+
+                pickle_file = os.path.join(self.imgdir, "catalog/catalog.pkl")
+
+                try:
+                        pf = file(pickle_file, "wb")
+                        # Version the dump file
+                        cPickle.dump((self.CATALOG_CACHE_VERSION, cache), pf,
+                            protocol = cPickle.HIGHEST_PROTOCOL)
+                        pf.close()
+                except (cPickle.PickleError, EnvironmentError):
+                        try:
+                                os.remove(pickle_file)
+                        except EnvironmentError:
+                                pass
+
+                self._catalog = cache
+
+        def load_catalog_cache(self):
+                """Read in the cached catalog data."""
+
+                self.__load_pkg_states()
+
+                cache_file = os.path.join(self.imgdir, "catalog/catalog.pkl")
+                try:
+                        version, self._catalog = cPickle.load(file(cache_file))
+                except (cPickle.PickleError, EnvironmentError):
+                        raise RuntimeError
+
+                # If we don't recognize the version, complain.
+                if version != self.CATALOG_CACHE_VERSION:
+                        raise RuntimeError
+
+                # Add the packages which are installed, but not in the catalog.
+                # XXX Should we have a different state for these, so we can flag
+                # them to the user?
+                for state, f in self.pkg_states.values():
+                        if state != PKG_STATE_INSTALLED:
+                                continue
+                        auth, name, vers = f.tuple()
+
+                        if name not in self._catalog or \
+                            vers not in self._catalog[name]["versions"]:
+                                catalog.Catalog.cache_fmri(self._catalog, f,
+                                    f.get_authority())
 
         def load_catalogs(self, progresstracker):
                 for auth in self.gen_authorities():
@@ -966,6 +1018,15 @@ class Image(object):
                                     authority = auth["prefix"])
                         self.catalogs[auth["prefix"]] = c
                         progresstracker.catalog_done()
+
+                # Try to load the catalog cache file.  If that fails, load the
+                # data from the canonical text copies of the catalogs from each
+                # authority.  Try to save it, to spare the time in the future.
+                # XXX Given that this is a read operation, should we be writing?
+                try:
+                        self.load_catalog_cache()
+                except RuntimeError:
+                        self.cache_catalogs()
 
         def fmri_is_same_pkg(self, cfmri, pfmri):
                 """Determine whether fmri and pfmri share the same package
@@ -1012,35 +1073,28 @@ class Image(object):
                 else:
                         return cat.rename_is_successor(cfmri, pfmri)
 
-        def gen_known_package_fmris(self):
-                """Generate the list of known packages, being the union of the
-                   catalogs and the installed image."""
-
-                li = [ x for x in self.gen_installed_pkgs() ]
-
-                # Generate those packages in the set of catalogs.
-                for c in self.catalogs.values():
-                        for pf in c.fmris():
-                                if pf in li:
-                                        li.remove(pf)
-                                yield pf
-
+        # This could simply call self.inventory() (or be replaced by inventory),
+        # but it turns out to be about 20% slower.
         def gen_installed_pkgs(self):
                 """Return an iteration through the installed packages."""
-                if self.installed_pkg_cache is not None:
-                        return iter(self.installed_pkg_cache)
-                else:
-                        return self.gen_installed_pkgs_forreal()
+                self.__load_pkg_states()
+                return (i[1] for i in self.pkg_states.values())
 
-        def gen_installed_pkgs_forreal(self):
-                """Return a non-cached iteration through the installed packages."""
+        def __load_pkg_states(self):
+                """Build up the package state dictionary."""
+
+                if self.pkg_states is not None:
+                        return
 
                 installed_state_dir = "%s/state/installed" % self.imgdir
 
-                self.installed_pkg_cache = []
+                self.pkg_states = {}
 
-                # If the state directory structure has already been created, we
-                # can just iterate through it.
+                # If the state directory structure has already been created,
+                # loading information from it is fast.  The directory is
+                # populated with symlinks, named by their (url-encoded) FMRI,
+                # which point to the "installed" file in the corresponding
+                # directory under /var/pkg.
                 if os.path.isdir(installed_state_dir):
                         for pl in sorted(os.listdir(installed_state_dir)):
                                 fmristr = urllib.unquote(pl)
@@ -1048,8 +1102,8 @@ class Image(object):
                                 auth = self.installed_file_authority(path)
                                 f = pkg.fmri.PkgFmri(fmristr, authority = auth)
 
-                                self.installed_pkg_cache.append(f)
-                                yield f
+                                self.pkg_states[fmristr] = \
+                                    (PKG_STATE_INSTALLED, f)
 
                         return
 
@@ -1066,8 +1120,8 @@ class Image(object):
                                 auth = self.installed_file_authority(path)
                                 f = pkg.fmri.PkgFmri(fmristr, authority = auth)
 
-                                self.installed_pkg_cache.append(f)
-                                yield f
+                                self.pkg_states[fmristr] = \
+                                    (PKG_STATE_INSTALLED, f)
 
         def strtofmri(self, myfmri):
                 ret = pkg.fmri.PkgFmri(myfmri, 
@@ -1087,9 +1141,8 @@ class Image(object):
                 else:
                         name = myfmri.get_name()
 
-                myfmri = self.get_matching_fmris(myfmri,
-                    constraint = version.CONSTRAINT_AUTO,
-                    matcher = pkg.fmri.exact_name_match)[0]
+                myfmri = self.inventory([ myfmri ], all_known = True,
+                    matcher = pkg.fmri.exact_name_match).next()[0]
 
                 ofmri = self.optional_dependencies.get(name, None)
                 if not ofmri or self.fmri_is_successor(myfmri, ofmri):
@@ -1152,73 +1205,218 @@ class Image(object):
                         else:
                                 raise
 
-        def gen_inventory(self, patterns, all_known=False):
-                """Iterating the package inventory, yielding per-package info.
+        @staticmethod
+        def __multimatch(name, patterns, matcher):
+                """Applies a matcher to a name across a list of patterns.
+                Returns all tuples of patterns which match the name.  Each tuple
+                contains the index into the original list, the pattern itself,
+                the package version, the authority, and the raw authority
+                string."""
+                return [
+                    (i, pat, pat.tuple()[2],
+                        pat.get_authority(), pat.get_authority_str())
+                    for i, pat in enumerate(patterns)
+                    if matcher(name, pat.tuple()[1])
+                ]
 
-                Yielded data are of the form package,dict, where dict is:
-                  state  : package installation state
-                  frozen,
-                  incorporated,
-                  excludes,
-                  upgradable : Booleans indicating the aforementioned flags.
-                """
-                pkgs_known = []
-                badpats = []
+        def __inventory(self, patterns = None, all_known = False, matcher = None,
+            constraint = pkg.version.CONSTRAINT_AUTO):
+                """Private method providing the back-end for inventory()."""
 
-                if patterns:
-                        for p in patterns:
-                                try:
-                                        # XXX dp: not sure if this is
-                                        # right with respect to the code
-                                        # 6 or 7 lines further below.
-                                        for m in self.get_matching_fmris(p):
-                                                if all_known or self.is_installed(m):
-                                                        pkgs_known.extend([ m ])
-                                except KeyError:
-                                        badpats.append(p)
+                if not matcher:
+                        matcher = pkg.fmri.fmri_match
 
-                        pkgs_known.extend(
-                                [ x for x in self.gen_installed_pkgs()
-                                for p in patterns
-                                if pkg.fmri.fmri_match(x.get_pkg_stem(), p)
-                                and not x in pkgs_known ] )
+                if not patterns:
+                        patterns = []
+
+                # Store the original patterns before we possibly turn them into
+                # PkgFmri objects, so we can give them back to the user in error
+                # messages.
+                opatterns = patterns[:]
+
+                for i, pat in enumerate(patterns):
+                        if not isinstance(pat, pkg.fmri.PkgFmri):
+                                if "*" in pat or "?" in pat:
+                                        matcher = pkg.fmri.glob_match
+                                patterns[i] = pkg.fmri.PkgFmri(pat, "5.11")
+
+                pauth = self.cfg_cache.preferred_authority
+
+                # matchingpats is the set of all the patterns which matched a
+                # package in the catalog.  This allows us to return partial
+                # failure if some patterns match and some don't.
+                # XXX It would be nice to keep track of why some patterns failed
+                # to match -- based on name, version, or authority.
+                matchingpats = set()
+
+                # XXX Perhaps we shouldn't sort here, but in the caller, to save
+                # memory?
+                for name in sorted(self._catalog.keys()):
+                        # Eliminate all patterns not matching "name".  If there
+                        # are no patterns left, go on to the next name, but only
+                        # if there were any to start with.
+                        matches = self.__multimatch(name, patterns, matcher)
+                        if patterns and not matches:
+                                continue
+
+                        newest = self._catalog[name]["versions"][-1]
+                        for ver in reversed(self._catalog[name]["versions"]):
+                                # If a pattern specified a version and that
+                                # version isn't succeeded by "ver", then record
+                                # the pattern for removal from consideration.
+                                nomatch = []
+                                for i, match in enumerate(matches):
+                                        if match[2] and \
+                                            not ver.is_successor(match[2],
+                                                constraint):
+                                                nomatch.append(i)
+
+                                # Eliminate the name matches that didn't match
+                                # on versions.  We need to create a new list
+                                # because we need to reuse the original
+                                # "matches" for each new version.
+                                vmatches = [
+                                    matches[i]
+                                    for i, match in enumerate(matches)
+                                    if i not in nomatch
+                                ]
+
+                                # If we deleted all contenders (if we had any to
+                                # begin with), go on to the next version.
+                                if matches and not vmatches:
+                                        continue
+
+                                # Like the version skipping above, do the same
+                                # for authorities.
+                                authlist = set(self._catalog[name][str(ver)][1])
+                                nomatch = []
+                                for i, match in enumerate(vmatches):
+                                        if match[3] and \
+                                            match[3] not in authlist:
+                                                nomatch.append(i)
+
+                                amatches = [
+                                    vmatches[i]
+                                    for i, match in enumerate(vmatches)
+                                    if i not in nomatch
+                                ]
+
+                                if vmatches and not amatches:
+                                        continue
+
+                                # If no patterns were specified or any still-
+                                # matching pattern specified no authority, we
+                                # use the entire authlist for this version.
+                                # Otherwise, we use the intersection of authlist
+                                # and the auths in the patterns.
+                                aset = set(i[3] for i in amatches)
+                                if aset and None not in aset:
+                                        authlist = set(
+                                            m[3:5]
+                                            for m in amatches
+                                            if m[3] in authlist
+                                        )
+                                else:
+                                        authlist = zip(authlist, authlist)
+
+                                pfmri = self._catalog[name][str(ver)][0]
+
+                                inst_state = self.get_pkg_state_by_fmri(pfmri)
+                                state = {
+                                    "state": inst_state,
+                                    "upgradable": ver != newest,
+                                    "frozen": False,
+                                    "incorporated": False,
+                                    "excludes": False
+                                }
+
+                                # We yield copies of the fmri objects in the
+                                # catalog because we add the authorities in, and
+                                # don't want to mess up the canonical catalog.
+                                # If a pattern had specified an authority as
+                                # preferred, be sure to emit an fmri that way,
+                                # too.
+                                yielded = False
+                                if all_known:
+                                        for auth, rauth in authlist:
+                                                nfmri = pfmri.copy()
+                                                nfmri.set_authority(rauth,
+                                                    auth == pauth)
+                                                yield nfmri, state
+                                                yielded = True
+                                elif inst_state == PKG_STATE_INSTALLED:
+                                        auth = self.installed_file_authority(
+                                            self._install_file(pfmri))
+                                        nfmri = pfmri.copy()
+                                        nfmri.set_authority(auth, auth == pauth)
+                                        yield nfmri, state
+                                        yielded = True
+
+                                if yielded:
+                                        matchingpats |= set(i[:2] for i in amatches)
+
+                nonmatchingpats = [
+                    opatterns[i]
+                    for i, f in set(enumerate(patterns)) - matchingpats
+                ]
+                if nonmatchingpats:
+                        raise RuntimeError, nonmatchingpats
+
+        def inventory(self, *args, **kwargs):
+                """Enumerate the package FMRIs in the image's catalog.
+
+                If "patterns" is None (the default) or an empty sequence, all
+                package names will match.  Otherwise, it is a list of patterns
+                to match against FMRIs in the catalog.
+
+                If "all_known" is False (the default), only installed packages
+                will be enumerated.  If True, all known packages will be
+                enumerated.
+
+                The "matcher" parameter should specify a function taking two
+                string arguments: a name and a pattern, returning True if the
+                pattern matches the name, and False otherwise.  By default, the
+                matcher will be pkg.fmri.fmri_match().
+
+                The "constraint" parameter defines how a version specified in a
+                pattern matches a version in the catalog.  By default, a natural
+                "subsetting" constraint is used."""
+
+                # "preferred" and "first_only" are private arguments that are
+                # currently only used in evaluate_fmri(), but could be made more
+                # generally useful.  "preferred" ensures that all potential
+                # matches from the preferred authority are generated before
+                # those from non-preferred authorities.  In the current
+                # implementation, this consumes more memory.  "first_only"
+                # signals us to return only the first match, which allows us to
+                # save all the memory that "preferred" currently eats up.
+                preferred = kwargs.pop("preferred", False)
+                first_only = kwargs.pop("first_only", False)
+                pauth = self.cfg_cache.preferred_authority
+
+                if not preferred:
+                        for f in self.__inventory(*args, **kwargs):
+                                yield f
                 else:
-                        pkgs_known = sorted(self.gen_installed_pkgs())
+                        nplist = []
+                        firstnp = None
+                        for f in self.__inventory(*args, **kwargs):
+                                if f[0].get_authority() == pauth:
+                                        yield f
+                                        if first_only:
+                                                return
+                                else:
+                                        if first_only:
+                                                if not firstnp:
+                                                        firstnp = f
+                                        else:
+                                                nplist.append(f)
+                        if first_only:
+                                yield firstnp
+                                return
 
-		counthash = {}
-		if pkgs_known:
-			#
-			# Walk the installed packages looking for those
-			# which have upgrades available.
-			#
-			self.get_matching_fmris(pkgs_known,
-			    counthash = counthash)
-
-		#
-		# If needed, merge in the rest of the known packages; we don't	
-		# compute upgradability for those, since it's very expensive.
-		#
-		if all_known and not patterns:
-                        pkgs_all_known = [ pf for pf in
-                            self.gen_known_package_fmris() ]
-			pkgs_known += pkgs_all_known
-			pkgs_known = sorted(set(pkgs_known))
-
-                for p in pkgs_known:
-                        if counthash.get(p, 0) > 1:
-                                upgradable = True
-                        else:
-                                upgradable = False
-                        inventory = {
-                                "state": self.get_pkg_state_by_fmri(p),
-                                "frozen": False,
-                                "incorporated": False,
-                                "excludes": False,
-                                "upgradable": upgradable}
-                        yield p, inventory
-
-                if badpats:
-                        raise RuntimeError, badpats
+                        for f in nplist:
+                                yield f
 
         def local_search(self, args):
                 """Search the image for the token in args[0]."""
@@ -1388,9 +1586,9 @@ class Image(object):
                 for p in pkg_list:
                         try:
                                 conp = self.apply_optional_dependencies(p)
-                                matches = self.get_matching_fmris(conp,
-                                    constraint = version.CONSTRAINT_AUTO)
-                        except KeyError:
+                                matches = list(self.inventory([ conp ],
+                                    all_known = True))
+                        except RuntimeError:
                                 # XXX Module directly printing.
                                 msg(_("""\
 pkg: no package matching '%s' could be found in current catalog
@@ -1402,7 +1600,7 @@ pkg: no package matching '%s' could be found in current catalog
                         pmatch = []
                         npnames = {}
                         npmatch = []
-                        for m in matches:
+                        for m, state in matches:
                                 if m.preferred_authority():
                                         pnames[m.get_pkg_stem()] = 1
                                         pmatch.append(m)

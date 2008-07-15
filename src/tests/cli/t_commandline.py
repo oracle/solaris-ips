@@ -172,14 +172,14 @@ class TestCommandLine(testutils.SingleDepotTestCase):
                 
                 # Check local info
                 self.pkg("info jade | grep 'State: Installed'")
-                self.pkg("info turquoise | grep 'no packages matching'")
+                self.pkg("info turquoise 2>&1 | grep 'no packages matching'")
                 self.pkg("info emerald", exit = 1)
-                self.pkg("info emerald 2>&1 | grep 'no matching packages'")
+                self.pkg("info emerald 2>&1 | grep 'no packages matching'")
 
                 # Check remote info
                 self.pkg("info -r jade | grep 'State: Installed'")
                 self.pkg("info -r turquoise| grep 'State: Not installed'")
-                self.pkg("info -r emerald | grep 'no package matching'")
+                self.pkg("info -r emerald 2>&1 | grep 'no packages matching'")
 
 if __name__ == "__main__":
         unittest.main()

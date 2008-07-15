@@ -35,6 +35,7 @@ import threading
 import datetime
 import sys
 import cPickle
+import bisect
 
 import pkg.fmri as fmri
 import pkg.version as version
@@ -108,7 +109,6 @@ class Catalog(object):
                 self.attrs = {}
                 self.auth = authority
                 self.renamed = None
-                self.pkg_names = set()
                 self.searchdb_update_handle = None
                 self.searchdb = None
                 self._search_available = False
@@ -134,29 +134,6 @@ class Catalog(object):
 
                 self.load_attrs()
                 self.check_prefix()
-
-                if self.pkg_names:
-                        return
-
-                # Load the list of pkg names.  If it doesn't exist, build a list
-                # of pkg names. If the catalog gets rebuilt in build_catalog,
-                # add_fmri() will generate the list of package names instead.
-                try:
-                        pkg_names = Catalog.load_pkg_names(self.catalog_root)
-                except IOError, e:
-                        if e.errno == errno.ENOENT:
-                                pkg_names = Catalog.build_pkg_names(
-                                    self.catalog_root) 
-                                if pkg_names and not self.read_only:
-                                        Catalog.save_pkg_names(
-                                            self.catalog_root,
-                                            pkg_names)
-                        else:
-                                raise
-
-                self.pkg_names = pkg_names
-
-
 
         def add_fmri(self, fmri, critical = False):
                 """Add a package, named by the fmri, to the catalog.
@@ -200,11 +177,66 @@ class Catalog(object):
                 ts = datetime.datetime.now()
                 self.set_time(ts)
 
-                # Add this pkg name to the list of package names
-                self.pkg_names.add(fmri.pkg_name)
-                Catalog.save_pkg_names(self.catalog_root, self.pkg_names)
-
                 return ts
+
+        @staticmethod
+        def cache_fmri(d, fmri, auth):
+                """Store the fmri in a data structure 'd' for fast lookup.
+
+                'd' is a dict that maps each package name to another dictionary,
+                itself mapping each version string to a tuple of the fmri object
+                and a list of authorities from which the package version is
+                available, as well as a special key, "versions", which maps to a
+                list of version objects, kept in sorted order.
+
+                    pkg_name1: {
+                        "versions": [ <version1>, <version2>, <version3>, ... ],
+                        "version1": ( <fmri1>, [ "auth1", "auth2", ... ],
+                        "version2": ( <fmri2>, [ "auth1", "auth2", ... ],
+                        "version3": ( <fmri3>, [ "auth1", "auth2", ... ],
+                        ...
+                    },
+                    pkg_name2: {
+                        ...
+                    },
+                    ...
+
+                (where names in quotes are strings, names in angle brackets are
+                objects, and the rest of the syntax is Pythonic.
+
+                The fmri is expected not to have an embedded authority.  If it
+                does, it will be ignored."""
+
+                version = str(fmri.version)
+                if fmri.pkg_name not in d:
+                        # This is the simplest representation of the cache data
+                        # structure.
+                        d[fmri.pkg_name] = {
+                            "versions": [ fmri.version ],
+                            version: (fmri, [ auth ])
+                        }
+                elif version not in d[fmri.pkg_name]:
+                        d[fmri.pkg_name][version] = (fmri, [ auth ])
+                        bisect.insort(
+                            d[fmri.pkg_name]["versions"], fmri.version)
+                else:
+                        d[fmri.pkg_name][version][1].append(auth)
+
+        @staticmethod
+        def read_catalog(catalog, dir, auth=None):
+                """Read the catalog file in "dir" and combine it with the
+                existing data in "catalog"."""
+
+                catf = file(os.path.join(dir, "catalog"))
+                for line in catf:
+                        if not line.startswith("V pkg") and \
+                            not line.startswith("C pkg"):
+                                continue
+
+                        f = fmri.PkgFmri(line[6:].replace(" ", "@"))
+                        Catalog.cache_fmri(catalog, f, auth)
+
+                catf.close()
 
         def added_prefix(self, p):
                 """Perform any catalog transformations necessary if
@@ -622,51 +654,14 @@ class Catalog(object):
                         else:
                                 return ret
 
-        def get_matching_fmris(self, patterns, matcher = None,
-            constraint = None, counthash = None):
-                """Iterate through the catalog, looking for packages matching
-                'pattern', based on the function in 'matcher' and the versioning
-                constraint described by 'constraint'.  If 'matcher' is None,
-                uses fmri subset matching as the default.  Returns a sorted list
-                of PkgFmri objects, newest versions first.  If 'counthash' is a
-                dictionary, instead store the number of matched fmris for each
-                package name which was matched."""
-
-                tuples = {}
-                names_matched = set()
+        # XXX Now this is only used by rename_package() and a handful of tests.
+        def get_matching_fmris(self, patterns):
+                """Wrapper for extract_matching_fmris."""
 
                 if self.attrs["npkgs"] == 0:
                         return []
 
-                if matcher is None:
-                        matcher = fmri.fmri_match
-
-                if not isinstance(patterns, list):
-                        patterns = [ patterns ]
-
-                # 'patterns' may be partially or fully decorated fmris; we want
-                # to extract their names and versions to match separately
-                # against the catalog.
-                #
-                # XXX "5.11" here needs to be saner
-                for pattern in patterns:
-                        if isinstance(pattern, fmri.PkgFmri):
-                                tuples[pattern] = pattern.tuple()
-                        else:
-                                tuples[pattern] = \
-                                    fmri.PkgFmri(pattern, "5.11").tuple()
-
-                # Walk list of pkg names and patterns.  See if any of the
-                # patterns match known package names
-                for p in self.pkg_names:
-                        for t in tuples.values():
-                                if matcher(p, t[1]):
-                                        names_matched.add(p)
-
-                pkgs = self._list_fmris_matched(names_matched)
-
-                ret = extract_matching_fmris(pkgs, patterns, matcher,
-                    constraint, counthash)
+                ret = extract_matching_fmris(self.fmris(), patterns)
 
                 return sorted(ret, reverse = True)
 
@@ -747,60 +742,6 @@ class Catalog(object):
                             fmri.version < rr.srcversion:
                                 yield rr
 
-        def _list_fmris_matched(self, pkg_names):
-                """Given a list of pkg_names, return all of the FMRIs
-                that contain an pkg_name entry as a substring."""
-                fmris = []
-
-                try:
-                        pfile = file(os.path.normpath(
-                            os.path.join(self.catalog_root, "catalog")), "r")
-                except IOError, e:
-                        if e.errno == errno.ENOENT:
-                                return fmris
-                        else:
-                                raise
-
-                for entry in pfile:
-                        if not entry[1].isspace() or \
-                            not entry[0] in known_prefixes:
-                                continue
-
-                        try:
-                                if entry[0] not in tuple("CV"):
-                                        continue
-
-                                cv, pkg, cat_name, cat_version = entry.split()
-                                if pkg != "pkg":
-                                        continue
-                                if cat_name not in pkg_names:
-                                        continue
-                        except ValueError:
-                                # Handle old two-column catalog file, mostly in
-                                # use on server.  If *this* doesn't work, we
-                                # have a corrupt catalog.
-                                try:
-                                        cv, cat_fmri = entry.split()
-                                except ValueError:
-                                        raise RuntimeError, \
-                                            "corrupt catalog entry for " \
-                                            "authority '%s': %s" % \
-                                            (self.auth, entry)
-                                cat_name = fmri.extract_pkg_name(cat_fmri)
-                                if cat_name not in pkg_names:
-                                        continue
-                                fmris.append(fmri.PkgFmri(cat_fmri, "5.11",
-                                        authority = self.auth))
-                                continue
-
-                        fmris.append(fmri.PkgFmri("%s@%s" %
-                            (cat_name, cat_version), "5.11",
-                            authority = self.auth))
-
-                pfile.close()
-
-                return fmris
-
         def last_modified(self):
                 """Return the time at which the catalog was last modified."""
 
@@ -828,90 +769,6 @@ class Catalog(object):
                 # convert npkgs to integer value
                 if "npkgs" in self.attrs:
                         self.attrs["npkgs"] = int(self.attrs["npkgs"])
-
-        @staticmethod
-        def build_pkg_names(cat_root):
-                """Read the catalog and build the array of fmri pkg names
-                that is contained within the catalog.  Returns a list
-                of strings of package names."""
-
-                pkg_names = set()
-                ppath = os.path.normpath(os.path.join(cat_root,
-                    "catalog"))
-
-                try:
-                        pfile = file(ppath, "r")
-                except IOError, e:
-                        if e.errno == errno.ENOENT:
-                                return pkg_names
-                        else:
-                                raise
-
-                for entry in pfile:
-                        try:
-                                if entry[0] not in tuple("CV"):
-                                        continue
-
-                                cv, pkg, cat_name, cat_version = entry.split()
-                                if pkg != "pkg":
-                                        continue
-                        except ValueError:
-                                # Handle old two-column catalog file, mostly in
-                                # use on server.  If *this* doesn't work, we
-                                # have a corrupt catalog.
-                                try:
-                                        cv, cat_fmri = entry.split()
-                                except ValueError:
-                                        raise RuntimeError, \
-                                            "corrupt catalog entry in file " \
-                                            "'%s': %s" % (ppath, entry)
-                                cat_name = fmri.extract_pkg_name(cat_fmri)
-
-                        pkg_names.add(cat_name)
-
-                pfile.close()
-
-                return pkg_names
-
-        @staticmethod
-        def save_pkg_names(cat_root, pkg_names):
-                """Pickle the list of package names in the catalog for faster
-                re-loading."""
-
-                if not pkg_names:
-                        return
-
-                ppath = os.path.normpath(os.path.join(cat_root,
-                    "pkg_names.pkl"))
-
-                try:
-                        pfile = file(ppath, "wb")
-                except IOError, e:
-                        if e.errno == errno.EACCES:
-                                # Don't bother saving, if we don't have
-                                # permission.
-                                return
-                        else:
-                                raise
-
-                cPickle.dump(pkg_names, pfile, -1)
-                pfile.close()
-
-        @staticmethod
-        def load_pkg_names(cat_root):
-                """Load pickled list of package names.  This function
-                may raise an IOError if the file doesn't exist.  Callers
-                should be sure to catch this exception and rebuild
-                the package names, if required."""
-
-                ppath = os.path.normpath(os.path.join(cat_root,
-                    "pkg_names.pkl"))
-
-                pfile = file(ppath, "rb")
-                pkg_names = cPickle.load(pfile) 
-                pfile.close()
-
-                return pkg_names
 
         def _load_renamed(self):
                 """Load the catalog's rename records into self.renamed"""
@@ -982,10 +839,6 @@ class Catalog(object):
 
                 attrf.close()
                 catf.close()
-
-                # Save a list of package names for easier searching
-                pkg_names = Catalog.build_pkg_names(path)
-                Catalog.save_pkg_names(path, pkg_names)
 
         def rename_package(self, srcname, srcvers, destname, destvers):
                 """Record that the name of package oldname has been changed
