@@ -96,8 +96,14 @@ class Image(object):
           $IROOT/cfg_cache
                File containing image's cached configuration.
 
-          $IROOT/state
+          $IROOT/opaque
                File containing image's opaque state.
+
+          $IROOT/state/installed
+               Directory containing symbolic links to
+               $IROOT/pkg/[stem]/[version] for each installed package.  On
+               platforms lacking symbolic links, the filename must be processed
+               such that the correct directory can be opened.
 
         All of these directories and files other than state are considered
         essential for any image to be complete. To add a new essential file or
@@ -107,6 +113,10 @@ class Image(object):
         be created automatically. The programmer must fill the directory as
         needed. If a file is added, the programmer is responsible for creating
         that file during image creation at an appropriate place and time.
+
+        If a directory is required to be present in order for an image to be
+        identifiable as such, it should go into required_subdirs instead.
+        However, upgrade issues abound; this list should probably not change.
 
         Once those steps have been carried out, the change should be added
         to the test suite for image corruption (t_pkg_install_corrupt_image.py).
@@ -119,7 +129,8 @@ class Image(object):
 
         XXX Image file format?  Image file manipulation API?"""
 
-        image_subdirs = ["catalog", "file", "pkg", "index"]
+        required_subdirs = [ "catalog", "file", "pkg", "index" ]
+        image_subdirs = required_subdirs + [ "state/installed" ]
 
         def __init__(self):
                 self.cfg_cache = None
@@ -147,7 +158,7 @@ class Image(object):
         def find_root(self, d):
 
                 def check_subdirs(sub_d, prefix):
-                        for n in self.image_subdirs:
+                        for n in self.required_subdirs:
                                 if not os.path.isdir(
                                     os.path.join(sub_d, prefix, n)):
                                         return False
@@ -662,19 +673,67 @@ class Image(object):
                 indicates that the package named by the fmri has been
                 installed."""
 
+                # XXX This can be removed at some point in the future once we
+                # think this link is available on all systems
+                if not os.path.isdir("%s/state/installed" % self.imgdir):
+                        self.update_installed_pkgs()
+
                 f = file("%s/pkg/%s/installed" % (self.imgdir,
                     fmri.get_dir_path()), "w")
 
                 f.writelines(["VERSION_1\n", fmri.get_authority_str()])
                 f.close()
 
+                os.symlink("../../pkg/%s/installed" % fmri.get_dir_path(),
+                    "%s/state/installed/%s" % (self.imgdir, fmri.get_link_path()))
+
         def remove_install_file(self, fmri):
                 """Take an image and a fmri.  Remove the file from disk
                 that indicates that the package named by the fmri has been
                 installed."""
 
+                # XXX This can be removed at some point in the future once we
+                # think this link is available on all systems
+                if not os.path.isdir("%s/state/installed" % self.imgdir):
+                        self.update_installed_pkgs()
+
                 os.unlink("%s/pkg/%s/installed" % (self.imgdir,
                     fmri.get_dir_path()))
+
+                os.unlink("%s/state/installed/%s" % (self.imgdir,
+                    fmri.get_link_path()))
+
+        def update_installed_pkgs(self):
+                """Take the image's record of installed packages from the
+                prototype layout, with an installed file in each
+                $META/pkg/stem/version directory, to the $META/state/installed
+                summary directory form."""
+
+                # Create the link forest in a temporary directory
+                os.makedirs("%s/state/installed.build" % self.imgdir)
+
+                proot = "%s/pkg" % self.imgdir
+
+                for pd in sorted(os.listdir(proot)):
+                        for vd in sorted(os.listdir("%s/%s" % (proot, pd))):
+                                path = "%s/%s/%s/installed" % (proot, pd, vd)
+                                if not os.path.exists(path):
+                                        continue
+
+                                fmristr = urllib.unquote("%s@%s" % (pd, vd))
+                                auth = self.installed_file_authority(path)
+                                f = pkg.fmri.PkgFmri(fmristr, authority = auth)
+
+                                os.symlink(path, "%s/state/installed.build/%s" %
+                                    (self.imgdir, f.get_link_path()))
+
+                # Someone may have already created this directory
+                try:
+                        portable.rename("%s/state/installed.build" % 
+                            self.imgdir, "%s/state/installed" % self.imgdir)
+                except EnvironmentError, e:
+                        if e.errno != errno.EEXIST:
+                                raise
 
         def _get_version_installed(self, pfmri):
                 pd = pfmri.get_pkg_stem()
@@ -967,15 +1026,36 @@ class Image(object):
                                 yield pf
 
         def gen_installed_pkgs(self):
+                """Return an iteration through the installed packages."""
                 if self.installed_pkg_cache is not None:
                         return iter(self.installed_pkg_cache)
                 else:
                         return self.gen_installed_pkgs_forreal()
 
         def gen_installed_pkgs_forreal(self):
-                proot = "%s/pkg" % self.imgdir
+                """Return a non-cached iteration through the installed packages."""
+
+                installed_state_dir = "%s/state/installed" % self.imgdir
 
                 self.installed_pkg_cache = []
+
+                # If the state directory structure has already been created, we
+                # can just iterate through it.
+                if os.path.isdir(installed_state_dir):
+                        for pl in sorted(os.listdir(installed_state_dir)):
+                                fmristr = urllib.unquote(pl)
+                                path = "%s/%s" % (installed_state_dir, pl)
+                                auth = self.installed_file_authority(path)
+                                f = pkg.fmri.PkgFmri(fmristr, authority = auth)
+
+                                self.installed_pkg_cache.append(f)
+                                yield f
+
+                        return
+
+                # Otherwise, we must iterate through the earlier installed
+                # state.  One day, this can be removed.
+                proot = "%s/pkg" % self.imgdir
                 for pd in sorted(os.listdir(proot)):
                         for vd in sorted(os.listdir("%s/%s" % (proot, pd))):
                                 path = "%s/%s/%s/installed" % (proot, pd, vd)

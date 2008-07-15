@@ -248,6 +248,18 @@ class PkgFmri(object):
 
                 return -1
 
+        def get_link_path(self, stemonly = False):
+                """Return the escaped link (or file) path fragment for this
+                FMRI."""
+
+                if stemonly:
+                        return "%s" % (urllib.quote(self.pkg_name, ""))
+
+                assert self.version != None
+
+                return "%s@%s" % (urllib.quote(self.pkg_name, ""),
+                    urllib.quote(str(self.version), ""))
+
         def get_dir_path(self, stemonly = False):
                 """Return the escaped directory path fragment for this FMRI."""
 
