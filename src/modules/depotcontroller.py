@@ -30,7 +30,9 @@ import signal
 import time
 import subprocess
 import socket
-
+import urllib2
+import httplib
+from pkg.misc import versioned_urlopen
 
 class DepotStateException(Exception):
 
@@ -100,21 +102,17 @@ class DepotController(object):
                 return "http://localhost:%d" % self.__port
 
         def __network_ping(self):
-                sock = None
-		#
-		# Any failure here is treated as an indication that the
-		# depot is not alive.  Hence we just wrap all exceptions
-		# and return false.
-		#
                 try:
-                        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                        sock.connect(("localhost", self.__port))
-                        sock.send("GET / HTTP/1.0\r\n\r\n")
-                        buf = sock.recv(1024)
-                        sock.close()
-                except:
-                        if sock:
-                                sock.close()
+                        c, v = versioned_urlopen(self.get_depot_url(),
+                            "versions", [0])
+                except urllib2.HTTPError, e:
+                        # Server returns NOT_MODIFIED if catalog is up
+                        # to date
+                        if e.code == httplib.NOT_MODIFIED:
+                                return True
+                        else:
+                                return False
+                except urllib2.URLError:
                         return False
                 return True
 
@@ -172,7 +170,7 @@ class DepotController(object):
 		
 		sleeptime = 0.05
 		contact = False
-		while sleeptime <= 4.0:
+		while sleeptime <= 40.0:
 			if self.is_alive():
 				contact = True
 				break
