@@ -327,9 +327,25 @@ class build_py_func(_build_py):
         # override the build_module method to do VERSION substitution on pkg/__init__.py
         def build_module (self, module, module_file, package):
                 if module == "__init__" and package == "pkg":
+                        versionre = '(?m)^VERSION[^"]*"([^"]*)"'
+                        # Grab the previously-built version out of the build
+                        # tree.
+                        try:
+                                ocontent = \
+                                    file(self.get_module_outfile(self.build_lib,
+                                        [package], module)).read()
+                                ov = re.search(versionre, ocontent).group(1)
+                        except IOError:
+                                ov = None
+                        v = get_hg_version()
+                        vstr = 'VERSION = "%s"' % v
+                        # If the versions haven't changed, there's no need to
+                        # recompile.
+                        if v == ov:
+                                return
+
                         mcontent = file(module_file).read()
-                        v = 'VERSION = "%s"' % get_hg_version()
-                        mcontent = re.sub('(?m)^VERSION[^"]*"([^"]*)"', v, mcontent)
+                        mcontent = re.sub(versionre, vstr, mcontent)
                         tmpfd, tmp_file = tempfile.mkstemp()
                         os.write(tmpfd, mcontent)
                         os.close(tmpfd)
@@ -337,6 +353,7 @@ class build_py_func(_build_py):
                         rv = _build_py.build_module(self, module, tmp_file, package)
                         os.unlink(tmp_file)
                         return rv
+
                 return _build_py.build_module(self, module, module_file, package)
 
 class clean_func(_clean):

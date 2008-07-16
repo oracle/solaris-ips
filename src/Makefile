@@ -33,7 +33,7 @@ PYTHON = /usr/bin/python
 
 all := TARGET = all
 link := TARGET = link
-install := TARGET = install
+install packages := TARGET = install
 link-clean := TARGET = link-clean
 clean := TARGET = clean
 clobber := TARGET = clobber
@@ -49,9 +49,11 @@ clean:
 clobber: clean
 	$(PYTHON) setup.py $(TARGET)
 
-install: all
+install:
 	$(PYTHON) setup.py $(TARGET)
 	@cd brand; pwd; $(MAKE) $(TARGET)
+
+packages: install
 	@cd pkgdefs; pwd; $(MAKE) $(TARGET)
 
 # XXX link is a developer target to connect the local machine to the current
