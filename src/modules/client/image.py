@@ -750,6 +750,16 @@ class Image(object):
                 return self.pkg_states.get(pfmri.get_fmri(anarchy = True)[5:],
                     (PKG_STATE_KNOWN, None))[0]
 
+        def get_pkg_auth_by_fmri(self, pfmri):
+                """Return the authority from which 'pfmri' was installed."""
+
+                f = self.pkg_states.get(pfmri.get_fmri(anarchy = True)[5:],
+                    (PKG_STATE_KNOWN, None))[1]
+                if f:
+                        # Return the non-preferred-prefixed name
+                        return f.get_authority()
+                return None
+
         def fmri_set_default_authority(self, fmri):
                 """If the FMRI supplied as an argument does not have
                 an authority, set it to the image's preferred authority."""
@@ -1034,10 +1044,6 @@ class Image(object):
                 also checks if two packages with different names are actually
                 the same because of a rename operation."""
 
-                # If authorities don't match, this can't be a successor
-                if not pkg.fmri.is_same_authority(cfmri.authority, pfmri.authority):
-                        return False
-
                 # If the catalog has a rename record that names fmri as a
                 # destination, it's possible that pfmri could be the same pkg by
                 # rename.
@@ -1058,10 +1064,6 @@ class Image(object):
                 routine from the catalog.  Otherwise, this runs the standard
                 fmri.is_successor() code."""
 
-                # If authorities don't match, this can't be a successor
-                if not pkg.fmri.is_same_authority(cfmri.authority, pfmri.authority):
-                        return False
-
                 # Get the catalog for the correct authority
                 cat = self.get_catalog(cfmri)
 
@@ -1081,7 +1083,16 @@ class Image(object):
                 return (i[1] for i in self.pkg_states.values())
 
         def __load_pkg_states(self):
-                """Build up the package state dictionary."""
+                """Build up the package state dictionary.
+                
+                This dictionary maps the full fmri string to a tuple of the
+                state, the prefix of the authority from which it's installed,
+                and the fmri object.
+
+                Note that this dictionary only maps installed packages.  Use
+                get_pkg_state_by_fmri() to retrieve the state for arbitrary
+                packages.
+                """
 
                 if self.pkg_states is not None:
                         return
@@ -1124,11 +1135,7 @@ class Image(object):
                                     (PKG_STATE_INSTALLED, f)
 
         def strtofmri(self, myfmri):
-                ret = pkg.fmri.PkgFmri(myfmri, 
-                    self.attrs["Build-Release"])
-                self.fmri_set_default_authority(ret)
-
-                return ret
+                return pkg.fmri.PkgFmri(myfmri, self.attrs["Build-Release"])
 
         def update_optional_dependency(self, inputfmri):
                 """Updates pkgname to min fmri mapping if fmri is newer"""
@@ -1141,12 +1148,25 @@ class Image(object):
                 else:
                         name = myfmri.get_name()
 
-                myfmri = self.inventory([ myfmri ], all_known = True,
-                    matcher = pkg.fmri.exact_name_match).next()[0]
+                try:
+                        myfmri = self.inventory([ myfmri ], all_known = True,
+                            matcher = pkg.fmri.exact_name_match).next()[0]
+                except RuntimeError:
+                        # If we didn't find the package in the authority it's
+                        # currently installed from, try again without specifying
+                        # the authority.  This will get the first available
+                        # instance of the package preferring the preferred
+                        # authority.  Make sure to unset the authority on a copy
+                        # of myfmri, just in case myfmri is the same object as
+                        # the input fmri.
+                        myfmri = myfmri.copy()
+                        myfmri.set_authority(None)
+                        myfmri = self.inventory([ myfmri ], all_known = True,
+                            matcher = pkg.fmri.exact_name_match).next()[0]
 
                 ofmri = self.optional_dependencies.get(name, None)
                 if not ofmri or self.fmri_is_successor(myfmri, ofmri):
-                               self.optional_dependencies[name] = myfmri
+                        self.optional_dependencies[name] = myfmri
 
         def apply_optional_dependencies(self, myfmri):
                 """Updates an fmri if optional dependencies require a newer version.
@@ -1322,8 +1342,8 @@ class Image(object):
                                 pfmri = self._catalog[name][str(ver)][0]
 
                                 inst_state = self.get_pkg_state_by_fmri(pfmri)
+                                inst_auth = self.get_pkg_auth_by_fmri(pfmri)
                                 state = {
-                                    "state": inst_state,
                                     "upgradable": ver != newest,
                                     "frozen": False,
                                     "incorporated": False,
@@ -1342,13 +1362,19 @@ class Image(object):
                                                 nfmri = pfmri.copy()
                                                 nfmri.set_authority(rauth,
                                                     auth == pauth)
+                                                if auth == inst_auth:
+                                                        state["state"] = \
+                                                            PKG_STATE_INSTALLED
+                                                else:
+                                                        state["state"] = \
+                                                            PKG_STATE_KNOWN
                                                 yield nfmri, state
                                                 yielded = True
                                 elif inst_state == PKG_STATE_INSTALLED:
-                                        auth = self.installed_file_authority(
-                                            self._install_file(pfmri))
                                         nfmri = pfmri.copy()
-                                        nfmri.set_authority(auth, auth == pauth)
+                                        nfmri.set_authority(inst_auth,
+                                            inst_auth == pauth)
+                                        state["state"] = inst_state
                                         yield nfmri, state
                                         yielded = True
 

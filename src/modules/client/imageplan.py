@@ -198,8 +198,6 @@ class ImagePlan(object):
 
                         f = fmri.PkgFmri(a.attrs["fmri"],
                             self.image.attrs["Build-Release"])
-        
-                        self.image.fmri_set_default_authority(f)
 
                         if self.image.has_version_installed(f) and \
                                     type != "exclude":

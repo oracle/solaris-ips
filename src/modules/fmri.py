@@ -250,17 +250,6 @@ class PkgFmri(object):
                 if not other:
                         return 1
 
-                if self.authority and not other.authority:
-                        return 1
-
-                if not self.authority and other.authority:
-                        return -1
-
-                if self.authority and other.authority:
-                        if not is_same_authority(self.authority,
-                             other.authority):
-                                return cmp(self.authority, other.authority)
-
                 if self.pkg_name == other.pkg_name:
                         return cmp(self.version, other.version)
 
@@ -302,18 +291,8 @@ class PkgFmri(object):
 
         def is_same_pkg(self, other):
                 """Return true if these packages are the same (although
-                potentially of different versions.
-
-                XXX Authority versus package name.
-                """
-                # Fastest path for most common case.
-                if self.pkg_name != other.pkg_name:
-                        return False
-
-                if is_same_authority(self.authority, other.authority):
-                        return True
-
-                return False
+                potentially of different versions.)"""
+                return self.pkg_name == other.pkg_name
 
         def tuple(self):
                 return self.get_authority_str(), self.pkg_name, self.version
@@ -337,9 +316,6 @@ class PkgFmri(object):
                         return False
 
                 if self.version < other.version:
-                        return False
-
-                if not is_same_authority(self.authority, other.authority):
                         return False
 
                 return True

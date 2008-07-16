@@ -67,7 +67,7 @@ class TestFMRI(unittest.TestCase):
                 self.assert_(self.n8.is_successor(self.n7))
 
         def testfmrisuccessor2(self):
-                self.assert_(not self.n1.is_successor(self.n2))
+                self.assert_(self.n1.is_successor(self.n2))
 
         def testfmrisuccessor3(self):
                 self.assert_(self.n4.is_successor(self.n3))
@@ -80,8 +80,8 @@ class TestFMRI(unittest.TestCase):
                 self.assert_(self.n5.is_successor(self.n5))
 
         def testfmrisuccessor6(self):
-                """ fmris are the same except for authority """
-                self.assert_(not self.n10.is_successor(self.n8))
+                """fmris have different versions and different authorities"""
+                self.assert_(self.n10.is_successor(self.n7))
 
         def testfmrisimilar1(self):
                 self.assert_(self.n4.is_similar(self.n2))
@@ -112,7 +112,7 @@ class TestFMRI(unittest.TestCase):
 
         def testfmriissamepkg(self):
                 self.assert_(self.n7.is_same_pkg(self.n8))
-                self.assert_(not self.n7.is_same_pkg(self.n10))
+                self.assert_(self.n7.is_same_pkg(self.n10))
                 self.assert_(not self.n7.is_same_pkg(self.n6))
 
         def testbadfmri1(self):

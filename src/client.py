@@ -363,9 +363,11 @@ def image_update(img, args):
                 img.retrieve_catalogs()
         except RuntimeError, failures:
                 if display_catalog_failures(failures) == 0:
-                        return 1
+                        if not noexecute:
+                                return 1
                 else:
-                        return 3
+                        if not noexecute:
+                                return 3
 
         # Reload catalog.  This picks up the update from retrieve_catalogs.
         img.load_catalogs(progresstracker)
@@ -377,6 +379,7 @@ def image_update(img, args):
                     verbose = verbose, noexecute = noexecute)
         except RuntimeError, e:
                 error(_("image-update failed: %s") % e)
+                return 1
 
         assert img.imageplan
 
