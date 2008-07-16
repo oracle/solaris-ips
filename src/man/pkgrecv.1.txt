@@ -5,7 +5,7 @@ NAME
      pkgrecv - image packaging system content retrieval utility
 
 SYNOPSIS
-     /usr/bin/pkgrecv [-d directory] -s server pkg...
+     /usr/bin/pkgrecv [-k] [-d directory] -s server pkg...
 
      /usr/bin/pkgrecv -s server -n
 
@@ -19,6 +19,8 @@ OPTIONS
      The following options are supported:
 
      -s repo_url    The URL prefix of the server.
+
+     -k             Keep the individual pkg contents compressed.
 
      -d directory   The directory where pkg content should be placed.
      		    The default location is the current working

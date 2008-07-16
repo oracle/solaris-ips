@@ -38,7 +38,7 @@ import pkg.fmri
 import pkg.pkgtarfile as ptf
 import pkg.catalog as catalog
 import pkg.actions as actions
-from pkg.misc import versioned_urlopen
+from pkg.misc import versioned_urlopen, gunzip_from_stream
 
 def usage(usage_error = None):
         """ Emit a usage message and optionally prefix it with a more
@@ -91,7 +91,7 @@ def hashes_from_mfst(manifest):
 
         return hashes
 
-def fetch_files_byhash(server_url, hashes, pkgdir):
+def fetch_files_byhash(server_url, hashes, pkgdir, keep_compressed):
         """Given a list of files named by content hash, download from
         server_url into pkgdir."""
 
@@ -120,9 +120,19 @@ def fetch_files_byhash(server_url, hashes, pkgdir):
                         sys.exit(1)
 
         for info in tar_stream:
-                hashval = info.name
+                gzfobj = None
                 try:
-                        tar_stream.extract_to(info, pkgdir, hashval)
+                        if not keep_compressed:
+                                # Uncompress as we retrieve the files
+                                gzfobj = tar_stream.extractfile(info)
+                                fpath = os.path.join(pkgdir, info.name)
+                                outfile = open(fpath, "wb")
+                                gunzip_from_stream(gzfobj, outfile)
+                                outfile.close()
+                                gzfobj.close()
+                        else:
+                                # We want to keep the files compressed on disk
+                                tar_stream.extract_to(info, pkgdir, info.name)
                 except:
                         error(_("Unable to extract file: %s") % info.name)
                         sys.exit(1)
@@ -238,12 +248,13 @@ def main_func():
         server = None
         basedir = None
         newfmri = False
+        keep_compressed = False
 
         # XXX /usr/lib/locale is OpenSolaris-specific.
         gettext.install("pkgrecv", "/usr/lib/locale")
 
         try:
-               opts, pargs = getopt.getopt(sys.argv[1:], "s:d:n")
+               opts, pargs = getopt.getopt(sys.argv[1:], "s:d:nk")
         except getopt.GetoptError, e:
                 usage(_("Illegal option -- %s") % e.opt) 
 
@@ -254,6 +265,8 @@ def main_func():
                         basedir = arg
                 if opt == "-n":
                         newfmri = True
+                if opt == "-k":
+                        keep_compressed = True
 
         if not server:
                 usage(_("must specify a server"))
@@ -291,7 +304,7 @@ def main_func():
                         content_hashes = hashes_from_mfst(mfstpath)
 
                         fetch_files_byhash(server, content_hashes,
-                            os.path.dirname(mfstpath))
+                            os.path.dirname(mfstpath), keep_compressed)
 
         return 0
 
