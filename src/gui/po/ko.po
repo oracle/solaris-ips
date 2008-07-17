@@ -1,0 +1,894 @@
+# Copyright (C) 2008 Sun Microsystems, Inc
+# This file is distributed under the same license as the packagemanager package.
+#
+# Desktop Discuss <desktop-discuss@opensolaris.org>
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: packagemanager HEAD\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2008-05-29 17:42+0900\n"
+"PO-Revision-Date: 2008-05-13 22:01+0900\n"
+"Last-Translator: desktop-discuss@opensolaris.org\n"
+"Language-Team: desktop-discuss@opensolaris.org\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../data/l10n.py:6
+msgid "Communication"
+msgstr "통신"
+
+#: ../data/l10n.py:7
+msgid "Mail"
+msgstr "메일"
+
+#: ../data/l10n.py:8
+msgid "Localization"
+msgstr "지역화"
+
+#: ../data/l10n.py:9
+msgid "Social Software"
+msgstr "사회적 소프트웨어"
+
+#: ../data/l10n.py:10
+msgid "Viewer"
+msgstr "뷰어"
+
+#: ../data/l10n.py:11
+msgid "RasterGraphics"
+msgstr "래스터 그래픽"
+
+#: ../data/l10n.py:12
+msgid "2DGraphics"
+msgstr "2차원 그래픽"
+
+#: ../data/l10n.py:13
+msgid "Photography"
+msgstr "사진"
+
+#: ../data/l10n.py:14
+msgid "CLI tools"
+msgstr "CLI 도구"
+
+#: ../data/l10n.py:15
+msgid "Print"
+msgstr "인쇄"
+
+#: ../data/packagemanager.desktop.in.h:1
+msgid "Install, update and remove software packages"
+msgstr "소프트웨어 패키지를 설치, 업데이트 및 제거"
+
+#: ../data/packagemanager.desktop.in.h:2 ../locale/packagemanager.glade.h:33
+#: ../packagemanager.glade.h:44
+msgid "Package Manager"
+msgstr "패키지 관리자"
+
+#: ../gui/installupdate.py:127 ../gui/remove.py:115
+#, python-format
+msgid ""
+"GUI will not respond to any event! %s.                                 Check "
+"create_plan_dialog_gui()"
+msgstr ""
+"GUI가 어떤 이벤트에도 응답하지 않습니다! %s.                                 "
+"create_plan_dialog_gui()를 확인하십시오."
+
+#: ../gui/installupdate.py:142
+#, python-format
+msgid ""
+"GUI will not respond to any event! %s.                                 Check "
+"create_network_down_gui()"
+msgstr ""
+"GUI가 어떤 이벤트에도 응답하지 않습니다! %s.                                 "
+"create_network_down_gui()를 확인하십시오."
+
+#: ../gui/installupdate.py:167
+#, python-format
+msgid "GUI will not respond to any event! %s.Check create_installupdate_gui()"
+msgstr ""
+"GUI가 어떤 이벤트에도 응답하지 않습니다! %s. create_installupdate_gui()를 확"
+"인하십시오."
+
+#: ../gui/installupdate.py:184
+#, python-format
+msgid "GUI will not respond to any event! %s.Check create_downloaddialog_gui()"
+msgstr ""
+"GUI가 어떤 이벤트에도 응답하지 않습니다! %s. create_downloaddialog_gui()를 확"
+"인하십시오."
+
+#. print "Updating" + p.destination_fmri.get_name()
+#: ../gui/installupdate.py:264
+msgid "Updating:  "
+msgstr "업데이트 중:  "
+
+#. print "Installing" + p.destination_fmri.get_name()
+#: ../gui/installupdate.py:279
+msgid "Installing:  "
+msgstr "설치 중:  "
+
+#: ../gui/installupdate.py:350 ../gui/remove.py:197
+#, python-format
+msgid "Evaluating: %s\n"
+msgstr "평가 중: %s\n"
+
+#: ../gui/installupdate.py:524
+msgid "Downloading: "
+msgstr "다운로드 중: "
+
+#: ../gui/installupdate.py:572
+#, python-format
+msgid "%d packages will be updated\n"
+msgstr "%d개의 패키지가 업데이트됩니다.\n"
+
+#: ../gui/installupdate.py:574
+#, python-format
+msgid "%d package will be updated\n"
+msgstr "%d개의 패키지가 업데이트됩니다.\n"
+
+#: ../gui/installupdate.py:576
+#, python-format
+msgid ""
+"%d packages will be installed\n"
+"\n"
+msgstr ""
+" %d개의 패키지가 설치됩니다.\n"
+" \n"
+
+#: ../gui/installupdate.py:578
+#, python-format
+msgid ""
+"%d package will be installed\n"
+"\n"
+msgstr ""
+" %d개의 패키지가 설치됩니다.\n"
+" \n"
+
+#: ../gui/installupdate.py:581
+#, python-format
+msgid "%d MB will be downloaded"
+msgstr "%dMB가 다운로드됩니다."
+
+#: ../gui/remove.py:140
+#, python-format
+msgid "GUI will not respond to any event! %s.Check create_remove_gui()"
+msgstr ""
+"GUI가 어떤 이벤트에도 응답하지 않습니다! %s. create_remove_gui()를 확인하십시"
+"오."
+
+#: ../gui/remove.py:237
+#, python-format
+msgid ""
+"%d packages will be removed\n"
+"\n"
+msgstr ""
+"%d개의 패키지가 제거됩니다.\n"
+" \n"
+
+#: ../gui/remove.py:239
+#, python-format
+msgid ""
+"%d package will be removed\n"
+"\n"
+msgstr ""
+"%d개의 패키지가 제거됩니다.\n"
+"\n"
+
+#: ../locale/packagemanager.glade.h:1 ../packagemanager.glade.h:1
+msgid ""
+"6 packages will be installed\n"
+"28 packages will be updated\n"
+"\n"
+"20.1 MB will be downloaded"
+msgstr ""
+"6개의 패키지가 설치됩니다.\n"
+"28개의 패키지가 업데이트됩니다.\n"
+"\n"
+"20.1MB가 다운로드됩니다."
+
+#: ../locale/packagemanager.glade.h:5
+msgid "<b>Apply the following changes?</b>"
+msgstr "<b>다음 변경 사항을 적용하시겠습니까?</b>"
+
+#: ../locale/packagemanager.glade.h:6 ../packagemanager.glade.h:6
+msgid "<b>PACKAGE NAME</b>"
+msgstr "<b>패키지 이름</b>"
+
+#: ../locale/packagemanager.glade.h:7 ../packagemanager.glade.h:7
+msgid "<b>Summary</b>"
+msgstr "<b>요약</b>"
+
+#: ../locale/packagemanager.glade.h:8 ../packagemanager.glade.h:8
+msgid "<i>Repository:</i>"
+msgstr "<i>저장소:</i>"
+
+#: ../locale/packagemanager.glade.h:9 ../packagemanager.glade.h:9
+msgid "About"
+msgstr "정보"
+
+#: ../locale/packagemanager.glade.h:10 ../packagemanager.glade.h:11
+msgid "About dialog"
+msgstr "정보 대화 상자"
+
+#: ../locale/packagemanager.glade.h:11
+msgid "Apply"
+msgstr "적용"
+
+#: ../locale/packagemanager.glade.h:12
+msgid "Applying changes"
+msgstr "변경 사항 적용 중"
+
+#: ../locale/packagemanager.glade.h:13 ../packagemanager.glade.h:14
+msgid "Cancel"
+msgstr "취소"
+
+#: ../locale/packagemanager.glade.h:14
+msgid "Changes applied"
+msgstr "변경 사항 적용됨"
+
+#: ../locale/packagemanager.glade.h:15 ../packagemanager.glade.h:26
+msgid "Dependencies"
+msgstr "종속성"
+
+#: ../locale/packagemanager.glade.h:16 ../packagemanager.glade.h:27
+msgid "Deselect"
+msgstr "선택 취소"
+
+#: ../locale/packagemanager.glade.h:17 ../packagemanager.glade.h:28
+msgid "Deselect selected packages"
+msgstr "선택된 패키지 선택 취소"
+
+#: ../locale/packagemanager.glade.h:18
+msgid "Download Preferences"
+msgstr "다운로드 기본 설정"
+
+#: ../locale/packagemanager.glade.h:19
+msgid "Download Preferences..."
+msgstr "다운로드 기본 설정..."
+
+#: ../locale/packagemanager.glade.h:20
+msgid "Downloading Files"
+msgstr "파일 다운로드 중"
+
+#: ../locale/packagemanager.glade.h:21
+msgid "Downloading Package Information"
+msgstr "패키지 정보 다운로드 중"
+
+#: ../locale/packagemanager.glade.h:22 ../packagemanager.glade.h:32
+msgid "General Info"
+msgstr "일반 정보"
+
+#: ../locale/packagemanager.glade.h:23
+msgid "History..."
+msgstr "내역..."
+
+#: ../locale/packagemanager.glade.h:24 ../packagemanager.glade.h:33
+msgid "Install / Update"
+msgstr "설치 / 업데이트"
+
+#: ../locale/packagemanager.glade.h:25 ../packagemanager.glade.h:34
+msgid "Install / Update Confirmation"
+msgstr "설치 / 업데이트 확인"
+
+#: ../locale/packagemanager.glade.h:26 ../packagemanager.glade.h:35
+msgid "Install or Update selected packages"
+msgstr "선택된 패키지 설치 또는 업데이트"
+
+#: ../locale/packagemanager.glade.h:27 ../packagemanager.glade.h:36
+msgid "Install/Update"
+msgstr "설치 / 업데이트"
+
+#: ../locale/packagemanager.glade.h:28
+msgid "Installed Files"
+msgstr "설치된 파일"
+
+#: ../locale/packagemanager.glade.h:29
+msgid "Lock"
+msgstr "잠그기"
+
+#: ../locale/packagemanager.glade.h:30
+msgid "Lock selected packages"
+msgstr "선택된 패키지 잠그기"
+
+#: ../locale/packagemanager.glade.h:31
+msgid "Manage Repositories"
+msgstr "저장소 관리"
+
+#: ../locale/packagemanager.glade.h:32
+msgid "Online Help"
+msgstr "온라인 도움말"
+
+#: ../locale/packagemanager.glade.h:34
+msgid "Preferences options for download"
+msgstr "다운로드 기본 설정 옵션"
+
+#: ../locale/packagemanager.glade.h:35 ../packagemanager.glade.h:47
+msgid "Quit"
+msgstr "종료"
+
+#: ../locale/packagemanager.glade.h:36 ../packagemanager.glade.h:48
+msgid "Quit application"
+msgstr "응용 프로그램 종료"
+
+#: ../locale/packagemanager.glade.h:37
+msgid "Redo"
+msgstr "다시 실행"
+
+#: ../locale/packagemanager.glade.h:38
+msgid "Redo last action"
+msgstr "마지막 작업 다시 실행"
+
+#: ../locale/packagemanager.glade.h:39 ../packagemanager.glade.h:49
+msgid "Reload"
+msgstr "다시 로드"
+
+#: ../locale/packagemanager.glade.h:40 ../packagemanager.glade.h:50
+msgid "Remove"
+msgstr "제거"
+
+#: ../locale/packagemanager.glade.h:41 ../packagemanager.glade.h:53
+msgid "Remove selected packages"
+msgstr "선택된 패키지 제거"
+
+#: ../locale/packagemanager.glade.h:42
+msgid "Repositories"
+msgstr "저장소"
+
+#: ../locale/packagemanager.glade.h:43
+msgid "Repositories..."
+msgstr "저장소..."
+
+#: ../locale/packagemanager.glade.h:44 ../packagemanager.glade.h:58
+msgid "Search:"
+msgstr "검색:"
+
+#: ../locale/packagemanager.glade.h:45 ../packagemanager.glade.h:59
+msgid "Select All"
+msgstr "모두 선택"
+
+#: ../locale/packagemanager.glade.h:46 ../packagemanager.glade.h:60
+msgid "Select All Items"
+msgstr "모든 항목 선택"
+
+#: ../locale/packagemanager.glade.h:47 ../packagemanager.glade.h:64
+msgid "Short description"
+msgstr "간략한 설명"
+
+#: ../locale/packagemanager.glade.h:48 ../packagemanager.glade.h:66
+msgid "Show:"
+msgstr "표시:"
+
+#: ../locale/packagemanager.glade.h:49
+msgid ""
+"The chosen action also affects other packages. The following changes are "
+"required to proceed:"
+msgstr ""
+"선택된 작업은 다른 패키지에도 영향을 미칩니다. 계속하려면 다음 변경 사항이 필"
+"요합니다."
+
+#: ../locale/packagemanager.glade.h:50
+msgid "Undo"
+msgstr "실행 취소"
+
+#: ../locale/packagemanager.glade.h:51
+msgid "Undo action"
+msgstr "작업 실행 취소"
+
+#: ../locale/packagemanager.glade.h:52
+msgid "Unlock"
+msgstr "잠금 해제"
+
+#: ../locale/packagemanager.glade.h:53
+msgid "Unlock selected packages"
+msgstr "선택된 패키지 잠금 해제"
+
+#: ../locale/packagemanager.glade.h:54 ../packagemanager.glade.h:73
+msgid "Update All"
+msgstr "모두 업데이트"
+
+#: ../locale/packagemanager.glade.h:55 ../packagemanager.glade.h:74
+msgid "Update all packages"
+msgstr "모든 패키지 업데이트"
+
+#: ../locale/packagemanager.glade.h:56
+msgid "View History"
+msgstr "내역 보기"
+
+#: ../locale/packagemanager.glade.h:57 ../packagemanager.glade.h:76
+msgid "_Edit"
+msgstr "편집(_E)"
+
+#: ../locale/packagemanager.glade.h:58 ../packagemanager.glade.h:77
+msgid "_File"
+msgstr "파일(_F)"
+
+#: ../locale/packagemanager.glade.h:59 ../packagemanager.glade.h:78
+msgid "_Help"
+msgstr "도움말(_H)"
+
+#: ../locale/packagemanager.glade.h:60 ../packagemanager.glade.h:79
+msgid "_Package"
+msgstr "패키지(_P)"
+
+#: ../locale/packagemanager.glade.h:61
+msgid "_Settings"
+msgstr "설정(_S)"
+
+#: ../packagemanager.glade.h:5
+msgid "<b>Can't establish a connection to the repository</b>"
+msgstr "<b>저장소와의 연결을 설정할 수 없습니다.</b>"
+
+#: ../packagemanager.glade.h:10
+msgid "About Glade"
+msgstr "글레이드 정보"
+
+#: ../packagemanager.glade.h:12
+msgid "Architecture (CPU):"
+msgstr "아키텍처(CPU):"
+
+#: ../packagemanager.glade.h:13
+msgid "Build type:"
+msgstr "빌드 유형:"
+
+#: ../packagemanager.glade.h:15
+msgid "Checking package dependencies..."
+msgstr "패키지 종속성 확인 중…"
+
+#: ../packagemanager.glade.h:16
+msgid "Clear"
+msgstr "지우기"
+
+#: ../packagemanager.glade.h:17
+msgid "Close"
+msgstr "닫기"
+
+#: ../packagemanager.glade.h:18
+msgid "Copy"
+msgstr "복사"
+
+#: ../packagemanager.glade.h:19
+msgid ""
+"Copyright 2008 Sun Microsystems, Inc.  \n"
+"All rights reserved.\n"
+"Use is subject to license terms."
+msgstr ""
+"Copyright 2008 Sun Microsystems, Inc.  \n"
+"모든 권리는 저작권자의 소유입니다.\n"
+"라이센스 계약 조건이 적용됩니다."
+
+#: ../packagemanager.glade.h:22
+msgid "Custom Package Options"
+msgstr "사용자 정의 패키지 옵션"
+
+#: ../packagemanager.glade.h:23
+msgid "Cut"
+msgstr "잘라내기"
+
+#: ../packagemanager.glade.h:24
+msgid "Cut action"
+msgstr "잘라내기 작업"
+
+#: ../packagemanager.glade.h:25
+msgid "Debug"
+msgstr "디버그"
+
+#: ../packagemanager.glade.h:29
+msgid "Downloading Packages"
+msgstr "패키지 다운로드 중"
+
+#: ../packagemanager.glade.h:30
+msgid "Downloading files..."
+msgstr "파일 다운로드 중..."
+
+#: ../packagemanager.glade.h:31
+msgid "Files Details"
+msgstr "파일 세부 정보"
+
+#: ../packagemanager.glade.h:37
+msgid "Install/Upgrade Check"
+msgstr "설치/업그레이드 확인"
+
+#: ../packagemanager.glade.h:38
+msgid "Installing Packages"
+msgstr "패키지 설치 중"
+
+#: ../packagemanager.glade.h:39
+msgid "Installing Packages..."
+msgstr "패키지 설치 중..."
+
+#: ../packagemanager.glade.h:40
+msgid "Network Problem"
+msgstr "네트워크 문제"
+
+#: ../packagemanager.glade.h:41
+msgid "Next"
+msgstr "다음"
+
+#: ../packagemanager.glade.h:42
+msgid "Non-Debug"
+msgstr "디버그 없음"
+
+#: ../packagemanager.glade.h:43
+msgid "Package Download Preferences"
+msgstr "패키지 다운로드 기본 설정"
+
+#: ../packagemanager.glade.h:45
+msgid "Paste"
+msgstr "붙여넣기"
+
+#: ../packagemanager.glade.h:46
+msgid "Please check your Internet settings."
+msgstr "인터넷 설정을 확인하십시오."
+
+#: ../packagemanager.glade.h:51
+msgid "Remove Check"
+msgstr "확인 표시 제거"
+
+#: ../packagemanager.glade.h:52
+msgid "Remove Confirmation"
+msgstr "확인 제거"
+
+#: ../packagemanager.glade.h:54
+msgid "Removing Packages"
+msgstr "패키지 제거 중"
+
+#: ../packagemanager.glade.h:55
+msgid "Removing Packages..."
+msgstr "패키지 제거 중..."
+
+#: ../packagemanager.glade.h:56
+msgid "Reset"
+msgstr "재설정"
+
+#: ../packagemanager.glade.h:57
+msgid "SPARC"
+msgstr "SPARC"
+
+#: ../packagemanager.glade.h:61
+msgid "Select Updates"
+msgstr "업데이트 선택"
+
+#: ../packagemanager.glade.h:62
+msgid ""
+"Select default download preferences for all packages.\n"
+"Click Reset to reset download preferences to the initial settings."
+msgstr ""
+"모든 패키지의 기본 다운로드 설정을 선택합니다.\n"
+"다운로드 기본 설정을 초기 설정으로 되돌리려면 재설정을 클릭합니다."
+
+#: ../packagemanager.glade.h:65
+msgid "Show Details"
+msgstr "세부 정보 표시"
+
+#: ../packagemanager.glade.h:67
+msgid ""
+"This action affects other packages.\n"
+"Review the packages to be installed or updated.\n"
+"Click Next to continue."
+msgstr ""
+"이 작업은 다른 패키지에 영향을 미칩니다.\n"
+"설치하거나 업데이트할 패키지를 검토하십시오.\n"
+"계속하려면 다음을 클릭하십시오."
+
+#: ../packagemanager.glade.h:70
+msgid ""
+"This action affects other packages.\n"
+"Review the packages to be removed.\n"
+"Click Next to continue."
+msgstr ""
+"이 작업은 다른 패키지에 영향을 미칩니다.\n"
+"제거할 패키지를 검토하십시오.\n"
+"계속하려면 다음을 클릭하십시오."
+
+#: ../packagemanager.glade.h:75
+msgid "X86"
+msgstr "X86"
+
+#. self.pkgconfig = packagemanagerconfig.PackageManagerConfig() #Config
+#. self.pkgconfig.set_config_file_path(os.path.expanduser("~")+"/.packagemanager/config")  #Config path
+#: ../packagemanager.py:103
+msgid "Package Manager - revision 0.1"
+msgstr "패키지 관리자 - 개정판 0.1"
+
+#: ../packagemanager.py:126
+#, python-format
+msgid "GUI will not respond to any event! %s.Check declare_signals()"
+msgstr ""
+"GUI가 어떤 이벤트에도 응답하지 않습니다! %s. declare_signals()를 확인하십시"
+"오."
+
+#: ../packagemanager.py:255 ../packagemanager.py:300
+msgid "Name"
+msgstr "이름"
+
+#: ../packagemanager.py:263
+msgid "Installed Version"
+msgstr "설치된 버전"
+
+#: ../packagemanager.py:269
+msgid "Latest Version"
+msgstr "최신 버전"
+
+#: ../packagemanager.py:275
+msgid "Rating"
+msgstr "등급"
+
+#: ../packagemanager.py:281
+msgid "Description"
+msgstr "설명"
+
+#. TODO: check if needed
+#: ../packagemanager.py:440 ../packagemanager.py:448 ../packagemanager.py:899
+#: ../packagemanager.py:904 ../packagemanager.py:972 ../packagemanager.py:977
+#: ../packagemanager.py:979 ../packagemanager.py:1467
+#: ../packagemanager.py:1472 ../packagemanager.py:1540
+msgid "All"
+msgstr "모두"
+
+#: ../packagemanager.py:442
+msgid "Meta Packages"
+msgstr "메타 패키지"
+
+#: ../packagemanager.py:443 ../packagemanager.py:1571
+#: ../packagemanager.py:1572 ../packagemanager.py:1573
+#: ../packagemanager.py:1574 ../packagemanager.py:1575
+#: ../packagemanager.py:1576 ../packagemanager.py:1577
+#: ../packagemanager.py:1578 ../packagemanager.py:1579
+msgid "Applications Desktop"
+msgstr "응용 프로그램 데스크탑"
+
+#: ../packagemanager.py:444
+msgid "Applications Web-Based"
+msgstr "응용 프로그램 웹 기반"
+
+#: ../packagemanager.py:445 ../packagemanager.py:1581
+#: ../packagemanager.py:1582 ../packagemanager.py:1583
+#: ../packagemanager.py:1585
+msgid "Operating System"
+msgstr "운영 체제"
+
+#: ../packagemanager.py:446
+msgid "User Environment"
+msgstr "사용자 환경"
+
+#: ../packagemanager.py:447
+msgid "Web Infrastructure"
+msgstr "웹 인프라"
+
+#: ../packagemanager.py:452 ../packagemanager.py:936
+msgid "All Packages"
+msgstr "모든 패키지"
+
+#: ../packagemanager.py:454 ../packagemanager.py:938
+msgid "Installed Packages"
+msgstr "설치된 패키지"
+
+#: ../packagemanager.py:455 ../packagemanager.py:940
+msgid "Updates"
+msgstr "업데이트"
+
+#. self.filter_list.append([self._('Locked Packages'),])
+#. self.filter_list.append(["",])
+#: ../packagemanager.py:459 ../packagemanager.py:946
+msgid "Selected Packages"
+msgstr "선택된 패키지"
+
+#: ../packagemanager.py:548
+#, python-format
+msgid "%d packages listed"
+msgstr "%d개의 패키지가 나열됨"
+
+#: ../packagemanager.py:549
+#, python-format
+msgid "%d installed"
+msgstr "%d개 설치됨"
+
+#: ../packagemanager.py:550
+#, python-format
+msgid "%d selected"
+msgstr "%d개 선택됨"
+
+#: ../packagemanager.py:551
+#, python-format
+msgid "%d broken"
+msgstr "%d개 깨짐"
+
+#: ../packagemanager.py:819
+msgid "Fetching description..."
+msgstr "설명을 불러오는 중..."
+
+#: ../packagemanager.py:820 ../packagemanager.py:821 ../packagemanager.py:822
+msgid "Fetching information..."
+msgstr "정보를 불러오는 중…"
+
+#: ../packagemanager.py:826
+msgid "Description not available for this package..."
+msgstr "이 패키지에 대한 설명 없음..."
+
+#: ../packagemanager.py:827
+msgid "Files Details not available for this package..."
+msgstr "이 패키지에 대한 파일 세부 정보 없음..."
+
+#: ../packagemanager.py:828
+msgid "Dependencies info not available for this package..."
+msgstr "이 패키지에 대한 종속성 정보 없음..."
+
+#: ../packagemanager.py:829
+msgid "Information not available for this package..."
+msgstr "이 패키지에 대한 정보 없음..."
+
+#: ../packagemanager.py:834
+#, python-format
+msgid "Root: %s\n"
+msgstr "루트: %s\n"
+
+#: ../packagemanager.py:835
+msgid "Dependencies:\n"
+msgstr "종속성:\n"
+
+#: ../packagemanager.py:838
+msgid ""
+"Information for installed package:\n"
+"\n"
+msgstr ""
+"설치된 패키지 정보:\n"
+"\n"
+
+#: ../packagemanager.py:840
+msgid ""
+"Information for latest available package:\n"
+"\n"
+msgstr ""
+"최근에 제공된 패키지 정보:\n"
+"\n"
+
+#: ../packagemanager.py:857
+msgid "depend"
+msgstr "종속"
+
+#: ../packagemanager.py:860
+msgid "dir"
+msgstr "디렉토리"
+
+#: ../packagemanager.py:862
+msgid "file"
+msgstr "파일"
+
+#. instbuffer.insert(institer,"\t"+self.locale_distinguished_name(a)+"\n")
+#. elif cmp(a.name,self.N_("driver")) == 0:
+#. print a.distinguished_name()
+#: ../packagemanager.py:867
+msgid "hardlink"
+msgstr "하드링크"
+
+#: ../packagemanager.py:869
+msgid "link"
+msgstr "링크"
+
+#: ../packagemanager.py:871
+msgid "legacy"
+msgstr "레거시"
+
+#: ../packagemanager.py:872 ../packagemanager.py:874
+msgid "pkg"
+msgstr "패키지"
+
+#: ../packagemanager.py:875
+msgid "name"
+msgstr "이름"
+
+#: ../packagemanager.py:876
+msgid "desc"
+msgstr "설명"
+
+#: ../packagemanager.py:877
+#, python-format
+msgid "  Description:\t%s\n"
+msgstr "  설명:\t%s\n"
+
+#: ../packagemanager.py:885
+#, python-format
+msgid "  Name:\t\t%s\n"
+msgstr "  이름:\t\t%s\n"
+
+#: ../packagemanager.py:886
+#, python-format
+msgid "  FMRI:\t\t%s\n"
+msgstr "  FMRI:\t\t%s\n"
+
+#: ../packagemanager.py:887
+#, python-format
+msgid "  Version:\t\t%s\n"
+msgstr "  버전:\t\t%s\n"
+
+#: ../packagemanager.py:888
+#, python-format
+msgid "  Packaged:\t%s\n"
+msgstr "  패키지화됨:\t%s\n"
+
+#: ../packagemanager.py:943
+msgid "Locked Packages"
+msgstr "잠긴 패키지"
+
+#: ../packagemanager.py:1311
+msgid "..."
+msgstr "..."
+
+#. TODO Instead trying root image, maybe popup window
+#. with question to which image switch??
+#: ../packagemanager.py:1385
+#, python-format
+msgid "%s is not valid image, trying root image"
+msgstr "%s은(는) 유효한 이미지가 아닙니다. 루트 이미지 시도 중"
+
+#. TODO if this function returns None, the popup gui with catalog
+#. Add/remove/select should be shown.
+#: ../packagemanager.py:1401
+#, python-format
+msgid "%s is not valid root image, return None"
+msgstr "%s은(는) 유효한 루트 이미지가 아닙니다. None 값 반환"
+
+#: ../packagemanager.py:1473
+msgid "All packages"
+msgstr "모든 패키지"
+
+#. self.add_package_to_category(_("All"),None,None,None);
+#. Category names until xdg is imported.
+#. from xdg.DesktopEntry import *
+#. entry = DesktopEntry ()
+#. directory = '/usr/share/desktop-directories'
+#. for root, dirs, files in os.walk (directory):
+#. for name in files:
+#. entry.parse (os.path.join (root, name))
+#. self.add_category_to_section (entry.getName (), self._('Applications Desktop'))
+#: ../packagemanager.py:1553 ../packagemanager.py:1554
+#: ../packagemanager.py:1571
+msgid "Accessories"
+msgstr "보조 프로그램"
+
+#: ../packagemanager.py:1555 ../packagemanager.py:1557
+#: ../packagemanager.py:1559 ../packagemanager.py:1572
+msgid "Games"
+msgstr "게임"
+
+#: ../packagemanager.py:1556 ../packagemanager.py:1558
+#: ../packagemanager.py:1560 ../packagemanager.py:1573
+#: ../packagemanager.py:1582
+msgid "Graphics"
+msgstr "그래픽"
+
+#: ../packagemanager.py:1574
+msgid "Internet"
+msgstr "인터넷"
+
+#: ../packagemanager.py:1575 ../packagemanager.py:1587
+msgid "Office"
+msgstr "오피스"
+
+#: ../packagemanager.py:1576
+msgid "Sound & Video"
+msgstr "음악과 비디오"
+
+#: ../packagemanager.py:1577
+msgid "System Tools"
+msgstr "시스템 도구"
+
+#: ../packagemanager.py:1578
+msgid "Universal Access"
+msgstr "범용 액세스"
+
+#. Can be twice :)
+#: ../packagemanager.py:1579 ../packagemanager.py:1585
+msgid "Developer Tools"
+msgstr "개발자 도구"
+
+#: ../packagemanager.py:1581
+msgid "Core"
+msgstr "코어"
+
+#: ../packagemanager.py:1583
+msgid "Media"
+msgstr "매체"
+
+#: ../packagemanager.py:1588
+msgid "Office2"
+msgstr "오피스2"

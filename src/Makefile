@@ -42,6 +42,7 @@ test-verbose := TARGET = test-verbose
 
 all:
 	$(PYTHON) setup.py build
+	@cd gui; pwd; $(MAKE) $(TARGET)
 
 clean:
 	$(PYTHON) setup.py $(TARGET)
@@ -51,6 +52,7 @@ clobber: clean
 
 install:
 	$(PYTHON) setup.py $(TARGET)
+	@cd gui; pwd; $(MAKE) $(TARGET)
 	@cd brand; pwd; $(MAKE) $(TARGET)
 
 packages: install
@@ -70,6 +72,7 @@ link:
 	@cd web; pwd; $(MAKE) $(TARGET)
 	@cd brand; pwd; $(MAKE) $(TARGET)
 	@cd man; pwd; $(MAKE) $(TARGET)
+	@cd gui; pwd; $(MAKE) $(TARGET)
 
 link-clean:
 	rm -f /usr/bin/pkg
@@ -81,6 +84,7 @@ link-clean:
 	@cd web; pwd; $(MAKE) $(TARGET)
 	@cd brand; pwd; $(MAKE) $(TARGET)
 	@cd man; pwd; $(MAKE) $(TARGET)
+	@cd gui; pwd; $(MAKE) $(TARGET)
 
 test:
 	$(PYTHON) setup.py test

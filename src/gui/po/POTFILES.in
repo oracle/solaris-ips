@@ -1,0 +1,9 @@
+# Files with translatable strings.
+# Please keep this file in alphabetical order.
+data/l10n.py
+data/packagemanager.desktop.in
+gui/installupdate.py
+gui/remove.py
+locale/packagemanager.glade.h
+packagemanager.glade
+packagemanager.py

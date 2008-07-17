@@ -1,0 +1,6 @@
+package SUNWipkg-gui
+import SUNWipkg-gui
+depend SUNWPython@2.4.4
+depend SUNWipkg@0.5.11
+version 0.0.1
+end package

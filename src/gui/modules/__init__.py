@@ -1,3 +1,4 @@
+#!/usr/bin/python2.4
 #
 # CDDL HEADER START
 #
@@ -22,9 +23,4 @@
 # Use is subject to license terms.
 #
 
-install:
-	@cd SUNWipkg; pwd; $(MAKE) install
-	@cd SUNWipkg-gui; pwd; $(MAKE) install
-	@cd SUNWipkg-gui-data; pwd; $(MAKE) install
-	@cd SUNWipkg-gui-l10n; pwd; $(MAKE) install
-	@cd SUNWpython-cherrypy; pwd; $(MAKE) install
+__all__ = ['installupdate', 'enumerations', 'filelist', 'thread', 'remove', 'userrights']

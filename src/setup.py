@@ -86,6 +86,7 @@ scripts_sunos = {
                 ['client.py', 'pkg'],
                 ['publish.py', 'pkgsend'],
                 ['pull.py', 'pkgrecv'],
+                ['packagemanager.py', 'packagemanager'],
                 ],
         lib_dir: [
                 ['depot.py', 'pkg.depotd'],
@@ -149,7 +150,7 @@ packages = [
         'pkg.client',
         'pkg.portable',
         'pkg.publish',
-        'pkg.server',
+        'pkg.server'
         ]
 web_files = [
         'web/pkg-block-icon.png',

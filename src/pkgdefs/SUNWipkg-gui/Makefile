@@ -47,23 +47,29 @@ prototype: FRC
 		$$1 == "f" { \
 			$$4 = "444" \
 		} \
-		$$1 == "f" && $$3 ~ /usr\/lib\/pkg.depotd|usr\/bin\/pkg(send)?|usr\/lib\/brand\/ipkg\/pkgcreatezone/ { \
+		$$1 == "f" && $$3 ~ /bin\/packagemanager/ { \
 			$$4 = "755" \
 		} \
 		{ \
 			$$5 = "root"; \
 			$$6 = "bin"; \
 		} \
-		$$3 ~ /^(etc(\/zones)?|usr(\/share(\/lib)?)?|var(\/svc(\/manifest(\/application(\/pkg-server.xml)?)?)?)?)$$/ { \
+		$$3 ~ /(share(\/applications\/packagemanager.desktop|\/applications|\/icons|\/icons\/package\-manager|\/icons\/package\-manager\/new_update.png))$$/ { \
+			$$6 = "other"; \
+		} \
+		$$3 ~ /(share(\/package\-manager|\/package\-manager\/data|\/package\-manager\/packagemanager.glade))$$/ { \
+			$$6 = "bin"; \
+		} \
+		$$3 ~ /^(share)$$/ { \
 			$$6 = "sys"; \
 		} \
-		$$3 !~ /^usr(\/lib\/python2.4\/vendor-packages(\/cherrypy|\/pkg\/gui)|\/bin\/packagemanager|\/share(\/package-manager|\/locale|\/applications|\/icons))/ { \
+		$$3 ~ /^usr(\/lib\/python2.4\/vendor-packages\/pkg\/gui|\/bin\/packagemanager|\/share(\/package-manager\/packagemanager.glade|\/applications|\/icons))/ { \
 			print \
 		}' > prototype
 
 # This will only work if there's a server running, so allow failure.
 img-pkg: sysv-pkg
-	-../../util/distro-import/solaris.py -b 0.0 -w $(PKGARCHIVE) SUNWipkg.import
+	-../../../../util/distro-import/solaris.py -b 0.0 -w $(PKGARCHIVE) SUNWipkg-gui.import
 
 $(PKGARCHIVE):
 	[ -d $(PKGARCHIVE) ] || mkdir -p $(PKGARCHIVE)

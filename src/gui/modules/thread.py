@@ -1,3 +1,4 @@
+#!/usr/bin/python2.4
 #
 # CDDL HEADER START
 #
@@ -22,9 +23,20 @@
 # Use is subject to license terms.
 #
 
-install:
-	@cd SUNWipkg; pwd; $(MAKE) install
-	@cd SUNWipkg-gui; pwd; $(MAKE) install
-	@cd SUNWipkg-gui-data; pwd; $(MAKE) install
-	@cd SUNWipkg-gui-l10n; pwd; $(MAKE) install
-	@cd SUNWpython-cherrypy; pwd; $(MAKE) install
+class ThreadRun:
+        def __init__(self):
+                self.cancelled = False
+
+        def is_cancelled(self):
+                return self.cancelled
+
+        def cancel(self):
+                self.cancelled = True
+
+        def run(self):
+                self.cancelled = False
+
+class CancelThreadException(Exception):
+        def __init__(self, args = None):
+                Exception.__init__(self)
+                self.args = args
