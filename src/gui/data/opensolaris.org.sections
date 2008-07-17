@@ -1,0 +1,17 @@
+[Meta Packages]
+category = Builds,Releases,Developer Tools,AMP Stack,Office Tools
+
+[Applications Desktop]
+category = Accessories,Control Panels,Developer Tools,Games,Graphics,Internet,Office,Panel Applets,Soudn & Video,System Tools,Universal Access
+
+[Applications Web-Based]
+category = Business,Composite Applications,Identity,Portal,Social Software,Web Technologies
+
+[Operating System]
+category = Communication,Configuration Administration,Core,Drivers,Media,Networking,SMF (System Management Function),Storage,Virtualisation
+
+[User Environment]
+category = Command lines,GNOME,KDE
+
+[Web Infrastructure]
+category = AFP,Application Server,DHCP,DNS,Firewall,FTP,Mail,NAT,NetBoot,NFS,Open Directory,Print,Samba,Video Streaming,VPN,Web (HTTP),Windows

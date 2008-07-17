@@ -1,0 +1,2667 @@
+[SUNWneuos]
+category = 
+
+[SUNWgnome-spell]
+category = GNOME
+
+[SUNWqlcu]
+category = 
+
+[SUNWauaow]
+category = 
+
+[SUNWfirefoxl10n-fr-FR]
+category = Localization,GNOME
+
+[SUNWauaos]
+category = 
+
+[SUNWgnome-a11y-dasher]
+category = Universal Access,GNOME
+
+[SUNWamd8111s]
+category = 
+
+[SUNWpostgr]
+category = 
+
+[SUNWxorg-client-docs]
+category = 
+
+[SUNWkvm]
+category = 
+
+[SUNWkdhcm]
+category = 
+
+[SUNWmyspell-dictionary-cs]
+category = 
+
+[SUNWsbrg]
+category = 
+
+[SUNWcos]
+category = 
+
+[SUNWnxge]
+category = 
+
+[SUNWlsimega]
+category = 
+
+[SUNWgnome-search-tool]
+category = 
+
+[SUNW1394h]
+category = 
+
+[SUNWib]
+category = 
+
+[SUNWthunderbird]
+category = Internet
+
+[SUNWfladm]
+category = 
+
+[SUNWii]
+category = 
+
+[SUNWtcat]
+category = 
+
+[SUNWxorg-compatlinks]
+category = 
+
+[SUNWebrg]
+category = 
+
+[SUNWfrdis]
+category = 
+
+[SUNWgnome-media-player]
+category = Sound & Video,GNOME
+
+[SUNWjupdatemgru]
+category = 
+
+[SUNWsvn-perl]
+category = 
+
+[SUNWgnome-gui-test]
+category = 
+
+[SUNWeupdatemgru]
+category = 
+
+[SUNWitiso1]
+category = 
+
+[SUNWvia823x]
+category = 
+
+[SUNWgnu-idn]
+category = 
+
+[SUNWkadis]
+category = 
+
+[SUNWcacaowsvr]
+category = 
+
+[SUNWthunderbirdl10n-sv-SE]
+category = Localization,GNOME
+
+[SUNWhbrg]
+category = 
+
+[SUNWfwdcu]
+category = 
+
+[SUNWitdma]
+category = 
+
+[SUNWgnome-system-tools]
+category = 
+
+[SUNWuprl]
+category = 
+
+[SUNWfchba]
+category = 
+
+[SUNWbison]
+category = 
+
+[SUNWkdc]
+category = 
+
+[SUNWweuow]
+category = 
+
+[SUNWafe]
+category = 
+
+[SUNWwsr2]
+category = 
+
+[SUNWweuos]
+category = 
+
+[SUNWfcprt]
+category = 
+
+[SUNWlocaledefsrc]
+category = 
+
+[SUNWfcip]
+category = 
+
+[SUNWkos]
+category = 
+
+[SUNWfcp]
+category = 
+
+[SUNWcladm]
+category = 
+
+[SUNWsprot]
+category = 
+
+[SUNWgnu-libiconv]
+category = 
+
+[SUNWpmdbdpg]
+category = 
+
+[SUNWgnome-component]
+category = 
+
+[SUNWmpapi]
+category = 
+
+[SUNWiupdatemgru]
+category = 
+
+[SUNWvtsts]
+category = 
+
+[SUNWpcmci]
+category = 
+
+[SUNWdmfe]
+category = 
+
+[SUNWad810]
+category = 
+
+[SUNWsvos]
+category = 
+
+[SUNWsmagt]
+category = 
+
+[SUNWgnome-media-apps]
+category = Sound & Video,GNOME
+
+[SUNWpcmcu]
+category = 
+
+[SUNWfirefoxl10n-ko-KR]
+category = Localization,GNOME
+
+[SUNWlibrsvg]
+category = 
+
+[SUNWgnome-l10nmessages-de]
+category = Localization,GNOME
+
+[SUNWevolution]
+category = Internet,Communication,GNOME,Mail
+
+[SUNWevolution-webcal]
+category = Internet,Communication,GNOME
+
+[SUNWdvdrw]
+category = 
+
+[SUNWlxml]
+category = 
+
+[SUNWrcmdc]
+category = 
+
+[SUNWPython-extra]
+category = 
+
+[SUNWgnu-automake-110]
+category = 
+
+[SUNWtlsu]
+category = 
+
+[SUNWdews2]
+category = 
+
+[SUNWj6man]
+category = 
+
+[SUNWpostgr-docs]
+category = 
+
+[SUNWgnome-doc-utils]
+category = 
+
+[SUNWi2cs]
+category = 
+
+[SUNWexplt]
+category = 
+
+[SUNWjadma]
+category = 
+
+[SUNWkwsr2]
+category = 
+
+[SUNWiscsitgt]
+category = 
+
+[SUNWzsh]
+category = 
+
+[SUNWktsu]
+category = 
+
+[SUNWthunderbirdl10n-it-IT]
+category = Localization,GNOME
+
+[SUNWpd]
+category = 
+
+[SUNWpc]
+category = 
+
+[SUNWgnome-l10nmessages-cs]
+category = Localization,GNOME
+
+[SUNWj6cfg]
+category = 
+
+[SUNWrds]
+category = 
+
+[SUNWpm]
+category = 
+
+[SUNWgpch]
+category = 
+
+[SUNWcdrw]
+category = 
+
+[SUNWgzip]
+category = 
+
+[SUNWgnome-print]
+category = 
+
+[SUNWhadma]
+category = 
+
+[SUNWmda]
+category = 
+
+[SUNWpr]
+category = 
+
+[SUNWbzip]
+category = 
+
+[SUNWmdb]
+category = 
+
+[SUNWbart]
+category = 
+
+[SUNWrdc]
+category = 
+
+[SUNWpsutils]
+category = 
+
+[SUNWwget]
+category = 
+
+[SUNWwpa]
+category = 
+
+[SUNWgnome-applets]
+category = 
+
+[SUNWmd]
+category = 
+
+[SUNWibsdpu]
+category = 
+
+[SUNWautoef]
+category = 
+
+[SUNWtnfd]
+category = 
+
+[SUNWgnome-l10nmessages-it]
+category = Localization,GNOME
+
+[SUNWcadma]
+category = 
+
+[SUNWbind]
+category = 
+
+[SUNWgnome-l10ndocument-de]
+category = Localization,GNOME
+
+[SUNWtsg]
+category = 
+
+[SUNWhiu8]
+category = 
+
+[SUNWltdl]
+category = 
+
+[SUNWibrg]
+category = 
+
+[SUNWfrws2]
+category = 
+
+[SUNWbrg]
+category = 
+
+[SUNWfrdma]
+category = 
+
+[SUNWgnome-l10nmessages-zhCN]
+category = Localization,GNOME
+
+[SUNWpostgr-pl]
+category = 
+
+[SUNWpostgr-server]
+category = 
+
+[SUNWgrubS]
+category = 
+
+[SUNWmyspell-dictionary-hu]
+category = 
+
+[SUNWhladm]
+category = 
+
+[SUNWTk]
+category = 
+
+[SUNWxscreensaver-hacks]
+category = 
+
+[SUNWnamos]
+category = 
+
+[SUNWgnome-crash-report]
+category = 
+
+[SUNWqos]
+category = 
+
+[SUNWfirefoxl10n-es-ES]
+category = Localization,GNOME
+
+[SUNWtavor]
+category = 
+
+[SUNWsviso1]
+category = 
+
+[SUNWbrltty]
+category = 
+
+[SUNWmyspell-dictionary-de]
+category = 
+
+[SUNWgnome-file-mgr]
+category = 
+
+[SUNWpostgr-contrib]
+category = 
+
+[SUNWkupdatemgru]
+category = 
+
+[SUNWgnu-diffutils]
+category = 
+
+[SUNWthunderbirdl10n-pl-PL]
+category = Localization,GNOME
+
+[SUNWipkg]
+category = 
+
+[SUNWthunderbird-calendar]
+category = Internet,Office,GNOME
+
+[SUNWpl5v]
+category = 
+
+[SUNWgnome-config]
+category = 
+
+[SUNWpl5u]
+category = 
+
+[SUNWdoc]
+category = 
+
+[SUNWpl5p]
+category = 
+
+[SUNWflexruntime]
+category = 
+
+[SUNWpl5m]
+category = 
+
+[SUNWfontconfig-docs]
+category = 
+
+[SUNWgnome-common-devel]
+category = 
+
+[SUNWppm]
+category = 
+
+[SUNWi7cs]
+category = 
+
+[SUNWj6dmo]
+category = 
+
+[SUNWpostgr-82-tcl]
+category = 
+
+[SUNWgnome-internet-applets]
+category = 
+
+[SUNWgnome-display-mgr]
+category = System Tools,GNOME
+
+[SUNWsmmgr]
+category = 
+
+[SUNWjpg]
+category = 
+
+[SUNWixgb]
+category = 
+
+[SUNWciu8]
+category = 
+
+[SUNWj6dmx]
+category = 
+
+[SUNWlibevent]
+category = 
+
+[SUNWtnetc]
+category = 
+
+[SUNWlibgpg-error]
+category = 
+
+[SUNWccinv]
+category = 
+
+[SUNWpcelx]
+category = 
+
+[SUNWman]
+category = 
+
+[SUNWfirefoxl10n-zh-CN]
+category = Localization,GNOME
+
+[SUNWnfsckr]
+category = 
+
+[SUNWGlib]
+category = 
+
+[SUNWsfman]
+category = 
+
+[SUNWadixp]
+category = 
+
+[SUNWtnetd]
+category = 
+
+[SUNWgnome-img-viewer]
+category = Graphics,GNOME
+
+[SUNWi9cs]
+category = 
+
+[SUNWsvdis]
+category = 
+
+[SUNWgnome-a11y-poke]
+category = Universal Access,GNOME
+
+[SUNWrge]
+category = 
+
+[SUNWsvn-python]
+category = 
+
+[SUNWloc]
+category = 
+
+[SUNWtoo]
+category = 
+
+[SUNWjxplt]
+category = 
+
+[SUNWstardict]
+category = 
+
+[SUNWeladm]
+category = 
+
+[SUNWthunderbirdl10n-fr-FR]
+category = Localization,GNOME
+
+[SUNWjadis]
+category = 
+
+[SUNWxge]
+category = 
+
+[SUNWpool]
+category = 
+
+[SUNWwebmin]
+category = 
+
+[SUNWukspfw]
+category = 
+
+[SUNWinplt]
+category = 
+
+[SUNWsfwhea]
+category = 
+
+[SUNWuedg]
+category = 
+
+[SUNWlibexif]
+category = 
+
+[SUNWhadis]
+category = 
+
+[SUNWgcmn]
+category = 
+
+[SUNWadmr]
+category = 
+
+[SUNWtls]
+category = 
+
+[SUNWphp524core]
+category = 
+
+[SUNWdhcs]
+category = 
+
+[SUNWgnome-keyring-manager]
+category = 
+
+[SUNWaudf]
+category = 
+
+[SUNWadmc]
+category = 
+
+[SUNWaudd]
+category = 
+
+[SUNWauda]
+category = 
+
+[SUNWgnome-log-viewer]
+category = 
+
+[SUNWts]
+category = 
+
+[SUNWastdev]
+category = 
+
+[SUNWfss]
+category = 
+
+[slim_cd]
+category = 
+
+[SUNWxvmdom]
+category = 
+
+[SUNWaudh]
+category = 
+
+[SUNWjos]
+category = 
+
+[SUNWgnome-l10ndocument-sv]
+category = Localization,GNOME
+
+[SUNWadmlib-sysid]
+category = 
+
+[SUNWidnd]
+category = 
+
+[SUNWTcl]
+category = 
+
+[SUNWslp]
+category = 
+
+[SUNWidnl]
+category = 
+
+[SUNWgnome-ps-viewer]
+category = 
+
+[SUNWhermon]
+category = 
+
+[SUNWkrb]
+category = 
+
+[SUNWidnu]
+category = 
+
+[SUNWgnome-l10nmessages-ru]
+category = Localization,GNOME
+
+[SUNWlibusbugen]
+category = 
+
+[SUNWscnprm]
+category = 
+
+[FSWxorg-devel-docs]
+category = 
+
+[SUNWkey]
+category = 
+
+[SUNWscp]
+category = 
+
+[SUNWgnome-l10ndocument-it]
+category = Localization,GNOME
+
+[SUNWagp]
+category = 
+
+[SUNWgnome-l10nmessages-extra]
+category = Localization,GNOME
+
+[SUNWhwsr2]
+category = 
+
+[SUNWuksp]
+category = 
+
+[SUNWgnome-vfs]
+category = 
+
+[SUNWspnego]
+category = 
+
+[SUNWbs]
+category = 
+
+[SUNWgssk]
+category = 
+
+[SUNWfirefoxl10n-zh-TW]
+category = Localization,GNOME
+
+[SUNWscm]
+category = 
+
+[SUNWtcpd]
+category = 
+
+[SUNWopensp]
+category = 
+
+[SUNWsfinf]
+category = 
+
+[SUNWcarx]
+category = 
+
+[SUNWapch22m-php5]
+category = 
+
+[SUNWgnome-desktop-prefs]
+category = 
+
+[SUNWscsa1394]
+category = 
+
+[SUNWlexpt]
+category = 
+
+[SUNWgnome-img-editor]
+category = Graphics,GNOME
+
+[SUNWiso-codes]
+category = 
+
+[SUNWfupdatemgru]
+category = 
+
+[SUNWvncviewer]
+category = 
+
+[SUNWluxop]
+category = 
+
+[SUNWdrmr]
+category = 
+
+[SUNWcacaodtrace]
+category = 
+
+[SUNWdeiso1]
+category = 
+
+[FSWxorg-data]
+category = 
+
+[SUNWcakr]
+category = 
+
+[SUNWspprou]
+category = 
+
+[SUNWhpijs]
+category = 
+
+[SUNWahci]
+category = 
+
+[SUNWperl584usr]
+category = 
+
+[SUNWgnome-a11y-speech-freetts]
+category = Universal Access,GNOME
+
+[SUNWgnome-python-desktop]
+category = 
+
+[SUNWgui-install]
+category = 
+
+[SUNWxorg-clientlibs]
+category = 
+
+[SUNWxorg-xkb]
+category = 
+
+[SUNWos86r]
+category = 
+
+[redistributable]
+category = 
+
+[SUNWgsfst]
+category = 
+
+[SUNWpppd]
+category = 
+
+[SUNWpppg]
+category = 
+
+[SUNWgnome-a11y-reader]
+category = Universal Access,GNOME
+
+[SUNWxorg-doc]
+category = 
+
+[SUNWgnome-l10nmessages-es]
+category = Localization,GNOME
+
+[SUNWgnome-l10nmessages-zhTW]
+category = Localization,GNOME
+
+[SUNWcwsr2]
+category = 
+
+[SUNWccccr]
+category = 
+
+[SUNWgnome-pilot]
+category = Communication,GNOME 
+
+[SUNWpiclh]
+category = 
+
+[SUNWggrp]
+category = 
+
+[SUNWpostgr-l10n-ja]
+category = Localization
+
+[SUNWbash]
+category = 
+
+[SUNWjdhcm]
+category = 
+
+[SUNWccfw]
+category = 
+
+[SUNWj6rt]
+category = 
+
+[SUNWphp524man]
+category = 
+
+[FSWxorg-client-programs]
+category = 
+
+[SUNWj6dvx]
+category = 
+
+[SUNWgnome-help-viewer]
+category = 
+
+[SUNWgnome-media-mp3]
+category = Sound & Video,GNOME
+
+[SUNWxorg-tsol-module]
+category = 
+
+[SUNWitws2]
+category = 
+
+[SUNWbcc]
+category = 
+
+[SUNWperl-xml-parser]
+category = 
+
+[SUNWscn-base]
+category = 
+
+[SUNWagph]
+category = 
+
+[SUNWfirefoxl10n-pl-PL]
+category = Localization,GNOME
+
+[FSWxorg-client-docs]
+category = 
+
+[SUNWxvm]
+category = 
+
+[SUNWiwi]
+category = 
+
+[SUNWgmake]
+category = 
+
+[SUNWgnome-desklets-extra]
+category = Accessories,GNOME
+
+[SUNWgnome-cd-burner]
+category = 
+
+[SUNWlibtool]
+category = 
+
+[SUNWtlsd]
+category = 
+
+[SUNWdpprou]
+category = 
+
+[SUNWnfsc]
+category = 
+
+[SUNWgnome-camera]
+category = 
+
+[SUNW1394]
+category = 
+
+[SUNWjws2]
+category = 
+
+[SUNWthunderbirdl10n-de-DE]
+category = Localization,GNOME
+
+[SUNWbinutils]
+category = 
+
+[SUNWfcmdb]
+category = 
+
+[SUNWserweb]
+category = 
+
+[SUNWnfss]
+category = 
+
+[SUNWpcser]
+category = 
+
+[SUNWudapl]
+category = 
+
+[SUNWlibusb]
+category = 
+
+[SUNWgnome-l10ndocument-ja]
+category = Localization,GNOME
+
+[SUNWsladm]
+category = 
+
+[SUNWftp]
+category = 
+
+[SUNWgnome-l10ndocument-extra]
+category = Localization,GNOME
+
+[SUNWmibii]
+category = 
+
+[SUNWchxge]
+category = 
+
+[SUNWgnu-gettext]
+category = 
+
+[SUNWacc]
+category = 
+
+[SUNWfcsm]
+category = 
+
+[SUNWeu8os]
+category = 
+
+[SUNWrpm]
+category = 
+
+[SUNWp7zip]
+category = 
+
+[SUNWgnome-l10ndocument-zhCN]
+category = Localization,GNOME
+
+[SUNWslim-utils]
+category = 
+
+[SUNWqlc]
+category = 
+
+[BRCMbnx]
+category = 
+
+[SUNWgnome-dictionary]
+category = 
+
+[SUNWfirefoxl10n-pt-BR]
+category = Localization,GNOME
+
+[SUNWdupdatemgru]
+category = 
+
+[SUNWgss]
+category = 
+
+[SUNWgnome-archive-mgr]
+category = 
+
+[SUNWxscreensaver-hacks-gl]
+category = 
+
+[SUNWav1394]
+category = 
+
+[SUNWjavadb-core]
+category = 
+
+[SUNWjpprou]
+category = 
+
+[SUNWpicl]
+category = 
+
+[SUNWsasnm]
+category = 
+
+[SUNWusbccid]
+category = 
+
+[SUNWi1cs]
+category = 
+
+[SUNWgnome-config-java]
+category = 
+
+[SUNWkpprou]
+category = 
+
+[SUNWnvsata]
+category = 
+
+[SUNWlibvirt]
+category = 
+
+[SUNWfirefoxl10n-sv-SE]
+category = Localization,GNOME
+
+[SUNWpsf]
+category = 
+
+[FSWxwpft]
+category = 
+
+[SUNWjss]
+category = 
+
+[SUNWmyspell-dictionary-ptBR]
+category = 
+
+[SUNWpsh]
+category = 
+
+[SUNWgscr]
+category = 
+
+[SUNWcbrg]
+category = 
+
+[SUNWfontconfig]
+category = 
+
+[SUNWimac]
+category = 
+
+[SUNWxorg-graphics-ddx]
+category = 
+
+[SUNWj6jmp]
+category = 
+
+[SUNWmeaos]
+category = 
+
+[SUNWfwflash]
+category = 
+
+[SUNWzlib]
+category = 
+
+[SUNWmeaow]
+category = 
+
+[SUNWzip]
+category = 
+
+[SUNWepprou]
+category = 
+
+[SUNWvts]
+category = 
+
+[SUNWthunderbirdl10n-zh-CN]
+category = Localization,GNOME
+
+[SUNWaspell]
+category = 
+
+[SUNWcacaort]
+category = 
+
+[SUNWdmgt]
+category = 
+
+[SUNWgnome-themes]
+category = 
+
+[SUNWmyspell-dictionary-pl]
+category = 
+
+[SUNWitdis]
+category = 
+
+[SUNWgnome-config-editor]
+category = 
+
+[SUNWavahi-bridge-dsd]
+category = 
+
+[SUNWbge]
+category = 
+
+[SUNWfwdc]
+category = 
+
+[SUNWaconf]
+category = 
+
+[SUNWjre-config-plugin]
+category = 
+
+[SUNWmysql5test]
+category = 
+
+[SUNWadmap]
+category = 
+
+[SUNWgnome-l10ndocument-zhTW]
+category = Localization,GNOME
+
+[SUNWicdc]
+category = GNOME
+
+[SUNWgrub]
+category = 
+
+[SUNWgnome-fonts]
+category = 
+
+[SUNWgnome-sys-suspend]
+category = 
+
+[SUNWdhcm]
+category = 
+
+[SUNWgnome-utility-applets]
+category = 
+
+[SUNWxwhl]
+category = 
+
+[SUNWsrh]
+category = 
+
+[SUNWgnome-remote-desktop]
+category = GNOME
+
+[SUNWccccfg]
+category = 
+
+[SUNWunzip]
+category = 
+
+[SUNWqosu]
+category = 
+
+[SUNWgnome-games]
+category = Games,GNOME
+
+[SUNWdbus-bindings]
+category = 
+
+[SUNWmkcd]
+category = 
+
+[SUNWmysqlt]
+category = 
+
+[SUNWgnome-hex-editor]
+category = Developer Tools,GNOME
+
+[SUNWlp-cmds]
+category = 
+
+[SUNWgnome-desklets]
+category = Accessories,GNOME
+
+[SUNWcsd]
+category = 
+
+[SUNWrmodr]
+category = 
+
+[FSWxorg-clientlibs]
+category = 
+
+[SUNWrmodu]
+category = 
+
+[SUNWcakrx]
+category = 
+
+[SUNWlx]
+category = 
+
+[SUNWaspell-en]
+category = 
+
+[SUNWfsexam]
+category = 
+
+[SUNWsacom]
+category = 
+
+[SUNWcctpx]
+category = 
+
+[SUNWzfskr]
+category = 
+
+[SUNWrpcib]
+category = 
+
+[SUNWsamow]
+category = 
+
+[SUNWcfpl]
+category = 
+
+[SUNWsamos]
+category = 
+
+[SUNWarbel]
+category = 
+
+[SUNWevolution-exchange]
+category = Internet,GNOME
+
+[SUNWpostgr-82-server-data-root]
+category = 
+
+[SUNWccfwctrl]
+category = 
+
+[SUNWlibsasl]
+category = 
+
+[SUNWhupdatemgru]
+category = 
+
+[SUNWfctl]
+category = 
+
+[SUNWgnome-a11y-libs]
+category = Universal Access,GNOME
+
+[SUNWthunderbirdl10n-ko-KR]
+category = Localization,GNOME
+
+[SUNWppro-plugin-sunos-base]
+category = 
+
+[SUNWnge]
+category = 
+
+[SUNWpgadmin3]
+category = 
+
+[SUNWTiff]
+category = 
+
+[SUNWpapi]
+category = 
+
+[SUNWfdhcm]
+category = 
+
+[SUNWgnome-panel]
+category = 
+
+[SUNWsolaris-devel-docs]
+category = 
+
+[SUNWmddr]
+category = 
+
+[SUNWrtw]
+category = 
+
+[SUNWpostgr-82-contrib]
+category = 
+
+[SUNWxsun-keytables]
+category = 
+
+[SUNWmdbdm]
+category = 
+
+[SUNWgnome-a11y-speech]
+category = Universal Access,GNOME
+
+[SUNWuiu8]
+category = 
+
+[SUNWseuow]
+category = 
+
+[SUNWsmedia]
+category = Sound & Video
+
+[SUNWmyspell-dictionary-sv]
+category = 
+
+[SUNWceuos]
+category = 
+
+[SUNWlibsdl]
+category = 
+
+[SUNWceuow]
+category = 
+
+[SUNWgm4]
+category = 
+
+[SUNWesiso1]
+category = 
+
+[SUNWevolution-jescs]
+category = Internet,GNOME
+
+[SUNWxsvc]
+category = 
+
+[SUNWesdis]
+category = 
+
+[SUNWspeex]
+category = Sound & Video
+
+[SUNWcnetr]
+category = 
+
+[SUNWgnome-l10nmessages-ja]
+category = Localization,GNOME
+
+[SUNWquagga]
+category = 
+
+[SUNWyp]
+category = 
+
+[SUNWgnome-base-libs-java]
+category = 
+
+[SUNWdedma]
+category = 
+
+[SUNWscplp]
+category = 
+
+[SUNWgnome-pdf-viewer]
+category = Office,GNOME
+
+[SUNWa2ps]
+category = 
+
+[SUNWIPython]
+category = 
+
+[SUNWflexlex]
+category = 
+
+[SUNWlibdaemon]
+category = 
+
+[SUNWgnome-media]
+category = Sound & Video,GNOME
+
+[SUNWpoold]
+category = 
+
+[SUNWtftp]
+category = 
+
+[SUNWcpcu]
+category = 
+
+[SUNWesdma]
+category = 
+
+[SUNWuium]
+category = 
+
+[SUNWxvnc]
+category = 
+
+[SUNWpostgr-82-client]
+category = 
+
+[SUNWnfsskr]
+category = 
+
+[SUNWedhcm]
+category = 
+
+[SUNWphp524-pgsql]
+category = 
+
+[SUNWbnu]
+category = 
+
+[SUNWsvn]
+category = 
+
+[SUNWruby18]
+category = 
+
+[SUNWhos]
+category = 
+
+[SUNWgnome-l10ndocument-fr]
+category = Localization,GNOME
+
+[SUNWcstl]
+category = 
+
+[SUNWfxplt]
+category = 
+
+[SUNWgnome-dtstart]
+category = 
+
+[SUNWimagick]
+category = 
+
+[SUNWgnome-screenshot]
+category = Graphics,GNOME
+
+[SUNWpppdt]
+category = 
+
+[SUNWidhcm]
+category = 
+
+[SUNWesws2]
+category = 
+
+[SUNWvtss]
+category = 
+
+[SUNWusbs]
+category = 
+
+[SUNWkadma]
+category = 
+
+[SUNWcupdatemgru]
+category = 
+
+[SUNWusbu]
+category = 
+
+[SUNWgetting-started-guide]
+category = 
+
+[SUNWcar]
+category = 
+
+[SUNWthunderbirdl10n-ja-JP]
+category = Localization,GNOME
+
+[FSWxorg-headers]
+category = 
+
+[SUNWmyspell-dictionary-extra]
+category = 
+
+[SUNWippcore]
+category = 
+
+[SUNWeeuow]
+category = 
+
+[SUNWamr]
+category = 
+
+[SUNWopenssl]
+category = 
+
+[SUNWeeuos]
+category = 
+
+[SUNWsbp2]
+category = 
+
+[SUNWcsl]
+category = 
+
+[SUNWkbrg]
+category = 
+
+[SUNWxwdv]
+category = 
+
+[SUNWpsdpr]
+category = 
+
+[SUNWpostgr-82-l10n-ja]
+category = Localization
+
+[SUNWGtk]
+category = 
+
+[SUNWdxplt]
+category = 
+
+[SUNWgnome-l10nmessages-sv]
+category = Localization,GNOME
+
+[SUNWpostgr-jdbc]
+category = 
+
+[SUNWgnome-a11y-gok]
+category = Universal Access,GNOME
+
+[SUNWcamow]
+category = 
+
+[SUNWcamos]
+category = 
+
+[SUNWfilebench]
+category = 
+
+[SUNWgnome-base-libs]
+category = GNOME,Core,Graphics
+
+[SUNWsdhcm]
+category = 
+
+[SUNWgimpprint]
+category = 
+
+[SUNWipprou]
+category = 
+
+[SUNWgnome-ui-designer]
+category = Developer Tools,GNOME
+
+[SUNWkiu8]
+category = 
+
+[SUNWpng]
+category = 
+
+[SUNWisolc]
+category = 
+
+[SUNWrsm]
+category = 
+
+[slim_install]
+category = 
+
+[SUNWrsg]
+category = 
+
+[SUNWtiu8]
+category = 
+
+[SUNWxorg-cfg]
+category = 
+
+[SUNWfriso1]
+category = 
+
+[SUNWcsos]
+category = 
+
+[SUNWtcpdS]
+category = 
+
+[SUNWseuos]
+category = 
+
+[SUNWthunderbirdl10n-es-ES]
+category = Localization,GNOME
+
+[SUNWapch]
+category = 
+
+[SUNWibsdp]
+category = 
+
+[SUNWcurl]
+category = 
+
+[SUNWicud]
+category = 
+
+[SUNWatfs]
+category = 
+
+[SUNWapct]
+category = 
+
+[SUNWmysql5]
+category = 
+
+[SUNWpcwl]
+category = 
+
+[SUNWjavadb-client]
+category = 
+
+[SUNWmpathadm]
+category = 
+
+[SUNWdhcsb]
+category = 
+
+[SUNWgd2]
+category = 
+
+[SUNWmysql]
+category = 
+
+[SUNWfirefoxl10n-de-DE]
+category = Localization,GNOME
+
+[SUNWrcmds]
+category = 
+
+[SUNWpsm-lpd]
+category = 
+
+[SUNWpcmem]
+category = 
+
+[SUNWesu]
+category = 
+
+[SUNWgnome-mm-applets]
+category = 
+
+[SUNWrmvolmgr]
+category = 
+
+[SUNWgtkperf]
+category = 
+
+[SUNWarc]
+category = 
+
+[SUNWbip]
+category = 
+
+[SUNWpostgr-82-libs]
+category = 
+
+[SUNWsupdatemgru]
+category = 
+
+[SUNWrsgk]
+category = 
+
+[SUNWgksu]
+category = 
+
+[SUNWgnome-freedb-libs]
+category = 
+
+[SUNWDTraceToolkit]
+category = 
+
+[SUNWkleue]
+category = 
+
+[SUNWtcsh]
+category = 
+
+[SUNWpsdir]
+category = 
+
+[SUNWgnome-terminal-java]
+category = System Tools
+
+[SUNWvirtinst]
+category = 
+
+[SUNWi15cs]
+category = 
+
+[SUNWgnome-l10nmessages-fr]
+category = Localization,GNOME
+
+[SUNWhdhcm]
+category = 
+
+[SUNWwbsup]
+category = 
+
+[SUNWxwsvr]
+category = 
+
+[SUNWsi3124]
+category = 
+
+[SUNWvtsmn]
+category = 
+
+[SUNWdcaf]
+category = 
+
+[FSWfontconfig-devel-docs]
+category = 
+
+[SUNWippl]
+category = 
+
+[SUNWi5cs]
+category = 
+
+[SUNWgnome-terminal]
+category = System Tools,GNOME
+
+[SUNWudf]
+category = 
+
+[SUNWwlan]
+category = 
+
+[SUNWjtsu]
+category = 
+
+[SUNWwpi]
+category = 
+
+[SUNWevolution-data-server]
+category = Internet,Communication,GNOME,Mail
+
+[SUNWxvmhvm]
+category = 
+
+[SUNWlibpopt]
+category = 
+
+[SUNWcfcl]
+category = 
+
+[SUNWgnome-text-editor]
+category = Accessories,GNOME
+
+[SUNWcea]
+category = 
+
+[SUNWipw]
+category = 
+
+[SUNWdtrp]
+category = 
+
+[SUNWced]
+category = 
+
+[SUNWtnfc]
+category = 
+
+[SUNWuxlcf]
+category = 
+
+[SUNWintgige]
+category = 
+
+[SUNWgnome-dialog]
+category = 
+
+[SUNWpostrun]
+category = 
+
+[SUNWusb]
+category = 
+
+[SUNWlldap]
+category = 
+
+[SUNWdtrc]
+category = 
+
+[SUNWipf]
+category = 
+
+[SUNWsfdoc]
+category = 
+
+[SUNWipc]
+category = 
+
+[SUNWmusicbrainz]
+category = Sound & Video
+
+[SUNWgtar]
+category = 
+
+[SUNWcleue]
+category = 
+
+[SUNWcs]
+category = 
+
+[SUNWtecla]
+category = 
+
+[SUNWsam]
+category = 
+
+[SUNWgnome-meeting]
+category = 
+
+[SUNWapchd]
+category = 
+
+[SUNWsmcmd]
+category = 
+
+[SUNWpostgr-82-jdbc]
+category = 
+
+[SUNWlibgtop]
+category = 
+
+[SUNWgnome-l10ndocument-ko]
+category = Localization,GNOME
+
+[SUNWzone]
+category = 
+
+[SUNWgnome-user-docs]
+category = 
+
+[SUNWucbt]
+category = 
+
+[SUNWps]
+category = 
+
+[SUNWgnome-cd]
+category = 
+
+[SUNWpostgr-libs]
+category = 
+
+[SUNWlpr-cmds]
+category = 
+
+[SUNWlibtheora]
+category = Sound & Video
+
+[SUNWgnu-coreutils]
+category = 
+
+[SUNWfirefox]
+category = Internet,GNOME
+
+[SUNWxwplr]
+category = 
+
+[SUNWjavadb-javadoc]
+category = 
+
+[SUNWgnome-audio]
+category = 
+
+[openoffice]
+category = Office
+
+[SUNWislcc]
+category = 
+
+[SUNWgnu-automake-19]
+category = 
+
+[SUNWipfh]
+category = 
+
+[SUNWsmapi]
+category = 
+
+[SUNWneon]
+category = 
+
+[SUNWroute]
+category = 
+
+[SUNWthunderbirdl10n-zh-TW]
+category = Localization,GNOME
+
+[SUNWhkeue]
+category = 
+
+[SUNWxcursor-themes]
+category = GNOME,Graphics
+
+[SUNWxorg-client-programs]
+category = 
+
+[SUNWapch2]
+category = 
+
+[SUNWpcan]
+category = 
+
+[SUNWeuxwe]
+category = 
+
+[SUNWpostgr-82-devel]
+category = 
+
+[SUNWevolution-libs]
+category = Internet,Communication,GNOME
+
+[SUNWisns]
+category = 
+
+[SUNWlcl]
+category = 
+
+[SUNWprd]
+category = 
+
+[SUNWmv88sx]
+category = 
+
+[SUNWosdem]
+category = 
+
+[SUNWesos]
+category = 
+
+[SUNWpostgr-82-pl]
+category = 
+
+[SUNWgnome-l10nmessages-ko]
+category = Localization,GNOME
+
+[SUNWppro]
+category = 
+
+[SUNWgnome-devhelp]
+category = Developer Tools,GNOME
+
+[SUNWitos]
+category = 
+
+[SUNWjavadb-docs]
+category = 
+
+[SUNWpostgr-tcl]
+category = 
+
+[SUNWfpprou]
+category = 
+
+[SUNWpcre]
+category = 
+
+[SUNWjavadb-demo]
+category = 
+
+[SUNWladm]
+category = 
+
+[SUNWddhcm]
+category = 
+
+[SUNWgnome-a11y-poke-root]
+category = Universal Access,GNOME
+
+[SUNWthunderbirdl10n-ru-RU]
+category = Localization,GNOME
+
+[SUNWpostgr-server-data]
+category = 
+
+[SUNWusbvc]
+category = 
+
+[SUNWugen]
+category = 
+
+[SUNWgnome-gtksourceview]
+category = 
+
+[SUNWtidy]
+category = 
+
+[SUNWperl584man]
+category = 
+
+[SUNWsmbskr]
+category = 
+
+[SUNWvscan]
+category = 
+
+[SUNWdfb]
+category = 
+
+[SUNWcsdhcm]
+category = 
+
+[SUNWrtls]
+category = 
+
+[SUNWxorg-headers]
+category = 
+
+[SUNWspsv]
+category = 
+
+[SUNWopenjade]
+category = 
+
+[SUNWsquid]
+category = 
+
+[SUNWgnome-intranet-applets]
+category = 
+
+[SUNWccsign]
+category = 
+
+[SUNWsensor]
+category = 
+
+[SUNWssh]
+category = 
+
+[SUNWurlgrabber]
+category = 
+
+[SUNWgnome-sound-recorder]
+category = 
+
+[SUNWgnome-l10nmessages-zhHK]
+category = Localization,GNOME
+
+[SUNWiniu8]
+category = 
+
+[SUNWfirefoxl10n-extra]
+category = Localization,GNOME
+
+[SUNWfirefoxl10n-it-IT]
+category = Localization,GNOME
+
+[SUNWfros]
+category = 
+
+[SUNWpilot-link]
+category = Communication,CLI tools
+
+[SUNWgsfot]
+category = 
+
+[SUNWugenu]
+category = 
+
+[SUNWiscsi]
+category = 
+
+[SUNWcns]
+category = 
+
+[SUNWllc]
+category = 
+
+[SUNWmyspell-dictionary-es]
+category = 
+
+[SUNWlibgcrypt]
+category = 
+
+[SUNWnca]
+category = 
+
+[SUNWxcu4]
+category = 
+
+[SUNWphp524-mysql]
+category = 
+
+[SUNWant]
+category = 
+
+[SUNWmyspell-dictionary-en]
+category = 
+
+[SUNWrsmo]
+category = 
+
+[SUNWmp]
+category = 
+
+[SUNWftdu]
+category = 
+
+[SUNWxcu6]
+category = 
+
+[SUNWfppd]
+category = 
+
+[SUNWgnome-character-map]
+category = 
+
+[SUNWlxsl]
+category = 
+
+[SUNWapch22]
+category = 
+
+[SUNWima]
+category = 
+
+[SUNWj6rtx]
+category = 
+
+[SUNWrsync]
+category = 
+
+[SUNWgnome-l10nmessages-ptBR]
+category = Localization,GNOME
+
+[SUNWphp524doc]
+category = 
+
+[SUNWgnome-libs]
+category = 
+
+[FSWxwrtl]
+category = 
+
+[SUNWpsm-ipp]
+category = 
+
+[SUNWgnome-xml-root]
+category = 
+
+[SUNWupdatemgr]
+category = 
+
+[SUNWdsd]
+category = 
+
+[SUNWrmwb]
+category = 
+
+[NVDAgraphics]
+category = 
+
+[SUNWgnome-menu-editor]
+category = System Tools,GNOME
+
+[SUNWser]
+category = 
+
+[SUNWses]
+category = 
+
+[SUNWinleu]
+category = 
+
+[SUNWcpc]
+category = 
+
+[SUNWpmdbi]
+category = 
+
+[SUNWgnome-l10ndocument-zhHK]
+category = Localization,GNOME
+
+[SUNWprint-monitor]
+category = GNOME,Print
+
+[SUNWmyspell-dictionary-it]
+category = 
+
+[SUNWcpr]
+category = 
+
+[SUNWcpp]
+category = 
+
+[SUNWgnome-disk-analyzer]
+category = 
+
+[SUNWudaplt]
+category = 
+
+[SUNWlibms]
+category = 
+
+[SUNWpostgr-82-server]
+category = 
+
+[SUNWgnome-python-libs]
+category = 
+
+[SUNWapch22d]
+category = 
+
+[SUNWdpl]
+category = 
+
+[SUNWeuluf]
+category = 
+
+[SUNWxorg-server]
+category = 
+
+[SUNWgssdh]
+category = 
+
+[SUNWpolkit]
+category = 
+
+[SUNWsolnm]
+category = 
+
+[SUNWgnome-fun-applets]
+category = 
+
+[SUNWapch2d]
+category = 
+
+[SUNWlccom]
+category = 
+
+[SUNWmpsvplr]
+category = 
+
+[SUNWflac]
+category = Sound & Video
+
+[SUNWdistro-license]
+category = 
+
+[SUNWscnsom]
+category = 
+
+[SUNWuacm]
+category = 
+
+[SUNWfmd]
+category = 
+
+[SUNWmyspell-dictionary-ru]
+category = 
+
+[SUNWgnu-which]
+category = 
+
+[SUNWsra]
+category = 
+
+[SUNWhwdata]
+category = 
+
+[SUNWlibcroco]
+category = Office
+
+[SUNWi13cs]
+category = 
+
+[SUNWmyspell-dictionary-fr]
+category = 
+
+[SUNWctpls]
+category = 
+
+[SUNWsfwdemo]
+category = 
+
+[SUNWipmi]
+category = 
+
+[SUNWdbus]
+category = 
+
+[SUNWxorg-devel-docs]
+category = 
+
+[SUNWsndm]
+category = 
+
+[SUNWdeos]
+category = 
+
+[SUNWhal]
+category = 
+
+[SUNWPython]
+category = 
+
+[SUNWindt]
+category = 
+
+[SUNWffilters]
+category = 
+
+[SUNWaudit]
+category = 
+
+[SUNWtexi]
+category = 
+
+[SUNWdbrg]
+category = 
+
+[SUNWless]
+category = 
+
+[SUNWatheros]
+category = 
+
+[SUNWadpu320]
+category = 
+
+[SUNWcedu]
+category = 
+
+[SUNWpsdcr]
+category = 
+
+[SUNWsxplt]
+category = 
+
+[SUNWckr]
+category = 
+
+[SUNWhpprou]
+category = 
+
+[SUNWsshcu]
+category = 
+
+[SUNWgccruntime]
+category = 
+
+[SUNWgcc]
+category = 
+
+[SUNWfbrg]
+category = 
+
+[SUNWproduct-registry-root]
+category = 
+
+[SUNWxorg-mesa]
+category = 
+
+[SUNWgnome-l10ndocument-es]
+category = Localization,GNOME
+
+[SUNWbtool]
+category = 
+
+[SUNWgnutls]
+category = Internet,Communication
+
+[SUNWdladm]
+category = 
+
+[SUNWgnome-calculator]
+category = Accessories,GNOME
+
+[SUNWgnome-system-monitor]
+category = 
+
+[SUNWdfbh]
+category = 
+
+[SUNWiiim]
+category = 
+
+[SUNWgnome-l10ndocument-ptBR]
+category = Localization,GNOME
+
+[SUNWperl584core]
+category = 
+
+[SUNWmercurial]
+category = 
+
+[SUNWmlib]
+category = 
+
+[SUNWfreetype2]
+category = 
+
+[SUNWipoib]
+category = 
+
+[SUNWpostgr-82-docs]
+category = 
+
+[SUNWdedis]
+category = 
+
+[SUNWpppgS]
+category = 
+
+[SUNWibsdpib]
+category = 
+
+[SUNWntp]
+category = 
+
+[SUNWsshd]
+category = 
+
+[SUNWjavadb-common]
+category = 
+
+[SUNWixplt]
+category = 
+
+[SUNWxwxft]
+category = 
+
+[SUNWmxfe]
+category = 
+
+[SUNWnamow]
+category = 
+
+[SUNWaudiohd]
+category = 
+
+[SUNWgnome-wm]
+category = GNOME,Core
+
+[SUNWphp524usr]
+category = 
+
+[SUNWogg-vorbis]
+category = Sound & Video
+
+[SUNWaac]
+category = 
+
+[SUNWnafos]
+category = 
+
+[SUNWjbrg]
+category = 
+
+[SUNWgnome-xml-share]
+category = 
+
+[SUNWnafow]
+category = 
+
+[SUNWcdhcm]
+category = 
+
+[SUNWhea]
+category = 
+
+[SUNWnis]
+category = 
+
+[SUNWgssc]
+category = 
+
+[SUNWfirefoxl10n-ru-RU]
+category = Localization,GNOME
+
+[SUNWcpprou]
+category = 
+
+[SUNWnmap]
+category = 
+
+[SUNWvim]
+category = 
+
+[SUNWsvn-java]
+category = 
+
+[SUNWgnome-devel-docs]
+category = 
+
+[SUNWsmbs]
+category = 
+
+[SUNWicu]
+category = 
+
+[SUNWfirefox-apoc-adapter]
+category = 
+
+[SUNWgnome-im-client]
+category = Internet,Social Software,Communication
+
+[SUNWj6dev]
+category = 
+
+[SUNWpkgcmds]
+category = 
+
+[SUNWkladm]
+category = 
+
+[SUNWperl-authen-pam]
+category = 
+
+[SUNWzfs]
+category = 
+
+[SUNWsmba]
+category = 
+
+[SUNWgnome-l10nmessages-hu]
+category = Localization,GNOME
+
+[SUNWgnome-session]
+category = 
+
+[SUNWcadis]
+category = 
+
+[SUNWthunderbirdl10n-pt-BR]
+category = Localization,GNOME
+
+[SUNWncft]
+category = 
+
+[SUNWfirefoxl10n-ja-JP]
+category = Localization,GNOME
+
+[SUNWter]
+category = 
+
+[SUNWgnome-img-organizer]
+category = GNOME,GTK,Graphics,Viewer,RasterGraphics,2DGraphics,Photography
+
+[SUNWjladm]
+category = 
+
+[SUNWgnome-l10nmessages-pl]
+category = Localization,GNOME
+
+[SUNWrcap]
+category = 
+
+[SUNWgdb]
+category = 
+
+[FSWxorg-fonts]
+category = 
+
+[SUNWulcf]
+category = 
+
+[SUNWlibC]
+category = 
+
+[SUNWneuow]
+category = 
+
+[SUNWcsmauth]
+category = 
+
+[SUNWsmdoc]
+category = 
+
+[SUNWxi18n]
+category = 
+
+[SUNWsvdma]
+category = 
+
+[SUNWralink]
+category = 
+
+[SUNWlibm]
+category = 
+
+[SUNWiladm]
+category = 
+
+[SUNWliboil]
+category = Sound & Video
+
+[SUNWhleue]
+category = 
+
+[SUNWthunderbirdl10n-extra]
+category = Localization,GNOME
+
