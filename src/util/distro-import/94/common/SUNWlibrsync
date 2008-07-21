@@ -1,0 +1,4 @@
+package SUNWlibrsync
+import SUNWlibrsync
+version 0.9.7
+end package

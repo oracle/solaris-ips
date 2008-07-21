@@ -1,0 +1,4 @@
+package SUNWpostgr-83-contrib
+import SUNWpostgr-83-contrib
+version 8.3.3
+end package

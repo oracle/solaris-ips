@@ -1,0 +1,5 @@
+package SUNWxorg-headers
+import SUNWxorg-headers
+depend SUNWhea
+depend SUNWxwinc
+end package
