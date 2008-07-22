@@ -49,6 +49,7 @@ def maketests():
 	import cli.t_depot
 	import cli.t_depotcontroller
 	import cli.t_image_create
+	import cli.t_info_contents
 	import cli.t_pkg_install_basics
 	import cli.t_pkg_install_corrupt_image
 	import cli.t_pkgsend
@@ -64,6 +65,7 @@ def maketests():
 	    cli.t_depotcontroller.TestDepotController,
 	    cli.t_image_create.TestImageCreate,
 	    cli.t_image_create.TestImageCreateNoDepot,
+            cli.t_info_contents.TestContentsAndInfo,
 	    cli.t_depot.TestDepot,
 	    cli.t_pkg_install_basics.TestPkgInstallBasics,
 	    cli.t_pkg_install_corrupt_image.TestImageCreateCorruptImage,

@@ -750,6 +750,9 @@ def info(img, args):
 
         if info_local:
                 fmris, notfound = installed_fmris_from_args(img, pargs)
+                if not fmris and not notfound:
+                        error(_("no packages installed"))
+                        return 1
         elif info_remote:
                 fmris = []
                 notfound = []
@@ -1034,6 +1037,9 @@ def list_contents(img, args):
 
         if local:
                 fmris, notfound = installed_fmris_from_args(img, pargs)
+                if not fmris and not notfound:
+                        error(_("no packages installed"))
+                        return 1
         elif remote:
                 fmris = []
                 notfound = []
