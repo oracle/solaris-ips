@@ -47,7 +47,9 @@ import urllib
 import pkg.catalog as catalog
 import pkg.fmri as fmri
 import pkg.misc as misc
+import pkg.Uuid25 as uuid
 
+import pkg.server.repositoryconfig as rc
 import pkg.server.face as face
 import pkg.server.transaction as trans
 
@@ -68,13 +70,38 @@ class Repository(object):
                     explicitly "exposed" for external usage. """
 
                 self.scfg = scfg
+
+                # Now load our repository configuration / metadata and
+                # populate our repository.id if needed.
+                cfgpathname = os.path.join(scfg.repo_root, "cfg_cache")
+
+                # Check to see if our configuration file exists first.
+                if os.path.exists(cfgpathname):
+                        self.rcfg = rc.RepositoryConfig(pathname=cfgpathname)
+                else:
+                        # If it doesn't exist, just create a new object, it
+                        # will automatically be populated with sane defaults.
+                        self.rcfg = rc.RepositoryConfig()
+
+                # RSS/Atom feeds require a unique identifier, so generate one
+                # if isn't defined already.
+                fid = self.rcfg.get_attribute("feed", "id")
+                if not fid:
+                        # Create a random UUID (type 4).
+                        self.rcfg._set_attribute("feed", "id",
+                            uuid.uuid4())
+
+                        # Save our new configuration.
+                        self.rcfg.write(cfgpathname)
+
                 self.vops = {}
 
                 # cherrypy has a special handler for favicon, and so we must
                 # setup an instance-level handler instead of just updating
                 # its configuration information.
                 self.favicon_ico = cherrypy.tools.staticfile.handler(
-                    os.path.join(face.content_root, 'pkg-block-icon.png'))
+                    os.path.join(face.content_root,
+                    self.rcfg.get_attribute("repository", "icon")))
 
                 for name, func in inspect.getmembers(self, inspect.ismethod):
                         m = re.match("(.*)_(\d+)", name)
@@ -99,9 +126,9 @@ class Repository(object):
                                 # be able to set arbitrary attributes that
                                 # contain function pointers to our object
                                 # instance.  CherryPy relies on this for its
-                                # dispatch tree mapping mechanism.  We can't use
-                                # other object types here since Python won't
-                                # let us set arbitary attributes on them.
+                                # dispatch tree mapping mechanism.  We can't
+                                # use other object types here since Python
+                                # won't let us set arbitary attributes on them.
                                 setattr(self, op, Dummy())
                                 self.vops[op] = [ver]
 
@@ -121,12 +148,12 @@ class Repository(object):
                 if operation not in self.vops:
                         request = cherrypy.request
                         response = cherrypy.response
-                        if face.match(self.scfg, request, response):
-                                return face.respond(self.scfg, request,
-                                    response)
+                        if face.match(self.scfg, self.rcfg, request, response):
+                                return face.respond(self.scfg, self.rcfg,
+                                    request, response)
                         else:
-                                return face.unknown(self.scfg, request,
-                                    response)
+                                return face.unknown(self.scfg, self.rcfg,
+                                    request, response)
 
                 # If we get here, we know that 'operation' is supported.
                 # Ensure that we have a integer protocol version.
@@ -196,11 +223,11 @@ class Repository(object):
 
                 self.scfg.inc_catalog()
 
-                # Try to guard against a non-existent catalog.  The catalog open
-                # will raise an exception, and only the attributes will have
-                # been sent.  But because we've sent data already (never mind
-                # the response header), we can't raise an exception here, or an
-                # INTERNAL_SERVER_ERROR header will get sent as well.
+                # Try to guard against a non-existent catalog.  The catalog
+                # open will raise an exception, and only the attributes will
+                # have been sent.  But because we've sent data already (never
+                # mind the response header), we can't raise an exception here,
+                # or an INTERNAL_SERVER_ERROR header will get sent as well.
                 try:
                         return self.scfg.updatelog.send(cherrypy.request,
                             cherrypy.response)
@@ -267,8 +294,9 @@ class Repository(object):
 
                         # We pass the response object directly to tarfile
                         # since it has a write() callable which is all tarfile
-                        # needs to output the stream.  This will write the bytes
-                        # to the client through our parent server process.
+                        # needs to output the stream.  This will write the
+                        # bytes to the client through our parent server
+                        # process.
                         tar_stream = tarfile.open(mode = "w|",
                             fileobj = cherrypy.response)
 
@@ -279,8 +307,9 @@ class Repository(object):
                         cherrypy.request.tar_stream = tar_stream
 
                         # This is a special hook just for this request so that
-                        # even if an exception is encountered, we will properly
-                        # close the stream regardless of which thread we are in.
+                        # even if an exception is encountered, the stream will
+                        # be closed properly regardless of which thread is
+                        # executing.
                         cherrypy.request.hooks.attach('on_end_request',
                             self._tar_stream_close, failsafe = True)
 

@@ -2,14 +2,17 @@
 # VIM swap files, emacs backups and the entire proto area.
 \.pyc
 \.ln
+\.mo
 \.o
 \.so
 \.sw.
 \.make\.
+\.intltool-merge-cache
 ~$
 ^proto
 ^packages
 # Specific build products
+^src/gui/data/packagemanager.desktop$
 ^src/man/pkg.1$
 ^src/man/pkg.5$
 ^src/man/pkg.depotd.1m$

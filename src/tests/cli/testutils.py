@@ -30,6 +30,7 @@ import subprocess
 import shutil
 import errno
 import platform
+import tempfile
 
 g_proto_area=""
 
@@ -225,8 +226,8 @@ class pkg5TestCase(unittest.TestCase):
                 self.image_dir = None
                 self.pid = os.getpid()
 
-                # XXX Windows portability issue
-                self.__test_prefix = "/tmp/ips.test.%d" % self.pid
+                self.__test_prefix = os.path.join(tempfile.gettempdir(),
+                    "ips.test.%d" % self.pid)
                 self.img_path = os.path.join(self.__test_prefix, "image")
                 os.environ["PKG_IMAGE"] = self.img_path
 
@@ -448,14 +449,13 @@ class ManyDepotTestCase(pkg5TestCase):
                 self.dcs = {}
 
                 for i in range(1, ndepots + 1):
-                        depotdir = \
-                            os.path.join(self.get_test_prefix(), "depot%d" % i)
+                        testdir = os.path.join(self.get_test_prefix(),
+                            self.id())
 
-                        depot_logdir = os.path.join(self.get_test_prefix(),
-                            "depot_logdir%d" % i)
-                        depot_logfile = os.path.join(depot_logdir, self.id())
+                        depotdir = os.path.join(testdir,
+                            "depot_contents%d" % i)
 
-                        for dir in (depotdir, depot_logdir):
+                        for dir in (testdir, depotdir):
                                 try:
                                         os.makedirs(dir, 0755)
                                 except OSError, e:
@@ -464,6 +464,9 @@ class ManyDepotTestCase(pkg5TestCase):
 
                         # We pick an arbitrary base port.  This could be more
                         # automated in the future.
+                        depot_logfile = os.path.join(testdir,
+                            "depot_logfile%d" % i)
+
                         self.dcs[i] = self.start_depot(12000 + i,
                             depotdir, depot_logfile)
 

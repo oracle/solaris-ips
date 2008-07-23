@@ -28,22 +28,22 @@ import sys
 import platform
 import unittest
 
-all_suite=None
+all_suite = None
 
 osname = platform.uname()[0].lower()
 arch = 'unknown'
 if osname == 'sunos':
-    arch = platform.processor()
+        arch = platform.processor()
 elif osname == 'linux':
-    arch = "linux_" + platform.machine()
+        arch = "linux_" + platform.machine()
 elif osname == 'windows':
-    arch = osname
+        arch = osname
 elif osname == 'darwin':
-    arch = osname
+        arch = osname
 
 ostype = os.name
 if ostype == '':
-    ostype = 'unknown'
+        ostype = 'unknown'
 
 #
 # This is wrapped in a function because __main__ below alters
@@ -60,6 +60,7 @@ def maketests():
         import api.t_misc
         import api.t_pkgtarfile
         import api.t_plat
+        import api.t_repositoryconfig
         import api.t_smf
         import api.t_version
 
@@ -76,6 +77,7 @@ def maketests():
             api.t_misc.TestMisc,
             api.t_pkgtarfile.TestPkgTarFile,
             api.t_plat.TestPlat,
+            api.t_repositoryconfig.TestRepositoryConfig,
             api.t_smf.TestSMF,
             api.t_version.TestVersion ]
 

@@ -82,7 +82,8 @@ import pkg.server.face as face
 import pkg.server.config as config
 import pkg.server.depot as depot
 import pkg.server.repository as repo
-from pkg.misc import port_available 
+import pkg.server.repositoryconfig as rc
+from pkg.misc import port_available, emsg
 
 def usage():
         print """\
@@ -185,7 +186,12 @@ if __name__ == "__main__":
         scfg.acquire_in_flight()
         scfg.acquire_catalog()
 
-        root = cherrypy.Application(repo.Repository(scfg))
+        try:
+                root = cherrypy.Application(repo.Repository(scfg))
+        except rc.InvalidAttributeValueError, e:
+                emsg("pkg.depotd: repository.conf error: %s" % e)
+                sys.exit(1)
+
         # We have to override cherrypy's default response_class so that we
         # have access to the write() callable to stream data directly to the
         # client.

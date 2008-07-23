@@ -37,31 +37,29 @@ except KeyError:
 def get_res_path(request, name):
         uri = "%s/%s" % ('static', name)
         # Calculate the depth of the current request path relative to our base
-        # uri. path_info always ends with a '/' -- so ignore it when calculating
-        # depth.
+        # uri. path_info always ends with a '/' -- so ignore it when
+        # calculating depth.
         depth = (request.path_info.count('/') - 1)
         return ('../' * depth) + uri
 
-PKG_LOGO = "pkg-block-logo.png"
-PKG_ICON = "pkg-block-icon.png"
-PKG_STYLE = "pkg.css"
-
-def head(request, title = "pkg - image packaging system"):
+def head(scfg, rcfg, request):
+        title = rcfg.get_attribute("repository", "name")
         return """\
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
         "http://www.w3.org/TR/2002/REC-xhtml1-20020801/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
- <link rel="shortcut icon" type="image/png" href="%s"/>
+ <link rel="shortcut icon" href="%s"/>
  <link rel="stylesheet" type="text/css" href="%s"/>
  <title>%s</title>
 </head>
-""" % (get_res_path(request, PKG_ICON), get_res_path(request, PKG_STYLE), title)
+""" % (get_res_path(request, rcfg.get_attribute("repository", "icon")),
+    get_res_path(request, rcfg.get_attribute("repository", "style")), title)
 
-def unknown(img, request, response):
+def unknown(scfg, rcfg, request, response):
 
         response.status = httplib.NOT_FOUND
-        output = head(request)
+        output = head(scfg, rcfg, request)
         output += """\
 <body>
  <div id="doc4" class="yui-t5">
@@ -72,7 +70,8 @@ def unknown(img, request, response):
    <div id="yui-main">
     <div class="yui-b">
      <pre>
-""" % (get_res_path(request, PKG_LOGO), request.path_info)
+""" % (get_res_path(request, rcfg.get_attribute("repository", "logo")),
+    request.path_info)
 
         output += ('''%d GET URI %s ; headers:\n%s''' %
             (httplib.NOT_FOUND, request.path_info, request.headers))
@@ -86,13 +85,12 @@ def unknown(img, request, response):
 </body>
 </html>
 """)
-
         return output
 
-def error(img, request, response):
+def error(scfg, rcfg, request, response):
         response.status = httplib.INTERNAL_SERVER_ERROR
 
-        output = head(request)
+        output = head(scfg, rcfg, request)
         output += """\
 <body>
  <div id="doc4" class="yui-t5">
@@ -111,12 +109,13 @@ face.response() for %s
  </div>
 </body>
 </html>
-""" % (get_res_path(request, PKG_LOGO), request.path_info)
+""" % (get_res_path(request, rcfg.get_attribute("repository", "logo")),
+    request.path_info)
 
         return output
 
-def index(img, request, response):
-        output = head(request)
+def index(scfg, rcfg, request, response):
+        output = head(scfg, rcfg, request)
         output += ("""\
 <body>
  <div id="doc4" class="yui-t5">
@@ -128,8 +127,8 @@ def index(img, request, response):
     <div class="yui-b">
      <h2>Statistics</h2>
      <pre>
-""") % (get_res_path(request, PKG_LOGO))
-        output += (img.get_status())
+""") % (get_res_path(request, rcfg.get_attribute("repository", "logo")))
+        output += (scfg.get_status())
         output += ("""\
      </pre>
 
@@ -137,7 +136,7 @@ def index(img, request, response):
      <pre>
 """)
 
-        for f in img.catalog.fmris():
+        for f in scfg.catalog.fmris():
                 output += ("%s\n" % f.get_fmri())
 
         output += ("""\
@@ -148,7 +147,6 @@ def index(img, request, response):
  </div>
 </body>
 </html>""")
-
         return output
 
 pages = {
@@ -160,15 +158,15 @@ def set_content_root(path):
         global content_root
         content_root = path
 
-def match(img, request, response):
+def match(scfg, rcfg, request, response):
         if request.path_info in pages:
                 return True
         return False
 
-def respond(img, request, response):
+def respond(scfg, rcfg, request, response):
         if request.path_info in pages:
                 page = pages[request.path_info]
-                return page(img, request, response)
+                return page(scfg, rcfg, request, response)
         else:
-                return error(img, request, response)
+                return error(scfg, rcfg, request, response)
 

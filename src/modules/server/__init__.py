@@ -24,4 +24,5 @@
 # Use is subject to license terms.
 #
 
-__all__ = ["catalog", "depot", "package", "repository", "transaction"]
+__all__ = ["catalog", "depot", "package", "repository", "repositoryconfig",
+    "transaction"]
