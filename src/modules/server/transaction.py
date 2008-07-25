@@ -302,6 +302,8 @@ class Transaction(object):
                 self.publish_package()
                 self.cfg.updatelog.add_package(self.fmri, self.critical)
 
+                self.cfg.catalog.refresh_index()
+
                 return ("%s" % self.fmri, "PUBLISHED")
 
         def publish_package(self):
@@ -327,10 +329,6 @@ class Transaction(object):
                 if os.path.exists("%s/manifest" % self.dir):
                         portable.rename("%s/manifest" % self.dir, "%s/%s" %
                             (pkgdir, urllib.quote(str(fmri.version), "")))
-
-                # update search index
-                cfg.catalog.update_searchdb([os.path.join(
-                    cfg.pkg_root, fmri.get_dir_path()).rsplit('/', 1)])
 
                 # Move each file to file_root, with appropriate directory
                 # structure.

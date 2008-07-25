@@ -28,6 +28,8 @@ SYNOPSIS
      /usr/bin/pkg unset-authority authority ...
      /usr/bin/pkg authority [-HP] [authname ...]
 
+     /usr/bin/pkg rebuild-index
+
      /usr/bin/pkg version
      /usr/bin/pkg help
 
@@ -224,6 +226,10 @@ SUBCOMMANDS
           values associated with that authority.  With -H, omit the
           headers from the listing.  With -P, display only the preferred
           authority.
+
+     rebuild-index
+          Rebuilds the index used by 'pkg search'. This is a recovery operation
+          not intended for general use.
 
      version
           Display a unique string identifying the version of pkg(1).  This

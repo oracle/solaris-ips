@@ -61,6 +61,8 @@ SOCKET_TIMEOUT_DEFAULT = 60
 READONLY_DEFAULT = False
 # Whether the repository catalog should be rebuilt on startup.
 REBUILD_DEFAULT = False
+# Whether the indexes should be rebuilt
+REINDEX_DEFAULT = False
 
 import getopt
 import os
@@ -96,7 +98,7 @@ Usage: /usr/lib/pkg.depotd [--readonly] [--rebuild] [-d repo_dir] [-p port]
         sys.exit(2)
 
 class OptionError(Exception):
-        """ Option exception. """
+        """Option exception. """
 
         def __init__(self, *args):
                 Exception.__init__(self, *args)
@@ -108,6 +110,7 @@ if __name__ == "__main__":
         socket_timeout = SOCKET_TIMEOUT_DEFAULT
         readonly = READONLY_DEFAULT
         rebuild = REBUILD_DEFAULT
+        reindex = REINDEX_DEFAULT
 
         if "PKG_REPO" in os.environ:
                 repo_path = os.environ["PKG_REPO"]
@@ -117,7 +120,7 @@ if __name__ == "__main__":
         try:
                 parsed = set()
                 opts, pargs = getopt.getopt(sys.argv[1:], "d:np:s:t:",
-                    ["readonly", "rebuild"])
+                    ["readonly", "rebuild", "refresh-index"])
                 for opt, arg in opts:
                         if opt in parsed:
                                 raise OptionError, "Each option may only be " \
@@ -145,6 +148,17 @@ if __name__ == "__main__":
                                 readonly = True
                         elif opt == "--rebuild":
                                 rebuild = True
+                        elif opt == "--refresh-index":
+                                # Note: This argument is for internal use
+                                # only. It's used when pkg.depotd is reexecing
+                                # itself and needs to know that's the case.
+                                # This flag is purposefully omitted in usage.
+                                # The supported way to forcefully reindex is to
+                                # kill any pkg.depot using that directory,
+                                # remove the index directory, and restart the
+                                # pkg.depot process. The index will be rebuilt
+                                # automatically on startup.
+                                reindex = True
         except getopt.GetoptError, e:
                 print "pkg.depotd: %s" % e.msg
                 usage()
@@ -155,12 +169,14 @@ if __name__ == "__main__":
                 print "pkg.depotd: illegal option value: %s specified " \
                     "for option: %s" % (arg, opt)
                 usage()
-
-        available, msg = port_available(None, port)
-        if not available:
-                print "pkg.depotd: unable to bind to the specified port: " \
-                    " %d. Reason: %s" % (port, msg)
-                sys.exit(1)
+        # If the program is going to reindex, the port is irrelevant since
+        # the program will not bind to a port.
+        if not reindex:
+                available, msg = port_available(None, port)
+                if not available:
+                        print "pkg.depotd: unable to bind to the specified " \
+                            "port: %d. Reason: %s" % (port, msg)
+                        sys.exit(1)
 
         try:
                 face.set_content_root(os.environ["PKG_DEPOT_CONTENT"])
@@ -182,6 +198,11 @@ if __name__ == "__main__":
                     "initialize the depot repository directory " \
                     "structures:\n%s" % e
                 sys.exit(1)
+
+        if reindex:
+                scfg.acquire_catalog(rebuild = False)
+                scfg.catalog.run_update_index()
+                sys.exit(0)
 
         scfg.acquire_in_flight()
         scfg.acquire_catalog()

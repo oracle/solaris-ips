@@ -234,7 +234,7 @@ class PipeError(Exception):
                 self.args = args
 
 def msg(*text):
-        """ Emit a message. """ 
+        """ Emit a message. """
 
         try:
                 print ' '.join([str(l) for l in text])
@@ -244,7 +244,7 @@ def msg(*text):
                 raise
 
 def emsg(*text):
-        """ Emit a message to sys.stderr. """ 
+        """ Emit a message to sys.stderr. """
 
         try:
                 print >> sys.stderr, ' '.join([str(l) for l in text])
@@ -321,3 +321,16 @@ MAX_TIMEOUT_COUNT = 4
 class TransferTimedOutException(Exception):
         def __init__(self, args = None):
                 self.args = args
+
+
+# Default maximum memory useage during indexing
+# This is a soft cap since memory usage is estimated.
+try:
+        phys_pages = os.sysconf("SC_PHYS_PAGES")
+        page_size = os.sysconf("SC_PAGE_SIZE")
+        SERVER_DEFAULT_MEM_USE_KB = (phys_pages / 1024.0) * page_size / 3
+        CLIENT_DEFAULT_MEM_USE_KB = SERVER_DEFAULT_MEM_USE_KB / 2.0
+
+except:
+        CLIENT_DEFAULT_MEM_USE_KB = 100
+        SERVER_DEFAULT_MEM_USE_KB = 500

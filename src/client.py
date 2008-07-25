@@ -58,6 +58,7 @@ import pkg.client.imageplan as imageplan
 import pkg.client.filelist as filelist
 import pkg.client.progress as progress
 import pkg.client.bootenv as bootenv
+import pkg.search_errors as search_errors
 import pkg.fmri as fmri
 import pkg.misc as misc
 from pkg.misc import msg, emsg, PipeError
@@ -65,14 +66,14 @@ import pkg.version
 import pkg
 
 def error(text):
-        """ Emit an error message prefixed by the command name """
+        """Emit an error message prefixed by the command name """
 
         # This has to be a constant value as we can't reliably get our actual
         # program name on all platforms.
         emsg("pkg: " + text)
 
 def usage(usage_error = None):
-        """ Emit a usage message and optionally prefix it with a more
+        """Emit a usage message and optionally prefix it with a more
             specific error message.  Causes program to exit. """
 
         if usage_error:
@@ -104,6 +105,7 @@ Advanced subcommands:
             [-O origin_url] authority
         pkg unset-authority authority ...
         pkg authority [-HP] [authname]
+        pkg rebuild-index
 
 Options:
         -R dir
@@ -116,6 +118,19 @@ Environment:
 #        pkg image-set name value
 #        pkg image-unset name
 #        pkg image-get [name ...]
+
+INCONSISTENT_INDEX_ERROR_MESSAGE = "The search index appears corrupted.  " + \
+    "Please rebuild the index with 'pkg rebuild-index'."
+
+PROBLEMATIC_PERMISSIONS_ERROR_MESSAGE = " (Failure of consistent use " + \
+    "of pfexec when running pkg commands is often a source of this problem.)"
+
+def get_partial_indexing_error_message(text):
+        return "Result of partial indexing found.\n" + \
+            "Could not make: " + \
+            text + "\nbecause it already exists. " + \
+            "Please use 'pkg rebuild-index' " + \
+            "to fix this problem."
 
 def list_inventory(img, args):
         all_known = False
@@ -139,7 +154,7 @@ def list_inventory(img, args):
                         verbose = True
 
         if summary and verbose:
-                usage(_("-s and -v may not be combined"))               
+                usage(_("-s and -v may not be combined"))
 
         if verbose:
                 fmt_str = "%-64s %-10s %s"
@@ -233,7 +248,7 @@ def get_tracker(quiet = False):
 
 
 def installed_fmris_from_args(img, args):
-        """ Helper function to translate client command line arguments
+        """Helper function to translate client command line arguments
             into a list of installed fmris.  Used by info, contents, verify.
 
             XXX consider moving into image class
@@ -416,6 +431,15 @@ def image_update(img, args):
                 error(_("image-update failed: %s") % e)
                 be.restore_image()
                 ret_code = 1
+        except search_errors.InconsistentIndexException, e:
+                error(INCONSISTENT_INDEX_ERROR_MESSAGE)
+                ret_code = 1
+        except search_errors.PartialIndexingException, e:
+                error(get_partial_indexing_error_message(e.cause))
+                ret_code = 1
+        except search_errors.ProblematicPermissionsIndexException, e:
+                error(str(e) + PROBLEMATIC_PERMISSIONS_ERROR_MESSAGE)
+                ret_code = 1
         except Exception, e:
                 error(_("\nAn unexpected error happened during " \
                     "image-update: %s") % e)
@@ -507,6 +531,15 @@ def install(img, args):
                 error(_("installation failed: %s") % e)
                 be.restore_install_uninstall()
                 ret_code = 1
+        except search_errors.InconsistentIndexException, e:
+                error(INCONSISTENT_INDEX_ERROR_MESSAGE)
+                ret_code = 1
+        except search_errors.PartialIndexingException, e:
+                error(get_partial_indexing_error_message(e.cause))
+                ret_code = 1
+        except search_errors.ProblematicPermissionsIndexException, e:
+                error(str(e) + PROBLEMATIC_PERMISSIONS_ERROR_MESSAGE)
+                ret_code = 1
         except Exception, e:
                 error(_("An unexpected error happened during " \
                     "installation: %s") % e)
@@ -514,7 +547,7 @@ def install(img, args):
                 img.cleanup_downloads()
                 raise
 
-        img.cleanup_downloads()   
+        img.cleanup_downloads()
         if ret_code == 0:
                 img.cleanup_cached_content()
 
@@ -608,7 +641,7 @@ def uninstall(img, args):
                 be = bootenv.BootEnv(img.get_root())
         except RuntimeError:
                 be = bootenv.BootEnvNull(img.get_root())
-               
+
         try:
                 ip.execute()
         except RuntimeError, e:
@@ -665,7 +698,19 @@ def search(img, args):
 
         searches = []
         if local:
-                searches.append(img.local_search(pargs))
+                try:
+                        searches.append(img.local_search(pargs))
+                except search_errors.NoIndexException, nie:
+                        error(str(nie) +
+                            "\nPlease try pkg rebuild-index to recreate the " +
+                            "index.")
+                        return 1
+                except search_errors.InconsistentIndexException, iie:
+                        error("The search index appears corrupted.  Please "
+                            "rebuild the index with pkg rebuild-index.")
+                        return 1
+
+
         if remote:
                 searches.append(img.remote_search(pargs, servers))
 
@@ -797,7 +842,7 @@ def info(img, args):
                         if len(pmatch) > 0:
                                 fmris.append(pmatch[0])
                         else:
-                                fmris.append(npmatch[0]) 
+                                fmris.append(npmatch[0])
 
         manifests = ( img.get_manifest(f, filtered = True) for f in fmris )
 
@@ -861,7 +906,7 @@ examining the catalogs:"""))
 
 def display_contents_results(actionlist, attrs, sort_attrs, action_types,
     display_headers):
-        """ Print results of a "list" operation """
+        """Print results of a "list" operation """
 
         # widths is a list of tuples of column width and justification.  Start
         # with the widths of the column headers.
@@ -1084,7 +1129,7 @@ def list_contents(img, args):
                         if len(pmatch) > 0:
                                 fmris.append(pmatch[0])
                         else:
-                                fmris.append(npmatch[0]) 
+                                fmris.append(npmatch[0])
 
         #
         # If the user specifies no specific attrs, and no specific
@@ -1415,7 +1460,7 @@ def image_create(img, args):
 
         if not misc.valid_auth_url(auth_url):
                 error(_("image-create: authority URL is invalid"))
-                return 1 
+                return 1
 
         try:
                 img.set_attrs(imgtype, pargs[0], is_zone, auth_name, auth_url,
@@ -1434,6 +1479,26 @@ def image_create(img, args):
                         return 3
         else:
                 return 0
+
+
+def rebuild_index(img, pargs):
+        """pkg rebuild-index
+
+        Forcibly rebuild the search indexes. Will remove existing indexes
+        and build new ones from scratch."""
+        quiet = False
+
+        if len(pargs) != 0:
+                usage(_("rebuild-index takes no arguments"))
+
+        try:
+                img.rebuild_search_index(get_tracker(quiet))
+        except search_errors.InconsistentIndexException, iie:
+                error(INCONSISTENT_INDEX_ERROR_MESSAGE)
+                return 1
+        except search_errors.ProblematicPermissionsIndexException, ppie:
+                error(str(ppie) + PROBLEMATIC_PERMISSIONS_ERROR_MESSAGE)
+                return 1
 
 def main_func():
         img = image.Image()
@@ -1524,6 +1589,8 @@ def main_func():
                         return authority_unset(img, pargs)
                 elif subcommand == "authority":
                         return authority_list(img, pargs)
+                elif subcommand == "rebuild-index":
+                        return rebuild_index(img, pargs)
                 else:
                         usage(_("unknown subcommand '%s'") % subcommand)
 
@@ -1549,5 +1616,10 @@ if __name__ == "__main__":
                 sys.exit(1)
         except:
                 traceback.print_exc()
+                error(
+                    "\n\nThis is an internal error, please let the " + \
+                    "developers know about this\nproblem by filing " + \
+                    "a bug at http://defect.opensolaris.org and including " + \
+                    "the\nabove traceback and the output of 'pkg version'.")
                 sys.exit(99)
         sys.exit(ret)

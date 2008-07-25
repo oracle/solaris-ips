@@ -31,6 +31,8 @@ import os
 import time
 from pkg.misc import msg, PipeError
 
+IND_DELAY = 0.05
+
 class ProgressTracker(object):
         """ This abstract class is used by the client to render and track
             progress towards the completion of various tasks, such as
@@ -67,6 +69,11 @@ class ProgressTracker(object):
                 self.act_goal_nactions = 0
                 self.act_phase = "None"
                 self.act_phase_last = "None"
+
+                self.ind_cur_nitems = 0
+                self.ind_goal_nitems = 0
+                self.ind_phase = "None"
+                self.ind_phase_last = "None"
 
                 self.debug = False
                 self.last_printed = 0 # when did we last emit status?
@@ -156,8 +163,20 @@ class ProgressTracker(object):
                         self.act_output_done()
                 assert self.act_goal_nactions == self.act_cur_nactions
 
-        def actions_get_progress(self):
-                msg("not yet")
+        def index_set_goal(self, phase, nitems):
+                self.ind_phase = phase
+                self.ind_goal_nitems = nitems
+                self.ind_cur_nitems = 0
+
+        def index_add_progress(self):
+                self.ind_cur_nitems += 1
+                if self.ind_goal_nitems > 0:
+                        self.ind_output()
+
+        def index_done(self):
+                if self.ind_goal_nitems > 0:
+                        self.ind_output_done()
+                assert self.ind_goal_nitems == self.ind_cur_nitems
 
         #
         # This set of methods should be regarded as abstract *and* protected.
@@ -196,6 +215,12 @@ class ProgressTracker(object):
 
         def act_output_done(self):
                 raise NotImplementedError("act_output_done() not implemented in superclass")
+
+        def ind_output(self):
+                raise NotImplementedError("ind_output() not implemented in superclass")
+
+        def ind_output_done(self):
+                raise NotImplementedError("ind_output_done() not implemented in superclass")
 
 
 
@@ -238,6 +263,10 @@ class QuietProgressTracker(ProgressTracker):
         def act_output(self): return
 
         def act_output_done(self): return
+
+        def ind_output(self): return
+
+        def ind_output_done(self): return
 
 
 class NullProgressTracker(QuietProgressTracker):
@@ -317,6 +346,26 @@ class CommandLineProgressTracker(ProgressTracker):
                                 raise PipeError, e
                         raise
 
+        def ind_output(self):
+                if self.ind_phase != self.ind_phase_last:
+                        try:
+                                print "%s ... " % self.ind_phase,
+                        except IOError, e:
+                                if e.errno == errno.EPIPE:
+                                        raise PipeError, e
+                                raise
+                        self.ind_phase_last = self.ind_phase
+                return
+
+        def ind_output_done(self):
+                try:
+                        print "Done"
+                        sys.stdout.flush()
+                except IOError, e:
+                        if e.errno == errno.EPIPE:
+                                raise PipeError, e
+                        raise
+
 
 
 class FancyUNIXProgressTracker(ProgressTracker):
@@ -330,6 +379,7 @@ class FancyUNIXProgressTracker(ProgressTracker):
                 ProgressTracker.__init__(self)
 
                 self.act_started = False
+                self.ind_started = False
                 self.last_print_time = 0
 
                 try:
@@ -422,7 +472,7 @@ class FancyUNIXProgressTracker(ProgressTracker):
                                 if self.spinner >= len(self.spinner_chars):
                                         self.spinner = 0
                                 print "%-50s..... %c%c" % \
-                                    (self.ver_cur_fmri.get_pkg_stem(), 
+                                    (self.ver_cur_fmri.get_pkg_stem(),
                                      self.spinner_chars[self.spinner],
                                      self.spinner_chars[self.spinner]),
                                 print self.cr,
@@ -519,3 +569,39 @@ class FancyUNIXProgressTracker(ProgressTracker):
                                 raise PipeError, e
                         raise
 
+        def ind_output(self, force=False):
+                if force or (time.time() - self.last_print_time) >= IND_DELAY:
+                        self.last_print_time = time.time()
+                else:
+                        return
+
+                try:
+                        # The first time, emit header.
+                        if not self.ind_started:
+                                self.ind_started = True
+                                print "%-40s %11s" % ("PHASE", "ITEMS")
+                        else:
+                                print self.cr,
+
+                        print "%-40s %11s" % \
+                            (
+                                self.ind_phase,
+                                "%d/%d" % (self.ind_cur_nitems,
+                                    self.ind_goal_nitems)
+                             ),
+
+                        sys.stdout.flush()
+                except IOError, e:
+                        if e.errno == errno.EPIPE:
+                                raise PipeError, e
+                        raise
+
+        def ind_output_done(self):
+                self.ind_output(force=True)
+                try:
+                        print
+                        sys.stdout.flush()
+                except IOError, e:
+                        if e.errno == errno.EPIPE:
+                                raise PipeError, e
+                        raise

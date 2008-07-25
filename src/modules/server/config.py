@@ -30,7 +30,7 @@ import os
 import statvfs
 import shutil
 
-import pkg.catalog as catalog
+import pkg.server.catalog as catalog
 import pkg.updatelog as updatelog
 
 import pkg.server.transaction as trans
@@ -87,23 +87,27 @@ class SvrConfig(object):
                                 os.makedirs(self.cat_root)
                         if not os.path.exists(self.update_root):
                                 os.makedirs(self.update_root)
+                        if not os.path.exists(self.index_root):
+                                os.makedirs(self.index_root)
 
                 if os.path.exists(self.trans_root) and \
                     os.path.exists(self.file_root) and \
                     os.path.exists(self.pkg_root) and \
                     os.path.exists(self.cat_root) and \
-                    os.path.exists(self.update_root):
+                    os.path.exists(self.update_root) and \
+                    os.path.exists(self.index_root):
                         return
 
                 raise RuntimeError, emsg
 
         def set_repo_root(self, root):
                 self.repo_root = root
-                self.trans_root = "%s/trans" % self.repo_root
-                self.file_root = "%s/file" % self.repo_root
-                self.pkg_root = "%s/pkg" % self.repo_root
-                self.cat_root = "%s/catalog" % self.repo_root
-                self.update_root = "%s/updatelog" % self.repo_root
+                self.trans_root = os.path.join(self.repo_root, "trans")
+                self.file_root = os.path.join(self.repo_root, "file")
+                self.pkg_root = os.path.join(self.repo_root, "pkg")
+                self.cat_root = os.path.join(self.repo_root, "catalog")
+                self.update_root = os.path.join(self.repo_root, "updatelog")
+                self.index_root = os.path.join(self.repo_root, "index")
 
         def set_read_only(self):
                 self.read_only = True
@@ -124,12 +128,14 @@ class SvrConfig(object):
 
                         self.in_flight_trans[t.get_basename()] = t
 
-        def acquire_catalog(self):
+        def acquire_catalog(self, rebuild=True):
                 """Tell the catalog to set itself up.  Associate an
                 instance of the catalog with this depot."""
 
-                self.catalog = catalog.Catalog(self.cat_root,
-                    pkg_root = self.pkg_root, read_only = self.read_only)
+                self.catalog = catalog.ServerCatalog(self.cat_root,
+                    pkg_root=self.pkg_root, read_only=self.read_only,
+                    index_root=self.index_root, repo_root=self.repo_root,
+                    rebuild=rebuild)
 
                 # UpdateLog allows server to issue incremental catalog updates
                 self.updatelog = updatelog.UpdateLog(self.update_root,

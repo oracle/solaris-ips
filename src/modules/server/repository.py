@@ -44,7 +44,7 @@ tarfile.grp = None
 
 import urllib
 
-import pkg.catalog as catalog
+import pkg.server.catalog as catalog
 import pkg.fmri as fmri
 import pkg.misc as misc
 import pkg.Uuid25 as uuid
@@ -203,16 +203,16 @@ class Repository(object):
                         raise cherrypy.HTTPError(httplib.SERVICE_UNAVAILABLE,
                             "Search temporarily unavailable")
 
-                try:
-                        res = self.scfg.catalog.search(token)
-                except KeyError:
-                        raise cherrypy.HTTPError(httplib.NOT_FOUND)
+                res = self.scfg.catalog.search(token)
 
                 response.headers['Content-type'] = 'text/plain'
 
                 output = ""
+                # The query_engine returns four pieces of information in the
+                # proper order. Put those four pieces of information into a
+                # string that the client can understand.
                 for l in res:
-                        output += ("%s %s\n" % (l[0], l[1]))
+                        output += ("%s %s %s %s\n" % (l[0], l[1], l[2], l[3]))
 
                 return output
 
@@ -330,17 +330,17 @@ class Repository(object):
 
                 yield ""
 
-	# We have to configure the headers either through the _cp_config
-	# namespace, or inside the function itself whenever we are using
-	# a streaming generator.  This is because headers have to be setup
-	# before the response even begins and the point at which @tools
-	# hooks in is too late.
+        # We have to configure the headers either through the _cp_config
+        # namespace, or inside the function itself whenever we are using
+        # a streaming generator.  This is because headers have to be setup
+        # before the response even begins and the point at which @tools
+        # hooks in is too late.
         filelist_0._cp_config = {
-		'response.stream': True,
-		'tools.response_headers.on': True,
-		'tools.response_headers.headers': [('Content-Type',
-		    'application/data')]
-	}
+                'response.stream': True,
+                'tools.response_headers.on': True,
+                'tools.response_headers.headers': [('Content-Type',
+                    'application/data')]
+        }
 
         @cherrypy.expose
         def rename_0(self, *tokens, **params):

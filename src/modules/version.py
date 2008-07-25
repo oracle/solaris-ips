@@ -61,6 +61,9 @@ class DotSequence(list):
         def __str__(self):
                 return ".".join(map(str, self))
 
+        def __hash__(self):
+                return hash(tuple(self))
+
         def is_subsequence(self, other):
                 """Return true if self is a "subsequence" of other, meaning that
                 other and self have identical components, up to the length of
@@ -283,6 +286,9 @@ class Version(object):
                 if self.build_release > other.build_release:
                         return 1
                 return 0
+
+        def __hash__(self):
+                return hash((self.release, self.branch, self.timestr))
 
         def is_successor(self, other, constraint):
                 """Evaluate true if self is a successor version to other.

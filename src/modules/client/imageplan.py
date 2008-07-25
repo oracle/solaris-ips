@@ -24,12 +24,13 @@
 # Use is subject to license terms.
 
 import pkg.fmri as fmri
-import os.path
 import pkg.client.pkgplan as pkgplan
 import pkg.client.retrieve as retrieve # XXX inventory??
 import pkg.version as version
+import pkg.indexer as indexer
 from pkg.client.filter import compile_filter
 from pkg.misc import msg
+from pkg.misc import CLIENT_DEFAULT_MEM_USE_KB
 
 UNEVALUATED = 0
 EVALUATED_OK = 1
@@ -96,7 +97,7 @@ class ImagePlan(object):
                 for pp in self.pkg_plans:
                         msg("%s -> %s" % (pp.origin_fmri, pp.destination_fmri))
 
- 
+
         def is_proposed_fmri(self, fmri):
                 for pf in self.target_fmris:
                         if self.image.fmri_is_same_pkg(fmri, pf):
@@ -137,7 +138,7 @@ class ImagePlan(object):
 
         def older_version_proposed(self, fmri):
                 # returns true if older version of this fmri has been
-                # proposed already                
+                # proposed already
                 for p in self.target_fmris:
                         if self.image.fmri_is_successor(fmri, p):
                                 return True
@@ -174,7 +175,7 @@ class ImagePlan(object):
                 if self.directories == None:
                         dirs = set(["var/pkg", "var/sadm/install"])
                         dirs.update(
-                            [ 
+                            [
                                 d
                                 for fmri in self.gen_new_installed_pkgs()
                                 for act in self.image.get_manifest(fmri, filtered = True).actions
@@ -282,7 +283,7 @@ class ImagePlan(object):
                 self.pkg_plans.append(pp)
 
         def evaluate_fmri_removal(self, pfmri):
-                # prob. needs breaking up as well 
+                # prob. needs breaking up as well
                 assert self.image.has_manifest(pfmri)
 
                 dependents = self.image.get_dependents(pfmri)
@@ -337,7 +338,7 @@ Cannot remove '%s' due to the following packages that directly depend on it:"""\
                 self.progtrack.evaluate_start()
 
                 outstring = ""
-                
+
                 # Operate on a copy, as it will be modified in flight.
                 for f in self.target_fmris[:]:
                         self.progtrack.evaluate_progress()
@@ -350,8 +351,8 @@ Cannot remove '%s' due to the following packages that directly depend on it:"""\
                 if outstring:
                         raise RuntimeError("No packages were installed because "
                             "package dependencies could not be satisfied\n" +
-                            outstring)                        
-                                
+                            outstring)
+
                 for f in self.target_fmris:
                         self.add_pkg_plan(f)
                         self.progtrack.evaluate_progress()
@@ -363,7 +364,7 @@ Cannot remove '%s' due to the following packages that directly depend on it:"""\
                 self.progtrack.evaluate_done()
 
                 self.state = EVALUATED_OK
-                
+
         def nothingtodo(self):
                 """ Test whether this image plan contains any work to do """
 
@@ -380,6 +381,17 @@ Cannot remove '%s' due to the following packages that directly depend on it:"""\
                 if self.nothingtodo():
                         self.state = PREEXECUTED_OK
                         return
+
+                # Checks the index to make sure it exists and is
+                # consistent. If it's inconsistent an exception is thrown.
+                # If it's totally absent, it will index the existing packages
+                # so that the incremental update that follows at the end of
+                # the function will work correctly.
+                self.image.update_index_dir()
+                self.ind = indexer.Indexer(self.image.index_dir,
+                    CLIENT_DEFAULT_MEM_USE_KB, progtrack=self.progtrack)
+                self.ind.check_index(self.image.get_fmri_manifest_pairs(),
+                    force_rebuild=False)
 
                 npkgs = 0
                 nfiles = 0
@@ -423,7 +435,7 @@ Cannot remove '%s' due to the following packages that directly depend on it:"""\
                 # than removal and re-install, since these two have separate
                 # semanticas.
                 #
-                # General install method is removals, updates and then 
+                # General install method is removals, updates and then
                 # installs.  User and group installs are moved to be ahead of
                 # updates so that a package that adds a new user can specify
                 # that owner for existing files.
@@ -461,11 +473,11 @@ Cannot remove '%s' due to the following packages that directly depend on it:"""\
                             for src, dest in p.gen_install_actions()
                             ]
 
-                # move any user/group actions into modify list to 
+                # move any user/group actions into modify list to
                 # permit package to add user/group and change existing
                 # files to that user/group in a single update
                 # iterate over copy since we're modify install_actions
-                
+
                 for a in install_actions[:]:
                         if a[2].name == "user" or a[2].name == "group":
                                 update_actions.append(a)
@@ -480,12 +492,13 @@ Cannot remove '%s' due to the following packages that directly depend on it:"""\
                         self.progtrack.actions_add_progress()
 
                 self.progtrack.actions_done()
-
+                
                 # generate list of install actions, sort and execute
 
                 install_actions.sort(key = lambda obj:obj[2])
 
-                self.progtrack.actions_set_goal("Install Phase", len(install_actions))
+                self.progtrack.actions_set_goal("Install Phase",
+                    len(install_actions))
 
                 for p, src, dest in install_actions:
                         p.execute_install(src, dest)
@@ -496,6 +509,36 @@ Cannot remove '%s' due to the following packages that directly depend on it:"""\
 
                 for p in self.pkg_plans:
                         p.postexecute()
-
+                        
                 self.state = EXECUTED_OK
+                
+                del actions
+                del update_actions
+                del install_actions
+                del self.target_rem_fmris
+                del self.target_fmris
+                del self.directories
+                
+                # Perform the incremental update to the search indexes
+                # for all changed packages
+                plan_info = []
+                for p in self.pkg_plans:
+                        d_fmri = p.destination_fmri
+                        d_manifest_path = None
+                        if d_fmri:
+                                d_manifest_path = \
+                                    self.image.get_manifest_path(d_fmri)
+                        o_fmri = p.origin_fmri
+                        o_manifest_path = None
+                        o_filter_file = None
+                        if o_fmri:
+                                o_manifest_path = \
+                                    self.image.get_manifest_path(o_fmri)
+                        plan_info.append((d_fmri, d_manifest_path, o_fmri,
+                                          o_manifest_path))
+                del self.pkg_plans
+                self.progtrack.actions_set_goal("Index Phase", len(plan_info))
+
+                self.ind.client_update_index((self.filters, plan_info))
+
 

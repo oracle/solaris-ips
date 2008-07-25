@@ -167,14 +167,19 @@ class PkgFmri(object):
         def get_version(self):
                 return self.version.get_short_version()
 
-        def get_pkg_stem(self, default_authority = None, anarchy = False):
+        def get_pkg_stem(self, default_authority = None, anarchy = False,
+            include_pkg = True):
                 """Return a string representation of the FMRI without a specific
                 version.  Anarchy returns a stem without any authority."""
+                pkg_str = ""
                 if not self.authority or \
                     self.authority.startswith(PREF_AUTH_PFX) or anarchy:
-                        return "pkg:/%s" % self.pkg_name
-
-                return "pkg://%s/%s" % (self.authority, self.pkg_name)
+                        if include_pkg:
+                                pkg_str = "pkg:/"
+                        return "%s%s" % (pkg_str, self.pkg_name)
+                if include_pkg:
+                        pkg_str = "pkg://"
+                return "%s%s/%s" % (pkg_str, self.authority, self.pkg_name)
 
         def get_short_fmri(self, default_authority = None):
                 """Return a string representation of the FMRI without a specific

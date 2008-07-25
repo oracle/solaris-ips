@@ -47,9 +47,12 @@ import pkg.client.imageconfig as imageconfig
 import pkg.client.imageplan as imageplan
 import pkg.client.retrieve as retrieve
 import pkg.portable as portable
+import pkg.client.query_engine as query_e
+import pkg.indexer as indexer
 
 from pkg.misc import versioned_urlopen
 from pkg.misc import TransferTimedOutException
+from pkg.misc import CLIENT_DEFAULT_MEM_USE_KB
 from pkg.client.imagetypes import *
 
 img_user_prefix = ".org.opensolaris,pkg"
@@ -141,6 +144,7 @@ class Image(object):
                 self.root = None
                 self.imgdir = None
                 self.img_prefix = None
+                self.index_dir = None
                 self.repo_uris = []
                 self.filter_tags = {}
                 self.catalogs = {}
@@ -154,7 +158,7 @@ class Image(object):
                 self.attrs["Policy-Pursue-Latest"] = True
 
                 self.imageplan = None # valid after evaluation succceds
-                
+
                 # contains a dictionary w/ key = pkgname, value is miminum
                 # frmi.XXX  Needs rewrite using graph follower
                 self.optional_dependencies = {}
@@ -244,7 +248,7 @@ class Image(object):
                         self.img_prefix = img_user_prefix
                 else:
                         self.img_prefix = img_root_prefix
-                self.imgdir = os.path.join(self.root, self.img_prefix) 
+                self.imgdir = os.path.join(self.root, self.img_prefix)
                 self.mkdirs()
 
                 self.cfg_cache = imageconfig.ImageConfig()
@@ -268,8 +272,8 @@ class Image(object):
                 return self.root == "/"
 
         def is_zone(self):
-		zone = self.cfg_cache.filters.get("opensolaris.zone", "")
-		return zone == "nonglobal"
+                zone = self.cfg_cache.filters.get("opensolaris.zone", "")
+                return zone == "nonglobal"
 
         def get_root(self):
                 return self.root
@@ -402,7 +406,7 @@ class Image(object):
                 self.cfg_cache.write("%s/cfg_cache" % self.imgdir)
 
         def verify(self, fmri, progresstracker, **args):
-                """ generator that returns any errors in installed pkgs
+                """generator that returns any errors in installed pkgs
                 as tuple of action, list of errors"""
 
                 for act in self.get_manifest(fmri, filtered = True).actions:
@@ -415,14 +419,23 @@ class Image(object):
                                 yield (actname, errors)
 
         def gen_installed_actions(self):
-                """ generates actions in installed image """
+                """generates actions in installed image """
 
                 for fmri in self.gen_installed_pkgs():
                         for act in self.get_manifest(fmri, filtered = True).actions:
                                 yield act
 
+        def get_fmri_manifest_pairs(self):
+                """For each installed fmri, finds the path to its manifest file
+                and adds the pair of the fmri and the path to a list. Once all
+                installed fmris have been processed, the list is returned."""
+                return [
+                    (fmri, self.get_manifest_path(fmri))
+                    for fmri in self.gen_installed_pkgs()
+                ]
+
         def get_link_actions(self):
-                """ return a dictionary of hardlink action lists indexed by
+                """return a dictionary of hardlink action lists indexed by
                 target """
                 if self.link_actions != None:
                         return self.link_actions
@@ -477,7 +490,6 @@ class Image(object):
                 fmri_dir_path = os.path.join(self.imgdir, "pkg",
                     fmri.get_dir_path())
                 mpath = os.path.join(fmri_dir_path, "manifest")
-                ipath = os.path.join(fmri_dir_path, "index")
 
                 # Get manifest as a string from the remote host, then build
                 # it up into an in-memory manifest, then write the finished
@@ -498,7 +510,7 @@ class Image(object):
                         m["authority"] = fmri.get_authority()
 
                 try:
-                        m.store(mpath, ipath)
+                        m.store(mpath)
                 except EnvironmentError, e:
                         if e.errno not in (errno.EROFS, errno.EACCES):
                                 raise
@@ -520,6 +532,13 @@ class Image(object):
                         return False
 
                 return True
+
+        def get_manifest_path(self, fmri):
+                """Find on-disk manifest and create in-memory Manifest
+                object, applying appropriate filters as needed."""
+                mpath = os.path.join(self.imgdir, "pkg",
+                    fmri.get_dir_path(), "manifest")
+                return mpath
 
         def get_manifest(self, fmri, filtered = False):
                 """Find on-disk manifest and create in-memory Manifest
@@ -552,21 +571,21 @@ class Image(object):
                                 # we have.  Keep the old manifest and drive on.
                                 pass
 
-		# XXX perhaps all of the below should live in Manifest.filter()?
+                # XXX perhaps all of the below should live in Manifest.filter()?
                 if filtered:
-			filters = []
-			try:
-				f = file("%s/filters" % fmri_dir_path, "r")
-			except IOError, e:
-				if e.errno != errno.ENOENT:
-					raise
-			else:
-				filters = [
-				    (l.strip(), compile(
-					l.strip(), "<filter string>", "eval"))
-				    for l in f.readlines()
-				]
-			m.filter(filters)
+                        filters = []
+                        try:
+                                f = file("%s/filters" % fmri_dir_path, "r")
+                        except IOError, e:
+                                if e.errno != errno.ENOENT:
+                                        raise
+                        else:
+                                filters = [
+                                    (l.strip(), compile(
+                                        l.strip(), "<filter string>", "eval"))
+                                    for l in f.readlines()
+                                ]
+                        m.filter(filters)
 
                 return m
 
@@ -1022,7 +1041,8 @@ class Image(object):
                         if auth["prefix"] == self.cfg_cache.preferred_authority:
                                 authpfx = "%s_%s" % (pkg.fmri.PREF_AUTH_PFX,
                                     auth["prefix"])
-                                c = catalog.Catalog(croot, authority = authpfx)
+                                c = catalog.Catalog(croot,
+                                    authority=authpfx)
                         else:
                                 c = catalog.Catalog(croot,
                                     authority = auth["prefix"])
@@ -1052,7 +1072,7 @@ class Image(object):
 
                 # Get the catalog for the correct authority
                 cat = self.get_catalog(cfmri)
-		return cat.rename_is_same_pkg(cfmri, pfmri)
+                return cat.rename_is_same_pkg(cfmri, pfmri)
 
 
         def fmri_is_successor(self, cfmri, pfmri):
@@ -1197,13 +1217,13 @@ class Image(object):
                                         self.update_optional_dependency(min_fmri)
 
         def get_user_by_name(self, name):
-                return portable.get_user_by_name(name, self.root, 
-                                                 self.type != IMG_USER)
+                return portable.get_user_by_name(name, self.root,
+                    self.type != IMG_USER)
 
         def get_name_by_uid(self, uid, returnuid = False):
                 # XXX What to do about IMG_PARTIAL?
                 try:
-                        return portable.get_name_by_uid(uid, self.root, 
+                        return portable.get_name_by_uid(uid, self.root,
                             self.type != IMG_USER)
                 except KeyError:
                         if returnuid:
@@ -1212,12 +1232,12 @@ class Image(object):
                                 raise
 
         def get_group_by_name(self, name):
-                return portable.get_group_by_name(name, self.root, 
-                                                  self.type != IMG_USER)
+                return portable.get_group_by_name(name, self.root,
+                    self.type != IMG_USER)
 
         def get_name_by_gid(self, gid, returngid = False):
                 try:
-                        return portable.get_name_by_gid(gid, self.root, 
+                        return portable.get_name_by_gid(gid, self.root,
                             self.type != IMG_USER)
                 except KeyError:
                         if returngid:
@@ -1444,54 +1464,20 @@ class Image(object):
                         for f in nplist:
                                 yield f
 
+        def update_index_dir(self, postfix="index"):
+                """Since the index directory will not reliably be updated when
+                the image root is, this should be called prior to using the
+                index directory.
+                """
+                self.index_dir = os.path.join(self.imgdir, postfix)
+
         def local_search(self, args):
                 """Search the image for the token in args[0]."""
-                idxdir = os.path.join(self.imgdir, "pkg")
-
-                # Convert a full directory path to the FMRI it represents.
-                def idx_to_fmri(index):
-                        return pkg.fmri.PkgFmri(urllib.unquote(os.path.dirname(
-                            index[len(idxdir) + 1:]).replace(os.path.sep, "@")),
-                            None)
-
-                indices = (
-                    (os.path.join(dir, "index"), os.path.join(dir, "manifest"))
-                    for dir, dirnames, filenames in os.walk(idxdir)
-                    if "manifest" in filenames and "installed" in filenames
-                )
-
-                for index, mfst in indices:
-                        # Try loading the index; if that fails, try parsing the
-                        # manifest.
-                        try:
-                                d = cPickle.load(file(index))
-                        except:
-                                m = manifest.Manifest()
-                                try:
-                                        mcontent = file(mfst).read()
-                                except:
-                                        # XXX log something?
-                                        continue
-                                m.set_content(mcontent)
-                                try:
-                                        m.pickle(file(index, "wb"))
-                                except:
-                                        pass
-                                d = m.search_dict()
-
-                        for k, v in d.items():
-                                if args[0] in v:
-                                        # Yield the index name (such as
-                                        # "basename", the fmri, and then
-                                        # the "match results" which
-                                        # include the action name and
-                                        # the value of the key attribute
-                                        try:
-                                                yield k, idx_to_fmri(index), \
-                                                    v[args[0]][0], v[args[0]][1]
-                                        except TypeError:
-                                                yield k, idx_to_fmri(index), \
-                                                    "", ""
+                assert args[0]
+                self.update_index_dir()
+                qe = query_e.ClientQueryEngine(self.index_dir)
+                query = query_e.Query(args[0])
+                return qe.search(query)
 
         def remote_search(self, args, servers = None):
                 """Search for the token in args[0] on the servers in 'servers'.
@@ -1522,9 +1508,9 @@ class Image(object):
                                 for l in res.read().splitlines():
                                         fields = l.split()
                                         if len(fields) < 4:
-                                               yield fields[:2] + [ "", "" ]
+                                                yield fields[:2] + [ "", "" ]
                                         else:
-                                               yield fields[:4]
+                                                yield fields[:4]
                         except socket.timeout, e:
                                 failed.append((auth, e))
                                 continue
@@ -1566,7 +1552,7 @@ class Image(object):
                 """Called when directory contains something and it's not supposed
                 to because it's being deleted. XXX Need to work out a better error
                 passback mechanism. Path is rooted in /...."""
-                
+
                 salvagedir = os.path.normpath(
                     os.path.join(self.imgdir, "lost+found",
                     path + "-" + time.strftime("%Y%m%dT%H%M%SZ")))
@@ -1580,7 +1566,7 @@ class Image(object):
                         "in %s" % (path, salvagedir))
 
         def expanddirs(self, dirs):
-                """ given a set of directories, return expanded set that includes 
+                """given a set of directories, return expanded set that includes
                 all components"""
                 out = set()
                 for d in dirs:
@@ -1595,7 +1581,7 @@ class Image(object):
             verbose = False, noexecute = False):
                 """Take a list of packages, specified in pkg_list, and attempt
                 to assemble an appropriate image plan.  This is a helper
-		routine for some common operations in the client.
+                routine for some common operations in the client.
 
                 This method checks all authorities for a package match;
                 however, it defaults to choosing the preferred authority
@@ -1656,7 +1642,7 @@ pkg: no package matching '%s' could be found in current catalog
                         if len(pmatch) > 0:
                                 ip.propose_fmri(pmatch[0])
                         else:
-                                ip.propose_fmri(npmatch[0]) 
+                                ip.propose_fmri(npmatch[0])
 
                 if error != 0:
                         raise RuntimeError, "Unable to assemble image plan"
@@ -1666,11 +1652,23 @@ pkg: no package matching '%s' could be found in current catalog
                         msg(ip)
 
                 ip.evaluate()
-                self.imageplan = ip 
+                self.imageplan = ip
 
                 if verbose:
                         msg(_("After evaluation:"))
                         msg(ip.display())
+
+        def rebuild_search_index(self, progtracker):
+                """Rebuilds the search indexes.  Removes all 
+                existing indexes and replaces them from scratch rather than 
+                performing the incremental update which is usually used."""
+                self.update_index_dir()
+                if not os.path.isdir(self.index_dir):
+                        img.mkdirs()
+                ind = indexer.Indexer(self.index_dir,
+                    CLIENT_DEFAULT_MEM_USE_KB, progtracker)
+                ind.check_index(self.get_fmri_manifest_pairs(),
+                    force_rebuild = True)
 
 if __name__ == "__main__":
         pass

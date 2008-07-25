@@ -24,7 +24,6 @@
 
 import os
 import errno
-import cPickle
 from itertools import groupby, chain
 
 import pkg.actions as actions
@@ -45,7 +44,7 @@ ACTION_DEPEND = 400
 
 DEPEND_REQUIRE = 0
 DEPEND_OPTIONAL = 1
-DEPEND_INCORPORATE =10
+DEPEND_INCORPORATE = 10
 
 depend_str = { DEPEND_REQUIRE : "require",
                 DEPEND_OPTIONAL : "optional",
@@ -109,11 +108,11 @@ class Manifest(object):
                 r = ""
                 if self.fmri != None:
                         r += "set name=fmri value=%s\n" % self.fmri
-                
+
                 for act in self.actions:
                         r += "%s\n" % act
                 return r
-                
+
 
         def difference(self, origin):
                 """Return three lists of action pairs representing origin and
@@ -250,7 +249,7 @@ class Manifest(object):
                                 action.attrs["path"] = np
 
                         self.size += int(action.attrs.get("pkg.size", "0"))
-                        self.actions.append(action)                               
+                        self.actions.append(action)
 
                 return
 
@@ -259,32 +258,46 @@ class Manifest(object):
                 action_dict = {}
                 for a in self.actions:
                         for k, v in a.generate_indices().iteritems():
-                                # The value might be a list if an indexed action
-                                # attribute is multivalued, such as driver
-                                # aliases.
-                                t = (a.name, a.attrs.get(a.key_attr))
-                                if isinstance(v, list):
-                                       if k in action_dict:
-                                               action_dict[k].update(
-                                                   dict((i, t) for i in v))
-                                       else:
-                                               action_dict[k] = \
-                                                   dict((i, t) for i in v)
+                                # Special handling of AttributeActions is
+                                # needed inorder to place the correct values
+                                # into the correct output columns. This is
+                                # the pattern of which information changes
+                                # on an item by item basis is differs for
+                                # AttributeActions.
+                                #
+                                # The right solution is probably to reorganize
+                                # this function and all the generate_indicies
+                                # functions to allow the necessary flexibility.
+                                if isinstance(a,
+                                    actions.attribute.AttributeAction):
+                                        tok_type = a.attrs.get(a.key_attr)
+                                        t = (a.name, k)
                                 else:
-                                        # XXX if there's more than one k,v pair
-                                        # in the manifest, only one will get
-                                        # recorded.  basename,gmake is one
-                                        # example.
-                                        if k in action_dict:
-                                                action_dict[k][v] = t
+                                        tok_type = k
+                                        t = (a.name, a.attrs.get(a.key_attr))
+                                # The value might be a list if an indexed
+                                # action attribute is multivalued, such as
+                                # driver aliases.
+                                if isinstance(v, list):
+                                        if tok_type in action_dict:
+                                                action_dict[tok_type].update(
+                                                    dict((i, [t]) for i in v))
                                         else:
-                                                action_dict[k] = { v: t }
+                                                action_dict[tok_type] = \
+                                                    dict((i, [t]) for i in v)
+                                else:
+                                        if tok_type not in action_dict:
+                                                action_dict[tok_type] = \
+                                                    { v: [t] }
+                                        elif v not in action_dict[tok_type]:
+                                                action_dict[tok_type][v] = [t]
+                                        else:
+                                                action_dict[tok_type][v].append(t)
+                                        assert action_dict[tok_type][v]
                 return action_dict
 
-        def store(self, mfst_path, pkl_path):
-                """ Store the manifest contents and the pickled index
-                    of the manifest (used for searching) to disk.
-                """
+        def store(self, mfst_path):
+                """Store the manifest contents to disk."""
 
                 try:
                         mfile = file(mfst_path, "w")
@@ -303,19 +316,6 @@ class Manifest(object):
                 #
                 mfile.write(self.tostr_unsorted())
                 mfile.close()
-                
-                try:
-                        pfile = open(pkl_path, "wb")
-                except IOError, e:
-                        return
-
-                try:
-                        cPickle.dump(self.search_dict(), pfile,
-                            protocol = cPickle.HIGHEST_PROTOCOL)
-                        pfile.close()
-                except (IOError, e):
-                        os.unlink(pkl_path)
-                        pass
 
         def get(self, key, default):
                 try:

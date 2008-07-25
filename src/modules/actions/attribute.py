@@ -32,6 +32,8 @@ attribute of a package (package metadata).  Attributes are typed, and the
 possible types are: XXX."""
 
 import generic
+import re
+import pkg.fmri as fmri
 
 class AttributeAction(generic.Action):
         """Class representing a package attribute."""
@@ -52,7 +54,44 @@ class AttributeAction(generic.Action):
                 else:
                         assert len(attrs) == 2
                         assert set(attrs.keys()) == set([ "name", "value" ])
-	
-	def verify(self, img, **args):
-		""" since there's no install method, this class is always installed correctly"""
-		return []
+
+        def verify(self, img, **args):
+                """Since there's no install method, this class is always
+                installed correctly."""
+
+                return []
+
+        def generate_indices(self):
+                """Generates the indices needed by the search dictionary."""
+                if self.attrs["name"] == "description" or \
+                    " " in self.attrs["value"]:
+                        return dict(
+                            (w, w)
+                            for w in self.attrs["value"].split()
+                        )
+                elif self.attrs["name"] == "fmri":
+                        fmri_obj = fmri.PkgFmri(self.attrs["value"])
+
+                        return {
+                            self.attrs["name"]: [
+                                  fmri_obj.get_pkg_stem(include_pkg=False),
+                                  str(fmri_obj.version.build_release),
+                                  str(fmri_obj.version.release),
+                                  str(fmri_obj.version.timestr)
+                            ]
+                        }
+                elif isinstance(self.attrs["value"], list):
+                        tmp = {}
+                        for v in self.attrs["value"]:
+                                assert isinstance(v, str)
+                                if " " in v:
+                                        words = v.split()
+                                        for w in words:
+                                                tmp[w] = w
+                                else:
+                                        tmp[v] = v
+                        return  tmp
+                else:
+                        return {
+                             self.attrs["value"]: self.attrs["value"]
+                        }

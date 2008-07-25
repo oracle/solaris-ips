@@ -1,0 +1,74 @@
+
+pkg
+SEARCH
+
+1. Goals
+
+   i.   Provide relevant information
+   ii.  Provide a consistently fast response
+   iii. Make responses consistent between local and remote search
+   iv.  Provide the user with a good interface to the information
+   v.   Allow seamless recovery when search fails
+   vi.  Ensure the index is (almost) always in a consistent state
+
+2. Approach
+
+   From a high level, there are two components to search: the 
+   indexer, which maintains the information needed for search; the 
+   query engine, which actually performs a search of the information 
+   provided. The indexer is responsible for creating and updating the 
+   indexes and ensuring they're always in a consistent state. It does this 
+   by maintaining a set of inverted indexes as text files (details of which
+   can be found in the comments at the top of indexer.py). On the server 
+   side, it's hooked into the publishing code so that the index is updated 
+   each  time a package is published. If indexing is already happening when 
+   packages are published, they're queued and another update to the indexes 
+   happens once the current run is finished. On the client side, it's 
+   hooked into the install, image-update, and uninstall code so that each 
+   of those actions are reflected in the index.
+
+   The query engine is responsible for processing the text from the user, 
+   searching for that token in its information, and giving the client code 
+   the information needed for a reasonable response to the user. It must 
+   ensure that the information it uses is in a consistent state. On the 
+   server, an engine is created during the server initialization. It reads 
+   in the files it needs and stores the data internally. When the server gets
+   a search request from a client, it hands the search token to the query
+   engine. The query engine ensures that it has the most recent information
+   (locking and rereading the files from disk if necessary) and then searches
+   for the token in its dictionaries. On the client, the process is the same
+   except that the indexes are read from disk each time instead of being stored
+   because a new instance of pkg is started for each search.
+
+3. Details
+
+   Search reserves the $ROOT/index directory for its use on both the client
+   and the server. It also creates a TMP directory inside index which it stores
+   indexes in until it's ready to migrate them to the the proper directory.
+
+   indexer.py contains detailed information about the files used to store the
+   index and their formats. 
+
+   3.1 Locking
+
+       The indexes use a version locking protocol. The requirements for the
+       protocol are: 
+		the writer never blocks on readers
+		any number of readers are allowed
+		readers must always have consistent data regardless the
+			writer's actions
+       To implement these features, several conventions must be observed. The
+       writer is responsible for updating these files in another location,
+       then moving them on top of existing files so that from a reader's
+       perspective, file updates are always atomic. Each file in the index has
+       a version in the first line. The writer is responsible for ensuring that
+       each time it updates the index, the files all have the same version
+       number and that version number has not been previously used. The writer
+       is not responsible for moving multiple files atomically, but it should
+       make an effort to have files in $ROOT/index be out of sync for as short
+       a time as is possible.
+
+       The readers are responsible for ensuring that the files their reading 
+       the indexes from are a consistent set (have identical version 
+       numbers). consistent_open in search_storage takes care of this
+       functionality.

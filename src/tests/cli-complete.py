@@ -50,6 +50,7 @@ def maketests():
 	import cli.t_depotcontroller
 	import cli.t_image_create
 	import cli.t_info_contents
+	import cli.t_search
 	import cli.t_pkg_install_basics
 	import cli.t_pkg_install_corrupt_image
 	import cli.t_pkgsend
@@ -76,7 +77,8 @@ def maketests():
 	    cli.t_circular_dependencies.TestCircularDependencies,
             cli.t_recv.TestPkgRecv,
 	    cli.t_rename.TestRename,
-	    cli.t_twodepot.TestTwoDepots ]
+	    cli.t_twodepot.TestTwoDepots,
+	    cli.t_search.TestPkgSearch ]
 
 	for t in tests:
 		all_suite.addTest(unittest.makeSuite(t, 'test'))
