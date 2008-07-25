@@ -39,6 +39,7 @@ clean := TARGET = clean
 clobber := TARGET = clobber
 test := TARGET = test
 test-verbose := TARGET = test-verbose
+test-generate := TARGET = test-generate
 
 all:
 	$(PYTHON) setup.py build
@@ -89,4 +90,8 @@ link-clean:
 test:
 	$(PYTHON) setup.py test
 
-test-verbose: test
+test-verbose:
+	$(PYTHON) setup.py test -v
+
+test-generate: 
+	$(PYTHON) setup.py test -g

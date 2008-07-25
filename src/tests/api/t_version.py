@@ -23,11 +23,17 @@
 # Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
-import unittest
 import pkg.version as version
 import datetime
+import os
+import sys
 
-class TestVersion(unittest.TestCase):
+# Set the path so that modules above can be found
+path_to_parent = os.path.join(os.path.dirname(__file__), "..")
+sys.path.insert(0, path_to_parent)
+import pkg5unittest
+
+class TestVersion(pkg5unittest.Pkg5TestCase):
         def setUp(self):
                 self.d1 = version.DotSequence("1.1.3")
                 self.d2 = version.DotSequence("1.1.3")

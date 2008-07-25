@@ -23,7 +23,9 @@
 # Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
+import getopt
 import os
+import pkg5unittest
 import sys
 import platform
 import unittest
@@ -84,8 +86,24 @@ def maketests():
         for t in tests:
                 all_suite.addTest(unittest.makeSuite(t, 'test'))
 
-
 if __name__ == "__main__":
+        try:
+                opts, pargs = getopt.getopt(sys.argv[1:], "gpv",
+                    ["generate-baseline", "parseable", "verbose"])
+        except getopt.GetoptError, e:
+                print >> sys.stderr, "Illegal option -- %s" % e.opt
+                sys.exit(1)
+
+        output = pkg5unittest.OUTPUT_DOTS
+        generate = False
+        for opt, arg in opts:
+                if opt == "-v":
+                        output = pkg5unittest.OUTPUT_VERBOSE
+                if opt == "-p":
+                        output = pkg5unittest.OUTPUT_PARSEABLE
+                if opt == "-g":
+                        generate = True
+
         try:
                 import t_elf
                 all_suite.addTest(unittest.makeSuite(t_elf.TestElf, 'test'))
@@ -106,7 +124,9 @@ if __name__ == "__main__":
 
         all_suite = unittest.TestSuite()
         maketests()
-        runner = unittest.TextTestRunner()
+        runner = pkg5unittest.Pkg5TestRunner("api", output=output,
+            generate=generate)
+
         res = runner.run(all_suite)
         if res.failures:
                 sys.exit(1)

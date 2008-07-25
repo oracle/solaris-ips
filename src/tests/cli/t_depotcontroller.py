@@ -33,15 +33,15 @@ import shutil
 
 import pkg.depotcontroller as dc
 
-class TestDepotController(testutils.pkg5TestCase):
+class TestDepotController(testutils.CliTestCase):
 
         def setUp(self):
-                testutils.pkg5TestCase.setUp(self)
+                testutils.CliTestCase.setUp(self)
 
                 self.__dc = dc.DepotController()
                 self.__pid = os.getpid()
 		self.__dc.set_depotd_path(testutils.g_proto_area + \
-		    "/usr/lib/pkg.depotd")
+                    "/usr/lib/pkg.depotd")
 
                 depotpath = os.path.join(self.get_test_prefix(), "depot")
                 logpath = os.path.join(self.get_test_prefix(), self.id())
@@ -55,7 +55,7 @@ class TestDepotController(testutils.pkg5TestCase):
                 self.__dc.set_logpath(logpath)
 
         def tearDown(self):
-                testutils.pkg5TestCase.tearDown(self)
+                testutils.CliTestCase.tearDown(self)
 
                 self.__dc.kill()
                 shutil.rmtree(self.__dc.get_repodir())

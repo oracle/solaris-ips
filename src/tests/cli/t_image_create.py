@@ -54,7 +54,7 @@ class TestImageCreate(testutils.SingleDepotTestCase):
                     self.image_create, durl, "")
 
 
-class TestImageCreateNoDepot(testutils.pkg5TestCase):
+class TestImageCreateNoDepot(testutils.CliTestCase):
         def test_bad_image_create(self):
                 """ Create image from non-existent server """
 

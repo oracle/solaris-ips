@@ -23,12 +23,17 @@
 # Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
-import unittest
 import tempfile
 import os
+import sys
 import pkg.smf as smf
 
-class TestSMF(unittest.TestCase):
+# Set the path so that modules above can be found
+path_to_parent = os.path.join(os.path.dirname(__file__), "..")
+sys.path.insert(0, path_to_parent)
+import pkg5unittest
+
+class TestSMF(pkg5unittest.Pkg5TestCase):
 
 	def setUp(self):
 		fd_passwd, self.passwd_tmp = tempfile.mkstemp()

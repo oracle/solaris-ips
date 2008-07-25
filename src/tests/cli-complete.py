@@ -23,7 +23,9 @@
 # Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
+import getopt
 import os
+import pkg5unittest
 import platform
 import unittest
 import sys
@@ -50,7 +52,7 @@ def maketests():
 	import cli.t_depotcontroller
 	import cli.t_image_create
 	import cli.t_info_contents
-	import cli.t_search
+        import cli.t_search
 	import cli.t_pkg_install_basics
 	import cli.t_pkg_install_corrupt_image
 	import cli.t_pkgsend
@@ -61,39 +63,56 @@ def maketests():
 	import cli.t_rename
 	import cli.t_twodepot
 
-	tests = [
-	    cli.t_actions.TestPkgActions,
-	    cli.t_depotcontroller.TestDepotController,
-	    cli.t_image_create.TestImageCreate,
-	    cli.t_image_create.TestImageCreateNoDepot,
+        tests = [
+            cli.t_actions.TestPkgActions,
+            cli.t_depotcontroller.TestDepotController,
+            cli.t_image_create.TestImageCreate,
+            cli.t_image_create.TestImageCreateNoDepot,
             cli.t_info_contents.TestContentsAndInfo,
-	    cli.t_depot.TestDepot,
-	    cli.t_pkg_install_basics.TestPkgInstallBasics,
-	    cli.t_pkg_install_corrupt_image.TestImageCreateCorruptImage,
-	    cli.t_pkgsend.TestPkgSend,
-	    cli.t_pkg_list.TestPkgList,
-	    cli.t_commandline.TestCommandLine,
-	    cli.t_upgrade.TestUpgrade,
-	    cli.t_circular_dependencies.TestCircularDependencies,
+            cli.t_depot.TestDepot,
+            cli.t_pkg_install_basics.TestPkgInstallBasics,
+            cli.t_pkg_install_corrupt_image.TestImageCreateCorruptImage,
+            cli.t_pkgsend.TestPkgSend,
+            cli.t_pkg_list.TestPkgList,
+            cli.t_commandline.TestCommandLine,
+            cli.t_upgrade.TestUpgrade,
+            cli.t_circular_dependencies.TestCircularDependencies,
             cli.t_recv.TestPkgRecv,
-	    cli.t_rename.TestRename,
-	    cli.t_twodepot.TestTwoDepots,
-	    cli.t_search.TestPkgSearch ]
+            cli.t_rename.TestRename,
+            cli.t_twodepot.TestTwoDepots,
+            cli.t_search.TestPkgSearch ]
 
-	for t in tests:
-		all_suite.addTest(unittest.makeSuite(t, 'test'))
-
+        for t in tests:
+                all_suite.addTest(unittest.makeSuite(t, 'test'))
 
 if __name__ == "__main__":
+        try:
+                opts, pargs = getopt.getopt(sys.argv[1:], "gpv",
+                    ["generate-baseline", "parseable", "verbose"])
+        except getopt.GetoptError, e:
+                print >> sys.stderr, "Illegal option -- %s" % e.opt
+                sys.exit(1)
 
-	if os.getuid() != 0:
-		print >> sys.stderr, "WARNING: You don't seem to be root." \
-		    " Tests may fail."
+        output = pkg5unittest.OUTPUT_DOTS
+        generate = False
+        for opt, arg in opts:
+                if opt == "-v":
+                        output = pkg5unittest.OUTPUT_VERBOSE
+                if opt == "-p":
+                        output = pkg5unittest.OUTPUT_PARSEABLE
+                if opt == "-g":
+                        generate = True
+
+        if os.getuid() != 0:
+                print >> sys.stderr, "WARNING: You don't seem to be root." \
+                    " Tests may fail."
 
 	all_suite = unittest.TestSuite()
 	maketests()
-	runner = unittest.TextTestRunner()
-	res = runner.run(all_suite)
-	if res.failures:
-		sys.exit(1)
+	runner = pkg5unittest.Pkg5TestRunner("cli", output=output,
+            generate=generate)
+
+        res = runner.run(all_suite)
+        if res.failures:
+                sys.exit(1)
 	sys.exit(0)

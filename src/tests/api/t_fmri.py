@@ -23,11 +23,18 @@
 # Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
-import unittest
 import pkg.fmri as fmri
 import pkg.version as version
 
-class TestFMRI(unittest.TestCase):
+import os
+import sys
+
+# Set the path so that modules above can be found
+path_to_parent = os.path.join(os.path.dirname(__file__), "..")
+sys.path.insert(0, path_to_parent)
+import pkg5unittest
+
+class TestFMRI(pkg5unittest.Pkg5TestCase):
         def setUp(self):
                 self.n1 = fmri.PkgFmri("pkg://pion/sunos/coreutils",
                     build_release = "5.9")

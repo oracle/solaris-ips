@@ -82,7 +82,7 @@ zones_dir = 'etc/zones'
 brand_dir = 'usr/lib/brand/ipkg'
 
 scripts_sunos = {
-        scripts_dir: [   
+        scripts_dir: [
                 ['client.py', 'pkg'],
                 ['publish.py', 'pkgsend'],
                 ['pull.py', 'pkgrecv'],
@@ -124,7 +124,7 @@ scripts_other_unix = {
         }
 
 # indexed by 'osname'
-scripts = { 
+scripts = {
         "sunos": scripts_sunos,
         "linux": scripts_other_unix,
         "windows": scripts_windows,
@@ -235,7 +235,7 @@ class lint_func(Command):
                 # rcfile, does not work, so we put it here instead, to load
                 # our custom checkers.
                 lint.Run(['--load-plugins=multiplatform', '--rcfile',
-                          os.path.join(pwd, 'tests', 'pylintrc')] + 
+                          os.path.join(pwd, 'tests', 'pylintrc')] +
                           scriptlist + packages)
 
 class install_func(_install):
@@ -267,10 +267,10 @@ class install_func(_install):
                                 dir_util.mkpath(dst_dir, verbose = True)
                                 file_util.copy_file(srcname, dst_path, update = True)
                                 # make scripts executable
-                                os.chmod(dst_path, 
+                                os.chmod(dst_path,
                                         os.stat(dst_path).st_mode | stat.S_IEXEC)
 
-                install_cherrypy()              
+                install_cherrypy()
 
 CP = 'CherryPy'
 CPVER = '3.0.3'
@@ -303,7 +303,7 @@ def install_cherrypy():
                 print "installing CherryPy"
                 subprocess.Popen(['python', 'setup.py', 'install',
                         '--install-lib=%s' % os.path.join(root_dir, py_install_dir),
-                        '--install-data=%s' % os.path.join(root_dir, py_install_dir)], 
+                        '--install-data=%s' % os.path.join(root_dir, py_install_dir)],
                         cwd = CPDIR).wait()
 
 def remove_cherrypy():
@@ -312,7 +312,7 @@ def remove_cherrypy():
         shutil.rmtree(CPDIR, True)
 
 class build_func(_build):
-        def initialize_options(self):            
+        def initialize_options(self):
                 _build.initialize_options(self)
                 self.build_base = build_dir
 
@@ -358,7 +358,7 @@ class build_py_func(_build_py):
                 return _build_py.build_module(self, module, module_file, package)
 
 class clean_func(_clean):
-        def initialize_options(self):            
+        def initialize_options(self):
                 _clean.initialize_options(self)
                 self.build_base = build_dir
 
@@ -382,11 +382,17 @@ class clobber_func(Command):
                 remove_cherrypy()
 
 class test_func(Command):
-        user_options = []
+        # Use verbosemode here so that when the attr gets set it doesn't
+        # clobber the "verbose" variable/option that distutils already has.
+        user_options = [("verbosemode", 'v', "run tests in verbose mode"),
+                        ("genbaseline", 'g', "generate test baseline"),
+                        ("parseable", 'p', "parseable output")]
         description = "Runs unit and functional tests"
 
         def initialize_options(self):
-                pass
+                self.verbosemode = 0
+                self.genbaseline = 0
+                self.parseable = 0
         def finalize_options(self):
                 pass
         def run(self):
@@ -396,20 +402,31 @@ class test_func(Command):
                 testlogfp = os.fdopen(testlogfd, "w")
                 print "logging to %s" % testlogpath
 
-                subprocess.call([sys.executable, "api-complete.py"], 
-                    stdout = testlogfp)
+                args = []
+                # Stuff any options that are set into 'args' so that we can
+                # send them along on the command line.
+                for (opt, short, _) in self.user_options:
+                        value = getattr(self, opt)
+                        if value == 1:
+                                args.append("-%s" % short)
+
+                cmd = [sys.executable, "api-complete.py"]
+                cmd.extend(args)
+                subprocess.call(cmd, stdout = testlogfp)
 
                 if ostype == 'posix':
-                        subprocess.call([sys.executable, "cli-complete.py"], 
-                            stdout = testlogfp)
+                        cmd = [sys.executable, "cli-complete.py"]
+                        cmd.extend(args)
+                        subprocess.call(cmd, stdout = testlogfp)
+
                 if osname == 'sunos':
-                        subprocess.call(["/bin/ksh", "memleaks.ksh"], 
+                        subprocess.call(["/bin/ksh", "memleaks.ksh"],
                             stdout = testlogfp)
                 testlogfp.close()
 
 class dist_func(_bdist):
         def initialize_options(self):
-                _bdist.initialize_options(self)            
+                _bdist.initialize_options(self)
                 self.dist_dir = dist_dir
 
 
@@ -418,7 +435,7 @@ ext_modules = None
 compile_args = None
 link_args = None
 elf_libraries = None
-data_files = [ (resource_dir, web_files) ] 
+data_files = [ (resource_dir, web_files) ]
 cmdclasses = {
         'install': install_func,
         'build': build_func,
@@ -466,7 +483,7 @@ if osname == 'sunos' or osname == "linux":
             elf_libraries += [ 'md' ]
             ext_modules += [
                     Extension(
-                            'arch', 
+                            'arch',
                             arch_srcs,
                             include_dirs = include_dirs,
                             extra_compile_args = compile_args,

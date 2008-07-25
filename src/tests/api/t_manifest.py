@@ -23,9 +23,9 @@
 # Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
-import unittest
 import tempfile
 import os
+import sys
 import types
 import itertools
 
@@ -36,8 +36,12 @@ import pkg.fmri as fmri
 import pkg.client.retrieve as retrieve
 import pkg.client.filter as filter
 
+# Set the path so that modules above can be found
+path_to_parent = os.path.join(os.path.dirname(__file__), "..")
+sys.path.insert(0, path_to_parent)
+import pkg5unittest
 
-class TestManifest(unittest.TestCase):
+class TestManifest(pkg5unittest.Pkg5TestCase):
 
         def setUp(self):
                 self.m1 = manifest.Manifest();

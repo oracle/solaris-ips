@@ -32,6 +32,12 @@ import errno
 import platform
 import tempfile
 
+# Set the path so that modules above can be found
+path_to_parent = os.path.join(os.path.dirname(__file__), "..")
+sys.path.insert(0, path_to_parent)
+
+import pkg5unittest
+
 g_proto_area=""
 
 def setup_environment(path_to_proto):
@@ -221,7 +227,7 @@ class PkgSendOpenException(Exception):
 
 
 
-class pkg5TestCase(unittest.TestCase):
+class CliTestCase(pkg5unittest.Pkg5TestCase):
         def setUp(self):
                 self.image_dir = None
                 self.pid = os.getpid()
@@ -435,14 +441,14 @@ class pkg5TestCase(unittest.TestCase):
                 return dc
                 
 
-class ManyDepotTestCase(pkg5TestCase):
+class ManyDepotTestCase(CliTestCase):
 
         def setUp(self, ndepots):
                 # Note that this must be deferred until after PYTHONPATH
                 # is set up.
                 import pkg.depotcontroller as depotcontroller
 
-                pkg5TestCase.setUp(self)
+                CliTestCase.setUp(self)
 
                 self.debug("setup: %s" % self.id())
                 self.debug("starting %d depot(s)" % ndepots)
@@ -503,7 +509,7 @@ class ManyDepotTestCase(pkg5TestCase):
                                 shutil.rmtree(dir)
 
                 self.dcs = None
-                pkg5TestCase.tearDown(self)
+                CliTestCase.tearDown(self)
 
 
 class SingleDepotTestCase(ManyDepotTestCase):

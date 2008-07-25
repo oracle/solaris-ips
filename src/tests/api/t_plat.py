@@ -24,16 +24,21 @@
 # Use is subject to license terms.
 
 import os
-import unittest
 import subprocess
 import shutil
+import sys
 import tempfile
 import pkg.fmri as fmri
 import pkg.client.image as image
 import pkg.portable.util as util
 import pkg.portable as portable
 
-class TestPlat(unittest.TestCase):
+# Set the path so that modules above can be found
+path_to_parent = os.path.join(os.path.dirname(__file__), "..")
+sys.path.insert(0, path_to_parent)
+import pkg5unittest
+
+class TestPlat(pkg5unittest.Pkg5TestCase):
         def setUp(self):
                 pass
                 

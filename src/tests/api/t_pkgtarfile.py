@@ -30,11 +30,15 @@ import os
 import tempfile
 import shutil
 import tarfile
-import unittest
 import pkg.portable as portable
 import pkg.pkgtarfile as pkgtarfile
 
-class TestPkgTarFile(unittest.TestCase):
+# Set the path so that modules above can be found
+path_to_parent = os.path.join(os.path.dirname(__file__), "..")
+sys.path.insert(0, path_to_parent)
+import pkg5unittest
+
+class TestPkgTarFile(pkg5unittest.Pkg5TestCase):
 
         def setUp(self):
                 self.tpath = tempfile.mkdtemp()

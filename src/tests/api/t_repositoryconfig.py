@@ -25,12 +25,17 @@
 
 import copy
 import os
+import sys
 import tempfile
-import unittest
 
 import pkg.server.repositoryconfig as rcfg
 
-class TestRepositoryConfig(unittest.TestCase):
+# Set the path so that modules above can be found
+path_to_parent = os.path.join(os.path.dirname(__file__), "..")
+sys.path.insert(0, path_to_parent)
+import pkg5unittest
+
+class TestRepositoryConfig(pkg5unittest.Pkg5TestCase):
         """Class to test the functionality of RepositoryConfig.
         """
         __attrs = {

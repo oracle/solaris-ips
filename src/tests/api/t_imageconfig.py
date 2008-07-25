@@ -24,12 +24,16 @@
 # Use is subject to license terms.
 
 import os
-import unittest
+import sys
 import tempfile
 import pkg.client.imageconfig as imageconfig
 
+# Set the path so that modules above can be found
+path_to_parent = os.path.join(os.path.dirname(__file__), "..")
+sys.path.insert(0, path_to_parent)
+import pkg5unittest
 
-class TestImageConfig(unittest.TestCase):
+class TestImageConfig(pkg5unittest.Pkg5TestCase):
         def setUp(self):
 
 		fd, self.sample_conf = tempfile.mkstemp()

@@ -25,9 +25,14 @@
 
 import pkg.elf as elf
 import os
-import unittest
+import sys
 
-class TestElf(unittest.TestCase):
+# Set the path so that modules above can be found
+path_to_parent = os.path.join(os.path.dirname(__file__), "..")
+sys.path.insert(0, path_to_parent)
+import pkg5unittest
+
+class TestElf(pkg5unittest.Pkg5TestCase):
 
 	def test_is_elf_object(self):
 		""" ASSERT: is_elf_object correctly classifies a range of

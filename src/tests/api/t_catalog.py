@@ -23,18 +23,24 @@
 # Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
-import unittest
 import shutil
 import tempfile
 import os
 import datetime
 import time
+import sys
+
+# Set the path so that modules above can be found
+path_to_parent = os.path.join(os.path.dirname(__file__), "..")
+sys.path.insert(0, path_to_parent)
+
+import pkg5unittest
 
 import pkg.fmri as fmri
 import pkg.catalog as catalog
 import pkg.updatelog as updatelog
 
-class TestCatalog(unittest.TestCase):
+class TestCatalog(pkg5unittest.Pkg5TestCase):
         def setUp(self):
                 self.cpath = tempfile.mkdtemp()
                 self.c = catalog.Catalog(self.cpath)
@@ -83,7 +89,7 @@ class TestCatalog(unittest.TestCase):
 
                 self.assert_(len(cl) == 1)
 
-class TestEmptyCatalog(unittest.TestCase):
+class TestEmptyCatalog(pkg5unittest.Pkg5TestCase):
         def setUp(self):
                 self.cpath = tempfile.mkdtemp()
                 self.c = catalog.Catalog(self.cpath)
@@ -113,7 +119,7 @@ class TestEmptyCatalog(unittest.TestCase):
         def testsend(self):
                 self.c.send(self.nullf)
 
-class TestCatalogRename(unittest.TestCase):
+class TestCatalogRename(pkg5unittest.Pkg5TestCase):
         def setUp(self):
 		self.cpath = tempfile.mkdtemp()
                 self.c = catalog.Catalog(self.cpath)
@@ -280,7 +286,7 @@ class TestCatalogRename(unittest.TestCase):
                     None)
                 self.failIf(self.c.rename_is_same_pkg(tfmri, added_fmris[1]))
 
-class TestUpdateLog(unittest.TestCase):
+class TestUpdateLog(pkg5unittest.Pkg5TestCase):
         def setUp(self):
                 self.cpath = tempfile.mkdtemp()
                 self.c = catalog.Catalog(self.cpath)
