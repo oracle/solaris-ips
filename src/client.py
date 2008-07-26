@@ -702,12 +702,12 @@ def search(img, args):
                         searches.append(img.local_search(pargs))
                 except search_errors.NoIndexException, nie:
                         error(str(nie) +
-                            "\nPlease try pkg rebuild-index to recreate the " +
+                            "\nPlease try 'pkg rebuild-index' to recreate the " +
                             "index.")
                         return 1
                 except search_errors.InconsistentIndexException, iie:
                         error("The search index appears corrupted.  Please "
-                            "rebuild the index with pkg rebuild-index.")
+                            "rebuild the index with 'pkg rebuild-index'.")
                         return 1
 
 

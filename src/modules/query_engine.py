@@ -25,6 +25,7 @@
 import fnmatch
 
 import pkg.search_storage as ss
+import pkg.search_errors as search_errors
 
 FILE_OPEN_TIMEOUT_SECS = 5
 
