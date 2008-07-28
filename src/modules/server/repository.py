@@ -83,15 +83,22 @@ class Repository(object):
                         # will automatically be populated with sane defaults.
                         self.rcfg = rc.RepositoryConfig()
 
-                # RSS/Atom feeds require a unique identifier, so generate one
-                # if isn't defined already.
-                fid = self.rcfg.get_attribute("feed", "id")
-                if not fid:
-                        # Create a random UUID (type 4).
-                        self.rcfg._set_attribute("feed", "id",
-                            uuid.uuid4())
+                if not self.scfg.is_read_only():
+                        # While our configuration can be parsed during
+                        # initialization, no changes can be written to disk
+                        # in readonly mode.
 
-                        # Save our new configuration.
+                        # RSS/Atom feeds require a unique identifier, so
+                        # generate one if isn't defined already.  This
+                        # needs to be a persistent value, so we only
+                        # generate this if we can save the configuration.
+                        fid = self.rcfg.get_attribute("feed", "id")
+                        if not fid:
+                                # Create a random UUID (type 4).
+                                self.rcfg._set_attribute("feed", "id",
+                                    uuid.uuid4())
+
+                        # Save the new configuration (or refresh existing).
                         self.rcfg.write(cfgpathname)
 
                 self.vops = {}
