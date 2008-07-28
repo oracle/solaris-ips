@@ -43,7 +43,8 @@ cli.t_recv.py TestPkgRecv.test_recv_send|pass
 cli.t_search.py TestPkgSearch.test_local|pass
 cli.t_pkg_list.py TestPkgList.test_list_2|pass
 cli.t_commandline.py TestCommandLine.test_authority_validation|pass
-cli.t_pkg_install_basics.py TestPkgInstallBasics.test_bug_387|error
+cli.t_pkg_install_basics.py TestPkgInstallBasics.test_nonrecursive_dependent_uninstall|pass
+cli.t_pkg_install_basics.py TestPkgInstallBasics.test_recursive_uninstall|pass
 cli.t_pkg_list.py TestPkgList.test_empty_image|pass
 cli.t_commandline.py TestCommandLine.test_pkg_bogus_opts|pass
 cli.t_search.py TestPkgSearch.test_remote|pass

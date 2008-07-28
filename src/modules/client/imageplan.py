@@ -40,6 +40,21 @@ PREEXECUTED_ERROR = 4
 EXECUTED_OK = 5
 EXECUTED_ERROR = 6
 
+class NonLeafPackageException(Exception):
+        """Removal of a package which satisfies dependencies has been attempted.
+        
+        The first argument to the constructor is the FMRI which we tried to
+        remove, and is available as the "fmri" member of the exception.  The
+        second argument is the list of dependent packages that prevent the
+        removal of the package, and is available as the "dependents" member.
+        """
+
+        def __init__(self, *args):
+                Exception.__init__(self, *args)
+
+                self.fmri = args[0]
+                self.dependents = args[1]
+
 class ImagePlan(object):
         """An image plan takes a list of requested packages, an Image (and its
         policy restrictions), and returns the set of package operations needed
@@ -286,23 +301,18 @@ class ImagePlan(object):
                 # prob. needs breaking up as well
                 assert self.image.has_manifest(pfmri)
 
-                dependents = self.image.get_dependents(pfmri)
+                self.progtrack.evaluate_progress()
+
+                dependents = self.image.get_dependents(pfmri, self.progtrack)
 
                 # Don't consider those dependencies already being removed in
                 # this imageplan transaction.
                 for i, d in enumerate(dependents):
-                        if fmri.PkgFmri(d, None) in self.target_rem_fmris:
+                        if d in self.target_rem_fmris:
                                 del dependents[i]
 
                 if dependents and not self.recursive_removal:
-                        # XXX Module function is printing, should raise or have
-                        # complex return.
-                        msg("""\
-Cannot remove '%s' due to the following packages that directly depend on it:"""\
-                        % pfmri)
-                        for d in dependents:
-                                msg(" ", fmri.PkgFmri(d, ""))
-                        return
+                        raise NonLeafPackageException(pfmri, dependents)
 
                 m = self.image.get_manifest(pfmri)
 
@@ -317,15 +327,13 @@ Cannot remove '%s' due to the following packages that directly depend on it:"""\
                 pp.evaluate()
 
                 for d in dependents:
-                        rf = fmri.PkgFmri(d, None)
-                        if self.is_proposed_rem_fmri(rf):
-                                msg("%s is already proposed for removal" % rf)
+                        if self.is_proposed_rem_fmri(d):
                                 continue
-                        if not self.image.has_version_installed(rf):
-                                msg("%s is not installed" % rf)
+                        if not self.image.has_version_installed(d):
                                 continue
-                        self.target_rem_fmris.append(rf)
-                        self.evaluate_fmri_removal(rf)
+                        self.target_rem_fmris.append(d)
+                        self.progtrack.evaluate_progress()
+                        self.evaluate_fmri_removal(d)
 
                 # Post-order append will ensure topological sorting for acyclic
                 # dependency graphs.  Cycles need to be arbitrarily broken, and

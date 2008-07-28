@@ -880,27 +880,39 @@ class Image(object):
 
                 return v == fmri
 
-        def get_dependents(self, pfmri):
+        def __build_dependents(self, progtrack):
+                """Build a dictionary mapping packages to the list of packages
+                that have required dependencies on them."""
+                self.__req_dependents = {}
+
+                for fmri in self.gen_installed_pkgs():
+                        progtrack.evaluate_progress()
+                        mfst = self.get_manifest(fmri, filtered = True)
+
+                        for dep in mfst.gen_actions_by_type("depend"):
+                                if dep.attrs["type"] != "require":
+                                        continue
+                                dfmri = self.strtofmri(dep.attrs["fmri"])
+                                if dfmri not in self.__req_dependents:
+                                        self.__req_dependents[dfmri] = []
+                                self.__req_dependents[dfmri].append(fmri)
+
+        def get_dependents(self, pfmri, progtrack):
                 """Return a list of the packages directly dependent on the given
                 FMRI."""
 
-                thedir = os.path.join(self.imgdir, "index", "depend",
-                    urllib.quote(str(pfmri.get_pkg_stem())[5:], ""))
+                if not hasattr(self, "_Image__req_dependents"):
+                        self.__build_dependents(progtrack)
 
-                if not os.path.isdir(thedir):
-                        return []
-
-                for v in os.listdir(thedir):
-                        f = pkg.fmri.PkgFmri(pfmri.get_pkg_stem() + "@" + v,
-                            self.attrs["Build-Release"])
+                dependents = []
+                # We run through all the keys, in case a package is depended
+                # upon under multiple versions.  That is, if pkgA depends on
+                # libc@1 and pkgB depends on libc@2, we need to return both pkgA
+                # and pkgB.  If we used package names as keys, this would be
+                # simpler, but it wouldn't handle package rename.
+                for f in self.__req_dependents.iterkeys():
                         if self.fmri_is_successor(pfmri, f):
-                                dependents = [
-                                    urllib.unquote(d)
-                                    for d in os.listdir(os.path.join(thedir, v))
-                                    if os.path.exists(
-                                        os.path.join(thedir, v, d, "installed"))
-                                ]
-
+                                dependents.extend(self.__req_dependents[f])
                 return dependents
 
         def retrieve_catalogs(self, full_refresh = False):

@@ -618,7 +618,15 @@ def uninstall(img, args):
                 msg(_("Before evaluation:"))
                 msg(ip)
 
-        ip.evaluate()
+        try:
+                ip.evaluate()
+        except imageplan.NonLeafPackageException, e:
+                error("""Cannot remove '%s' due to
+the following packages that depend on it:""" % e[0])
+                for d in e[1]:
+                        emsg("  %s" % d)
+                return 1
+
         img.imageplan = ip
 
         if verbose:

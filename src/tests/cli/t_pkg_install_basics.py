@@ -220,10 +220,8 @@ class TestPkgInstallBasics(testutils.SingleDepotTestCase):
                 self.pkg("verify")
 
 
-        def test_bug_387(self):
-                """ KNOWN Bug 387.  Please Fix Me!
-                    Install bar@1.0, dependent on foo@1.0, uninstall recursively.
-                    See http://defect.opensolaris.org/bz/show_bug.cgi?id=387 """
+        def test_recursive_uninstall(self):
+                """Install bar@1.0, dependent on foo@1.0, uninstall foo recursively."""
 
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.foo10)
@@ -237,10 +235,24 @@ class TestPkgInstallBasics(testutils.SingleDepotTestCase):
                 # at this point foo and bar are installed, and
                 # bar depends on foo.  foo and bar should both
                 # be removed by this action.
-                self.pkg("uninstall -vr bar")
+                self.pkg("uninstall -vr foo")
                 self.pkg("list bar", exit = 1)
-                self.pkg("list foo", exit = 1,
-                   comment = self.test_bug_387.__doc__)
+                self.pkg("list foo", exit = 1)
+
+        def test_nonrecursive_dependent_uninstall(self):
+                """Trying to remove a package that's a dependency of another
+                package should fail if the uninstall isn't recursive."""
+
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.foo10)
+                self.pkgsend_bulk(durl, self.bar10)
+                self.image_create(durl)
+
+                self.pkg("install bar@1.0")
+
+                self.pkg("uninstall -v foo", exit = 1)
+                self.pkg("list bar")
+                self.pkg("list foo")
 
         def test_basics_5(self):
                 """ Add bar@1.1, install bar@1.0. """
