@@ -106,10 +106,8 @@ class Image(object):
                File containing image's opaque state.
 
           $IROOT/state/installed
-               Directory containing symbolic links to
-               $IROOT/pkg/[stem]/[version] for each installed package.  On
-               platforms lacking symbolic links, the filename must be processed
-               such that the correct directory can be opened.
+               Directory containing files whose names identify the installed
+               packages.
 
         All of these directories and files other than state are considered
         essential for any image to be complete. To add a new essential file or
@@ -667,8 +665,9 @@ class Image(object):
                 f.writelines(["VERSION_1\n", fmri.get_authority_str()])
                 f.close()
 
-                os.symlink("../../pkg/%s/installed" % fmri.get_dir_path(),
-                    "%s/state/installed/%s" % (self.imgdir, fmri.get_link_path()))
+                fi = file("%s/state/installed/%s" % (self.imgdir,
+                    fmri.get_link_path()), "w")
+                fi.close()
                 self.pkg_states[urllib.unquote(fmri.get_link_path())] = \
                     (PKG_STATE_INSTALLED, fmri)
 
@@ -727,10 +726,8 @@ class Image(object):
                         fmristr = urllib.unquote("%s@%s" % (pd, vd))
                         auth = self.installed_file_authority(path)
                         f = pkg.fmri.PkgFmri(fmristr, authority = auth)
-
-                        relpath = "../../pkg/%s/installed" % f.get_dir_path()
-                        os.symlink(relpath, "%s/%s" %
-                            (tmpdir, f.get_link_path()))
+                        fi = file("%s/%s" % (tmpdir, f.get_link_path()), "w")
+                        fi.close()
 
                 # Someone may have already created this directory.  Junk the
                 # directory we just populated if that's the case.
@@ -1025,7 +1022,8 @@ class Image(object):
 
                 cache_file = os.path.join(self.imgdir, "catalog/catalog.pkl")
                 try:
-                        version, self._catalog = cPickle.load(file(cache_file))
+                        version, self._catalog = \
+                            cPickle.load(file(cache_file, "rb"))
                 except (cPickle.PickleError, EnvironmentError):
                         raise RuntimeError
 
@@ -1141,7 +1139,8 @@ class Image(object):
                 if os.path.isdir(installed_state_dir):
                         for pl in sorted(os.listdir(installed_state_dir)):
                                 fmristr = urllib.unquote(pl)
-                                path = "%s/%s" % (installed_state_dir, pl)
+                                tmpf = pkg.fmri.PkgFmri(fmristr)
+                                path = self._install_file(tmpf)
                                 auth = self.installed_file_authority(path)
                                 f = pkg.fmri.PkgFmri(fmristr, authority = auth)
 
