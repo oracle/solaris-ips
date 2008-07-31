@@ -115,10 +115,13 @@ printf "\n$m_image" $zoneroot
 pkg image-create -z -F -a "$authority" $zoneroot || fail_fatal $f_img
 printf "$m_done\n"
 
+entire_fmri=$(pkg list -Hv entire | nawk '{print $1}')
+
 PKG_IMAGE="$zoneroot"
 export PKG_IMAGE
 
 printf "$m_core\n"
+pkg install -q $entire_fmri || fail_incomplete "$f_pkg"
 pkg install -q SUNWcsd || fail_incomplete "$f_pkg"
 
 pkglist=""
