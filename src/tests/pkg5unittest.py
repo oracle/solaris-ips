@@ -53,7 +53,8 @@ class Pkg5TestCase(unittest.TestCase):
                 # code in unittest.TestCase.run is that
                 # except SuccessfulException: has been added and counted as
                 # a successful test.
-                if result is None: result = self.defaultTestResult()
+                if result is None:
+                        result = self.defaultTestResult()
                 result.startTest(self)
                 testMethod = getattr(self, self._TestCase__testMethodName)
                 try:
@@ -86,7 +87,8 @@ class Pkg5TestCase(unittest.TestCase):
                         except:
                                 result.addError(self, self._TestCase__exc_info())
                                 ok = False
-                        if ok: result.addSuccess(self)
+                        if ok:
+                                result.addSuccess(self)
                 finally:
                         result.stopTest(self)
 

@@ -514,7 +514,8 @@ class ManyDepotTestCase(CliTestCase):
                 CliTestCase.tearDown(self)
 
         def run(self, result=None):
-                if result is None: result = self.defaultTestResult()
+                if result is None:
+                        result = self.defaultTestResult()
                 CliTestCase.run(self, result)
                 # Try to tearDown in case depots are running. Ignore the
                 # errors from tearDown because its assumptions may not
