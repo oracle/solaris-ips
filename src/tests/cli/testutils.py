@@ -450,6 +450,7 @@ class ManyDepotTestCase(CliTestCase):
 
                 CliTestCase.setUp(self)
 
+                self.tearDown_run = False
                 self.debug("setup: %s" % self.id())
                 self.debug("starting %d depot(s)" % ndepots)
                 self.dcs = {}
@@ -497,6 +498,7 @@ class ManyDepotTestCase(CliTestCase):
                         dc.start()
 
         def tearDown(self):
+                self.tearDown_run = True
                 self.debug("teardown: %s" % self.id())
 
                 for i in sorted(self.dcs.keys()):
@@ -511,7 +513,21 @@ class ManyDepotTestCase(CliTestCase):
                 self.dcs = None
                 CliTestCase.tearDown(self)
 
+        def run(self, result=None):
+                if result is None: result = self.defaultTestResult()
+                CliTestCase.run(self, result)
+                # Try to tearDown in case depots are running. Ignore the
+                # errors from tearDown because its assumptions may not
+                # be met.
+                if not self.tearDown_run:
+                        try:
+                                self.tearDown()
+                        except KeyboardInterrupt:
+                                raise
+                        else:
+                                pass
 
+                        
 class SingleDepotTestCase(ManyDepotTestCase):
 
         def setUp(self):

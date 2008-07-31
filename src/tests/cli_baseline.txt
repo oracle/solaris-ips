@@ -1,6 +1,7 @@
 cli.t_pkg_install_corrupt_image.py TestImageCreateCorruptImage.test_var_pkg_missing_index|pass
 cli.t_actions.py TestPkgActions.test_grouptest|pass
 cli.t_pkg_install_corrupt_image.py TestImageCreateCorruptImage.test_var_pkg_ospkg_missing_cfg_cache_alongside|pass
+cli.t_pkg_install_basics.py TestPkgInstallBasics.test_recursive_uninstall|pass
 cli.t_image_create.py TestImageCreateNoDepot.test_763a|pass
 cli.t_twodepot.py TestTwoDepots.test_upgrade_non_preferred_to_preferred_incorporated|pass
 cli.t_image_create.py TestImageCreateNoDepot.test_763c|pass
@@ -38,13 +39,13 @@ cli.t_upgrade.py TestUpgrade.test_upgrade1|pass
 cli.t_info_contents.py TestContentsAndInfo.test_contents_1|pass
 cli.t_pkg_install_corrupt_image.py TestImageCreateCorruptImage.test_var_pkg_missing_catalog|pass
 cli.t_commandline.py TestCommandLine.test_info_local_remote|pass
-cli.t_pkg_install_corrupt_image.py TestImageCreateCorruptImage.test_ospkg_missing_pkg|pass
+cli.t_pkg_install_corrupt_image.py TestImageCreateCorruptImage.test_ospkg_missing_index|pass
 cli.t_recv.py TestPkgRecv.test_recv_send|pass
-cli.t_search.py TestPkgSearch.test_local|pass
+cli.t_pkg_list.py TestPkgList.test_list_4|pass
 cli.t_pkg_list.py TestPkgList.test_list_2|pass
 cli.t_commandline.py TestCommandLine.test_authority_validation|pass
-cli.t_pkg_install_basics.py TestPkgInstallBasics.test_nonrecursive_dependent_uninstall|pass
-cli.t_pkg_install_basics.py TestPkgInstallBasics.test_recursive_uninstall|pass
+cli.t_setUp.py TestSetUp.test_2|pass
+cli.t_setUp.py TestSetUp.test_1|pass
 cli.t_pkg_list.py TestPkgList.test_empty_image|pass
 cli.t_commandline.py TestCommandLine.test_pkg_bogus_opts|pass
 cli.t_search.py TestPkgSearch.test_remote|pass
@@ -59,9 +60,9 @@ cli.t_commandline.py TestCommandLine.test_pkgsend_bogus_opts|pass
 cli.t_actions.py TestPkgActions.test_usertest|pass
 cli.t_search.py TestPkgSearch.test_bug_983|pass
 cli.t_twodepot.py TestTwoDepots.test_upgrade_non_preferred_to_preferred|pass
-cli.t_pkg_install_corrupt_image.py TestImageCreateCorruptImage.test_ospkg_missing_index|pass
+cli.t_pkg_install_corrupt_image.py TestImageCreateCorruptImage.test_ospkg_missing_pkg|pass
 cli.t_pkg_install_corrupt_image.py TestImageCreateCorruptImage.test_ospkg_missing_cfg_cache|pass
-cli.t_rename.py TestRename.test_rename2|pass
+cli.t_pkg_install_corrupt_image.py TestImageCreateCorruptImage.test_ospkg_missing_catalog|pass
 cli.t_pkg_install_basics.py TestPkgInstallBasics.test_bug_1338|pass
 cli.t_commandline.py TestCommandLine.test_pkg_missing_args|pass
 cli.t_search.py TestPkgSearch.test_low_mem|pass
@@ -70,6 +71,7 @@ cli.t_pkg_install_corrupt_image.py TestImageCreateCorruptImage.test_empty_ospkg|
 cli.t_pkg_install_corrupt_image.py TestImageCreateCorruptImage.test_ospkg_missing_file|pass
 cli.t_depotcontroller.py TestDepotController.testStartStop|pass
 cli.t_twodepot.py TestTwoDepots.test_upgrade_preferred_to_non_preferred_incorporated|pass
+cli.t_pkg_install_basics.py TestPkgInstallBasics.test_nonrecursive_dependent_uninstall|pass
 cli.t_pkg_install_basics.py TestPkgInstallBasics.test_basics_3|pass
 cli.t_pkg_install_basics.py TestPkgInstallBasics.test_basics_2|pass
 cli.t_pkg_install_basics.py TestPkgInstallBasics.test_basics_1|pass
@@ -78,7 +80,7 @@ cli.t_pkg_install_basics.py TestPkgInstallBasics.test_basics_4|pass
 cli.t_circular_dependencies.py TestCircularDependencies.test_anchored_circular_dependencies|pass
 cli.t_pkg_list.py TestPkgList.test_list_6|pass
 cli.t_pkg_list.py TestPkgList.test_list_7|pass
-cli.t_pkg_list.py TestPkgList.test_list_4|pass
+cli.t_search.py TestPkgSearch.test_local|pass
 cli.t_pkg_list.py TestPkgList.test_list_5|pass
 cli.t_depot.py TestDepot.test_depot_ping|pass
 cli.t_pkg_list.py TestPkgList.test_list_3|pass
@@ -87,5 +89,5 @@ cli.t_pkgsend.py TestPkgSend.test_pkgsend_abandon|pass
 cli.t_pkgsend.py TestPkgSend.test_bug_89|pass
 cli.t_rename.py TestRename.test_rename4|pass
 cli.t_rename.py TestRename.test_rename1|pass
-cli.t_pkg_install_corrupt_image.py TestImageCreateCorruptImage.test_ospkg_missing_catalog|pass
+cli.t_rename.py TestRename.test_rename2|pass
 cli.t_rename.py TestRename.test_rename3|pass

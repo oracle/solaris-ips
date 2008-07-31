@@ -62,6 +62,7 @@ def maketests():
         import cli.t_recv
 	import cli.t_rename
 	import cli.t_twodepot
+        import cli.t_setUp
 
         tests = [
             cli.t_actions.TestPkgActions,
@@ -80,7 +81,8 @@ def maketests():
             cli.t_recv.TestPkgRecv,
             cli.t_rename.TestRename,
             cli.t_twodepot.TestTwoDepots,
-            cli.t_search.TestPkgSearch ]
+            cli.t_search.TestPkgSearch,
+            cli.t_setUp.TestSetUp ]
 
         for t in tests:
                 all_suite.addTest(unittest.makeSuite(t, 'test'))

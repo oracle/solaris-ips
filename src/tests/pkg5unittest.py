@@ -32,6 +32,13 @@ OUTPUT_DOTS=0           # Dots ...
 OUTPUT_VERBOSE=1        # Verbose
 OUTPUT_PARSEABLE=2      # Machine readable
 
+class SuccessfulException(Exception):
+        """An exception for situations where raising an exception is the
+        correct behavior for a test in the test suite. This is useful for
+        testing the testsuite behavior itself, but should not be used in
+        testing other code."""
+        pass
+
 class Pkg5TestCase(unittest.TestCase):
         def __init__(self, methodName='runTest'):
                 super(Pkg5TestCase, self).__init__(methodName)
@@ -40,6 +47,48 @@ class Pkg5TestCase(unittest.TestCase):
         def __str__(self):
                 return "%s.py %s.%s" % (self.__class__.__module__,
                     self.__class__.__name__, self.__testMethodName)
+
+        def run(self, result=None):
+                # The only difference between this code and the original
+                # code in unittest.TestCase.run is that
+                # except SuccessfulException: has been added and counted as
+                # a successful test.
+                if result is None: result = self.defaultTestResult()
+                result.startTest(self)
+                testMethod = getattr(self, self._TestCase__testMethodName)
+                try:
+                        try:
+                                self.setUp()
+                        except KeyboardInterrupt:
+                                raise
+                        except SuccessfulException:
+                                result.addSuccess(self)
+                                return
+                        except:
+                                result.addError(self, self._TestCase__exc_info())
+                                return
+
+                        ok = False
+                        try:
+                                testMethod()
+                                ok = True
+                        except self.failureException:
+                                result.addFailure(self, self._TestCase__exc_info())
+                        except KeyboardInterrupt:
+                                raise
+                        except:
+                                result.addError(self, self._TestCase__exc_info())
+
+                        try:
+                                self.tearDown()
+                        except KeyboardInterrupt:
+                                raise
+                        except:
+                                result.addError(self, self._TestCase__exc_info())
+                                ok = False
+                        if ok: result.addSuccess(self)
+                finally:
+                        result.stopTest(self)
 
 class _Pkg5TestResult(unittest._TextTestResult):
         baseline = None
