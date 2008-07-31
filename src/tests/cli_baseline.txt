@@ -1,3 +1,4 @@
+cli.t_actions.py TestPkgActions.test_minugid|pass
 cli.t_pkg_install_corrupt_image.py TestImageCreateCorruptImage.test_var_pkg_missing_index|pass
 cli.t_actions.py TestPkgActions.test_grouptest|pass
 cli.t_pkg_install_corrupt_image.py TestImageCreateCorruptImage.test_var_pkg_ospkg_missing_cfg_cache_alongside|pass

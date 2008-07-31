@@ -123,6 +123,12 @@ adm:NP:6445::::::
                     add depend fmri=pkg:/grouptest@1.0 type=require
                     add depend fmri=pkg:/basics@1.0 type=require
                     close """
+
+                self.ugidtest = """
+                    open ugidtest@1.0,5.11-0
+                    add user username=dummy group=root
+                    add group groupname=dummy
+                    close """
         
                 for f in self.misc_files:
                         filename = os.path.join(self.testdata_dir, f)
@@ -187,7 +193,39 @@ adm:NP:6445::::::
                 self.pkg("uninstall usertest")
                 self.pkg("verify")
 
+        def test_minugid(self):
+                """Ensure that an unspecified uid/gid results in the first
+                unused."""
 
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.ugidtest)
+                self.image_create(durl)
+
+                os.mkdir(os.path.join(self.get_img_path(), "etc"))
+                os.mkdir(os.path.join(self.get_img_path(), "etc/ftpd"))
+                for f in self.misc_files:
+                        dir = "etc"
+                        if f == "ftpusers":
+                                dir = "etc/ftpd"
+                        filename = os.path.join(self.get_img_path(), dir, f)
+                        file_handle = open(filename, 'wb')
+                        exec("%s_path = \"%s\"" % (f, filename))
+                        try:
+				file_handle.write(eval("self.%s_data" % f))
+                        finally:
+                                file_handle.close()
+
+                self.pkg("install ugidtest")
+                passwd_file = file(passwd_path)
+                for line in passwd_file:
+                        if line.startswith("dummy"):
+                                self.assert_(line.startswith("dummy:x:5:"))
+                passwd_file.close()
+                group_file = file(group_path)
+                for line in group_file:
+                        if line.startswith("dummy"):
+                                self.assert_(line.startswith("dummy::5:"))
+                group_file.close()
 
 if __name__ == "__main__":
         unittest.main()

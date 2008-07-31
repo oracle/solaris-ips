@@ -209,7 +209,7 @@ class PasswordFile(CfgFile):
                     ":",
                     {"username"   : (1, None),
                      "password"   : (2, "x"),
-                     "uid"        : (3, self.getnextuid),
+                     "uid"        : (3, None),
                      "gid"        : (4, None), 
                      "gcos-field" : (5, "& User"), 
                      "home-dir"   : (6, "/"),
@@ -236,6 +236,7 @@ class PasswordFile(CfgFile):
         if lock:
             self.lockfile()
         self.readfile()
+        self.password_file.default_values["uid"] = self.getnextuid()
 
     def __str__(self):
         return "PasswordFile: [%s %s]" % (self.password_file, self.shadow_file)
@@ -271,7 +272,7 @@ class PasswordFile(CfgFile):
         for t in self.password_file.index.itervalues():
             uids.append(t[1]["uid"])
         for i in range(100):
-            if i not in uids:
+            if str(i) not in uids:
                 return i
         raise RuntimeError, "No free system uids"
 
@@ -314,12 +315,13 @@ class GroupFile(CfgFile):
                          ":",
                          {"groupname"  : (1, None),
                           "password"   : (2, ""),
-                          "gid"        : (3, self.getnextgid),
+                          "gid"        : (3, None),
                           "user-list"  : (4, "")
                           },
                          "groupname", comment_match="[+-]")
     
         self.readfile()
+        self.default_values["gid"] = self.getnextgid()
 
     def getnextgid(self):
         """returns next free system (<=99) gid""" 
@@ -327,7 +329,7 @@ class GroupFile(CfgFile):
         for t in self.index.itervalues():
             gids.append(t[1]["gid"])
         for i in range(100):
-            if i not in gids:
+            if str(i) not in gids:
                 return i
         raise RuntimeError, "No free system gids"
 
