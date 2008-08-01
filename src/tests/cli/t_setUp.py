@@ -42,14 +42,14 @@ class TestSetUp(testutils.SingleDepotTestCase):
                 testutils.SingleDepotTestCase.setUp(self)
                 raise pkg5unittest.SuccessfulException("Died in setup")
 
-        def first_depot_start(self):
+        def test_first_depot_start(self):
                 """Attempt to start a depot, which dies because of an exception
                 raised during setUP.
                 """
 
                 durl = self.dc.get_depot_url()
 
-        def second_depot_start(self):
+        def test_second_depot_start(self):
                 """Test whether the first depot was shut down.  If this test
                 raises a exception because a depot was already running on that
                 port, then the test has failed.  If it raises the
