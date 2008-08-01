@@ -38,7 +38,7 @@ import pkg.fmri
 import pkg.pkgtarfile as ptf
 import pkg.catalog as catalog
 import pkg.actions as actions
-from pkg.misc import versioned_urlopen, gunzip_from_stream
+from pkg.misc import versioned_urlopen, gunzip_from_stream, msg, PipeError
 
 def usage(usage_error = None):
         """ Emit a usage message and optionally prefix it with a more
@@ -303,8 +303,12 @@ def main_func():
                         mfstpath = fetch_manifest(server, fmri, basedir)
                         content_hashes = hashes_from_mfst(mfstpath)
 
-                        fetch_files_byhash(server, content_hashes,
-                            os.path.dirname(mfstpath), keep_compressed)
+                        if len(content_hashes) > 0:
+                                fetch_files_byhash(server, content_hashes,
+                                        os.path.dirname(mfstpath),
+                                        keep_compressed)
+                        else:
+                                msg(_("No files to retrieve."))
 
         return 0
 
@@ -313,8 +317,9 @@ if __name__ == "__main__":
                 ret = main_func()
         except SystemExit, e:
                 raise e
-        except KeyboardInterrupt:
-                print "Interrupted"
+        except (PipeError, KeyboardInterrupt):
+                # We don't want to display any messages here to prevent
+                # possible further broken pipe (EPIPE) errors.
                 sys.exit(1)
         except:
                 traceback.print_exc()
