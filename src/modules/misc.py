@@ -35,11 +35,22 @@ import urllib2
 import urlparse
 import sys
 import zlib
-
+import time
+import calendar
 import pkg.urlhelpers as urlhelpers
 import pkg.portable as portable
 from pkg.client.imagetypes import img_type_names, IMG_NONE
 from pkg import VERSION
+
+def time_to_timestamp(t):
+        """ convert seconds since epoch to %Y%m%dT%H%M%SZ format"""
+        # XXX optimize?
+        return time.strftime("%Y%m%dT%H%M%SZ", time.gmtime(t))
+
+def timestamp_to_time(ts):
+        """ convert %Y%m%dT%H%M%SZ format to seconds since epoch"""
+        # XXX optimize?
+        return calendar.timegm(time.strptime(ts, "%Y%m%dT%H%M%SZ"))
 
 def hash_file_name(f):
         """Return the two-level path fragment for the given filename, which is

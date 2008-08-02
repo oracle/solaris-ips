@@ -77,6 +77,13 @@ solaris.py [-dn] -b defaultbranch [-B perpkgbranches] [-D elided-file]
      		     for files included during pkg processing
 		     May be used multiple times.
 
+  -T pattern	     Any file basenames matching this pattern will inherit
+                     a timestamp attribute from their Svr4 package, and thus
+		     will be installed w/ the same timestamp as when they
+		     were packaged.  The pattern uses shell-type matching:
 
 
-
+		     	  *      matches everything
+		     	  ?      matches any single character
+		     	  [seq]  matches any character in seq
+		     	  [!seq] matches any character not in seq

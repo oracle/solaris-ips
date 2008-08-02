@@ -23,12 +23,12 @@
 # Use is subject to license terms.
 
 
+import fnmatch
 import getopt
 import os
+import re
 import shlex
 import sys
-import fnmatch
-import re
 
 from datetime import datetime
 from itertools import groupby
@@ -503,6 +503,14 @@ def publish_pkg(pkg):
                                 f.attrs["owner"] = pathdict[path].owner
                                 f.attrs["group"] = pathdict[path].group
                                 f.attrs["mode"] = pathdict[path].mode
+
+                                # is this a file for which we need a timestamp?
+                                basename = os.path.basename(path)
+                                for file_pattern in timestamp_files:
+                                        if fnmatch.fnmatch(basename, file_pattern):
+                                                break
+                                else:
+                                        del f.attrs["timestamp"]
                                 if pathdict[path].klass in preserve_dict.keys():
                                         f.attrs["preserve"] = \
                                             preserve_dict[pathdict[path].klass]
@@ -769,6 +777,7 @@ def_repo = "http://localhost:10000"
 wos_path = []
 include_path = []
 branch_dict = {}
+timestamp_files = []
 
 #
 # files (by path) we always delete for bulk imports
@@ -787,7 +796,7 @@ description_detritus = [", (usr)", ", (root)", " (usr)", " (root)",
 " (/usr)", " - / filesystem", ",root(/)"]
 
 try:
-        opts, args = getopt.getopt(sys.argv[1:], "B:D:I:b:dns:v:w:j:")
+        opts, args = getopt.getopt(sys.argv[1:], "B:D:I:T:b:dns:v:w:j:")
 except getopt.GetoptError, e:
         print "unknown option", e.opt
         sys.exit(1)
@@ -819,6 +828,8 @@ for opt, arg in opts:
                                 if len(bfargs) == 2:
                                         branch_dict[bfargs[0]] = bfargs[1]
                 branch_file.close()
+        elif opt == "-T":
+                timestamp_files.append(arg)
 
 if not def_branch:
         print "need a branch id (build number)"

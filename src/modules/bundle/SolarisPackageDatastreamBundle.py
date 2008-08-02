@@ -27,6 +27,7 @@
 
 import os
 import stat
+import pkg.misc as misc
 
 from pkg.sysvpkg import SolarisPackage
 from pkg.actions import *
@@ -106,24 +107,25 @@ class SolarisPackageDatastreamBundle(object):
                         mapline = pkgmap[path]
                 except KeyError:
                         # XXX Return an unknown instead of a missing, for now.
-                        return unknown.UnknownAction(path = path)
+                        return unknown.UnknownAction(path=path)
 
                 if mapline.type in "fev":
                         return file.FileAction(ci.extractfile(),
-                            mode = mapline.mode, owner = mapline.owner,
-                            group = mapline.group, path = mapline.pathname)
+                            mode=mapline.mode, owner=mapline.owner,
+                            group=mapline.group, path=mapline.pathname,
+                            timestamp=misc.time_to_timestamp(int(mapline.modtime)))
                 elif mapline.type in "dx":
                         return directory.DirectoryAction(mode = mapline.mode,
-                            owner = mapline.owner, group = mapline.group,
-                            path = mapline.pathname)
+                            owner=mapline.owner, group=mapline.group,
+                            path=mapline.pathname)
                 elif mapline.type == "s":
-                        return link.LinkAction(path = mapline.pathname,
-                            target = mapline.target)
+                        return link.LinkAction(path=mapline.pathname,
+                            target=mapline.target)
                 elif mapline.type == "l":
-                        return hardlink.HardLinkAction(path = mapline.pathname,
-                            target = mapline.target)
+                        return hardlink.HardLinkAction(path=mapline.pathname,
+                            target=mapline.target)
                 else:
-                        return unknown.UnknownAction(path = mapline.pathname)
+                        return unknown.UnknownAction(path=mapline.pathname)
 
 def test(filename):
         if not os.path.isfile(filename):

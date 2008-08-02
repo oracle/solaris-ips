@@ -26,6 +26,7 @@
 #
 
 import os
+import pkg.misc as misc
 from pkg.sysvpkg import SolarisPackage
 from pkg.cpiofile import CpioFile
 from pkg.actions import *
@@ -95,7 +96,9 @@ class SolarisPackageDirBundle(object):
                 if mapline.type in "fev":
                         return file.FileAction(data, mode=mapline.mode,
                             owner=mapline.owner, group=mapline.group,
-                            path=mapline.pathname)
+                            path=mapline.pathname, 
+                            timestamp=misc.time_to_timestamp(int(mapline.modtime)))
+
                 elif mapline.type in "dx":
                         return directory.DirectoryAction(mode=mapline.mode,
                             owner=mapline.owner, group=mapline.group,

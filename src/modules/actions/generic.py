@@ -346,8 +346,8 @@ class Action(object):
                 return opener
 
         def verify(self, img, **args):
-                """returns True if correctly installed in the given image"""
-                return ["verify method for action type %s unimplemented" % self.name]
+                """returns empty list if correctly installed in the given image"""
+                return []
 
         def needsdata(self, orig):
                 """Returns True if the action transition requires a

@@ -45,6 +45,7 @@ import os
 import sys
 import threading
 import traceback
+import fnmatch
 
 import pkg.bundle
 import pkg.config as config
@@ -61,7 +62,7 @@ Usage:
 Packager subcommands:
         pkgsend open [-en] pkg_fmri
         pkgsend add action arguments 
-        pkgsend import bundlefile ...
+        pkgsend import [-T file_pattern] bundlefile ...
         pkgsend include [-d basedir] manifest ...
         pkgsend close [-A]
 
@@ -250,11 +251,26 @@ def trans_import(config, args):
                     _("No transaction ID specified in $PKG_TRANS_ID")
                 sys.exit(1)
                 
-        for filename in args:
+        opts, pargs = getopt.getopt(args, "T:")
+
+        timestamp_files = []
+
+        for opt, arg in opts:
+                if opt == "-T":
+                        timestamp_files.append(arg)
+        
+        for filename in pargs:
                 bundle = pkg.bundle.make_bundle(filename)
                 t = trans.Transaction()
 
                 for action in bundle:
+                        if action.name == "file":
+                                basename = os.path.basename(action.attrs["path"])
+                                for pattern in timestamp_files:
+                                        if fnmatch.fnmatch(basename, pattern):
+                                                break
+                                else:
+                                        del action.attrs["timestamp"]
                         try:
                                 status, msg, body = t.add(config, trans_id, 
                                     action)

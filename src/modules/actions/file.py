@@ -68,14 +68,9 @@ class FileAction(generic.Action):
                 if not os.path.exists(os.path.dirname(final_path)):
                         self.makedirs(os.path.dirname(final_path), mode=0755)
 
-                # If we're upgrading, extract the attributes from the old file.
-                if orig:
-                        omode = int(orig.attrs["mode"], 8)
-                        oowner = pkgplan.image.get_user_by_name(
-                            orig.attrs["owner"])
-                        ogroup = pkgplan.image.get_group_by_name(
-                            orig.attrs["group"])
-                        ohash = orig.hash
+
+                # XXX If we're upgrading, do we need to preserve file perms from
+		# exiting file?
 
                 # If the action has been marked with a preserve attribute, and
                 # the file exists and has a contents hash different from what
@@ -92,7 +87,7 @@ class FileAction(generic.Action):
                         # XXX We should save the originally installed file.  It
                         # can be used as an ancestor for a three-way merge, for
                         # example.  Where should it be stored?
-                        if not orig or chash != ohash:
+                        if not orig or chash != orig.hash:
                                 pres_type = self.attrs["preserve"]
                                 if pres_type == "renameold":
                                         old_path = final_path + ".old"
@@ -133,16 +128,9 @@ class FileAction(generic.Action):
                 # This is safe even if temp == final_path.
                 portable.rename(temp, final_path)
 
-		# XXX .pyc files are causing problems because they're not enough
-		# newer than the .py files.... if we just installed a .pyc
-		# file, move its modification time into the future to prevent
-		# python commands running as root from updating these files
-		# because they look out of date... the right fix is to fix
-		# Solaris python to look at the entire timestamp.... pending.
-		# in the mean time, this "accomodation" has to be made to
-		# prevent pkg verify errors.
-		if final_path.endswith(".pyc"):
-			t = os.stat(final_path)[ST_MTIME] + 5 # magic
+                # Handle timestamp if specified
+                if "timestamp" in self.attrs:
+                        t = misc.timestamp_to_time(self.attrs["timestamp"])
 			os.utime(final_path, (t, t))
 
         def verify(self, img, **args):
@@ -185,6 +173,12 @@ class FileAction(generic.Action):
                         errors.append("Mode: 0%.3o should be 0%.3o" % \
                             (S_IMODE(stat[ST_MODE]), mode))
 
+                if "timestamp" in self.attrs and stat[ST_MTIME] != \
+                    misc.timestamp_to_time(self.attrs["timestamp"]):
+                        errors.append("Timestamp: %s should be %s" %
+                            (misc.time_to_timestamp(stat[ST_MTIME]), 
+                            self.attrs["timestamp"]))
+                             
                 # avoid checking pkg.size if elfhash present;
                 # different size files may have the same elfhash
                 if "preserve" not in self.attrs and \

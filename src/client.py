@@ -266,8 +266,9 @@ def installed_fmris_from_args(img, args):
 def verify_image(img, args):
         opts, pargs = getopt.getopt(args, "vfqH")
 
-        quiet = forever = verbose = False
-        display_headers = True
+        quiet = verbose = False
+        # for now, always check contents of files
+        forever = display_headers = True
 
         for opt, arg in opts:
                 if opt == "-H":

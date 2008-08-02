@@ -21,11 +21,10 @@
 ^src/pkg$
 ^src/pkgrecv$
 ^src/pkg.depotd$
-^src/pkgdefs/SUNWipkg/prototype$
-^src/pkgdefs/SUNWpython-cherrypy/prototype$
-^src/*.tar.gz$
+^src/pkgdefs/.*/prototype$
 ^src/CherryPy-.*$
 ^src/pkgsend$
+^src/*.tar.gz$
 ^src/util/distro-import/SUNWfixes/
 ^src/util/distro-import/cluster.import$
 ^src/util/distro-import/ksh-wrapper$
@@ -34,3 +33,4 @@
 ^src/util/distro-import/slim_cluster$
 ^src/util/distro-import/.*/entire.incorporation$
 ^webrev
+

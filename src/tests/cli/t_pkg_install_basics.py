@@ -28,7 +28,9 @@ if __name__ == "__main__":
 	testutils.setup_environment("../../../proto")
 
 import os
+import time
 import unittest
+from stat import *
 
 class TestPkgInstallBasics(testutils.SingleDepotTestCase):
 
@@ -39,8 +41,9 @@ class TestPkgInstallBasics(testutils.SingleDepotTestCase):
         foo11 = """
             open foo@1.1,5.11-0
             add dir mode=0755 owner=root group=bin path=/lib
-            add file /tmp/libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.so.1
+            add file /tmp/libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.so.1 timestamp="20080731T024051Z"
             close """
+        foo11_timestamp = 1217472051
 
         foo12 = """
             open foo@1.2,5.11-0
@@ -65,7 +68,7 @@ class TestPkgInstallBasics(testutils.SingleDepotTestCase):
             open bar@1.2,5.11-0
             add depend type=require fmri=pkg:/foo@1.0
             add dir mode=0755 owner=root group=bin path=/bin
-            add file /tmp/cat mode=0555 owner=root group=bin path=/bin/cat
+            add file /tmp/cat mode=0555 owner=root group=bin path=/bin/cat 
             close """
 
         baz10 = """
@@ -136,6 +139,18 @@ class TestPkgInstallBasics(testutils.SingleDepotTestCase):
                 self.pkg("search -r /lib/libc.so.1")
                 self.pkg("search blah", exit = 1)
                 self.pkg("search -r blah", exit = 1)
+
+                # check to make sure timestamp was set to correct value
+
+                libc_path = os.path.join(self.get_img_path(), "lib/libc.so.1")
+                stat = os.stat(libc_path)
+
+                assert (stat[ST_MTIME] == self.foo11_timestamp)
+
+                # check that verify finds changes
+                now = time.time()
+                os.utime(libc_path, (now, now))
+                self.pkg("verify", exit=1)
 
                 self.pkg("uninstall foo")
                 self.pkg("verify")

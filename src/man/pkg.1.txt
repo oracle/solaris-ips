@@ -10,7 +10,7 @@ SYNOPSIS
      /usr/bin/pkg install [-nvq] pkg_fmri ...
      /usr/bin/pkg uninstall [-nrvq] pkg_fmri ...
 
-     /usr/bin/pkg verify [-fHvq] [pkg_fmri_pattern ...]
+     /usr/bin/pkg verify [-Hvq] [pkg_fmri_pattern ...]
      /usr/bin/pkg info [-lr] [--license] [pkg_fmri_pattern ...]
      /usr/bin/pkg contents [-Hmr] [-o attribute ...] [-s sort_key]
          [-t action_type ... ] [pkg_fmri_pattern ...]
@@ -198,13 +198,11 @@ SUBCOMMANDS
           with newer versions available.  With -v, report full package
           FMRIs.
 
-     verify [-fHqv] [pkg_fmri_pattern ...]
+     verify [-Hqv] [pkg_fmri_pattern ...]
           Validate the installation of packages in the current image.
           With -v, do more verbose reporting.  With -q, print nothing, but
-          return failure if there are any verification problems.  With -f,
-          fully validate the contents of files against the hash values in
-          the package manifests, as well as checking for file and directory
-          presence.
+          return failure if there are any verification problems.  File hashes
+	  are always checked.
 
           The -H option causes the headers to be omitted.
 

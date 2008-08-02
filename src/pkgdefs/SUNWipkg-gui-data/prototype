@@ -1,5 +1,0 @@
-i pkginfo
-i copyright
-d none usr/share/package-manager/data 755 root bin
-f none usr/share/package-manager/data/opensolaris.org 444 root bin
-f none usr/share/package-manager/data/opensolaris.org.sections 444 root bin

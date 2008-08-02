@@ -28,7 +28,7 @@
 import os
 import stat
 import tarfile
-
+import pkg.misc as misc
 from pkg.actions import *
 
 class TarBundle(object):
@@ -49,14 +49,15 @@ class TarBundle(object):
         def action(self, tarfile, tarinfo):
                 if tarinfo.isreg():
                         return file.FileAction(tarfile.extractfile(tarinfo),
-                            mode = oct(stat.S_IMODE(tarinfo.mode)),
-                            owner = tarinfo.uname, group = tarinfo.gname,
-                            path = tarinfo.name)
+                            mode=oct(stat.S_IMODE(tarinfo.mode)),
+                            owner=tarinfo.uname, group=tarinfo.gname,
+                            path=tarinfo.name,
+                            timestamp=misc.time_to_timestamp(tarinfo.mtime))
                 elif tarinfo.isdir():
                         return directory.DirectoryAction(
-                            mode = oct(stat.S_IMODE(tarinfo.mode)),
-                            owner = tarinfo.uname, group = tarinfo.gname,
-                            path = tarinfo.name)
+                            mode=oct(stat.S_IMODE(tarinfo.mode)),
+                            owner=tarinfo.uname, group=tarinfo.gname,
+                            path=tarinfo.name)
 
 def test(filename):
         try:

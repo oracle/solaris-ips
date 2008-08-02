@@ -9,7 +9,7 @@ SYNOPSIS
 
      /usr/bin/pkgsend open [-en] pkg_fmri
      /usr/bin/pkgsend add action arguments
-     /usr/bin/pkgsend import bundlefile ...
+     /usr/bin/pkgsend import [-T pattern] bundlefile ...
      /usr/bin/pkgsend include [-d basedir] manifest ...
      /usr/bin/pkgsend close [-A]
 
@@ -44,9 +44,17 @@ SUBCOMMANDS
           transaction.  Requires transaction context.  See ACTIONS
           below.
 
-     import bundlefile ...
+     import [-T pattern] bundlefile ...
 	  Add each given bundlefile (such as a SVr4 package) into the
-	  current transaction.
+	  current transaction.  If the basename of files in the bundle
+	  match the optional pattern(s), the timestamp of the file is
+	  added to the action for that file.  The pattern uses shell
+	  matching rules:
+
+	     	  *      matches everything
+	 	  ?      matches any single character
+	     	  [seq]  matches any character in seq
+	     	  [!seq] matches any character not in seq
 
      include [-d basedir] manifest ...
           Add resources associated with the multiple actions present in
