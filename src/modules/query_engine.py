@@ -27,7 +27,7 @@ import fnmatch
 import pkg.search_storage as ss
 import pkg.search_errors as search_errors
 
-FILE_OPEN_TIMEOUT_SECS = 5
+FILE_OPEN_TIMEOUT_SECS = 1
 
 class Query(object):
         """The class which handles all query parsing and representation. """

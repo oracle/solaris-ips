@@ -34,6 +34,9 @@ import copy
 
 import pkg.depotcontroller as dc
 
+import pkg.query_engine as query_engine
+import pkg.portable as portable
+
 class TestPkgSearch(testutils.SingleDepotTestCase):
 
         example_pkg10 = """
@@ -387,6 +390,59 @@ close
 
                 self._run_remote_tests()
                 self._search_op(True, "gmake", self.res_bug_983)
+
+        def test_missing_files(self):
+                """Test to check for stack trace when files missing.
+                Bug 2753"""
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.example_pkg10)
+
+                self.image_create(durl)
+                self.pkg("install example_pkg")
                 
+                index_dir = os.path.join(self.img_path, "var","pkg","index")
+
+                qe = query_engine.QueryEngine(index_dir)
+                
+                for d in qe._data_dict.values():
+                        orig_fn = d.get_file_name()
+                        orig_path = os.path.join(index_dir, orig_fn)
+                        dest_fn = orig_fn + "TMP"
+                        dest_path = os.path.join(index_dir, dest_fn)
+                        portable.rename(orig_path, dest_path)
+                        self.pkg("search  example_pkg", exit=1)
+                        portable.rename(dest_path, orig_path)
+                        self.pkg("search  example_pkg")
+                        
+        def test_mismatched_versions(self):
+                """Test to check for stack trace when files missing.
+                Bug 2753"""
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.example_pkg10)
+
+                self.image_create(durl)
+                self.pkg("install example_pkg")
+                
+                index_dir = os.path.join(self.img_path, "var","pkg","index")
+
+                qe = query_engine.QueryEngine(index_dir)
+                
+                for d in qe._data_dict.values():
+                        orig_fn = d.get_file_name()
+                        orig_path = os.path.join(index_dir, orig_fn)
+                        dest_fn = orig_fn + "TMP"
+                        dest_path = os.path.join(index_dir, dest_fn)
+                        shutil.copy(orig_path, dest_path)
+                        fh = open(orig_path, "r+")
+                        fh.seek(0)
+                        fh.seek(9)
+                        # Overwrite the existing version number.
+                        # By definition, the version 0 is never used.
+                        fh.write("0")
+                        fh.close()
+                        self.pkg("search  example_pkg", exit=1)
+                        portable.rename(dest_path, orig_path)
+                        self.pkg("search  example_pkg")
+                        
 if __name__ == "__main__":
         unittest.main()

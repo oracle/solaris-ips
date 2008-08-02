@@ -49,6 +49,11 @@ def consistent_open(data_list, directory, timeout = None):
         start_time = time.time()
 
         while cur_version == None and missing != True:
+                # The assignments to cur_version and missing cannot be
+                # placed here. They must be reset prior to breaking out of the
+                # for loop so that the while loop condition will be true. They
+                # cannot be placed after the for loop since that path is taken
+                # when all files are missing or opened successfully.
                 if timeout != None and ((time.time() - start_time) > timeout):
                         raise search_errors.InconsistentIndexException(
                             directory)
@@ -70,7 +75,7 @@ def consistent_open(data_list, directory, timeout = None):
                                                 dl.close_file_handle()
                                         missing = None
                                         cur_version = None
-                                        continue
+                                        break
                                 d.set_file_handle(fh, f)
                                 version_tmp = fh.next()
                                 version_num = \
@@ -81,14 +86,13 @@ def consistent_open(data_list, directory, timeout = None):
                                 if cur_version == None:
                                         cur_version = version_num
                                 elif not (cur_version == version_num):
-                                        cur_version = None
                                         # Got inconsistent versions, so close
                                         # all files and try again.
                                         for d in data_list:
                                                 d.close_file_handle()
                                         missing = None
                                         cur_version = None
-                                        continue
+                                        break
                         except IOError, e:
                                 if e.errno == errno.ENOENT:
                                         # If the index file is missing, ensure
@@ -99,7 +103,7 @@ def consistent_open(data_list, directory, timeout = None):
                                                         d.close_file_handle()
                                                 missing = None
                                                 cur_version = None
-                                                continue
+                                                break
                                         missing = True
                                 else:
                                         for d in data_list:
