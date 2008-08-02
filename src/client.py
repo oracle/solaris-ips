@@ -346,6 +346,85 @@ installed on the system.\n"""))
                 return 1
         return 0
 
+def ipkg_is_up_to_date(img):
+        """ Test whether SUNWipkg is updated to the latest version
+            known to be available for this image """
+        #
+        # This routine makes the distinction between the "target image"--
+        # which we're going to alter, and the "running image", which is to
+        # say whatever image appears to contain the version of the pkg
+        # command we're running.
+        #
+
+        #
+        # There are two relevant cases here:
+        #     1) Packaging code and image we're updating are the same
+        #        image.  (i.e. 'pkg image-update')
+        #
+        #     2) Packaging code's image and the image we're updating are
+        #        different (i.e. 'pkg image-update -R')
+        #
+        # In general, we care about getting the user to run the
+        # most recent packaging code available for their build.  So,
+        # if we're not in the liveroot case, we create a new image
+        # which represents "/" on the system.
+        #
+
+        # always quiet for this part of the code.
+        progresstracker = get_tracker(True)
+
+        if not img.is_liveroot():
+                newimg = image.Image()
+                cmdpath = os.path.join(os.getcwd(), sys.argv[0])
+                cmdpath = os.path.realpath(cmdpath)
+                cmddir = os.path.dirname(os.path.realpath(cmdpath))
+                try:
+                        #
+                        # Find the path to ourselves, and use that
+                        # as a way to locate the image we're in.  It's
+                        # not perfect-- we could be in a developer's
+                        # workspace, for example.
+                        #
+                        newimg.find_root(cmddir)
+                except ValueError:
+                        # We can't answer in this case, so we return True to
+                        # let installation proceed.
+                        msg(_("No image corresponding to '%s' was located. " \
+                            "Proceeding.") % cmdpath)
+                        return True
+                newimg.load_config()
+
+                # Refresh the catalog, so that we can discover if a new
+                # SUNWipkg is available.
+                try:
+                        newimg.retrieve_catalogs()
+                except RuntimeError, failures:
+                        display_catalog_failures(failures)
+                        error(_("SUNWipkg update check failed."))
+                        return False
+
+                # Load catalog.
+                newimg.load_catalogs(progresstracker)
+                img = newimg
+
+        msg(_("Checking that SUNWipkg (in '%s') is up to date... ") % \
+            img.get_root())
+
+        try:
+                img.make_install_plan(["SUNWipkg"], progresstracker,
+                    filters = [], noexecute = True)
+        except RuntimeError:
+                return True
+
+        if img.imageplan.nothingtodo():
+                return True
+
+        msg(_("WARNING: pkg(5) appears to be out of date, and should be " \
+            "updated before\nrunning image-update.\n"))
+        msg(_("Please update pkg(5) using 'pfexec pkg install SUNWipkg' " \
+            "and then retry\nthe image-update."))
+        return False
+
 
 def image_update(img, args):
         """Attempt to take all installed packages specified to latest
@@ -355,9 +434,9 @@ def image_update(img, args):
         # XXX Are filters appropriate for an image update?
         # XXX Leaf package refinements.
 
-        opts, pargs = getopt.getopt(args, "b:nvq")
+        opts, pargs = getopt.getopt(args, "b:fnvq")
 
-        quiet = noexecute = verbose = False
+        force = quiet = noexecute = verbose = False
         for opt, arg in opts:
                 if opt == "-n":
                         noexecute = True
@@ -367,9 +446,15 @@ def image_update(img, args):
                         filelist.FileList.maxbytes_default = int(arg)
                 elif opt == "-q":
                         quiet = True
+                elif opt == "-f":
+                        force = True
 
         if verbose and quiet:
                 usage(_("image-update: -v and -q may not be combined"))
+
+        if pargs:
+                usage(_("image-update: command does not take operands " \
+                    "('%s')") % " ".join(pargs))
 
         progresstracker = get_tracker(quiet)
         img.load_catalogs(progresstracker)
@@ -386,6 +471,20 @@ def image_update(img, args):
 
         # Reload catalog.  This picks up the update from retrieve_catalogs.
         img.load_catalogs(progresstracker)
+
+        #
+        # If we can find SUNWipkg and SUNWcs in the target image, then
+        # we assume this is a valid opensolaris image, and activate some
+        # special case behaviors.
+        #
+        opensolaris_image = True
+        fmris, notfound = installed_fmris_from_args(img, ["SUNWipkg", "SUNWcs"])
+        if notfound:
+                opensolaris_image = False
+
+        if opensolaris_image and not force:
+                if not ipkg_is_up_to_date(img):
+                        return 1
 
         pkg_list = [ ipkg.get_pkg_stem() for ipkg in img.gen_installed_pkgs() ]
 
@@ -450,6 +549,13 @@ def image_update(img, args):
         img.cleanup_downloads()
         if ret_code == 0:
                 img.cleanup_cached_content()
+                
+                if opensolaris_image:
+                        msg("\n" + "-" * 75)
+                        msg(_("NOTE: Please review release notes posted at:\n" \
+                            "   http://opensolaris.org/os/project/indiana/" \
+                            "resources/rn3/"))
+                        msg("-" * 75 + "\n")
 
         return ret_code
 
@@ -1066,6 +1172,10 @@ def list_contents(img, args):
         elif local and remote:
                 usage(_("contents: -l and -r may not be combined"))
 
+        if remote and not pargs:
+                usage(_("contents: must request remote contents for specific " \
+                   "packages"))
+
         if display_raw:
                 display_headers = False
                 attrs = [ "action.raw" ]
@@ -1178,7 +1288,7 @@ def list_contents(img, args):
                         emsg(_("""\
 pkg: no packages matching the following patterns you specified are
 installed on the system.  Try specifying -r to query remotely:"""))
-                elif info_remote:
+                elif remote:
                         emsg(_("""\
 pkg: no packages matching the following patterns you specified were
 found in the catalog.  Try relaxing the patterns, refreshing, and/or
@@ -1225,6 +1335,10 @@ def catalog_refresh(img, args):
                 if opt == "--full":
                         full_refresh = True
 
+        if pargs:
+                usage(_("refresh: command does not take operands ('%s')") %
+                      " ".join(pargs))
+        
         # Ensure Image directory structure is valid.
         if not os.path.isdir("%s/catalog" % img.imgdir):
                 img.mkdirs()
@@ -1496,8 +1610,9 @@ def rebuild_index(img, pargs):
         and build new ones from scratch."""
         quiet = False
 
-        if len(pargs) != 0:
-                usage(_("rebuild-index takes no arguments"))
+        if pargs:
+                usage(_("rebuild-index: command does not take operands " \
+                    "('%s')") % " ".join(pargs))
 
         try:
                 img.rebuild_search_index(get_tracker(quiet))
@@ -1542,6 +1657,9 @@ def main_func():
                             (subcommand, e.opt))
                 return ret
         elif subcommand == "version":
+                if pargs:
+                        usage(_("version: command does not take operands " \
+                            "('%s')") % " ".join(pargs))
                 msg(pkg.VERSION)
                 return 0
         elif subcommand == "help":

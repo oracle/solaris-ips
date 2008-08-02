@@ -51,6 +51,7 @@ class TestCommandLine(testutils.SingleDepotTestCase):
                 self.pkg("uninstall -@ foo", exit=2)
                 self.pkg("set-authority -@ test3", exit=2)
                 self.pkg("authority -@ test5", exit=2)
+                self.pkg("contents -m -r", exit=2)
 
         def test_pkg_vq_1153(self):
                 """ test that -v and -q are mutually exclusive """
@@ -82,6 +83,14 @@ class TestCommandLine(testutils.SingleDepotTestCase):
                 self.pkg("refresh -F", exit=2)
                 self.pkg("search", exit=2)
                 self.pkg("image-create", exit=2)
+
+        def test_pkg_bogus_args_2418(self):
+                """ specify arguments to commands which don't accept them"""
+                durl = self.dc.get_depot_url()
+                self.image_create(durl)
+
+                self.pkg("image-update foo", exit=2)
+                self.pkg("version foo", exit=2)
 
         def test_pkgsend_bogus_opts(self):
                 """ pkgsend bogus option checks """
@@ -143,43 +152,6 @@ class TestCommandLine(testutils.SingleDepotTestCase):
                 self.pkg("set-authority -O http://*^5$% test2", exit=1)
                 self.pkg("set-authority -O http://test1:abcde test2", exit=1)
                 self.pkg("set-authority -O ftp://test2 test2", exit=1)
-
-        def test_info_local_remote(self):
-                """pkg: check that info behaves for local and remote cases."""
-
-                pkg1 = """
-                    open jade@1.0,5.11-0
-                    add dir mode=0755 owner=root group=bin path=/bin
-                    close
-                """
-
-                pkg2 = """
-                    open turquoise@1.0,5.11-0
-                    add dir mode=0755 owner=root group=bin path=/bin
-                    close
-                """
-
-                durl = self.dc.get_depot_url()
-
-                self.pkgsend_bulk(durl, pkg1)
-                self.pkgsend_bulk(durl, pkg2)
-
-                self.image_create(durl)
-
-                # Install one package and verify
-                self.pkg("install jade")
-                self.pkg("verify -v")
-                
-                # Check local info
-                self.pkg("info jade | grep 'State: Installed'")
-                self.pkg("info turquoise 2>&1 | grep 'no packages matching'")
-                self.pkg("info emerald", exit = 1)
-                self.pkg("info emerald 2>&1 | grep 'no packages matching'")
-
-                # Check remote info
-                self.pkg("info -r jade | grep 'State: Installed'")
-                self.pkg("info -r turquoise| grep 'State: Not installed'")
-                self.pkg("info -r emerald 2>&1 | grep 'no packages matching'")
 
 if __name__ == "__main__":
         unittest.main()

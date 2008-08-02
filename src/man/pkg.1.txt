@@ -81,13 +81,13 @@ SUBCOMMANDS
           If the image is to be run within nonglobal zone context, then
           the -z (--zone) option can be used to set an appropriate filter.
 
-     image-update [-nvq]
+     image-update [-fnvq]
           Update all installed packages in the current image to the
-          latest available version.  With the -n option, execute the
-          requested operation but make no persistent changes to the
-          image.  With the -v option, issue verbose progress messages
-          during the requested operation.  With the -q option, be
-          completely silent.
+          latest available version.  With the -f option, skip safety
+          checks.  With the -n option, execute the requested operation
+          but make no persistent changes to the image.  With the -v
+          option, issue verbose progress messages during the requested
+          operation.  With the -q option, be completely silent.
 
      refresh [--full]
           Retrieve updates to the catalogs for each authority registered
