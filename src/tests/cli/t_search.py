@@ -233,7 +233,7 @@ close
                                     proposed_answer)
                                 print "Extra  : " + str(proposed_answer -
                                     correct_answer)
-                        assert correct_answer == proposed_answer
+                        self.assert_(correct_answer == proposed_answer)
 
         def _search_op(self, remote, token, test_value):
                 outfile = os.path.join(self.testdata_dir, "res")

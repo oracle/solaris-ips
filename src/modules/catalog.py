@@ -111,6 +111,8 @@ class Catalog(object):
                 self.pkg_root = pkg_root
                 self.read_only = read_only
 
+                assert not (read_only and rebuild)
+
                 # The catalog protects the catalog file from having multiple
                 # threads writing to it at the same time.
                 self.catalog_lock = threading.Lock()

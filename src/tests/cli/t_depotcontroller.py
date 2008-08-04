@@ -70,7 +70,30 @@ class TestDepotController(testutils.CliTestCase):
                         self.__dc.stop()
                         self.assert_(not self.__dc.is_alive())
 
+        def testBadArgs(self):
+                self.__dc.set_readonly()
+                self.__dc.set_rebuild()
+                self.__dc.set_norefresh_index()
 
+                self.assert_(self.__dc.start_expected_fail())
+
+                self.__dc.set_readonly()
+                self.__dc.set_norebuild()
+                self.__dc.set_refresh_index()
+
+                self.assert_(self.__dc.start_expected_fail())
+
+                self.__dc.set_readonly()
+                self.__dc.set_rebuild()
+                self.__dc.set_refresh_index()
+
+                self.assert_(self.__dc.start_expected_fail())
+
+                self.__dc.set_readwrite()
+                self.__dc.set_rebuild()
+                self.__dc.set_refresh_index()
+
+                self.assert_(self.__dc.start_expected_fail())
 
 if __name__ == "__main__":
         unittest.main()

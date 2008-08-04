@@ -94,6 +94,7 @@ Usage: /usr/lib/pkg.depotd [--readonly] [--rebuild] [-d repo_dir] [-p port]
 
         --readonly      Read-only operation; modifying operations disallowed
         --rebuild       Re-build the catalog from pkgs in depot
+                        Cannot be used with --readonly
 """
         sys.exit(2)
 
@@ -168,6 +169,15 @@ if __name__ == "__main__":
         except (ArithmeticError, ValueError):
                 print "pkg.depotd: illegal option value: %s specified " \
                     "for option: %s" % (arg, opt)
+                usage()
+        if rebuild and reindex:
+                print "--refresh-index cannot be used with --rebuild"
+                usage()
+        if rebuild and readonly:
+                print "--readonly cannot be used with --rebuild"
+                usage()
+        if reindex and readonly:
+                print "--readonly cannot be used with --refresh-index"
                 usage()
         # If the program is going to reindex, the port is irrelevant since
         # the program will not bind to a port.

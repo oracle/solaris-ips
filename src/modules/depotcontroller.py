@@ -52,6 +52,7 @@ class DepotController(object):
                 self.__dir = None
                 self.__readonly = False
                 self.__rebuild = False
+                self.__refresh_index = False
                 self.__logpath = "/tmp/depot.log"
                 self.__output = None
                 self.__depot_handle = None
@@ -95,9 +96,15 @@ class DepotController(object):
         def get_logpath(self):
                 return self.__logpath
 
+        def set_refresh_index(self):
+                self.__refresh_index = True
+
+        def set_norefresh_index(self):
+                self.__refresh_index = False
+        
         def get_state(self):
                 return self.__state
-
+        
         def get_depot_url(self):
                 return "http://localhost:%d" % self.__port
 
@@ -145,9 +152,11 @@ class DepotController(object):
                         args.append("--readonly")
                 if self.__rebuild:
                         args.append("--rebuild")
+                if self.__refresh_index:
+                        args.append("--refresh-index")
                 return args
-                
-        def start(self):
+
+        def __initial_start(self):
                 if self.__state != self.HALTED:
                         raise DepotStateException("Depot already starting or running")
 
@@ -167,7 +176,10 @@ class DepotController(object):
 		    stdout = self.__output, stderr = self.__output)
 		if self.__depot_handle == None:
 			raise DepotStateException("Could not start Depot")
-		
+                
+        def start(self):
+                self.__initial_start()
+                
 		sleeptime = 0.05
 		contact = False
 		while sleeptime <= 40.0:
@@ -180,11 +192,33 @@ class DepotController(object):
 		if contact == False:
 			self.kill()
 			self.__state = self.HALTED
-			raise DepotStateException("Depot did not respond to repeated attempts to make contact")
+			raise DepotStateException("Depot did not respond to "
+                            "repeated attempts to make contact")
 
 		self.__state = self.RUNNING
 
+        def start_expected_fail(self):
+                self.__initial_start()
+		
+		sleeptime = 0.05
+		died = False
+                rc = None
+		while sleeptime <= 1.0:
 
+                        rc = self.__depot_handle.poll()
+                        if rc is not None:
+				died = True
+				break
+			time.sleep(sleeptime)
+			sleeptime *= 2
+                
+                if died and rc == 2:
+                        self.__state = self.HALTED
+                        return True
+                else:
+                        self.stop()
+                        return False
+                        
         def kill(self):
 
                 if self.__depot_handle == None:

@@ -72,33 +72,19 @@ class SvrConfig(object):
                                 raise
 
                 emsg = "repository directories incomplete"
-
+                                 
                 if not os.access(self.repo_root, os.W_OK):
                         self.set_read_only()
                         emsg = "repository directories read-only and incomplete"
                 else:
-                        if not os.path.exists(self.trans_root):
-                                os.makedirs(self.trans_root)
-                        if not os.path.exists(self.file_root):
-                                os.makedirs(self.file_root)
-                        if not os.path.exists(self.pkg_root):
-                                os.makedirs(self.pkg_root)
-                        if not os.path.exists(self.cat_root):
-                                os.makedirs(self.cat_root)
-                        if not os.path.exists(self.update_root):
-                                os.makedirs(self.update_root)
-                        if not os.path.exists(self.index_root):
-                                os.makedirs(self.index_root)
+                        for d in self.required_dirs + self.optional_dirs:
+                                if not os.path.exists(d):
+                                        os.makedirs(d)
 
-                if os.path.exists(self.trans_root) and \
-                    os.path.exists(self.file_root) and \
-                    os.path.exists(self.pkg_root) and \
-                    os.path.exists(self.cat_root) and \
-                    os.path.exists(self.update_root) and \
-                    os.path.exists(self.index_root):
-                        return
-
-                raise RuntimeError, emsg
+                for d in self.required_dirs:
+                        if not os.path.exists(d):
+                                raise RuntimeError, emsg
+                return
 
         def set_repo_root(self, root):
                 self.repo_root = root
@@ -108,6 +94,12 @@ class SvrConfig(object):
                 self.cat_root = os.path.join(self.repo_root, "catalog")
                 self.update_root = os.path.join(self.repo_root, "updatelog")
                 self.index_root = os.path.join(self.repo_root, "index")
+
+                self.required_dirs = [self.trans_root, self.file_root, self.pkg_root,
+                    self.cat_root, self.update_root]
+
+                self.optional_dirs = [self.index_root]
+                
 
         def set_read_only(self):
                 self.read_only = True
@@ -128,10 +120,13 @@ class SvrConfig(object):
 
                         self.in_flight_trans[t.get_basename()] = t
 
-        def acquire_catalog(self, rebuild=True):
+        def acquire_catalog(self, rebuild=None):
                 """Tell the catalog to set itself up.  Associate an
                 instance of the catalog with this depot."""
 
+                if rebuild == None:
+                        rebuild = not self.read_only
+                
                 self.catalog = catalog.ServerCatalog(self.cat_root,
                     pkg_root=self.pkg_root, read_only=self.read_only,
                     index_root=self.index_root, repo_root=self.repo_root,
