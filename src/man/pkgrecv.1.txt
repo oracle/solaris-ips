@@ -11,24 +11,27 @@ SYNOPSIS
 
 DESCRIPTION
      pkgrecv allows the user to download the contents of a package
-     from a server.  The contents are retrieved in a format that can
-     easily be input to pkgsend(1) when used with the 'include'
-     subcommand.
+     from a server.  With the default options, the contents are
+     retrieved in a format that can easily be input to pkgsend(1) when
+     used with the 'include' subcommand.  As a result, pkgrecv(1) and
+     pkgsend(1) can be used to conveniently modify and republish
+     packages, perhaps by correcting file contents or providing
+     additional package tags.
 
 OPTIONS
      The following options are supported:
 
      -s repo_url    The URL prefix of the server.
 
-     -k             Keep the individual pkg contents compressed.
+     -k             Keep the individual package contents compressed.
 
-     -d directory   The directory where pkg content should be placed.
-     		    The default location is the current working
-		    directory.
+     -d directory   The directory where package content should be
+                    placed.  The default location is the current working
+                    directory.
 
-     -n             Instead of downloading packages, list the most recent 
-                    versions of the packages available at the specified
-		    server.
+     -n             Instead of downloading package contents, list the
+                    most recent versions of the packages available at
+                    the specified server.
 
 EXAMPLES
      Example 1:  List newest packages available from server test
@@ -40,12 +43,13 @@ EXAMPLES
      pkg:/SUNWliboil@0.5.11,5.11-0.79:20080221T125730Z
 
      Example 2: Receive the SUNWlibC, SUNWfreetype, and SUNWlibm
-     packages from example 1
+     packages from example 1.
 
      $ pkgrecv -s http://test SUNWlibC@0.5.11,5.11-0.79:20080221T125720Z
      SUNWfreetype2@0.5.11,5.11-0.79:20080221T123955Z
      SUNWlibm@0.5.11,5.11-0.79:20080221T125728Z
-
+     $ ls -d SUNW*
+     SUNWfreetype2  SUNWlibC       SUNWlibm
 
 EXIT STATUS
      The following exit values are returned:
@@ -78,6 +82,3 @@ NOTES
 
      http://opensolaris.org/os/project/pkg/
 
-     Other package bundle formats can be created.  Other forms of
-     package publication, via the underlying Python API or via the web
-     API, are also possible.

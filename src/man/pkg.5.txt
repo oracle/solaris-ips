@@ -5,13 +5,13 @@ NAME
      pkg - image packaging system
 
 DESCRIPTION
-     The image packaging system (IPS) is a framework which provides for
+     The image packaging system, pkg(5), is a framework which provides for
      software lifecycle management (installation, upgrade, and removal).
-     IPS manages software in units of packages, which are collections of
-     'OpenSolaris.  actions', defined by a set of key/value pairs and
-     possibly a data payload.  In many cases, actions are files found in a
-     filesystem, but they also represent other installable objects, such as
-     drivers, services, and users.
+     Image packaging manages software in units of packages, which are
+     collections of 'actions', defined by a set of key/value pairs and
+     possibly a data payload.  In many cases, actions are files found in
+     a filesystem, but they also represent other installable objects,
+     such as drivers, services, and users.
 
   Package FMRIs and Versions
 
@@ -23,7 +23,7 @@ DESCRIPTION
          pkg://opensolaris.org/library/libc@5.11,5.11-0.75:20071001T163427Z
 
      'opensolaris.org' is the authority.  'library/libc' is the package
-     name.  Although the namespace is heirarchical and arbitrarily deep,
+     name.  Although the namespace is hierarchical and arbitrarily deep,
      there is no enforced containment -- the name is essentially arbitrary.
 
      The version follows the package name, separated by an '@'.  It
@@ -32,14 +32,14 @@ DESCRIPTION
      sequences are arbitrarily long.
 
      The first part is the component version.  For components tightly bound
-     to Solaris, this will usually be the value of 'uname -r' for that
-     version of Solaris.  For a component with its own development
+     to OpenSolaris, this will usually be the value of 'uname -r' for that
+     version of OpenSolaris.  For a component with its own development
      lifecycle, this sequence will be the dotted release number, such as
      '2.4.10'.
 
      The second part, following the comma, is the build version, specifying
-     what version of Solaris the contents of the package were built on,
-     providing a minimum bound on which Solaris version the contents can be
+     what version of OpenSolaris the contents of the package were built on,
+     providing a minimum bound on which OpenSolaris version the contents can be
      expected to run successfully.
 
      The third part, following the dash, is the branch version, a
@@ -265,7 +265,7 @@ DESCRIPTION
                  free group under 100.
 
   User actions
-     The 'usr' action defines a Unix user as defined in /etc/passwd, /etc/shadow,
+     The 'user' action defines a Unix user as defined in /etc/passwd, /etc/shadow,
      /etc/group and /etc/ftpd/ftpusers files.  Users defined with this attribute
      have entries added to the appropriate files.
 
@@ -276,16 +276,16 @@ DESCRIPTION
      password    The encryped password of the user.  Default value is '*LK*'. See
                  shadow(4).
 
-     uid	 The unique uid of the user. Default value is first free value
-                 under 100. 
+     uid         The unique uid of the user. Default value is first free value
+                 under 100.
 
-     group       The name of the users primary group.  Must be 
+     group       The name of the users primary group.  Must be
                  found in /etc/group
 
-     gcos-field  The value of the gecos field in /etc/passwd.  Default value is 
+     gcos-field  The value of the gecos field in /etc/passwd.  Default value is
                  username.
 
-     home-dir	 The user's home directory.  Default value is '/'.
+     home-dir    The user's home directory.  Default value is '/'.
 
      login-shell The user's default shell.  Default value is empty.
 
@@ -295,9 +295,9 @@ DESCRIPTION
      ftpuser     Can be set to "true" or "false".  Determines whether
                  user is allowed to use ftp.  See ftpusers(4).
 
-     lastchng	 The number of days between January 1, 1970,  and
-                 the  date  that  the password was last modified.  
-		 Default value is empty.  See shadow(4).
+     lastchng    The number of days between January 1, 1970,  and
+                 the  date  that  the password was last modified.
+                 Default value is empty.  See shadow(4).
 
      min         The minimum  number  of  days  required  between
                  password changes. This field must be set to 0 or
@@ -313,7 +313,7 @@ DESCRIPTION
      inactive    The number of days  of  inactivity  allowed  for
                  that  user.  This  is  counted  on a per-machine
                  basis; the information about the last  login  is
-                 taken  from  the  machine's  lastlog  file.  See 
+                 taken  from  the  machine's  lastlog  file.  See
                  shadow(4).
 
      expire      An absolute date expressed as the number of days
@@ -324,7 +324,7 @@ DESCRIPTION
                  See shadow(4).
 
      flag        set to empty. See shadow(4).
-		       
+
 
   Constraints and Freezing
      TBD

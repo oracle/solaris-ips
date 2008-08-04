@@ -35,13 +35,17 @@ SYNOPSIS
 
 DESCRIPTION
      pkg is the retrieval client for the image packaging system.  With a
-     valid configuration, pkg can be invoked to create images, target
-     locations for packages to be installed, and install packages into
-     those images.
+     valid configuration, pkg can be invoked to create locations for
+     packages to be installed, called 'images', and install packages
+     into those images.  Packages are published by authorities, who may
+     make their packages available at one or more repositories.  pkg,
+     then, retrieves packages from an authority's repository and
+     installs them into an image.
 
      pkg can also uninstall packages, refresh the package catalogs,
      validate package installation in an image and query the image for
-     various tokens
+     various tokens.  These queries can also be made of pkg(5)
+     repositories.
 
      Images can be of three types:  full images, capable of providing a
      complete system; partial images, which are linked to a full image
@@ -128,7 +132,7 @@ SUBCOMMANDS
           may be specified as the argument to one -o option by separating
           the attribute names with commas.  Only actions which have the
           requested attributes will be displayed.  The -m option may
-          also be used, as a shorthand for '-o action.raw'.
+          also be used, as a shorthand for '-Ho action.raw'.
 
           The -s option specifies the attribute by which the listing should
           be sorted.
@@ -172,19 +176,19 @@ SUBCOMMANDS
                                 the package containing the action, such
                                 as "opensolaris.org"
 
-
-
-     search [-lr] [-s server] token
+     search [-lr] [-s server_url] token
           Search for the token "token", and display the FMRIs in which the token
           was found.  Which tokens are indexed are action-dependent, but may
           include content hashes and pathnames.
 
           By default, and with -l, search the image's installed packages.
 
-          With -r, search the servers corresponding to the image's authorities.
+          With -r, search the repositories corresponding to the image's
+          authorities.
 
-          With -s, search the named servers.  This may be specified multiple
-          times.
+          With -s, search the identified server, which is expected to be
+          a pkg(5) repository, at the given URL.  This may be specified
+          multiple times.
 
           Both -l and -r (or -s) may be specified together, in which case both
           local and remote searches will be performed.
@@ -202,7 +206,7 @@ SUBCOMMANDS
           Validate the installation of packages in the current image.
           With -v, do more verbose reporting.  With -q, print nothing, but
           return failure if there are any verification problems.  File hashes
-	  are always checked.
+          are always checked.
 
           The -H option causes the headers to be omitted.
 
@@ -311,7 +315,7 @@ ATTRIBUTES
      ____________________________________________________________
     |       ATTRIBUTE TYPE        |       ATTRIBUTE VALUE       |
     |_____________________________|_____________________________|
-    | Availability                |                             |
+    | Availability                | SUNWipkg                    |
     | Interface Stability         | None / Under Development    |
     |_____________________________|_____________________________|
 
@@ -328,6 +332,12 @@ NOTES
 
      At present, user images are not restricted to relocatable
      packages--but they will be.
+
+     The pkg(1) command recognizes use of the http_proxy environment
+     variable to select a suitable HTTP proxy server.  At present,
+     particular care is needed when using local repository URLs--such as
+     http://localhost:10000/--with the http_proxy environment variable;
+     this behaviour may change in a future version of image packaging.
 
      Although HTTPS servers may validate client SSL certificates, the
      client does not currently validate the server's.

@@ -36,8 +36,16 @@ SUBCOMMANDS
 
      open [-en] pkg_fmri
           Begin a transaction on the package and version specified by
-          pkg_fmri.  Standard output will contain a sh(1)-compatible
-          environment statement, suitable for use with an eval built-in.
+          pkg_fmri.
+
+          By default, or if the -e option is given, a successfully
+          opened transaction's ID will be published in a form suitable
+          for use with eval(1), to set the PKG_TRANS_ID environment
+          variable.  This form can be convenient for delivering a
+          package transaction from a shell script, for example.  If the
+          -n option is given, the transaction ID is displayed as a
+          string; this may be more useful in situations where shell
+          scripting is not an available option.
 
      add action arguments
           Add a resource associated with an action to the current
@@ -45,29 +53,29 @@ SUBCOMMANDS
           below.
 
      import [-T pattern] bundlefile ...
-	  Add each given bundlefile (such as a SVr4 package) into the
-	  current transaction.  If the basename of files in the bundle
-	  match the optional pattern(s), the timestamp of the file is
-	  added to the action for that file.  The pattern uses shell
-	  matching rules:
+          Add each given bundlefile (such as a SVR4 package) into the
+          current transaction.  If the basename of files in the bundle
+          match the optional pattern(s), the timestamp of the file is
+          added to the action for that file.  The pattern uses shell
+          matching rules:
 
-	     	  *      matches everything
-	 	  ?      matches any single character
-	     	  [seq]  matches any character in seq
-	     	  [!seq] matches any character not in seq
+               *      matches everything
+               ?      matches any single character
+               [seq]  matches any character in seq
+               [!seq] matches any character not in seq
 
      include [-d basedir] manifest ...
           Add resources associated with the multiple actions present in
-	  each manifest file to the current transaction.  Each line in the
-	  file should be the string representation of an action.  In
-	  particular, the "add" token as described above should not be
-	  present, nor should there be open and close tokens representing
-	  transaction boundaries.  For those actions with datastreams, the
-	  path to the file containing the data should be the second word on
-	  the line.
+          each manifest file to the current transaction.  Each line in the
+          file should be the string representation of an action.  In
+          particular, the "add" token as described above should not be
+          present, nor should there be open and close tokens representing
+          transaction boundaries.  For those actions with datastreams, the
+          path to the file containing the data should be the second word on
+          the line.
 
-	  If the user specifies the -d option, basedir is prepended to
-	  the search path when locating files in the manifest. 
+          If the user specifies the -d option, basedir is prepended to
+          the search path when locating files in the manifest.
 
      close [-A]
           Close current transaction.  With -A, abandon the current
@@ -80,11 +88,11 @@ SUBCOMMANDS
 ENVIRONMENT VARIABLES
      The following environment variables are supported:
 
-     PKG_TRANS_ID               Transaction identifier to use for this
-                                transaction.  If undefined (and no
-                                alternative means of specifying a
-                                transaction is given), subcommands
-                                requiring transaction context will fail.
+     PKG_TRANS_ID               Identifier to use for this transaction.
+                                If undefined (and no alternative means
+                                of specifying a transaction is given),
+                                subcommands requiring transaction
+                                context will fail.
 
 ACTIONS
      Each resource within a package must be associated with an action.
@@ -110,7 +118,7 @@ ACTIONS
           Deliver a directory with the listed attributes into the
           transaction.
 
-     driver name=<name> perms=<perms> class=<class> alias=<alias>
+     driver name=<name> perms=<perms> class=<class> alias=<alias> \
        [ property_list ]
           Deliver driver configuration with the listed attributes into
           the transaction.  Multiple alias entries may be given to
@@ -120,6 +128,12 @@ ACTIONS
         path=<path> [ property_list ]
           Deliver a file with the listed attributes into the
           transaction.
+
+     group groupname=<groupname> gid=<gid> [ property_list ]
+          Deliver a group definition as defined in group(4).  If the
+          group ID, or gid, is omitted, the first free group under 100
+          will be assigned at installation time.  See pkg(5) for
+          additional details, and relation to the user action below.
 
      hardlink path=<path> target=<target> [ property_list ]
           Deliver a link with given path, pointing to the given
@@ -143,6 +157,23 @@ ACTIONS
      set name=<name> value=<value> [ property_list ]
           Deliver a "package property" defined by the given name and
           value.
+
+     user username=<username> password=<password> uid=<uid> \
+       group=<group> gcos-field=<gcos> home-dir=<homedir> \
+       login-shell=<login-shell> group-list=<groups> \
+       ftpuser={true|false} lastchng=<lastchange> min=<mindays> \
+       max=<maxdays> warn=<warndays> inactive=<inactivedays> \
+       expire=<expiredate> flag=<flag> [ property_list ]
+          Deliver a user account, as defined in passwd(4), shadow(4),
+          group(4), and ftpusers(4).  If the user ID, or uid, is
+          omitted, then the first free user ID under 100 will be
+          assigned at installation time.  The primary group, specified
+          by group, must exist prior to the action's execution; this
+          condition can be ensured by having a group action deliver the
+          group definition in the same package as the user action, or by
+          having a depend action that expresses a requirement on a
+          package possessing a group action.  See pkg(5) for additional
+          details.
 
 EXAMPLES
      Example 1:  Create a trivial package.
@@ -173,7 +204,8 @@ ATTRIBUTES
     |_____________________________|_____________________________|
 
 SEE ALSO
-     pkg.depotd(1M), attributes(5), pkg(5)
+     eval(1), pkg.depotd(1M), ftpusers(4), group(4), passwd(4),
+     shadow(4), attributes(5), pkg(5)
 
 NOTES
      The image packaging system is an under-development feature.
