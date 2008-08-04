@@ -1,0 +1,5 @@
+package SUNWstunnel
+import SUNWstunnelr
+import SUNWstunnelu
+version 4.25
+end package

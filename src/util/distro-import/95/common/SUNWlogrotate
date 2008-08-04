@@ -1,0 +1,5 @@
+package SUNWlogrotate
+import SUNWlogrotater
+import SUNWlogrotateu
+version 3.7.1
+end package

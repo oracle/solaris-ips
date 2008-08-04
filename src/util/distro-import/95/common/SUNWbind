@@ -1,0 +1,5 @@
+package SUNWbind
+import SUNWbind
+import SUNWbindr
+version 9.3.5.1
+end package
