@@ -156,7 +156,12 @@ class UserAction(generic.Action):
 
                 username = self.attrs["username"]
 
-                pw, gr, ftp, cur_attrs = self.readstate(img, username)
+                try:
+                        pw, gr, ftp, cur_attrs = self.readstate(img, username)
+                except EnvironmentError, e:
+                        if e.errno == errno.EACCES:
+                                return ["Skipping: Permission denied"]
+                        return ["Unexpected error: %s" % e]
 
                 if "group-list" in self.attrs:
                         self.attrs["group-list"] = sorted(self.attrs["group-list"])

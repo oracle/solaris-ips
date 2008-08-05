@@ -188,36 +188,56 @@ class FileAction(generic.Action):
                         errors.append("Size: %d bytes should be %d" % \
                             (stat[ST_SIZE], int(self.attrs["pkg.size"])))
 
-                if "preserve" not in self.attrs and args["forever"] == True:
-                        try:
-                                if "elfhash" in self.attrs:
-                                        if haveelf:
-                                                elfhash = elf.get_dynamic(path)["hash"]
-                                                if elfhash != self.attrs["elfhash"]:
-                                                        errors.append("Elfhash: %s should be %s" % \
-                                                            (elfhash, self.attrs["elfhash"]))
-                                        else:
-                                                errors.append("Elfhash: unable to verify due to missing elf module")
+                if "preserve" in self.attrs:
+                        return errors
 
-                                # not an elf file -> try normal hash
-                                else:
-                                        f = file(path)
-                                        data = f.read()
-                                        f.close()
-                                        hashvalue = sha.new(data).hexdigest()
-                                        if hashvalue != self.hash:
-                                                errors.append("Hash: %s should be %s" % \
-                                                    (hashvalue, self.hash))
-                        except EnvironmentError, e:
-                                if e.errno == errno.EACCES:
-                                        errors.append("Skipping: Permission Denied" % e)
-                                else:
-                                        errors.append("Unexpected Error %s" % e)
-                        except KeyboardInterrupt:
-                                # This is not really unexpected...
-                                raise
-                        except Exception, e:
-                                errors.append("Unexpected Exception: %s" % e)
+                if args["forever"] != True:
+                        return errors
+
+                #
+                # Check file contents
+                #
+                try:
+                        elfhash = None
+                        if "elfhash" in self.attrs and haveelf:
+                                #
+                                # It's possible for the elf module to
+                                # throw while computing the hash,
+                                # especially if the file is badly
+                                # corrupted or truncated.
+                                #
+                                try:
+                                        elfhash = elf.get_dynamic(path)["hash"]
+                                except RuntimeError, e:
+                                        errors.append("Elfhash: %s" % e)
+
+                                if elfhash is not None and elfhash != self.attrs["elfhash"]:
+                                        errors.append("Elfhash: %s should be %s" % \
+                                            (elfhash, self.attrs["elfhash"]))
+
+                        #
+                        # not an elf file, or we couldn't check elf -> try
+                        # normal hash
+                        #
+                        if elfhash is None:
+                                f = file(path)
+                                data = f.read()
+                                f.close()
+                                hashvalue = sha.new(data).hexdigest()
+                                if hashvalue != self.hash:
+                                        errors.append("Hash: %s should be %s" % \
+                                            (hashvalue, self.hash))
+                except EnvironmentError, e:
+                        if e.errno == errno.EACCES:
+                                errors.append("Skipping: Permission Denied" % e)
+                        else:
+                                errors.append("Unexpected Error %s" % e)
+                except KeyboardInterrupt:
+                        # This is not really unexpected...
+                        raise
+                except Exception, e:
+                        errors.append("Unexpected Exception: %s" % e)
+
                 return errors
 
         # If we're not upgrading, or the file contents have changed,
