@@ -1714,7 +1714,7 @@ pkg: no package matching '%s' could be found in current catalog
                 performing the incremental update which is usually used."""
                 self.update_index_dir()
                 if not os.path.isdir(self.index_dir):
-                        img.mkdirs()
+                        self.mkdirs()
                 ind = indexer.Indexer(self.index_dir,
                     CLIENT_DEFAULT_MEM_USE_KB, progtracker)
                 ind.check_index(self.get_fmri_manifest_pairs(),
