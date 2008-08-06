@@ -24,9 +24,9 @@
 #
 
 import os
+import platform
 import stat
 import sys
-import platform
 import shutil
 import re
 import subprocess
@@ -47,8 +47,6 @@ import distutils.file_util as file_util
 import distutils.dir_util as dir_util
 import distutils.util as util
 
-pwd = os.path.normpath(sys.path[0])
-
 osname = platform.uname()[0].lower()
 ostype = arch = 'unknown'
 if osname == 'sunos':
@@ -63,6 +61,8 @@ elif osname == 'windows':
 elif osname == 'darwin':
         arch = osname
         ostype = "posix"
+
+pwd = os.path.normpath(sys.path[0])
 
 dist_dir = os.path.normpath(os.path.join(pwd, os.pardir, "proto", "dist_" + arch))
 build_dir = os.path.normpath(os.path.join(pwd, os.pardir, "proto", "build_" + arch))
@@ -382,47 +382,33 @@ class clobber_func(Command):
                 remove_cherrypy()
 
 class test_func(Command):
-        # Use verbosemode here so that when the attr gets set it doesn't
-        # clobber the "verbose" variable/option that distutils already has.
+        # NOTE: these options need to be in sync with tests/run.py
         user_options = [("verbosemode", 'v', "run tests in verbose mode"),
-                        ("genbaseline", 'g', "generate test baseline"),
-                        ("parseable", 'p', "parseable output")]
+            ("genbaseline", 'g', "generate test baseline"),
+            ("parseable", 'p', "parseable output"),
+            ("baselinefile=", 'b', "baseline file <file>"),
+            ("only=", "o", "only <regex>")]
         description = "Runs unit and functional tests"
 
         def initialize_options(self):
+                self.only = ""
+                self.baselinefile = ""
                 self.verbosemode = 0
-                self.genbaseline = 0
                 self.parseable = 0
+                self.genbaseline = 0
         def finalize_options(self):
                 pass
         def run(self):
                 os.putenv('PYEXE', sys.executable)
                 os.chdir(os.path.join(pwd, "tests"))
-                testlogfd, testlogpath = tempfile.mkstemp(suffix = '.pkg-test.log')
-                testlogfp = os.fdopen(testlogfd, "w")
-                print "logging to %s" % testlogpath
 
-                args = []
-                # Stuff any options that are set into 'args' so that we can
-                # send them along on the command line.
-                for (opt, short, _) in self.user_options:
-                        value = getattr(self, opt)
-                        if value == 1:
-                                args.append("-%s" % short)
-
-                cmd = [sys.executable, "api-complete.py"]
-                cmd.extend(args)
-                subprocess.call(cmd, stdout = testlogfp)
-
-                if ostype == 'posix':
-                        cmd = [sys.executable, "cli-complete.py"]
+                # Reconstruct the cmdline and send that to run.py
+                cmd = [sys.executable, "run.py"]
+                args = ""
+                if "test" in sys.argv:
+                        args = sys.argv[sys.argv.index("test")+1:]
                         cmd.extend(args)
-                        subprocess.call(cmd, stdout = testlogfp)
-
-                if osname == 'sunos':
-                        subprocess.call(["/bin/ksh", "memleaks.ksh"],
-                            stdout = testlogfp)
-                testlogfp.close()
+                subprocess.call(cmd)
 
 class dist_func(_bdist):
         def initialize_options(self):

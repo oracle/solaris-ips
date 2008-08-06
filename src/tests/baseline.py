@@ -112,9 +112,14 @@ class BaseLine(object):
                         print >> sys.stderr, "Failed to open %s: %s" % \
                                 (self.filename, msg)
                         return 
-                for res in self.results.keys():
+
+		# Sort the results to make baseline diffs easier
+		results_sorted = self.results.keys()
+		results_sorted.sort()
+	
+                for s in results_sorted:
                         f.write("%s|%s%s" %
-                            (res, self.results[res], os.linesep))
+                            (s, self.results[s], os.linesep))
                 f.flush()
                 f.close()
 

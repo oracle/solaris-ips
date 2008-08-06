@@ -26,6 +26,7 @@
 import baseline
 import string
 import sys
+import time
 import unittest
 
 OUTPUT_DOTS=0           # Dots ...
@@ -100,7 +101,8 @@ class _Pkg5TestResult(unittest._TextTestResult):
                 self.stream = stream
                 self.output = output
                 self.baseline = baseline
-                
+                self.success = []
+
         def addSuccess(self, test):
                 unittest.TestResult.addSuccess(self, test)
                 bresult = self.baseline.handleresult(str(test), "pass")
@@ -114,6 +116,7 @@ class _Pkg5TestResult(unittest._TextTestResult):
                         self.stream.writeln(res)
                 elif self.output == OUTPUT_DOTS:
                         self.stream.write('.')
+                self.success.append(test)
 
         def addError(self, test, err):
                 unittest.TestResult.addError(self, test, err)
@@ -172,27 +175,41 @@ class Pkg5TestRunner(unittest.TextTestRunner):
         sep1 = '=' * 70
         sep2 = '-' * 70
 
-        def __init__(self, suite, stream=sys.stderr, output=OUTPUT_DOTS,
-            generate=False):
+        def __init__(self, baseline, stream=sys.stderr, output=OUTPUT_DOTS):
                 """Set up the runner, creating a baseline object that has
                 a name of 'suite'_baseline.pkl, where suite is 'cli', 'api',
                 etc."""
                 # output is one of "dots", "verbose", "machine"
                 super(Pkg5TestRunner, self).__init__(stream)
-                # Make sure we have no spaces in the filename
-                self.suite = suite.replace(" ", "_")
-                self.baseline = baseline.BaseLine(
-                    "%s_baseline.txt" % self.suite, generate=generate)
-                self.baseline.load()
+                self.baseline = baseline
                 self.output = output
 
         def _makeResult(self):
                 return _Pkg5TestResult(self.stream, self.output, self.baseline)
 
         def run(self, test):
-                res = super(Pkg5TestRunner, self).run(test)
-                self.baseline.store()
-                self.baseline.reportfailures()
-                return res
-
-
+                "Run the given test case or test suite."
+                result = self._makeResult()
+                startTime = time.time()
+                test(result)
+                stopTime = time.time()
+                timeTaken = stopTime - startTime
+                result.printErrors()
+                self.stream.writeln(result.separator2)
+                run = result.testsRun
+                self.stream.writeln("Ran %d test%s in %.3fs" %
+                    (run, run != 1 and "s" or "", timeTaken))
+                self.stream.writeln()
+                if not result.wasSuccessful():
+                        self.stream.write("FAILED (")
+                        success, failed, errored, mismatches = map(len,
+                            (result.success, result.failures, result.errors,
+                                self.baseline.getfailures()))
+                        self.stream.write("successes=%d, " % success)
+                        self.stream.write("failures=%d, " % failed)
+                        self.stream.write("errors=%d, " % errored)
+                        self.stream.write("mismatches=%d" % mismatches)
+                        self.stream.writeln(")")
+                else:
+                        self.stream.writeln("OK")
+                return result

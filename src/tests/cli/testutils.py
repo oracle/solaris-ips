@@ -91,7 +91,6 @@ def setup_environment(path_to_proto):
         pkgs = "%s/usr/lib/python2.4/vendor-packages" % g_proto_area
         bins = "%s/usr/bin" % g_proto_area
 
-        print "NOTE: Adding %s to PYTHONPATH" % pkgs
         sys.path.insert(1, pkgs)
 
         #
@@ -105,13 +104,11 @@ def setup_environment(path_to_proto):
                 pypath = ""
         os.environ["PYTHONPATH"] = "." + os.pathsep + pkgs + pypath
 
-        print "NOTE: Adding '%s' to head of PATH" % bins
         os.environ["PATH"] = bins + os.pathsep + os.environ["PATH"]
 
         # Use "keys"; otherwise we'll change dictionary size during iteration.
         for k in os.environ.keys():
                 if k.startswith("PKG_"):
-                        print "NOTE: Clearing '%s' from environment" % k
                         del os.environ[k]
 
 
@@ -245,6 +242,15 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
 
         def tearDown(self):
                 self.image_destroy()
+
+        # In the case of an assertion (not a pkg() failure) dump the most
+        # recent debug info to stdout so that it is captured in the test log.
+        def assert_(self, expr, msg=None):
+                if not expr:
+                        print "--- (most recent debug buffer) " + "-" * 39
+                        print self.get_debugbuf()
+                        print "-" * 70
+                        pkg5unittest.Pkg5TestCase.assert_(self, expr, msg)
 
         def get_img_path(self):
                 return self.img_path
