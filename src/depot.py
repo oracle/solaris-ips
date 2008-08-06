@@ -72,12 +72,12 @@ import urlparse
 try:
         import cherrypy
         version = cherrypy.__version__.split('.')
-        if map(int, version) < [3, 0, 3]:
+        if map(int, version) < [3, 1, 0]:
                 raise ImportError
-        elif map(int, version) >= [3, 1, 0]:
+        elif map(int, version) >= [3, 2, 0]:
                 raise ImportError
 except ImportError:
-        print """cherrypy 3.0.3 or greater (but less than 3.1.0) is """ \
+        print """cherrypy 3.1.0 or greater (but less than 3.2.0) is """ \
             """required to use this program."""
         sys.exit(2)
 
@@ -245,16 +245,12 @@ if __name__ == "__main__":
                 emsg("pkg.depotd: repository.conf error: %s" % e)
                 sys.exit(1)
 
-        # We have to override cherrypy's default response_class so that we
-        # have access to the write() callable to stream data directly to the
-        # client.
-        root.wsgiapp.response_class = depot.DepotResponse
-
-        # Setup our basic server configuration.
+        # Setup our global configuration.
         cherrypy.config.update({
             "environment": "production",
             "checker.on": True,
             "log.screen": True,
+            "server.socket_host": "0.0.0.0",
             "server.socket_port": port,
             "server.thread_pool": threads,
             "server.socket_timeout": socket_timeout
@@ -262,6 +258,12 @@ if __name__ == "__main__":
 
         # Now build our site configuration.
         conf = {
+            "/": {
+                # We have to override cherrypy's default response_class so that
+                # we have access to the write() callable to stream data
+                # directly to the client.
+                "wsgi.response_class": depot.DepotResponse,
+            },
             "/robots.txt": {
                 "tools.staticfile.on": True,
                 "tools.staticfile.filename": os.path.join(face.content_root,

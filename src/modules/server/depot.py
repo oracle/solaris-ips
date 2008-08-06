@@ -45,19 +45,42 @@ class DepotResponse(_cpwsgi.AppResponse):
             footprint for streaming operations performed by the depot server,
             such as filelist. """
 
+        def __add_write_hook(self, s, h, exc):
+                # The WSGI specification includes a special write()
+                # callable returned by the start_response callable.
+                # cherrypy traditionally hides this from applications
+                # as new WSGI applications and frameworks are not
+                # supposed to use it if at all possible.  The write()
+                # callable is considered a hack to support imperative
+                # streaming APIs.
+                #
+                # As a result, we have to provide access to the write()
+                # callable ourselves by replacing the default
+                # response_class with our own.  This callable is
+                # provided so that streaming APIs can be treated as if
+                # their output had been yielded by an iterable.
+                #
+                # The cherrypy singleton below is thread-local, and
+                # guaranteed to only be set for a specific request.
+                # This means any callables that use the singleton
+                # to access this method are guaranteed to write output
+                # back to the same request.
+                #
+                # See: http://www.python.org/dev/peps/pep-0333/
+                #
+                _cherrypy.response.write = self.start_response(s, h, exc)
+
         def setapp(self):
-                # Stage 1: by whatever means necessary, obtain a status, header
-                # set and body, with an optional exception object.
                 try:
-                        self.request = self.get_engine_request()
+                        self.request = self.get_request()
                         s, h, b = self.get_response()
-                        exc = None
+                        self.iter_response = iter(b)
+                        self.__add_write_hook(s, h, None)
                 except self.throws:
                         self.close()
                         raise
                 except _cherrypy.InternalRedirect, ir:
-                        self.environ['cherrypy.previous_request'] = \
-                            _cherrypy._serving.request
+                        self.environ['cherrypy.previous_request'] = _cherrypy.serving.request
                         self.close()
                         self.iredirect(ir.path, ir.query_string)
                         return
@@ -67,55 +90,21 @@ class DepotResponse(_cpwsgi.AppResponse):
                                 raise
 
                         tb = _cperror.format_exc()
-                        _cherrypy.log(tb)
+                        _cherrypy.log(tb, severity=40)
                         if not getattr(self.request, "show_tracebacks", True):
                                 tb = ""
                         s, h, b = _cperror.bare_error(tb)
-                        exc = _sys.exc_info()
+                        self.iter_response = iter(b)
 
-                self.iter_response = iter(b)
-
-                # Stage 2: now that we have a status, header set, and body,
-                # finish the WSGI conversation by calling start_response.
-                try:
-                        # The WSGI specification includes a special write()
-                        # callable returned by the start_response callable.
-                        # cherrypy traditionally hides this from applications
-                        # as new WSGI applications and frameworks are not
-                        # supposed to use it if at all possible.  The write()
-                        # callable is considered a hack to support imperative
-                        # streaming APIs.
-                        #
-                        # As a result, we have to provide access to the write()
-                        # callable ourselves by replacing the default
-                        # response_class with our own.  This callable is
-                        # provided so that streaming APIs can be treated as if
-                        # their output had been yielded by an iterable.
-                        #
-                        # The cherrypy singleton below is thread-local, and
-                        # guaranteed to only be set for a specific request.
-                        # This means any callables that use the singleton
-                        # to access this method are guaranteed to write output
-                        # back to the same request.
-                        #
-                        # See: http://www.python.org/dev/peps/pep-0333/
-                        #
-                        _cherrypy.response.write = self.start_response(s, h,
-                            exc)
-                except self.throws:
-                        self.close()
-                        raise
-                except:
-                        if getattr(self.request, "throw_errors", False):
+                        try:
+                                self.__add_write_hook(s, h, _sys.exc_info())
+                        except:
+                                # "The application must not trap any exceptions raised by
+                                # start_response, if it called start_response with exc_info.
+                                # Instead, it should allow such exceptions to propagate
+                                # back to the server or gateway."
+                                # But we still log and call close() to clean up ourselves.
+                                _cherrypy.log(traceback=True, severity=40)
                                 self.close()
                                 raise
-
-                        _cherrypy.log(traceback=True)
-                        self.close()
-
-                        # CherryPy test suite expects bare_error body to be
-                        # output, so don't call start_response (which, according
-                        # to PEP 333, may raise its own error at that point).
-                        s, h, b = _cperror.bare_error()
-                        self.iter_response = iter(b)
 

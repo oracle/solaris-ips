@@ -491,7 +491,7 @@ class ManyDepotTestCase(CliTestCase):
                 logfile = open(logpath, "r")
                 output = logfile.read()
                 for line in output.splitlines():
-                        if line.startswith("Traceback"):
+                        if line.find("Traceback") > -1:
                                 raise DepotTracebackException(logpath, output)
 
         def restart_depots(self):

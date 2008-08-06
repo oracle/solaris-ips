@@ -274,7 +274,7 @@ class install_func(_install):
                 install_cherrypy()
 
 CP = 'CherryPy'
-CPVER = '3.0.3'
+CPVER = '3.1.0'
 CPARC = '%s-%s.tar.gz' % (CP, CPVER)
 CPDIR = '%s-%s' % (CP, CPVER)
 CPURL = 'http://download.cherrypy.org/cherrypy/%s/%s' % (CPVER, CPARC)

@@ -1,3 +1,4 @@
 package SUNWpython-cherrypy
 import ../../../packages/i386/SUNWpython-cherrypy
+version 3.1.0
 end package

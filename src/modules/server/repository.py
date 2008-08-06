@@ -264,7 +264,7 @@ class Repository(object):
         @staticmethod
         def _tar_stream_close(**kwargs):
                 """ This is a special function to finish a tar_stream-based
-                    request; to be called by cherrypy. """
+                    request in the event of an exception. """
 
                 tar_stream = cherrypy.request.tar_stream
                 if tar_stream:
@@ -279,7 +279,8 @@ class Repository(object):
                                 # we have to lie and say the fileobj has been
                                 # closed.
                                 tar_stream.fileobj.closed = True
-                                cherrypy.log("Request aborted.")
+                                cherrypy.log("Request aborted: ",
+                                    traceback=True)
 
                         cherrypy.request.tar_stream = None
 
@@ -292,23 +293,25 @@ class Repository(object):
                 try:
                         self.scfg.inc_flist()
 
-                        # We pass the response object directly to tarfile
-                        # since it has a write() callable which is all tarfile
-                        # needs to output the stream.  This will write the
-                        # bytes to the client through our parent server
-                        # process.
+                        # Create a dummy file object that hooks to the write()
+                        # callable which is all tarfile needs to output the
+                        # stream.  This will write the bytes to the client
+                        # through our parent server process.
+                        f = Dummy()
+                        f.write = cherrypy.response.write
+
                         tar_stream = tarfile.open(mode = "w|",
-                            fileobj = cherrypy.response)
+                            fileobj = f)
 
                         # We can use the request object for storage of data
                         # specific to this request.  In this case, it allows us
-                        # to provide our on_end_request function with access
-                        # to the stream we are processing.
+                        # to provide our on_end_request function with access to
+                        # the stream we are processing.
                         cherrypy.request.tar_stream = tar_stream
 
                         # This is a special hook just for this request so that
-                        # even if an exception is encountered, the stream will
-                        # be closed properly regardless of which thread is
+                        # if an exception is encountered, the stream will be
+                        # closed properly regardless of which thread is
                         # executing.
                         cherrypy.request.hooks.attach('on_end_request',
                             self._tar_stream_close, failsafe = True)
@@ -321,12 +324,18 @@ class Repository(object):
                                 tar_stream.add(filepath, v, False)
 
                                 self.scfg.inc_flist_files()
+
+                        # Flush the remaining bytes to the client.
+                        tar_stream.close()
+                        cherrypy.request.tar_stream = None
+
                 except Exception, e:
                         # If we find an exception of this type, the
                         # client has most likely been interrupted.
                         if isinstance(e, socket.error) \
                             and e.args[0] == errno.EPIPE:
                                 return
+                        raise
 
                 yield ""
 
