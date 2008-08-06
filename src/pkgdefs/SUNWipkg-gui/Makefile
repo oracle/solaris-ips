@@ -57,13 +57,13 @@ prototype: FRC
 		$$3 ~ /(share(\/applications\/packagemanager.desktop|\/applications|\/icons|\/icons\/package\-manager|\/icons\/package\-manager\/new_update.png))$$/ { \
 			$$6 = "other"; \
 		} \
-		$$3 ~ /(share(\/package\-manager|\/package\-manager\/data|\/package\-manager\/packagemanager.glade))$$/ { \
+		$$3 ~ /(share(\/package\-manager|\/package\-manager\/data|\/package\-manager(\/packagemanager.glade|\/PM_app_48x.png|\/PM_package_36x.png)))$$/ { \
 			$$6 = "bin"; \
 		} \
 		$$3 ~ /^(share)$$/ { \
 			$$6 = "sys"; \
 		} \
-		$$3 ~ /^usr(\/lib\/python2.4\/vendor-packages\/pkg\/gui|\/bin\/packagemanager|\/share(\/package-manager\/packagemanager.glade|\/applications|\/icons))/ { \
+		$$3 ~ /^usr(\/lib\/python2.4\/vendor-packages\/pkg\/gui|\/bin\/packagemanager|\/share(\/package-manager(\/packagemanager.glade|\/PM_app_48x.png|\/PM_package_36x.png)|\/applications|\/icons))/ { \
 			print \
 		}' > prototype
 

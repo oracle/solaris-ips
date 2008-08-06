@@ -51,12 +51,15 @@ PYMODS = \
    modules/remove.py \
    modules/enumerations.py \
    modules/filelist.py \
-   modules/thread.py \
-   modules/userrights.py
+   modules/thread.py 
 PYCMODS = $(PYMODS:%.py=%.pyc)
 
 ICONS = \
-   data/icons/new_update.png   
+   data/icons/new_update.png 
+
+GLADEICONS = \
+   data/PM_app_48x.png \
+   data/PM_package_36x.png
 
 CATALOG = \
    data/opensolaris.org \
@@ -73,6 +76,8 @@ ROOTDESKTOP = $(DESKTOP:%=$(ROOTDESKTOPSHARE)/%)
 
 ROOTCATALOG = $(CATALOG:data/%=$(ROOTDATASHARE)/%)
 
+ROOTGLADEICONS = $(GLADEICONS:data/%=$(ROOTSHARE)/%)
+
 ROOTPYGLADE = $(ROOTSHARE)/packagemanager.glade
 
 ROOTPYCALLMODS = \
@@ -85,6 +90,7 @@ ROOTCOMPONENTS = \
    $(ROOTPYCALLMODS) \
    $(ROOTCATALOG) \
    $(ROOTPYGLADE) \
+   $(ROOTGLADEICONS) \
    $(ROOTICONS) \
    $(ROOTDESKTOP) \
 

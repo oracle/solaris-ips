@@ -32,20 +32,22 @@ try:
         import pygtk
         pygtk.require("2.0")
 except:
-        pass
+        sys.exit(1)
 try:
         import gtk
         import gtk.glade
         import gobject
 except:
         sys.exit(1)
-import pkg.client.progress as progress
-import pkg.gui.enumerations as enumerations
-import pkg.client.imageplan as imageplan
-import pkg.client.retrieve as retrieve
-import pkg.gui.filelist as filelist
+
 import pkg.fmri as fmri
+import pkg.client.bootenv as bootenv
+import pkg.client.imageplan as imageplan
 import pkg.client.pkgplan as pkgplan
+import pkg.client.progress as progress
+import pkg.client.retrieve as retrieve
+import pkg.gui.enumerations as enumerations
+import pkg.gui.filelist as filelist
 import pkg.gui.thread as guithread
 
 class Remove(progress.ProgressTracker):
@@ -55,6 +57,8 @@ class Remove(progress.ProgressTracker):
                 self.remove_list = remove_list
                 self.parent = parent
                 self.gladefile = parent.gladefile
+                #This is hack since we should show proper dialog.
+                self.error = None
                 self.create_plan_dialog_gui()
                 self.create_remove_gui()
                 self.create_removing_gui()
@@ -91,6 +95,7 @@ class Remove(progress.ProgressTracker):
                 self.summary_label = wTree.get_widget("removelabel")
                 self.treeview = wTree.get_widget("treeview3")
                 self.remove_column = gtk.TreeViewColumn('Removed')
+                self.next_button = wTree.get_widget("next_remove")
                 self.treeview.append_column(self.remove_column)
                 self.cell = gtk.CellRendererText()
                 self.remove_column.pack_start(self.cell, True)
@@ -158,11 +163,16 @@ class Remove(progress.ProgressTracker):
                                 if self.gui_thread.is_cancelled():
                                         return
                                 self.ip.propose_fmri_removal(fmri)
-                        assert self.ip.state == imageplan.UNEVALUATED
+                        self.ip.state = imageplan.UNEVALUATED
                         self.ip.progtrack.evaluate_start()
                         for f in self.ip.target_rem_fmris[:]:
                                 gobject.idle_add(self.update_createplan_progress, self.parent._("Evaluating: %s\n") % f.get_fmri())
-                                self.ip.evaluate_fmri_removal(f)
+                                try:
+                                        self.ip.evaluate_fmri_removal(f)
+                                except imageplan.NonLeafPackageException, e:
+                                        self.error = e[1]
+                                        gobject.idle_add(self.ip.progtrack.evaluate_done)
+                                        return   
                         self.ip.state = imageplan.EVALUATED_OK
                         image.imageplan = self.ip
                         gobject.idle_add(self.ip.progtrack.evaluate_done)
@@ -181,19 +191,34 @@ class Remove(progress.ProgressTracker):
                     [
                         ["Packages To Be Removed:"],
                     ]
+                if self.ip.state != imageplan.EVALUATED_OK:
+                        packaged_removed = \
+                            [
+                                ["Cannot remove, due to the following dependencies:"],
+                            ]
                 self.treestore = gtk.TreeStore(str)
                 remove_iter = None 
                 remove_count = 0
                 self.total_remove_count = 0
                 self.total_files_count = 0
-                for package_plan in self.ip.pkg_plans:
-                        if package_plan.origin_fmri and not package_plan.destination_fmri:
-                                if not remove_iter:
-                                        remove_iter = self.treestore.append(None, packaged_removed[0])
-                                pkg_version = package_plan.origin_fmri.version.get_short_version()# + dt_str
-                                pkg = package_plan.origin_fmri.get_name() + "@" + pkg_version
-                                remove_count = remove_count + 1
-                                self.treestore.append(remove_iter, [pkg])
+                if self.ip.state == imageplan.EVALUATED_OK:
+                        self.next_button.set_sensitive(True)
+                        for package_plan in self.ip.pkg_plans:
+                                if package_plan.origin_fmri and not package_plan.destination_fmri:
+                                        if not remove_iter:
+                                                remove_iter = self.treestore.append(None, packaged_removed[0])
+                                        pkg_version = package_plan.origin_fmri.version.get_short_version()# + dt_str
+                                        pkg = package_plan.origin_fmri.get_name() + "@" + pkg_version
+                                        remove_count = remove_count + 1
+                                        self.treestore.append(remove_iter, [pkg])
+                else:
+                        self.next_button.set_sensitive(False)
+                        if self.error:
+                                for package in self.error:
+                                        if not remove_iter:
+                                                remove_iter = self.treestore.append(None,packaged_removed[0])
+                                        self.treestore.append(remove_iter, [package])
+
                 self.treeview.set_model(self.treestore)
                 self.treeview.expand_all()
                 remove_str = self.parent._("%d packages will be removed\n\n")
@@ -213,9 +238,25 @@ class Remove(progress.ProgressTracker):
         def remove_stage(self):
                 self.removedialog.hide()
                 self.removingdialog.show()
-                self.ip.execute()
+                self.ip.preexecute()
+                try:
+                        be = bootenv.BootEnv(self.ip.image.get_root())
+                except RuntimeError:
+                        be = bootenv.BootEnvNull(self.ip.image.get_root())
+                try:
+                        self.ip.execute()
+                except RuntimeError, e:
+                        be.restore_install_uninstall()
+                except Exception, e:
+                        be.restore_install_uninstall()
+                        raise
 
-        def act_output(self, force = False):
+                if self.ip.state == imageplan.EXECUTED_OK:
+                        be.activate_install_uninstall()
+                else:
+                        be.restore_install_uninstall()
+
+        def act_output(self):
                 gobject.idle_add(self.update_remove_progress, self.ip.progtrack.act_cur_nactions, self.ip.progtrack.act_goal_nactions)
                 return
 
@@ -223,4 +264,31 @@ class Remove(progress.ProgressTracker):
                 if self.parent != None:
                         self.parent.update_package_list()
                 self.removingdialog.hide()
+                return
+
+        def cat_output_start(self): 
+                return
+
+        def cat_output_done(self): 
+                return
+
+        def ver_output(self): 
+                return
+
+        def ver_output_error(self, actname, errors): 
+                return
+
+        def dl_output(self): 
+                return
+
+        def dl_output_done(self): 
+                return
+
+        def eval_output_progress(self): 
+                return
+
+        def ind_output(self):
+                return
+
+        def ind_output_done(self):
                 return

@@ -29,13 +29,14 @@ import sys
 import time
 import pango
 import locale
+import socket
 import gettext
 from threading import Thread
 try:
         import pygtk
         pygtk.require("2.0")
 except:
-        pass
+        sys.exit(1)
 try:
         import gobject
         gobject.threads_init()
@@ -47,14 +48,24 @@ import pkg.catalog as catalog
 import pkg.client.image as image
 import pkg.client.progress as progress
 import pkg.client.filelist as filelist
+import pkg.misc as misc
+import pkg.portable as portable
 import pkg.gui.imageinfo as imageinfo
 import pkg.gui.installupdate as installupdate
 import pkg.gui.remove as remove
 import pkg.gui.enumerations as enumerations
-import pkg.gui.userrights as userrights
 
 class PackageManager:
         def __init__(self):
+                self.image_o = None
+                socket.setdefaulttimeout(
+                    int(os.environ.get("PKG_CLIENT_TIMEOUT", "30"))) # in seconds
+
+                # Override default MAX_TIMEOUT_COUNT if a value has been specified
+                # in the environment.
+                timeout_max = misc.MAX_TIMEOUT_COUNT
+                misc.MAX_TIMEOUT_COUNT = int(os.environ.get("PKG_TIMEOUT_MAX",
+                    timeout_max))
                 pass
 
         def N_(self, message): 
@@ -72,9 +83,9 @@ class PackageManager:
                         module.textdomain("packagemanager")
                 self._ = gettext.gettext
                 main_window_title = self._('Package Manager - revision 0.1')
-                rights = userrights.UserRights()
-                self.user_rights = rights.check_administrative_rights()
+                self.user_rights = portable.is_admin()
                 self.cancelled = False                   # For background processes
+                self.image_directory = None
                 self.preparing_list = True               #
                 self.description_thread_running = False # For background processes
                 self.pkginfo_thread = None              # For background processes
@@ -105,7 +116,7 @@ class PackageManager:
 
         def create_available_widgets(self):
                 '''Create available widgets'''
-                #Widnows
+                # Widnows
                 self.mainwindow = self.wTree.get_widget("mainwindow")
                 self.downloadingfiles = self.wTree.get_widget("downloadingfiles")
                 self.applyingchanges = self.wTree.get_widget("applyingchanges")
@@ -113,10 +124,10 @@ class PackageManager:
                 self.downloadingpackageinformation = \
                     self.wTree.get_widget("downloadingpackageinformation")
                 self.managerepositories = self.wTree.get_widget("managerepositories")
-                #Treeviews
+                # Treeviews
                 self.applicationtreeview = self.wTree.get_widget("applicationtreeview")
                 self.categoriestreeview = self.wTree.get_widget("categoriestreeview")
-                #Textviews
+                # Textviews
                 self.generalinfotextview = self.wTree.get_widget("generalinfotextview")
                 self.installedfilestextview = self.wTree.get_widget("installedfilestextview")
                 self.dependenciestextview = self.wTree.get_widget("dependenciestextview")
@@ -124,22 +135,24 @@ class PackageManager:
                 self.packagenamelabel = self.wTree.get_widget("packagenamelabel")
                 self.shortdescriptionlabel = \
                     self.wTree.get_widget("shortdescriptionlabel")
-                #Search dialog
+                # Search dialog
                 self.searchentrydialog = self.wTree.get_widget("searchentry")
-                #Buttons
+                # Buttons
                 self.install_update_button = self.wTree.get_widget("install_update_button")
                 self.remove_button = self.wTree.get_widget("remove_button")
+                # XXX disabled until new API
                 self.update_all_button = self.wTree.get_widget("update_all_button")
                 self.reload_button = self.wTree.get_widget("reloadbutton")
-                #Other
+                # Other
                 self.repositorycombobox = self.wTree.get_widget("repositorycombobox")
                 self.sectionscombobox = self.wTree.get_widget("sectionscombobox")
                 self.filtercombobox = self.wTree.get_widget("filtercombobox")
                 self.packageimage = self.wTree.get_widget("packageimage")
                 self.statusbar = self.wTree.get_widget("statusbar")
-                #Menu
+                # Menu
                 self.install_update_menu = self.wTree.get_widget("package_install_update")
                 self.remove_menu = self.wTree.get_widget("package_remove")
+                # XXX disabled until new API
                 self.update_all_menu = self.wTree.get_widget("package_update_all")
                 self.cut_menu = self.wTree.get_widget("edit_cut")
                 self.copy_menu = self.wTree.get_widget("edit_copy")
@@ -148,7 +161,7 @@ class PackageManager:
                 self.select_all_menu = self.wTree.get_widget("edit_select_all")
                 self.select_updates_menu = self.wTree.get_widget("edit_select_updates")
                 self.deselect_menu = self.wTree.get_widget("edit_deselect")
-                #Clipboard
+                # Clipboard
                 self.clipboard = gtk.clipboard_get(gtk.gdk.SELECTION_CLIPBOARD)
 
         def clipboard_text_received(self, clipboard, text, data):
@@ -210,11 +223,15 @@ class PackageManager:
                 installed_version_renderer = gtk.CellRendererText()
                 column = gtk.TreeViewColumn(self._('Installed Version'), \
                     installed_version_renderer, text = enumerations.INSTALLED_VERSION_COLUMN)
+                column.set_sort_column_id(enumerations.INSTALLED_VERSION_COLUMN)
+                column.set_sort_indicator(True)
                 column.set_cell_data_func(installed_version_renderer, self.cell_data_function, None)
                 self.applicationtreeview.append_column(column)
                 latest_available_renderer = gtk.CellRendererText()
                 column = gtk.TreeViewColumn(self._('Latest Version'), \
                     latest_available_renderer, text = enumerations.LATEST_AVAILABLE_COLUMN)
+                column.set_sort_column_id(enumerations.LATEST_AVAILABLE_COLUMN)
+                column.set_sort_indicator(True)
                 column.set_cell_data_func(latest_available_renderer, self.cell_data_function, None)
                 self.applicationtreeview.append_column(column)
                 rating_renderer = gtk.CellRendererText()
@@ -223,6 +240,8 @@ class PackageManager:
                 description_renderer = gtk.CellRendererText()
                 column = gtk.TreeViewColumn(self._('Description'), description_renderer, \
                     text = enumerations.DESCRIPTION_COLUMN)
+                column.set_sort_column_id(enumerations.DESCRIPTION_COLUMN)
+                column.set_sort_indicator(True)
                 column.set_cell_data_func(description_renderer, self.cell_data_function, None)
                 self.applicationtreeview.append_column(column)
                 #Added selection listener
@@ -339,15 +358,6 @@ class PackageManager:
 
         def combobox_separator(self, model, iter):
                 return model.get_value(iter, enumerations.FILTER_NAME) == "" 
-
-        def set_visible_packages_from_category(self, category):
-                '''Sets all packages as visible from category'''
-                if not category:
-                        return
-                pkglist = category[PACKAGE_LIST_OBJECT];
-                if pkglist:
-                        for pkg in pkglist:
-                                pkg[enumerations.IS_VISIBLE_COLUMN] = True
 
         def init_sections(self):
                 '''This function is for initializing sections combo box, also adds "All"
@@ -665,7 +675,7 @@ class PackageManager:
                 if icon and icon != pkg:
                         self.packageimage.set_from_pixbuf(icon)
                 else:
-                        self.packageimage.set_from_icon_name("None", 4)
+                        self.packageimage.set_from_pixbuf(self.get_pixbuf_from_path("/usr/share/package-manager/", "PM_package_36x"))
                 self.packagenamelabel.set_markup("<b>" + pkg.get_name() + "</b>")
                 instbuffer = self.installedfilestextview.get_buffer()
                 depbuffer = self.dependenciestextview.get_buffer()
@@ -907,8 +917,10 @@ class PackageManager:
                         "on_edit_select_all_activate":self.on_select_all,
                         "on_edit_select_updates_activate":self.on_select_updates,
                         "on_edit_deselect_activate":self.on_deselect,
+                        # XXX disabled until new API
                         "on_package_update_all_activate":self.on_update_all,
                         #toolbar signals
+                        # XXX disabled until new API
                         "on_update_all_button_clicked":self.on_update_all,
                         "on_reload_button_clicked":self.on_reload,
                         "on_install_update_button_clicked":self.on_install_update,
@@ -926,26 +938,26 @@ class PackageManager:
                 return False
 
         def on_install_update(self, widget):
-                installupdate.InstallUpdate(self.application_list, self)
+                installupdate.InstallUpdate(self.application_list, self, False)
 
         def on_update_all(self, widget):
-                for row in self.application_list:
-                        if self.is_pkg_repository_visible(self.application_list, row.iter):
-                                if self.application_list.get_value(row.iter, enumerations.INSTALLED_VERSION_COLUMN):
-                                        if self.application_list.get_value(row.iter, enumerations.LATEST_AVAILABLE_COLUMN):
-                                                self.application_list.set_value(row.iter, enumerations.MARK_COLUMN, True)
-                                        else:
-                                                self.application_list.set_value(row.iter, enumerations.MARK_COLUMN, False)
-                                else:
-                                        self.application_list.set_value(row.iter, enumerations.MARK_COLUMN, False)
-                        else:
-                                self.application_list.set_value(row.iter, enumerations.MARK_COLUMN, False)
-                installupdate.InstallUpdate(self.application_list, self)
+                try:
+                        self.image_o.retrieve_catalogs()
+                except RuntimeError, failures:
+                        raise
+
+                # Reload catalog.  This picks up the update from retrieve_catalogs.
+                self.image_o.load_catalogs(self.pr)
+
+                pkg_list = [ ipkg.get_pkg_stem() for ipkg in self.image_o.gen_installed_pkgs() ]
+
+                installupdate.InstallUpdate({self.image_o:pkg_list}, self, True)
 
         def enable_disable_selection_menus(self):
                 self.enable_disable_select_all()
                 self.enable_disable_select_updates()
                 self.enable_disable_deselect()
+                # XXX disabled until new API
                 self.enable_disable_update_all()
 
         def enable_disable_select_all(self):
@@ -1020,20 +1032,23 @@ class PackageManager:
                 if self.description_thread_running:
                         self.cancelled = True
                 self.catalog_refresh()
-                self.get_image_from_directory(self.image_directory)
+                self.process_package_list_start(self.image_directory)
                 self.category_list_filter.refilter()
                 self.application_list_filter.refilter()
+                self.enable_disable_selection_menus()
+                self.update_statusbar()
+                self.update_install_update_button(None,True)
+                self.update_remove_button(None,True)
 
         def catalog_refresh(self):
                 """Update image's catalogs."""
                 images = self.get_images_from_model()
-                full_refresh = True
+                full_refresh = False
                 for img in images:
                         # Ensure Image directory structure is valid.
                         if not os.path.isdir("%s/catalog" % img.imgdir):
                                 img.mkdirs()
                         # Loading catalogs allows us to perform incremental update
-                        img.load_catalogs(self.pr)
                         img.retrieve_catalogs(full_refresh)
 
         def get_images_from_model(self):
@@ -1069,7 +1084,7 @@ class PackageManager:
                         try:
                                 dir = os.environ["PKG_IMAGE"]
                         except KeyError:
-                                pass
+                                print
                         try:
                                 image_obj.find_root(dir)
                                 image_obj.load_config()
@@ -1082,13 +1097,14 @@ class PackageManager:
 
 
         def get_image_from_directory(self, image_obj):
-                """ This method set up image from the given directory and returns the 
-                image object or None"""
+                """ This method set up image from the given directory and
+                returns the image object or None"""
                 # XXX Convert timestamp to some nice date :)
                 self.preparing_list = True
                 self.application_list.clear()
-                pkgs_known = [ pf for pf in 
-                    sorted(image_obj.gen_known_package_fmris()) ]
+                self.application_list_filter.refilter()
+                pkgs_known = [ pf[0] for pf in
+                    sorted(image_obj.inventory(all_known = True)) ]
                 #Only one instance of those icons should be in memory
                 locked_icon = None #self.get_icon_pixbuf("locked")
                 update_available_icon = self.get_icon_pixbuf("new_update")
@@ -1099,7 +1115,7 @@ class PackageManager:
                 catalogs = image_obj.catalogs
                 categories = {}
                 sections = {}
-#                self.setup_repositories_combobox(image_obj)
+                self.setup_repositories_combobox(image_obj)
                 for catalog in catalogs:
                         category = imginfo.read(self.application_dir + "/usr/share/package-manager/data/" + catalog)
                         categories[catalog] = category
@@ -1205,10 +1221,11 @@ class PackageManager:
         def switch_to_active_valid_image(self):
                 ''' switches to active and valid image, if there is no, tries to
                 switch to root image, if this fails returns None '''
-                pkgconfig = packagemanagerconfig.PackageManagerConfig()
+                # pkgconfig = packagemanagerconfig.PackageManagerConfig()
                 # XXX We should be able to get list of images (valid and non valid)
                 #So we are able to put them into combo-box
-                #The imageconfig should return something nicer than now, like 
+                #The imageconfig should return something nicer than now, like
+                return 
 
         def get_manifests_for_packages(self):
                 ''' Function, which get's manifest for packages. If the manifest is not
@@ -1269,9 +1286,9 @@ class PackageManager:
                 if not category_name:
                         return
                         # XXX check if needed
-                        category_name = self._('All')
-                        category_description = self._('All packages')
-                        category_icon = None
+                        # category_name = self._('All')
+                        # category_description = self._('All packages')
+                        # category_icon = None
                 category_ref = None
                 for category in self.category_list:
                         if category[enumerations.CATEGORY_NAME] == category_name:
@@ -1322,13 +1339,13 @@ class PackageManager:
                                 return None
 
         def process_package_list_start(self, image_directory):
+                self.image_directory = image_directory
+                # Create our image object based on image directory.
                 image_obj = self.get_image_obj_from_directory(image_directory)
-                #gobject # tutaj dodac jakis progress mowiacy o tym ile sie juz zrobilo
-                #ten progress powinien byc updatowany z funkcji ponizszej
+                self.image_o = image_obj
+                # Acquire image contents.
                 self.get_image_from_directory(image_obj)
-                # tutaj powinna byc odpalana funkcja ktora zwiaze liste z view,
-                #ale oczywiscie w gobject.add_idle
-                # na koncu tej funkcji powinien byc dodany filtr
+
 
 
 ###############################################################################
@@ -1397,30 +1414,31 @@ if __name__ == '__main__':
         packagemanager = PackageManager()
         packagemanager.create_widgets_and_show_gui()
         test = False
+        image_dir = "/"
+
         try:
-                opts, args = getopt.getopt(sys.argv[1:], "htd", ["help", "test-gui", "image-dir"])
+                opts, args = getopt.getopt(sys.argv[1:], "htR:", ["help", "test-gui", "image-dir="])
         except getopt.error, msg:
-                print ('%s, for help use --help') % msg
+                print "%s, for help use --help" % msg
                 sys.exit(2)
-        for option, arguments in opts:
+        for option, argument in opts:
                 if option in ("-h", "--help"):
-                        print ('Use -d (--image-dir) to specify image directory.')
-                        print ('Use -t (--test-gui) to work on fake data.')
+                        print """\
+Use -R (--image-dir) to specify image directory.
+Use -t (--test-gui) to work on fake data."""
                         sys.exit(0)
                 if option in ("-t", "--test-gui"):
                         packagemanager.fill_with_fake_data()
                         test = True
-                if option in ("-d", "--image-dir"):
-                        if test:
-                                print "Options -d and -t can not be used together."
-                                sys.exit(0)
-                        #Thread(target = packagemanager.process_package_list_start, args = (args[0], )).start()
-                        packagemanager.process_package_list_start(args[0])
-                        Thread(target = packagemanager.get_manifests_for_packages, args = ()).start()
-                        test = True
+                if option in ("-R", "--image-dir"):
+                        image_dir = argument
+
+        if test and image_dir != "/":
+                print "Options -R and -t can not be used together."
+                sys.exit(2)
         if not test:
-                #Thread(target = packagemanager.process_package_list_start, args = ("/", )).start()
-                packagemanager.process_package_list_start(args[0])
-                Thread(target = packagemanager.get_manifests_for_packages, args = ()).start()
+                packagemanager.process_package_list_start(image_dir)
+                Thread(target = packagemanager.get_manifests_for_packages,
+                    args = ()).start()
         packagemanager.update_statusbar()
         main()

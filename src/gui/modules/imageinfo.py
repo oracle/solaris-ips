@@ -27,6 +27,7 @@ import ConfigParser
 import re
 import sys
 import os
+from ConfigParser import ParsingError
 
 class ImageInfo(object):
         """An ImagineInfo object is a collection of information
@@ -92,7 +93,7 @@ class ImageInfo(object):
                         r = cp.read(path)
                         if r:
                                 if r[0] != path:
-                                        raise ParseError
+                                        raise ParsingError
                                 return cp
 
         def mkdirs_files(self, path):

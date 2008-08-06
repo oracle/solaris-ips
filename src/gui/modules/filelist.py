@@ -26,110 +26,84 @@
 import os
 import urllib
 import pkg.pkgtarfile as ptf
-import pkg.misc as misc
+import pkg.portable as portable
+from pkg.misc import hash_file_name
 import pkg.client.filelist as filelist
 
 class FileList(filelist.FileList):
 
-        def __init__(self, progtrack, image, fmri, maxbytes = None):
-                filelist.FileList.__init__(self, image, fmri, maxbytes = None)
+        def __init__(self, progtrack, image, fmri, gui_thread = None, maxbytes = None):
                 self.progtrack = progtrack
+                self.gui_thread = gui_thread
+                filelist.FileList.__init__(self, image, fmri, progtrack, maxbytes = None)
 
-        def get_files(self, gui_thread = None):
-                """Instruct the FileList object to download the files
-                for the actions that have been associated with this object.
-                This routine will raise a FileListException if the server
-                does not support filelist.  Callers of get_files should
-                consider catching this exception."""
-                req_dict = { }
-                authority, pkg_name, version = self.fmri.tuple()
-                url_prefix = self.image.get_url_by_authority(authority)
-                for i, k in enumerate(self.fhash.keys()):
-                        fstr = "File-Name-%s" % i
-                        req_dict[fstr] = k
-                req_str = urllib.urlencode(req_dict)
+
+        def _extract_file(self, tarinfo, tar_stream, download_dir):
+                """Given a tarinfo object, extract that onto the filesystem
+                so it can be installed."""
+
+                if self.gui_thread.is_cancelled():
+                        self.image.cleanup_downloads()
+                        raise CancelException
+
+                completed_dir = self.image.cached_download_dir()
+
+                hashval = tarinfo.name
+
+                # Set the perms of the temporary file. The file must
+                # be writable so that the mod time can be changed on Windows
+                tarinfo.mode = 0600
+                tarinfo.uname = "root"
+                tarinfo.gname = "root"
+
+                # Now that the file has been successfully extracted, move
+                # it to the cached content directory.
+                final_path = os.path.normpath(os.path.join(completed_dir,
+                    hash_file_name(hashval)))
+
+                # XXX catch IOError if tar stream closes inadvertently?
+                tar_stream.extract_to(tarinfo, download_dir, hashval)
+
+                file_path = self.fhash[hashval][0].attrs.get("path")
+                self.progtrack.download_file_path(file_path)
+
+                if not os.path.exists(os.path.dirname(final_path)):
+                        os.makedirs(os.path.dirname(final_path))
+
+                portable.rename(os.path.join(download_dir, hashval), final_path)
+
+                # assign opener to actions in the list
                 try:
-                        f, v = misc.versioned_urlopen(url_prefix, "filelist", [0],
-                            data = req_str)
-                except RuntimeError:
-                        raise FileListException, "No server-side support" 
-                tar_stream = ptf.PkgTarFile.open(mode = "r|", fileobj = f)
-                filelist_download_dir = self.image.get_download_dir()
-                for info in tar_stream:
-                        if gui_thread.is_cancelled():
-                                tar_stream.close()
-                                f.close()
-                                self.image.cleanup_downloads()
-                                return
-                        hashval = info.name
-                        pkgnm = self.fmri.get_dir_path(True)
                         l = self.fhash[hashval]
-                        act = l.pop()
-                        path = act.attrs["path"]
-                        self.progtrack.download_file_path(path) 
-                        imgroot = self.image.get_root()
-                        # get directory and basename
-                        dirname, base = os.path.split(path)
-                        # reconstruct path without basename
-                        path = os.path.normpath(os.path.join(
-                            filelist_download_dir,
-                            dirname))
-                        # Since the file hash value identifies the content, and
-                        # not the file or package itself, generate temporary
-                        # file names that are unique by package and file name.
-                        # This ensures that each opener gets access to a unique
-                        # file name that hasn't been manipulated by another
-                        # action.
-                        filename =  "." + pkgnm + "-" + base + "-" + hashval
-                        # Set the perms of the temporary file.
-                        info.mode = 0400
-                        info.uname = "root"
-                        info.gname = "root"
-                        # XXX catch IOError if tar stream closes inadvertently?
-                        tar_stream.extract_to(info, path, filename)
-                        # extract path is where the file now lives
-                        # after being extracted
-                        extract_path = os.path.normpath(os.path.join(
-                            path, filename))
-                        #self.progtrack.download_file_path(extract_path)
-                        # assign opener
-                        act.data = self._make_opener(extract_path)
-                        # If there are more actions in the list, copy the
-                        # extracted file to their paths, changing names as
-                        # appropriate to maintain uniqueness
-                        for action in l:
-                                if gui_thread.is_cancelled():
-                                        tar_stream.close()
-                                        f.close()
-                                        self.image.cleanup_downloads()
-                                        return
-                                path = action.attrs["path"]
-                                self.progtrack.download_file_path(path)
-                                dirname, base = os.path.split(path)
-                                cpdir = os.path.normpath(os.path.join(
-                                    filelist_download_dir,
-                                    dirname))
-                                cppath = os.path.normpath(os.path.join(
-                                    cpdir, "." + pkgnm + "-" + base \
-                                    + "-" + hashval))
-                                if not os.path.exists(cpdir):
-                                        os.makedirs(cpdir)
-                                # we can use hardlink here
-                                os.link(extract_path, cppath)
-                                action.data = self._make_opener(cppath)
-                tar_stream.close()
-                f.close()
+                except KeyError:
+                        # If the key isn't in the dictionary, the server
+                        # sent us a file we didn't ask for.  In this
+                        # case, we can't create an opener for it, so just
+                        # leave it in the cache.
+                        return
+
+                for action in l:
+                        action.data = self._make_opener(final_path)
+
+                # Remove successfully extracted items from the hash
+                # and adjust bean counters
+                self._del_hash(hashval)
 
                 @staticmethod
-                def _make_opener(filepath, gui_thread = None):
+                def _make_opener(filepath):
                         def opener():
-                                if gui_thread.is_cancelled():
+                                if self.gui_thread.is_cancelled():
                                         self.image.cleanup_downloads()
-                                        return
+                                        raise CancelException
                                 f = open(filepath, "rb")
                                 os.unlink(filepath)
                                 return f
-                        return opener   
+                        return opener
+
+class CancelException(Exception):
+        def __init__(self, args=None):
+                Exception.__init__(self)
+                self.args = args
 
 class FileListException(Exception):
         def __init__(self, args = None):

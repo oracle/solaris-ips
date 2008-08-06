@@ -24,41 +24,41 @@
 #
 
 (
-    MARK_COLUMN,
-    STATUS_ICON_COLUMN,
-    ICON_COLUMN,
-    NAME_COLUMN,
-    INSTALLED_VERSION_COLUMN,
-    INSTALLED_OBJECT_COLUMN, # This will speed up a little bit
-    LATEST_AVAILABLE_COLUMN,
-    RATING_COLUMN,           # Not in revision 1
-    DESCRIPTION_COLUMN,
-    PACKAGE_OBJECT_COLUMN,   # pkg.client.fmri.py module
-    IMAGE_OBJECT_COLUMN,     # This takes not much memory, so we can use that :)
-    IS_VISIBLE_COLUMN,       # True indicates that the package is visible in ui
-    CATEGORY_LIST_OBJECT     # list of categories to which package belongs
+MARK_COLUMN,
+STATUS_ICON_COLUMN,
+ICON_COLUMN,
+NAME_COLUMN,
+INSTALLED_VERSION_COLUMN,
+INSTALLED_OBJECT_COLUMN, # This will speed up a little bit
+LATEST_AVAILABLE_COLUMN,
+RATING_COLUMN,           # Not in revision 1
+DESCRIPTION_COLUMN,
+PACKAGE_OBJECT_COLUMN,   # pkg.client.fmri.py module
+IMAGE_OBJECT_COLUMN,     # This takes not much memory, so we can use that :)
+IS_VISIBLE_COLUMN,       # True indicates that the package is visible in ui
+CATEGORY_LIST_OBJECT     # list of categories to which package belongs
 ) = range(13)
 
 #Categories
 (
-    CATEGORY_NAME,
-    CATEGORY_DESCRIPTION,
-    CATEGORY_ICON,
-    CATEGORY_VISIBLE,
-    SECTION_LIST_OBJECT,     #List with the sections to which category belongs 
+CATEGORY_NAME,
+CATEGORY_DESCRIPTION,
+CATEGORY_ICON,
+CATEGORY_VISIBLE,
+SECTION_LIST_OBJECT,     #List with the sections to which category belongs 
 ) = range(5)
 
 #Sections
 (
-    SECTION_NAME,
+SECTION_NAME,
 ) = range(1)
 
 #Filter
 (
-    FILTER_NAME,
+FILTER_NAME,
 ) = range(1)
 
 #Repositories switch
 (
-    REPOSITORY_NAME,
+REPOSITORY_NAME,
 ) = range(1)
