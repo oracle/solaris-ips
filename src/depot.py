@@ -67,6 +67,7 @@ REINDEX_DEFAULT = False
 import getopt
 import os
 import sys
+import urlparse
 
 try:
         import cherrypy
@@ -89,12 +90,14 @@ from pkg.misc import port_available, emsg
 
 def usage():
         print """\
-Usage: /usr/lib/pkg.depotd [--readonly] [--rebuild] [-d repo_dir] [-p port]
-           [-s threads] [-t socket_timeout]
+Usage: /usr/lib/pkg.depotd [--readonly] [--rebuild] [--proxy-base url]
+           [-d repo_dir] [-p port] [-s threads] [-t socket_timeout] 
 
         --readonly      Read-only operation; modifying operations disallowed
         --rebuild       Re-build the catalog from pkgs in depot
                         Cannot be used with --readonly
+        --proxy-base    The url to use as the base for generating internal
+                        redirects and content.
 """
         sys.exit(2)
 
@@ -112,6 +115,7 @@ if __name__ == "__main__":
         readonly = READONLY_DEFAULT
         rebuild = REBUILD_DEFAULT
         reindex = REINDEX_DEFAULT
+        proxy_base = None
 
         if "PKG_REPO" in os.environ:
                 repo_path = os.environ["PKG_REPO"]
@@ -121,7 +125,8 @@ if __name__ == "__main__":
         try:
                 parsed = set()
                 opts, pargs = getopt.getopt(sys.argv[1:], "d:np:s:t:",
-                    ["readonly", "rebuild", "refresh-index"])
+                    ["readonly", "rebuild", "proxy-base=", "refresh-index"])
+                opt = None
                 for opt, arg in opts:
                         if opt in parsed:
                                 raise OptionError, "Each option may only be " \
@@ -160,6 +165,21 @@ if __name__ == "__main__":
                                 # pkg.depot process. The index will be rebuilt
                                 # automatically on startup.
                                 reindex = True
+                        elif opt == "--proxy-base":
+                                # Attempt to decompose the url provided into
+                                # its base parts.  This is done so we can
+                                # remove any scheme information since we
+                                # don't need it.
+                                scheme, netloc, path, params, query, \
+                                    fragment = urlparse.urlparse(arg,
+                                    allow_fragments=0)
+
+                                # Rebuild the url without the scheme and
+                                # remove the leading // urlunparse adds.
+                                proxy_base = urlparse.urlunparse(("", netloc,
+                                    path, params, query, fragment)
+                                    ).lstrip("//")
+
         except getopt.GetoptError, e:
                 print "pkg.depotd: %s" % e.msg
                 usage()
@@ -170,6 +190,7 @@ if __name__ == "__main__":
                 print "pkg.depotd: illegal option value: %s specified " \
                     "for option: %s" % (arg, opt)
                 usage()
+
         if rebuild and reindex:
                 print "--refresh-index cannot be used with --rebuild"
                 usage()
@@ -179,6 +200,7 @@ if __name__ == "__main__":
         if reindex and readonly:
                 print "--readonly cannot be used with --refresh-index"
                 usage()
+
         # If the program is going to reindex, the port is irrelevant since
         # the program will not bind to a port.
         if not reindex:
@@ -210,7 +232,7 @@ if __name__ == "__main__":
                 sys.exit(1)
 
         if reindex:
-                scfg.acquire_catalog(rebuild = False)
+                scfg.acquire_catalog(rebuild=False)
                 scfg.catalog.run_update_index()
                 sys.exit(0)
 
@@ -228,6 +250,7 @@ if __name__ == "__main__":
         # client.
         root.wsgiapp.response_class = depot.DepotResponse
 
+        # Setup our basic server configuration.
         cherrypy.config.update({
             "environment": "production",
             "checker.on": True,
@@ -237,6 +260,7 @@ if __name__ == "__main__":
             "server.socket_timeout": socket_timeout
         })
 
+        # Now build our site configuration.
         conf = {
             "/robots.txt": {
                 "tools.staticfile.on": True,
@@ -249,6 +273,27 @@ if __name__ == "__main__":
                 "tools.staticdir.dir": ""
             }
         }
+
+        if proxy_base:
+                # This changes the base URL for our server, and is primarily
+                # intended to allow our depot process to operate behind Apache
+                # or some other webserver process.
+                #
+                # Visit the following URL for more information:
+                #    http://cherrypy.org/wiki/BuiltinTools#tools.proxy
+                proxy_conf = {
+                        "tools.proxy.on": True,
+                        "tools.proxy.local": "",
+                        "tools.proxy.base": proxy_base
+                }
+
+                if "/" not in conf:
+                        conf["/"] = {}
+
+                # Now merge or add our proxy configuration information into the
+                # existing configuration.
+                for entry in proxy_conf:
+                        conf["/"][entry] = proxy_conf[entry]
 
         try:
                 cherrypy.quickstart(root, config = conf)

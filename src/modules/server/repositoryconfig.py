@@ -96,6 +96,15 @@ class RepositoryConfig(object):
                     "default": "opensolaris.org image packaging feed"
                 },
                 "description": {},
+                "icon": {
+                    "default": "pkg-block-icon.png"
+                },
+                "logo": {
+                    "default": "pkg-block-logo.png"
+                },
+                "authority": {
+                    "default": "opensolaris.org"
+                },
                 "window": {
                     "type": ATTR_TYPE_INT,
                     "default": 24

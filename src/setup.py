@@ -156,6 +156,7 @@ web_files = [
         'web/pkg-block-icon.png',
         'web/pkg-block-logo.png',
         'web/pkg.css',
+        'web/feed-icon-32x32.png',
         'web/robots.txt',
         ]
 zones_files = [

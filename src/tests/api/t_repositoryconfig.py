@@ -79,6 +79,15 @@ class TestRepositoryConfig(pkg5unittest.Pkg5TestCase):
                     "default": "An RSS/Atom feed that contains a summary of "
                         "repository changes."
                 },
+                "icon": {
+                    "default": "pkg-block-icon.png"
+                },
+                "logo": {
+                    "default": "pkg-block-logo.png"
+                },
+                "authority": {
+                    "default": "opensolaris.org"
+                },
                 "window": {
                     "type": rcfg.ATTR_TYPE_INT,
                     "default": 24

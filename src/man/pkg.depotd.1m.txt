@@ -5,8 +5,8 @@ NAME
      pkg.depotd - image packaging system depot server
 
 SYNOPSIS
-     /usr/lib/pkg.depotd [--readonly] [--rebuild] [-d repo_dir] [-p port]
-         [-s threads] [-t socket_timeout]
+     /usr/lib/pkg.depotd [--readonly] [--rebuild] [--proxy-base url]
+         [-d repo_dir] [-p port] [-s threads] [-t socket_timeout]
 
 DESCRIPTION
      pkg.depotd is the depot server for the image packaging system.
@@ -30,6 +30,12 @@ DESCRIPTION
                                 the instance should find its repository
                                 data.  The default value is
                                 /var/pkg/repo.
+
+     pkg/proxy_base             (uri) This changes the base URL for the
+                                depot server and is most useful when
+                                running behind Apache or some other
+                                webserver in a reverse proxy
+                                configuration.
 
      pkg/socket_timeout         (count) The maximum number of seconds the
                                 server should wait for a response from a
@@ -64,6 +70,9 @@ OPTIONS
 
      --rebuild                  Any existing repository catalog will be
                                 destroyed and then recreated on startup.
+
+     --proxy-base url           Overrides pkg/proxy_base with the value
+                                given by url.
 
 EXAMPLES
      Example 1:  Enabling the depot server.
@@ -140,4 +149,8 @@ NOTES
      Because the depot server expects to be run by an smf(5) restarter,
      it does not daemonize.  Error messages are generally sent to
      standard output, or to the syslogd(1M) system.
+
+     Changes to configuration require a restart of the depot server process
+     so that they can be reflected in operations and output.  This must be
+     done when the server is not operating in read-only or mirror mode.
 

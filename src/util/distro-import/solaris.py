@@ -29,6 +29,7 @@ import os
 import re
 import shlex
 import sys
+import urllib
 
 from datetime import datetime
 from itertools import groupby
@@ -1081,5 +1082,10 @@ for p in sorted(newpkgs):
         print "  Version:", p.version
         print "  Description:", p.desc
         publish_pkg(p)
+
+# Ensure that the feed is updated and cached to reflect changes.
+print "Caching RSS/Atom feed..."
+f = urllib.urlopen("%s/feed" % def_repo)
+f.close()
 
 print "Done:", datetime.now()

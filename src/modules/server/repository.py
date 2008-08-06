@@ -25,6 +25,7 @@
 import cherrypy
 from cherrypy.lib.static import serve_file
 
+import cStringIO
 import errno
 import httplib
 import inspect
@@ -32,7 +33,6 @@ import logging
 import os
 import re
 import socket
-
 import tarfile
 # Without the below statements, tarfile will trigger calls to getpwuid and
 # getgrgid for every file downloaded.  This in turn leads to nscd usage which
@@ -44,13 +44,13 @@ tarfile.grp = None
 
 import urllib
 
-import pkg.server.catalog as catalog
+import pkg.catalog as catalog
 import pkg.fmri as fmri
+import pkg.manifest as manifest
 import pkg.misc as misc
-import pkg.Uuid25 as uuid
 
-import pkg.server.repositoryconfig as rc
 import pkg.server.face as face
+import pkg.server.repositoryconfig as rc
 import pkg.server.transaction as trans
 
 class Dummy(object):
@@ -83,20 +83,13 @@ class Repository(object):
                         # will automatically be populated with sane defaults.
                         self.rcfg = rc.RepositoryConfig()
 
+                # Allow our interface module to do any startup work.
+                face.init(self.scfg, self.rcfg)
+
                 if not self.scfg.is_read_only():
                         # While our configuration can be parsed during
-                        # initialization, no changes can be written to disk
-                        # in readonly mode.
-
-                        # RSS/Atom feeds require a unique identifier, so
-                        # generate one if isn't defined already.  This
-                        # needs to be a persistent value, so we only
-                        # generate this if we can save the configuration.
-                        fid = self.rcfg.get_attribute("feed", "id")
-                        if not fid:
-                                # Create a random UUID (type 4).
-                                self.rcfg._set_attribute("feed", "id",
-                                    uuid.uuid4())
+                        # initialization, no changes can be written to disk in
+                        # readonly mode.
 
                         # Save the new configuration (or refresh existing).
                         self.rcfg.write(cfgpathname)
@@ -157,7 +150,7 @@ class Repository(object):
                         response = cherrypy.response
                         if face.match(self.scfg, self.rcfg, request, response):
                                 return face.respond(self.scfg, self.rcfg,
-                                    request, response)
+                                    request, response, *tokens, **params)
                         else:
                                 return face.unknown(self.scfg, self.rcfg,
                                     request, response)
@@ -279,7 +272,7 @@ class Repository(object):
                                 # Attempt to close the tar_stream now that we
                                 # are done processing the request.
                                 tar_stream.close()
-                        except Exception, e:
+                        except:
                                 # tarfile most likely failed trying to flush
                                 # its internal buffer.  To prevent tarfile from
                                 # causing further exceptions during __del__,
@@ -509,4 +502,73 @@ class Repository(object):
                 'request.process_request_body': False,
                 'response.timeout': 3600,
         }
+
+        @cherrypy.expose
+        @cherrypy.tools.response_headers(headers = \
+            [('Content-Type','text/plain')])
+        def info_0(self, *tokens):
+                """ Output a text/plain summary of information about the
+                    specified package. The request is an encoded pkg FMRI.  If
+                    the version is specified incompletely, we return an error,
+                    as the client is expected to form correct requests, based
+                    on its interpretation of the catalog and its image
+                    policies. """
+
+                # Parse request into FMRI component and decode.
+                try:
+                        pfmri = tokens[0]
+                except IndexError:
+                        raise cherrypy.HTTPError(httplib.BAD_REQUEST)
+
+                try:
+                        f = fmri.PkgFmri(pfmri, None)
+                except:
+                        # If we couldn't parse the FMRI for whatever reason,
+                        # assume the client made a bad request.
+                        raise cherrypy.HTTPError(httplib.BAD_REQUEST)
+
+                m = manifest.Manifest()
+                m.set_fmri(None, pfmri)
+                mpath = os.path.join(self.scfg.pkg_root, f.get_dir_path())
+                if not os.path.exists(mpath):
+                        raise cherrypy.HTTPError(httplib.NOT_FOUND)
+
+                m.set_content(file(mpath).read())
+
+                authority, name, version = f.tuple()
+                if authority:
+                        authority = fmri.strip_auth_pfx(authority)
+                else:
+                        authority = "Unknown"
+                summary = m.get("description", "")
+
+                lsummary = cStringIO.StringIO()
+                for i, entry in enumerate(m.gen_actions_by_type("license")):
+                        if i > 0:
+                                lsummary.write("\n")
+
+                        lpath = os.path.normpath(os.path.join(
+                            self.scfg.file_root,
+                            misc.hash_file_name(entry.hash)))
+
+                        lfile = file(lpath, "rb")
+                        misc.gunzip_from_stream(lfile, lsummary)
+                lsummary.seek(0)
+
+                return """\
+          Name: %s
+       Summary: %s
+     Authority: %s
+       Version: %s
+ Build Release: %s
+        Branch: %s
+Packaging Date: %s
+          Size: %s
+          FMRI: %s
+
+License:
+%s
+""" % (name, summary, authority, version.release, version.build_release,
+    version.branch, version.get_timestamp().ctime(), misc.bytes_to_str(m.size),
+    f, lsummary.read())
 

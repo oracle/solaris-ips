@@ -264,15 +264,14 @@ def emsg(*text):
                         raise PipeError, e
                 raise
 
-
 def port_available(host, port):
-        """Returns True if the indicated port is available to bind to; otherwise
-        returns False."""
+        """Returns True if the indicated port is available to bind to;
+        otherwise returns False."""
 
         port = int(port)
         if host is None:
-                # None is the same as INADDR_ANY, which for our purposes, should
-                # be the hostname.
+                # None is the same as INADDR_ANY, which for our purposes,
+                # should be the hostname.
                 host = socket.gethostname()
 
         try:
@@ -310,9 +309,9 @@ def port_available(host, port):
         except socket.error, e:
                 errnum = e[0]
                 try:
-                        msg = e[1]
+                        text = e[1]
                 except IndexError:
-                        msg = e[0]
+                        text = e[0]
 
                 if sock:
                         sock.close()
@@ -322,8 +321,41 @@ def port_available(host, port):
                         # in use.
                         return True, None
 
-                return False, msg
+                return False, text
 
+def bytes_to_str(bytes):
+        """Returns a human-formatted string representing the number of bytes
+        in the largest unit possible."""
+
+        units = [
+            ("B", 2**10),
+            ("kB", 2**20),
+            ("MB", 2**30),
+            ("GB", 2**40),
+            ("TB", 2**50),
+            ("PB", 2**60),
+            ("EB", 2**70)
+        ]
+
+        for uom, limit in units:
+                if uom != "EB" and bytes >= limit:
+                        # Try the next largest unit of measure unless this is
+                        # the largest or if the byte size is within the current
+                        # unit of measure's range.
+                        continue
+                else:
+                        return "%.2f %s" % (round(bytes / float(
+                            limit / 2**10), 2), uom)
+
+def get_rel_path(request, uri):
+        # Calculate the depth of the current request path relative to our base
+        # uri. path_info always ends with a '/' -- so ignore it when
+        # calculating depth.
+        depth = request.path_info.count("/") - 1
+        return ("../" * depth) + uri
+
+def get_res_path(request, name):
+        return get_rel_path(request, "%s/%s" % ("static", name))
 
 # Set the maximum number of timeouts before we giveup.  This can
 # be adjusted by setting the environment variable PKG_TIMEOUT_MAX

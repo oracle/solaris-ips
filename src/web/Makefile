@@ -21,6 +21,7 @@
 # Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
+ROOTSHARE = $(ROOT)/$(SHARE)
 
 all := TARGET = all
 link := TARGET = link
@@ -28,13 +29,14 @@ link-clean := TARGET = link-clean
 
 all:
 
-PWD:sh = pwd 
+PWD:sh = pwd
 link:
 	mkdir -p /usr/share/lib/pkg
-	ln -sf $(PWD)/pkg-block-icon.png /usr/share/lib/pkg/pkg-block-icon.png
-	ln -sf $(PWD)/pkg-block-logo.png /usr/share/lib/pkg/pkg-block-logo.png
-	ln -sf $(PWD)/robots.txt /usr/share/lib/pkg/robots.txt
-	ln -sf $(PWD)/pkg.css /usr/share/lib/pkg/pkg.css
+	ln -sf $(PWD)/pkg-block-icon.png $(ROOTSHARE)/pkg-block-icon.png
+	ln -sf $(PWD)/pkg-block-logo.png $(ROOTSHARE)/pkg-block-logo.png
+	ln -sf $(PWD)/robots.txt $(ROOTSHARE)/robots.txt
+	ln -sf $(PWD)/pkg.css $(ROOTSHARE)/pkg.css
+	ln -sf $(PWD)/feed-icon-32x32.png $(ROOTSHARE)/feed-icon-32x32.png
 
 link-clean:
 	rm -rf /usr/share/lib/pkg

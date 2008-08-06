@@ -24,7 +24,6 @@
 #
 
 import datetime
-import errno
 import httplib
 import os
 import re
@@ -38,14 +37,14 @@ class UpdateLogException(Exception):
                 self.args = args
 
 class UpdateLog(object):
-        """The update log is a mechanism that allows clients and servers to make
-        incremental updates to their package catalogs.  The server logs
+        """The update log is a mechanism that allows clients and servers to
+        make incremental updates to their package catalogs.  The server logs
         whether it has added or removed a package, the time when the action
         occurred, and the name of the package added or removed.  The client
         requests a list of actions that have been applied to the server's
-        catalog since a particular time in the past.  The server is then able to
-        send this list of actions, allowing the client to apply these changes to
-        its catalog.
+        catalog since a particular time in the past.  The server is then able
+        to send this list of actions, allowing the client to apply these
+        changes to its catalog.
 
         This allows the client to obtain incremental updates to its catalog,
         instead of having to download an entire (and largely duplicated)
@@ -59,7 +58,7 @@ class UpdateLog(object):
         entry in server-side format.  They must be in order and separated by
         spaces."""
 
-        def __init__(self, update_root, catalog, maxfiles = 336):
+        def __init__(self, update_root, cat, maxfiles = 336):
                 """Create an instance of the UpdateLog.  "update_root" is
                 the root directory for the update log files.
 
@@ -72,7 +71,12 @@ class UpdateLog(object):
                 self.rootdir = update_root
                 self.logfd = None
                 self.maxfiles = maxfiles
-                self.catalog = catalog
+                self.catalog = cat
+                self.close_time = None
+                self.first_update = None
+                self.last_update = None
+                self.curfiles = 0
+                self.logfiles = []
 
                 if not os.path.exists(update_root):
                         os.makedirs(update_root)
@@ -90,11 +94,11 @@ class UpdateLog(object):
 
                         self.logfd = None
 
-        def add_package(self, fmri, critical = False):
-                """Record that the catalog has added "fmri"."""
+        def add_package(self, pfmri, critical = False):
+                """Record that the catalog has added "pfmri"."""
 
                 # First add FMRI to catalog
-                ts = self.catalog.add_fmri(fmri, critical)
+                ts = self.catalog.add_fmri(pfmri, critical)
 
                 # Now add update to updatelog
                 self._check_logs()
@@ -111,7 +115,7 @@ class UpdateLog(object):
                 # in the docstrings for the Catalog class.
 
                 logstr = "+ %s %s %s\n" % \
-                    (ts.isoformat(), entry_type, fmri.get_fmri(anarchy = True))
+                    (ts.isoformat(), entry_type, pfmri.get_fmri(anarchy=True))
 
                 self.logfd.write(logstr)
                 self.logfd.flush()
@@ -125,8 +129,8 @@ class UpdateLog(object):
                 effective as of version vers."""
 
                 # Record rename in catalog
-                ts, rr = self.catalog.rename_package(srcname, srcvers, destname,
-                    destvers)
+                ts, rr = self.catalog.rename_package(srcname, srcvers,
+                     destname, destvers)
 
                 # Now add rename record to updatelog
                 self._check_logs()
@@ -168,9 +172,9 @@ class UpdateLog(object):
                         self.first_update = ftime
 
         def _check_logs(self):
-                """Check to see if maximum number of logfiles has been exceeded.
-                If so, rotate the logs.  Also, if a log is open, check to
-                see if it needs to be closed."""
+                """Check to see if maximum number of logfiles has been
+                exceeded. If so, rotate the logs.  Also, if a log is
+                open, check to see if it needs to be closed."""
 
                 if self.logfd and self.close_time < datetime.datetime.now():
                         self.logfd.close()
@@ -237,8 +241,8 @@ class UpdateLog(object):
                         os.makedirs(path)
 
                 # Build a list of FMRIs that this update would add, check to
-                # make sure that they aren't present in the catalog, then append
-                # the fmris.
+                # make sure that they aren't present in the catalog, then
+                # append the fmris.
                 mts = catalog.ts_to_datetime(cts)
                 cts = mts
                 added = 0
@@ -314,7 +318,8 @@ class UpdateLog(object):
                 catf.close()
 
                 # Now re-write npkgs and Last-Modified in attributes file
-                afile = file(os.path.normpath(os.path.join(path, "attrs")), "r")
+                afile = file(os.path.normpath(os.path.join(path, "attrs")),
+                    "r")
                 attrre = re.compile('^S ([^:]*): (.*)')
 
                 for entry in afile:
@@ -329,7 +334,8 @@ class UpdateLog(object):
                 attrs["Last-Modified"] = mts.isoformat()
 
                 # Write attributes back out
-                afile = file(os.path.normpath(os.path.join(path, "attrs")), "w")
+                afile = file(os.path.normpath(os.path.join(path, "attrs")),
+                    "w")
                 for a in attrs.keys():
                         s = "S %s: %s\n" % (a, attrs[a])
                         afile.write(s)
@@ -371,10 +377,10 @@ class UpdateLog(object):
                         response.headers['X-Catalog-Type'] = 'full'
                         return self.catalog.send(None)
 
-        def _send_updates(self, ts, filep):
-                """Look through the logs for updates that have occurred
-                after timestamp.  Write these changes to the file-like object
-                supplied in filep."""
+        def _gen_updates(self, ts):
+                """Look through the logs for updates that have occurred after
+                the timestamp.  Yield each of those updates in line-update
+                format."""
 
                 # The files that need to be examined depend upon the timestamp
                 # supplied by the client, and the log files actually present.
@@ -383,8 +389,8 @@ class UpdateLog(object):
                 #
                 # 1. No updates have occurred since timestamp.  Send nothing.
                 #
-                # 2. Timestamp is older than oldest log record.  Client needs to
-                # download full catalog.
+                # 2. Timestamp is older than oldest log record.  Client needs
+                # to download full catalog.
                 #
                 # 3. Timestamp falls within a range for which update records
                 # exist.  If the timestamp is in the middle of a log-file, open
@@ -392,33 +398,51 @@ class UpdateLog(object):
                 # all newer files.  Otherwise, just send updates from the newer
                 # log files.
 
-                if self.up_to_date(ts) or not self.enough_history(ts):
-                        return
-
-                # Remove minutes, seconds, and microsec from timestamp
                 rts = datetime.datetime(ts.year, ts.month, ts.day, ts.hour)
                 assert rts < ts
 
-                def output():
-                        # send data from logfiles newer or equal to rts
-                        for lf in self.logfiles:
+                # send data from logfiles newer or equal to rts
+                for lf in self.logfiles:
 
-                                lf_time = datetime.datetime(
-                                    *time.strptime(lf, "%Y%m%d%H")[0:6])
+                        lf_time = datetime.datetime(
+                            *time.strptime(lf, "%Y%m%d%H")[0:6])
 
-                                if lf_time >= rts:
-                                        fn = "%s" % lf
-                                        logf = file(os.path.join(self.rootdir,
-                                            fn), "r")
-                                        for line in logf:
-                                                yield line
-                                        logf.close()
+                        if lf_time >= rts:
+                                fn = "%s" % lf
+                                logf = file(os.path.join(self.rootdir, fn),
+                                    "r")
+                                for line in logf:
+                                        yield line
+                                logf.close()
+
+        def gen_updates_as_dictionaries(self, ts):
+                """Look through the logs for updates that have occurred after
+                the timestamp.  Yield each of those updates in dictionary form,
+                with values for operation, timestamp, and the catalog entry."""
+
+                for line in self._gen_updates(ts):
+                        flds = line.split(None, 2)
+                        ret = {
+                            "operation": flds[0],
+                            "timestamp": flds[1],
+                            "catalog": flds[2]
+                        }
+
+                        yield ret
+
+        def _send_updates(self, ts, filep):
+                """Look through the logs for updates that have occurred after
+                timestamp.  Write these changes to the file-like object
+                supplied in filep."""
+
+                if self.up_to_date(ts) or not self.enough_history(ts):
+                        return
 
                 if filep:
-                        for line in output():
+                        for line in self._gen_updates(ts):
                                 filep.write(line)
                 else:
-                        return output()
+                        return self._gen_updates(ts)
 
         def _setup_logfiles(self):
                 """Scans the directory containing the update log's files.
