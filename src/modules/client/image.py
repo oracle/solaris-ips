@@ -49,6 +49,7 @@ import pkg.client.retrieve as retrieve
 import pkg.portable as portable
 import pkg.client.query_engine as query_e
 import pkg.indexer as indexer
+import pkg.search_errors as search_errors
 
 from pkg.misc import versioned_urlopen
 from pkg.misc import TransferTimedOutException
@@ -1482,13 +1483,51 @@ class Image(object):
                 """
                 self.index_dir = os.path.join(self.imgdir, postfix)
 
+        def degraded_local_search(self, args):
+                msg("Search capabilities and performance are degraded.\n"
+                    "To improve, run 'pkg rebuild-index'.")
+                idxdir = os.path.join(self.imgdir, "pkg")
+
+                # Convert a full directory path to the FMRI it represents.
+                def idx_to_fmri(index):
+                        return pkg.fmri.PkgFmri(urllib.unquote(os.path.dirname(
+                            index[len(idxdir) + 1:]).replace(os.path.sep, "@")),
+                            None)
+                
+                res = []
+
+                for fmri, mfst in self.get_fmri_manifest_pairs():
+                        m = manifest.Manifest()
+                        try:
+                                mcontent = file(mfst).read()
+                        except:
+                                # XXX log something?
+                                continue
+                        m.set_content(mcontent)
+                        new_dict = m.search_dict()
+
+                        tok = args[0]
+
+                        for tok_type in new_dict.keys():
+                                if new_dict[tok_type].has_key(tok):
+                                        ak_list = new_dict[tok_type][tok]
+                                        for action, keyval in ak_list:
+                                                res.append((tok_type, fmri, \
+                                                    action, keyval))
+                return res
+
+                
         def local_search(self, args):
                 """Search the image for the token in args[0]."""
                 assert args[0]
                 self.update_index_dir()
                 qe = query_e.ClientQueryEngine(self.index_dir)
                 query = query_e.Query(args[0])
-                return qe.search(query)
+                try:
+                        res = qe.search(query)
+                except search_errors.NoIndexException, nie:
+                        res = self.degraded_local_search(args)
+                return res
 
         def remote_search(self, args, servers = None):
                 """Search for the token in args[0] on the servers in 'servers'.
