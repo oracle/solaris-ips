@@ -100,7 +100,7 @@
 
 	<property_group name='pkg' type='application'>
 		<propval name='port' type='count' value='80' />
-		<propval name='proxy_base' type='uri' value='' />
+		<propval name='proxy_base' type='astring' value='' />
 		<propval name='inst_root' type='astring'
 			value='/var/pkg/repo' />
 		<propval name='socket_timeout' type='count' value='60' />

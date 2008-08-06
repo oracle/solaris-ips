@@ -23,6 +23,7 @@
 # Use is subject to license terms.
 #
 
+import fnmatch
 import os
 import platform
 import stat
@@ -308,9 +309,12 @@ def install_cherrypy():
                         cwd = CPDIR).wait()
 
 def remove_cherrypy():
-        if os.path.exists(CPARC):
-                os.unlink(CPARC)
-        shutil.rmtree(CPDIR, True)
+        for file in os.listdir("."):
+                if fnmatch.fnmatch(file, "%s*" % CP):
+                        if os.path.isfile(file):
+                                os.unlink(file)
+                        else:
+                                shutil.rmtree(file, True)
 
 class build_func(_build):
         def initialize_options(self):
