@@ -36,9 +36,10 @@ TEST_PKGS=
 REPO=http://localhost:10000
 JUST_THESE_PKGS=
 
-ALL_PKGS=$(TEST_PKGS) \
-	 $(NONWOS_PKGS) \
-	 $(WOS_PKGS)
+ALL_PKGS=	../../../packages/i386	\
+		$(TEST_PKGS)		\
+		$(NONWOS_PKGS)		\
+		$(WOS_PKGS)
 
 TMPPKGS=SUNWfixes
 EXTRA_OPTIONS=

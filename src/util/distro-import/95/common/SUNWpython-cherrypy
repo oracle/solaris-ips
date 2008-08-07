@@ -1,0 +1,4 @@
+package SUNWpython-cherrypy
+import SUNWpython-cherrypy
+version 3.1.0
+end package

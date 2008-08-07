@@ -195,7 +195,9 @@ include common/SUNWinstall-l10n
 include common/SUNWinstall-libs
 include common/SUNWintgige
 include common/SUNWipf
+include common/SUNWipkg
 include common/SUNWipkg-gui
+include common/SUNWipkg-gui-l10n
 include common/SUNWipmi
 include common/SUNWipoib
 include common/SUNWippcore
@@ -300,6 +302,7 @@ include common/SUNWpsf
 include common/SUNWpsm-ipp
 include common/SUNWpsm-lpd
 include common/SUNWpsutils
+include common/SUNWpython-cherrypy
 include common/SUNWqlcu
 include common/SUNWrcmdc
 include common/SUNWrcmds
@@ -542,7 +545,6 @@ include i386/SUNWdcopy
 include i386/SUNWdrmr
 include i386/SUNWgrub
 include i386/SUNWhxge
-include i386/SUNWipkg
 include i386/SUNWipw
 include i386/SUNWiwi
 include i386/SUNWiwk
@@ -563,7 +565,6 @@ include i386/SUNWpd
 include i386/SUNWpicl
 include i386/SUNWpsdcr
 include i386/SUNWpsdir
-include i386/SUNWpython-cherrypy
 include i386/SUNWqlc
 include i386/SUNWralink
 include i386/SUNWrmodr
@@ -850,6 +851,7 @@ depend SUNWintgige
 depend SUNWipf
 depend SUNWipkg
 depend SUNWipkg-gui
+depend SUNWipkg-gui-l10n
 depend SUNWipmi
 depend SUNWipoib
 depend SUNWippcore
