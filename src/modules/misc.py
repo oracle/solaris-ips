@@ -300,7 +300,7 @@ def port_available(host, port):
                         sock = socket.socket(family, socktype, proto)
                         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR,
                             1)
-                        sock.bind((host, port))
+                        sock.bind(sockaddr)
                         sock.close()
 
                         # Now try to connect to the specified port to see if it
@@ -312,12 +312,29 @@ def port_available(host, port):
                         # systems (such as certain firewalls).
                         sock.settimeout(1.0)
 
-                        sock.connect((host, port))
+                        try:
+                                sock.connect(sockaddr)
+                        except socket.timeout:
+                                # handle this at the next level
+                                raise
+                        except socket.error, e:
+                                errnum = e[0]
+                                if errnum != errno.EINVAL:
+                                        raise
+                                # this BSD-based system has trouble with a 
+                                # non-blocking failed connect
+                                sock.close()
+                                sock = socket.socket(family, socktype, proto)
+                                sock.connect(sockaddr)
+                                
                         sock.close()
 
                         # If we successfully connected...
                         raise socket.error(errno.EBUSY,
                             'Port already in use')
+
+        except socket.timeout, t:
+                return True, None
 
         except socket.error, e:
                 errnum = e[0]
