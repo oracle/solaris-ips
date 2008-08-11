@@ -27,6 +27,7 @@
 
 import errno
 import os
+import os.path
 import statvfs
 import shutil
 
@@ -88,6 +89,7 @@ class SvrConfig(object):
                 return
 
         def set_repo_root(self, root):
+                assert(os.path.isabs(root))
                 self.repo_root = root
                 self.trans_root = os.path.join(self.repo_root, "trans")
                 self.file_root = os.path.join(self.repo_root, "file")

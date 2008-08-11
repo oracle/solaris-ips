@@ -69,6 +69,7 @@ MIRROR_DEFAULT = False
 import getopt
 import logging
 import os
+import os.path
 import sys
 import urlparse
 
@@ -259,7 +260,7 @@ if __name__ == "__main__":
         except KeyError:
                 pass
 
-        scfg = config.SvrConfig(repo_path, AUTH_DEFAULT)
+        scfg = config.SvrConfig(os.path.abspath(repo_path), AUTH_DEFAULT)
 
         if rebuild:
                 scfg.destroy_catalog()
