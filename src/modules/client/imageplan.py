@@ -396,9 +396,9 @@ class ImagePlan(object):
                 # so that the incremental update that follows at the end of
                 # the function will work correctly.
                 self.image.update_index_dir()
-                self.ind = indexer.Indexer(self.image.index_dir,
+                ind = indexer.Indexer(self.image.index_dir,
                     CLIENT_DEFAULT_MEM_USE_KB, progtrack=self.progtrack)
-                self.ind.check_index(self.image.get_fmri_manifest_pairs(),
+                ind.check_index(self.image.get_fmri_manifest_pairs(),
                     force_rebuild=False)
 
                 npkgs = 0
@@ -547,6 +547,9 @@ class ImagePlan(object):
                 del self.pkg_plans
                 self.progtrack.actions_set_goal("Index Phase", len(plan_info))
 
-                self.ind.client_update_index((self.filters, plan_info))
+                self.image.update_index_dir()
+                ind = indexer.Indexer(self.image.index_dir,
+                    CLIENT_DEFAULT_MEM_USE_KB, progtrack=self.progtrack)
+                ind.client_update_index((self.filters, plan_info))
 
 
