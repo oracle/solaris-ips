@@ -1,0 +1,4 @@
+package SUNWscim-tables-extra
+import SUNWscim-tables-extra
+version 0.5.7
+end package

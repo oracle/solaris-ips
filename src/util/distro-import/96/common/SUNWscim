@@ -1,0 +1,7 @@
+package SUNWscim
+import SUNWscim
+import SUNWscim-bridge
+import SUNWscim-devel
+import SUNWscim-root
+version 1.4.7
+end package
