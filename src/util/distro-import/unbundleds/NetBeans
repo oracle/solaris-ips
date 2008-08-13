@@ -1,47 +1,48 @@
 package netbeans
 description "Open-source Integrated Development Environment for enterprise, web and mobile applications in Java, C/C++, and Ruby"
-version 6.0.1
-depend SUNWnetbeans-ide
-depend SUNWnetbeans-javaee
-depend SUNWnetbeans-javase
-depend SUNWnetbeans-ruby
-depend SUNWnetbeans-cpp
+version 6.1
 depend SUNWlibnb-apisupport1
 depend SUNWlibnb-cnd1
 depend SUNWlibnb-enterprise4
+depend SUNWlibnb-gsf1
 depend SUNWlibnb-ide8
-#depend SUNWlibnb-identity1
 depend SUNWlibnb-java1
 depend SUNWlibnb-platform7
 depend SUNWlibnb-profiler2
 depend SUNWlibnb-ruby1
-#depend SUNWlibnb-soa1
-#depend SUNWlibnb-uml4
 depend SUNWlibnb-visualweb1
 depend SUNWlibnb-xml1
+depend SUNWnetbeans-cpp
+depend SUNWnetbeans-ide
+depend SUNWnetbeans-javaee
+depend SUNWnetbeans-javase
+depend SUNWnetbeans-ruby
+depend netbeans-incorporation@6.1
 chattr_glob * edit mode 0777 0755 
 chattr_glob * edit mode 0666 0644
 end package
 
 package SUNWnetbeans-ide
-version 6.0.1
+version 6.1
 import SUNWnetbeans-ide
 depend SUNWj6rt
 depend SUNWj6dev
 depend SUNWnetbeans-desktop
+depend netbeans-incorporation@6.1
 chattr_glob * edit mode 0777 0755 
 chattr_glob * edit mode 0666 0644
 end package
 
 package SUNWnetbeans-desktop
-version 6.0.1
+version 6.1
 import SUNWnetbeans-desktop
+depend netbeans-incorporation@6.1
 chattr_glob * edit mode 0777 0755 
 chattr_glob * edit mode 0666 0644
 end package
 
 package SUNWnetbeans-javaee
-version 6.0.1
+version 6.1
 import SUNWnetbeans-javaee
 depend SUNWj6rt
 depend SUNWj6dev
@@ -53,12 +54,13 @@ depend SUNWlibnb-platform7
 depend SUNWlibnb-profiler2
 depend SUNWlibnb-visualweb1
 depend SUNWlibnb-xml1
+depend netbeans-incorporation@6.1
 chattr_glob * edit mode 0777 0755 
 chattr_glob * edit mode 0666 0644
 end package
 
 package SUNWnetbeans-javase
-version 6.0.1
+version 6.1
 import SUNWnetbeans-javase
 depend SUNWj6rt
 depend SUNWj6dev
@@ -67,146 +69,174 @@ depend SUNWlibnb-ide8
 depend SUNWlibnb-java1
 depend SUNWlibnb-platform7
 depend SUNWlibnb-profiler2
+depend netbeans-incorporation@6.1
 chattr_glob * edit mode 0777 0755 
 chattr_glob * edit mode 0666 0644
 end package
 
 package SUNWnetbeans-ruby
-version 6.0.1
+version 6.1
 import SUNWnetbeans-ruby
 depend SUNWj6rt
 depend SUNWj6dev
 depend SUNWlibnb-ide8
 depend SUNWlibnb-platform7
 depend SUNWlibnb-ruby1
+depend netbeans-incorporation@6.1
 chattr_glob * edit mode 0777 0755 
 chattr_glob * edit mode 0666 0644
 end package
 
 package SUNWnetbeans-cpp
-version 6.0.1
+version 6.1
 depend SUNWlibnb-cnd1
 depend SUNWlibnb-ide8
 depend SUNWlibnb-platform7
+depend netbeans-incorporation@6.1
 import SUNWnetbeans-cpp
 chattr_glob * edit mode 0777 0755 
 chattr_glob * edit mode 0666 0644
 end package
 
 package SUNWlibnb-apisupport1
-version 6.0.1
+version 6.1
 import SUNWlibnb-apisupport1
 depend SUNWnetbeans-ide
 depend SUNWlibnb-platform7
 depend SUNWlibnb-ide8
 depend SUNWlibnb-java1
+depend netbeans-incorporation@6.1
 chattr_glob * edit mode 0777 0755 
 chattr_glob * edit mode 0666 0644
 end package
 
 package SUNWlibnb-cnd1
-version 6.0.1
-import SUNWlibnb-cnd1
+version 6.1
+import SUNWlibnb-cnd2
 depend SUNWnetbeans-ide
 depend SUNWlibnb-platform7
 depend SUNWlibnb-ide8
+depend netbeans-incorporation@6.1
 chattr_glob * edit mode 0777 0755 
 chattr_glob * edit mode 0666 0644
 end package
 
 package SUNWlibnb-enterprise4
-version 6.0.1
-import SUNWlibnb-enterprise4
+version 6.1
+import SUNWlibnb-enterprise5
 depend SUNWnetbeans-ide
 depend SUNWlibnb-platform7
 depend SUNWlibnb-ide8
 depend SUNWlibnb-java1
+depend netbeans-incorporation@6.1
 chattr_glob * edit mode 0777 0755 
 chattr_glob * edit mode 0666 0644
 end package
 
 package SUNWlibnb-ide8
-version 6.0.1
-import SUNWlibnb-ide8
+version 6.1
+import SUNWlibnb-ide9
 depend SUNWnetbeans-ide
 depend SUNWlibnb-platform7
+depend netbeans-incorporation@6.1
 chattr_glob * edit mode 0777 0755 
 chattr_glob * edit mode 0666 0644
 end package
 
-#package SUNWlibnb-identity1
-#version 6.0.1
-#import SUNWlibnb-identity1
-#end package
-
 package SUNWlibnb-java1
-version 6.0.1
-import SUNWlibnb-java1
+version 6.1
+import SUNWlibnb-java2
 depend SUNWnetbeans-ide
 depend SUNWlibnb-platform7
 depend SUNWlibnb-ide8
+depend netbeans-incorporation@6.1
 chattr_glob * edit mode 0777 0755 
 chattr_glob * edit mode 0666 0644
 end package
 
 package SUNWlibnb-platform7
-version 6.0.1
-import SUNWlibnb-platform7
+version 6.1
+import SUNWlibnb-platform8
 depend SUNWnetbeans-ide
+depend netbeans-incorporation@6.1
 chattr_glob * edit mode 0777 0755 
 chattr_glob * edit mode 0666 0644
 end package
 
 package SUNWlibnb-profiler2
-version 6.0.1
-import SUNWlibnb-profiler2
+version 6.1
+import SUNWlibnb-profiler3
 depend SUNWnetbeans-ide
 depend SUNWlibnb-platform7
 depend SUNWlibnb-ide8
 depend SUNWlibnb-java1
+depend netbeans-incorporation@6.1
 chattr_glob * edit mode 0777 0755 
 chattr_glob * edit mode 0666 0644
 end package
 
 package SUNWlibnb-ruby1
-version 6.0.1
-import SUNWlibnb-ruby1
+version 6.1
+import SUNWlibnb-ruby2
 depend SUNWnetbeans-ide
 depend SUNWlibnb-platform7
 depend SUNWlibnb-ide8
+depend netbeans-incorporation@6.1
 chattr_glob * edit mode 0777 0755 
 chattr_glob * edit mode 0666 0644
 end package
 
-#package SUNWlibnb-soa1
-#version 6.0.1
-#import SUNWlibnb-soa1
-#end package
-
-#package SUNWlibnb-uml4
-#version 6.0.1
-#import SUNWlibnb-uml4p
-#end package
-
 package SUNWlibnb-visualweb1
-version 6.0.1
-import SUNWlibnb-visualweb1
+version 6.1
+import SUNWlibnb-visualweb2
 depend SUNWnetbeans-ide
 depend SUNWlibnb-platform7
 depend SUNWlibnb-ide8
 depend SUNWlibnb-java1
 depend SUNWlibnb-enterprise4
+depend netbeans-incorporation@6.1
 chattr_glob * edit mode 0777 0755 
 chattr_glob * edit mode 0666 0644
 end package
 
 package SUNWlibnb-xml1
-version 6.0.1
-import SUNWlibnb-xml1
+version 6.1
+import SUNWlibnb-xml2
 depend SUNWnetbeans-ide
 depend SUNWlibnb-platform7
 depend SUNWlibnb-ide8
 depend SUNWlibnb-java1
+depend netbeans-incorporation@6.1
 chattr_glob * edit mode 0777 0755 
 chattr_glob * edit mode 0666 0644
+end package
+
+package SUNWlibnb-gsf1
+version 6.1
+import SUNWlibnb-gsf1
+depend netbeans-incorporation@6.1
+chattr_glob * edit mode 0777 0755 
+chattr_glob * edit mode 0666 0644
+end package
+
+package netbeans-incorporation
+version 6.1
+description "netbeans incorporation to insure all components are upgraded at once"
+add depend type=incorporate fmri=SUNWlibnb-apisupport1@6.1
+add depend type=incorporate fmri=SUNWlibnb-cnd1@6.1
+add depend type=incorporate fmri=SUNWlibnb-enterprise4@6.1
+add depend type=incorporate fmri=SUNWlibnb-gsf1@6.1
+add depend type=incorporate fmri=SUNWlibnb-ide8@6.1
+add depend type=incorporate fmri=SUNWlibnb-java1@6.1
+add depend type=incorporate fmri=SUNWlibnb-platform7@6.1
+add depend type=incorporate fmri=SUNWlibnb-profiler2@6.1
+add depend type=incorporate fmri=SUNWlibnb-ruby1@6.1
+add depend type=incorporate fmri=SUNWlibnb-visualweb1@6.1
+add depend type=incorporate fmri=SUNWlibnb-xml1@6.1
+add depend type=incorporate fmri=SUNWnetbeans-cpp@6.1
+add depend type=incorporate fmri=SUNWnetbeans-desktop@6.1
+add depend type=incorporate fmri=SUNWnetbeans-ide@6.1
+add depend type=incorporate fmri=SUNWnetbeans-javaee@6.1
+add depend type=incorporate fmri=SUNWnetbeans-javase@6.1
+add depend type=incorporate fmri=SUNWnetbeans-ruby@6.1
 end package
