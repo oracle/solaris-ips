@@ -55,6 +55,7 @@ import pkg.gui.installupdate as installupdate
 import pkg.gui.remove as remove
 import pkg.gui.enumerations as enumerations
 
+
 class PackageManager:
         def __init__(self):
                 self.image_o = None
@@ -89,6 +90,7 @@ class PackageManager:
                 self.preparing_list = True               #
                 self.description_thread_running = False # For background processes
                 self.pkginfo_thread = None              # For background processes
+                self.progress_stop_thread = False              # For background processes
                 gtk.rc_parse('~/.gtkrc-1.2-gnome2')     # Load gtk theme
                 self.gladefile = self.application_dir + \
                     "/usr/share/package-manager/packagemanager.glade"
@@ -113,7 +115,41 @@ class PackageManager:
                 self.init_sections()                   #Initiates sections
                 self.init_show_filter()                #Initiates filter sections
                 self.mainwindow.show_all()
+                self.create_progress_dialog_gui("Update All", "Checking SUNWipkg and SUNWipkg-gui versions\n\nPlease wait ...")
 
+
+        def create_progress_dialog_gui(self, title, progressinfo):
+                wProgressTree = gtk.glade.XML(self.gladefile, "progressdialog")
+                self.progressdialog = wProgressTree.get_widget("progressdialog")
+                self.progressdialog.set_title(title)
+                self.progressinfo = wProgressTree.get_widget("progressinfo")
+                self.progressinfo.set_text(progressinfo)
+                self.progressbar = wProgressTree.get_widget("progressbar")
+                self.progressbar.set_pulse_step(0.1)
+                self.progress_canceled = False
+                
+                try:
+                        handlers = \
+                            {
+                                 'on_cancel_progressdialog_clicked':self.on_cancel_progressdialog_clicked,
+                            }
+                        wProgressTree.signal_autoconnect( handlers )
+                except AttributeError, error:
+                        print self.parent._('GUI will not respond to any event! %s.\
+                            Check create_progress_dialog_gui()')\
+                            % error
+                return
+
+        def on_cancel_progressdialog_clicked(self, widget):
+                self.progress_canceled = True
+                self.progress_stop_thread = True
+
+        def on_progressdialog_progress(self):
+                while not self.progress_stop_thread:
+                        self.progressbar.pulse()
+                        time.sleep(0.1)
+                self.progressdialog.hide()
+                        
         def create_available_widgets(self):
                 '''Create available widgets'''
                 # Widnows
@@ -163,7 +199,7 @@ class PackageManager:
                 self.deselect_menu = self.wTree.get_widget("edit_deselect")
                 # Clipboard
                 self.clipboard = gtk.clipboard_get(gtk.gdk.SELECTION_CLIPBOARD)
-
+                
         def clipboard_text_received(self, clipboard, text, data):
                 self.clipboard_text = text
                 return
@@ -269,21 +305,21 @@ class PackageManager:
                 cell = gtk.CellRendererText()
                 self.sectionscombobox.pack_start(cell, True)
                 self.sectionscombobox.add_attribute(cell, 'text', enumerations.SECTION_NAME)
-                self.sectionscombobox.set_row_separator_func(self.combobox_separator)
+                self.sectionscombobox.set_row_separator_func(self.combobox_id_separator)
                 ##FILTER COMBOBOX
                 #enumerations.FILTER_NAME
                 self.filtercombobox.set_model(self.filter_list)
                 cell = gtk.CellRendererText()
                 self.filtercombobox.pack_start(cell, True)
                 self.filtercombobox.add_attribute(cell, 'text', enumerations.FILTER_NAME)
-                self.filtercombobox.set_row_separator_func(self.combobox_separator)
+                self.filtercombobox.set_row_separator_func(self.combobox_id_separator)
                 ##FILTER COMBOBOX
                 #enumerations.FILTER_NAME
                 self.repositorycombobox.set_model(self.repositories_list)
                 cell = gtk.CellRendererText()
                 self.repositorycombobox.pack_start(cell, True)
                 self.repositorycombobox.add_attribute(cell, 'text', enumerations.REPOSITORY_NAME)
-                self.repositorycombobox.set_row_separator_func(self.combobox_separator)
+                self.repositorycombobox.set_row_separator_func(self.combobox_id_separator)
 
         def on_mainwindow_delete_event(self, widget, event):
                 ''' handler for delete event of the main window '''
@@ -331,9 +367,15 @@ class PackageManager:
                 # XXX Not for rev 1
                 return
 
-        def main_application_quit(self):
+        def main_application_quit(self, restart_app = False):
                 '''quits the main gtk loop'''
                 self.cancelled = True
+                
+                if restart_app:
+                        if "image_dir_arg" in self.__dict__:
+                                gobject.spawn_async([self.application_path, "-R", self.image_dir_arg])
+                        else:
+                                gobject.spawn_async([self.application_path])
                 gtk.main_quit()
                 sys.exit(0)
                 return True
@@ -359,30 +401,33 @@ class PackageManager:
         def combobox_separator(self, model, iter):
                 return model.get_value(iter, enumerations.FILTER_NAME) == "" 
 
+        def combobox_id_separator(self, model, iter):
+                return model.get_value(iter, 0) == -1
+
         def init_sections(self):
                 '''This function is for initializing sections combo box, also adds "All"
                 Category. It sets active section combobox entry "All"'''
-                self.section_list.append([self._('All'), ])
-                self.section_list.append(["", ])
-                self.section_list.append([self._('Meta Packages'), ])
-                self.section_list.append([self._('Applications Desktop'), ])
-                self.section_list.append([self._('Applications Web-Based'), ])
-                self.section_list.append([self._('Operating System'), ])
-                self.section_list.append([self._('User Environment'), ])
-                self.section_list.append([self._('Web Infrastructure'), ])
-                self.category_list.append([self._('All'), None, None, True, None])
+                self.section_list.append([0, self._('All'), ])
+                self.section_list.append([-1, "", ])
+                self.section_list.append([2, self._('Meta Packages'), ])
+                self.section_list.append([3, self._('Applications Desktop'), ])
+                self.section_list.append([4, self._('Applications Web-Based'), ])
+                self.section_list.append([5, self._('Operating System'), ])
+                self.section_list.append([6, self._('User Environment'), ])
+                self.section_list.append([7, self._('Web Infrastructure'), ])
+                self.category_list.append([0, self._('All'), None, None, True, None])
                 self.sectionscombobox.set_active(0)
 
         def init_show_filter(self):
-                self.filter_list.append([self._('All Packages'), ])
-                self.filter_list.append(["", ])
-                self.filter_list.append([self._('Installed Packages'), ])
-                self.filter_list.append([self._('Updates'), ])
-                self.filter_list.append([self._('Non-installed Packages'), ])
-                self.filter_list.append(["", ])
+                self.filter_list.append([0, self._('All Packages'), ])
+                self.filter_list.append([-1, "", ])
+                self.filter_list.append([2, self._('Installed Packages'), ])
+                self.filter_list.append([3, self._('Updates'), ])
+                self.filter_list.append([4, self._('Non-installed Packages'), ])
+                self.filter_list.append([-1, "", ])
                 # self.filter_list.append([self._('Locked Packages'), ])
                 # self.filter_list.append(["", ])
-                self.filter_list.append([self._('Selected Packages'), ])
+                self.filter_list.append([6, self._('Selected Packages'), ])
                 self.filtercombobox.set_active(0)
 
         def setup_repositories_combobox(self, image):
@@ -394,8 +439,9 @@ class PackageManager:
                 for repo in repositories:
                         if cmp(repo, default_authority) == 0:
                                 active = i
+
+                        self.repositories_list.append([i, repo, ])
                         i = i + 1
-                        self.repositories_list.append([repo, ])
                 if default_authority:
                         self.repositorycombobox.set_active(active)
                 else:
@@ -477,7 +523,7 @@ class PackageManager:
                 for row in self.application_list:
                         if row[enumerations.MARK_COLUMN]:
                                 image =  row[enumerations.IMAGE_OBJECT_COLUMN]
-                                pkg = max(row[enumerations.PACKAGE_OBJECT_COLUMN])
+                                pkg = row[enumerations.PACKAGE_OBJECT_COLUMN][0]
                                 package_installed = self.get_installed_version(image, pkg)
                                 version_installed = None
                                 if package_installed:
@@ -740,13 +786,13 @@ class PackageManager:
 
         def on_sectionscombobox_changed(self, widget):
                 '''On section combobox changed'''
-                selected_section = widget.get_active_text()
-                if selected_section == self._('All'):
+                selected_section = widget.get_active()
+                if selected_section == 0:
                         for category in self.category_list:
                                 category[enumerations.CATEGORY_VISIBLE] = True
                 else:
                         for category in self.category_list:
-                                if category[enumerations.CATEGORY_NAME] == self._('All'):
+                                if category[enumerations.CATEGORY_ID] == 0:
                                         category[enumerations.CATEGORY_VISIBLE] = True
                                 else:
                                         category_list = category[enumerations.SECTION_LIST_OBJECT]
@@ -775,21 +821,22 @@ class PackageManager:
                 '''Function for filtercombobox'''
                 # XXX Instead of string comparison, we should do it through integers.
                 # XXX It should be faster and better for localisations.
-                filter_text = self.filtercombobox.get_active_text()
-                if filter_text == self._('All Packages'):
+                filter_text = self.filtercombobox.get_active()
+                if filter_text == 0:
                         return True
-                elif filter_text == self._('Installed Packages'):
+                elif filter_text == 2:
                         return model.get_value(iter, enumerations.INSTALLED_VERSION_COLUMN) != None
-                elif filter_text == self._('Non-installed Packages'):
-                        return not model.get_value(iter, enumerations.INSTALLED_VERSION_COLUMN) != None
-                elif filter_text == self._('Updates'):
+                elif filter_text == 3:
                         return (model.get_value(iter, enumerations.INSTALLED_VERSION_COLUMN) != None) & \
                             (model.get_value(iter, enumerations.LATEST_AVAILABLE_COLUMN) != None)
-                elif filter_text == self._('Locked Packages'):
+                elif filter_text == 4:
+                        return not model.get_value(iter, enumerations.INSTALLED_VERSION_COLUMN) != None
+                elif filter_text == 6:
+                        return model.get_value(iter, enumerations.MARK_COLUMN)                        
+                elif filter_text == 8:
                         # XXX Locked support
                         return False
-                elif filter_text == self._('Selected Packages'):
-                        return model.get_value(iter, enumerations.MARK_COLUMN)
+
 
         def application_filter(self, model, iter):
                 '''This function is used to filter content in the main application view'''
@@ -803,7 +850,7 @@ class PackageManager:
                         selection.select_path(0)
                         category_model, category_iter = selection.get_selected()
                 if category_iter:
-                        selected_category = category_model.get_value(category_iter, enumerations.CATEGORY_NAME)
+                        selected_category = category_model.get_value(category_iter, enumerations.CATEGORY_ID)
                 category_list_iter = model.get_value(iter, enumerations.CATEGORY_LIST_OBJECT)
                 category = False
                 repository = self.is_pkg_repository_visible(model, iter)
@@ -812,14 +859,14 @@ class PackageManager:
                         for category_iter in category_list_iter:
                                 if category != True:
                                         category = self.category_filter(self.category_list, category_iter)
-                                if selected_category != self._('All'):
-                                        if selected_category == self.category_list.get_value(category_iter, enumerations.CATEGORY_NAME):
+                                if selected_category != 0:
+                                        if selected_category == self.category_list.get_value(category_iter, enumerations.CATEGORY_ID):
                                                 sel = True
                                         category = sel
                 else:
-                        if selected_category == self._('All'):
-                                selected_section = self.sectionscombobox.get_active_text()
-                                if selected_section == self._('All'):
+                        if selected_category == 0:
+                                selected_section = self.sectionscombobox.get_active()
+                                if selected_section == 0:
                                         category = True
                 if (model.get_value(iter, enumerations.IS_VISIBLE_COLUMN) == False):
                         return False
@@ -871,6 +918,7 @@ class PackageManager:
                         )
                 self.category_list = \
                     gtk.ListStore(
+                        gobject.TYPE_INT,          # enumerations.CATEGORY_ID
                         gobject.TYPE_STRING,       # enumerations.CATEGORY_NAME
                         gobject.TYPE_STRING,       # enumerations.CATEGORY_DESCRIPTION
                         gtk.gdk.Pixbuf,            # enumerations.CATEGORY_ICON
@@ -879,14 +927,17 @@ class PackageManager:
                         )
                 self.section_list = \
                     gtk.ListStore(
+                        gobject.TYPE_INT,          # enumerations.SECTION_ID
                         gobject.TYPE_STRING,       # enumerations.SECTION_NAME
                         )
                 self.filter_list = \
                     gtk.ListStore(
+                        gobject.TYPE_INT,          # enumerations.FILTER_ID
                         gobject.TYPE_STRING,       # enumerations.FILTER_NAME
                         )
                 self.repositories_list = \
                     gtk.ListStore(
+                        gobject.TYPE_INT,          # enumerations.REPOSITORY_ID
                         gobject.TYPE_STRING,       # enumerations.REPOSITORY_NAME
                         )
 
@@ -941,17 +992,114 @@ class PackageManager:
                 installupdate.InstallUpdate(self.application_list, self, False)
 
         def on_update_all(self, widget):
+
+                # Load the catalogs from the repository, its a long running tasks so need a progress dialog
+                self.progress_stop_thread = False
+                self.progress_canceled = False
+                self.ips_uptodate = False
+                self.progressdialog.show()
+                self.progressbar_thread = Thread(target = self.on_progressdialog_progress)
+                self.progressbar_thread.start()
+                self.progressbar_thread = Thread(target = self.do_ips_uptodate_check)
+                self.progressbar_thread.start()
+                self.progressdialog.run()
+                
+                if self.progress_canceled:
+                        return
+                        
+                #2790: Make sure ipkg and ipkg-gui are up to date, if not update them and prompt user to restart
+                if not self.ips_uptodate:
+                        # Prompt user
+                        msgbox = gtk.MessageDialog(parent = self.mainwindow, buttons = gtk.BUTTONS_YES_NO, 
+                        flags = gtk.DIALOG_MODAL, type = gtk.MESSAGE_QUESTION, 
+                        message_format = self._("Newer versions of SUNWipkg and SUNWipkg-gui are available and\nmust be updated before running Update All.\n\n Do you want to update them now?"))
+                        msgbox.set_title(self._("Update All"))
+                        result = msgbox.run()
+                        msgbox.destroy()
+                        if result == gtk.RESPONSE_YES:
+                                pkg_list = [self.ipkg_fmri, self.ipkggui_fmri]
+                                installupdate.InstallUpdate({self.image_o:pkg_list}, self, False, True)
+                        else:
+                                msgbox = gtk.MessageDialog(parent = self.mainwindow, buttons = gtk.BUTTONS_OK,
+                                flags = gtk.DIALOG_MODAL, type = gtk.MESSAGE_INFO,
+                                message_format = self._("Update All was not run.\n\nIt can not be run until SUNWipkg and SUNWipkg-gui have been updated."))
+                                msgbox.set_title(self._("Update All"))
+                                result = msgbox.run()
+                                msgbox.destroy()
+                else:                        
+                        pkg_list = [ ipkg.get_pkg_stem() for ipkg in self.image_o.gen_installed_pkgs() ]
+                        installupdate.InstallUpdate({self.image_o:pkg_list}, self, True, False)
+
+        def do_ips_uptodate_check(self):
+                self.ips_uptodate = self.ipkg_ipkgui_uptodate(self.image_o)
+                self.progress_stop_thread = True
+ 
+        def ipkg_ipkgui_uptodate(self, img):
+                if not img.is_liveroot():
+                        newimg = image.Image()
+                        cmdpath = os.path.join(os.getcwd(), sys.argv[0])
+                        cmdpath = os.path.realpath(cmdpath)
+                        cmddir = os.path.dirname(os.path.realpath(cmdpath))
+                        try:
+                                #
+                                # Find the path to ourselves, and use that
+                                # as a way to locate the image we're in.  It's
+                                # not perfect-- we could be in a developer's
+                                # workspace, for example.
+                                #
+                                newimg.find_root(cmddir)
+                        except ValueError:
+                                # We can't answer in this case, so we return True to
+                                # let installation proceed.
+                                # TODO: log - msg(_("No image corresponding to '%s' was located. " \
+                                #    "Proceeding.") % cmdpath)
+                                return True
+                        newimg.load_config()
+                        img = newimg
+
                 try:
-                        self.image_o.retrieve_catalogs()
+                        img.retrieve_catalogs()
                 except RuntimeError, failures:
                         raise
-
                 # Reload catalog.  This picks up the update from retrieve_catalogs.
-                self.image_o.load_catalogs(self.pr)
+                img.load_catalogs(self.pr)
+ 
+                try:
+                        # We will use whatever the incorporation provides as the latest version of ipkg and ipkg-gui
+                        self.ipkg_fmri = "SUNWipkg"
+                        self.ipkggui_fmri = "SUNWipkg-gui"
+                        
+                        img.make_install_plan([self.ipkg_fmri, self.ipkggui_fmri], self.pr,
+                        filters = [], noexecute = True)
+                except RuntimeError:
+                        return True
 
-                pkg_list = [ ipkg.get_pkg_stem() for ipkg in self.image_o.gen_installed_pkgs() ]
+                if img.imageplan.nothingtodo():
+                        return True                
+                        
+                return False
 
-                installupdate.InstallUpdate({self.image_o:pkg_list}, self, True)
+        def shutdown_after_ips_update(self):    
+
+                # 2790: As IPS and IPS-GUI have been updated the IPS GUI must be shutdown and restarted
+                msgbox = gtk.MessageDialog(parent = self.mainwindow, buttons = gtk.BUTTONS_OK,
+                        flags = gtk.DIALOG_MODAL, type = gtk.MESSAGE_INFO,
+                        message_format = self._("SUNWipkg and SUNWipkg-gui have been updated and Package Manager will now be restarted.\n\nAfter restart select Update All to continue."))
+                msgbox.set_title(self._("Update All"))
+                msgbox.run()
+                msgbox.destroy()
+                self.main_application_quit(restart_app = True)
+
+        def shutdown_after_image_update(self):    
+
+                msgbox = gtk.MessageDialog(parent = self.mainwindow, buttons = gtk.BUTTONS_OK,
+                        flags = gtk.DIALOG_MODAL, type = gtk.MESSAGE_INFO,
+                        message_format = self._("Update All has completed and Package Manager will now exit.\n\nPlease review posted release notes before rebooting:\n\n" \
+                            "   http://opensolaris.org/os/project/indiana/resources/rn3/"))
+                msgbox.set_title(self._("Update All"))
+                msgbox.run()
+                msgbox.destroy()
+                self.main_application_quit()
 
         def enable_disable_selection_menus(self):
                 self.enable_disable_select_all()
@@ -1294,7 +1442,7 @@ class PackageManager:
                         if category[enumerations.CATEGORY_NAME] == category_name:
                                 category_ref = category.iter
                 if not category_ref:                       # Category not exists
-                        category_ref = self.category_list.append([category_name, category_description, category_icon, True, None])
+                        category_ref = self.category_list.append([len(self.category_list), category_name, category_description, category_icon, True, None])
                 if category_ref:
                         if self.application_list.get_value(package, enumerations.CATEGORY_LIST_OBJECT):
                                 a = self.application_list.get_value(package, enumerations.CATEGORY_LIST_OBJECT)
@@ -1315,13 +1463,14 @@ class PackageManager:
                                 for category in self.category_list:
                                         if category[enumerations.CATEGORY_NAME] == category_name:
                                                 if not category[enumerations.SECTION_LIST_OBJECT]:
-                                                        category[enumerations.SECTION_LIST_OBJECT] = [section_name,]
+                                                        category[enumerations.SECTION_LIST_OBJECT] = [section[enumerations.SECTION_ID],]
                                                 else:
                                                         if not section_name in category[enumerations.SECTION_LIST_OBJECT]:
-                                                                category[enumerations.SECTION_LIST_OBJECT].append(section_name)
+                                                                category[enumerations.SECTION_LIST_OBJECT].append(section[enumerations.SECTION_ID])
 
         def get_icon_pixbuf(self, icon_name):
-                return self.get_pixbuf_from_path("/usr/share/icons/package-manager/", icon_name)
+                #2821: The get_icon_pixbuf should use PACKAGE_MANAGER_ROOT
+                return self.get_pixbuf_from_path(self.application_dir +"/usr/share/icons/package-manager/", icon_name)
 
         def get_pixbuf_from_path(self, path, icon_name):
                 icon = icon_name.replace(' ', '_')
@@ -1413,14 +1562,19 @@ def main():
 if __name__ == '__main__':
         packagemanager = PackageManager()
         packagemanager.create_widgets_and_show_gui()
-        test = False
-        image_dir = "/"
+        passed_test_arg = False
+        passed_imagedir_arg = False
 
         try:
                 opts, args = getopt.getopt(sys.argv[1:], "htR:", ["help", "test-gui", "image-dir="])
         except getopt.error, msg:
                 print "%s, for help use --help" % msg
                 sys.exit(2)
+
+        cmdpath = os.path.join(os.getcwd(), sys.argv[0])
+        cmdpath = os.path.realpath(cmdpath)
+        packagemanager.application_path = cmdpath
+
         for option, argument in opts:
                 if option in ("-h", "--help"):
                         print """\
@@ -1429,14 +1583,22 @@ Use -t (--test-gui) to work on fake data."""
                         sys.exit(0)
                 if option in ("-t", "--test-gui"):
                         packagemanager.fill_with_fake_data()
-                        test = True
+                        passed_test_arg = True
                 if option in ("-R", "--image-dir"):
+                        packagemanager.image_dir_arg = argument
                         image_dir = argument
+                        passed_imagedir_arg = True
 
-        if test and image_dir != "/":
+        if passed_test_arg and passed_imagedir_arg:
                 print "Options -R and -t can not be used together."
                 sys.exit(2)
-        if not test:
+        if not passed_imagedir_arg:
+                try:
+                         image_dir = os.environ["PKG_IMAGE"]
+                except KeyError:
+                         image_dir = os.getcwd()
+
+        if not passed_test_arg:
                 packagemanager.process_package_list_start(image_dir)
                 Thread(target = packagemanager.get_manifests_for_packages,
                     args = ()).start()

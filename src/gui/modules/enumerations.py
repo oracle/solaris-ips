@@ -41,24 +41,28 @@ CATEGORY_LIST_OBJECT     # list of categories to which package belongs
 
 #Categories
 (
+CATEGORY_ID,
 CATEGORY_NAME,
 CATEGORY_DESCRIPTION,
 CATEGORY_ICON,
 CATEGORY_VISIBLE,
 SECTION_LIST_OBJECT,     #List with the sections to which category belongs 
-) = range(5)
+) = range(6)
 
 #Sections
 (
+SECTION_ID,
 SECTION_NAME,
-) = range(1)
+) = range(2)
 
 #Filter
 (
+FILTER_ID,
 FILTER_NAME,
-) = range(1)
+) = range(2)
 
 #Repositories switch
 (
+REPOSITORY_ID,
 REPOSITORY_NAME,
-) = range(1)
+) = range(2)

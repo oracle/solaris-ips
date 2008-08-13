@@ -27,6 +27,7 @@ import sys
 import os
 import itertools
 import errno
+import gettext # Temporary workaround
 from urllib2 import URLError
 from threading import Thread
 try:
@@ -55,22 +56,24 @@ import pkg.gui.thread as guithread
 from pkg.gui.filelist import CancelException
 
 class InstallUpdate(progress.ProgressTracker):
-        def __init__(self, install_list, parent, image_update = False):
+        def __init__(self, install_list, parent, image_update = False, ips_update = False):
+                gettext.install("pkg","/usr/lib/locale") # Workaround as BE is using msg(_("message")) which bypasses the self._ mechanism the GUI is using
                 progress.ProgressTracker.__init__(self)
                 self.gui_thread = guithread.ThreadRun()
                 self.install_list = install_list
                 self.parent = parent
                 self.image_update = image_update
+                self.ips_update = ips_update
                 self.gladefile = parent.gladefile
                 self.create_plan_dialog_gui()
                 self.create_installupdate_gui()
                 self.create_downloaddialog_gui()
                 self.create_installation_gui()
                 self.create_network_down_gui()
-                if not image_update:
-                        list_of_packages = self.prepare_list_of_packages()
-                else:
+                if image_update or ips_update:
                         list_of_packages = install_list
+                else:
+                         list_of_packages = self.prepare_list_of_packages()
                 self.thread = Thread(target = self.plan_the_install_updateimage, args = (list_of_packages, ))
                 self.thread.start()
                 self.createplandialog.run()
@@ -369,8 +372,14 @@ class InstallUpdate(progress.ProgressTracker):
 
         def actions_done(self):
                 if self.parent != None:
-                        gobject.idle_add(self.update_package_list)
+                        if not self.ips_update and not self.image_update:
+                                gobject.idle_add(self.update_package_list)
                 gobject.idle_add(self.installingdialog.hide)
+
+                if self.ips_update:
+                        gobject.idle_add(self.parent.shutdown_after_ips_update)
+                elif self.image_update:
+                        gobject.idle_add(self.parent.shutdown_after_image_update)
 
         def update_package_list(self):
                 for pkg in self.ip.pkg_plans:
@@ -383,7 +392,7 @@ class InstallUpdate(progress.ProgressTracker):
                         if row[enumerations.NAME_COLUMN] == pkg_name:
                                 row[enumerations.MARK_COLUMN] = True
                                 return
-	  
+
         def prepare_list_of_packages(self):
                 ''' This method return the dictionary of images and newest marked packages'''
                 fmri_to_install_update = {}
@@ -392,10 +401,12 @@ class InstallUpdate(progress.ProgressTracker):
                                 image = row[enumerations.IMAGE_OBJECT_COLUMN]
                                 packages = row[enumerations.PACKAGE_OBJECT_COLUMN]
                                 im = fmri_to_install_update.get(image)
+                                # XXX Hack to be bug to bug compatible - incorporations
+                                pkg_name = packages[0].get_name()
                                 if im:
-                                        im.append(max(packages))
+                                        im.append(pkg_name)
                                 else:
-                                        fmri_to_install_update[image] = [max(packages), ]
+                                        fmri_to_install_update[image] = [pkg_name, ]
                 return fmri_to_install_update
 
         def plan_the_install_updateimage(self, list_of_packages):

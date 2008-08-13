@@ -27,6 +27,7 @@ import sys
 import os
 import itertools
 import errno
+import gettext
 from threading import Thread
 try:
         import pygtk
@@ -52,6 +53,7 @@ import pkg.gui.thread as guithread
 
 class Remove(progress.ProgressTracker):
         def __init__(self, remove_list, parent):
+                gettext.install("pkg","/usr/lib/locale") # Workaround as BE is using msg(_("message")) which bypasses the self._ mechanism the GUI is using
                 progress.ProgressTracker.__init__(self)
                 self.gui_thread = guithread.ThreadRun()
                 self.remove_list = remove_list
