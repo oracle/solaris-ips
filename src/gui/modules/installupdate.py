@@ -46,6 +46,7 @@ import pkg.client.bootenv as bootenv
 import pkg.client.imageplan as imageplan
 import pkg.client.pkgplan as pkgplan
 import pkg.client.progress as progress
+import pkg.indexer as indexer
 import pkg.search_errors as search_errors
 import pkg.client.retrieve as retrieve
 from pkg.misc import TransferTimedOutException
@@ -54,6 +55,7 @@ import pkg.gui.filelist as filelist
 import pkg.fmri as fmri
 import pkg.gui.thread as guithread
 from pkg.gui.filelist import CancelException
+from pkg.misc import CLIENT_DEFAULT_MEM_USE_KB
 
 class InstallUpdate(progress.ProgressTracker):
         def __init__(self, install_list, parent, image_update = False, ips_update = False):
@@ -61,6 +63,7 @@ class InstallUpdate(progress.ProgressTracker):
                 progress.ProgressTracker.__init__(self)
                 self.gui_thread = guithread.ThreadRun()
                 self.install_list = install_list
+                self.update_list = None
                 self.parent = parent
                 self.image_update = image_update
                 self.ips_update = ips_update
@@ -214,6 +217,18 @@ class InstallUpdate(progress.ProgressTracker):
                 if rebuild:
                         self.installingdialog.hide()
                 self.downloadingfilesdialog.show()
+
+                # Checks the index to make sure it exists and is
+                # consistent. If it's inconsistent an exception is thrown.
+                # If it's totally absent, it will index the existing packages
+                # so that the incremental update that follows at the end of
+                # the function will work correctly.
+                self.ip.image.update_index_dir()
+                ind = indexer.Indexer(self.ip.image.index_dir,
+                    CLIENT_DEFAULT_MEM_USE_KB, progtrack=self.ip.progtrack)
+                ind.check_index(self.ip.image.get_fmri_manifest_pairs(),
+                    force_rebuild=False)
+                
                 self.nfiles = 0
                 self.nbytes = 0
                 for package_plan in self.ip.pkg_plans:
@@ -318,8 +333,7 @@ class InstallUpdate(progress.ProgressTracker):
                 for p, src, dest in actions:
                         p.execute_removal(src, dest)
                         self.ip.progtrack.actions_add_progress()
-                self.ip.progtrack.actions_done()
-
+                        
                 # generate list of update actions, sort and execute
 
                 update_actions = [ (p, src, dest)
@@ -350,8 +364,6 @@ class InstallUpdate(progress.ProgressTracker):
                         p.execute_update(src, dest)
                         self.ip.progtrack.actions_add_progress()
 
-                self.ip.progtrack.actions_done()
-
                 # generate list of install actions, sort and execute
 
                 install_actions.sort(key = lambda obj:obj[2])
@@ -361,7 +373,6 @@ class InstallUpdate(progress.ProgressTracker):
                 for p, src, dest in install_actions:
                         p.execute_install(src, dest)
                         self.ip.progtrack.actions_add_progress()
-                self.ip.progtrack.actions_done()
 
                 # handle any postexecute operations
 
@@ -369,6 +380,43 @@ class InstallUpdate(progress.ProgressTracker):
                         p.postexecute()
 
                 self.ip.state = imageplan.EXECUTED_OK
+                
+                del actions
+                del update_actions
+                del install_actions
+                del self.ip.target_rem_fmris
+                del self.ip.target_fmris
+                del self.ip.directories
+                
+                # Perform the incremental update to the search indexes
+                # for all changed packages
+                plan_info = []
+                for p in self.ip.pkg_plans:
+                        d_fmri = p.destination_fmri
+                        d_manifest_path = None
+                        if d_fmri:
+                                d_manifest_path = \
+                                    self.ip.image.get_manifest_path(d_fmri)
+                        o_fmri = p.origin_fmri
+                        o_manifest_path = None
+                        o_filter_file = None
+                        if o_fmri:
+                                o_manifest_path = \
+                                    self.ip.image.get_manifest_path(o_fmri)
+                        plan_info.append((d_fmri, d_manifest_path, o_fmri,
+                                          o_manifest_path))
+                self.update_list = self.ip.pkg_plans[:]
+                del self.ip.pkg_plans
+
+                self.ip.progtrack.actions_set_goal("Index Phase", len(plan_info))
+
+                self.ip.image.update_index_dir()
+                ind = indexer.Indexer(self.ip.image.index_dir,
+                    CLIENT_DEFAULT_MEM_USE_KB, progtrack=self.ip.progtrack)
+                ind.client_update_index((self.ip.filters, plan_info))
+                
+                self.ip.progtrack.actions_done()
+                
 
         def actions_done(self):
                 if self.parent != None:
@@ -382,9 +430,10 @@ class InstallUpdate(progress.ProgressTracker):
                         gobject.idle_add(self.parent.shutdown_after_image_update)
 
         def update_package_list(self):
-                for pkg in self.ip.pkg_plans:
+                for pkg in self.update_list:
                         pkg_name = pkg.get_xfername()
                         self.update_install_list(pkg_name)
+                del self.update_list
                 self.parent.update_package_list()
                         
         def update_install_list(self, pkg_name):
@@ -654,6 +703,8 @@ class InstallUpdate(progress.ProgressTracker):
                 package_plan._PkgPlan__progtrack.download_end_pkg()
 
         def act_output(self):
+                gobject.idle_add(self.update_install_progress, \
+                    self.act_cur_nactions, self.act_goal_nactions)
                 return
 
         def act_output_done(self):
