@@ -37,20 +37,33 @@ import sys
 import zlib
 import time
 import calendar
+import shutil
+from stat import *
+
 import pkg.urlhelpers as urlhelpers
 import pkg.portable as portable
 from pkg.client.imagetypes import img_type_names, IMG_NONE
 from pkg import VERSION
 
 def time_to_timestamp(t):
-        """ convert seconds since epoch to %Y%m%dT%H%M%SZ format"""
+        """convert seconds since epoch to %Y%m%dT%H%M%SZ format"""
         # XXX optimize?
         return time.strftime("%Y%m%dT%H%M%SZ", time.gmtime(t))
 
 def timestamp_to_time(ts):
-        """ convert %Y%m%dT%H%M%SZ format to seconds since epoch"""
+        """convert %Y%m%dT%H%M%SZ format to seconds since epoch"""
         # XXX optimize?
         return calendar.timegm(time.strptime(ts, "%Y%m%dT%H%M%SZ"))
+
+def copyfile(src_path, dst_path):
+        """copy a file, preserving attributes, ownership, etc. where possible"""
+        stat = os.lstat(src_path)
+        shutil.copy2(src_path, dst_path)
+        try:
+                portable.chown(dst_path, stat.st_uid, stat.st_gid)
+        except OSError, e:
+                if e.errno != errno.EPERM:
+                        raise
 
 def hash_file_name(f):
         """Return the two-level path fragment for the given filename, which is

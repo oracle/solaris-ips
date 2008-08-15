@@ -47,12 +47,12 @@ class HardLinkAction(link.LinkAction):
                 
                 target = self.attrs["target"]
 
-		# paths are either relative to path or absolute
-		# both need to be passed through os.path.normpath to isure
-		# that all ".." are removed to constrain target to image
+                # paths are either relative to path or absolute;
+                # both need to be passed through os.path.normpath to ensure
+                # that all ".." are removed to constrain target to image
 
                 if target[0] != "/":
-			path = self.attrs["path"]
+                        path = self.attrs["path"]
                         target = os.path.normpath(
                             os.path.join(os.path.split(path)[0], target))
                 else:
@@ -69,11 +69,13 @@ class HardLinkAction(link.LinkAction):
                 path = os.path.normpath(os.path.sep.join(
                     (pkgplan.image.get_root(), path)))
 
-                if os.path.exists(path):
+                if not os.path.exists(os.path.dirname(path)):
+                        self.makedirs(os.path.dirname(path), mode=0755)
+                elif os.path.exists(path):
                         os.unlink(path)
 
-		target = os.path.normpath(os.path.sep.join(
-		    (pkgplan.image.get_root(), target)))
+                target = os.path.normpath(os.path.sep.join(
+                    (pkgplan.image.get_root(), target)))
 
                 os.link(target, path)
 
@@ -87,8 +89,8 @@ class HardLinkAction(link.LinkAction):
                 if not os.path.exists(path):
                         return ["No such path %s" % self.attrs["path"]]
 
-		target = os.path.normpath(os.path.sep.join(
-		    (img.get_root(), target)))
+                target = os.path.normpath(os.path.sep.join(
+                    (img.get_root(), target)))
 
                 if not os.path.exists(target):
                         return ["Target %s doesn't exist", self.attrs["target"]]
@@ -96,7 +98,7 @@ class HardLinkAction(link.LinkAction):
                 try:
                         if os.stat(path)[ST_INO] != os.stat(target)[ST_INO]:
                                 return ["Path and Target (%s) inodes not the same" % \
-						self.get_target_path()]
+                                    self.get_target_path()]
 
                 except OSError, e:
                         return ["Unexected exception: %s" % e]

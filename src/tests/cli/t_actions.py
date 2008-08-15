@@ -129,7 +129,20 @@ adm:NP:6445::::::
                     add user username=dummy group=root
                     add group groupname=dummy
                     close """
-        
+
+                self.silver10 = """
+                    open silver@1.0,5.11-0
+                    add file """ + self.testdata_dir + """/empty mode=0755 owner=root group=root path=/usr/local/bin/silver
+                    add depend fmri=pkg:/basics@1.0 type=require
+                    close """
+                self.silver20 = """
+                    open silver@2.0,5.11-0
+                    add file """ + self.testdata_dir + """/empty mode=0755 owner=Kermit group=Kermit path=/usr/local/bin/silver
+                    add user username=Kermit group=Kermit home-dir=/export/home/Kermit group-list=lp group-list=staff
+                    add depend fmri=pkg:/basics@1.0 type=require
+                    add depend fmri=pkg:/grouptest@1.0 type=require
+                    close """
+
                 for f in self.misc_files:
                         filename = os.path.join(self.testdata_dir, f)
                         file_handle = open(filename, 'wb')
@@ -226,6 +239,22 @@ adm:NP:6445::::::
                         if line.startswith("dummy"):
                                 self.assert_(line.startswith("dummy::5:"))
                 group_file.close()
+
+        def test_upgrade_with_user(self):
+                """make sure we can add a user and change file ownership to that user in
+                the same delta (mysql tripped over this early on in IPS development)"""
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.basics0)
+                self.pkgsend_bulk(durl, self.silver10)
+                self.pkgsend_bulk(durl, self.silver20)
+                self.pkgsend_bulk(durl, self.grouptest)
+                self.image_create(durl)
+                self.pkg("install silver@1.0")
+                self.pkg("list silver@1.0")
+                self.pkg("verify -v")
+                self.pkg("install silver@2.0")
+                self.pkg("verify -v")
+
 
 if __name__ == "__main__":
         unittest.main()

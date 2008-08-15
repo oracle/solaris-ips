@@ -23,6 +23,7 @@
 # Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
+import os
 import pkg.fmri as fmri
 import pkg.client.pkgplan as pkgplan
 import pkg.client.retrieve as retrieve # XXX inventory??
@@ -32,13 +33,13 @@ from pkg.client.filter import compile_filter
 from pkg.misc import msg
 from pkg.misc import CLIENT_DEFAULT_MEM_USE_KB
 
-UNEVALUATED = 0
-EVALUATED_OK = 1
-EVALUATED_ERROR = 2
-PREEXECUTED_OK = 3
-PREEXECUTED_ERROR = 4
-EXECUTED_OK = 5
-EXECUTED_ERROR = 6
+UNEVALUATED       = 0 # nothing done yet
+EVALUATED_PKGS    = 1 # established fmri changes
+EVALUATED_OK      = 2 # ready to execute
+PREEXECUTED_OK    = 3 # finished w/ preexecute
+PREEXECUTED_ERROR = 4 # whoops
+EXECUTED_OK       = 5 # finished execution
+EXECUTED_ERROR    = 6 # failed
 
 class NonLeafPackageException(Exception):
         """Removal of a package which satisfies dependencies has been attempted.
@@ -86,7 +87,8 @@ class ImagePlan(object):
                 self.target_rem_fmris = []
                 self.pkg_plans = []
 
-                self.directories = None
+                self.__directories = None
+                self.__link_actions = None
 
                 ifilters = [
                     "%s = %s" % (k, v)
@@ -174,7 +176,7 @@ class ImagePlan(object):
 
         def gen_new_installed_pkgs(self):
                 """ generates all the actions in the new set of installed pkgs"""
-                assert self.state == PREEXECUTED_OK
+                assert self.state >= EVALUATED_PKGS
                 fmri_set = set(self.image.gen_installed_pkgs())
 
                 for p in self.pkg_plans:
@@ -183,23 +185,45 @@ class ImagePlan(object):
                 for fmri in fmri_set:
                         yield fmri
 
+        def gen_new_installed_actions(self):
+                """generates actions in new installed image"""
+
+                for fmri in self.gen_new_installed_pkgs():
+                        for act in self.image.get_manifest(fmri, 
+                            filtered=True).actions:
+                                yield act
+
         def get_directories(self):
                 """ return set of all directories in target image """
                 # always consider var and var/pkg fixed in image....
                 # XXX should be fixed for user images
-                if self.directories == None:
+                if self.__directories == None:
                         dirs = set(["var/pkg", "var/sadm/install"])
                         dirs.update(
                             [
-                                d
-                                for fmri in self.gen_new_installed_pkgs()
-                                for act in self.image.get_manifest(fmri, filtered = True).actions
+                                os.path.normpath(d)
+                                for act in self.gen_new_installed_actions()
                                 for d in act.directory_references()
                         ])
-                        self.directories = self.image.expanddirs(dirs)
+                        self.__directories = self.image.expanddirs(dirs)
 
-                return self.directories
+                return self.__directories
 
+        def get_link_actions(self):
+                """return a dictionary of hardlink action lists indexed by
+                target """
+                if self.__link_actions == None:
+                        d = {}
+                        for act in self.gen_new_installed_actions():
+                                if act.name == "hardlink":
+                                        t = act.get_target_path()
+                                        if t in d:
+                                                d[t].append(act)
+                                        else:
+                                                d[t] = [act]
+                        self.__link_actions = d
+                return self.__link_actions
+                
         def evaluate_fmri(self, pfmri):
 
                 self.progtrack.evaluate_progress()
@@ -369,6 +393,90 @@ class ImagePlan(object):
                         self.evaluate_fmri_removal(f)
                         self.progtrack.evaluate_progress()
 
+                # we now have a workable set of packages to add/upgrade/remove
+                # now combine all actions together to create a synthetic single
+                # step upgrade operation, and handle editable files moving from
+                # package to package.  See theory comment in execute, below.
+
+                self.state = EVALUATED_PKGS
+
+                self.removal_actions = [ (p, src, dest)
+                                         for p in self.pkg_plans
+                                         for src, dest in p.gen_removal_actions()
+                ]
+
+                self.update_actions = [ (p, src, dest)
+                                        for p in self.pkg_plans
+                                        for src, dest in p.gen_update_actions()
+                ]
+
+                self.install_actions = [ (p, src, dest)
+                                         for p in self.pkg_plans
+                                         for src, dest in p.gen_install_actions()
+                ]
+
+                self.progtrack.evaluate_progress()
+
+                # iterate over copy of removals since we're modding list
+                # keep track of deletion count so later use of index works
+                named_removals = {}
+                deletions = 0
+                for i, a in enumerate(self.removal_actions[:]):
+                        # remove dir removals if dir is still in final image
+                        if a[1].name == "dir" and \
+                            os.path.normpath(a[1].attrs["path"]) in \
+                            self.get_directories():
+                                del self.removal_actions[i - deletions]
+                                deletions += 1
+                                continue
+                        # store names of files being removed under own name
+                        # or original name if specified
+                        if a[1].name == "file":
+                                attrs = a[1].attrs
+                                fname = attrs.get("original_name",
+                                    "%s:%s" % (a[0].origin_fmri.get_name(), attrs["path"]))
+                                named_removals[fname] = \
+                                    (i - deletions,
+                                    id(self.removal_actions[i-deletions][1]))
+
+                self.progtrack.evaluate_progress()
+
+                for a in self.install_actions:
+                        # In order to handle editable files that move their path or
+                        # change pkgs, for all new files with original_name attribute,
+                        # make sure file isn't being removed by checking removal list.
+                        # if it is, tag removal to save file, and install to recover
+                        # cached version... caching is needed if directories
+                        # are removed or don't exist yet.
+                        if a[2].name == "file" and "original_name" in a[2].attrs and \
+                            a[2].attrs["original_name"] in named_removals:
+                                cache_name = a[2].attrs["original_name"]
+                                index = named_removals[cache_name][0]
+                                assert(id(self.removal_actions[index][1]) == 
+                                       named_removals[cache_name][1])
+                                self.removal_actions[index][1].attrs["save_file"] = \
+                                    cache_name
+                                a[2].attrs["save_file"] = cache_name
+
+                self.progtrack.evaluate_progress()
+                # Go over update actions
+                l_actions = self.get_link_actions()
+                l_refresh = []
+                for a in self.update_actions:
+                        # for any files being updated that are the target of
+                        # _any_ hardlink actions, append the hardlink actions
+                        # to the update list so that they are not broken...
+                        if a[2].name == "file": 
+                                path = a[2].attrs["path"]
+                                if path in l_actions:
+                                        l_refresh.extend([(a[0], l, l) for l in l_actions[path]])
+                self.update_actions.extend(l_refresh)
+
+                # sort actions to match needed processing order
+                self.removal_actions.sort(key = lambda obj:obj[1], reverse=True)
+                self.update_actions.sort(key = lambda obj:obj[2])
+                self.install_actions.sort(key = lambda obj:obj[2])
+
                 self.progtrack.evaluate_done()
 
                 self.state = EVALUATED_OK
@@ -435,83 +543,76 @@ class ImagePlan(object):
                 preexecute, execute and postexecute
                 execute actions need to be sorted across packages
                 """
-
-                #
-                # now we're ready to start install.  At this point we
-                # should do a merge between removals and installs so that
-                # any actions moving from pkg to pkg are seen as updates rather
-                # than removal and re-install, since these two have separate
-                # semanticas.
-                #
-                # General install method is removals, updates and then
-                # installs.  User and group installs are moved to be ahead of
-                # updates so that a package that adds a new user can specify
-                # that owner for existing files.
-
-                # generate list of removal actions, sort and execute
-
                 assert self.state == PREEXECUTED_OK
+
+                #
+                # what determines execution order?
+                #
+                # The following constraints are key in understanding imageplan
+                # execution:
+                #
+                # 1) All non-directory actions (files, users, hardlinks, symbolic
+                # links, etc.) must appear in only a single installed package. 
+                #
+                # 2) All installed packages must be consistent in their view of
+                # action types; if /usr/openwin is a directory in one package, it
+                # must be a directory in all packages, never a symbolic link.  This
+                # includes implicitly defined directories.
+                # 
+                # A key goal in IPS is to be able to undergo an arbtrary transformation
+                # in package contents in a single step.  Packages must be able to exchange
+                # files, convert directories to symbolic links, etc.; so long as the start
+                # and end states meet the above two constraints IPS must be able to transition
+                # between the states directly.  This leads to the following:
+                # 
+                # 1) All actions must be ordered across packages; packages cannot be updated 
+                #    one at a time.
+                #
+                #    This is readily apparent when one considers two packages exchanging 
+                #    files in their new versions; in each case the package now owning the
+                #    file must be installed last, but it is not possible for each package to
+                #    to be installed before the other.  Clearly, all the removals must be done 
+                #    first, followed by the installs and updates.
+                #
+                # 2) Installs of new actions must preceed updates of existing ones.
+                #    
+                #    In order to accomodate changes of file ownership of existing files
+                #    to a newly created user, it is necessary for the installation of that
+                #    user to preceed the update of files to reflect their new ownership.
+                #
 
                 if self.nothingtodo():
                         self.state = EXECUTED_OK
                         return
 
-                actions = [ (p, src, dest)
-                            for p in self.pkg_plans
-                            for src, dest in p.gen_removal_actions()
-                            ]
+                # execute removals
 
-                actions.sort(key = lambda obj:obj[1], reverse=True)
-
-                self.progtrack.actions_set_goal("Removal Phase", len(actions))
-                for p, src, dest in actions:
+                self.progtrack.actions_set_goal("Removal Phase", len(self.removal_actions))
+                for p, src, dest in self.removal_actions:
                         p.execute_removal(src, dest)
                         self.progtrack.actions_add_progress()
                 self.progtrack.actions_done()
 
-                # generate list of update actions, sort and execute
+                # execute installs
 
-                update_actions = [ (p, src, dest)
-                            for p in self.pkg_plans
-                            for src, dest in p.gen_update_actions()
-                            ]
+                self.progtrack.actions_set_goal("Install Phase", len(self.install_actions))
 
-                install_actions = [ (p, src, dest)
-                            for p in self.pkg_plans
-                            for src, dest in p.gen_install_actions()
-                            ]
+                for p, src, dest in self.install_actions:
+                        p.execute_install(src, dest)
+                        self.progtrack.actions_add_progress()
+                self.progtrack.actions_done()
 
-                # move any user/group actions into modify list to
-                # permit package to add user/group and change existing
-                # files to that user/group in a single update
-                # iterate over copy since we're modify install_actions
+                # execute updates
 
-                for a in install_actions[:]:
-                        if a[2].name == "user" or a[2].name == "group":
-                                update_actions.append(a)
-                                install_actions.remove(a)
+                self.progtrack.actions_set_goal("Update Phase", len(self.update_actions))
 
-                update_actions.sort(key = lambda obj:obj[2])
-
-                self.progtrack.actions_set_goal("Update Phase", len(update_actions))
-
-                for p, src, dest in update_actions:
+                for p, src, dest in self.update_actions:
                         p.execute_update(src, dest)
                         self.progtrack.actions_add_progress()
 
                 self.progtrack.actions_done()
-                
-                # generate list of install actions, sort and execute
 
-                install_actions.sort(key = lambda obj:obj[2])
 
-                self.progtrack.actions_set_goal("Install Phase",
-                    len(install_actions))
-
-                for p, src, dest in install_actions:
-                        p.execute_install(src, dest)
-                        self.progtrack.actions_add_progress()
-                self.progtrack.actions_done()
 
                 # handle any postexecute operations
 
@@ -520,12 +621,15 @@ class ImagePlan(object):
                         
                 self.state = EXECUTED_OK
                 
-                del actions
-                del update_actions
-                del install_actions
+                # reduce memory consumption
+
+                del self.removal_actions
+                del self.update_actions
+                del self.install_actions
+
                 del self.target_rem_fmris
                 del self.target_fmris
-                del self.directories
+                del self.__directories
                 
                 # Perform the incremental update to the search indexes
                 # for all changed packages

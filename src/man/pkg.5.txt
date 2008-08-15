@@ -119,6 +119,17 @@ DESCRIPTION
               necessary to consider when determining whether two binaries'
               executable behavior will differ.
 
+     original_name This attribute is used to handle editable files moving
+                   from package to package or from place to place, or both.
+                   The form this takes is the name of the originating package, 
+		   followed by a colon and the original path to the file.
+		   Any file being deleted is recorded either with its 
+		   package and path, or with the value of the original_name
+		   attribute if specified.  Any editable file being installed
+		   that has the original_name attribute set will use the
+		   file of that name if it is deleted as part of the same
+		   packaging operation.
+
   Directory Actions
      The 'directory' action is like the file action in that it represents a
      filesystem object, but a directory instead of an ordinary file.  It

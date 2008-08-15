@@ -197,11 +197,19 @@ class pkg(object):
                 self.files.extend(o)
 
         def convert_type(self, type):
+                """ given sv4r type, return IPS type"""
                 return {
                         "f": "file", "e": "file", "v": "file",
                         "d": "dir", "x": "dir",
                         "s": "link",
                         "l": "hardlink"
+                        }[type]
+
+        def type_convert(self, type):
+                """ given IPS type, return svr4 type(s)"""
+                return {
+                        "file": "fev", "dir": "dx", "link": "s",
+                        "hardlink": "l"
                         }[type]
 
         def file_to_action(self, f):
@@ -275,6 +283,13 @@ class pkg(object):
                 else:
                         pkgglob = "*"
 
+                if args[0] == "type": # we care about type
+                        args.pop(0)
+                        types = self.type_convert(args.pop(0))
+                        line = " ".join(args)
+                else:
+                        types = "dfevslx"
+
                 if args[0] == "edit": # we're doing regexp edit of attr
                         edit = True
                         args.pop(0)
@@ -290,7 +305,8 @@ class pkg(object):
                         for f in self.files
                         if fnmatch.fnmatchcase(f.pathname, glob) and
                             fnmatch.fnmatchcase(
-                                usedlist[f.pathname][0], pkgglob)
+                                usedlist[f.pathname][0], pkgglob) and
+                            f.type in types    
                      ]
 
                 chattr_line = line
@@ -795,9 +811,13 @@ just_these_pkgs = []
 #
 description_detritus = [", (usr)", ", (root)", " (usr)", " (root)",
 " (/usr)", " - / filesystem", ",root(/)"]
+#
+# list of global includes to add to every package
+#
+global_includes = []
 
 try:
-        opts, args = getopt.getopt(sys.argv[1:], "B:D:I:T:b:dns:v:w:j:")
+        opts, args = getopt.getopt(sys.argv[1:], "B:D:I:G:T:b:dns:v:w:j:")
 except getopt.GetoptError, e:
         print "unknown option", e.opt
         sys.exit(1)
@@ -829,6 +849,8 @@ for opt, arg in opts:
                                 if len(bfargs) == 2:
                                         branch_dict[bfargs[0]] = bfargs[1]
                 branch_file.close()
+        elif opt == "-G": #another file of global includes
+                global_includes.append(arg)
         elif opt == "-T":
                 timestamp_files.append(arg)
 
@@ -911,10 +933,11 @@ def sourcehook(filename):
 
         return filename, open(filename)
 
-for mf in filelist:
+def SolarisParse(mf):
+        global curpkg
 
         lexer = shlex.shlex(file(mf), mf, True)
-        lexer.whitespace_split = True
+        lexer.whitespace_split = True                 
         lexer.source = "include"
         lexer.sourcehook = sourcehook
 
@@ -932,6 +955,8 @@ for mf in filelist:
                 elif token == "end":
                         endarg = lexer.get_token()
                         if endarg == "package":
+                                for f in global_includes:
+                                        SolarisParse(f)
                                 try:
                                         end_package(curpkg)
                                 except Exception, e:
@@ -1042,6 +1067,9 @@ for mf in filelist:
                 else:
                         raise "Error: unknown token '%s' (%s:%s)" % \
                             (token, lexer.infile, lexer.lineno)
+
+for mf in filelist:
+        SolarisParse(mf)
 
 seenpkgs = set(i[0] for i in usedlist.values())
 

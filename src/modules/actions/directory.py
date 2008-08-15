@@ -142,21 +142,20 @@ class DirectoryAction(generic.Action):
 
         def remove(self, pkgplan):
                 localpath = os.path.normpath(self.attrs["path"])
-                if localpath not in pkgplan.image.imageplan.get_directories():
-                        path = os.path.normpath(os.path.sep.join(
-                            (pkgplan.image.get_root(), self.attrs["path"])))
-                        try:
-                                os.rmdir(path)
-                        except OSError, e:
-                                if e.errno == errno.ENOENT:
-                                        pass
-                                elif e.errno == errno.EEXIST or \
-                                            e.errno == errno.ENOTEMPTY:
-                                        # cannot remove directory since it's
-                                        # not empty...
-                                        pkgplan.image.salvagedir(localpath)
-                                elif e.errno != errno.EACCES: # this happens on Windows
-                                        raise
+                path = os.path.normpath(os.path.sep.join(
+                    (pkgplan.image.get_root(), localpath)))
+                try:
+                        os.rmdir(path)
+                except OSError, e:
+                        if e.errno == errno.ENOENT:
+                                pass
+                        elif e.errno == errno.EEXIST or \
+                                    e.errno == errno.ENOTEMPTY:
+                                # cannot remove directory since it's
+                                # not empty...
+                                pkgplan.image.salvagedir(localpath)
+                        elif e.errno != errno.EACCES: # this happens on Windows
+                                raise
 
         def generate_indices(self):
                 return {

@@ -30,6 +30,7 @@ if __name__ == "__main__":
 import os
 import unittest
 
+                        
 class TestUpgrade(testutils.SingleDepotTestCase):
 
         incorp10 = """
@@ -119,12 +120,63 @@ class TestUpgrade(testutils.SingleDepotTestCase):
             close 
         """
 
+        gold10 = """
+            open gold@1.0,5.11-0
+            add file /tmp/config1 mode=0644 owner=root group=bin path=etc/config1 preserve=true
+            close
+        """
+
+        gold20 = """
+            open gold@2.0,5.11-0
+            add file /tmp/config2 mode=0644 owner=root group=bin path=etc/config2 original_name="gold:etc/config1" preserve=true
+            close
+        """
+
+        gold30 =  """
+            open gold@3.0,5.11-0
+            close
+        """
+
+        silver10  = """
+            open silver@1.0,5.11-0
+            close
+        """
+
+        silver20  = """
+            open silver@2.0,5.11-0
+            add file /tmp/config2 mode=0644 owner=root group=bin path=etc/config1 original_name="gold:etc/config1" preserve=true
+            close
+        """
+        silver30  = """
+            open silver@3.0,5.11-0
+            add file /tmp/config2 mode=0644 owner=root group=bin path=etc/config2 original_name="gold:etc/config1" preserve=true
+            close
+        """
+
+
+
+        iron10 = """
+            open iron@1.0,5.11-0
+            add dir mode=0755 owner=root group=bin path=etc
+            add file /tmp/config1 mode=0644 owner=root group=bin path=etc/foo
+            add hardlink path=etc/foo.link target=foo
+            close
+        """
+        iron20 = """
+            open iron@2.0,5.11-0
+            add dir mode=0755 owner=root group=bin path=etc
+            add file /tmp/config2 mode=0644 owner=root group=bin path=etc/foo
+            add hardlink path=etc/foo.link target=foo
+            close
+        """
+
+
         misc_files = [ "/tmp/amber1", "/tmp/amber2",
                     "/tmp/bronzeA1",  "/tmp/bronzeA2",
                     "/tmp/bronze1", "/tmp/bronze2",
                     "/tmp/copyright1", "/tmp/copyright2",
                     "/tmp/copyright3", "/tmp/copyright4",
-                    "/tmp/libc.so.1", "/tmp/sh"]
+                    "/tmp/libc.so.1", "/tmp/sh", "/tmp/config1", "/tmp/config2"]
 
         def setUp(self):
                 testutils.SingleDepotTestCase.setUp(self)
@@ -142,6 +194,7 @@ class TestUpgrade(testutils.SingleDepotTestCase):
                         os.remove(p)
 
         def test_upgrade1(self):
+
                 """ Upgrade torture test.
                     Send package amber@1.0, bronze1.0; install bronze1.0, which
                     should cause amber to also install.
@@ -217,6 +270,115 @@ class TestUpgrade(testutils.SingleDepotTestCase):
                 self.pkg("install bronze")
                 self.pkg("list bronze@2.0")
                 self.pkg("verify -v")
+
+        def test_upgrade3(self):
+                """ test for editable files moving between packages or locations or both"""
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.silver10)
+                self.pkgsend_bulk(durl, self.silver20)
+                self.pkgsend_bulk(durl, self.silver30)
+                self.pkgsend_bulk(durl, self.gold10)
+                self.pkgsend_bulk(durl, self.gold20)
+                self.pkgsend_bulk(durl, self.gold30)
+              
+                self.image_create(durl)
+
+                # first test - move an editable file between packages
                 
+                self.pkg("install gold@1.0 silver@1.0")
+                self.pkg("verify -v")
+                
+                # modify config file
+
+                str = "this file has been modified 1"
+                file_path = "etc/config1"
+                self.file_append(file_path, str)
+
+               # make sure /etc/config1 contains correct string
+                self.file_contains(file_path, str)
+
+                # update packages
+
+                self.pkg("install gold@3.0 silver@2.0")
+                self.pkg("verify -v")
+                
+                # make sure /etc/config1 contains still correct string
+                self.file_contains(file_path, str)
+
+                self.pkg("uninstall silver gold")
+
+                # test file moving within package
+
+                self.pkg("install gold@1.0")
+                self.pkg("verify -v")
+                
+                # modify config file
+                str = "this file has been modified test 2"                
+                file_path = "etc/config1"
+                self.file_append(file_path, str)
+                        
+                self.pkg("install gold@2.0")
+                self.pkg("verify -v")
+
+                 # make sure /etc/config2 contains correct string
+
+                file_path = "etc/config2"
+                self.file_contains(file_path, str)
+
+                self.pkg("uninstall gold")
+                self.pkg("verify -v")
+
+                # test movement in filesystem and across packages
+                
+                self.pkg("install gold@1.0 silver@1.0")
+                self.pkg("verify -v")
+
+                # modify config file
+
+                file_path = "etc/config1"
+                str = "this file has been modified test 3"
+                self.file_append(file_path, str)
+
+                self.file_contains(file_path, str)
+
+                self.pkg("install gold@3.0 silver@3.0")
+                self.pkg("verify -v")
+                 # make sure /etc/config2 now contains correct string
+                file_path = "etc/config2"
+                self.file_contains(file_path, str)
+
+        def test_upgrade4(self):
+                """ test to make sure hardlinks are correctly restored when file they point to is updated """
+       
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.iron10)
+                self.pkgsend_bulk(durl, self.iron20)
+              
+                self.image_create(durl)
+                
+                self.pkg("install iron@1.0")
+                self.pkg("verify -v")
+           
+                self.pkg("install iron@2.0")
+                self.pkg("verify -v")
+           
+
+        def file_append(self, path, string):
+                file_path = os.path.join(self.get_img_path(), path)
+                f = file(file_path, "a+")
+                f.write("\n%s\n" % string)
+                f.close
+
+        def file_contains(self, path, string):
+                file_path = os.path.join(self.get_img_path(), path)
+                f = file(file_path)
+                for line in f:
+                        if string in line:
+                                f.close()
+                                break
+                else:
+                        f.close()
+                        self.assert_(False, "File %s does not contain %s" % (path, string))
+
 if __name__ == "__main__":
         unittest.main()

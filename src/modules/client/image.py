@@ -31,6 +31,7 @@ import urllib
 import urllib2
 import httplib
 import shutil
+import tempfile
 import time
 import operator
 
@@ -152,7 +153,6 @@ class Image(object):
                 self.pkg_states = None
 
                 self.attrs = {}
-                self.link_actions = None
 
                 self.attrs["Policy-Require-Optional"] = False
                 self.attrs["Policy-Pursue-Latest"] = True
@@ -163,6 +163,9 @@ class Image(object):
                 # frmi.XXX  Needs rewrite using graph follower
                 self.optional_dependencies = {}
 
+                # a place to keep info about saved_files; needed by file action
+                self.saved_files = {}
+ 
         def find_root(self, d):
 
                 def check_subdirs(sub_d, prefix):
@@ -504,23 +507,6 @@ class Image(object):
                     (fmri, self.get_manifest_path(fmri))
                     for fmri in self.gen_installed_pkgs()
                 ]
-
-        def get_link_actions(self):
-                """return a dictionary of hardlink action lists indexed by
-                target """
-                if self.link_actions != None:
-                        return self.link_actions
-
-                d = {}
-                for act in self.gen_installed_actions():
-                        if act.name == "hardlink":
-                                t = act.get_target_path()
-                                if t in d:
-                                        d[t].append(act)
-                                else:
-                                        d[t] = [act]
-                self.link_actions = d
-                return d
 
         def has_manifest(self, fmri):
                 mpath = fmri.get_dir_path()
@@ -1686,6 +1672,15 @@ class Image(object):
                 # XXX need a better way to do this.
                 emsg("\nWarning - directory %s not empty - contents preserved "
                         "in %s" % (path, salvagedir))
+
+        def temporary_file(self):
+                """ create a temp file under image directory for various purposes"""
+                tempdir = os.path.normpath(os.path.join(self.imgdir, "tmp"))
+                if not os.path.exists(tempdir):
+                        os.makedirs(tempdir)
+                fd, name = tempfile.mkstemp(dir=tempdir)
+                os.close(fd)
+                return name
 
         def expanddirs(self, dirs):
                 """given a set of directories, return expanded set that includes

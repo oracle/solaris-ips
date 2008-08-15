@@ -70,7 +70,13 @@ class FileAction(generic.Action):
 
 
                 # XXX If we're upgrading, do we need to preserve file perms from
-		# exiting file?
+                # exisiting file?
+
+                # check if we have a save_file active; if so, simulate file
+                # being already present rather than installed from scratch
+
+                if "save_file" in self.attrs:
+                        orig = self.restore_file(pkgplan.image)
 
                 # If the action has been marked with a preserve attribute, and
                 # the file exists and has a contents hash different from what
@@ -131,7 +137,7 @@ class FileAction(generic.Action):
                 # Handle timestamp if specified
                 if "timestamp" in self.attrs:
                         t = misc.timestamp_to_time(self.attrs["timestamp"])
-			os.utime(final_path, (t, t))
+                        os.utime(final_path, (t, t))
 
         def verify(self, img, **args):
                 """ verify that file is present and if preserve attribute
@@ -257,6 +263,11 @@ class FileAction(generic.Action):
                 path = os.path.normpath(os.path.sep.join(
                     (pkgplan.image.get_root(), self.attrs["path"])))
 
+                # are we supposed to save this file to restore it elsewhere
+                # or in another pkg?
+                if "save_file" in self.attrs:
+                        self.save_file(pkgplan.image, path)
+
                 try:
                         # Make file writable so it can be deleted
                         os.chmod(path, S_IWRITE|S_IREAD)
@@ -292,3 +303,29 @@ class FileAction(generic.Action):
                     "basename": os.path.basename(self.attrs["path"]),
                     "path": os.path.sep + self.attrs["path"]
                 }
+
+        def save_file(self, image, full_path):
+                """save a file for later (in same process invocation) 
+                installation"""
+
+                saved_name = image.temporary_file()
+                misc.copyfile(full_path, saved_name)
+                 
+                image.saved_files[self.attrs["save_file"]] = (self, saved_name)
+
+        def restore_file(self, image):
+                """restore a previously saved file; return cached action """
+
+
+                path = self.attrs["path"]
+
+                orig, saved_name = image.saved_files[self.attrs["save_file"]]
+                full_path = os.path.normpath(os.path.sep.join(
+                    (image.get_root(), path)))
+
+                assert(not os.path.exists(full_path))
+
+                misc.copyfile(saved_name, full_path)
+                os.unlink(saved_name)
+
+                return orig

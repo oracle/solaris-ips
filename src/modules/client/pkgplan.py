@@ -168,19 +168,6 @@ class PkgPlan(object):
                         self.actions[2].append(
 			    [directory.DirectoryAction(path=a), None])
 
-		# over the list of update actions, check for any that are the
-		# target of hardlink actions, and add the renewal of those
-		# hardlinks to the install set
-                link_actions = self.image.get_link_actions()
-
-                # iterate over copy since we're appending to list
-
-                for a in self.actions[1][:]:
-                        if a[1].name == "file" and \
-                            a[1].attrs["path"] in link_actions:
-                                la = link_actions[a[1].attrs["path"]]
-                                self.actions[1].extend([(a, a) for a in la])
-
                 # Stash information needed by legacy actions.
                 self.__legacy_info["description"] = \
                     self.__destination_mfst.get("description", "none provided")

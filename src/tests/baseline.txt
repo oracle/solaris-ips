@@ -148,6 +148,7 @@ api.t_version.py TestVersion.testversionsuccessor9|pass
 cli.t_actions.py TestPkgActions.test_basics_0|pass
 cli.t_actions.py TestPkgActions.test_grouptest|pass
 cli.t_actions.py TestPkgActions.test_minugid|pass
+cli.t_actions.py TestPkgActions.test_upgrade_with_user|pass
 cli.t_actions.py TestPkgActions.test_usertest|pass
 cli.t_circular_dependencies.py TestCircularDependencies.test_anchored_circular_dependencies|pass
 cli.t_circular_dependencies.py TestCircularDependencies.test_unanchored_circular_dependencies|pass
@@ -248,3 +249,5 @@ cli.t_twodepot.py TestTwoDepots.test_upgrade_preferred_to_non_preferred|pass
 cli.t_twodepot.py TestTwoDepots.test_upgrade_preferred_to_non_preferred_incorporated|pass
 cli.t_upgrade.py TestUpgrade.test_upgrade1|pass
 cli.t_upgrade.py TestUpgrade.test_upgrade2|pass
+cli.t_upgrade.py TestUpgrade.test_upgrade3|pass
+cli.t_upgrade.py TestUpgrade.test_upgrade4|pass
