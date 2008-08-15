@@ -527,6 +527,10 @@ class InstallUpdate(progress.ProgressTracker):
 
                         self.evaluate(image)
 
+                        image.imageplan = self.ip
+
+                        gobject.idle_add(self.ip.progtrack.evaluate_done)
+
                 return
 
 
@@ -564,8 +568,6 @@ class InstallUpdate(progress.ProgressTracker):
                 self.ip.progtrack.evaluate_done()
 
                 self.ip.state = imageplan.EVALUATED_OK
-
-                gobject.idle_add(self.ip.progtrack.evaluate_done)
 
         def evaluate_fmri(self, pfmri, image):
 
