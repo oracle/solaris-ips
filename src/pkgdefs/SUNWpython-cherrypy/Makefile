@@ -56,14 +56,17 @@ prototype: $(PROTOLOC)
 			$$6 = "sys"; \
 		} \
 		{ \
-			if ($$1 == "d" && $$3 ~ /^(usr(\/lib(\/python2.4(\/vendor-packages(\/cherrypy(\/.*)?)?)?)?)?)$$/) \
-			{ \
-				print \
-			} \
-			if ($$1 == "f" && $$3 ~ /^usr\/lib\/python2.4\/vendor-packages\/cherrypy/) \
-			{ \
-				print \
-			} \
+			if ($$3 !~ /^usr\/lib\/python2.4\/vendor-packages\/cherrypy\/(scaffold|test|tutorial)/) \
+                        { \
+				if ($$1 == "d" && $$3 ~ /^(usr(\/lib(\/python2.4(\/vendor-packages(\/cherrypy(\/.*)?)?)?)?)?)$$/) \
+				{ \
+					print \
+				} \
+				if ($$1 == "f" && $$3 ~ /^usr\/lib\/python2.4\/vendor-packages\/cherrypy/) \
+				{ \
+					print \
+				} \
+		       } \
 		}' > prototype
 
 clobber:
