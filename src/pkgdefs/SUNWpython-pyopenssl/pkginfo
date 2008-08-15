@@ -22,10 +22,13 @@
 # Use is subject to license terms.
 #
 
-install:
-	@cd SUNWipkg; pwd; $(MAKE) install
-	@cd SUNWipkg-gui; pwd; $(MAKE) install
-	@cd SUNWipkg-gui-data; pwd; $(MAKE) install
-	@cd SUNWipkg-gui-l10n; pwd; $(MAKE) install
-	@cd SUNWpython-cherrypy; pwd; $(MAKE) install
-	@cd SUNWpython-pyopenssl; pwd; $(MAKE) install
+PKG="SUNWpython-pyopenssl"
+NAME="pyOpenSSL"
+DESC="Python bindings for OpenSSL"
+ARCH="ISA"
+VERSION="0.7"
+SUNW_PKGVERS="1.0"
+BASEDIR=/
+CATEGORY="system"
+CLASSES="none"
+VENDOR="Sun Microsystems, Inc."

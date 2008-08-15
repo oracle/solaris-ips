@@ -48,6 +48,21 @@ import distutils.file_util as file_util
 import distutils.dir_util as dir_util
 import distutils.util as util
 
+# 3rd party software required for the build
+CP = 'CherryPy'
+CPIDIR = 'cherrypy'
+CPVER = '3.1.0'
+CPARC = '%s-%s.tar.gz' % (CP, CPVER)
+CPDIR = '%s-%s' % (CP, CPVER)
+CPURL = 'http://download.cherrypy.org/cherrypy/%s/%s' % (CPVER, CPARC)
+
+PO = 'pyOpenSSL'
+POIDIR = 'OpenSSL'
+POVER = '0.7'
+POARC = '%s-%s.tar.gz' % (PO, POVER)
+PODIR = '%s-%s' % (PO, POVER)
+POURL = 'http://downloads.sourceforge.net/pyopenssl/%s' % (POARC)
+
 osname = platform.uname()[0].lower()
 ostype = arch = 'unknown'
 if osname == 'sunos':
@@ -272,50 +287,49 @@ class install_func(_install):
                                 os.chmod(dst_path,
                                         os.stat(dst_path).st_mode | stat.S_IEXEC)
 
-                install_cherrypy()
+                install_sw(CP, CPVER, CPARC, CPDIR, CPURL, CPIDIR)
+                install_sw(PO, POVER, POARC, PODIR, POURL, POIDIR)
 
-CP = 'CherryPy'
-CPVER = '3.1.0'
-CPARC = '%s-%s.tar.gz' % (CP, CPVER)
-CPDIR = '%s-%s' % (CP, CPVER)
-CPURL = 'http://download.cherrypy.org/cherrypy/%s/%s' % (CPVER, CPARC)
-def install_cherrypy():
-        if not os.path.exists(CPARC):
-                print "downloading CherryPy"
+def install_sw(swname, swver, swarc, swdir, swurl, swidir):
+        if not os.path.exists(swarc):
+                print "downloading %s" % swname
                 try:
-                        fname, hdr = urllib.urlretrieve(CPURL, CPARC)
+                        fname, hdr = urllib.urlretrieve(swurl, swarc)
                 except IOError:
                         pass
-                if not os.path.exists(CPARC) or \
-                    hdr.gettype() != "application/x-gzip":
+                if not os.path.exists(swarc) or \
+                    (hdr.gettype() != "application/x-gzip" and
+                     hdr.gettype() != "application/x-tar"):
                         print "Unable to retrieve %s.\nPlease retrieve the file " \
-                            "and place it at: %s\n" % (CPURL, CPARC)
+                            "and place it at: %s\n" % (swurl, swarc)
                         # remove a partial download or error message from proxy
-                        remove_cherrypy()
+                        remove_sw(swname)
                         sys.exit(1)
-        if not os.path.exists(CPDIR):
-                print "unpacking CherryPy"
-                tar = tarfile.open(CPARC)
+        if not os.path.exists(swdir):
+                print "unpacking %s" % swname
+                tar = tarfile.open(swarc)
                 # extractall doesn't exist until python 2.5
                 for m in tar.getmembers():
                         tar.extract(m)
                 tar.close()
-        cherrypy_dir = os.path.join(root_dir, py_install_dir, "cherrypy")
-        if not os.path.exists(cherrypy_dir):
-                print "installing CherryPy"
+        swinst_dir = os.path.join(root_dir, py_install_dir, swidir)
+        if not os.path.exists(swinst_dir):
+                print "installing %s" % swname
                 subprocess.Popen(['python', 'setup.py', 'install',
                         '--install-lib=%s' % os.path.join(root_dir, py_install_dir),
                         '--install-data=%s' % os.path.join(root_dir, py_install_dir)],
-                        cwd = CPDIR).wait()
+                        cwd = swdir).wait()
 
-def remove_cherrypy():
+        
+def remove_sw(swname):
+        print("deleting %s" % swname)
         for file in os.listdir("."):
-                if fnmatch.fnmatch(file, "%s*" % CP):
+                if fnmatch.fnmatch(file, "%s*" % swname):
                         if os.path.isfile(file):
                                 os.unlink(file)
                         else:
                                 shutil.rmtree(file, True)
-
+        
 class build_func(_build):
         def initialize_options(self):
                 _build.initialize_options(self)
@@ -383,8 +397,8 @@ class clobber_func(Command):
                 shutil.rmtree(build_dir, True)
                 print("deleting " + root_dir)
                 shutil.rmtree(root_dir, True)
-                print("deleting cherrypy")
-                remove_cherrypy()
+                remove_sw(CP)
+                remove_sw(PO)
 
 class test_func(Command):
         # NOTE: these options need to be in sync with tests/run.py
