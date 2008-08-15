@@ -46,29 +46,21 @@ def get_canonical_os_name():
         useful to avoid the ambiguity of OS marketing names.  
         """
         
-        if platform.system().lower() == 'sunos':
-                return 'sunos'
-        elif platform.system().lower() == 'linux':
-                return 'linux'
-        elif platform.system().lower() == 'darwin':
-                return 'darwin'
+        psl = platform.system().lower()
+        if psl in ['sunos', 'darwin', 'windows']:
+                return psl
+
+        if psl == 'linux':
+                # add distro information for Linux
+                return 'linux_%s' % platform.dist()[0]
+
         # Workaround for python bug 1082, on Vista, platform.system()
         # returns 'Microsoft'
-        elif platform.system().lower() == 'microsoft' or \
-                platform.release().lower() == 'vista':
-                return 'winvista'
-        elif platform.release().lower() == 'xp':
-                return 'winxp'
-        elif platform.release().lower() == '95':
-                return 'win95'
-        elif platform.release().lower() == '98':
-                return 'win98'
-        elif platform.release().lower().find('2003') != -1:
-                return 'win2003'
-        elif platform.release().lower().find('2000') != -1:
-                return 'win2000'
-        else:
-                return 'unknown'
+        prl = platform.release.lower()
+        if psl == 'microsoft' or prl == 'vista' or prl == 'windows':
+                return 'windows'
+
+        return 'unknown'
 
 def get_os_release():
         """
