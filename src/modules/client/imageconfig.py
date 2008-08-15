@@ -29,6 +29,41 @@ import pkg.fmri as fmri
 import pkg.misc as misc
 from pkg.misc import msg
 
+class DepotStatus(object):
+        """An object that encapsulates status about a depot server.
+        This includes things like observed performance, availability,
+        successful and unsuccessful transaction rates, etc."""
+
+        def __init__(self, authority, url):
+                """Authority is the authority prefix for this depot.
+                Url is the URL that names the server or mirror itself."""
+
+                self.auth = authority
+                self.url = url.rstrip("/")
+                self.available = True
+
+                self.errors = 0
+                self.good_tx = 0
+
+                self.last_tx_time = None
+
+        def record_error(self):
+
+                self.errors += 1
+
+        def record_success(self, tx_time):
+
+                self.good_tx += 1
+                self.last_tx_time = tx_time
+
+        def set_available(self, avail):
+
+                if avail:
+                        self.available = True
+                else:
+                        self.available = False
+
+
 class ImageConfig(object):
         """An ImageConfig object is a collection of configuration information:
         URLs, authorities, policies, etc. that allow an Image to operate."""
@@ -40,8 +75,16 @@ class ImageConfig(object):
         # XXX Use of ConfigParser is convenient and at most speculative--and
         # definitely not interface.
 
+        BOOLEAN_POLICIES = [
+                "require-optional",
+                "pursue-latest",
+                "display-copyrights",
+                "flush-content-cache-on-success" ]       
+
         def __init__(self):
                 self.authorities = {}
+                self.authority_status = {}
+                self.mirror_status = {}
                 self.preferred_authority = None
                 self.flush_content_cache = False
                 self.filters = {}
@@ -74,6 +117,7 @@ class ImageConfig(object):
                                 # authority block has prefix, origin, and
                                 # mirrors
                                 a = {}
+                                ms = []
 
                                 k = cp.get(s, "prefix")
 
@@ -83,7 +127,9 @@ class ImageConfig(object):
 
                                 a["prefix"] = k
                                 a["origin"] = cp.get(s, "origin")
-                                a["mirrors"] = cp.get(s, "mirrors")
+                                a["mirrors"] = self.read_list(
+                                    cp.get(s, "mirrors"))
+
                                 try:
                                         a["ssl_key"] = cp.get(s, "ssl_key")
                                 except ConfigParser.NoOptionError:
@@ -98,31 +144,37 @@ class ImageConfig(object):
                                     misc.url_affix_trailing_slash(a["origin"])
 
                                 self.authorities[k] = a
+                                self.authority_status[k] = DepotStatus(k,
+                                    a["origin"])
 
+                                for mirror in a["mirrors"]:
+                                        ms.append(DepotStatus(k, mirror))
+                                ms.append(self.authority_status[k])
+
+                                self.mirror_status[k] = ms
+                                
                                 if self.preferred_authority == None:
                                         self.preferred_authority = k
 
-                        if re.match("policy", s):
-                                for o in cp.options("policy"):
+                if cp.has_section("policy"):
+                        for o in cp.options("policy"):
+                                if o in self.BOOLEAN_POLICIES:
+                                        self.policies[o] = \
+                                            cp.getboolean("policy", o)
+                                else:
                                         self.policies[o] = cp.get("policy", o)
 
-                        if re.match("filter", s):
-                                for o in cp.options("filter"):
-                                        self.filters[o] = cp.get("filter", o)
-
-                        # XXX Child images
+                if cp.has_section("filter"):
+                        for o in cp.options("filter"):
+                                self.filters[o] = cp.get("filter", o)
 
                 if "preferred-authority" in self.policies:
-                        self.preferred_authority = self.policies["preferred-authority"]
+                        self.preferred_authority = \
+                            self.policies["preferred-authority"]
 
                 if "flush-content-cache-on-success" in self.policies:
-                        policystr = self.policies["flush-content-cache-on-success"]
-
-                        if policystr == "True" or policystr == "true":
-                                self.flush_content_cache = True
-                        else:
-                                self.flush_content_cache = False
-
+                        self.flush_content_cache = \
+                            self.policies["flush-content-cache-on-success"]
 
         def write(self, path):
                 cp = ConfigParser.SafeConfigParser()
@@ -164,6 +216,23 @@ class ImageConfig(object):
 
         def delete_authority(self, auth):
                 del self.authorities[auth]
+
+        @staticmethod
+        def read_list(str):
+                """Take a list in string representation and convert it back
+                to a Python list."""
+                
+                # Strip brackets and any whitespace
+                str = str.strip("][ ")
+                # Strip comma and any whitespeace
+                lst = str.split(", ")
+                # Strip empty whitespace, single, and double quotation marks
+                lst = [ s.strip("' \"") for s in lst ]
+                # Eliminate any empty strings
+                lst = [ s for s in lst if s != '' ]
+
+                return lst
+ 
 
 if __name__ == "__main__":
         # XXX Need to construct a trivial configuration, load it, and verify

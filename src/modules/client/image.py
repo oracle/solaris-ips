@@ -32,6 +32,7 @@ import urllib2
 import httplib
 import shutil
 import time
+import operator
 
 from pkg.misc import msg, emsg
 
@@ -306,6 +307,56 @@ class Image(object):
 
                 return o.rstrip("/")
 
+        def select_mirror(self, auth = None, chosen_set = None):
+                """For the given authority, look through the status of
+                the mirrors.  Pick the best one.  This method returns
+                a DepotStatus object or None.  The chosen_set argument
+                contains a set object that lists the mirrors that were
+                previously chosen.  This allows us to choose both
+                by depot status statistics and ensures we don't
+                always pick the same depot."""
+
+                if auth == None:
+                        auth = self.cfg_cache.preferred_authority
+                try:
+                        slst = self.cfg_cache.mirror_status[auth]
+                except KeyError:
+                        # If the authority that we're trying to get no longer
+                        # exists, fall back to preferred authority.
+                        auth = self.cfg_cache.preferred_authority
+                        slst = self.cfg_cache.mirror_status[auth]
+
+                if len(slst) == 0:
+                        if auth in self.cfg_cache.authority_status:
+                                return self.cfg_cache.authority_status[auth]
+                        else:
+                                return None
+
+                # Choose mirror with fewest errors.
+                # If mirrors have same number of errors, choose mirror
+                # with smaller number of good transactions.  Assume it's
+                # being underused, not high-latency.
+                #
+                # XXX Will need to revisit the above assumption.
+                def cmp_depotstatus(a, b):
+                        res = cmp(a.errors, b.errors)
+                        if res == 0:
+                                return cmp(a.good_tx, b.good_tx)
+                        return res                        
+
+                slst.sort(cmp = cmp_depotstatus)
+
+                if chosen_set and len(chosen_set) == len(slst):
+                        chosen_set.clear()
+                        chosen_set = None
+
+                if chosen_set and slst[0] in chosen_set:
+                        for ds in slst:
+                                if ds not in chosen_set:
+                                        return ds
+
+                return slst[0]
+
         def get_ssl_credentials(self, authority = None, origin = None):
                 """Return a tuple containing (ssl_key, ssl_cert) for the
                 specified authority prefix.  If the authority isn't specified,
@@ -367,7 +418,7 @@ class Image(object):
                                 update_dt = catalog.ts_to_datetime(update_dt)
 
                 return (prefix, auth["origin"], auth["ssl_key"],
-                    auth["ssl_cert"], update_dt)
+                    auth["ssl_cert"], update_dt, auth["mirrors"])
 
         def set_preferred_authority(self, auth_name):
                 if not self.has_authority(auth_name):
@@ -376,7 +427,7 @@ class Image(object):
                 self.cfg_cache.write("%s/cfg_cache" % self.imgdir)
 
         def set_authority(self, auth_name, origin_url = None, ssl_key = None,
-            ssl_cert = None, mirrors = []):
+            ssl_cert = None):
 
                 auths = self.cfg_cache.authorities
 
@@ -390,19 +441,40 @@ class Image(object):
                                 auths[auth_name]["ssl_key"] = ssl_key
                         if ssl_cert:
                                 auths[auth_name]["ssl_cert"] = ssl_cert
-                        if mirrors:
-                                auths[auth_name]["mirrors"] = mirrors
 
                 else:
                         auths[auth_name] = {}
                         auths[auth_name]["prefix"] = auth_name
                         auths[auth_name]["origin"] = \
                             misc.url_affix_trailing_slash(origin_url)
-                        auths[auth_name]["mirrors"] = mirrors
+                        auths[auth_name]["mirrors"] = []
                         auths[auth_name]["ssl_key"] = ssl_key
                         auths[auth_name]["ssl_cert"] = ssl_cert
 
                 self.cfg_cache.write("%s/cfg_cache" % self.imgdir)
+                        
+        def add_mirror(self, auth_name, mirror):
+                """Add the mirror URL contained in mirror to
+                auth_name's list of mirrors."""
+
+                auths = self.cfg_cache.authorities
+                auths[auth_name]["mirrors"].append(mirror)
+                self.cfg_cache.write("%s/cfg_cache" % self.imgdir)
+
+        def has_mirror(self, auth_name, url):
+                """Returns true if url is in auth_name's list of mirrors."""
+
+                return url in self.cfg_cache.authorities[auth_name]["mirrors"]
+
+        def del_mirror(self, auth_name, mirror):
+                """Remove the mirror URL contained in mirror from
+                auth_name's list of mirrors."""
+
+                auths = self.cfg_cache.authorities
+
+                if mirror in self.cfg_cache.authorities[auth_name]["mirrors"]:
+                        auths[auth_name]["mirrors"].remove(mirror)
+                        self.cfg_cache.write("%s/cfg_cache" % self.imgdir)
 
         def verify(self, fmri, progresstracker, **args):
                 """generator that returns any errors in installed pkgs

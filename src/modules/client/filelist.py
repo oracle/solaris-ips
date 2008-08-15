@@ -28,7 +28,11 @@
 import os
 import urllib
 import urllib2
+import httplib
 import socket
+import time
+import sha
+from tarfile import ReadError
 
 import pkg.pkgtarfile as ptf
 import pkg.portable as portable
@@ -36,6 +40,8 @@ import pkg.fmri
 from pkg.misc import versioned_urlopen
 from pkg.misc import hash_file_name
 from pkg.misc import TransferTimedOutException
+from pkg.misc import TransferContentException
+from pkg.misc import InvalidContentException
 from pkg.misc import MAX_TIMEOUT_COUNT
 
 class FileList(object):
@@ -84,6 +90,18 @@ class FileList(object):
                 self.effective_bytes = 0
                 self.effective_nfiles = 0
 
+                if fmri:
+                        auth, pkg_name, version = self.fmri.tuple()
+
+                        self.authority = pkg.fmri.strip_auth_pfx(auth)
+                        self.ssl_tuple = self.image.get_ssl_credentials(auth)
+                else:
+                        self.authority = None
+                        self.ssl_tuple = None
+
+                self.ds = None
+                self.url = None
+
         def add_action(self, action):
                 """Add the specified action to the filelist.  The action
                 must name a file that can be retrieved from the repository.
@@ -103,6 +121,8 @@ class FileList(object):
                 if os.path.exists(cache_path):
                         action.data = self._make_opener(cache_path)
                         bytes = int(action.attrs.get("pkg.size", "0"))
+
+                        self._verify_content(action, cache_path)
 
                         self.progtrack.download_adjust_goal(0, -1, -bytes)
 
@@ -149,6 +169,13 @@ class FileList(object):
                 self.effective_nfiles += 1
                 self.effective_bytes += int(action.attrs.get("pkg.size", "0"))
 
+        def _clear_mirror(self):
+                """Clear any selected DepotStatus and URL assocated with
+                a mirror selection."""
+
+                self.ds = None
+                self.url = None
+
         def _del_hash(self, hash):
                 """Given the supplied content hash, remove the entry
                 from the flist's dictionary and adjust the counters
@@ -186,16 +213,29 @@ class FileList(object):
 
                 nfiles = self._get_nfiles()
                 nbytes = self._get_nbytes()
+                chosen_mirrors = set()
+                ts = 0
 
                 while files_extracted == 0:
                         try:
+                                self._pick_mirror(chosen_mirrors)
+                                ts = time.time()
+
                                 fe = self._get_files()
                                 files_extracted += fe
-                        except TransferTimedOutException:
+
+                        except (TransferTimedOutException,
+                            TransferContentException, InvalidContentException):
+
                                 retry_count -= 1
+                                self.ds.record_error()
+                                self._clear_mirror()
 
                                 if retry_count <= 0:
-                                        raise
+                                        raise TransferTimedOutException
+                        else:
+                                ts = time.time() - ts
+                                self.ds.record_success(ts)
 
                 nfiles -= self._get_nfiles()
                 nbytes -= self._get_nbytes()
@@ -232,11 +272,14 @@ class FileList(object):
                 try:
                         l = self.fhash[hashval]
                 except KeyError:
-                        # If the key isn't in the dictionary, the server
-                        # sent us a file we didn't ask for.  In this
-                        # case, we can't create an opener for it, so just
-                        # leave it in the cache.
+                        # If the key isn't in the dictionary, the server sent us
+                        # a file we didn't ask for.  In this case, we can't
+                        # create an opener for it, nor should we leave it in the
+                        # cache.
+                        os.remove(final_path)
                         return
+
+                self._verify_content(l[0], final_path)
 
                 for action in l:
                         action.data = self._make_opener(final_path)
@@ -264,10 +307,7 @@ class FileList(object):
                 tar_stream = None
                 files_extracted = 0
 
-                authority, pkg_name, version = self.fmri.tuple()
-                authority = pkg.fmri.strip_auth_pfx(authority)
-                url_prefix = self.image.get_url_by_authority(authority)
-                ssl_tuple = self.image.get_ssl_credentials(authority)
+                url_prefix = self.url
 
                 download_dir = self.image.incoming_download_dir()
                 # Make sure the download directory is there before we start
@@ -288,20 +328,21 @@ class FileList(object):
 
                 try:
                         f, v = versioned_urlopen(url_prefix, "filelist", [0],
-                            data = req_str, ssl_creds = ssl_tuple,
+                            data = req_str, ssl_creds = self.ssl_tuple,
                             imgtype = self.image.type)
                 except RuntimeError:
                         raise FileListException, "No server-side support" 
-                except urllib2.HTTPError:
-                        # This is stupidest class hierarchy ever.
+                except urllib2.HTTPError, e:
+                        # Must check for HTTPError before URLError
+                        if e.code == httplib.REQUEST_TIMEOUT:
+                                raise TransferTimedOutException
                         raise
                 except urllib2.URLError, e:
                         if len(e.args) == 1 and \
                             isinstance(e.args[0], socket.timeout):
                                 self.image.cleanup_downloads()
                                 raise TransferTimedOutException
-                        else:
-                                raise
+                        raise
 
                 # Exception handling here is a bit complicated.  The finally
                 # block makes sure we always close our file objects.  If we get
@@ -319,6 +360,9 @@ class FileList(object):
                         except socket.timeout:
                                 self.image.cleanup_downloads()
                                 raise TransferTimedOutException
+                        except ReadError:
+                                raise TransferContentException
+
                 finally:
                         if tar_stream:
                                 tar_stream.close()
@@ -352,6 +396,43 @@ class FileList(object):
                         f = open(filepath, "rb")
                         return f
                 return opener                                
+
+        def _pick_mirror(self, chosen_set=None):
+                """If we don't already have a DepotStatus or a URL,
+                select a mirror, populate the DepotStatus, and choose a URL."""
+
+                if self.ds and self.url:
+                        return
+                elif self.ds:
+                        self.url = self.ds.url
+                else:
+                        self.ds = self.image.select_mirror(self.authority,
+                            chosen_set)
+                        self.url = self.ds.url
+                        chosen_set.add(self.ds)
+
+        @staticmethod
+        def _verify_content(action, filepath):
+                """If action contains an attribute that has the compressed
+                hash, read the file specified in filepath and verify
+                that the hash values match.  If the values do not match,
+                remove the file and raise an InvalidContentException."""
+
+                chash = action.attrs.get("chash", None)
+                if not chash:
+                        return
+
+                cfile = open(filepath, "rb")
+                cdata = cfile.read()
+                cfile.close()
+                hashobj = sha.new(cdata)
+                newhash = hashobj.hexdigest()
+                cdata = None
+
+                if chash != newhash:
+                       os.remove(filepath)
+                       raise InvalidContentException(action, newhash)
+
 
 class FileListException(Exception):
         def __init__(self, args=None):

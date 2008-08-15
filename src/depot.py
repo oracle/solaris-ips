@@ -63,6 +63,8 @@ READONLY_DEFAULT = False
 REBUILD_DEFAULT = False
 # Whether the indexes should be rebuilt
 REINDEX_DEFAULT = False
+# Not in mirror mode by default
+MIRROR_DEFAULT = False
 
 import getopt
 import os
@@ -90,12 +92,14 @@ from pkg.misc import port_available, emsg
 
 def usage():
         print """\
-Usage: /usr/lib/pkg.depotd [--readonly] [--rebuild] [--proxy-base url]
+Usage: /usr/lib/pkg.depotd [--readonly] [--rebuild] [--mirror] [--proxy-base url]
            [-d repo_dir] [-p port] [-s threads] [-t socket_timeout] 
 
         --readonly      Read-only operation; modifying operations disallowed
         --rebuild       Re-build the catalog from pkgs in depot
-                        Cannot be used with --readonly
+                        Cannot be used with --readonly or --mirror
+        --mirror        Content mirror mode. Publishing and metadata operations
+                        disabled
         --proxy-base    The url to use as the base for generating internal
                         redirects and content.
 """
@@ -116,6 +120,7 @@ if __name__ == "__main__":
         rebuild = REBUILD_DEFAULT
         reindex = REINDEX_DEFAULT
         proxy_base = None
+        mirror = MIRROR_DEFAULT
 
         if "PKG_REPO" in os.environ:
                 repo_path = os.environ["PKG_REPO"]
@@ -125,7 +130,7 @@ if __name__ == "__main__":
         try:
                 parsed = set()
                 opts, pargs = getopt.getopt(sys.argv[1:], "d:np:s:t:",
-                    ["readonly", "rebuild", "proxy-base=", "refresh-index"])
+                    ["readonly", "rebuild", "mirror", "proxy-base=", "refresh-index"])
                 opt = None
                 for opt, arg in opts:
                         if opt in parsed:
@@ -180,6 +185,8 @@ if __name__ == "__main__":
                                     path, params, query, fragment)
                                     ).lstrip("//")
 
+                        elif opt == "--mirror":
+                                mirror = True
         except getopt.GetoptError, e:
                 print "pkg.depotd: %s" % e.msg
                 usage()
@@ -194,11 +201,11 @@ if __name__ == "__main__":
         if rebuild and reindex:
                 print "--refresh-index cannot be used with --rebuild"
                 usage()
-        if rebuild and readonly:
-                print "--readonly cannot be used with --rebuild"
+        if rebuild and (readonly or mirror):
+                print "--readonly and --mirror cannot be used with --rebuild"
                 usage()
-        if reindex and readonly:
-                print "--readonly cannot be used with --refresh-index"
+        if reindex and (readonly or mirror):
+                print "--readonly and --mirror cannot be used with --refresh-index"
                 usage()
 
         # If the program is going to reindex, the port is irrelevant since
@@ -222,6 +229,9 @@ if __name__ == "__main__":
 
         if readonly:
                 scfg.set_read_only()
+
+        if mirror:
+                scfg.set_mirror()
 
         try:
                 scfg.init_dirs()

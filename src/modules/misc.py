@@ -365,6 +365,20 @@ class TransferTimedOutException(Exception):
         def __init__(self, args = None):
                 self.args = args
 
+class TransferContentException(Exception):
+        def __init__(self, args = None):
+                self.args = args
+
+class InvalidContentException(Exception):
+        def __init__(self, action, hashval):
+                self.action = action
+                self.hashval = hashval
+
+        def __str__(self):
+                str = "Action with path %s should have hash %s. Computed hash %s instead." % \
+                    (self.action.attrs["path"], self.action.attrs["chash"], 
+                    self.hashval)
+                return str
 
 # Default maximum memory useage during indexing
 # This is a soft cap since memory usage is estimated.
@@ -377,3 +391,4 @@ try:
 except:
         CLIENT_DEFAULT_MEM_USE_KB = 100
         SERVER_DEFAULT_MEM_USE_KB = 500
+

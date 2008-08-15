@@ -64,6 +64,32 @@ class Repository(object):
             theory) to instantiate and manage multiple repositories for a single
             depot process. """
 
+        REPO_OPS_DEFAULT = [
+                "versions",
+                "search",
+                "catalog",
+                "manifest",
+                "filelist",
+                "rename",
+                "file",
+                "open",
+                "close",
+                "abandon",
+                "add" ]
+
+        REPO_OPS_READONLY = [
+                "versions",
+                "search",
+                "catalog",
+                "manifest",
+                "filelist",
+                "file" ]
+
+        REPO_OPS_MIRROR = [
+                "versions",
+                "filelist",
+                "file" ]
+
         def __init__(self, scfg):
                 """ Initialise and map the valid operations for the repository.
                     While doing so, ensure that the operations have been
@@ -96,6 +122,13 @@ class Repository(object):
 
                 self.vops = {}
 
+                if scfg.is_mirror():
+                        self.ops_list = self.REPO_OPS_MIRROR
+                elif scfg.is_read_only():
+                        self.ops_list = self.REPO_OPS_READONLY
+                else:
+                        self.ops_list = self.REPO_OPS_DEFAULT
+
                 # cherrypy has a special handler for favicon, and so we must
                 # setup an instance-level handler instead of just updating
                 # its configuration information.
@@ -109,15 +142,13 @@ class Repository(object):
                         if not m:
                                 continue
 
-                        # We only want to allow operations we have explicitly
-                        # exposed.  cherrypy will handle this automatically,
-                        # but this prevents a bad operator from being put
-                        # into vops.
-                        assert getattr(func, 'exposed', False), "Unable to " \
-                            "map operation %s; not explicitly exposed." % name
-
                         op = m.group(1)
                         ver = m.group(2)
+
+                        if op not in self.ops_list:
+                                continue
+
+                        func.__dict__['exposed'] = True
 
                         if op in self.vops:
                                 self.vops[op].append(ver)
@@ -141,11 +172,14 @@ class Repository(object):
                     object will be handled by the "externally facing" server
                     code instead. """
 
-                operation = None
+                op = None
                 if len(tokens) > 0:
-                        operation = tokens[0]
+                        op = tokens[0]
 
-                if operation not in self.vops:
+                if op in self.REPO_OPS_DEFAULT and op not in self.vops:
+                        raise cherrypy.HTTPError(httplib.NOT_FOUND,
+                            "Operation not supported in current server mode.")
+                elif op not in self.vops:
                         request = cherrypy.request
                         response = cherrypy.response
                         if face.match(self.scfg, self.rcfg, request, response):
@@ -171,7 +205,6 @@ class Repository(object):
                     % (version, operation)
                 raise cherrypy.HTTPError(httplib.NOT_FOUND, msg)
 
-        @cherrypy.expose
         @cherrypy.tools.response_headers(headers = \
             [('Content-Type','text/plain')])
         def versions_0(self, *tokens):
@@ -184,7 +217,6 @@ class Repository(object):
                 ) + "\n"
                 return versions
 
-        @cherrypy.expose
         def search_0(self, *tokens):
                 """ Based on the request path, return a list of packages that
                     match the specified criteria. """
@@ -216,7 +248,6 @@ class Repository(object):
 
                 return output
 
-        @cherrypy.expose
         def catalog_0(self, *tokens):
                 """ Provide an incremental update or full version of the
                     catalog as appropriate to the requesting client. """
@@ -240,7 +271,6 @@ class Repository(object):
 
         catalog_0._cp_config = { 'response.stream': True }
 
-        @cherrypy.expose
         def manifest_0(self, *tokens):
                 """ The request is an encoded pkg FMRI.  If the version is
                     specified incompletely, we return an error, as the client
@@ -284,7 +314,6 @@ class Repository(object):
 
                         cherrypy.request.tar_stream = None
 
-        @cherrypy.expose
         def filelist_0(self, *tokens, **params):
                 """ Request data contains application/x-www-form-urlencoded
                     entries with the requested filenames.  The resulting tar
@@ -321,6 +350,10 @@ class Repository(object):
                                     self.scfg.file_root,
                                     misc.hash_file_name(v)))
 
+                                # If file isn't here, skip it
+                                if not os.path.exists(filepath):
+                                        continue
+
                                 tar_stream.add(filepath, v, False)
 
                                 self.scfg.inc_flist_files()
@@ -351,7 +384,6 @@ class Repository(object):
                     'application/data')]
         }
 
-        @cherrypy.expose
         def rename_0(self, *tokens, **params):
                 """ Renames an existing package specified by Src-FMRI to
                     Dest-FMRI.  Returns no output. """
@@ -391,7 +423,6 @@ class Repository(object):
 
                 self.scfg.inc_renamed()
 
-        @cherrypy.expose
         def file_0(self, *tokens):
                 """ The request is the SHA-1 hash name for the file.  The
                     contents of the file is output directly to the client. """
@@ -406,7 +437,6 @@ class Repository(object):
                     self.scfg.file_root, misc.hash_file_name(fhash))),
                     'application/data')
 
-        @cherrypy.expose
         def open_0(self, *tokens):
                 """ Starts a transaction for the package name specified in the
                     request path.  Returns no output."""
@@ -415,9 +445,6 @@ class Repository(object):
 
                 # XXX Authentication will be handled by virtue of possessing a
                 # signed certificate (or a more elaborate system).
-                if self.scfg.is_read_only():
-                        raise cherrypy.HTTPError(httplib.FORBIDDEN,
-                            "Read-only server")
 
                 t = trans.Transaction()
                 ret = t.open(self.scfg, *tokens)
@@ -430,14 +457,9 @@ class Repository(object):
                 else:
                         raise cherrypy.HTTPError(httplib.INTERNAL_SERVER_ERROR)
 
-        @cherrypy.expose
         def close_0(self, *tokens):
                 """ Ends an in-flight transaction for the Transaction ID
                     specified in the request path.  Returns no output. """
-
-                if self.scfg.is_read_only():
-                        raise cherrypy.HTTPError(httplib.FORBIDDEN,
-                            "Read-only server")
 
                 try:
                         # cherrypy decoded it, but we actually need it encoded.
@@ -454,14 +476,10 @@ class Repository(object):
                         t.close()
                         del self.scfg.in_flight_trans[trans_id]
 
-        @cherrypy.expose
         def abandon_0(self, *tokens):
                 """ Aborts an in-flight transaction for the Transaction ID
                     specified in the request path.  Returns no output. """
 
-                if self.scfg.is_read_only():
-                        raise cherrypy.HTTPError(httplib.FORBIDDEN,
-                            "Read-only server")
                 try:
                         # cherrypy decoded it, but we actually need it encoded.
                         trans_id = urllib.quote("%s" % tokens[0], "")
@@ -477,16 +495,11 @@ class Repository(object):
                         t.abandon()
                         del self.scfg.in_flight_trans[trans_id]
 
-        @cherrypy.expose
         def add_0(self, *tokens, **params):
                 """ Adds content to an in-flight transaction for the
                     Transaction ID specified in the request path.  The content
                     is expected to be in the request body.  Returns no
                     output. """
-
-                if self.scfg.is_read_only():
-                        raise cherrypy.HTTPError(httplib.FORBIDDEN,
-                            "Read-only server")
 
                 try:
                         # cherrypy decoded it, but we actually need it encoded.

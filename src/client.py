@@ -102,7 +102,8 @@ Advanced subcommands:
             [-k ssl_key] [-c ssl_cert] -a <prefix>=<url> dir
 
         pkg set-authority [-P] [-k ssl_key] [-c ssl_cert]
-            [-O origin_url] authority
+            [-O origin_url] [-m mirror to add | --add-mirror=mirror to add]
+            [-M mirror to remove | --remove-mirror=mirror to remove] authority
         pkg unset-authority authority ...
         pkg authority [-HP] [authname]
         pkg rebuild-index
@@ -1359,14 +1360,19 @@ def catalog_refresh(img, args):
 
 def authority_set(img, args):
         """pkg set-authority [-P] [-k ssl_key] [-c ssl_cert]
-            [-O origin_url] authority"""
+            [-O origin_url] [-m mirror to add] [-M mirror to remove] 
+            authority"""
 
         preferred = False
         ssl_key = None
         ssl_cert = None
         origin_url = None
+        add_mirror = None
+        remove_mirror = None
 
-        opts, pargs = getopt.getopt(args, "Pk:c:O:")
+        opts, pargs = getopt.getopt(args, "Pk:c:O:M:m:",
+            ["add-mirror=", "remove-mirror="])
+
         for opt, arg in opts:
                 if opt == "-P":
                         preferred = True
@@ -1376,6 +1382,10 @@ def authority_set(img, args):
                         ssl_cert = arg
                 if opt == "-O":
                         origin_url = arg
+                if opt == "-m" or opt == "--add-mirror":
+                        add_mirror = arg
+                if opt == "-M" or opt == "--remove-mirror":
+                        remove_mirror = arg
 
         if len(pargs) != 1:
                 usage(
@@ -1400,8 +1410,8 @@ def authority_set(img, args):
 
 
         if not img.has_authority(auth) and origin_url == None:
-                error(_("set-authority: must define origin URL for new " \
-                    "authority"))
+                error(_("set-authority: authority does not exist. Use " \
+                    "-O to define origin URL for new authority"))
                 return 1
 
         elif not img.has_authority(auth) and not misc.valid_auth_prefix(auth):
@@ -1421,6 +1431,33 @@ def authority_set(img, args):
 
         if preferred:
                 img.set_preferred_authority(auth)
+
+
+        if add_mirror:
+
+                if not misc.valid_auth_url(add_mirror):
+                        error(_("set-authority: added mirror's URL is invalid"))
+                        return 1
+
+                if img.has_mirror(auth, add_mirror):
+                        error(_("set-authority: mirror already exists"))
+                        return 1
+
+                img.add_mirror(auth, add_mirror)
+
+        if remove_mirror:
+
+                if not misc.valid_auth_url(remove_mirror):
+                        error(_("set-authority: removed mirror has bad URL"))
+                        return 1
+
+                if not img.has_mirror(auth, remove_mirror):
+                        error(_("set-authority: mirror does not exist"))
+                        return 1
+
+
+                img.del_mirror(auth, remove_mirror)
+
 
         return 0
 
@@ -1474,7 +1511,8 @@ def authority_list(img, args):
 
                 for a in auths:
                         # summary list
-                        pfx, url, ssl_key, ssl_cert, dt = img.split_authority(a)
+                        pfx, url, ssl_key, ssl_cert, dt, mir = \
+                            img.split_authority(a)
 
                         if not preferred_only and pfx == preferred_authority:
                                 pfx += " (preferred)"
@@ -1490,7 +1528,7 @@ def authority_list(img, args):
 
                         # detailed print
                         auth = img.get_authority(a)
-                        pfx, url, ssl_key, ssl_cert, dt = \
+                        pfx, url, ssl_key, ssl_cert, dt, mir = \
                             img.split_authority(auth)
 
                         if dt:
@@ -1502,6 +1540,7 @@ def authority_list(img, args):
                         msg("        SSL Key:", ssl_key)
                         msg("       SSL Cert:", ssl_cert)
                         msg("Catalog Updated:", dt)
+                        msg("        Mirrors:", mir)
 
         return 0
 
@@ -1739,7 +1778,12 @@ if __name__ == "__main__":
                 # further broken pipe (EPIPE) errors.
                 sys.exit(1)
         except misc.TransferTimedOutException:
-                msg(_("Maximum number of timeouts exceeded during download."))
+                error(_("Maximum number of timeouts exceeded during download."))
+                sys.exit(1)
+        except misc.InvalidContentException, e:
+                error(_("One or more hosts providing content for this install" +
+                    " has provided a file with invalid content."))
+                error(_(str(e)))
                 sys.exit(1)
         except:
                 traceback.print_exc()

@@ -25,6 +25,7 @@
 
 import socket
 import urllib2
+import httplib
 
 import pkg.fmri
 from pkg.misc import versioned_urlopen
@@ -73,6 +74,9 @@ def get_manifest(img, fmri):
                     fmri.get_url_path(), ssl_creds = ssl_tuple,
                     imgtype = img.type)
         except urllib2.HTTPError, e:
+                if e.code == httplib.REQUEST_TIMEOUT:
+                        raise TransferTimedOutException
+
                 raise NameError, "could not retrieve manifest '%s' from '%s'" % \
                     (fmri.get_url_path(), url_prefix)
         except urllib2.URLError, e:

@@ -24,7 +24,6 @@
 
 import cherrypy
 import errno
-import gzip
 import httplib
 import logging
 import os
@@ -35,11 +34,13 @@ import time
 import datetime
 import calendar
 import urllib
+import stat
 
 import pkg.actions
 import pkg.fmri as fmri
 import pkg.misc as misc
 import pkg.portable as portable
+from pkg.pkggzip import PkgGzipFile
 
 try:
         import pkg.elf as elf
@@ -258,7 +259,9 @@ class Transaction(object):
                         fhash = sha.new(data)
                         fname = fhash.hexdigest()
                         action.hash = fname
-                        ofile = gzip.GzipFile("%s/%s" % (self.dir, fname), "wb")
+
+                        opath = os.path.join(self.dir, fname)
+                        ofile = PkgGzipFile(opath, "wb")
 
                         bufsz = 64 * 1024
 
@@ -272,6 +275,28 @@ class Transaction(object):
                         m = nbuf * bufsz
                         ofile.write(data[m:])
                         ofile.close()
+
+                        data = None
+                
+                        # Now that the file has been compressed, determine its
+                        # size and store that as an attribute in the manifest
+                        # for the file.
+                        fs = os.stat(opath)
+                        action.attrs["pkg.csize"] = str(fs[stat.ST_SIZE])
+
+                        # Compute the SHA hash of the compressed file.
+                        # Store this as the chash attribute of the file's
+                        # action.  In order for this to work correctly, we
+                        # have to use the PkgGzipFile class.  It omits
+                        # filename and timestamp information from the gzip
+                        # header, allowing us to generate deterministic
+                        # hashes for different files with identical content.
+                        cfile = open(opath, "rb")
+                        cdata = cfile.read()
+                        cfile.close()
+                        chash = sha.new(cdata)
+                        action.attrs["chash"] = chash.hexdigest()
+                        cdata = None
 
                 tfile = file("%s/manifest" % self.dir, "a")
                 print >> tfile, action

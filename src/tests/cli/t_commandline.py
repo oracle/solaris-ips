@@ -153,5 +153,56 @@ class TestCommandLine(testutils.SingleDepotTestCase):
                 self.pkg("set-authority -O http://test1:abcde test2", exit=1)
                 self.pkg("set-authority -O ftp://test2 test2", exit=1)
 
+        def test_mirror(self):
+                """Test set-mirror and unset-mirror."""
+                durl = self.dc.get_depot_url()
+                pfx = "mtest"
+                self.image_create(durl, prefix = pfx)
+
+                self.pkg("set-authority -m http://test1 mtest")
+                self.pkg("set-authority -m http://test2.test.com mtest")
+                self.pkg("set-authority -m http://test5", exit=2)
+                self.pkg("set-authority -m mtest", exit=2)
+                self.pkg("set-authority -m http://test1 mtest", exit=1)
+                self.pkg("set-authority -m http://test5 test", exit=1)
+                self.pkg("set-authority -m test7 mtest", exit=1)
+
+                self.pkg("set-authority -M http://test1 mtest")
+                self.pkg("set-authority -M http://test2.test.com mtest")
+                self.pkg("set-authority -M mtest http://test2 http://test4",
+                    exit=2)
+                self.pkg("set-authority -M http://test5", exit=2)
+                self.pkg("set-authority -M mtest", exit=2)
+                self.pkg("set-authority -M http://test5 test", exit=1)
+                self.pkg("set-authority -M http://test6 mtest", exit=1)
+                self.pkg("set-authority -M test7 mtest", exit=1)
+
+        def test_mirror_longopt(self):
+                """Test set-mirror and unset-mirror."""
+                durl = self.dc.get_depot_url()
+                pfx = "mtest"
+                self.image_create(durl, prefix = pfx)
+
+                self.pkg("set-authority --add-mirror=http://test1 mtest")
+                self.pkg("set-authority --add-mirror=http://test2.test.com mtest")
+                self.pkg("set-authority --add-mirror=http://test5", exit=2)
+                self.pkg("set-authority --add-mirror mtest", exit=2)
+                self.pkg("set-authority --add-mirror=http://test1 mtest",
+                    exit=1)
+                self.pkg("set-authority --add-mirror=http://test5 test", exit=1)
+                self.pkg("set-authority --add-mirror=test7 mtest", exit=1)
+
+                self.pkg("set-authority --remove-mirror=http://test1 mtest")
+                self.pkg("set-authority --remove-mirror=http://test2.test.com mtest")
+                self.pkg("set-authority --remove-mirror=mtest http://test2 http://test4",
+                    exit=2)
+                self.pkg("set-authority --remove-mirror=http://test5", exit=2)
+                self.pkg("set-authority --remove-mirror mtest", exit=2)
+                self.pkg("set-authority --remove-mirror=http://test5 test",
+                    exit=1)
+                self.pkg("set-authority --remove-mirror=http://test6 mtest",
+                    exit=1)
+                self.pkg("set-authority --remove-mirror=test7 mtest", exit=1)
+
 if __name__ == "__main__":
         unittest.main()

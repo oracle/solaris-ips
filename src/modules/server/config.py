@@ -49,6 +49,7 @@ class SvrConfig(object):
                 self.authority = authority
 
                 self.read_only = False
+                self.mirror = False
 
                 self.in_flight_trans = {}
 
@@ -104,8 +105,14 @@ class SvrConfig(object):
         def set_read_only(self):
                 self.read_only = True
 
+        def set_mirror(self):
+                self.mirror = True
+
         def is_read_only(self):
                 return self.read_only
+
+        def is_mirror(self):
+                return self.mirror
 
         def acquire_in_flight(self):
                 """Walk trans_root, acquiring valid transaction IDs."""
@@ -123,6 +130,9 @@ class SvrConfig(object):
         def acquire_catalog(self, rebuild=None):
                 """Tell the catalog to set itself up.  Associate an
                 instance of the catalog with this depot."""
+
+                if self.is_mirror():
+                        return
 
                 if rebuild == None:
                         rebuild = not self.read_only

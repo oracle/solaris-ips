@@ -53,6 +53,7 @@ class DepotController(object):
                 self.__readonly = False
                 self.__rebuild = False
                 self.__refresh_index = False
+                self.__mirror = False
                 self.__logpath = "/tmp/depot.log"
                 self.__output = None
                 self.__depot_handle = None
@@ -83,6 +84,12 @@ class DepotController(object):
 
         def set_readwrite(self):
                 self.__readonly = False
+
+        def set_mirror(self):
+                self.__mirror = True
+
+        def unset_mirror(self):
+                self.__mirror = False
 
         def set_rebuild(self):
                 self.__rebuild = True
@@ -152,6 +159,8 @@ class DepotController(object):
                         args.append("--readonly")
                 if self.__rebuild:
                         args.append("--rebuild")
+                if self.__mirror:
+                        args.append("--mirror")
                 if self.__refresh_index:
                         args.append("--refresh-index")
                 return args
