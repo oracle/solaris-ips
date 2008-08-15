@@ -77,6 +77,9 @@ class ServerCatalog(catalog.Catalog):
                 catalog.Catalog.__init__(self, cat_root, authority, pkg_root,
                     read_only, rebuild)
 
+                if not self._search_available:
+                        self._check_search()
+
         def whence(self, cmd):
                 if cmd[0] != '/':
                         tmp_cmd = cmd
@@ -160,14 +163,17 @@ class ServerCatalog(catalog.Catalog):
                             SERVER_DEFAULT_MEM_USE_KB)
                         ind.setup()
 
-        def build_catalog(self):
-                """ Creates an Indexer instance and after building the
-                catalog, refreshes the index.
-                """
+        def _check_search(self):
                 ind = indexer.Indexer(self.index_root, SERVER_DEFAULT_MEM_USE_KB)
                 if ind.check_index_existence():
                         self._search_available = True
                         cherrypy.log("Search Available", "INDEX")
+                        
+        def build_catalog(self):
+                """ Creates an Indexer instance and after building the
+                catalog, refreshes the index.
+                """
+                self._check_search()
                 catalog.Catalog.build_catalog(self)
                 # refresh_index doesn't use file modification times
                 # to determine which packages need to be indexed, so use
