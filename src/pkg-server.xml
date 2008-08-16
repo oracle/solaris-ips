@@ -85,7 +85,7 @@
 	<exec_method
 		type='method'
 		name='start'
-		exec='/usr/lib/pkg.depotd -p %{pkg/port} -d %{pkg/inst_root} -t %{pkg/socket_timeout} -s %{pkg/threads} --proxy-base=%{pkg/proxy_base}'
+		exec='/usr/lib/pkg.depotd -p %{pkg/port} -d %{pkg/inst_root} -t %{pkg/socket_timeout} -s %{pkg/threads} --proxy-base=%{pkg/proxy_base} --log-access=%{pkg/log_access} --log-errors=%{pkg/log_errors}'
 		timeout_seconds='0' />
 
 	<exec_method
@@ -105,6 +105,10 @@
 			value='/var/pkg/repo' />
 		<propval name='socket_timeout' type='count' value='60' />
 		<propval name='threads' type='count' value='10' />
+		<propval name='log_access' type='astring'
+			value='none' />
+		<propval name='log_errors' type='astring'
+			value='stderr' />
 	</property_group>
 
 	<stability value='Unstable' />

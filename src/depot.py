@@ -67,6 +67,7 @@ REINDEX_DEFAULT = False
 MIRROR_DEFAULT = False
 
 import getopt
+import logging
 import os
 import sys
 import urlparse
@@ -88,12 +89,28 @@ import pkg.server.config as config
 import pkg.server.depot as depot
 import pkg.server.repository as repo
 import pkg.server.repositoryconfig as rc
-from pkg.misc import port_available, emsg
+from pkg.misc import port_available, msg, emsg
 
-def usage():
+class LogSink(object):
+        """This is a dummy object that we can use to discard log entries
+        without relying on non-portable interfaces such as /dev/null."""
+
+        def write(self, *args, **kwargs):
+                """Discard the bits."""
+                pass
+
+        def flush(self, *args, **kwargs):
+                """Discard the bits."""
+                pass
+
+def usage(text):
+        if text:
+                emsg(text)
+
         print """\
 Usage: /usr/lib/pkg.depotd [--readonly] [--rebuild] [--mirror] [--proxy-base url]
-           [-d repo_dir] [-p port] [-s threads] [-t socket_timeout] 
+           [--log-access dest] [--log-errors dest] [-d repo_dir] [-p port]
+           [-s threads] [-t socket_timeout]
 
         --readonly      Read-only operation; modifying operations disallowed
         --rebuild       Re-build the catalog from pkgs in depot
@@ -102,6 +119,15 @@ Usage: /usr/lib/pkg.depotd [--readonly] [--rebuild] [--mirror] [--proxy-base url
                         disabled
         --proxy-base    The url to use as the base for generating internal
                         redirects and content.
+        --log-access    The destination for any access related information
+                        logged by the depot process.  Possible values are:
+                        stderr, stdout, none, or an absolute pathname.  The
+                        default value is stdout if stdout is a tty; otherwise
+                        the default value is none.
+        --log-errors    The destination for any errors or other information
+                        logged by the depot process.  Possible values are:
+                        stderr, stdout, none, or an absolute pathname.  The
+                        default value is stderr.
 """
         sys.exit(2)
 
@@ -127,18 +153,28 @@ if __name__ == "__main__":
         else:
                 repo_path = REPO_PATH_DEFAULT
 
-        try:
-                parsed = set()
-                opts, pargs = getopt.getopt(sys.argv[1:], "d:np:s:t:",
-                    ["readonly", "rebuild", "mirror", "proxy-base=", "refresh-index"])
-                opt = None
-                for opt, arg in opts:
-                        if opt in parsed:
-                                raise OptionError, "Each option may only be " \
-                                    "specified once."
-                        else:
-                                parsed.add(opt)
+        # By default, if the destination for a particular log type is not
+        # specified, this is where we will send the output.
+        log_routes = {
+            "access": "none",
+            "errors": "stderr"
+        }
+        log_opts = ["--log-%s" % log_type for log_type in log_routes]
 
+        # If stdout is a tty, then send access output there by default instead
+        # of discarding it.
+        if os.isatty(sys.stdout.fileno()):
+                log_routes["access"] = "stdout"
+
+        opt = None
+        try:
+                long_opts = ["readonly", "rebuild", "mirror", "refresh-index",
+                    "proxy-base="]
+                for opt in log_opts:
+                        long_opts.append("%s=" % opt.lstrip('--'))
+                opts, pargs = getopt.getopt(sys.argv[1:], "d:np:s:t:",
+                    long_opts)
+                for opt, arg in opts:
                         if opt == "-n":
                                 sys.exit(0)
                         elif opt == "-d":
@@ -155,6 +191,12 @@ if __name__ == "__main__":
                                             "maximum value is %d" % THREADS_MAX
                         elif opt == "-t":
                                 socket_timeout = int(arg)
+                        elif opt in log_opts:
+                                if arg is None or arg == "":
+                                        raise OptionError, \
+                                            "You must specify a log " \
+                                            "destination."
+                                log_routes[opt.lstrip("--log-")] = arg
                         elif opt == "--readonly":
                                 readonly = True
                         elif opt == "--rebuild":
@@ -188,25 +230,20 @@ if __name__ == "__main__":
                         elif opt == "--mirror":
                                 mirror = True
         except getopt.GetoptError, e:
-                print "pkg.depotd: %s" % e.msg
-                usage()
+                usage("pkg.depotd: %s" % e.msg)
         except OptionError, e:
-                print "pkg.depotd: option: %s -- %s" % (opt, e)
-                usage()
+                usage("pkg.depotd: option: %s -- %s" % (opt, e))
         except (ArithmeticError, ValueError):
-                print "pkg.depotd: illegal option value: %s specified " \
-                    "for option: %s" % (arg, opt)
-                usage()
+                usage("pkg.depotd: illegal option value: %s specified " \
+                    "for option: %s" % (arg, opt))
 
         if rebuild and reindex:
-                print "--refresh-index cannot be used with --rebuild"
-                usage()
+                usage("--refresh-index cannot be used with --rebuild")
         if rebuild and (readonly or mirror):
-                print "--readonly and --mirror cannot be used with --rebuild"
-                usage()
+                usage("--readonly and --mirror cannot be used with --rebuild")
         if reindex and (readonly or mirror):
-                print "--readonly and --mirror cannot be used with --refresh-index"
-                usage()
+                usage("--readonly and --mirror cannot be used with " \
+                    "--refresh-index")
 
         # If the program is going to reindex, the port is irrelevant since
         # the program will not bind to a port.
@@ -241,30 +278,49 @@ if __name__ == "__main__":
                     "structures:\n%s" % e
                 sys.exit(1)
 
-        if reindex:
-                scfg.acquire_catalog(rebuild=False)
-                scfg.catalog.run_update_index()
-                sys.exit(0)
-
-        scfg.acquire_in_flight()
-        scfg.acquire_catalog()
-
-        try:
-                root = cherrypy.Application(repo.Repository(scfg))
-        except rc.InvalidAttributeValueError, e:
-                emsg("pkg.depotd: repository.conf error: %s" % e)
-                sys.exit(1)
-
         # Setup our global configuration.
-        cherrypy.config.update({
+        # Global cherrypy configuration
+        gconf = {
             "environment": "production",
             "checker.on": True,
-            "log.screen": True,
+            "log.screen": False,
             "server.socket_host": "0.0.0.0",
             "server.socket_port": port,
             "server.thread_pool": threads,
-            "server.socket_timeout": socket_timeout
-        })
+            "server.socket_timeout": socket_timeout,
+            "tools.log_headers.on": True
+        }
+
+        log_type_map = {
+            "errors": {
+                "param": "log.error_file",
+                "attr": "error_log"
+            },
+            "access": {
+                "param": "log.access_file",
+                "attr": "access_log"
+            }
+        }
+
+        for log_type in log_type_map:
+                dest = log_routes[log_type]
+                if dest in ("stdout", "stderr", "none"):
+                        if dest == "none":
+                                h = logging.StreamHandler(LogSink())
+                        else:
+                                h = logging.StreamHandler(eval("sys.%s" % \
+                                    dest))
+
+                        h.setLevel(logging.DEBUG)
+                        h.setFormatter(cherrypy._cplogging.logfmt)
+                        log_obj = eval("cherrypy.log.%s" % \
+                            log_type_map[log_type]["attr"])
+                        log_obj.addHandler(h)
+                        # Since we've replaced cherrypy's log handler with our
+                        # own, we don't want the output directed to a file.
+                        dest = ""
+
+                gconf[log_type_map[log_type]["param"]] = dest
 
         # Now build our site configuration.
         conf = {
@@ -307,10 +363,27 @@ if __name__ == "__main__":
                 for entry in proxy_conf:
                         conf["/"][entry] = proxy_conf[entry]
 
+        cherrypy.config.update(gconf)
+
+        # Now that our logging, etc. has been setup, it's safe to perform any
+        # remaining preparation.
+        if reindex:
+                scfg.acquire_catalog(rebuild=False)
+                scfg.catalog.run_update_index()
+                sys.exit(0)
+
+        scfg.acquire_in_flight()
+        scfg.acquire_catalog()
+
         try:
-                cherrypy.quickstart(root, config = conf)
+                root = cherrypy.Application(repo.Repository(scfg))
+        except rc.InvalidAttributeValueError, e:
+                emsg("pkg.depotd: repository.conf error: %s" % e)
+                sys.exit(1)
+
+        try:
+                cherrypy.quickstart(root, config=conf)
         except:
-                print "pkg.depotd: unknown error starting depot, illegal " \
-                    "option value specified?"
-                usage()
+                usage("pkg.depotd: unknown error starting depot, illegal " \
+                    "option value specified?")
 

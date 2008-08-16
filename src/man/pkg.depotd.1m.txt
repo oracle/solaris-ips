@@ -6,7 +6,8 @@ NAME
 
 SYNOPSIS
      /usr/lib/pkg.depotd [--readonly] [--rebuild] [--proxy-base url]
-         [-d repo_dir] [-p port] [-s threads] [-t socket_timeout]
+         [--log-access dest] [--log-errors dest] [-d repo_dir] [-p port]
+         [-s threads] [-t socket_timeout]
 
 DESCRIPTION
      pkg.depotd is the depot server for the image packaging system.
@@ -39,12 +40,26 @@ DESCRIPTION
 
      pkg/socket_timeout         (count) The maximum number of seconds the
                                 server should wait for a response from a
-                                client before closing a connection. The
+                                client before closing a connection.  The
                                 default value is 60.
 
      pkg/threads                (count) The number of threads that will
-                                be started to serve requests. The default
+                                be started to serve requests.  The default
                                 value is 10.
+
+     pkg/log_access             (astring) The destination for any access
+                                related information logged by the depot
+                                process.  Possible values are: stderr,
+                                stdout, none, or an absolute pathname.
+                                The default value is stdout if stdout is
+                                a tty; otherwise the default value is
+                                none.
+
+     pkg/log_errors             (astring) The destination for any errors
+                                or other information logged by the depot
+                                process.  Possible values are: stderr,
+                                stdout, none, or an absolute pathname.
+                                The default value is stderr.
 
 OPTIONS
      The following options alter the default behavior, if present, and
@@ -62,6 +77,12 @@ OPTIONS
 
      -t socket_timeout          Overrides pkg/socket_timeout with the
                                 value given by socket_timeout.
+
+     --log-access dest          Overrides pkg/log_access with the value
+                                given by dest.
+
+     --log-errors dest          Overrides pkg/log_errors with the value
+                                given by dest.
 
      --readonly                 Modifying operations, such as those
                                 initiated by pkgsend(1M) are disabled.
@@ -87,10 +108,11 @@ EXAMPLES
 
 ENVIRONMENT VARIABLES
      PKG_DEPOT_CONTENT          Specifies the directory containing static
-                                content served by the depot. The files listed
-                                below under FILES should be present in this
-                                directory, although their content may differ
-                                from the supplied default content.
+                                content served by the depot.  The files
+                                listed below under FILES should be present
+                                in this directory, although their content
+                                may differ from the supplied default
+                                content.
 
 EXIT STATUS
      The following exit values are returned:
@@ -137,7 +159,7 @@ NOTES
      The image packaging system is an under-development feature.
      Command names, invocation, formats, and operations are all subject
      to change.  Development is hosted in the OpenSolaris community
-     at
+     at:
 
      http://opensolaris.org/os/project/pkg/
 
