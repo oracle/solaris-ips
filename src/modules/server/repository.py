@@ -48,6 +48,7 @@ import pkg.catalog as catalog
 import pkg.fmri as fmri
 import pkg.manifest as manifest
 import pkg.misc as misc
+import pkg.version as version
 
 import pkg.server.face as face
 import pkg.server.repositoryconfig as rc
@@ -202,7 +203,7 @@ class Repository(object):
 
                 # Assume 'version' is not supported for the operation.
                 msg = "Version '%s' not supported for operation '%s'\n" \
-                    % (version, operation)
+                    % (version, op)
                 raise cherrypy.HTTPError(httplib.NOT_FOUND, msg)
 
         @cherrypy.tools.response_headers(headers = \
@@ -282,14 +283,15 @@ class Repository(object):
                 # Parse request into FMRI component and decode.
                 try:
                         pfmri = tokens[0]
-                except IndexError:
-                        raise cherrypy.HTTPError(httplib.BAD_REQUEST)
-
-                f = fmri.PkgFmri(pfmri, None)
+                        f = fmri.PkgFmri(pfmri, None)
+                        fpath = f.get_dir_path()
+                except (IndexError, AssertionError, version.IllegalDotSequence,
+                    version.IllegalVersion):
+                        raise cherrypy.HTTPError(httplib.NOT_FOUND)
 
                 # send manifest
                 return serve_file("%s/%s" % (self.scfg.pkg_root,
-                    f.get_dir_path()), 'text/plain')
+                    fpath), 'text/plain')
 
         @staticmethod
         def _tar_stream_close(**kwargs):
