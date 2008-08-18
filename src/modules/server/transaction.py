@@ -240,7 +240,17 @@ class Transaction(object):
                         action.attrs["pkg.size"] = str(size)
 
                 if action.data != None:
-                        data = action.data().read(size)
+                        bufsz = 64 * 1024
+
+                        # Read in the data in chunks.  A large read on 
+                        # Windows XP fails.
+                        databufs = []
+                        sz = size
+                        while sz > 0:
+                                data = action.data().read(min(bufsz, sz))
+                                databufs.append(data)
+                                sz -= len(data)
+                        data = "".join(databufs)
 
                         # Extract ELF information
                         # XXX This needs to be modularized.
@@ -262,8 +272,6 @@ class Transaction(object):
 
                         opath = os.path.join(self.dir, fname)
                         ofile = PkgGzipFile(opath, "wb")
-
-                        bufsz = 64 * 1024
 
                         nbuf = size / bufsz
 
