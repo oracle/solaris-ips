@@ -132,7 +132,7 @@ def set_title(request, rcfg, doc, feed, update_ts):
         # identifier.
         i = doc.createElement("id")
         it = xmini.Text()
-        it.replaceWholeText(rcfg.get_attribute("feed", "id"))
+        it.replaceWholeText("urn:uuid:%s" % rcfg.get_attribute("feed", "id"))
         i.appendChild(it)
         feed.appendChild(i)
 
@@ -258,8 +258,7 @@ def add_transaction(request, scfg, rcfg, doc, feed, txn):
         # package was added).
         eu = doc.createElement("updated")
         ut = xmini.Text()
-        ut.replaceWholeText("%sZ" % \
-            ults_to_rfc3339_str(txn["timestamp"]))
+        ut.replaceWholeText(ults_to_rfc3339_str(txn["timestamp"]))
         eu.appendChild(ut)
         e.appendChild(eu)
 
