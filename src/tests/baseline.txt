@@ -189,6 +189,7 @@ cli.t_pkg_install_basics.py TestPkgInstallBasics.test_bug_1338|pass
 cli.t_pkg_install_basics.py TestPkgInstallBasics.test_bug_1338_2|pass
 cli.t_pkg_install_basics.py TestPkgInstallBasics.test_bug_1338_3|pass
 cli.t_pkg_install_basics.py TestPkgInstallBasics.test_bug_1338_4|pass
+cli.t_pkg_install_basics.py TestPkgInstallBasics.test_bug_2795|pass
 cli.t_pkg_install_basics.py TestPkgInstallBasics.test_image_upgrade|pass
 cli.t_pkg_install_basics.py TestPkgInstallBasics.test_nonrecursive_dependent_uninstall|pass
 cli.t_pkg_install_basics.py TestPkgInstallBasics.test_recursive_uninstall|pass

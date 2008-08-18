@@ -148,6 +148,8 @@ class ImagePlan(object):
                         if self.image.fmri_is_successor(fmri, p):
                                 self.target_fmris[i] = fmri
                                 break
+                        if self.image.fmri_is_successor(p, fmri):
+                                break
                 else:
                         self.target_fmris.append(fmri)
 

@@ -319,6 +319,23 @@ class TestPkgInstallBasics(testutils.SingleDepotTestCase):
 
                 self.pkg("install deep@1.0", exit = 1)
 
+        def test_bug_2795(self):
+                """ Try to install two versions of the same package """
+
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.foo11)
+                self.pkgsend_bulk(durl, self.foo12)
+                self.image_create(durl)
+
+                self.pkg("install foo@1.1 foo@1.2")
+                self.pkg("list foo@1.1", exit = 1)
+                self.pkg("list foo@1.2")
+                self.pkg("uninstall foo")
+
+                self.pkg("install foo@1.2 foo@1.1")
+                self.pkg("list foo@1.1", exit = 1)
+                self.pkg("list foo@1.2")
+                
 
 if __name__ == "__main__":
         unittest.main()
