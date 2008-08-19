@@ -23,6 +23,7 @@
 ^src/pkg.depotd$
 ^src/pkgdefs/.*/prototype$
 ^src/CherryPy-.*$
+^src/pyOpenSSL-.*$
 ^src/pkgsend$
 ^src/*.tar.gz$
 ^src/util/distro-import/SUNWfixes/
