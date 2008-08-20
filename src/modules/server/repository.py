@@ -69,6 +69,7 @@ class Repository(object):
                 "versions",
                 "search",
                 "catalog",
+                "info",
                 "manifest",
                 "filelist",
                 "rename",
@@ -82,6 +83,7 @@ class Repository(object):
                 "versions",
                 "search",
                 "catalog",
+                "info",
                 "manifest",
                 "filelist",
                 "file" ]
