@@ -34,6 +34,10 @@ import shutil
 import tempfile
 import time
 import operator
+import datetime
+import calendar
+
+import OpenSSL.crypto as osc
 
 from pkg.misc import msg, emsg
 
@@ -63,6 +67,9 @@ img_root_prefix = "var/pkg"
 
 PKG_STATE_INSTALLED = "installed"
 PKG_STATE_KNOWN = "known"
+
+# Minimum number of days to issue warning before a certificate expires
+MIN_WARN_DAYS = datetime.timedelta(days=30)
 
 class Image(object):
         """An Image object is a directory tree containing the laid-down contents
@@ -386,6 +393,84 @@ class Image(object):
                         authent = self.cfg_cache.authorities[authority]
 
                 return (authent["ssl_key"], authent["ssl_cert"])
+
+        @staticmethod
+        def build_cert(path):
+                """Take the file given in path, open it, and use it to create
+                an X509 certificate object."""
+
+                cf = file(path, "rb")
+                certdata = cf.read()
+                cf.close()
+                cert = osc.load_certificate(osc.FILETYPE_PEM, certdata)
+
+                return cert
+
+        def check_cert_validity(self):
+                """Look through the authorities defined for the image.  Print
+                a message and exit with an error if one of the certificates
+                has expired.  If certificates are getting close to expiration,
+                print a warning instead."""
+
+                for a in self.gen_authorities():
+                        pfx, url, ssl_key, ssl_cert, dt, mir = \
+                            self.split_authority(a)
+
+                        if ssl_cert == "None":
+                                continue
+
+                        try:
+                                cert = self.build_cert(ssl_cert)
+                        except IOError, e:
+                                if e.errno == errno.ENOENT:
+                                        emsg(_("Certificate for authority %s" \
+                                            " not found") % pfx)
+                                        emsg(_("File was supposed to exist at" \
+                                           "  path %s") % ssl_cert)
+                                        return False 
+                                else:
+                                        raise
+                        # OpenSSL.crypto.Error
+                        except osc.Error, e:
+                                emsg(_("Certificate for authority %s at" \
+                                    " %s has an invalid format.") % \
+                                    (pfx, ssl_cert))
+                                return False
+
+                        if cert.has_expired():
+                                emsg(_("Certificate for authority %s" \
+                                    " has expired") % pfx)
+                                emsg(_("Please install a valid certificate"))
+                                return False
+
+                        now = datetime.datetime.utcnow()
+                        nb = cert.get_notBefore()
+                        t = time.strptime(nb, "%Y%m%d%H%M%SZ")
+                        nbdt = datetime.datetime.utcfromtimestamp(
+                            calendar.timegm(t))
+
+                        # PyOpenSSL's has_expired() doesn't validate the notBefore
+                        # time on the certificate.  Don't ask me why.
+
+                        if nbdt > now:
+                                emsg(_("Certificate for authority %s is" \
+                                    " invalid") % pfx)
+                                emsg(_("Certificate effective date is in" \
+                                    " the future"))
+                                return False
+                        
+                        na = cert.get_notAfter()
+                        t = time.strptime(na, "%Y%m%d%H%M%SZ")
+                        nadt = datetime.datetime.utcfromtimestamp(
+                            calendar.timegm(t))
+
+                        diff = nadt - now
+
+                        if diff <= MIN_WARN_DAYS:
+                                emsg(_("Certificate for authority %s will" \
+                                    " expire in %d days" % (pfx, diff.days)))
+
+                return True
 
         def get_default_authority(self):
                 return self.cfg_cache.preferred_authority

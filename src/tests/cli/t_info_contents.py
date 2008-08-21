@@ -69,6 +69,17 @@ class TestContentsAndInfo(testutils.SingleDepotTestCase):
                 for p in self.misc_files:
                         os.remove(p)
 
+        def assertEqualDiff(self, expected, actual):
+                self.assertEqual(expected, actual,
+                    "Actual output differed from expected output.\n" +
+                    "\n".join(difflib.unified_diff(
+                        expected.splitlines(), actual.splitlines(),
+                        "Expected output", "Actual output", lineterm="")))
+
+        def reduceSpaces(self, string):
+                """Reduce runs of spaces down to a single space."""
+                return re.sub(" +", " ", string)
+
         def test_empty_image(self):
                 """local pkg info/contents should fail in an empty image; remote
                 should succeed on a match """
@@ -90,10 +101,14 @@ class TestContentsAndInfo(testutils.SingleDepotTestCase):
                 self.image_create(self.dc.get_depot_url())
                 self.pkg("install bronze@1.0")
                 self.pkg("contents -m bronze@1.0")
-                x = self.output
+                x = sorted(self.output.splitlines())
+                x = "".join(x) 
+                x = self.reduceSpaces(x)
                 self.pkg("contents -r -m bronze@1.0")
-                y = self.output
-                self.assert_(x == y)
+                y = sorted(self.output.splitlines())
+                y = "".join(y)
+                y = self.reduceSpaces(y)
+                self.assertEqualDiff(x, y)
 
         def test_contents_failures(self):
                 """ attempt to get contents of non-existent packages """

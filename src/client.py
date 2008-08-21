@@ -52,6 +52,11 @@ import sys
 import traceback
 import urllib2
 import urlparse
+import datetime
+import time
+import calendar
+
+import OpenSSL.crypto
 
 import pkg.client.image as image
 import pkg.client.imageplan as imageplan
@@ -436,6 +441,10 @@ def image_update(img, args):
         # XXX Are filters appropriate for an image update?
         # XXX Leaf package refinements.
 
+        # Verify validity of certificates before attempting network operations
+        if not img.check_cert_validity():
+                return 1
+
         opts, pargs = getopt.getopt(args, "b:fnvq")
 
         force = quiet = noexecute = verbose = False
@@ -567,6 +576,10 @@ def install(img, args):
         are interpreted as glob patterns."""
 
         # XXX Authority-catalog issues.
+
+        # Verify validity of certificates before attempting network operations
+        if not img.check_cert_validity():
+                return 1
 
         opts, pargs = getopt.getopt(args, "nvb:f:q")
 
@@ -790,6 +803,10 @@ def unfreeze(img, args):
 def search(img, args):
         """Search through the reverse index databases for the given token."""
 
+        # Verify validity of certificates before attempting network operations
+        if not img.check_cert_validity():
+                return 1
+
         opts, pargs = getopt.getopt(args, "lrs:")
 
         local = remote = False
@@ -915,6 +932,11 @@ def info(img, args):
                         error(_("no packages installed"))
                         return 1
         elif info_remote:
+                # Verify validity of certificates before attempting network
+                # operations
+                if not img.check_cert_validity():
+                        return 1
+
                 fmris = []
                 notfound = []
 
@@ -1206,6 +1228,11 @@ def list_contents(img, args):
                         error(_("no packages installed"))
                         return 1
         elif remote:
+                # Verify validity of certificates before attempting network
+                # operations
+                if not img.check_cert_validity():
+                        return 1
+
                 fmris = []
                 notfound = []
 
@@ -1329,6 +1356,10 @@ def display_catalog_failures(failures):
 
 def catalog_refresh(img, args):
         """Update image's catalogs."""
+
+        # Verify validity of certificates before attempting network operations
+        if not img.check_cert_validity():
+                return 1
 
         # XXX will need to show available content series for each package
         full_refresh = False
@@ -1534,13 +1565,39 @@ def authority_list(img, args):
                         if dt:
                                 dt = dt.ctime()
 
+                        if ssl_cert != "None":
+                                try:
+                                        cert = img.build_cert(ssl_cert)
+                                except (IOError, OpenSSL.crypto.Error):
+                                        error(_("SSL certificate for %s" \
+                                            "is invalid or non-existent.") % \
+                                            pfx)
+                                        error(_("Please check file at %s") %\
+                                            ssl_cert)
+                                        continue
+
+                                nb = cert.get_notBefore()
+                                t = time.strptime(nb, "%Y%m%d%H%M%SZ")
+                                nb = datetime.datetime.utcfromtimestamp(
+                                    calendar.timegm(t))
+
+                                na = cert.get_notAfter()
+                                t = time.strptime(na, "%Y%m%d%H%M%SZ")
+                                na = datetime.datetime.utcfromtimestamp(
+                                    calendar.timegm(t))
+                        else:
+                                cert = None
+
                         msg("")
-                        msg("      Authority:", pfx)
-                        msg("     Origin URL:", url)
-                        msg("        SSL Key:", ssl_key)
-                        msg("       SSL Cert:", ssl_cert)
-                        msg("Catalog Updated:", dt)
-                        msg("        Mirrors:", mir)
+                        msg("           Authority:", pfx)
+                        msg("          Origin URL:", url)
+                        msg("             SSL Key:", ssl_key)
+                        msg("            SSL Cert:", ssl_cert)
+                        if cert:
+                                msg(" Cert Effective Date:", nb.ctime())
+                                msg("Cert Expiration Date:", na.ctime())
+                        msg("     Catalog Updated:", dt)
+                        msg("             Mirrors:", mir)
 
         return 0
 
