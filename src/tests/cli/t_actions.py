@@ -25,7 +25,7 @@
 
 import testutils
 if __name__ == "__main__":
-	testutils.setup_environment("../../../proto")
+        testutils.setup_environment("../../../proto")
 
 import os
 import unittest
@@ -34,7 +34,7 @@ import shutil
 class TestPkgActions(testutils.SingleDepotTestCase):
 
         ftpusers_data = \
-"""# ident	"@(#)ftpusers	1.6	06/11/21 SMI"
+"""# ident      "@(#)ftpusers   1.6     06/11/21 SMI"
 #
 # List of users denied access to the FTP server, see ftpusers(4).
 #
@@ -65,10 +65,18 @@ sys:NP:6445::::::
 adm:NP:6445::::::
 """
 
-	empty_data = ""
+        empty_data = ""
         
         misc_files = [ "empty", "ftpusers", "group", "passwd", "shadow" ]
-        
+ 
+        testdata_dir = None
+
+        pkg_name_valid_chars = {
+            "never": " `~!@#$%^&*()=+[{]}\\|;:\",<>?",
+            "always": "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
+            "after-first": "0123456789_/-.",
+        }
+
         def setUp(self):
 
                 testutils.SingleDepotTestCase.setUp(self)
@@ -147,16 +155,17 @@ adm:NP:6445::::::
                         filename = os.path.join(self.testdata_dir, f)
                         file_handle = open(filename, 'wb')
                         try:
-				file_handle.write(eval("self.%s_data" % f))
+                                file_handle.write(eval("self.%s_data" % f))
                         finally:
                                 file_handle.close()
 
         def tearDown(self):
                 testutils.SingleDepotTestCase.tearDown(self)
-                shutil.rmtree(self.testdata_dir)
+                if self.testdata_dir:
+                        shutil.rmtree(self.testdata_dir)
         
         def test_basics_0(self):
-                """ Send basic infrastructure, install and uninstall """
+                """Send basic infrastructure, install and uninstall."""
 
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.basics0)
@@ -173,19 +182,19 @@ adm:NP:6445::::::
                 self.pkg("uninstall basics")
                 self.pkg("verify")
 
-	def test_grouptest(self):
+        def test_grouptest(self):
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.basics0)
                 self.pkgsend_bulk(durl, self.grouptest)
                 self.image_create(durl)
                 self.pkg("install basics")
 
-		self.pkg("install grouptest")
+                self.pkg("install grouptest")
                 self.pkg("verify")
                 self.pkg("uninstall grouptest")
                 self.pkg("verify")
 
-	def test_usertest(self):
+        def test_usertest(self):
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.basics0)
                 self.pkgsend_bulk(durl, self.grouptest)
@@ -193,15 +202,15 @@ adm:NP:6445::::::
                 self.image_create(durl)
                 self.pkg("install basics")
 
-		self.pkg("install usertest")
+                self.pkg("install usertest")
                 self.pkg("verify")
-		self.pkg("contents -m usertest")
+                self.pkg("contents -m usertest")
 
                 self.pkgsend_bulk(durl, self.usertest11)
                 self.pkg("refresh")
-		self.pkg("install usertest")
+                self.pkg("install usertest")
                 self.pkg("verify")
-		self.pkg("contents -m usertest")
+                self.pkg("contents -m usertest")
 
                 self.pkg("uninstall usertest")
                 self.pkg("verify")
@@ -224,7 +233,7 @@ adm:NP:6445::::::
                         file_handle = open(filename, 'wb')
                         exec("%s_path = \"%s\"" % (f, filename))
                         try:
-				file_handle.write(eval("self.%s_data" % f))
+                                file_handle.write(eval("self.%s_data" % f))
                         finally:
                                 file_handle.close()
 
@@ -241,8 +250,9 @@ adm:NP:6445::::::
                 group_file.close()
 
         def test_upgrade_with_user(self):
-                """make sure we can add a user and change file ownership to that user in
-                the same delta (mysql tripped over this early on in IPS development)"""
+                """Ensure that we can add a user and change file ownership to
+                that user in the same delta (mysql tripped over this early on
+                in IPS development)."""
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.basics0)
                 self.pkgsend_bulk(durl, self.silver10)
@@ -254,6 +264,41 @@ adm:NP:6445::::::
                 self.pkg("verify -v")
                 self.pkg("install silver@2.0")
                 self.pkg("verify -v")
+
+        def test_invalid_open(self):
+                """Send a invalid package definition (invalid fmri); expect
+                failure."""
+
+                durl = self.dc.get_depot_url()
+
+                for char in self.pkg_name_valid_chars["never"]:
+                        invalid_name = "invalid%spkg@1.0,5.11-0" % char
+                        self.pkgsend(durl, "open '%s'" % invalid_name, exit=1)
+
+                for char in self.pkg_name_valid_chars["after-first"]:
+                        invalid_name = "%sinvalidpkg@1.0,5.11-0" % char
+                        if char == "-":
+                                cmd = "open -- '%s'" % invalid_name
+                        else:
+                                cmd = "open '%s'" % invalid_name
+                        self.pkgsend(durl, cmd, exit=1)
+
+        def test_valid_open(self):
+                """Send a invalid package definition (valid fmri); expect
+                success."""
+
+                durl = self.dc.get_depot_url()
+                for char in self.pkg_name_valid_chars["always"]:
+                        valid_name = "%svalid%spkg%s@1.0,5.11-0" % (char,
+                            char, char)
+                        self.pkgsend(durl, "open '%s'" % valid_name)
+                        self.pkgsend(durl, "close -A")
+
+                for char in self.pkg_name_valid_chars["after-first"]:
+                        valid_name = "v%salid%spkg%s@1.0,5.11-0" % (char,
+                            char, char)
+                        self.pkgsend(durl, "open '%s'" % valid_name)
+                        self.pkgsend(durl, "close -A")
 
 
 if __name__ == "__main__":

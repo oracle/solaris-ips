@@ -35,6 +35,7 @@ import tempfile
 import bisect
 
 import pkg.fmri as fmri
+import pkg.misc as misc
 import pkg.version as version
 import pkg.portable as portable
 
@@ -734,7 +735,7 @@ class Catalog(object):
         def search_available(self):
                 return self._search_available
 
-        def valid_new_fmri(self, fmri):
+        def valid_new_fmri(self, pfmri):
                 """Check that the fmri supplied as an argument would be
                 valid to add to the catalog.  This checks to make sure that
                 rename/freeze operations would not prohibit the caller
@@ -744,9 +745,12 @@ class Catalog(object):
                         self._load_renamed()
 
                 for rr in self.renamed:
-                        if rr.srcname == fmri.pkg_name and \
-                            fmri.version >= rr.srcversion:
+                        if rr.srcname == pfmri.pkg_name and \
+                            pfmri.version >= rr.srcversion:
                                 return False
+
+                if not fmri.is_valid_pkg_name(pfmri.get_name()):
+                        return False
 
                 return True
 

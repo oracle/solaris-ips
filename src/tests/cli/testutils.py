@@ -369,9 +369,12 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
                 self.debugcmd(cmdline)
 
                 # XXX may need to be smarter.
+                output = ""
                 if command.startswith("open "):
                         p = subprocess.Popen(cmdline,
-                            shell = True, stdout = subprocess.PIPE)
+                            shell = True,
+                            stdout = subprocess.PIPE,
+                            stderr = subprocess.STDOUT)
 
                         out, err = p.communicate()
                         retcode = p.wait()
@@ -409,7 +412,7 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
 
                 return retcode
 
-        def pkgsend_bulk(self, depot_url, commands, comment = ""):
+        def pkgsend_bulk(self, depot_url, commands, exit=0, comment=""):
                 """ Send a series of packaging commands; useful for
                     quickly doing a bulk-load of stuff into the repo.
                     We expect that the commands will all work; if not,
@@ -420,10 +423,11 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
                                 line = line.strip()
                                 if line == "":
                                         continue
-                                self.pkgsend(depot_url, line, exit=0)
+                                self.pkgsend(depot_url, line, exit=exit)
 
                 except (TracebackException, UnexpectedExitCodeException):
-                        self.pkgsend(depot_url, "close -A", exit=0)
+                        if os.environ.get("PKG_TRANS_ID", None):
+                                self.pkgsend(depot_url, "close -A", exit=0)
                         raise
 
         def start_depot(self, port, depotdir, logpath):

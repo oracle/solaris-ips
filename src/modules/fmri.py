@@ -389,3 +389,8 @@ def is_same_authority(auth1, auth2):
                 return True
         return False
 
+def is_valid_pkg_name(name):
+        if re.match("^[A-Za-z][A-Za-z0-9_/\-\.]*$", name):
+                return True
+        return False
+
