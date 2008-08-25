@@ -55,6 +55,29 @@ class FileAction(generic.Action):
                 generic.Action.__init__(self, data, **attrs)
                 self.hash = "NOHASH"
 
+        # this check is only needed on Windows
+        if portable.ostype == "windows":
+                def preinstall(self, pkgplan, orig):
+                        """If the file exists, check if it is in use."""
+                        if not orig:
+                                return
+                        path = os.path.join(pkgplan.image.get_root(), 
+                            orig.attrs["path"])
+                        if os.path.isfile(path) and self.in_use(path):
+                                raise RuntimeError, \
+                                    "Cannot install %s, file is in use" % path
+
+                def in_use(self, path):
+                        """Determine if a file is in use (locked) by trying
+                        to rename the file to itself."""
+                        try:
+                                os.rename(path, path)
+                        except OSError, err:
+                                if err.errno != errno.EPERM:
+                                        raise
+                                return True
+                        return False
+
         def install(self, pkgplan, orig):
                 """Client-side method that installs a file."""
                 path = self.attrs["path"]
@@ -271,7 +294,7 @@ class FileAction(generic.Action):
                 try:
                         # Make file writable so it can be deleted
                         os.chmod(path, S_IWRITE|S_IREAD)
-                        os.unlink(path)
+                        portable.remove(path)
                 except OSError,e:
                         if e.errno != errno.ENOENT:
                                 raise

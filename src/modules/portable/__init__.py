@@ -149,6 +149,13 @@ def link(src, dst):
            or copy files"""
         raise NotImplementedError
 
+def remove(path):
+        """ Remove the given file in an OS-specific way
+        Exceptions:
+           OSError (or subclass) if the source path does not exist or 
+           the file cannot be removed"""
+        raise NotImplementedError
+
 def copyfile(src, dst):
         """ Copy the contents of the file named src to a file named dst.
         If dst already exists, it will be replaced. src and dst are

@@ -56,7 +56,7 @@ def get_canonical_os_name():
 
         # Workaround for python bug 1082, on Vista, platform.system()
         # returns 'Microsoft'
-        prl = platform.release.lower()
+        prl = platform.release().lower()
         if psl == 'microsoft' or prl == 'vista' or prl == 'windows':
                 return 'windows'
 

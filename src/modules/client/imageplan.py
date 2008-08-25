@@ -533,6 +533,9 @@ class ImagePlan(object):
                         for p in self.pkg_plans:
                                 p.preexecute()
 
+                        for p in self.pkg_plans:
+                                p.download()
+
                         self.progtrack.download_done()
                 except:
                         self.state = PREEXECUTED_ERROR

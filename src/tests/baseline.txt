@@ -85,6 +85,7 @@ api.t_plat.py TestPlat.testAdmin|pass
 api.t_plat.py TestPlat.testForcibleRename|pass
 api.t_plat.py TestPlat.testGroup|pass
 api.t_plat.py TestPlat.testRelease|pass
+api.t_plat.py TestPlat.testRemoveOfRunningExecutable|pass
 api.t_plat.py TestPlat.testRenameOfRunningExecutable|pass
 api.t_plat.py TestPlat.testUser|pass
 api.t_plat.py TestPlat.testUtils|pass

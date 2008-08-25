@@ -168,6 +168,9 @@ def chown(path, owner, group):
 def rename(src, dst):
         os.rename(src, dst)
 
+def remove(path):
+        os.unlink(path)
+
 def link(src, dst):
         os.link(src, dst)
         

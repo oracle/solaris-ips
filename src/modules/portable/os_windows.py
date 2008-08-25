@@ -193,6 +193,18 @@ def rename(src, dst):
         # this is here to get rid of files from previous calls to rename
         empty_trash(dst)
 
+def remove(path):
+        """
+        Remove the given path. The file is moved to the trash area of the
+        image if necessary where it will be removed at a later time.
+        """
+        try:
+                os.unlink(path)
+        except OSError, err:
+                if err.errno != errno.EACCES:
+                        raise
+                move_to_trash(path)
+
 def link(src, dst):
         copyfile(src, dst)
         

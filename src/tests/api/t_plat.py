@@ -140,6 +140,50 @@ class TestPlat(pkg5unittest.Pkg5TestCase):
                 # cleanup
                 shutil.rmtree(img1.get_root())
                 shutil.rmtree(img2.get_root())
+
+        def testRemoveOfRunningExecutable(self):
+                if util.get_canonical_os_type() != 'windows':
+                        return
+                import pkg.portable.os_windows as os_windows
+                exefilesrc = 'C:\\Windows\\system32\\more.com'
+                self.assert_(os.path.exists(exefilesrc))
+
+                # create an image, copy an executable into it, 
+                # run the executable, remove the executable
+                tdir1 = tempfile.mkdtemp()
+                img1 = image.Image()
+                img1.set_attrs(image.IMG_USER, tdir1, False, "test", 
+                    "http://localhost:10000")
+                exefile = os.path.join(tdir1, 'less.com')
+                shutil.copyfile(exefilesrc, exefile)
+                proc = subprocess.Popen([exefile], stdin = subprocess.PIPE)
+                self.assertRaises(OSError, os.unlink, exefile)
+                portable.remove(exefile)
+                self.assert_(not os.path.exists(exefile))
+                proc.communicate()
+
+                # Make sure that the removed executable gets deleted
+                # First do a rename in another image
+                tdir2 = tempfile.mkdtemp()
+                img2 = image.Image()
+                img2.set_attrs(image.IMG_USER, tdir2, False, "test", 
+                    "http://localhost:10000")
+                fd2, path2 = tempfile.mkstemp(dir = tdir2)
+                os.write(fd2, "bar")
+                os.close(fd2)
+                portable.rename(path2, os.path.join(tdir2, "bar"))
+                # Now do another rename in the original image
+                # This should cause the executable to deleted from the trash
+                fd3, path3 = tempfile.mkstemp(dir = tdir1)
+                os.write(fd3, "baz")
+                os.close(fd3)
+                portable.rename(path3, os.path.join(tdir1, "foo"))
+                self.assert_(not os.path.exists(os.path.join(img1.imgdir, 
+                    os_windows.trashname)))
+
+                # cleanup
+                shutil.rmtree(img1.get_root())
+                shutil.rmtree(img2.get_root())
             
 if __name__ == "__main__":
         unittest.main()

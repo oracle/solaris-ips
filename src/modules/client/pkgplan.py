@@ -221,32 +221,23 @@ class PkgPlan(object):
                 methods, as well as any package-wide steps that need to be taken
                 at such a time.
                 """
-                flist = filelist.FileList(self.image, self.destination_fmri,
-                    self.__progtrack)
-
-                self.__progtrack.download_start_pkg(self.get_xfername())
-
-                # retrieval step
-                if self.destination_fmri == None:
-                        self.image.remove_install_file(self.origin_fmri)
-
-                        try:
-                                os.unlink("%s/pkg/%s/filters" % (
-                                    self.image.imgdir,
-                                    self.origin_fmri.get_dir_path()))
-                        except EnvironmentError, e:
-                                if e.errno != errno.ENOENT:
-                                        raise
 
                 for src, dest in itertools.chain(*self.actions):
                         if dest:
                                 dest.preinstall(self, src)
-                                if dest.needsdata(src):
-                                        flist.add_action(dest)
                         else:
                                 src.preremove(self)
 
-                # Tell flist to get any remaining files
+        def download(self):
+                """Download data for any actions that need it."""
+                flist = filelist.FileList(self.image, self.destination_fmri,
+                    self.__progtrack)
+                self.__progtrack.download_start_pkg(self.get_xfername())
+                for src, dest in itertools.chain(*self.actions):
+                        if dest:
+                                if dest.needsdata(src):
+                                        flist.add_action(dest)
+
                 flist.flush()
                 self.__progtrack.download_end_pkg()
 
@@ -309,10 +300,10 @@ class PkgPlan(object):
                         else:
                                 src.postremove(self)
 
-                # In the case of an upgrade, remove the installation turds from
-                # the origin's directory.
+                # For an uninstall or an upgrade, remove the installation 
+                # turds from the origin's directory.
                 # XXX should this just go in preexecute?
-                if self.origin_fmri != None and self.destination_fmri != None:
+                if self.destination_fmri == None or self.origin_fmri != None:
                         self.image.remove_install_file(self.origin_fmri)
 
                         try:
