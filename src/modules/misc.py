@@ -370,6 +370,18 @@ def get_rel_path(request, uri):
 def get_res_path(request, name):
         return get_rel_path(request, "%s/%s" % ("static", name))
 
+def get_pkg_otw_size(action):
+        """Takes a file action and returns the over-the-wire size of
+        a package as an integer.  The OTW size is the compressed size,
+        pkg.csize.  If that value isn't available, it returns pkg.size.
+        If pkg.size isn't available, return zero."""
+
+        size = action.attrs.get("pkg.csize", 0)
+        if size == 0:
+                size = action.attrs.get("pkg.size", 0)
+
+        return int(size)
+
 # Set the maximum number of timeouts before we giveup.  This can
 # be adjusted by setting the environment variable PKG_TIMEOUT_MAX
 MAX_TIMEOUT_COUNT = 4

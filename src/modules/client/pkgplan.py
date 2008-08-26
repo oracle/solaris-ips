@@ -31,6 +31,7 @@ import pkg.manifest as manifest
 import pkg.client.filelist as filelist
 import pkg.actions.directory as directory
 from pkg.misc import msg
+from pkg.misc import get_pkg_otw_size
 
 class PkgPlan(object):
         """A package plan takes two package FMRIs and an Image, and produces the
@@ -193,8 +194,7 @@ class PkgPlan(object):
                 self.__xferfiles = 0
                 for src, dest in itertools.chain(*self.actions):
                         if dest and dest.needsdata(src):
-                                self.__xfersize += \
-                                    int(dest.attrs.get("pkg.size", 0))
+                                self.__xfersize += get_pkg_otw_size(dest)
                                 self.__xferfiles += 1
 
                 return (self.__xferfiles, self.__xfersize)

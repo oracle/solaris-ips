@@ -39,6 +39,7 @@ import pkg.portable as portable
 import pkg.fmri
 from pkg.misc import versioned_urlopen
 from pkg.misc import hash_file_name
+from pkg.misc import get_pkg_otw_size
 from pkg.misc import TransferTimedOutException
 from pkg.misc import TransferContentException
 from pkg.misc import InvalidContentException
@@ -120,7 +121,7 @@ class FileList(object):
 
                 if os.path.exists(cache_path):
                         action.data = self._make_opener(cache_path)
-                        bytes = int(action.attrs.get("pkg.size", "0"))
+                        bytes = get_pkg_otw_size(action)
 
                         self._verify_content(action, cache_path)
 
@@ -161,13 +162,13 @@ class FileList(object):
                 else:
                         self.fhash[hashval] = [ action ]
                         self.actual_nfiles += 1
-                        self.actual_bytes += int(action.attrs.get("pkg.size", "0"))
+                        self.actual_bytes += get_pkg_otw_size(action)
 
                 # Regardless of whether files map to the same hash, we
                 # also track the total (effective) size and number of entries
                 # in the flist, for reporting purposes.
                 self.effective_nfiles += 1
-                self.effective_bytes += int(action.attrs.get("pkg.size", "0"))
+                self.effective_bytes += get_pkg_otw_size(action)
 
         def _clear_mirror(self):
                 """Clear any selected DepotStatus and URL assocated with
@@ -186,7 +187,7 @@ class FileList(object):
                 except KeyError:
                         return
 
-                pkgsz = int(act_list[0].attrs.get("pkg.size", "0"))
+                pkgsz = get_pkg_otw_size(act_list[0])
                 nactions = len(act_list)
         
                 # Update the actual counts by subtracting the first
