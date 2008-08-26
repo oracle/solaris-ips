@@ -57,7 +57,7 @@ prototype: FRC
 		$$3 ~ /^(etc(\/zones)?|usr(\/share(\/lib)?)?|var(\/svc(\/manifest(\/application(\/pkg-server.xml)?)?)?)?)$$/ { \
 			$$6 = "sys"; \
 		} \
-		$$3 !~ /^usr(\/lib\/python2.4\/vendor-packages(\/cherrypy|\/pkg\/gui)|\/bin\/packagemanager|\/share(\/package-manager|\/locale|\/applications|\/icons))/ { \
+		$$3 !~ /^usr(\/lib\/python2.4\/vendor-packages(\/cherrypy|\/OpenSSL|\/pkg\/gui)|\/bin\/packagemanager|\/share(\/package-manager|\/locale|\/applications|\/icons))/ { \
 			print \
 		}' > prototype
 
