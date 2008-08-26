@@ -401,7 +401,8 @@ class Indexer(object):
                         added_fmri, manifest_path = \
                             fmri_manifest_list[start_point]
                         start_point += 1
-                        self._data_full_fmri.add_entity(added_fmri.get_fmri())
+                        self._data_full_fmri.add_entity(
+                            added_fmri.get_fmri(anarchy=True))
                         mfst = manifest.Manifest()
                         mfst_file = file(manifest_path)
                         mfst.set_content(mfst_file.read())

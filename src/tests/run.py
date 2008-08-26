@@ -109,6 +109,7 @@ def make_cli_tests(testpat):
         import cli.t_image_create
         import cli.t_info_contents
         import cli.t_search
+        import cli.t_search_multi
         import cli.t_pkg_install_basics
         import cli.t_pkg_install_corrupt_image
         import cli.t_pkgsend
@@ -138,6 +139,7 @@ def make_cli_tests(testpat):
             cli.t_rename.TestRename,
             cli.t_twodepot.TestTwoDepots,
             cli.t_search.TestPkgSearch,
+            cli.t_search_multi.TestPkgSearchMulti,
             cli.t_setUp.TestSetUp ]
 
         return add_tests(tests, testpat)

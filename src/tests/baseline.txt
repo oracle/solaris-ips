@@ -242,6 +242,7 @@ cli.t_search.py TestPkgSearch.test_mismatched_versions|pass
 cli.t_search.py TestPkgSearch.test_missing_files|pass
 cli.t_search.py TestPkgSearch.test_remote|pass
 cli.t_search.py TestPkgSearch.test_repeated_install_uninstall|pass
+cli.t_search_multi.py TestPkgSearchMulti.test_bug_2955|pass
 cli.t_setUp.py TestSetUp.test_first_depot_start|pass
 cli.t_setUp.py TestSetUp.test_second_depot_start|pass
 cli.t_twodepot.py TestTwoDepots.test_basics_1|pass
