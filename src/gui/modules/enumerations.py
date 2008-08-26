@@ -23,6 +23,11 @@
 # Use is subject to license terms.
 #
 
+"""
+This module consists of user readable enumerations for the data models
+used in the IPS GUI
+"""
+
 (
 MARK_COLUMN,
 STATUS_ICON_COLUMN,

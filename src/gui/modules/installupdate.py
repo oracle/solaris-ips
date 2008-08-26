@@ -23,43 +23,40 @@
 # Use is subject to license terms.
 #
 
-import sys
-import os
-import itertools
 import errno
-import gettext # Temporary workaround
-from urllib2 import URLError
+import gettext # XXX Temporary workaround
+import itertools
+import os
+import sys
 from threading import Thread
+from urllib2 import URLError
 try:
-        import pygtk
-        pygtk.require("2.0")
-except:
-        sys.exit(1)
-try:
+        import gobject
         import gtk
         import gtk.glade
-        import gobject
-except:
+        import pygtk
+        pygtk.require("2.0")
+except ImportError:
         sys.exit(1)
-
 import pkg.client.bootenv as bootenv
 import pkg.client.imageplan as imageplan
-import pkg.client.pkgplan as pkgplan
 import pkg.client.progress as progress
+import pkg.fmri as fmri
 import pkg.indexer as indexer
 import pkg.search_errors as search_errors
-import pkg.client.retrieve as retrieve
 from pkg.misc import TransferTimedOutException
+from pkg.misc import CLIENT_DEFAULT_MEM_USE_KB
 import pkg.gui.enumerations as enumerations
 import pkg.gui.filelist as filelist
-import pkg.fmri as fmri
 import pkg.gui.thread as guithread
 from pkg.gui.filelist import CancelException
-from pkg.misc import CLIENT_DEFAULT_MEM_USE_KB
 
 class InstallUpdate(progress.ProgressTracker):
-        def __init__(self, install_list, parent, image_update = False, ips_update = False):
-                gettext.install("pkg","/usr/lib/locale") # Workaround as BE is using msg(_("message")) which bypasses the self._ mechanism the GUI is using
+        def __init__(self, install_list, parent, \
+            image_update = False, ips_update = False):
+                # XXX Workaround as BE is using msg(_("message")) 
+                # which bypasses the self._ mechanism the GUI is using
+                gettext.install("pkg","/usr/lib/locale")
                 progress.ProgressTracker.__init__(self)
                 self.gui_thread = guithread.ThreadRun()
                 self.install_list = install_list
@@ -67,156 +64,372 @@ class InstallUpdate(progress.ProgressTracker):
                 self.parent = parent
                 self.image_update = image_update
                 self.ips_update = ips_update
-                self.gladefile = parent.gladefile
-                self.create_plan_dialog_gui()
-                self.create_installupdate_gui()
-                self.create_downloaddialog_gui()
-                self.create_installation_gui()
-                self.create_network_down_gui()
+                self.ip = None
+                w_tree_createplan = gtk.glade.XML(parent.gladefile, "createplandialog")
+                w_tree_installupdate = gtk.glade.XML(parent.gladefile, "installupdate")
+                w_tree_downloadingfiles = \
+                    gtk.glade.XML(parent.gladefile, "downloadingfiles")
+                w_tree_installingdialog = \
+                    gtk.glade.XML(parent.gladefile, "installingdialog") 
+                w_tree_networkdown = gtk.glade.XML(parent.gladefile, "networkdown")
+                self.w_createplan_dialog = \
+                    w_tree_createplan.get_widget("createplandialog")                    
+                self.w_createplan_progressbar = \
+                    w_tree_createplan.get_widget("createplanprogress") 
+                self.w_createplan_textview = \
+                    w_tree_createplan.get_widget("createplantextview")
+                self.w_installupdate_dialog = w_tree_installupdate.get_widget("installupdate")
+                self.w_summary_label = w_tree_installupdate.get_widget("packagenamelabel3")
+                self.w_review_treeview = w_tree_installupdate.get_widget("treeview1")
+                self.w_downloadingfiles_dialog = \
+                    w_tree_downloadingfiles.get_widget("downloadingfiles")
+                self.w_download_textview = \
+                    w_tree_downloadingfiles.get_widget("downloadtextview")
+                self.w_download_progressbar = \
+                    w_tree_downloadingfiles.get_widget("downloadprogress")
+                self.w_installing_dialog = \
+                    w_tree_installingdialog.get_widget("installingdialog")
+                self.w_installing_textview = \
+                    w_tree_installingdialog.get_widget("installingtextview")
+                self.w_installing_progressbar = \
+                    w_tree_installingdialog.get_widget("installingprogress")
+                self.w_networkdown_dialog = w_tree_networkdown.get_widget("networkdown")
+                self.w_createplan_progressbar.set_pulse_step(0.1)
+                installed_updated_column = gtk.TreeViewColumn('Installed/Updated')
+                self.w_review_treeview.append_column(installed_updated_column)
+                cell = gtk.CellRendererText()
+                installed_updated_column.pack_start(cell, True)
+                installed_updated_column.add_attribute(cell, 'text', 0)
+                self.w_review_treeview.expand_all()
+                try:
+                        dic_createplan = \
+                            {
+                                "on_cancelcreateplan_clicked": \
+                                    self.__on_cancelcreateplan_clicked,
+                            }
+                        dic_installupdate = \
+                            {
+                                "on_cancel_button_clicked": \
+                                    self.__on_cancel_button_clicked,
+                                "on_next_button_clicked":self.__on_next_button_clicked,
+                            }
+                        dic_downloadingfiles = \
+                            {
+                                "on_canceldownload_clicked": \
+                                    self.__on_cancel_download_clicked,
+                            }
+                        dic_networkdown = \
+                            {
+                                "on_networkdown_close_clicked": \
+                                    self.__on_networkdown_close_clicked,
+                            }
+                        w_tree_createplan.signal_autoconnect(dic_createplan)
+                        w_tree_installupdate.signal_autoconnect(dic_installupdate)
+                        w_tree_downloadingfiles.signal_autoconnect(dic_downloadingfiles)
+                        w_tree_networkdown.signal_autoconnect(dic_networkdown)
+                except AttributeError, error:
+                        print self.parent._('GUI will not respond to any event! %s. \
+                            Check installupdate.py signals') \
+                            % error
                 if image_update or ips_update:
                         list_of_packages = install_list
                 else:
-                         list_of_packages = self.prepare_list_of_packages()
-                self.thread = Thread(target = self.plan_the_install_updateimage, args = (list_of_packages, ))
-                self.thread.start()
-                self.createplandialog.run()
+                        list_of_packages = self.__prepare_list_of_packages()
+                thread = Thread(target = self.__plan_the_install_updateimage, \
+                    args = (list_of_packages, ))
+                thread.start()
+                self.w_createplan_dialog.run()
 
-        def update_createplan_progress(self, action):
-                textiter = self.createplantextbuffer.get_end_iter()
-                self.createplantextbuffer.insert(textiter, action)
-                self.createplanprogress.pulse()
+        def __on_cancelcreateplan_clicked(self, widget):
+                '''Handler for signal send by cancel button, which user might press during
+                evaluation stage - while the dialog is creating plan'''
+                self.gui_thread.cancel()
+                self.w_createplan_dialog.destroy()
 
-        def update_download_progress(self, cur_bytes, total_bytes):
-                progress = float(cur_bytes)/total_bytes
-                self.downloadprogress.set_fraction(progress)
+        def __on_cancel_button_clicked(self, widget):
+                '''Handler for signal send by cancel button, which is available for the 
+                user after evaluation stage on the dialog showing what will be installed
+                or updated'''
+                self.gui_thread.cancel()
+                self.w_installupdate_dialog.destroy()
+
+        def __on_next_button_clicked(self, widget):
+                '''Handler for signal send by next button, which is available for the 
+                user after evaluation stage on the dialog showing what will be installed
+                or updated'''
+                download_thread = Thread(target = self.__download_stage, args = ())
+                download_thread.start()
+
+        def __on_cancel_download_clicked(self, widget):
+                '''Handler for signal send by cancel button, which user might press during
+                download stage.'''
+                self.gui_thread.cancel()
+                self.w_downloadingfiles_dialog.destroy()
+
+        def __on_networkdown_close_clicked(self, widget):
+                '''Handler for signal send by close button on the dialog showing that
+                there was some problem with the network connection.'''
+                self.gui_thread.cancel()
+                self.w_networkdown_dialog.destroy()
+
+        def __update_createplan_progress(self, action):
+                buf = self.w_createplan_textview.get_buffer()
+                textiter = buf.get_end_iter()
+                buf.insert(textiter, action)
+                self.w_createplan_progressbar.pulse()
+
+        def __update_download_progress(self, cur_bytes, total_bytes):
+                prog = float(cur_bytes)/total_bytes
+                self.w_download_progressbar.set_fraction(prog)
                 a = str(cur_bytes/1024)
                 b = str(total_bytes/1024)
                 c = "Downloaded: " + a + " / " + b + " KB"
-                self.downloadprogress.set_text(c)#str(int(progress*100)) + "%")
+                self.w_download_progressbar.set_text(c)
 
-        def update_update_progress(self, current, total):
-                progress = float(current)/total
-                self.installingprogress.set_fraction(progress)
+        def __update_install_progress(self, current, total):
+                prog = float(current)/total
+                self.w_installing_progressbar.set_fraction(prog)
 
-        def update_install_progress(self, current, total):
-                progress = float(current)/total
-                self.installingprogress.set_fraction(progress)
+        def __prepare_list_of_packages(self):
+                ''' This method return the dictionary of 
+                images and newest marked packages'''
+                fmri_to_install_update = {}
+                for row in self.install_list:
+                        if row[enumerations.MARK_COLUMN]:
+                                image = row[enumerations.IMAGE_OBJECT_COLUMN]
+                                packages = row[enumerations.PACKAGE_OBJECT_COLUMN]
+                                im = fmri_to_install_update.get(image)
+                                # XXX Hack to be bug to bug compatible - incorporations
+                                pkg_name = packages[0].get_name()
+                                if im:
+                                        im.append(pkg_name)
+                                else:
+                                        fmri_to_install_update[image] = [pkg_name, ]
+                return fmri_to_install_update
 
-        def create_plan_dialog_gui(self):
-                gladefile = self.gladefile
-                wTreePlan = gtk.glade.XML(gladefile, "createplandialog") 
-                self.createplandialog = wTreePlan.get_widget("createplandialog")
-                self.createplantextview = wTreePlan.get_widget("createplantextview")
-                self.createplanprogress = wTreePlan.get_widget("createplanprogress")
-                self.createplantextbuffer = self.createplantextview.get_buffer()
-                self.createplanprogress.set_pulse_step(0.1)
-                try:
-                        dic = \
-                            {
-                                "on_cancelcreateplan_clicked":self.on_cancelcreateplan_clicked,
-                            }
-                        wTreePlan.signal_autoconnect(dic)
-                except AttributeError, error:
-                        print self.parent._('GUI will not respond to any event! %s.\
-                            Check create_plan_dialog_gui()')\
-                            % error
+        def __plan_the_install_updateimage(self, list_of_packages):
+                '''Function which plans the image'''
+                self.gui_thread.run()
+                filters = []
+                verbose = False
+                noexecute = False
+                for image in list_of_packages:
+                        # Take a list of packages, specified in pkg_list, and attempt
+                        # to assemble an appropriate image plan.  This is a helper
+                        # routine for some common operations in the client.
+                        #
+                        # This method checks all authorities for a package match;
+                        # however, it defaults to choosing the preferred authority
+                        # when an ambiguous package name is specified.  If the user
+                        # wishes to install a package from a non-preferred authority,
+                        # the full FMRI that contains an authority should be used
+                        # to name the package.
+
+                        pkg_list = list_of_packages.get(image)
+
+                        error = 0
+                        self.ip = imageplan.ImagePlan(image, self, filters = filters)
+
+                        self.__load_optional_dependencies(image)
+
+                        for p in pkg_list:
+                                try:
+                                        conp = image.apply_optional_dependencies(p)
+                                        matches = list(image.inventory([ conp ],
+                                            all_known = True))
+                                except RuntimeError:
+                                        # XXX Module directly printing.
+                                        error = 1
+                                        continue
+
+                                pnames = {}
+                                pmatch = []
+                                npnames = {}
+                                npmatch = []
+                                for m, state in matches:
+                                        if m.preferred_authority():
+                                                pnames[m.get_pkg_stem()] = 1
+                                                pmatch.append(m)
+                                        else:
+                                                npnames[m.get_pkg_stem()] = 1
+                                                npmatch.append(m)
+
+                                if len(pnames.keys()) > 1:
+                                        # XXX Module directly printing.
+                                        error = 1
+                                        continue
+                                elif len(pnames.keys()) < 1 and len(npnames.keys()) > 1:
+                                        # XXX Module directly printing.
+                                        error = 1
+                                        continue
+
+                                # matches is a list reverse sorted by version, so take
+                                # the first; i.e., the latest.
+                                if len(pmatch) > 0:
+                                        self.ip.propose_fmri(pmatch[0])
+                                else:
+                                        self.ip.propose_fmri(npmatch[0])
+
+                        if error != 0:
+                                raise RuntimeError, "Unable to assemble image plan"
+
+
+                        self.__evaluate(image)
+
+                        image.imageplan = self.ip
+
+                        gobject.idle_add(self.ip.progtrack.evaluate_done)
+
                 return
 
-        def create_network_down_gui(self):
-                gladefile = self.gladefile
-                wTreePlan = gtk.glade.XML(gladefile, "networkdown") 
-                self.networkdown = wTreePlan.get_widget("networkdown")
-                try:
-                        dic = \
-                            {
-                                "on_networkdown_close_clicked":self.on_networkdown_close_clicked,
-                            }
-                        wTreePlan.signal_autoconnect(dic)
-                except AttributeError, error:
-                        print self.parent._('GUI will not respond to any event! %s.\
-                            Check create_network_down_gui()')\
-                            % error
-                return
+        def __load_optional_dependencies(self, image):
+                for b_fmri in image.gen_installed_pkgs():
+                        if self.gui_thread.is_cancelled():
+                                return
+                        mfst = image.get_manifest(b_fmri, filtered = True)
 
-        def create_installupdate_gui(self):
-                gladefile = self.gladefile
-                wTree = gtk.glade.XML(gladefile, "installupdate") 
-                self.installupdatedialog = wTree.get_widget("installupdate")
-                self.summary_label = wTree.get_widget("packagenamelabel3")
-                self.warning_label = wTree.get_widget("label5")
-                self.treeview = wTree.get_widget("treeview1")
-                self.installed_updated_column = gtk.TreeViewColumn('Installed/Updated')
-                self.treeview.append_column(self.installed_updated_column)
-                self.cell = gtk.CellRendererText()
-                self.installed_updated_column.pack_start(self.cell, True)
-                self.installed_updated_column.add_attribute(self.cell, 'text', 0)
-                self.treeview.expand_all()
-                try:
-                        dic = \
-                            {
-                                "on_cancel_button_clicked":self.on_cancel_button_clicked,
-                                "on_next_button_clicked":self.on_next_button_clicked,
-                            }
-                        wTree.signal_autoconnect(dic)
-                except AttributeError, error:
-                        print self.parent._('GUI will not respond to any event! %s.Check create_installupdate_gui()')\
-                            % error
-                return
+                        for dep in mfst.gen_actions_by_type("depend"):
+                                required, min_fmri, max_fmri = dep.parse(image)
+                                if required == False:
+                                        image.update_optional_dependency(min_fmri)
 
-        def create_downloaddialog_gui(self):
-                gladefile = self.gladefile
-                wTree = gtk.glade.XML(gladefile, "downloadingfiles") 
-                self.downloadingfilesdialog = wTree.get_widget("downloadingfiles")
-                self.downloadtextview = wTree.get_widget("downloadtextview")
-                self.downloadprogress = wTree.get_widget("downloadprogress")
-                self.downloadtextbuffer = self.downloadtextview.get_buffer()
-                try:
-                        dic = \
-                            {
-                                "on_canceldownload_clicked":self.on_cancel_download_clicked,
-                            }
-                        wTree.signal_autoconnect(dic)
-                except AttributeError, error:
-                        print self.parent._('GUI will not respond to any event! %s.Check create_downloaddialog_gui()')\
-                            % error
-                return
+        def __evaluate(self, image):
+                assert self.ip.state == imageplan.UNEVALUATED
 
-        def create_installation_gui(self):
-                gladefile = self.gladefile
-                wTree = gtk.glade.XML(gladefile, "installingdialog") 
-                self.installingdialog = wTree.get_widget("installingdialog")
-                self.installingtextview = wTree.get_widget("installingtextview")
-                self.installingprogress = wTree.get_widget("installingprogress")
-                self.installingtextbuffer = self.installingtextview.get_buffer()
-                return
+                self.ip.progtrack.evaluate_start()
 
-        def on_cancel_download_clicked(self, widget):
-                self.gui_thread.cancel()
-                self.downloadingfilesdialog.destroy()
+                outstring = ""
+                
+                # Operate on a copy, as it will be modified in flight.
+                for f in self.ip.target_fmris[:]:
+                        self.ip.progtrack.evaluate_progress()
+                        try:
+                                self.__evaluate_fmri(f, image)
+                        except KeyError, e:
+                                outstring += "Attemping to install %s causes:\n\t%s\n" % \
+                                    (f.get_name(), e)
+                        except NameError:
+                                gobject.idle_add(self.__creating_plan_net_error)
+                                return
+                if outstring:
+                        raise RuntimeError("No packages were installed because "
+                            "package dependencies could not be satisfied\n" +
+                            outstring)                        
+                                
+                for f in self.ip.target_fmris:
+                        self.ip.add_pkg_plan(f)
+                        self.ip.progtrack.evaluate_progress()
 
-        def on_networkdown_close_clicked(self, widget):
-                self.gui_thread.cancel()
-                self.networkdown.destroy()
+                for f in self.ip.target_rem_fmris[:]:
+                        self.ip.evaluate_fmri_removal(f)
+                        self.ip.progtrack.evaluate_progress()
 
-        def on_cancelcreateplan_clicked(self, widget):
-                self.gui_thread.cancel()
-                self.createplandialog.destroy()
+                self.ip.progtrack.evaluate_done()
 
-        def on_cancel_button_clicked(self, widget):
-                self.gui_thread.cancel()
-                self.installupdatedialog.destroy()
+                self.ip.state = imageplan.EVALUATED_OK
 
-        def on_next_button_clicked(self, widget):
-                self.download_thread = Thread(target = self.download_stage, args = ())
-                self.download_thread.start()
+        def __creating_plan_net_error(self):
+                '''Helper method which shows the dialog informing user that there was
+                problem with network connection'''
+                self.w_createplan_dialog.hide()
+                self.w_networkdown_dialog.show()
 
-        def download_stage(self, rebuild=False):
+        def __evaluate_fmri(self, pfmri, image):
+
+                if self.gui_thread.is_cancelled():
+                        return
+                gobject.idle_add(self.__update_createplan_progress, \
+                    self.parent._("Evaluating: %s\n") % pfmri.get_fmri())
+
+                self.ip.progtrack.evaluate_progress()
+                m = image.get_manifest(pfmri)
+
+                # [manifest] examine manifest for dependencies
+                for a in m.actions:
+                        if a.name != "depend":
+                                continue
+
+                        type = a.attrs["type"]
+
+                        f = fmri.PkgFmri(a.attrs["fmri"],
+                            self.ip.image.attrs["Build-Release"])
+
+                        if self.ip.image.has_version_installed(f) and \
+                                    type != "exclude":
+                                continue
+
+                        # XXX This alone only prevents infinite recursion when a
+                        # cycle member is on the commandline, as we never update
+                        # target_fmris.  Is target_fmris supposed to be just
+                        # what was specified on the commandline, or include what
+                        # we've found while processing dependencies?
+                        # XXX probably should just use propose_fmri() here
+                        # instead of this and the has_version_installed() call
+                        # above.
+                        if self.ip.is_proposed_fmri(f):
+                                continue
+
+                        # XXX LOG  "%s not in pending transaction;
+                        # checking catalog" % f
+
+                        required = True
+                        excluded = False
+                        if type == "optional" and \
+                            not self.ip.image.attrs["Policy-Require-Optional"]:
+                                required = False
+                        elif type == "transfer" and \
+                            not self.ip.image.older_version_installed(f):
+                                required = False
+                        elif type == "exclude":
+                                excluded = True
+                        elif type == "incorporate":
+                                self.ip.image.update_optional_dependency(f)
+                                if self.ip.image.older_version_installed(f) or \
+                                    self.ip.older_version_proposed(f):
+                                        required = True
+                                else:
+                                        required = False
+
+                        if not required:
+                                continue
+
+                        if excluded:
+                                raise RuntimeError, "excluded by '%s'" % f
+
+                        # treat-as-required, treat-as-required-unless-pinned,
+                        # ignore
+                        # skip if ignoring
+                        #     if pinned
+                        #       ignore if treat-as-required-unless-pinned
+                        #     else
+                        #       **evaluation of incorporations**
+                        #     [imageplan] pursue installation of this package
+                        #     -->
+                        #     backtrack or reset??
+
+                        # This will be the newest version of the specified
+                        # dependency package, coming from the preferred
+                        # authority, if it's available there.
+                        cf = self.ip.image.inventory([ a.attrs["fmri"] ],
+                            all_known = True, preferred = True,
+                            first_only = True).next()[0]
+
+                        # XXX LOG "adding dependency %s" % pfmri
+
+                        #msg("adding dependency %s" % cf)
+
+                        self.ip.propose_fmri(cf)
+                        self.__evaluate_fmri(cf, image)
+
+        def __download_stage(self, rebuild=False):
+                '''Parts of the code duplicated from install and image-update from pkg(1) 
+                and pkg.client.ImagePlan.preexecute()'''
                 self.gui_thread.run()
                 if not rebuild:
-                        self.installupdatedialog.hide()
+                        self.w_installupdate_dialog.hide()
                 if rebuild:
-                        self.installingdialog.hide()
-                self.downloadingfilesdialog.show()
+                        self.w_installing_dialog.hide()
+                self.w_downloadingfiles_dialog.show()
 
                 # Checks the index to make sure it exists and is
                 # consistent. If it's inconsistent an exception is thrown.
@@ -229,28 +442,26 @@ class InstallUpdate(progress.ProgressTracker):
                 ind.check_index(self.ip.image.get_fmri_manifest_pairs(),
                     force_rebuild=False)
                 
-                self.nfiles = 0
-                self.nbytes = 0
                 for package_plan in self.ip.pkg_plans:
                         if self.gui_thread.is_cancelled():
                                 return
                         try:
-                                self.preexecute(package_plan)
+                                self.__preexecute(package_plan)
                         except TransferTimedOutException:
-                                self.downloadingfilesdialog.hide()
-                                self.networkdown.show()
+                                self.w_downloadingfiles_dialog.hide()
+                                self.w_networkdown_dialog.show()
                                 return
                         except URLError, e:
                                 #if e.reason[0] == 8:
-                                self.downloadingfilesdialog.hide()
-                                self.networkdown.show()
+                                self.w_downloadingfiles_dialog.hide()
+                                self.w_networkdown_dialog.show()
                                 return
                         except CancelException:
-                                self.downloadingfilesdialog.hide()
+                                self.w_downloadingfiles_dialog.hide()
                                 return
 
                 self.ip.progtrack.download_done()
-                self.downloadingfilesdialog.hide()
+                self.w_downloadingfiles_dialog.hide()
 
                 try:
                         be = bootenv.BootEnv(self.ip.image.get_root())
@@ -262,7 +473,7 @@ class InstallUpdate(progress.ProgressTracker):
                         if self.ip.image.is_liveroot():
                                 return 1
                 try:
-                        self.installation_stage()
+                        self.__installation_stage()
                         if self.image_update:
                                 be.activate_image()
                         else:
@@ -293,16 +504,53 @@ class InstallUpdate(progress.ProgressTracker):
                         self.ip.image.cleanup_cached_content()
                 elif ret_code == 2:
                         return_code = 0
-                        return_code = self.rebuild_index()
+                        return_code = self.__rebuild_index()
                         if return_code == 1:
                                 return
-                        self.download_stage(True)
-                                
-        def rebuild_index(self, pargs):
-                """pkg rebuild-index
+                        self.__download_stage(True)
 
-                Forcibly rebuild the search indexes. Will remove existing indexes
-                and build new ones from scratch."""
+        def __preexecute(self, package_plan):
+                '''Code duplication from pkg.client.PkgPlan.preexecute() except that
+                pkg.gui.filelist is called instead of pkg.client.fileobject with shared
+                cancel object - self.gui_thread that allows to cancel download 
+                operation'''
+                flist = filelist.FileList(self,
+                    package_plan.image,
+                    package_plan.destination_fmri,
+                    self.gui_thread,
+                    maxbytes = None
+                    )
+                _PkgPlan__prog = package_plan._PkgPlan__progtrack
+                _PkgPlan__prog.download_start_pkg(package_plan.get_xfername())
+
+                # retrieval step
+                if package_plan.destination_fmri == None:
+                        package_plan.image.remove_install_file(package_plan.origin_fmri)
+
+                        try:
+                                os.unlink("%s/pkg/%s/filters" % (
+                                    package_plan.image.imgdir,
+                                    package_plan.origin_fmri.get_dir_path()))
+                        except EnvironmentError, e:
+                                if e.errno != errno.ENOENT:
+                                        raise
+
+                for src, dest in itertools.chain(*package_plan.actions):
+                        if dest:
+                                dest.preinstall(package_plan, src)
+                                if dest.needsdata(src):
+                                        flist.add_action(dest)
+                        else:
+                                src.preremove(package_plan)
+
+                # Tell flist to get any remaining files
+                flist.flush()
+                package_plan._PkgPlan__progtrack.download_end_pkg()
+
+        def __rebuild_index(self, pargs):
+                '''Code duplication from pkg(1):
+                       Forcibly rebuild the search indexes. Will remove existing indexes
+                       and build new ones from scratch.'''
                 quiet = False
                 
                 try:
@@ -312,9 +560,9 @@ class InstallUpdate(progress.ProgressTracker):
                 except search_errors.ProblematicPermissionsIndexException, ppie:
                         return 1
 
-        def installation_stage(self):
+        def __installation_stage(self):
                 self.gui_thread.run()
-                self.installingdialog.show()
+                self.w_installing_dialog.show()
                 self.ip.state = imageplan.PREEXECUTED_OK
 
                 if self.ip.nothingtodo():
@@ -416,301 +664,51 @@ class InstallUpdate(progress.ProgressTracker):
                 ind.client_update_index((self.ip.filters, plan_info))
                 
                 self.ip.progtrack.actions_done()
-                
 
         def actions_done(self):
                 if self.parent != None:
                         if not self.ips_update and not self.image_update:
-                                gobject.idle_add(self.update_package_list)
-                gobject.idle_add(self.installingdialog.hide)
+                                gobject.idle_add(self.__update_package_list)
+                gobject.idle_add(self.w_installing_dialog.hide)
 
                 if self.ips_update:
                         gobject.idle_add(self.parent.shutdown_after_ips_update)
                 elif self.image_update:
                         gobject.idle_add(self.parent.shutdown_after_image_update)
 
-        def update_package_list(self):
+        def __update_package_list(self):
                 for pkg in self.update_list:
                         pkg_name = pkg.get_xfername()
-                        self.update_install_list(pkg_name)
+                        self.__update_install_list(pkg_name)
                 del self.update_list
                 self.parent.update_package_list()
                         
-        def update_install_list(self, pkg_name):
+        def __update_install_list(self, pkg_name):
                 for row in self.install_list:
                         if row[enumerations.NAME_COLUMN] == pkg_name:
                                 row[enumerations.MARK_COLUMN] = True
                                 return
 
-        def prepare_list_of_packages(self):
-                ''' This method return the dictionary of images and newest marked packages'''
-                fmri_to_install_update = {}
-                for row in self.install_list:
-                        if row[enumerations.MARK_COLUMN]:
-                                image = row[enumerations.IMAGE_OBJECT_COLUMN]
-                                packages = row[enumerations.PACKAGE_OBJECT_COLUMN]
-                                im = fmri_to_install_update.get(image)
-                                # XXX Hack to be bug to bug compatible - incorporations
-                                pkg_name = packages[0].get_name()
-                                if im:
-                                        im.append(pkg_name)
-                                else:
-                                        fmri_to_install_update[image] = [pkg_name, ]
-                return fmri_to_install_update
+        def download_file_path(self, file_path):
+                '''Called by GUI's filelist.py through the progress, which is passed 
+                to the filelist.'''
+                # XXX this function should be removed and also pkg.gui.filelist should 
+                # not call it, since we don't want to show single file progress
+                gobject.idle_add(self.__add_file_to_downloadtext, file_path)
 
-        def plan_the_install_updateimage(self, list_of_packages):
-                '''Function which plans the image'''
-                self.gui_thread.run()
-                filters = []
-                verbose = False
-                noexecute = False
-                for image in list_of_packages:
-                        # Take a list of packages, specified in pkg_list, and attempt
-                        # to assemble an appropriate image plan.  This is a helper
-                        # routine for some common operations in the client.
-                        #
-                        # This method checks all authorities for a package match;
-                        # however, it defaults to choosing the preferred authority
-                        # when an ambiguous package name is specified.  If the user
-                        # wishes to install a package from a non-preferred authority,
-                        # the full FMRI that contains an authority should be used
-                        # to name the package.
+        def __add_file_to_downloadtext(self, file_path):
+                '''Function which adds another line text in the "more details" download 
+                dialog'''
+                buf = self.w_download_textview.get_buffer()
+                textiter = buf.get_end_iter()
+                buf.insert(textiter, self.parent._("Downloading: ") + file_path + "\n")
 
-                        pkg_list = list_of_packages.get(image)
-
-                        error = 0
-                        self.ip = imageplan.ImagePlan(image, self, filters = filters)
-
-                        self.load_optional_dependencies(image)
-
-                        for p in pkg_list:
-                                try:
-                                        conp = image.apply_optional_dependencies(p)
-                                        matches = list(image.inventory([ conp ],
-                                            all_known = True))
-                                except RuntimeError:
-                                        # XXX Module directly printing.
-                                        error = 1
-                                        continue
-
-                                pnames = {}
-                                pmatch = []
-                                npnames = {}
-                                npmatch = []
-                                for m, state in matches:
-                                        if m.preferred_authority():
-                                                pnames[m.get_pkg_stem()] = 1
-                                                pmatch.append(m)
-                                        else:
-                                                npnames[m.get_pkg_stem()] = 1
-                                                npmatch.append(m)
-
-                                if len(pnames.keys()) > 1:
-                                        # XXX Module directly printing.
-                                        error = 1
-                                        continue
-                                elif len(pnames.keys()) < 1 and len(npnames.keys()) > 1:
-                                        # XXX Module directly printing.
-                                        error = 1
-                                        continue
-
-                                # matches is a list reverse sorted by version, so take
-                                # the first; i.e., the latest.
-                                if len(pmatch) > 0:
-                                        self.ip.propose_fmri(pmatch[0])
-                                else:
-                                        self.ip.propose_fmri(npmatch[0])
-
-                        if error != 0:
-                                raise RuntimeError, "Unable to assemble image plan"
-
-
-                        self.evaluate(image)
-
-                        image.imageplan = self.ip
-
-                        gobject.idle_add(self.ip.progtrack.evaluate_done)
-
-                return
-
-
-        def evaluate(self, image):
-                assert self.ip.state == imageplan.UNEVALUATED
-
-                self.ip.progtrack.evaluate_start()
-
-                outstring = ""
-                
-                # Operate on a copy, as it will be modified in flight.
-                for f in self.ip.target_fmris[:]:
-                        self.ip.progtrack.evaluate_progress()
-                        try:
-                                self.evaluate_fmri(f, image)
-                        except KeyError, e:
-                                outstring += "Attemping to install %s causes:\n\t%s\n" % \
-                                    (f.get_name(), e)
-                        except NameError:
-                                gobject.idle_add(self.creating_plan_net_error)
-                                return
-                if outstring:
-                        raise RuntimeError("No packages were installed because "
-                            "package dependencies could not be satisfied\n" +
-                            outstring)                        
-                                
-                for f in self.ip.target_fmris:
-                        self.ip.add_pkg_plan(f)
-                        self.ip.progtrack.evaluate_progress()
-
-                for f in self.ip.target_rem_fmris[:]:
-                        self.ip.evaluate_fmri_removal(f)
-                        self.ip.progtrack.evaluate_progress()
-
-                self.ip.progtrack.evaluate_done()
-
-                self.ip.state = imageplan.EVALUATED_OK
-
-        def evaluate_fmri(self, pfmri, image):
-
-                if self.gui_thread.is_cancelled():
-                        return
-                gobject.idle_add(self.update_createplan_progress, self.parent._("Evaluating: %s\n") % pfmri.get_fmri())
-
-                self.ip.progtrack.evaluate_progress()
-                m = image.get_manifest(pfmri)
-
-                # [manifest] examine manifest for dependencies
-                for a in m.actions:
-                        if a.name != "depend":
-                                continue
-
-                        type = a.attrs["type"]
-
-                        f = fmri.PkgFmri(a.attrs["fmri"],
-                            self.ip.image.attrs["Build-Release"])
-
-                        if self.ip.image.has_version_installed(f) and \
-                                    type != "exclude":
-                                continue
-
-                        # XXX This alone only prevents infinite recursion when a
-                        # cycle member is on the commandline, as we never update
-                        # target_fmris.  Is target_fmris supposed to be just
-                        # what was specified on the commandline, or include what
-                        # we've found while processing dependencies?
-                        # XXX probably should just use propose_fmri() here
-                        # instead of this and the has_version_installed() call
-                        # above.
-                        if self.ip.is_proposed_fmri(f):
-                                continue
-
-                        # XXX LOG  "%s not in pending transaction;
-                        # checking catalog" % f
-
-                        required = True
-                        excluded = False
-                        if type == "optional" and \
-                            not self.ip.image.attrs["Policy-Require-Optional"]:
-                                required = False
-                        elif type == "transfer" and \
-                            not self.ip.image.older_version_installed(f):
-                                required = False
-                        elif type == "exclude":
-                                excluded = True
-                        elif type == "incorporate":
-                                self.ip.image.update_optional_dependency(f)
-                                if self.ip.image.older_version_installed(f) or \
-                                    self.ip.older_version_proposed(f):
-                                        required = True
-                                else:
-                                        required = False
-
-                        if not required:
-                                continue
-
-                        if excluded:
-                                raise RuntimeError, "excluded by '%s'" % f
-
-                        # treat-as-required, treat-as-required-unless-pinned,
-                        # ignore
-                        # skip if ignoring
-                        #     if pinned
-                        #       ignore if treat-as-required-unless-pinned
-                        #     else
-                        #       **evaluation of incorporations**
-                        #     [imageplan] pursue installation of this package
-                        #     -->
-                        #     backtrack or reset??
-
-                        # This will be the newest version of the specified
-                        # dependency package, coming from the preferred
-                        # authority, if it's available there.
-                        cf = self.ip.image.inventory([ a.attrs["fmri"] ],
-                            all_known = True, preferred = True,
-                            first_only = True).next()[0]
-
-                        # XXX LOG "adding dependency %s" % pfmri
-
-                        #msg("adding dependency %s" % cf)
-
-                        self.ip.propose_fmri(cf)
-                        self.evaluate_fmri(cf, image)
-
-        def load_optional_dependencies(self, image):
-                for fmri in image.gen_installed_pkgs():
-                        if self.gui_thread.is_cancelled():
-                                return
-                        mfst = image.get_manifest(fmri, filtered = True)
-
-                        for dep in mfst.gen_actions_by_type("depend"):
-                                required, min_fmri, max_fmri = dep.parse(image)
-                                if required == False:
-                                        image.update_optional_dependency(min_fmri)
-
-        def creating_plan_net_error(self):
-                self.createplandialog.hide()
-                self.networkdown.show()
-
-        def preexecute(self, package_plan):
-                flist = filelist.FileList(self,
-                    package_plan.image,
-                    package_plan.destination_fmri,
-                    self.gui_thread,
-                    maxbytes = None
-                    )
-
-                package_plan._PkgPlan__progtrack.download_start_pkg(package_plan.get_xfername())
-
-                # retrieval step
-                if package_plan.destination_fmri == None:
-                        package_plan.image.remove_install_file(package_plan.origin_fmri)
-
-                        try:
-                                os.unlink("%s/pkg/%s/filters" % (
-                                    package_plan.image.imgdir,
-                                    package_plan.origin_fmri.get_dir_path()))
-                        except EnvironmentError, e:
-                                if e.errno != errno.ENOENT:
-                                        raise
-
-                for src, dest in itertools.chain(*package_plan.actions):
-                        if dest:
-                                dest.preinstall(package_plan, src)
-                                if dest.needsdata(src):
-                                        flist.add_action(dest)
-                        else:
-                                src.preremove(package_plan)
-
-                # Tell flist to get any remaining files
-                flist.flush()
-                package_plan._PkgPlan__progtrack.download_end_pkg()
-
-        def act_output(self):
-                gobject.idle_add(self.update_install_progress, \
-                    self.act_cur_nactions, self.act_goal_nactions)
-                return
-
-        def act_output_done(self):
-                return
+        def __add_info_to_installtext(self, text):
+                '''Function which adds another line text in the "more details" install 
+                dialog'''
+                buf = self.w_installing_textview.get_buffer()
+                textiter = buf.get_end_iter()
+                buf.insert(textiter, text)
 
         def cat_output_start(self): 
                 return
@@ -718,102 +716,114 @@ class InstallUpdate(progress.ProgressTracker):
         def cat_output_done(self): 
                 return
 
-        def ind_output(self):
-                return
-
-        def ind_output_done(self):
-                return
-                
-        def ver_output(self): 
-                return
-
-        def ver_output_error(self, actname, errors): 
-                return
-
         def eval_output_start(self):
+                '''Called by progress tracker when the evaluation of the packages just 
+                started.'''
                 return
 
         def eval_output_progress(self):
+                '''Called by progress tracker each time some package was evaluated. The
+                call is being done by calling progress tracker evaluate_progress() 
+                function'''
                 return
-
-        def dl_output(self):
-                gobject.idle_add(self.dl_output_idle, self.dl_cur_nbytes, self.dl_goal_nbytes)
-
-                return
-        def dl_output_idle(self, cur_nbytes, goal_nbytes):
-                self.update_download_progress(cur_nbytes, goal_nbytes)
-
-        def dl_output_done(self):
-                return
-
-        def download_file_path(self, file_path):
-                gobject.idle_add(self.add_file_to_downloadtext, file_path)
-
-        def add_file_to_downloadtext(self, file_path):
-                textiter = self.downloadtextbuffer.get_end_iter()
-                self.downloadtextbuffer.insert(textiter, self.parent._("Downloading: ") + file_path + "\n")
-
-        def add_info_to_installtext(self, text):
-                textiter = self.installingtextbuffer.get_end_iter()
-                self.installingtextbuffer.insert(textiter, text)
 
         def eval_output_done(self):
-                self.createplandialog.hide()
-                if self.gui_thread.is_cancelled(): #If the evaluation was cancelled, return
+                '''Called by progress tracker after the evaluation of the packages is 
+                finished. Gets information like how many packages will be 
+                updated/installed and maximum amount of data which will be downloaded. 
+                Later this information is being adjusted, while downloading'''
+                self.w_createplan_dialog.hide()
+                if self.gui_thread.is_cancelled():
                         return
                 updated_installed = \
                     [
                         ["Packages To Be Installed:"],
                         ["Packages To Be Updated:"]
                     ]
-                self.treestore = gtk.TreeStore(str)
+                treestore = gtk.TreeStore(str)
                 install_iter = None 
                 updated_iter = None
                 install_count = 0
                 updated_count = 0
-                self.total_download_count = 0
-                self.total_files_count = 0
+                total_download_count = 0
+                total_files_count = 0
                 npkgs = 0
                 for package_plan in self.ip.pkg_plans:
                         npkgs += 1
                         if package_plan.origin_fmri and package_plan.destination_fmri:
                                 if not updated_iter:
-                                        updated_iter = self.treestore.append(None, updated_installed[1])
-                                dt = self.get_datetime(package_plan.destination_fmri.version)
+                                        updated_iter = treestore.append(None, \
+                                            updated_installed[1])
+                                d_fmri = package_plan.destination_fmri
+                                dt = self.get_datetime(d_fmri.version)
                                 dt_str = (":%02d%02d") % (dt.month, dt.day)
-                                pkg_version = package_plan.destination_fmri.version.get_short_version() + dt_str
-                                pkg = package_plan.destination_fmri.get_name() + "@" + pkg_version
+                                pkg_version = d_fmri.version.get_short_version() + dt_str
+                                pkg = d_fmri.get_name() + "@" + pkg_version
                                 updated_count = updated_count + 1
-                                self.treestore.append(updated_iter, [pkg])
+                                treestore.append(updated_iter, [pkg])
                         elif package_plan.destination_fmri:
                                 if not install_iter:
-                                        install_iter = self.treestore.append(None, updated_installed[0])
-                                dt = self.get_datetime(package_plan.destination_fmri.version)
+                                        install_iter = treestore.append(None, \
+                                            updated_installed[0])
+                                d_fmri = package_plan.destination_fmri
+                                dt = self.get_datetime(d_fmri.version)
                                 dt_str = (":%02d%02d") % (dt.month, dt.day)
-                                pkg_version = package_plan.destination_fmri.version.get_short_version() + dt_str
-                                pkg = package_plan.destination_fmri.get_name() + "@" + pkg_version
+                                pkg_version = d_fmri.version.get_short_version() + dt_str
+                                pkg = d_fmri.get_name() + "@" + pkg_version
                                 install_count = install_count + 1
-                                self.treestore.append(install_iter, [pkg])
+                                treestore.append(install_iter, [pkg])
                         xferfiles, xfersize = package_plan.get_xferstats()
-                        self.total_download_count = self.total_download_count + xfersize
-                        self.total_files_count = self.total_files_count + xferfiles
-                self.ip.progtrack.download_set_goal(npkgs, self.total_files_count, self.total_download_count)
-                self.treeview.set_model(self.treestore)
-                self.treeview.expand_all()
+                        total_download_count = total_download_count + xfersize
+                        total_files_count = total_files_count + xferfiles
+                self.ip.progtrack.download_set_goal(npkgs, total_files_count, \
+                    total_download_count)
+                self.w_review_treeview.set_model(treestore)
+                self.w_review_treeview.expand_all()
                 updated_str = self.parent._("%d packages will be updated\n")
                 if updated_count == 1:
                         updated_str = self.parent._("%d package will be updated\n")
                 install_str = self.parent._("%d packages will be installed\n\n")
                 if install_count == 1:
                         install_str = self.parent._("%d package will be installed\n\n")
-                self.summary_label.set_text((updated_str + install_str + 
-                    self.parent._("%d MB will be downloaded"))%(updated_count, install_count,
-                    (self.total_download_count/1024/1024)))
-                self.createplandialog.hide()
-                self.installupdatedialog.show()
+                self.w_summary_label.set_text((updated_str + install_str + \
+                    self.parent._("%d MB will be downloaded"))% \
+                    (updated_count, install_count, (total_download_count/1024/1024)))
+                self.w_createplan_dialog.hide()
+                self.w_installupdate_dialog.show()
                 return True
 
-        def get_datetime(self, version):
+        def ver_output(self): 
+                return
+
+        def ver_output_error(self, actname, errors): 
+                return
+
+        def dl_output(self):
+                gobject.idle_add(self.__update_download_progress, self.dl_cur_nbytes, \
+                    self.dl_goal_nbytes)
+                return
+
+        def dl_output_done(self):
+                return
+
+        def act_output(self):
+                gobject.idle_add(self.__update_install_progress, \
+                    self.act_cur_nactions, self.act_goal_nactions)
+                return
+
+        def act_output_done(self):
+                return
+
+        def ind_output(self):
+                return
+
+        def ind_output_done(self):
+                return
+
+        @staticmethod
+        def get_datetime(version):
+                '''Support function for change in the IPS API: get_timestamp() was
+                replaced by get_datetime()'''
                 dt = None
                 try:
                         dt = version.get_datetime()

@@ -39,69 +39,71 @@ class ImageInfo(object):
         def read(self, path):
                 """This method reads specified by path file and returns lists of 
                 categories per package"""
-                cp = self.get_config_parser(path)
-                if cp:
-                        for s in cp.sections():
-                                self.categories[s] = cp.get(s, "category")
+                cpars = self.__get_config_parser(path)
+                if cpars:
+                        for section in cpars.sections():
+                                self.categories[section] = cpars.get(section, "category")
                 return self.categories
 
-        def get_pixbuf_image_for_package(self, path, packageName):
+        def get_pixbuf_image_for_package(self, path, package_name):
                 """Method that returns pixbuf field from the file specified by path for
-                the given packageName"""
-                cp = self.get_config_parser(path)
-                if cp:
-                        for s in cp.sections():
-                                if re.match(packageName, s):
-                                        pixbuf = cp.get(s, "pixbuf")
+                the given package_name"""
+                cpars = self.__get_config_parser(path)
+                if cpars:
+                        for section in cpars.sections():
+                                if re.match(package_name, section):
+                                        pixbuf = cpars.get(section, "pixbuf")
                                         return pixbuf
                 return None
 
         def add_package(self, path, name, category):
                 """Add the package information to the file specified by the path. If the 
                 package name already exists, than returns False"""
-                cp = self.get_config_parser(path)
-                if cp:
-                        for s in cp.sections():
-                                if re.match(name, s):
+                cpars = self.__get_config_parser(path)
+                if cpars:
+                        for section in cpars.sections():
+                                if re.match(name, section):
                                 #This should behave differently, if the repo 
                                 #exists should throw some error
                                         return False
-                        cp.add_section(name)
-                        cp.set(name, "category", category)
-                        f = open(path, "w")
-                        cp.write(f)
+                        cpars.add_section(name)
+                        cpars.set(name, "category", category)
+                        file_op = open(path, "w")
+                        cpars.write(file_op)
                         return True
                 return False
 
         def remove_package(self, path, name):
-                """If exists removes package specified by name from the filename specified 
-                by path"""
-                cp = self.get_config_parser(path)
-                if cp:
-                        for s in cp.sections():
-                                if re.match(name, s):
-                                        cp.remove_section(name)
-                                        f = open(path, "w")
-                                        cp.write(f)
+                """If exists removes package specified by name from the 
+                filename specified by path"""
+                cpars = self.__get_config_parser(path)
+                if cpars:
+                        for section in cpars.sections():
+                                if re.match(name, section):
+                                        cpars.remove_section(name)
+                                        file_op = open(path, "w")
+                                        cpars.write(file_op)
 
-        def get_config_parser(self, path):
+        @staticmethod 
+        def __get_config_parser(path):
                 """Creates and returns ConfigParser.SafeConfigParser()"""
-                cp = ConfigParser.SafeConfigParser()
-                if cp:
+                cpars = ConfigParser.SafeConfigParser()
+                if cpars:
                         if not os.path.isfile(path):
                                 print "File: " + str(path) + " not found."
-                        r = cp.read(path)
-                        if r:
-                                if r[0] != path:
+                        read_cp = cpars.read(path)
+                        if read_cp:
+                                if read_cp[0] != path:
                                         raise ParsingError
-                                return cp
+                                return cpars
 
-        def mkdirs_files(self, path):
+        @staticmethod
+        def __mkdirs_files(path):
                 if not os.path.isdir(os.path.dirname(path)):
                         os.makedirs(os.path.dirname(path))
                 if not os.path.isfile(path):
-                        f = open(path, "w")
-                        f.close()
+                        file_op = open(path, "w")
+                        file_op.close()
 
 if __name__ == "__main__":
         print "Usage:"

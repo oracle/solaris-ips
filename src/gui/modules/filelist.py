@@ -24,8 +24,6 @@
 #
 
 import os
-import urllib
-import pkg.pkgtarfile as ptf
 import pkg.portable as portable
 from pkg.misc import hash_file_name
 import pkg.client.filelist as filelist
@@ -35,7 +33,8 @@ class FileList(filelist.FileList):
         def __init__(self, progtrack, image, fmri, gui_thread = None, maxbytes = None):
                 self.progtrack = progtrack
                 self.gui_thread = gui_thread
-                filelist.FileList.__init__(self, image, fmri, progtrack, maxbytes = None)
+                filelist.FileList.__init__(self, image, fmri, progtrack, \
+                    maxbytes = maxbytes)
 
 
         def _extract_file(self, tarinfo, tar_stream, download_dir):
@@ -63,7 +62,7 @@ class FileList(filelist.FileList):
 
                 # XXX catch IOError if tar stream closes inadvertently?
                 tar_stream.extract_to(tarinfo, download_dir, hashval)
-
+                # XXX Single file progress consumed by pkg.gui.installupdate
                 file_path = self.fhash[hashval][0].attrs.get("path")
                 self.progtrack.download_file_path(file_path)
 
@@ -74,7 +73,7 @@ class FileList(filelist.FileList):
 
                 # assign opener to actions in the list
                 try:
-                        l = self.fhash[hashval]
+                        lis = self.fhash[hashval]
                 except KeyError:
                         # If the key isn't in the dictionary, the server
                         # sent us a file we didn't ask for.  In this
@@ -82,7 +81,7 @@ class FileList(filelist.FileList):
                         # leave it in the cache.
                         return
 
-                for action in l:
+                for action in lis:
                         action.data = self._make_opener(final_path)
 
                 # Remove successfully extracted items from the hash
@@ -95,9 +94,9 @@ class FileList(filelist.FileList):
                                 if self.gui_thread.is_cancelled():
                                         self.image.cleanup_downloads()
                                         raise CancelException
-                                f = open(filepath, "rb")
+                                file_op = open(filepath, "rb")
                                 os.unlink(filepath)
-                                return f
+                                return file_op
                         return opener
 
 class CancelException(Exception):
