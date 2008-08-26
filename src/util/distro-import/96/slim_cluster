@@ -303,6 +303,7 @@ include common/SUNWpsm-ipp
 include common/SUNWpsm-lpd
 include common/SUNWpsutils
 include common/SUNWpython-cherrypy
+include common/SUNWpython-pyopenssl
 include common/SUNWqlcu
 include common/SUNWrcmdc
 include common/SUNWrcmds
@@ -991,6 +992,7 @@ depend SUNWpsm-ipp
 depend SUNWpsm-lpd
 depend SUNWpsutils
 depend SUNWpython-cherrypy
+depend SUNWpython-pyopenssl
 depend SUNWqlc
 depend SUNWqlcu
 depend SUNWralink
