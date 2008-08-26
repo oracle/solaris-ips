@@ -312,5 +312,5 @@ if __name__ == "__main__":
                 print
 		file = open("/tmp/depot.log", "r")
 		print file.read()
-		file.close
+		file.close()
 

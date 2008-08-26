@@ -550,6 +550,9 @@ class SingleDepotTestCase(ManyDepotTestCase):
                 ManyDepotTestCase.setUp(self, 1)
                 self.dc = self.dcs[1]
 
+        def tearDown(self):
+                ManyDepotTestCase.tearDown(self)
+                self.dc = None
 
 class SingleDepotTestCaseCorruptImage(SingleDepotTestCase):
         """ A class which allows manipulation of the image directory that
