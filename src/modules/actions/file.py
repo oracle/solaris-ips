@@ -127,7 +127,7 @@ class FileAction(generic.Action):
 
                 # XXX This needs to be modularized.
                 # XXX This needs to be controlled by policy.
-                if self.needsdata(orig): 
+                if self.needsdata(orig):
                         tfilefd, temp = tempfile.mkstemp(dir = os.path.dirname(final_path))
                         stream = self.data()
                         tfile = os.fdopen(tfilefd, "wb");
@@ -141,7 +141,15 @@ class FileAction(generic.Action):
                 else:
                         temp = final_path
 
-                os.chmod(temp, mode)
+                try:
+                        os.chmod(temp, mode)
+                except OSError, e:
+                        # If the file didn't exist, assume that's intentional,
+                        # and drive on.
+                        if e.errno != errno.ENOENT:
+                                raise
+                        else:
+                                return
 
                 try:
                         portable.chown(temp, owner, group)
