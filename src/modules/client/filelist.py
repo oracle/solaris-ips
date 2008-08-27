@@ -119,15 +119,23 @@ class FileList(object):
                     self.image.cached_download_dir(),
                     hash_file_name(hashval)))
 
-                if os.path.exists(cache_path):
-                        action.data = self._make_opener(cache_path)
-                        bytes = get_pkg_otw_size(action)
+                try:
+                        if os.path.exists(cache_path):
+                                action.data = self._make_opener(cache_path)
+                                bytes = get_pkg_otw_size(action)
 
-                        self._verify_content(action, cache_path)
+                                self._verify_content(action, cache_path)
 
-                        self.progtrack.download_adjust_goal(0, -1, -bytes)
+                                self.progtrack.download_adjust_goal(0, -1,
+                                    -bytes)
 
-                        return
+                                return
+                except InvalidContentException:
+                        # If the content in the cache doesn't match the hash of
+                        # the action, verify will have already purged the item
+                        # from the cache.  Reset action.data to None and have
+                        # _add_action download the file.
+                        action.data = None
 
                 while self._is_full():
                         self._do_get_files()
