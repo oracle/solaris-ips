@@ -852,7 +852,6 @@ depend SUNWintgige
 depend SUNWipf
 depend SUNWipkg
 depend SUNWipkg-gui
-depend SUNWipkg-gui-l10n
 depend SUNWipmi
 depend SUNWipoib
 depend SUNWippcore
