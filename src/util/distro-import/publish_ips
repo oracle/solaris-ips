@@ -24,8 +24,45 @@
 # Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
-export PATH=../../../proto/root_`uname -p`/usr/bin:$PATH
-export PYTHONPATH=../../../proto/root_`uname -p`/usr/lib/python2.4/vendor-packages
-eval `pkgsend open $1`
-pkgsend import -T \*.py $2
+MACH=$(uname -p)
+export PATH=../../../proto/root_$MACH/usr/bin:$PATH
+export PYTHONPATH=../../../proto/root_$MACH/usr/lib/python2.4/vendor-packages
+
+buildid=$(echo $1 | tr -d '[a-z]')
+pkgname=$2
+
+PKG_ARCHIVE=../../../packages/$MACH
+CHERRYPY_VER=$(pkgparam -d $PKG_ARCHIVE SUNWpython-cherrypy VERSION)
+PYOPENSSL_VER=$(pkgparam -d $PKG_ARCHIVE SUNWpython-pyopenssl VERSION)
+
+if [[ $pkgname == "SUNWpython-cherrypy" ]]; then
+	pkgvers=$CHERRYPY_VER
+elif [[ $pkgname == "SUNWpython-pyopenssl" ]]; then 
+	pkgvers=$PYOPENSSL_VER
+else
+	pkgvers=0.5.11
+fi
+
+pkgdir=$PKG_ARCHIVE/$pkgname
+pkgfmri="$pkgname@$pkgvers,5.11-0.$buildid"
+
+eval `pkgsend open $pkgfmri`
+
+# SUNWipkg-gui-l10n is empty, because SUNWipkg-gui contains the .mo files,
+# but needs to exist, since it existed in build 95 and an early copy of
+# build 96 with data in it.
+if [[ $pkgname != "SUNWipkg-gui-l10n" ]]; then
+	pkgsend import -T \*.py $pkgdir
+fi
+
+# We don't add a dependency on SUNWopenssl for SUNWpython-pyopenssl, since
+# SUNWopenssl is always installed
+if [[ $pkgname == "SUNWipkg" ]]; then
+	pkgsend add depend fmri=SUNWpython-pyopenssl@$PYOPENSSL_VER type=require
+	pkgsend add depend fmri=SUNWpython-cherrypy@$CHERRYPY_VER type=require
+elif [[ $pkgname == "SUNWipkg-gui" ]]; then
+	pkgsend import $PKG_ARCHIVE/SUNWipkg-gui-data
+	pkgsend import $PKG_ARCHIVE/SUNWipkg-gui-l10n
+	pkgsend add depend fmri=SUNWipkg-gui-l10n type=require
+fi
 pkgsend close

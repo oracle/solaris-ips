@@ -372,11 +372,18 @@ all_unbundleds:	$(UNBUNDLED_TARGETS:%=$(BUILDID)/%)
 	$(MAKE) $(BUILDID)/$(UNBUNDLED_CLUSTERS)
 
 
-%/SUNWipkg:
+%/SUNWipkg %/backpublish:
 	$(MAKE) BUILDID=$(@D) $(@F)
 
 SUNWipkg:
-	PKG_REPO=$(REPO) ./publish_ips pkg:/SUNWipkg@0.5.11,5.11-0.`echo $(BUILDID) | tr '[a-z]' ' '` ../../../packages/i386/SUNWipkg
+	PKG_REPO=$(REPO) ./publish_ips $(BUILDID) SUNWipkg
+
+backpublish:
+	PKG_REPO=$(REPO) ./publish_ips $(BUILDID) SUNWipkg
+	PKG_REPO=$(REPO) ./publish_ips $(BUILDID) SUNWipkg-gui
+	PKG_REPO=$(REPO) ./publish_ips $(BUILDID) SUNWipkg-gui-l10n
+	PKG_REPO=$(REPO) ./publish_ips $(BUILDID) SUNWpython-cherrypy
+	PKG_REPO=$(REPO) ./publish_ips $(BUILDID) SUNWpython-pyopenssl
 
 clean:
 	rm -f $(OBJS)
