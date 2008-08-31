@@ -137,7 +137,7 @@ class BootEnv(object):
                         # if were are on UFS.
                         raise RuntimeError, "recoveryDisabled"
                                
-        def init_image_recovery(self, img):
+        def init_image_recovery(self, img, be_name=None):
 
                 """Initialize for an image-update.
                         If we're operating on a live BE then clone the
@@ -152,11 +152,19 @@ class BootEnv(object):
                         
                         # Do nothing with the returned snapshot name
                         # that is taken of the clone during beCopy.
-                        ret, self.be_name_clone, not_used = be.beCopy()
+                        ret, self.be_name_clone, not_used = be.beCopy(be_name)
+                        if be_name:
+                                self.be_name_clone = be_name
                         if ret != 0:
-                                emsg(_("pkg: unable to create BE %s") % \
-                                    self.be_name_clone)
-                                return
+                                if be_name:
+                                        # Try default name, if the be_name was 
+                                        # already in the names of be's
+                                        ret, self.be_name_clone, not_used = \
+                                            be.beCopy()
+                                if ret != 0:
+                                        emsg(_("pkg: unable to create BE %s") % \
+                                            self.be_name_clone)
+                                        return
 
                         if be.beMount(self.be_name_clone, self.clone_dir) != 0:
                                  emsg(_("pkg: attempt to mount %s failed.") % \
@@ -339,7 +347,7 @@ class BootEnvNull(object):
         def __init__(self, root):
                 pass
 
-        def init_image_recovery(self, img):
+        def init_image_recovery(self, img, be_name=None):
                 pass
 
         def activate_image(self):
