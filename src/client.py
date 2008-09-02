@@ -73,9 +73,14 @@ import pkg
 def error(text):
         """Emit an error message prefixed by the command name """
 
+        # If the message starts with whitespace, assume that it should come
+        # *before* the command-name prefix.
+        text_nows = text.lstrip()
+        ws = text[:len(text) - len(text_nows)]
+
         # This has to be a constant value as we can't reliably get our actual
         # program name on all platforms.
-        emsg("pkg: " + text)
+        emsg(ws + "pkg: " + text_nows)
 
 def usage(usage_error = None):
         """Emit a usage message and optionally prefix it with a more
@@ -1865,9 +1870,11 @@ if __name__ == "__main__":
         except:
                 traceback.print_exc()
                 error(
-                    "\n\nThis is an internal error, please let the " + \
+                    _("\n\nThis is an internal error.  Please let the " + \
                     "developers know about this\nproblem by filing " + \
                     "a bug at http://defect.opensolaris.org and including " + \
-                    "the\nabove traceback and the output of 'pkg version'.")
+                    "the\nabove traceback and this message.  The version " + \
+                    "of pkg(5) is '%s'.") %
+                    pkg.VERSION)
                 sys.exit(99)
         sys.exit(ret)
