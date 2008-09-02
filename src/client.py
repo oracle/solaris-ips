@@ -777,6 +777,15 @@ the following packages that depend on it:""" % e[0])
                 error(_("installation failed: %s") % e)
                 be.restore_install_uninstall()
                 err = 1
+        except search_errors.InconsistentIndexException, e:
+                error(INCONSISTENT_INDEX_ERROR_MESSAGE)
+                ret_code = 1
+        except search_errors.PartialIndexingException, e:
+                error(get_partial_indexing_error_message(e.cause))
+                ret_code = 1
+        except search_errors.ProblematicPermissionsIndexException, e:
+                error(str(e) + PROBLEMATIC_PERMISSIONS_ERROR_MESSAGE)
+                ret_code = 1
         except Exception, e:
                 error(_("An unexpected error happened during " \
                     "uninstallation: %s") % e)

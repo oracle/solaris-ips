@@ -56,6 +56,18 @@ class TestPkgSearch(testutils.SingleDepotTestCase):
             add dir mode=0755 owner=root group=bin path=/bin
             add file /tmp/example_file mode=0555 owner=root group=bin path=/bin/example_path11
             close """
+
+        another_pkg10 = """
+            open another_pkg@1.0,5.11-0
+            add dir mode=0755 owner=root group=bin path=/bin
+            add dir mode=0755 owner=root group=bin path=/bin/another_dir
+            add file /tmp/example_file mode=0555 owner=root group=bin path=/bin/another_path
+            add set name=com.sun.service.incorporated_changes value="6556919 6627937"
+            add set name=com.sun.service.random_test value=42 value=79
+            add set name=com.sun.service.bug_ids value="4641790 4725245 4817791 4851433 4897491 4913776 6178339 6556919 6627937"
+            add set name=com.sun.service.keywords value="sort null -n -m -t sort 0x86 separator"
+            add set name=com.sun.service.info_url value=http://service.opensolaris.com/xml/pkg/SUNWcsu@0.5.11,5.11-1:20080514I120000Z
+            close """
         
         headers = "INDEX      ACTION    VALUE                     PACKAGE\n"
 
@@ -443,6 +455,100 @@ close
                         self.pkg("search  example_pkg", exit=1)
                         portable.rename(dest_path, orig_path)
                         self.pkg("search  example_pkg")
+
+        def test_bug_2989_1(self):
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.example_pkg10)
+
+                self.image_create(durl)
+
+                self.pkg("rebuild-index")
+
+                index_dir = os.path.join(self.img_path, "var","pkg","index")
+                index_dir_tmp = index_dir + "TMP"
+
+                shutil.copytree(index_dir, index_dir_tmp)
+                
+                self.pkg("install example_pkg")
+
+                shutil.rmtree(index_dir)
+                shutil.move(index_dir_tmp, index_dir)
+
+                self.pkg("uninstall example_pkg")
+                
+
                         
+        def test_bug_2989_2(self):
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.example_pkg10)
+
+                self.image_create(durl)
+                self.pkg("install example_pkg")
+
+                index_dir = os.path.join(self.img_path, "var","pkg","index")
+                index_dir_tmp = index_dir + "TMP"
+                
+                shutil.copytree(index_dir, index_dir_tmp)
+
+                self.pkgsend_bulk(durl, self.another_pkg10)
+                self.pkg("refresh")
+
+                self.pkg("install another_pkg")
+
+                shutil.rmtree(index_dir)
+                shutil.move(index_dir_tmp, index_dir)
+
+                self.pkg("uninstall another_pkg")
+
+        def test_bug_2989_3(self):
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.example_pkg10)
+
+                self.image_create(durl)
+                self.pkg("install example_pkg")
+
+                index_dir = os.path.join(self.img_path, "var","pkg","index")
+
+                index_dir_tmp = index_dir + "TMP"
+                
+                shutil.copytree(index_dir, index_dir_tmp)
+
+                self.pkgsend_bulk(durl, self.example_pkg11)
+                self.pkg("refresh")
+
+                self.pkg("install example_pkg")
+
+                shutil.rmtree(index_dir)
+                shutil.move(index_dir_tmp, index_dir)
+
+                self.pkg("uninstall example_pkg")
+
+        def test_bug_2989_4(self):
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.another_pkg10)
+                
+                self.image_create(durl)
+                self.pkg("install another_pkg")
+                
+                index_dir = os.path.join(self.img_path, "var","pkg","index")
+
+                index_dir_tmp = index_dir + "TMP"
+                
+                shutil.copytree(index_dir, index_dir_tmp)
+
+                self.pkgsend_bulk(durl, self.example_pkg10)
+                self.pkg("refresh")
+                self.pkg("install example_pkg")
+
+                shutil.rmtree(index_dir)
+                shutil.move(index_dir_tmp, index_dir)
+                
+                self.pkgsend_bulk(durl, self.example_pkg11)
+                self.pkg("refresh")
+
+                self.pkg("image-update")
+
+                
+                
 if __name__ == "__main__":
         unittest.main()

@@ -29,6 +29,7 @@ import pkg.client.pkgplan as pkgplan
 import pkg.client.retrieve as retrieve # XXX inventory??
 import pkg.version as version
 import pkg.indexer as indexer
+import pkg.search_errors as se
 from pkg.client.filter import compile_filter
 from pkg.misc import msg
 from pkg.misc import CLIENT_DEFAULT_MEM_USE_KB
@@ -505,11 +506,26 @@ class ImagePlan(object):
                 # If it's totally absent, it will index the existing packages
                 # so that the incremental update that follows at the end of
                 # the function will work correctly.
-                self.image.update_index_dir()
-                ind = indexer.Indexer(self.image.index_dir,
-                    CLIENT_DEFAULT_MEM_USE_KB, progtrack=self.progtrack)
-                ind.check_index(self.image.get_fmri_manifest_pairs(),
-                    force_rebuild=False)
+                try:
+                        self.image.update_index_dir()
+                        ind = indexer.Indexer(self.image.index_dir,
+                            CLIENT_DEFAULT_MEM_USE_KB, progtrack=self.progtrack)
+                        ind.check_index(self.image.get_fmri_manifest_pairs(),
+                            force_rebuild=False)
+                except (KeyboardInterrupt,
+                    se.ProblematicPermissionsIndexException):
+                        # ProblematicPermissionsIndexException is included here
+                        # as there's little chance that trying again will fix
+                        # this problem.
+                        raise
+                except Exception, e:
+                        # XXX Once we have a framework for emitting a message
+                        # to the user in this spot in the code, we should tell
+                        # them something has gone wrong so that we continue to
+                        # get feedback to allow us to debug the code.
+                        self._index_exception = e
+                        del(ind)
+                        self.image.rebuild_search_index(self.progtrack)
 
                 npkgs = 0
                 nfiles = 0
@@ -655,10 +671,21 @@ class ImagePlan(object):
                                           o_manifest_path))
                 del self.pkg_plans
                 self.progtrack.actions_set_goal("Index Phase", len(plan_info))
-
-                self.image.update_index_dir()
-                ind = indexer.Indexer(self.image.index_dir,
-                    CLIENT_DEFAULT_MEM_USE_KB, progtrack=self.progtrack)
-                ind.client_update_index((self.filters, plan_info))
-
-
+                try:
+                        self.image.update_index_dir()
+                        ind = indexer.Indexer(self.image.index_dir,
+                            CLIENT_DEFAULT_MEM_USE_KB, progtrack=self.progtrack)
+                        ind.client_update_index((self.filters, plan_info))
+                except (KeyboardInterrupt,
+                    se.ProblematicPermissionsIndexException):
+                        # ProblematicPermissionsIndexException is included here
+                        # as there's little chance that trying again will fix
+                        # this problem.
+                        raise
+                except Exception, e:
+                        del(ind)
+                        # XXX Once we have a framework for emitting a message
+                        # to the user in this spot in the code, we should tell
+                        # them something has gone wrong so that we continue to
+                        # get feedback to allow us to debug the code.
+                        self.image.rebuild_search_index(self.progtrack)
