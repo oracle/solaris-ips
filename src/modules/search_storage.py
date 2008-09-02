@@ -516,6 +516,9 @@ class IndexStoreDictMutable(IndexStoreBase):
         def get_id(self, entity):
                 return self._dict[entity]
 
+        def get_keys(self):
+                return self._dict.keys()
+
         def read_dict_file(self):
                 """Reads in a dictionary stored in with an entity
                 and its number on each line.

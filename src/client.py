@@ -104,7 +104,7 @@ Basic subcommands:
 
 Advanced subcommands:
         pkg info [-lr] [--license] [pkg_fmri_pattern ...]
-        pkg search [-lr] [-s server] token
+        pkg search [-lrI] [-s server] token
         pkg verify [-fHqv] [pkg_fmri_pattern ...]
         pkg contents [-Hmr] [-o attribute ...] [-s sort_key] [-t action_type ... ]
             pkg_fmri_pattern [...]
@@ -449,7 +449,7 @@ def image_update(img, args):
         # Verify validity of certificates before attempting network operations
         if not img.check_cert_validity():
                 return 1
-
+        
         opts, pargs = getopt.getopt(args, "b:fnvq")
 
         force = quiet = noexecute = verbose = False
@@ -821,9 +821,9 @@ def search(img, args):
         if not img.check_cert_validity():
                 return 1
 
-        opts, pargs = getopt.getopt(args, "lrs:")
+        opts, pargs = getopt.getopt(args, "lrs:I")
 
-        local = remote = False
+        local = remote = case_sensitive = False
         servers = []
         for opt, arg in opts:
                 if opt == "-l":
@@ -836,21 +836,27 @@ def search(img, args):
                                 arg = "http://" + arg
                         remote = True
                         servers.append({"origin": arg})
+                elif opt == "-I":
+                        case_sensitive = True
 
         if not local and not remote:
                 local = True
 
+        if remote and case_sensitive:
+                emsg("Case sensitive remote search not currently supported.")
+                usage()
+                
         if not pargs:
                 usage()
 
         searches = []
         if local:
                 try:
-                        searches.append(img.local_search(pargs))
+                        searches.append(img.local_search(pargs, case_sensitive))
                 except search_errors.NoIndexException, nie:
                         error(str(nie) +
-                            "\nPlease try 'pkg rebuild-index' to recreate the " +
-                            "index.")
+                            "\nPlease try 'pkg rebuild-index' to recreate " +
+                            "the index.")
                         return 1
                 except search_errors.InconsistentIndexException, iie:
                         error("The search index appears corrupted.  Please "

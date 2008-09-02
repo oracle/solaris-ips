@@ -49,6 +49,8 @@ class TestPkgSearch(testutils.SingleDepotTestCase):
             add set name=com.sun.service.bug_ids value="4641790 4725245 4817791 4851433 4897491 4913776 6178339 6556919 6627937"
             add set name=com.sun.service.keywords value="sort null -n -m -t sort 0x86 separator"
             add set name=com.sun.service.info_url value=http://service.opensolaris.com/xml/pkg/SUNWcsu@0.5.11,5.11-1:20080514I120000Z
+            add set description='FOOO bAr O OO OOO'
+            add set name='weirdness' value='] [ * ?'
             close """
 
         example_pkg11 = """
@@ -118,6 +120,36 @@ class TestPkgSearch(testutils.SingleDepotTestCase):
             "path       dir       bin/example_dir           pkg:/example_pkg@1.0-0\n"
         ])
 
+        res_remote_foo = set([
+            headers,
+            "description set       FOOO                      pkg:/example_pkg@1.0-0\n"
+        ])
+
+        res_remote_bar = set([
+            headers,
+            "description set       bAr                       pkg:/example_pkg@1.0-0\n"
+        ])
+
+        res_remote_star = set([
+            headers,
+            "weirdness  set       *                         pkg:/example_pkg@1.0-0\n"
+        ])
+
+        res_remote_mark = set([
+            headers,
+            "weirdness  set       ?                         pkg:/example_pkg@1.0-0\n"
+        ])
+
+        res_remote_left_brace = set([
+            headers,
+            "weirdness  set       [                         pkg:/example_pkg@1.0-0\n"
+        ])
+
+        res_remote_right_brace = set([
+            headers,
+            "weirdness  set       ]                         pkg:/example_pkg@1.0-0\n"
+        ])
+        
         local_fmri_string = \
             "fmri       set       fmri                      pkg:/example_pkg@1.0-0\n"
 
@@ -145,6 +177,9 @@ class TestPkgSearch(testutils.SingleDepotTestCase):
         res_local_glob = copy.copy(res_remote_glob)
         res_local_glob.add(local_fmri_string)
 
+        res_local_foo = copy.copy(res_remote_foo)
+        res_local_bar = copy.copy(res_remote_bar)
+        
         res_local_path_example11 = set([
             headers,
             "basename   file      bin/example_path11        pkg:/example_pkg@1.1-0\n"
@@ -241,16 +276,18 @@ close
                         print "Correct Answer : " + str(correct_answer)
                         if isinstance(correct_answer, set) and \
                             isinstance(proposed_answer, set):
-                                print "Missing: " + str(correct_answer - 
-                                    proposed_answer)
-                                print "Extra  : " + str(proposed_answer -
-                                    correct_answer)
+                                print >> sys.stderr, "Missing: " + \
+                                    str(correct_answer - proposed_answer)
+                                print >> sys.stderr, "Extra  : " + \
+                                    str(proposed_answer - correct_answer)
                         self.assert_(correct_answer == proposed_answer)
 
-        def _search_op(self, remote, token, test_value):
+        def _search_op(self, remote, token, test_value, case_sensitive=False):
                 outfile = os.path.join(self.testdata_dir, "res")
                 if remote:
                         token = "-r " + token
+                if case_sensitive:
+                        token = "-I " + token
                 self.pkg("search " + token + " > " + outfile)
                 res_list = (open(outfile, "rb")).readlines()
                 self._check(set(res_list), test_value)
@@ -267,9 +304,13 @@ close
                 self._search_op(True, "/bin", self.res_remote_bin)
                 self._search_op(True, "4851433", self.res_remote_bug_id)
                 self._search_op(True, "6556919", self.res_remote_inc_changes)
+                self._search_op(True, "6556?19", self.res_remote_inc_changes)
                 self._search_op(True, "42", self.res_remote_random_test) 
                 self._search_op(True, "separator", self.res_remote_keywords)               
                 self._search_op(True, "*example*", self.res_remote_glob)
+                self._search_op(True, "fooo", self.res_remote_foo)
+                self._search_op(True, "fo*", self.res_remote_foo)
+                self._search_op(True, "bar", self.res_remote_bar)
 
                 # These tests are included because a specific bug
                 # was found during development. This prevents regression back
@@ -299,9 +340,13 @@ close
                 self._search_op(False, "/bin", self.res_local_bin)
                 self._search_op(False, "4851433", self.res_local_bug_id)
                 self._search_op(False, "6556919", self.res_local_inc_changes)
+                self._search_op(False, "65569??", self.res_local_inc_changes)
                 self._search_op(False, "42", self.res_local_random_test)
                 self._search_op(False, "separator", self.res_local_keywords)
-                self._search_op(False, "*example*", self.res_local_glob)                
+                self._search_op(False, "*example*", self.res_local_glob)
+                self._search_op(False, "fooo", self.res_local_foo)
+                self._search_op(False, "fo*", self.res_local_foo)
+                self._search_op(False, "bar", self.res_local_bar)
 
                 # These tests are included because a specific bug
                 # was found during development. These tests prevent regression
@@ -548,7 +593,45 @@ close
 
                 self.pkg("image-update")
 
+        def test_local_case_sensitive(self):
+                """Test local case sensitive search"""
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.example_pkg10)
+
+                self.image_create(durl)
+                self.pkg("install example_pkg")
+                self.pkg("search -I fooo", exit=1)
+                self.pkg("search -I fo*", exit=1)
+                self.pkg("search -I bar", exit=1)
+                self._search_op(True, "FOOO", self.res_remote_foo)
+                self._search_op(True, "bAr", self.res_remote_bar)
+
+        def test_weird_patterns(self):
+                """Test strange patterns to ensure they're handled correctly"""
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.example_pkg10)
+
+                self.image_create(durl)
+                self._search_op(True, "[*]", self.res_remote_star)
+                self._search_op(True, "[?]", self.res_remote_mark)
+                self._search_op(True, "[[]", self.res_remote_left_brace)
+                self._search_op(True, "[]]", self.res_remote_right_brace)
+                self._search_op(True, "FO[O]O", self.res_remote_foo)
+                self._search_op(True, "FO[?O]O", self.res_remote_foo)
+                self._search_op(True, "FO[*O]O", self.res_remote_foo)
+                self._search_op(True, "FO[]O]O", self.res_remote_foo)
+
+        def test_bug_2958(self):
+                """http://defect.opensolaris.org/bz/show_bug.cgi?id=2958"""
                 
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.example_pkg10)
+
+                self.image_create(durl)                
+                self.pkg("search -r \"O[[O]\"")
+                # If the bug in /bin/sh wasn't there, this should succeed.
+                self.pkg("search -r O[[O]", exit=1)
+
                 
 if __name__ == "__main__":
         unittest.main()

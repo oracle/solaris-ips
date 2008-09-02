@@ -164,7 +164,8 @@ class ServerCatalog(catalog.Catalog):
                         ind.setup()
 
         def _check_search(self):
-                ind = indexer.Indexer(self.index_root, SERVER_DEFAULT_MEM_USE_KB)
+                ind = indexer.Indexer(self.index_root,
+                    SERVER_DEFAULT_MEM_USE_KB)
                 if ind.check_index_existence():
                         self._search_available = True
                         cherrypy.log("Search Available", "INDEX")
@@ -257,5 +258,5 @@ class ServerCatalog(catalog.Catalog):
                 if not self.query_engine:
                         self.query_engine = \
                             query_e.ServerQueryEngine(self.index_root)
-                query = query_e.Query(token)
+                query = query_e.Query(token, case_sensitive=False)
                 return self.query_engine.search(query)

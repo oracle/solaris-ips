@@ -15,7 +15,7 @@ SYNOPSIS
      /usr/bin/pkg contents [-Hmr] [-o attribute ...] [-s sort_key]
          [-t action_type ... ] [pkg_fmri_pattern ...]
      /usr/bin/pkg list [-aHsuv] [pkg_fmri_pattern ...]
-     /usr/bin/pkg search [-lr] [-s server] token
+     /usr/bin/pkg search [-lrI] [-s server] token
 
      /usr/bin/pkg refresh [--full] [authority ...]
 
@@ -178,7 +178,7 @@ SUBCOMMANDS
                                 the package containing the action, such
                                 as "opensolaris.org"
 
-     search [-lr] [-s server_url] token
+     search [-lrI] [-s server] token
           Search for the token "token", and display the FMRIs in which the token
           was found.  Which tokens are indexed are action-dependent, but may
           include content hashes and pathnames.
@@ -191,6 +191,9 @@ SUBCOMMANDS
           With -s, search the identified server, which is expected to be
           a pkg(5) repository, at the given URL.  This may be specified
           multiple times.
+
+	  With -I, use a case sensitive search. Note: -I cannot currently
+	  be used with -r or -s.
 
           Both -l and -r (or -s) may be specified together, in which case both
           local and remote searches will be performed.

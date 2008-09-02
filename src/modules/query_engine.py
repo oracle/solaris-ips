@@ -23,18 +23,21 @@
 # Use is subject to license terms.
 
 import fnmatch
+import re
 
 import pkg.search_storage as ss
 import pkg.search_errors as search_errors
+from pkg.choose import choose
 
 FILE_OPEN_TIMEOUT_SECS = 1
 
 class Query(object):
         """The class which handles all query parsing and representation. """
 
-        def __init__(self, term):
+        def __init__(self, term, case_sensitive):
                 term = term.strip()
                 self._glob = False
+                self._case_sensitive = case_sensitive
                 if '*' in term or '?' in term or '[' in term:
                         self._glob = True
                 self._term = term
@@ -44,6 +47,9 @@ class Query(object):
 
         def uses_glob(self):
                 return self._glob
+
+        def is_case_sensitive(self):
+                return self._case_sensitive
 
 class QueryEngine(object):
         """This class contains the data structures and methods needed to
@@ -82,7 +88,8 @@ class QueryEngine(object):
                 self._data_version = self._data_dict['version']
                 self._data_keyval = self._data_dict['keyval']
                 self._data_main_dict = self._data_dict['main_dict']
-                self._data_token_offset = self._data_dict['token_byte_offset']
+                self._data_token_offset = \
+                    self._data_dict['token_byte_offset']
 
         def _open_dicts(self, raise_on_no_index=True):
                 ret = ss.consistent_open(self._data_dict.values(),
@@ -94,7 +101,7 @@ class QueryEngine(object):
         def _close_dicts(self):
                 for d in self._data_dict.values():
                         d.close_file_handle()
-                
+
         def search_internal(self, query):
                 """Searches the indexes in dir_path for any matches of query
                 and the results in self.res. The method assumes the dictionaries
@@ -117,15 +124,19 @@ class QueryEngine(object):
                 
                 glob = query.uses_glob()
                 term = query.get_term()
+                case_sensitive = query.is_case_sensitive()
 
+                if not case_sensitive:
+                        glob = True
+                        
                 offsets = []
 
                 if glob:
-                        keys = self._data_token_offset.get_dict().keys()
+                        keys = self._data_token_offset.get_keys()
                         if not keys:
                                 # No matches were found.
                                 return matched_ids, res
-                        matches = fnmatch.filter(keys, term)
+                        matches = choose(keys, term, case_sensitive)
                         offsets = [
                             self._data_token_offset.get_id(match)
                             for match in matches
@@ -144,8 +155,11 @@ class QueryEngine(object):
                         line = md_fh.readline()
                         assert not line == '\n'
                         tok, entries = self._data_main_dict.parse_main_dict_line(line)
-                        assert ((term == tok) or
-                            (glob and fnmatch.fnmatch(tok, term)))
+                        assert ((term == tok) or 
+                            (not case_sensitive and term == tok.lower()) or
+                            (glob and fnmatch.fnmatch(tok, term)) or
+                            (not case_sensitive and
+                            fnmatch.fnmatch(tok.lower(), term)))
                         for tok_type_id, action_id, keyval_id, \
                             fmri_ids in entries:
                                 matched_ids['tok_type'].add(tok_type_id)

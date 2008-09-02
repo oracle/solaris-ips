@@ -1667,15 +1667,15 @@ class Image(object):
                 return res
 
                 
-        def local_search(self, args):
+        def local_search(self, args, case_sensitive):
                 """Search the image for the token in args[0]."""
                 assert args[0]
                 self.update_index_dir()
                 qe = query_e.ClientQueryEngine(self.index_dir)
-                query = query_e.Query(args[0])
+                query = query_e.Query(args[0], case_sensitive)
                 try:
                         res = qe.search(query)
-                except search_errors.NoIndexException, nie:
+                except search_errors.NoIndexException:
                         res = self.degraded_local_search(args)
                 return res
 
@@ -1705,8 +1705,8 @@ class Image(object):
                                 continue
 
                         try:
-                                for l in res.read().splitlines():
-                                        fields = l.split()
+                                for line in res.read().splitlines():
+                                        fields = line.split()
                                         if len(fields) < 4:
                                                 yield fields[:2] + [ "", "" ]
                                         else:
