@@ -316,9 +316,10 @@ def install_sw(swname, swver, swarc, swdir, swurl, swidir):
         if not os.path.exists(swinst_dir):
                 print "installing %s" % swname
                 subprocess.Popen(['python', 'setup.py', 'install',
-                        '--install-lib=%s' % os.path.join(root_dir, py_install_dir),
-                        '--install-data=%s' % os.path.join(root_dir, py_install_dir)],
-                        cwd = swdir).wait()
+                    '--root=%s' % root_dir,
+                    '--install-lib=%s' % py_install_dir,
+                    '--install-data=%s' % py_install_dir],
+                    cwd = swdir).wait()
 
         
 def remove_sw(swname):
