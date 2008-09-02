@@ -17,7 +17,7 @@ SYNOPSIS
      /usr/bin/pkg list [-aHsuv] [pkg_fmri_pattern ...]
      /usr/bin/pkg search [-lr] [-s server] token
 
-     /usr/bin/pkg refresh [--full]
+     /usr/bin/pkg refresh [--full] [authority ...]
 
      /usr/bin/pkg image-create [-FPUz] [--full|--partial|--user] [--zone]
          [-k ssl_key] [-c ssl_cert] -a authority=origin_url dir
@@ -93,9 +93,11 @@ SUBCOMMANDS
           option, issue verbose progress messages during the requested
           operation.  With the -q option, be completely silent.
 
-     refresh [--full]
-          Retrieve updates to the catalogs for each authority registered
-          within the image.  With --full, retrieve the full catalogs.
+     refresh [--full] [authority ...]
+          Retrieve updates to the catalogs for each authority specified.
+          When given no arguments, retrieves updates for each authority
+          registered within the image. With --full, retrieve the full
+          catalogs.
 
      install [-nvq] pkg_fmri ...
      uninstall [-nrvq] pkg_fmri ...

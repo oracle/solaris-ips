@@ -1056,16 +1056,22 @@ class Image(object):
                                 dependents.extend(self.__req_dependents[f])
                 return dependents
 
-        def retrieve_catalogs(self, full_refresh = False):
+        def retrieve_catalogs(self, full_refresh = False,
+            auths = None):
                 failed = []
                 total = 0
                 succeeded = 0
                 cat = None
                 ts = 0
 
-                for auth in self.gen_authorities():
+                if not auths:
+                        auths = self.gen_authorities()
+
+                for auth in auths:
                         total += 1
 
+                        full_refresh_this_auth = False
+                        
                         if auth["prefix"] in self.catalogs:
                                 cat = self.catalogs[auth["prefix"]]
                                 ts = cat.last_modified()
@@ -1075,9 +1081,10 @@ class Image(object):
                                 # origin URL for the authority.  If this has
                                 # occurred, we need to perform a full refresh.
                                 if cat.origin() != auth["origin"]:
-                                        full_refresh = True
+                                        full_refresh_this_auth = True
 
-                        if ts and not full_refresh:
+                        if ts and not full_refresh and \
+                            not full_refresh_this_auth:
                                 hdr = {'If-Modified-Since': ts}
                         else:
                                 hdr = {}

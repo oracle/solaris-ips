@@ -1372,14 +1372,25 @@ def catalog_refresh(img, args):
 
         # XXX will need to show available content series for each package
         full_refresh = False
-        opts, pargs = getopt.getopt(args, "", ["full"])
+        opts, pargs = getopt.getopt(args, ["full"])
         for opt, arg in opts:
                 if opt == "--full":
                         full_refresh = True
 
-        if pargs:
-                usage(_("refresh: command does not take operands ('%s')") %
-                      " ".join(pargs))
+        auths_to_refresh = []
+        for parg in pargs:
+                try:
+                        auth = img.get_authority(parg)
+                except KeyError:
+                        tmp = "%s is not a recognized authority to " \
+                            "refresh. \n'pkg authority' will show a" \
+                            " list of authorities."
+                        tmp = (_(tmp))
+                        tmp = tmp % parg
+                        error(tmp)
+                        return 1
+                auths_to_refresh.append(auth)
+
         
         # Ensure Image directory structure is valid.
         if not os.path.isdir("%s/catalog" % img.imgdir):
@@ -1389,7 +1400,7 @@ def catalog_refresh(img, args):
         img.load_catalogs(get_tracker())
 
         try:
-                img.retrieve_catalogs(full_refresh)
+                img.retrieve_catalogs(full_refresh, auths_to_refresh)
         except RuntimeError, failures:
                 if display_catalog_failures(failures) == 0:
                         return 1

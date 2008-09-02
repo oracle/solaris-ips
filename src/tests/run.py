@@ -117,6 +117,7 @@ def make_cli_tests(testpat):
         import cli.t_commandline
         import cli.t_upgrade
         import cli.t_recv
+        import cli.t_refresh
         import cli.t_rename
         import cli.t_twodepot
         import cli.t_setUp
@@ -136,6 +137,7 @@ def make_cli_tests(testpat):
             cli.t_upgrade.TestUpgrade,
             cli.t_circular_dependencies.TestCircularDependencies,
             cli.t_recv.TestPkgRecv,
+            cli.t_refresh.TestPkgRefresh,
             cli.t_rename.TestRename,
             cli.t_twodepot.TestTwoDepots,
             cli.t_search.TestPkgSearch,
