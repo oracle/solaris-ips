@@ -63,13 +63,20 @@ class BootEnv(object):
                 self.is_live_BE = False
                 self.snapshot_name = None
                 self.root = root
+                rc = 0
 
                 assert root != None
 
-                self.beList = be.beList()
+                # Check for the old beList() API since pkg(1) can be
+                # back published and live on a system without the latest libbe.
+                beVals = be.beList()
+                if isinstance(beVals[0], int):
+                        rc, self.beList = beVals
+                else:
+                        self.beList = beVals
 
                 # Happens e.g. in zones (at least, for now)
-                if not self.beList:
+                if not self.beList or rc != 0:
                         raise RuntimeError, "nobootenvironments"
 
                 # Need to find the name of the BE we're operating on in order
