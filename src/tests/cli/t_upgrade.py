@@ -32,6 +32,8 @@ import unittest
 
                         
 class TestUpgrade(testutils.SingleDepotTestCase):
+        # Only start/stop the depot once (instead of for every test)
+        persistent_depot = True
 
         incorp10 = """
             open incorp@1.0,5.11-0

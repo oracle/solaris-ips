@@ -34,6 +34,8 @@ import shutil
 import difflib
 
 class TestContentsAndInfo(testutils.SingleDepotTestCase):
+        # Only start/stop the depot once (instead of for every test)
+        persistent_depot = True
 
         bronze10 = """
             open bronze@1.0,5.11-0

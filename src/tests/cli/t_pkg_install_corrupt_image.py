@@ -43,6 +43,10 @@ class TestImageCreateCorruptImage(testutils.SingleDepotTestCaseCorruptImage):
         situations are found where these behave differently than Full or User
         images.
         """
+
+        # Only start/stop the depot once (instead of for every test)
+        persistent_depot = True
+
         foo11 = """
             open foo@1.1,5.11-0
             add dir mode=0755 owner=root group=bin path=/lib

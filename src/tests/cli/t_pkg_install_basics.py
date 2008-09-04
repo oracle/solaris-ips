@@ -33,6 +33,8 @@ import unittest
 from stat import *
 
 class TestPkgInstallBasics(testutils.SingleDepotTestCase):
+        # Only start/stop the depot once (instead of for every test)
+        persistent_depot = True
 
         foo10 = """
             open foo@1.0,5.11-0
@@ -64,6 +66,25 @@ class TestPkgInstallBasics(testutils.SingleDepotTestCase):
             add file /tmp/cat mode=0555 owner=root group=bin path=/bin/cat
             close """
 
+        xfoo10 = """
+            open xfoo@1.0,5.11-0
+            close """
+
+        xbar10 = """
+            open xbar@1.0,5.11-0
+            add depend type=require fmri=pkg:/xfoo@1.0
+            add dir mode=0755 owner=root group=bin path=/bin
+            add file /tmp/cat mode=0555 owner=root group=bin path=/bin/cat
+            close """
+
+        xbar11 = """
+            open xbar@1.1,5.11-0
+            add depend type=require fmri=pkg:/xfoo@1.2
+            add dir mode=0755 owner=root group=bin path=/bin
+            add file /tmp/cat mode=0555 owner=root group=bin path=/bin/cat
+            close """
+
+
         bar12 = """
             open bar@1.2,5.11-0
             add depend type=require fmri=pkg:/foo@1.0
@@ -85,6 +106,20 @@ class TestPkgInstallBasics(testutils.SingleDepotTestCase):
             add file /tmp/cat mode=0555 owner=root group=bin path=/bin/cat
             close """
         
+        xdeep10 = """
+            open xdeep@1.0,5.11-0
+            add depend type=require fmri=pkg:/xbar@1.0
+            add dir mode=0755 owner=root group=bin path=/bin
+            add file /tmp/cat mode=0555 owner=root group=bin path=/bin/cat
+            close """
+
+        ydeep10 = """
+            open ydeep@1.0,5.11-0
+            add depend type=require fmri=pkg:/ybar@1.0
+            add dir mode=0755 owner=root group=bin path=/bin
+            add file /tmp/cat mode=0555 owner=root group=bin path=/bin/cat
+            close """
+
         misc_files = [ "/tmp/libc.so.1", "/tmp/cat" ]
 
         def setUp(self):
@@ -202,8 +237,6 @@ class TestPkgInstallBasics(testutils.SingleDepotTestCase):
                 self.pkg("list foo", exit = 1)
                 self.pkg("verify")
 
-
-
         def test_image_upgrade(self):
                 """ Send package bar@1.1, dependent on foo@1.2.  Install bar@1.0.
                     List all packages.  Upgrade image. """
@@ -273,10 +306,10 @@ class TestPkgInstallBasics(testutils.SingleDepotTestCase):
                 """ Add bar@1.1, install bar@1.0. """
 
                 durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.bar11)
+                self.pkgsend_bulk(durl, self.xbar11)
                 self.image_create(durl)
 
-                self.pkg("install bar@1.0", exit = 1)
+                self.pkg("install xbar@1.0", exit = 1)
 
         def test_bug_1338(self):
                 """ Add bar@1.1, dependent on foo@1.2, install bar@1.1. """
@@ -299,25 +332,25 @@ class TestPkgInstallBasics(testutils.SingleDepotTestCase):
                 self.pkg("install baz@1.0 bar@1.1", exit = 1)
 
         def test_bug_1338_3(self):
-                """ Add deep@1.0, bar@1.0. Deep@1.0 depends on bar@1.0 which
-                    depends on foo@1.0, install deep@1.0. """
+                """ Add xdeep@1.0, xbar@1.0. xDeep@1.0 depends on xbar@1.0 which
+                    depends on xfoo@1.0, install xdeep@1.0. """
                 
                 durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.bar10)
-                self.pkgsend_bulk(durl, self.deep10)
+                self.pkgsend_bulk(durl, self.xbar10)
+                self.pkgsend_bulk(durl, self.xdeep10)
                 self.image_create(durl)
 
-                self.pkg("install deep@1.0", exit = 1)
+                self.pkg("install xdeep@1.0", exit = 1)
 
         def test_bug_1338_4(self):
-                """ Add deep@1.0. Deep@1.0 depends on bar@1.0 which depends on
-                    foo@1.0, install deep@1.0. """
+                """ Add ydeep@1.0. yDeep@1.0 depends on ybar@1.0 which depends
+                on xfoo@1.0, install ydeep@1.0. """
                 
                 durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.deep10)
+                self.pkgsend_bulk(durl, self.ydeep10)
                 self.image_create(durl)
 
-                self.pkg("install deep@1.0", exit = 1)
+                self.pkg("install ydeep@1.0", exit = 1)
 
         def test_bug_2795(self):
                 """ Try to install two versions of the same package """

@@ -24,6 +24,7 @@
 # Use is subject to license terms.
 
 import baseline
+import copy
 import string
 import sys
 import time
@@ -33,14 +34,19 @@ OUTPUT_DOTS=0           # Dots ...
 OUTPUT_VERBOSE=1        # Verbose
 OUTPUT_PARSEABLE=2      # Machine readable
 
-class SuccessfulException(Exception):
-        """An exception for situations where raising an exception is the
-        correct behavior for a test in the test suite. This is useful for
-        testing the testsuite behavior itself, but should not be used in
-        testing other code."""
+class EarlyTearDownException(Exception):
+        """An exception for inidicating early teardown of the testcase is
+        desired.  This exception is only useful for testing depot startup and
+        whatnot from the test case setUp() functions, and shouldn't be used or
+        inherited from for other purposes.  
+        """
         pass
 
 class Pkg5TestCase(unittest.TestCase):
+
+        # Needed for compatability
+        failureException = AssertionError
+
         def __init__(self, methodName='runTest'):
                 super(Pkg5TestCase, self).__init__(methodName)
                 self.__testMethodName = methodName
@@ -49,45 +55,53 @@ class Pkg5TestCase(unittest.TestCase):
                 return "%s.py %s.%s" % (self.__class__.__module__,
                     self.__class__.__name__, self.__testMethodName)
 
+        def getTeardownFunc(self):
+                return (self, self.tearDown)
+
         def run(self, result=None):
-                # The only difference between this code and the original
-                # code in unittest.TestCase.run is that
-                # except SuccessfulException: has been added and counted as
-                # a successful test.
                 if result is None:
                         result = self.defaultTestResult()
                 result.startTest(self)
-                testMethod = getattr(self, self._TestCase__testMethodName)
+                testMethod = getattr(self, self.__testMethodName)
+                persistent_depot = getattr(self, "persistent_depot", False)
                 try:
-                        try:
-                                self.setUp()
-                        except KeyboardInterrupt:
-                                raise
-                        except SuccessfulException:
-                                result.addSuccess(self)
-                                return
-                        except:
-                                result.addError(self, self._TestCase__exc_info())
-                                return
+                        # Only call setUp for non-persistent depot tests,
+                        # for persistent tests this is called in the testsuite
+                        # run function below
+                        if not persistent_depot:
+                                try:
+                                        self.setUp()
+                                except KeyboardInterrupt:
+                                        raise
+                                except EarlyTearDownException:
+                                        self.tearDown()
+                                        result.addSuccess(self)
+                                        return
+                                except:
+                                        result.addError(self, sys.exc_info())
+                                        return
 
                         ok = False
                         try:
                                 testMethod()
                                 ok = True
                         except self.failureException:
-                                result.addFailure(self, self._TestCase__exc_info())
+                                result.addFailure(self, sys.exc_info())
                         except KeyboardInterrupt:
                                 raise
                         except:
-                                result.addError(self, self._TestCase__exc_info())
+                                result.addError(self, sys.exc_info())
 
-                        try:
-                                self.tearDown()
-                        except KeyboardInterrupt:
-                                raise
-                        except:
-                                result.addError(self, self._TestCase__exc_info())
-                                ok = False
+                        # Only call teardown on non-persistent depot tests
+                        if not persistent_depot:
+                                try:
+                                        self.tearDown()
+                                except KeyboardInterrupt:
+                                        raise
+                                except:
+                                        result.addError(self, sys.exc_info())
+                                        ok = False
+
                         if ok:
                                 result.addSuccess(self)
                 finally:
@@ -213,3 +227,49 @@ class Pkg5TestRunner(unittest.TextTestRunner):
                 else:
                         self.stream.writeln("OK")
                 return result
+
+class Pkg5TestSuite(unittest.TestSuite):
+        """Test suite that handles persistent depot tests.  Persistent depot
+        tests are ones that are able to only call their setUp/tearDown
+        functions once per class, instead of before and after every test case.
+        Aside from actually running the test it defers the majority of its
+        work to unittest.TestSuite.
+
+        To make a test class into a persistent depot one, add this class
+        variable declaration:
+                persistent_depot = True
+        """
+
+        def run(self, result):
+                inst = None
+                tdf = None
+                persistent_depot = getattr(self._tests[0],
+                    "persistent_depot", False)
+                if persistent_depot:
+                        inst, tdf = self._tests[0].getTeardownFunc()
+                        try:
+                                inst.setUp()
+                        except KeyboardInterrupt:
+                                raise
+                        except:
+                                result.addError(self, sys.exc_info())
+                for test in self._tests:
+                        if result.shouldStop:
+                                break
+                        # Populate test with the data from the instance
+                        # already constructed, but update the method name.
+                        # We need to do this so that we have all the state
+                        # that the object is populated with when setUp() is
+                        # called (depot controller list, etc).
+                        if persistent_depot:
+                                name = test._Pkg5TestCase__testMethodName
+                                test = copy.copy(inst)
+                                test._Pkg5TestCase__testMethodName = name
+                        test(result)
+                if persistent_depot:
+                        try:
+                                tdf()
+                        except KeyboardInterrupt:
+                                raise
+                        except:
+                                result.addError(self, sys.exc_info())

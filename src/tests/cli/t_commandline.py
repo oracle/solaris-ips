@@ -32,6 +32,8 @@ import os
 import tempfile
 
 class TestCommandLine(testutils.SingleDepotTestCase):
+        # Only start/stop the depot once (instead of for every test)
+        persistent_depot = True
 
         def test_pkg_bogus_opts(self):
                 """ pkg bogus option checks """

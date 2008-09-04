@@ -40,7 +40,7 @@ class TestSetUp(testutils.SingleDepotTestCase):
 
         def setUp(self):
                 testutils.SingleDepotTestCase.setUp(self)
-                raise pkg5unittest.SuccessfulException("Died in setup")
+                raise pkg5unittest.EarlyTearDownException("Died in setup")
 
         def test_first_depot_start(self):
                 """Attempt to start a depot, which dies because of an exception

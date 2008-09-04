@@ -225,6 +225,9 @@ class PkgSendOpenException(Exception):
 
 
 class CliTestCase(pkg5unittest.Pkg5TestCase):
+        __debug = False
+        __debug_buf = ""
+
         def setUp(self):
                 self.image_dir = None
                 self.pid = os.getpid()
@@ -236,9 +239,6 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
 
                 if "TEST_DEBUG" in os.environ:
                         self.__debug = True
-                else:
-                        self.__debug = False
-                self.__debug_buf = ""
 
         def tearDown(self):
                 self.image_destroy()
@@ -460,7 +460,6 @@ class ManyDepotTestCase(CliTestCase):
 
                 CliTestCase.setUp(self)
 
-                self.tearDown_run = False
                 self.debug("setup: %s" % self.id())
                 self.debug("starting %d depot(s)" % ndepots)
                 self.dcs = {}
@@ -508,7 +507,6 @@ class ManyDepotTestCase(CliTestCase):
                         dc.start()
 
         def tearDown(self):
-                self.tearDown_run = True
                 self.debug("teardown: %s" % self.id())
 
                 for i in sorted(self.dcs.keys()):
@@ -527,17 +525,6 @@ class ManyDepotTestCase(CliTestCase):
                 if result is None:
                         result = self.defaultTestResult()
                 CliTestCase.run(self, result)
-                # Try to tearDown in case depots are running. Ignore the
-                # errors from tearDown because its assumptions may not
-                # be met.
-                if not self.tearDown_run:
-                        try:
-                                self.tearDown()
-                        except KeyboardInterrupt:
-                                raise
-                        else:
-                                pass
-
                         
 class SingleDepotTestCase(ManyDepotTestCase):
 
@@ -579,9 +566,6 @@ class SingleDepotTestCaseCorruptImage(SingleDepotTestCase):
                 level. """
                 if self.backup_img_path:
                         self.img_path = self.backup_img_path
-                else:
-                        raise RuntimeError("Uncorrupting a image path that "
-                                           "was never corrupted.\n")
 
         def corrupt_image_create(self, repourl, config, subdirs, prefix = "test",
             destroy = True):

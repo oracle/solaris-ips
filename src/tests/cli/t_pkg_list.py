@@ -34,6 +34,8 @@ import shutil
 import difflib
 
 class TestPkgList(testutils.ManyDepotTestCase):
+        # Only start/stop the depot once (instead of for every test)
+        persistent_depot = True
 
         foo1 = """
             open foo@1,5.11-0
@@ -102,12 +104,6 @@ class TestPkgList(testutils.ManyDepotTestCase):
 
         def tearDown(self):
                 testutils.ManyDepotTestCase.tearDown(self)
-
-        def test_empty_image(self):
-                """ pkg list should fail in an empty image """
-
-                self.image_create(self.dcs[1].get_depot_url())
-                self.pkg("list", exit=1)
 
         def test_list_1(self):
                 """List all "foo@1.0" from auth "test1"."""
@@ -209,6 +205,13 @@ class TestPkgList(testutils.ManyDepotTestCase):
                 output = self.reduceSpaces(self.output)
                 expected = self.reduceSpaces(expected)
                 self.assertEqualDiff(expected, output)
+
+        # Put this one last since it screws the other tests up
+        def test_list_z_empty_image(self):
+                """ pkg list should fail in an empty image """
+
+                self.image_create(self.dcs[1].get_depot_url())
+                self.pkg("list", exit=1)
 
 if __name__ == "__main__":
         unittest.main()

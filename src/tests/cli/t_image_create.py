@@ -31,7 +31,8 @@ import unittest
 import os
 
 class TestImageCreate(testutils.SingleDepotTestCase):
-
+        # Only start/stop the depot once (instead of for every test)
+        persistent_depot = True
         def test_basic(self):
                 """ Create an image, verify it. """
 
@@ -55,6 +56,7 @@ class TestImageCreate(testutils.SingleDepotTestCase):
 
 
 class TestImageCreateNoDepot(testutils.CliTestCase):
+        persistent_depot = True
         def test_bad_image_create(self):
                 """ Create image from non-existent server """
 

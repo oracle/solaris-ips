@@ -32,6 +32,8 @@ import unittest
 import shutil
 
 class TestPkgActions(testutils.SingleDepotTestCase):
+        # Only start/stop the depot once (instead of for every test)
+        persistent_depot = True
 
         ftpusers_data = \
 """# ident      "@(#)ftpusers   1.6     06/11/21 SMI"

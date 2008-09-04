@@ -65,7 +65,8 @@ def add_tests(tests, testpat):
         pat = re.compile(".*%s.*" % testpat, re.IGNORECASE)
         for t in tests:
                 if re.match(pat, str(t)):
-                        suite.addTest(unittest.makeSuite(t, 'test'))
+                        suite.addTest(unittest.makeSuite(t, 'test',
+                            suiteClass=pkg5unittest.Pkg5TestSuite))
         return suite
 
 def make_api_tests(testpat):
@@ -205,8 +206,8 @@ if __name__ == "__main__":
         cli_suite = make_cli_tests(onlyval)
 
         try:
-                import t_elf
-                api_suite.addTest(unittest.makeSuite(t_elf.TestElf, 'test'))
+                import api.t_elf
+                api_suite.addTest(unittest.makeSuite(api.t_elf.TestElf, 'test'))
         except ImportError, e:
                 # some platforms do not have support for reading ELF files, so
                 # skip those tests if we cannot import the elf test.

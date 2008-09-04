@@ -32,6 +32,8 @@ import unittest
 
 
 class TestRename(testutils.SingleDepotTestCase):
+        # Only start/stop the depot once (instead of for every test)
+        persistent_depot = True
 
         def test_rename1(self):
 		""" Test some ways in which we expect rename to fail """

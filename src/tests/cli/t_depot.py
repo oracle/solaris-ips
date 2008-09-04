@@ -33,6 +33,8 @@ import os
 import pkg.depotcontroller as dc
 
 class TestDepot(testutils.SingleDepotTestCase):
+        # Only start/stop the depot once (instead of for every test)
+        persistent_depot = True
 
         quux10 = """
             open quux@1.0,5.11-0

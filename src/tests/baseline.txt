@@ -20,6 +20,9 @@ api.t_catalog.py TestUpdateLog.testnotuptodate|pass
 api.t_catalog.py TestUpdateLog.testoneupdate|pass
 api.t_catalog.py TestUpdateLog.testrolllogfiles|pass
 api.t_catalog.py TestUpdateLog.testsequentialupdate|pass
+api.t_elf.py TestElf.test_get_dynamic|pass
+api.t_elf.py TestElf.test_get_info|pass
+api.t_elf.py TestElf.test_is_elf_object|pass
 api.t_filter.py TestFilter.test_01_debug_i386|pass
 api.t_filter.py TestFilter.test_02_nondebug_i386|pass
 api.t_filter.py TestFilter.test_03_i386|pass
@@ -226,6 +229,7 @@ cli.t_pkg_list.py TestPkgList.test_list_5|pass
 cli.t_pkg_list.py TestPkgList.test_list_6|pass
 cli.t_pkg_list.py TestPkgList.test_list_7|pass
 cli.t_pkg_list.py TestPkgList.test_list_multi_name|pass
+cli.t_pkg_list.py TestPkgList.test_list_z_empty_image|pass
 cli.t_pkgsend.py TestPkgSend.test_bug_89|pass
 cli.t_pkgsend.py TestPkgSend.test_pkgsend_abandon|pass
 cli.t_recv.py TestPkgRecv.test_bad_opts|pass

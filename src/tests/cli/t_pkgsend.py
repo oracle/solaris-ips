@@ -31,7 +31,8 @@ import unittest
 import os
 
 class TestPkgSend(testutils.SingleDepotTestCase):
-
+        # Only start/stop the depot once (instead of for every test)
+        persistent_depot = True
 
         def test_pkgsend_abandon(self):
                 """ Send package shouldnotexist@1.0, then abandon the

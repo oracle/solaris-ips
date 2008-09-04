@@ -36,6 +36,8 @@ import tempfile
 import unittest
 
 class TestPkgRecv(testutils.ManyDepotTestCase):
+        # Only start/stop the depot once (instead of for every test)
+        persistent_depot = True
 
         bronze10 = """
             open bronze@1.0,5.11-0
