@@ -44,10 +44,11 @@ end package
 package SUNWnetbeans-javaee
 version 6.1
 import SUNWnetbeans-javaee
-depend SUNWj6rt
 depend SUNWj6dev
+depend SUNWj6rt
 depend SUNWlibnb-apisupport1
 depend SUNWlibnb-enterprise4
+depend SUNWlibnb-gsf1
 depend SUNWlibnb-ide8
 depend SUNWlibnb-java1
 depend SUNWlibnb-platform7
@@ -78,8 +79,9 @@ end package
 package SUNWnetbeans-ruby
 version 6.1
 import SUNWnetbeans-ruby
-depend SUNWj6rt
 depend SUNWj6dev
+depend SUNWj6rt
+depend SUNWlibnb-gsf1
 depend SUNWlibnb-ide8
 depend SUNWlibnb-platform7
 depend SUNWlibnb-ruby1

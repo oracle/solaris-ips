@@ -1,0 +1,6 @@
+package SUNWmms
+import SUNWmmsr
+import SUNWmmsu
+add driver name=dmd
+add driver name=dda
+end package

@@ -1,0 +1,5 @@
+package SUNWsudo
+import SUNWsudor
+import SUNWsudou
+version 1.6.9.17
+end package

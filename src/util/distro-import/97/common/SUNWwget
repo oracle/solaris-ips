@@ -1,0 +1,5 @@
+package SUNWwget
+import SUNWwgetu
+import SUNWwgetr
+version 1.10.2
+end package
