@@ -36,6 +36,7 @@
 #---------
 # Imports
 #---------
+import subprocess
 import sys
 import os
 import stat
@@ -735,11 +736,52 @@ class CpioFile(object):
                 t._extfileobj = False
                 return t
 
+        @classmethod
+        def p7zopen(cls, name, mode="r", fileobj=None):
+                """Open 7z compressed cpio archive name for reading, writing.
+                
+                Appending is not allowed
+                """
+                if len(mode) > 1 or mode not in "rw":
+                        raise ValueError, "mode must be 'r' or 'w'."
+
+                pre, ext = os.path.splitext(name)
+                pre = os.path.basename(pre)
+                if ext == ".7z":
+                        ext = ""
+                cpioname = pre + ext
+
+                try:
+                        # To extract: 7z e -so <fname>
+                        # To create an archive: 7z a -si <fname>
+                        cmd = "7z %s -%s %s" % (
+                            {'r':'e',  'w':'a'}[mode],
+                            {'r':'so', 'w':'si'}[mode],
+                            name)
+                        p = subprocess.Popen(cmd.split(),
+                            stdin=subprocess.PIPE,
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE)
+                        pobj = p.stdout
+                        if mode == "w":
+                                pobj = p.stdin
+
+                        comptype = "cpio"
+                        bufsize = 20*512
+
+                        obj = _Stream(cpioname, mode, comptype, pobj, bufsize)
+                        t = cls.cpioopen(cpioname, mode, obj)
+                except IOError:
+                        raise ReadError, "read/write via 7z failed"
+                t._extfileobj = False
+                return t
+
         # All *open() methods are registered here.
         OPEN_METH = {
                 "cpio": "cpioopen",     # uncompressed
                 "gz":   "gzopen",       # gzip compressed
-                "bz2":  "bz2open"       # bzip2 compressed
+                "bz2":  "bz2open",      # bzip2 compressed
+                "p7z":  "p7zopen"       # 7z compressed
         }
 
         def getmember(self, name):

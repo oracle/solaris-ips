@@ -54,8 +54,13 @@ class SolarisPackageDirBundle(object):
                 faspac_contents = set()
 
                 for klass in faspac:
-                        cf = CpioFile.open(os.path.join(
-                            self.filename, "archive", klass + ".bz2"))
+                        fpath = os.path.join(self.filename, "archive", klass)
+                        # We accept either bz2 or 7zip'd files
+                        for x in [".bz2", ".7z"]:
+                                if os.path.exists(fpath + x):
+                                        cf = CpioFile.open(fpath + x)
+                                        break
+                        
                         for ci in cf:
                                 faspac_contents.add(j(ci.name))
                                 yield self.action(pkgmap[j(ci.name)],
