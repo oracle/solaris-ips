@@ -159,6 +159,7 @@ class DirectoryAction(generic.Action):
 
         def generate_indices(self):
                 return {
-                    "basename": os.path.basename(self.attrs["path"]),
+                    "basename": os.path.basename(
+                        self.attrs["path"].rstrip(os.path.sep)),
                     "path": os.path.sep + self.attrs["path"]
                 }

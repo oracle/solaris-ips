@@ -258,6 +258,11 @@ class Manifest(object):
                 action_dict = {}
                 for a in self.actions:
                         for k, v in a.generate_indices().iteritems():
+                                # v is the token to be searched on. If the
+                                # token is empty, it cannot be retrieved and
+                                # it should not be placed in the dictionary.
+                                if v == "":
+                                        continue
                                 # Special handling of AttributeActions is
                                 # needed inorder to place the correct values
                                 # into the correct output columns. This is

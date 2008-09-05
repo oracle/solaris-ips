@@ -70,6 +70,12 @@ class TestPkgSearch(testutils.SingleDepotTestCase):
             add set name=com.sun.service.keywords value="sort null -n -m -t sort 0x86 separator"
             add set name=com.sun.service.info_url value=http://service.opensolaris.com/xml/pkg/SUNWcsu@0.5.11,5.11-1:20080514I120000Z
             close """
+
+        bad_pkg10 = """
+            open bad_pkg@1.0,5.11-0
+            add dir path=foo/ mode=0755 owner=root group=bin
+            add dir path=/ mode=0755 owner=root group=bin
+            close """
         
         headers = "INDEX      ACTION    VALUE                     PACKAGE\n"
 
@@ -631,7 +637,14 @@ close
                 self.pkg("search -r \"O[[O]\"")
                 # If the bug in /bin/sh wasn't there, this should succeed.
                 self.pkg("search -r O[[O]", exit=1)
-
                 
+        def test_bug_3046(self):
+                """Checks if directories ending in / break the indexer."""
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.bad_pkg10)
+                self.image_create(durl)
+                self.pkg("search -r foo")
+                self.pkg("search -r /")
+
 if __name__ == "__main__":
         unittest.main()
