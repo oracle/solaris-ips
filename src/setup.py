@@ -258,11 +258,24 @@ class lint_func(Command):
 class install_func(_install):
         def initialize_options(self):
                 _install.initialize_options(self)
+
+                # PRIVATE_BUILD set in the environment tells us to put the build
+                # directory into the .pyc files, rather than the final
+                # installation directory.
+                private_build = os.getenv("PRIVATE_BUILD", None)
+
                 # It's OK to have /'s here, python figures it out when writing files
-                self.install_purelib = py_install_dir
-                self.install_platlib = py_install_dir
-                self.root = root_dir
-                self.prefix = '.'
+                if private_build is None:
+                        self.install_lib = py_install_dir
+                        self.install_data = py_install_dir
+                        self.root = root_dir
+                else:
+                        self.install_lib = os.path.join(root_dir, py_install_dir)
+                        self.install_data = os.path.join(root_dir, py_install_dir)
+
+                # This is used when installing scripts, below, but it isn't a
+                # standard distutils variable.
+                self.root_dir = root_dir
 
         def run(self):
                 """
@@ -278,8 +291,8 @@ class install_func(_install):
 
                 for d, files in scripts[osname].iteritems():
                         for (srcname, dstname) in files:
-                                dst_dir = util.change_root(self.root, d)
-                                dst_path = util.change_root(self.root,
+                                dst_dir = util.change_root(self.root_dir, d)
+                                dst_path = util.change_root(self.root_dir,
                                        os.path.join(d, dstname))
                                 dir_util.mkpath(dst_dir, verbose = True)
                                 file_util.copy_file(srcname, dst_path, update = True)
