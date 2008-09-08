@@ -181,7 +181,7 @@ def index(scfg, rcfg, request, response):
                 for op in fmri_ops:
                         output += """\
         <td><a href="%s">%s</a></td>
-""" % (get_rel_path(request, "%s/0/%s" % (op, pfmri.lstrip('pkg:/'))),
+""" % (get_rel_path(request, "%s/0/%s" % (op, pfmri[len("pkg:/"):])),
     fmri_ops[op])
 
                 # End FMRI entry
