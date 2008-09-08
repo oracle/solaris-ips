@@ -28,6 +28,7 @@ import gettext # XXX Temporary workaround
 import itertools
 import os
 import sys
+import time
 from threading import Thread
 from urllib2 import URLError
 try:
@@ -65,6 +66,8 @@ class InstallUpdate(progress.ProgressTracker):
                 self.image_update = image_update
                 self.ips_update = ips_update
                 self.ip = None
+                self.progress_stop_timer_thread = False
+                self.progress_stop_timer_running = False                
                 w_tree_createplan = gtk.glade.XML(parent.gladefile, "createplandialog")
                 w_tree_installupdate = gtk.glade.XML(parent.gladefile, "installupdate")
                 w_tree_downloadingfiles = \
@@ -78,6 +81,10 @@ class InstallUpdate(progress.ProgressTracker):
                     w_tree_createplan.get_widget("createplanprogress") 
                 self.w_createplan_textview = \
                     w_tree_createplan.get_widget("createplantextview")
+                self.w_createplan_label = \
+                    w_tree_createplan.get_widget("packagedependencies")
+                self.w_createplancancel_button = \
+                    w_tree_createplan.get_widget("cancelcreateplan")
                 self.w_installupdate_dialog = w_tree_installupdate.get_widget("installupdate")
                 self.w_summary_label = w_tree_installupdate.get_widget("packagenamelabel3")
                 self.w_review_treeview = w_tree_installupdate.get_widget("treeview1")
@@ -89,6 +96,10 @@ class InstallUpdate(progress.ProgressTracker):
                     w_tree_downloadingfiles.get_widget("downloadprogress")
                 self.w_installing_dialog = \
                     w_tree_installingdialog.get_widget("installingdialog")
+                self.w_installingdialog_label = \
+                    w_tree_installingdialog.get_widget("packagedependencies3")                    
+                self.w_installingdialog_expander = \
+                    w_tree_installingdialog.get_widget("expander4")                     
                 self.w_installing_textview = \
                     w_tree_installingdialog.get_widget("installingtextview")
                 self.w_installing_progressbar = \
@@ -135,16 +146,25 @@ class InstallUpdate(progress.ProgressTracker):
                         list_of_packages = install_list
                 else:
                         list_of_packages = self.__prepare_list_of_packages()
+                # XXX Hidden until progress will give information about fmri                        
+                self.w_installingdialog_expander.hide()
+                pulse_t = Thread(target = self.__progressdialog_progress_pulse)
                 thread = Thread(target = self.__plan_the_install_updateimage, \
                     args = (list_of_packages, ))
+                pulse_t.start()
                 thread.start()
+                self.w_createplan_label.set_text(\
+                    self.parent._("Checking package dependencies..."))
+                self.w_createplancancel_button.set_sensitive(True)           
                 self.w_createplan_dialog.run()
 
         def __on_cancelcreateplan_clicked(self, widget):
                 '''Handler for signal send by cancel button, which user might press during
                 evaluation stage - while the dialog is creating plan'''
+                self.w_createplan_label.set_text(\
+                    self.parent._("Canceling..."))
+                self.w_createplancancel_button.set_sensitive(False)                    
                 self.gui_thread.cancel()
-                self.w_createplan_dialog.destroy()
 
         def __on_cancel_button_clicked(self, widget):
                 '''Handler for signal send by cancel button, which is available for the 
@@ -176,7 +196,11 @@ class InstallUpdate(progress.ProgressTracker):
                 buf = self.w_createplan_textview.get_buffer()
                 textiter = buf.get_end_iter()
                 buf.insert(textiter, action)
-                self.w_createplan_progressbar.pulse()
+                
+        def __progressdialog_progress_pulse(self):
+                while not self.progress_stop_timer_thread:
+                        gobject.idle_add(self.w_createplan_progressbar.pulse)
+                        time.sleep(0.1)
 
         def __update_download_progress(self, cur_bytes, total_bytes):
                 prog = float(cur_bytes)/total_bytes
@@ -189,6 +213,13 @@ class InstallUpdate(progress.ProgressTracker):
         def __update_install_progress(self, current, total):
                 prog = float(current)/total
                 self.w_installing_progressbar.set_fraction(prog)
+
+        def __update_install_pulse(self):
+                while not self.progress_stop_timer_thread:
+                        self.progress_stop_timer_running = True
+                        gobject.idle_add(self.w_installing_progressbar.pulse)
+                        time.sleep(0.1)
+                self.progress_stop_timer_running = False
 
         def __prepare_list_of_packages(self):
                 ''' This method return the dictionary of 
@@ -273,12 +304,13 @@ class InstallUpdate(progress.ProgressTracker):
                         if error != 0:
                                 raise RuntimeError, "Unable to assemble image plan"
 
-
-                        self.__evaluate(image)
-
+                        try:
+                                self.__evaluate(image)
+                        except CancelException, e:
+                                self.progress_stop_timer_thread = True
+                                gobject.idle_add(self.w_createplan_dialog.hide)
+                                
                         image.imageplan = self.ip
-
-                        gobject.idle_add(self.ip.progtrack.evaluate_done)
 
                 return
 
@@ -294,6 +326,7 @@ class InstallUpdate(progress.ProgressTracker):
                                         image.update_optional_dependency(min_fmri)
 
         def __evaluate(self, image):
+                '''Code duplication from imageplan.evaluate()'''
                 assert self.ip.state == imageplan.UNEVALUATED
 
                 self.ip.progtrack.evaluate_start()
@@ -324,6 +357,89 @@ class InstallUpdate(progress.ProgressTracker):
                         self.ip.evaluate_fmri_removal(f)
                         self.ip.progtrack.evaluate_progress()
 
+                # we now have a workable set of packages to add/upgrade/remove
+                # now combine all actions together to create a synthetic single
+                # step upgrade operation, and handle editable files moving from
+                # package to package.  See theory comment in execute, below.
+
+                self.ip.state = imageplan.EVALUATED_PKGS
+
+                self.ip.removal_actions = [ (p, src, dest)
+                                         for p in self.ip.pkg_plans
+                                         for src, dest in p.gen_removal_actions()
+                ]
+
+                self.ip.update_actions = [ (p, src, dest)
+                                        for p in self.ip.pkg_plans
+                                        for src, dest in p.gen_update_actions()
+                ]
+
+                self.ip.install_actions = [ (p, src, dest)
+                                         for p in self.ip.pkg_plans
+                                         for src, dest in p.gen_install_actions()
+                ]
+
+                self.ip.progtrack.evaluate_progress()
+
+                # iterate over copy of removals since we're modding list
+                # keep track of deletion count so later use of index works
+                named_removals = {}
+                deletions = 0
+                for i, a in enumerate(self.ip.removal_actions[:]):
+                        # remove dir removals if dir is still in final image
+                        if a[1].name == "dir" and \
+                            os.path.normpath(a[1].attrs["path"]) in \
+                            self.ip.get_directories():
+                                del self.ip.removal_actions[i - deletions]
+                                deletions += 1
+                                continue
+                        # store names of files being removed under own name
+                        # or original name if specified
+                        if a[1].name == "file":
+                                attrs = a[1].attrs
+                                fname = attrs.get("original_name",
+                                    "%s:%s" % (a[0].origin_fmri.get_name(), attrs["path"]))
+                                named_removals[fname] = \
+                                    (i - deletions,
+                                    id(self.ip.removal_actions[i-deletions][1]))
+
+                self.ip.progtrack.evaluate_progress()
+
+                for a in self.ip.install_actions:
+                        # In order to handle editable files that move their path or
+                        # change pkgs, for all new files with original_name attribute,
+                        # make sure file isn't being removed by checking removal list.
+                        # if it is, tag removal to save file, and install to recover
+                        # cached version... caching is needed if directories
+                        # are removed or don't exist yet.
+                        if a[2].name == "file" and "original_name" in a[2].attrs and \
+                            a[2].attrs["original_name"] in named_removals:
+                                cache_name = a[2].attrs["original_name"]
+                                index = named_removals[cache_name][0]
+                                assert(id(self.ip.removal_actions[index][1]) ==
+                                       named_removals[cache_name][1])
+                                self.ip.removal_actions[index][1].attrs["save_file"] = \
+                                    cache_name
+                                a[2].attrs["save_file"] = cache_name
+
+                self.ip.progtrack.evaluate_progress()
+                # Go over update actions
+                l_actions = self.ip.get_link_actions()
+                l_refresh = []
+                for a in self.ip.update_actions:
+                        # for any files being updated that are the target of
+                        # _any_ hardlink actions, append the hardlink actions
+                        # to the update list so that they are not broken...
+                        if a[2].name == "file":
+                                path = a[2].attrs["path"]
+                                if path in l_actions:
+                                        l_refresh.extend([(a[0], l, l) for l in l_actions[path]])
+                self.ip.update_actions.extend(l_refresh)
+                # sort actions to match needed processing order
+                self.ip.removal_actions.sort(key = lambda obj:obj[1], reverse=True)
+                self.ip.update_actions.sort(key = lambda obj:obj[2])
+                self.ip.install_actions.sort(key = lambda obj:obj[2])
+
                 self.ip.progtrack.evaluate_done()
 
                 self.ip.state = imageplan.EVALUATED_OK
@@ -331,13 +447,14 @@ class InstallUpdate(progress.ProgressTracker):
         def __creating_plan_net_error(self):
                 '''Helper method which shows the dialog informing user that there was
                 problem with network connection'''
+                self.progress_stop_timer_thread = True
                 self.w_createplan_dialog.hide()
                 self.w_networkdown_dialog.show()
 
         def __evaluate_fmri(self, pfmri, image):
 
                 if self.gui_thread.is_cancelled():
-                        return
+                        raise CancelException
                 gobject.idle_add(self.__update_createplan_progress, \
                     self.parent._("Evaluating: %s\n") % pfmri.get_fmri())
 
@@ -426,42 +543,58 @@ class InstallUpdate(progress.ProgressTracker):
                 and pkg.client.ImagePlan.preexecute()'''
                 self.gui_thread.run()
                 if not rebuild:
-                        self.w_installupdate_dialog.hide()
+                        gobject.idle_add(self.w_installupdate_dialog.hide)
                 if rebuild:
-                        self.w_installing_dialog.hide()
-                self.w_downloadingfiles_dialog.show()
+                        gobject.idle_add(self.w_installing_dialog.hide)
+                gobject.idle_add(self.w_downloadingfiles_dialog.show)
 
                 # Checks the index to make sure it exists and is
                 # consistent. If it's inconsistent an exception is thrown.
                 # If it's totally absent, it will index the existing packages
                 # so that the incremental update that follows at the end of
                 # the function will work correctly.
-                self.ip.image.update_index_dir()
-                ind = indexer.Indexer(self.ip.image.index_dir,
-                    CLIENT_DEFAULT_MEM_USE_KB, progtrack=self.ip.progtrack)
-                ind.check_index(self.ip.image.get_fmri_manifest_pairs(),
-                    force_rebuild=False)
-                
-                for package_plan in self.ip.pkg_plans:
-                        if self.gui_thread.is_cancelled():
-                                return
-                        try:
-                                self.__preexecute(package_plan)
-                        except TransferTimedOutException:
-                                self.w_downloadingfiles_dialog.hide()
-                                self.w_networkdown_dialog.show()
-                                return
-                        except URLError, e:
-                                #if e.reason[0] == 8:
-                                self.w_downloadingfiles_dialog.hide()
-                                self.w_networkdown_dialog.show()
-                                return
-                        except CancelException:
-                                self.w_downloadingfiles_dialog.hide()
-                                return
+                try:
+                        self.ip.image.update_index_dir()
+                        ind = indexer.Indexer(self.ip.image.index_dir,
+                            CLIENT_DEFAULT_MEM_USE_KB, progtrack=self.ip.progtrack)
+                        ind.check_index(self.ip.image.get_fmri_manifest_pairs(),
+                            force_rebuild=False)
+                except search_errors.ProblematicPermissionsIndexException:
+                        # ProblematicPermissionsIndexException is included here
+                        # as there's little chance that trying again will fix
+                        # this problem.
+                        raise
+                except Exception, e:
+                        # XXX Once we have a framework for emitting a message
+                        # to the user in this spot in the code, we should tell
+                        # them something has gone wrong so that we continue to
+                        # get feedback to allow us to debug the code.
+                        self.ip._index_exception = e
+                        del(ind)
+                        self.ip.image.rebuild_search_index(self.ip.progtrack)
+                try:
+                        for p in self.ip.pkg_plans:
+                                p.preexecute()
+
+                        for package_plan in self.ip.pkg_plans:
+                                if self.gui_thread.is_cancelled():
+                                       return
+                                self.__download(package_plan)
+                except TransferTimedOutException:
+                        gobject.idle_add(self.w_downloadingfiles_dialog.hide)
+                        gobject.idle_add(self.w_networkdown_dialog.show)
+                        return
+                except URLError, e:
+                        #if e.reason[0] == 8:
+                        gobject.idle_add(self.w_downloadingfiles_dialog.hide)
+                        gobject.idle_add(self.w_networkdown_dialog.show)
+                        return
+                except CancelException:
+                        gobject.idle_add(self.w_downloadingfiles_dialog.hide)
+                        return
 
                 self.ip.progtrack.download_done()
-                self.w_downloadingfiles_dialog.hide()
+                gobject.idle_add(self.w_downloadingfiles_dialog.hide)
 
                 try:
                         be = bootenv.BootEnv(self.ip.image.get_root())
@@ -509,8 +642,8 @@ class InstallUpdate(progress.ProgressTracker):
                                 return
                         self.__download_stage(True)
 
-        def __preexecute(self, package_plan):
-                '''Code duplication from pkg.client.PkgPlan.preexecute() except that
+        def __download(self, package_plan):
+                '''Code duplication from pkg.client.PkgPlan.download() except that
                 pkg.gui.filelist is called instead of pkg.client.fileobject with shared
                 cancel object - self.gui_thread that allows to cancel download 
                 operation'''
@@ -523,46 +656,33 @@ class InstallUpdate(progress.ProgressTracker):
                 _PkgPlan__prog = package_plan._PkgPlan__progtrack
                 _PkgPlan__prog.download_start_pkg(package_plan.get_xfername())
 
-                # retrieval step
-                if package_plan.destination_fmri == None:
-                        package_plan.image.remove_install_file(package_plan.origin_fmri)
-
-                        try:
-                                os.unlink("%s/pkg/%s/filters" % (
-                                    package_plan.image.imgdir,
-                                    package_plan.origin_fmri.get_dir_path()))
-                        except EnvironmentError, e:
-                                if e.errno != errno.ENOENT:
-                                        raise
-
                 for src, dest in itertools.chain(*package_plan.actions):
                         if dest:
-                                dest.preinstall(package_plan, src)
                                 if dest.needsdata(src):
                                         flist.add_action(dest)
-                        else:
-                                src.preremove(package_plan)
 
-                # Tell flist to get any remaining files
                 flist.flush()
                 package_plan._PkgPlan__progtrack.download_end_pkg()
 
-        def __rebuild_index(self, pargs):
+        def __rebuild_index(self):
                 '''Code duplication from pkg(1):
                        Forcibly rebuild the search indexes. Will remove existing indexes
                        and build new ones from scratch.'''
                 quiet = False
                 
                 try:
-                        self.ip.image.rebuild_search_index(self.ip.image.progtrack)
+                        self.ip.image.rebuild_search_index(self.ip.progtrack)
                 except search_errors.InconsistentIndexException, iie:
                         return 1
                 except search_errors.ProblematicPermissionsIndexException, ppie:
                         return 1
 
         def __installation_stage(self):
+                '''Code duplication from imageplan.py def execute(self)'''
                 self.gui_thread.run()
-                self.w_installing_dialog.show()
+                text = self.parent._("Installing Packages...")
+                gobject.idle_add(self.w_installingdialog_label.set_text, text)
+                gobject.idle_add(self.w_installing_dialog.show)
                 self.ip.state = imageplan.PREEXECUTED_OK
 
                 if self.ip.nothingtodo():
@@ -570,56 +690,23 @@ class InstallUpdate(progress.ProgressTracker):
                         self.ip.progtrack.actions_done()
                         return
 
-                actions = [ (p, src, dest)
-                            for p in self.ip.pkg_plans
-                            for src, dest in p.gen_removal_actions()
-                            ]
-
-                actions.sort(key = lambda obj:obj[1], reverse=True)
-
-                self.ip.progtrack.actions_set_goal("Removal Phase", len(actions))
-                for p, src, dest in actions:
+                # execute removals
+                self.ip.progtrack.actions_set_goal("Removal Phase", len(self.ip.removal_actions))
+                for p, src, dest in self.ip.removal_actions:                        
                         p.execute_removal(src, dest)
                         self.ip.progtrack.actions_add_progress()
-                        
-                # generate list of update actions, sort and execute
 
-                update_actions = [ (p, src, dest)
-                            for p in self.ip.pkg_plans
-                            for src, dest in p.gen_update_actions()
-                            ]
-
-                install_actions = [ (p, src, dest)
-                            for p in self.ip.pkg_plans
-                            for src, dest in p.gen_install_actions()
-                            ]
-
-                # move any user/group actions into modify list to
-                # permit package to add user/group and change existing
-                # files to that user/group in a single update
-                # iterate over copy since we're modify install_actions
-
-                for a in install_actions[:]:
-                        if a[2].name == "user" or a[2].name == "group":
-                                update_actions.append(a)
-                                install_actions.remove(a)
-
-                update_actions.sort(key = lambda obj:obj[2])
-
-                self.ip.progtrack.actions_set_goal("Update Phase", len(update_actions))
-
-                for p, src, dest in update_actions:
-                        p.execute_update(src, dest)
+                # execute installs
+                self.ip.progtrack.actions_set_goal("Install Phase", len(self.ip.install_actions))
+                for p, src, dest in self.ip.install_actions:
+                        p.execute_install(src, dest)
                         self.ip.progtrack.actions_add_progress()
 
-                # generate list of install actions, sort and execute
+                # execute updates
+                self.ip.progtrack.actions_set_goal("Update Phase", len(self.ip.update_actions))
 
-                install_actions.sort(key = lambda obj:obj[2])
-
-                self.ip.progtrack.actions_set_goal("Install Phase", len(install_actions))
-
-                for p, src, dest in install_actions:
-                        p.execute_install(src, dest)
+                for p, src, dest in self.ip.update_actions:
+                        p.execute_update(src, dest)
                         self.ip.progtrack.actions_add_progress()
 
                 # handle any postexecute operations
@@ -628,13 +715,17 @@ class InstallUpdate(progress.ProgressTracker):
                         p.postexecute()
 
                 self.ip.state = imageplan.EXECUTED_OK
-                
-                del actions
-                del update_actions
-                del install_actions
+
+                # reduce memory consumption
+                del self.ip.removal_actions
+                del self.ip.update_actions
+                del self.ip.install_actions
+
                 del self.ip.target_rem_fmris
                 del self.ip.target_fmris
-                del self.ip.directories
+                # XXX This is accessing private member, and this fix should go
+                # Once we will remove code duplication.
+                del self.ip._ImagePlan__directories
                 
                 # Perform the incremental update to the search indexes
                 # for all changed packages
@@ -658,11 +749,24 @@ class InstallUpdate(progress.ProgressTracker):
 
                 self.ip.progtrack.actions_set_goal("Index Phase", len(plan_info))
 
-                self.ip.image.update_index_dir()
-                ind = indexer.Indexer(self.ip.image.index_dir,
-                    CLIENT_DEFAULT_MEM_USE_KB, progtrack=self.ip.progtrack)
-                ind.client_update_index((self.ip.filters, plan_info))
-                
+                try:
+                        self.ip.image.update_index_dir()
+                        ind = indexer.Indexer(self.ip.image.index_dir,
+                            CLIENT_DEFAULT_MEM_USE_KB, progtrack=self.ip.progtrack)
+                        ind.client_update_index((self.ip.filters, plan_info))
+                except search_errors.ProblematicPermissionsIndexException:
+                        # ProblematicPermissionsIndexException is included here
+                        # as there's little chance that trying again will fix
+                        # this problem.
+                        raise
+                except Exception, e:
+                        del(ind)
+                        # XXX Once we have a framework for emitting a message
+                        # to the user in this spot in the code, we should tell
+                        # them something has gone wrong so that we continue to
+                        # get feedback to allow us to debug the code.
+                        self.ip.image.rebuild_search_index(self.ip.progtrack)
+
                 self.ip.progtrack.actions_done()
 
         def actions_done(self):
@@ -728,12 +832,16 @@ class InstallUpdate(progress.ProgressTracker):
                 return
 
         def eval_output_done(self):
+                gobject.idle_add(self.__eval_output_done)
+
+        def __eval_output_done(self):
                 '''Called by progress tracker after the evaluation of the packages is 
                 finished. Gets information like how many packages will be 
                 updated/installed and maximum amount of data which will be downloaded. 
                 Later this information is being adjusted, while downloading'''
-                self.w_createplan_dialog.hide()
                 if self.gui_thread.is_cancelled():
+                        self.progress_stop_timer_thread = True
+                        self.w_createplan_dialog.hide()
                         return
                 updated_installed = \
                     [
@@ -788,9 +896,9 @@ class InstallUpdate(progress.ProgressTracker):
                 self.w_summary_label.set_text((updated_str + install_str + \
                     self.parent._("%d MB will be downloaded"))% \
                     (updated_count, install_count, (total_download_count/1024/1024)))
+                self.progress_stop_timer_thread = True
                 self.w_createplan_dialog.hide()
                 self.w_installupdate_dialog.show()
-                return True
 
         def ver_output(self): 
                 return
@@ -815,9 +923,18 @@ class InstallUpdate(progress.ProgressTracker):
                 return
 
         def ind_output(self):
+                self.progress_stop_timer_thread = False
+                gobject.idle_add(self.__indexing_progress)
                 return
 
+        def __indexing_progress(self):
+                if not self.progress_stop_timer_running:
+                        self.w_installingdialog_label.set_text(\
+                            self.parent._("Creating packages index..."))
+                        Thread(target = self.__update_install_pulse).start()
+                        
         def ind_output_done(self):
+                self.progress_stop_timer_thread = True
                 return
 
         @staticmethod

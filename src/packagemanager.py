@@ -34,7 +34,7 @@
 INITIAL_PROGRESS_TIME_INTERVAL = 0.5      # Time to update progress during start phase
 INITIAL_PROGRESS_TIME_PERCENTAGE = 0.005  # Amount to update progress during start phase
 INITIAL_PROGRESS_TOTAL_PERCENTAGE = 0.05  # Total progress for start phase
-PACKAGE_PROGRESS_TOTAL_INCREMENTS = 95    # Total increments for loading phase
+PACKAGE_PROGRESS_TOTAL_INCREMENTS = 95.0    # Total increments for loading phase
 PACKAGE_PROGRESS_PERCENT_INCREMENT = 0.01 # Amount to update progress during loading phase
 PACKAGE_PROGRESS_PERCENT_TOTAL = 1.0      # Total progress for loading phase
 
@@ -619,20 +619,30 @@ class PackageManager:
                 installupdate.InstallUpdate(self.application_list, self, False)
 
         def __on_update_all(self, widget):
+                opensolaris_image = True
+                fmris, notfound = self.__installed_fmris_from_args(self.image_o, \
+                    ["SUNWipkg", "SUNWcs"])
 
-                # Load the catalogs from the repository, its a long running tasks so 
-                # need a progress dialog
-                self.w_progress_dialog.set_title(self._("Update All"))
-                self.w_progressinfo_label.set_text(self._( \
-                    "Checking SUNWipkg and SUNWipkg-gui versions\n\nPlease wait ..."))
+                if notfound:
+                        opensolaris_image = False
 
-                self.w_progress_dialog.show()
-                Thread(target = self.__progressdialog_progress_pulse).start()
-                Thread(target = self.__do_ips_uptodate_check).start()
-                self.w_progress_dialog.run()
-                
-                if self.progress_canceled:
-                        return
+                if opensolaris_image:
+                        # Load the catalogs from the repository, its a long 
+                        # running tasks so need a progress dialog
+                        self.w_progress_dialog.set_title(self._("Update All"))
+                        self.w_progressinfo_label.set_text(self._( \
+                            "Checking SUNWipkg and SUNWipkg-gui versions\n" + \
+                            "\nPlease wait ..."))
+
+                        self.w_progress_dialog.show()
+                        Thread(target = self.__progressdialog_progress_pulse).start()
+                        Thread(target = self.__do_ips_uptodate_check).start()
+                        self.w_progress_dialog.run()
+                        
+                        if self.progress_canceled:
+                                return
+                else:
+                        self.ips_uptodate = True
                         
                 #2790: Make sure ipkg and ipkg-gui are up to date, if not update them and
                 # prompt user to restart
@@ -927,6 +937,7 @@ class PackageManager:
                 if self.in_setup or self.cancelled:
                         return False
                 # XXX Show filter, chenge text to integers 
+                selected_category = 0
                 selection = self.w_categories_treeview.get_selection()
                 category_model, category_iter = selection.get_selected()
                 if not category_iter:         #no category was selected, so select "All"
@@ -1201,6 +1212,7 @@ class PackageManager:
                 returns the image object or None"""
                 # XXX Convert timestamp to some nice date :)
                 self.application_list.clear()
+                self.category_list.clear()
                 self.application_list_filter.refilter()
                 pkgs_known = [ pf[0] for pf in
                     sorted(image_obj.inventory(all_known = True)) ]
@@ -1367,9 +1379,10 @@ class PackageManager:
                                             self._(section))
 
                 #1915 Sort the Categories into alphabetical order and prepend All Category
-                rows = [tuple(r) + (i,) for i, r in enumerate(self.category_list)]
-                rows.sort(self.__sort)
-                self.category_list.reorder([r[-1] for r in rows])
+                if len(self.category_list) > 0:
+                        rows = [tuple(r) + (i,) for i, r in enumerate(self.category_list)]
+                        rows.sort(self.__sort)
+                        self.category_list.reorder([r[-1] for r in rows])
                 self.category_list.prepend([0, self._('All'), None, None, True, None])
 
                 gobject.idle_add(progressdialog_progress, PACKAGE_PROGRESS_PERCENT_TOTAL,
@@ -1465,11 +1478,22 @@ class PackageManager:
                                 # XXX Could return image-we don't want to show ugly icon.
                                 return None
 
+        def __installed_fmris_from_args(self, img, args):
+                found = []
+                notfound = []
+                try:
+                        for m in img.inventory(args):
+                                found.append(m[0])
+                except RuntimeError, e:
+                        notfound = e[0]
+
+                return found, notfound
+
         def __progressdialog_progress_pulse(self):
                 while not self.progress_stop_timer_thread:
-                        gobject.idle_add(self.w_progressbar.pulse())
+                        gobject.idle_add(self.w_progressbar.pulse)
                         time.sleep(0.1)
-                gobject.idle_add(self.w_progress_dialog.hide())
+                gobject.idle_add(self.w_progress_dialog.hide)
                 self.progress_stop_timer_thread = False
                 
         # For initial setup before loading package entries allow 5% of progress bar
@@ -1696,6 +1720,7 @@ class PackageManager:
                                 row[enumerations.INSTALLED_OBJECT_COLUMN] = \
                                     package_installed
                                 if not package_installed:
+                                        pkg = max(row[enumerations.PACKAGE_OBJECT_COLUMN])
                                         dt = self.get_datetime(pkg.version)
                                         dt_str = (":%02d%02d") % (dt.month, dt.day)
                                         available_version = \

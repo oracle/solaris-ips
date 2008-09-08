@@ -26,6 +26,7 @@
 
 import gettext
 import sys
+import time
 from threading import Thread
 try:
         import gobject
@@ -37,6 +38,8 @@ except ImportError:
         sys.exit(1)
 import pkg.client.bootenv as bootenv
 import pkg.client.imageplan as imageplan
+import pkg.search_errors as search_errors
+import pkg.indexer as indexer
 import pkg.client.progress as progress
 import pkg.gui.enumerations as enumerations
 import pkg.gui.thread as guithread
@@ -53,6 +56,8 @@ class Remove(progress.ProgressTracker):
                 #This is hack since we should show proper dialog.
                 self.error = None
                 self.ip = None
+                self.progress_stop_timer_thread = False
+                self.progress_stop_timer_running = False
                 w_tree_createplan = gtk.glade.XML(parent.gladefile, "createplandialog2")
                 w_tree_removedialog = gtk.glade.XML(parent.gladefile, "removedialog")
                 w_tree_removingdialog = gtk.glade.XML(parent.gladefile, "removingdialog") 
@@ -62,6 +67,12 @@ class Remove(progress.ProgressTracker):
                     w_tree_createplan.get_widget("createplantextview2")
                 self.w_createplan_progressbar = \
                     w_tree_createplan.get_widget("createplanprogress2")
+                self.w_createplan_expander = \
+                    w_tree_createplan.get_widget("expander7")      
+                self.w_createplan_label = \
+                    w_tree_createplan.get_widget("packagedependencies5")  
+                self.w_createplancancel_button = \
+                    w_tree_createplan.get_widget("cancelcreateplan2")                      
                 self.w_remove_dialog = w_tree_removedialog.get_widget("removedialog")
                 self.w_summary_label = w_tree_removedialog.get_widget("removelabel")
                 self.w_review_treeview = w_tree_removedialog.get_widget("treeview3")
@@ -70,6 +81,10 @@ class Remove(progress.ProgressTracker):
                     w_tree_removingdialog.get_widget("removingdialog")
                 self.w_removing_progressbar = \
                     w_tree_removingdialog.get_widget("removingprogress")
+                self.w_removingdialog_label = \
+                    w_tree_removingdialog.get_widget("packagedependencies4")
+                self.w_removingdialog_expander = \
+                    w_tree_removingdialog.get_widget("expander6") 
                 self.w_createplan_progressbar.set_pulse_step(0.1)
                 remove_column = gtk.TreeViewColumn('Removed')
                 self.w_review_treeview.append_column(remove_column)
@@ -96,24 +111,37 @@ class Remove(progress.ProgressTracker):
                             Check remove.py signals') \
                             % error
                 list_of_packages = self.__prepare_list_of_packages()
+                # XXX Hidden until progress will give information about fmri
+                self.w_createplan_expander.hide()
+                self.w_removingdialog_expander.hide()
+                pulse_t = Thread(target = self.__progressdialog_progress_pulse)
                 thread = Thread(target = self.__plan_the_removeimage, \
                     args = (list_of_packages, ))
+                pulse_t.start()
                 thread.start()
+                self.w_createplan_label.set_text(\
+                    self.parent._("Checking package dependencies..."))
+                self.w_createplancancel_button.set_sensitive(True)
                 self.w_createplan_dialog.run()
                 return
 
-        def __on_cancelcreateplan_clicked(self, widget):
+        def __on_cancelcreateplan_clicked(self, widget):         
+                self.w_createplan_label.set_text(\
+                    self.parent._("Canceling..."))
+                self.w_createplancancel_button.set_sensitive(False)                    
                 self.gui_thread.cancel()
-                self.w_createplan_dialog.destroy()
 
         def __on_next_button_clicked(self, widget):
+                self.w_remove_dialog.hide()
+                self.w_removing_dialog.show()
                 remove_thread = Thread(target = self.__remove_stage, args = ())
                 remove_thread.start()
 
         def __on_cancel_button_clicked(self, widget):
                 self.gui_thread.cancel()
-                self.w_remove_dialog.destroy()
+                self.w_remove_dialog.hide()
 
+        # XXX Not used until progress will give information about fmri
         def __update_createplan_progress(self, action):
                 buf = self.w_createplan_textview.get_buffer()
                 textiter = buf.get_end_iter()
@@ -149,45 +177,91 @@ class Remove(progress.ProgressTracker):
                         fmris = list_of_packages.get(image)
                         for fmri in fmris:
                                 if self.gui_thread.is_cancelled():
+                                        self.progress_stop_timer_thread = True
+                                        gobject.idle_add(self.w_createplan_dialog.hide)
                                         return
                                 self.ip.propose_fmri_removal(fmri)
-                        self.ip.state = imageplan.UNEVALUATED
-                        self.ip.progtrack.evaluate_start()
-                        for f in self.ip.target_rem_fmris[:]:
-                                gobject.idle_add(self.__update_createplan_progress, \
-                                    self.parent._("Evaluating: %s\n") % f.get_fmri())
-                                try:
-                                        self.ip.evaluate_fmri_removal(f)
-                                except imageplan.NonLeafPackageException, e:
+                        try:
+                                self.ip.evaluate()
+                                if self.gui_thread.is_cancelled():
+                                        self.progress_stop_timer_thread = True
+                                        gobject.idle_add(self.w_createplan_dialog.hide)
+                                        return
+                                image.imageplan = self.ip
+                        except imageplan.NonLeafPackageException, e:
                                         self.error = e[1]
-                                        gobject.idle_add(self.ip.progtrack.evaluate_done)
-                                        return   
-                        self.ip.state = imageplan.EVALUATED_OK
-                        image.imageplan = self.ip
-                        gobject.idle_add(self.ip.progtrack.evaluate_done)
+                                        self.ip.progtrack.evaluate_done()
+                                        return
                 return
 
         def __remove_stage(self):
-                self.w_remove_dialog.hide()
-                self.w_removing_dialog.show()
                 self.ip.preexecute()
                 try:
                         be = bootenv.BootEnv(self.ip.image.get_root())
                 except RuntimeError:
                         be = bootenv.BootEnvNull(self.ip.image.get_root())
                 try:
+                        ret_code = 0
                         self.ip.execute()
                 except RuntimeError:
                         be.restore_install_uninstall()
+                except search_errors.InconsistentIndexException, e:
+                        ret_code = 2
+                except search_errors.PartialIndexingException, e:
+                        ret_code = 2
+                except search_errors.ProblematicPermissionsIndexException, e:
+                        ret_code = 2
+                except KeyError, e:
+                        # XXX KeyError was seen while problem with
+                        # creating index
+                        ret_code = 2
                 except Exception:
                         be.restore_install_uninstall()
+                        gobject.idle_add(self.w_removing_dialog.hide)
                         raise
+
+                if ret_code == 2:
+                        return_code = 0
+                        return_code = self.__rebuild_index()
+                        if return_code == 1:
+                                gobject.idle_add(self.w_removing_dialog.hide)
+                                return
 
                 if self.ip.state == imageplan.EXECUTED_OK:
                         be.activate_install_uninstall()
                 else:
                         be.restore_install_uninstall()
 
+                if self.parent != None:
+                        gobject.idle_add(self.parent.update_package_list)
+
+                gobject.idle_add(self.w_removing_dialog.hide)
+
+        def __rebuild_index(self):
+                '''Code duplication from pkg(1):
+                       Forcibly rebuild the search indexes. Will remove existing indexes
+                       and build new ones from scratch.'''
+                quiet = False
+                
+                try:
+                        self.ip.image.rebuild_search_index(self.ip.progtrack)
+                except search_errors.InconsistentIndexException, iie:
+                        return 1
+                except search_errors.ProblematicPermissionsIndexException, ppie:
+                        return 1
+                        
+        def __progressdialog_progress_pulse(self):
+                while not self.progress_stop_timer_thread:
+                        gobject.idle_add(self.w_createplan_progressbar.pulse)
+                        time.sleep(0.1)
+
+        def __removedialog_progress_pulse(self):
+                while not self.progress_stop_timer_thread:
+                        self.progress_stop_timer_running = True
+                        gobject.idle_add(self.w_removing_progressbar.pulse)
+                        time.sleep(0.1)
+                self.progress_stop_timer_running = False
+                
         def cat_output_start(self): 
                 return
 
@@ -201,10 +275,13 @@ class Remove(progress.ProgressTracker):
                 return
 
         def eval_output_done(self):
-                self.w_createplan_dialog.hide()
+            gobject.idle_add(self.__eval_output_done)
+            
+        def __eval_output_done(self):
                 if self.gui_thread.is_cancelled():
+                        self.progress_stop_timer_thread = True
+                        self.w_createplan_dialog.hide()
                         return
-                self.w_remove_dialog.show()
                 packaged_removed = \
                     [
                         ["Packages To Be Removed:"],
@@ -248,8 +325,11 @@ class Remove(progress.ProgressTracker):
                 remove_str = self.parent._("%d packages will be removed\n\n")
                 if remove_count == 1:
                         remove_str = self.parent._("%d package will be removed\n\n")
-                self.w_summary_label.set_text(remove_str % remove_count)
-                return True
+                text = remove_str % remove_count
+                self.w_summary_label.set_text(text)
+                self.progress_stop_timer_thread = True
+                self.w_createplan_dialog.hide()
+                self.w_remove_dialog.show()
 
         def ver_output(self): 
                 return
@@ -264,19 +344,27 @@ class Remove(progress.ProgressTracker):
                 return
 
         def act_output(self):
+                text = self.parent._("Removing Packages...")
+                gobject.idle_add(self.w_removingdialog_label.set_text, text)
                 gobject.idle_add(self.__update_remove_progress, \
                     self.ip.progtrack.act_cur_nactions, \
                     self.ip.progtrack.act_goal_nactions)
                 return
 
         def act_output_done(self):
-                if self.parent != None:
-                        self.parent.update_package_list()
-                self.w_removing_dialog.hide()
                 return
 
         def ind_output(self):
+                self.progress_stop_timer_thread = False
+                gobject.idle_add(self.__indexing_progress)
                 return
 
+        def __indexing_progress(self):
+                if not self.progress_stop_timer_running:
+                        self.w_removingdialog_label.set_text(\
+                            self.parent._("Creating packages index..."))
+                        Thread(target = self.__removedialog_progress_pulse).start()
+
         def ind_output_done(self):
+                self.progress_stop_timer_thread = True
                 return

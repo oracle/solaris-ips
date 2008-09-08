@@ -75,11 +75,14 @@ class FileList(filelist.FileList):
                 try:
                         lis = self.fhash[hashval]
                 except KeyError:
-                        # If the key isn't in the dictionary, the server
-                        # sent us a file we didn't ask for.  In this
-                        # case, we can't create an opener for it, so just
-                        # leave it in the cache.
+                        # If the key isn't in the dictionary, the server sent us
+                        # a file we didn't ask for.  In this case, we can't
+                        # create an opener for it, nor should we leave it in the
+                        # cache.
+                        os.remove(final_path)
                         return
+
+                self._verify_content(lis[0], final_path)
 
                 for action in lis:
                         action.data = self._make_opener(final_path)
