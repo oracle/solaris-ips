@@ -32,6 +32,11 @@ class IndexingException(Exception):
         def __init__(self, cause):
                 self.cause = cause
 
+class IncorrectIndexFileHash(IndexingException):
+        """This is used when file with a hash in it has more than one entry."""
+        def __init__(self):
+                IndexingException.__init__(self, None)
+
 class InconsistentIndexException(IndexingException):
         """ This is used when the existing index is found to have inconsistent
         versions."""

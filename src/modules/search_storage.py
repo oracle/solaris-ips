@@ -29,12 +29,13 @@ import os
 import errno
 import time
 import stat
+import sha
 
 import pkg.fmri as fmri
 import pkg.search_errors as search_errors
 import pkg.portable as portable
 
-def consistent_open(data_list, directory, timeout = None):
+def consistent_open(data_list, directory, timeout = 1):
         """Opens all data holders in data_list and ensures that the
         versions are consistent among all of them.
         It retries several times in case a race condition between file
@@ -560,6 +561,54 @@ class IndexStoreDictMutable(IndexStoreBase):
                 """
                 return 0
 
+class IndexStoreSetHash(IndexStoreBase):
+        def __init__(self, file_name):
+                IndexStoreBase.__init__(self, file_name)
+                self.hash_val = sha.new().hexdigest()
+                
+        def set_hash(self, vals):
+                """Set the has value."""
+                self.hash_val = self.calc_hash(vals) 
+
+        def calc_hash(self, vals):
+                """Calculate the hash value of the sorted members of vals."""
+                vl = list(vals)
+                vl.sort()
+                shasum = sha.new()
+                for v in vl:
+                        shasum.update(v)
+                return shasum.hexdigest()
+                
+        def write_dict_file(self, path, version_num):
+                """Write self.hash_val out to a line in a file """
+                IndexStoreBase._protected_write_dict_file(self, path,
+                    version_num, [self.hash_val])
+
+        def read_dict_file(self):
+                """Process a dictionary file written using the above method
+                """
+                assert self._file_handle
+                res = 0
+                for res, line in enumerate(self._file_handle):
+                        assert res < 1
+                        self.hash_val = line.rstrip()
+                if res > 0:
+                        raise search_errors.IncorrectIndexFileHash(res)
+                return res
+                
+        def check_against_file(self, vals):
+                """Check the hash value of vals against the value stored
+                in the file for this object."""
+                if self.hash_val == sha.new().hexdigest():
+                        self.read_dict_file()
+                incoming_hash = self.calc_hash(vals)
+                return self.hash_val == incoming_hash 
+
+        def count_entries_removed_during_partial_indexing(self):
+                """Returns the number of entries removed during a second phase
+                of indexing."""
+                return 0
+        
 class IndexStoreSet(IndexStoreBase):
         """Used when only set membership is desired.
         This is currently designed for exclusive use

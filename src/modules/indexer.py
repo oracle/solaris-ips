@@ -106,6 +106,8 @@ IDX_INPUT_TYPE_FMRI = 1
 
 INITIAL_VERSION_NUMBER = 1
 
+FILE_OPEN_TIMEOUT_SECS = 2
+
 class Indexer(object):
         """ See block comment at top for documentation """
         file_version_string = "VERSION: "
@@ -160,6 +162,8 @@ class Indexer(object):
 
                 self._progtrack = progtrack
 
+                self._file_timeout_secs = FILE_OPEN_TIMEOUT_SECS
+
         @staticmethod
         def _build_version(vers):
                 """ Private method for building versions from a string. """
@@ -171,7 +175,8 @@ class Indexer(object):
                 inefficient memory usage.
 
                 """
-                res = ss.consistent_open(self._data_dict.values(), directory)
+                res = ss.consistent_open(self._data_dict.values(), directory,
+                    self._file_timeout_secs)
                 if self._progtrack is not None:
                         self._progtrack.index_set_goal(
                             "Reading Existing Index", len(self._data_dict))
@@ -698,7 +703,8 @@ class Indexer(object):
                         try:
                                 res = \
                                     ss.consistent_open(self._data_dict.values(),
-                                        self._index_dir)
+                                        self._index_dir,
+                                        self._file_timeout_secs)
                         except Exception:
                                 return False
                 finally:
@@ -707,26 +713,31 @@ class Indexer(object):
                 assert res is not 0
                 return res
 
-        def check_index(self, fmris, force_rebuild, tmp_index_dir = None):
-                """ Rebuilds the indexes using the given fmris if it is
-                needed. It's needed if the index is empty or if force_rebuild
-                is true.
+        def check_index_has_exactly_fmris(self, fmri_names):
+                """ Checks to see if the fmris given are the ones indexed.
                 """
-                if not force_rebuild:
-                        try:
-                                res = \
-                                    ss.consistent_open(self._data_dict.values(),
-                                        self._index_dir)
-                        finally:
-                                for d in self._data_dict.values():
-                                        d.close_file_handle()
-                        if res == None:
-                                self.file_version_number = \
-                                    INITIAL_VERSION_NUMBER
-                                self.empty_index = True
-                        else:
-                                return
+                try:
+                        res = \
+                            ss.consistent_open(self._data_dict.values(),
+                                self._index_dir, self._file_timeout_secs)
+                        if res is not None and not \
+                            self._data_full_fmri_hash.check_against_file(
+                                fmri_names):
+                                res = None
+                finally:
+                        for d in self._data_dict.values():
+                                d.close_file_handle()
+                return res is not None
 
+        def rebuild_index_from_scratch(self, fmri_manifest_pairs,
+            tmp_index_dir = None):
+                """ Removes any existing index directory and rebuilds the
+                index based on the fmris and manifests provided as an
+                argument.
+                """
+                self.file_version_number = INITIAL_VERSION_NUMBER
+                self.empty_index = True
+                
                 try:
                         shutil.rmtree(self._index_dir)
                         os.makedirs(self._index_dir)
@@ -734,8 +745,8 @@ class Indexer(object):
                         if e.errno == errno.EACCES:
                                 raise search_errors.ProblematicPermissionsIndexException(
                                     self._index_dir)
-                self._generic_update_index(fmris, IDX_INPUT_TYPE_FMRI,
-                    tmp_index_dir)
+                self._generic_update_index(fmri_manifest_pairs,
+                    IDX_INPUT_TYPE_FMRI, tmp_index_dir)
                 self.empty_index = False
 
         def setup(self):

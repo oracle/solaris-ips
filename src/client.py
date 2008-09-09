@@ -858,7 +858,8 @@ def search(img, args):
                             "\nPlease try 'pkg rebuild-index' to recreate " +
                             "the index.")
                         return 1
-                except search_errors.InconsistentIndexException, iie:
+                except (search_errors.InconsistentIndexException,
+                        search_errors.IncorrectIndexFileHash):
                         error("The search index appears corrupted.  Please "
                             "rebuild the index with 'pkg rebuild-index'.")
                         return 1

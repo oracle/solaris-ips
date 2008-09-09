@@ -39,7 +39,6 @@ except ImportError:
 import pkg.client.bootenv as bootenv
 import pkg.client.imageplan as imageplan
 import pkg.search_errors as search_errors
-import pkg.indexer as indexer
 import pkg.client.progress as progress
 import pkg.gui.enumerations as enumerations
 import pkg.gui.thread as guithread

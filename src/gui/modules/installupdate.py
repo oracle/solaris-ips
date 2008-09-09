@@ -43,7 +43,7 @@ import pkg.client.bootenv as bootenv
 import pkg.client.imageplan as imageplan
 import pkg.client.progress as progress
 import pkg.fmri as fmri
-import pkg.indexer as indexer
+import pkg.client.indexer as indexer
 import pkg.search_errors as search_errors
 from pkg.misc import TransferTimedOutException
 from pkg.misc import CLIENT_DEFAULT_MEM_USE_KB
@@ -552,26 +552,31 @@ class InstallUpdate(progress.ProgressTracker):
                 # consistent. If it's inconsistent an exception is thrown.
                 # If it's totally absent, it will index the existing packages
                 # so that the incremental update that follows at the end of
-                # the function will work correctly.
+                # the function will work correctly. It also repairs the index
+                # for this BE so the user can boot into this BE and have a
+                # correct index.
                 try:
                         self.ip.image.update_index_dir()
                         ind = indexer.Indexer(self.ip.image.index_dir,
                             CLIENT_DEFAULT_MEM_USE_KB, progtrack=self.ip.progtrack)
-                        ind.check_index(self.ip.image.get_fmri_manifest_pairs(),
-                            force_rebuild=False)
-                except search_errors.ProblematicPermissionsIndexException:
-                        # ProblematicPermissionsIndexException is included here
-                        # as there's little chance that trying again will fix
-                        # this problem.
-                        raise
-                except Exception, e:
-                        # XXX Once we have a framework for emitting a message
-                        # to the user in this spot in the code, we should tell
-                        # them something has gone wrong so that we continue to
-                        # get feedback to allow us to debug the code.
-                        self.ip._index_exception = e
-                        del(ind)
-                        self.ip.image.rebuild_search_index(self.ip.progtrack)
+                        if not ind.check_index_existence() or \
+                            not ind.check_index_has_exactly_fmris(
+                                self.ip.image.gen_installed_pkg_names()):
+                                # XXX Once we have a framework for emitting a
+                                # message to the user in this spot in the
+                                # code, we should tell them something has gone
+                                # wrong so that we continue to get feedback to
+                                # allow us to debug the code.
+                                ind.rebuild_index_from_scratch(
+                                    self.ip.image.get_fmri_manifest_pairs())
+                except search_errors.IndexingException:
+                        # If there's a problem indexing, we want to attempt
+                        # to finish the installation anyway. If there's a
+                        # problem updating the index on the new image,
+                        # that error needs to be communicated to the user.
+                        pass
+
+                
                 try:
                         for p in self.ip.pkg_plans:
                                 p.preexecute()
@@ -754,7 +759,8 @@ class InstallUpdate(progress.ProgressTracker):
                         ind = indexer.Indexer(self.ip.image.index_dir,
                             CLIENT_DEFAULT_MEM_USE_KB, progtrack=self.ip.progtrack)
                         ind.client_update_index((self.ip.filters, plan_info))
-                except search_errors.ProblematicPermissionsIndexException:
+                except (KeyboardInterrupt,
+                    search_errors.ProblematicPermissionsIndexException):
                         # ProblematicPermissionsIndexException is included here
                         # as there's little chance that trying again will fix
                         # this problem.

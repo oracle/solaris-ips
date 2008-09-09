@@ -31,10 +31,11 @@ import os
 import unittest
 import shutil
 import copy
+import sys
 
 import pkg.depotcontroller as dc
 
-import pkg.query_engine as query_engine
+import pkg.client.query_engine as query_engine
 import pkg.portable as portable
 
 class TestPkgSearch(testutils.SingleDepotTestCase):
@@ -255,7 +256,6 @@ close
 
         ])
 
-                
         def setUp(self):
                 for p in self.misc_files:
                         f = open(p, "w")
@@ -267,6 +267,8 @@ close
                 tp = self.get_test_prefix()
                 self.testdata_dir = os.path.join(tp, "search_results")
                 os.mkdir(self.testdata_dir)
+                self._dir_restore_functions = [self._restore_dir,
+                    self._restore_dir_preserve_hash]
 
         def tearDown(self):
                 testutils.SingleDepotTestCase.tearDown(self)
@@ -312,7 +314,7 @@ close
                 self._search_op(True, "6556919", self.res_remote_inc_changes)
                 self._search_op(True, "6556?19", self.res_remote_inc_changes)
                 self._search_op(True, "42", self.res_remote_random_test) 
-                self._search_op(True, "separator", self.res_remote_keywords)               
+                self._search_op(True, "separator", self.res_remote_keywords)
                 self._search_op(True, "*example*", self.res_remote_glob)
                 self._search_op(True, "fooo", self.res_remote_foo)
                 self._search_op(True, "fo*", self.res_remote_foo)
@@ -325,14 +327,6 @@ close
                 self.pkg("search -r a_non_existent_token", exit=1)
                 self.pkg("search -r a_non_existent_token", exit=1)
                 
-        def test_remote(self):
-                """Test remote search."""
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.example_pkg10)
-
-                self.image_create(durl)
-                self._run_remote_tests()
-
         def _run_local_tests(self):
                 outfile = os.path.join(self.testdata_dir, "res")
 
@@ -380,6 +374,62 @@ close
                 self.pkg("search  example*", exit=1)
                 self.pkg("search  /bin", exit=1)
 
+        @staticmethod
+        def _restore_dir(index_dir, index_dir_tmp):
+                shutil.rmtree(index_dir)
+                shutil.move(index_dir_tmp, index_dir)
+
+        @staticmethod
+        def _restore_dir_preserve_hash(index_dir, index_dir_tmp):
+                tmp_file = "full_fmri_list.hash"
+                portable.remove(os.path.join(index_dir_tmp, tmp_file))
+                shutil.move(os.path.join(index_dir, tmp_file),
+                            index_dir_tmp)
+                fh = open(os.path.join(index_dir_tmp, "main_dict.ascii"), "r")
+                fh.seek(0)
+                fh.seek(9)
+                ver = fh.read(1)
+                fh.close()
+                fh = open(os.path.join(index_dir_tmp, tmp_file), "r+")
+                fh.seek(0)
+                fh.seek(9)
+                # Overwrite the existing version number.
+                # By definition, the version 0 is never used.
+                fh.write("%s" % ver)
+                shutil.rmtree(index_dir)
+                shutil.move(index_dir_tmp, index_dir)
+
+        def _get_index_dirs(self):
+                index_dir = os.path.join(self.img_path, "var","pkg","index")
+                index_dir_tmp = index_dir + "TMP"
+                return index_dir, index_dir_tmp
+
+        @staticmethod
+        def _overwrite_version_number(file_path):
+                fh = open(file_path, "r+")
+                fh.seek(0)
+                fh.seek(9)
+                # Overwrite the existing version number.
+                # By definition, the version 0 is never used.
+                fh.write("0")
+                fh.close()
+
+        @staticmethod
+        def _overwrite_hash(ffh_path):
+                fh = open(ffh_path, "r+")
+                fh.seek(0)
+                fh.seek(20)
+                fh.write("*")
+                fh.close()
+
+        def test_remote(self):
+                """Test remote search."""
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.example_pkg10)
+
+                self.image_create(durl)
+                self._run_remote_tests()
+                
         def test_local(self):
                 """Install one package, and run the search suite."""
                 durl = self.dc.get_depot_url()
@@ -465,7 +515,7 @@ close
                 
                 index_dir = os.path.join(self.img_path, "var","pkg","index")
 
-                qe = query_engine.QueryEngine(index_dir)
+                qe = query_engine.ClientQueryEngine(index_dir)
                 
                 for d in qe._data_dict.values():
                         orig_fn = d.get_file_name()
@@ -488,7 +538,7 @@ close
                 
                 index_dir = os.path.join(self.img_path, "var","pkg","index")
 
-                qe = query_engine.QueryEngine(index_dir)
+                qe = query_engine.ClientQueryEngine(index_dir)
                 
                 for d in qe._data_dict.values():
                         orig_fn = d.get_file_name()
@@ -496,108 +546,116 @@ close
                         dest_fn = orig_fn + "TMP"
                         dest_path = os.path.join(index_dir, dest_fn)
                         shutil.copy(orig_path, dest_path)
-                        fh = open(orig_path, "r+")
-                        fh.seek(0)
-                        fh.seek(9)
-                        # Overwrite the existing version number.
-                        # By definition, the version 0 is never used.
-                        fh.write("0")
-                        fh.close()
+                        self._overwrite_version_number(orig_path)
                         self.pkg("search  example_pkg", exit=1)
                         portable.rename(dest_path, orig_path)
                         self.pkg("search  example_pkg")
-
+                        self._overwrite_version_number(orig_path)
+                        self.pkg("uninstall example_pkg")
+                        self.pkg("search example_pkg", exit=1)
+                        self._overwrite_version_number(orig_path)
+                        self.pkg("install example_pkg")
+                        self.pkg("search example_pkg")
+                        
+                ffh = qe._data_dict['fmri_hash']
+                ffh_path = os.path.join(index_dir, ffh.get_file_name())
+                dest_path = ffh_path + "TMP"
+                shutil.copy(ffh_path, dest_path)
+                self._overwrite_hash(ffh_path)
+                self.pkg("search example_pkg", exit=1)
+                portable.rename(dest_path, ffh_path)
+                self.pkg("search  example_pkg")
+                self._overwrite_hash(ffh_path)
+                self.pkg("uninstall example_pkg")
+                self.pkg("search example_pkg", exit=1)
+                
         def test_bug_2989_1(self):
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.example_pkg10)
 
-                self.image_create(durl)
+                for f in self._dir_restore_functions:
+                        self.image_create(durl)
 
-                self.pkg("rebuild-index")
+                        self.pkg("rebuild-index")
 
-                index_dir = os.path.join(self.img_path, "var","pkg","index")
-                index_dir_tmp = index_dir + "TMP"
+                        index_dir, index_dir_tmp = self._get_index_dirs()
 
-                shutil.copytree(index_dir, index_dir_tmp)
+                        shutil.copytree(index_dir, index_dir_tmp)
                 
-                self.pkg("install example_pkg")
+                        self.pkg("install example_pkg")
 
-                shutil.rmtree(index_dir)
-                shutil.move(index_dir_tmp, index_dir)
+                        f(index_dir, index_dir_tmp)
 
-                self.pkg("uninstall example_pkg")
-                
+                        self.pkg("uninstall example_pkg")
 
-                        
+                        self.image_destroy()
+
         def test_bug_2989_2(self):
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.example_pkg10)
-
-                self.image_create(durl)
-                self.pkg("install example_pkg")
-
-                index_dir = os.path.join(self.img_path, "var","pkg","index")
-                index_dir_tmp = index_dir + "TMP"
-                
-                shutil.copytree(index_dir, index_dir_tmp)
-
                 self.pkgsend_bulk(durl, self.another_pkg10)
-                self.pkg("refresh")
 
-                self.pkg("install another_pkg")
+                for f in self._dir_restore_functions:
 
-                shutil.rmtree(index_dir)
-                shutil.move(index_dir_tmp, index_dir)
+                        self.image_create(durl)
+                        self.pkg("install example_pkg")
 
-                self.pkg("uninstall another_pkg")
+                        index_dir, index_dir_tmp = self._get_index_dirs()
+                
+                        shutil.copytree(index_dir, index_dir_tmp)
 
+                        self.pkg("install another_pkg")
+
+                        f(index_dir, index_dir_tmp)
+
+                        self.pkg("uninstall another_pkg")
+
+                        self.image_destroy()
+                
         def test_bug_2989_3(self):
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.example_pkg10)
-
-                self.image_create(durl)
-                self.pkg("install example_pkg")
-
-                index_dir = os.path.join(self.img_path, "var","pkg","index")
-
-                index_dir_tmp = index_dir + "TMP"
-                
-                shutil.copytree(index_dir, index_dir_tmp)
-
                 self.pkgsend_bulk(durl, self.example_pkg11)
-                self.pkg("refresh")
 
-                self.pkg("install example_pkg")
+                for f in self._dir_restore_functions:
+                
+                        self.image_create(durl)
+                        self.pkg("install example_pkg@1.0,5.11-0")
 
-                shutil.rmtree(index_dir)
-                shutil.move(index_dir_tmp, index_dir)
+                        index_dir, index_dir_tmp = self._get_index_dirs()
 
-                self.pkg("uninstall example_pkg")
+                        shutil.copytree(index_dir, index_dir_tmp)
+
+                        self.pkg("install example_pkg")
+
+                        f(index_dir, index_dir_tmp)
+                        
+                        self.pkg("uninstall example_pkg")
+
+                        self.image_destroy()
 
         def test_bug_2989_4(self):
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.another_pkg10)
-                
-                self.image_create(durl)
-                self.pkg("install another_pkg")
-                
-                index_dir = os.path.join(self.img_path, "var","pkg","index")
-
-                index_dir_tmp = index_dir + "TMP"
-                
-                shutil.copytree(index_dir, index_dir_tmp)
-
                 self.pkgsend_bulk(durl, self.example_pkg10)
-                self.pkg("refresh")
-                self.pkg("install example_pkg")
-
-                shutil.rmtree(index_dir)
-                shutil.move(index_dir_tmp, index_dir)
-                
                 self.pkgsend_bulk(durl, self.example_pkg11)
-                self.pkg("refresh")
 
-                self.pkg("image-update")
+                for f in self._dir_restore_functions:
+                
+                        self.image_create(durl)
+                        self.pkg("install another_pkg")
+                
+                        index_dir, index_dir_tmp = self._get_index_dirs()
+                        
+                        shutil.copytree(index_dir, index_dir_tmp)
+
+                        self.pkg("install example_pkg@1.0,5.11-0")
+
+                        f(index_dir, index_dir_tmp)
+
+                        self.pkg("image-update")
+
+                        self.image_destroy()
 
         def test_local_case_sensitive(self):
                 """Test local case sensitive search"""

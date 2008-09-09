@@ -54,7 +54,7 @@ import pkg.client.imageplan as imageplan
 import pkg.client.retrieve as retrieve
 import pkg.portable as portable
 import pkg.client.query_engine as query_e
-import pkg.indexer as indexer
+import pkg.client.indexer as indexer
 import pkg.search_errors as search_errors
 
 from pkg.misc import versioned_urlopen
@@ -1256,6 +1256,35 @@ class Image(object):
                 else:
                         return cat.rename_is_successor(cfmri, pfmri)
 
+        def gen_installed_pkg_names(self):
+                """Generate the string representation of all installed
+                packages. This is faster than going through gen_installed_pkgs
+                when all that will be done is to extract the strings from
+                the result.
+                """
+                if self.pkg_states is not None:
+                        for i in self.pkg_states.values():
+                                yield i[1].get_fmri(anarchy=True)
+                else:
+                        installed_state_dir = "%s/state/installed" % \
+                            self.imgdir
+                        if os.path.isdir(installed_state_dir):
+                                for pl in os.listdir(installed_state_dir):
+                                        yield "pkg:/" + urllib.unquote(pl)
+                        else:
+                                proot = "%s/pkg" % self.imgdir
+                                for pd in sorted(os.listdir(proot)):
+                                        for vd in \
+                                            sorted(os.listdir("%s/%s" %
+                                            (proot, pd))):
+                                                path = "%s/%s/%s/installed" % \
+                                                    (proot, pd, vd)
+                                                if not os.path.exists(path):
+                                                        continue
+
+                                                yield urllib.unquote(
+                                                    "pkg:/%s@%s" % (pd, vd))
+
         # This could simply call self.inventory() (or be replaced by inventory),
         # but it turns out to be about 20% slower.
         def gen_installed_pkgs(self):
@@ -1315,6 +1344,9 @@ class Image(object):
 
                                 self.pkg_states[fmristr] = \
                                     (PKG_STATE_INSTALLED, f)
+
+        def clear_pkg_state(self):
+                self.pkg_states = None
 
         def strtofmri(self, myfmri):
                 return pkg.fmri.PkgFmri(myfmri, self.attrs["Build-Release"])
@@ -1674,7 +1706,7 @@ class Image(object):
                 qe = query_e.ClientQueryEngine(self.index_dir)
                 query = query_e.Query(args[0], case_sensitive)
                 try:
-                        res = qe.search(query)
+                        res = qe.search(query, self.gen_installed_pkg_names())
                 except search_errors.NoIndexException:
                         res = self.degraded_local_search(args)
                 return res
@@ -1876,8 +1908,7 @@ pkg: no package matching '%s' could be found in current catalog
                         self.mkdirs()
                 ind = indexer.Indexer(self.index_dir,
                     CLIENT_DEFAULT_MEM_USE_KB, progtracker)
-                ind.check_index(self.get_fmri_manifest_pairs(),
-                    force_rebuild = True)
+                ind.rebuild_index_from_scratch(self.get_fmri_manifest_pairs())
 
 if __name__ == "__main__":
         pass

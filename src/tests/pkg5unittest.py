@@ -252,7 +252,7 @@ class Pkg5TestSuite(unittest.TestSuite):
                         except KeyboardInterrupt:
                                 raise
                         except:
-                                result.addError(self, sys.exc_info())
+                                result.addError(inst, sys.exc_info())
                 for test in self._tests:
                         if result.shouldStop:
                                 break
@@ -272,4 +272,4 @@ class Pkg5TestSuite(unittest.TestSuite):
                         except KeyboardInterrupt:
                                 raise
                         except:
-                                result.addError(self, sys.exc_info())
+                                result.addError(inst, sys.exc_info())

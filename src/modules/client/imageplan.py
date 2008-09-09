@@ -28,7 +28,7 @@ import pkg.fmri as fmri
 import pkg.client.pkgplan as pkgplan
 import pkg.client.retrieve as retrieve # XXX inventory??
 import pkg.version as version
-import pkg.indexer as indexer
+import pkg.client.indexer as indexer
 import pkg.search_errors as se
 from pkg.client.filter import compile_filter
 from pkg.misc import msg
@@ -505,27 +505,29 @@ class ImagePlan(object):
                 # consistent. If it's inconsistent an exception is thrown.
                 # If it's totally absent, it will index the existing packages
                 # so that the incremental update that follows at the end of
-                # the function will work correctly.
+                # the function will work correctly. It also repairs the index
+                # for this BE so the user can boot into this BE and have a
+                # correct index.
                 try:
                         self.image.update_index_dir()
                         ind = indexer.Indexer(self.image.index_dir,
                             CLIENT_DEFAULT_MEM_USE_KB, progtrack=self.progtrack)
-                        ind.check_index(self.image.get_fmri_manifest_pairs(),
-                            force_rebuild=False)
-                except (KeyboardInterrupt,
-                    se.ProblematicPermissionsIndexException):
-                        # ProblematicPermissionsIndexException is included here
-                        # as there's little chance that trying again will fix
-                        # this problem.
-                        raise
-                except Exception, e:
-                        # XXX Once we have a framework for emitting a message
-                        # to the user in this spot in the code, we should tell
-                        # them something has gone wrong so that we continue to
-                        # get feedback to allow us to debug the code.
-                        self._index_exception = e
-                        del(ind)
-                        self.image.rebuild_search_index(self.progtrack)
+                        if not ind.check_index_existence() or \
+                            not ind.check_index_has_exactly_fmris(
+                                self.image.gen_installed_pkg_names()):
+                                # XXX Once we have a framework for emitting a
+                                # message to the user in this spot in the
+                                # code, we should tell them something has gone
+                                # wrong so that we continue to get feedback to
+                                # allow us to debug the code.
+                                ind.rebuild_index_from_scratch(
+                                    self.image.get_fmri_manifest_pairs())
+                except se.IndexingException:
+                        # If there's a problem indexing, we want to attempt
+                        # to finish the installation anyway. If there's a
+                        # problem updating the index on the new image,
+                        # that error needs to be communicated to the user.
+                        pass
 
                 npkgs = 0
                 nfiles = 0
@@ -639,6 +641,8 @@ class ImagePlan(object):
 
                 for p in self.pkg_plans:
                         p.postexecute()
+
+                self.image.clear_pkg_state()
                         
                 self.state = EXECUTED_OK
                 

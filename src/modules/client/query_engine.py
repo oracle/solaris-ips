@@ -23,7 +23,7 @@
 # Use is subject to license terms.
 
 import pkg.search_storage as ss
-import pkg.search_errors as search_errors
+import pkg.search_errors as se
 import pkg.query_engine as qe
 
 class Query(qe.Query):
@@ -37,18 +37,30 @@ class ClientQueryEngine(qe.QueryEngine):
         """This class contains the data structures and methods needed to
         perform search on the indexes created by Indexer."""
 
-        def search(self, query):
+        def __init__(self, dir_path):
+                qe.QueryEngine.__init__(self, dir_path)
+                self._data_dict['fmri_hash'] = \
+                    ss.IndexStoreSetHash('full_fmri_list.hash')
+
+        
+        def search(self, query, expected_fmri_names):
                 """Searches the indexes for any matches of query
                 and returns the results."""
 
                 self._open_dicts()
 
+                full_fmri_hash = self._data_dict['fmri_hash']
+                if not full_fmri_hash.check_against_file(expected_fmri_names):
+                        raise se.IncorrectIndexFileHash()
+
+
                 try:
                         self._data_token_offset.read_dict_file()
                         matched_ids, res = self.search_internal(query)
                         for n, d in self._data_dict.iteritems():
-                                if d == self._data_main_dict or \
-                                    d == self._data_token_offset:
+                                if d is self._data_main_dict or \
+                                    d is self._data_token_offset or \
+                                    d is full_fmri_hash:
                                         continue
                                 d.matching_read_dict_file(matched_ids[n])
                 finally:
