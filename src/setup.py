@@ -267,11 +267,11 @@ class install_func(_install):
                 # It's OK to have /'s here, python figures it out when writing files
                 if private_build is None:
                         self.install_lib = py_install_dir
-                        self.install_data = py_install_dir
+                        self.install_data = "/"
                         self.root = root_dir
                 else:
                         self.install_lib = os.path.join(root_dir, py_install_dir)
-                        self.install_data = os.path.join(root_dir, py_install_dir)
+                        self.install_data = root_dir
 
                 # This is used when installing scripts, below, but it isn't a
                 # standard distutils variable.
