@@ -48,9 +48,11 @@ all:
 
 clean:
 	$(PYTHON) setup.py $(TARGET)
+	@cd gui; pwd; $(MAKE) $(TARGET)
 
 clobber: clean
 	$(PYTHON) setup.py $(TARGET)
+	@cd gui; pwd; $(MAKE) $(TARGET)
 
 install:
 	$(PYTHON) setup.py $(TARGET)

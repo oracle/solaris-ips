@@ -70,9 +70,9 @@ DESKTOP = \
 
 ROOTPYMODS = $(PYMODS:modules/%=$(ROOTPYTHONPKG)/%)
 
-ROOTICONS = $(ICONS:data/%=$(ROOTICONSHARE)/%)
+ROOTICONS = $(ICONS:data/icons/%=$(ROOTICONSHARE)/%)
 
-ROOTDESKTOP = $(DESKTOP:%=$(ROOTDESKTOPSHARE)/%)
+ROOTDESKTOP = $(DESKTOP:data/%=$(ROOTDESKTOPSHARE)/%)
 
 ROOTCATALOG = $(CATALOG:data/%=$(ROOTDATASHARE)/%)
 
@@ -97,30 +97,28 @@ ROOTCOMPONENTS = \
 all := TARGET = all
 install := TARGET = install
 clean := TARGET = clean
+clobber := TARGET = clobber
 link := TARGET = link
 link-clean := TARGET = link-clean
 
-all:
-	cd data; pwd;\
-	  LC_ALL=C intltool-merge -d -u -c ../po/.intltool-merge-cache ../po packagemanager.desktop.in packagemanager.desktop
+all: data/packagemanager.desktop
+	cd po; pwd; $(MAKE) $(TARGET)
 
 install: all $(ROOTCOMPONENTS)
-	@cd po; pwd;\
-	  mkdir -p ../$(ROOT); \
-	  for PO in *.po; do \
-	    LING=`basename $$PO .po`; \
-	    MO=$$LING.mo; \
-	    msgfmt -o $$MO $$PO; \
-	    mkdir -p ../$(ROOT)/share/locale/$$LING/LC_MESSAGES; \
-	    cp $$MO ../$(ROOT)/share/locale/$$LING/LC_MESSAGES/packagemanager.mo; \
-	  done;
+	cd po; pwd; $(MAKE) $(TARGET)
 
-clean:
+clean clobber:
+	cd po; pwd; $(MAKE) $(TARGET)
 	rm -f $(PYCMODS)
 	rm -f $(DESKTOP)
+	rm -f po/.intltool-merge-cache
    
 modules/%.pyc: modules/%.py
 	python -m compileall -l $(@D)
+
+data/packagemanager.desktop: data/packagemanager.desktop.in
+	cd data; pwd; \
+	  LC_ALL=C intltool-merge -d -u -c ../po/.intltool-merge-cache ../po packagemanager.desktop.in packagemanager.desktop
 
 PWD:sh = pwd
 
@@ -152,10 +150,10 @@ $(ROOTDATASHARE)/%: data/%
 $(ROOTPYTHONPKG)/%: modules/%
 	rm -f $@; install -f $(ROOTPYTHONPKG) -m 0644 $<
 
-$(ROOTICONSHARE)/%: data/%
+$(ROOTICONSHARE)/%: data/icons/%
 	rm -f $@; install -f $(ROOTICONSHARE) -m 0644 $<
 
-$(ROOTDESKTOPSHARE)/%: %
+$(ROOTDESKTOPSHARE)/%: data/%
 	rm -f $@; install -f $(ROOTDESKTOPSHARE) -m 0644 $<
 
 $(ROOTSHARE)/%: data/%
