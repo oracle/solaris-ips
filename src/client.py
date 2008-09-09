@@ -1804,7 +1804,21 @@ def main_func():
                 try:
                         mydir = os.environ["PKG_IMAGE"]
                 except KeyError:
-                        mydir = os.getcwd()
+                        try:
+                                mydir = os.getcwd()
+                        except OSError, e:
+                                try:
+                                        mydir = os.environ["PWD"]
+                                        if not mydir or mydir[0] != "/":
+                                                mydir = None
+                                except KeyError:
+                                        mydir = None
+
+        if mydir == None:
+                error(_("Could not find image.  Use the -R option or set "
+                    "$PKG_IMAGE to point\nto an image, or change the working "
+                    "directory to one inside the image."))
+                return 1
 
         try:
                 img.find_root(mydir)
