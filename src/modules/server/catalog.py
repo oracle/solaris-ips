@@ -30,6 +30,7 @@ import sys
 import cherrypy
 
 import pkg.catalog as catalog
+import pkg.fmri as fmri
 import pkg.indexer as indexer
 import pkg.server.query_engine as query_e
 
@@ -260,3 +261,20 @@ class ServerCatalog(catalog.Catalog):
                             query_e.ServerQueryEngine(self.index_root)
                 query = query_e.Query(token, case_sensitive=False)
                 return self.query_engine.search(query)
+
+        @staticmethod
+        def read_catalog(catalog, dir, auth=None):
+                """Read the catalog file in "dir" and combine it with the
+                existing data in "catalog"."""
+
+                catf = file(os.path.join(dir, "catalog"))
+                for line in catf:
+                        if not line.startswith("V pkg") and \
+                            not line.startswith("C pkg"):
+                                continue
+
+                        f = fmri.PkgFmri(line[7:])
+                        ServerCatalog.cache_fmri(catalog, f, auth)
+
+                catf.close()
+

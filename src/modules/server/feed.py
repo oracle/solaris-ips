@@ -35,12 +35,13 @@ import datetime
 import httplib
 import os
 import rfc822
+import sys
 import time
 import urllib
 import xml.dom.minidom as xmini
 
 from pkg.misc import get_rel_path, get_res_path
-import pkg.catalog as catalog
+import pkg.server.catalog as catalog
 import pkg.fmri as fmri
 import pkg.Uuid25 as uuid
 
@@ -201,7 +202,7 @@ operations = {
             "the repository."]
 }
 
-def add_transaction(request, scfg, rcfg, doc, feed, txn):
+def add_transaction(request, scfg, rcfg, doc, feed, txn, fmris):
         """Each transaction is an entry.  We have non-trivial content, so we
         can omit summary elements.
         """
@@ -229,14 +230,11 @@ def add_transaction(request, scfg, rcfg, doc, feed, txn):
                 op_content = "%s was changed in the repository."
 
         if txn["operation"] == "+":
-                c = scfg.updatelog.catalog
                 # Get all FMRIs matching the current FMRI's package name.
-                matches = catalog.extract_matching_fmris(c.fmris(),
-                    f.get_name(), matcher=fmri.exact_name_match)
-
-                if len(matches) > 1:
-                        # Get the oldest fmri (it's the last entry).
-                        of = matches[-1]
+                matches = fmris[f.pkg_name]
+                if len(matches["versions"]) > 1:
+                        # Get the oldest fmri.
+                        of = matches[str(matches["versions"][0])][0]
 
                         # If the current fmri isn't the oldest one, then this
                         # is an update to the package.
@@ -307,9 +305,15 @@ def update(request, scfg, rcfg, t, cf):
                 return cmp(ults_to_ts(a["timestamp"]),
                     ults_to_ts(b["timestamp"]))
 
+        # Get the entire catalog in the format returned by catalog.cache_fmri,
+        # so that we don't have to keep looking for possible matches.
+        fmris = {}
+        catalog.ServerCatalog.read_catalog(fmris,
+            scfg.updatelog.catalog.catalog_root)
+
         for txn in sorted(scfg.updatelog.gen_updates_as_dictionaries(feed_ts),
             cmp=compare_ul_entries, reverse=True):
-                add_transaction(request, scfg, rcfg, d, feed, txn)
+                add_transaction(request, scfg, rcfg, d, feed, txn, fmris)
 
         d.writexml(cf)
 
@@ -414,8 +418,10 @@ def handle(scfg, rcfg, request, response):
                         # Now that the feed has been generated, set the headers
                         # correctly and return it.
                         response.headers['Content-type'] = MIME_TYPE
-                        response.headers['Last-Modified'] = \
-                            datetime.datetime.now().isoformat()
+
+                        # Return the current time and date in GMT.
+                        response.headers['Last-Modified'] = rfc822.formatdate()
+
                         response.headers['Content-length'] = len(buf)
                         return buf
                 else:
