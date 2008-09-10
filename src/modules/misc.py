@@ -32,6 +32,7 @@ import sha
 import socket
 import urllib
 import urllib2
+import httplib
 import urlparse
 import sys
 import zlib
@@ -406,6 +407,14 @@ MAX_TIMEOUT_COUNT = 4
 class TransferTimedOutException(Exception):
         def __init__(self, args = None):
                 self.args = args
+
+# Retryable http errors.  These are the HTTP errors that we'll catch.  When we
+# catch them, we throw a TransferTimedOutException instead re-raising the
+# HTTPError and letting some other handler catch it.
+
+retryable_http_errors = set((httplib.REQUEST_TIMEOUT, httplib.BAD_GATEWAY,
+        httplib.GATEWAY_TIMEOUT))
+
 
 class TransferContentException(Exception):
         def __init__(self, args = None):

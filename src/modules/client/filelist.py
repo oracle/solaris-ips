@@ -44,6 +44,7 @@ from pkg.misc import TransferTimedOutException
 from pkg.misc import TransferContentException
 from pkg.misc import InvalidContentException
 from pkg.misc import MAX_TIMEOUT_COUNT
+from pkg.misc import retryable_http_errors
 
 class FileList(object):
         """A FileList maintains mappings between files and Actions.
@@ -343,7 +344,7 @@ class FileList(object):
                         raise FileListException, "No server-side support" 
                 except urllib2.HTTPError, e:
                         # Must check for HTTPError before URLError
-                        if e.code == httplib.REQUEST_TIMEOUT:
+                        if e.code in retryable_http_errors:
                                 raise TransferTimedOutException
                         raise
                 except urllib2.URLError, e:

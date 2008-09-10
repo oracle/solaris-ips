@@ -241,7 +241,6 @@ cli.t_rename.py TestRename.test_rename1|pass
 cli.t_rename.py TestRename.test_rename2|pass
 cli.t_rename.py TestRename.test_rename3|pass
 cli.t_rename.py TestRename.test_rename4|pass
-cli.t_search.py TestPkgSearch.test_bug_2958|pass
 cli.t_search.py TestPkgSearch.test_bug_2989_1|pass
 cli.t_search.py TestPkgSearch.test_bug_2989_2|pass
 cli.t_search.py TestPkgSearch.test_bug_2989_3|pass

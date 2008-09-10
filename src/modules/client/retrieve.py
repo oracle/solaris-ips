@@ -30,6 +30,7 @@ import httplib
 import pkg.fmri
 from pkg.misc import versioned_urlopen
 from pkg.misc import TransferTimedOutException
+from pkg.misc import retryable_http_errors
 
 # client/retrieve.py - collected methods for retrieval of pkg components
 # from repositories
@@ -74,7 +75,7 @@ def get_manifest(img, fmri):
                     fmri.get_url_path(), ssl_creds = ssl_tuple,
                     imgtype = img.type)
         except urllib2.HTTPError, e:
-                if e.code == httplib.REQUEST_TIMEOUT:
+                if e.code in retryable_http_errors:
                         raise TransferTimedOutException
 
                 raise NameError, "could not retrieve manifest '%s' from '%s'" % \

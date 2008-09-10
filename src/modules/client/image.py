@@ -416,7 +416,7 @@ class Image(object):
                         pfx, url, ssl_key, ssl_cert, dt, mir = \
                             self.split_authority(a)
 
-                        if ssl_cert == "None":
+                        if not ssl_cert:
                                 continue
 
                         try:

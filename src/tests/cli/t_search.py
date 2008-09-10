@@ -685,17 +685,6 @@ close
                 self._search_op(True, "FO[*O]O", self.res_remote_foo)
                 self._search_op(True, "FO[]O]O", self.res_remote_foo)
 
-        def test_bug_2958(self):
-                """http://defect.opensolaris.org/bz/show_bug.cgi?id=2958"""
-                
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.example_pkg10)
-
-                self.image_create(durl)                
-                self.pkg("search -r \"O[[O]\"")
-                # If the bug in /bin/sh wasn't there, this should succeed.
-                self.pkg("search -r O[[O]", exit=1)
-                
         def test_bug_3046(self):
                 """Checks if directories ending in / break the indexer."""
                 durl = self.dc.get_depot_url()

@@ -127,16 +127,23 @@ class ImageConfig(object):
 
                                 a["prefix"] = k
                                 a["origin"] = cp.get(s, "origin")
-                                a["mirrors"] = self.read_list(
-                                    cp.get(s, "mirrors"))
+                                mir_str = cp.get(s, "mirrors")
+                                if mir_str == "None":
+                                        a["mirrors"] = []
+                                else:
+                                        a["mirrors"] = self.read_list(mir_str)
 
                                 try:
                                         a["ssl_key"] = cp.get(s, "ssl_key")
+                                        if a["ssl_key"] == "None":
+                                                a["ssl_key"] = None
                                 except ConfigParser.NoOptionError:
                                         a["ssl_key"] = None
 
                                 try:
                                         a["ssl_cert"] = cp.get(s, "ssl_cert")
+                                        if a["ssl_cert"] == "None":
+                                                a["ssl_cert"] = None
                                 except ConfigParser.NoOptionError:
                                         a["ssl_cert"] = None
 

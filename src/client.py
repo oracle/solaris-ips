@@ -1597,7 +1597,7 @@ def authority_list(img, args):
                         if dt:
                                 dt = dt.ctime()
 
-                        if ssl_cert != "None":
+                        if ssl_cert:
                                 try:
                                         cert = img.build_cert(ssl_cert)
                                 except (IOError, OpenSSL.crypto.Error):
