@@ -330,6 +330,9 @@ slim_import:	$(BUILDID)/slim_cluster $(TMPPKGS)
 		$(BUILDID)/slim_cluster 
 
 %/slim_import:
+	if test -z "$(JUST_THESE_PKGS)"; then \
+		$(MAKE) clobber; \
+	fi
 	$(MAKE) BUILDID=$(@:%/slim_import=%) slim_import
 
 redist_import:	$(BUILDID)/redist_cluster $(TMPPKGS)
@@ -339,6 +342,9 @@ redist_import:	$(BUILDID)/redist_cluster $(TMPPKGS)
 	$(MAKE) $(BUILDID)/entire
 
 %/redist_import:
+	if test -z "$(JUST_THESE_PKGS)"; then \
+		$(MAKE) clobber; \
+	fi
 	$(MAKE) BUILDID=$(@:%/redist_import=%) redist_import
 
 %/entire:
@@ -393,6 +399,7 @@ clean:
 
 clobber: clean
 	rm -f $(PROG)
+	rm -rf $(TMPPKGS)
 
 lint:
 	$(LINT) $(LINTFLAGS) $(SRCS)
