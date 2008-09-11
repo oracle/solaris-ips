@@ -27,15 +27,62 @@
 # return file on stdout
 #
 
+import os
+import platform
 import sys
 
 from pkg.sysvpkg import SolarisPackage
 from pkg.bundle.SolarisPackageDirBundle import SolarisPackageDirBundle
 
+def setup_environment(path_to_proto):
+        """ Set up environment for running the Solaris import.
+
+            We modify the Python search path by adjusting sys.path so
+            that it references the proto area.
+
+            path_to_proto should be a relative path indicating a path
+            to proto area of the workspace.
+
+            This function looks at argv[0] to compute the ultimate
+            path to the proto area.
+
+        """
+
+        osname = platform.uname()[0].lower()
+        proc = 'unknown'
+        if osname == 'sunos':
+                proc = platform.processor()
+        elif osname == 'linux':
+                proc = "linux_" + platform.machine()
+        elif osname == 'windows':
+                proc = osname
+        elif osname == 'darwin':
+                proc = osname
+        else:
+                print >> sys.stderr, \
+                    "Unable to determine appropriate proto area location."
+                sys.exit(1)
+
+        # Figure out from where we're invoking the command
+        cmddir, cmdname = os.path.split(sys.argv[0])
+        cmddir = os.path.realpath(cmddir)
+
+        if "ROOT" in os.environ:
+                g_proto_area = os.environ["ROOT"]
+        else:
+                g_proto_area = "%s/%s/root_%s" % (cmddir, path_to_proto, proc)
+
+        # Clean up relative ../../, etc. out of path to proto
+        g_proto_area = os.path.realpath(g_proto_area)
+
+        pkgs = "%s/usr/lib/python2.4/vendor-packages" % g_proto_area
+
+        sys.path.insert(1, pkgs)
 
 pkgpath = sys.argv[1]
 filename = sys.argv[2]
 
+setup_environment("../../../proto")
 p = SolarisPackage(pkgpath)
 
 if filename not in (f.pathname for f in p.manifest):
