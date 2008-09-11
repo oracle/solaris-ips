@@ -1,3 +1,5 @@
 package SUNWvirtinst
 import SUNWvirtinst
+depend SUNWlibvirt
+depend SUNWurlgrabber
 end package

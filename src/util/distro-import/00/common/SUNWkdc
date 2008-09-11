@@ -1,6 +1,7 @@
 package SUNWkdc
 import SUNWkdcu
 import SUNWkdcr
+depend SUNWlldap
 depend SUNWrsg
 depend SUNWsmbs
 end package
