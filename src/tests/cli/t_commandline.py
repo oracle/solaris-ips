@@ -206,5 +206,14 @@ class TestCommandLine(testutils.SingleDepotTestCase):
                     exit=1)
                 self.pkg("set-authority --remove-mirror=test7 mtest", exit=1)
 
+        def test_refresh(self):
+                """Test refresh and options."""
+                durl = self.dc.get_depot_url()
+                self.image_create(durl)
+
+                self.pkg("refresh")
+                self.pkg("refresh --full")
+               
+
 if __name__ == "__main__":
         unittest.main()

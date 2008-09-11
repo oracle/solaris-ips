@@ -1384,7 +1384,7 @@ def catalog_refresh(img, args):
 
         # XXX will need to show available content series for each package
         full_refresh = False
-        opts, pargs = getopt.getopt(args, ["full"])
+        opts, pargs = getopt.getopt(args, "", ["full"])
         for opt, arg in opts:
                 if opt == "--full":
                         full_refresh = True

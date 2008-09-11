@@ -169,6 +169,7 @@ cli.t_commandline.py TestCommandLine.test_pkg_bogus_opts|pass
 cli.t_commandline.py TestCommandLine.test_pkg_missing_args|pass
 cli.t_commandline.py TestCommandLine.test_pkg_vq_1153|pass
 cli.t_commandline.py TestCommandLine.test_pkgsend_bogus_opts|pass
+cli.t_commandline.py TestCommandLine.test_refresh|pass
 cli.t_depot.py TestDepot.testStartStop|pass
 cli.t_depot.py TestDepot.test_bug_1876|pass
 cli.t_depot.py TestDepot.test_depot_ping|pass
