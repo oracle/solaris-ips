@@ -58,7 +58,7 @@ fi
 # We don't add a dependency on SUNWopenssl for SUNWpython-pyopenssl, since
 # SUNWopenssl is always installed
 if [[ $pkgname == "SUNWipkg" ]]; then
-	pkgsend add depend fmri=SUNWpython-pyopenssl@$PYOPENSSL_VER type=require
+	pkgsend add depend fmri=SUNWpython-pyopenssl@$PYOPENSSL_VER-0.$buildid type=require
 	pkgsend add depend fmri=SUNWpython-cherrypy@$CHERRYPY_VER type=require
 elif [[ $pkgname == "SUNWipkg-gui" ]]; then
 	pkgsend import $PKG_ARCHIVE/SUNWipkg-gui-data
