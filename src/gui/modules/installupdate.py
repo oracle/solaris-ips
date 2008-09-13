@@ -268,7 +268,7 @@ class InstallUpdate(progress.ProgressTracker):
                                         conp = image.apply_optional_dependencies(p)
                                         matches = list(image.inventory([ conp ],
                                             all_known = True))
-                                except RuntimeError:
+                                except (RuntimeError, InventoryException):
                                         # XXX Module directly printing.
                                         error = 1
                                         continue

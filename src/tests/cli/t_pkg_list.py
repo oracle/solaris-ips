@@ -192,6 +192,36 @@ class TestPkgList(testutils.ManyDepotTestCase):
                 expected = self.reduceSpaces(expected)
                 self.assertEqualDiff(expected, output)
 
+        def test_list_matching(self):
+                """List all versions of package foo, regardless of authority."""
+                self.pkg("list -aH foo*")
+                expected = \
+                    "foo         1.2.1-0 known ----\n" \
+                    "foo (test2) 1.2.1-0 known ----\n" \
+                    "foo         1.2-0   known u---\n" \
+                    "foo (test2) 1.2-0   known u---\n" \
+                    "foo         1.1-0   known u---\n" \
+                    "foo (test2) 1.1-0   known u---\n" \
+                    "foo         1.0-0   known u---\n" \
+                    "foo (test2) 1.0-0   known u---\n" \
+                    "foo         1-0     known u---\n" \
+                    "foo (test2) 1-0     known u---\n" \
+                    "food        1.2-0   known ----\n" \
+                    "food (test2) 1.2-0  known ----\n"
+
+                output = self.reduceSpaces(self.output)
+                expected = self.reduceSpaces(expected)
+                self.assertEqualDiff(expected, output)
+                self.pkg("list -aH 'fo*'")
+                output = self.reduceSpaces(self.output)
+                self.assertEqualDiff(expected, output)
+                self.pkg("list -aH '*fo*'")
+                output = self.reduceSpaces(self.output)
+                self.assertEqualDiff(expected, output)
+                self.pkg("list -aH 'f?o*'")
+                output = self.reduceSpaces(self.output)
+                self.assertEqualDiff(expected, output)
+
         def test_list_multi_name(self):
                 """Test for multiple name match listing."""
                 self.pkg("list -aH foo*@1.2")

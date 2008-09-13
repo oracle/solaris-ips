@@ -52,11 +52,27 @@ class DotSequence(list):
         versioning.  We define the "major release" value and the "minor release"
         value as the first two numbers in the sequence."""
 
+        @staticmethod
+        def dotsequence_int(elem):
+                # Do this first; if the string is zero chars or non-numeric
+                # chars, this will throw.
+                x = int(elem)
+                if elem[0] == "-":
+                        raise ValueError, "Negative number"
+                if x > 0 and elem[0] == "0":
+                        raise ValueError, "Zero padded number"
+                return x
+
         def __init__(self, dotstring):
                 try:
-                        list.__init__(self, map(int, dotstring.split(".")))
+                        list.__init__(self,
+                            map(DotSequence.dotsequence_int,
+                                dotstring.split(".")))
                 except ValueError:
                         raise IllegalDotSequence(dotstring)
+
+		if len(self) == 0:
+                        raise IllegalDotSequence("Empty DotSequence")
 
         def __str__(self):
                 return ".".join(map(str, self))
@@ -106,9 +122,17 @@ class Version(object):
                 # XXX If illegally formatted, raise exception.
 
                 if not version_string:
-                        raise IllegalVersion, \
-                            "Version cannot be empty."
+                        raise IllegalVersion, "Version cannot be empty"
 
+                #
+                # Locate and extract the time, branch, and build strings,
+                # if specified.  Error checking happens in the second half of
+                # the routine.  In the event that a given part of the input is
+                # signalled but empty (for example: '0.3-' or '0.3-3.0:',
+                # we'll produce an empty (but not None) string for that portion.
+                #
+
+                # Locate and extract the time string, if specified.
                 timeidx = version_string.find(":")
                 if timeidx != -1:
                         timestr = version_string[timeidx + 1:]
@@ -116,6 +140,7 @@ class Version(object):
                         timeidx = None
                         timestr = None
 
+                # Locate and extract the branch string, if specified.
                 branchidx = version_string.find("-")
                 if branchidx != -1:
                         branch = version_string[branchidx + 1:timeidx]
@@ -123,6 +148,7 @@ class Version(object):
                         branchidx = timeidx
                         branch = None
 
+                # Locate and extract the build string, if specified.
                 buildidx = version_string.find(",")
                 if buildidx != -1:
                         build = version_string[buildidx + 1:branchidx]
@@ -132,20 +158,28 @@ class Version(object):
 
                 if buildidx == 0:
                         raise IllegalVersion, \
-                            "Versions must have a release value."
+                            "Versions must have a release value"
 
-                self.release = DotSequence(version_string[:buildidx])
+                #
+                # Error checking and conversion from strings to objects
+                # begins here.
+                #
+		try:
+			self.release = DotSequence(version_string[:buildidx])
 
-                if branch:
-                        self.branch = DotSequence(branch)
-                else:
-                        self.branch = None
+			if branch is not None:
+				self.branch = DotSequence(branch)
+			else:
+				self.branch = None
 
-                if build:
-                        self.build_release = DotSequence(build)
-                else:
-                        assert build_string is not None
-                        self.build_release = DotSequence(build_string)
+			if build is not None:
+				self.build_release = DotSequence(build)
+			else:
+				assert build_string is not None
+				self.build_release = DotSequence(build_string)
+
+		except IllegalDotSequence, id:
+			raise IllegalVersion("Bad Version: %s" % id)
 
                 #
                 # In 99% of the cases in which we use date and time, it's solely
@@ -153,7 +187,7 @@ class Version(object):
                 # collates in date order, we just hold onto the string-
                 # converting it to anything else is expensive.
                 #
-                if timestr:
+                if timestr is not None:
                         if len(timestr) != 16 or timestr[8] != "T" \
                             or timestr[15] != "Z":
                                 raise IllegalVersion, \
@@ -174,8 +208,6 @@ class Version(object):
                         self.timestr = timestr
                 else:
                         self.timestr = None
-
-                # raise IllegalVersion
 
         def compatible_with_build(self, target):
                 """target is a DotSequence for the target system."""
@@ -288,7 +320,13 @@ class Version(object):
                 return 0
 
         def __hash__(self):
-                return hash((self.release, self.branch, self.timestr))
+                # If a timestamp is present, it's enough to hash on, and is
+                # nicely unique.  If not, use release and branch, which are
+                # not very unique.
+                if self.timestr:
+                        return hash(self.timestr)
+                else:
+                        return hash((self.release, self.branch))
 
         def is_successor(self, other, constraint):
                 """Evaluate true if self is a successor version to other.

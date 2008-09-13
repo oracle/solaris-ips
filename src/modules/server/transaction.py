@@ -82,27 +82,40 @@ class Transaction(object):
                 if self.client_release == None:
                         # If client_release is not defined, then this request is
                         # invalid.
-                        return httplib.BAD_REQUEST
+                        #
+                        # XXX should test whether client-release string is
+                        # a valid dotsequence
+                        return (httplib.BAD_REQUEST,
+                            "Client-Release header missing") 
 
                 try:
                         self.pkg_name = tokens[0]
                         # cherrypy decoded it, but we actually need it encoded.
                         self.esc_pkg_name = urllib.quote("%s" % tokens[0], "")
                 except IndexError:
-                        return httplib.BAD_REQUEST
+                        return (httplib.BAD_REQUEST, "Missing Package Name")
 
                 self.open_time = datetime.datetime.utcnow()
 
                 # record transaction metadata:  opening_time, package, user
 
                 # attempt to construct an FMRI object
-                self.fmri = fmri.PkgFmri(self.pkg_name, self.client_release)
+                try:
+                        self.fmri = fmri.PkgFmri(self.pkg_name,
+                            self.client_release)
+                except fmri.IllegalFmri, e:
+                        return (httplib.BAD_REQUEST, str(e))
+
+                # We must have a version supplied for publication.
+                if self.fmri.version == None:
+                        return (httplib.BAD_REQUEST, "Missing Version")
+
                 self.fmri.set_timestamp(self.open_time)
 
                 # Check that the new FMRI's version is valid.  I.e. the package
                 # has not been renamed or frozen for the new version.
                 if not self.cfg.catalog.valid_new_fmri(self.fmri):
-                        return httplib.BAD_REQUEST
+                        return (httplib.BAD_REQUEST, "Invalid version")
 
                 trans_basename = self.get_basename()
                 self.dir = "%s/%s" % (self.cfg.trans_root, trans_basename)
@@ -128,7 +141,7 @@ class Transaction(object):
                 # if not found, create package
                 # set package state to TRANSACTING
 
-                return httplib.OK
+                return (httplib.OK, None)
 
         def reopen(self, cfg, trans_dir):
                 """The reopen() method is invoked on server restart, to
@@ -348,9 +361,8 @@ class Transaction(object):
                 and trans, respectively."""
 
                 cfg = self.cfg
-                fmri = self.fmri
 
-                authority, pkg_name, version = fmri.tuple()
+                authority, pkg_name, version = self.fmri.tuple()
                 pkgdir = "%s/%s" % (cfg.pkg_root, urllib.quote(pkg_name, ""))
 
                 # If the directory isn't there, create it.
@@ -361,7 +373,7 @@ class Transaction(object):
                 # A package may have no files, so there needn't be a manifest.
                 if os.path.exists("%s/manifest" % self.dir):
                         portable.rename("%s/manifest" % self.dir, "%s/%s" %
-                            (pkgdir, urllib.quote(str(fmri.version), "")))
+                            (pkgdir, urllib.quote(str(self.fmri.version), "")))
 
                 # Move each file to file_root, with appropriate directory
                 # structure.

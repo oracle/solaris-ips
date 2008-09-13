@@ -73,6 +73,9 @@ import pkg
 def error(text):
         """Emit an error message prefixed by the command name """
 
+        # If we get passed something like an Exception, we can convert it
+        # down to a string.
+        text = str(text)
         # If the message starts with whitespace, assume that it should come
         # *before* the command-name prefix.
         text_nows = text.lstrip()
@@ -143,6 +146,22 @@ def get_partial_indexing_error_message(text):
             "Please use 'pkg rebuild-index' " + \
             "to fix this problem."
 
+def check_fmri_args(args):
+        """ Convenience routine to check that input args are valid fmris. """
+        ret = True
+        for x in args:
+                try:
+                        #
+                        # Pass a bogus build release-- needed to satisfy
+                        # fmri's checks in the common case that a version but
+                        # no build release was specified by the user.
+                        #
+                        fmri.MatchingPkgFmri(x, build_release="1.0")
+                except fmri.IllegalFmri, e:
+                        error(e)
+                        ret = False
+        return ret
+
 def list_inventory(img, args):
         all_known = False
         display_headers = True
@@ -174,11 +193,16 @@ def list_inventory(img, args):
         else:
                 fmt_str = "%-45s %-15s %-10s %s"
 
+        if not check_fmri_args(pargs):
+                return 1
+
         img.load_catalogs(progress.NullProgressTracker())
 
+        seen_one_pkg = False
+        found = False
         try:
-                found = False
                 for pkg, state in img.inventory(pargs, all_known):
+                        seen_one_pkg = True
                         if upgradable_only and not state["upgradable"]:
                                 continue
 
@@ -225,23 +249,32 @@ def list_inventory(img, args):
 
 
                 if not found:
-                        if not pargs:
-                                if upgradable_only:
-                                        error(_("no installed packages have " \
+                        if not seen_one_pkg and not all_known:
+                                emsg(_("no packages installed"))
+                                return 1
+
+                        if upgradable_only:
+                                if pargs:
+                                        emsg(_("No specified packages have " \
                                             "available updates"))
                                 else:
-                                        error(_("no packages installed"))
+                                        emsg(_("No installed packages have " \
+                                            "available updates"))
+                                return 1
                         return 1
                 return 0
 
-        except RuntimeError, e:
-                if not found:
-                        error(_("no matching packages installed"))
+        except image.InventoryException, e:
+                if e.illegal:
+                        for i in e.illegal:
+                                error(i)
                         return 1
 
-                state = all_known and \
-                    image.PKG_STATE_KNOWN or image.PKG_STATE_INSTALLED
-                for pat in e.args[0]:
+                if all_known:
+                        state = image.PKG_STATE_KNOWN
+                else:
+                        state = image.PKG_STATE_INSTALLED
+                for pat in e.notfound:
                         error(_("no packages matching '%s' %s") % (pat, state))
                 return 1
 
@@ -266,13 +299,15 @@ def installed_fmris_from_args(img, args):
         """
         found = []
         notfound = []
+        illegals = []
         try:
                 for m in img.inventory(args):
                         found.append(m[0])
-        except RuntimeError, e:
-                notfound = e[0]
+        except image.InventoryException, e:
+                illegals = e.illegal
+                notfound = e.notfound
 
-        return found, notfound
+        return found, notfound, illegals
 
 def verify_image(img, args):
         opts, pargs = getopt.getopt(args, "vfqH")
@@ -297,9 +332,17 @@ def verify_image(img, args):
 
         progresstracker = get_tracker(quiet)
 
+        if not check_fmri_args(pargs):
+                return 1
+
         img.load_catalogs(progresstracker)
 
-        fmris, notfound = installed_fmris_from_args(img, pargs)
+        fmris, notfound, illegals = installed_fmris_from_args(img, pargs)
+
+        if illegals:
+                for i in illegals:
+                        emsg(str(i))
+                return 1
 
         any_errors = False
 
@@ -494,7 +537,9 @@ def image_update(img, args):
         # special case behaviors.
         #
         opensolaris_image = True
-        fmris, notfound = installed_fmris_from_args(img, ["SUNWipkg", "SUNWcs"])
+        fmris, notfound, illegals = \
+            installed_fmris_from_args(img, ["SUNWipkg", "SUNWcs"])
+        assert(len(illegals) == 0)
         if notfound:
                 opensolaris_image = False
 
@@ -565,7 +610,7 @@ def image_update(img, args):
         img.cleanup_downloads()
         if ret_code == 0:
                 img.cleanup_cached_content()
-                
+
                 if opensolaris_image:
                         msg("\n" + "-" * 75)
                         msg(_("NOTE: Please review release notes posted at:\n" \
@@ -610,6 +655,9 @@ def install(img, args):
 
         progresstracker = get_tracker(quiet)
 
+        if not check_fmri_args(pargs):
+                return 1
+
         img.load_catalogs(progresstracker)
 
         pkg_list = [ pat.replace("*", ".*").replace("?", ".")
@@ -620,6 +668,12 @@ def install(img, args):
                     filters = filters, verbose = verbose, noexecute = noexecute)
         except RuntimeError, e:
                 error(_("install failed: %s") % e)
+                return 1
+        except image.InventoryException, e:
+                error(_("install failed: %s") % e)
+                return 1
+        except fmri.IllegalFmri, e:
+                error(e)
                 return 1
 
         assert img.imageplan
@@ -704,6 +758,9 @@ def uninstall(img, args):
 
         progresstracker = get_tracker(quiet)
 
+        if not check_fmri_args(pargs):
+                return 1
+
         img.load_catalogs(progresstracker)
 
         ip = imageplan.ImagePlan(img, progresstracker, recursive_removal)
@@ -718,6 +775,10 @@ def uninstall(img, args):
                         matches = list(img.inventory([ rpat ]))
                 except RuntimeError:
                         error(_("'%s' not even in catalog!") % ppat)
+                        err = 1
+                        continue
+                except image.InventoryException, e:
+                        error(e)
                         err = 1
                         continue
 
@@ -943,12 +1004,21 @@ def info(img, args):
         if info_remote and not pargs:
                 usage(_("info: must request remote info for specific packages"))
 
+        if not check_fmri_args(pargs):
+                return 1
+
         img.load_catalogs(progress.NullProgressTracker())
 
         err = 0
 
         if info_local:
-                fmris, notfound = installed_fmris_from_args(img, pargs)
+                fmris, notfound, illegals = \
+                    installed_fmris_from_args(img, pargs)
+                if illegals:
+                        for i in illegals:
+                                emsg(str(i))
+                        return 1
+
                 if not fmris and not notfound:
                         error(_("no packages installed"))
                         return 1
@@ -967,8 +1037,10 @@ def info(img, args):
                         try:
                                 matches = list(img.inventory([ p ],
                                     all_known = True))
-                        except RuntimeError:
-                                notfound.append(p)
+                        except image.InventoryException, e:
+                                assert(len(e.notfound) == 1)
+                                notfound.append(e.notfound[0])
+                                err = 1
                                 continue
 
                         pnames = {}
@@ -1221,6 +1293,9 @@ def list_contents(img, args):
                 usage(_("contents: must request remote contents for specific " \
                    "packages"))
 
+        if not check_fmri_args(pargs):
+                return 1
+
         if display_raw:
                 display_headers = False
                 attrs = [ "action.raw" ]
@@ -1244,7 +1319,14 @@ def list_contents(img, args):
         err = 0
 
         if local:
-                fmris, notfound = installed_fmris_from_args(img, pargs)
+                fmris, notfound, illegals = \
+                    installed_fmris_from_args(img, pargs)
+
+                if illegals:
+                        for i in illegals:
+                                emsg(i)
+                        return 1
+
                 if not fmris and not notfound:
                         error(_("no packages installed"))
                         return 1
@@ -1263,8 +1345,9 @@ def list_contents(img, args):
                         try:
                                 matches = list(img.inventory([ p ],
                                     all_known = True))
-                        except RuntimeError:
-                                notfound.append(p)
+                        except image.InventoryException, e:
+                                assert(len(e.notfound) == 1)
+                                notfound.append(e.notfound[0])
                                 continue
 
                         pnames = {}
@@ -1403,7 +1486,6 @@ def catalog_refresh(img, args):
                         return 1
                 auths_to_refresh.append(auth)
 
-        
         # Ensure Image directory structure is valid.
         if not os.path.isdir("%s/catalog" % img.imgdir):
                 img.mkdirs()
@@ -1423,7 +1505,7 @@ def catalog_refresh(img, args):
 
 def authority_set(img, args):
         """pkg set-authority [-P] [-k ssl_key] [-c ssl_cert]
-            [-O origin_url] [-m mirror to add] [-M mirror to remove] 
+            [-O origin_url] [-m mirror to add] [-M mirror to remove]
             authority"""
 
         preferred = False

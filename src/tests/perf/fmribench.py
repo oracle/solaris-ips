@@ -32,18 +32,6 @@ import timeit
 import sys
 
 benches = [
-        [ "version hash (tstamp)", 1000000,
-        """import pkg.version as version
-f1 = version.Version("5.11-0.72:20070921T203926Z", "0.5.11")""",
-        """hash(f1)"""
-        ],
-
-        [ "version hash (no-tstamp)", 1000000,
-        """import pkg.version as version
-f1 = version.Version("5.11-0.72", "0.5.11")""",
-        """hash(f1)"""
-        ],
-
         
         [ "dotsequence creation", 100000,
         """import pkg.version as version""",
@@ -88,6 +76,18 @@ v2 = version.DotSequence("0.72.1.3.4.5")""",
         """import pkg.version as version
 v1 = version.DotSequence("0.72.1")""",
         """str(v1)"""
+        ],
+
+        [ "version hash (tstamp)", 100000,
+        """import pkg.version as version
+f1 = version.Version("5.11-0.72:20070921T203926Z", "0.5.11")""",
+        """hash(f1)"""
+        ],
+
+        [ "version hash (no-tstamp)", 100000,
+        """import pkg.version as version
+f1 = version.Version("5.11-0.72", "0.5.11")""",
+        """hash(f1)"""
         ],
 
         [ "fmri create", 50000,

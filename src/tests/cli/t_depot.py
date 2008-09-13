@@ -115,5 +115,12 @@ class TestDepot(testutils.SingleDepotTestCase):
                 self.pkg("uninstall quux")
                 self.pkg("verify")
 
+        def test_bad_fmris(self):
+                durl = self.dc.get_depot_url()
+                self.pkgsend(durl, "open foo@", exit=1)
+                self.pkgsend(durl, "open foo@x.y", exit=1)
+                self.pkgsend(durl, "open foo@1.0,-2.0", exit=1)
+
+
 if __name__ == "__main__":
         unittest.main()

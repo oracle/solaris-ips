@@ -23,6 +23,7 @@
 # Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
+import unittest
 import pkg.fmri as fmri
 import pkg.version as version
 
@@ -35,6 +36,14 @@ sys.path.insert(0, path_to_parent)
 import pkg5unittest
 
 class TestFMRI(pkg5unittest.Pkg5TestCase):
+
+        pkg_name_valid_chars = {
+            "never": " `~!@#$%^&*()=[{]}\\|;:\",<>?",
+            "always": "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ" +
+                "0123456789",
+            "after-first": "_/-.+",
+        }
+
         def setUp(self):
                 self.n1 = fmri.PkgFmri("pkg://pion/sunos/coreutils",
                     build_release = "5.9")
@@ -124,13 +133,127 @@ class TestFMRI(pkg5unittest.Pkg5TestCase):
 
         def testbadfmri1(self):
                 # no 31st day in february
-                self.assertRaises(version.IllegalVersion, fmri.PkgFmri,
+                self.assertRaises(fmri.IllegalFmri, fmri.PkgFmri,
                     "pkg://origin/SUNWxwssu@0.5.11,5.11-0.72:20070231T203926Z")
 
         def testbadfmri2(self):
                 # missing version
-                self.assertRaises(version.IllegalVersion, fmri.PkgFmri,
+                self.assertRaises(fmri.IllegalFmri, fmri.PkgFmri,
                     "pkg://origin/SUNWxwssu@")
+
+        #
+        # The next assertions are for various bogus fmris
+        #
+        def testbadfmri3(self):
+                self.assertRaises(fmri.IllegalFmri, fmri.PkgFmri, "")
+
+        def testbadfmri4(self):
+                self.assertRaises(fmri.IllegalFmri, fmri.PkgFmri, "@")
+
+        def testbadfmri5(self):
+                self.assertRaises(fmri.IllegalFmri, fmri.PkgFmri, "@1,1-1")
+
+        def testbadfmri6(self):
+                self.assertRaises(fmri.IllegalFmri, fmri.PkgFmri, "pkg:")
+
+        def testbadfmri7(self):
+                self.assertRaises(fmri.IllegalFmri, fmri.PkgFmri, "pkg://")
+
+        def testbadfmri8(self):
+                self.assertRaises(fmri.IllegalFmri, fmri.PkgFmri, "pkg://foo")
+
+        def testbadfmri9(self):
+                self.assertRaises(fmri.IllegalFmri, fmri.PkgFmri, "pkg://foo/")
+
+        def testbadfmri10(self):
+                self.assertRaises(fmri.IllegalFmri, fmri.PkgFmri, "pkg:/")
+
+        def testbadfmri11(self):
+                self.assertRaises(fmri.IllegalFmri, fmri.PkgFmri, "pkg://@")
+
+        def testbadfmri12(self):
+                self.assertRaises(fmri.IllegalFmri, fmri.PkgFmri, "pkg:/@")
+
+        def testbadfmri13(self):
+                self.assertRaises(fmri.IllegalFmri, fmri.PkgFmri, "pkg:/pkg:")
+
+        def testbadfmri14(self):
+                self.assertRaises(fmri.IllegalFmri, fmri.PkgFmri,
+                    "pkg://foo/pkg:")
+
+        def testbadfmri15(self):
+                # Truncated time
+                self.assertRaises(fmri.IllegalFmri, fmri.PkgFmri,
+                    "pkg://origin/SUNWxwssu@0.5.11,5.11-0.72:20070231T203")
+
+        def testbadfmri16(self):
+                # Truncated time
+                self.assertRaises(fmri.IllegalFmri, fmri.PkgFmri,
+                    "pkg://origin/SUNWxwssu@0.5.11,5.11-0.72:200702")
+
+        def testbadfmri17(self):
+                # Dangling Branch with Time
+                self.assertRaises(fmri.IllegalFmri, fmri.PkgFmri,
+                    "pkg://origin/SUNWxwssu@0.5.11,5.11-:20070922T153047Z")
+
+        def testbadfmri18(self):
+                # Dangling Branch
+                self.assertRaises(fmri.IllegalFmri, fmri.PkgFmri,
+                    "pkg://origin/SUNWxwssu@0.5.11,5.11-")
+
+        def test_pkgname_grammar(self):
+                for char in self.pkg_name_valid_chars["never"]:
+                        invalid_name = "invalid%spkg@1.0,5.11-0" % char
+                        self.assertRaises(fmri.IllegalFmri, fmri.PkgFmri,
+                            invalid_name)
+
+                for char in self.pkg_name_valid_chars["after-first"]:
+                        invalid_name = "%sinvalidpkg@1.0,5.11-0" % char
+                        self.assertRaises(fmri.IllegalFmri, fmri.PkgFmri,
+                            invalid_name)
+
+                for char in self.pkg_name_valid_chars["after-first"]:
+                        invalid_name = "test/%spkg@1.0,5.11-0" % char
+                        self.assertRaises(fmri.IllegalFmri, fmri.PkgFmri,
+                            invalid_name)
+
+                # Some positive tests
+                for char in self.pkg_name_valid_chars["always"]:
+                        for char2 in self.pkg_name_valid_chars["after-first"]:
+                                valid_name = "%s%stest@1.0,5.11-0" % \
+                                    (char, char2)
+                                fmri.PkgFmri(valid_name)
+
+        def testbadfmri_pkgname(self):
+                self.assertRaises(fmri.IllegalFmri, fmri.PkgFmri,
+                    "application//office@0.5.11,5.11-0.96")
+                self.assertRaises(fmri.IllegalFmri, fmri.PkgFmri,
+                    "application/office/@0.5.11,5.11-0.96")
+                self.assertRaises(fmri.IllegalFmri, fmri.PkgFmri,
+                    "/application@0.5.11,5.11-0.96")
+                self.assertRaises(fmri.IllegalFmri, fmri.PkgFmri,
+                    "app/.cool@0.5.11,5.11-0.96")
+
+        def testgoodfmris_dots(self):
+                fmri.PkgFmri("a.b")
+                fmri.PkgFmri("a.b@1.0", "5.11")
+
+        def testgoodfmris_slashes(self):
+                fmri.PkgFmri("a/b")
+                fmri.PkgFmri("a/b/c")
+
+        def testgoodfmris_dashes(self):
+                fmri.PkgFmri("a--b---")
+
+        def testgoodfmris_unders(self):
+                fmri.PkgFmri("a___b__")
+
+        def testgoodfmris_pluses(self):
+                fmri.PkgFmri("a+++b+++")
+
+        def testgoodfmris_(self):
+                fmri.PkgFmri("pkg:/abcdef01234.-+_/GHIJK@1.0", "5.11")
+                fmri.PkgFmri("pkg:/a/b/c/d/e/f/g/H/I/J/0/1/2")
 
         def testfmrihash(self):
                 """ FMRIs override __hash__.  Test that this is working

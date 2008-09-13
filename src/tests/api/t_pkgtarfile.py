@@ -25,6 +25,7 @@
 # Use is subject to license terms.
 #
 
+import unittest
 import sys
 import os
 import tempfile

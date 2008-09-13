@@ -23,6 +23,7 @@
 # Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
+import unittest
 import pkg.client.filter as filter
 import pkg.actions as actions
 

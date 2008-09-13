@@ -35,6 +35,9 @@ import urllib
 import generic
 import pkg.fmri as fmri
 
+# for fmri correction hack
+import re
+
 class DependencyAction(generic.Action):
         """Class representing a dependency packaging object.  The fmri attribute
         is expected to be the pkg FMRI that this package depends on.  The type
@@ -52,7 +55,7 @@ class DependencyAction(generic.Action):
 
         incorporate - optional freeze at specified version
 
-        exclude - package non-functional if dependent package is present 
+        exclude - package non-functional if dependent package is present
         (unimplemented) """
 
         name = "depend"
@@ -62,6 +65,59 @@ class DependencyAction(generic.Action):
 
         def __init__(self, data=None, **attrs):
                 generic.Action.__init__(self, data, **attrs)
+                if "fmri" in self.attrs:
+                        self.clean_fmri()
+
+        def clean_fmri(self):
+                """ Clean up an invalid depend fmri into one which
+                we can recognize.
+                Example: 2.01.01.38-0.96  -> 2.1.1.38-0.96
+                This also corrects self.attrs["fmri"] as external code
+                knows about that, too.
+                """
+                #
+                # This hack corrects a problem in pre-2008.11 packaging
+                # metadata: some depend actions were specified with invalid
+                # fmris of the form 2.38.01.01.3 (the padding zero is considered
+                # invalid).  When we get an invalid FMRI, we use regular
+                # expressions to perform a replacement operation which
+                # cleans up these problems.
+                #
+                # n.b. that this parser is not perfect: it will fix only
+                # the 'release' part of depend fmris.
+                #
+                fmri_string = self.attrs["fmri"]
+
+                #
+                # Start by locating the @ and the "," or "-" or ":" which
+                # is to the right of said @.
+                #
+                verbegin = fmri_string.find("@")
+                if verbegin == -1:
+                        return
+                verend = fmri_string.find(",", verbegin)
+                if verend == -1:
+                        verend = fmri_string.find("-", verbegin)
+                if verend == -1:
+                        verend = fmri_string.find(":", verbegin)
+                if verend == -1:
+                        verend = len(fmri_string)
+                # skip over the @ sign
+                verbegin += 1
+                verdots = fmri_string[verbegin:verend]
+                dots = verdots.split(".")
+                if len(dots) == 0:
+                        return
+                # Do the correction
+                cleanvers = ".".join([str(int(x)) for x in dots])
+                cleanfmri = fmri_string[:verbegin] + \
+                    cleanvers + fmri_string[verend:]
+                # XXX enable if you need to debug
+                #if cleanfmri != fmri_string:
+                #       print "corrected invalid fmri: %s -> %s" % \
+                #           (fmri_string, cleanfmri)
+                self.attrs["fmri"] = cleanfmri
+
 
         def parse(self, image):
                 """ decodes attributes into tuple whose contents are
@@ -69,11 +125,11 @@ class DependencyAction(generic.Action):
                 XXX still needs exclude support....
                 """
                 type = self.attrs["type"]
-                fmri_string = self.attrs["fmri"]
 
-                f = fmri.PkgFmri(fmri_string, image.attrs["Build-Release"])
+                pkgfmri = self.attrs["fmri"]
+                f = fmri.PkgFmri(pkgfmri, image.attrs["Build-Release"])
                 image.fmri_set_default_authority(f)
-                
+
                 min_fmri = f
                 max_fmri = None
                 required = True
@@ -84,42 +140,43 @@ class DependencyAction(generic.Action):
                         max_fmri = f
                 return required, min_fmri, max_fmri
 
-                
-        def verify(self, img, **args):
+
+        def verify(self, image, **args):
                 # XXX maybe too loose w/ early versions
 
                 type = self.attrs["type"]
-                pkgfmri = self.attrs["fmri"]
 
                 if type not in self.known_types:
                         return ["Unknown type (%s) in depend action" % type]
 
-                fm = fmri.PkgFmri(pkgfmri, img.attrs["Build-Release"])
-
-                installed_version = img.has_version_installed(fm)
+                pkgfmri = self.attrs["fmri"]
+                f = fmri.PkgFmri(pkgfmri, image.attrs["Build-Release"])
+                installed_version = image.has_version_installed(f)
 
                 if not installed_version:
                         if type == "require":
                                 return ["Required dependency %s is not installed" % fm]
-                        installed_version = img.older_version_installed(fm) 
+                        installed_version = image.older_version_installed(f)
                         if installed_version:
-                                return ["%s dependency %s is downrev (%s)" % (type,
-                                    fm,        installed_version)]
-                #XXX - leave off for now since we can't handle max fmri constraint
-                #w/o backtracking
+                                return ["%s dependency %s is downrev (%s)" %
+                                        (type, f, installed_version)]
+
+                #XXX - leave off for now since we can't handle max
+                # fmri constraint w/o backtracking
                 #elif type == "incorporate":
-                #        if not img.is_installed(fm):
-                #                return ["%s dependency %s is uprev (%s)" % (type,
-                #                    fm,        installed_version)]
+                #        if not image.is_installed(f):
+                #                return ["%s dependency %s is uprev (%s)" %
+                #                        (type, f, installed_version)]
                 return []
 
         def generate_indices(self):
                 type = self.attrs["type"]
                 fmri = self.attrs["fmri"]
-                
+
                 if type not in self.known_types:
                         return {}
 
+                #
                 # XXX Ideally, we'd turn the string into a PkgFmri, and separate
                 # the stem from the version, or use get_dir_path, but we can't
                 # create a PkgFmri without supplying a build release and without
@@ -128,6 +185,7 @@ class DependencyAction(generic.Action):
                 #
                 # XXX This code will need to change once we start using fmris
                 # with authorities.
+                #
                 if fmri.startswith("pkg:/"):
                         fmri = fmri[5:]
                 # Note that this creates a directory hierarchy!

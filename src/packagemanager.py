@@ -1214,8 +1214,13 @@ class PackageManager:
                 self.application_list.clear()
                 self.category_list.clear()
                 self.application_list_filter.refilter()
-                pkgs_known = [ pf[0] for pf in
-                    sorted(image_obj.inventory(all_known = True)) ]
+                try:
+                        pkgs_known = [ pf[0] for pf in
+                            sorted(image_obj.inventory(all_known = True)) ]
+                except image.InventoryException, e:
+                        # Can't happen when all_known is true and no args,
+                        # but here for completeness.
+                        raise
                 #Only one instance of those icons should be in memory
                 update_available_icon = self.__get_icon_pixbuf("new_update")
                 #Imageinfo for categories
@@ -1484,8 +1489,8 @@ class PackageManager:
                 try:
                         for m in img.inventory(args):
                                 found.append(m[0])
-                except RuntimeError, e:
-                        notfound = e[0]
+                except image.InventoryException, e:
+                        notfound = e.notfound
 
                 return found, notfound
 

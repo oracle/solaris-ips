@@ -96,7 +96,7 @@ class TestPkgInstallBasics(testutils.SingleDepotTestCase):
             open baz@1.0,5.11-0
             add depend type=require fmri=pkg:/foo@1.0
             add dir mode=0755 owner=root group=bin path=/bin
-            add file /tmp/cat mode=0555 owner=root group=bin path=/bin/cat
+            add file /tmp/baz mode=0555 owner=root group=bin path=/bin/baz
             close """
 
         deep10 = """
@@ -120,7 +120,7 @@ class TestPkgInstallBasics(testutils.SingleDepotTestCase):
             add file /tmp/cat mode=0555 owner=root group=bin path=/bin/cat
             close """
 
-        misc_files = [ "/tmp/libc.so.1", "/tmp/cat" ]
+        misc_files = [ "/tmp/libc.so.1", "/tmp/cat", "/tmp/baz" ]
 
         def setUp(self):
                 testutils.SingleDepotTestCase.setUp(self)
@@ -369,6 +369,25 @@ class TestPkgInstallBasics(testutils.SingleDepotTestCase):
                 self.pkg("list foo@1.1", exit = 1)
                 self.pkg("list foo@1.2")
                 
+
+        def test_install_matching(self):
+                """ Try to [un]install packages matching a pattern """
+
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.foo10)
+                self.pkgsend_bulk(durl, self.bar10)
+                self.pkgsend_bulk(durl, self.baz10)
+                self.image_create(durl)
+
+                self.pkg("install 'ba*'")
+                self.pkg("list foo@1.0", exit=0)
+                self.pkg("list bar@1.0", exit=0)
+                self.pkg("list baz@1.0", exit=0)
+
+                self.pkg("uninstall 'ba*'")
+                self.pkg("list foo@1.0", exit=0)
+                self.pkg("list bar@1.0", exit=1)
+                self.pkg("list baz@1.0", exit=1)
 
 if __name__ == "__main__":
         unittest.main()

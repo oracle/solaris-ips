@@ -112,6 +112,12 @@ class TestContentsAndInfo(testutils.SingleDepotTestCase):
                 y = self.reduceSpaces(y)
                 self.assertEqualDiff(x, y)
 
+        def test_contents_3(self):
+                """ test matching """
+                self.image_create(self.dc.get_depot_url())
+                self.pkg("install bronze@1.0")
+                self.pkg("contents 'bro*'")
+
         def test_contents_failures(self):
                 """ attempt to get contents of non-existent packages """
                 self.image_create(self.dc.get_depot_url())
@@ -149,6 +155,8 @@ class TestContentsAndInfo(testutils.SingleDepotTestCase):
                 self.pkg("info turquoise 2>&1 | grep 'no packages matching'")
                 self.pkg("info emerald", exit=1)
                 self.pkg("info emerald 2>&1 | grep 'no packages matching'")
+                self.pkg("info 'j*'")
+                self.pkg("info '*a*'")
 
                 # Check remote info
                 self.pkg("info -r jade | grep 'State: Installed'")

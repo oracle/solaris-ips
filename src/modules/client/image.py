@@ -71,6 +71,19 @@ PKG_STATE_KNOWN = "known"
 # Minimum number of days to issue warning before a certificate expires
 MIN_WARN_DAYS = datetime.timedelta(days=30)
 
+class InventoryException(Exception):
+        def __init__(self, notfound=None, illegal=None):
+                Exception.__init__(self)
+                if notfound is None:
+                        self.notfound = []
+                else:
+                        self.notfound = notfound
+                if illegal is None:
+                        self.illegal = []
+                else:
+                        self.illegal = illegal
+                assert(self.notfound or self.illegal)
+
 class Image(object):
         """An Image object is a directory tree containing the laid-down contents
         of a self-consistent graph of Packages.
@@ -1294,7 +1307,7 @@ class Image(object):
 
         def __load_pkg_states(self):
                 """Build up the package state dictionary.
-                
+
                 This dictionary maps the full fmri string to a tuple of the
                 state, the prefix of the authority from which it's installed,
                 and the fmri object.
@@ -1351,6 +1364,9 @@ class Image(object):
         def strtofmri(self, myfmri):
                 return pkg.fmri.PkgFmri(myfmri, self.attrs["Build-Release"])
 
+        def strtomatchingfmri(self, myfmri):
+                return pkg.fmri.MatchingPkgFmri(myfmri, self.attrs["Build-Release"])
+
         def update_optional_dependency(self, inputfmri):
                 """Updates pkgname to min fmri mapping if fmri is newer"""
 
@@ -1358,14 +1374,14 @@ class Image(object):
 
                 if isinstance(myfmri, str):
                         name = pkg.fmri.extract_pkg_name(myfmri)
-                        myfmri = self.strtofmri(myfmri)
+                        myfmri = self.strtomatchingfmri(myfmri)
                 else:
                         name = myfmri.get_name()
 
                 try:
                         myfmri = self.inventory([ myfmri ], all_known = True,
                             matcher = pkg.fmri.exact_name_match).next()[0]
-                except RuntimeError:
+                except InventoryException:
                         # If we didn't find the package in the authority it's
                         # currently installed from, try again without specifying
                         # the authority.  This will get the first available
@@ -1389,7 +1405,7 @@ class Image(object):
 
                 if isinstance(myfmri, str):
                         name = pkg.fmri.extract_pkg_name(myfmri)
-                        myfmri = self.strtofmri(myfmri)
+                        myfmri = self.strtomatchingfmri(myfmri)
                 else:
                         name = myfmri.get_name()
 
@@ -1468,11 +1484,24 @@ class Image(object):
                 # messages.
                 opatterns = patterns[:]
 
+                illegals = []
                 for i, pat in enumerate(patterns):
                         if not isinstance(pat, pkg.fmri.PkgFmri):
-                                if "*" in pat or "?" in pat:
-                                        matcher = pkg.fmri.glob_match
-                                patterns[i] = pkg.fmri.PkgFmri(pat, "5.11")
+                                try:
+                                        if "*" in pat or "?" in pat:
+                                                matcher = pkg.fmri.glob_match
+                                                patterns[i] = \
+                                                    pkg.fmri.MatchingPkgFmri(pat,
+                                                        "5.11")
+                                        else:
+                                                patterns[i] = \
+                                                    pkg.fmri.PkgFmri(pat,
+                                                    "5.11")
+                                except pkg.fmri.IllegalFmri, e:
+                                        illegals.append(e)
+
+                if illegals:
+                        raise InventoryException(illegal=illegals)
 
                 pauth = self.cfg_cache.preferred_authority
 
@@ -1600,7 +1629,7 @@ class Image(object):
                     for i, f in set(enumerate(patterns)) - matchingpats
                 ]
                 if nonmatchingpats:
-                        raise RuntimeError, nonmatchingpats
+                        raise InventoryException(notfound=nonmatchingpats)
 
         def inventory(self, *args, **kwargs):
                 """Enumerate the package FMRIs in the image's catalog.
@@ -1841,7 +1870,7 @@ class Image(object):
                                 conp = self.apply_optional_dependencies(p)
                                 matches = list(self.inventory([ conp ],
                                     all_known = True))
-                        except RuntimeError:
+                        except InventoryException:
                                 # XXX Module directly printing.
                                 msg(_("""\
 pkg: no package matching '%s' could be found in current catalog

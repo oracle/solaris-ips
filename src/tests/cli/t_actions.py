@@ -74,9 +74,10 @@ adm:NP:6445::::::
         testdata_dir = None
 
         pkg_name_valid_chars = {
-            "never": " `~!@#$%^&*()=+[{]}\\|;:\",<>?",
-            "always": "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
-            "after-first": "0123456789_/-.",
+            "never": " `~!@#$%^&*()=[{]}\\|;:\",<>?",
+            "always": "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
+            "after-first": "_/-.+",
+            "at-end": "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-.+",
         }
 
         def setUp(self):
@@ -285,20 +286,28 @@ adm:NP:6445::::::
                                 cmd = "open '%s'" % invalid_name
                         self.pkgsend(durl, cmd, exit=1)
 
+                        invalid_name = "invalid/%spkg@1.0,5.11-0" % char
+                        cmd = "open '%s'" % invalid_name
+                        self.pkgsend(durl, cmd, exit=1)
+
         def test_valid_open(self):
                 """Send a invalid package definition (valid fmri); expect
                 success."""
 
                 durl = self.dc.get_depot_url()
                 for char in self.pkg_name_valid_chars["always"]:
-                        valid_name = "%svalid%spkg%s@1.0,5.11-0" % (char,
-                            char, char)
+                        valid_name = "%svalid%s/%spkg%s@1.0,5.11-0" % (char,
+                            char, char, char)
                         self.pkgsend(durl, "open '%s'" % valid_name)
                         self.pkgsend(durl, "close -A")
 
                 for char in self.pkg_name_valid_chars["after-first"]:
-                        valid_name = "v%salid%spkg%s@1.0,5.11-0" % (char,
-                            char, char)
+                        valid_name = "v%salid%spkg@1.0,5.11-0" % (char, char)
+                        self.pkgsend(durl, "open '%s'" % valid_name)
+                        self.pkgsend(durl, "close -A")
+
+                for char in self.pkg_name_valid_chars["at-end"]:
+                        valid_name = "validpkg%s@1.0,5.11-0" % char
                         self.pkgsend(durl, "open '%s'" % valid_name)
                         self.pkgsend(durl, "close -A")
 

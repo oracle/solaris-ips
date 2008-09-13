@@ -27,7 +27,7 @@ import fnmatch
 import re
 import urllib
 
-from version import Version
+from version import Version, IllegalVersion
 
 # In order to keep track of what authority is presently the preferred authority,
 # a prefix is included ahead of the name of the authority.  If this prefix is
@@ -42,6 +42,34 @@ PREF_AUTH_PFX = "_PRE"
 #
 PREF_AUTH_PFX_ = PREF_AUTH_PFX + "_"
 
+g_valid_pkg_name = re.compile("^[A-Za-z0-9][A-Za-z0-9_\-\.\+]*(/[A-Za-z0-9][A-Za-z0-9_\-\.\+]*)*$")
+
+class IllegalFmri(Exception):
+
+        BAD_VERSION = 1
+        BAD_PACKAGENAME = 2
+        SYNTAX_ERROR = 3
+
+        msg_prefix = "Illegal FMRI"
+
+        def __init__(self, fmri, reason, detail=None, nested_exc=None):
+                Exception.__init__(self)
+                self.reason = reason
+                self.fmri = fmri
+                self.detail = detail
+                self.nested_exc = nested_exc
+
+        def __str__(self):
+                outstr = "%s '%s': " % (self.msg_prefix, self.fmri)
+                if self.reason == IllegalFmri.BAD_VERSION:
+                        return outstr + str(self.nested_exc)
+                if self.reason == IllegalFmri.BAD_PACKAGENAME:
+                        return outstr + "Invalid Package Name: " + self.detail
+                if self.reason == IllegalFmri.SYNTAX_ERROR:
+                        return outstr + self.detail
+
+class IllegalMatchingFmri(IllegalFmri):
+        msg_prefix = "Illegal matching pattern"
 
 class PkgFmri(object):
         """The authority is the anchor of a package namespace.  Clients can
@@ -55,14 +83,22 @@ class PkgFmri(object):
         package, and that higher build release versions are superior
         publications than lower build release versions."""
 
+        # Stored in a class variable so that subclasses can override
+        valid_pkg_name = g_valid_pkg_name
+
         def __init__(self, fmri, build_release = None, authority = None):
                 """XXX pkg:/?pkg_name@version not presently supported."""
                 fmri = fmri.rstrip()
 
                 veridx, nameidx = PkgFmri.gen_fmri_indexes(fmri)
 
-                if veridx:
-                        self.version = Version(fmri[veridx + 1:], build_release)
+                if veridx != None:
+			try:
+				self.version = Version(fmri[veridx + 1:],
+				    build_release)
+			except IllegalVersion, iv:
+				raise IllegalFmri(fmri, IllegalFmri.BAD_VERSION,
+                                    nested_exc=iv)
                 else:
                         self.version = veridx = None
 
@@ -70,10 +106,18 @@ class PkgFmri(object):
                 if fmri.startswith("pkg://"):
                         self.authority = fmri[6:nameidx - 1]
 
-                if veridx:
+                if veridx != None:
                         self.pkg_name = fmri[nameidx:veridx]
                 else:
                         self.pkg_name = fmri[nameidx:]
+
+		if not self.pkg_name:
+			raise IllegalFmri(fmri, IllegalFmri.SYNTAX_ERROR,
+                            detail="Missing package name")
+                     
+                if not self.valid_pkg_name.match(self.pkg_name):
+			raise IllegalFmri(fmri, IllegalFmri.BAD_PACKAGENAME,
+                            detail=self.pkg_name) 
 
         def copy(self):
                 return PkgFmri(str(self))
@@ -88,7 +132,13 @@ class PkgFmri(object):
                         veridx = None
 
                 if fmri.startswith("pkg://"):
-                        nameidx = fmri.index("/", 6) + 1
+                        nameidx = fmri.find("/", 6)
+			if nameidx == -1:
+				raise IllegalFmri(fmri,
+                                    IllegalFmri.SYNTAX_ERROR,
+                                    detail="Missing '/' after authority name")
+			# Name starts after / which terminates authority
+			nameidx += 1
                 elif fmri.startswith("pkg:/"):
                         nameidx = 5
                 else:
@@ -325,6 +375,19 @@ class PkgFmri(object):
 
                 return True
 
+
+class MatchingPkgFmri(PkgFmri):
+        """ A subclass of PkgFmri with (much) weaker rules about package names.
+        This is intended to accept user input with globbing characters. """
+        valid_pkg_name = re.compile("^[A-Za-z0-9_/\-\.\+\*\?]*$")
+
+        def __init__(self, *args, **kwargs):
+                try:
+                        PkgFmri.__init__(self, *args, **kwargs)
+                except IllegalFmri, e:
+                        raise IllegalMatchingFmri(e.fmri, e.reason,
+                            detail=e.detail, nested_exc=e.nested_exc)
+
 def fmri_match(pkg_name, pattern):
         """Returns true if 'pattern' is a proper subset of 'pkg_name'."""
         return ("/" + pkg_name).endswith("/" + pattern)
@@ -389,8 +452,6 @@ def is_same_authority(auth1, auth2):
                 return True
         return False
 
-def is_valid_pkg_name(name):
-        if re.match("^[A-Za-z][A-Za-z0-9_/\-\.]*$", name):
-                return True
-        return False
 
+def is_valid_pkg_name(name):
+        return g_valid_pkg_name.match(name)

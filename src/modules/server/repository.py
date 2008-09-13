@@ -451,15 +451,16 @@ class Repository(object):
                 # signed certificate (or a more elaborate system).
 
                 t = trans.Transaction()
-                ret = t.open(self.scfg, *tokens)
+                (ret, detail) = t.open(self.scfg, *tokens)
                 if ret == httplib.OK:
                         self.scfg.in_flight_trans[t.get_basename()] = t
                         response.headers['Content-type'] = 'text/plain'
                         response.headers['Transaction-ID'] = t.get_basename()
-                elif ret == httplib.BAD_REQUEST:
-                        raise cherrypy.HTTPError(httplib.BAD_REQUEST)
                 else:
-                        raise cherrypy.HTTPError(httplib.INTERNAL_SERVER_ERROR)
+                        # ret should be an http status code
+                        assert ret >= 400 and ret < 600
+                        assert detail
+                        raise cherrypy.HTTPError(ret, detail)
 
         def close_0(self, *tokens):
                 """ Ends an in-flight transaction for the Transaction ID

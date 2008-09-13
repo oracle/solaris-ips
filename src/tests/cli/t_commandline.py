@@ -94,6 +94,25 @@ class TestCommandLine(testutils.SingleDepotTestCase):
                 self.pkg("image-update foo", exit=2)
                 self.pkg("version foo", exit=2)
 
+        def test_pkg_bad_fmris(self):
+                durl = self.dc.get_depot_url()
+                self.image_create(durl)
+
+                # bad fmris get a full workout in t_fmri.py and t_version.py
+                # in the API suite.  Here we do some basic validation.
+                self.pkg("install foo@x.y", exit=1)
+                self.pkg("uninstall foo@x.y", exit=1)
+                self.pkg("contents foo@x.y", exit=1)
+                self.pkg("info foo@x.y", exit=1)
+                self.pkg("info pkg:/man@0.5.11,5.11-0.95:20080807T160129", exit=1)
+                self.pkg("info pkg:/man@0.5.11,5.11-0.95:20080807T1", exit=1)
+                self.pkg("info pkg:/man@0.5.11,5.11-0.95:", exit=1)
+                self.pkg("info pkg:/man@0.5.11,5.11-0.", exit=1)
+                self.pkg("info pkg:/man@0.5.11,5.11-", exit=1)
+                self.pkg("info pkg:/man@0.5.11,-", exit=1)
+                self.pkg("info pkg:/man@-", exit=1)
+                self.pkg("info pkg:/man@", exit=1)
+
         def test_pkgsend_bogus_opts(self):
                 """ pkgsend bogus option checks """
                 durl = "bogus"
@@ -205,6 +224,32 @@ class TestCommandLine(testutils.SingleDepotTestCase):
                 self.pkg("set-authority --remove-mirror=http://test6 mtest",
                     exit=1)
                 self.pkg("set-authority --remove-mirror=test7 mtest", exit=1)
+
+        def test_bad_fmris(self):
+                """ test that pkg tests for bad fmris in input """
+
+                # create an image and one valid pkg
+                durl = self.dc.get_depot_url()
+                pkg1 = """
+                    open jade@1.0,5.11-0
+                    add dir mode=0755 owner=root group=bin path=/bin
+                    close
+                """
+                self.pkgsend_bulk(durl, pkg1)
+                self.image_create(durl)
+
+                # bad version
+                self.pkg("install jade")
+                self.pkg("info pkg:/foo@bar.baz", exit=1)
+                self.pkg("info pkg:/foo@bar.baz jade", exit=1)
+                self.pkg("info -r pkg:/foo@bar.baz", exit=1)
+                self.pkg("install pkg:/foo@bar.baz", exit=1)
+                self.pkg("uninstall pkg:/foo@bar.baz", exit=1)
+
+                # bad time
+                self.pkg("info pkg:/foo@0.5.11,5.11-0.91:20080613T999999Z",
+                    exit=1)
+
 
         def test_refresh(self):
                 """Test refresh and options."""
