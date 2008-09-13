@@ -13,17 +13,12 @@ SYNOPSIS
      /usr/bin/pkgsend include [-d basedir] manifest ...
      /usr/bin/pkgsend close [-A]
 
-     /usr/bin/pkgsend send bundlefile ...
-
 DESCRIPTION
      pkgsend allows the publication of new packages and new package
      versions to an image packaging depot server.  Each publication is
      structured as a transaction; multiple invocations of pkgsend
      through a transaction allow the addition of resources and the
      transaction submission.
-
-     pkgsend also has an alternate invocation that allows the conversion
-     of existing software bundles via a submission.
 
 OPTIONS
      The following options alter the default behavior:
@@ -80,10 +75,6 @@ SUBCOMMANDS
      close [-A]
           Close current transaction.  With -A, abandon the current
           transaction.
-
-     send bundlefile ...
-          Send each given bundlefile as a new package version, in an
-          appropriate series of transactions.
 
 ENVIRONMENT VARIABLES
      The following environment variables are supported:
