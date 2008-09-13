@@ -103,7 +103,7 @@ class LegacyAction(generic.Action):
 
                 try:
                         file(os.path.join(pkgplan.image.get_root(),
-                            "var/sadm/install/contents"), "w").close()
+                            "var/sadm/install/contents"), "a").close()
                 except IOError, e:
                         if e.errno != errno.ENOENT:
                                 raise
