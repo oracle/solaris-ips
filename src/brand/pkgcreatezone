@@ -182,20 +182,23 @@ chown root:sys $repfile
 
 printf "$m_done\n"
 
+# Clean up root as a role and jack if needed
+if grep "^root::::type=role;" $zoneroot/etc/user_attr >/dev/null 2>&1; then
+	printf "$m_brokenness\n"
+	#
+	# Remove "jack" user.
+	#
+	print "/^jack:/d\nw" | ed -s $zoneroot/etc/passwd
+	chmod u+w $zoneroot/etc/shadow
+	print "/^jack:/d\nw" | ed -s $zoneroot/etc/shadow
+	chmod u-w $zoneroot/etc/shadow
 
-printf "$m_brokenness\n"
-#
-# Remove "jack" user.
-#
-print "/^jack:/d\nw" | ed -s $zoneroot/etc/passwd
-chmod u+w $zoneroot/etc/shadow
-print "/^jack:/d\nw" | ed -s $zoneroot/etc/shadow
-chmod u-w $zoneroot/etc/shadow
-
-#
-# Set root from a role back to... not a role.  Grr.
-#
-print "s/^root::::type=role;/root::::/\nw" | ed -s $zoneroot/etc/user_attr
+	#
+	# Set root from a role back to... not a role.  Grr.
+	#
+	print "s/^root::::type=role;/root::::/\nw" | 
+	    ed -s $zoneroot/etc/user_attr
+fi
 
 #
 # Make sure sysidtools run; we manually poke in the SSH action

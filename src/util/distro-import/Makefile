@@ -149,7 +149,8 @@ BUILDS=	75a			\
 	94			\
 	95			\
 	96			\
-	97
+	97			\
+	98
 
 #
 # Starting in build 80, filelist.ramdisk began moving between various
@@ -253,13 +254,11 @@ proto/usr/share/applications/services.desktop: proto
 #
 proto/etc/passwd:	proto Makefile
 	(./get_file_from_pkg.py $(WOS_PKGS)/SUNWcsr etc/passwd | nawk -F:			\
-	'/^root/{ print "root:x:0:0:Super-User:/root:/usr/bin/bash";continue} {print $$0}';	\
-	echo "jack:x:65432:10:Default User:/jack:/usr/bin/bash") > $@
+	'/^root/{ print "root:x:0:0:Super-User:/root:/usr/bin/bash";continue} {print $$0}') > $@
 
 proto/etc/shadow:	proto Makefile
 	(./get_file_from_pkg.py $(WOS_PKGS)/SUNWcsr etc/shadow | nawk -F:		\
-	'/^root/{ print "root:wqy8hz4xKqw4o:13817::::::";continue} {print $$0}';	\
-	echo "jack:9Nd/cwBcNWFZg:13817::::::") > $@
+	'/^root/{ print "root:wqy8hz4xKqw4o:13817::::::";continue} {print $$0}') > $@
 
 proto/usr/has/bin/sh:	proto Makefile
 	./get_file_from_pkg.py $(WOS_PKGS)/SUNWcsr sbin/sh > $@
@@ -316,6 +315,7 @@ INCLUDE_PATH_94 = 94:$(INCLUDE_PATH_93)
 INCLUDE_PATH_95 = 95:$(INCLUDE_PATH_94)
 INCLUDE_PATH_96 = 96:$(INCLUDE_PATH_95)
 INCLUDE_PATH_97 = 97:$(INCLUDE_PATH_96)
+INCLUDE_PATH_98 = 98:$(INCLUDE_PATH_97)
 
 import:	cluster.import $(TMPPKGS)
 	$(SOLARIS.PY) -s $(REPO) -w $(WOS_PKGS) $(ELIDED_FILES:%=-D %) \
