@@ -175,7 +175,8 @@ DESCRIPTION
 
      policy       This specifies additional security policy for the device.
                   There may be more than one policy attribute for any given
-                  driver.
+                  driver, but no minor device specification may be present in
+                  more than one attribute.
 
      privs        This specifies privileges used by the driver.  There may
                   be more than one privs attribute for any given driver.

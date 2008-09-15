@@ -279,15 +279,34 @@ class DriverAction(generic.Action):
                             "of privilege '%(priv)s')",
                             {"name": self.attrs["name"], "priv": i})
 
-                for i in add_policy:
-                        args = add_base + ("-p", i, self.attrs["name"])
-                        self.__call(args, "driver (%(name)s) upgrade (addition "
+                # We remove policies before adding them, since removing a policy
+                # for a driver/minor combination removes it completely from the
+                # policy file, not just the subset you might have specified.
+                #
+                # Also, when removing a policy, there is no way to convince
+                # update_drv to remove it unless there's a minor node associated
+                # with it.
+                for i in rem_policy:
+                        spec = i.split()
+                        if len(spec) == 2:
+                                print "driver (%s) upgrade (removal of policy" \
+                                    "'%s) failed: minor node spec required." % \
+                                    (self.attrs["name"], i)
+                                continue
+                        elif len(spec) != 3:
+                                print "driver (%s) upgrade (removal of policy" \
+                                    "'%s) failed: invalid policy spec." % \
+                                    (self.attrs["name"], i)
+                                continue
+
+                        args = rem_base + ("-p", spec[0], self.attrs["name"])
+                        self.__call(args, "driver (%(name)s) upgrade (removal "
                             "of policy '%(policy)s')",
                             {"name": self.attrs["name"], "policy": i})
 
-                for i in rem_policy:
-                        args = rem_base + ("-p", i, self.attrs["name"])
-                        self.__call(args, "driver (%(name)s) upgrade (removal "
+                for i in add_policy:
+                        args = add_base + ("-p", i, self.attrs["name"])
+                        self.__call(args, "driver (%(name)s) upgrade (addition "
                             "of policy '%(policy)s')",
                             {"name": self.attrs["name"], "policy": i})
 
