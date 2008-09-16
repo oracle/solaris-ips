@@ -1,0 +1,6 @@
+package SUNWipkg-brand
+import SUNWipkg-brand
+depend SUNWesu
+depend SUNWipkg
+depend SUNWzone
+end package

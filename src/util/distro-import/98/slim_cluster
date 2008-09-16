@@ -196,6 +196,7 @@ include common/SUNWinstall-libs
 include common/SUNWintgige
 include common/SUNWipf
 include common/SUNWipkg
+include common/SUNWipkg-brand
 include common/SUNWipkg-gui
 include common/SUNWipkg-gui-l10n
 include common/SUNWipmi
@@ -852,6 +853,7 @@ depend SUNWinstall-libs
 depend SUNWintgige
 depend SUNWipf
 depend SUNWipkg
+depend SUNWipkg-brand
 depend SUNWipkg-gui
 depend SUNWipmi
 depend SUNWipoib
