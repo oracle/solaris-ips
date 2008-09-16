@@ -70,9 +70,6 @@ Kerberos Client Management:::Maintain and Administer Kerberos excluding the serv
 Kerberos Server Management:::Maintain and Administer Kerberos Servers:profiles=Kerberos Client Management;help=RtKerberosSrvrMngmnt.html
 Lighttpd 14 Administration::::auths=solaris.smf.manage.http/lighttpd14,solaris.smf.value.http/lighttpd14
 Log Management:::Manage log files:help=RtLogMngmnt.html
-MMS Administrator:::MMS Media Manager Administrator:auths=solaris.smf.manage.mms,solaris.smf.modify.mms,solaris.smf.value.mms,solaris.mms.*
-MMS Operator:::MMS Media Manager Operator:auths=solaris.smf.manage.mms,solaris.mms.media.*,solaris.mms.request.*,solaris.mms.device.state.*,solaris.mms.device.log.*
-MMS User:::MMS Tape User:auths=solaris.mms.io.*
 Mail Management:::Manage sendmail & queues:auths=solaris.smf.manage.sendmail;help=RtMailMngmnt.html
 Maintenance and Repair:::Maintain and repair a system:auths=solaris.smf.manage.system-log,solaris.label.range,solaris.admin.logsvc.write,solaris.admin.logsvc.read,solaris.compsys.write,solaris.compsys.read,solaris.system.shutdown;help=RtMaintAndRepair.html
 Media Backup:::Backup files and file systems:profiles=NDMP Management;help=RtMediaBkup.html

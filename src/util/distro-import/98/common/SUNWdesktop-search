@@ -1,0 +1,5 @@
+package SUNWdesktop-search
+import SUNWdesktop-search
+import SUNWdesktop-search-devel
+import SUNWdesktop-search-root
+end package

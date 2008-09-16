@@ -113,6 +113,9 @@ include common/SUNWdcaf
 include common/SUNWdcraw
 include common/SUNWddu
 include common/SUNWdesktop-cache
+include common/SUNWdesktop-search
+include common/SUNWdesktop-search-firefox
+include common/SUNWdesktop-search-thunderbird
 include common/SUNWdfbh
 include common/SUNWdhcm
 include common/SUNWdhcs
@@ -430,6 +433,7 @@ include common/SUNWmp
 include common/SUNWmpapi
 include common/SUNWmpathadm
 include common/SUNWmpsvplr
+include common/SUNWmtx
 include common/SUNWmusicbrainz
 include common/SUNWmutt
 include common/SUNWmxfe
@@ -1221,11 +1225,13 @@ include i386/SUNWvia823x
 include i386/SUNWvirt-manager
 include i386/SUNWvirtinst
 include i386/SUNWwpi
+include i386/SUNWxdt
 include i386/SUNWxorg-mesa
 include i386/SUNWxsvc
 include i386/SUNWxvm
 include i386/SUNWxvmdom
 include i386/SUNWxvmhvm
+include i386/SUNWxvmipa
 include i386/SUNWxvmpv
 include i386/SUNWxwice
 include i386/SUNWxwplt
@@ -1375,6 +1381,9 @@ depend SUNWdesktop-other-l10n-sv
 depend SUNWdesktop-other-l10n-zhCN
 depend SUNWdesktop-other-l10n-zhHK
 depend SUNWdesktop-other-l10n-zhTW
+depend SUNWdesktop-search
+depend SUNWdesktop-search-firefox
+depend SUNWdesktop-search-thunderbird
 depend SUNWdexwsvr
 depend SUNWdfb
 depend SUNWdfbh
@@ -1771,13 +1780,10 @@ depend SUNWlang-lv-extra
 depend SUNWlang-mk
 depend SUNWlang-mk-extra
 depend SUNWlang-mt
-depend SUNWlang-mt-extra
 depend SUNWlang-nb
-depend SUNWlang-nb-extra
 depend SUNWlang-nl
 depend SUNWlang-nl-extra
 depend SUNWlang-nn
-depend SUNWlang-nn-extra
 depend SUNWlang-no-extra
 depend SUNWlang-pl
 depend SUNWlang-pl-extra
@@ -1885,6 +1891,7 @@ depend SUNWmp
 depend SUNWmpapi
 depend SUNWmpathadm
 depend SUNWmpsvplr
+depend SUNWmtx
 depend SUNWmusicbrainz
 depend SUNWmutt
 depend SUNWmv88sx
@@ -2248,6 +2255,7 @@ depend SUNWxcursor-themes
 depend SUNWxdg-user-dirs
 depend SUNWxdg-user-dirs-gtk
 depend SUNWxdg-utils
+depend SUNWxdt
 depend SUNWxge
 depend SUNWxorg-cfg
 depend SUNWxorg-client-docs
@@ -2267,6 +2275,7 @@ depend SUNWxscreensaver-hacks-gl
 depend SUNWxsvc
 depend SUNWxvm
 depend SUNWxvmdom
+depend SUNWxvmipa
 depend SUNWxvmpv
 depend SUNWxvnc
 depend SUNWxwdem

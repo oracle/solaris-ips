@@ -1,0 +1,46 @@
+package SUNWxwman
+import SUNWxwman exclude usr/openwin
+# Not yet confirmed redistributable
+drop usr/openwin/man
+drop usr/openwin/share
+drop usr/openwin/share/man
+drop usr/openwin/share/man/man1
+drop usr/openwin/share/man/man1/Xnest.1
+drop usr/openwin/share/man/man1/Xprt.1
+drop usr/openwin/share/man/man1/Xserver.1
+drop usr/openwin/share/man/man1/Xsun.1
+drop usr/openwin/share/man/man1/Xvfb.1
+drop usr/openwin/share/man/man1/bdftosnf.1
+drop usr/openwin/share/man/man1/cmap_alloc.1
+drop usr/openwin/share/man/man1/cmap_compact.1
+drop usr/openwin/share/man/man1/fs.1
+drop usr/openwin/share/man/man1/fsadmin.1
+drop usr/openwin/share/man/man1/makepsres.1
+drop usr/openwin/share/man/man1/mkfontdir.1
+drop usr/openwin/share/man/man1/proxymngr.1
+drop usr/openwin/share/man/man1/pswrap.1
+drop usr/openwin/share/man/man1/redxblue.1
+drop usr/openwin/share/man/man1/rstart.1
+drop usr/openwin/share/man/man1/rstartd.1
+drop usr/openwin/share/man/man1/showsnf.1
+drop usr/openwin/share/man/man1/xdm.1
+drop usr/openwin/share/man/man1/xfs.1
+drop usr/openwin/share/man/man1/xkbcomp.1
+drop usr/openwin/share/man/man1/xlock.1
+drop usr/openwin/share/man/man1/xmakemap.1
+drop usr/openwin/share/man/man1/xmh.1
+drop usr/openwin/share/man/man4
+drop usr/openwin/share/man/man4/keytable.map.4
+drop usr/openwin/share/man/man4/rasterfile.4
+drop usr/openwin/share/man/man5
+drop usr/openwin/share/man/man5/dps.5
+drop usr/openwin/share/man/man6
+drop usr/openwin/share/man/man6/dpsexec.6
+drop usr/openwin/share/man/man6/texteroids.6
+drop usr/openwin/share/man/man6/xepsf.6
+drop usr/openwin/share/man/man6/xscope.6
+# Pull in replacements from FSW packages for things we had to drop
+from FSWxorg-client-docs import
+usr/X11/share/man/man1/mkfontdir.1
+end import
+end package

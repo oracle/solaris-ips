@@ -25,8 +25,6 @@
 #
 # execution attributes for profiles. see exec_attr(4)
 #
-#ident	"%Z%%M%	%I%	%E% SMI"
-#
 #
 All Actions:solaris:act:::*;*;*;*;*:
 All:solaris:act:::*;*;*;*;*:
@@ -250,10 +248,6 @@ Kerberos Server Management:solaris:cmd:::/usr/sbin/kdb5_ldap_util:euid=0;privs=n
 Kerberos Server Management:solaris:cmd:::/usr/sbin/kdb5_util:euid=0;privs=none
 Kerberos Server Management:solaris:cmd:::/usr/sbin/kdcmgr:euid=0;privs=none
 Log Management:suser:cmd:::/usr/sbin/logadm:euid=0
-MMS Administrator:solaris:cmd:::/usr/bin/mmsadm:uid=0
-MMS Administrator:solaris:cmd:::/usr/bin/mmsinit:uid=0
-MMS Operator:solaris:cmd:::/usr/bin/mmsadm:uid=0;privs=file_dac_read
-MMS User:solaris:cmd:::/usr/bin/mmsmnt:uid=0;privs=file_dac_read
 Mail Management:suser:cmd:::/usr/lib/sendmail:uid=0
 Mail Management:suser:cmd:::/usr/sbin/editmap:euid=0
 Mail Management:suser:cmd:::/usr/sbin/makemap:euid=0
@@ -337,7 +331,7 @@ Network IPsec Management:suser:cmd:::/usr/sbin/ikecert:euid=0
 Network IPsec Management:suser:cmd:::/usr/sbin/ipsecalgs:euid=0
 Network IPsec Management:suser:cmd:::/usr/sbin/ipsecconf:euid=0
 Network IPsec Management:suser:cmd:::/usr/sbin/ipseckey:uid=0
-Network Link Security:solaris:cmd:::/sbin/dladm:euid=dladm;egid=sys;	privs=sys_net_config,net_rawaccess,proc_audit
+Network Link Security:solaris:cmd:::/sbin/dladm:euid=dladm;egid=sys;	privs=sys_dl_config,net_rawaccess,proc_audit
 Network Management:solaris:act:::DNS_Resolve;*;*;*;*:privs=all
 Network Management:solaris:act:::EditMotd;*;*;*;*:privs=all
 Network Management:solaris:act:::Nsswitch;*;*;*;*:privs=all
@@ -345,7 +339,7 @@ Network Management:solaris:act:::SDTShareLogical;*;*;*;*:privs=all
 Network Management:solaris:act:::SDTSharePhysical;*;*;*;*:privs=all
 Network Management:solaris:act:::SetRoutes;*;*;*;*:privs=all
 Network Management:solaris:act:::Tnchkdb;*;*;*;*:
-Network Management:solaris:cmd:::/sbin/dladm:euid=dladm;egid=sys;	privs=sys_net_config,net_rawaccess,proc_audit
+Network Management:solaris:cmd:::/sbin/dladm:euid=dladm;egid=sys;	privs=sys_dl_config,net_rawaccess,proc_audit
 Network Management:solaris:cmd:::/sbin/ifconfig:uid=0
 Network Management:solaris:cmd:::/sbin/route:privs=sys_ip_config
 Network Management:solaris:cmd:::/sbin/routeadm:euid=0;	privs=proc_chroot,proc_owner,sys_ip_config
