@@ -26,6 +26,7 @@ MACH:sh = uname -p
 
 KSH=/usr/bin/ksh
 PYTHON = /usr/bin/python
+INSTALL = /usr/sbin/install
 
 ROOT = ../../proto/root_${MACH}/usr
 ROOTUSRLIB = $(ROOT)/lib
@@ -145,17 +146,17 @@ $(ROOTDIRS):
 	mkdir -m 0755 -p $@
 
 $(ROOTDATASHARE)/%: data/%
-	rm -f $@; install -f $(ROOTDATASHARE) -m 0644 $<
+	rm -f $@; $(INSTALL) -f $(ROOTDATASHARE) -m 0644 $<
 
 $(ROOTPYTHONPKG)/%: modules/%
-	rm -f $@; install -f $(ROOTPYTHONPKG) -m 0644 $<
+	rm -f $@; $(INSTALL) -f $(ROOTPYTHONPKG) -m 0644 $<
 
 $(ROOTICONSHARE)/%: data/icons/%
-	rm -f $@; install -f $(ROOTICONSHARE) -m 0644 $<
+	rm -f $@; $(INSTALL) -f $(ROOTICONSHARE) -m 0644 $<
 
 $(ROOTDESKTOPSHARE)/%: data/%
-	rm -f $@; install -f $(ROOTDESKTOPSHARE) -m 0644 $<
+	rm -f $@; $(INSTALL) -f $(ROOTDESKTOPSHARE) -m 0644 $<
 
 $(ROOTSHARE)/%: data/%
-	rm -f $@; install -f $(ROOTSHARE) -m 0644 $<
+	rm -f $@; $(INSTALL) -f $(ROOTSHARE) -m 0644 $<
 

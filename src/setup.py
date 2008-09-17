@@ -80,9 +80,17 @@ elif osname == 'darwin':
 
 pwd = os.path.normpath(sys.path[0])
 
+#
+# Unbuffer stdout and stderr.  This helps to ensure that subprocess output
+# is properly interleaved with output from this program.
+#
+sys.stdout = os.fdopen(sys.stdout.fileno(), "w", 0)
+sys.stderr = os.fdopen(sys.stderr.fileno(), "w", 0)
+
 dist_dir = os.path.normpath(os.path.join(pwd, os.pardir, "proto", "dist_" + arch))
 build_dir = os.path.normpath(os.path.join(pwd, os.pardir, "proto", "build_" + arch))
 root_dir = os.path.normpath(os.path.join(pwd, os.pardir, "proto", "root_" + arch))
+pkgs_dir = os.path.normpath(os.path.join(pwd, os.pardir, "packages", arch))
 
 py_install_dir = 'usr/lib/python2.4/vendor-packages'
 
@@ -411,6 +419,8 @@ class clobber_func(Command):
                 shutil.rmtree(build_dir, True)
                 print("deleting " + root_dir)
                 shutil.rmtree(root_dir, True)
+                print("deleting " + pkgs_dir)
+                shutil.rmtree(pkgs_dir, True)
                 remove_sw(CP)
                 remove_sw(PO)
 

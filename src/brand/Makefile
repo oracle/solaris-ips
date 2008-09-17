@@ -26,6 +26,7 @@
 MACH:sh = uname -p
 
 PYTHON = /usr/bin/python
+INSTALL = /usr/sbin/install
 
 ROOT = ../../proto/root_${MACH}
 ROOTETC = $(ROOT)/etc
@@ -81,7 +82,7 @@ $(ROOT) $(ROOTETC) $(ROOTETCZONES) $(ROOTUSRLIB) $(ROOTBRAND) $(ROOTBRANDPKG):
 	mkdir -p $@
 
 $(ROOTETCZONES)/%: $(ROOTETCZONES) %
-	rm -f $@; install -f $(ROOTETCZONES) -m 0444 $<
+	rm -f $@; $(INSTALL) -f $(ROOTETCZONES) -m 0444 $<
 
 $(ROOTBRANDPKG)/%: $(ROOTBRANDPKG) %
-	rm -f $@; install -f $(ROOTBRANDPKG) -m 0444 $<
+	rm -f $@; $(INSTALL) -f $(ROOTBRANDPKG) -m 0444 $<

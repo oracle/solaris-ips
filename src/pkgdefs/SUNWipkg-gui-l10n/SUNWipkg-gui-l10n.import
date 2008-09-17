@@ -1,5 +1,0 @@
-package SUNWipkg-gui-l10n
-import SUNWipkg-gui-l10n
-depend SUNWipkg-gui
-version 0.0.1
-end package

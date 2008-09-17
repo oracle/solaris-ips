@@ -1,5 +1,0 @@
-package SUNWipkg-gui-data
-import SUNWipkg-gui-data
-depend SUNWipkg-gui
-version 0.0.1
-end package

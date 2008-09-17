@@ -36,7 +36,7 @@ install: sysv-pkg
 sysv-pkg: $(PKGARCHIVE) prototype
 	[ -f $(PKGARCHIVE)/$(PKG)/pkgmap ] || pkgmk -a $(MACH) -o -r $(ROOT) -d $(PKGARCHIVE)
 
-prototype: $(PROTOLOC)
+prototype: FRC
 	(cd $(ROOT); pkgproto .) | \
 		nawk 'BEGIN { \
 			print "i pkginfo"; \
@@ -69,10 +69,6 @@ prototype: $(PROTOLOC)
 clobber:
 	rm -f prototype
 	rm -rf $(PKGARCHIVE)/$(PKG)
-
-# This will only work if there's a server running, so allow failure.
-img-pkg: sysv-pkg
-	-../../util/distro-import/solaris.py -b 0.0 -w $(PKGARCHIVE) $(PKG).import
 
 $(PKGARCHIVE):
 	[ -d $(PKGARCHIVE) ] || mkdir -p $(PKGARCHIVE)

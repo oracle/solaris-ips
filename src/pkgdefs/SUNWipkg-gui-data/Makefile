@@ -61,10 +61,6 @@ prototype: FRC
 			print \
 		}' > prototype
 
-# This will only work if there's a server running, so allow failure.
-img-pkg: sysv-pkg
-	-../../../../util/distro-import/solaris.py -b 0.0 -w $(PKGARCHIVE) SUNWipkg-gui-data.import
-
 $(PKGARCHIVE):
 	[ -d $(PKGARCHIVE) ] || mkdir -p $(PKGARCHIVE)
 
