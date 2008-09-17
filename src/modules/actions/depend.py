@@ -65,8 +65,13 @@ class DependencyAction(generic.Action):
 
         def __init__(self, data=None, **attrs):
                 generic.Action.__init__(self, data, **attrs)
-                if "fmri" in self.attrs:
-                        self.clean_fmri()
+                try:
+                        if "fmri" in self.attrs:
+                                self.clean_fmri()
+                except ValueError:
+                        print "Warning: failed to clean FMRI: %s" % \
+                            self.attrs["fmri"]
+                        pass
 
         def clean_fmri(self):
                 """ Clean up an invalid depend fmri into one which
@@ -84,7 +89,11 @@ class DependencyAction(generic.Action):
                 # cleans up these problems.
                 #
                 # n.b. that this parser is not perfect: it will fix only
-                # the 'release' part of depend fmris.
+                # the 'release' and 'branch' part of depend fmris-- these
+                # are the only places we've seen rules violations.
+                #
+                # Lots of things could go wrong here-- the caller should
+                # catch ValueError.
                 #
                 fmri_string = self.attrs["fmri"]
 
@@ -102,16 +111,41 @@ class DependencyAction(generic.Action):
                         verend = fmri_string.find(":", verbegin)
                 if verend == -1:
                         verend = len(fmri_string)
+
                 # skip over the @ sign
                 verbegin += 1
                 verdots = fmri_string[verbegin:verend]
                 dots = verdots.split(".")
-                if len(dots) == 0:
-                        return
+
                 # Do the correction
                 cleanvers = ".".join([str(int(x)) for x in dots])
-                cleanfmri = fmri_string[:verbegin] + \
-                    cleanvers + fmri_string[verend:]
+
+                # 
+                # Next, find the branch if it exists, the first '-'
+                # following the version.
+                #
+                branchbegin = fmri_string.find("-", verend)
+                if branchbegin != -1:
+                        branchend = fmri_string.find(":", branchbegin)
+                        if branchend == -1:
+                                branchend = len(fmri_string)
+
+                        # skip over the -
+                        branchbegin += 1
+                        branchdots = fmri_string[branchbegin:branchend]
+                        dots = branchdots.split(".")
+
+                        # Do the correction
+                        cleanbranch = ".".join([str(int(x)) for x in dots])
+
+                if branchbegin == -1:
+                        cleanfmri = fmri_string[:verbegin] + cleanvers + \
+                            fmri_string[verend:]
+                else:
+                        cleanfmri = fmri_string[:verbegin] + cleanvers + \
+                            fmri_string[verend:branchbegin] + cleanbranch + \
+                            fmri_string[branchend:]
+                            
                 # XXX enable if you need to debug
                 #if cleanfmri != fmri_string:
                 #       print "corrected invalid fmri: %s -> %s" % \
@@ -194,3 +228,35 @@ class DependencyAction(generic.Action):
                 return {
                     "depend": fmri
                 }
+
+if __name__ == "__main__":
+        x = DependencyAction(fmri="pkg:/SUNWpool@1,2-3", type="require")
+        print x
+        x = DependencyAction(fmri="pkg:/SUNWpool@0.5.11-0.97", type="require")
+        print x
+        x = DependencyAction(fmri="pkg:/SUNWpool@0.05.011-0.97", type="require")
+        print x
+        x = DependencyAction(fmri="pkg:/SUNWpool@0.05.011-0.097", type="require")
+        print x
+        x = DependencyAction(fmri="pkg:/SUNWpool@0.05.011,3.4-0.097", type="require")
+        print x
+        x = DependencyAction(fmri="pkg:/SUNWpool@0", type="require")
+        print x
+        x = DependencyAction(fmri="pkg:/SUNWpool@0-0", type="require")
+        print x
+        x = DependencyAction(fmri="pkg:/SUNWpool@0", type="require")
+        print x
+        x = DependencyAction(fmri="pkg:/SUNWpool@0-0", type="require")
+        print x
+        x = DependencyAction(fmri="pkg:/SUNWpool@", type="require")
+        print x
+        x = DependencyAction(fmri="pkg:/SUNWpool@-", type="require")
+        print x
+        x = DependencyAction(fmri="pkg:/SUNWpool@-:", type="require")
+        print x
+        x = DependencyAction(fmri="pkg:/SUNWpool@1-2:", type="require")
+        print x
+        x = DependencyAction(fmri="pkg:/SUNWpool@x.y", type="require")
+        print x
+        x = DependencyAction(fmri="pkg:/SUNWpool@1,2-", type="require")
+        print x
