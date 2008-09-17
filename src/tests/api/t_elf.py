@@ -77,7 +77,7 @@ class TestElf(pkg5unittest.Pkg5TestCase):
 				self.fail();
 
 		if os.path.exists("/etc/motd"):
-			self.assertRaises(RuntimeError, elf.get_dynamic,
+			self.assertRaises(elf.ElfError, elf.get_dynamic,
 			    "/etc/motd")
 
 		if os.path.exists("/usr/lib/libmlib.so"):
@@ -106,7 +106,7 @@ class TestElf(pkg5unittest.Pkg5TestCase):
 				self.fail();
 
 		if os.path.exists("/etc/motd"):
-			self.assertRaises(RuntimeError, elf.get_info,
+			self.assertRaises(elf.ElfError, elf.get_info,
 			    "/etc/motd");
 
 		if os.path.exists("/usr/lib/libmlib.so"):

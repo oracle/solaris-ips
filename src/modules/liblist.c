@@ -18,17 +18,19 @@
  *
  * CDDL HEADER END
  */
+
 /*
- * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <assert.h>
 #include <liblist.h>
 
-static void copyto_liblist_cb(libnode_t *, void *, void *);
+#include <Python.h>
+
+static int copyto_liblist_cb(libnode_t *, void *, void *);
 
 liblist_t *
 liblist_alloc()
@@ -36,7 +38,7 @@ liblist_alloc()
 	liblist_t *n;
 
 	if ((n = malloc(sizeof (liblist_t))) == NULL)
-		return (NULL);
+		return (PyErr_NoMemory());
 
 	n->head = NULL;
 	n->tail = NULL;
@@ -72,7 +74,7 @@ liblist_add(liblist_t *lst, off_t off)
 		return (NULL);
 
 	if ((n = malloc(sizeof (libnode_t))) == NULL)
-		return (NULL);
+		return (PyErr_NoMemory());
 
 	n->nameoff = off;
 	n->verlist = NULL;
@@ -89,8 +91,8 @@ liblist_add(liblist_t *lst, off_t off)
 	return (n);
 }
 
-void
-liblist_foreach(liblist_t *lst, void (*cb)(libnode_t *, void *, void *),
+int
+liblist_foreach(liblist_t *lst, int (*cb)(libnode_t *, void *, void *),
     void *info, void *info2)
 {
 	if (!lst)
@@ -99,9 +101,12 @@ liblist_foreach(liblist_t *lst, void (*cb)(libnode_t *, void *, void *),
 	libnode_t *n = lst->head;
 
 	while (n) {
-		cb(n, info, info2);
+		if (cb(n, info, info2) == -1)
+			return (-1);
 		n = n->next;
 	}
+
+	return (0);
 }
 
 static liblist_t *
@@ -115,7 +120,8 @@ liblist_copy(liblist_t *lst)
 	if (!(nl = liblist_alloc()))
 		return (NULL);
 
-	liblist_foreach(lst, copyto_liblist_cb, nl, NULL);
+	if (liblist_foreach(lst, copyto_liblist_cb, nl, NULL) == -1)
+		return (NULL);
 
 	return (nl);
 }
@@ -124,7 +130,7 @@ liblist_copy(liblist_t *lst)
 /* callbacks */
 
 /*ARGSUSED2*/
-void
+int
 setver_liblist_cb(libnode_t *n, void *info, void *info2)
 {
 	liblist_t *vers = (liblist_t *)info;
@@ -133,20 +139,23 @@ setver_liblist_cb(libnode_t *n, void *info, void *info2)
 
 	while (vn) {
 		if (vn->nameoff == n->nameoff) {
-			n->verlist = liblist_copy(vn->verlist);
+			if ((n->verlist = liblist_copy(vn->verlist)) == NULL)
+				return (-1);
 			break;
 		}
 		vn = vn->next;
 	}
+
+	return (0);
 }
 
 /*ARGSUSED2*/
-static void
+static int
 copyto_liblist_cb(libnode_t *n, void *info, void *info2)
 {
 	liblist_t *lst = (liblist_t *)info;
-	if (liblist_add(lst, n->nameoff) == NULL) {
-		assert(0); /* XXX */
-	}
+	if (liblist_add(lst, n->nameoff) == NULL)
+		return (-1);
 	lst->tail->verlist = liblist_copy(n->verlist);
+	return (0);
 }

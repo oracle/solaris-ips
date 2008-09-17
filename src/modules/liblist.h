@@ -18,8 +18,9 @@
  *
  * CDDL HEADER END
  */
+
 /*
- * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 
@@ -52,11 +53,11 @@ typedef struct liblist {
 liblist_t *liblist_alloc();
 void liblist_free(liblist_t *lst);
 libnode_t *liblist_add(liblist_t *lst, off_t off);
-void liblist_foreach(liblist_t *lst, void (*cb)(libnode_t *, void *, void *),
+int liblist_foreach(liblist_t *lst, int (*cb)(libnode_t *, void *, void *),
     void *info, void *info2);
 
 /* callbacks */
-void setver_liblist_cb(libnode_t *n, void *info, void *info2);
+int setver_liblist_cb(libnode_t *n, void *info, void *info2);
 
 #ifdef	__cplusplus
 }

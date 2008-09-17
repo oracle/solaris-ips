@@ -18,6 +18,7 @@
  *
  * CDDL HEADER END
  */
+
 /*
  * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
@@ -51,40 +52,59 @@
 
 #include <Python.h>
 
-static void
+static int
 pythonify_ver_liblist_cb(libnode_t *n, void *info, void *info2)
 {
 	PyObject *pverlist = (PyObject *)info;
 	PyObject *ent;
 	dyninfo_t *dyn = (dyninfo_t *)info2;
+	char *str;
+	
+	if ((str = elf_strptr(dyn->elf, dyn->dynstr, n->nameoff)) == NULL) {
+		PyErr_SetString(ElfError, elf_errmsg(-1));
+		return (-1);
+	}
 
-	ent = Py_BuildValue("s", elf_strptr(dyn->elf, dyn->dynstr, n->nameoff));
+	ent = Py_BuildValue("s", str);
 
-	PyList_Append(pverlist, ent);
+	return (PyList_Append(pverlist, ent));
 }
 
-static void
+static int
 pythonify_2dliblist_cb(libnode_t *n, void *info, void *info2)
 {
 	PyObject *pdep = (PyObject *)info;
 	dyninfo_t *dyn = (dyninfo_t *)info2;
+	char *str;
 
 	PyObject *pverlist;
 
 	pverlist = PyList_New(0);
-	liblist_foreach(n->verlist, pythonify_ver_liblist_cb, pverlist, dyn);
-	PyList_Append(pdep, Py_BuildValue("[s,O]",
-	    elf_strptr(dyn->elf, dyn->dynstr, n->nameoff), pverlist));
+	if (liblist_foreach(
+		n->verlist, pythonify_ver_liblist_cb, pverlist, dyn) == -1)
+		return (-1);
+
+	if ((str = elf_strptr(dyn->elf, dyn->dynstr, n->nameoff)) == NULL) {
+		PyErr_SetString(ElfError, elf_errmsg(-1));
+		return (-1);
+	}
+
+	return (PyList_Append(pdep, Py_BuildValue("[s,O]", str, pverlist)));
 }
 
-static void
+static int
 pythonify_1dliblist_cb(libnode_t *n, void *info, void *info2)
 {
 	PyObject *pdef = (PyObject *)info;
 	dyninfo_t *dyn = (dyninfo_t *)info2;
+	char *str;
 
-	PyList_Append(pdef, Py_BuildValue("s",
-	    elf_strptr(dyn->elf, dyn->dynstr, n->nameoff)));
+	if ((str = elf_strptr(dyn->elf, dyn->dynstr, n->nameoff)) == NULL) {
+		PyErr_SetString(ElfError, elf_errmsg(-1));
+		return (-1);
+	}
+
+	return (PyList_Append(pdef, Py_BuildValue("s", str)));
 }
 /*
  * Open a file named by python, setting an appropriate error on failure.
@@ -124,6 +144,9 @@ elf_is_elf_object(PyObject *self, PyObject *args)
 
 	(void) close(fd);
 
+	if (ret == -1)
+		return (NULL);
+
 	return (Py_BuildValue("i", ret));
 }
 
@@ -153,10 +176,8 @@ get_info(PyObject *self, PyObject *args)
 	if ((fd = py_get_fd(args)) < 0)
 		return (NULL);
 
-	if ((hi = getheaderinfo(fd)) == NULL) {
-		PyErr_SetString(PyExc_RuntimeError, "could not get elf header");
+	if ((hi = getheaderinfo(fd)) == NULL)
 		goto out;
-	}
 
 	pdict = PyDict_New();
 	PyDict_SetItemString(pdict, "type",
@@ -170,7 +191,8 @@ get_info(PyObject *self, PyObject *args)
 	    Py_BuildValue("s", pkg_string_from_osabi(hi->osabi)));
 
 out:
-	free(hi);
+	if (hi != NULL)
+		free(hi);
 	(void) close(fd);
 	return (pdict);
 }
@@ -214,29 +236,41 @@ get_dynamic(PyObject *self, PyObject *args)
 	if ((fd = py_get_fd(args)) < 0)
 		return (NULL);
 
-	if ((dyn = getdynamic(fd)) == NULL) {
-		PyErr_SetString(PyExc_RuntimeError,
-		    "failed to load dynamic section");
+	if ((dyn = getdynamic(fd)) == NULL)
 		goto out;
-	}
 
 	pdict = PyDict_New();
 	if (dyn->deps->head) {
 		pdep = PyList_New(0);
-		liblist_foreach(dyn->deps, pythonify_2dliblist_cb, pdep, dyn);
+		if (liblist_foreach(
+			dyn->deps, pythonify_2dliblist_cb, pdep, dyn) == -1)
+			goto out;
 		PyDict_SetItemString(pdict, "deps", pdep);
 	}
 	if (dyn->def) {
+		char *str;
+
 		pdef = PyList_New(0);
-		liblist_foreach(dyn->vers, pythonify_1dliblist_cb, pdef, dyn);
+		if (liblist_foreach(
+			dyn->vers, pythonify_1dliblist_cb, pdef, dyn) == -1)
+			goto out;
 		PyDict_SetItemString(pdict, "vers", pdef);
-		PyDict_SetItemString(pdict, "def", Py_BuildValue("s",
-		    elf_strptr(dyn->elf, dyn->dynstr, dyn->def)));
+		if ((str = elf_strptr(
+			dyn->elf, dyn->dynstr, dyn->def)) == NULL) {
+			PyErr_SetString(ElfError, elf_errmsg(-1));
+			goto out;
+		}
+		PyDict_SetItemString(pdict, "def", Py_BuildValue("s", str));
 	}
 	if (dyn->runpath) {
-		PyDict_SetItemString(pdict, "runpath",
-		    Py_BuildValue("s",
-		    elf_strptr(dyn->elf, dyn->dynstr, dyn->runpath)));
+		char *str;
+
+		if ((str = elf_strptr(
+			dyn->elf, dyn->dynstr, dyn->runpath)) == NULL) {
+			PyErr_SetString(ElfError, elf_errmsg(-1));
+			goto out;
+		}
+		PyDict_SetItemString(pdict, "runpath", Py_BuildValue("s", str));
 	}
 
 	for (i = 0; i < 20; i++) {
@@ -282,6 +316,18 @@ static PyMethodDef methods[] = {
 	{ NULL, NULL }
 };
 
-void initelf() {
-	Py_InitModule("elf", methods);
+PyMODINIT_FUNC
+initelf(void)
+{
+	PyObject *m;
+
+	if ((m = Py_InitModule("elf", methods)) == NULL)
+		return;
+
+	ElfError = PyErr_NewException("pkg.elf.ElfError", NULL, NULL);
+	if (ElfError == NULL)
+		return;
+
+	Py_INCREF(ElfError);
+	PyModule_AddObject(m, "ElfError", ElfError);
 }

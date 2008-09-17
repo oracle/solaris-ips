@@ -18,10 +18,12 @@
  *
  * CDDL HEADER END
  */
+
 /*
  * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
+
 #include <libelf.h>
 #include <gelf.h>
 
@@ -34,7 +36,6 @@
 #include <stdio.h>
 #include <strings.h>
 #include <string.h>
-#include <assert.h>
 #include <netinet/in.h>
 #include <inttypes.h>
 #if defined (__SVR4) && defined (__sun)
@@ -134,16 +135,16 @@ getident(int fd)
 	char *id = NULL;
 
 	if ((id = malloc(EI_NIDENT)) == NULL)
-		return (NULL);
+		return (PyErr_NoMemory());
 	
 	if (lseek(fd, 0, SEEK_SET) == -1) {
-		assert(0);
+		PyErr_SetFromErrno(PyExc_IOError);
 		free(id);
 		return (NULL);
 	}
 
 	if (read(fd, id, EI_NIDENT) < 0) {
-		assert(0);
+		PyErr_SetFromErrno(PyExc_IOError);
 		free(id);
 		return (NULL);
 	}
@@ -157,7 +158,7 @@ iself(int fd)
 	char *ident;
 
 	if (!(ident = getident(fd)))
-		return (0);
+		return (-1);
 
 	if (strncmp(ident, ELFMAG, strlen(ELFMAG)) == 0) {
 		free(ident);
@@ -174,9 +175,15 @@ iself32(int fd)
 	char *ident = NULL;
 
 	if (!(ident = getident(fd)))
-		return (0);
+		return (-1);
 
-	return (ident[EI_CLASS] == ELFCLASS32);
+	if (ident[EI_CLASS] == ELFCLASS32) {
+		free(ident);
+		return (1);
+	}
+
+	free(ident);
+	return (0);
 }
 
 static GElf_Ehdr *
@@ -184,17 +191,20 @@ gethead(Elf *elf)
 {
 	GElf_Ehdr *hdr;
 
-	if (!elf)
-		return (NULL);
-
-	if ((hdr = malloc(sizeof (GElf_Ehdr))) == NULL)
-		return (NULL);
-
-	if (gelf_getehdr(elf, hdr) == 0) {
-		free(hdr);
+	if (!elf) {
+		PyErr_SetString(PyExc_ValueError,
+		    "elf.so`gethead: argument 'elf' must not be NULL");
 		return (NULL);
 	}
 
+	if ((hdr = malloc(sizeof (GElf_Ehdr))) == NULL)
+		return (PyErr_NoMemory());
+
+	if (gelf_getehdr(elf, hdr) == 0) {
+		PyErr_SetString(ElfError, elf_errmsg(-1));
+		free(hdr);
+		return (NULL);
+	}
 
 	return (hdr);
 }
@@ -206,18 +216,17 @@ getheaderinfo(int fd)
 	GElf_Ehdr *hdr;
 	hdrinfo_t *hi;
 
-	if (!iself(fd))
-		return (NULL);
-
 	if ((hi = malloc(sizeof (hdrinfo_t))) == NULL)
-		return (NULL);
+		return (PyErr_NoMemory());
 
 	if (elf_version(EV_CURRENT) == EV_NONE) {
+		PyErr_SetString(ElfError, elf_errmsg(-1));
 		free(hi);
 		return (NULL);
 	}
 
 	if (!(elf = elf_begin(fd, ELF_C_READ, NULL))) {
+		PyErr_SetString(ElfError, elf_errmsg(-1));
 		free(hi);
 		return (NULL);
 	}
@@ -259,13 +268,9 @@ hashsection(char *name)
 }
 
 /*
- * Reads a section in 64k increments, adding it
- * to the hash.
- *
- * XXX this function seems to generate an invalid hash if either
- * lseek and/or read fails.
+ * Reads a section in 64k increments, adding it to the hash.
  */
-static void
+static int
 readhash(int fd, SHA1_CTX *shc, off_t offset, off_t size)
 {
 	off_t n;
@@ -273,21 +278,24 @@ readhash(int fd, SHA1_CTX *shc, off_t offset, off_t size)
 	ssize_t rbytes;
 
 	if (!size)
-		return;
+		return (0);
 
-	/* XXX should we really just return here? */
-	if (lseek(fd, offset, SEEK_SET) == -1)
-		return;
+	if (lseek(fd, offset, SEEK_SET) == -1) {
+		PyErr_SetFromErrno(PyExc_IOError);
+		return (-1);
+	}
 
 	do {
 		n = MIN(size, sizeof (hashbuf));
 		if ((rbytes = read(fd, hashbuf, n)) == -1) {
-			/* XXX what do we do here? */
-			assert(0);
+			PyErr_SetFromErrno(PyExc_IOError);
+			return (-1);
 		}
 		SHA1Update(shc, hashbuf, rbytes);
 		size -= rbytes;
 	} while (size != 0);
+
+	return (0);
 }
 
 /*
@@ -328,23 +336,33 @@ getdynamic(int fd)
 	GElf_Verdaux *va = NULL;
 	liblist_t *verdef = NULL;
 
-	if (elf_version(EV_CURRENT) == EV_NONE)
+	if (elf_version(EV_CURRENT) == EV_NONE) {
+		PyErr_SetString(ElfError, elf_errmsg(-1));
 		return (NULL);
+	}
 
-	if (!(elf = elf_begin(fd, ELF_C_READ, NULL)))
+	if (!(elf = elf_begin(fd, ELF_C_READ, NULL))) {
+		PyErr_SetString(ElfError, elf_errmsg(-1));
 		goto bad;
+	}
 
-	if (!elf_getshstrndx(elf, &sh_str))
+	if (!elf_getshstrndx(elf, &sh_str)) {
+		PyErr_SetString(ElfError, elf_errmsg(-1));
 		goto bad;
+	}
 
 	/* get useful sections */
 	SHA1Init(&shc);
 	while ((scn = elf_nextscn(elf, scn))) {
-		if (gelf_getshdr(scn, &shdr) != &shdr)
+		if (gelf_getshdr(scn, &shdr) != &shdr) {
+			PyErr_SetString(ElfError, elf_errmsg(-1));
 			goto bad;
+		}
 
-		if (!(name = elf_strptr(elf, sh_str, shdr.sh_name)))
+		if (!(name = elf_strptr(elf, sh_str, shdr.sh_name))) {
+			PyErr_SetString(ElfError, elf_errmsg(-1));
 			goto bad;
+		}
 
 		if (hashsection(name)) {
 			if (shdr.sh_type == SHT_NOBITS) {
@@ -361,15 +379,22 @@ getdynamic(int fd)
 				SHA1Update(&shc, &top, sizeof (top));
 				SHA1Update(&shc, &bot, sizeof (bot));
 			}
-			else
-				readhash(fd, &shc, shdr.sh_offset,
+			else {
+				int hash;
+				hash = readhash(fd, &shc, shdr.sh_offset,
 				    shdr.sh_size);
+
+				if (hash == -1)
+					goto bad;
+			}
 		}
 
 		switch (shdr.sh_type) {
 		case SHT_DYNAMIC:
-			if (!(data_dyn = elf_getdata(scn, NULL)))
+			if (!(data_dyn = elf_getdata(scn, NULL))) {
+				PyErr_SetString(ElfError, elf_errmsg(-1));
 				goto bad;
+			}
 
 			num_dyn = shdr.sh_size / shdr.sh_entsize;
 			dynstr = shdr.sh_link;
@@ -380,8 +405,10 @@ getdynamic(int fd)
 #else
 		case SHT_GNU_verdef:
 #endif
-			if (!(data_verdef = elf_getdata(scn, NULL)))
+			if (!(data_verdef = elf_getdata(scn, NULL))) {
+				PyErr_SetString(ElfError, elf_errmsg(-1));
 				goto bad;
+			}
 
 			verdefnum = shdr.sh_info;
 			break;
@@ -391,8 +418,10 @@ getdynamic(int fd)
 #else
 		case SHT_GNU_verneed:
 #endif
-			if (!(data_verneed = elf_getdata(scn, NULL)))
+			if (!(data_verneed = elf_getdata(scn, NULL))) {
+				PyErr_SetString(ElfError, elf_errmsg(-1));
 				goto bad;
+			}
 
 			vernum = shdr.sh_info;
 			break;
@@ -401,7 +430,8 @@ getdynamic(int fd)
 
 	/* Dynamic but no string table? */
 	if (data_dyn && dynstr < 0) {
-		(void) printf("bad elf: didn't find the dynamic duo\n");
+		PyErr_SetString(ElfError,
+			"bad elf: didn't find the dynamic duo");
 		goto bad;
 	}
 
@@ -411,15 +441,14 @@ getdynamic(int fd)
 
 	for (t = 0; t < num_dyn; t++) {
 		if (gelf_getdyn(data_dyn, t, &gd) == NULL) {
-			/* XXX what do we do here? */
-			assert(0);
+			PyErr_SetString(ElfError, elf_errmsg(-1));
+			goto bad;
 		}
 
 		switch (gd.d_tag) {
 		case DT_NEEDED:
-			if (liblist_add(deps, gd.d_un.d_val) == NULL) {
-				assert(0); /* XXX what do we do here? */
-			}
+			if (liblist_add(deps, gd.d_un.d_val) == NULL)
+				goto bad;
 			break;
 		case DT_RPATH:
 			rpath = gd.d_un.d_val;
@@ -465,14 +494,12 @@ getdynamic(int fd)
 			if (ea)
 				cp += ea->vna_next;
 			ea = (GElf_Vernaux*)cp;
-			if (liblist_add(veraux, ea->vna_name) == NULL) {
-				assert(0); /* XXX what do we do here? */
-			}
+			if (liblist_add(veraux, ea->vna_name) == NULL)
+				goto bad;
 		}
 
-		if (liblist_add(vers, ev->vn_file) == NULL) {
-			assert(0); /* XXX what do we do here? */
-		}
+		if (liblist_add(vers, ev->vn_file) == NULL)
+			goto bad;
 		vers->tail->verlist = veraux;
 
 		cp = buf;
@@ -509,21 +536,19 @@ getdynamic(int fd)
 				cp += va->vda_next;
 			va = (GElf_Verdaux*)cp;
 			/* first one is name, rest are versions */
-			if (!def) {
+			if (!def)
 				def = va->vda_name;
-			} else {
-				if (liblist_add(verdef, va->vda_name) == NULL) {
-					/* XXX what do we do here? */
-					assert(0);
-				}
-			}
+			else if (liblist_add(verdef, va->vda_name) == NULL)
+				goto bad;
 		}
 
 		cp = buf;
 	}
 
-	if ((dyn = malloc(sizeof (dyninfo_t))) == NULL)
+	if ((dyn = malloc(sizeof (dyninfo_t))) == NULL) {
+		PyErr_NoMemory();
 		goto bad;
+	}
 
 	dyn->runpath = runpath;
 	dyn->dynstr = dynstr;
@@ -550,8 +575,6 @@ bad:
 void
 dyninfo_free(dyninfo_t *dyn)
 {
-	assert(dyn != NULL);
-
 	liblist_free(dyn->deps);
 	liblist_free(dyn->vers);
 	(void) elf_end(dyn->elf);
