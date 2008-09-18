@@ -166,7 +166,8 @@ class TestImageCreateCorruptImage(testutils.SingleDepotTestCaseCorruptImage):
 
                 # This is expected to fail because it will see an empty
                 # catalog directory and not rebuild the files as needed
-                self.pkg("install foo@1.1", exit = 1)
+                self.pkg("install --no-refresh foo@1.1", exit=1)
+                self.pkg("install foo@1.1")
 
         def test_var_pkg_missing_catalog_empty_hit_then_refreshed_then_hit(
             self):
@@ -182,7 +183,7 @@ class TestImageCreateCorruptImage(testutils.SingleDepotTestCaseCorruptImage):
                 self.corrupt_image_create(durl, set(["catalog_empty"]),
                     ["var/pkg"])
 
-                self.pkg("install foo@1.1", exit = 1)
+                self.pkg("install --no-refresh foo@1.1", exit = 1)
                 self.pkg("refresh")
                 self.pkg("install foo@1.1")
 
@@ -296,7 +297,7 @@ class TestImageCreateCorruptImage(testutils.SingleDepotTestCaseCorruptImage):
                 self.corrupt_image_create(durl, set(["catalog_empty"]),
                     [".org.opensolaris,pkg"])
 
-                self.pkg("install foo@1.1", exit = 1)
+                self.pkg("install --no-refresh foo@1.1", exit = 1)
 
         def test_ospkg_missing_catalog_empty_hit_then_refreshed_then_hit(self):
                 """ Creates bad_dir with all dirs and files present, but
@@ -311,7 +312,7 @@ class TestImageCreateCorruptImage(testutils.SingleDepotTestCaseCorruptImage):
                 self.corrupt_image_create(durl, set(["catalog_empty"]),
                     [".org.opensolaris,pkg"])
 
-                self.pkg("install foo@1.1", exit = 1)
+                self.pkg("install --no-refresh foo@1.1", exit = 1)
                 self.pkg("refresh")
                 self.pkg("install foo@1.1")
 

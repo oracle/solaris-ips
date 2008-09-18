@@ -78,7 +78,6 @@ class TestRename(testutils.SingleDepotTestCase):
 
                 self.pkgsend(durl, "rename foo@1.1,5.11-0 bar@1.0,5.11-0")
 
-                self.pkg("refresh")
 		self.pkg("install bar")
 		self.pkg("verify")
 

@@ -453,8 +453,8 @@ def ipkg_is_up_to_date(img):
                 # SUNWipkg is available.
                 try:
                         newimg.retrieve_catalogs()
-                except RuntimeError, failures:
-                        display_catalog_failures(failures)
+                except image.CatalogRefreshException, cre:
+                        display_catalog_failures(cre)
                         error(_("SUNWipkg update check failed."))
                         return False
 
@@ -492,10 +492,13 @@ def image_update(img, args):
         # Verify validity of certificates before attempting network operations
         if not img.check_cert_validity():
                 return 1
+
+        ret_code = 0
         
-        opts, pargs = getopt.getopt(args, "b:fnvq")
+        opts, pargs = getopt.getopt(args, "b:fnvq", ["no-refresh"])
 
         force = quiet = noexecute = verbose = False
+        refresh_catalogs = True
         for opt, arg in opts:
                 if opt == "-n":
                         noexecute = True
@@ -507,6 +510,8 @@ def image_update(img, args):
                         quiet = True
                 elif opt == "-f":
                         force = True
+                elif opt == "--no-refresh":
+                        refresh_catalogs = False
 
         if verbose and quiet:
                 usage(_("image-update: -v and -q may not be combined"))
@@ -518,18 +523,19 @@ def image_update(img, args):
         progresstracker = get_tracker(quiet)
         img.load_catalogs(progresstracker)
 
-        try:
-                img.retrieve_catalogs()
-        except RuntimeError, failures:
-                if display_catalog_failures(failures) == 0:
-                        if not noexecute:
-                                return 1
-                else:
-                        if not noexecute:
-                                return 3
+        if refresh_catalogs:
+                try:
+                        img.retrieve_catalogs()
+                except image.CatalogRefreshException, cre:
+                        if display_catalog_failures(cre) == 0:
+                                if not noexecute:
+                                        return 1
+                        else:
+                                ret_code = 3
 
-        # Reload catalog.  This picks up the update from retrieve_catalogs.
-        img.load_catalogs(progresstracker)
+                # Reload catalog. This picks up the update from
+                # retrieve_catalogs.
+                img.load_catalogs(progresstracker)
 
         #
         # If we can find SUNWipkg and SUNWcs in the target image, then
@@ -560,10 +566,10 @@ def image_update(img, args):
 
         if img.imageplan.nothingtodo():
                 msg(_("No updates available for this image."))
-                return 0
+                return ret_code
 
         if noexecute:
-                return 0
+                return ret_code
 
         try:
                 img.imageplan.preexecute()
@@ -586,7 +592,6 @@ def image_update(img, args):
         try:
                 img.imageplan.execute()
                 be.activate_image()
-                ret_code = 0
         except RuntimeError, e:
                 error(_("image-update failed: %s") % e)
                 be.restore_image()
@@ -631,9 +636,12 @@ def install(img, args):
         if not img.check_cert_validity():
                 return 1
 
-        opts, pargs = getopt.getopt(args, "nvb:f:q")
+        ret_code = 0
+        
+        opts, pargs = getopt.getopt(args, "nvb:f:q", ["no-refresh"])
 
         quiet = noexecute = verbose = False
+        refresh_catalogs = True
         filters = []
         for opt, arg in opts:
                 if opt == "-n":
@@ -646,6 +654,8 @@ def install(img, args):
                         filters += [ arg ]
                 elif opt == "-q":
                         quiet = True
+                elif opt == "--no-refresh":
+                        refresh_catalogs = False
 
         if not pargs:
                 usage(_("install: at least one package name required"))
@@ -659,6 +669,21 @@ def install(img, args):
                 return 1
 
         img.load_catalogs(progresstracker)
+
+        if refresh_catalogs:
+        
+                try:
+                        img.retrieve_catalogs()
+                except image.CatalogRefreshException, cre:
+                        if not display_catalog_failures(cre):
+                                if not noexecute:
+                                        return 1
+                        else:
+                                ret_code = 3
+
+                # Reload catalog. This picks up the update from
+                # retrieve_catalogs.
+                img.load_catalogs(progresstracker)
 
         pkg_list = [ pat.replace("*", ".*").replace("?", ".")
             for pat in pargs ]
@@ -685,10 +710,10 @@ def install(img, args):
         if img.imageplan.nothingtodo():
                 msg(_("Nothing to install in this image (is this package " \
                     "already installed?)"))
-                return 0
+                return ret_code
 
         if noexecute:
-                return 0
+                return ret_code
 
         try:
                 img.imageplan.preexecute()
@@ -706,7 +731,6 @@ def install(img, args):
         try:
                 img.imageplan.execute()
                 be.activate_install_uninstall()
-                ret_code = 0
         except RuntimeError, e:
                 error(_("installation failed: %s") % e)
                 be.restore_install_uninstall()
@@ -1432,11 +1456,12 @@ examining the catalogs:"""))
 
         return err
 
-def display_catalog_failures(failures):
-        total, succeeded = failures.args[1:3]
+def display_catalog_failures(cre):
+        total = cre.total
+        succeeded = cre.succeeded
         msg(_("pkg: %s/%s catalogs successfully updated:") % (succeeded, total))
 
-        for auth, err in failures.args[0]:
+        for auth, err in cre.failed:
                 if isinstance(err, urllib2.HTTPError):
                         emsg("   %s: %s - %s" % \
                             (err.filename, err.code, err.msg))
@@ -1495,8 +1520,8 @@ def catalog_refresh(img, args):
 
         try:
                 img.retrieve_catalogs(full_refresh, auths_to_refresh)
-        except RuntimeError, failures:
-                if display_catalog_failures(failures) == 0:
+        except image.CatalogRefreshException, cre:
+                if display_catalog_failures(cre) == 0:
                         return 1
                 else:
                         return 3
@@ -1505,8 +1530,8 @@ def catalog_refresh(img, args):
 
 def authority_set(img, args):
         """pkg set-authority [-P] [-k ssl_key] [-c ssl_cert]
-            [-O origin_url] [-m mirror to add] [-M mirror to remove]
-            authority"""
+            [-O origin_url] [-m mirror to add] [-M mirror to remove] 
+            [--no-refresh] authority"""
 
         preferred = False
         ssl_key = None
@@ -1514,9 +1539,11 @@ def authority_set(img, args):
         origin_url = None
         add_mirror = None
         remove_mirror = None
+        ret_code = 0
+        refresh_catalogs = True
 
         opts, pargs = getopt.getopt(args, "Pk:c:O:M:m:",
-            ["add-mirror=", "remove-mirror="])
+            ["add-mirror=", "remove-mirror=", "no-refresh"])
 
         for opt, arg in opts:
                 if opt == "-P":
@@ -1531,6 +1558,8 @@ def authority_set(img, args):
                         add_mirror = arg
                 if opt == "-M" or opt == "--remove-mirror":
                         remove_mirror = arg
+                if opt == "--no-refresh":
+                        refresh_catalogs = False
 
         if len(pargs) != 1:
                 usage(
@@ -1569,10 +1598,16 @@ def authority_set(img, args):
 
         try:
                 img.set_authority(auth, origin_url = origin_url,
-                        ssl_key = ssl_key, ssl_cert = ssl_cert)
+                        ssl_key = ssl_key, ssl_cert = ssl_cert,
+                        refresh_allowed = refresh_catalogs)
         except RuntimeError, e:
                 error(_("set-authority failed: %s") % e)
                 return 1
+        except image.CatalogRefreshException, cre:
+                msg = "Could not refresh the catalog for %s" % \
+                    auth
+                error(_(msg))
+                ret_code = 1
 
         if preferred:
                 img.set_preferred_authority(auth)
@@ -1604,7 +1639,7 @@ def authority_set(img, args):
                 img.del_mirror(auth, remove_mirror)
 
 
-        return 0
+        return ret_code
 
 def authority_unset(img, args):
         """pkg unset-authority authority ..."""
@@ -1732,9 +1767,10 @@ def image_create(img, args):
         ssl_cert = None
         auth_name = None
         auth_url = None
+        refresh_catalogs = True
 
         opts, pargs = getopt.getopt(args, "FPUza:k:c:",
-            ["full", "partial", "user", "zone", "authority="])
+            ["full", "partial", "user", "zone", "authority=", "no-refresh"])
 
         for opt, arg in opts:
                 if opt == "-F" or opt == "--full":
@@ -1745,6 +1781,8 @@ def image_create(img, args):
                         imgtype = image.IMG_USER
                 if opt == "-z" or opt == "--zone":
                         is_zone = True
+                if opt == "--no-refresh":
+                        refresh_catalogs = False
                 if opt == "-k":
                         ssl_key = arg
                 if opt == "-c":
@@ -1803,15 +1841,15 @@ def image_create(img, args):
                     (pargs[0], e.args[1]))
                 return 1
 
-        try:
-                img.retrieve_catalogs()
-        except RuntimeError, failures:
-                if display_catalog_failures(failures) == 0:
-                        return 1
-                else:
-                        return 3
-        else:
-                return 0
+        if refresh_catalogs:
+                try:
+                        img.retrieve_catalogs()
+                except image.CatalogRefreshException, cre:
+                        if display_catalog_failures(cre) == 0:
+                                return 1
+                        else:
+                                return 3
+        return 0
 
 
 def rebuild_index(img, pargs):

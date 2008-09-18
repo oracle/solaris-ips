@@ -71,6 +71,13 @@ PKG_STATE_KNOWN = "known"
 # Minimum number of days to issue warning before a certificate expires
 MIN_WARN_DAYS = datetime.timedelta(days=30)
 
+class CatalogRefreshException(Exception):
+        def __init__(self, failed, total, succeeded):
+                Exception.__init__(self)
+                self.failed = failed
+                self.total = total
+                self.succeeded = succeeded
+
 class InventoryException(Exception):
         def __init__(self, notfound=None, illegal=None):
                 Exception.__init__(self)
@@ -497,6 +504,8 @@ class Image(object):
 
                 self.cfg_cache.delete_authority(auth_name)
                 self.cfg_cache.write("%s/cfg_cache" % self.imgdir)
+                self.destroy_catalog(auth_name)
+                self.cache_catalogs()
 
         def get_authority(self, auth_name):
                 if not self.has_authority(auth_name):
@@ -528,9 +537,11 @@ class Image(object):
                 self.cfg_cache.write("%s/cfg_cache" % self.imgdir)
 
         def set_authority(self, auth_name, origin_url = None, ssl_key = None,
-            ssl_cert = None):
+            ssl_cert = None, refresh_allowed = True):
 
                 auths = self.cfg_cache.authorities
+
+                refresh_needed = False
 
                 if auth_name in auths:
                         # If authority already exists, only update non-NULL
@@ -538,6 +549,7 @@ class Image(object):
                         if origin_url:
                                 auths[auth_name]["origin"] = \
                                     misc.url_affix_trailing_slash(origin_url)
+                                refresh_needed = True
                         if ssl_key:
                                 auths[auth_name]["ssl_key"] = ssl_key
                         if ssl_cert:
@@ -551,8 +563,15 @@ class Image(object):
                         auths[auth_name]["mirrors"] = []
                         auths[auth_name]["ssl_key"] = ssl_key
                         auths[auth_name]["ssl_cert"] = ssl_cert
+                        refresh_needed = True
 
                 self.cfg_cache.write("%s/cfg_cache" % self.imgdir)
+                
+                if refresh_needed and refresh_allowed:
+                        self.destroy_catalog(auth_name)
+                        self.destroy_catalog_cache()
+                        self.retrieve_catalogs(full_refresh=True,
+                            auths=[auths[auth_name]])
                         
         def add_mirror(self, auth_name, mirror):
                 """Add the mirror URL contained in mirror to
@@ -1138,9 +1157,9 @@ class Image(object):
                                 succeeded += 1
 
                 self.cache_catalogs()
-
+                
                 if failed:
-                        raise RuntimeError, (failed, total, succeeded)
+                        raise CatalogRefreshException(failed, total, succeeded)
 
         CATALOG_CACHE_VERSION = 1
 
@@ -1231,6 +1250,22 @@ class Image(object):
                         self.load_catalog_cache()
                 except RuntimeError:
                         self.cache_catalogs()
+
+        def destroy_catalog_cache(self):
+                pickle_file = os.path.join(self.imgdir, "catalog/catalog.pkl")
+                try:
+                        portable.remove(pickle_file)
+                except OSError, e:
+                        if e.errno != errno.ENOENT:
+                                raise
+                        
+        def destroy_catalog(self, auth_name):
+                try:
+                        shutil.rmtree("%s/catalog/%s" %
+                            (self.imgdir, auth_name))
+                except OSError, e:
+                        if e.errno != errno.ENOENT:
+                                raise
 
         def fmri_is_same_pkg(self, cfmri, pfmri):
                 """Determine whether fmri and pfmri share the same package

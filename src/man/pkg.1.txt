@@ -7,7 +7,7 @@ NAME
 SYNOPSIS
      /usr/bin/pkg [options] command [cmd_options] [operands]
 
-     /usr/bin/pkg install [-nvq] pkg_fmri ...
+     /usr/bin/pkg install [-nvq] [--no-refresh] pkg_fmri ...
      /usr/bin/pkg uninstall [-nrvq] pkg_fmri ...
 
      /usr/bin/pkg verify [-Hvq] [pkg_fmri_pattern ...]
@@ -20,11 +20,11 @@ SYNOPSIS
      /usr/bin/pkg refresh [--full] [authority ...]
 
      /usr/bin/pkg image-create [-FPUz] [--full|--partial|--user] [--zone]
-         [-k ssl_key] [-c ssl_cert] -a authority=origin_url dir
-     /usr/bin/pkg image-update [-nvq]
+         [-k ssl_key] [-c ssl_cert] [--no-refresh] -a authority=origin_url dir
+     /usr/bin/pkg image-update [-nvq] [--no-refresh]
 
      /usr/bin/pkg set-authority [-P] [-k ssl_key] [-c ssl_cert]
-         [-O origin_url] authority
+         [-O origin_url] [--no-refresh] authority
      /usr/bin/pkg unset-authority authority ...
      /usr/bin/pkg authority [-HP] [authname ...]
 
@@ -68,7 +68,7 @@ SUBCOMMANDS
      The following subcommands are supported:
 
      image-create [-FPUz] [--full|--partial|--user] [--zone] [-k ssl_key]
-       [-c ssl_cert] -a authority=origin_url dir
+       [-c ssl_cert] [--no-refresh] -a authority=origin_url dir
           Create, at location given by dir, an image suitable for package
           operations.  The default image type is user, as given by the -U
           (--user) option.  The image type may be set to a full image (-F
@@ -85,13 +85,18 @@ SUBCOMMANDS
           If the image is to be run within nonglobal zone context, then
           the -z (--zone) option can be used to set an appropriate filter.
 
-     image-update [-fnvq]
+          With --no-refresh, do not attempt to contact the image's authority
+          to retrieve its catalog.
+
+     image-update [-fnvq] [--no-refresh] 
           Update all installed packages in the current image to the
           latest available version.  With the -f option, skip safety
           checks.  With the -n option, execute the requested operation
           but make no persistent changes to the image.  With the -v
           option, issue verbose progress messages during the requested
-          operation.  With the -q option, be completely silent.
+          operation.  With the -q option, be completely silent. With 
+          --no-refresh, do not attempt to contact the image's authority
+          to retrieve its catalog.
 
      refresh [--full] [authority ...]
           Retrieve updates to the catalogs for each authority specified.
@@ -99,7 +104,7 @@ SUBCOMMANDS
           registered within the image. With --full, retrieve the full
           catalogs.
 
-     install [-nvq] pkg_fmri ...
+     install [-nvq] [--no-refresh] pkg_fmri ...
      uninstall [-nrvq] pkg_fmri ...
           Install or remove the package specified by pkg_fmri or
           matching pkg_fmri as a substring.  With the -n option, execute
@@ -110,6 +115,9 @@ SUBCOMMANDS
           In the case of uninstall, the -r option will recursively
           uninstall any packages which are dependent on the initial
           package.
+
+          With --no-refresh, do not attempt to contact the image's authority
+          to retrieve its catalog.
 
      info [-lr] [--license] [pkg_fmri_pattern ...]
           Display information about packages in a human-readable form.
@@ -215,12 +223,16 @@ SUBCOMMANDS
 
           The -H option causes the headers to be omitted.
 
-     set-authority [-P] [-k ssl_key] [-c ssl_cert] [-O origin_url] authority
+     set-authority [-P] [-k ssl_key] [-c ssl_cert] [-O origin_url] 
+                   [--no-refresh] authority
           Update an existing authority or add an additional package
           authority.  With -P, set the specified authority as the
           preferred authority.  With -c and -k, specify client SSL
           certificate and key respectively.  The -O option sets the URL
           prefix for the origin packaging repository for the authority.
+
+          With --no-refresh, do not attempt to contact the image's authority
+          to retrieve its catalog.
 
      unset-authority authority ...
           Remove the configuration associated with the given authority

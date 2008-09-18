@@ -275,6 +275,7 @@ cli.t_pkgsend.py TestPkgSend.test_pkgsend_abandon|pass
 cli.t_recv.py TestPkgRecv.test_bad_opts|pass
 cli.t_recv.py TestPkgRecv.test_recv_send|pass
 cli.t_refresh.py TestPkgRefresh.test_general_refresh|pass
+cli.t_refresh.py TestPkgRefresh.test_set_authority_induces_delayed_full_refresh|pass
 cli.t_refresh.py TestPkgRefresh.test_set_authority_induces_full_refresh|pass
 cli.t_refresh.py TestPkgRefresh.test_specific_refresh|pass
 cli.t_rename.py TestRename.test_rename1|pass

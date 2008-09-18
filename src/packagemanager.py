@@ -1059,7 +1059,7 @@ class PackageManager:
 
                 try:
                         img.retrieve_catalogs()
-                except RuntimeError:
+                except image.CatalogRefreshException:
                         raise
                 # Reload catalog.  This picks up the update from retrieve_catalogs.
                 img.load_catalogs(self.pr)

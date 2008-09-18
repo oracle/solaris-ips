@@ -52,7 +52,6 @@ class TestPkgSearchMulti(testutils.ManyDepotTestCase):
 
                 self.image_create(durl1, prefix = "test1")
                 self.pkg("set-authority -O " + durl2 + " test2")
-                self.pkg("refresh")
 
         def test_bug_2955(self):
                 """See http://defect.opensolaris.org/bz/show_bug.cgi?id=2955"""

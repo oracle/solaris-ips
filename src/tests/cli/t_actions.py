@@ -210,7 +210,6 @@ adm:NP:6445::::::
                 self.pkg("contents -m usertest")
 
                 self.pkgsend_bulk(durl, self.usertest11)
-                self.pkg("refresh")
                 self.pkg("install usertest")
                 self.pkg("verify")
                 self.pkg("contents -m usertest")

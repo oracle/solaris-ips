@@ -124,9 +124,11 @@ class TestCommandLine(testutils.SingleDepotTestCase):
                 durl = self.dc.get_depot_url()
                 self.image_create(durl)
 
-                self.pkg("set-authority -O http://test1 test1")
+                self.pkg("set-authority -O http://test1 test1", exit=1)
+                self.pkg("set-authority --no-refresh -O http://test1 test1")
                 self.pkg("authority | grep test")
-                self.pkg("set-authority -P -O http://test2 test2")
+                self.pkg("set-authority -P -O http://test2 test2", exit=1)
+                self.pkg("set-authority -P --no-refresh -O http://test2 test2")
                 self.pkg("authority | grep test2")
                 self.pkg("unset-authority test1")
                 self.pkg("authority | grep test1", exit=1)
@@ -144,8 +146,10 @@ class TestCommandLine(testutils.SingleDepotTestCase):
                     "set-authority -O http://test1 test1 -O http://test2 test2",
                      exit=2)
 
-                self.pkg("set-authority -O http://test1 test1")
-                self.pkg("set-authority -O http://test2 test2")
+                self.pkg("set-authority -O http://test1 test1", exit=1)
+                self.pkg("set-authority -O http://test2 test2", exit=1)
+                self.pkg("set-authority --no-refresh -O http://test1 test1")
+                self.pkg("set-authority --no-refresh -O http://test2 test2")
 
                 self.pkg("set-authority -k %s test1" % key_path)
                 os.close(key_fh)
@@ -166,7 +170,8 @@ class TestCommandLine(testutils.SingleDepotTestCase):
                 durl = self.dc.get_depot_url()
                 self.image_create(durl)
 
-                self.pkg("set-authority -O http://test1 test1")
+                self.pkg("set-authority -O http://test1 test1", exit=1)
+                self.pkg("set-authority --no-refresh -O http://test1 test1")
 
                 self.pkg("set-authority -O http://test2 $%^8", exit=1)
                 self.pkg("set-authority -O http://test2 8^$%", exit=1)

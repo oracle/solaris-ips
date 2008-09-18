@@ -89,8 +89,6 @@ class TestPkgList(testutils.ManyDepotTestCase):
 
                 self.pkg("set-authority -O " + durl2 + " test2")
 
-                self.pkg("refresh")
-
         def reduceSpaces(self, string):
                 """Reduce runs of spaces down to a single space."""
                 return re.sub(" +", " ", string)

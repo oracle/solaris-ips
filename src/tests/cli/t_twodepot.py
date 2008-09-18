@@ -112,9 +112,6 @@ class TestTwoDepots(testutils.ManyDepotTestCase):
                 # Create second authority using depot #2
                 self.pkg("set-authority -O " + durl2 + " test2")
 
-                self.pkg("refresh")
-
-
         def tearDown(self):
                 testutils.ManyDepotTestCase.tearDown(self)
 
