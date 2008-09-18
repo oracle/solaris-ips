@@ -47,7 +47,7 @@ def head(rcfg, request):
         """Returns the XHTML used as a common page header for depot pages."""
         return """\
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-        "http://www.w3.org/TR/2002/REC-xhtml1-20020801/DTD/xhtml1-strict.dtd">
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
  <link rel="shortcut icon" href="%s"/>
@@ -122,21 +122,33 @@ def index(scfg, rcfg, request, response):
         """Returns a dynamically-generated status page for the repository
         represented by scfg."""
 
+        #
+        # Page Start
+        #
         output = """\
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-        "http://www.w3.org/TR/2002/REC-xhtml1-20020801/DTD/xhtml1-strict.dtd">
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
  <link rel="shortcut icon" href="%s"/>
  <link rel="stylesheet" type="text/css" href="%s"/>
+""" % (get_res_path(request, rcfg.get_attribute("repository", "icon")),
+    get_res_path(request, rcfg.get_attribute("repository", "style")))
+
+        if not scfg.is_mirror():
+                # The feed isn't available in mirror mode.
+                output += """\
  <link rel="alternate" type="application/atom+xml" title="%s" href="%s"/>
+""" % (rcfg.get_attribute("feed", "name"), get_rel_path(request, "feed"))
+
+        output += """\
  <title>%s</title>
 </head>
-""" % (get_res_path(request, rcfg.get_attribute("repository", "icon")),
-    get_res_path(request, rcfg.get_attribute("repository", "style")),
-    rcfg.get_attribute("feed", "name"), get_rel_path(request, "feed"),
-    rcfg.get_attribute("repository", "name"))
+""" % rcfg.get_attribute("repository", "name")
 
+        #
+        # Status Information
+        #
         output += ("""\
 <body>
  <div id="doc4" class="yui-t5">
@@ -151,66 +163,92 @@ def index(scfg, rcfg, request, response):
         output += scfg.get_status()
         output += """\
     </pre>
+"""
+
+        #
+        # Feed Information (if available)
+        #
+        if not scfg.is_mirror():
+                # Metadata (e.g. updatelog) is not available in mirror mode.
+                output += ("""\
+    <div class="yui-b">
+     <a href="%s"><img src="%s" alt="Atom feed" /></a>
+     <p>Last Updated: %s</p>
+    </div>
+""") % (get_rel_path(request, "feed"),
+    get_res_path(request, "feed-icon-32x32.png"),
+    scfg.updatelog.last_update)
+
+        #
+        # Catalog Information (if available)
+        #
+        if not scfg.is_mirror():
+                # Metadata (e.g. catalog) is not available in mirror mode.
+                output += """\
     <h2>Catalog</h2>
     <div>
      <table>
       <tr>
        <th>FMRI</th>
 """
-        for op in fmri_ops:
-                # Output a header for each possible operation for an FMRI.
-                output += """\
+                for op in fmri_ops:
+                        # Output a header for each possible operation for an
+                        # FMRI.
+                        output += """\
        <th>%s</th>
 """ % fmri_ops[op]
-        output += """\
+
+                output += """\
       </tr>
 """
 
-        # Output each FMRI that we have in the catalog.
-        flist = [f.get_fmri() for f in scfg.catalog.fmris()]
-        flist.sort()
-        for idx, pfmri in enumerate(flist):
-                tr_class = idx % 2 and "even" or "odd"
-                # Start FMRI entry
-                output += """\
+                # Output each FMRI that we have in the catalog.
+                flist = [f.get_fmri() for f in scfg.catalog.fmris()]
+                flist.sort()
+                for idx, pfmri in enumerate(flist):
+                        tr_class = idx % 2 and "even" or "odd"
+                        # Start FMRI entry
+                        output += """\
        <tr class="%s">
         <td>%s</td>
 """ % (tr_class, pfmri)
 
-                # Output all available operations for an FMRI.
-                for op in fmri_ops:
-                        output += """\
-        <td><a href="%s">%s</a></td>
-""" % (get_rel_path(request, "%s/0/%s" % (op, pfmri[len("pkg:/"):])),
-    fmri_ops[op])
+                        # Output all available operations for an FMRI.
+                        for op in fmri_ops:
+                                output += """\
+                <td><a href="%s">%s</a></td>
+        """ % (get_rel_path(request, "%s/0/%s" % (op, pfmri[len("pkg:/"):])),
+            fmri_ops[op])
 
-                # End FMRI entry
-                output += """\
+                        # End FMRI entry
+                        output += """\
        </tr>
 """
 
-        output += ("""\
+                # End of catalog table.
+                output += """\
      </table>
     </div>
-    <div class="yui-b">
-     <a href="%s"><img src="%s" alt="Atom feed" /></a>
-     <p>Last Updated: %s</p>
-    </div>
+"""
+
+        #
+        # Page End
+        #
+        output += """\
    </div>
   </div>
  </div>
 </body>
-</html>""") % (get_rel_path(request, "feed"),
-    get_res_path(request, "feed-icon-32x32.png"),
-    scfg.updatelog.last_update)
-
+</html>"""
         return output
 
 def feed(scfg, rcfg, request, response, *tokens, **params):
+        if scfg.is_mirror():
+                raise cherrypy.HTTPError(httplib.NOT_FOUND,
+                    "Operation not supported in current server mode.")
         if not scfg.updatelog.last_update:
                 raise cherrypy.HTTPError(httplib.SERVICE_UNAVAILABLE,
                     "No update history; unable to generate feed.")
-
         return pkg.server.feed.handle(scfg, rcfg, cherrypy.request,
             cherrypy.response)
 

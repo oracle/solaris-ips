@@ -161,7 +161,14 @@ class SvrConfig(object):
         def get_status(self):
                 """Display simple server status."""
 
-                ret = """\
+                if self.mirror:
+                        ret = """\
+Number of files served: %d
+Number of flists requested: %d
+Number of files served by flist: %d
+""" % (self.file_requests, self.flist_requests, self.flist_files)
+                else:
+                        ret = """\
 Number of packages: %d
 Number of in-flight transactions: %d
 
@@ -172,9 +179,9 @@ Number of flists requested: %d
 Number of files served by flist: %d
 Number of packages renamed: %d
 """ % (self.catalog.npkgs(), len(self.in_flight_trans),
-                self.catalog_requests, self.manifest_requests,
-                self.file_requests, self.flist_requests, self.flist_files,
-                self.pkgs_renamed)
+    self.catalog_requests, self.manifest_requests,
+    self.file_requests, self.flist_requests, self.flist_files,
+    self.pkgs_renamed)
 
                 return ret
 
