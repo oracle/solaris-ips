@@ -25,7 +25,15 @@
 # Use is subject to license terms.
 #
 
-__all__ = [ "SolarisPackageDatastreamBundle", "SolarisPackageDirBundle", "TarBundle" ]
+# The ordering is important -- SolarisPackageDirBundle must come before
+# DirectoryBundle, or the latter class will recognize a Solaris package
+# as a plain directory.
+__all__ = [
+    "SolarisPackageDirBundle",
+    "DirectoryBundle",
+    "SolarisPackageDatastreamBundle",
+    "TarBundle"
+]
 
 import os
 import sys

@@ -267,7 +267,10 @@ def trans_import(config, args):
                                         if fnmatch.fnmatch(basename, pattern):
                                                 break
                                 else:
-                                        del action.attrs["timestamp"]
+                                        try:
+                                                del action.attrs["timestamp"]
+                                        except KeyError:
+                                                pass
                         try:
                                 status, msg, body = t.add(config, trans_id, 
                                     action)
