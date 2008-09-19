@@ -107,6 +107,7 @@ class TestPlat(pkg5unittest.Pkg5TestCase):
                 # run the executable, replace the executable
                 tdir1 = tempfile.mkdtemp()
                 img1 = image.Image()
+                img1.history.client_name = "pkg-test"
                 img1.set_attrs(image.IMG_USER, tdir1, False, "test", 
                     "http://localhost:10000")
                 exefile = os.path.join(tdir1, 'less.com')
@@ -126,6 +127,7 @@ class TestPlat(pkg5unittest.Pkg5TestCase):
                 # First do a rename in another image
                 tdir2 = tempfile.mkdtemp()
                 img2 = image.Image()
+                img2.history.client_name = "pkg-test"
                 img2.set_attrs(image.IMG_USER, tdir2, False, "test", 
                     "http://localhost:10000")
                 fd2, path2 = tempfile.mkstemp(dir = tdir2)
@@ -153,6 +155,7 @@ class TestPlat(pkg5unittest.Pkg5TestCase):
                 # run the executable, remove the executable
                 tdir1 = tempfile.mkdtemp()
                 img1 = image.Image()
+                img1.history.client_name = "pkg-test"
                 img1.set_attrs(image.IMG_USER, tdir1, False, "test", 
                     "http://localhost:10000")
                 exefile = os.path.join(tdir1, 'less.com')
@@ -167,6 +170,7 @@ class TestPlat(pkg5unittest.Pkg5TestCase):
                 # First do a rename in another image
                 tdir2 = tempfile.mkdtemp()
                 img2 = image.Image()
+                img2.history.client_name = "pkg-test"
                 img2.set_attrs(image.IMG_USER, tdir2, False, "test", 
                     "http://localhost:10000")
                 fd2, path2 = tempfile.mkstemp(dir = tdir2)

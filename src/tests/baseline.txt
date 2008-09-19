@@ -90,6 +90,11 @@ api.t_fmri.py TestFMRI.testgoodfmris_dots|pass
 api.t_fmri.py TestFMRI.testgoodfmris_pluses|pass
 api.t_fmri.py TestFMRI.testgoodfmris_slashes|pass
 api.t_fmri.py TestFMRI.testgoodfmris_unders|pass
+api.t_history.py TestHistory.test_0_valid_operation|pass
+api.t_history.py TestHistory.test_1_client_info|pass
+api.t_history.py TestHistory.test_2_clear|pass
+api.t_history.py TestHistory.test_3_client_load|pass
+api.t_history.py TestHistory.test_4_stacked_operations|pass
 api.t_imageconfig.py TestImageConfig.test_missing_conffile|pass
 api.t_imageconfig.py TestImageConfig.test_read|pass
 api.t_manifest.py TestManifest.test_diffs1|pass
@@ -224,6 +229,9 @@ cli.t_info_contents.py TestContentsAndInfo.test_contents_3|pass
 cli.t_info_contents.py TestContentsAndInfo.test_contents_failures|pass
 cli.t_info_contents.py TestContentsAndInfo.test_empty_image|pass
 cli.t_info_contents.py TestContentsAndInfo.test_info_local_remote|pass
+cli.t_pkg_history.py TestPkgHistory.test_1_history_options|pass
+cli.t_pkg_history.py TestPkgHistory.test_2_history_record|pass
+cli.t_pkg_history.py TestPkgHistory.test_3_purge_history|pass
 cli.t_pkg_install_basics.py TestPkgInstallBasics.test_basics_1|pass
 cli.t_pkg_install_basics.py TestPkgInstallBasics.test_basics_2|pass
 cli.t_pkg_install_basics.py TestPkgInstallBasics.test_basics_3|pass

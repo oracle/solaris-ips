@@ -37,6 +37,7 @@ try:
 except ImportError:
         sys.exit(1)
 import pkg.client.bootenv as bootenv
+import pkg.client.history as history
 import pkg.client.imageplan as imageplan
 import pkg.search_errors as search_errors
 import pkg.client.progress as progress
@@ -125,6 +126,8 @@ class Remove(progress.ProgressTracker):
                 return
 
         def __on_cancelcreateplan_clicked(self, widget):         
+                self.ip.image.history.operation_result = \
+                    history.RESULT_CANCELED
                 self.w_createplan_label.set_text(\
                     self.parent._("Canceling..."))
                 self.w_createplancancel_button.set_sensitive(False)                    
@@ -137,6 +140,8 @@ class Remove(progress.ProgressTracker):
                 remove_thread.start()
 
         def __on_cancel_button_clicked(self, widget):
+                self.ip.image.history.operation_result = \
+                    history.RESULT_CANCELED
                 self.gui_thread.cancel()
                 self.w_remove_dialog.hide()
 
@@ -173,6 +178,7 @@ class Remove(progress.ProgressTracker):
                 filters = []
                 for image in list_of_packages:
                         self.ip = imageplan.ImagePlan(image, self, filters = filters)
+                        self.ip.image.history.operation_name = "uninstall"
                         fmris = list_of_packages.get(image)
                         for fmri in fmris:
                                 if self.gui_thread.is_cancelled():
@@ -181,7 +187,11 @@ class Remove(progress.ProgressTracker):
                                         return
                                 self.ip.propose_fmri_removal(fmri)
                         try:
+                                self.ip.image.history.operation_start_state = \
+                                    self.ip.get_plan()
                                 self.ip.evaluate()
+                                self.ip.image.history.operation_end_state = \
+                                    self.ip.get_plan(full=False)
                                 if self.gui_thread.is_cancelled():
                                         self.progress_stop_timer_thread = True
                                         gobject.idle_add(self.w_createplan_dialog.hide)
@@ -204,19 +214,31 @@ class Remove(progress.ProgressTracker):
                         self.ip.execute()
                 except RuntimeError:
                         be.restore_install_uninstall()
+                        self.ip.image.history.operation_result = \
+                            history.RESULT_FAILED_UNKNOWN
                 except search_errors.InconsistentIndexException, e:
                         ret_code = 2
+                        self.ip.image.history.operation_result = \
+                            history.RESULT_FAILED_SEARCH
                 except search_errors.PartialIndexingException, e:
                         ret_code = 2
+                        self.ip.image.history.operation_result = \
+                            history.RESULT_FAILED_SEARCH
                 except search_errors.ProblematicPermissionsIndexException, e:
                         ret_code = 2
+                        self.ip.image.history.operation_result = \
+                            history.RESULT_FAILED_STORAGE
                 except KeyError, e:
                         # XXX KeyError was seen while problem with
                         # creating index
                         ret_code = 2
+                        self.ip.image.history.operation_result = \
+                            history.RESULT_FAILED_UNKNOWN
                 except Exception:
                         be.restore_install_uninstall()
                         gobject.idle_add(self.w_removing_dialog.hide)
+                        self.ip.image.history.operation_result = \
+                            history.RESULT_FAILED_UNKNOWN
                         raise
 
                 if ret_code == 2:
@@ -228,6 +250,8 @@ class Remove(progress.ProgressTracker):
 
                 if self.ip.state == imageplan.EXECUTED_OK:
                         be.activate_install_uninstall()
+                        self.ip.image.history.operation_result = \
+                            history.RESULT_SUCCEEDED
                 else:
                         be.restore_install_uninstall()
 

@@ -55,6 +55,7 @@ try:
         pygtk.require("2.0")
 except ImportError:
         sys.exit(1)
+import pkg.client.history as history
 import pkg.client.image as image
 import pkg.client.progress as progress
 import pkg.misc as misc
@@ -1067,7 +1068,6 @@ class PackageManager:
                 try:
                         # We will use whatever the incorporation provides as the latest 
                         # version of ipkg and ipkg-gui
-                        
                         img.make_install_plan([self.ipkg_fmri, self.ipkggui_fmri], \
                             self.pr, filters = [], noexecute = True)
                 except RuntimeError:
@@ -1075,7 +1075,7 @@ class PackageManager:
 
                 if img.imageplan.nothingtodo():
                         return True                
-                        
+
                 return False
 
 
@@ -1203,9 +1203,11 @@ class PackageManager:
                                 print self._('%s is not valid root image, return None') \
                                     % dr
                                 image_obj = None
+
+                # Tell the image the name of the client performing operations.
+                image_obj.history.client_name = "packagemanager"
+
                 return image_obj
-
-
 
         def __get_image_from_directory(self, image_obj, progressdialog_progress):
                 """ This method set up image from the given directory and

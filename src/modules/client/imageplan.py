@@ -111,10 +111,20 @@ class ImagePlan(object):
                         s = s + "%s\n" % pp
                 return s
 
+        def get_plan(self, full=True):
+                if full:
+                        return str(self)
+
+                output = ""
+                for pp in self.pkg_plans:
+                        output += "%s -> %s\n" % (pp.origin_fmri,
+                            pp.destination_fmri)
+
+                return output
+
         def display(self):
                 for pp in self.pkg_plans:
                         msg("%s -> %s" % (pp.origin_fmri, pp.destination_fmri))
-
 
         def is_proposed_fmri(self, fmri):
                 for pf in self.target_fmris:

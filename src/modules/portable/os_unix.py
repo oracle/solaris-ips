@@ -55,8 +55,17 @@ def get_release():
 def get_platform():
         return platform.uname()[4]
 
+def get_userid():
+        try:
+                return get_user_by_name(os.getlogin(), None, False)
+        except ImportError:
+                return os.getuid()
+
 def get_username():
-        return pwd.getpwuid(os.getuid())[0]
+        try:
+                return os.getlogin()
+        except ImportError:
+                return pwd.getpwuid(os.getuid())[0]
 
 def is_admin():
         return os.getuid() == 0

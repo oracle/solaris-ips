@@ -40,6 +40,7 @@ try:
 except ImportError:
         sys.exit(1)
 import pkg.client.bootenv as bootenv
+import pkg.client.history as history
 import pkg.client.imageplan as imageplan
 import pkg.client.progress as progress
 import pkg.fmri as fmri
@@ -161,6 +162,8 @@ class InstallUpdate(progress.ProgressTracker):
         def __on_cancelcreateplan_clicked(self, widget):
                 '''Handler for signal send by cancel button, which user might press during
                 evaluation stage - while the dialog is creating plan'''
+                self.ip.image.history.operation_result = \
+                    history.RESULT_CANCELED
                 self.w_createplan_label.set_text(\
                     self.parent._("Canceling..."))
                 self.w_createplancancel_button.set_sensitive(False)                    
@@ -170,6 +173,8 @@ class InstallUpdate(progress.ProgressTracker):
                 '''Handler for signal send by cancel button, which is available for the 
                 user after evaluation stage on the dialog showing what will be installed
                 or updated'''
+                self.ip.image.history.operation_result = \
+                    history.RESULT_CANCELED
                 self.gui_thread.cancel()
                 self.w_installupdate_dialog.destroy()
 
@@ -183,12 +188,16 @@ class InstallUpdate(progress.ProgressTracker):
         def __on_cancel_download_clicked(self, widget):
                 '''Handler for signal send by cancel button, which user might press during
                 download stage.'''
+                self.ip.image.history.operation_result = \
+                    history.RESULT_CANCELED
                 self.gui_thread.cancel()
                 self.w_downloadingfiles_dialog.destroy()
 
         def __on_networkdown_close_clicked(self, widget):
                 '''Handler for signal send by close button on the dialog showing that
                 there was some problem with the network connection.'''
+                self.ip.image.history.operation_result = \
+                    history.RESULT_FAILED_TRANSPORT
                 self.gui_thread.cancel()
                 self.w_networkdown_dialog.destroy()
 
@@ -260,6 +269,12 @@ class InstallUpdate(progress.ProgressTracker):
 
                         error = 0
                         self.ip = imageplan.ImagePlan(image, self, filters = filters)
+                        if self.image_update:
+                                self.ip.image.history.operation_name = \
+                                    "image-update"
+                        else:
+                                self.ip.image.history.operation_name = \
+                                    "install"
 
                         self.__load_optional_dependencies(image)
 
@@ -304,12 +319,18 @@ class InstallUpdate(progress.ProgressTracker):
                         if error != 0:
                                 raise RuntimeError, "Unable to assemble image plan"
 
+                        self.ip.image.history.operation_start_state = \
+                            self.ip.get_plan()
+
                         try:
                                 self.__evaluate(image)
                         except CancelException, e:
                                 self.progress_stop_timer_thread = True
                                 gobject.idle_add(self.w_createplan_dialog.hide)
-                                
+                        else:
+                                self.ip.image.history.operation_end_state = \
+                                    self.ip.get_plan(full=False)
+
                         image.imageplan = self.ip
 
                 return
@@ -691,6 +712,8 @@ class InstallUpdate(progress.ProgressTracker):
                 self.ip.state = imageplan.PREEXECUTED_OK
 
                 if self.ip.nothingtodo():
+                        self.ip.image.history.operation_result = \
+                            history.RESULT_NOTHING_TO_DO
                         self.ip.state = imageplan.EXECUTED_OK
                         self.ip.progtrack.actions_done()
                         return
@@ -764,6 +787,8 @@ class InstallUpdate(progress.ProgressTracker):
                         # ProblematicPermissionsIndexException is included here
                         # as there's little chance that trying again will fix
                         # this problem.
+                        self.ip.image.history.operation_result = \
+                            history.RESULT_FAILED_STORAGE
                         raise
                 except Exception, e:
                         del(ind)
@@ -772,7 +797,11 @@ class InstallUpdate(progress.ProgressTracker):
                         # them something has gone wrong so that we continue to
                         # get feedback to allow us to debug the code.
                         self.ip.image.rebuild_search_index(self.ip.progtrack)
+                        self.ip.image.history.operation_result = \
+                            history.RESULT_FAILED_UNKNOWN
 
+                self.ip.image.history.operation_result = \
+                    history.RESULT_SUCCEEDED
                 self.ip.progtrack.actions_done()
 
         def actions_done(self):

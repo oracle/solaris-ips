@@ -118,6 +118,10 @@ def is_admin():
         root user?)."""
         raise NotImplementedError
 
+def get_userid():
+        """ Return a string representing the invoking user's id."""
+        raise NotImplementedError
+
 def get_username():
         """ Return a string representing the invoking user's username."""
         raise NotImplementedError

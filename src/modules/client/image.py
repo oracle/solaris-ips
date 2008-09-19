@@ -33,7 +33,6 @@ import httplib
 import shutil
 import tempfile
 import time
-import operator
 import datetime
 import calendar
 
@@ -48,7 +47,8 @@ import pkg.updatelog as updatelog
 import pkg.fmri
 import pkg.manifest as manifest
 import pkg.misc as misc
-import pkg.version as version
+import pkg.version
+import pkg.client.history as history
 import pkg.client.imageconfig as imageconfig
 import pkg.client.imageplan as imageplan
 import pkg.client.retrieve as retrieve
@@ -170,6 +170,7 @@ class Image(object):
                 self.cfg_cache = None
                 self.type = None
                 self.root = None
+                self.history = history.History()
                 self.imgdir = None
                 self.img_prefix = None
                 self.index_dir = None
@@ -218,6 +219,7 @@ class Image(object):
                                 self.root = d
                                 self.img_prefix = img_user_prefix
                                 self.imgdir = os.path.join(d, self.img_prefix)
+                                self.history.root_dir = self.imgdir
                                 self.attrs["Build-Release"] = "5.11"
                                 return
                         elif os.path.isdir(os.path.join(d, img_root_prefix)) \
@@ -232,6 +234,7 @@ class Image(object):
                                 self.root = d
                                 self.img_prefix = img_root_prefix
                                 self.imgdir = os.path.join(d, self.img_prefix)
+                                self.history.root_dir = self.imgdir
                                 self.attrs["Build-Release"] = "5.11"
                                 return
 
@@ -279,6 +282,13 @@ class Image(object):
                 else:
                         self.img_prefix = img_root_prefix
                 self.imgdir = os.path.join(self.root, self.img_prefix)
+                self.history.root_dir = self.imgdir
+
+                if not os.path.exists(os.path.join(self.imgdir, "cfg_cache")):
+                        self.history.operation_name = "image-create"
+                else:
+                        self.history.operation_name = "image-set-attributes"
+
                 self.mkdirs()
 
                 self.cfg_cache = imageconfig.ImageConfig()
@@ -297,6 +307,7 @@ class Image(object):
                 self.cfg_cache.preferred_authority = auth_name
 
                 self.cfg_cache.write("%s/cfg_cache" % self.imgdir)
+                self.history.operation_result = history.RESULT_SUCCEEDED
 
         def is_liveroot(self):
                 return self.root == "/"
@@ -499,13 +510,18 @@ class Image(object):
                 return auth_name in self.cfg_cache.authorities
 
         def delete_authority(self, auth_name):
+                self.history.operation_name = "delete-authority"
                 if not self.has_authority(auth_name):
-                        raise KeyError, "no such authority '%s'" % auth_name
-
+                        error = "no such authority '%s'" % auth_name
+                        self.history.operation_errors.append(error)
+                        self.history.operation_result = \
+                            history.RESULT_FAILED_UNKNOWN
+                        raise KeyError, error
                 self.cfg_cache.delete_authority(auth_name)
                 self.cfg_cache.write("%s/cfg_cache" % self.imgdir)
                 self.destroy_catalog(auth_name)
                 self.cache_catalogs()
+                self.history.operation_result = history.RESULT_SUCCEEDED
 
         def get_authority(self, auth_name):
                 if not self.has_authority(auth_name):
@@ -531,14 +547,20 @@ class Image(object):
                     auth["ssl_cert"], update_dt, auth["mirrors"])
 
         def set_preferred_authority(self, auth_name):
+                self.history.operation_name = "set-preferred-authority"
                 if not self.has_authority(auth_name):
-                        raise KeyError, "no such authority '%s'" % auth_name
+                        error = "no such authority '%s'" % auth_name
+                        self.history.operation_errors.append(error)
+                        self.history.operation_result = \
+                            history.RESULT_FAILED_UNKNOWN
+                        raise KeyError, error
                 self.cfg_cache.preferred_authority = auth_name
                 self.cfg_cache.write("%s/cfg_cache" % self.imgdir)
+                self.history.operation_result = history.RESULT_SUCCEEDED
 
         def set_authority(self, auth_name, origin_url = None, ssl_key = None,
             ssl_cert = None, refresh_allowed = True):
-
+                self.history.operation_name = "set-authority"
                 auths = self.cfg_cache.authorities
 
                 refresh_needed = False
@@ -572,14 +594,17 @@ class Image(object):
                         self.destroy_catalog_cache()
                         self.retrieve_catalogs(full_refresh=True,
                             auths=[auths[auth_name]])
-                        
+
+                self.history.operation_result = history.RESULT_SUCCEEDED
+
         def add_mirror(self, auth_name, mirror):
                 """Add the mirror URL contained in mirror to
                 auth_name's list of mirrors."""
-
+                self.history.operation_name = "add-mirror"
                 auths = self.cfg_cache.authorities
                 auths[auth_name]["mirrors"].append(mirror)
                 self.cfg_cache.write("%s/cfg_cache" % self.imgdir)
+                self.history.operation_result = history.RESULT_SUCCEEDED
 
         def has_mirror(self, auth_name, url):
                 """Returns true if url is in auth_name's list of mirrors."""
@@ -590,11 +615,14 @@ class Image(object):
                 """Remove the mirror URL contained in mirror from
                 auth_name's list of mirrors."""
 
+                self.history.operation_name = "delete-mirror"
                 auths = self.cfg_cache.authorities
 
                 if mirror in self.cfg_cache.authorities[auth_name]["mirrors"]:
                         auths[auth_name]["mirrors"].remove(mirror)
                         self.cfg_cache.write("%s/cfg_cache" % self.imgdir)
+
+                self.history.operation_result = history.RESULT_SUCCEEDED
 
         def verify(self, fmri, progresstracker, **args):
                 """generator that returns any errors in installed pkgs
@@ -1956,8 +1984,17 @@ pkg: no package matching '%s' could be found in current catalog
                         msg(_("Before evaluation:"))
                         msg(ip)
 
+                # A plan can be requested without actually performing an
+                # operation on the image.
+                if self.history.operation_name:
+                        self.history.operation_start_state = ip.get_plan()
+
                 ip.evaluate()
                 self.imageplan = ip
+
+                if self.history.operation_name:
+                        self.history.operation_end_state = \
+                            ip.get_plan(full=False)
 
                 if verbose:
                         msg(_("After evaluation:"))

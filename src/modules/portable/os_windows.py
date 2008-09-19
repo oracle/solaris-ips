@@ -66,6 +66,10 @@ def get_name_by_uid(uid, dirpath, use_file):
         """group names/numbers are ignored on Windows."""
         return '' 
 
+def get_userid():
+        """group names/numbers are ignored on Windows."""
+        return -1
+
 def get_username():
         try:
                 return getpass.getuser()

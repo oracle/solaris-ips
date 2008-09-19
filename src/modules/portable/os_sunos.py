@@ -31,8 +31,8 @@ implementation in the 'arch' extension module.
 
 from os_unix import \
     get_group_by_name, get_user_by_name, get_name_by_gid, get_name_by_uid, \
-    is_admin, get_username, chown, rename, remove, link, copyfile, split_path, \
-    get_root
+    is_admin, get_userid, get_username, chown, rename, remove, link, \
+    copyfile, split_path, get_root
 import pkg.arch as arch
 
 def get_isainfo():

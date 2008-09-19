@@ -28,6 +28,9 @@ SYNOPSIS
      /usr/bin/pkg unset-authority authority ...
      /usr/bin/pkg authority [-HP] [authname ...]
 
+     /usr/bin/pkg history [-Hl]
+     /usr/bin/pkg purge-history
+
      /usr/bin/pkg rebuild-index
 
      /usr/bin/pkg version
@@ -245,6 +248,17 @@ SUBCOMMANDS
           values associated with that authority.  With -H, omit the
           headers from the listing.  With -P, display only the preferred
           authority.
+
+     history [-Hl]
+          Displays the command history of the applicable image.  With -H, omit
+          the headers from the listing.  With -l, display log records in long
+          format, which in addition to the standard format, includes the outcome
+          of the command, when the command completed, version and name of the
+          client used, what user performed the operation, and any errors that
+          were encountered while executing the command.
+
+     purge-history
+          Deletes all existing history information.
 
      rebuild-index
           Rebuilds the index used by 'pkg search'. This is a recovery operation
