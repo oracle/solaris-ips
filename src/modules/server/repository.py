@@ -44,6 +44,7 @@ tarfile.grp = None
 
 import urllib
 
+import pkg
 import pkg.catalog as catalog
 import pkg.fmri as fmri
 import pkg.manifest as manifest
@@ -195,7 +196,7 @@ class Repository(object):
                 # If we get here, we know that 'operation' is supported.
                 # Ensure that we have a integer protocol version.
                 try:
-                        version = int(tokens[1])
+                        ver = int(tokens[1])
                 except IndexError:
                         raise cherrypy.HTTPError(httplib.BAD_REQUEST,
                             "Missing version\n")
@@ -205,7 +206,7 @@ class Repository(object):
 
                 # Assume 'version' is not supported for the operation.
                 msg = "Version '%s' not supported for operation '%s'\n" \
-                    % (version, op)
+                    % (ver, op)
                 raise cherrypy.HTTPError(httplib.NOT_FOUND, msg)
 
         @cherrypy.tools.response_headers(headers = \
@@ -214,7 +215,8 @@ class Repository(object):
                 """ Output a text/plain list of valid operations, and their
                     versions, supported by the repository. """
 
-                versions = "\n".join(
+                versions = "pkg-server %s\n" % pkg.VERSION
+                versions += "\n".join(
                     "%s %s" % (op, " ".join(vers))
                     for op, vers in self.vops.iteritems()
                 ) + "\n"
@@ -562,7 +564,7 @@ class Repository(object):
 
                 m.set_content(file(mpath).read())
 
-                authority, name, version = f.tuple()
+                authority, name, ver = f.tuple()
                 if authority:
                         authority = fmri.strip_auth_pfx(authority)
                 else:
@@ -595,7 +597,7 @@ Packaging Date: %s
 
 License:
 %s
-""" % (name, summary, authority, version.release, version.build_release,
-    version.branch, version.get_timestamp().ctime(), misc.bytes_to_str(m.size),
+""" % (name, summary, authority, ver.release, ver.build_release,
+    ver.branch, ver.get_timestamp().ctime(), misc.bytes_to_str(m.size),
     f, lsummary.read())
 
