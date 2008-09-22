@@ -157,7 +157,7 @@ def format_debug(output):
         str += botdivider
         return str
 
-class DepotTracebackException(Exception):
+class DepotTracebackException(pkg5unittest.Pkg5TestCase.failureException):
         def __init__(self, logfile, output):
                 Exception.__init__(self)
                 self.__logfile = logfile
@@ -170,7 +170,7 @@ class DepotTracebackException(Exception):
                 str += format_output(None, self.__output)
                 return str
 
-class TracebackException(Exception):
+class TracebackException(pkg5unittest.Pkg5TestCase.failureException):
         def __init__(self, command, output = None, comment = None,
             debug = None):
                 Exception.__init__(self)
@@ -190,8 +190,7 @@ class TracebackException(Exception):
                         str += format_debug(self.__debug)
                 return str
 
-class UnexpectedExitCodeException(Exception):
-
+class UnexpectedExitCodeException(pkg5unittest.Pkg5TestCase.failureException):
         def __init__(self, command, expected, got, output = None,
             comment = None, debug = None):
                 Exception.__init__(self)
@@ -218,7 +217,7 @@ class UnexpectedExitCodeException(Exception):
                 return str
 
 
-class PkgSendOpenException(Exception):
+class PkgSendOpenException(pkg5unittest.Pkg5TestCase.failureException):
         def __init__(self, com = ""):
                 Exception.__init__(self, com)
 

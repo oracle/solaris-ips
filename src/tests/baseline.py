@@ -62,6 +62,8 @@ class BaseLine(object):
                         self.results[name] = result
                 else:
                         rv = self.checkresult(name, result)
+                        if rv != True:
+                                self.failed_list.append((name, result))
                 return rv
 
         def getresult(self, name):
@@ -75,10 +77,7 @@ class BaseLine(object):
                 if self.generating:
                         return True
                 res = self.getresult(name)
-                rv = (cmp(res, result) == 0)
-                if rv != True:
-                        self.failed_list.append((name, result))
-                return rv
+                return (cmp(res, result) == 0)
 
         def getfailures(self):
                 """Return the list of failed tests."""
