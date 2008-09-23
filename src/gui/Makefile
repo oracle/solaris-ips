@@ -52,10 +52,12 @@ PYMODS = \
    modules/remove.py \
    modules/enumerations.py \
    modules/filelist.py \
+   modules/beadmin.py \
    modules/thread.py 
 PYCMODS = $(PYMODS:%.py=%.pyc)
 
 ICONS = \
+   data/icons/status_checkmark.png \
    data/icons/new_update.png 
 
 GLADEICONS = \

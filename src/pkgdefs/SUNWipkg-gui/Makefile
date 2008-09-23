@@ -54,7 +54,7 @@ prototype: FRC
 			$$5 = "root"; \
 			$$6 = "bin"; \
 		} \
-		$$3 ~ /(share(\/applications\/packagemanager.desktop|\/applications|\/icons|\/icons\/package\-manager|\/icons\/package\-manager\/new_update.png))$$/ { \
+		$$3 ~ /(share(\/applications\/packagemanager.desktop|\/applications|\/icons|\/icons\/package\-manager|\/icons\/package\-manager\/new_update.png|\/icons\/package\-manager\/status_checkmark.png))$$/ { \
 			$$6 = "other"; \
 		} \
 		$$3 ~ /(share(\/package\-manager|\/package\-manager\/data|\/package\-manager(\/packagemanager.glade|\/PM_app_48x.png|\/PM_package_36x.png)))$$/ { \

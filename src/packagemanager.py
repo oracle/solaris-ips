@@ -60,6 +60,7 @@ import pkg.client.image as image
 import pkg.client.progress as progress
 import pkg.misc as misc
 import pkg.portable as portable
+import pkg.gui.beadmin as beadm
 import pkg.gui.imageinfo as imageinfo
 import pkg.gui.installupdate as installupdate
 import pkg.gui.remove as remove
@@ -227,6 +228,7 @@ class PackageManager:
                                     self.__on_repositorycombobox_changed,
                                 #menu signals
                                 "on_file_quit_activate":self.__on_file_quit_activate,
+                                "on_file_be_activate":self.__on_file_be_activate,
                                 "on_package_install_update_activate": \
                                     self.__on_install_update,
                                 "on_package_remove_activate":self.__on_remove,
@@ -430,6 +432,10 @@ class PackageManager:
                 ''' handler for quit menu event '''
                 self.__on_mainwindow_delete_event(None, None)
 
+        def __on_file_be_activate(self, widget):
+                ''' handler for be menu event '''
+                beadm.Beadmin(self)
+
         def __on_searchentry_changed(self, widget):
                 '''On text search field changed we should refilter the main view'''
                 Thread(target = self.__on_searchentry_threaded, args = ()).start()
@@ -621,7 +627,7 @@ class PackageManager:
 
         def __on_update_all(self, widget):
                 opensolaris_image = True
-                fmris, notfound = self.__installed_fmris_from_args(self.image_o, \
+                notfound = self.__installed_fmris_from_args(self.image_o, \
                     ["SUNWipkg", "SUNWcs"])
 
                 if notfound:
@@ -1219,12 +1225,12 @@ class PackageManager:
                 try:
                         pkgs_known = [ pf[0] for pf in
                             sorted(image_obj.inventory(all_known = True)) ]
-                except image.InventoryException, e:
+                except image.InventoryException:
                         # Can't happen when all_known is true and no args,
                         # but here for completeness.
                         raise
                 #Only one instance of those icons should be in memory
-                update_available_icon = self.__get_icon_pixbuf("new_update")
+                update_available_icon = self.get_icon_pixbuf("new_update")
                 #Imageinfo for categories
                 imginfo = imageinfo.ImageInfo()
                 sectioninfo = imageinfo.ImageInfo()
@@ -1389,6 +1395,7 @@ class PackageManager:
                 if len(self.category_list) > 0:
                         rows = [tuple(r) + (i,) for i, r in enumerate(self.category_list)]
                         rows.sort(self.__sort)
+                        r = []
                         self.category_list.reorder([r[-1] for r in rows])
                 self.category_list.prepend([0, self._('All'), None, None, True, None])
 
@@ -1454,11 +1461,6 @@ class PackageManager:
                                                                     enumerations. \
                                                                     SECTION_ID])
 
-        def __get_icon_pixbuf(self, icon_name):
-                #2821: The __get_icon_pixbuf should use PACKAGE_MANAGER_ROOT
-                return self.__get_pixbuf_from_path(self.application_dir + \
-                    "/usr/share/icons/package-manager/", icon_name)
-
         def __get_pixbuf_from_path(self, path, icon_name):
                 icon = icon_name.replace(' ', '_')
 
@@ -1484,17 +1486,6 @@ class PackageManager:
                                     detail = None)
                                 # XXX Could return image-we don't want to show ugly icon.
                                 return None
-
-        def __installed_fmris_from_args(self, img, args):
-                found = []
-                notfound = []
-                try:
-                        for m in img.inventory(args):
-                                found.append(m[0])
-                except image.InventoryException, e:
-                        notfound = e.notfound
-
-                return found, notfound
 
         def __progressdialog_progress_pulse(self):
                 while not self.progress_stop_timer_thread:
@@ -1538,6 +1529,18 @@ class PackageManager:
         @staticmethod
         def __sort(a, b):
                 return cmp(a[1], b[1])
+
+        @staticmethod
+        def __installed_fmris_from_args(img, args):
+                found = []
+                notfound = []
+                try:
+                        for m in img.inventory(args):
+                                found.append(m[0])
+                except image.InventoryException, e:
+                        notfound = e.notfound
+
+                return notfound
                 
         @staticmethod
         def cell_data_function(column, renderer, model, itr, data):
@@ -1657,6 +1660,11 @@ class PackageManager:
                 self.w_sections_combobox.set_active(0)
                 self.application_list_filter.set_visible_func(self.__application_filter)
                 self.__setup_repositories_combobox(self.image_o)
+
+        def get_icon_pixbuf(self, icon_name):
+                #2821: The get_icon_pixbuf should use PACKAGE_MANAGER_ROOT
+                return self.__get_pixbuf_from_path(self.application_dir + \
+                    "/usr/share/icons/package-manager/", icon_name)
                 
         def get_manifests_for_packages(self):
                 ''' Function, which get's manifest for packages. If the manifest is not
@@ -1778,21 +1786,21 @@ class PackageManager:
 #-----------------------------------------------------------------------------#
         def fill_with_fake_data(self):
                 '''test data for gui'''
-                app1 = [False, self.__get_icon_pixbuf("locked"), \
-                    self.__get_icon_pixbuf("None"), "acc", None, None, None, 4, "desc6", \
+                app1 = [False, self.get_icon_pixbuf("locked"), \
+                    self.get_icon_pixbuf("None"), "acc", None, None, None, 4, "desc6", \
                     "Object Name1", None, True, None]
-                app2 = [False, self.__get_icon_pixbuf("update_available"), \
-                    self.__get_icon_pixbuf(self._('All')), "acc_gam", \
+                app2 = [False, self.get_icon_pixbuf("update_available"), \
+                    self.get_icon_pixbuf(self._('All')), "acc_gam", \
                     "2.3", None, "2.8", \
                     4, "desc7", "Object Name2", None, True, None]
-                app3 = [False, self.__get_icon_pixbuf("None"), \
-                    self.__get_icon_pixbuf("Other"), "gam_grap", "2.3", None, None, 4, \
+                app3 = [False, self.get_icon_pixbuf("None"), \
+                    self.get_icon_pixbuf("Other"), "gam_grap", "2.3", None, None, 4, \
                     "desc8", "Object Name3", None, True, None]
-                app4 = [False, self.__get_icon_pixbuf("update_locked"), \
-                    self.__get_icon_pixbuf("Office"), "grap_gam", "2.3", None, "2.8", 4, \
+                app4 = [False, self.get_icon_pixbuf("update_locked"), \
+                    self.get_icon_pixbuf("Office"), "grap_gam", "2.3", None, "2.8", 4, \
                     "desc9", "Object Name2", None, True, None]
-                app5 = [False, self.__get_icon_pixbuf("update_available"), \
-                    self.__get_icon_pixbuf("None"), "grap", "2.3", None, "2.8", 4, \
+                app5 = [False, self.get_icon_pixbuf("update_available"), \
+                    self.get_icon_pixbuf("None"), "grap", "2.3", None, "2.8", 4, \
                     "desc0", "Object Name3", None, True, None]
                 itr1 = self.application_list.append(app1)
                 itr2 = self.application_list.append(app2)
