@@ -714,12 +714,12 @@ def install(img, args):
                     filters=filters, verbose=verbose, noexecute=noexecute)
         except RuntimeError, e:
                 img.history.operation_result = history.RESULT_FAILED_UNKNOWN
-                error(_("install failed: %s") % e)
+                error(_("install failed (runtime error): %s") % e)
                 return 1
         except image.InventoryException, e:
                 img.history.operation_result = \
                     history.RESULT_FAILED_UNKNOWN
-                error(_("install failed: %s") % e)
+                error(_("install failed (inventory exception): %s") % e)
                 return 1
         except fmri.IllegalFmri, e:
                 img.history.operation_result = \

@@ -26,18 +26,13 @@
 #
 #ident	"%Z%%M%	%I%	%E% SMI"
 
-import sys
-import struct
 import gzip
-
-def out32u(outf, val):
-        outf.write(struct.pack("<L", val))
 
 class PkgGzipFile(gzip.GzipFile):
         """This is a version of GzipFile that does not include a file
         pathname or timestamp in the gzip header.  This allows us to get
         deterministic gzip files on compression, so that we can reliably
-        use a cryptopgraphic hash on the compressed content."""
+        use a cryptographic hash on the compressed content."""
 
         def __init__(self, filename=None, mode=None, compresslevel=9,
             fileobj=None):
@@ -45,10 +40,23 @@ class PkgGzipFile(gzip.GzipFile):
                gzip.GzipFile.__init__(self, filename, mode, compresslevel,
                     fileobj) 
 
+        #
+        # This is a gzip header conforming to RFC1952.  The first two bytes
+        # (\037,\213) are the gzip magic number.  The third byte is the
+        # compression method (8, deflate).  The fourth byte is the flag byte
+        # (0), which indicates that no FNAME, FCOMMENT or other extended data
+        # is present.  Bytes 5-8 are the MTIME field, zeroed in this case.
+        # Byte 9 is the XFL (Extra Flags) field, set to 2 (compressor used
+        # max compression).  The final bit is the OS type, set to 255 (for
+        # "unknown").
+        magic = "\037\213\010\000\000\000\000\000\002\377"
+
         def _write_gzip_header(self):
-                self.fileobj.write("\037\213")
-                self.fileobj.write("\010")
-                self.fileobj.write(chr(0))
-                out32u(self.fileobj, long(0))
-                self.fileobj.write("\002")
-                self.fileobj.write("\377")
+                self.fileobj.write(self.magic)
+
+        @staticmethod
+        def test_is_pkggzipfile(path):
+                f = open(path, "rb")
+                hdrstr = f.read(len(PkgGzipFile.magic))
+                f.close()
+                return (hdrstr == PkgGzipFile.magic)

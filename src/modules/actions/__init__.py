@@ -101,12 +101,15 @@ def fromstr(str):
         for i in list:
                 if '="' in i:
                         n = i.replace('="', '=')
-                        if n.endswith('"'):
+
+                        # since i was non-trivial, n must be too, so n[-1] is
+                        # safe to look at without raising an exception.
+                        if n[-1] == '"':
                                 nlist += [ n[:-1] ]
                                 n = ""
                         else:
                                 state = 1
-                elif i.endswith('"'):
+                elif i and i[-1] == '"':
                         n += " " + i[:-1]
                         nlist += [ n ]
                         n = ""

@@ -91,6 +91,15 @@ class InventoryException(Exception):
                         self.illegal = illegal
                 assert(self.notfound or self.illegal)
 
+        def __str__(self):
+                outstr = ""
+                for x in self.illegal:
+                        # Illegal FMRIs have their own __str__ method
+                        outstr += "%s\n" % x
+                for x in self.notfound:
+                        outstr += "Not found in inventory: %s\n" % str(x)
+                return outstr
+
 class Image(object):
         """An Image object is a directory tree containing the laid-down contents
         of a self-consistent graph of Packages.

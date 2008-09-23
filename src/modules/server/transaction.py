@@ -30,7 +30,6 @@ import os
 import re
 import sha
 import shutil
-import time
 import datetime
 import calendar
 import urllib
@@ -255,15 +254,21 @@ class Transaction(object):
                 if action.data != None:
                         bufsz = 64 * 1024
 
-                        # Read in the data in chunks.  A large read on 
+                        # Read in the data in chunks and compute the SHA1
+                        # hash as it comes in.  A large read on 
                         # Windows XP fails.
+                        fhash = sha.new()
                         databufs = []
                         sz = size
                         while sz > 0:
                                 data = action.data().read(min(bufsz, sz))
+                                fhash.update(data)
                                 databufs.append(data)
                                 sz -= len(data)
                         data = "".join(databufs)
+
+                        fname = fhash.hexdigest()
+                        action.hash = fname
 
                         # Extract ELF information
                         # XXX This needs to be modularized.
@@ -279,23 +284,40 @@ class Transaction(object):
                                 action.attrs["elfhash"] = elf_hash
                                 os.unlink(elf_name)
 
-                        fhash = sha.new(data)
-                        fname = fhash.hexdigest()
-                        action.hash = fname
+                        #
+                        # This check prevents entering into the depot store
+                        # a file which is already there in the store. 
+                        # This takes CPU load off the depot on large imports
+                        # of mostly-the-same stuff.  And in general it saves
+                        # disk bandwidth, and on ZFS in particular it saves
+                        # us space in differential snapshots.  We also need
+                        # to check that the destination is in the same
+                        # compression format as the source, as we must have
+                        # properly formed files for chash/csize properties
+                        # to work right.
+                        #
+                        fpath = misc.hash_file_name(fname)
+                        dst_path = "%s/%s" % (self.cfg.file_root, fpath)
+                        fileneeded = True
+                        if os.path.exists(dst_path):
+                                if PkgGzipFile.test_is_pkggzipfile(dst_path):
+                                        fileneeded = False
+                                        opath = dst_path
 
-                        opath = os.path.join(self.dir, fname)
-                        ofile = PkgGzipFile(opath, "wb")
+                        if fileneeded:
+                                opath = os.path.join(self.dir, fname)
+                                ofile = PkgGzipFile(opath, "wb")
 
-                        nbuf = size / bufsz
+                                nbuf = size / bufsz
 
-                        for n in range(0, nbuf):
-                                l = n * bufsz
-                                h = (n + 1) * bufsz
-                                ofile.write(data[l:h])
+                                for n in range(0, nbuf):
+                                        l = n * bufsz
+                                        h = (n + 1) * bufsz
+                                        ofile.write(data[l:h])
 
-                        m = nbuf * bufsz
-                        ofile.write(data[m:])
-                        ofile.close()
+                                m = nbuf * bufsz
+                                ofile.write(data[m:])
+                                ofile.close()
 
                         data = None
                 
@@ -313,9 +335,13 @@ class Transaction(object):
                         # header, allowing us to generate deterministic
                         # hashes for different files with identical content.
                         cfile = open(opath, "rb")
-                        cdata = cfile.read()
+                        chash = sha.new()
+                        while True:
+                                cdata = cfile.read(bufsz)
+                                if cdata == "":
+                                        break
+                                chash.update(cdata)
                         cfile.close()
-                        chash = sha.new(cdata)
                         action.attrs["chash"] = chash.hexdigest()
                         cdata = None
 
