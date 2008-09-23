@@ -19,7 +19,7 @@
 # CDDL HEADER END
 #
 
-# Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 
@@ -49,7 +49,13 @@ ROOTFILES = \
 	$(ROOTETCZONES)/SUNWipkg.xml \
 	$(ROOTBRANDPKG)/config.xml \
 	$(ROOTBRANDPKG)/platform.xml \
-	$(ROOTBRANDPKG)/pkgcreatezone
+	$(ROOTBRANDPKG)/clone \
+	$(ROOTBRANDPKG)/common.ksh \
+	$(ROOTBRANDPKG)/pkgcreatezone \
+	$(ROOTBRANDPKG)/poststate \
+	$(ROOTBRANDPKG)/prestate \
+	$(ROOTBRANDPKG)/query \
+	$(ROOTBRANDPKG)/uninstall
 
 all := TARGET = all
 link := TARGET = link
@@ -71,7 +77,13 @@ link:
 	mkdir -p /usr/lib/brand/ipkg
 	ln -sf $(PWD)/config.xml /usr/lib/brand/ipkg/config.xml
 	ln -sf $(PWD)/platform.xml /usr/lib/brand/ipkg/platform.xml
+	ln -sf $(PWD)/clone /usr/lib/brand/ipkg/clone
+	ln -sf $(PWD)/common.ksh /usr/lib/brand/ipkg/common.ksh
 	ln -sf $(PWD)/pkgcreatezone /usr/lib/brand/ipkg/pkgcreatezone
+	ln -sf $(PWD)/poststate /usr/lib/brand/ipkg/poststate
+	ln -sf $(PWD)/prestate /usr/lib/brand/ipkg/prestate
+	ln -sf $(PWD)/query /usr/lib/brand/ipkg/query
+	ln -sf $(PWD)/uninstall /usr/lib/brand/ipkg/uninstall
 	ln -sf $(PWD)/SUNWipkg.xml /etc/zones/SUNWipkg.xml
 
 link-clean:

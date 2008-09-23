@@ -1,0 +1,106 @@
+#!/bin/ksh -p
+#
+# CDDL HEADER START
+#
+# The contents of this file are subject to the terms of the
+# Common Development and Distribution License (the "License").
+# You may not use this file except in compliance with the License.
+#
+# You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+# or http://www.opensolaris.org/os/licensing.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+#
+# When distributing Covered Code, include this CDDL HEADER in each
+# file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+# If applicable, add the following below this CDDL HEADER, with the
+# fields enclosed by brackets "[]" replaced with your own identifying
+# information: Portions Copyright [yyyy] [name of copyright owner]
+#
+# CDDL HEADER END
+#
+#
+# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Use is subject to license terms.
+#
+
+. /usr/lib/brand/ipkg/common.ksh
+
+f_nosource=$(gettext "Error: unable to determine source zone dataset.")
+f_sysunconfig=$(gettext "Error: sys-unconfig failed.")
+
+# Set up ZFS dataset hierarchy for the zone.
+
+ROOT="rpool/ROOT"
+
+# Other brand clone options are invalid for this brand.
+while getopts "R:z:" opt; do
+	case $opt in
+		R)	zonepath="$OPTARG" ;;
+		z)	zonename="$OPTARG" ;;
+		*)	fail_usage "$0 {sourcezone}";;
+	esac
+done
+shift $((OPTIND-1))
+
+if [ $# -ne 1 ]; then
+	fail_usage "$0 {sourcezone}";
+fi
+
+sourcezone=$1
+
+# Find the active source zone dataset to clone.
+sourcezonepath=`/usr/sbin/zonecfg -z $sourcezone info zonepath | \
+    /usr/bin/cut -f2 -d' '`
+if [ -z "$sourcezonepath" ]; then
+	fail_fatal "$f_nosource"
+fi
+
+get_current_gzbe
+get_zonepath_ds $sourcezonepath
+get_active_ds $CURRENT_GZBE $ZONEPATH_DS
+
+#
+# Now set up the zone's datasets
+#
+
+#
+# First make the top-level dataset.
+#
+
+pdir=`/usr/bin/dirname $zonepath`
+zpname=`/usr/bin/basename $zonepath`
+
+get_zonepath_ds $pdir
+zpds=$ZONEPATH_DS
+
+fail_zonepath_in_rootds $zpds
+
+/usr/sbin/zfs create $zpds/$zpname || fail_fatal "$f_zfs_create"
+
+/usr/sbin/zfs create -o mountpoint=legacy -o zoned=on $zpds/$zpname/ROOT \
+	|| fail_fatal "$f_zfs_create"
+
+# make snapshot
+/usr/sbin/zfs snapshot $ACTIVE_DS@${zonename}_snap || fail_fatal "$f_zfs_create"
+
+# do clone
+/usr/sbin/zfs clone $ACTIVE_DS@${zonename}_snap $zpds/$zpname/ROOT/zbe || \
+	fail_incomplete "$f_zfs_create"
+
+/usr/sbin/zfs set $PROP_ACTIVE=on $zpds/$zpname/ROOT/zbe || \
+	fail_incomplete "$f_zfs_create"
+
+/usr/sbin/zfs set $PROP_PARENT=$CURRENT_GZBE $zpds/$zpname/ROOT/zbe || \
+	fail_incomplete "$f_zfs_create"
+
+/usr/bin/mkdir -p $zonepath/root || fail_incomplete "$f_root_create"
+/usr/bin/chmod 700 $zonepath
+/usr/sbin/mount -F zfs $zpds/$zpname/ROOT/zbe $zonepath/root || \
+	fail_incomplete "$f_zfs_mount"
+
+/usr/sbin/sys-unconfig -R $zonepath/root || fail_incomplete "$f_sysunconfig"
+
+/usr/sbin/umount $zonepath/root || fail_fatal "$f_umount"
+
+exit $ZONE_SUBPROC_OK

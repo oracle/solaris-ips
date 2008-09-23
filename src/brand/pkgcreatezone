@@ -24,10 +24,7 @@
 # Use is subject to license terms.
 #
 
-ZONE_SUBPROC_OK=0
-ZONE_SUBPROC_USAGE=253
-ZONE_SUBPROC_NOTCOMPLETE=254
-ZONE_SUBPROC_FATAL=255
+. /usr/lib/brand/ipkg/common.ksh
 
 f_img=$(gettext "failed to create image")
 f_pkg=$(gettext "failed to install package")
@@ -45,23 +42,6 @@ m_postnote=$(gettext  " Next Steps: Boot the zone, then log into the zone consol
 m_postnote2=$(gettext "             (zlogin -C) to complete the configuration process")
 
 m_done=$(gettext      " done.")
-
-
-fail_incomplete() {
-	print -u2 "$1"
-	exit $ZONE_SUBPROC_NOTCOMPLETE
-}
-
-fail_fatal() {
-	print -u2 "$1"
-	exit $ZONE_SUBPROC_FATAL
-}
-
-
-fail_usage() {
-	print "Usage: $0 [-h] [-a <authority>]"
-	exit $ZONE_SUBPROC_USAGE
-}
 
 trap_cleanup() {
 	print "$f_interrupted"
@@ -94,11 +74,11 @@ export TEXTDOMAIN
 
 while getopts "a:z:R:h" opt; do
 	case $opt in
-		h)	fail_usage ;;
+		h)	fail_usage "$0 [-h] [-a <authority>]";;
 		R)	zonepath="$OPTARG" ;;
 		z)	zonename="$OPTARG" ;;
 		a)	authority="$OPTARG" ;;
-		*)	fail_usage ;;
+		*)	fail_usage "$0 [-h] [-a <authority>]";;
 	esac
 done
 shift $((OPTIND-1))
@@ -110,9 +90,35 @@ fi
 
 zoneroot=$zonepath/root
 
+#
+# Before installing the zone, set up ZFS dataset hierarchy for the zone root
+# dataset.
+#
+
+get_current_gzbe
+
+# Find the zone's current dataset.  This should have been created by zoneadm.
+get_zonepath_ds $zonepath
+
+# Check that zone is not in the ROOT dataset.
+fail_zonepath_in_rootds $ZONEPATH_DS
+
+/usr/sbin/zfs create -o mountpoint=legacy -o zoned=on $ZONEPATH_DS/ROOT \
+	|| fail_fatal "$f_zfs_create"
+/usr/sbin/zfs create -o $PROP_ACTIVE=on -o $PROP_PARENT=$CURRENT_GZBE \
+	$ZONEPATH_DS/ROOT/zbe || fail_incomplete "$f_zfs_create"
+
+/usr/bin/mkdir $zoneroot || fail_incomplete "$f_root_create"
+/usr/sbin/mount -F zfs $ZONEPATH_DS/ROOT/zbe $zoneroot || \
+	fail_incomplete "$f_zfs_mount"
+
+#
+# Done setting up the zone's datasets.
+#
+
 printf "$m_authority" `echo $authority | cut -d= -f 2`
 printf "\n$m_image" $zoneroot
-pkg image-create -z -F -a "$authority" $zoneroot || fail_fatal $f_img
+pkg image-create -z -F -a "$authority" $zoneroot || fail_incomplete "$f_img"
 printf "$m_done\n"
 
 entire_fmri=$(pkg list -Hv entire | nawk '{print $1}')
@@ -208,6 +214,8 @@ printf "$m_more_brokenness\n"
 /usr/sbin/sysidconfig -b $zoneroot -a /lib/svc/method/sshd
 touch $zoneroot/etc/.UNCONFIGURED
 
+# Umount the dataset on the root.
+/usr/sbin/umount $zoneroot
 
 printf "$m_complete\n\n" ${SECONDS}
 printf "$m_postnote\n"

@@ -1,0 +1,173 @@
+#!/bin/ksh -p
+#
+# CDDL HEADER START
+#
+# The contents of this file are subject to the terms of the
+# Common Development and Distribution License (the "License").
+# You may not use this file except in compliance with the License.
+#
+# You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+# or http://www.opensolaris.org/os/licensing.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+#
+# When distributing Covered Code, include this CDDL HEADER in each
+# file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+# If applicable, add the following below this CDDL HEADER, with the
+# fields enclosed by brackets "[]" replaced with your own identifying
+# information: Portions Copyright [yyyy] [name of copyright owner]
+#
+# CDDL HEADER END
+#
+#
+# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Use is subject to license terms.
+#
+
+. /usr/lib/brand/ipkg/common.ksh
+
+f_promote=$(gettext "Error: promoting ZFS dataset.")
+f_destroy=$(gettext "Error: destroying ZFS dataset.")
+f_rmdir=$(gettext "Error: removing zonepath.")
+
+zonename=$1
+zonepath=$2
+
+zoneroot=$zonepath/root
+
+#
+# We want uninstall to work in the face of various problems, such as a
+# zone with no delegated root dataset or multiple active datasets, so we
+# don't use the common functions.  Instead, we do our own work here and
+# are tolerant of errors.
+#
+
+#
+# get_current_gzbe
+#
+CURRENT_GZBE=`/usr/sbin/beadm list -H | /usr/bin/nawk -F\; '{
+	# Field 3 is the BE status.  'N' is the active BE.
+	if ($3 ~ "N")
+		# Field 2 is the BE UUID
+		print $2
+	}'`
+
+if [ -z "$CURRENT_GZBE" ]; then
+	print "$f_no_gzbe"
+fi
+
+#
+# get_zonepath_ds $zonepath
+#
+ZONEPATH_DS=`/usr/sbin/zfs list -t filesystem -o name,mountpoint | \
+    /usr/bin/nawk -v zonepath=$zonepath '{
+	if ($2 == zonepath)
+		print $1
+}'`
+
+if [ -z "$ZONEPATH_DS" ]; then
+	print "$f_no_ds"
+fi
+
+#
+# Get the active dataset that is associated with the current global zone (GZ)
+# BE.
+#
+# get_active_ds $CURRENT_GZBE $ZONEPATH_DS
+
+if [ -n "$ZONEPATH_DS" -a -n "$CURRENT_GZBE" ]; then
+	ACTIVE_DS=`/usr/sbin/zfs list -H -r -t filesystem \
+	    -o name,$PROP_PARENT,$PROP_ACTIVE $ZONEPATH_DS/ROOT | \
+	    /usr/bin/nawk -v gzbe=$CURRENT_GZBE ' {
+		if ($1 ~ /ROOT\/[^\/]+$/ && $2 == gzbe && $3 == "on") {
+			print $1
+			if (found == 1)
+				exit 1
+			found = 1
+		}
+	    }'`
+
+	if [ $? -ne 0 ]; then
+		print "$f_multiple_ds"
+		ACTIVE_DS=""
+	fi
+fi
+
+if [ -z "$ACTIVE_DS" ]; then
+	print "$f_no_active_ds"
+fi
+
+#
+# If the active dataset has dependents, need to promote them.
+#
+# This happens if we are booted back to an earlier GZ BE and are deleting the
+# zone on that BE.  In this case, we would have a snapshot of the current zone
+# dataset which is used for a clone by the later GZ BE.  We need to promote
+# that one before we try to delete the current one.
+#
+
+if [ -n "$ACTIVE_DS" ]; then
+	CLONES=`/usr/sbin/zfs list -H -r -t filesystem -o name,origin \
+	    $ZONEPATH_DS/ROOT | \
+	    /usr/bin/nawk -v zonepath=$ACTIVE_DS '
+		BEGIN {snapshot = "^" zonepath "@"}
+		{
+			if ($2 ~ snapshot)
+				print $1
+		}'`
+
+	for i in $CLONES
+	do
+		/usr/sbin/zfs promote $i || print "$f_promote"
+	done
+
+	# Delete the active dataset that is associated with the current GZ BE.
+	origin=`/usr/sbin/zfs get -H -o value origin $ACTIVE_DS 2>/dev/null`
+	/usr/sbin/zfs destroy -r $ACTIVE_DS
+
+	# Check for snapshot as origin and destroy it.
+	if [ $origin != "-" ]; then
+		/usr/sbin/zfs destroy $origin || print "$f_destroy"
+	fi
+fi
+
+#
+# Now find the rest of the datasets associated with the current GZ BE and
+# delete those, along with their snapshots.
+#
+if [ -n "$ZONEPATH_DS" -a -n "$CURRENT_GZBE" ]; then
+	DS=`/usr/sbin/zfs list -H -r -t filesystem \
+	    -o name,$PROP_PARENT $ZONEPATH_DS/ROOT | \
+	    /usr/bin/nawk -v gzbe=$CURRENT_GZBE ' {
+		if ($1 ~ /ROOT\/[^\/]+$/ && $2 == gzbe) {
+			print $1
+		}
+	    }'`
+
+	for i in $DS
+	do
+		/usr/sbin/zfs destroy -r $i || print "$f_destroy"
+	done
+fi
+
+#
+# Check if there are any other datasets left.  There may be datasets
+# associated with other GZ BEs, so we need to leave things alone in that case.
+#
+if [ -n "$ZONEPATH_DS" ]; then
+	DS=`/usr/sbin/zfs list -H -r -t filesystem -o name $ZONEPATH_DS/ROOT | \
+	    /usr/bin/egrep "$ZONEPATH_DS/ROOT/"`
+	if [ -z "$DS" ]; then
+		# If not, destroy the ROOT dataset.
+		/usr/sbin/zfs destroy -r $ZONEPATH_DS/ROOT || print "$f_destroy"
+
+		# And its parent.
+		/usr/sbin/zfs destroy -r $ZONEPATH_DS || print "$f_destroy"
+
+		rm -rf $zonepath || print "$f_rmdir"
+	fi
+else
+	rm -rf $zonepath || print "$f_rmdir"
+fi
+
+exit $ZONE_SUBPROC_OK
