@@ -113,7 +113,7 @@ class Action(object):
                         self.data = None
                         return
 
-                if isinstance(data, str):
+                if isinstance(data, basestring):
                         def file_opener():
                                 return open(data, "rb")
                         self.data = file_opener

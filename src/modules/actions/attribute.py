@@ -83,7 +83,7 @@ class AttributeAction(generic.Action):
                 elif isinstance(self.attrs["value"], list):
                         tmp = {}
                         for v in self.attrs["value"]:
-                                assert isinstance(v, str)
+                                assert isinstance(v, basestring)
                                 if " " in v:
                                         words = v.split()
                                         for w in words:

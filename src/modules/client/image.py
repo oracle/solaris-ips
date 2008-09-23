@@ -1482,11 +1482,11 @@ class Image(object):
 
                 myfmri = inputfmri
 
-                if isinstance(myfmri, str):
+                try:
+                        name = myfmri.get_name()
+                except AttributeError:
                         name = pkg.fmri.extract_pkg_name(myfmri)
                         myfmri = self.strtomatchingfmri(myfmri)
-                else:
-                        name = myfmri.get_name()
 
                 try:
                         myfmri = self.inventory([ myfmri ], all_known = True,
@@ -1513,11 +1513,11 @@ class Image(object):
                 Doesn't handle catalog renames... to ease programming for now,
                 unversioned fmris are returned upgraded"""
 
-                if isinstance(myfmri, str):
+                try:
+                        name = myfmri.get_name()
+                except AttributeError:
                         name = pkg.fmri.extract_pkg_name(myfmri)
                         myfmri = self.strtomatchingfmri(myfmri)
-                else:
-                        name = myfmri.get_name()
 
                 minfmri = self.optional_dependencies.get(name, None)
                 if not minfmri:

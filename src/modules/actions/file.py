@@ -73,7 +73,7 @@ class FileAction(generic.Action):
                         try:
                                 os.rename(path, path)
                         except OSError, err:
-                                if err.errno != errno.EPERM:
+                                if err.errno != errno.EACCES:
                                         raise
                                 return True
                         return False
