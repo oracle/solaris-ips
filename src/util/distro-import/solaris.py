@@ -1112,8 +1112,9 @@ for p in sorted(newpkgs):
         publish_pkg(p)
 
 # Ensure that the feed is updated and cached to reflect changes.
-print "Caching RSS/Atom feed..."
-f = urllib.urlopen("%s/feed" % def_repo)
-f.close()
+if not nopublish:
+        print "Caching RSS/Atom feed..."
+        f = urllib.urlopen("%s/feed" % def_repo)
+        f.close()
 
 print "Done:", datetime.now()
