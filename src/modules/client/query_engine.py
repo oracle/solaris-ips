@@ -40,7 +40,7 @@ class ClientQueryEngine(qe.QueryEngine):
         def __init__(self, dir_path):
                 qe.QueryEngine.__init__(self, dir_path)
                 self._data_dict['fmri_hash'] = \
-                    ss.IndexStoreSetHash('full_fmri_list.hash')
+                    ss.IndexStoreSetHash(ss.FULL_FMRI_HASH_FILE)
 
         
         def search(self, query, expected_fmri_names):

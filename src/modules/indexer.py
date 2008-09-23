@@ -126,21 +126,20 @@ class Indexer(object):
                 # index files.
 
                 self._data_dict = {
-                        'fmri': ss.IndexStoreListDict('id_to_fmri_dict.ascii'),
+                        'fmri': ss.IndexStoreListDict(ss.FMRI_FILE),
                         'action':
-                            ss.IndexStoreListDict('id_to_action_dict.ascii'),
+                            ss.IndexStoreListDict(ss.ACTION_FILE),
                         'tok_type':
-                            ss.IndexStoreListDict(
-                                'id_to_token_type_dict.ascii'),
+                            ss.IndexStoreListDict(ss.TT_FILE),
                         'version':
-                            ss.IndexStoreListDict('id_to_version_dict.ascii',
+                            ss.IndexStoreListDict(ss.VERSION_FILE,
                                 Indexer._build_version),
                         'keyval':
-                            ss.IndexStoreListDict('id_to_keyval_dict.ascii'),
-                        'full_fmri': ss.IndexStoreSet('full_fmri_list'),
-                        'main_dict': ss.IndexStoreMainDict('main_dict.ascii'),
+                            ss.IndexStoreListDict(ss.KEYVAL_FILE),
+                        'full_fmri': ss.IndexStoreSet(ss.FULL_FMRI_FILE),
+                        'main_dict': ss.IndexStoreMainDict(ss.MAIN_FILE),
                         'token_byte_offset':
-                            ss.IndexStoreDictMutable('token_byte_offset')
+                            ss.IndexStoreDictMutable(ss.BYTE_OFFSET_FILE)
                         }
 
                 self._data_fmri = self._data_dict['fmri']
@@ -520,7 +519,6 @@ class Indexer(object):
                                 # existing main dictionary file.
                                 while added_toks and (added_toks[-1] < tok):
                                         new_tok = added_toks.pop()
-                                        assert ' ' not in new_tok
                                         assert len(new_tok) > 0
                                         self._write_main_dict_line(
                                             out_main_dict_handle,
@@ -550,7 +548,6 @@ class Indexer(object):
                                 # If this token has any packages still
                                 # associated with it, write them to the file.
                                 if new_entries:
-                                        assert ' ' not in tok
                                         assert len(tok) > 0
                                         self._write_main_dict_line(
                                             out_main_dict_handle,
@@ -567,7 +564,6 @@ class Indexer(object):
                 # entry in the existing file, add them to the end of the file.
                 while added_toks:
                         new_tok = added_toks.pop()
-                        assert ' ' not in new_tok
                         assert len(new_tok) > 0
                         self._write_main_dict_line(
                             out_main_dict_handle,
@@ -712,22 +708,6 @@ class Indexer(object):
                                 d.close_file_handle()
                 assert res is not 0
                 return res
-
-        def check_index_has_exactly_fmris(self, fmri_names):
-                """ Checks to see if the fmris given are the ones indexed.
-                """
-                try:
-                        res = \
-                            ss.consistent_open(self._data_dict.values(),
-                                self._index_dir, self._file_timeout_secs)
-                        if res is not None and not \
-                            self._data_full_fmri_hash.check_against_file(
-                                fmri_names):
-                                res = None
-                finally:
-                        for d in self._data_dict.values():
-                                d.close_file_handle()
-                return res is not None
 
         def rebuild_index_from_scratch(self, fmri_manifest_pairs,
             tmp_index_dir = None):

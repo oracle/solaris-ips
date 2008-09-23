@@ -70,16 +70,16 @@ class QueryEngine(object):
                 # index files.
                 
                 self._data_dict = {
-                    'fmri': ss.IndexStoreDict('id_to_fmri_dict.ascii'),
-                    'action': ss.IndexStoreDict('id_to_action_dict.ascii'),
+                    'fmri': ss.IndexStoreDict(ss.FMRI_FILE),
+                    'action': ss.IndexStoreDict(ss.ACTION_FILE),
                     'tok_type':
-                        ss.IndexStoreDict('id_to_token_type_dict.ascii'),
+                        ss.IndexStoreDict(ss.TT_FILE),
                     'version':
-                        ss.IndexStoreDict('id_to_version_dict.ascii'),
-                    'keyval': ss.IndexStoreDict('id_to_keyval_dict.ascii'),
-                    'main_dict': ss.IndexStoreMainDict('main_dict.ascii'),
+                        ss.IndexStoreDict(ss.VERSION_FILE),
+                    'keyval': ss.IndexStoreDict(ss.KEYVAL_FILE),
+                    'main_dict': ss.IndexStoreMainDict(ss.MAIN_FILE),
                     'token_byte_offset':
-                            ss.IndexStoreDictMutable('token_byte_offset')
+                            ss.IndexStoreDictMutable(ss.BYTE_OFFSET_FILE)
                 }
 
                 self._data_fmri = self._data_dict['fmri']

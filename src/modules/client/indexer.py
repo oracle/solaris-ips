@@ -46,3 +46,20 @@ class Indexer(indexer.Indexer):
                 self._data_full_fmri_hash.set_hash(
                     self._data_full_fmri.get_set())
                 indexer.Indexer._write_assistant_dicts(self, out_dir)
+
+        def check_index_has_exactly_fmris(self, fmri_names):
+                """Checks to see if the fmris given are the ones indexed.
+                """
+                try:
+                        res = \
+                            ss.consistent_open(self._data_dict.values(),
+                                self._index_dir, self._file_timeout_secs)
+                        if res is not None and \
+                            not self._data_full_fmri_hash.check_against_file(
+                            fmri_names):
+                                res = None
+                finally:
+                        for d in self._data_dict.values():
+                                d.close_file_handle()
+                return res is not None
+

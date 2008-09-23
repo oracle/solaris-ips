@@ -32,11 +32,13 @@ import unittest
 import shutil
 import copy
 import sys
+import time
 
 import pkg.depotcontroller as dc
 
 import pkg.client.query_engine as query_engine
 import pkg.portable as portable
+import pkg.search_storage as ss
 
 class TestPkgSearch(testutils.SingleDepotTestCase):
 
@@ -77,6 +79,13 @@ class TestPkgSearch(testutils.SingleDepotTestCase):
             add dir path=foo/ mode=0755 owner=root group=bin
             add dir path=/ mode=0755 owner=root group=bin
             close """
+
+        space_pkg10 = """
+            open space_pkg@1.0,5.11-0
+            add file /tmp/example_file mode=0444 owner=nobody group=sys path='foo/with a space'
+            add dir mode=0755 owner=root group=bin path=foodir
+            close """
+
         
         headers = "INDEX      ACTION    VALUE                     PACKAGE\n"
 
@@ -385,7 +394,7 @@ close
                 portable.remove(os.path.join(index_dir_tmp, tmp_file))
                 shutil.move(os.path.join(index_dir, tmp_file),
                             index_dir_tmp)
-                fh = open(os.path.join(index_dir_tmp, "main_dict.ascii"), "r")
+                fh = open(os.path.join(index_dir_tmp, ss.MAIN_FILE), "r")
                 fh.seek(0)
                 fh.seek(9)
                 ver = fh.read(1)
@@ -412,6 +421,38 @@ close
                 # Overwrite the existing version number.
                 # By definition, the version 0 is never used.
                 fh.write("0")
+                fh.close()
+
+        @staticmethod
+        def _overwrite_on_disk_format_version_number(file_path):
+                fh = open(file_path, "r+")
+                fh.seek(0)
+                fh.seek(16)
+                # Overwrite the existing version number.
+                # By definition, the version 0 is never used.
+                fh.write("9")
+                fh.close()
+
+        @staticmethod
+        def _overwrite_on_disk_format_version_number_with_letter(file_path):
+                fh = open(file_path, "r+")
+                fh.seek(0)
+                fh.seek(16)
+                # Overwrite the existing version number.
+                # By definition, the version 0 is never used.
+                fh.write("a")
+                fh.close()
+
+        @staticmethod
+        def _replace_on_disk_format_version(dir):
+                file_path = os.path.join(dir, ss.BYTE_OFFSET_FILE)
+                fh = open(file_path, "r")
+                lst = fh.readlines()
+                fh.close()
+                fh = open(file_path, "w")
+                fh.write(lst[0])
+                for l in lst[2:]:
+                        fh.write(l)
                 fh.close()
 
         @staticmethod
@@ -692,6 +733,35 @@ close
                 self.image_create(durl)
                 self.pkg("search -r foo")
                 self.pkg("search -r /")
+
+        def test_bug_2849(self):
+                """Checks if things with spaces break the indexer."""
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.space_pkg10)
+                self.image_create(durl)
+
+                self.pkg("install space_pkg")
+                time.sleep(1)
+                
+                self.pkgsend_bulk(durl, self.space_pkg10)
+
+                self.pkg("refresh")
+                self.pkg("install space_pkg")
+
+                self.pkg("search with", exit=1)
+                self.pkg("search with*")
+                self.pkg("search *space")
+                self.pkg("search foodir")
+                self.pkg("search -r with", exit=1)
+                self.pkg("search -r with*")
+                self.pkg("search -r *space")
+                self.pkgsend_bulk(durl, self.space_pkg10)
+                self.pkg("install space_pkg")
+                self.pkg("search with", exit=1)
+                self.pkg("search with*")
+                self.pkg("search *space")
+                self.pkg("search foodir")
+                        
 
 if __name__ == "__main__":
         unittest.main()

@@ -30,10 +30,21 @@ import errno
 import time
 import stat
 import sha
+import urllib
 
 import pkg.fmri as fmri
 import pkg.search_errors as search_errors
 import pkg.portable as portable
+
+FMRI_FILE = 'id_to_fmri_dict.ascii'
+ACTION_FILE = 'id_to_action_dict.ascii'
+TT_FILE = 'id_to_token_type_dict.ascii'
+VERSION_FILE = 'id_to_version_dict.ascii'
+KEYVAL_FILE = 'id_to_keyval_dict.ascii'
+FULL_FMRI_FILE = 'full_fmri_list'
+MAIN_FILE = 'main_dict.ascii.v1'
+BYTE_OFFSET_FILE = 'token_byte_offset.v1'
+FULL_FMRI_HASH_FILE = 'full_fmri_list.hash'
 
 def consistent_open(data_list, directory, timeout = 1):
         """Opens all data holders in data_list and ensures that the
@@ -78,7 +89,7 @@ def consistent_open(data_list, directory, timeout = 1):
                                         cur_version = None
                                         break
                                 d.set_file_handle(fh, f)
-                                version_tmp = fh.next()
+                                version_tmp = fh.readline()
                                 version_num = \
                                     int(version_tmp.split(' ')[1].rstrip('\n'))
                                 # Read the version. If this is the first file,
@@ -240,7 +251,7 @@ class IndexStoreMainDict(IndexStoreBase):
                 line = line.rstrip('\n')
                 tok_end = line.find(' ')
                 assert tok_end > 0
-                tok = line[:tok_end]
+                tok = urllib.unquote(line[:tok_end])
                 entries = line[tok_end + 2:].split('(')
                 res = []
                 for entry in entries:
@@ -268,7 +279,7 @@ class IndexStoreMainDict(IndexStoreBase):
                 """Paired with parse_main_dict_line above. Writes
                 a line in a main dictionary file in the appropriate format.
                 """
-                file_handle.write(token)
+                file_handle.write(urllib.quote(token))
                 for k in dictionary.keys():
                         tok_type_id, action_id, keyval_id = k
                         file_handle.write(" (" + str(tok_type_id) +
@@ -520,6 +531,20 @@ class IndexStoreDictMutable(IndexStoreBase):
         def get_keys(self):
                 return self._dict.keys()
 
+        @staticmethod
+        def __unquote(str):
+                if str[0] == "1":
+                        return urllib.unquote(str[1:])
+                else:
+                        return str[1:]
+
+        @staticmethod
+        def __quote(str):
+                if " " in str:
+                        return "1" + urllib.quote(str)
+                else:
+                        return "0" + str
+
         def read_dict_file(self):
                 """Reads in a dictionary stored in with an entity
                 and its number on each line.
@@ -527,8 +552,8 @@ class IndexStoreDictMutable(IndexStoreBase):
                 if self.should_reread():
                         self._dict.clear()
                         for line in self._file_handle:
-                                res = line.split()
-                                token = res[0]
+                                res = line.split(" ")
+                                token = self.__unquote(res[0])
                                 offset = int(res[1])
                                 self._dict[token] = offset
 
@@ -536,16 +561,14 @@ class IndexStoreDictMutable(IndexStoreBase):
                 """Opens the output file for this class and prepares it
                 to be written via write_entity.
                 """
-
-                IndexStoreBase._protected_write_dict_file(self, use_dir,
-                    version_num, [])
+                self.write_dict_file(use_dir, version_num)
                 self._file_handle = open(os.path.join(use_dir, self._name),
                     'ab')
 
         def write_entity(self, entity, my_id):
                 """Writes the entity out to the file with my_id """
                 assert self._file_handle is not None
-                self._file_handle.write(str(entity) + " " + str(my_id) + "\n")
+                self._file_handle.write(self.__quote(str(entity)) + " " + str(my_id) + "\n")
 
         def write_dict_file(self, path, version_num):
                 """ Generates an iterable list of string representations of
