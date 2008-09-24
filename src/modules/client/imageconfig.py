@@ -239,12 +239,3 @@ class ImageConfig(object):
                 lst = [ s for s in lst if s != '' ]
 
                 return lst
- 
-
-if __name__ == "__main__":
-        # XXX Need to construct a trivial configuration, load it, and verify
-        # correctness.
-        ic = ImageConfig()
-        ic.read("tests/sampleconfig.conf")
-
-        msg(ic)

@@ -2019,6 +2019,3 @@ pkg: no package matching '%s' could be found in current catalog
                 ind = indexer.Indexer(self.index_dir,
                     CLIENT_DEFAULT_MEM_USE_KB, progtracker)
                 ind.rebuild_index_from_scratch(self.get_fmri_manifest_pairs())
-
-if __name__ == "__main__":
-        pass

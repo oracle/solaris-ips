@@ -367,6 +367,3 @@ class BootEnvNull(object):
 
 if "be" not in locals():
         BootEnv = BootEnvNull
-
-if __name__ == "__main__":
-        pass

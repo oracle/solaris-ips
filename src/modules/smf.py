@@ -117,12 +117,3 @@ def get_info(f):
 
         return info
 
-
-if __name__ == "__main__":
-        assert not is_smf_manifest("/etc/passwd")
-        assert not is_smf_manifest("/etc/zones/SUNWdefault.xml")
-        assert is_smf_manifest(
-            "/var/svc/manifest/system/filesystem/minimal-fs.xml")
-
-        print get_info("/var/svc/manifest/system/filesystem/minimal-fs.xml")
-        print get_info("/var/svc/manifest/system/filesystem/autofs.xml")
