@@ -1,3 +1,4 @@
 package SUNWpoold
 import SUNWpoold
+depend SUNWj6rt
 end package
