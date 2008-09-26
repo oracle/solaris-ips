@@ -56,16 +56,45 @@ def get_platform():
         return platform.uname()[4]
 
 def get_userid():
-        try:
-                return get_user_by_name(os.getlogin(), None, False)
-        except ImportError:
+        def __get_userid():
+                user = os.getenv('USER') or os.getenv('LOGNAME') or \
+                    os.getenv('USERNAME')
+                if user:
+                        try:
+                                return get_user_by_name(user, None, False)
+                        except KeyError:
+                                pass
                 return os.getuid()
 
+        try:
+                return get_user_by_name(os.getlogin(), None, False)
+        except AttributeError:
+                # os.getlogin() not available on this platform.
+                return __get_userid()
+        except OSError, e:
+                if e.errno == errno.ENOTTY:
+                        # Known failure case for gksu.
+                        return __get_userid()
+                raise
+
 def get_username():
+        def __get_username():
+                user = os.getenv('USER') or os.getenv('LOGNAME') or \
+                    os.getenv('USERNAME')
+                if not user:
+                        return pwd.getpwuid(os.getuid())[0]
+                return user
+
         try:
                 return os.getlogin()
-        except ImportError:
-                return pwd.getpwuid(os.getuid())[0]
+        except AttributeError:
+                # os.getlogin() not available on this platform.
+                return __get_username()
+        except OSError, e:
+                if e.errno == errno.ENOTTY:
+                        # Known failure case for gksu.
+                        return __get_username()
+                raise
 
 def is_admin():
         return os.getuid() == 0
