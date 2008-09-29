@@ -44,6 +44,9 @@ class TestImageConfig(pkg5unittest.Pkg5TestCase):
 [policy]
 Display-Copyrights: False
 
+[property]
+name = an image
+                
 [authority_sfbay.sun.com]
 prefix: sfbay.sun.com
 origin: http://zruty.sfbay:10001
@@ -62,6 +65,18 @@ ssl_cert:
 
 	def test_read(self):
 		self.ic.read(self.sample_conf)
+
+        def test_unicode(self):
+                self.ic.read(self.sample_conf)
+                ustr = u'abc\u3041def'
+                self.ic.properties['name'] = ustr
+                fd, fname = tempfile.mkstemp()
+                os.close(fd)
+                self.ic.write(fname)
+                ic2 = imageconfig.ImageConfig()
+                ic2.read(fname)
+                ustr2 = ic2.properties['name']
+                self.assert_(ustr == ustr2)
 
 	def test_missing_conffile(self):
 		#

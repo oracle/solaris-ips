@@ -273,7 +273,7 @@ class ImagePlan(object):
                         required = True
                         excluded = False
                         if type == "optional" and \
-                            not self.image.attrs["Policy-Require-Optional"]:
+                            not self.image.cfg_cache.get_policy(imageconfig.REQUIRE_OPTIONAL):
                                 required = False
                         elif type == "transfer" and \
                             not self.image.older_version_installed(f):

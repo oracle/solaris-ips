@@ -97,9 +97,11 @@ class FileList(object):
 
                         self.authority = pkg.fmri.strip_auth_pfx(auth)
                         self.ssl_tuple = self.image.get_ssl_credentials(auth)
+                        self.uuid = self.image.get_uuid(self.authority)
                 else:
                         self.authority = None
                         self.ssl_tuple = None
+                        self.uuid = None
 
                 self.ds = None
                 self.url = None
@@ -338,8 +340,8 @@ class FileList(object):
 
                 try:
                         f, v = versioned_urlopen(url_prefix, "filelist", [0],
-                            data = req_str, ssl_creds = self.ssl_tuple,
-                            imgtype = self.image.type)
+                            data=req_str, ssl_creds=self.ssl_tuple,
+                            imgtype=self.image.type, uuid=self.uuid)
                 except RuntimeError:
                         raise FileListException, "No server-side support" 
                 except urllib2.HTTPError, e:

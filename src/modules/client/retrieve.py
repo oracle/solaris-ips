@@ -42,10 +42,12 @@ def get_datastream(img, fmri, hash):
         authority = pkg.fmri.strip_auth_pfx(authority)
         url_prefix = img.get_url_by_authority(authority)
         ssl_tuple = img.get_ssl_credentials(authority)
+        uuid = img.get_uuid(authority)
 
         try:
                 f, v = versioned_urlopen(url_prefix, "file", [0], hash,
-                           ssl_creds = ssl_tuple, imgtype = img.type)
+                    ssl_creds=ssl_tuple, imgtype=img.type, 
+                    uuid=uuid)
         except urllib2.HTTPError, e:
                 raise NameError, "could not retrieve file '%s' from '%s'" % \
                     (hash, url_prefix)
@@ -69,11 +71,12 @@ def get_manifest(img, fmri):
         authority = pkg.fmri.strip_auth_pfx(authority)
         url_prefix = img.get_url_by_authority(authority)
         ssl_tuple = img.get_ssl_credentials(authority)
+        uuid = img.get_uuid(authority)
 
         try:
                 m, v = versioned_urlopen(url_prefix, "manifest", [0],
-                    fmri.get_url_path(), ssl_creds = ssl_tuple,
-                    imgtype = img.type)
+                    fmri.get_url_path(), ssl_creds=ssl_tuple,
+                    imgtype=img.type, uuid=uuid)
         except urllib2.HTTPError, e:
                 if e.code in retryable_http_errors:
                         raise TransferTimedOutException

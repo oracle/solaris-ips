@@ -54,6 +54,9 @@ class TestCommandLine(testutils.SingleDepotTestCase):
                 self.pkg("set-authority -@ test3", exit=2)
                 self.pkg("authority -@ test5", exit=2)
                 self.pkg("contents -m -r", exit=2)
+                self.pkg("set-property -@", exit=2)
+                self.pkg("get-property -@", exit=2)
+                self.pkg("property -@", exit=2)
 
         def test_pkg_vq_1153(self):
                 """ test that -v and -q are mutually exclusive """
@@ -119,6 +122,21 @@ class TestCommandLine(testutils.SingleDepotTestCase):
                 self.pkgsend(durl, "-@ open foo@1.0,5.11-0", exit=2)
                 self.pkgsend(durl, "close -@", exit=2)
 
+        def test_properties(self):
+                """pkg: set, unset, and display properties """
+                durl = self.dc.get_depot_url()
+                self.image_create(durl)
+                self.pkg("set-property title sample")
+                self.pkg('set-property description "more than one word"')
+                self.pkg("property")
+                self.pkg("unset-property description")
+                self.pkg("property -H")
+                self.pkg("property title")
+                self.pkg("property -H title")
+                self.pkg("property description", exit=1)
+                self.pkg("unset-property description", exit=1)
+                self.pkg("unset-property", exit=2)
+
         def test_authority_add_remove(self):
                 """pkg: add and remove an authority"""
                 durl = self.dc.get_depot_url()
@@ -133,6 +151,13 @@ class TestCommandLine(testutils.SingleDepotTestCase):
                 self.pkg("unset-authority test1")
                 self.pkg("authority | grep test1", exit=1)
                 self.pkg("unset-authority test2", exit=1)
+
+        def test_authority_uuid(self):
+                """pkg: set the uuid for an authority"""
+                durl = self.dc.get_depot_url()
+                self.image_create(durl)
+                self.pkg("set-authority -O http://test1 --no-refresh --reset-uuid test1")
+                self.pkg("set-authority --no-refresh --reset-uuid test1")
 
         def test_authority_bad_opts(self):
                 """pkg: more insidious option abuse for set-authority"""

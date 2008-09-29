@@ -350,8 +350,22 @@ DESCRIPTION
   Images and Substrates
      TBD
 
+  Properties
+     Images can have one or more properties associated with them.
+     These properties can be used to store information about the purpose, 
+     content and behavior of the image.
+
   Policy
-     TBD
+     Policies are defined by image properties with boolean values.  The 
+     supported policies include:
+
+        flush-content-cache-on-success
+            When true, the cache of downloaded files is erased after a 
+            successful install of a package.  Default value: False
+
+        send-uuid
+            When true, a unique identifier (UUID) that identifies the image
+            to the authority is sent on all requests.  Default value: False 
 
 ATTRIBUTES
      See attributes(5) for descriptions of the  following  attri-

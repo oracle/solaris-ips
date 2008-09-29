@@ -89,17 +89,25 @@ IMAGES
       /origin                  http:, https:, or ftp: URL
       /mirrors                 list of URLs
 
-    Image attributes.  The image has a collection of simple attributes,
-    like machine type.
+    Image properties.  The image has a collection of simple properties,
+    like machine type and policies that control the behavior of the pkg(5)
+    software within that image.  Policies are properties with a boolean value.
 
-    application/
-      /preferred_auth          preferred authority for unknown package
-                               lookups
+    properties/
+      /pursue-latest            (not currently used)
+      /require-optional         (not currently used)
+      /display-copyrights       (not currently used)
+      /flush-content-cache-on-success
+                                should downloaded compressed files be removed
+                                after a successful install
+      /preferred-authority      preferred authority for unknown package lookups
+      /title                    title of image for use in GUIs and other UIs
+      /description              longer description of the content of the image
       /[various]
 
     Entire images have a property group for each tied partial image.
 
-    partial_[escaped_name]/    Property group of type "com.sun.pkg,partial"
+    partial_[escaped_name]/     Property group of type "com.sun.pkg,partial"
       /path                     Filesystem path
       /vdomainname              Defined if this image is a virtual
                                 domain controlled on this system.

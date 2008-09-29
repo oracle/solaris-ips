@@ -64,9 +64,25 @@ class DepotStatus(object):
                         self.available = False
 
 
+# The default_policies dictionary defines the policies that are supported by 
+# pkg(5) and their default values. Calls to the ImageConfig.get_policy method
+# should use the constants defined here.
+REQUIRE_OPTIONAL = "require-optional"
+PURSUE_LATEST = "pursue-latest"
+DISPLAY_COPYRIGHTS = "display-copyrights"
+FLUSH_CONTENT_CACHE = "flush-content-cache-on-success"
+SEND_UUID = "send-uuid"
+default_policies = { 
+    REQUIRE_OPTIONAL: False,
+    PURSUE_LATEST: True,
+    DISPLAY_COPYRIGHTS: True,
+    FLUSH_CONTENT_CACHE: False,
+    SEND_UUID: False,
+}
+
 class ImageConfig(object):
         """An ImageConfig object is a collection of configuration information:
-        URLs, authorities, policies, etc. that allow an Image to operate."""
+        URLs, authorities, properties, etc. that allow an Image to operate."""
 
         # XXX The SSL ssl_key attribute asserts that there is one
         # ssl_key per authority.  This may be insufficiently general:  we
@@ -75,31 +91,32 @@ class ImageConfig(object):
         # XXX Use of ConfigParser is convenient and at most speculative--and
         # definitely not interface.
 
-        BOOLEAN_POLICIES = [
-                "require-optional",
-                "pursue-latest",
-                "display-copyrights",
-                "flush-content-cache-on-success" ]       
-
         def __init__(self):
                 self.authorities = {}
                 self.authority_status = {}
                 self.mirror_status = {}
+                self.properties = dict((
+                    (p, str(v)) 
+                    for p, v in default_policies.iteritems()
+                ))
                 self.preferred_authority = None
-                self.flush_content_cache = False
                 self.filters = {}
-
                 self.children = []
 
-                self.policies = {}
-                self.policies["require-optional"] = False
-                self.policies["pursue-latest"] = True
-                self.policies["display-copyrights"] = True
-                self.policies["flush-content-cache-on-success"] = False
-
         def __str__(self):
-                return "%s\n%s" % (self.authorities, self.policies)
+                return "%s\n%s" % (self.authorities, self.properties)
 
+        def get_policy(self, policy):
+                """Return a boolean value for the named policy.  Returns
+                the default value for the policy if the named policy is 
+                not defined in the image configuration.
+                """
+                assert policy in default_policies
+                if policy in self.properties:
+                        policystr = self.properties[policy]
+                        return policystr.lower() in ("true", "yes")
+                return default_policies[policy]
+                
         def read(self, path):
                 """Read the given file as if it were a configuration cache for
                 pkg(1)."""
@@ -147,6 +164,11 @@ class ImageConfig(object):
                                 except ConfigParser.NoOptionError:
                                         a["ssl_cert"] = None
 
+                                try:
+                                        a["uuid"] = cp.get(s, "uuid")
+                                except ConfigParser.NoOptionError:
+                                        a["uuid"] = "None"
+
                                 a["origin"] = \
                                     misc.url_affix_trailing_slash(a["origin"])
 
@@ -163,34 +185,32 @@ class ImageConfig(object):
                                 if self.preferred_authority == None:
                                         self.preferred_authority = k
 
+                # read in the policy section to provide backward
+                # compatibility for older images
                 if cp.has_section("policy"):
                         for o in cp.options("policy"):
-                                if o in self.BOOLEAN_POLICIES:
-                                        self.policies[o] = \
-                                            cp.getboolean("policy", o)
-                                else:
-                                        self.policies[o] = cp.get("policy", o)
+                                self.properties[o] = cp.get("policy", o)
+
+                if cp.has_section("property"):
+                        for o in cp.options("property"):
+                                self.properties[o] = cp.get("property", 
+                                    o, raw=True).decode('utf-8')
 
                 if cp.has_section("filter"):
                         for o in cp.options("filter"):
                                 self.filters[o] = cp.get("filter", o)
 
-                if "preferred-authority" in self.policies:
-                        self.preferred_authority = \
-                            self.policies["preferred-authority"]
-
-                if "flush-content-cache-on-success" in self.policies:
-                        self.flush_content_cache = \
-                            self.policies["flush-content-cache-on-success"]
+                if "preferred-authority" in self.properties:
+                        self.preferred_authority = self.properties["preferred-authority"]
 
         def write(self, path):
                 cp = ConfigParser.SafeConfigParser()
 
-                self.policies["preferred-authority"] = self.preferred_authority
+                self.properties["preferred-authority"] = self.preferred_authority
 
-                cp.add_section("policy")
-                for p in self.policies:
-                        cp.set("policy", p, str(self.policies[p]))
+                cp.add_section("property")
+                for p in self.properties:
+                        cp.set("property", p, self.properties[p].encode('utf-8'))
 
                 cp.add_section("filter")
                 for f in self.filters:
@@ -211,6 +231,8 @@ class ImageConfig(object):
                             str(self.authorities[a]["ssl_key"]))
                         cp.set(section, "ssl_cert",
                             str(self.authorities[a]["ssl_cert"]))
+                        cp.set(section, "uuid",
+                            str(self.authorities[a]["uuid"]))
 
                 # XXX Child images
 

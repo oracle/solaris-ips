@@ -47,6 +47,7 @@ import pkg.updatelog as updatelog
 import pkg.fmri
 import pkg.manifest as manifest
 import pkg.misc as misc
+import pkg.Uuid25
 import pkg.version
 import pkg.client.history as history
 import pkg.client.imageconfig as imageconfig
@@ -191,9 +192,6 @@ class Image(object):
 
                 self.attrs = {}
 
-                self.attrs["Policy-Require-Optional"] = False
-                self.attrs["Policy-Pursue-Latest"] = True
-
                 self.imageplan = None # valid after evaluation succceds
 
                 # contains a dictionary w/ key = pkgname, value is miminum
@@ -275,6 +273,9 @@ class Image(object):
 
                 self.cfg_cache = ic
 
+        def save_config(self):
+                self.cfg_cache.write("%s/cfg_cache" % self.imgdir)
+
         # XXX mkdirs and set_attrs() need to be combined into a create
         # operation.
         def mkdirs(self):
@@ -312,10 +313,11 @@ class Image(object):
                 self.cfg_cache.authorities[auth_name]["mirrors"] = []
                 self.cfg_cache.authorities[auth_name]["ssl_key"] = ssl_key
                 self.cfg_cache.authorities[auth_name]["ssl_cert"] = ssl_cert
+                self.cfg_cache.authorities[auth_name]["uuid"] = pkg.Uuid25.uuid1()
 
                 self.cfg_cache.preferred_authority = auth_name
 
-                self.cfg_cache.write("%s/cfg_cache" % self.imgdir)
+                self.save_config()
                 self.history.operation_result = history.RESULT_SUCCEEDED
 
         def is_liveroot(self):
@@ -512,6 +514,18 @@ class Image(object):
 
                 return True
 
+        def get_uuid(self, authority):
+                """Return the UUID for the specified authority prefix.  If the
+                policy for sending the UUID is set to false, return None.
+                """
+                if not self.cfg_cache.get_policy(imageconfig.SEND_UUID):
+                        return None
+
+                try:
+                        return self.cfg_cache.authorities[authority]["uuid"]
+                except KeyError:
+                        return None
+                        
         def get_default_authority(self):
                 return self.cfg_cache.preferred_authority
 
@@ -527,7 +541,7 @@ class Image(object):
                             history.RESULT_FAILED_UNKNOWN
                         raise KeyError, error
                 self.cfg_cache.delete_authority(auth_name)
-                self.cfg_cache.write("%s/cfg_cache" % self.imgdir)
+                self.save_config()
                 self.destroy_catalog(auth_name)
                 self.cache_catalogs()
                 self.history.operation_result = history.RESULT_SUCCEEDED
@@ -564,11 +578,11 @@ class Image(object):
                             history.RESULT_FAILED_UNKNOWN
                         raise KeyError, error
                 self.cfg_cache.preferred_authority = auth_name
-                self.cfg_cache.write("%s/cfg_cache" % self.imgdir)
+                self.save_config()
                 self.history.operation_result = history.RESULT_SUCCEEDED
 
         def set_authority(self, auth_name, origin_url = None, ssl_key = None,
-            ssl_cert = None, refresh_allowed = True):
+            ssl_cert = None, refresh_allowed = True, uuid = None):
                 self.history.operation_name = "set-authority"
                 auths = self.cfg_cache.authorities
 
@@ -585,6 +599,8 @@ class Image(object):
                                 auths[auth_name]["ssl_key"] = ssl_key
                         if ssl_cert:
                                 auths[auth_name]["ssl_cert"] = ssl_cert
+                        if uuid:
+                                auths[auth_name]["uuid"] = uuid
 
                 else:
                         auths[auth_name] = {}
@@ -594,9 +610,12 @@ class Image(object):
                         auths[auth_name]["mirrors"] = []
                         auths[auth_name]["ssl_key"] = ssl_key
                         auths[auth_name]["ssl_cert"] = ssl_cert
+                        if not uuid:
+                                uuid = pkg.Uuid25.uuid1()
+                        auths[auth_name]["uuid"] = uuid
                         refresh_needed = True
 
-                self.cfg_cache.write("%s/cfg_cache" % self.imgdir)
+                self.save_config()
                 
                 if refresh_needed and refresh_allowed:
                         self.destroy_catalog(auth_name)
@@ -606,13 +625,31 @@ class Image(object):
 
                 self.history.operation_result = history.RESULT_SUCCEEDED
 
+        def set_property(self, prop_name, prop_value):
+                self.cfg_cache.properties[prop_name] = prop_value
+                self.save_config()
+
+        def get_property(self, prop_name):
+                return self.cfg_cache.properties[prop_name]
+
+        def has_property(self, prop_name):
+                return prop_name in self.cfg_cache.properties
+
+        def delete_property(self, prop_name):
+                del self.cfg_cache.properties[prop_name]
+                self.save_config()
+
+        def properties(self):
+                for p in self.cfg_cache.properties:
+                        yield p
+
         def add_mirror(self, auth_name, mirror):
                 """Add the mirror URL contained in mirror to
                 auth_name's list of mirrors."""
                 self.history.operation_name = "add-mirror"
                 auths = self.cfg_cache.authorities
                 auths[auth_name]["mirrors"].append(mirror)
-                self.cfg_cache.write("%s/cfg_cache" % self.imgdir)
+                self.save_config()
                 self.history.operation_result = history.RESULT_SUCCEEDED
 
         def has_mirror(self, auth_name, url):
@@ -629,7 +666,7 @@ class Image(object):
 
                 if mirror in self.cfg_cache.authorities[auth_name]["mirrors"]:
                         auths[auth_name]["mirrors"].remove(mirror)
-                        self.cfg_cache.write("%s/cfg_cache" % self.imgdir)
+                        self.save_config()
 
                 self.history.operation_result = history.RESULT_SUCCEEDED
 
@@ -1163,8 +1200,9 @@ class Image(object):
                         # XXX Mirror selection and retrieval policy?
                         try:
                                 c, v = versioned_urlopen(auth["origin"],
-                                    "catalog", [0], ssl_creds = ssl_tuple,
-                                    headers = hdr, imgtype = self.type)
+                                    "catalog", [0], ssl_creds=ssl_tuple,
+                                    headers=hdr, imgtype=self.type,
+                                    uuid=self.get_uuid(auth["prefix"]))
                         except urllib2.HTTPError, e:
                                 # Server returns NOT_MODIFIED if catalog is up
                                 # to date
@@ -1824,11 +1862,16 @@ class Image(object):
                         ssl_tuple = self.get_ssl_credentials(
                             authority = auth.get("prefix", None),
                             origin = auth["origin"])
+                        try:
+                                uuid = self.get_uuid(auth["prefix"])
+                        except KeyError:
+                                uuid = None
 
                         try:
                                 res, v = versioned_urlopen(auth["origin"],
                                     "search", [0], urllib.quote(args[0], ""),
-                                     ssl_creds = ssl_tuple, imgtype = self.type)
+                                    ssl_creds=ssl_tuple, imgtype=self.type,
+                                    uuid=uuid)
                         except urllib2.HTTPError, e:
                                 if e.code != httplib.NOT_FOUND:
                                         failed.append((auth, e))
@@ -1877,7 +1920,7 @@ class Image(object):
                 downloaded content.  This may take a while for a large
                 directory hierarchy."""
 
-                if self.cfg_cache.flush_content_cache:
+                if self.cfg_cache.get_policy(imageconfig.FLUSH_CONTENT_CACHE):
                         msg("Deleting content cache")
                         shutil.rmtree(self.cached_download_dir(), True)
 

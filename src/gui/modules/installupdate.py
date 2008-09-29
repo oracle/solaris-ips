@@ -513,7 +513,7 @@ class InstallUpdate(progress.ProgressTracker):
                         required = True
                         excluded = False
                         if type == "optional" and \
-                            not self.ip.image.attrs["Policy-Require-Optional"]:
+                            not self.ip.image.cfg_cache.get_policy(imageconfig.REQUIRE_OPTIONAL):
                                 required = False
                         elif type == "transfer" and \
                             not self.ip.image.older_version_installed(f):

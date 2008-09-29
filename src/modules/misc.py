@@ -82,7 +82,8 @@ _client_version = "pkg/%s (%s %s; %s %s; %%s)" % \
     portable.util.get_os_release(), platform.version())
 
 def versioned_urlopen(base_uri, operation, versions = [], tail = None,
-    data = None, headers = {}, ssl_creds = None, imgtype = IMG_NONE):
+    data = None, headers = None, ssl_creds = None, imgtype = IMG_NONE,
+    uuid = None):
         """Open the best URI for an operation given a set of versions.
 
         Both the client and the server may support multiple versions of
@@ -114,6 +115,9 @@ def versioned_urlopen(base_uri, operation, versions = [], tail = None,
         else:
                 url_opener = urllib2.urlopen
 
+        if not headers:
+                headers = {}
+
         for version in versions:
                 if base_uri[-1] != '/':
                         base_uri += '/'
@@ -127,6 +131,8 @@ def versioned_urlopen(base_uri, operation, versions = [], tail = None,
 
                 headers["User-Agent"] = \
                     _client_version % img_type_names[imgtype]
+                if uuid:
+                        headers["X-IPkg-UUID"] = uuid
                 req = urllib2.Request(url = uri, headers = headers)
                 if data is not None:
                         req.add_data(data)

@@ -69,6 +69,7 @@ import pkg.fmri as fmri
 import pkg.misc as misc
 from pkg.misc import msg, emsg, PipeError
 import pkg.version
+import pkg.Uuid25
 import pkg
 
 def error(text):
@@ -115,7 +116,11 @@ Advanced subcommands:
         pkg image-create [-FPUz] [--full|--partial|--user] [--zone]
             [-k ssl_key] [-c ssl_cert] -a <prefix>=<url> dir
 
-        pkg set-authority [-P] [-k ssl_key] [-c ssl_cert]
+        pkg set-property propname propvalue
+        pkg unset-property propname ...
+        pkg property [-H] [propname ...]
+
+        pkg set-authority [-P] [-k ssl_key] [-c ssl_cert] [--reset-uuid]
             [-O origin_url] [-m mirror to add | --add-mirror=mirror to add]
             [-M mirror to remove | --remove-mirror=mirror to remove] authority
         pkg unset-authority authority ...
@@ -1584,7 +1589,7 @@ def catalog_refresh(img, args):
                 return 0
 
 def authority_set(img, args):
-        """pkg set-authority [-P] [-k ssl_key] [-c ssl_cert]
+        """pkg set-authority [-P] [-k ssl_key] [-c ssl_cert] [--reset-uuid]
             [-O origin_url] [-m mirror to add] [-M mirror to remove] 
             [--no-refresh] authority"""
 
@@ -1592,13 +1597,14 @@ def authority_set(img, args):
         ssl_key = None
         ssl_cert = None
         origin_url = None
+        reset_uuid = False
         add_mirror = None
         remove_mirror = None
         ret_code = 0
         refresh_catalogs = True
 
         opts, pargs = getopt.getopt(args, "Pk:c:O:M:m:",
-            ["add-mirror=", "remove-mirror=", "no-refresh"])
+            ["add-mirror=", "remove-mirror=", "no-refresh", "reset-uuid"])
 
         for opt, arg in opts:
                 if opt == "-P":
@@ -1615,6 +1621,8 @@ def authority_set(img, args):
                         remove_mirror = arg
                 if opt == "--no-refresh":
                         refresh_catalogs = False
+                if opt == "--reset-uuid":
+                        reset_uuid = True
 
         if len(pargs) != 1:
                 usage(
@@ -1652,10 +1660,14 @@ def authority_set(img, args):
                 error(_("set-authority: authority URL is invalid"))
                 return 1
 
+        uuid = None
+        if reset_uuid:
+                uuid = pkg.Uuid25.uuid1()
+
         try:
                 img.set_authority(auth, origin_url=origin_url,
                     ssl_key=ssl_key, ssl_cert=ssl_cert,
-                    refresh_allowed=refresh_catalogs)
+                    refresh_allowed=refresh_catalogs, uuid=uuid)
         except RuntimeError, e:
                 error(_("set-authority failed: %s") % e)
                 return 1
@@ -1802,8 +1814,76 @@ def authority_list(img, args):
                         if cert:
                                 msg(" Cert Effective Date:", nb.ctime())
                                 msg("Cert Expiration Date:", na.ctime())
+                        msg("                UUID:", auth["uuid"])
                         msg("     Catalog Updated:", dt)
                         msg("             Mirrors:", mir)
+
+        return 0
+
+def property_set(img, args):
+        """pkg set-property propname propvalue"""
+
+        # ensure no options are passed in
+        opts, pargs = getopt.getopt(args, "")
+        try:
+                propname, propvalue = pargs
+        except ValueError:
+                usage(
+                    _("pkg: set-property: requires a property name and value"))
+
+        try:
+                img.set_property(propname, propvalue)
+        except RuntimeError, e:
+                error(_("set-property failed: %s") % e)
+                return 1
+        return 0
+
+def property_unset(img, args):
+        """pkg unset-property propname ..."""
+
+        # is this an existing property in our image?
+        # if so, delete it
+        # if not, error
+
+        # ensure no options are passed in
+        opts, pargs = getopt.getopt(args, "")
+        if not pargs:
+                usage(
+                    _("pkg: unset-property requires at least one property name"))
+
+        for p in pargs:
+                try:
+                        img.delete_property(p)
+                except KeyError:
+                        error(_("unset-property: no such property: %s") % p)
+                        return 1
+
+        return 0
+
+def property_list(img, args):
+        """pkg property [-H] [propname ...]"""
+        omit_headers = False
+
+        opts, pargs = getopt.getopt(args, "H")
+        for opt, arg in opts:
+                if opt == "-H":
+                        omit_headers = True
+
+        for p in pargs:
+                if not img.has_property(p):
+                        error(_("property: no such property: %s") % p)
+                        return 1
+
+        if not pargs:
+                pargs = img.properties()
+
+        width = max(max([len(p) for p in pargs]), 8)
+        fmt = "%%-%ss %%s" % width
+        if not omit_headers:
+                msg(fmt % ("PROPERTY", "VALUE"))
+
+        for p in pargs:
+                msg(fmt % (p, img.get_property(p)))
 
         return 0
 
@@ -2130,6 +2210,12 @@ def main_func():
                         return authority_unset(img, pargs)
                 elif subcommand == "authority":
                         return authority_list(img, pargs)
+                elif subcommand == "set-property":
+                        return property_set(img, pargs)
+                elif subcommand == "unset-property":
+                        return property_unset(img, pargs)
+                elif subcommand == "property":
+                        return property_list(img, pargs)
                 elif subcommand == "history":
                         return history_list(img, pargs)
                 elif subcommand == "purge-history":
