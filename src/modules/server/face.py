@@ -27,6 +27,7 @@
 import cherrypy
 import httplib
 import os
+import urllib
 
 import pkg.server.feed
 from pkg.misc import get_rel_path, get_res_path
@@ -217,8 +218,8 @@ def index(scfg, rcfg, request, response):
                         for op in fmri_ops:
                                 output += """\
                 <td><a href="%s">%s</a></td>
-        """ % (get_rel_path(request, "%s/0/%s" % (op, pfmri[len("pkg:/"):])),
-            fmri_ops[op])
+        """ % (get_rel_path(request, "%s/0/%s" % (op,
+            urllib.quote(pfmri[len("pkg:/"):], ""))), fmri_ops[op])
 
                         # End FMRI entry
                         output += """\
