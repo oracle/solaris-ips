@@ -31,6 +31,7 @@ f_pkg=$(gettext "failed to install package")
 f_interrupted=$(gettext "Installation cancelled due to interrupt.")
 
 m_authority=$(gettext   "  Authority: Using %s.")
+m_cache=$(gettext   "      Cache: Using %s.")
 m_image=$(gettext     "      Image: Preparing at %s ...")
 m_core=$(gettext      " Installing: (output follows)\n")
 m_smf=$(gettext	      "Postinstall: Copying SMF seed repository ...")
@@ -125,6 +126,11 @@ entire_fmri=$(pkg list -Hv entire | nawk '{print $1}')
 
 PKG_IMAGE="$zoneroot"
 export PKG_IMAGE
+if [ -d /var/pkg/download ]; then
+	PKG_CACHEDIR=/var/pkg/download
+	export PKG_CACHEDIR
+	printf "$m_cache\n" $PKG_CACHEDIR
+fi
 
 printf "$m_core\n"
 pkg install -q $entire_fmri || fail_incomplete "$f_pkg"

@@ -128,9 +128,7 @@ class FileList(object):
                                 bytes = get_pkg_otw_size(action)
 
                                 self._verify_content(action, cache_path)
-
-                                self.progtrack.download_adjust_goal(0, -1,
-                                    -bytes)
+                                self.progtrack.download_add_progress(1, bytes)
 
                                 return
                 except InvalidContentException:

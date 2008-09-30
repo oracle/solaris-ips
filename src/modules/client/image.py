@@ -189,6 +189,9 @@ class Image(object):
                 self.catalogs = {}
                 self._catalog = {}
                 self.pkg_states = None
+                self.dl_cache_dir = None
+                self.dl_cache_incoming = None
+                self.is_user_cache_dir = False
 
                 self.attrs = {}
 
@@ -222,11 +225,7 @@ class Image(object):
                             check_subdirs(d, img_user_prefix):
                                 # XXX Look at image file to determine filter
                                 # tags and repo URIs.
-                                self.type = IMG_USER
-                                self.root = d
-                                self.img_prefix = img_user_prefix
-                                self.imgdir = os.path.join(d, self.img_prefix)
-                                self.history.root_dir = self.imgdir
+                                self.__set_dirs(imgtype=IMG_USER, root=d)
                                 self.attrs["Build-Release"] = "5.11"
                                 return
                         elif os.path.isdir(os.path.join(d, img_root_prefix)) \
@@ -237,11 +236,7 @@ class Image(object):
                                 # tags and repo URIs.
                                 # XXX Look at image file to determine if this
                                 # image is a partial image.
-                                self.type = IMG_ENTIRE
-                                self.root = d
-                                self.img_prefix = img_root_prefix
-                                self.imgdir = os.path.join(d, self.img_prefix)
-                                self.history.root_dir = self.imgdir
+                                self.__set_dirs(imgtype=IMG_ENTIRE, root=d)
                                 self.attrs["Build-Release"] = "5.11"
                                 return
 
@@ -283,9 +278,8 @@ class Image(object):
                         if not os.path.isdir(os.path.join(self.imgdir, sd)):
                                 os.makedirs(os.path.join(self.imgdir, sd))
 
-        def set_attrs(self, type, root, is_zone, auth_name, auth_url,
-            ssl_key = None, ssl_cert = None):
-                self.type = type
+        def __set_dirs(self, imgtype, root):
+                self.type = imgtype
                 self.root = root
                 if self.type == IMG_USER:
                         self.img_prefix = img_user_prefix
@@ -293,6 +287,20 @@ class Image(object):
                         self.img_prefix = img_root_prefix
                 self.imgdir = os.path.join(self.root, self.img_prefix)
                 self.history.root_dir = self.imgdir
+
+                if "PKG_CACHEDIR" in os.environ:
+                        self.dl_cache_dir = os.path.normpath( \
+                            os.environ["PKG_CACHEDIR"])
+                        self.is_user_cache_dir = True
+                else:
+                        self.dl_cache_dir = os.path.normpath( \
+                            os.path.join(self.imgdir, "download"))
+                self.dl_cache_incoming = os.path.normpath(os.path.join(
+                    self.dl_cache_dir, "incoming-%d" % os.getpid()))
+
+        def set_attrs(self, type, root, is_zone, auth_name, auth_url,
+            ssl_key = None, ssl_cert = None):
+                self.__set_dirs(imgtype=type, root=root)
 
                 if not os.path.exists(os.path.join(self.imgdir, "cfg_cache")):
                         self.history.operation_name = "image-create"
@@ -1900,29 +1908,30 @@ class Image(object):
                 successfully downloaded, it is moved to the cached download
                 directory."""
 
-                return os.path.normpath(os.path.join(self.imgdir, "download",
-                    "incoming-%d" % os.getpid()))
+                return self.dl_cache_incoming
 
         def cached_download_dir(self):
                 """Return the directory path for cached content.
                 Files that have been successfully downloaded live here."""
 
-                return os.path.normpath(os.path.join(self.imgdir, "download"))
+                return self.dl_cache_dir
 
         def cleanup_downloads(self):
                 """Clean up any downloads that were in progress but that
                 did not successfully finish."""
 
-                shutil.rmtree(self.incoming_download_dir(), True)
+                shutil.rmtree(self.dl_cache_incoming, True)
 
         def cleanup_cached_content(self):
                 """Delete the directory that stores all of our cached
                 downloaded content.  This may take a while for a large
-                directory hierarchy."""
+                directory hierarchy.  Don't clean up caches if the
+                user overrode the underlying setting using PKG_CACHEDIR. """
 
-                if self.cfg_cache.get_policy(imageconfig.FLUSH_CONTENT_CACHE):
+                if not self.is_user_cache_dir and \
+                    self.cfg_cache.get_policy(imageconfig.FLUSH_CONTENT_CACHE):
                         msg("Deleting content cache")
-                        shutil.rmtree(self.cached_download_dir(), True)
+                        shutil.rmtree(self.dl_cache_dir, True)
 
         def salvagedir(self, path):
                 """Called when directory contains something and it's not supposed
