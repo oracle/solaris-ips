@@ -917,10 +917,17 @@ class PackageManager:
                         gobject.idle_add(self.__update_package_info, pkg, icon,
                             True, None)
                 man = None
+                img.history.operation_name = "info"
                 try:
                         man = img.get_manifest(pkg, filtered = True)
                 except IOError:
                         man = "NotAvailable"
+                        img.history.operation_result = \
+                            history.RESULT_FAILED_STORAGE
+                except:
+                        img.history.operation_result = \
+                            history.RESULT_FAILED_UNKNOWN
+
                 if cmp(self.pkginfo_thread, pkg) == 0:
                         if not pkg:
                                 gobject.idle_add(self.__update_package_info, pkg, icon, \
@@ -928,7 +935,11 @@ class PackageManager:
                         else:
                                 gobject.idle_add(self.__update_package_info, pkg, icon, \
                                     True, man)
+                        img.history.operation_result = \
+                            history.RESULT_SUCCEEDED
                 else:
+                        img.history.operation_result = \
+                            history.RESULT_SUCCEEDED
                         return
 
         # This function is ported from pkg.actions.generic.distinguished_name()
@@ -1672,6 +1683,8 @@ class PackageManager:
                 for the particular version (local operation only), if the package is 
                 not installed than the newest one'''
                 self.description_thread_running = True
+                img = self.image_o
+                img.history.operation_name = "info"
                 for pkg in self.application_list:
                         if self.cancelled:
                                 self.description_thread_running = False
@@ -1698,6 +1711,7 @@ class PackageManager:
                         # XXX workaround, this should be done nicer
                         gobject.idle_add(self.update_desc, info, pkg, package)
                         time.sleep(0.01)
+                img.history.operation_result = history.RESULT_SUCCEEDED
                 self.description_thread_running = False
                 
         def update_statusbar(self):

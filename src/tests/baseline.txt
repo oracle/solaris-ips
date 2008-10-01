@@ -95,6 +95,7 @@ api.t_history.py TestHistory.test_1_client_info|pass
 api.t_history.py TestHistory.test_2_clear|pass
 api.t_history.py TestHistory.test_3_client_load|pass
 api.t_history.py TestHistory.test_4_stacked_operations|pass
+api.t_history.py TestHistory.test_5_discarded_operations|pass
 api.t_imageconfig.py TestImageConfig.test_missing_conffile|pass
 api.t_imageconfig.py TestImageConfig.test_read|pass
 api.t_imageconfig.py TestImageConfig.test_unicode|pass

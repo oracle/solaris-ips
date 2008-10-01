@@ -209,6 +209,30 @@ class TestHistory(pkg5unittest.Pkg5TestCase):
                         loaded_data = loaded_ops[op_name]
                         self.assertEqual(op_data, loaded_data)
 
+        def test_5_discarded_operations(self):
+                """Verify that discarded operations are not saved."""
+
+                h = self.__h
+                h.client_name = "pkg-test"
+
+                for op_name in sorted(history.DISCARDED_OPERATIONS):
+                        h.operation_name = op_name
+                        h.operation_result = history.RESULT_NOTHING_TO_DO
+
+                # Now load all operation data that's been saved during testing
+                # for comparison.
+                loaded_ops = []
+                for entry in sorted(os.listdir(h.path)):
+                        # Load the history entry.
+                        he = history.History(root_dir=h.root_dir,
+                            filename=entry)
+                        loaded_ops.append(he.operation_name)
+
+                # Now verify that none of the saved operations are one that
+                # should have been discarded.
+                for op_name in sorted(history.DISCARDED_OPERATIONS):
+                        self.assert_(op_name not in loaded_ops)
+
 if __name__ == "__main__":
         unittest.main()
 

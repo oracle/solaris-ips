@@ -56,6 +56,9 @@ RESULT_FAILED_STORAGE = ["Failed", "Storage"]
 # Indicates that a transport error caused the operation to fail.
 RESULT_FAILED_TRANSPORT = ["Failed", "Transport"]
 
+# Operations that are discarded, not saved, when recorded by history.
+DISCARDED_OPERATIONS = ["contents", "info", "list"]
+
 class _HistoryOperation(object):
         """A _HistoryOperation object is a representation of data about an
         operation that a pkg(5) client has performed.  This class is private
@@ -192,10 +195,17 @@ class History(object):
                 elif name == "operation_result":
                         # Record when the operation ended.
                         op.end_time = misc.time_to_timestamp(None)
-                        # Write current history and last operation to a file.
-                        if self.__save():
-                                # Discard it now that it is no longer needed.
-                                ops.pop()
+
+                        # Some operations shouldn't be saved -- they're merely
+                        # included in the stack for completeness or to support
+                        # client functionality.
+                        if op.name not in DISCARDED_OPERATIONS:
+                                # Write current history and last operation to a
+                                # file.
+                                self.__save()
+
+                        # Discard it now that it is no longer needed.
+                        ops.pop()
 
         def __init__(self, root_dir=".", filename=None):
                 """'root_dir' should be the path of the directory where the

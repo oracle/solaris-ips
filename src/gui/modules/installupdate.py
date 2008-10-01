@@ -42,6 +42,7 @@ except ImportError:
 import pkg.client.bootenv as bootenv
 import pkg.client.history as history
 import pkg.client.imageplan as imageplan
+import pkg.client.imagestate as imagestate
 import pkg.client.progress as progress
 import pkg.fmri as fmri
 import pkg.client.indexer as indexer
@@ -480,6 +481,7 @@ class InstallUpdate(progress.ProgressTracker):
                     self.parent._("Evaluating: %s\n") % pfmri.get_fmri())
 
                 self.ip.progtrack.evaluate_progress()
+                self.ip.image.state.set_target(pfmri, imagestate.INTENT_PROCESS)
                 m = image.get_manifest(pfmri)
 
                 # [manifest] examine manifest for dependencies
@@ -532,6 +534,7 @@ class InstallUpdate(progress.ProgressTracker):
                                 continue
 
                         if excluded:
+                                self.ip.image.state.set_target()
                                 raise RuntimeError, "excluded by '%s'" % f
 
                         # treat-as-required, treat-as-required-unless-pinned,
@@ -558,6 +561,8 @@ class InstallUpdate(progress.ProgressTracker):
 
                         self.ip.propose_fmri(cf)
                         self.__evaluate_fmri(cf, image)
+
+                self.ip.image.state.set_target()
 
         def __download_stage(self, rebuild=False):
                 '''Parts of the code duplicated from install and image-update from pkg(1) 

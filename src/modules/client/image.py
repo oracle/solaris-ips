@@ -52,6 +52,7 @@ import pkg.version
 import pkg.client.history as history
 import pkg.client.imageconfig as imageconfig
 import pkg.client.imageplan as imageplan
+import pkg.client.imagestate as imagestate
 import pkg.client.retrieve as retrieve
 import pkg.portable as portable
 import pkg.client.query_engine as query_e
@@ -192,10 +193,13 @@ class Image(object):
                 self.dl_cache_dir = None
                 self.dl_cache_incoming = None
                 self.is_user_cache_dir = False
+                self.state = imagestate.ImageState()
+                self.attrs = {
+                    "Policy-Require-Optional": False,
+                    "Policy-Pursue-Latest": True
+                }
 
-                self.attrs = {}
-
-                self.imageplan = None # valid after evaluation succceds
+                self.imageplan = None # valid after evaluation succeeds
 
                 # contains a dictionary w/ key = pkgname, value is miminum
                 # frmi.XXX  Needs rewrite using graph follower
@@ -203,7 +207,11 @@ class Image(object):
 
                 # a place to keep info about saved_files; needed by file action
                 self.saved_files = {}
- 
+
+                # A place to keep track of which manifests (based on fmri and
+                # operation) have already provided intent information.
+                self.__touched_manifests = {}
+
         def find_root(self, d):
 
                 def check_subdirs(sub_d, prefix):
@@ -402,7 +410,7 @@ class Image(object):
                         res = cmp(a.errors, b.errors)
                         if res == 0:
                                 return cmp(a.good_tx, b.good_tx)
-                        return res                        
+                        return res
 
                 slst.sort(cmp = cmp_depotstatus)
 
@@ -477,7 +485,7 @@ class Image(object):
                                             " not found") % pfx)
                                         emsg(_("File was supposed to exist at" \
                                            "  path %s") % ssl_cert)
-                                        return False 
+                                        return False
                                 else:
                                         raise
                         # OpenSSL.crypto.Error
@@ -508,7 +516,7 @@ class Image(object):
                                 emsg(_("Certificate effective date is in" \
                                     " the future"))
                                 return False
-                        
+
                         na = cert.get_notAfter()
                         t = time.strptime(na, "%Y%m%d%H%M%SZ")
                         nadt = datetime.datetime.utcfromtimestamp(
@@ -624,7 +632,7 @@ class Image(object):
                         refresh_needed = True
 
                 self.save_config()
-                
+
                 if refresh_needed and refresh_allowed:
                         self.destroy_catalog(auth_name)
                         self.destroy_catalog_cache()
@@ -717,8 +725,8 @@ class Image(object):
 
                 return False
 
-        def _fetch_manifest_with_retries(self, fmri):
-                """Wrapper function around _fetch_manifest to handle some
+        def __fetch_manifest_with_retries(self, fmri):
+                """Wrapper function around __fetch_manifest to handle some
                 exceptions and keep track of additional state."""
 
                 m = None
@@ -726,15 +734,99 @@ class Image(object):
 
                 while not m:
                         try:
-                                m = self._fetch_manifest(fmri)
+                                m = self.__fetch_manifest(fmri)
                         except TransferTimedOutException:
                                 retry_count -= 1
 
                                 if retry_count <= 0:
                                         raise
+
                 return m
 
-        def _fetch_manifest(self, fmri):
+        def __get_touched_manifest(self, fmri):
+                """Returns whether intent information has been provided for the
+                given fmri."""
+
+                op = self.history.operation_name
+                if not op:
+                        # The client may not have provided the name of the
+                        # operation it is performing.
+                        op = "unknown"
+
+                if op not in self.__touched_manifests:
+                        # No intent information has been provided for fmris
+                        # for the current operation.
+                        return False
+
+                f = str(fmri)
+                if f not in self.__touched_manifests[op]:
+                        # No intent information has been provided for this
+                        # fmri for the current operation.
+                        return False
+
+                return True
+
+        def __set_touched_manifest(self, fmri):
+                """Records that intent information has been provided for the
+                given fmri's manifest."""
+
+                op = self.history.operation_name
+                if not op:
+                        # The client may not have provided the name of the
+                        # operation it is performing.
+                        op = "unknown"
+
+                if op not in self.__touched_manifests:
+                        # No intent information has yet been provided for fmris
+                        # for the current operation.
+                        self.__touched_manifests[op] = {}
+
+                f = str(fmri)
+                if f not in self.__touched_manifests[op]:
+                        # No intent information has yet been provided for this
+                        # fmri for the current operation.
+                        self.__touched_manifests[op][f] = None
+
+        def __touch_manifest(self, fmri):
+                """Perform steps necessary to 'touch' a manifest to provide
+                intent information.  Ignores most exceptions as this operation
+                is only for informational purposes."""
+
+                if not self.__get_touched_manifest(fmri):
+                        # If the manifest for this fmri hasn't been "seen"
+                        # before, determine if intent information needs to be
+                        # provided.
+
+                        # What is the client currently processing?
+                        target, intent = self.state.get_target()
+
+                        if target and intent != imagestate.INTENT_EVALUATE:
+                                # If the client is currently performing an
+                                # image-modifying operation, not just an
+                                # an evaluation, then perform further checks.
+
+                                # Ignore the authority for comparison.
+                                na_target = target.get_fmri(anarchy=True)
+                                na_fmri = target.get_fmri(anarchy=True)
+
+                                if na_target == na_fmri:
+                                        # If the client is currently processing
+                                        # the given fmri (for an install, etc.)
+                                        # then intent information is needed.
+                                        try:
+                                                retrieve.touch_manifest(self,
+                                                    fmri)
+                                        except NameError:
+                                                pass
+
+                                        # Manifests should only be marked as
+                                        # processed if the touch is actually
+                                        # performed since multiple retrievals
+                                        # may occur during the same operation
+                                        # for different reasons.
+                                        self.__set_touched_manifest(fmri)
+
+        def __fetch_manifest(self, fmri):
                 """Perform steps necessary to get manifest from remote host
                 and write resulting contents to disk.  Helper routine for
                 get_manifest.  Does not filter the results, caller must do
@@ -771,6 +863,8 @@ class Image(object):
                         if e.errno not in (errno.EROFS, errno.EACCES):
                                 raise
 
+                self.__set_touched_manifest(fmri)
+
                 return m
 
         def _valid_manifest(self, fmri, manifest):
@@ -796,39 +890,50 @@ class Image(object):
                     fmri.get_dir_path(), "manifest")
                 return mpath
 
-        def get_manifest(self, fmri, filtered = False):
+        def __get_manifest(self, fmri):
                 """Find on-disk manifest and create in-memory Manifest
-                object, applying appropriate filters as needed."""
+                object."""
 
-                m = manifest.Manifest()
-
-                fmri_dir_path = os.path.join(self.imgdir, "pkg",
-                    fmri.get_dir_path())
-                mpath = os.path.join(fmri_dir_path, "manifest")
-
-                # If the manifest isn't there, download.
-                if not os.path.exists(mpath):
-                        m = self._fetch_manifest_with_retries(fmri)
-                else:
+                m = None
+                mpath = os.path.join(self.imgdir, "pkg", fmri.get_dir_path(),
+                    "manifest")
+                if os.path.exists(mpath):
+                        # If the manifest already exists, load it from storage.
+                        m = manifest.Manifest()
                         mcontent = file(mpath).read()
                         m.set_fmri(self, fmri)
                         m.set_content(mcontent)
 
-                # If the manifest isn't from the correct authority, or
-                # no authority is attached to the manifest, download a new one.
-                if not self._valid_manifest(fmri, m):
-                        try:
-                                m = self._fetch_manifest_with_retries(fmri)
-                        except NameError:
-                                # In thise case, the client has failed to
-                                # download a new manifest with the same name.
-                                # We can either give up or drive on.  It makes
-                                # the most sense to do the best we can with what
-                                # we have.  Keep the old manifest and drive on.
-                                pass
+                try:
+                        # If the manifest didn't already exist, or isn't from
+                        # the correct authority, or no authority is attached
+                        # to the manifest, attempt to download a new one.
+                        if not m or not self._valid_manifest(fmri, m):
+                                m = self.__fetch_manifest_with_retries(fmri)
+                except NameError:
+                        # In this case, the client has failed to download a new
+                        # manifest or re-download an existing one with the same
+                        # name.
+                        if not m:
+                                # Since an older copy doesn't exist, give up.
+                                raise
+
+                        # Since the old manifest exists, keep it, and drive on.
+
+                return m
+
+        def get_manifest(self, fmri, filtered = False):
+                """Find on-disk manifest and create in-memory Manifest
+                object, applying appropriate filters as needed."""
+
+                m = self.__get_manifest(fmri)
+                self.__touch_manifest(fmri)
 
                 # XXX perhaps all of the below should live in Manifest.filter()?
                 if filtered:
+                        fmri_dir_path = os.path.join(self.imgdir, "pkg",
+                            fmri.get_dir_path())
+
                         filters = []
                         try:
                                 f = file("%s/filters" % fmri_dir_path, "r")
@@ -995,6 +1100,15 @@ class Image(object):
                         if e.errno != errno.EEXIST:
                                 raise
                         shutil.rmtree(tmpdir)
+
+        def get_version_installed(self, pfmri):
+                """Returns an fmri of the installed package matching the
+                package stem of the given fmri or None if no match is found."""
+                target = pfmri.get_pkg_stem()
+                for f in self.gen_installed_pkgs():
+                        if f.get_pkg_stem() == target:
+                                return f
+                return None
 
         def _get_version_installed(self, pfmri):
                 pd = pfmri.get_pkg_stem()
@@ -1185,7 +1299,7 @@ class Image(object):
                         total += 1
 
                         full_refresh_this_auth = False
-                        
+
                         if auth["prefix"] in self.catalogs:
                                 cat = self.catalogs[auth["prefix"]]
                                 ts = cat.last_modified()
@@ -1240,7 +1354,7 @@ class Image(object):
                                 succeeded += 1
 
                 self.cache_catalogs()
-                
+
                 if failed:
                         raise CatalogRefreshException(failed, total, succeeded)
 
@@ -1341,7 +1455,7 @@ class Image(object):
                 except OSError, e:
                         if e.errno != errno.ENOENT:
                                 raise
-                        
+
         def destroy_catalog(self, auth_name):
                 try:
                         shutil.rmtree("%s/catalog/%s" %
@@ -1538,7 +1652,6 @@ class Image(object):
         def load_optional_dependencies(self):
                 for fmri in self.gen_installed_pkgs():
                         mfst = self.get_manifest(fmri, filtered = True)
-
                         for dep in mfst.gen_actions_by_type("depend"):
                                 required, min_fmri, max_fmri = dep.parse(self)
                                 if required == False:
@@ -1822,7 +1935,7 @@ class Image(object):
                         return pkg.fmri.PkgFmri(urllib.unquote(os.path.dirname(
                             index[len(idxdir) + 1:]).replace(os.path.sep, "@")),
                             None)
-                
+
                 res = []
 
                 for fmri, mfst in self.get_fmri_manifest_pairs():
@@ -1845,7 +1958,7 @@ class Image(object):
                                                     action, keyval))
                 return res
 
-                
+
         def local_search(self, args, case_sensitive):
                 """Search the image for the token in args[0]."""
                 assert args[0]
@@ -1985,7 +2098,8 @@ class Image(object):
                 to name the package."""
 
                 error = 0
-                ip = imageplan.ImagePlan(self, progress, filters = filters)
+                ip = imageplan.ImagePlan(self, progress, filters = filters,
+                    noexecute = noexecute)
 
                 self.load_optional_dependencies()
 
@@ -2062,8 +2176,8 @@ pkg: no package matching '%s' could be found in current catalog
                         msg(ip.display())
 
         def rebuild_search_index(self, progtracker):
-                """Rebuilds the search indexes.  Removes all 
-                existing indexes and replaces them from scratch rather than 
+                """Rebuilds the search indexes.  Removes all
+                existing indexes and replaces them from scratch rather than
                 performing the incremental update which is usually used."""
                 self.update_index_dir()
                 if not os.path.isdir(self.index_dir):

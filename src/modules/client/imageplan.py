@@ -25,9 +25,8 @@
 
 import os
 import pkg.fmri as fmri
+import pkg.client.imagestate as imagestate
 import pkg.client.pkgplan as pkgplan
-import pkg.client.retrieve as retrieve # XXX inventory??
-import pkg.version as version
 import pkg.client.indexer as indexer
 import pkg.search_errors as se
 from pkg.client.filter import compile_filter
@@ -78,11 +77,18 @@ class ImagePlan(object):
         "pkg delete fmri; pkg install fmri@v(n - 1)", then we'd better have a
         plan to identify when this operation is safe or unsafe."""
 
-        def __init__(self, image, progtrack, recursive_removal = False, filters = []):
+        def __init__(self, image, progtrack, recursive_removal = False,
+            noexecute = False, filters = []):
                 self.image = image
                 self.state = UNEVALUATED
                 self.recursive_removal = recursive_removal
                 self.progtrack = progtrack
+
+                self.noexecute = noexecute
+                if noexecute:
+                        self.__intent = imagestate.INTENT_EVALUATE
+                else:
+                        self.__intent = imagestate.INTENT_PROCESS
 
                 self.target_fmris = []
                 self.target_rem_fmris = []
@@ -240,6 +246,7 @@ class ImagePlan(object):
         def evaluate_fmri(self, pfmri):
 
                 self.progtrack.evaluate_progress()
+                self.image.state.set_target(pfmri, self.__intent)
                 m = self.image.get_manifest(pfmri)
 
                 # [manifest] examine manifest for dependencies
@@ -292,6 +299,7 @@ class ImagePlan(object):
                                 continue
 
                         if excluded:
+                                self.image.state.set_target()
                                 raise RuntimeError, "excluded by '%s'" % f
 
                         # treat-as-required, treat-as-required-unless-pinned,
@@ -318,6 +326,8 @@ class ImagePlan(object):
 
                         self.propose_fmri(cf)
                         self.evaluate_fmri(cf)
+
+                self.image.state.set_target()
 
         def add_pkg_plan(self, pfmri):
                 """add a pkg plan to imageplan for fully evaluated frmi"""
@@ -351,13 +361,15 @@ class ImagePlan(object):
                 if dependents and not self.recursive_removal:
                         raise NonLeafPackageException(pfmri, dependents)
 
-                m = self.image.get_manifest(pfmri)
-
                 pp = pkgplan.PkgPlan(self.image, self.progtrack)
+
+                self.image.state.set_target(pfmri, self.__intent)
+                m = self.image.get_manifest(pfmri)
 
                 try:
                         pp.propose_removal(pfmri, m)
                 except RuntimeError:
+                        self.image.state.set_target()
                         msg("pkg %s not installed" % pfmri)
                         return
 
@@ -376,6 +388,7 @@ class ImagePlan(object):
                 # dependency graphs.  Cycles need to be arbitrarily broken, and
                 # are done so in the loop above.
                 self.pkg_plans.append(pp)
+                self.image.state.set_target()
 
         def evaluate(self):
                 assert self.state == UNEVALUATED
@@ -390,8 +403,8 @@ class ImagePlan(object):
                         try:
                                 self.evaluate_fmri(f)
                         except KeyError, e:
-                                outstring += "Attemping to install %s causes:\n\t%s\n" % \
-                                    (f.get_name(), e)
+                                outstring += "Attempting to install %s " \
+                                    "causes:\n\t%s\n" % (f.get_name(), e)
 
                 if outstring:
                         raise RuntimeError("No packages were installed because "

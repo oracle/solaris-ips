@@ -204,6 +204,7 @@ def list_inventory(img, args):
         if not check_fmri_args(pargs):
                 return 1
 
+        img.history.operation_name = "list"
         img.load_catalogs(progress.NullProgressTracker())
 
         seen_one_pkg = False
@@ -260,6 +261,8 @@ def list_inventory(img, args):
                 if not found:
                         if not seen_one_pkg and not all_known:
                                 emsg(_("no packages installed"))
+                                img.history.operation_result = \
+                                    history.RESULT_NOTHING_TO_DO
                                 return 1
 
                         if upgradable_only:
@@ -269,14 +272,23 @@ def list_inventory(img, args):
                                 else:
                                         emsg(_("No installed packages have " \
                                             "available updates"))
+                                img.history.operation_result = \
+                                    history.RESULT_NOTHING_TO_DO
                                 return 1
+
+                        img.history.operation_result = \
+                            history.RESULT_NOTHING_TO_DO
                         return 1
+
+                img.history.operation_result = history.RESULT_SUCCEEDED
                 return 0
 
         except image.InventoryException, e:
                 if e.illegal:
                         for i in e.illegal:
                                 error(i)
+                        img.history.operation_result = \
+                            history.RESULT_FAILED_BAD_REQUEST
                         return 1
 
                 if all_known:
@@ -285,6 +297,7 @@ def list_inventory(img, args):
                         state = image.PKG_STATE_INSTALLED
                 for pat in e.notfound:
                         error(_("no packages matching '%s' %s") % (pat, state))
+                img.history.operation_result = history.RESULT_NOTHING_TO_DO
                 return 1
 
 def get_tracker(quiet = False):
@@ -828,7 +841,8 @@ def uninstall(img, args):
 
         img.load_catalogs(progresstracker)
 
-        ip = imageplan.ImagePlan(img, progresstracker, recursive_removal)
+        ip = imageplan.ImagePlan(img, progresstracker, recursive_removal,
+            noexecute)
 
         err = 0
 
@@ -1088,6 +1102,7 @@ def info(img, args):
         if not check_fmri_args(pargs):
                 return 1
 
+        img.history.operation_name = "info"
         img.load_catalogs(progress.NullProgressTracker())
 
         err = 0
@@ -1098,15 +1113,21 @@ def info(img, args):
                 if illegals:
                         for i in illegals:
                                 emsg(str(i))
+                        img.history.operation_result = \
+                            history.RESULT_FAILED_BAD_REQUEST
                         return 1
 
                 if not fmris and not notfound:
                         error(_("no packages installed"))
+                        img.history.operation_result = \
+                            history.RESULT_NOTHING_TO_DO
                         return 1
         elif info_remote:
                 # Verify validity of certificates before attempting network
                 # operations
                 if not img.check_cert_validity():
+                        img.history.operation_result = \
+                            history.RESULT_FAILED_TRANSPORT
                         return 1
 
                 fmris = []
@@ -1214,7 +1235,9 @@ examining the catalogs:"""))
                 emsg()
                 for p in notfound:
                         emsg("        %s" % p)
-
+                img.history.operation_result = history.RESULT_NOTHING_TO_DO
+        else:
+                img.history.operation_result = history.RESULT_SUCCEEDED
         return err
 
 def display_contents_results(actionlist, attrs, sort_attrs, action_types,
@@ -1396,6 +1419,7 @@ def list_contents(img, args):
                 if a.startswith("pkg.") and not a in valid_special_attrs:
                         usage(_("Invalid attribute '%s'") % a)
 
+        img.history.operation_name = "contents"
         img.load_catalogs(progress.NullProgressTracker())
 
         err = 0
@@ -1407,15 +1431,21 @@ def list_contents(img, args):
                 if illegals:
                         for i in illegals:
                                 emsg(i)
+                        img.history.operation_result = \
+                            history.RESULT_FAILED_BAD_REQUEST
                         return 1
 
                 if not fmris and not notfound:
                         error(_("no packages installed"))
+                        img.history.operation_result = \
+                            history.RESULT_NOTHING_TO_DO
                         return 1
         elif remote:
                 # Verify validity of certificates before attempting network
                 # operations
                 if not img.check_cert_validity():
+                        img.history.operation_result = \
+                            history.RESULT_FAILED_TRANSPORT
                         return 1
 
                 fmris = []
@@ -1512,7 +1542,9 @@ examining the catalogs:"""))
                 emsg()
                 for p in notfound:
                         emsg("        %s" % p)
-
+                img.history.operation_result = history.RESULT_NOTHING_TO_DO
+        else:
+                img.history.operation_result = history.RESULT_SUCCEEDED
         return err
 
 def display_catalog_failures(cre):
@@ -1672,9 +1704,9 @@ def authority_set(img, args):
                 error(_("set-authority failed: %s") % e)
                 return 1
         except image.CatalogRefreshException, cre:
-                msg = "Could not refresh the catalog for %s" % \
+                text = "Could not refresh the catalog for %s" % \
                     auth
-                error(_(msg))
+                error(_(text))
                 ret_code = 1
 
         if preferred:

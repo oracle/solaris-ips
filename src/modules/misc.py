@@ -32,7 +32,6 @@ import sha
 import socket
 import urllib
 import urllib2
-import httplib
 import urlparse
 import sys
 import zlib
@@ -81,9 +80,9 @@ _client_version = "pkg/%s (%s %s; %s %s; %%s)" % \
     (VERSION, portable.util.get_canonical_os_name(), platform.machine(),
     portable.util.get_os_release(), platform.version())
 
-def versioned_urlopen(base_uri, operation, versions = [], tail = None,
+def versioned_urlopen(base_uri, operation, versions = None, tail = None,
     data = None, headers = None, ssl_creds = None, imgtype = IMG_NONE,
-    uuid = None):
+    method = "GET", uuid = None):
         """Open the best URI for an operation given a set of versions.
 
         Both the client and the server may support multiple versions of
@@ -115,6 +114,9 @@ def versioned_urlopen(base_uri, operation, versions = [], tail = None,
         else:
                 url_opener = urllib2.urlopen
 
+        if not versions:
+                versions = []
+
         if not headers:
                 headers = {}
 
@@ -134,7 +136,11 @@ def versioned_urlopen(base_uri, operation, versions = [], tail = None,
                 if uuid:
                         headers["X-IPkg-UUID"] = uuid
                 req = urllib2.Request(url = uri, headers = headers)
-                if data is not None:
+                if method == "HEAD":
+                        # Must override urllib2's get_method since it doesn't
+                        # natively support this operation.
+                        req.get_method = lambda: "HEAD"
+                elif data is not None:
                         req.add_data(data)
 
                 try:
@@ -432,9 +438,9 @@ class InvalidContentException(Exception):
                 self.hashval = hashval
 
         def __str__(self):
-                str = "Action with path %s should have hash %s. Computed hash %s instead." % \
-                    (self.action.attrs["path"], self.action.attrs["chash"], 
-                    self.hashval)
+                str = "Action with path %s should have hash %s. Computed " \
+                    "hash %s instead." % (self.action.attrs["path"],
+                    self.action.attrs["chash"], self.hashval)
                 return str
 
 # Default maximum memory useage during indexing
