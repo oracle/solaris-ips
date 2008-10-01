@@ -39,6 +39,7 @@ drop etc/inet/hosts
 drop etc/nsswitch.conf
 drop etc/pam.conf
 drop etc/passwd
+drop etc/security/policy.conf
 drop etc/shadow
 drop var/svc/manifest/system/coreadm.xml
 drop var/svc/profile/generic_limited_net.xml
@@ -64,6 +65,7 @@ etc/nsswitch.conf
 etc/pam.conf
 etc/passwd
 etc/security/exec_attr
+etc/security/policy.conf
 etc/shadow
 etc/user_attr
 root

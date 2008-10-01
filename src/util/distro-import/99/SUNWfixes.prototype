@@ -15,6 +15,7 @@ e none etc/passwd 0644 root sys
 e none etc/power.conf 0644 root sys
 e none etc/security/auth_attr 0644 root sys
 e none etc/security/exec_attr 0644 root sys
+e none etc/security/policy.conf 0644 root sys
 e none etc/security/prof_attr 0644 root sys
 e none etc/shadow 0400 root sys
 e none etc/user_attr 0644 root sys

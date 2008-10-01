@@ -71,6 +71,7 @@ CACHED_FILES=								\
 	boot/grub/menu.lst						\
 	boot/grub/splash.xpm.gz						\
 	etc/inet/hosts							\
+	etc/security/policy.conf					\
 	etc/zones/SUNWblank.xml						\
 	etc/zones/SUNWdefault.xml					\
 	lib/svc/method/fs-usr						\
@@ -254,7 +255,7 @@ proto/usr/share/applications/services.desktop: proto
 	./desktop_exec.sh /usr/lib/vp-services > $@
 
 #
-# change root's default shell, homedir and add jack user
+# change root's default shell, homedir, password
 #
 proto/etc/passwd:	proto Makefile
 	(./get_file_from_pkg.py $(WOS_PKGS)/SUNWcsr etc/passwd | nawk -F:			\
@@ -262,7 +263,7 @@ proto/etc/passwd:	proto Makefile
 
 proto/etc/shadow:	proto Makefile
 	(./get_file_from_pkg.py $(WOS_PKGS)/SUNWcsr etc/shadow | nawk -F:		\
-	'/^root/{ print "root:wqy8hz4xKqw4o:13817::::::";continue} {print $$0}') > $@
+	'/^root/{ print "root:$5$VgppCOxA$ycFmYW4ObRRHhtsGEygDdexk5bugqgSiaSR9niNCouC:14146::::::";continue} {print $$0}') > $@
 
 proto/usr/has/bin/sh:	proto Makefile
 	./get_file_from_pkg.py $(WOS_PKGS)/SUNWcsr sbin/sh > $@
