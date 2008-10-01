@@ -337,10 +337,6 @@ class pkg(object):
                         f.changed_attrs = a.attrs
 
 
-def sysv_to_new_name(pkgname):
-        return "pkg:/" + os.path.basename(pkgname)
-
-
 pkgpaths = {}
 
 def pkg_path(pkgname):
@@ -369,7 +365,7 @@ def end_package(pkg):
         elif "-" not in pkg.version:
                 pkg.version += "-%s" % pkg_branch
 
-        print "Package '%s'" % sysv_to_new_name(pkg.name)
+        print "Package '%s'" % pkg.name
         print "  Version:", pkg.version
         print "  Description:", pkg.desc
 
@@ -384,14 +380,13 @@ def publish_pkg(pkg):
                 t.add = lambda a, b, c: None
                 t.close = lambda a, b, c: (200, {
                     "Package-FMRI":
-                        "%s@%s" % (sysv_to_new_name(pkg.name), pkg.version),
+                        "%s@%s" % (pkg.name, pkg.version),
                     "State": "PUBLISHED"
                 })
 
         cfg = config.ParentRepo(def_repo, [def_repo])
-        print "    open %s@%s" % (sysv_to_new_name(pkg.name), pkg.version)
-        status, id = t.open(cfg, \
-            "%s@%s" % (sysv_to_new_name(pkg.name), pkg.version))
+        print "    open %s@%s" % (pkg.name, pkg.version)
+        status, id = t.open(cfg, "%s@%s" % (pkg.name, pkg.version))
         if status / 100 in (4, 5) or not id:
                 raise RuntimeError, "failed to open transaction for %s" % \
                     pkg.name
@@ -585,10 +580,9 @@ def publish_pkg(pkg):
                 if "@" not in p and p in pkgdict:
                         p = "%s@%s" % (p, pkgdict[p].version)
 
-                print "    %s add depend require %s" % \
-                    (pkg.name, sysv_to_new_name(p))
+                print "    %s add depend require %s" % (pkg.name, p)
                 action = actions.depend.DependencyAction(None,
-                    type = "require", fmri = sysv_to_new_name(p))
+                    type = "require", fmri = p)
                 t.add(cfg, id, action)
 
         for a in pkg.extra:
@@ -1106,7 +1100,7 @@ if just_these_pkgs:
 else:
         newpkgs = set(pkgdict.values())
 for p in sorted(newpkgs):
-        print "Package '%s'" % sysv_to_new_name(p.name)
+        print "Package '%s'" % p.name
         print "  Version:", p.version
         print "  Description:", p.desc
         publish_pkg(p)
