@@ -1110,28 +1110,6 @@ class Image(object):
                                 return f
                 return None
 
-        def _get_version_installed(self, pfmri):
-                pd = pfmri.get_pkg_stem()
-                pdir = "%s/pkg/%s" % (self.imgdir,
-                    pfmri.get_dir_path(stemonly = True))
-
-                try:
-                        pkgs_inst = [ (urllib.unquote("%s@%s" % (pd, vd)),
-                            "%s/%s/installed" % (pdir, vd))
-                            for vd in os.listdir(pdir)
-                            if os.path.exists("%s/%s/installed" % (pdir, vd)) ]
-                except OSError:
-                        return None
-
-                if len(pkgs_inst) == 0:
-                        return None
-
-                assert len(pkgs_inst) <= 1
-
-                auth = self.installed_file_authority(pkgs_inst[0][1])
-
-                return pkg.fmri.PkgFmri(pkgs_inst[0][0], authority = auth)
-
         def get_pkg_state_by_fmri(self, pfmri):
                 """Given pfmri, determine the local state of the package."""
 
@@ -1184,7 +1162,7 @@ class Image(object):
                 """Check that the version given in the FMRI or a successor is
                 installed in the current image."""
 
-                v = self._get_version_installed(fmri)
+                v = self.get_version_installed(fmri)
 
                 if v and not fmri.has_authority():
                         fmri.set_authority(v.get_authority_str())
@@ -1204,7 +1182,7 @@ class Image(object):
                         rpkgs = cat.rename_newer_pkgs(fmri)
                         for f in rpkgs:
 
-                                v = self._get_version_installed(f)
+                                v = self.get_version_installed(f)
 
                                 if v and self.fmri_is_successor(v, fmri):
                                         return True
@@ -1219,7 +1197,7 @@ class Image(object):
                 if an older version is installed under another name.  This
                 allows upgrade correctly locate the src fmri, if one exists."""
 
-                v = self._get_version_installed(fmri)
+                v = self.get_version_installed(fmri)
 
                 assert fmri.has_authority()
 
@@ -1230,7 +1208,7 @@ class Image(object):
 
                         rpkgs = cat.rename_older_pkgs(fmri)
                         for f in rpkgs:
-                                v = self._get_version_installed(f)
+                                v = self.get_version_installed(f)
                                 if v and self.fmri_is_successor(fmri, v):
                                         return v
 
@@ -1243,7 +1221,7 @@ class Image(object):
                 # All FMRIs passed to is_installed shall have an authority
                 assert fmri.has_authority()
 
-                v = self._get_version_installed(fmri)
+                v = self.get_version_installed(fmri)
                 if not v:
                         return False
 

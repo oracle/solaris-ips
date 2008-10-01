@@ -1598,15 +1598,7 @@ class PackageManager:
 
         @staticmethod
         def get_installed_version(img, pkg):
-                if not img.has_version_installed(pkg):
-                        return None
-                else:
-                        img_ret = None
-                        try:
-                                img_ret = img.get_version_installed(pkg)
-                        except AttributeError:
-                                img_ret = img._get_version_installed(pkg)
-                        return img_ret
+                return img.get_version_installed(pkg)
 
         @staticmethod
         def get_manifest(img, package, filtered = True):
@@ -1711,6 +1703,7 @@ class PackageManager:
                         # XXX workaround, this should be done nicer
                         gobject.idle_add(self.update_desc, info, pkg, package)
                         time.sleep(0.01)
+                img = self.image_o
                 img.history.operation_result = history.RESULT_SUCCEEDED
                 self.description_thread_running = False
                 
