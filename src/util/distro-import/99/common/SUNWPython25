@@ -1,0 +1,5 @@
+package SUNWPython25
+import SUNWPython25
+import SUNWPython25-devel
+version 2.5
+end package

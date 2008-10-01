@@ -1,0 +1,10 @@
+#
+# As there isn't currently a way to rename packages on upgrade, create an
+# empty package which will cause the previous contents of the package to
+# be deleted when the empty version is installed and declare a dependency
+# on the package with the new name.
+#
+package SUNWphp524-mysql
+version 5.2.4
+depend SUNWphp52-mysql
+end package

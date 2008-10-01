@@ -1,0 +1,5 @@
+package SUNWfmd
+import SUNWfmd
+import SUNWfmdr
+add driver name=fm perms="* 0644 root sys"
+end package

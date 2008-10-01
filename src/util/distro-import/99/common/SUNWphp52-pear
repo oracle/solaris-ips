@@ -1,0 +1,5 @@
+package SUNWphp52-pear
+import SUNWphp52r-pear
+import SUNWphp52u-pear
+version 5.2.6
+end package

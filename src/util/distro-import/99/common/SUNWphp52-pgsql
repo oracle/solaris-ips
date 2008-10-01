@@ -1,0 +1,5 @@
+package SUNWphp52-pgsql
+import SUNWphp52r-pgsql
+import SUNWphp52u-pgsql
+version 5.2.6
+end package

@@ -1,0 +1,26 @@
+package SUNWxwrtl
+import SUNWxwrtl exclude usr/openwin
+# X libraries not yet included
+drop usr/lib/amd64/libxkbfile.so
+drop usr/lib/amd64/libxkbfile.so.4
+drop usr/lib/libXIE.so
+drop usr/lib/libXIE.so.6
+drop usr/lib/libXaw.so.4
+drop usr/lib/libxkbfile.so
+drop usr/lib/libxkbfile.so.4
+# Motif
+drop usr/lib/amd64/libXm.so
+drop usr/lib/amd64/libXm.so.4
+drop usr/lib/libMrm.so
+drop usr/lib/libMrm.so.1.2
+drop usr/lib/libMrm.so.3
+drop usr/lib/libMrm.so.4
+drop usr/lib/libUil.so
+drop usr/lib/libUil.so.3
+drop usr/lib/libXm.so
+drop usr/lib/libXm.so.1.2
+drop usr/lib/libXm.so.3
+drop usr/lib/libXm.so.4
+chattr usr/X target=X11
+chattr_glob * edit target openwin X11
+end package

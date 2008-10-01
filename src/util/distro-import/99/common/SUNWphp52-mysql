@@ -1,0 +1,5 @@
+package SUNWphp52-mysql
+import SUNWphp52r-mysql
+import SUNWphp52u-mysql
+version 5.2.6
+end package

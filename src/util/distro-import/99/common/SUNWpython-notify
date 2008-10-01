@@ -1,0 +1,4 @@
+package SUNWpython-notify
+import SUNWpython-notify
+import SUNWpython-notify-devel
+end package

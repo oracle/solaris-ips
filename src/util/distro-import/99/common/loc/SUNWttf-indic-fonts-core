@@ -1,0 +1,4 @@
+package SUNWttf-indic-fonts-core
+import SUNWttf-indic-fonts-core exclude usr/openwin
+chattr_glob * edit path usr/openwin usr/X11
+end package
