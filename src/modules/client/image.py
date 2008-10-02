@@ -102,6 +102,14 @@ class InventoryException(Exception):
                         outstr += "Not found in inventory: %s\n" % str(x)
                 return outstr
 
+class ImageNotFoundException(Exception):
+        """Used when an image was not found"""
+        def __init__(self, user_specified, user_dir, root_dir):
+                Exception.__init__(self)
+                self.user_specified = user_specified
+                self.user_dir = user_dir
+                self.root_dir = root_dir
+
 class Image(object):
         """An Image object is a directory tree containing the laid-down contents
         of a self-consistent graph of Packages.
@@ -212,7 +220,7 @@ class Image(object):
                 # operation) have already provided intent information.
                 self.__touched_manifests = {}
 
-        def find_root(self, d):
+        def find_root(self, d, exact_match=False):
 
                 def check_subdirs(sub_d, prefix):
                         for n in self.required_subdirs:
@@ -222,7 +230,9 @@ class Image(object):
                         return True
 
                 # Ascend from the given directory d to find first
-                # encountered image.
+                # encountered image. If exact_match is true, if the
+                # image found doesn't match startd, raise an
+                # ImageNotFoundException.
                 startd = d
                 # eliminate problem if relative path such as "." is passed in
                 d = os.path.realpath(d)
@@ -233,6 +243,11 @@ class Image(object):
                             check_subdirs(d, img_user_prefix):
                                 # XXX Look at image file to determine filter
                                 # tags and repo URIs.
+                                if exact_match and \
+                                    os.path.realpath(startd) != \
+                                    os.path.realpath(d):
+                                        raise ImageNotFoundException(
+                                            exact_match, startd, d)
                                 self.__set_dirs(imgtype=IMG_USER, root=d)
                                 self.attrs["Build-Release"] = "5.11"
                                 return
@@ -244,6 +259,11 @@ class Image(object):
                                 # tags and repo URIs.
                                 # XXX Look at image file to determine if this
                                 # image is a partial image.
+                                if exact_match and \
+                                    os.path.realpath(startd) != \
+                                    os.path.realpath(d):
+                                        raise ImageNotFoundException(
+                                            exact_match, startd, d)
                                 self.__set_dirs(imgtype=IMG_ENTIRE, root=d)
                                 self.attrs["Build-Release"] = "5.11"
                                 return
@@ -257,7 +277,8 @@ class Image(object):
                         #
                         # (XXX - Need to deal with symlinks here too)
                         if d == oldpath:
-                                raise ValueError, "directory %s not contained within an image" % startd
+                                raise ImageNotFoundException(exact_match,
+                                    startd, d, None)
 
         def load_config(self):
                 """Load this image's cached configuration from the default
@@ -862,7 +883,6 @@ class Image(object):
                 except EnvironmentError, e:
                         if e.errno not in (errno.EROFS, errno.EACCES):
                                 raise
-
                 self.__set_touched_manifest(fmri)
 
                 return m
@@ -1913,7 +1933,6 @@ class Image(object):
                         return pkg.fmri.PkgFmri(urllib.unquote(os.path.dirname(
                             index[len(idxdir) + 1:]).replace(os.path.sep, "@")),
                             None)
-
                 res = []
 
                 for fmri, mfst in self.get_fmri_manifest_pairs():
@@ -1935,7 +1954,6 @@ class Image(object):
                                                 res.append((tok_type, fmri, \
                                                     action, keyval))
                 return res
-
 
         def local_search(self, args, case_sensitive):
                 """Search the image for the token in args[0]."""

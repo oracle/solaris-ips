@@ -1202,27 +1202,19 @@ class PackageManager:
                 image_obj = image.Image()
                 dr = "/"
                 try:
-                        image_obj.find_root(image_directory)
+                        image_obj.find_root(image_directory,
+                            self.provided_image_dir)
                         image_obj.load_config()
                         image_obj.load_catalogs(self.pr)
-                except ValueError:
-                        print self._('%s is not valid image, trying root image') \
-                            % image_directory 
-                        try:
-                                dr = os.environ["PKG_IMAGE"]
-                        except KeyError:
-                                print
-                        try:
-                                image_obj.find_root(dr)
-                                image_obj.load_config()
-                                image_obj.load_catalogs(self.pr)
-                        except ValueError:
-                                print self._('%s is not valid root image, return None') \
-                                    % dr
-                                image_obj = None
+                except image.ImageNotFoundException, infe:
+                        print self._("%s is not a valid root image, return "
+                            "None") % infe.user_dir
+                        image_obj = None
+
 
                 # Tell the image the name of the client performing operations.
-                image_obj.history.client_name = "packagemanager"
+                if image_obj is not None:
+                        image_obj.history.client_name = "packagemanager"
 
                 return image_obj
 
@@ -1878,6 +1870,7 @@ if __name__ == '__main__':
         packagemanager = PackageManager()
         passed_test_arg = False
         passed_imagedir_arg = False
+        packagemanager.provided_image_dir = True
 
         try:
                 opts, args = getopt.getopt(sys.argv[1:], "htR:", \
@@ -1911,6 +1904,7 @@ Use -t (--test-gui) to work on fake data."""
                         image_dir = os.environ["PKG_IMAGE"]
                 except KeyError:
                         image_dir = os.getcwd()
+                        packagemanager.provided_image_dir = False
 
         if not passed_test_arg:
                 packagemanager.setup_progressdialog_show()

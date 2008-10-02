@@ -55,6 +55,8 @@ class TestImageCreateCorruptImage(testutils.SingleDepotTestCaseCorruptImage):
 
         misc_files = [ "/tmp/libc.so.1" ]
 
+        PREFIX = "unset PKG_IMAGE; cd %s"
+        
         def setUp(self):
                 testutils.SingleDepotTestCaseCorruptImage.setUp(self)
                 for p in self.misc_files:
@@ -70,6 +72,10 @@ class TestImageCreateCorruptImage(testutils.SingleDepotTestCaseCorruptImage):
                 for p in self.misc_files:
                         os.remove(p)
 
+        def pkg(self, command, exit=0, comment=""):
+                testutils.SingleDepotTestCaseCorruptImage.pkg(self, command, 
+                    exit=exit, comment=comment, prefix=self.PREFIX % self.dir)
+                        
         # For each test:
         # A good image is created at $basedir/image
         # A corrupted image is created at $basedir/image/bad (called bad_dir
@@ -86,7 +92,7 @@ class TestImageCreateCorruptImage(testutils.SingleDepotTestCaseCorruptImage):
                 self.pkgsend_bulk(durl, self.foo11)
                 self.image_create(durl)
 
-                self.corrupt_image_create(durl,
+                self.dir = self.corrupt_image_create(durl,
                     set(["catalog", "cfg_cache", "file", "pkg", "index"]),
                     ["var/pkg"])
 
@@ -99,8 +105,8 @@ class TestImageCreateCorruptImage(testutils.SingleDepotTestCaseCorruptImage):
                 self.pkgsend_bulk(durl, self.foo11)
                 self.image_create(durl)
 
-                self.corrupt_image_create(durl, set(["catalog_absent"]),
-                    ["var/pkg"])
+                self.dir = self.corrupt_image_create(durl,
+                    set(["catalog_absent"]), ["var/pkg"])
 
                 self.pkg("install foo@1.1")
 
@@ -111,8 +117,8 @@ class TestImageCreateCorruptImage(testutils.SingleDepotTestCaseCorruptImage):
                 self.pkgsend_bulk(durl, self.foo11)
                 self.image_create(durl)
 
-                self.corrupt_image_create(durl, set(["cfg_cache_absent"]),
-                    ["var/pkg"])
+                self.dir = self.corrupt_image_create(durl,
+                    set(["cfg_cache_absent"]), ["var/pkg"])
 
                 self.pkg("install foo@1.1")
 
@@ -123,8 +129,8 @@ class TestImageCreateCorruptImage(testutils.SingleDepotTestCaseCorruptImage):
                 self.pkgsend_bulk(durl, self.foo11)
                 self.image_create(durl)
 
-                self.corrupt_image_create(durl, set(["file_absent"]),
-                    ["var/pkg"])
+                self.dir = self.corrupt_image_create(durl,
+                    set(["file_absent"]), ["var/pkg"])
 
                 self.pkg("install foo@1.1")
 
@@ -135,7 +141,7 @@ class TestImageCreateCorruptImage(testutils.SingleDepotTestCaseCorruptImage):
                 self.pkgsend_bulk(durl, self.foo11)
                 self.image_create(durl)
 
-                self.corrupt_image_create(durl, set(["pkg_absent"]),
+                self.dir = self.corrupt_image_create(durl, set(["pkg_absent"]),
                     ["var/pkg"])
 
                 self.pkg("install foo@1.1")
@@ -147,7 +153,7 @@ class TestImageCreateCorruptImage(testutils.SingleDepotTestCaseCorruptImage):
                 self.pkgsend_bulk(durl, self.foo11)
                 self.image_create(durl)
 
-                self.corrupt_image_create(durl, set(["index_absent"]),
+                self.dir = self.corrupt_image_create(durl, set(["index_absent"]),
                     ["var/pkg"])
 
                 self.pkg("install foo@1.1")
@@ -161,8 +167,8 @@ class TestImageCreateCorruptImage(testutils.SingleDepotTestCaseCorruptImage):
                 self.pkgsend_bulk(durl, self.foo11)
                 self.image_create(durl)
 
-                self.corrupt_image_create(durl, set(["catalog_empty"]),
-                    ["var/pkg"])
+                self.dir = self.corrupt_image_create(durl,
+                    set(["catalog_empty"]), ["var/pkg"])
 
                 # This is expected to fail because it will see an empty
                 # catalog directory and not rebuild the files as needed
@@ -180,10 +186,10 @@ class TestImageCreateCorruptImage(testutils.SingleDepotTestCaseCorruptImage):
                 self.pkgsend_bulk(durl, self.foo11)
                 self.image_create(durl)
 
-                self.corrupt_image_create(durl, set(["catalog_empty"]),
-                    ["var/pkg"])
+                self.dir = self.corrupt_image_create(durl,
+                    set(["catalog_empty"]), ["var/pkg"])
 
-                self.pkg("install --no-refresh foo@1.1", exit = 1)
+                self.pkg("install --no-refresh foo@1.1", exit=1)
                 self.pkg("refresh")
                 self.pkg("install foo@1.1")
 
@@ -197,7 +203,7 @@ class TestImageCreateCorruptImage(testutils.SingleDepotTestCaseCorruptImage):
                 self.pkgsend_bulk(durl, self.foo11)
                 self.image_create(durl)
 
-                self.corrupt_image_create(durl, set(), ["var/pkg"])
+                self.dir = self.corrupt_image_create(durl, set(), ["var/pkg"])
 
                 self.pkg("install foo@1.1")
 
@@ -214,7 +220,7 @@ class TestImageCreateCorruptImage(testutils.SingleDepotTestCaseCorruptImage):
                 self.pkgsend_bulk(durl, self.foo11)
                 self.image_create(durl)
 
-                self.corrupt_image_create(durl,
+                self.dir = self.corrupt_image_create(durl,
                     set(["catalog", "cfg_cache", "file", "pkg", "index"]),
                     [".org.opensolaris,pkg"])
 
@@ -228,8 +234,8 @@ class TestImageCreateCorruptImage(testutils.SingleDepotTestCaseCorruptImage):
                 self.pkgsend_bulk(durl, self.foo11)
                 self.image_create(durl)
 
-                self.corrupt_image_create(durl, set(["catalog_absent"]),
-                    [".org.opensolaris,pkg"])
+                self.dir = self.corrupt_image_create(durl,
+                    set(["catalog_absent"]), [".org.opensolaris,pkg"])
 
                 self.pkg("install foo@1.1")
 
@@ -241,8 +247,8 @@ class TestImageCreateCorruptImage(testutils.SingleDepotTestCaseCorruptImage):
                 self.pkgsend_bulk(durl, self.foo11)
                 self.image_create(durl)
 
-                self.corrupt_image_create(durl, set(["cfg_cache_absent"]),
-                    [".org.opensolaris,pkg"])
+                self.dir = self.corrupt_image_create(durl,
+                    set(["cfg_cache_absent"]), [".org.opensolaris,pkg"])
 
                 self.pkg("install foo@1.1")
 
@@ -254,7 +260,7 @@ class TestImageCreateCorruptImage(testutils.SingleDepotTestCaseCorruptImage):
                 self.pkgsend_bulk(durl, self.foo11)
                 self.image_create(durl)
 
-                self.corrupt_image_create(durl, set(["file_absent"]),
+                self.dir = self.corrupt_image_create(durl, set(["file_absent"]),
                     [".org.opensolaris,pkg"])
 
                 self.pkg("install foo@1.1")
@@ -267,7 +273,7 @@ class TestImageCreateCorruptImage(testutils.SingleDepotTestCaseCorruptImage):
                 self.pkgsend_bulk(durl, self.foo11)
                 self.image_create(durl)
 
-                self.corrupt_image_create(durl, set(["pkg_absent"]),
+                self.dir = self.corrupt_image_create(durl, set(["pkg_absent"]),
                     [".org.opensolaris,pkg"])
 
                 self.pkg("install foo@1.1")
@@ -280,7 +286,7 @@ class TestImageCreateCorruptImage(testutils.SingleDepotTestCaseCorruptImage):
                 self.pkgsend_bulk(durl, self.foo11)
                 self.image_create(durl)
 
-                self.corrupt_image_create(durl, set(["index_absent"]),
+                self.dir = self.corrupt_image_create(durl, set(["index_absent"]),
                     [".org.opensolaris,pkg"])
 
                 self.pkg("install foo@1.1")
@@ -294,10 +300,10 @@ class TestImageCreateCorruptImage(testutils.SingleDepotTestCaseCorruptImage):
                 self.pkgsend_bulk(durl, self.foo11)
                 self.image_create(durl)
 
-                self.corrupt_image_create(durl, set(["catalog_empty"]),
-                    [".org.opensolaris,pkg"])
+                self.dir = self.corrupt_image_create(durl,
+                    set(["catalog_empty"]), [".org.opensolaris,pkg"])
 
-                self.pkg("install --no-refresh foo@1.1", exit = 1)
+                self.pkg("install --no-refresh foo@1.1", exit=1)
 
         def test_ospkg_missing_catalog_empty_hit_then_refreshed_then_hit(self):
                 """ Creates bad_dir with all dirs and files present, but
@@ -309,13 +315,12 @@ class TestImageCreateCorruptImage(testutils.SingleDepotTestCaseCorruptImage):
                 self.pkgsend_bulk(durl, self.foo11)
                 self.image_create(durl)
 
-                self.corrupt_image_create(durl, set(["catalog_empty"]),
-                    [".org.opensolaris,pkg"])
+                self.dir = self.corrupt_image_create(durl,
+                    set(["catalog_empty"]), [".org.opensolaris,pkg"])
 
-                self.pkg("install --no-refresh foo@1.1", exit = 1)
+                self.pkg("install --no-refresh foo@1.1", exit=1)
                 self.pkg("refresh")
                 self.pkg("install foo@1.1")
-
 
         def test_ospkg_left_alone(self):
                 """ Sanity check to ensure that the code for creating
@@ -326,7 +331,8 @@ class TestImageCreateCorruptImage(testutils.SingleDepotTestCaseCorruptImage):
                 self.pkgsend_bulk(durl, self.foo11)
                 self.image_create(durl)
 
-                self.corrupt_image_create(durl, set(), [".org.opensolaris,pkg"])
+                self.dir = self.corrupt_image_create(durl, set(),
+                    [".org.opensolaris,pkg"])
 
                 self.pkg("install foo@1.1")
 
@@ -344,10 +350,10 @@ class TestImageCreateCorruptImage(testutils.SingleDepotTestCaseCorruptImage):
                 self.pkgsend_bulk(durl, self.foo11)
                 self.image_create(durl)
 
-                self.corrupt_image_create(durl, set(["cfg_cache_absent"]),
-                    [".org.opensolaris,pkg"])
-                self.corrupt_image_create(durl, set(["cfg_cache_absent"]),
-                    ["var/pkg"], destroy = False)
+                self.dir = self.corrupt_image_create(durl,
+                    set(["cfg_cache_absent"]), [".org.opensolaris,pkg"])
+                self.dir = self.corrupt_image_create(durl,
+                    set(["cfg_cache_absent"]), ["var/pkg"], destroy=False)
 
                 self.pkg("install foo@1.1")
 
@@ -360,9 +366,10 @@ class TestImageCreateCorruptImage(testutils.SingleDepotTestCaseCorruptImage):
                 self.pkgsend_bulk(durl, self.foo11)
                 self.image_create(durl)
 
-                self.corrupt_image_create(durl, set(), ["var/pkg"])
-                self.corrupt_image_create(durl, set(["cfg_cache_absent"]),
-                    [".org.opensolaris,pkg"], destroy = False)
+                self.dir = self.corrupt_image_create(durl, set(), ["var/pkg"])
+                self.dir = self.corrupt_image_create(durl,
+                    set(["cfg_cache_absent"]), [".org.opensolaris,pkg"],
+                    destroy=False)
 
                 self.pkg("install foo@1.1")
 
@@ -374,10 +381,10 @@ class TestImageCreateCorruptImage(testutils.SingleDepotTestCaseCorruptImage):
                 self.pkgsend_bulk(durl, self.foo11)
                 self.image_create(durl)
 
-                self.corrupt_image_create(durl, set(["cfg_cache_absent"]),
-                    ["var/pkg"])
-                self.corrupt_image_create(durl, set(),
-                    [".org.opensolaris,pkg"], destroy = False)
+                self.dir = self.corrupt_image_create(durl,
+                    set(["cfg_cache_absent"]), ["var/pkg"])
+                self.dir = self.corrupt_image_create(durl, set(),
+                    [".org.opensolaris,pkg"], destroy=False)
 
                 self.pkg("install foo@1.1")
 

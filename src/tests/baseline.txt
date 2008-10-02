@@ -189,6 +189,7 @@ api.t_version.py TestVersion.testversionsuccessor6|pass
 api.t_version.py TestVersion.testversionsuccessor7|pass
 api.t_version.py TestVersion.testversionsuccessor8|pass
 api.t_version.py TestVersion.testversionsuccessor9|pass
+cli.t_R_option.py TestROption.test_1|pass
 cli.t_actions.py TestPkgActions.test_basics_0|pass
 cli.t_actions.py TestPkgActions.test_grouptest|pass
 cli.t_actions.py TestPkgActions.test_invalid_open|pass

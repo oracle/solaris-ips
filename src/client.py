@@ -2181,6 +2181,9 @@ def main_func():
                 except SystemExit:
                         return 0
 
+        provided_image_dir = True
+        pkg_image_used = False
+                
         for opt, arg in opts:
                 if opt == "-R":
                         mydir = arg
@@ -2188,8 +2191,10 @@ def main_func():
         if "mydir" not in locals():
                 try:
                         mydir = os.environ["PKG_IMAGE"]
+                        pkg_image_used = True
                 except KeyError:
                         try:
+                                provided_image_dir = False
                                 mydir = os.getcwd()
                         except OSError, e:
                                 try:
@@ -2206,9 +2211,15 @@ def main_func():
                 return 1
 
         try:
-                img.find_root(mydir)
-        except ValueError:
-                error(_("'%s' is not an install image") % mydir)
+                img.find_root(mydir, provided_image_dir)
+        except image.ImageNotFoundException, infe:
+                if infe.user_specified:
+                        m = "No image rooted at '%s'"
+                        if pkg_image_used:
+                                m += " (set by $PKG_IMAGE)"
+                        error(_(m) % infe.user_dir)
+                else:
+                        error(_("No image found."))
                 return 1
 
         img.load_config()

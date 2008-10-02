@@ -312,9 +312,9 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
                 if os.path.exists(self.img_path):
                         shutil.rmtree(self.img_path)
 
-        def pkg(self, command, exit = 0, comment = ""):
+        def pkg(self, command, exit = 0, comment = "", prefix = ""):
 
-                cmdline = "pkg %s" % command
+                cmdline = "%s;pkg %s" % (prefix, command)
                 self.debugcmd(cmdline)
 
                 p = subprocess.Popen(cmdline, shell = True,
@@ -640,10 +640,10 @@ class SingleDepotTestCaseCorruptImage(SingleDepotTestCase):
 
                 # Make find root start at final. (See the doc string for
                 # more explanation.)
-                self.img_path = os.path.join(self.img_path, "final")
+                cmd_path = os.path.join(self.img_path, "final")
 
-                os.mkdir(self.img_path)
-                os.environ["PKG_IMAGE"] = self.img_path
+                os.mkdir(cmd_path)
+                return cmd_path
 
 
 
