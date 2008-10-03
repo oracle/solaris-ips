@@ -62,8 +62,9 @@ def __get_intent_str(img, fmri):
                 op = "unknown"
 
         reason = imagestate.INTENT_INFO
-        initial_pkg = ""
-        parent_pkg = ""
+        initial_pkg = None
+        needed_by_pkg = None
+        current_auth = fmri.get_authority()
         try:
                 targets = img.state.get_targets()
                 # Attempt to determine why the client is retrieving the
@@ -81,47 +82,78 @@ def __get_intent_str(img, fmri):
                         # The fmri responsible for the current one being processed
                         # should immediately precede the current one in the target
                         # list.
-                        parent = targets[-2][0]
-                        parent_pkg = parent.get_fmri(anarchy=True)[len("pkg:/"):]
+                        needed_by = targets[-2][0]
 
-                        if len(targets) > 2:
-                                # If there are more than two targets in the list, then
-                                # the very first fmri is the one that caused the
-                                # current and parent fmris to be retrieved.
-                                initial = targets[0][0]
-                                initial_pkg = initial.get_fmri(
+                        needed_by_auth = needed_by.get_authority()
+                        if needed_by_auth == current_auth:
+                                # To prevent dependency information being shared
+                                # across authority boundaries, authorities must
+                                # match.
+                                needed_by_pkg = needed_by.get_fmri(
                                     anarchy=True)[len("pkg:/"):]
                         else:
-                                initial_pkg = parent_pkg
-                                parent_pkg = ""
+                                # If they didn't match, indicate that the
+                                # package is needed by another, but not which
+                                # one.
+                                needed_by_pkg = "unknown"
+
+                        if len(targets) > 2:
+                                # If there are more than two targets in the
+                                # list, then the very first fmri is the one
+                                # that caused the current and needed_by fmris
+                                # to be retrieved.
+                                initial = targets[0][0]
+                                initial_auth = initial.get_authority()
+                                if initial_auth == current_auth:
+                                        # Prevent providing information across
+                                        # authorities.
+                                        initial_pkg = initial.get_fmri(
+                                            anarchy=True)[len("pkg:/"):]
+                                else:
+                                        # If they didn't match, indicate that
+                                        # the needed_by_pkg was a dependency of
+                                        # another, but not which one.
+                                        initial_pkg = "unknown"
+                        else:
+                                # If there are only two targets in the stack,
+                                # then the first target is both the initial
+                                # target and is the cause of the current fmri
+                                # being retrieved.
+                                initial_pkg = needed_by_pkg
         except IndexError:
                 # Any part of the target information may not be available.
                 # Ignore it, and move on.
                 pass
 
-        version = ""
+        prior_version = None
         if reason != imagestate.INTENT_INFO:
                 # Only provide version information for non-informational
                 # operations.
-                version = "none"
                 try:
-                        version = "%s" % img.get_version_installed(fmri).version
+                        prior = "%s" % img.get_version_installed(fmri)
+                        prior_version = prior.version
+                        prior_auth = prior.get_authority()
+                        if prior_auth != current_auth:
+                                # Prevent providing information across
+                                # authorities by indicating that a prior
+                                # version was installed, but not which one.
+                                prior_version = "unknown"
                 except AttributeError:
                         # We didn't get a match back, drive on.
                         pass
 
         info = {
             "operation": op,
-            "version": version,
+            "prior_version": prior_version,
             "reason": reason,
             "initial_target": initial_pkg,
-            "parent_target": parent_pkg,
+            "needed_by": needed_by_pkg,
         }
 
-        # op/installed_version/reason/initial_target/immediate_parent/
+        # op/prior_version/reason/initial_target/needed_by/
         return "(%s)" % ";".join([
-            "%s=%s" % (key, info[key]) for key in info.keys()
-            if info[key] != ""
+            "%s=%s" % (key, info[key]) for key in info
+            if info[key] is not None
         ])
 
 def get_datastream(img, fmri, fhash):
