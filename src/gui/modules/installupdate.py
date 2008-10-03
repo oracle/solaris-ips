@@ -44,6 +44,7 @@ import pkg.client.history as history
 import pkg.client.imageplan as imageplan
 import pkg.client.imagestate as imagestate
 import pkg.client.progress as progress
+import pkg.client.retrieve as retrieve
 import pkg.fmri as fmri
 import pkg.client.indexer as indexer
 import pkg.search_errors as search_errors
@@ -361,9 +362,10 @@ class InstallUpdate(progress.ProgressTracker):
                         try:
                                 self.__evaluate_fmri(f, image)
                         except KeyError, e:
-                                outstring += "Attemping to install %s causes:\n\t%s\n" % \
+                                outstring += "Attempting to install %s causes:\n\t%s\n" % \
                                     (f.get_name(), e)
-                        except NameError:
+                        except (retrieve.ManifestRetrievalError,
+                            retrieve.DatastreamRetrievalError, NameError):
                                 gobject.idle_add(self.__creating_plan_net_error)
                                 return
                 if outstring:

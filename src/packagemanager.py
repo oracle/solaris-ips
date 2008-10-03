@@ -58,6 +58,7 @@ except ImportError:
 import pkg.client.history as history
 import pkg.client.image as image
 import pkg.client.progress as progress
+import pkg.client.retrieve as retrieve
 import pkg.misc as misc
 import pkg.portable as portable
 import pkg.gui.beadmin as beadm
@@ -1608,7 +1609,8 @@ class PackageManager:
                         # XXX proper permissions to save manifest, should we do something 
                         # XXX and popup information dialog?
                         pass
-                except NameError:
+                except (retrieve.ManifestRetrievalError,
+                    retrieve.DatastreamRetrievalError, NameError):
                         pass
                 return manifest
 

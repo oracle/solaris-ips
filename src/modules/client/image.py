@@ -837,7 +837,8 @@ class Image(object):
                                         try:
                                                 retrieve.touch_manifest(self,
                                                     fmri)
-                                        except NameError:
+                                        except (retrieve.ManifestRetrievalError,
+                                            retrieve.DatastreamRetrievalError):
                                                 pass
 
                                         # Manifests should only be marked as
@@ -930,7 +931,8 @@ class Image(object):
                         # to the manifest, attempt to download a new one.
                         if not m or not self._valid_manifest(fmri, m):
                                 m = self.__fetch_manifest_with_retries(fmri)
-                except NameError:
+                except (retrieve.ManifestRetrievalError,
+                    retrieve.DatastreamRetrievalError):
                         # In this case, the client has failed to download a new
                         # manifest or re-download an existing one with the same
                         # name.

@@ -32,6 +32,22 @@ from pkg.misc import versioned_urlopen
 from pkg.misc import TransferTimedOutException
 from pkg.misc import retryable_http_errors
 
+class ManifestRetrievalError(Exception):
+        """Used when manifest retrieval fails"""
+        def __init__(self, data):
+                self.data = data
+
+        def __str__(self):
+                return str(self.data)
+
+class DatastreamRetrievalError(Exception):
+        """Used when datastream retrieval fails"""
+        def __init__(self, data):
+                self.data = data
+
+        def __str__(self):
+                return str(self.data)
+
 # client/retrieve.py - collected methods for retrieval of pkg components
 # from repositories
 def __get_intent_str(img, fmri):
@@ -122,17 +138,21 @@ def get_datastream(img, fmri, fhash):
                 f = versioned_urlopen(url_prefix, "file", [0], fhash,
                     ssl_creds=ssl_tuple, imgtype=img.type, uuid=uuid)[0]
         except urllib2.HTTPError, e:
-                raise NameError, "could not retrieve file '%s' from '%s'" % \
-                    (fhash, url_prefix)
+                raise DatastreamRetrievalError("could not retrieve file '%s'"
+                    "from '%s'\nHTTPError, code:%s"% (hash, url_prefix, e.code))
         except urllib2.URLError, e:
                 if len(e.args) == 1 and isinstance(e.args[0], socket.sslerror):
                         raise RuntimeError, e
 
-                raise NameError, "could not retrieve file '%s' from '%s'" % \
-                    (fhash, url_prefix)
-        except:
-                raise NameError, "could not retrieve file '%s' from '%s'" % \
-                    (fhash, url_prefix)
+                raise DatastreamRetrievalError("could not retrieve file '%s'"
+                    "from '%s'\nURLError args:%s" % (hash, url_prefix,
+                    " ".join([str(a) for a in e.args])))
+        except KeyboardInterrupt:
+                raise
+        except Exception, e:
+                raise DatastreamRetrievalError("could not retrieve manifest '%s'"
+                    "from '%s'\nException: str:%s repr:%s" % (fmri.get_url_path(),
+                    url_prefix, e, repr(e)))
 
         return f
 
@@ -171,20 +191,24 @@ def get_manifest(img, fmri):
                 if e.code in retryable_http_errors:
                         raise TransferTimedOutException
 
-                raise NameError, "could not retrieve manifest '%s' from '%s'" % \
-                    (fmri.get_url_path(), url_prefix)
+                raise ManifestRetrievalError("could not retrieve manifest '%s' from '%s'\n"
+                    "HTTPError code:%s" % (fmri.get_url_path(), url_prefix, 
+                    e.code))
         except urllib2.URLError, e:
                 if len(e.args) == 1 and isinstance(e.args[0], socket.sslerror):
                         raise RuntimeError, e
-                elif len(e.args) == 1 and isinstance(e.args[0],
-                    socket.timeout):
+                elif len(e.args) == 1 and isinstance(e.args[0], socket.timeout):
                         raise TransferTimedOutException
 
-                raise NameError, "could not retrieve manifest '%s' from '%s'" % \
-                    (fmri.get_url_path(), url_prefix)
-        except:
-                raise NameError, "could not retrieve manifest '%s' from '%s'" % \
-                    (fmri.get_url_path(), url_prefix)
+                raise ManifestRetrievalError("could not retrieve manifest '%s' from '%s'\n"
+                    "URLError, args:%s" % (fmri.get_url_path(), url_prefix,
+                    " ".join([str(a) for a in e.args])))
+        except KeyboardInterrupt:
+                raise
+        except Exception, e:
+                raise ManifestRetrievalError("could not retrieve manifest '%s' from '%s'"
+                    "Exception: str:%s repr:%s" % (fmri.get_url_path(),
+                    url_prefix, e, repr(e)))
 
         return m.read()
 
@@ -201,4 +225,3 @@ def touch_manifest(img, fmri):
         except:
                 raise NameError, "could not 'touch' manifest '%s' at '%s'" % \
                     (fmri.get_url_path(), url_prefix)
-

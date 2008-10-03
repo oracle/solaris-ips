@@ -64,6 +64,7 @@ import pkg.client.filelist as filelist
 import pkg.client.progress as progress
 import pkg.client.bootenv as bootenv
 import pkg.client.history as history
+import pkg.client.retrieve as retrieve
 import pkg.search_errors as search_errors
 import pkg.fmri as fmri
 import pkg.misc as misc
@@ -2307,6 +2308,15 @@ if __name__ == "__main__":
                             history.RESULT_FAILED_TRANSPORT
                 error(_("One or more hosts providing content for this install"
                     "has provided a file with invalid content."))
+                error(str(__e))
+                __ret = 1
+        except (retrieve.ManifestRetrievalError,
+            retrieve.DatastreamRetrievalError), __e:
+                if __img and __img.history.operation_name:
+                        __img.history.operation_result = \
+                            history.RESULT_FAILED_TRANSPORT
+                error(_("An error was encountered while attempting to retrieve"
+                    " package or file data for the requested operation."))
                 error(str(__e))
                 __ret = 1
         except:
