@@ -39,6 +39,7 @@ except ImportError:
 import pkg.client.bootenv as bootenv
 import pkg.client.history as history
 import pkg.client.imageplan as imageplan
+import pkg.client.api_errors as api_errors
 import pkg.search_errors as search_errors
 import pkg.client.progress as progress
 import pkg.gui.enumerations as enumerations
@@ -177,7 +178,8 @@ class Remove(progress.ProgressTracker):
                 self.gui_thread.run()
                 filters = []
                 for image in list_of_packages:
-                        self.ip = imageplan.ImagePlan(image, self, filters = filters)
+                        self.ip = imageplan.ImagePlan(image, self,
+                            self.gui_thread.is_cancelled, filters = filters)
                         self.ip.image.history.operation_name = "uninstall"
                         fmris = list_of_packages.get(image)
                         for fmri in fmris:
@@ -197,7 +199,7 @@ class Remove(progress.ProgressTracker):
                                         gobject.idle_add(self.w_createplan_dialog.hide)
                                         return
                                 image.imageplan = self.ip
-                        except imageplan.NonLeafPackageException, e:
+                        except api_errors.NonLeafPackageException, e:
                                         self.error = e[1]
                                         self.ip.progtrack.evaluate_done()
                                         return

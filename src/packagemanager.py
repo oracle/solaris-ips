@@ -59,6 +59,7 @@ import pkg.client.history as history
 import pkg.client.image as image
 import pkg.client.progress as progress
 import pkg.client.retrieve as retrieve
+import pkg.client.api_errors as api_errors
 import pkg.misc as misc
 import pkg.portable as portable
 import pkg.gui.beadmin as beadm
@@ -1078,16 +1079,20 @@ class PackageManager:
 
                 try:
                         img.retrieve_catalogs()
-                except image.CatalogRefreshException:
+                except api_errors.CatalogRefreshException:
                         raise
                 # Reload catalog.  This picks up the update from retrieve_catalogs.
                 img.load_catalogs(self.pr)
  
                 try:
+                        def __check_cancelation():
+                                return False
+
                         # We will use whatever the incorporation provides as the latest 
                         # version of ipkg and ipkg-gui
                         img.make_install_plan([self.ipkg_fmri, self.ipkggui_fmri], \
-                            self.pr, filters = [], noexecute = True)
+                            self.pr, __check_cancelation, filters = [],
+                            noexecute = True)
                 except RuntimeError:
                         return True
 
@@ -1229,7 +1234,7 @@ class PackageManager:
                 try:
                         pkgs_known = [ pf[0] for pf in
                             sorted(image_obj.inventory(all_known = True)) ]
-                except image.InventoryException:
+                except api_errors.InventoryException:
                         # Can't happen when all_known is true and no args,
                         # but here for completeness.
                         raise
@@ -1541,7 +1546,7 @@ class PackageManager:
                 try:
                         for m in img.inventory(args):
                                 found.append(m[0])
-                except image.InventoryException, e:
+                except api_errors.InventoryException, e:
                         notfound = e.notfound
 
                 return notfound

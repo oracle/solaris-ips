@@ -54,10 +54,12 @@ import pkg.client.imageconfig as imageconfig
 import pkg.client.imageplan as imageplan
 import pkg.client.imagestate as imagestate
 import pkg.client.retrieve as retrieve
+import pkg.client.progress as progress
 import pkg.portable as portable
 import pkg.client.query_engine as query_e
 import pkg.client.indexer as indexer
 import pkg.search_errors as search_errors
+import pkg.client.api_errors as api_errors
 
 from pkg.misc import versioned_urlopen
 from pkg.misc import TransferTimedOutException
@@ -72,43 +74,6 @@ PKG_STATE_KNOWN = "known"
 
 # Minimum number of days to issue warning before a certificate expires
 MIN_WARN_DAYS = datetime.timedelta(days=30)
-
-class CatalogRefreshException(Exception):
-        def __init__(self, failed, total, succeeded):
-                Exception.__init__(self)
-                self.failed = failed
-                self.total = total
-                self.succeeded = succeeded
-
-class InventoryException(Exception):
-        def __init__(self, notfound=None, illegal=None):
-                Exception.__init__(self)
-                if notfound is None:
-                        self.notfound = []
-                else:
-                        self.notfound = notfound
-                if illegal is None:
-                        self.illegal = []
-                else:
-                        self.illegal = illegal
-                assert(self.notfound or self.illegal)
-
-        def __str__(self):
-                outstr = ""
-                for x in self.illegal:
-                        # Illegal FMRIs have their own __str__ method
-                        outstr += "%s\n" % x
-                for x in self.notfound:
-                        outstr += "Not found in inventory: %s\n" % str(x)
-                return outstr
-
-class ImageNotFoundException(Exception):
-        """Used when an image was not found"""
-        def __init__(self, user_specified, user_dir, root_dir):
-                Exception.__init__(self)
-                self.user_specified = user_specified
-                self.user_dir = user_dir
-                self.root_dir = root_dir
 
 class Image(object):
         """An Image object is a directory tree containing the laid-down contents
@@ -246,7 +211,7 @@ class Image(object):
                                 if exact_match and \
                                     os.path.realpath(startd) != \
                                     os.path.realpath(d):
-                                        raise ImageNotFoundException(
+                                        raise api_errors.ImageNotFoundException(
                                             exact_match, startd, d)
                                 self.__set_dirs(imgtype=IMG_USER, root=d)
                                 self.attrs["Build-Release"] = "5.11"
@@ -262,7 +227,7 @@ class Image(object):
                                 if exact_match and \
                                     os.path.realpath(startd) != \
                                     os.path.realpath(d):
-                                        raise ImageNotFoundException(
+                                        raise api_errors.ImageNotFoundException(
                                             exact_match, startd, d)
                                 self.__set_dirs(imgtype=IMG_ENTIRE, root=d)
                                 self.attrs["Build-Release"] = "5.11"
@@ -277,8 +242,8 @@ class Image(object):
                         #
                         # (XXX - Need to deal with symlinks here too)
                         if d == oldpath:
-                                raise ImageNotFoundException(exact_match,
-                                    startd, d, None)
+                                raise api_errors.ImageNotFoundException(
+                                    exact_match, startd, d, None)
 
         def load_config(self):
                 """Load this image's cached configuration from the default
@@ -704,7 +669,6 @@ class Image(object):
                 if mirror in self.cfg_cache.authorities[auth_name]["mirrors"]:
                         auths[auth_name]["mirrors"].remove(mirror)
                         self.save_config()
-
                 self.history.operation_result = history.RESULT_SUCCEEDED
 
         def verify(self, fmri, progresstracker, **args):
@@ -884,6 +848,7 @@ class Image(object):
                 except EnvironmentError, e:
                         if e.errno not in (errno.EROFS, errno.EACCES):
                                 raise
+
                 self.__set_touched_manifest(fmri)
 
                 return m
@@ -1356,7 +1321,8 @@ class Image(object):
                 self.cache_catalogs()
 
                 if failed:
-                        raise CatalogRefreshException(failed, total, succeeded)
+                        raise api_errors.CatalogRefreshException(failed, total,
+                            succeeded)
 
         CATALOG_CACHE_VERSION = 1
 
@@ -1613,7 +1579,7 @@ class Image(object):
                 try:
                         myfmri = self.inventory([ myfmri ], all_known = True,
                             matcher = pkg.fmri.exact_name_match).next()[0]
-                except InventoryException:
+                except api_errors.InventoryException:
                         # If we didn't find the package in the authority it's
                         # currently installed from, try again without specifying
                         # the authority.  This will get the first available
@@ -1732,7 +1698,7 @@ class Image(object):
                                         illegals.append(e)
 
                 if illegals:
-                        raise InventoryException(illegal=illegals)
+                        raise api_errors.InventoryException(illegal=illegals)
 
                 pauth = self.cfg_cache.preferred_authority
 
@@ -1860,7 +1826,8 @@ class Image(object):
                     for i, f in set(enumerate(patterns)) - matchingpats
                 ]
                 if nonmatchingpats:
-                        raise InventoryException(notfound=nonmatchingpats)
+                        raise api_errors.InventoryException(
+                            notfound=nonmatchingpats)
 
         def inventory(self, *args, **kwargs):
                 """Enumerate the package FMRIs in the image's catalog.
@@ -1928,19 +1895,14 @@ class Image(object):
         def degraded_local_search(self, args):
                 msg("Search capabilities and performance are degraded.\n"
                     "To improve, run 'pkg rebuild-index'.")
-                idxdir = os.path.join(self.imgdir, "pkg")
-
-                # Convert a full directory path to the FMRI it represents.
-                def idx_to_fmri(index):
-                        return pkg.fmri.PkgFmri(urllib.unquote(os.path.dirname(
-                            index[len(idxdir) + 1:]).replace(os.path.sep, "@")),
-                            None)
                 res = []
 
                 for fmri, mfst in self.get_fmri_manifest_pairs():
                         m = manifest.Manifest()
                         try:
                                 mcontent = file(mfst).read()
+                        except KeyboardInterrupt:
+                                raise
                         except:
                                 # XXX log something?
                                 continue
@@ -2082,8 +2044,8 @@ class Image(object):
                 return out
 
 
-        def make_install_plan(self, pkg_list, progress, filters = [],
-            verbose = False, noexecute = False):
+        def make_install_plan(self, pkg_list, prtrack, check_cancelation,
+            noexecute, filters = None, verbose=False):
                 """Take a list of packages, specified in pkg_list, and attempt
                 to assemble an appropriate image plan.  This is a helper
                 routine for some common operations in the client.
@@ -2095,23 +2057,26 @@ class Image(object):
                 the full FMRI that contains an authority should be used
                 to name the package."""
 
+                if filters is None:
+                        filters = []
+                
                 error = 0
-                ip = imageplan.ImagePlan(self, progress, filters = filters,
-                    noexecute = noexecute)
+                ip = imageplan.ImagePlan(self, prtrack, check_cancelation,
+                    filters=filters, noexecute=noexecute)
 
                 self.load_optional_dependencies()
 
+                unfound_fmris = []
+                multiple_matches = []
+                
                 for p in pkg_list:
                         try:
                                 conp = self.apply_optional_dependencies(p)
                                 matches = list(self.inventory([ conp ],
                                     all_known = True))
-                        except InventoryException:
-                                # XXX Module directly printing.
-                                msg(_("""\
-pkg: no package matching '%s' could be found in current catalog
-     suggest relaxing pattern, refreshing and/or examining catalogs""") % p)
+                        except api_errors.InventoryException:
                                 error = 1
+                                unfound_fmris.append(p)
                                 continue
 
                         pnames = {}
@@ -2127,19 +2092,11 @@ pkg: no package matching '%s' could be found in current catalog
                                         npmatch.append(m)
 
                         if len(pnames.keys()) > 1:
-                                # XXX Module directly printing.
-                                msg(_("pkg: '%s' matches multiple packages") % \
-                                    p)
-                                for k in pnames.keys():
-                                        msg("\t%s" % k)
+                                multiple_matches.append((p, pnames.keys()))
                                 error = 1
                                 continue
                         elif len(pnames.keys()) < 1 and len(npnames.keys()) > 1:
-                                # XXX Module directly printing.
-                                msg(_("pkg: '%s' matches multiple packages") % \
-                                    p)
-                                for k in npnames.keys():
-                                        msg("\t%s" % k)
+                                multiple_matches.append((p, pnames.keys()))
                                 error = 1
                                 continue
 
@@ -2151,7 +2108,8 @@ pkg: no package matching '%s' could be found in current catalog
                                 ip.propose_fmri(npmatch[0])
 
                 if error != 0:
-                        raise RuntimeError, "Unable to assemble image plan"
+                        raise api_errors.PlanCreationException(unfound_fmris,
+                            multiple_matches, None)
 
                 if verbose:
                         msg(_("Before evaluation:"))
@@ -2172,6 +2130,136 @@ pkg: no package matching '%s' could be found in current catalog
                 if verbose:
                         msg(_("After evaluation:"))
                         msg(ip.display())
+
+        def make_uninstall_plan(self, fmri_list, recursive_removal,
+            progresstracker, check_cancelation, noexecute, verbose=False):
+                ip = imageplan.ImagePlan(self, progresstracker,
+                    check_cancelation, recursive_removal, noexecute=noexecute)
+
+                err = 0
+
+                unfound_fmris = []
+                multiple_matches = []
+                missing_matches = []
+
+                for ppat in fmri_list:
+                        try:
+                                matches = list(self.inventory([ppat]))
+                        except api_errors.InventoryException:
+                                unfound_fmris.append(ppat)
+                                err = 1
+                                continue
+
+                        if len(matches) > 1:
+                                multiple_matches.append((ppat, matches))
+                                err = 1
+                                continue
+
+                        if len(matches) < 1:
+                                missing_matches.append(ppat)
+                                err = 1
+                                continue
+
+                        # Propose the removal of the first (and only!) match.
+                        ip.propose_fmri_removal(matches[0][0])
+
+                if err == 1:
+                        raise api_errors.PlanCreationException(unfound_fmris,
+                            multiple_matches, missing_matches)
+                if verbose:
+                        msg(_("Before evaluation:"))
+                        msg(ip)
+
+                self.history.operation_start_state = ip.get_plan()
+                ip.evaluate()
+                self.history.operation_end_state = ip.get_plan(full=False)
+                self.imageplan = ip
+
+                if verbose:
+                        msg(_("After evaluation:"))
+                        ip.display()
+
+        def ipkg_is_up_to_date(self, actual_cmd, check_cancelation, noexecute,
+            refresh_catalogs):
+                """ Test whether SUNWipkg is updated to the latest version
+                    known to be available for this image """
+                #
+                # This routine makes the distinction between the "target image",
+                # which will be altered, and the "running image", which is
+                # to say whatever image appears to contain the version of the 
+                # pkg command we're running.
+                #
+
+                #
+                # There are two relevant cases here:
+                #     1) Packaging code and image we're updating are the same
+                #        image.  (i.e. 'pkg image-update')
+                #
+                #     2) Packaging code's image and the image we're updating are
+                #        different (i.e. 'pkg image-update -R')
+                #
+                # In general, we care about getting the user to run the
+                # most recent packaging code available for their build.  So,
+                # if we're not in the liveroot case, we create a new image
+                # which represents "/" on the system.
+                #
+
+                # always quiet for this part of the code.
+                progresstracker = progress.QuietProgressTracker()
+
+                img = self
+                
+                if not img.is_liveroot():
+                        newimg = Image()
+                        cmdpath = os.path.join(os.getcwd(), actual_cmd)
+                        cmdpath = os.path.realpath(cmdpath)
+                        cmddir = os.path.dirname(os.path.realpath(cmdpath))
+                        #
+                        # Find the path to ourselves, and use that
+                        # as a way to locate the image we're in.  It's
+                        # not perfect-- we could be in a developer's
+                        # workspace, for example.
+                        #
+                        newimg.find_root(cmddir)
+                        newimg.load_config()
+
+                        if refresh_catalogs:
+                                # Refresh the catalog, so that we can discover
+                                # if a new SUNWipkg is available.
+                                try:
+                                        newimg.retrieve_catalogs()
+                                except api_errors.CatalogRefreshException, cre:
+                                        cre.message = \
+                                            _("SUNWipkg update check failed.")
+                                        raise
+
+                        # Load catalog.
+                        newimg.load_catalogs(progresstracker)
+                        img = newimg
+
+                # XXX call to progress tracker that SUNWipkg is being checked
+
+                img.make_install_plan(["SUNWipkg"], progresstracker,
+                    check_cancelation, noexecute, filters = [])
+
+                return img.imageplan.nothingtodo()
+
+        def installed_fmris_from_args(self, args):
+                """Helper function to translate client command line arguments
+                into a list of installed fmris.  Used by info, contents,
+                verify.
+                """
+                found = []
+                notfound = []
+                illegals = []
+                try:
+                        for m in self.inventory(args):
+                                found.append(m[0])
+                except api_errors.InventoryException, e:
+                        illegals = e.illegal
+                        notfound = e.notfound
+
+                return found, notfound, illegals
 
         def rebuild_search_index(self, progtracker):
                 """Rebuilds the search indexes.  Removes all

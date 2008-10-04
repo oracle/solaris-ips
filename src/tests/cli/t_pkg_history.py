@@ -111,14 +111,18 @@ class TestPkgHistory(testutils.ManyDepotTestCase):
                 # Only the operation is listed in short format.
                 for op in operations:
                         # Verify that each operation was recorded.
-                        self.assert_(o.find(op) != -1)
+                        if o.find(op) == -1:
+                                raise RuntimeError("Operation: %s wasn't "
+                                    "recorded, o:%s" % (op, o))
 
                 # The actual commands are only found in long format.
                 self.pkg("history -l")
                 o = self.output
                 for cmd in commands:
                         # Verify that each of the commands was recorded.
-                        self.assert_(o.find(" %s" % cmd) != -1)
+                        if o.find(" %s" % cmd) == -1:
+                                raise RuntimeError("Command: %s wasn't recorded,"
+                                    " o:%s" % (cmd, o))
 
         def test_3_purge_history(self):
                 """Verify that the purge-history command works as expected.

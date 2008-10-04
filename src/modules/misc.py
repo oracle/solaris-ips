@@ -199,6 +199,13 @@ def valid_auth_url(url):
 
         return False
 
+class FilelikeString(object):
+        def __init__(self):
+                self.buf = ""
+
+        def write(self, o):
+                self.buf += o
+
 def gunzip_from_stream(gz, outfile):
         """Decompress a gzipped input stream into an output stream.
 
@@ -450,7 +457,8 @@ try:
         page_size = os.sysconf("SC_PAGE_SIZE")
         SERVER_DEFAULT_MEM_USE_KB = (phys_pages / 1024.0) * page_size / 3
         CLIENT_DEFAULT_MEM_USE_KB = SERVER_DEFAULT_MEM_USE_KB / 2.0
-
+except KeyboardInterrupt:
+        raise
 except:
         CLIENT_DEFAULT_MEM_USE_KB = 100
         SERVER_DEFAULT_MEM_USE_KB = 500

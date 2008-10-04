@@ -53,6 +53,9 @@ class ProgressTracker(object):
         """
 
         def __init__(self):
+                self.reset()
+
+        def reset(self):
                 self.cat_cur_catalog = None
 
                 self.ver_cur_fmri = None
@@ -74,10 +77,9 @@ class ProgressTracker(object):
                 self.ind_goal_nitems = 0
                 self.ind_phase = "None"
                 self.ind_phase_last = "None"
-
-                self.debug = False
+                
                 self.last_printed = 0 # when did we last emit status?
-
+                
         def catalog_start(self, catalog):
                 self.cat_cur_catalog = catalog
                 self.cat_output_start()
@@ -380,6 +382,8 @@ class FancyUNIXProgressTracker(ProgressTracker):
 
                         curses.setupterm()
                         self.cr = curses.tigetstr("cr")
+                except KeyboardInterrupt:
+                        raise
                 except:
                         raise ProgressTrackerException()
                 self.dl_started = False

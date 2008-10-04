@@ -45,6 +45,7 @@ import pkg.client.imageplan as imageplan
 import pkg.client.imagestate as imagestate
 import pkg.client.progress as progress
 import pkg.client.retrieve as retrieve
+import pkg.client.api_errors as api_errors
 import pkg.fmri as fmri
 import pkg.client.indexer as indexer
 import pkg.search_errors as search_errors
@@ -270,7 +271,8 @@ class InstallUpdate(progress.ProgressTracker):
                         pkg_list = list_of_packages.get(image)
 
                         error = 0
-                        self.ip = imageplan.ImagePlan(image, self, filters = filters)
+                        self.ip = imageplan.ImagePlan(image, self,
+                            self.gui_thread.is_cancelled, filters = filters)
                         if self.image_update:
                                 self.ip.image.history.operation_name = \
                                     "image-update"
@@ -285,7 +287,8 @@ class InstallUpdate(progress.ProgressTracker):
                                         conp = image.apply_optional_dependencies(p)
                                         matches = list(image.inventory([ conp ],
                                             all_known = True))
-                                except (RuntimeError, InventoryException):
+                                except (RuntimeError,
+                                    api_errors.InventoryException):
                                         # XXX Module directly printing.
                                         error = 1
                                         continue
@@ -362,7 +365,7 @@ class InstallUpdate(progress.ProgressTracker):
                         try:
                                 self.__evaluate_fmri(f, image)
                         except KeyError, e:
-                                outstring += "Attempting to install %s causes:\n\t%s\n" % \
+                                outstring += "Attemping to install %s causes:\n\t%s\n" % \
                                     (f.get_name(), e)
                         except (retrieve.ManifestRetrievalError,
                             retrieve.DatastreamRetrievalError, NameError):

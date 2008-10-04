@@ -79,17 +79,19 @@ class PkgTarFile(tarfile.TarFile):
                 upperdirs = os.path.dirname(os.path.join(path, filename))
 
                 if upperdirs and not os.path.exists(upperdirs):
-			# The tarfile we receive contains only files, and none of the
-			# containing directories.  The tarfile code will create the
-			# directories as necessary, but with mode 777, which is
-			# insuffficiently secure.  Thus we create these directories in
-			# advance with tighter permissions; they'll be fixed up later, when
-			# the action execute methods run.  If proper directory actions
-			# don't exist for these directories, the permissions will be wrong.
-			try:
-				os.makedirs(upperdirs, 0700)
-			except:
-				pass
+                        # The tarfile we receive contains only files, and none of the
+                        # containing directories.  The tarfile code will create the
+                        # directories as necessary, but with mode 777, which is
+                        # insuffficiently secure.  Thus we create these directories in
+                        # advance with tighter permissions; they'll be fixed up later, when
+                        # the action execute methods run.  If proper directory actions
+                        # don't exist for these directories, the permissions will be wrong.
+                        try:
+                                os.makedirs(upperdirs, 0700)
+                        except KeyboardInterrupt:
+                                raise
+                        except:
+                                pass
                 try:
                         self._extract_member(tarinfo, os.path.join(
                             path, filename))

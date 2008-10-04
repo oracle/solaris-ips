@@ -46,7 +46,6 @@ import getopt
 import gettext
 import itertools
 import os
-import re
 import socket
 import sys
 import traceback
@@ -59,12 +58,11 @@ import calendar
 import OpenSSL.crypto
 
 import pkg.client.image as image
-import pkg.client.imageplan as imageplan
 import pkg.client.filelist as filelist
 import pkg.client.progress as progress
-import pkg.client.bootenv as bootenv
 import pkg.client.history as history
-import pkg.client.retrieve as retrieve
+import pkg.client.api as api
+import pkg.client.api_errors as api_errors
 import pkg.search_errors as search_errors
 import pkg.fmri as fmri
 import pkg.misc as misc
@@ -72,6 +70,18 @@ from pkg.misc import msg, emsg, PipeError
 import pkg.version
 import pkg.Uuid25
 import pkg
+
+from pkg.client.history import RESULT_FAILED_UNKNOWN
+from pkg.client.history import RESULT_CANCELED
+from pkg.client.history import RESULT_FAILED_TRANSPORT
+from pkg.client.history import RESULT_SUCCEEDED
+from pkg.client.history import RESULT_FAILED_SEARCH
+from pkg.client.history import RESULT_FAILED_STORAGE
+from pkg.client.retrieve import ManifestRetrievalError
+from pkg.client.retrieve import DatastreamRetrievalError
+
+CLIENT_API_VERSION = 0
+PKG_CLIENT_NAME = "pkg"
 
 def error(text):
         """Emit an error message prefixed by the command name """
@@ -148,13 +158,6 @@ INCONSISTENT_INDEX_ERROR_MESSAGE = "The search index appears corrupted.  " + \
 PROBLEMATIC_PERMISSIONS_ERROR_MESSAGE = " (Failure of consistent use " + \
     "of pfexec when running pkg commands is often a source of this problem.)"
 
-def get_partial_indexing_error_message(text):
-        return "Result of partial indexing found.\n" + \
-            "Could not make: " + \
-            text + "\nbecause it already exists. " + \
-            "Please use 'pkg rebuild-index' " + \
-            "to fix this problem."
-
 def check_fmri_args(args):
         """ Convenience routine to check that input args are valid fmris. """
         ret = True
@@ -228,8 +231,7 @@ def list_inventory(img, args):
                                         else:
                                                 msg(fmt_str % \
                                                     ("NAME (AUTHORITY)",
-                                                    "VERSION", "STATE",
-                                                    "UFIX"))
+                                                    "VERSION", "STATE", "UFIX"))
                                 found = True
 
                         ufix = "%c%c%c%c" % \
@@ -244,8 +246,7 @@ def list_inventory(img, args):
                                 auth = " (" + pfmri.get_authority() + ")"
 
                         if verbose:
-                                pf = pfmri.get_fmri(
-                                    img.get_default_authority())
+                                pf = pfmri.get_fmri(img.get_default_authority())
                                 msg("%-64s %-10s %s" % (pf, state["state"],
                                     ufix))
                         elif summary:
@@ -284,7 +285,7 @@ def list_inventory(img, args):
                 img.history.operation_result = history.RESULT_SUCCEEDED
                 return 0
 
-        except image.InventoryException, e:
+        except api_errors.InventoryException, e:
                 if e.illegal:
                         for i in e.illegal:
                                 error(i)
@@ -311,26 +312,6 @@ def get_tracker(quiet = False):
                 except progress.ProgressTrackerException:
                         progresstracker = progress.CommandLineProgressTracker()
         return progresstracker
-
-
-
-def installed_fmris_from_args(img, args):
-        """Helper function to translate client command line arguments
-            into a list of installed fmris.  Used by info, contents, verify.
-
-            XXX consider moving into image class
-        """
-        found = []
-        notfound = []
-        illegals = []
-        try:
-                for m in img.inventory(args):
-                        found.append(m[0])
-        except image.InventoryException, e:
-                illegals = e.illegal
-                notfound = e.notfound
-
-        return found, notfound, illegals
 
 def verify_image(img, args):
         opts, pargs = getopt.getopt(args, "vfqH")
@@ -360,7 +341,7 @@ def verify_image(img, args):
 
         img.load_catalogs(progresstracker)
 
-        fmris, notfound, illegals = installed_fmris_from_args(img, pargs)
+        fmris, notfound, illegals = img.installed_fmris_from_args(pargs)
 
         if illegals:
                 for i in illegals:
@@ -380,8 +361,7 @@ def verify_image(img, args):
                         #
                         if not pkgerr:
                                 if display_headers and not header:
-                                        msg("%-50s %7s" % ("PACKAGE",
-                                            "STATUS"))
+                                        msg("%-50s %7s" % ("PACKAGE", "STATUS"))
                                         header = True
 
                                 if not quiet:
@@ -425,99 +405,13 @@ installed on the system.\n"""))
                 return 1
         return 0
 
-def ipkg_is_up_to_date(img):
-        """ Test whether SUNWipkg is updated to the latest version
-            known to be available for this image """
-        #
-        # This routine makes the distinction between the "target image"--
-        # which we're going to alter, and the "running image", which is to
-        # say whatever image appears to contain the version of the pkg
-        # command we're running.
-        #
-
-        #
-        # There are two relevant cases here:
-        #     1) Packaging code and image we're updating are the same
-        #        image.  (i.e. 'pkg image-update')
-        #
-        #     2) Packaging code's image and the image we're updating are
-        #        different (i.e. 'pkg image-update -R')
-        #
-        # In general, we care about getting the user to run the
-        # most recent packaging code available for their build.  So,
-        # if we're not in the liveroot case, we create a new image
-        # which represents "/" on the system.
-        #
-
-        # always quiet for this part of the code.
-        progresstracker = get_tracker(True)
-
-        if not img.is_liveroot():
-                newimg = image.Image()
-                cmdpath = os.path.join(os.getcwd(), sys.argv[0])
-                cmdpath = os.path.realpath(cmdpath)
-                cmddir = os.path.dirname(os.path.realpath(cmdpath))
-                try:
-                        #
-                        # Find the path to ourselves, and use that
-                        # as a way to locate the image we're in.  It's
-                        # not perfect-- we could be in a developer's
-                        # workspace, for example.
-                        #
-                        newimg.find_root(cmddir)
-                except ValueError:
-                        # We can't answer in this case, so we return True to
-                        # let installation proceed.
-                        msg(_("No image corresponding to '%s' was located. " \
-                            "Proceeding.") % cmdpath)
-                        return True
-                newimg.load_config()
-
-                # Refresh the catalog, so that we can discover if a new
-                # SUNWipkg is available.
-                try:
-                        newimg.retrieve_catalogs()
-                except image.CatalogRefreshException, cre:
-                        display_catalog_failures(cre)
-                        error(_("SUNWipkg update check failed."))
-                        return False
-
-                # Load catalog.
-                newimg.load_catalogs(progresstracker)
-                img = newimg
-
-        msg(_("Checking that SUNWipkg (in '%s') is up to date... ") % \
-            img.get_root())
-
-        try:
-                img.make_install_plan(["SUNWipkg"], progresstracker,
-                    filters=[], noexecute=True)
-        except RuntimeError:
-                return True
-
-        if img.imageplan.nothingtodo():
-                return True
-
-        msg(_("WARNING: pkg(5) appears to be out of date, and should be " \
-            "updated before\nrunning image-update.\n"))
-        msg(_("Please update pkg(5) using 'pfexec pkg install SUNWipkg' " \
-            "and then retry\nthe image-update."))
-        return False
-
-
-def image_update(img, args):
+def image_update(img_dir, args):
         """Attempt to take all installed packages specified to latest
         version."""
 
         # XXX Authority-catalog issues.
         # XXX Are filters appropriate for an image update?
         # XXX Leaf package refinements.
-
-        # Verify validity of certificates before attempting network operations
-        if not img.check_cert_validity():
-                return 1
-
-        ret_code = 0
 
         opts, pargs = getopt.getopt(args, "b:fnvq", ["no-refresh"])
 
@@ -544,139 +438,96 @@ def image_update(img, args):
                 usage(_("image-update: command does not take operands " \
                     "('%s')") % " ".join(pargs))
 
-        img.history.operation_name = "image-update"
         progresstracker = get_tracker(quiet)
-        img.load_catalogs(progresstracker)
-
-        if refresh_catalogs:
-                try:
-                        img.retrieve_catalogs()
-                except image.CatalogRefreshException, cre:
-                        if display_catalog_failures(cre) == 0:
-                                if not noexecute:
-                                        return 1
-                        else:
-                                ret_code = 3
-
-                # Reload catalog. This picks up the update from
-                # retrieve_catalogs.
-                img.load_catalogs(progresstracker)
-
-        #
-        # If we can find SUNWipkg and SUNWcs in the target image, then
-        # we assume this is a valid opensolaris image, and activate some
-        # special case behaviors.
-        #
-        opensolaris_image = True
-        fmris, notfound, illegals = \
-            installed_fmris_from_args(img, ["SUNWipkg", "SUNWcs"])
-        assert(len(illegals) == 0)
-        if notfound:
-                opensolaris_image = False
-
-        if opensolaris_image and not force:
-                if not ipkg_is_up_to_date(img):
-                        img.history.operation_result = \
-                            history.RESULT_FAILED_CONSTRAINED
-                        return 1
-
-        pkg_list = [ ipkg.get_pkg_stem() for ipkg in img.gen_installed_pkgs() ]
 
         try:
-                img.make_install_plan(pkg_list, progresstracker,
-                    verbose=verbose, noexecute=noexecute)
-        except RuntimeError, e:
-                img.history.operation_result = history.RESULT_FAILED_UNKNOWN
-                error(_("image-update failed: %s") % e)
+                api_inst = api.ImageInterface(img_dir, CLIENT_API_VERSION,
+                    progresstracker, cancel_state_callable=None,
+                    pkg_client_name=PKG_CLIENT_NAME)
+        except api_errors.ImageNotFoundException, e:
+                error(_("No image rooted at '%s'") % e.user_dir)
                 return 1
 
-        assert img.imageplan
-
-        if img.imageplan.nothingtodo():
-                img.history.operation_result = history.RESULT_NOTHING_TO_DO
-                msg(_("No updates available for this image."))
-                return ret_code
-
+        try:
+                # cre is either None or a catalog refresh exception which was
+                # caught while planning.
+                stuff_to_do, opensolaris_image, cre = \
+                    api_inst.plan_update_all(sys.argv[0], refresh_catalogs,
+                        noexecute, force=force, verbose=verbose)
+                if cre and not display_catalog_failures(cre):
+                        raise RuntimeError("Catalog refresh failed during"
+                            " image-update.")
+                if not stuff_to_do:
+                        msg(_("No updates available for this image."))
+                        return 0
+        except api_errors.CatalogRefreshException, e:
+                if display_catalog_failures(e) == 0:
+                        if not noexecute:
+                                return 1
+                else:
+                        raise RuntimeError("Catalog refresh failed during"
+                            " image-update.")
+        except (api_errors.PlanCreationException,
+            api_errors.NetworkUnavailableException), e:
+                msg(str(e))
+                return 1
+        except api_errors.IpkgOutOfDateException:
+                msg(_("WARNING: pkg(5) appears to be out of date, and should " \
+                    "be updated before\nrunning image-update.\n"))
+                msg(_("Please update pkg(5) using 'pfexec pkg install " \
+                    "SUNWipkg' and then retry\nthe image-update."))
+                return 1
+        except api_errors.ImageNotFoundException, e:
+                error(_("No image rooted at '%s'") % e.user_dir)
+                return 1
         if noexecute:
-                img.history.operation_result = history.RESULT_NOTHING_TO_DO
-                return ret_code
+                return 0
 
+        ret_code = 0
+        
         try:
-                img.imageplan.preexecute()
-        except Exception, e:
-                img.history.operation_result = history.RESULT_FAILED_UNKNOWN
-                error(_("\nAn unexpected error happened during " \
-                    "image-update:"))
-                img.cleanup_downloads()
+                api_inst.prepare()
+        except KeyboardInterrupt:
                 raise
-        try:
-                be = bootenv.BootEnv(img.get_root())
-        except RuntimeError:
-                be = bootenv.BootEnvNull(img.get_root())
-
-        be.init_image_recovery(img)
-
-        if img.is_liveroot():
-                img.history.operation_result = \
-                    history.RESULT_FAILED_BAD_REQUEST
-                error(_("image-update cannot be done on live image"))
-                return 1
+        except:
+                error(_("\nAn unexpected error happened while preparing for " \
+                    "image-update:"))
+                raise
 
         try:
-                img.imageplan.execute()
-                be.activate_image()
+                api_inst.execute_plan()
         except RuntimeError, e:
-                img.history.operation_result = history.RESULT_FAILED_UNKNOWN
                 error(_("image-update failed: %s") % e)
-                be.restore_image()
                 ret_code = 1
-        except search_errors.InconsistentIndexException, e:
-                img.history.operation_result = history.RESULT_FAILED_SEARCH
+        except api_errors.ImageUpdateOnLiveImageException:
+                error(_("image-update cannot be done on live image"))
+                ret_code = 1
+        except api_errors.CorruptedIndexException, e:
                 error(INCONSISTENT_INDEX_ERROR_MESSAGE)
                 ret_code = 1
-        except search_errors.PartialIndexingException, e:
-                img.history.operation_result = history.RESULT_FAILED_SEARCH
-                error(get_partial_indexing_error_message(e.cause))
-                ret_code = 1
-        except search_errors.ProblematicPermissionsIndexException, e:
-                img.history.operation_result = history.RESULT_FAILED_STORAGE
+        except api_errors.ProblematicPermissionsIndexException, e:
                 error(str(e) + PROBLEMATIC_PERMISSIONS_ERROR_MESSAGE)
                 ret_code = 1
         except Exception, e:
-                img.history.operation_result = history.RESULT_FAILED_UNKNOWN
                 error(_("\nAn unexpected error happened during " \
                     "image-update: %s") % e)
-                be.restore_image()
-                img.cleanup_downloads()
                 raise
 
-        img.cleanup_downloads()
-        if ret_code == 0:
-                img.cleanup_cached_content()
-                img.history.operation_result = history.RESULT_SUCCEEDED
-
-                if opensolaris_image:
-                        msg("\n" + "-" * 75)
-                        msg(_("NOTE: Please review release notes posted at:\n"
-                            "   http://opensolaris.org/os/project/indiana/"
-                            "resources/rn3/"))
-                        msg("-" * 75 + "\n")
+        if ret_code == 0 and opensolaris_image:
+                msg("\n" + "-" * 75)
+                msg(_("NOTE: Please review release notes posted at:\n" \
+                    "   http://opensolaris.org/os/project/indiana/" \
+                    "resources/rn3/"))
+                msg("-" * 75 + "\n")
 
         return ret_code
 
-
-def install(img, args):
+def install(img_dir, args):
         """Attempt to take package specified to INSTALLED state.  The operands
         are interpreted as glob patterns."""
 
         # XXX Authority-catalog issues.
 
-        # Verify validity of certificates before attempting network operations
-        if not img.check_cert_validity():
-                return 1
-
-        ret_code = 0
-        
         opts, pargs = getopt.getopt(args, "nvb:f:q", ["no-refresh"])
 
         quiet = noexecute = verbose = False
@@ -702,117 +553,75 @@ def install(img, args):
         if verbose and quiet:
                 usage(_("install: -v and -q may not be combined"))
 
-        img.history.operation_name = "install"
         progresstracker = get_tracker(quiet)
 
         if not check_fmri_args(pargs):
                 return 1
-
-        img.load_catalogs(progresstracker)
-
-        if refresh_catalogs:
         
-                try:
-                        img.retrieve_catalogs()
-                except image.CatalogRefreshException, cre:
-                        if not display_catalog_failures(cre):
-                                if not noexecute:
-                                        return 1
-                        else:
-                                ret_code = 3
-
-                # Reload catalog. This picks up the update from
-                # retrieve_catalogs.
-                img.load_catalogs(progresstracker)
-
+        # XXX not sure where this should live
         pkg_list = [ pat.replace("*", ".*").replace("?", ".")
             for pat in pargs ]
 
         try:
-                img.make_install_plan(pkg_list, progresstracker,
-                    filters=filters, verbose=verbose, noexecute=noexecute)
-        except RuntimeError, e:
-                img.history.operation_result = history.RESULT_FAILED_UNKNOWN
-                error(_("install failed (runtime error): %s") % e)
+                api_inst = api.ImageInterface(img_dir, CLIENT_API_VERSION,
+                    progresstracker, None, PKG_CLIENT_NAME)
+        except api_errors.ImageNotFoundException, e:
+                error(_("'%s' is not an install image") % e.user_dir)
                 return 1
-        except image.InventoryException, e:
-                img.history.operation_result = \
-                    history.RESULT_FAILED_UNKNOWN
+
+        try:
+                if not api_inst.plan_install(pkg_list, filters,
+                    refresh_catalogs, noexecute, verbose=verbose):
+                        msg(_("Nothing to install in this image (is this "
+                            "package already installed?)"))
+                        return 0
+        except api_errors.InvalidCertException:
+                return 1
+        except (api_errors.PlanCreationException,
+            api_errors.NetworkUnavailableException), e:
+                msg(str(e))
+                return 1
+        except api_errors.InventoryException, e:
                 error(_("install failed (inventory exception): %s") % e)
                 return 1
         except fmri.IllegalFmri, e:
-                img.history.operation_result = \
-                    history.RESULT_FAILED_BAD_REQUEST
                 error(e)
                 return 1
 
-        assert img.imageplan
 
-        #
-        # The result of make_install_plan is that an imageplan is now filled
-        # out for the image.
-        #
-        if img.imageplan.nothingtodo():
-                img.history.operation_result = history.RESULT_NOTHING_TO_DO
-                msg(_("Nothing to install in this image (is this package " \
-                    "already installed?)"))
-                return ret_code
 
         if noexecute:
-                img.history.operation_result = history.RESULT_NOTHING_TO_DO
-                return ret_code
+                return 0
 
         try:
-                img.imageplan.preexecute()
+                api_inst.prepare()
         except Exception, e:
-                img.history.operation_result = history.RESULT_FAILED_UNKNOWN
-                error(_("\nAn unexpected error happened during " \
+                error(_("\nAn unexpected error happened while preparing for " \
                     "install:"))
-                img.cleanup_downloads()
                 raise
 
+        ret_code = 0
+        
         try:
-                be = bootenv.BootEnv(img.get_root())
-        except RuntimeError:
-                be = bootenv.BootEnvNull(img.get_root())
-
-        try:
-                img.imageplan.execute()
-                be.activate_install_uninstall()
+                api_inst.execute_plan()
         except RuntimeError, e:
-                img.history.operation_result = history.RESULT_FAILED_UNKNOWN
                 error(_("installation failed: %s") % e)
-                be.restore_install_uninstall()
                 ret_code = 1
-        except search_errors.InconsistentIndexException, e:
-                img.history.operation_result = history.RESULT_FAILED_SEARCH
+        except api_errors.CorruptedIndexException, e:
                 error(INCONSISTENT_INDEX_ERROR_MESSAGE)
                 ret_code = 1
-        except search_errors.PartialIndexingException, e:
-                img.history.operation_result = history.RESULT_FAILED_SEARCH
-                error(get_partial_indexing_error_message(e.cause))
-                ret_code = 1
-        except search_errors.ProblematicPermissionsIndexException, e:
-                img.history.operation_result = history.RESULT_FAILED_STORAGE
+        except api_errors.ProblematicPermissionsIndexException, e:
                 error(str(e) + PROBLEMATIC_PERMISSIONS_ERROR_MESSAGE)
                 ret_code = 1
         except Exception, e:
-                img.history.operation_result = history.RESULT_FAILED_UNKNOWN
                 error(_("An unexpected error happened during " \
                     "installation: %s") % e)
-                be.restore_install_uninstall()
-                img.cleanup_downloads()
                 raise
-
-        img.cleanup_downloads()
-        if ret_code == 0:
-                img.cleanup_cached_content()
-                img.history.operation_result = history.RESULT_SUCCEEDED
 
         return ret_code
 
 
-def uninstall(img, args):
+def uninstall(img_dir, args):
         """Attempt to take package specified to DELETED state."""
 
         opts, pargs = getopt.getopt(args, "nrvq")
@@ -834,130 +643,67 @@ def uninstall(img, args):
         if verbose and quiet:
                 usage(_("uninstall: -v and -q may not be combined"))
 
-        img.history.operation_name = "uninstall"
         progresstracker = get_tracker(quiet)
 
         if not check_fmri_args(pargs):
                 return 1
 
-        img.load_catalogs(progresstracker)
-
-        ip = imageplan.ImagePlan(img, progresstracker, recursive_removal,
-            noexecute)
-
-        err = 0
-
-        for ppat in pargs:
-                rpat = re.sub("\*", ".*", ppat)
-                rpat = re.sub("\?", ".", rpat)
-
-                try:
-                        matches = list(img.inventory([ rpat ]))
-                except RuntimeError:
-                        error(_("'%s' not even in catalog!") % ppat)
-                        err = 1
-                        continue
-                except image.InventoryException, e:
-                        error(e)
-                        err = 1
-                        continue
-
-                if len(matches) > 1:
-                        error(_("'%s' matches multiple packages") % ppat)
-                        for k in matches:
-                                msg("\t%s" % k[0])
-                        err = 1
-                        continue
-
-                if len(matches) < 1:
-                        error(_("'%s' matches no installed packages") % \
-                            ppat)
-                        err = 1
-                        continue
-
-                # Propose the removal of the first (and only!) match.
-                ip.propose_fmri_removal(matches[0][0])
-
-        if err == 1:
-                img.history.operation_result = \
-                    history.RESULT_FAILED_BAD_REQUEST
-                return err
-
-        if verbose:
-                msg(_("Before evaluation:"))
-                msg(ip)
+        # XXX not sure where this should live
+        pkg_list = [ pat.replace("*", ".*").replace("?", ".")
+            for pat in pargs ]
+        
+        try:
+                api_inst = api.ImageInterface(img_dir, CLIENT_API_VERSION,
+                    progresstracker, None, PKG_CLIENT_NAME)
+        except api_errors.ImageNotFoundException, e:
+                error(_("'%s' is not an install image") % e.user_dir)
+                return 1
 
         try:
-                img.history.operation_start_state = ip.get_plan()
-                ip.evaluate()
-                img.history.operation_end_state = ip.get_plan(full=False)
-        except imageplan.NonLeafPackageException, e:
-                img.history.operation_result = \
-                    history.RESULT_FAILED_CONSTRAINED
-                error("""Cannot remove '%s' due to the following packages """
-                    """that depend on it:""" % e[0])
+                if not api_inst.plan_uninstall(pkg_list, recursive_removal,
+                    noexecute, verbose=verbose):
+                        assert 0
+        except api_errors.NonLeafPackageException, e:
+                error("""Cannot remove '%s' due to
+the following packages that depend on it:""" % e[0])
                 for d in e[1]:
                         emsg("  %s" % d)
                 return 1
+        except (api_errors.PlanCreationException,
+            api_errors.NetworkUnavailableException), e:
+                msg(str(e))
+                return 1
 
-        img.imageplan = ip
-
-        if verbose:
-                msg(_("After evaluation:"))
-                ip.display()
-
-        assert not ip.nothingtodo()
 
         if noexecute:
-                img.history.operation_result = history.RESULT_NOTHING_TO_DO
                 return 0
 
         try:
-                img.imageplan.preexecute()
+                api_inst.prepare()
         except Exception, e:
-                img.history.operation_result = history.RESULT_FAILED_UNKNOWN
-                error(_("\nAn unexpected error happened during " \
-                    "uninstall"))
+                error(_("\nAn unexpected error happened while preparing for " \
+                    "uninstall:"))
                 raise
 
+        ret_code = 0
+        
         try:
-                be = bootenv.BootEnv(img.get_root())
-        except RuntimeError:
-                be = bootenv.BootEnvNull(img.get_root())
-
-        try:
-                ip.execute()
+                api_inst.execute_plan()
         except RuntimeError, e:
-                img.history.operation_result = history.RESULT_FAILED_UNKNOWN
-                error(_("installation failed: %s") % e)
-                be.restore_install_uninstall()
-                err = 1
-        except search_errors.InconsistentIndexException, e:
-                img.history.operation_result = history.RESULT_FAILED_SEARCH
+                error(_("uninstallation failed: %s") % e)
+                ret_code = 1
+        except api_errors.CorruptedIndexException, e:
                 error(INCONSISTENT_INDEX_ERROR_MESSAGE)
-                err = 1
-        except search_errors.PartialIndexingException, e:
-                img.history.operation_result = history.RESULT_FAILED_SEARCH
-                error(get_partial_indexing_error_message(e.cause))
-                err = 1
-        except search_errors.ProblematicPermissionsIndexException, e:
-                img.history.operation_result = history.RESULT_FAILED_STORAGE
+                ret_code = 1
+        except api_errors.ProblematicPermissionsIndexException, e:
                 error(str(e) + PROBLEMATIC_PERMISSIONS_ERROR_MESSAGE)
-                err = 1
+                ret_code = 1
         except Exception, e:
-                img.history.operation_result = history.RESULT_FAILED_UNKNOWN
                 error(_("An unexpected error happened during " \
                     "uninstallation: %s") % e)
-                be.restore_install_uninstall()
                 raise
 
-        if ip.state == imageplan.EXECUTED_OK:
-                be.activate_install_uninstall()
-                img.history.operation_result = history.RESULT_SUCCEEDED
-        else:
-                be.restore_install_uninstall()
-
-        return err
+        return ret_code
 
 def freeze(img, args):
         """Attempt to take package specified to FROZEN state, with given
@@ -1007,15 +753,9 @@ def search(img, args):
         searches = []
         if local:
                 try:
-                        searches.append(img.local_search(pargs,
-                            case_sensitive))
-                except search_errors.NoIndexException, nie:
-                        error(str(nie) +
-                            "\nPlease try 'pkg rebuild-index' to recreate " +
-                            "the index.")
-                        return 1
+                        searches.append(img.local_search(pargs, case_sensitive))
                 except (search_errors.InconsistentIndexException,
-                           search_errors.IncorrectIndexFileHash):
+                        search_errors.IncorrectIndexFileHash):
                         error("The search index appears corrupted.  Please "
                             "rebuild the index with 'pkg rebuild-index'.")
                         return 1
@@ -1062,19 +802,7 @@ def search(img, args):
 
         return retcode
 
-def info_license(img, mfst, remote):
-        for i, lic in enumerate(mfst.gen_actions_by_type("license")):
-                if i > 0:
-                        msg("")
-
-                if remote:
-                        misc.gunzip_from_stream(
-                            lic.get_remote_opener(img, mfst.fmri)(),
-                                sys.stdout)
-                else:
-                        msg(lic.get_local_opener(img, mfst.fmri)().read()[:-1])
-
-def info(img, args):
+def info(img_dir, args):
         """Display information about a package or packages.
         """
 
@@ -1097,132 +825,61 @@ def info(img, args):
                 usage(_("info: -l and -r may not be combined"))
 
         if info_remote and not pargs:
-                usage(_("info: must request remote info for specific "
-                    "packages"))
+                usage(_("info: must request remote info for specific packages"))
 
         if not check_fmri_args(pargs):
                 return 1
 
-        img.history.operation_name = "info"
-        img.load_catalogs(progress.NullProgressTracker())
-
         err = 0
 
-        if info_local:
-                fmris, notfound, illegals = \
-                    installed_fmris_from_args(img, pargs)
-                if illegals:
-                        for i in illegals:
-                                emsg(str(i))
-                        img.history.operation_result = \
-                            history.RESULT_FAILED_BAD_REQUEST
-                        return 1
+        api_inst = api.ImageInterface(img_dir, CLIENT_API_VERSION,
+            progress.NullProgressTracker(), None, PKG_CLIENT_NAME)
 
-                if not fmris and not notfound:
-                        error(_("no packages installed"))
-                        img.history.operation_result = \
-                            history.RESULT_NOTHING_TO_DO
-                        return 1
-        elif info_remote:
-                # Verify validity of certificates before attempting network
-                # operations
-                if not img.check_cert_validity():
-                        img.history.operation_result = \
-                            history.RESULT_FAILED_TRANSPORT
-                        return 1
+        try:
+                ret = api_inst.info(pargs, info_local, display_license)
+                pis = ret[api.ImageInterface.INFO_FOUND]
+                notfound = ret[api.ImageInterface.INFO_MISSING]
+                illegals = ret[api.ImageInterface.INFO_ILLEGALS]
+                multi_match = ret[api.ImageInterface.INFO_MULTI_MATCH]
+                
+        except api_errors.NoPackagesInstalledException:
+                error(_("no packages installed"))
+                return 1
 
-                fmris = []
-                notfound = []
-
-                # XXX This loop really needs not to be copied from
-                # Image.make_install_plan()!
-                for p in pargs:
-                        try:
-                                matches = list(img.inventory([ p ],
-                                    all_known = True))
-                        except image.InventoryException, e:
-                                assert(len(e.notfound) == 1)
-                                notfound.append(e.notfound[0])
-                                err = 1
-                                continue
-
-                        pnames = {}
-                        pmatch = []
-                        npnames = {}
-                        npmatch = []
-                        for m, state in matches:
-                                if m.preferred_authority():
-                                        pnames[m.get_pkg_stem()] = 1
-                                        pmatch.append(m)
-                                else:
-                                        npnames[m.get_pkg_stem()] = 1
-                                        npmatch.append(m)
-
-                        if len(pnames.keys()) > 1:
-                                msg(_("pkg: '%s' matches multiple "
-                                    "packages") % p)
-                                for k in pnames.keys():
-                                        msg("\t%s" % k)
-                                continue
-                        elif len(pnames.keys()) < 1 and \
-                            len(npnames.keys()) > 1:
-                                msg(_("pkg: '%s' matches multiple "
-                                    "packages") % p)
-                                for k in npnames.keys():
-                                        msg("\t%s" % k)
-                                continue
-
-                        # matches is a list reverse sorted by version, so take
-                        # the first; i.e., the latest.
-                        if len(pmatch) > 0:
-                                fmris.append(pmatch[0])
-                        else:
-                                fmris.append(npmatch[0])
-
-        manifests = ( img.get_manifest(f, filtered=True) for f in fmris )
-
-        for i, m in enumerate(manifests):
+        for i, pi in enumerate(pis):
                 if i > 0:
                         msg("")
 
                 if display_license:
-                        info_license(img, m, info_remote)
+                        for lic in pi.licenses:
+                                msg(lic)
                         continue
-
-                authority, name, version = m.fmri.tuple()
-                authority = fmri.strip_auth_pfx(authority)
-                summary = m.get("description", "")
-                if m.fmri.preferred_authority():
-                        authority += _(" (preferred)")
-                if img.is_installed(m.fmri):
+                
+                if pi.state == api.PackageInfo.INSTALLED:
                         state = _("Installed")
-                else:
+                elif pi.state == api.PackageInfo.NOT_INSTALLED:
                         state = _("Not installed")
-
-                msg("          Name:", name)
-                msg("       Summary:", summary)
+                else:
+                        raise RuntimeError("Encountered unknown package "
+                            "information state: %d" % pi.state )
+                
+                msg("          Name:", pi.pkg_stem)
+                msg("       Summary:", pi.summary)
                 msg("         State:", state)
 
                 # XXX even more info on the authority would be nice?
-                msg("     Authority:", authority)
-                msg("       Version:", version.release)
-                msg(" Build Release:", version.build_release)
-                msg("        Branch:", version.branch)
-                msg("Packaging Date:", version.get_timestamp().ctime())
-                if m.size > (1024 * 1024):
-                        msg("          Size: %.1f MB" % \
-                            (m.size / float(1024 * 1024)))
-                elif m.size > 1024:
-                        msg("          Size: %d kB" % (m.size / 1024))
-                else:
-                        msg("          Size: %d B" % m.size)
-                msg("          FMRI:", m.fmri)
-                # XXX need to properly humanize the manifest.size
+                msg("     Authority:", pi.authority)
+                msg("       Version:", pi.version)
+                msg(" Build Release:", pi.build_release)
+                msg("        Branch:", pi.branch)
+                msg("Packaging Date:", pi.packaging_date)
+                msg("          Size: %s", misc.bytes_to_str(pi.size))
+                msg("          FMRI:", pi.fmri)
                 # XXX add license/copyright info here?
 
         if notfound:
                 err = 1
-                if fmris:
+                if pis:
                         emsg()
                 if info_local:
                         emsg(_("""\
@@ -1236,9 +893,18 @@ examining the catalogs:"""))
                 emsg()
                 for p in notfound:
                         emsg("        %s" % p)
-                img.history.operation_result = history.RESULT_NOTHING_TO_DO
-        else:
-                img.history.operation_result = history.RESULT_SUCCEEDED
+
+        if illegals:
+                for i in illegals:
+                        emsg(str(i))
+                err = 1
+
+        if multi_match:
+                err = 1
+                for pfmri, matches in  multi_match:
+                        error(_("'%s' matches multiple packages") % pfmri)
+                        for k in matches:
+                                msg("\t%s" % k[0])
         return err
 
 def display_contents_results(actionlist, attrs, sort_attrs, action_types,
@@ -1427,7 +1093,7 @@ def list_contents(img, args):
 
         if local:
                 fmris, notfound, illegals = \
-                    installed_fmris_from_args(img, pargs)
+                    img.installed_fmris_from_args(pargs)
 
                 if illegals:
                         for i in illegals:
@@ -1458,7 +1124,7 @@ def list_contents(img, args):
                         try:
                                 matches = list(img.inventory([ p ],
                                     all_known = True))
-                        except image.InventoryException, e:
+                        except api_errors.InventoryException, e:
                                 assert(len(e.notfound) == 1)
                                 notfound.append(e.notfound[0])
                                 continue
@@ -1476,15 +1142,14 @@ def list_contents(img, args):
                                         npmatch.append(m)
 
                         if len(pnames.keys()) > 1:
-                                msg(_("pkg: '%s' matches multiple "
-                                    "packages") % p)
+                                msg(_("pkg: '%s' matches multiple packages") % \
+                                    p)
                                 for k in pnames.keys():
                                         msg("\t%s" % k)
                                 continue
-                        elif len(pnames.keys()) < 1 and \
-                            len(npnames.keys()) > 1:
-                                msg(_("pkg: '%s' matches multiple "
-                                    "packages") % p)
+                        elif len(pnames.keys()) < 1 and len(npnames.keys()) > 1:
+                                msg(_("pkg: '%s' matches multiple packages") % \
+                                    p)
                                 for k in npnames.keys():
                                         msg("\t%s" % k)
                                 continue
@@ -1551,8 +1216,7 @@ examining the catalogs:"""))
 def display_catalog_failures(cre):
         total = cre.total
         succeeded = cre.succeeded
-        msg(_("pkg: %s/%s catalogs successfully updated:") % (succeeded,
-            total))
+        msg(_("pkg: %s/%s catalogs successfully updated:") % (succeeded, total))
 
         for auth, err in cre.failed:
                 if isinstance(err, urllib2.HTTPError):
@@ -1574,14 +1238,13 @@ def display_catalog_failures(cre):
                 else:
                         emsg("   ", err)
 
+        if cre.message:
+                emsg(cre.message)
+                        
         return succeeded
 
-def catalog_refresh(img, args):
+def catalog_refresh(img_dir, args):
         """Update image's catalogs."""
-
-        # Verify validity of certificates before attempting network operations
-        if not img.check_cert_validity():
-                return 1
 
         # XXX will need to show available content series for each package
         full_refresh = False
@@ -1590,31 +1253,25 @@ def catalog_refresh(img, args):
                 if opt == "--full":
                         full_refresh = True
 
-        auths_to_refresh = []
-        for parg in pargs:
-                try:
-                        auth = img.get_authority(parg)
-                except KeyError:
-                        tmp = "%s is not a recognized authority to " \
-                            "refresh. \n'pkg authority' will show a" \
-                            " list of authorities."
-                        tmp = (_(tmp))
-                        tmp = tmp % parg
-                        error(tmp)
-                        return 1
-                auths_to_refresh.append(auth)
-
-        # Ensure Image directory structure is valid.
-        if not os.path.isdir("%s/catalog" % img.imgdir):
-                img.mkdirs()
-
-        # Loading catalogs allows us to perform incremental update
-        img.load_catalogs(get_tracker())
+        progresstracker = get_tracker(True)
+                        
+        try:
+                api_inst = api.ImageInterface(img_dir, CLIENT_API_VERSION,
+                    progresstracker, None, PKG_CLIENT_NAME)
+        except api_errors.ImageNotFoundException, e:
+                error(_("'%s' is not an install image") % e.user_dir)
+                return 1
 
         try:
-                img.retrieve_catalogs(full_refresh, auths_to_refresh)
-        except image.CatalogRefreshException, cre:
-                if display_catalog_failures(cre) == 0:
+                api_inst.refresh(full_refresh, pargs)
+        except api_errors.UnrecognizedAuthorityException, e:
+                tmp = _("%s is not a recognized authority to " \
+                    "refresh. \n'pkg authority' will show a" \
+                    " list of authorities.")
+                error(tmp % e.auth)
+                return 1
+        except api_errors.CatalogRefreshException, e:
+                if display_catalog_failures(e) == 0:
                         return 1
                 else:
                         return 3
@@ -1633,7 +1290,6 @@ def authority_set(img, args):
         reset_uuid = False
         add_mirror = None
         remove_mirror = None
-        ret_code = 0
         refresh_catalogs = True
 
         opts, pargs = getopt.getopt(args, "Pk:c:O:M:m:",
@@ -1685,8 +1341,7 @@ def authority_set(img, args):
                 return 1
 
         elif not img.has_authority(auth) and not misc.valid_auth_prefix(auth):
-                error(_("set-authority: authority name has invalid "
-                    "characters"))
+                error(_("set-authority: authority name has invalid characters"))
                 return 1
 
         if origin_url and not misc.valid_auth_url(origin_url):
@@ -1701,14 +1356,9 @@ def authority_set(img, args):
                 img.set_authority(auth, origin_url=origin_url,
                     ssl_key=ssl_key, ssl_cert=ssl_cert,
                     refresh_allowed=refresh_catalogs, uuid=uuid)
-        except RuntimeError, e:
+        except api_errors.CatalogRefreshException, e:
                 error(_("set-authority failed: %s") % e)
                 return 1
-        except image.CatalogRefreshException, cre:
-                text = "Could not refresh the catalog for %s" % \
-                    auth
-                error(_(text))
-                ret_code = 1
 
         if preferred:
                 img.set_preferred_authority(auth)
@@ -1717,8 +1367,7 @@ def authority_set(img, args):
         if add_mirror:
 
                 if not misc.valid_auth_url(add_mirror):
-                        error(_("set-authority: added mirror's URL is "
-                            "invalid"))
+                        error(_("set-authority: added mirror's URL is invalid"))
                         return 1
 
                 if img.has_mirror(auth, add_mirror):
@@ -1741,7 +1390,7 @@ def authority_set(img, args):
                 img.del_mirror(auth, remove_mirror)
 
 
-        return ret_code
+        return 0
 
 def authority_unset(img, args):
         """pkg unset-authority authority ..."""
@@ -1929,8 +1578,6 @@ def image_create(img, args):
         component that consumes global zone-only information, such as various
         kernel statistics or device information."""
 
-        # XXX Long options support
-
         imgtype = image.IMG_USER
         is_zone = False
         ssl_key = None
@@ -2014,7 +1661,7 @@ def image_create(img, args):
         if refresh_catalogs:
                 try:
                         img.retrieve_catalogs()
-                except image.CatalogRefreshException, cre:
+                except api_errors.CatalogRefreshException, cre:
                         if display_catalog_failures(cre) == 0:
                                 return 1
                         else:
@@ -2036,16 +1683,16 @@ def rebuild_index(img, pargs):
         try:
                 img.history.operation_name = "rebuild-index"
                 img.rebuild_search_index(get_tracker(quiet))
-        except search_errors.InconsistentIndexException:
-                img.history.operation_result = history.RESULT_FAILED_SEARCH
+        except api_errors.CorruptedIndexException:
+                img.history.operation_result = RESULT_FAILED_SEARCH
                 error(INCONSISTENT_INDEX_ERROR_MESSAGE)
                 return 1
-        except search_errors.ProblematicPermissionsIndexException, ppie:
-                img.history.operation_result = history.RESULT_FAILED_STORAGE
-                error(str(ppie) + PROBLEMATIC_PERMISSIONS_ERROR_MESSAGE)
+        except api_errors.ProblematicPermissionsIndexException, e:
+                img.history.operation_result = RESULT_FAILED_STORAGE
+                error(str(e) + PROBLEMATIC_PERMISSIONS_ERROR_MESSAGE)
                 return 1
         else:
-                img.history.operation_result = history.RESULT_SUCCEEDED
+                img.history.operation_result = RESULT_SUCCEEDED
                 return 0
 
 def history_list(img, args):
@@ -2138,7 +1785,7 @@ __img = None
 def main_func():
         global __img
         __img = img = image.Image()
-        img.history.client_name = "pkg"
+        img.history.client_name = PKG_CLIENT_NAME
 
         # XXX /usr/lib/locale is OpenSolaris-specific.
         gettext.install("pkg", "/usr/lib/locale")
@@ -2213,12 +1860,12 @@ def main_func():
 
         try:
                 img.find_root(mydir, provided_image_dir)
-        except image.ImageNotFoundException, infe:
-                if infe.user_specified:
+        except api_errors.ImageNotFoundException, e:
+                if e.user_specified:
                         m = "No image rooted at '%s'"
                         if pkg_image_used:
                                 m += " (set by $PKG_IMAGE)"
-                        error(_(m) % infe.user_dir)
+                        error(_(m) % e.user_dir)
                 else:
                         error(_("No image found."))
                 return 1
@@ -2227,15 +1874,15 @@ def main_func():
 
         try:
                 if subcommand == "refresh":
-                        return catalog_refresh(img, pargs)
+                        return catalog_refresh(mydir, pargs)
                 elif subcommand == "list":
                         return list_inventory(img, pargs)
                 elif subcommand == "image-update":
-                        return image_update(img, pargs)
+                        return image_update(mydir, pargs)
                 elif subcommand == "install":
-                        return install(img, pargs)
+                        return install(mydir, pargs)
                 elif subcommand == "uninstall":
-                        return uninstall(img, pargs)
+                        return uninstall(mydir, pargs)
                 elif subcommand == "freeze":
                         return freeze(img, pargs)
                 elif subcommand == "unfreeze":
@@ -2243,7 +1890,7 @@ def main_func():
                 elif subcommand == "search":
                         return search(img, pargs)
                 elif subcommand == "info":
-                        return info(img, pargs)
+                        return info(mydir, pargs)
                 elif subcommand == "contents":
                         return list_contents(img, pargs)
                 elif subcommand == "verify":
@@ -2259,7 +1906,7 @@ def main_func():
                 elif subcommand == "unset-property":
                         return property_unset(img, pargs)
                 elif subcommand == "property":
-                        return property_list(img, pargs)
+                        return property_list(img, pargs)                
                 elif subcommand == "history":
                         return history_list(img, pargs)
                 elif subcommand == "purge-history":
@@ -2286,35 +1933,35 @@ if __name__ == "__main__":
         except SystemExit, __e:
                 if __img and __img.history.operation_name:
                         __img.history.operation_result = \
-                            history.RESULT_FAILED_UNKNOWN
+                            RESULT_FAILED_UNKNOWN
                 raise __e
         except (PipeError, KeyboardInterrupt):
                 if __img and __img.history.operation_name:
                         __img.history.operation_result = \
-                            history.RESULT_CANCELED
+                            RESULT_CANCELED
                 # We don't want to display any messages here to prevent
                 # possible further broken pipe (EPIPE) errors.
                 __ret = 1
         except misc.TransferTimedOutException:
                 if __img and __img.history.operation_name:
                         __img.history.operation_result = \
-                            history.RESULT_FAILED_TRANSPORT
+                            RESULT_FAILED_TRANSPORT
                 error(_("maximum number of timeouts exceeded during "
                     "download."))
                 __ret = 1
         except misc.InvalidContentException, __e:
                 if __img and __img.history.operation_name:
                         __img.history.operation_result = \
-                            history.RESULT_FAILED_TRANSPORT
+                            RESULT_FAILED_TRANSPORT
                 error(_("One or more hosts providing content for this install"
                     "has provided a file with invalid content."))
                 error(str(__e))
                 __ret = 1
-        except (retrieve.ManifestRetrievalError,
-            retrieve.DatastreamRetrievalError), __e:
+        except (ManifestRetrievalError,
+            DatastreamRetrievalError), __e:
                 if __img and __img.history.operation_name:
                         __img.history.operation_result = \
-                            history.RESULT_FAILED_TRANSPORT
+                            RESULT_FAILED_TRANSPORT
                 error(_("An error was encountered while attempting to retrieve"
                     " package or file data for the requested operation."))
                 error(str(__e))
@@ -2322,7 +1969,7 @@ if __name__ == "__main__":
         except:
                 if __img and __img.history.operation_name:
                         __img.history.operation_result = \
-                            history.RESULT_FAILED_UNKNOWN
+                            RESULT_FAILED_UNKNOWN
                 traceback.print_exc()
                 error(
                     _("\n\nThis is an internal error.  Please let the " + \

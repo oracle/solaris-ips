@@ -92,8 +92,8 @@ SUBCOMMANDS
           If the image is to be run within nonglobal zone context, then
           the -z (--zone) option can be used to set an appropriate filter.
 
-          With --no-refresh, do not attempt to contact the image's authority
-          to retrieve its catalog.
+          With --no-refresh, do not attempt to contact the authority 
+          specified with -a to retrieve its catalog.
 
      image-update [-fnvq] [--no-refresh] 
           Update all installed packages in the current image to the
@@ -102,8 +102,8 @@ SUBCOMMANDS
           but make no persistent changes to the image.  With the -v
           option, issue verbose progress messages during the requested
           operation.  With the -q option, be completely silent. With 
-          --no-refresh, do not attempt to contact the image's authority
-          to retrieve its catalog.
+          --no-refresh, do not attempt to contact the image's authorities
+          to retrieve their catalogs.
 
      refresh [--full] [authority ...]
           Retrieve updates to the catalogs for each authority specified.
@@ -123,8 +123,8 @@ SUBCOMMANDS
           uninstall any packages which are dependent on the initial
           package.
 
-          With --no-refresh, do not attempt to contact the image's authority
-          to retrieve its catalog.
+          With --no-refresh, do not attempt to contact the image's authorities
+          to retrieve their catalogs.
 
      info [-lr] [--license] [pkg_fmri_pattern ...]
           Display information about packages in a human-readable form.
@@ -250,8 +250,8 @@ SUBCOMMANDS
           certificate and key respectively.  The -O option sets the URL
           prefix for the origin packaging repository for the authority.
 
-          With --no-refresh, do not attempt to contact the image's authority
-          to retrieve its catalog.
+          With --no-refresh, do not attempt to contact the authority
+          specified to retrieve its catalog.
 
           With --reset-uuid, choose a new unique identifier to identify
           this image to the authority. 

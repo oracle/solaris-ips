@@ -35,6 +35,7 @@ from pkg.misc import retryable_http_errors
 class ManifestRetrievalError(Exception):
         """Used when manifest retrieval fails"""
         def __init__(self, data):
+                Exception.__init__(self)
                 self.data = data
 
         def __str__(self):
@@ -43,6 +44,7 @@ class ManifestRetrievalError(Exception):
 class DatastreamRetrievalError(Exception):
         """Used when datastream retrieval fails"""
         def __init__(self, data):
+                Exception.__init__(self)
                 self.data = data
 
         def __str__(self):
@@ -254,6 +256,25 @@ def touch_manifest(img, fmri):
 
         try:
                 __get_manifest(img, fmri, "HEAD")
-        except:
-                raise NameError, "could not 'touch' manifest '%s' at '%s'" % \
-                    (fmri.get_url_path(), url_prefix)
+        except urllib2.HTTPError, e:
+                if e.code in retryable_http_errors:
+                        raise TransferTimedOutException
+
+                raise ManifestRetrievalError("could not 'touch' manifest '%s' from '%s'\n"
+                    "HTTPError code:%s" % (fmri.get_url_path(), url_prefix, 
+                    e.code))
+        except urllib2.URLError, e:
+                if len(e.args) == 1 and isinstance(e.args[0], socket.sslerror):
+                        raise RuntimeError, e
+                elif len(e.args) == 1 and isinstance(e.args[0], socket.timeout):
+                        raise TransferTimedOutException
+
+                raise ManifestRetrievalError("could not 'touch' manifest '%s' from '%s'\n"
+                    "URLError, args:%s" % (fmri.get_url_path(), url_prefix,
+                    " ".join([str(a) for a in e.args])))
+        except KeyboardInterrupt:
+                raise
+        except Exception, e:
+                raise ManifestRetrievalError("could not 'touch' manifest '%s' from '%s'"
+                    "Exception: str:%s repr:%s" % (fmri.get_url_path(),
+                    url_prefix, e, repr(e)))

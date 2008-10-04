@@ -71,7 +71,7 @@ class DotSequence(list):
                 except ValueError:
                         raise IllegalDotSequence(dotstring)
 
-		if len(self) == 0:
+                if len(self) == 0:
                         raise IllegalDotSequence("Empty DotSequence")
 
         def __str__(self):
@@ -164,22 +164,22 @@ class Version(object):
                 # Error checking and conversion from strings to objects
                 # begins here.
                 #
-		try:
-			self.release = DotSequence(version_string[:buildidx])
+                try:
+                        self.release = DotSequence(version_string[:buildidx])
 
-			if branch is not None:
-				self.branch = DotSequence(branch)
-			else:
-				self.branch = None
+                        if branch is not None:
+                                self.branch = DotSequence(branch)
+                        else:
+                                self.branch = None
 
-			if build is not None:
-				self.build_release = DotSequence(build)
-			else:
-				assert build_string is not None
-				self.build_release = DotSequence(build_string)
+                        if build is not None:
+                                self.build_release = DotSequence(build)
+                        else:
+                                assert build_string is not None
+                                self.build_release = DotSequence(build_string)
 
-		except IllegalDotSequence, id:
-			raise IllegalVersion("Bad Version: %s" % id)
+                except IllegalDotSequence, id:
+                        raise IllegalVersion("Bad Version: %s" % id)
 
                 #
                 # In 99% of the cases in which we use date and time, it's solely
@@ -201,6 +201,8 @@ class Version(object):
                                     timeint / 10000,
                                     (timeint / 100) % 100,
                                     timeint % 100)
+                        except KeyboardInterrupt:
+                                raise
                         except:
                                 raise IllegalVersion, \
                                     "Time must be ISO8601 format."

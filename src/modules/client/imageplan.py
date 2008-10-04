@@ -25,13 +25,18 @@
 
 import os
 import pkg.fmri as fmri
+import pkg.client.api_errors as api_errors
 import pkg.client.imagestate as imagestate
 import pkg.client.pkgplan as pkgplan
 import pkg.client.indexer as indexer
 import pkg.search_errors as se
+from pkg.client.imageconfig import REQUIRE_OPTIONAL
 from pkg.client.filter import compile_filter
 from pkg.misc import msg
 from pkg.misc import CLIENT_DEFAULT_MEM_USE_KB
+
+from pkg.client.retrieve import ManifestRetrievalError
+from pkg.client.retrieve import DatastreamRetrievalError
 
 UNEVALUATED       = 0 # nothing done yet
 EVALUATED_PKGS    = 1 # established fmri changes
@@ -40,21 +45,6 @@ PREEXECUTED_OK    = 3 # finished w/ preexecute
 PREEXECUTED_ERROR = 4 # whoops
 EXECUTED_OK       = 5 # finished execution
 EXECUTED_ERROR    = 6 # failed
-
-class NonLeafPackageException(Exception):
-        """Removal of a package which satisfies dependencies has been attempted.
-        
-        The first argument to the constructor is the FMRI which we tried to
-        remove, and is available as the "fmri" member of the exception.  The
-        second argument is the list of dependent packages that prevent the
-        removal of the package, and is available as the "dependents" member.
-        """
-
-        def __init__(self, *args):
-                Exception.__init__(self, *args)
-
-                self.fmri = args[0]
-                self.dependents = args[1]
 
 class ImagePlan(object):
         """An image plan takes a list of requested packages, an Image (and its
@@ -77,8 +67,10 @@ class ImagePlan(object):
         "pkg delete fmri; pkg install fmri@v(n - 1)", then we'd better have a
         plan to identify when this operation is safe or unsafe."""
 
-        def __init__(self, image, progtrack, recursive_removal = False,
-            noexecute = False, filters = []):
+        def __init__(self, image, progtrack, check_cancelation,
+            recursive_removal = False, filters = None, noexecute = False):
+                if filters is None:
+                        filters = []
                 self.image = image
                 self.state = UNEVALUATED
                 self.recursive_removal = recursive_removal
@@ -102,6 +94,8 @@ class ImagePlan(object):
                     for k, v in image.cfg_cache.filters.iteritems()
                 ]
                 self.filters = [ compile_filter(f) for f in filters + ifilters ]
+
+                self.check_cancelation = check_cancelation
 
         def __str__(self):
                 if self.state == UNEVALUATED:
@@ -247,6 +241,10 @@ class ImagePlan(object):
 
                 self.progtrack.evaluate_progress()
                 self.image.state.set_target(pfmri, self.__intent)
+
+                if self.check_cancelation():
+                        raise api_errors.CanceledException()
+                
                 m = self.image.get_manifest(pfmri)
 
                 # [manifest] examine manifest for dependencies
@@ -280,7 +278,7 @@ class ImagePlan(object):
                         required = True
                         excluded = False
                         if type == "optional" and \
-                            not self.image.cfg_cache.get_policy(imageconfig.REQUIRE_OPTIONAL):
+                            not self.image.cfg_cache.get_policy(REQUIRE_OPTIONAL):
                                 required = False
                         elif type == "transfer" and \
                             not self.image.older_version_installed(f):
@@ -359,7 +357,8 @@ class ImagePlan(object):
                                 del dependents[i]
 
                 if dependents and not self.recursive_removal:
-                        raise NonLeafPackageException(pfmri, dependents)
+                        raise api_errors.NonLeafPackageException(pfmri,
+                            dependents)
 
                 pp = pkgplan.PkgPlan(self.image, self.progtrack)
 
@@ -405,6 +404,10 @@ class ImagePlan(object):
                         except KeyError, e:
                                 outstring += "Attempting to install %s " \
                                     "causes:\n\t%s\n" % (f.get_name(), e)
+                        except (ManifestRetrievalError,
+                            DatastreamRetrievalError), e:
+                                raise api_errors.NetworkUnavailableException(
+                                    str(e))
 
                 if outstring:
                         raise RuntimeError("No packages were installed because "

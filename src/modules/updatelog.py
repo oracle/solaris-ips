@@ -89,6 +89,8 @@ class UpdateLog(object):
                 if self.logfd:
                         try:
                                 self.logfd.close()
+                        except KeyboardInterrupt:
+                                raise
                         except:
                                 pass
 

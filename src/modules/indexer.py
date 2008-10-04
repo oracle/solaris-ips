@@ -701,6 +701,8 @@ class Indexer(object):
                                     ss.consistent_open(self._data_dict.values(),
                                         self._index_dir,
                                         self._file_timeout_secs)
+                        except KeyboardInterrupt:
+                                raise
                         except Exception:
                                 return False
                 finally:
