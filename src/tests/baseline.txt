@@ -117,11 +117,9 @@ api.t_misc.py TestMisc.test_hash_file_name|pass
 api.t_pkgtarfile.py TestPkgTarFile.testerrorlevelIsCorrect|pass
 api.t_plat.py TestPlat.testAdmin|pass
 api.t_plat.py TestPlat.testForcibleRename|pass
-api.t_plat.py TestPlat.testGroup|pass
 api.t_plat.py TestPlat.testRelease|pass
 api.t_plat.py TestPlat.testRemoveOfRunningExecutable|pass
 api.t_plat.py TestPlat.testRenameOfRunningExecutable|pass
-api.t_plat.py TestPlat.testUser|pass
 api.t_plat.py TestPlat.testUtils|pass
 api.t_plat.py TestPlat.testbasic|pass
 api.t_repositoryconfig.py TestRepositoryConfig.test__set_invalid_attribute|pass
@@ -144,8 +142,13 @@ api.t_smf.py TestSMF.test_get_info_1|pass
 api.t_smf.py TestSMF.test_is_smf_manifest1|pass
 api.t_smf.py TestSMF.test_is_smf_manifest2|pass
 api.t_smf.py TestSMF.test_is_smf_manifest3|pass
+api.t_unix_usergrp.py TestUserGroup.testGroup1|pass
+api.t_unix_usergrp.py TestUserGroup.testGroup2|pass
+api.t_unix_usergrp.py TestUserGroup.testGroup3|pass
+api.t_unix_usergrp.py TestUserGroup.testUser1|pass
+api.t_unix_usergrp.py TestUserGroup.testUser2|pass
+api.t_unix_usergrp.py TestUserGroup.testUser3|pass
 api.t_version.py TestVersion.testbogusdotsequence|pass
-api.t_version.py TestVersion.testbogusversion|pass
 api.t_version.py TestVersion.testbogusversion1|pass
 api.t_version.py TestVersion.testbogusversion2|pass
 api.t_version.py TestVersion.testbogusversion3|pass
@@ -204,7 +207,6 @@ cli.t_commandline.py TestCommandLine.test_authority_bad_opts|pass
 cli.t_commandline.py TestCommandLine.test_authority_uuid|pass
 cli.t_commandline.py TestCommandLine.test_authority_validation|pass
 cli.t_commandline.py TestCommandLine.test_bad_fmris|pass
-cli.t_commandline.py TestCommandLine.test_info_local_remote|pass
 cli.t_commandline.py TestCommandLine.test_mirror|pass
 cli.t_commandline.py TestCommandLine.test_mirror_longopt|pass
 cli.t_commandline.py TestCommandLine.test_pkg_bad_fmris|pass
@@ -272,7 +274,6 @@ cli.t_pkg_install_corrupt_image.py TestImageCreateCorruptImage.test_var_pkg_miss
 cli.t_pkg_install_corrupt_image.py TestImageCreateCorruptImage.test_var_pkg_missing_index|pass
 cli.t_pkg_install_corrupt_image.py TestImageCreateCorruptImage.test_var_pkg_missing_pkg|pass
 cli.t_pkg_install_corrupt_image.py TestImageCreateCorruptImage.test_var_pkg_ospkg_missing_cfg_cache_alongside|pass
-cli.t_pkg_list.py TestPkgList.test_empty_image|pass
 cli.t_pkg_list.py TestPkgList.test_list_1|pass
 cli.t_pkg_list.py TestPkgList.test_list_2|pass
 cli.t_pkg_list.py TestPkgList.test_list_3|pass

@@ -48,22 +48,6 @@ class TestPlat(pkg5unittest.Pkg5TestCase):
                 portable.get_release()
                 portable.get_platform()
 
-        def testGroup(self):
-                if os.path.exists("/etc/group"):
-                        self.assertRaises(KeyError, portable.get_group_by_name,
-                            "ThisShouldNotExist", "/", True)
-
-                        self.assertRaises(KeyError, portable.get_name_by_gid, 
-                            87285, "/", True)
-
-        def testUser(self):        
-                if os.path.exists("/etc/passwd"):
-                        self.assertRaises(KeyError, portable.get_user_by_name,
-                            "ThisShouldNotExist", "/", True)
-
-                        self.assertRaises(KeyError, portable.get_name_by_uid, 
-                            87285, "/", True)
-
 
         def testAdmin(self):
                 if os.name == 'posix' and os.getuid() == 0:

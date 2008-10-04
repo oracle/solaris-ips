@@ -170,8 +170,15 @@ def load_passwd(dirpath):
         f = file(passwd_file)
         for line in f:
                 arr = line.rstrip().split(":")
-                arr[2] = int(arr[2])
-                arr[3] = int(arr[3])
+                if len(arr) < 7:
+                        # Skip any line we can't make sense of.
+                        continue
+                try:
+                        arr[2] = int(arr[2])
+                        arr[3] = int(arr[3])
+                except ValueError:
+                        # Skip any line we can't make sense of.
+                        continue
                 pw_entry = pwd.struct_passwd(arr)
 
                 user[pw_entry.pw_name] = pw_entry
@@ -191,7 +198,14 @@ def load_groups(dirpath):
         f = file(group_file)
         for line in f:
                 arr = line.rstrip().split(":")
-                arr[2] = int(arr[2])
+                if len(arr) < 4:
+                        # Skip any line we can't make sense of.
+                        continue
+                try:
+                        arr[2] = int(arr[2])
+                except ValueError:
+                        # Skip any line we can't make sense of.
+                        continue
                 gr_entry = grp.struct_group(arr)
 
                 group[gr_entry.gr_name] = gr_entry
