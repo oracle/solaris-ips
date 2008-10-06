@@ -206,6 +206,14 @@ class ImagePlan(object):
                             filtered=True).actions:
                                 yield act
 
+        def gen_new_installed_actions_bytype(self, type):
+                """generates actions in new installed image"""
+
+                for fmri in self.gen_new_installed_pkgs():
+                        m = self.image.get_manifest(fmri, filtered=True)
+                        for act in m.gen_actions_by_type(type):
+                                yield act
+
         def get_directories(self):
                 """ return set of all directories in target image """
                 # always consider var and var/pkg fixed in image....
@@ -227,14 +235,14 @@ class ImagePlan(object):
                 target """
                 if self.__link_actions == None:
                         d = {}
-                        for act in self.gen_new_installed_actions():
-                                if act.name == "hardlink":
-                                        t = act.get_target_path()
-                                        if t in d:
-                                                d[t].append(act)
-                                        else:
-                                                d[t] = [act]
-                        self.__link_actions = d
+                        for act in \
+                            self.gen_new_installed_actions_bytype("hardlink"):
+                                t = act.get_target_path()
+                                if t in d:
+                                        d[t].append(act)
+                                else:
+                                        d[t] = [act]
+                self.__link_actions = d
                 return self.__link_actions
                 
         def evaluate_fmri(self, pfmri):
@@ -248,9 +256,7 @@ class ImagePlan(object):
                 m = self.image.get_manifest(pfmri)
 
                 # [manifest] examine manifest for dependencies
-                for a in m.actions:
-                        if a.name != "depend":
-                                continue
+                for a in m.gen_actions_by_type("depend"):
 
                         type = a.attrs["type"]
 

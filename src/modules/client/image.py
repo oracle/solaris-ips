@@ -185,6 +185,8 @@ class Image(object):
                 # operation) have already provided intent information.
                 self.__touched_manifests = {}
 
+                self.__manifest_cache = {}
+
         def find_root(self, d, exact_match=False):
 
                 def check_subdirs(sub_d, prefix):
@@ -684,13 +686,6 @@ class Image(object):
                                     errors)
                                 yield (actname, errors)
 
-        def gen_installed_actions(self):
-                """generates actions in installed image """
-
-                for fmri in self.gen_installed_pkgs():
-                        for act in self.get_manifest(fmri, filtered = True).actions:
-                                yield act
-
         def get_fmri_manifest_pairs(self):
                 """For each installed fmri, finds the path to its manifest file
                 and adds the pair of the fmri and the path to a list. Once all
@@ -913,7 +908,12 @@ class Image(object):
                 """Find on-disk manifest and create in-memory Manifest
                 object, applying appropriate filters as needed."""
 
-                m = self.__get_manifest(fmri)
+                if fmri in self.__manifest_cache:
+                        m = self.__manifest_cache[fmri]
+                else:
+                        m = self.__get_manifest(fmri)
+                        self.__manifest_cache[fmri] = m
+
                 self.__touch_manifest(fmri)
 
                 # XXX perhaps all of the below should live in Manifest.filter()?
@@ -1558,6 +1558,7 @@ class Image(object):
 
         def clear_pkg_state(self):
                 self.pkg_states = None
+                self.__manifest_cache = {}
 
         def strtofmri(self, myfmri):
                 return pkg.fmri.PkgFmri(myfmri, self.attrs["Build-Release"])

@@ -94,6 +94,7 @@ class Manifest(object):
 
                 self.size = 0
                 self.actions = []
+                self.actions_bytype = {}
 
         def __str__(self):
                 r = ""
@@ -187,7 +188,7 @@ class Manifest(object):
         def gen_actions_by_type(self, type):
                 """Generate actions in the manifest of type "type"."""
 
-                return (a for a in self.actions if a.name == type)
+                return (a for a in self.actions_bytype.get(type,[]))
 
         def filter(self, filters):
                 """Filter out actions from the manifest based on filters."""
@@ -250,6 +251,11 @@ class Manifest(object):
 
                         self.size += int(action.attrs.get("pkg.size", "0"))
                         self.actions.append(action)
+
+                        if action.name not in self.actions_bytype:
+                                self.actions_bytype[action.name] = [ action ]
+                        else:
+                                self.actions_bytype[action.name].append(action)
 
                 return
 
