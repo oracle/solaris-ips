@@ -39,10 +39,9 @@ LATEST_AVAILABLE_COLUMN,
 RATING_COLUMN,           # Not in revision 1
 DESCRIPTION_COLUMN,
 PACKAGE_OBJECT_COLUMN,   # pkg.client.fmri.py module
-IMAGE_OBJECT_COLUMN,     # This takes not much memory, so we can use that :)
 IS_VISIBLE_COLUMN,       # True indicates that the package is visible in ui
 CATEGORY_LIST_OBJECT     # list of categories to which package belongs
-) = range(13)
+) = range(12)
 
 #Categories
 (
@@ -71,3 +70,9 @@ FILTER_NAME,
 REPOSITORY_ID,
 REPOSITORY_NAME,
 ) = range(2)
+
+(
+INSTALL_UPDATE,
+REMOVE,
+IMAGE_UPDATE
+) = range(3)

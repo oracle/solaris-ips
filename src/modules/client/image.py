@@ -1212,7 +1212,7 @@ class Image(object):
                 self.__req_dependents = {}
 
                 for fmri in self.gen_installed_pkgs():
-                        progtrack.evaluate_progress()
+                        progtrack.evaluate_progress(fmri)
                         mfst = self.get_manifest(fmri, filtered = True)
 
                         for dep in mfst.gen_actions_by_type("depend"):

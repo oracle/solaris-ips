@@ -54,16 +54,16 @@ prototype: FRC
 			$$5 = "root"; \
 			$$6 = "bin"; \
 		} \
-		$$3 ~ /(share(\/applications\/packagemanager.desktop|\/applications|\/icons|\/icons\/package\-manager|\/icons\/package\-manager\/new_update.png|\/icons\/package\-manager\/status_checkmark.png))$$/ { \
+		$$3 ~ /(share(\/applications\/packagemanager.desktop|\/applications|\/icons|\/icons\/package\-manager|\/icons\/package\-manager(\/status_installed.png|\/status_checkmark.png|\/status_newupdate.png)))$$/ { \
 			$$6 = "other"; \
 		} \
-		$$3 ~ /(share(\/package\-manager|\/package\-manager\/data|\/package\-manager(\/packagemanager.glade|\/PM_app_48x.png|\/PM_package_36x.png)))$$/ { \
+		$$3 ~ /(share(\/gnome\/help\/package\-manager\/C|\/package\-manager|\/package\-manager\/data|\/package\-manager(\/packagemanager.glade|\/PM_app_48x.png|\/PM_package_36x.png|\/update_all24x.png|\/remove24x.png|\/reload24x.png|\/install_update24x.png)))$$/ { \
 			$$6 = "bin"; \
 		} \
 		$$3 ~ /^(share)$$/ { \
 			$$6 = "sys"; \
 		} \
-		$$3 ~ /^usr(\/lib\/python2.4\/vendor-packages\/pkg\/gui|\/bin\/packagemanager|\/share(\/package-manager(\/packagemanager.glade|\/PM_app_48x.png|\/PM_package_36x.png)|\/applications|\/icons))/ { \
+		$$3 ~ /^usr(\/lib\/python2.4\/vendor-packages\/pkg\/gui|\/bin\/packagemanager|\/share(\/gnome\/help\/package\-manager\/C|\/package-manager(\/packagemanager.glade|\/PM_app_48x.png|\/PM_package_36x.png|\/update_all24x.png|\/remove24x.png|\/reload24x.png|\/install_update24x.png)|\/applications|\/icons))/ { \
 			print \
 		}' > prototype
 

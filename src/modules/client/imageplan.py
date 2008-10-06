@@ -85,6 +85,8 @@ class ImagePlan(object):
                 self.target_fmris = []
                 self.target_rem_fmris = []
                 self.pkg_plans = []
+                self.target_insall_count = 0
+		self.target_update_count = 0
 
                 self.__directories = None
                 self.__link_actions = None
@@ -247,7 +249,7 @@ class ImagePlan(object):
                 
         def evaluate_fmri(self, pfmri):
 
-                self.progtrack.evaluate_progress()
+                self.progtrack.evaluate_progress(pfmri)
                 self.image.state.set_target(pfmri, self.__intent)
 
                 if self.check_cancelation():
@@ -346,13 +348,18 @@ class ImagePlan(object):
 
                 pp.evaluate(self.filters)
 
+                if pp.origin_fmri:
+                        self.target_update_count += 1
+                else:
+                        self.target_insall_count += 1
+                        
                 self.pkg_plans.append(pp)
 
         def evaluate_fmri_removal(self, pfmri):
                 # prob. needs breaking up as well
                 assert self.image.has_manifest(pfmri)
 
-                self.progtrack.evaluate_progress()
+                self.progtrack.evaluate_progress(pfmri)
 
                 dependents = self.image.get_dependents(pfmri, self.progtrack)
 
@@ -386,7 +393,7 @@ class ImagePlan(object):
                         if not self.image.has_version_installed(d):
                                 continue
                         self.target_rem_fmris.append(d)
-                        self.progtrack.evaluate_progress()
+                        self.progtrack.evaluate_progress(d)
                         self.evaluate_fmri_removal(d)
 
                 # Post-order append will ensure topological sorting for acyclic
@@ -397,14 +404,16 @@ class ImagePlan(object):
 
         def evaluate(self):
                 assert self.state == UNEVALUATED
-
-                self.progtrack.evaluate_start()
+                
+                evaluate_npkgs = len(self.target_fmris) + \
+                    len(self.target_rem_fmris)
+                self.progtrack.evaluate_start(evaluate_npkgs)
 
                 outstring = ""
 
                 # Operate on a copy, as it will be modified in flight.
                 for f in self.target_fmris[:]:
-                        self.progtrack.evaluate_progress()
+                        self.progtrack.evaluate_progress(f)
                         try:
                                 self.evaluate_fmri(f)
                         except KeyError, e:
@@ -422,11 +431,11 @@ class ImagePlan(object):
 
                 for f in self.target_fmris:
                         self.add_pkg_plan(f)
-                        self.progtrack.evaluate_progress()
+                        self.progtrack.evaluate_progress(f)
 
                 for f in self.target_rem_fmris[:]:
                         self.evaluate_fmri_removal(f)
-                        self.progtrack.evaluate_progress()
+                        self.progtrack.evaluate_progress(f)
 
                 # we now have a workable set of packages to add/upgrade/remove
                 # now combine all actions together to create a synthetic single
@@ -512,7 +521,27 @@ class ImagePlan(object):
                 self.update_actions.sort(key = lambda obj:obj[2])
                 self.install_actions.sort(key = lambda obj:obj[2])
 
-                self.progtrack.evaluate_done()
+                remove_npkgs = len(self.target_rem_fmris)
+                npkgs = 0
+                nfiles = 0
+                nbytes = 0
+                nactions = 0
+                for p in self.pkg_plans:
+                        nf, nb = p.get_xferstats()
+                        nbytes += nb
+                        nfiles += nf
+                        nactions += p.get_nactions()
+
+                        # It's not perfectly accurate but we count a download
+                        # even if the package will do zero data transfer.  This
+                        # makes the pkg stats consistent between download and
+                        # install.
+                        npkgs += 1
+
+                self.progtrack.download_set_goal(npkgs, nfiles, nbytes)
+
+                self.progtrack.evaluate_done(self.target_insall_count, \
+                    self.target_update_count, remove_npkgs)
 
                 self.state = EVALUATED_OK
 
@@ -561,25 +590,7 @@ class ImagePlan(object):
                         # that error needs to be communicated to the user.
                         pass
 
-                npkgs = 0
-                nfiles = 0
-                nbytes = 0
-                nactions = 0
                 try:
-                        for p in self.pkg_plans:
-                                nf, nb = p.get_xferstats()
-                                nbytes += nb
-                                nfiles += nf
-                                nactions += p.get_nactions()
-
-                                # It's not perfectly accurate but we count a download
-                                # even if the package will do zero data transfer.  This
-                                # makes the pkg stats consistent between download and
-                                # install.
-                                npkgs += 1
-
-                        self.progtrack.download_set_goal(npkgs, nfiles, nbytes)
-
                         for p in self.pkg_plans:
                                 p.preexecute()
 

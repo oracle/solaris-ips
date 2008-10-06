@@ -60,6 +60,12 @@ class ProgressTracker(object):
 
                 self.ver_cur_fmri = None
 
+                self.eval_cur_fmri = None
+                self.eval_prop_npkgs = 0
+                self.eval_goal_install_npkgs = 0
+                self.eval_goal_update_npkgs = 0
+                self.eval_goal_remove_npkgs = 0
+                
                 self.dl_goal_nfiles = 0
                 self.dl_cur_nfiles = 0
                 self.dl_goal_nbytes = 0
@@ -87,13 +93,20 @@ class ProgressTracker(object):
         def catalog_done(self):
                 self.cat_output_done()
 
-        def evaluate_start(self):
+        def evaluate_start(self, npkgs=-1):
+                self.eval_prop_npkgs = npkgs
                 self.eval_output_start()
 
-        def evaluate_progress(self):
+        def evaluate_progress(self, fmri=None):
+                if fmri:
+                        self.eval_cur_fmri = fmri
                 self.eval_output_progress()
 
-        def evaluate_done(self):
+        def evaluate_done(self, install_npkgs=-1, \
+            update_npkgs=-1, remove_npkgs=-1):
+                self.eval_goal_install_npkgs = install_npkgs
+                self.eval_goal_update_npkgs = update_npkgs
+                self.eval_goal_remove_npkgs = remove_npkgs             
                 self.eval_output_done()
 
         def verify_add_progress(self, fmri):

@@ -23,5 +23,5 @@
 # Use is subject to license terms.
 #
 
-__all__ = ['installupdate', 'enumerations', 'filelist', \
-    'thread', 'remove', 'imageinfo', 'beadmin']
+__all__ = ['installupdate', 'enumerations', \
+    'repository', 'imageinfo', 'beadmin']

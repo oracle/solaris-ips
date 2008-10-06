@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN" "http://www.oasis-open.org/docbook/xml/4.0/docbookx.dtd">
+<book id="package_manager_online_help" lang="en"><title>Getting Started with Package Manager</title>
+<bookinfo><authorgroup><author><firstname>Jyothi</firstname>
+<surname>Srinath</surname>
+</author>
+</authorgroup>
+<pubsnumber></pubsnumber>
+<releaseinfo></releaseinfo>
+<pubdate></pubdate>
+<publisher><publishername>Sun Microsystems, Inc.</publishername>
+<address><street>4150 Network Circle</street>
+<city>Santa Clara</city>
+<state>CA</state>
+<postcode>95054</postcode>
+<country>U.S.A.</country>
+</address>
+</publisher>
+<copyright><year>2008</year>
+<holder>Sun Microsystems, Inc.</holder>
+</copyright>
+<abstract><para></para>
+</abstract>
+<legalnotice><para>Sun Microsystems, Inc. has intellectual property rights relating to technology embodied in the product that is described in this document. In particular, and without limitation, these intellectual property rights may include one or more U.S. patents or pending patent applications in the U.S. and in other countries.</para>
+<para>U.S. Government Rights – Commercial software. Government users are subject to the Sun Microsystems, Inc. standard license agreement and applicable provisions of the FAR and its supplements.</para>
+<para>This distribution may include materials developed by third parties.</para>
+<para>Parts of the product may be derived from Berkeley BSD systems, licensed from the University of California. UNIX is a registered trademark in the U.S. and other countries, exclusively licensed through X/Open Company, Ltd.</para>
+<para>Sun, Sun Microsystems, the Sun logo, the Solaris logo, the Java Coffee Cup logo, docs.sun.com, Java, and Solaris are trademarks or registered trademarks of Sun Microsystems, Inc. or its subsidiaries in the U.S. and other countries. All SPARC trademarks are used under license and are trademarks or registered trademarks of SPARC International, Inc. in the U.S. and other countries. Products bearing SPARC trademarks are based upon an architecture developed by Sun Microsystems, Inc. </para>
+<para>The OPEN LOOK and <trademark>Sun</trademark> Graphical User Interface was developed by Sun Microsystems, Inc. for its users and licensees. Sun acknowledges the pioneering efforts of Xerox in researching and developing the concept of visual or graphical user interfaces for the computer industry. Sun holds a non-exclusive license from Xerox to the Xerox Graphical User Interface, which license also covers Sun's licensees who implement OPEN LOOK GUIs and otherwise comply with Sun's written license agreements.</para>
+<para>Products covered by and information contained in this publication are controlled by U.S. Export Control laws and may be subject to the export or import laws in other countries. Nuclear, missile, chemical or biological weapons or nuclear maritime end uses or end users, whether direct or indirect, are strictly prohibited. Export or reexport to countries subject to U.S. embargo or to entities identified on U.S. export exclusion lists, including, but not limited to, the denied persons and specially designated nationals lists is strictly prohibited.</para>
+<para>DOCUMENTATION IS PROVIDED “AS IS” AND ALL EXPRESS OR IMPLIED CONDITIONS, REPRESENTATIONS AND WARRANTIES, INCLUDING ANY IMPLIED WARRANTY OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE OR NON-INFRINGEMENT, ARE DISCLAIMED, EXCEPT TO THE EXTENT THAT SUCH DISCLAIMERS ARE HELD TO BE LEGALLY INVALID.</para>
+<para lang="fr"></para>
+<para>Sun Microsystems, Inc. détient les droits de propriété intellectuelle relatifs à la technologie incorporée dans le produit qui est décrit dans ce document. En particulier, et ce sans limitation, ces droits de propriété intellectuelle peuvent inclure un ou plusieurs brevets américains ou des applications de brevet en attente aux Etats-Unis et dans d'autres pays.</para>
+<para>Cette distribution peut comprendre des composants développés par des tierces personnes.</para>
+<para>Certaines composants de ce produit peuvent être dérivées du logiciel Berkeley BSD, licenciés par l'Université de Californie. UNIX est une marque déposée aux Etats-Unis et dans d'autres pays; elle est licenciée exclusivement par X/Open Company, Ltd. </para>
+<para>Sun, Sun Microsystems, le logo Sun, le logo Solaris, le logo Java Coffee Cup, docs.sun.com, Java et Solaris sont des marques de fabrique ou des marques déposées de Sun Microsystems, Inc., ou ses filiales, aux Etats-Unis et dans d'autres pays. Toutes les marques SPARC sont utilisées sous licence et sont des marques de fabrique ou des marques déposées de SPARC International, Inc. aux Etats-Unis et dans d'autres pays. Les produits portant les marques SPARC sont basés sur une architecture développée par Sun Microsystems, Inc.</para>
+<para>L'interface d'utilisation graphique OPEN LOOK et Sun a été développée par Sun Microsystems, Inc. pour ses utilisateurs et licenciés. Sun reconnaît les efforts de pionniers de Xerox pour la recherche et le développement du concept des interfaces d'utilisation visuelle ou graphique pour l'industrie de l'informatique. Sun détient une licence non exclusive de Xerox sur l'interface d'utilisation graphique Xerox, cette licence couvrant également les licenciés de Sun qui mettent en place l'interface d'utilisation graphique OPEN LOOK et qui, en outre, se conforment aux licences écrites de Sun.</para>
+<para>Les produits qui font l'objet de cette publication et les informations qu'il contient sont régis par la legislation américaine en matière de contrôle des exportations et peuvent être soumis au droit d'autres pays dans le domaine des exportations et importations. Les utilisations finales, ou utilisateurs finaux, pour des armes nucléaires, des missiles, des armes chimiques ou biologiques ou pour le nucléaire maritime, directement ou indirectement, sont strictement interdites. Les exportations ou réexportations vers des pays sous embargo des Etats-Unis, ou vers des entités figurant sur les listes d'exclusion d'exportation américaines, y compris, mais de manière non exclusive, la liste de personnes qui font objet d'un ordre de ne pas participer, d'une façon directe ou indirecte, aux exportations des produits ou des services qui sont régis par la legislation américaine en matière de contrôle des exportations et la liste de ressortissants spécifiquement designés, sont rigoureusement interdites.</para>
+<para>LA DOCUMENTATION EST FOURNIE "EN L'ETAT" ET TOUTES AUTRES CONDITIONS, DECLARATIONS ET GARANTIES EXPRESSES OU TACITES SONT FORMELLEMENT EXCLUES, DANS LA MESURE AUTORISEE PAR LA LOI APPLICABLE, Y COMPRIS NOTAMMENT TOUTE GARANTIE IMPLICITE RELATIVE A LA QUALITE MARCHANDE, A L'APTITUDE A UNE UTILISATION PARTICULIERE OU A L'ABSENCE DE CONTREFACON. </para>
+</legalnotice>
+</bookinfo>
+<chapter><title>Introduction</title>
+<highlights><para>The <application>Package Manager</application> application is a graphical user interface for the Image Packaging System (IPS) software. The Package Manger allows you to search, install, and remove packages; add, and modify repositories; and create and remove boot environments.</para>
+</highlights>
+<sect1><title>To Start Package Manager</title>
+<para>You can start the <application>Package Manager</application> in the following ways:</para>
+<variablelist><varlistentry><term><emphasis role="strong">Desktop Menu</emphasis></term>
+<listitem><para>Click <guimenu>System</guimenu> <guisubmenu>Administration</guisubmenu> <guisubmenu>Package Manager</guisubmenu>. </para>
+</listitem>
+</varlistentry>
+<varlistentry><term><emphasis role="strong">Command line</emphasis></term>
+<listitem><para>Execute the following command at the prompt:</para>
+<para><userinput>$ packagemanager &amp;</userinput></para>
+</listitem>
+</varlistentry>
+</variablelist>
+</sect1>
+<sect1 id="ghmbh"><title>When You Start Package Manager</title>
+<para>When you start the <application>Package Manager</application> ,the following window is displayed: (todo insert screen shot)</para>
+<para>The main window of the <application>Package Manager</application> is divided into the following elements :</para>
+<variablelist><varlistentry><term><emphasis role="strong">List of Packages by Category</emphasis></term>
+<listitem><para>You can browse the available packages by category. The dropdown menu shows the list of categories available. </para>
+</listitem>
+</varlistentry>
+<varlistentry><term><emphasis role="strong">List of Packages by Status</emphasis></term>
+<listitem><para>The <guilabel>Show</guilabel> dropdown menu allows you to filter the list of packages by the options listed below:</para>
+<itemizedlist><listitem><para><emphasis role="strong">All Packages</emphasis>– Shows the list of all packages available in the current (todo) repository.</para>
+</listitem>
+<listitem><para><emphasis role="strong">Installed Packages</emphasis> – Shows the list of packages installed on your system.</para>
+</listitem>
+<listitem><para><emphasis role="strong">Selected Packages</emphasis> – Shows the list of packages you have selected.</para>
+</listitem>
+<listitem><para><emphasis role="strong">Updates Available</emphasis> — Shows the list of packages that have newer versions available in the current repository.</para>
+</listitem>
+</itemizedlist>
+</listitem>
+</varlistentry>
+<varlistentry><term><emphasis role="strong">Toolbar</emphasis></term>
+<listitem><para>The toolbar contains the icons for a subset of the commands that can be performed by using the menus on the menubar.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><emphasis role="strong">Menubar</emphasis></term>
+<listitem><para>You can access the menus on the menubar to perform all of the commands related to the Package Manager.</para>
+<para></para>
+</listitem>
+</varlistentry>
+<varlistentry><term><emphasis role="strong">Package Name and Description</emphasis></term>
+<listitem><para>The list of packages in the selected category and a brief description are displayed here.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><emphasis role="strong">Package Details</emphasis></term>
+<listitem><para>Click on a package to select it. Details of the selected package such as name, version, file dependencies, are displayed in this window.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><emphasis role="strong">Repository Dropdown Menu</emphasis></term>
+<listitem><para>The list of available repositories are shown in the repository dropdown menu. Click on a repository name to select it.</para>
+<note><para>Click the <guilabel>Reload</guilabel> button to reload the Package Manager and view the list of the packages from the newly—selected repository.</para>
+</note>
+</listitem>
+</varlistentry>
+</variablelist>
+</sect1>
+<sect1 id="ghmzf"><title>Install a Package</title>
+<para>Perform the following steps to install a package:</para>
+<orderedlist><listitem><para>In the main window of the <application>Package Manager</application>, click the <guibutton>Reload</guibutton> button in order to view the latest list of the packages available to you.</para>
+</listitem>
+<listitem><para>Check the box next to the package to select it.</para>
+</listitem>
+<listitem><para>Click on <guibutton>Install/Update</guibutton> in the toolbar to start the package installation process.</para>
+<para>You can also choose <guimenu>Package</guimenu> <guimenuitem>Install/Update</guimenuitem> to start the package installation process.</para>
+</listitem>
+<listitem><para>The Package Manager checks for dependencies. Click <emphasis>Show Details</emphasis> to view the details.</para>
+<para>Click <guibutton>Cancel</guibutton> to cancel the package installation. No changes are made and you are returned to the main window. </para>
+</listitem>
+<listitem><para>The <literal>Install Confirmation</literal> dialog box is displayed. Review the package installation information and the package dependencies.</para>
+<para>Click <guibutton>Cancel</guibutton> to cancel the package installation. No changes are made and you are returned to the main window.</para>
+</listitem>
+<listitem><para>The packages are downloaded and installed.</para>
+</listitem>
+<listitem><para>Click the <guibutton>Reload</guibutton> button to view the updated list of packages.</para>
+</listitem>
+</orderedlist>
+</sect1>
+<sect1 id="ghmyo"><title>Remove a Package</title>
+<para>Perform the following steps to remove a package:</para>
+<orderedlist><listitem><para>Check the box next to the package you want to remove.</para>
+</listitem>
+<listitem><para>Click the <guibutton>Remove</guibutton> button in the toolbar to start the process.</para>
+<para>You can also choose <guimenu>Package</guimenu> <guimenuitem>Remove</guimenuitem> to remove a package.</para>
+</listitem>
+<listitem><para>The <literal>Remove Confirmation</literal> dialog box is displayed. Review the packages to be removed and the package dependencies.</para>
+</listitem>
+<listitem><para>Click <guibutton>OK</guibutton> to proceed. After you click the <guibutton>OK</guibutton> button, you cannot undo the package removal.</para>
+<para>Click <guibutton>Cancel</guibutton> to cancel the process. No changes are made and you are returned to the main window.</para>
+</listitem>
+<listitem><para>Click the <guibutton>Reload</guibutton> button to view the updated list of packages.</para>
+</listitem>
+</orderedlist>
+</sect1>
+<sect1 id="ghmxy"><title>Search for a Package</title>
+<para>Type the name of the package you want to search for in the <guilabel>Search</guilabel> box.</para>
+<para>The following search parameters are available:</para>
+<itemizedlist><listitem><para><emphasis role="strong">Name, Description or Keyword</emphasis> – </para>
+</listitem>
+<listitem><para><emphasis role="strong">Maintainer</emphasis> – </para>
+</listitem>
+<listitem><para><emphasis role="strong">Dependencies</emphasis> – </para>
+</listitem>
+<listitem><para><emphasis role="strong">Commands</emphasis> – </para>
+</listitem>
+</itemizedlist>
+<para>Use the submenus under the <guimenu>Edit</guimenu> menu to cut, copy, paste, or clear text in the Search tab.</para>
+</sect1>
+<sect1 id="ghmzc"><title>Update a Package</title>
+<para>Look for the green icon next to the installed package name. This icon indicates that updates are available for the package in the currently selected repository. Select the package and click on the <guibutton>Install/Update</guibutton> button to install the latest version of the package.</para>
+</sect1>
+<sect1 id="ghmym"><title>Switch Between Configured Repositories</title>
+<para>Use the <guilabel>Repositories</guilabel> drop-down menu on the toolbar to view a list of configured repositories. Click on a repository name to switch to a different repository.</para>
+</sect1>
+<sect1 id="ghmyp"><title>Update the Current Image (Update All Packages)</title>
+<para>Perform the following steps to update your entire image :</para>
+<orderedlist><listitem><para>Click <guimenu>File</guimenu> <guimenuitem>Update All</guimenuitem> or the <guilabel>Update All</guilabel> button to start the process of updating <emphasis role="strong">all</emphasis> the packages in your image.</para>
+<note><para>The <guilabel>Update All</guilabel> button is enabled when updates are available to the installed packages.</para>
+</note>
+</listitem>
+<listitem><para>The <guilabel>Update All Confirmation</guilabel> dialog box is displayed.</para>
+<para>During the <emphasis>Update All</emphasis> process, a clone of the active boot environment is created. This clone enables the user to <emphasis>rollback</emphasis> the system to the current boot environment if the Update All process fails to complete or if it or corrupts the system.</para>
+</listitem>
+<listitem><para>Enter a name for the new boot environment clone that will be created.</para>
+<note><para>It is recommended that users enter meaningful names for the boot environment clone. For example, <emphasis>OpenSolaris_11/15/08</emphasis> , clearly shows that the boot environment clone is a clone of the OpenSolaris OS and was created on <literal>11/15/08</literal>.</para>
+</note>
+</listitem>
+<listitem><para>Click <guibutton>Proceed</guibutton> to continue the <emphasis>Update All</emphasis> process.</para>
+<para>Click <guibutton>Cancel</guibutton> to cancel the process. No changes are made to the boot environment and the you are returned to the main window of the <application>Package Manager</application>.</para>
+</listitem>
+</orderedlist>
+<sect2 id="ghmyd"><title>Update All Errors</title>
+<para>A new boot environment clone <emphasis role="strong">must</emphasis> be created for the Update All process to be completed. An error message is displayed if a boot environment clone cannot be created. You may see the following error message dialog box:</para>
+<para><literal>Not enough disk space: the Update All action cannot be performed. You may choose to return BE Management to manage your boot environments and free up disk space</literal>.</para>
+<para>Perform the following steps if you wish to rectify the error and continue with the Update All process: </para>
+<orderedlist><listitem><para>Click <guibutton>BE Management</guibutton> to go to the BE Management dialog box.</para>
+</listitem>
+<listitem><para>Follow the steps listed in <xref linkend="ghlik"/> to delete old or unused boot environments and free up disk space.</para>
+</listitem>
+<listitem><para>After you have rebooted your system, click the <guilabel>Update All</guilabel> icon to restart the process of updating all packages.</para>
+</listitem>
+</orderedlist>
+</sect2>
+</sect1>
+<sect1 id="ghmya"><title>Manage Boot Environments</title>
+<para>For an OpenSolaris release, a boot environment is an instance of a bootable OpenSolaris environment. The boot environment consists of a root file system and, optionally, other file systems, such as <filename>/usr</filename>, <filename>/var</filename>, or <filename>/export</filename>. These other file systems are mounted below the root file system. The root file system and all other file systems of the boot environment that contain system software are required to be zfs datasets.</para>
+<para>An active boot environment is the one that is currently booted. Exactly one active boot environment can be booted. An inactive boot environment is not currently booted, but can be in a state of waiting for activation on the next reboot.</para>
+<para>Link to GSG BE section.</para>
+<para>Perform the following steps to manage your Boot Environments (BE):</para>
+<orderedlist><listitem><para>Click on <guimenu>File</guimenu> <guimenuitem>Boot Environment Management</guimenuitem>.</para>
+</listitem>
+<listitem><para>The <guilabel>Boot Environment Management</guilabel> dialog box is displayed. In this dialog box, you can perform the following actions:</para>
+<variablelist><varlistentry><term><emphasis role="strong">Change the default boot environment.</emphasis></term>
+<listitem><para>Select the radio button next to the boot environment that you want to boot into upon system reboot. This is the default boot environment.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><emphasis role="strong">Remove old or unused boot environments to free up disk space.</emphasis></term>
+<listitem><para>Select the checkbox next to the boot environment you want to delete.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</listitem>
+<listitem><para>Click <guibutton>OK</guibutton> to proceed.</para>
+<para>Click <guibutton>Reset</guibutton> to revert the changes to the opening state.</para>
+<para>Click <guibutton>Cancel</guibutton> to cancel all changes and return to the main window.</para>
+</listitem>
+<listitem><para>If you clicked OK , the BE Management Confirmation dialog box is displayed. Review the changes to the boot environment and click <guibutton>OK</guibutton> to proceed.</para>
+<note><para>The changes made will take effect only after system reboot.</para>
+</note>
+<para>Click <guibutton>Cancel</guibutton> to cancel the changes and return to the BE Management dialog box.</para>
+</listitem>
+<listitem><para>Reboot your system.</para>
+</listitem>
+</orderedlist>
+</sect1>
+<sect1 id="ghmzn"><title>Edit Repositories</title>
+<para>Perform the following steps to add, remove, or configure repositories:</para>
+<orderedlist><listitem><para>Click <guimenu>Settings</guimenu> <guimenuitem>Edit Repositories</guimenuitem>.</para>
+</listitem>
+<listitem><para>The <literal>Manage Repositories</literal> dialog box is displayed. The following actions can be performed in this dialog box:</para>
+<orderedlist><listitem><para><emphasis role="strong">Add a Repository</emphasis> – To add a new repository, enter the name and the address (URL) of the repository. Click <guibutton>Add</guibutton>.</para>
+</listitem>
+<listitem><para><emphasis role="strong">Remove a Repository</emphasis> – To remove a repository, click on a repository name from the list to select it. Click <guibutton>Remove</guibutton>.</para>
+<note><para>A repository that has been set as preferred repository cannot be removed. To remove a preferred repository, set a non-preferred repository as preferred, and then remove the repository.</para>
+</note>
+</listitem>
+<listitem><para><emphasis role="strong">Set a Preferred Repository</emphasis></para>
+<para>A preferred repository is the default repository where the source for the packages are downloaded from. (edit)</para>
+<para>To set a repository as a preferred repository, click the radio button next to the repository you would like to set as preferred repository. Click <guibutton>Close</guibutton> if you are not making any other changes to the repository information.</para>
+</listitem>
+<listitem><para><emphasis role="strong">Modify a Repository</emphasis> – Perform the following steps to modify a repository :</para>
+<orderedlist><listitem><para>Select the repository you want to modify.</para>
+</listitem>
+<listitem><para>Click the <guibutton>Modify</guibutton> button. The <literal>Modify Repository</literal> dialog box is displayed.</para>
+</listitem>
+<listitem><para>Type a valid name for the repository and the URL of the repository. A repository name is considered valid if it does not exist in the current list of repositories.</para>
+</listitem>
+<listitem><para>Click <guibutton>OK</guibutton> to save the changes and return to the <literal>Manage Repositories</literal> dialog box.</para>
+<para>Click <guibutton>Cancel</guibutton> to cancel your changes. You are returned to the <literal>Manage Repositories</literal> dialog box.</para>
+</listitem>
+</orderedlist>
+</listitem>
+</orderedlist>
+</listitem>
+</orderedlist>
+</sect1>
+</chapter>
+</book>

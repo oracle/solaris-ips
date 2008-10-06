@@ -31,6 +31,7 @@ INSTALL = /usr/sbin/install
 ROOT = ../../proto/root_${MACH}/usr
 ROOTUSRLIB = $(ROOT)/lib
 ROOTSHARE = $(ROOT)/share/package-manager
+ROOTHELPSHARE = $(ROOT)/share/gnome/help/package-manager/C
 ROOTDESKTOPSHARE = $(ROOT)/share/applications
 ROOTDATASHARE = $(ROOTSHARE)/data
 ROOTPYTHON = $(ROOTUSRLIB)/python2.4
@@ -43,26 +44,34 @@ ROOTDIRS = \
    $(ROOTSHARE) \
    $(ROOTICONSHARE) \
    $(ROOTDATASHARE) \
-   $(ROOTDESKTOPSHARE) 
+   $(ROOTDESKTOPSHARE) \
+   $(ROOTHELPSHARE)
 
 PYMODS = \
    modules/__init__.py \
    modules/imageinfo.py \
    modules/installupdate.py \
-   modules/remove.py \
+   modules/repository.py \
    modules/enumerations.py \
-   modules/filelist.py \
-   modules/beadmin.py \
-   modules/thread.py 
+   modules/beadmin.py
 PYCMODS = $(PYMODS:%.py=%.pyc)
 
 ICONS = \
    data/icons/status_checkmark.png \
-   data/icons/new_update.png 
+   data/icons/status_installed.png \
+   data/icons/status_newupdate.png 
+
+HELP = \
+   data/package-manager.xml \
+   data/legal.xml 
 
 GLADEICONS = \
    data/PM_app_48x.png \
-   data/PM_package_36x.png
+   data/PM_package_36x.png \
+   data/update_all24x.png \
+   data/remove24x.png \
+   data/reload24x.png \
+   data/install_update24x.png
 
 CATALOG = \
    data/opensolaris.org \
@@ -81,6 +90,8 @@ ROOTCATALOG = $(CATALOG:data/%=$(ROOTDATASHARE)/%)
 
 ROOTGLADEICONS = $(GLADEICONS:data/%=$(ROOTSHARE)/%)
 
+ROOTHELP = $(HELP:data/%=$(ROOTHELPSHARE)/%)
+
 ROOTPYGLADE = $(ROOTSHARE)/packagemanager.glade
 
 ROOTPYCALLMODS = \
@@ -94,6 +105,7 @@ ROOTCOMPONENTS = \
    $(ROOTCATALOG) \
    $(ROOTPYGLADE) \
    $(ROOTGLADEICONS) \
+   $(ROOTHELP) \
    $(ROOTICONS) \
    $(ROOTDESKTOP) \
 
@@ -146,6 +158,9 @@ proto: $(ROOT)
 
 $(ROOTDIRS):
 	mkdir -m 0755 -p $@
+
+$(ROOTHELPSHARE)/%: data/%
+	rm -f $@; $(INSTALL) -f $(ROOTHELPSHARE) -m 0644 $<
 
 $(ROOTDATASHARE)/%: data/%
 	rm -f $@; $(INSTALL) -f $(ROOTDATASHARE) -m 0644 $<
