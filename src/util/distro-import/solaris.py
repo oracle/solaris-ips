@@ -919,6 +919,23 @@ print "First pass:", datetime.now()
 
 lexer = None
 
+def read_full_line(lexer, continuation='\\'):
+        """Read a complete line, allowing for the possibility of it being
+        continued over multiple lines.  Returns a single joined line, with 
+        continuation characters and leading and trailing spaces removed.
+        """
+
+        lines = []
+        while True:
+                line = lexer.instream.readline().strip()
+                if line[-1] in continuation:
+                        lines.append(line[:-1])
+                else:
+                        lines.append(line)
+                        break;
+        return ' '.join(lines) 
+
+
 def sourcehook(filename):
         for i in include_path:
                 f = os.path.join(i, filename)
@@ -971,7 +988,7 @@ def SolarisParse(mf):
                                 line = ""
                                 lexer.push_token(next)
                         else:
-                                line = lexer.instream.readline().strip()
+                                line = read_full_line(lexer)
 
                         curpkg.import_pkg(package_name, line)
 
@@ -1004,7 +1021,7 @@ def SolarisParse(mf):
                         curpkg.undepend.append(lexer.get_token())
 
                 elif token == "add":
-                        curpkg.extra.append(lexer.instream.readline().strip())
+                        curpkg.extra.append(read_full_line(lexer))
 
                 elif token == "drop":
                         f = lexer.get_token()
@@ -1023,7 +1040,7 @@ def SolarisParse(mf):
 
                 elif token == "chattr":
                         fname = lexer.get_token()
-                        line = lexer.instream.readline().strip()
+                        line = read_full_line(lexer)
                         try:
                                 curpkg.chattr(fname, line)
                         except Exception, e:
@@ -1033,7 +1050,7 @@ def SolarisParse(mf):
 
                 elif token == "chattr_glob":
                         glob = lexer.get_token()
-                        line = lexer.instream.readline().strip()
+                        line = read_full_line(lexer)
                         try:
                                 curpkg.chattr_glob(glob, line)
                         except Exception, e:
@@ -1048,7 +1065,7 @@ def SolarisParse(mf):
                                 # I can't imagine this is supported, but there's no
                                 # other way to read the rest of the line without a whole
                                 # lot more pain.
-                                line = lexer.instream.readline().strip()
+                                line = read_full_line(lexer)
                         else:
                                 lexer.push_token(next)
                                 line = ""
