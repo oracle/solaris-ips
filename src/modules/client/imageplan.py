@@ -338,7 +338,8 @@ class ImagePlan(object):
         def add_pkg_plan(self, pfmri):
                 """add a pkg plan to imageplan for fully evaluated frmi"""
                 m = self.image.get_manifest(pfmri)
-                pp = pkgplan.PkgPlan(self.image, self.progtrack)
+                pp = pkgplan.PkgPlan(self.image, self.progtrack, \
+                    self.check_cancelation)
 
                 try:
                         pp.propose_destination(pfmri, m)
@@ -373,7 +374,8 @@ class ImagePlan(object):
                         raise api_errors.NonLeafPackageException(pfmri,
                             dependents)
 
-                pp = pkgplan.PkgPlan(self.image, self.progtrack)
+                pp = pkgplan.PkgPlan(self.image, self.progtrack, \
+                    self.check_cancelation)
 
                 self.image.state.set_target(pfmri, self.__intent)
                 m = self.image.get_manifest(pfmri)

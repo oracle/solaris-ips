@@ -41,7 +41,7 @@ class PkgPlan(object):
         If the destination FMRI is None, the package is removed.
         """
 
-        def __init__(self, image, progtrack):
+        def __init__(self, image, progtrack, check_cancelation):
                 self.origin_fmri = None
                 self.destination_fmri = None
                 self.actions = []
@@ -57,6 +57,8 @@ class PkgPlan(object):
                 self.__xferfiles = -1
 
                 self.__destination_filters = []
+
+                self.check_cancelation = check_cancelation
 
         def __str__(self):
                 s = "%s -> %s\n" % (self.origin_fmri, self.destination_fmri)
@@ -231,7 +233,7 @@ class PkgPlan(object):
         def download(self):
                 """Download data for any actions that need it."""
                 flist = filelist.FileList(self.image, self.destination_fmri,
-                    self.__progtrack)
+                    self.__progtrack, self.check_cancelation)
                 self.__progtrack.download_start_pkg(self.get_xfername())
                 for src, dest in itertools.chain(*self.actions):
                         if dest:

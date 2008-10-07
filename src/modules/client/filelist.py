@@ -37,6 +37,7 @@ from tarfile import ReadError
 import pkg.pkgtarfile as ptf
 import pkg.portable as portable
 import pkg.fmri
+import pkg.client.api_errors as api_errors
 from pkg.client import global_settings
 from pkg.misc import versioned_urlopen
 from pkg.misc import hash_file_name
@@ -74,7 +75,8 @@ class FileList(object):
         #
         maxbytes_default = 1024 * 1024
 
-        def __init__(self, image, fmri, progtrack, maxbytes=None):
+        def __init__(self, image, fmri, progtrack, check_cancelation,
+            maxbytes=None):
                 """
                 Create a FileList object for the specified image and pkgplan.
                 """
@@ -107,6 +109,7 @@ class FileList(object):
 
                 self.ds = None
                 self.url = None
+                self.check_cancelation = check_cancelation
 
         def add_action(self, action):
                 """Add the specified action to the filelist.  The action
@@ -266,6 +269,9 @@ class FileList(object):
                 tarinfo.mode = 0600
                 tarinfo.uname = "root"
                 tarinfo.gname = "root"
+
+                if self.check_cancelation():
+                        raise api_errors.CanceledException
 
                 # XXX catch IOError if tar stream closes inadvertently?
                 tar_stream.extract_to(tarinfo, download_dir, hashval)
