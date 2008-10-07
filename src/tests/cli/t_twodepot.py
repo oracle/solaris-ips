@@ -191,6 +191,33 @@ class TestTwoDepots(testutils.ManyDepotTestCase):
                 self.pkg("install incorp-np@1.1")
                 self.pkg("list upgrade-np@1.1")
 
+        def test_uninstall_from_wrong_authority(self):
+                """Install a package from an authority and try to remove it
+                using a different authority name; this should fail."""
+                self.pkg("install foo")
+                self.pkg("uninstall pkg://test2/foo", exit=1)
+                # Check to make sure that uninstalling using the explicit
+                # authority works
+                self.pkg("uninstall pkg://test1/foo")
+
+        def test_zzz_uninstall_after_preferred_authority_change(self):
+                """Install a package from the preferred authority, change the
+                preferred authority, and attempt to remove the package."""
+                self.pkg("install foo@1.0")
+                self.pkg("set-authority -P test2")
+                self.pkg("uninstall foo")
+                # Change the image metadata back to where it was, in preparation
+                # for the next test.
+                self.pkg("set-authority -P test1")
+
+        def test_zzz_uninstall_after_preferred_authority_removal(self):
+                """Install a package from the preferred authority, remove the
+                preferred authority, and attempt to remove the package."""
+                self.pkg("install foo@1.0")
+                self.pkg("set-authority -P test2")
+                self.pkg("unset-authority test1")
+                self.pkg("uninstall foo")
+
 if __name__ == "__main__":
         unittest.main()
 

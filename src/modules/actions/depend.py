@@ -189,7 +189,7 @@ class DependencyAction(generic.Action):
 
                 if not installed_version:
                         if type == "require":
-                                return ["Required dependency %s is not installed" % fm]
+                                return ["Required dependency %s is not installed" % f]
                         installed_version = image.older_version_installed(f)
                         if installed_version:
                                 return ["%s dependency %s is downrev (%s)" %

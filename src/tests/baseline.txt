@@ -335,10 +335,13 @@ cli.t_setUp.py TestSetUp.test_second_depot_start|pass
 cli.t_twodepot.py TestTwoDepots.test_basics_1|pass
 cli.t_twodepot.py TestTwoDepots.test_basics_2|pass
 cli.t_twodepot.py TestTwoDepots.test_basics_3|pass
+cli.t_twodepot.py TestTwoDepots.test_uninstall_from_wrong_authority|pass
 cli.t_twodepot.py TestTwoDepots.test_upgrade_non_preferred_to_preferred|pass
 cli.t_twodepot.py TestTwoDepots.test_upgrade_non_preferred_to_preferred_incorporated|pass
 cli.t_twodepot.py TestTwoDepots.test_upgrade_preferred_to_non_preferred|pass
 cli.t_twodepot.py TestTwoDepots.test_upgrade_preferred_to_non_preferred_incorporated|pass
+cli.t_twodepot.py TestTwoDepots.test_zzz_uninstall_after_preferred_authority_change|pass
+cli.t_twodepot.py TestTwoDepots.test_zzz_uninstall_after_preferred_authority_removal|pass
 cli.t_upgrade.py TestUpgrade.test_upgrade1|pass
 cli.t_upgrade.py TestUpgrade.test_upgrade2|pass
 cli.t_upgrade.py TestUpgrade.test_upgrade3|pass

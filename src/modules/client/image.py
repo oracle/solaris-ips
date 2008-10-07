@@ -1091,9 +1091,8 @@ class Image(object):
         def get_version_installed(self, pfmri):
                 """Returns an fmri of the installed package matching the
                 package stem of the given fmri or None if no match is found."""
-                target = pfmri.get_pkg_stem()
                 for f in self.gen_installed_pkgs():
-                        if f.get_pkg_stem() == target:
+                        if self.fmri_is_same_pkg(f, pfmri):
                                 return f
                 return None
 
