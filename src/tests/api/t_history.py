@@ -24,6 +24,7 @@
 # Use is subject to license terms.
 
 import os
+import re
 import sys
 import tempfile
 import shutil
@@ -210,7 +211,8 @@ class TestHistory(pkg5unittest.Pkg5TestCase):
                         self.assertEqual(op_data, loaded_data)
 
         def test_5_discarded_operations(self):
-                """Verify that discarded operations are not saved."""
+                """Verify that discarded operations are not saved.
+                """
 
                 h = self.__h
                 h.client_name = "pkg-test"
@@ -232,6 +234,62 @@ class TestHistory(pkg5unittest.Pkg5TestCase):
                 # should have been discarded.
                 for op_name in sorted(history.DISCARDED_OPERATIONS):
                         self.assert_(op_name not in loaded_ops)
+
+        def test_6_purge_history(self):
+                """Verify that purge() removes all history and creates a new
+                history entry.
+                """
+                h = self.__h
+                h.clear()
+                h.client_name = "pkg-test"
+                h.purge()
+
+                expected_ops = [["purge-history", history.RESULT_SUCCEEDED]]
+
+                # Now load all operation data to verify that only an entry
+                # for purge-history remains and that it was successful.
+                loaded_ops = []
+                for entry in sorted(os.listdir(h.path)):
+                        # Load the history entry.
+                        he = history.History(root_dir=h.root_dir,
+                            filename=entry)
+                        loaded_ops.append([he.operation_name, he.operation_result])
+
+                self.assert_(loaded_ops == expected_ops)
+
+        def test_7_aborted_operations(self):
+                """Verify that aborted operations are saved properly."""
+
+                h = self.__h
+                h.client_name = "pkg-test"
+
+                for i in range(1, 4):
+                        h.operation_name = "operation-%d" % i
+
+                h.abort(history.RESULT_FAILED_BAD_REQUEST)
+
+                # Now load all operation data that's been saved during testing
+                # for comparison and verify the expected result was set for
+                # each.
+                loaded_ops = []
+                for entry in sorted(os.listdir(h.path)):
+                        # Load the history entry.
+                        he = history.History(root_dir=h.root_dir,
+                            filename=entry)
+
+                        if he.operation_name != "purge-history":
+                                loaded_ops.append([he.operation_name,
+                                    he.operation_result])
+
+                # There should be three operations: operation-1, operation-2,
+                # and operation-3.
+                self.assert_(len(loaded_ops) == 3)
+
+                for op in loaded_ops:
+                        op_name, op_result = op
+                        self.assertTrue(re.match("operation-[123]", op_name))
+                        self.assertEqual(op_result,
+                            history.RESULT_FAILED_BAD_REQUEST)
 
 if __name__ == "__main__":
         unittest.main()

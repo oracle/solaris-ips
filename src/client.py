@@ -1931,53 +1931,74 @@ if __name__ == "__main__":
         try:
                 __ret = main_func()
         except SystemExit, __e:
-                if __img and __img.history.operation_name:
-                        __img.history.operation_result = \
-                            RESULT_FAILED_UNKNOWN
+                if __img:
+                        __img.history.abort(RESULT_FAILED_UNKNOWN)
                 raise __e
         except (PipeError, KeyboardInterrupt):
-                if __img and __img.history.operation_name:
-                        __img.history.operation_result = \
-                            RESULT_CANCELED
+                if __img:
+                        __img.history.abort(RESULT_CANCELED)
                 # We don't want to display any messages here to prevent
                 # possible further broken pipe (EPIPE) errors.
                 __ret = 1
         except misc.TransferTimedOutException:
-                if __img and __img.history.operation_name:
-                        __img.history.operation_result = \
-                            RESULT_FAILED_TRANSPORT
+                if __img:
+                        __img.history.abort(RESULT_FAILED_TRANSPORT)
                 error(_("maximum number of timeouts exceeded during "
                     "download."))
                 __ret = 1
         except misc.InvalidContentException, __e:
-                if __img and __img.history.operation_name:
-                        __img.history.operation_result = \
-                            RESULT_FAILED_TRANSPORT
+                if __img:
+                        __img.history.abort(RESULT_FAILED_TRANSPORT)
                 error(_("One or more hosts providing content for this install"
                     "has provided a file with invalid content."))
-                error(str(__e))
+                error(__e)
                 __ret = 1
         except (ManifestRetrievalError,
             DatastreamRetrievalError), __e:
-                if __img and __img.history.operation_name:
-                        __img.history.operation_result = \
-                            RESULT_FAILED_TRANSPORT
+                if __img:
+                        __img.history.abort(RESULT_FAILED_TRANSPORT)
                 error(_("An error was encountered while attempting to retrieve"
                     " package or file data for the requested operation."))
-                error(str(__e))
+                error(__e)
+                __ret = 1
+        except history.HistoryLoadException, __e:
+                # Since a history related error occurred, discard all
+                # information about the current operation(s) in progress.
+                if __img:
+                        __img.history.clear()
+                error(_("An error was encountered while attempting to load "
+                    "history information\nabout past client operations."))
+                error(__e)
+                __ret = 1
+        except history.HistoryStoreException, __e:
+                # Since a history related error occurred, discard all
+                # information about the current operation(s) in progress.
+                if __img:
+                        __img.history.clear()
+                error(_("An error was encountered while attempting to store "
+                    "information about the\ncurrent operation in client "
+                    "history."))
+                error(__e)
+                __ret = 1
+        except history.HistoryPurgeException, __e:
+                # Since a history related error occurred, discard all
+                # information about the current operation(s) in progress.
+                if __img:
+                        __img.history.clear()
+                error(_("An error was encountered while attempting to purge "
+                    "client history."))
+                error(__e)
                 __ret = 1
         except:
-                if __img and __img.history.operation_name:
-                        __img.history.operation_result = \
-                            RESULT_FAILED_UNKNOWN
+                if __img:
+                        __img.history.abort(RESULT_FAILED_UNKNOWN)
                 traceback.print_exc()
                 error(
-                    _("\n\nThis is an internal error.  Please let the " + \
-                    "developers know about this\nproblem by filing " + \
-                    "a bug at http://defect.opensolaris.org and including " + \
-                    "the\nabove traceback and this message.  The version " + \
-                    "of pkg(5) is '%s'.") %
-                    pkg.VERSION)
+                    _("\n\nThis is an internal error.  Please let the "
+                    "developers know about this\nproblem by filing a bug at"
+                    "http://defect.opensolaris.org and including the\nabove"
+                    "traceback and this message.  The version of pkg(5) is "
+                    "'%s'.") % pkg.VERSION)
                 __ret = 99
 
         sys.exit(__ret)

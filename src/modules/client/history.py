@@ -59,6 +59,42 @@ RESULT_FAILED_TRANSPORT = ["Failed", "Transport"]
 # Operations that are discarded, not saved, when recorded by history.
 DISCARDED_OPERATIONS = ["contents", "info", "list"]
 
+class __HistoryException(Exception):
+        """Private base exception class for all History exceptions."""
+        def __init__(self, *args):
+                Exception.__init__(self, *args)
+                self.data = args[0]
+
+        def __str__(self):
+                return str(self.data)
+
+class HistoryLoadException(__HistoryException):
+        """Used to indicate that an unexpected error occurred while loading
+        History operation information.
+
+        The first argument should be an exception object related to the
+        error encountered.
+        """
+        pass
+
+class HistoryStoreException(__HistoryException):
+        """Used to indicate that an unexpected error occurred while storing
+        History operation information.
+
+        The first argument should be an exception object related to the
+        error encountered.
+        """
+        pass
+
+class HistoryPurgeException(__HistoryException):
+        """Used to indicate that an unexpected error occurred while purging
+        History operation information.
+
+        The first argument should be an exception object related to the
+        error encountered.
+        """
+        pass
+
 class _HistoryOperation(object):
         """A _HistoryOperation object is a representation of data about an
         operation that a pkg(5) client has performed.  This class is private
@@ -76,6 +112,20 @@ class _HistoryOperation(object):
                         value = str(value)
 
                 return object.__setattr__(self, name, value)
+
+        def __str__(self):
+                return """\
+Operation Name: %s
+Operation Result: %s
+Operation Start Time: %s
+Operation End Time: %s
+Operation Start State:
+%s
+Operation End State:
+%s
+Operation User: %s (%s)
+""" % (self.name, self.result, self.start_time, self.end_time,
+    self.start_state, self.end_state, self.username, self.userid)
 
         # All "time" values should be in UTC, using ISO 8601 as the format.
         # Name of the operation performed (e.g. install, image-update, etc.).
@@ -205,7 +255,7 @@ class History(object):
                                 self.__save()
 
                         # Discard it now that it is no longer needed.
-                        ops.pop()
+                        del ops[-1]
 
         def __init__(self, root_dir=".", filename=None):
                 """'root_dir' should be the path of the directory where the
@@ -220,6 +270,10 @@ class History(object):
                 self.root_dir = root_dir
                 if filename:
                         self.__load(filename)
+
+        def __str__(self):
+                ops = self.__operations
+                return "\n".join([str(op["operation"]) for op in ops])
 
         @property
         def path(self):
@@ -320,25 +374,35 @@ class History(object):
                 # Ensure all previous information is discarded.
                 self.clear()
 
-                pathname = os.path.join(self.path, filename)
-                d = xmini.parse(pathname)
-                root = d.documentElement
-                for cnode in root.childNodes:
-                        if cnode.nodeName == "client":
-                                self.__load_client_data(cnode)
-                        elif cnode.nodeName == "operation":
-                                # Operations load differently due to the stack.
-                                self.__operations.append({
-                                    "pathname": pathname,
-                                    "operation": self.__load_operation_data(
-                                        cnode)
-                                    })
-                return True
+                try:
+                        pathname = os.path.join(self.path, filename)
+                        d = xmini.parse(pathname)
+                        root = d.documentElement
+                        for cnode in root.childNodes:
+                                if cnode.nodeName == "client":
+                                        self.__load_client_data(cnode)
+                                elif cnode.nodeName == "operation":
+                                        # Operations load differently due to
+                                        # the stack.
+                                        self.__operations.append({
+                                            "pathname": pathname,
+                                            "operation":
+                                                self.__load_operation_data(
+                                                cnode)
+                                            })
+                except KeyboardInterrupt:
+                        raise
+                except Exception, e:
+                        raise HistoryLoadException(e)
 
         def __serialize_client_data(self, d):
                 """Internal function used to serialize current client data
                 using the supplied 'd' (xml.dom.minidom) object.
                 """
+
+                assert self.client_name is not None
+                assert self.client_version is not None
+
                 root = d.documentElement
                 client = d.createElement("client")
                 client.setAttribute("name", self.client_name)
@@ -358,6 +422,16 @@ class History(object):
                 """Internal function used to serialize current operation data
                 using the supplied 'd' (xml.dom.minidom) object.
                 """
+
+                if self.operation_userid is None:
+                        raise HistoryStoreException("Unable to determine the "
+                            "id of the user that performed the current "
+                            "operation; unable to store history information.")
+                elif self.operation_username is None:
+                        raise HistoryStoreException("Unable to determine the "
+                            "username of the user that performed the current "
+                            "operation; unable to store history information.")
+
                 root = d.documentElement
                 op = d.createElement("operation")
                 op.setAttribute("name", self.operation_name)
@@ -409,41 +483,66 @@ class History(object):
                 # operations possibly occuring within the same second (but not
                 # microsecond).
                 pathname = self.pathname
-                for i in range(1, 10):
+                for i in range(1, 100):
                         try:
                                 f = os.fdopen(os.open(pathname,
                                     os.O_CREAT|os.O_EXCL|os.O_WRONLY), "w")
                                 d.writexml(f,
                                     encoding=sys.getdefaultencoding())
                                 f.close()
-                                return True
-                        except (OSError, IOError), e:
+                                return
+                        except EnvironmentError, e:
                                 if e.errno == errno.EEXIST:
                                         name, ext = os.path.splitext(
                                             os.path.basename(pathname))
-                                        name, seq = name.split("-", 1)
+                                        name = name.split("-", 1)[0]
                                         # Pick the next name in our sequence
                                         # and try again.
                                         pathname = os.path.join(self.path,
                                             "%s-%02d%s" % (name, i + 1, ext))
                                         continue
+                                elif e.errno not in (errno.EROFS,
+                                    errno.EACCES):
+                                        # Ignore read-only file system and
+                                        # access errors as it isn't critical
+                                        # to the image that this data is
+                                        # written.
+                                        raise HistoryStoreException(
+                                            e)
+                        except KeyboardInterrupt:
                                 raise
-
-                return False
-
+                        except Exception, e:
+                                raise HistoryStoreException(e)
+        
         def purge(self):
-                """Removes self.path (including its contents).
+                """Removes all history information by deleting the directory
+                indicated by the value self.path and then creates a new history
+                entry to record that this purge occurred.
                 """
                 self.operation_name = "purge-history"
                 try:
-                        self.operation_name = "purge-history"
                         shutil.rmtree(self.path)
-                except IOError, e:
-                        if e.errno == errno.EACCES:
-                                # XXX inform the user how to resolve this?
-                                # No point in attempting to end the operation
-                                # as it will likely fail during write as well.
-                                raise
+                except KeyboardInterrupt:
+                        raise
+                except Exception, e:
+                        raise HistoryPurgeException(e)
                 else:
                         self.operation_result = RESULT_SUCCEEDED
 
+        def abort(self, result):
+                """Intended to be used by the client during top-level error
+                handling to indicate that an unrecoverable error occurred
+                during the current operation(s).  This allows History to end
+                all of the current operations properly and handle any possible
+                errors that might be encountered in History itself.
+                """
+                try:
+                        # Ensure that all operations in the current stack are
+                        # ended properly.
+                        while self.operation_name:
+                                self.operation_result = result
+                except HistoryStoreException:
+                        # Ignore storage errors as it's likely that whatever
+                        # caused the client to abort() also caused the storage
+                        # of the history information to fail.
+                        return
