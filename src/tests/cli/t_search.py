@@ -46,6 +46,7 @@ class TestPkgSearch(testutils.SingleDepotTestCase):
             open example_pkg@1.0,5.11-0
             add dir mode=0755 owner=root group=bin path=/bin
             add dir mode=0755 owner=root group=bin path=/bin/example_dir
+            add dir mode=0755 owner=root group=bin path=/usr/lib/python2.4/vendor-packages/OpenSSL
             add file /tmp/example_file mode=0555 owner=root group=bin path=/bin/example_path
             add set name=com.sun.service.incorporated_changes value="6556919 6627937"
             add set name=com.sun.service.random_test value=42 value=79
@@ -97,6 +98,11 @@ class TestPkgSearch(testutils.SingleDepotTestCase):
         res_remote_bin = set([
             headers,
             "path       dir       bin                       pkg:/example_pkg@1.0-0\n"
+        ])
+
+        res_remote_openssl = set([
+            headers,
+            "basename   dir       usr/lib/python2.4/vendor-packages/OpenSSL pkg:/example_pkg@1.0-0\n"
         ])
 
         res_remote_bug_id = set([
@@ -195,6 +201,8 @@ class TestPkgSearch(testutils.SingleDepotTestCase):
 
         res_local_foo = copy.copy(res_remote_foo)
         res_local_bar = copy.copy(res_remote_bar)
+
+        res_local_openssl = copy.copy(res_remote_openssl)
         
         res_local_path_example11 = set([
             headers,
@@ -328,6 +336,10 @@ close
                 self._search_op(True, "fooo", self.res_remote_foo)
                 self._search_op(True, "fo*", self.res_remote_foo)
                 self._search_op(True, "bar", self.res_remote_bar)
+                self._search_op(True, "openssl", self.res_remote_openssl)
+                self._search_op(True, "OPENSSL", self.res_remote_openssl)
+                self._search_op(True, "OpEnSsL", self.res_remote_openssl)
+                self._search_op(True, "OpEnS*", self.res_remote_openssl)
 
                 # These tests are included because a specific bug
                 # was found during development. This prevents regression back
@@ -356,6 +368,10 @@ close
                 self._search_op(False, "fooo", self.res_local_foo)
                 self._search_op(False, "fo*", self.res_local_foo)
                 self._search_op(False, "bar", self.res_local_bar)
+                self._search_op(False, "openssl", self.res_local_openssl)
+                self._search_op(False, "OPENSSL", self.res_local_openssl)
+                self._search_op(False, "OpEnSsL", self.res_local_openssl)
+                self._search_op(False, "OpEnS*", self.res_local_openssl)
 
                 # These tests are included because a specific bug
                 # was found during development. These tests prevent regression

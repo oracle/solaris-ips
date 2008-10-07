@@ -156,10 +156,10 @@ class QueryEngine(object):
                         assert not line == '\n'
                         tok, entries = self._data_main_dict.parse_main_dict_line(line)
                         assert ((term == tok) or 
-                            (not case_sensitive and term == tok.lower()) or
+                            (not case_sensitive and term.lower() == tok.lower()) or
                             (glob and fnmatch.fnmatch(tok, term)) or
                             (not case_sensitive and
-                            fnmatch.fnmatch(tok.lower(), term)))
+                            fnmatch.fnmatch(tok.lower(), term.lower())))
                         for tok_type_id, action_id, keyval_id, \
                             fmri_ids in entries:
                                 matched_ids['tok_type'].add(tok_type_id)
