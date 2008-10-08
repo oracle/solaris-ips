@@ -133,7 +133,7 @@ class TestPkgRefresh(testutils.ManyDepotTestCase):
                 self.pkgsend_bulk(self.durl1, self.foo11)
                 self.pkgsend_bulk(self.durl2, self.foo11)
                 self.pkg("refresh test1 test2")
-                self.pkg("list -aH pkg:/foo")
+                self.pkg("list -aHf pkg:/foo")
                 expected = \
                     "foo (test1) 1.0-0 known u---\n" + \
                     "foo (test1) 1.1-0 known u---\n" + \

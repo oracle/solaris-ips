@@ -14,7 +14,7 @@ SYNOPSIS
      /usr/bin/pkg info [-lr] [--license] [pkg_fmri_pattern ...]
      /usr/bin/pkg contents [-Hmr] [-o attribute ...] [-s sort_key]
          [-t action_type ... ] [pkg_fmri_pattern ...]
-     /usr/bin/pkg list [-aHsuv] [pkg_fmri_pattern ...]
+     /usr/bin/pkg list [-aHsuvf] [pkg_fmri_pattern ...]
      /usr/bin/pkg search [-lrI] [-s server] token
 
      /usr/bin/pkg refresh [--full] [authority ...]
@@ -213,14 +213,15 @@ SUBCOMMANDS
           Both -l and -r (or -s) may be specified together, in which case both
           local and remote searches will be performed.
 
-     list [-aHsuv] [pkg_fmri_pattern ...]
+     list [-aHsuvf] [pkg_fmri_pattern ...]
           Report on the state of packages in the current image.  With
           -a, report on all packages known, whether installed or not;
           without -a, report only based on installed packages in the
           image.  With -s, display a one-line short-form giving the
           package name and description.  With -u, report only packages
           with newer versions available.  With -v, report full package
-          FMRIs.
+          FMRIs.  With -f, report all versions of packages, without -f
+          report only the installed and newest version of a package.
 
      verify [-Hqv] [pkg_fmri_pattern ...]
           Validate the installation of packages in the current image.

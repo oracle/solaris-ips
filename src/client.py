@@ -112,7 +112,7 @@ Usage:
 Basic subcommands:
         pkg install [-nvq] package...
         pkg uninstall [-nrvq] package...
-        pkg list [-aHsuv] [package...]
+        pkg list [-aHsuvf] [package...]
         pkg image-update [-nvq]
         pkg refresh [--full]
         pkg version
@@ -180,8 +180,9 @@ def list_inventory(img, args):
         upgradable_only = False
         verbose = False
         summary = False
+        all_versions = True
 
-        opts, pargs = getopt.getopt(args, "aHsuv")
+        opts, pargs = getopt.getopt(args, "aHsuvf")
 
         for opt, arg in opts:
                 if opt == "-a":
@@ -194,6 +195,8 @@ def list_inventory(img, args):
                         upgradable_only = True
                 elif opt == "-v":
                         verbose = True
+                elif opt == "-f":
+                        all_versions = False
 
         if summary and verbose:
                 usage(_("-s and -v may not be combined"))
@@ -214,7 +217,56 @@ def list_inventory(img, args):
         seen_one_pkg = False
         found = False
         try:
-                for pfmri, state in img.inventory(pargs, all_known):
+                most_recent = {}
+                installed = []
+                res = img.inventory(pargs, all_known)
+                # All_Versions reduces the output so that only the most recent
+                # version and installed version of packages appear.
+                if all_versions:
+                        for pfmri, state in res:
+                                if state["state"] == "installed":
+                                        installed.append((pfmri, state))
+                                hv = pfmri.get_pkg_stem(include_pkg=False)
+                                if hv in most_recent:
+                                        stored_pfmri, stored_state = \
+                                            most_recent[hv]
+                                        if pfmri.is_successor(stored_pfmri):
+                                                most_recent[hv] = (pfmri, state)
+                                else:
+                                        most_recent[hv] = (pfmri, state)
+                        res = installed + most_recent.values()
+
+                        # This method is necessary because fmri.__cmp__ does
+                        # not provide the desired ordering. It uses the same
+                        # ordering on package names as fmri.__cmp__ but it
+                        # reverse sorts on version, so that 98 comes before 97.
+                        # Also, authorities are taken into account so that
+                        # preferred authorities come before others. Finally,
+                        # authorties are presented in alphabetical order.
+                        def __fmri_cmp((f1, s1), (f2, s2)):
+                                t = cmp(f1.pkg_name, f2.pkg_name)
+                                if t != 0:
+                                        return t
+                                t = cmp(f2, f1)
+                                if t != 0:
+                                        return t
+                                if f1.preferred_authority():
+                                        return -1
+                                if f2.preferred_authority():
+                                        return 1
+                                return cmp(f1.get_authority(),
+                                    f2.get_authority())
+                        
+                        res.sort(cmp=__fmri_cmp)
+                prev_pfmri_str = ""
+                prev_state = None
+                for pfmri, state in res:
+                        if all_versions and prev_pfmri_str and \
+                            prev_pfmri_str == pfmri.get_short_fmri() and \
+                            prev_state == state:
+                                continue
+                        prev_pfmri_str = pfmri.get_short_fmri()
+                        prev_state = state
                         seen_one_pkg = True
                         if upgradable_only and not state["upgradable"]:
                                 continue
@@ -233,7 +285,6 @@ def list_inventory(img, args):
                                                     ("NAME (AUTHORITY)",
                                                     "VERSION", "STATE", "UFIX"))
                                 found = True
-
                         ufix = "%c%c%c%c" % \
                             (state["upgradable"] and "u" or "-",
                             state["frozen"] and "f" or "-",
