@@ -793,18 +793,7 @@ class Image(object):
                                         # If the client is currently processing
                                         # the given fmri (for an install, etc.)
                                         # then intent information is needed.
-                                        try:
-                                                retrieve.touch_manifest(self,
-                                                    fmri)
-                                        except (retrieve.ManifestRetrievalError,
-                                            retrieve.DatastreamRetrievalError):
-                                                pass
-
-                                        # Manifests should only be marked as
-                                        # processed if the touch is actually
-                                        # performed since multiple retrievals
-                                        # may occur during the same operation
-                                        # for different reasons.
+                                        retrieve.touch_manifest(self, fmri)
                                         self.__set_touched_manifest(fmri)
 
         def __fetch_manifest(self, fmri):

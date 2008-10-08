@@ -256,25 +256,9 @@ def touch_manifest(img, fmri):
 
         try:
                 __get_manifest(img, fmri, "HEAD")
-        except urllib2.HTTPError, e:
-                if e.code in retryable_http_errors:
-                        raise TransferTimedOutException
-
-                raise ManifestRetrievalError("could not 'touch' manifest '%s' from '%s'\n"
-                    "HTTPError code:%s" % (fmri.get_url_path(), url_prefix, 
-                    e.code))
-        except urllib2.URLError, e:
-                if len(e.args) == 1 and isinstance(e.args[0], socket.sslerror):
-                        raise RuntimeError, e
-                elif len(e.args) == 1 and isinstance(e.args[0], socket.timeout):
-                        raise TransferTimedOutException
-
-                raise ManifestRetrievalError("could not 'touch' manifest '%s' from '%s'\n"
-                    "URLError, args:%s" % (fmri.get_url_path(), url_prefix,
-                    " ".join([str(a) for a in e.args])))
         except KeyboardInterrupt:
                 raise
-        except Exception, e:
-                raise ManifestRetrievalError("could not 'touch' manifest '%s' from '%s'"
-                    "Exception: str:%s repr:%s" % (fmri.get_url_path(),
-                    url_prefix, e, repr(e)))
+        except:
+                # All other errors are ignored as this is a non-critical
+                # operation that returns no information.
+                pass
