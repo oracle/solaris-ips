@@ -67,6 +67,20 @@ if ostype == '':
         ostype = 'unknown'
 
 def find_tests(testdir, testpat):
+        # Test pattern to match against
+        pat = re.compile("%s" % testpat, re.IGNORECASE)
+
+        def _istest(obj):
+                if (isinstance(obj, type) and 
+                    issubclass(obj, unittest.TestCase)):
+                        return True
+                return False
+        def _istestmethod(name, obj):
+                if name.startswith("test") and \
+                    isinstance(obj, types.MethodType):
+                        return True
+                return False
+
         loader = unittest.TestLoader()
         suite = unittest.TestSuite()
         testclasses = []
@@ -85,25 +99,33 @@ def find_tests(testdir, testpat):
                         continue
                 print "Loading tests from: %s" % name
                 # "api.t_filter" -> ["api", "t_filter"]
-                parts = name.split(".")
-                # subobj will be the actual file object (t_filter, etc)
-                subobj = getattr(obj, parts[1])
-                # Get all the classes from the subobj
-                for cname in dir(subobj):
+                suitename, filename = name.split(".")
+                # file object (t_filter, etc)
+                fileobj = getattr(obj, filename)
+                # Get all the classes from the file
+                for cname in dir(fileobj):
                         # Get the actual class object
-                        classobj = getattr(subobj, cname)
+                        classobj = getattr(fileobj, cname)
                         # Make sure it's a test case
-                        if (isinstance(classobj, type) and
-                            issubclass(classobj, unittest.TestCase)):
-                                full = "%s.%s.%s" % (testdir, parts[1], cname)
-                                # Append it to our list
-                                testclasses.append((full, classobj))
-        # Only add tests if they match the test pattern
-        pat = re.compile("%s" % testpat, re.IGNORECASE)
-        for fullname, cobj in testclasses:
-                if re.search(pat, fullname):
-                        suite.addTest(unittest.makeSuite(cobj, 'test',
-                            suiteClass=pkg5unittest.Pkg5TestSuite))
+                        if not _istest(classobj):
+                                continue
+                        for attrname in dir(classobj):
+                                methobj = getattr(classobj, attrname)
+                                # Make sure its a test method
+                                if not _istestmethod(attrname, methobj):
+                                        continue
+                                full = "%s.%s.%s.%s" % (testdir,
+                                    filename, cname, attrname)
+                                # Remove this function from our class obj if
+                                # it doesn't match the test pattern
+                                if not re.search(pat, full):
+                                        delattr(classobj, attrname)
+                        testclasses.append(classobj)
+                        
+        for cobj in testclasses:
+                suite.addTest(unittest.makeSuite(cobj, 'test',
+                    suiteClass=pkg5unittest.Pkg5TestSuite))
+
         return suite
 
 def usage():

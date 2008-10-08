@@ -63,23 +63,18 @@ class Pkg5TestCase(unittest.TestCase):
                         result = self.defaultTestResult()
                 result.startTest(self)
                 testMethod = getattr(self, self.__testMethodName)
-                persistent_depot = getattr(self, "persistent_depot", False)
                 try:
-                        # Only call setUp for non-persistent depot tests,
-                        # for persistent tests this is called in the testsuite
-                        # run function below
-                        if not persistent_depot:
-                                try:
-                                        self.setUp()
-                                except KeyboardInterrupt:
-                                        raise
-                                except EarlyTearDownException:
-                                        self.tearDown()
-                                        result.addSuccess(self)
-                                        return
-                                except:
-                                        result.addError(self, sys.exc_info())
-                                        return
+                        try:
+                                self.setUp()
+                        except KeyboardInterrupt:
+                                raise
+                        except EarlyTearDownException:
+                                self.tearDown()
+                                result.addSuccess(self)
+                                return
+                        except:
+                                result.addError(self, sys.exc_info())
+                                return
 
                         ok = False
                         try:
@@ -92,15 +87,13 @@ class Pkg5TestCase(unittest.TestCase):
                         except:
                                 result.addError(self, sys.exc_info())
 
-                        # Only call teardown on non-persistent depot tests
-                        if not persistent_depot:
-                                try:
-                                        self.tearDown()
-                                except KeyboardInterrupt:
-                                        raise
-                                except:
-                                        result.addError(self, sys.exc_info())
-                                        ok = False
+                        try:
+                                self.tearDown()
+                        except KeyboardInterrupt:
+                                raise
+                        except:
+                                result.addError(self, sys.exc_info())
+                                ok = False
 
                         if ok:
                                 result.addSuccess(self)
@@ -243,8 +236,13 @@ class Pkg5TestSuite(unittest.TestSuite):
         def run(self, result):
                 inst = None
                 tdf = None
-                persistent_depot = getattr(self._tests[0],
-                    "persistent_depot", False)
+                try:
+                        persistent_depot = getattr(self._tests[0],
+                            "persistent_depot", False)
+                except IndexError:
+                        # No tests, thats ok.
+                        return
+
                 if persistent_depot:
                         inst, tdf = self._tests[0].getTeardownFunc()
                         try:
@@ -253,6 +251,8 @@ class Pkg5TestSuite(unittest.TestSuite):
                                 raise
                         except:
                                 result.addError(inst, sys.exc_info())
+                def donothing():
+                        pass
                 for test in self._tests:
                         if result.shouldStop:
                                 break
@@ -265,6 +265,11 @@ class Pkg5TestSuite(unittest.TestSuite):
                                 name = test._Pkg5TestCase__testMethodName
                                 test = copy.copy(inst)
                                 test._Pkg5TestCase__testMethodName = name
+                                # For test classes with persistent_depot set,
+                                # make their setup/teardown methods do nothing
+                                # since we are calling them here.
+                                test.setUp = donothing
+                                test.tearDown = donothing
                         test(result)
                 if persistent_depot:
                         try:
