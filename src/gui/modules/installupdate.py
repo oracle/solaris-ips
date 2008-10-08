@@ -43,6 +43,7 @@ import pkg.client.bootenv as bootenv
 import pkg.client.history as history
 import pkg.client.imageplan as imageplan
 import pkg.client.imagestate as imagestate
+import pkg.client.imageconfig as imageconfig
 import pkg.client.progress as progress
 import pkg.client.retrieve as retrieve
 import pkg.client.api_errors as api_errors

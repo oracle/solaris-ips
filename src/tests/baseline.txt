@@ -222,6 +222,8 @@ cli.t_commandline.py TestCommandLine.test_pkg_vq_1153|pass
 cli.t_commandline.py TestCommandLine.test_pkgsend_bogus_opts|pass
 cli.t_commandline.py TestCommandLine.test_properties|pass
 cli.t_commandline.py TestCommandLine.test_refresh|pass
+cli.t_depend.py TestDependencies.test_optional_dependencies|pass
+cli.t_depend.py TestDependencies.test_require_optional|pass
 cli.t_depot.py TestDepot.testStartStop|pass
 cli.t_depot.py TestDepot.test_bad_fmris|pass
 cli.t_depot.py TestDepot.test_bug_1876|pass

@@ -314,7 +314,10 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
 
         def pkg(self, command, exit = 0, comment = "", prefix = ""):
 
-                cmdline = "%s;pkg %s" % (prefix, command)
+                if prefix:
+                        cmdline = "%s;pkg %s" % (prefix, command)
+                else:
+                        cmdline = "pkg %s" % command
                 self.debugcmd(cmdline)
 
                 p = subprocess.Popen(cmdline, shell = True,
