@@ -104,13 +104,35 @@ get_zonepath_ds $zonepath
 # Check that zone is not in the ROOT dataset.
 fail_zonepath_in_rootds $ZONEPATH_DS
 
-/usr/sbin/zfs create -o mountpoint=legacy -o zoned=on $ZONEPATH_DS/ROOT \
-	|| fail_fatal "$f_zfs_create"
-/usr/sbin/zfs create -o $PROP_ACTIVE=on -o $PROP_PARENT=$CURRENT_GZBE \
-	$ZONEPATH_DS/ROOT/zbe || fail_incomplete "$f_zfs_create"
+#
+# We need to tolerate errors while creating the datasets and making the
+# mountpoint, since these could already exist from some other BE.
+#
 
-/usr/bin/mkdir $zoneroot || fail_incomplete "$f_root_create"
-/usr/sbin/mount -F zfs $ZONEPATH_DS/ROOT/zbe $zoneroot || \
+/usr/sbin/zfs create -o mountpoint=legacy -o zoned=on $ZONEPATH_DS/ROOT
+
+BENAME=zbe
+BENUM=0
+# Try 100 different names before giving up.
+while [ $BENUM -lt 100 ]; do
+        /usr/sbin/zfs create -o $PROP_ACTIVE=on -o $PROP_PARENT=$CURRENT_GZBE \
+	    -o canmount=noauto $ZONEPATH_DS/ROOT/$BENAME
+        if [ $? = 0 ]; then
+                break
+	fi
+        BENUM=`expr $BENUM + 1`
+	BENAME="zbe-$BENUM"
+done
+
+if [ $BENUM -ge 100 ]; then
+	fail_fatal "$f_zfs_create"
+fi
+
+if [ ! -d $zoneroot ]; then
+	/usr/bin/mkdir $zoneroot
+fi
+
+/usr/sbin/mount -F zfs $ZONEPATH_DS/ROOT/$BENAME $zoneroot || \
 	fail_incomplete "$f_zfs_mount"
 
 #
