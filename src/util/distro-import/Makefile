@@ -263,7 +263,7 @@ proto/etc/passwd:	proto Makefile
 
 proto/etc/shadow:	proto Makefile
 	(./get_file_from_pkg.py $(WOS_PKGS)/SUNWcsr etc/shadow | nawk -F:		\
-	'/^root/{ print "root:$5$VgppCOxA$ycFmYW4ObRRHhtsGEygDdexk5bugqgSiaSR9niNCouC:14146::::::";continue} {print $$0}') > $@
+	'/^root/{ print "root:$$5$$VgppCOxA$$ycFmYW4ObRRHhtsGEygDdexk5bugqgSiaSR9niNCouC:14146::::::";continue} {print $$0}') > $@
 
 proto/usr/has/bin/sh:	proto Makefile
 	./get_file_from_pkg.py $(WOS_PKGS)/SUNWcsr sbin/sh > $@
