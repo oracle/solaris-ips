@@ -89,9 +89,7 @@ class UpdateLog(object):
                 if self.logfd:
                         try:
                                 self.logfd.close()
-                        except KeyboardInterrupt:
-                                raise
-                        except:
+                        except EnvironmentError:
                                 pass
 
                         self.logfd = None

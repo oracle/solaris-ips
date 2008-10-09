@@ -60,13 +60,13 @@ import pkg.client.image as image
 import pkg.client.progress as progress
 import pkg.client.retrieve as retrieve
 import pkg.client.api_errors as api_errors
-import pkg.misc as misc
 import pkg.portable as portable
 import pkg.gui.beadmin as beadm
 import pkg.gui.imageinfo as imageinfo
 import pkg.gui.installupdate as installupdate
 import pkg.gui.remove as remove
 import pkg.gui.enumerations as enumerations
+from pkg.client import global_settings
 
 
 class PackageManager:
@@ -75,11 +75,10 @@ class PackageManager:
                 socket.setdefaulttimeout(
                     int(os.environ.get("PKG_CLIENT_TIMEOUT", "30"))) # in seconds
 
-                # Override default MAX_TIMEOUT_COUNT if a value has been specified
+                # Override default PKG_TIMEOUT_MAX if a value has been specified
                 # in the environment.
-                timeout_max = misc.MAX_TIMEOUT_COUNT
-                misc.MAX_TIMEOUT_COUNT = int(os.environ.get("PKG_TIMEOUT_MAX",
-                    timeout_max))
+                global_settings.PKG_TIMEOUT_MAX = int(os.environ.get("PKG_TIMEOUT_MAX",
+                    global_settings.PKG_TIMEOUT_MAX))
                     
                 try:
                         self.application_dir = os.environ["PACKAGE_MANAGER_ROOT"]

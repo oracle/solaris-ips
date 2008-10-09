@@ -24,4 +24,14 @@
 # Use is subject to license terms.
 #
 
-__all__ = ["image"]
+__all__ = ["global_settings"]
+
+class GlobalSettings(object):
+        """ This class defines settings which are global
+            to the client instance """
+
+        def __init__(self):
+                object.__init__(self)
+                self.PKG_TIMEOUT_MAX = 4
+
+global_settings = GlobalSettings()

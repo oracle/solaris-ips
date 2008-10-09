@@ -62,8 +62,11 @@ import pkg.search_errors as search_errors
 import pkg.client.api_errors as api_errors
 
 from pkg.misc import versioned_urlopen
+from pkg.misc import TransportException
 from pkg.misc import TransferTimedOutException
+from pkg.misc import TransportFailures
 from pkg.misc import CLIENT_DEFAULT_MEM_USE_KB
+from pkg.client import global_settings
 from pkg.client.imagetypes import *
 
 img_user_prefix = ".org.opensolaris,pkg"
@@ -710,16 +713,18 @@ class Image(object):
                 exceptions and keep track of additional state."""
 
                 m = None
-                retry_count = misc.MAX_TIMEOUT_COUNT
+                retry_count = global_settings.PKG_TIMEOUT_MAX
+                failures = TransportFailures()
 
                 while not m:
                         try:
                                 m = self.__fetch_manifest(fmri)
-                        except TransferTimedOutException:
+                        except TransportException, e:
                                 retry_count -= 1
+                                failures.append(e)
 
                                 if retry_count <= 0:
-                                        raise
+                                        raise failures
 
                 return m
 
@@ -811,12 +816,11 @@ class Image(object):
 
                 # Get manifest as a string from the remote host, then build
                 # it up into an in-memory manifest, then write the finished
-                # representation to disk.
-                try:
-                        mcontent = retrieve.get_manifest(self, fmri)
-                        m.set_content(mcontent)
-                except socket.timeout:
-                        raise TransferTimedOutException
+                # representation to disk.  Note that this may throw a
+                # TransportException of some sort; we let upper layers
+                # handle that.
+                mcontent = retrieve.get_manifest(self, fmri)
+                m.set_content(mcontent)
 
                 # Write the originating authority into the manifest.
                 # Manifests prior to this change won't contain this information.
@@ -1890,9 +1894,7 @@ class Image(object):
                         m = manifest.Manifest()
                         try:
                                 mcontent = file(mfst).read()
-                        except KeyboardInterrupt:
-                                raise
-                        except:
+                        except EnvironmentError:
                                 # XXX log something?
                                 continue
                         m.set_content(mcontent)

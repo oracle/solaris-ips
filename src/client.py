@@ -57,6 +57,7 @@ import calendar
 
 import OpenSSL.crypto
 
+from pkg.client import global_settings
 import pkg.client.image as image
 import pkg.client.filelist as filelist
 import pkg.client.progress as progress
@@ -536,8 +537,15 @@ def image_update(img_dir, args):
 
         ret_code = 0
         
+        # Exceptions which happen here are printed in the above level, with
+        # or without some extra decoration done here.
+        # XXX would be nice to kick the progress tracker.
         try:
                 api_inst.prepare()
+        except misc.TransportException:
+                # move past the progress tracker line.
+                msg("\n")
+                raise
         except KeyboardInterrupt:
                 raise
         except:
@@ -559,6 +567,8 @@ def image_update(img_dir, args):
         except api_errors.ProblematicPermissionsIndexException, e:
                 error(str(e) + PROBLEMATIC_PERMISSIONS_ERROR_MESSAGE)
                 ret_code = 1
+        except KeyboardInterrupt:
+                raise
         except Exception, e:
                 error(_("\nAn unexpected error happened during " \
                     "image-update: %s") % e)
@@ -644,9 +654,18 @@ def install(img_dir, args):
         if noexecute:
                 return 0
 
+        # Exceptions which happen here are printed in the above level, with
+        # or without some extra decoration done here.
+        # XXX would be nice to kick the progress tracker.
         try:
                 api_inst.prepare()
-        except Exception, e:
+        except misc.TransportException:
+                # move past the progress tracker line.
+                msg("\n")
+                raise
+        except KeyboardInterrupt:
+                raise
+        except:
                 error(_("\nAn unexpected error happened while preparing for " \
                     "install:"))
                 raise
@@ -664,6 +683,8 @@ def install(img_dir, args):
         except api_errors.ProblematicPermissionsIndexException, e:
                 error(str(e) + PROBLEMATIC_PERMISSIONS_ERROR_MESSAGE)
                 ret_code = 1
+        except KeyboardInterrupt:
+                raise
         except Exception, e:
                 error(_("An unexpected error happened during " \
                     "installation: %s") % e)
@@ -729,11 +750,21 @@ the following packages that depend on it:""" % e[0])
         if noexecute:
                 return 0
 
+
+        # Exceptions which happen here are printed in the above level, with
+        # or without some extra decoration done here.
+        # XXX would be nice to kick the progress tracker.
         try:
                 api_inst.prepare()
-        except Exception, e:
+        except misc.TransportException:
+                # move past the progress tracker line.
+                msg("\n")
+                raise
+        except KeyboardInterrupt:
+                raise
+        except:
                 error(_("\nAn unexpected error happened while preparing for " \
-                    "uninstall:"))
+                    "install:"))
                 raise
 
         ret_code = 0
@@ -749,6 +780,8 @@ the following packages that depend on it:""" % e[0])
         except api_errors.ProblematicPermissionsIndexException, e:
                 error(str(e) + PROBLEMATIC_PERMISSIONS_ERROR_MESSAGE)
                 ret_code = 1
+        except KeyboardInterrupt:
+                raise
         except Exception, e:
                 error(_("An unexpected error happened during " \
                     "uninstallation: %s") % e)
@@ -1855,11 +1888,10 @@ def main_func():
         socket.setdefaulttimeout(
             int(os.environ.get("PKG_CLIENT_TIMEOUT", "30"))) # in seconds
 
-        # Override default MAX_TIMEOUT_COUNT if a value has been specified
+        # Override default PKG_TIMEOUT_MAX if a value has been specified
         # in the environment.
-        timeout_max = misc.MAX_TIMEOUT_COUNT
-        misc.MAX_TIMEOUT_COUNT = int(os.environ.get("PKG_TIMEOUT_MAX",
-            timeout_max))
+        global_settings.PKG_TIMEOUT_MAX = int(os.environ.get("PKG_TIMEOUT_MAX",
+            global_settings.PKG_TIMEOUT_MAX))
 
         if subcommand == "image-create":
                 try:
@@ -1991,18 +2023,12 @@ if __name__ == "__main__":
                 # We don't want to display any messages here to prevent
                 # possible further broken pipe (EPIPE) errors.
                 __ret = 1
-        except misc.TransferTimedOutException:
+        except misc.TransportException, __e:
                 if __img:
                         __img.history.abort(RESULT_FAILED_TRANSPORT)
-                error(_("maximum number of timeouts exceeded during "
-                    "download."))
-                __ret = 1
-        except misc.InvalidContentException, __e:
-                if __img:
-                        __img.history.abort(RESULT_FAILED_TRANSPORT)
-                error(_("One or more hosts providing content for this install"
-                    "has provided a file with invalid content."))
-                error(__e)
+                error(_("\nMaximum (%d) network retries exceeded during "
+                    "download. Details follow:\n%s") %
+                      (global_settings.PKG_TIMEOUT_MAX, __e))
                 __ret = 1
         except (ManifestRetrievalError,
             DatastreamRetrievalError), __e:

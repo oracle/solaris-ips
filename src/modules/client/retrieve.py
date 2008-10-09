@@ -223,7 +223,7 @@ def get_manifest(img, fmri):
                 m = __get_manifest(img, fmri, "GET")
         except urllib2.HTTPError, e:
                 if e.code in retryable_http_errors:
-                        raise TransferTimedOutException
+                        raise TransferTimedOutException(url_prefix, str(e.code))
 
                 raise ManifestRetrievalError("could not retrieve manifest '%s' from '%s'\n"
                     "HTTPError code:%s" % (fmri.get_url_path(), url_prefix, 
@@ -232,7 +232,7 @@ def get_manifest(img, fmri):
                 if len(e.args) == 1 and isinstance(e.args[0], socket.sslerror):
                         raise RuntimeError, e
                 elif len(e.args) == 1 and isinstance(e.args[0], socket.timeout):
-                        raise TransferTimedOutException
+                        raise TransferTimedOutException(url_prefix, e.reason)
 
                 raise ManifestRetrievalError("could not retrieve manifest '%s' from '%s'\n"
                     "URLError, args:%s" % (fmri.get_url_path(), url_prefix,
@@ -244,7 +244,14 @@ def get_manifest(img, fmri):
                     "Exception: str:%s repr:%s" % (fmri.get_url_path(),
                     url_prefix, e, repr(e)))
 
-        return m.read()
+        try:
+                return m.read()
+        except socket.timeout, e:
+                raise TransferTimedOutException(url_prefix, str(e))
+        except EnvironmentError, e:
+                raise TransferContentException(url_prefix,
+                    "Read error retrieving manifest: %s" % e)
+
 
 def touch_manifest(img, fmri):
         """Perform a HEAD operation on the manifest for the given fmri.

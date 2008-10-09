@@ -37,13 +37,15 @@ from tarfile import ReadError
 import pkg.pkgtarfile as ptf
 import pkg.portable as portable
 import pkg.fmri
+from pkg.client import global_settings
 from pkg.misc import versioned_urlopen
 from pkg.misc import hash_file_name
 from pkg.misc import get_pkg_otw_size
+from pkg.misc import TransportException
+from pkg.misc import TransportFailures
 from pkg.misc import TransferTimedOutException
 from pkg.misc import TransferContentException
 from pkg.misc import InvalidContentException
-from pkg.misc import MAX_TIMEOUT_COUNT
 from pkg.misc import retryable_http_errors
 
 class FileList(object):
@@ -218,13 +220,14 @@ class FileList(object):
                 """A wrapper around _get_files.  This handles exceptions
                 that might occur and deals with timeouts."""
 
-                retry_count = MAX_TIMEOUT_COUNT
+                retry_count = global_settings.PKG_TIMEOUT_MAX
                 files_extracted = 0
 
                 nfiles = self._get_nfiles()
                 nbytes = self._get_nbytes()
                 chosen_mirrors = set()
                 ts = 0
+                failures = TransportFailures()
 
                 while files_extracted == 0:
                         try:
@@ -234,15 +237,14 @@ class FileList(object):
                                 fe = self._get_files()
                                 files_extracted += fe
 
-                        except (TransferTimedOutException,
-                            TransferContentException, InvalidContentException):
-
+                        except TransportException, e:
                                 retry_count -= 1
                                 self.ds.record_error()
                                 self._clear_mirror()
 
+                                failures.append(e)
                                 if retry_count <= 0:
-                                        raise TransferTimedOutException
+                                        raise failures
                         else:
                                 ts = time.time() - ts
                                 self.ds.record_success(ts)
@@ -345,13 +347,14 @@ class FileList(object):
                 except urllib2.HTTPError, e:
                         # Must check for HTTPError before URLError
                         if e.code in retryable_http_errors:
-                                raise TransferTimedOutException
+                                raise TransferTimedOutException(url_prefix,
+                                    str(e.code))
                         raise
                 except urllib2.URLError, e:
                         if len(e.args) == 1 and \
                             isinstance(e.args[0], socket.timeout):
                                 self.image.cleanup_downloads()
-                                raise TransferTimedOutException
+                                raise TransferTimedOutException(url_prefix)
                         raise
 
                 # Exception handling here is a bit complicated.  The finally
@@ -367,11 +370,12 @@ class FileList(object):
                                         self._extract_file(info, tar_stream,
                                             download_dir)
                                         files_extracted += 1
-                        except socket.timeout:
+                        except socket.timeout, e:
                                 self.image.cleanup_downloads()
-                                raise TransferTimedOutException
+                                raise TransferTimedOutException(url_prefix)
                         except ReadError:
-                                raise TransferContentException
+                                raise TransferContentException(url_prefix,
+                                    "Read error on tar stream")
 
                 finally:
                         if tar_stream:

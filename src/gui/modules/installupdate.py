@@ -617,7 +617,7 @@ class InstallUpdate(progress.ProgressTracker):
                                 if self.gui_thread.is_cancelled():
                                        return
                                 self.__download(package_plan)
-                except TransferTimedOutException:
+                except TransportException:
                         gobject.idle_add(self.w_downloadingfiles_dialog.hide)
                         gobject.idle_add(self.w_networkdown_dialog.show)
                         return

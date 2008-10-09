@@ -201,9 +201,7 @@ class Version(object):
                                     timeint / 10000,
                                     (timeint / 100) % 100,
                                     timeint % 100)
-                        except KeyboardInterrupt:
-                                raise
-                        except:
+                        except ValueError:
                                 raise IllegalVersion, \
                                     "Time must be ISO8601 format."
 

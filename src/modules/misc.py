@@ -419,36 +419,117 @@ def get_pkg_otw_size(action):
 
         return int(size)
 
-# Set the maximum number of timeouts before we giveup.  This can
-# be adjusted by setting the environment variable PKG_TIMEOUT_MAX
-MAX_TIMEOUT_COUNT = 4
+class TransportException(Exception):
+        """ Abstract base class for various transport exceptions """
+        def __init__(self):
+                self.count = 1
 
-class TransferTimedOutException(Exception):
-        def __init__(self, args = None):
-                self.args = args
+class TransportFailures(TransportException):
+        """ This exception encapsulates multiple transport exceptions """
+
+        #
+        # This class is a subclass of TransportException so that calling
+        # code can reasonably 'except TransportException' and get either
+        # a single-valued or in this case a multi-valued instance.
+        #
+        def __init__(self):
+                TransportException.__init__(self)
+                self.exceptions = []
+
+        def append(self, exc):
+                assert isinstance(exc, TransportException)
+                for x in self.exceptions:
+                        if cmp(x, exc) == 0:
+                                x.count += 1
+                                return
+
+                self.exceptions.append(exc)
+
+        def __str__(self):
+                if len(self.exceptions) == 0:
+                        return "[no errors accumulated]"
+
+                s = ""
+                for i, x in enumerate(self.exceptions):
+                        if len(self.exceptions) > 1:
+                                s += "%d: " % (i + 1)
+                        s += str(x)
+                        if x.count > 1:
+                                s += " (happened %d times)" % x.count
+                        s += "\n"
+                return s
+
+
+class TransferTimedOutException(TransportException):
+        def __init__(self, url, reason=None):
+                TransportException.__init__(self)
+                self.url = url
+                self.reason = reason
+
+        def __str__(self):
+                s = "Transfer from '%s' timed out" % self.url
+                if self.reason:
+                        s += ": %s" % self.reason
+                s += "."
+                return s
+
+        def __cmp__(self, other):
+                if not isinstance(other, TransferTimedOutException):
+                        return -1        
+                r = cmp(self.url, other.url)
+                if r != 0:
+                        return r
+                return cmp(self.reason, other.reason)
+
 
 # Retryable http errors.  These are the HTTP errors that we'll catch.  When we
 # catch them, we throw a TransferTimedOutException instead re-raising the
 # HTTPError and letting some other handler catch it.
 
+# XXX consider moving to pkg.client module
 retryable_http_errors = set((httplib.REQUEST_TIMEOUT, httplib.BAD_GATEWAY,
         httplib.GATEWAY_TIMEOUT))
 
 
-class TransferContentException(Exception):
-        def __init__(self, args = None):
-                self.args = args
+class TransferContentException(TransportException):
+        def __init__(self, url, reason=None):
+                TransportException.__init__(self)
+                self.url = url
+                self.reason = reason
 
-class InvalidContentException(Exception):
+        def __str__(self):
+                s = "Transfer from '%s' failed" % self.url
+                if self.reason:
+                        s += ": %s" % self.reason
+                s += "."
+                return s
+
+        def __cmp__(self, other):
+                if not isinstance(other, TransferContentException):
+                        return -1        
+                r = cmp(self.url, other.url)
+                if r != 0:
+                        return r
+                return cmp(self.reason, other.reason)
+
+
+class InvalidContentException(TransportException):
         def __init__(self, action, hashval):
+                TransportException.__init__(self)
                 self.action = action
                 self.hashval = hashval
 
         def __str__(self):
-                str = "Action with path %s should have hash %s. Computed " \
+                s = "Action with path %s should have hash %s. Computed " \
                     "hash %s instead." % (self.action.attrs["path"],
                     self.action.attrs["chash"], self.hashval)
-                return str
+                return s
+
+        def __cmp__(self, other):
+                if not isinstance(other, InvalidContentException):
+                        return -1        
+                return cmp(self.hashval, other.hashval)
+
 
 # Default maximum memory useage during indexing
 # This is a soft cap since memory usage is estimated.
