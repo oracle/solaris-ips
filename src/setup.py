@@ -111,9 +111,11 @@ scripts_sunos = {
                 ['publish.py', 'pkgsend'],
                 ['pull.py', 'pkgrecv'],
                 ['packagemanager.py', 'packagemanager'],
+                ['updatemanager.py', 'updatemanager'],
                 ],
         lib_dir: [
                 ['depot.py', 'pkg.depotd'],
+                ['updatemanagernotifier.py', 'updatemanagernotifier'],
                 ],
         }
             
@@ -193,6 +195,7 @@ brand_files = [
         ]
 smf_files = [
         'pkg-server.xml',
+        'pkg-update.xml',
         ]
 elf_srcs = [
         'modules/elf.c',

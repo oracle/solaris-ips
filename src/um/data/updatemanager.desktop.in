@@ -1,0 +1,14 @@
+[Desktop Entry]
+_Name=Update Manager
+_GenericName=Update Manager
+_Comment=Install available updates
+Exec=gksu /usr/bin/updatemanager -r
+Icon=/usr/share/update-manager/PM_app_48x.png
+Terminal=false
+MultipleArgs=false
+StartupNotify=true
+Type=Application
+Encoding=UTF-8
+Categories=UpdateManager;Applications;GTK;System;Settings
+NotShowIn=KDE
+X-KDE-SubstituteUID=true

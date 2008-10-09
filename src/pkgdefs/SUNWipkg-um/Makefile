@@ -47,25 +47,29 @@ prototype: FRC
 		$$1 == "f" { \
 			$$4 = "444" \
 		} \
-		$$1 == "f" && $$3 ~ /bin\/packagemanager/ { \
+		$$1 == "f" && $$3 ~ /usr\/lib(\/updatemanagernotifier|\/update-manager\/update-refresh.sh)|usr\/bin\/updatemanager|lib\/svc\/method\/pkg-update/ { \
 			$$4 = "755" \
 		} \
 		{ \
 			$$5 = "root"; \
 			$$6 = "bin"; \
 		} \
-		$$3 ~ /(share(\/applications\/packagemanager.desktop|\/applications|\/icons|\/icons\/package\-manager|\/icons\/package\-manager(\/status_installed.png|\/status_checkmark.png|\/status_newupdate.png)))$$/ { \
-			$$6 = "other"; \
-		} \
-		$$3 ~ /(share(\/gnome\/help\/package\-manager\/C|\/package\-manager|\/package\-manager\/data|\/package\-manager(\/packagemanager.glade|\/PM_app_48x.png|\/PM_package_36x.png|\/update_all24x.png|\/remove24x.png|\/reload24x.png|\/install_update24x.png)))$$/ { \
-			$$6 = "bin"; \
-		} \
-		$$3 ~ /^(share)$$/ { \
+		$$3 ~ /^(usr(\/share)?|etc(\/xdg(\/autostart(\/updatemanagernotifier.desktop)?)?)?|etc(\/gconf(\/schemas(\/updatemanager-preferences.schemas)?)?)?|var(\/svc(\/manifest(\/application(\/pkg-update.xml)?)?)?)?)$$/ { \
 			$$6 = "sys"; \
 		} \
-		$$3 ~ /^usr(\/lib\/python2.4\/vendor-packages\/pkg\/gui|\/bin\/packagemanager|\/share(\/gnome\/help\/package\-manager\/C|\/package-manager(\/packagemanager.glade|\/PM_app_48x.png|\/PM_package_36x.png|\/update_all24x.png|\/remove24x.png|\/reload24x.png|\/install_update24x.png)|\/applications\/packagemanager.desktop|\/icons\/package-manager))/ { \
+		$$3 ~ /share\/applications(\/icons(\/update-manager(\/notify_update.png|\/status_checkmark.png|\/status_blank.png)?)?)?$$/ { \
+			$$6 = "other"; \
+		} \
+                $$3 ~ /(share(\/update-manager|\/update-manager\/data|\/update-manager(\/updatemanager.glade|\/PM_app_48x.png|\/PM_package_36x.png)))$$/ { \
+                        $$6 = "bin"; \
+                } \
+		$$3 ~ /^(usr(\/lib(\/updatemanagernotifier)?)?|usr\/lib\/update-manager(\/update-refresh.sh)?|usr(\/bin(\/updatemanager)?)?|var(\/svc(\/manifest(\/application\/(pkg-update.xml)?)?)?)?|etc(\/xdg(\/autostart(\/updatemanagernotifier.desktop)?)?)?|etc\/gconf(\/schemas(\/updatemanager-preferences.schemas)?)?|lib(\/svc(\/method(\/pkg-update)?)?)?|usr(\/share(\/update-manager(\/updatemanager.glade|\/PM_app_48x.png|\/PM_package_36x.png)?|\/applications(\/updatemanager.desktop)?|\/icons(\/update-manager(\/notify_update.png|\/status_checkmark.png|\/status_blank.png)?)?)?)?)$$/ { \
 			print \
 		}' > prototype
+
+# This will only work if there's a server running, so allow failure.
+img-pkg: sysv-pkg
+	-../../util/distro-import/solaris.py -b 0.0 -w $(PKGARCHIVE) SUNWipkg.import
 
 $(PKGARCHIVE):
 	[ -d $(PKGARCHIVE) ] || mkdir -p $(PKGARCHIVE)

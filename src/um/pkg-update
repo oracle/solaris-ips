@@ -1,0 +1,85 @@
+#!/bin/ksh
+#
+# CDDL HEADER START
+#
+# The contents of this file are subject to the terms of the
+# Common Development and Distribution License (the "License").
+# You may not use this file except in compliance with the License.
+#
+# You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+# or http://www.opensolaris.org/os/licensing.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+#
+# When distributing Covered Code, include this CDDL HEADER in each
+# file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+# If applicable, add the following below this CDDL HEADER, with the
+# fields enclosed by brackets "[]" replaced with your own identifying
+# information: Portions Copyright [yyyy] [name of copyright owner]
+#
+# CDDL HEADER END
+#
+#
+# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Use is subject to license terms.
+# A rather simple SMF method script for
+# svc:/application/pkg/update:default
+# It's sole purpose is to add or remove a crontab entry
+
+. /lib/svc/share/smf_include.sh
+
+FMRI="svc:/application/pkg/update:default"
+REFRESH_PROG="/usr/lib/update-manager/update-refresh.sh"
+
+function add_refresh_cronjob {
+	# Call intermittently  
+	SCHEDULE="30 0,9,12,18,21 * * *"
+
+	# adding a cron job is essentially just looking for an existing entry,
+	# removing it, and appending a new one. Neato.
+	crontab -l | grep -v "${REFRESH_PROG}" \
+	    > /tmp/saved-crontab.$$
+
+	echo "${SCHEDULE} ${REFRESH_PROG}" \
+	    >> /tmp/saved-crontab.$$
+
+	crontab /tmp/saved-crontab.$$
+	check_failure $? "Unable to add cron job!"
+
+	rm /tmp/saved-crontab.$$
+	return 0
+}
+
+function remove_refresh_cronjob {
+
+	crontab -l | grep -v "${REFRESH_PROG}" \
+	    > /tmp/saved-crontab.$$
+
+	crontab /tmp/saved-crontab.$$
+	check_failure $? "Unable to unschedule snapshots for $FMRI"
+
+	rm /tmp/saved-crontab.$$
+
+	# finally, check our status before we return
+	STATE=$(svcprop -p restarter/state $FMRI)
+	if [ "${STATE}" == "maintenance" ] ; then
+	    STATE=1
+	else
+	    STATE=0
+	fi
+}
+
+case $SMF_METHOD in
+"start")
+	add_refresh_cronjob
+	;;
+"stop")
+	remove_refresh_cronjob
+	;;
+*)
+	echo "Command line invocation of ${0} unsupported."
+	echo "This script is intended for smf(5) invocation only"
+	exit $SMF_EXIT_ERR_NOSMF
+	;;
+esac
+exit $SMF_EXIT_OK

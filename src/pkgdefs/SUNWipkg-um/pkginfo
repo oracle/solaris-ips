@@ -22,12 +22,19 @@
 # Use is subject to license terms.
 #
 
-install:
-	@cd SUNWipkg; pwd; $(MAKE) install
-	@cd SUNWipkg-brand; pwd; $(MAKE) install
-	@cd SUNWipkg-gui; pwd; $(MAKE) install
-	@cd SUNWipkg-gui-data; pwd; $(MAKE) install
-	@cd SUNWipkg-gui-l10n; pwd; $(MAKE) install
-	@cd SUNWipkg-um; pwd; $(MAKE) install
-	@cd SUNWpython-cherrypy; pwd; $(MAKE) install
-	@cd SUNWpython-pyopenssl; pwd; $(MAKE) install
+PKG="SUNWipkg-um"
+NAME="Update Manager for Image Packaging System"
+ARCH=i386
+VERSION="0.1.1"
+SUNW_PKGVERS="1.0"
+SUNW_PRODVERS=1.0
+SUNW_PKGTYPE=usr
+BASEDIR=/
+CATEGORY="system"
+CLASSES="none"
+HOTLINE=Please contact your local service provider
+SUNW_PRODNAME=GNOME
+EMAIL=
+MAXINST=1000
+VENDOR=Sun Microsystems, Inc.
+DESC="Update Manager for Image Packaging System"

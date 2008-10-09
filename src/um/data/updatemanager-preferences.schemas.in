@@ -1,0 +1,59 @@
+<gconfschemafile>
+  <schemalist>
+    <schema>
+      <key>/schemas/apps/updatemanager/preferences/start_delay</key>
+      <applyto>/apps/updatemanager/preferences/start_delay</applyto>
+      <owner>updatemanager</owner>
+      <type>int</type>
+      <default>120</default>
+      <locale name="C">
+         <short>Start delay</short>
+         <long>
+          The time, in seconds, that the updatemanagernotifier should wait, 
+          after starting, before checking for updates.
+         </long>
+      </locale>
+    </schema>
+    <schema>
+      <key>/schemas/apps/updatemanager/preferences/refresh_period</key>
+      <applyto>/apps/updatemanager/preferences/refresh_period</applyto>
+      <owner>updatemanager</owner>
+      <type>string</type>
+      <default>Daily</default>
+      <locale name="C">
+         <short>How often to check for updates</short>
+         <long>
+          How often to check for updates. The valid values are
+          Daily, Weekly, Monthly, Never
+         </long>
+      </locale>
+    </schema>
+    <schema>
+      <key>/schemas/apps/updatemanager/preferences/show_notify_message</key>
+      <applyto>/apps/updatemanager/preferences/show_notify_message</applyto>
+      <owner>updatemanager</owner>
+      <type>bool</type>
+      <default>True</default>
+      <locale name="C">
+         <short>Whether to display text message when updates are available</short>
+         <long>
+          A text message describing the updates is displayed near the panel's
+          Notification Area when updates become available if set to true.
+         </long>
+      </locale>
+    </schema>
+    <schema>
+      <key>/schemas/apps/updatemanager/preferences/show_icon_on_startup</key>
+      <applyto>/apps/updatemanager/preferences/show_icon_on_startup</applyto>
+      <owner>updatemanager</owner>
+      <type>bool</type>
+      <default>False</default>
+      <locale name="C">
+         <short>Whether to always display the icon on startup</short>
+         <long>
+          The notify icon is displayed on startup if set to true.
+         </long>
+      </locale>
+    </schema>
+  </schemalist>  
+</gconfschemafile>

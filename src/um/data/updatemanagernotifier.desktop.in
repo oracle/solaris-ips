@@ -1,0 +1,13 @@
+[Desktop Entry]
+Name=Update Manager Notifier
+GenericName=Update Manager Notifier
+Comment=Notify user when updates are available
+Exec=/usr/lib/updatemanagernotifier
+Terminal=false
+MultipleArgs=false
+StartupNotify=true
+Type=Application
+Encoding=UTF-8
+Categories=UpdateManagerNotifier;Applications;GTK;System;Settings
+NotShowIn=KDE
+X-KDE-SubstituteUID=true

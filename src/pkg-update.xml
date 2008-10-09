@@ -1,0 +1,95 @@
+<?xml version="1.0"?>
+<!--
+	CDDL HEADER START
+
+	The contents of this file are subject to the terms of the
+	Common Development and Distribution License (the "License").
+	You may not use this file except in compliance with the License.
+
+	You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+	or http://www.opensolaris.org/os/licensing.
+	See the License for the specific language governing permissions
+	and limitations under the License.
+
+	When distributing Covered Code, include this CDDL HEADER in each
+	file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+	If applicable, add the following below this CDDL HEADER, with the
+	fields enclosed by brackets "[]" replaced with your own identifying
+	information: Portions Copyright [yyyy] [name of copyright owner]
+
+	CDDL HEADER END
+
+	Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+	Use is subject to license terms.
+
+	NOTE:  This service manifest is not editable; its contents will
+	be overwritten by package or patch operations, including
+	operating system upgrade.  Make customizations in a different
+	file.
+-->
+
+<!DOCTYPE service_bundle SYSTEM "/usr/share/lib/xml/dtd/service_bundle.dtd.1">
+
+<service_bundle type='manifest' name=':pkg-update'>
+
+<service
+	name='application/pkg/update'
+	type='service'
+	version='1'>
+
+	<create_default_instance enabled='true' />
+
+	<single_instance/>
+
+	<dependency
+		name='fs'
+		grouping='require_all'
+		restart_on='none'
+		type='service'>
+		<service_fmri value='svc:/system/filesystem/local' />
+	</dependency>
+
+	<!--
+	    If we're homed on an autofs mount point, then we should
+	    delay until our path becomes available.
+	-->
+	<dependency
+		name='autofs'
+		grouping='optional_all'
+		restart_on='none'
+		type='service'>
+		<service_fmri value='svc:/system/filesystem/autofs' />
+	</dependency>
+
+	<exec_method
+		type='method'
+		name='start'
+		exec='lib/svc/method/pkg-update start'
+		timeout_seconds='60' />
+
+	<exec_method
+		type='method'
+		name='stop'
+		exec='lib/svc/method/pkg-update stop'
+		timeout_seconds='60' />
+
+	<property_group name='startd' type='framework'>
+		<propval name='duration' type='astring' value='transient' />
+	</property_group>
+
+	<property_group name='update' type='application'>
+		<propval name='image_dir' type='astring' value='/' />
+	</property_group>
+
+	<stability value='Unstable' />
+
+	<template>
+		<common_name>
+			<loctext xml:lang='C'>
+image packaging repository
+			</loctext>
+		</common_name>
+	</template>
+</service>
+
+</service_bundle>

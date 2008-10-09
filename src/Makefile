@@ -45,6 +45,7 @@ test-leaks := TARGET = test-leaks
 all:
 	$(PYTHON) setup.py build
 	@cd gui; pwd; $(MAKE) $(TARGET)
+	@cd um; pwd; $(MAKE) $(TARGET)
 
 clean:
 	$(PYTHON) setup.py $(TARGET)
@@ -57,6 +58,7 @@ clobber: clean
 install:
 	$(PYTHON) setup.py $(TARGET)
 	@cd gui; pwd; $(MAKE) $(TARGET)
+	@cd um; pwd; $(MAKE) $(TARGET)
 	@cd brand; pwd; $(MAKE) $(TARGET)
 
 packages: install
@@ -73,10 +75,12 @@ link:
 	ln -sf $(PWD)/depot.py /usr/lib/pkg.depotd
 	ln -sf $(PWD)/modules /usr/lib/python2.4/vendor-packages/pkg
 	ln -sf $(PWD)/pkg-server.xml /var/svc/manifest/application/pkg-server.xml
+	ln -sf $(PWD)/pkg-update.xml /var/svc/manifest/application/pkg-update.xml
 	@cd web; pwd; $(MAKE) $(TARGET)
 	@cd brand; pwd; $(MAKE) $(TARGET)
 	@cd man; pwd; $(MAKE) $(TARGET)
 	@cd gui; pwd; $(MAKE) $(TARGET)
+	@cd um; pwd; $(MAKE) $(TARGET)
 
 link-clean:
 	rm -f /usr/bin/pkg
@@ -85,10 +89,12 @@ link-clean:
 	rm -f /usr/lib/pkg.depotd
 	rm -f /usr/lib/python2.4/vendor-packages/pkg
 	rm -f /var/svc/manifest/application/pkg-server.xml
+	rm -f /var/svc/manifest/application/pkg-update.xml
 	@cd web; pwd; $(MAKE) $(TARGET)
 	@cd brand; pwd; $(MAKE) $(TARGET)
 	@cd man; pwd; $(MAKE) $(TARGET)
 	@cd gui; pwd; $(MAKE) $(TARGET)
+	@cd um; pwd; $(MAKE) $(TARGET)
 
 test:
 	$(PYTHON) setup.py test
