@@ -69,21 +69,26 @@ class LinkAction(generic.Action):
                 path = self.attrs["path"]
                 target = self.attrs["target"]
 
+                errors = []
                 path = os.path.normpath(os.path.sep.join(
                     (img.get_root(), path)))
                 
                 try:
                         if not os.path.islink(path):
-                                return ["%s is not symbolic link" % self.attrs["path"]]
+                                errors.append("%s is not symbolic link" % self.attrs["path"])
                 except EnvironmentError, e:
-                        return ["%s is not symbolic link" % self.attrs["path"]]
+                        errors.append("%s is not symbolic link" % self.attrs["path"])
+
+                # No point in continuing if it's not a link
+                if errors:
+                        return errors
 
                 atarget = os.readlink(path)
 
                 if target != atarget:
-                        return ["target=%s" % atarget]
+                        errors.append("target=%s" % atarget)
 
-                return []
+                return errors
 
         def remove(self, pkgplan):
                 path = os.path.normpath(os.path.sep.join(
@@ -99,3 +104,4 @@ class LinkAction(generic.Action):
                     "basename": os.path.basename(self.attrs["path"]),
                     "path": os.path.sep + self.attrs["path"]
                 }
+

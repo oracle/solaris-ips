@@ -11,6 +11,7 @@ SYNOPSIS
      /usr/bin/pkg uninstall [-nrvq] pkg_fmri ...
 
      /usr/bin/pkg verify [-Hvq] [pkg_fmri_pattern ...]
+     /usr/bin/pkg fix [pkg_fmri_pattern ...]
      /usr/bin/pkg info [-lr] [--license] [pkg_fmri_pattern ...]
      /usr/bin/pkg contents [-Hmr] [-o attribute ...] [-s sort_key]
          [-t action_type ... ] [pkg_fmri_pattern ...]
@@ -233,6 +234,9 @@ SUBCOMMANDS
           are always checked.
 
           The -H option causes the headers to be omitted.
+
+     fix [pkg_fmri_pattern ...]
+          Fix any any errors reported by pkg verify.
 
      set-property propname propvalue
           Update an existing image property or add a new image property.

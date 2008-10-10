@@ -52,6 +52,7 @@ import pkg.version
 import pkg.client.history as history
 import pkg.client.imageconfig as imageconfig
 import pkg.client.imageplan as imageplan
+import pkg.client.pkgplan as pkgplan
 import pkg.client.imagestate as imagestate
 import pkg.client.retrieve as retrieve
 import pkg.client.progress as progress
@@ -695,7 +696,32 @@ class Image(object):
                         if errors:
                                 progresstracker.verify_yield_error(actname,
                                     errors)
-                                yield (actname, errors)
+                                yield (act, errors)
+
+        def repair(self, repairs, progtrack):
+                """Repair any actions in the fmri that failed a verify."""
+                pps = []
+                for fmri, actions in repairs:
+                        msg("Repairing: %-50s" % fmri.get_pkg_stem())
+                        m = self.get_manifest(fmri, filtered=True)
+                        pp = pkgplan.PkgPlan(self, progtrack, False)
+
+                        pp.propose_repair(fmri, m, actions)
+                        pp.evaluate()
+                        pps.append(pp)
+
+                ip = imageplan.ImagePlan(self, progtrack, False)
+                ip.pkg_plans = pps
+                try:
+                        ip.evaluate()
+                        ip.preexecute()
+                        ip.execute()
+                except KeyboardInterrupt:
+                        raise
+                except:
+                        return False
+
+                return True
 
         def get_fmri_manifest_pairs(self):
                 """For each installed fmri, finds the path to its manifest file

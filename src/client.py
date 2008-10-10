@@ -58,6 +58,7 @@ import calendar
 import OpenSSL.crypto
 
 from pkg.client import global_settings
+import pkg.client.bootenv as bootenv
 import pkg.client.image as image
 import pkg.client.filelist as filelist
 import pkg.client.progress as progress
@@ -123,6 +124,7 @@ Advanced subcommands:
         pkg info [-lr] [--license] [pkg_fmri_pattern ...]
         pkg search [-lrI] [-s server] token
         pkg verify [-fHqv] [pkg_fmri_pattern ...]
+        pkg fix [pkg_fmri_pattern ...]
         pkg contents [-Hmr] [-o attribute ...] [-s sort_key] [-t action_type ... ]
             pkg_fmri_pattern [...]
         pkg image-create [-fFPUz] [--force] [--full|--partial|--user] [--zone]
@@ -365,6 +367,41 @@ def get_tracker(quiet = False):
                         progresstracker = progress.CommandLineProgressTracker()
         return progresstracker
 
+def fix_image(img, args):
+        progresstracker = get_tracker(False)
+        img.load_catalogs(progresstracker)
+        fmris, notfound, illegals = img.installed_fmris_from_args(args)
+
+        any_errors = False
+        repairs = []
+        for f in fmris:
+                failed_actions = []
+                for err in img.verify(f, progresstracker,
+                    verbose=True, forever=True):
+                        if not failed_actions:
+                                msg("Verifying: %-50s %7s" % 
+                                    (f.get_pkg_stem(), "ERROR"))
+                        act = err[0]
+                        failed_actions.append(act)
+                        msg("\t%s" % act.distinguished_name())
+                        for x in err[1]:
+                                msg("\t\t%s" % x)
+                if failed_actions:
+                        repairs.append((f, failed_actions))
+
+        # Repair anything we failed to verify
+        if repairs:
+                # Create a snapshot in case they want to roll back
+                try:
+                        be = bootenv.BootEnv(img.get_root())
+                        msg(_("Created ZFS snapshot: %s" % be.snapshot_name))
+                except RuntimeError, e:
+                        msg(_("Unable to create ZFS snapshot: %s") % e)
+                success = img.repair(repairs, progresstracker)
+                if not success:
+                        return 1
+        return 0
+        
 def verify_image(img, args):
         opts, pargs = getopt.getopt(args, "vfqH")
 
@@ -422,7 +459,7 @@ def verify_image(img, args):
                                 pkgerr = True
 
                         if not quiet:
-                                msg("\t%s" % err[0])
+                                msg("\t%s" % err[0].distinguished_name())
                                 for x in err[1]:
                                         msg("\t\t%s" % x)
                 if verbose and not pkgerr:
@@ -1995,6 +2032,8 @@ def main_func():
                         return info(mydir, pargs)
                 elif subcommand == "contents":
                         return list_contents(img, pargs)
+                elif subcommand == "fix":
+                        return fix_image(img, pargs)
                 elif subcommand == "verify":
                         return verify_image(img, pargs)
                 elif subcommand == "set-authority":

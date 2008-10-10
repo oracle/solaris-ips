@@ -54,6 +54,7 @@ class FileAction(generic.Action):
         def __init__(self, data=None, **attrs):
                 generic.Action.__init__(self, data, **attrs)
                 self.hash = "NOHASH"
+                self.replace_required = False
 
         # this check is only needed on Windows
         if portable.ostype == "windows":
@@ -91,7 +92,6 @@ class FileAction(generic.Action):
                 if not os.path.exists(os.path.dirname(final_path)):
                         self.makedirs(os.path.dirname(final_path), mode=0755)
 
-
                 # XXX If we're upgrading, do we need to preserve file perms from
                 # exisiting file?
 
@@ -124,6 +124,22 @@ class FileAction(generic.Action):
                                         final_path = final_path + ".new"
                                 else:
                                         return
+
+                # If it is a directory (and not empty) then we should
+                # salvage the contents.
+                if os.path.exists(final_path) and \
+                    not os.path.islink(final_path) and os.path.isdir(final_path):
+                        try:    
+                                os.rmdir(final_path)
+                        except OSError, e:
+                                if e.errno == errno.ENOENT:
+                                        pass
+                                elif e.errno == errno.EEXIST or \
+                                            e.errno == errno.ENOTEMPTY:
+                                        pkgplan.image.salvagedir(final_path)
+                                elif e.errno != errno.EACCES:
+                                        # this happens on Windows
+                                        raise
 
                 # XXX This needs to be modularized.
                 # XXX This needs to be controlled by policy.
@@ -181,16 +197,22 @@ class FileAction(generic.Action):
                 path = os.path.normpath(os.path.sep.join(
                     (img.get_root(), path)))
 
+                errors = []
+
                 try:
                         stat = os.lstat(path)
                 except OSError, e:
                         if e.errno == errno.ENOENT:
-                                return ["File does not exist"]
+                                self.replace_required = True
+                                errors.append("File does not exist")
                         if e.errno == errno.EACCES:
-                                return ["Skipping: Permission denied"]
-                        return ["Unexpected OSError: %s" % e]
+                                errors.append("Skipping: Permission denied")
+                        errors.append("Unexpected OSError: %s" % e)
 
-                errors = []
+                # If we have errors already there isn't much point in
+                # continuing.
+                if errors:
+                        return errors
 
                 if path.lower().endswith("/cat") and args["verbose"] == True:
                         errors.append("Warning: package may contain bobcat!  "
@@ -198,6 +220,8 @@ class FileAction(generic.Action):
 
                 if not S_ISREG(stat[ST_MODE]):
                         errors.append("%s is not a regular file" % self.attrs["path"])
+                        self.replace_required = True
+
                 if stat[ST_UID] != owner:
                         errors.append("Owner: '%s' should be '%s'" % \
                             (img.get_name_by_uid(stat[ST_UID], True),
@@ -251,6 +275,7 @@ class FileAction(generic.Action):
                                 if elfhash is not None and elfhash != self.attrs["elfhash"]:
                                         errors.append("Elfhash: %s should be %s" % \
                                             (elfhash, self.attrs["elfhash"]))
+                                        self.replace_required = True
 
                         #
                         # not an elf file, or we couldn't check elf -> try
@@ -264,6 +289,7 @@ class FileAction(generic.Action):
                                 if hashvalue != self.hash:
                                         errors.append("Hash: %s should be %s" % \
                                             (hashvalue, self.hash))
+                                        self.replace_required = True
                 except EnvironmentError, e:
                         if e.errno == errno.EACCES:
                                 errors.append("Skipping: Permission Denied" % e)
@@ -281,6 +307,8 @@ class FileAction(generic.Action):
         # retrieve the file and write it to a temporary location.
         # For ELF files, only write the new file if the elfhash changed.
         def needsdata(self, orig):
+                if self.replace_required:
+                        return True
                 bothelf = orig and "elfhash" in orig.attrs and "elfhash" in self.attrs
                 if not orig or \
                     (orig.hash != self.hash and (not bothelf or

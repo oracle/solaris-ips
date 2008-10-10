@@ -45,6 +45,7 @@ class PkgPlan(object):
                 self.origin_fmri = None
                 self.destination_fmri = None
                 self.actions = []
+                self.__repair_actions = []
 
                 self.__origin_mfst = manifest.null
                 self.__destination_mfst = manifest.null
@@ -67,6 +68,20 @@ class PkgPlan(object):
                         s += "  %s -> %s\n" % (src, dest)
 
                 return s
+
+        def propose_repair(self, fmri, mfst, actions):
+                self.destination_fmri = fmri
+                self.__destination_mfst = mfst
+                self.origin_fmri = None
+                self.__origin_mfst = mfst
+
+                # Create a list of (src, dst) pairs for the actions to send to
+                # execute_repair.  src is none in this case since we aren't
+                # upgrading, just repairing.
+                lst = [(None, x) for x in actions]
+                
+                # Only install actions, no update or remove
+                self.__repair_actions = lst
 
         def propose_destination(self, fmri, mfst):
                 self.destination_fmri = fmri
@@ -145,8 +160,7 @@ class PkgPlan(object):
                 if ddups:
                         raise RuntimeError, ["Duplicate actions", ddups]
 
-                self.actions = self.__destination_mfst.difference(
-                    self.__origin_mfst)
+                self.actions = self.__destination_mfst.difference(self.__origin_mfst)
 
                 # figure out how many implicit directories disappear in this
                 # transition and add directory remove actions.  These won't
@@ -174,6 +188,9 @@ class PkgPlan(object):
                 # Stash information needed by legacy actions.
                 self.__legacy_info["description"] = \
                     self.__destination_mfst.get("description", "none provided")
+
+                # Add any repair actions to the update list
+                self.actions[1].extend(self.__repair_actions)
 
                 #
                 # We cross a point of no return here, and throw away the origin

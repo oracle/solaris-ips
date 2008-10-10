@@ -59,7 +59,7 @@ class HardLinkAction(link.LinkAction):
                         target = os.path.normpath(target)[1:]
 
                 return target
-                
+
         def install(self, pkgplan, orig):
                 """Client-side method that installs a hard link."""
 
@@ -83,24 +83,30 @@ class HardLinkAction(link.LinkAction):
                 path = self.attrs["path"]
                 target = self.get_target_path()
 
+                errors = []
                 path = os.path.normpath(os.path.sep.join(
                     (img.get_root(), path)))
 
                 if not os.path.exists(path):
-                        return ["No such path %s" % self.attrs["path"]]
+                        errors.append("No such path %s" % self.attrs["path"])
 
                 target = os.path.normpath(os.path.sep.join(
                     (img.get_root(), target)))
 
                 if not os.path.exists(target):
-                        return ["Target %s doesn't exist", self.attrs["target"]]
+                        errors.append("Target %s doesn't exist" % \
+                            self.attrs["target"])
+
+                # No point in continuing if we have errors already
+                if errors:
+                        return errors
 
                 try:
                         if os.stat(path)[ST_INO] != os.stat(target)[ST_INO]:
-                                return ["Path and Target (%s) inodes not the same" % \
-                                    self.get_target_path()]
+                                errors.append("Path and Target (%s) inodes not the same" % \
+                                    self.get_target_path())
 
                 except OSError, e:
-                        return ["Unexected exception: %s" % e]
+                        errors.append("Unexpected exception: %s" % e)
 
-                return []
+                return errors
