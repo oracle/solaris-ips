@@ -33,7 +33,7 @@ import re
 import shutil
 import difflib
 
-class TestPkgRefresh(testutils.ManyDepotTestCase):
+class TestPkgRefreshMulti(testutils.ManyDepotTestCase):
 
         foo1 = """
             open foo@1,5.11-0
@@ -95,7 +95,17 @@ class TestPkgRefresh(testutils.ManyDepotTestCase):
                 return self._check(
                     self.reduce_spaces(expected),
                     self.reduce_spaces(actual))
-        
+
+ 	def test_refresh_cli_options(self):
+                """Test refresh and options."""
+
+                durl = self.dcs[1].get_depot_url()
+                self.image_create(durl)
+
+                self.pkg("refresh")
+                self.pkg("refresh --full")
+                self.pkg("refresh -F", exit=2)
+       
         def test_general_refresh(self):
                 self.image_create(self.durl1, prefix = "test1")
                 self.pkg("set-authority -O " + self.durl2 + " test2")

@@ -35,7 +35,7 @@ import shutil
 import tempfile
 import unittest
 
-class TestPkgRecv(testutils.ManyDepotTestCase):
+class TestPkgrecvMulti(testutils.ManyDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
         persistent_depot = True
 

@@ -28,40 +28,35 @@ if __name__ == "__main__":
 	testutils.setup_environment("../../../proto")
 
 import unittest
+import os
+import re
+import shutil
+import difflib
 
-class TestROption(testutils.SingleDepotTestCase):
+class TestPkgInfoBasics(testutils.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
         persistent_depot = True
 
-        foo10 = """
-            open foo@1.0,5.11-0
-            close """
+        def test_pkg_properties(self):
+                """pkg: set, unset, and display properties """
 
-        def test_1(self):
                 durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.foo10)
-                
                 self.image_create(durl)
 
-                imgpath = self.img_path
-                badpath = "/this/dir/should/not/ever/exist/foo/bar/afsddfas"
+		self.pkg("set-property -@", exit=2)
+                self.pkg("get-property -@", exit=2)
+                self.pkg("property -@", exit=2)
 
-                self.pkg("-R %s list" % badpath, exit=1)
-                self.pkg("-R %s list" % imgpath, exit=1)
-                
-                self.pkg("-R %s install foo" % badpath, exit=1)
-                self.pkg("-R %s install foo" % imgpath)
+                self.pkg("set-property title sample")
+                self.pkg('set-property description "more than one word"')
+                self.pkg("property")
+                self.pkg("unset-property description")
+                self.pkg("property -H")
+                self.pkg("property title")
+                self.pkg("property -H title")
+                self.pkg("property description", exit=1)
+                self.pkg("unset-property description", exit=1)
+                self.pkg("unset-property", exit=2)
 
-                self.pkg("-R %s list" % badpath, exit=1)
-                self.pkg("-R %s list" % imgpath)
-
-                self.pkgsend_bulk(durl, self.foo10)
-                
-                self.pkg("-R %s image-update" % badpath, exit=1)
-                self.pkg("-R %s image-update" % imgpath)
-
-                self.pkg("-R %s uninstall foo" % badpath, exit=1)
-                self.pkg("-R %s install foo" % imgpath)
-
-                self.pkg("-R %s info foo" % badpath, exit=1)
-                self.pkg("-R %s info foo" % imgpath)
+if __name__ == "__main__":
+        unittest.main()

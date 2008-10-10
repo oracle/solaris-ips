@@ -27,37 +27,21 @@ import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 
-import os
 import unittest
-import shutil
-import copy
+import os
 
-import pkg.depotcontroller as dc
+class TestPkgVerify(testutils.SingleDepotTestCase):
+        # Only start/stop the depot once (instead of for every test)
+        persistent_depot = True
 
-import pkg.query_engine as query_engine
-import pkg.portable as portable
+        def test_pkg_verify_bad_opts(self):
+                """ test pkg verify with bad options """
+			
+		durl = self.dc.get_depot_url()
+                self.image_create(durl)
 
-class TestPkgSearchMulti(testutils.ManyDepotTestCase):
-
-        example_pkg10 = """
-            open example_pkg@1.0,5.11-0
-            close """
-
-        def setUp(self):
-                testutils.ManyDepotTestCase.setUp(self, 2)
-
-                durl1 = self.dcs[1].get_depot_url()
-                durl2 = self.dcs[2].get_depot_url()
-                self.pkgsend_bulk(durl2, self.example_pkg10)
-
-                self.image_create(durl1, prefix = "test1")
-                self.pkg("set-authority -O " + durl2 + " test2")
-
-        def test_bug_2955(self):
-                """See http://defect.opensolaris.org/bz/show_bug.cgi?id=2955"""
-                self.pkg("install example_pkg")
-                self.pkg("rebuild-index")
-                self.pkg("uninstall example_pkg")
+                self.pkg("verify -vq", exit=2)
 
 if __name__ == "__main__":
         unittest.main()
+

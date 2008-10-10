@@ -103,6 +103,12 @@ class TestPkgList(testutils.ManyDepotTestCase):
         def tearDown(self):
                 testutils.ManyDepotTestCase.tearDown(self)
 
+	def test_pkg_list_cli_opts(self):
+
+                self.pkg("list -@", exit=2)
+                self.pkg("list -v -s", exit=2)
+
+
         def test_list_1(self):
                 """List all "foo@1.0" from auth "test1"."""
                 self.pkg("list -aH pkg://test1/foo@1.0,5.11-0")

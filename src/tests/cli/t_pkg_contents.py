@@ -33,7 +33,7 @@ import re
 import shutil
 import difflib
 
-class TestContentsAndInfo(testutils.SingleDepotTestCase):
+class TestPkgContentsBasics(testutils.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
         persistent_depot = True
 
@@ -82,13 +82,23 @@ class TestContentsAndInfo(testutils.SingleDepotTestCase):
                 """Reduce runs of spaces down to a single space."""
                 return re.sub(" +", " ", string)
 
-        def test_empty_image(self):
-                """local pkg info/contents should fail in an empty image; remote
+	def test_contents_bad_opts(self):
+
+		self.image_create(self.dc.get_depot_url())
+
+                self.pkg("contents -@", exit=2)
+                self.pkg("contents -m -r", exit=2)
+                self.pkg("contents -o", exit=2)
+                self.pkg("contents -s", exit=2)
+                self.pkg("contents -t", exit=2)
+                self.pkg("contents foo@x.y", exit=1)
+
+        def test_contents_empty_image(self):
+                """local pkg contents should fail in an empty image; remote
                 should succeed on a match """
 
                 self.image_create(self.dc.get_depot_url())
                 self.pkg("contents -m", exit=1)
-                self.pkg("info", exit=1)
                 self.pkg("contents -m -r bronze@1.0", exit=0)
 
         def test_contents_1(self):
@@ -123,47 +133,6 @@ class TestContentsAndInfo(testutils.SingleDepotTestCase):
                 self.image_create(self.dc.get_depot_url())
                 self.pkg("contents bad", exit=1)
                 self.pkg("contents -r bad", exit=1)
-
-        def test_info_local_remote(self):
-                """pkg: check that info behaves for local and remote cases."""
-
-                pkg1 = """
-                    open jade@1.0,5.11-0
-                    add dir mode=0755 owner=root group=bin path=/bin
-                    close
-                """
-
-                pkg2 = """
-                    open turquoise@1.0,5.11-0
-                    add dir mode=0755 owner=root group=bin path=/bin
-                    close
-                """
-
-                durl = self.dc.get_depot_url()
-
-                self.pkgsend_bulk(durl, pkg1)
-                self.pkgsend_bulk(durl, pkg2)
-
-                self.image_create(durl)
-
-                # Install one package and verify
-                self.pkg("install jade")
-                self.pkg("verify -v")
-                
-                # Check local info
-                self.pkg("info jade | grep 'State: Installed'")
-                self.pkg("info turquoise 2>&1 | grep 'no packages matching'")
-                self.pkg("info emerald", exit=1)
-                self.pkg("info emerald 2>&1 | grep 'no packages matching'")
-                self.pkg("info 'j*'")
-                self.pkg("info '*a*'")
-
-                # Check remote info
-                self.pkg("info -r jade | grep 'State: Installed'")
-                self.pkg("info -r turquoise| grep 'State: Not installed'")
-                self.pkg("info -r emerald", exit=1)
-                self.pkg("info -r emerald 2>&1 | grep 'no packages matching'")
-
 
 if __name__ == "__main__":
         unittest.main()

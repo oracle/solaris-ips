@@ -25,117 +25,28 @@
 
 import testutils
 if __name__ == "__main__":
-	testutils.setup_environment("../../../proto")
+        testutils.setup_environment("../../../proto")
 
 import unittest
 import os
 import tempfile
 
-class TestCommandLine(testutils.SingleDepotTestCase):
+class TestPkgAuthorityBasics(testutils.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
         persistent_depot = True
 
-        def test_pkg_bogus_opts(self):
+        def test_pkg_authority_bogus_opts(self):
                 """ pkg bogus option checks """
 
-                # create a image to avoid non-existant image messages
-                durl = self.dc.get_depot_url()
+		durl = self.dc.get_depot_url()
                 self.image_create(durl)
 
-                self.pkg("-@", exit=2)
-                self.pkg("list -@", exit=2)
-                self.pkg("list -v -s", exit=2)
-                self.pkg("contents -@", exit=2)
-                self.pkg("image-update -@", exit=2)
-                self.pkg("image-create -@", exit=2)
-                self.pkg("image-create --bozo", exit=2)
-                self.pkg("install -@ foo", exit=2)
-                self.pkg("uninstall -@ foo", exit=2)
                 self.pkg("set-authority -@ test3", exit=2)
                 self.pkg("authority -@ test5", exit=2)
-                self.pkg("contents -m -r", exit=2)
-                self.pkg("set-property -@", exit=2)
-                self.pkg("get-property -@", exit=2)
-                self.pkg("property -@", exit=2)
-
-        def test_pkg_vq_1153(self):
-                """ test that -v and -q are mutually exclusive """
-                durl = self.dc.get_depot_url()
-                self.image_create(durl)
-
-                self.pkg("verify -vq", exit=2)
-                self.pkg("install -vq foo", exit=2)
-                self.pkg("uninstall -vq foo", exit=2)
-                self.pkg("image-update -vq", exit=2)
-
-        def test_pkg_missing_args(self):
-                """ pkg: Lack of needed arguments should yield complaint """
-                # create a image to avoid non-existant image messages
-                durl = self.dc.get_depot_url()
-                self.image_create(durl)
-
-                self.pkg("install", exit=2)
-                self.pkg("uninstall", exit=2)
-                self.pkg("-s status", exit=2)
-                self.pkg("-R status", exit=2)
-                self.pkg("contents -o", exit=2)
-                self.pkg("contents -s", exit=2)
-                self.pkg("contents -t", exit=2)
                 self.pkg("set-authority -k", exit=2)
                 self.pkg("set-authority -c", exit=2)
                 self.pkg("set-authority -O", exit=2)
                 self.pkg("unset-authority", exit=2)
-                self.pkg("refresh -F", exit=2)
-                self.pkg("search", exit=2)
-                self.pkg("image-create", exit=2)
-
-        def test_pkg_bogus_args_2418(self):
-                """ specify arguments to commands which don't accept them"""
-                durl = self.dc.get_depot_url()
-                self.image_create(durl)
-
-                self.pkg("image-update foo", exit=2)
-                self.pkg("version foo", exit=2)
-
-        def test_pkg_bad_fmris(self):
-                durl = self.dc.get_depot_url()
-                self.image_create(durl)
-
-                # bad fmris get a full workout in t_fmri.py and t_version.py
-                # in the API suite.  Here we do some basic validation.
-                self.pkg("install foo@x.y", exit=1)
-                self.pkg("uninstall foo@x.y", exit=1)
-                self.pkg("contents foo@x.y", exit=1)
-                self.pkg("info foo@x.y", exit=1)
-                self.pkg("info pkg:/man@0.5.11,5.11-0.95:20080807T160129", exit=1)
-                self.pkg("info pkg:/man@0.5.11,5.11-0.95:20080807T1", exit=1)
-                self.pkg("info pkg:/man@0.5.11,5.11-0.95:", exit=1)
-                self.pkg("info pkg:/man@0.5.11,5.11-0.", exit=1)
-                self.pkg("info pkg:/man@0.5.11,5.11-", exit=1)
-                self.pkg("info pkg:/man@0.5.11,-", exit=1)
-                self.pkg("info pkg:/man@-", exit=1)
-                self.pkg("info pkg:/man@", exit=1)
-
-        def test_pkgsend_bogus_opts(self):
-                """ pkgsend bogus option checks """
-                durl = "bogus"
-                self.pkgsend(durl, "-@ open foo@1.0,5.11-0", exit=2)
-                self.pkgsend(durl, "close -@", exit=2)
-
-        def test_properties(self):
-                """pkg: set, unset, and display properties """
-                durl = self.dc.get_depot_url()
-                self.image_create(durl)
-                self.pkg("set-property title sample")
-                self.pkg('set-property description "more than one word"')
-                self.pkg("property")
-                self.pkg("unset-property description")
-                self.pkg("property -H")
-                self.pkg("property title")
-                self.pkg("property -H title")
-                self.pkg("property description", exit=1)
-                self.pkg("unset-property description", exit=1)
-                self.pkg("unset-property", exit=2)
 
         def test_authority_add_remove(self):
                 """pkg: add and remove an authority"""
@@ -254,41 +165,6 @@ class TestCommandLine(testutils.SingleDepotTestCase):
                 self.pkg("set-authority --remove-mirror=http://test6 mtest",
                     exit=1)
                 self.pkg("set-authority --remove-mirror=test7 mtest", exit=1)
-
-        def test_bad_fmris(self):
-                """ test that pkg tests for bad fmris in input """
-
-                # create an image and one valid pkg
-                durl = self.dc.get_depot_url()
-                pkg1 = """
-                    open jade@1.0,5.11-0
-                    add dir mode=0755 owner=root group=bin path=/bin
-                    close
-                """
-                self.pkgsend_bulk(durl, pkg1)
-                self.image_create(durl)
-
-                # bad version
-                self.pkg("install jade")
-                self.pkg("info pkg:/foo@bar.baz", exit=1)
-                self.pkg("info pkg:/foo@bar.baz jade", exit=1)
-                self.pkg("info -r pkg:/foo@bar.baz", exit=1)
-                self.pkg("install pkg:/foo@bar.baz", exit=1)
-                self.pkg("uninstall pkg:/foo@bar.baz", exit=1)
-
-                # bad time
-                self.pkg("info pkg:/foo@0.5.11,5.11-0.91:20080613T999999Z",
-                    exit=1)
-
-
-        def test_refresh(self):
-                """Test refresh and options."""
-                durl = self.dc.get_depot_url()
-                self.image_create(durl)
-
-                self.pkg("refresh")
-                self.pkg("refresh --full")
-               
 
 if __name__ == "__main__":
         unittest.main()

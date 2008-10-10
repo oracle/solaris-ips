@@ -30,15 +30,25 @@ if __name__ == "__main__":
 import unittest
 import os
 
-class TestImageCreate(testutils.SingleDepotTestCase):
+class TestPkgImageCreateBasics(testutils.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
         persistent_depot = True
+
         def test_basic(self):
                 """ Create an image, verify it. """
 
                 durl = self.dc.get_depot_url()
                 self.image_create(durl)
                 self.pkg("verify")
+
+        def test_image_create_bad_opts(self):
+		"""Test some bad cli options."""
+
+                self.pkg("image-create -@", exit=2)
+                self.pkg("image-create --bozo", exit=2)
+                self.pkg("image-create", exit=2)
+
+
 
         def test_766(self):
                 """Bug 766: image-create without authority prefix specified."""
@@ -55,7 +65,7 @@ class TestImageCreate(testutils.SingleDepotTestCase):
                     self.image_create, durl, "")
 
 
-class TestImageCreateNoDepot(testutils.CliTestCase):
+class TestPkgImageCreateNoDepot(testutils.CliTestCase):
         persistent_depot = True
         def test_bad_image_create(self):
                 """ Create image from non-existent server """

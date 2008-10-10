@@ -33,6 +33,96 @@ import shutil
 
 import pkg.depotcontroller as dc
 
+class TestPkgDepot(testutils.SingleDepotTestCase):
+        # Only start/stop the depot once (instead of for every test)
+        persistent_depot = True
+
+        quux10 = """
+            open quux@1.0,5.11-0
+            add dir mode=0755 owner=root group=bin path=/bin
+            add file /tmp/cat mode=0555 owner=root group=bin path=/bin/cat
+            add file /tmp/libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.so.1
+            close """
+
+        misc_files = [ "/tmp/libc.so.1", "/tmp/cat" ]
+
+        def setUp(self):
+                testutils.SingleDepotTestCase.setUp(self)
+                for p in self.misc_files:
+                        f = open(p, "w")
+                        # write the name of the file into the file, so that
+                        # all files have differing contents
+                        f.write(p)
+                        f.close
+                        self.debug("wrote %s" % p)
+
+        def tearDown(self):
+                testutils.SingleDepotTestCase.tearDown(self)
+                for p in self.misc_files:
+                        os.remove(p)
+
+        def test_depot_ping(self):
+                """ Ping the depot several times """
+
+                self.assert_(self.dc.is_alive())
+                self.assert_(self.dc.is_alive())
+                self.assert_(self.dc.is_alive())
+                self.assert_(self.dc.is_alive())
+
+        def testStartStop(self):
+                """ Start and stop the depot several times """
+                self.dc.stop()
+                for i in range(0, 5):
+                        self.dc.start()
+                        self.assert_(self.dc.is_alive())
+                        self.dc.stop()
+                        self.assert_(not self.dc.is_alive())
+
+                self.dc.start()
+
+        def test_bug_1876(self):
+                """ Send package quux@1.0 an action at a time, restarting the
+                    depot server after each one is sent, to ensure that
+                    transactions work across depot restart. Then verify that
+                    the package was successfully added by performing some
+                    basic operations. """
+
+                durl = self.dc.get_depot_url()
+
+                for line in self.quux10.split("\n"):
+                        line = line.strip()
+                        if line == "":
+                                continue
+
+                        try:
+                                self.pkgsend(durl, line, exit = 0)
+                        except:
+                                self.pkgsend(durl, "close -A", exit = 0)
+                                raise
+
+                        if not line == "close":
+                                self.restart_depots()
+
+                self.image_create(durl)
+
+                self.pkg("list -a")
+                self.pkg("list", exit=1)
+
+                self.pkg("install quux")
+
+                self.pkg("list")
+                self.pkg("verify")
+
+                self.pkg("uninstall quux")
+                self.pkg("verify")
+
+        def test_bad_fmris(self):
+                durl = self.dc.get_depot_url()
+                self.pkgsend(durl, "open foo@", exit=1)
+                self.pkgsend(durl, "open foo@x.y", exit=1)
+                self.pkgsend(durl, "open foo@1.0,-2.0", exit=1)
+
+
 class TestDepotController(testutils.CliTestCase):
 
         def setUp(self):
