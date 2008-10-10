@@ -190,15 +190,28 @@ class Image(object):
 
                 self.__manifest_cache = {}
 
+        def _check_subdirs(self, sub_d, prefix):
+                for n in self.required_subdirs:
+                        if not os.path.isdir(os.path.join(sub_d, prefix, n)):
+                                return False
+                return True
+
+        def image_type(self, d):
+                """Returns the type of image at directory: d; or None"""
+                rv = None
+                if os.path.isdir(os.path.join(d, img_user_prefix)) and \
+                        os.path.isfile(os.path.join(d, img_user_prefix,
+                            "cfg_cache")) and \
+                            self._check_subdirs(d, img_user_prefix):
+                        rv = IMG_USER
+                elif os.path.isdir(os.path.join(d, img_root_prefix)) \
+                         and os.path.isfile(os.path.join(d,
+                             img_root_prefix, "cfg_cache")) and \
+                             self._check_subdirs(d, img_root_prefix):
+                        rv = IMG_ENTIRE
+                return rv
+                
         def find_root(self, d, exact_match=False):
-
-                def check_subdirs(sub_d, prefix):
-                        for n in self.required_subdirs:
-                                if not os.path.isdir(
-                                    os.path.join(sub_d, prefix, n)):
-                                        return False
-                        return True
-
                 # Ascend from the given directory d to find first
                 # encountered image. If exact_match is true, if the
                 # image found doesn't match startd, raise an
@@ -207,10 +220,8 @@ class Image(object):
                 # eliminate problem if relative path such as "." is passed in
                 d = os.path.realpath(d)
                 while True:
-                        if os.path.isdir(os.path.join(d, img_user_prefix)) and \
-                            os.path.isfile(os.path.join(d, img_user_prefix,
-                                "cfg_cache")) and \
-                            check_subdirs(d, img_user_prefix):
+                        imgtype = self.image_type(d)
+                        if imgtype == IMG_USER:
                                 # XXX Look at image file to determine filter
                                 # tags and repo URIs.
                                 if exact_match and \
@@ -218,13 +229,10 @@ class Image(object):
                                     os.path.realpath(d):
                                         raise api_errors.ImageNotFoundException(
                                             exact_match, startd, d)
-                                self.__set_dirs(imgtype=IMG_USER, root=d)
+                                self.__set_dirs(imgtype=imgtype, root=d)
                                 self.attrs["Build-Release"] = "5.11"
                                 return
-                        elif os.path.isdir(os.path.join(d, img_root_prefix)) \
-                              and os.path.isfile(os.path.join(d,
-                              img_root_prefix,"cfg_cache")) and \
-                              check_subdirs(d, img_root_prefix):
+                        elif imgtype == IMG_ENTIRE:
                                 # XXX Look at image file to determine filter
                                 # tags and repo URIs.
                                 # XXX Look at image file to determine if this
@@ -234,7 +242,7 @@ class Image(object):
                                     os.path.realpath(d):
                                         raise api_errors.ImageNotFoundException(
                                             exact_match, startd, d)
-                                self.__set_dirs(imgtype=IMG_ENTIRE, root=d)
+                                self.__set_dirs(imgtype=imgtype, root=d)
                                 self.attrs["Build-Release"] = "5.11"
                                 return
 

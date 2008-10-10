@@ -125,7 +125,7 @@ Advanced subcommands:
         pkg verify [-fHqv] [pkg_fmri_pattern ...]
         pkg contents [-Hmr] [-o attribute ...] [-s sort_key] [-t action_type ... ]
             pkg_fmri_pattern [...]
-        pkg image-create [-FPUz] [--full|--partial|--user] [--zone]
+        pkg image-create [-fFPUz] [--force] [--full|--partial|--user] [--zone]
             [-k ssl_key] [-c ssl_cert] -a <prefix>=<url> dir
 
         pkg set-property propname propvalue
@@ -1669,11 +1669,15 @@ def image_create(img, args):
         auth_name = None
         auth_url = None
         refresh_catalogs = True
+        force = False
 
-        opts, pargs = getopt.getopt(args, "FPUza:k:c:",
-            ["full", "partial", "user", "zone", "authority=", "no-refresh"])
+        opts, pargs = getopt.getopt(args, "fFPUza:k:c:",
+            ["force", "full", "partial", "user", "zone", "authority=",
+                "no-refresh"])
 
         for opt, arg in opts:
+                if opt == "-f" or opt == "--force":
+                        force = True
                 if opt == "-F" or opt == "--full":
                         imgtype = image.IMG_ENTIRE
                 if opt == "-P" or opt == "--partial":
@@ -1734,12 +1738,27 @@ def image_create(img, args):
                 error(_("image-create: authority URL is invalid"))
                 return 1
 
+        image_dir = pargs[0]
+
+        # Bail if there is already an image there
+        if img.image_type(image_dir) != None and not force:
+                error(_("there is already an image at: %s") % image_dir)
+                error(_("To override, use the -f (force) option."))
+                return 1
+
+        # Bail if the directory exists but isn't empty
+        if os.path.exists(image_dir) and \
+            len(os.listdir(image_dir)) > 0 and not force:
+                error(_("Non-empty directory: %s") % image_dir)
+                error(_("To override, use the -f (force) option."))
+                return 1
+
         try:
-                img.set_attrs(imgtype, pargs[0], is_zone, auth_name, auth_url,
+                img.set_attrs(imgtype, image_dir, is_zone, auth_name, auth_url,
                     ssl_key=ssl_key, ssl_cert=ssl_cert)
         except OSError, e:
                 error(_("cannot create image at %s: %s") % \
-                    (pargs[0], e.args[1]))
+                    (image_dir, e.args[1]))
                 return 1
 
         if refresh_catalogs:

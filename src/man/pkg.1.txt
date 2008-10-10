@@ -74,8 +74,8 @@ OPTIONS
 SUBCOMMANDS
      The following subcommands are supported:
 
-     image-create [-FPUz] [--full|--partial|--user] [--zone] [-k ssl_key]
-       [-c ssl_cert] [--no-refresh] -a authority=origin_url dir
+     image-create [-fFPUz] [--force] [--full|--partial|--user] [--zone]
+       [-k ssl_key] [-c ssl_cert] [--no-refresh] -a authority=origin_url dir
           Create, at location given by dir, an image suitable for package
           operations.  The default image type is user, as given by the -U
           (--user) option.  The image type may be set to a full image (-F
@@ -92,8 +92,11 @@ SUBCOMMANDS
           If the image is to be run within nonglobal zone context, then
           the -z (--zone) option can be used to set an appropriate filter.
 
-          With --no-refresh, do not attempt to contact the authority 
-          specified with -a to retrieve its catalog.
+          With --no-refresh, do not attempt to contact the image's authority
+          to retrieve its catalog.
+
+          With -f (--force), force the creation of an image over an existing
+          image.  This option should be used with care.
 
      image-update [-fnvq] [--no-refresh] 
           Update all installed packages in the current image to the
