@@ -72,6 +72,7 @@ from pkg.misc import msg, emsg, PipeError
 import pkg.version
 import pkg.Uuid25
 import pkg
+from pkg.client.debugvalues import DebugValues
 
 from pkg.client.history import RESULT_FAILED_UNKNOWN
 from pkg.client.history import RESULT_CANCELED
@@ -145,6 +146,7 @@ Advanced subcommands:
 
 Options:
         -R dir
+        -D/--debug name=value
 
 Environment:
         PKG_IMAGE"""))
@@ -1931,9 +1933,20 @@ def main_func():
         gettext.install("pkg", "/usr/lib/locale")
 
         try:
-                opts, pargs = getopt.getopt(sys.argv[1:], "R:")
+                opts, pargs = getopt.getopt(sys.argv[1:], "R:D:", ["debug="])
         except getopt.GetoptError, e:
                 usage(_("illegal global option -- %s") % e.opt)
+
+        for opt, arg in opts:
+                if opt == "-D" or opt == "--debug":
+                        try:
+                                key, value = arg.split('=', 1)
+                        except:
+                                usage(_("%s takes argument of form name=value, not %s")
+                                    % (opt, arg))
+                        DebugValues.set_value(key, value)
+                elif opt == "-R":
+                        mydir = arg
 
         if pargs == None or len(pargs) == 0:
                 usage()
@@ -1950,6 +1963,9 @@ def main_func():
             global_settings.PKG_TIMEOUT_MAX))
 
         if subcommand == "image-create":
+                if "mydir" in locals():
+                        usage(_("-R not allowed for %s subcommand") % 
+                              subcommand)
                 try:
                         ret = image_create(img, pargs)
                 except getopt.GetoptError, e:
@@ -1957,6 +1973,9 @@ def main_func():
                             (subcommand, e.opt))
                 return ret
         elif subcommand == "version":
+                if "mydir" in locals():
+                        usage(_("-R not allowed for %s subcommand") % 
+                              subcommand)
                 if pargs:
                         usage(_("version: command does not take operands " \
                             "('%s')") % " ".join(pargs))
@@ -1971,10 +1990,6 @@ def main_func():
         provided_image_dir = True
         pkg_image_used = False
                 
-        for opt, arg in opts:
-                if opt == "-R":
-                        mydir = arg
-
         if "mydir" not in locals():
                 try:
                         mydir = os.environ["PKG_IMAGE"]

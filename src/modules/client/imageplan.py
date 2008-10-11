@@ -31,6 +31,8 @@ import pkg.client.pkgplan as pkgplan
 import pkg.client.indexer as indexer
 import pkg.search_errors as se
 from pkg.client.imageconfig import REQUIRE_OPTIONAL
+import pkg.client.actuator as actuator
+
 from pkg.client.filter import compile_filter
 from pkg.misc import msg
 from pkg.misc import CLIENT_DEFAULT_MEM_USE_KB
@@ -99,6 +101,8 @@ class ImagePlan(object):
 
                 self.check_cancelation = check_cancelation
 
+                self.actuators = None
+
         def __str__(self):
                 if self.state == UNEVALUATED:
                         s = "UNEVALUATED:\n"
@@ -111,6 +115,8 @@ class ImagePlan(object):
                 s = ""
                 for pp in self.pkg_plans:
                         s = s + "%s\n" % pp
+                
+                s = s + "Actuators:\n%s" % self.actuators
                 return s
 
         def get_plan(self, full=True):
@@ -127,6 +133,7 @@ class ImagePlan(object):
         def display(self):
                 for pp in self.pkg_plans:
                         msg("%s -> %s" % (pp.origin_fmri, pp.destination_fmri))
+                msg("Actuators:\n" % self.actuators)
 
         def is_proposed_fmri(self, fmri):
                 for pf in self.target_fmris:
@@ -463,6 +470,8 @@ class ImagePlan(object):
 
                 self.progtrack.evaluate_progress()
 
+                self.actuators = actuator.Actuator()
+
                 # iterate over copy of removals since we're modding list
                 # keep track of deletion count so later use of index works
                 named_removals = {}
@@ -485,6 +494,8 @@ class ImagePlan(object):
                                     (i - deletions,
                                     id(self.removal_actions[i-deletions][1]))
 
+                        self.actuators.scan_removal(a[1].attrs)
+
                 self.progtrack.evaluate_progress()
 
                 for a in self.install_actions:
@@ -504,6 +515,8 @@ class ImagePlan(object):
                                     cache_name
                                 a[2].attrs["save_file"] = cache_name
 
+                        self.actuators.scan_install(a[2].attrs)
+
                 self.progtrack.evaluate_progress()
                 # Go over update actions
                 l_actions = self.get_link_actions()
@@ -516,6 +529,12 @@ class ImagePlan(object):
                                 path = a[2].attrs["path"]
                                 if path in l_actions:
                                         l_refresh.extend([(a[0], l, l) for l in l_actions[path]])
+
+                        # scan both old and new actions
+                        # repairs may result in update action w/o orig action
+                        if a[1]:
+                                self.actuators.scan_update(a[1].attrs)
+                        self.actuators.scan_update(a[2].attrs)
                 self.update_actions.extend(l_refresh)
 
                 # sort actions to match needed processing order
@@ -653,42 +672,55 @@ class ImagePlan(object):
                         self.state = EXECUTED_OK
                         return
 
-                # execute removals
+                self.actuators.exec_prep(self.image)
 
-                self.progtrack.actions_set_goal("Removal Phase", len(self.removal_actions))
-                for p, src, dest in self.removal_actions:
-                        p.execute_removal(src, dest)
-                        self.progtrack.actions_add_progress()
-                self.progtrack.actions_done()
+                self.actuators.exec_pre_actuators(self.image)
 
-                # execute installs
+                try:
+                
+                        # execute removals
 
-                self.progtrack.actions_set_goal("Install Phase", len(self.install_actions))
+                        self.progtrack.actions_set_goal("Removal Phase",
+                            len(self.removal_actions))
+                        for p, src, dest in self.removal_actions:
+                                p.execute_removal(src, dest)
+                                self.progtrack.actions_add_progress()
+                        self.progtrack.actions_done()
 
-                for p, src, dest in self.install_actions:
-                        p.execute_install(src, dest)
-                        self.progtrack.actions_add_progress()
-                self.progtrack.actions_done()
+                        # execute installs
 
-                # execute updates
+                        self.progtrack.actions_set_goal("Install Phase",
+                            len(self.install_actions))
 
-                self.progtrack.actions_set_goal("Update Phase", len(self.update_actions))
+                        for p, src, dest in self.install_actions:
+                                p.execute_install(src, dest)
+                                self.progtrack.actions_add_progress()
+                        self.progtrack.actions_done()
 
-                for p, src, dest in self.update_actions:
-                        p.execute_update(src, dest)
-                        self.progtrack.actions_add_progress()
+                        # execute updates
 
-                self.progtrack.actions_done()
+                        self.progtrack.actions_set_goal("Update Phase",
+                            len(self.update_actions))
 
+                        for p, src, dest in self.update_actions:
+                                p.execute_update(src, dest)
+                                self.progtrack.actions_add_progress()
 
+                        self.progtrack.actions_done()
 
-                # handle any postexecute operations
+                        # handle any postexecute operations
 
-                for p in self.pkg_plans:
-                        p.postexecute()
+                        for p in self.pkg_plans:
+                                p.postexecute()
 
-                self.image.clear_pkg_state()
+                	self.image.clear_pkg_state()
                         
+                except:
+                        self.actuators.exec_fail_actuators(self.image)                        
+                        raise
+                else:
+                        self.actuators.exec_post_actuators(self.image)
+
                 self.state = EXECUTED_OK
                 
                 # reduce memory consumption
@@ -700,6 +732,8 @@ class ImagePlan(object):
                 del self.target_rem_fmris
                 del self.target_fmris
                 del self.__directories
+
+                del self.actuators
                 
                 # Perform the incremental update to the search indexes
                 # for all changed packages

@@ -43,7 +43,7 @@ ALL_PKGS=	../../../packages/i386	\
 
 TMPPKGS=SUNWfixes
 EXTRA_OPTIONS=
-SOLARIS.PY=./solaris.py -b 0.$(BUILDID) $(EXTRA_OPTIONS) -T \*.py
+SOLARIS.PY=./solaris.py -b 0.$(BUILDID) $(EXTRA_OPTIONS) -T \*.py -G smf_manifests -G reboot
 
 #
 # always remove the following (editable) files from packages we bulk import;

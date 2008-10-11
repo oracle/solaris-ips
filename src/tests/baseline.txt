@@ -194,6 +194,7 @@ api.t_version.py TestVersion.testversionsuccessor6|pass
 api.t_version.py TestVersion.testversionsuccessor7|pass
 api.t_version.py TestVersion.testversionsuccessor8|pass
 api.t_version.py TestVersion.testversionsuccessor9|pass
+cli.t_actuators.py TestPkgActuators.test_actuators|pass
 cli.t_api.py TestPkgApi.test_bad_orderings|pass
 cli.t_api.py TestPkgApi.test_reset|pass
 cli.t_api_info.py TestApiInfo.test_info_local_remote|pass

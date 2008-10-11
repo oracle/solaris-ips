@@ -966,8 +966,14 @@ def SolarisParse(mf):
                 elif token == "end":
                         endarg = lexer.get_token()
                         if endarg == "package":
-                                for f in global_includes:
-                                        SolarisParse(f)
+                                for filename in global_includes:
+                                        for i in include_path:
+                                                f = os.path.join(i, filename)
+                                                if os.path.exists(f):
+                                                        SolarisParse(f)
+                                                        break
+                                        else:
+                                                raise RuntimeError, "File not found: %s" % filename
                                 try:
                                         end_package(curpkg)
                                 except Exception, e:

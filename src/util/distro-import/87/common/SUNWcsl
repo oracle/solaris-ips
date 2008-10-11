@@ -1,4 +1,12 @@
 package SUNWcsl
 import SUNWcsl
 import SUNWcslr
-end package
+# tag libc as needing reboot for now; this will change
+# when we handle overlay mounts correctly on x86
+# XXX work needed for SPARC
+chattr lib/libc.so.1 reboot_needed=true
+chattr lib/amd64/libc.so reboot_needed=true
+chattr usr/lib/libc/libc_hwcap1.so.1 reboot_needed=true
+chattr usr/lib/libc/libc_hwcap2.so.1 reboot_needed=true
+chattr usr/lib/libc/libc_hwcap3.so.1 reboot_needed=true
+end package 
