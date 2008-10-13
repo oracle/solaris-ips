@@ -57,7 +57,7 @@ prototype: FRC
 		$$3 ~ /^(usr(\/share)?|etc(\/xdg(\/autostart(\/updatemanagernotifier.desktop)?)?)?|etc(\/gconf(\/schemas(\/updatemanager-preferences.schemas)?)?)?|var(\/svc(\/manifest(\/application(\/pkg-update.xml)?)?)?)?)$$/ { \
 			$$6 = "sys"; \
 		} \
-		$$3 ~ /share\/applications(\/icons(\/update-manager(\/notify_update.png|\/status_checkmark.png|\/status_blank.png)?)?)?$$/ { \
+		$$3 ~ /share\/applications|share\/icons(\/update-manager(\/notify_update.png|\/status_checkmark.png|\/status_blank.png)?)?$$/ { \
 			$$6 = "other"; \
 		} \
                 $$3 ~ /(share(\/update-manager|\/update-manager\/data|\/update-manager(\/updatemanager.glade|\/PM_app_48x.png|\/PM_package_36x.png)))$$/ { \
