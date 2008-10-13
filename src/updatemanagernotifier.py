@@ -199,7 +199,7 @@ class UpdateManagerNotifier:
                 self.client.set_bool(SHOW_ICON_ON_STARTUP_PREFERENCES, True)
                 self.status_icon.set_visible(True)
 
-        def check_for_updates(self):
+	def check_for_updates(self):
                 self.set_last_check_time()
                 image_directory = os.popen(IMAGE_DIR_COMMAND).readline().rstrip()
                 if debug == True:
@@ -207,22 +207,37 @@ class UpdateManagerNotifier:
                 if len(image_directory) == 0:
                         image_directory = IMAGE_DIRECTORY_DEFAULT
                 image_obj = self.__get_image_obj_from_directory(image_directory)
-                pkgs_to_be_updated = [ pf[0] for pf in 
-                        sorted(image_obj.inventory(all_known = False)) ]
+                
+                count = 0
+                pkg_upgradeable = None
+                for pkg, state in sorted(image_obj.inventory(all_known = True)):
+                        if state["upgradable"] and state["state"] == "installed":
+                                pkg_upgradeable = pkg
+                        
+                        if pkg_upgradeable != None and not state["upgradable"] \
+                            and image_obj.fmri_is_same_pkg(pkg_upgradeable, pkg):
+                                count += 1
+
                 if debug == True:
-                        print "pkgs_to_be_updated: %d" % len(pkgs_to_be_updated)
-                if len(pkgs_to_be_updated):
+                        print "pkgs_to_be_updated: %d" % count
+                if count:
                         self.show_status_icon()
-                return False
-        
+                return False                                
+
         # This is copied from a similar function in packagemanager.py 
         def __get_image_obj_from_directory(self, image_directory):
                 image_obj = image.Image()
                 dr = "/"
                 try:
                         image_obj.find_root(image_directory)
+                        while gtk.events_pending():
+                                gtk.main_iteration(False)
                         image_obj.load_config()
+                        while gtk.events_pending():
+                                gtk.main_iteration(False)
                         image_obj.load_catalogs(self.pr)
+                        while gtk.events_pending():
+                                gtk.main_iteration(False)
                 except ValueError:
                         print self._('%s is not valid image, trying root image') \
                             % image_directory
@@ -295,6 +310,7 @@ class UpdateManagerNotifier:
         def do_next_check(self):
                 if debug == True:
                         print "Called do_next_check"
+			print "time for check: %s - %s \n" % (time.gmtime(), self.last_check_time)
                 if self.last_check_time == 0 or self.is_check_required():
                         gobject.idle_add(self.check_for_updates)
                 else:
