@@ -44,11 +44,11 @@ class SvrConfig(object):
         the primary derived configuration.  State is the current set of
         transactions and packages stored by the repository."""
 
-        def __init__(self, repo_root, authority):
+        def __init__(self, repo_root, content_root, authority):
                 self.set_repo_root(repo_root)
+                self.set_content_root(content_root)
 
                 self.authority = authority
-
                 self.read_only = False
                 self.mirror = False
 
@@ -66,7 +66,6 @@ class SvrConfig(object):
                 self.pkgs_renamed = 0
 
         def init_dirs(self):
-
                 if not os.path.exists(self.repo_root):
                         try:
                                 os.makedirs(self.repo_root)
@@ -86,11 +85,15 @@ class SvrConfig(object):
                 for d in self.required_dirs:
                         if not os.path.exists(d):
                                 raise RuntimeError, emsg
+
+                if not os.path.exists(self.content_root):
+                        raise RuntimeError("The specified content root (%s) "
+                            "does not exist." % self.content_root)
+
                 return
 
         def set_repo_root(self, root):
-                assert(os.path.isabs(root))
-                self.repo_root = root
+                self.repo_root = os.path.abspath(root)
                 self.trans_root = os.path.join(self.repo_root, "trans")
                 self.file_root = os.path.join(self.repo_root, "file")
                 self.pkg_root = os.path.join(self.repo_root, "pkg")
@@ -102,7 +105,11 @@ class SvrConfig(object):
                     self.cat_root, self.update_root]
 
                 self.optional_dirs = [self.index_root]
-                
+
+        def set_content_root(self, root):
+                self.content_root = os.path.abspath(root)
+                # XXX Same as content_root for now, but won't be soon...
+                self.web_static_root = self.content_root
 
         def set_read_only(self):
                 self.read_only = True

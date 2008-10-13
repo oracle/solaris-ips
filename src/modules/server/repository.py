@@ -114,9 +114,9 @@ class Repository(object):
                         self.rcfg = rc.RepositoryConfig()
 
                 # Allow our interface module to do any startup work.
-                face.init(self.scfg, self.rcfg)
+                face.init(scfg, self.rcfg)
 
-                if not self.scfg.is_read_only():
+                if not scfg.is_read_only():
                         # While our configuration can be parsed during
                         # initialization, no changes can be written to disk in
                         # readonly mode.
@@ -137,7 +137,7 @@ class Repository(object):
                 # setup an instance-level handler instead of just updating
                 # its configuration information.
                 self.favicon_ico = cherrypy.tools.staticfile.handler(
-                    os.path.join(face.content_root,
+                    os.path.join(scfg.web_static_root,
                     self.rcfg.get_attribute("repository", "icon")))
 
                 for name, func in inspect.getmembers(self, inspect.ismethod):

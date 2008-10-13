@@ -5,9 +5,9 @@ NAME
      pkg.depotd - image packaging system depot server
 
 SYNOPSIS
-     /usr/lib/pkg.depotd [--readonly] [--rebuild] [--proxy-base url]
-         [--log-access dest] [--log-errors dest] [-d repo_dir] [-p port]
-         [-s threads] [-t socket_timeout]
+     /usr/lib/pkg.depotd [-d repo_dir] [-p port] [-s threads]
+         [-t socket_timeout] [--content-root] [--log-access] [--log-errors]
+         [--mirror] [--proxy-base url] [--readonly] [--rebuild]
 
 DESCRIPTION
      pkg.depotd is the depot server for the image packaging system.
@@ -19,18 +19,37 @@ DESCRIPTION
      purposes.
 
      The pkg.depot server is generally configured via the smf(5)
-     properties associated with its service.  Four properties
+     properties associated with its service.  Eight properties
      are currently recognized:
 
-     pkg/port                   (count) The port number on which the
-                                instance should listen for incoming
-                                package requests.  The default value is
-                                80.
+     pkg/content_root           (astring) The file system path at which
+                                the instance should find its static
+                                and other web content.  The default
+                                value is /usr/share/lib/pkg.
 
      pkg/inst_root              (astring) The file system path at which
                                 the instance should find its repository
                                 data.  The default value is
                                 /var/pkg/repo.
+
+     pkg/log_access             (astring) The destination for any access
+                                related information logged by the depot
+                                process.  Possible values are: stderr,
+                                stdout, none, or an absolute pathname.
+                                The default value is stdout if stdout is
+                                a tty; otherwise the default value is
+                                none.
+
+     pkg/log_errors             (astring) The destination for any errors
+                                or other information logged by the depot
+                                process.  Possible values are: stderr,
+                                stdout, none, or an absolute pathname.
+                                The default value is stderr.
+
+     pkg/port                   (count) The port number on which the
+                                instance should listen for incoming
+                                package requests.  The default value is
+                                80.
 
      pkg/proxy_base             (uri) This changes the base URL for the
                                 depot server and is most useful when
@@ -46,20 +65,6 @@ DESCRIPTION
      pkg/threads                (count) The number of threads that will
                                 be started to serve requests.  The default
                                 value is 10.
-
-     pkg/log_access             (astring) The destination for any access
-                                related information logged by the depot
-                                process.  Possible values are: stderr,
-                                stdout, none, or an absolute pathname.
-                                The default value is stdout if stdout is
-                                a tty; otherwise the default value is
-                                none.
-
-     pkg/log_errors             (astring) The destination for any errors
-                                or other information logged by the depot
-                                process.  Possible values are: stderr,
-                                stdout, none, or an absolute pathname.
-                                The default value is stderr.
 
 OPTIONS
      The following options alter the default behavior, if present, and
@@ -84,16 +89,30 @@ OPTIONS
      --log-errors dest          Overrides pkg/log_errors with the value
                                 given by dest.
 
+     --content-root root_dir    Overrides pkg/content_root with the value
+                                given by root_dir.
+
+     --mirror                   Package mirror mode; publishing and
+                                metadata operations are disabled and
+                                only a limited browser user interface is
+                                provided.  This option may not be
+                                combined with the --readonly or
+                                --rebuild options.
+
+     --proxy-base url           Overrides pkg/proxy_base with the value
+                                given by url.  Ignored if empty value is
+                                provided.
+
      --readonly                 Modifying operations, such as those
                                 initiated by pkgsend(1M) are disabled.
-                                Retrieval operations are still
-                                available.
+                                Retrieval operations are still available.
+                                This option may not be combined with the
+                                --mirror or --rebuild options.
 
      --rebuild                  Any existing repository catalog will be
                                 destroyed and then recreated on startup.
-
-     --proxy-base url           Overrides pkg/proxy_base with the value
-                                given by url.
+                                This option may not be combined with the
+                                --mirror or --readonly options.
 
 EXAMPLES
      Example 1:  Enabling the depot server.

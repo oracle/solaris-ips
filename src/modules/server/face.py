@@ -34,11 +34,6 @@ from pkg.misc import get_rel_path, get_res_path
 
 # XXX Use small templating module?
 
-try:
-        content_root = os.path.join(os.environ['PKG_HOME'], 'share/lib/pkg')
-except KeyError:
-        content_root = '/usr/share/lib/pkg'
-
 def init(scfg, rcfg):
         """Ensure that the BUI is properly initialized.
         """
@@ -259,10 +254,6 @@ pages = {
         "/index.htm" :  index,
         "/index.html" :  index
 }
-
-def set_content_root(path):
-        global content_root
-        content_root = path
 
 def match(scfg, rcfg, request, response):
         path = request.path_info.rstrip("/")

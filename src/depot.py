@@ -45,6 +45,8 @@
 AUTH_DEFAULT = "opensolaris.org"
 # The default repository path.
 REPO_PATH_DEFAULT = "/var/pkg/repo"
+# The default path for static and other web content.
+CONTENT_PATH_DEFAULT = "/usr/share/lib/pkg"
 # The default port to serve data from.
 PORT_DEFAULT = 80
 # The minimum number of threads allowed.
@@ -109,17 +111,15 @@ def usage(text):
                 emsg(text)
 
         print """\
-Usage: /usr/lib/pkg.depotd [--readonly] [--rebuild] [--mirror] [--proxy-base url]
-           [--log-access dest] [--log-errors dest] [-d repo_dir] [-p port]
-           [-s threads] [-t socket_timeout]
+Usage: /usr/lib/pkg.depotd [-d repo_dir] [-p port] [-s threads]
+           [-t socket_timeout] [--content-root] [--log-access dest]
+           [--log-errors dest] [--mirror] [--proxy-base url] [--readonly]
+           [--rebuild]
 
-        --readonly      Read-only operation; modifying operations disallowed
-        --rebuild       Re-build the catalog from pkgs in depot
-                        Cannot be used with --readonly or --mirror
-        --mirror        Content mirror mode. Publishing and metadata operations
-                        disabled
-        --proxy-base    The url to use as the base for generating internal
-                        redirects and content.
+        --content-root  The file system path to the directory containing the
+                        the static and other web content used by the depot's
+                        browser user interface.  The default value is
+                        '/usr/share/lib/pkg'.
         --log-access    The destination for any access related information
                         logged by the depot process.  Possible values are:
                         stderr, stdout, none, or an absolute pathname.  The
@@ -129,6 +129,15 @@ Usage: /usr/lib/pkg.depotd [--readonly] [--rebuild] [--mirror] [--proxy-base url
                         logged by the depot process.  Possible values are:
                         stderr, stdout, none, or an absolute pathname.  The
                         default value is stderr.
+        --mirror        Package mirror mode; publishing and metadata operations
+                        disallowed.  Cannot be used with --readonly or
+                        --rebuild.
+        --proxy-base    The url to use as the base for generating internal
+                        redirects and content.
+        --readonly      Read-only operation; modifying operations disallowed.
+                        Cannot be used with --mirror or --rebuild.
+        --rebuild       Re-build the catalog from pkgs in depot.  Cannot be
+                        used with --mirror or --readonly.
 """
         sys.exit(2)
 
@@ -154,6 +163,15 @@ if __name__ == "__main__":
         else:
                 repo_path = REPO_PATH_DEFAULT
 
+        try:
+                content_root = os.environ["PKG_DEPOT_CONTENT"]
+        except KeyError:
+                try:
+                        content_root = os.path.join(os.environ['PKG_HOME'],
+                            'share/lib/pkg')
+                except KeyError:
+                        content_root = CONTENT_PATH_DEFAULT
+
         # By default, if the destination for a particular log type is not
         # specified, this is where we will send the output.
         log_routes = {
@@ -169,8 +187,8 @@ if __name__ == "__main__":
 
         opt = None
         try:
-                long_opts = ["readonly", "rebuild", "mirror", "refresh-index",
-                    "proxy-base="]
+                long_opts = ["content-root=", "mirror", "proxy-base=",
+                    "readonly", "rebuild", "refresh-index"]
                 for opt in log_opts:
                         long_opts.append("%s=" % opt.lstrip('--'))
                 opts, pargs = getopt.getopt(sys.argv[1:], "d:np:s:t:",
@@ -192,12 +210,33 @@ if __name__ == "__main__":
                                             "maximum value is %d" % THREADS_MAX
                         elif opt == "-t":
                                 socket_timeout = int(arg)
+                        elif opt == "--content-root":
+                                if arg == "":
+                                        raise OptionError, "You must specify " \
+                                            "a directory path."
+                                content_root = arg
                         elif opt in log_opts:
                                 if arg is None or arg == "":
                                         raise OptionError, \
                                             "You must specify a log " \
                                             "destination."
                                 log_routes[opt.lstrip("--log-")] = arg
+                        elif opt == "--mirror":
+                                mirror = True
+                        elif opt == "--proxy-base":
+                                # Attempt to decompose the url provided into
+                                # its base parts.  This is done so we can
+                                # remove any scheme information since we
+                                # don't need it.
+                                scheme, netloc, path, params, query, \
+                                    fragment = urlparse.urlparse(arg,
+                                    allow_fragments=0)
+
+                                # Rebuild the url without the scheme and
+                                # remove the leading // urlunparse adds.
+                                proxy_base = urlparse.urlunparse(("", netloc,
+                                    path, params, query, fragment)
+                                    ).lstrip("//")
                         elif opt == "--readonly":
                                 readonly = True
                         elif opt == "--rebuild":
@@ -213,23 +252,6 @@ if __name__ == "__main__":
                                 # pkg.depot process. The index will be rebuilt
                                 # automatically on startup.
                                 reindex = True
-                        elif opt == "--proxy-base":
-                                # Attempt to decompose the url provided into
-                                # its base parts.  This is done so we can
-                                # remove any scheme information since we
-                                # don't need it.
-                                scheme, netloc, path, params, query, \
-                                    fragment = urlparse.urlparse(arg,
-                                    allow_fragments=0)
-
-                                # Rebuild the url without the scheme and
-                                # remove the leading // urlunparse adds.
-                                proxy_base = urlparse.urlunparse(("", netloc,
-                                    path, params, query, fragment)
-                                    ).lstrip("//")
-
-                        elif opt == "--mirror":
-                                mirror = True
         except getopt.GetoptError, e:
                 usage("pkg.depotd: %s" % e.msg)
         except OptionError, e:
@@ -255,12 +277,7 @@ if __name__ == "__main__":
                             "port: %d. Reason: %s" % (port, msg)
                         sys.exit(1)
 
-        try:
-                face.set_content_root(os.environ["PKG_DEPOT_CONTENT"])
-        except KeyError:
-                pass
-
-        scfg = config.SvrConfig(os.path.abspath(repo_path), AUTH_DEFAULT)
+        scfg = config.SvrConfig(repo_path, content_root, AUTH_DEFAULT)
 
         if rebuild:
                 scfg.destroy_catalog()
@@ -273,7 +290,7 @@ if __name__ == "__main__":
 
         try:
                 scfg.init_dirs()
-        except EnvironmentError, e:
+        except (RuntimeError, EnvironmentError), e:
                 print "pkg.depotd: an error occurred while trying to " \
                     "initialize the depot repository directory " \
                     "structures:\n%s" % e
@@ -333,12 +350,12 @@ if __name__ == "__main__":
             },
             "/robots.txt": {
                 "tools.staticfile.on": True,
-                "tools.staticfile.filename": os.path.join(face.content_root,
+                "tools.staticfile.filename": os.path.join(scfg.web_static_root,
                     "robots.txt")
             },
             "/static": {
                 "tools.staticdir.on": True,
-                "tools.staticdir.root": face.content_root,
+                "tools.staticdir.root": scfg.web_static_root,
                 "tools.staticdir.dir": ""
             }
         }
