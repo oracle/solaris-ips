@@ -161,6 +161,7 @@ class DriverAction(generic.Action):
                         dlf = file(dlp)
                         dllines = dlf.readlines()
                         dlf.close()
+                        st = os.stat(dlp)
 
                         dlt, dltp = mkstemp(suffix=".devlink.tab",
                             dir=image.get_root() + "/etc")
@@ -172,6 +173,8 @@ class DriverAction(generic.Action):
                             if s.replace("\\t", "\t") + "\n" not in dllines
                         ))
                         dlt.close()
+                        os.chmod(dltp, st.st_mode)
+                        os.chown(dltp, st.st_uid, st.st_gid)
                         os.rename(dltp, dlp)
 
         def __update_install(self, image, orig):
@@ -272,6 +275,7 @@ class DriverAction(generic.Action):
                                 dlf = file(dlp)
                                 lines = dlf.readlines()
                                 dlf.close()
+                                st = os.stat(dlp)
                         except IOError, e:
                                 e.args += ("reading",)
                                 raise
@@ -307,8 +311,10 @@ class DriverAction(generic.Action):
                                 dlt = os.fdopen(dlt, "w")
                                 dlt.writelines(lines)
                                 dlt.close()
+                                os.chmod(dltp, st.st_mode)
+                                os.chown(dltp, st.st_uid, st.st_gid)
                                 os.rename(dltp, dlp)
-                        except IOError, e:
+                        except EnvironmentError, e:
                                 e.args += ("writing",)
                                 raise
 
@@ -691,6 +697,7 @@ class DriverAction(generic.Action):
                                 dlf = file(dlp)
                                 lines = dlf.readlines()
                                 dlf.close()
+                                st = os.stat(dlp)
                         except IOError, e:
                                 print "%s (%s) removal (devlinks modification) " \
                                     "failed reading etc/devlink.tab with error: " \
@@ -723,8 +730,10 @@ class DriverAction(generic.Action):
                                 dlt = os.fdopen(dlt, "w")
                                 dlt.writelines(lines)
                                 dlt.close()
+                                os.chmod(dltp, st.st_mode)
+                                os.chown(dltp, st.st_uid, st.st_gid)
                                 os.rename(dltp, dlp)
-                        except IOError, e:
+                        except EnvironmentError, e:
                                 print "%s (%s) removal (devlinks modification) " \
                                     "failed writing etc/devlink.tab with error: " \
                                     "%s (%s)" % (self.name, self.attrs["name"],
