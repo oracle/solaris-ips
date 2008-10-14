@@ -73,61 +73,64 @@ for modname in __all__:
 # Clean up after ourselves
 del f, modname, module, nvlist, classes, c, cls
 
-def fromstr(str):
+class ActionError(Exception):
+        pass
+
+class UnknownActionError(ActionError):
+        def __init__(self, *args):
+                self.actionstr = args[0]
+                self.type = args[1]
+
+        def __str__(self):
+                fmrierr = ""
+                errtuple = (self.type, self.actionstr)
+                if hasattr(self, "fmri") and self.fmri is not None:
+                        fmrierr = "in package '%s' "
+                        errtuple = (self.type, self.fmri, self.actionstr)
+                return ("Unknown action type '%s' " + fmrierr +
+                    "in action '%s'") % errtuple
+
+class MalformedActionError(ActionError):
+        def __init__(self, *args):
+                self.actionstr = args[0]
+                self.position = args[1]
+                self.errorstr = args[2]
+
+        def __str__(self):
+                fmrierr = ""
+                marker = " " * (4 + self.position) + "^"
+                errtuple = (self.errorstr, self.position, self.actionstr, marker)
+                if hasattr(self, "fmri") and self.fmri is not None:
+                        fmrierr = " in package '%s'"
+                        errtuple = (self.fmri,) + errtuple
+                return ("Malformed action" + fmrierr +": %s at position %d:\n"
+                    "    %s\n%s") % errtuple
+                    
+
+from _actions import _fromstr
+
+def fromstr(string):
         """Create an action instance based on a str() representation of an action.
 
-        Raises KeyError if the action type is unknown.
-        Raises ValueError if the action has other syntactic problems.
+        Raises UnknownActionError if the action type is unknown.
+        Raises MalformedActionError if the action has other syntactic problems.
         """
 
-        list = str.split(' ')
-        type = list.pop(0)
+        type, hash, attr_dict = _fromstr(string)
+
         if type not in types:
-                raise KeyError, "Unknown action type '%s' in action '%s'" % \
-                    (type, str)
+                raise UnknownActionError(string, type)
 
-        # That is, if the first attribute is a hash
-        if list[0].find("=") == -1:
-                hash = list.pop(0)
-        else:
-                hash = None
+        action = types[type](**attr_dict)
+        if hash:
+                action.hash = hash
 
-        # Simple state machine to reconnect the elements that shouldn't have
-        # been split.  Put the results into a new list since we can't modify the
-        # list we're iterating over.
-        state = 0
-        nlist = []
-        n = ""
-        for i in list:
-                if '="' in i:
-                        n = i.replace('="', '=')
+        return action
 
-                        # since i was non-trivial, n must be too, so n[-1] is
-                        # safe to look at without raising an exception.
-                        if n[-1] == '"':
-                                nlist += [ n[:-1] ]
-                                n = ""
-                        else:
-                                state = 1
-                elif i and i[-1] == '"':
-                        n += " " + i[:-1]
-                        nlist += [ n ]
-                        n = ""
-                        state = 0
-                elif state == 1:
-                        n += " " + i
-                elif i:
-                        nlist += [ i ]
-
-        if n != "":
-                raise ValueError("Unmatched \" in action '%s'" % str)
-
-        return fromlist(type, nlist, hash)
-
-def fromlist(type, args, hash = None):
+def fromlist(type, args, hash=None):
         """Create an action instance based on a sequence of "key=value" strings.
 
-        Raises ValueError if the attribute strings are malformed.
+        Raises MalformedActionError if the attribute strings are malformed.
         """
 
         attrs = {}
@@ -137,8 +140,12 @@ def fromlist(type, args, hash = None):
                 for a, v in [kv.split("=", 1) for kv in args]:
                         if v == '' or a == '':
                                 saw_error = True
-                                raise ValueError(
-                                    "Malformed action attribute: '%s=%s'" % (a, v))
+                                kvi = args.index(kv) + 1
+                                p1 = " ".join(args[:kvi])
+                                p2 = " ".join(args[kvi:])
+                                raise MalformedActionError(
+                                    "%s %s %s" % (type, p1, p2), len(p1) + 1,
+                                    "attribute '%s'" % kv)
 
                         # This is by far the common case-- an attribute with
                         # a single value.
@@ -150,17 +157,16 @@ def fromlist(type, args, hash = None):
                                         attrs[a].append(v)
                                 else:
                                         attrs[a] = [ av, v ]
-        except ValueError, v:
-                if saw_error:
-                        raise
-
-                #
+        except ValueError:
                 # We're only here if the for: statement above throws a
-                # ValueError.  That can happen if split yields a single element,
-                # which is possible if e.g. an attribute lacks an =.
-                #
-                raise ValueError("Malformed action: '%s %s'" % (type,
-                    " ".join(args)))
+                # MalformedActionError.  That can happen if split yields a
+                # single element, which is possible if e.g. an attribute lacks
+                # an =.
+                kvi = args.index(kv) + 1
+                p1 = " ".join(args[:kvi])
+                p2 = " ".join(args[kvi:])
+                raise MalformedActionError("%s %s %s" % (type, p1, p2),
+                    len(p1) + 2, "attribute '%s'" % kv)
 
         action = types[type](**attrs)
         if hash:

@@ -242,8 +242,10 @@ class Manifest(object):
 
                         try:
                                 action = actions.fromstr(l)
-                        except (KeyError, ValueError), e:
-                                raise SyntaxError, "%s: %s" % (self.fmri, e[0])
+                        except actions.ActionError, e:
+                                # Add the FMRI to the exception and re-raise
+                                e.fmri = self.fmri
+                                raise
 
                         if action.attrs.has_key("path"):
                                 np = action.attrs["path"].lstrip(os.path.sep)

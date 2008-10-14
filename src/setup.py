@@ -205,6 +205,9 @@ elf_srcs = [
 arch_srcs = [
         'modules/arch.c'
         ]
+_actions_srcs = [
+        'modules/actions/_actions.c'
+        ]
 include_dirs = [ 'modules' ]
 lint_flags = [ '-u', '-axms', '-erroff=E_NAME_DEF_NOT_USED2' ]
 
@@ -236,11 +239,17 @@ class lint_func(Command):
                             ['-I' + self.escape(get_python_inc())] + \
                             ["%s%s" % ("-l", k) for k in elf_libraries] + \
                             elf_srcs
+                        _actionscmd = ['lint'] + lint_flags + \
+                            ["%s%s" % ("-I", k) for k in include_dirs] + \
+                            ['-I' + self.escape(get_python_inc())] + \
+                            _actions_srcs
 
                         print(" ".join(archcmd))
                         os.system(" ".join(archcmd))
                         print(" ".join(elfcmd))
                         os.system(" ".join(elfcmd))
+                        print(" ".join(_actionscmd))
+                        os.system(" ".join(_actionscmd))
 
                         proto = os.path.join(root_dir, py_install_dir)
                         sys.path.insert(0, proto)
@@ -504,6 +513,13 @@ if osname == 'sunos' or osname == "linux":
                         elf_srcs,
                         include_dirs = include_dirs,
                         libraries = elf_libraries,
+                        extra_compile_args = compile_args,
+                        extra_link_args = link_args
+                        ),
+                Extension(
+                        'actions._actions',
+                        _actions_srcs,
+                        include_dirs = include_dirs,
                         extra_compile_args = compile_args,
                         extra_link_args = link_args
                         ),
