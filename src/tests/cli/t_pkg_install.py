@@ -28,6 +28,7 @@ if __name__ == "__main__":
 	testutils.setup_environment("../../../proto")
 
 import os
+import re
 import time
 import unittest
 import shutil
@@ -952,6 +953,37 @@ adm:NP:6445::::::
                     add depend fmri=pkg:/grouptest@1.0 type=require
                     close """
 
+                self.devicebase = """
+                    open devicebase@1.0,5.11-0
+                    add dir mode=0755 owner=root group=root path=/tmp
+                    add dir mode=0755 owner=root group=root path=/etc
+                    add dir mode=0755 owner=root group=root path=/etc/security
+                    add file """ + self.testdata_dir + """/empty mode=0600 owner=root group=root path=/etc/devlink.tab preserve=true
+                    add file """ + self.testdata_dir + """/empty mode=0644 owner=root group=sys path=/etc/name_to_major preserve=true
+                    add file """ + self.testdata_dir + """/empty mode=0644 owner=root group=sys path=/etc/driver_aliases preserve=true
+                    add file """ + self.testdata_dir + """/empty mode=0644 owner=root group=sys path=/etc/driver_classes preserve=true
+                    add file """ + self.testdata_dir + """/empty mode=0644 owner=root group=sys path=/etc/minor_perm preserve=true
+                    add file """ + self.testdata_dir + """/empty mode=0644 owner=root group=root path=/etc/security/device_policy preserve=true
+                    add file """ + self.testdata_dir + """/empty mode=0644 owner=root group=sys path=/etc/security/extra_privs preserve=true
+                    close
+                """
+
+                self.devlink10 = """
+                    open devlinktest@1.0,5.11-0
+                    add driver name=zerg devlink="type=ddi_pseudo;name=zerg\\t\D"
+                    add driver name=borg devlink="type=ddi_pseudo;name=borg\\t\D" devlink="type=ddi_pseudo;name=warg\\t\D"
+                    add depend type=require fmri=devicebase
+                    close
+                """
+
+                self.devlink20 = """
+                    open devlinktest@2.0,5.11-0
+                    add driver name=zerg devlink="type=ddi_pseudo;name=zerg2\\t\D" devlink="type=ddi_pseudo;name=zorg\\t\D"
+                    add driver name=borg devlink="type=ddi_pseudo;name=borg\\t\D" devlink="type=ddi_pseudo;name=zork\\t\D"
+                    add depend type=require fmri=devicebase
+                    close
+                """
+
                 for f in self.misc_files:
                         filename = os.path.join(self.testdata_dir, f)
                         file_handle = open(filename, 'wb')
@@ -1107,6 +1139,129 @@ adm:NP:6445::::::
                         valid_name = "validpkg%s@1.0,5.11-0" % char
                         self.pkgsend(durl, "open '%s'" % valid_name)
                         self.pkgsend(durl, "close -A")
+
+        def test_devlink(self):
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.devicebase)
+                self.pkgsend_bulk(durl, self.devlink10)
+                self.pkgsend_bulk(durl, self.devlink20)
+                self.image_create(durl)
+
+                def readfile():
+                        dlf = file(os.path.join(self.get_img_path(),
+                            "etc/devlink.tab"))
+                        dllines = dlf.readlines()
+                        dlf.close()
+                        return dllines
+
+                def writefile(dllines):
+                        dlf = file(os.path.join(self.get_img_path(),
+                            "etc/devlink.tab"), "w")
+                        dlf.writelines(dllines)
+                        dlf.close()
+
+                def assertContents(dllines, contents):
+                        actual = re.findall("name=([^\t;]*)",
+                            "\n".join(dllines), re.M)
+                        self.assert_(set(actual) == set(contents))
+
+                # Install
+                self.pkg("install devlinktest@1.0")
+                self.pkg("verify -v")
+
+                dllines = readfile()
+
+                # Verify that three entries got added
+                self.assert_(len(dllines) == 3)
+
+                # Verify that the tab character got written correctly
+                self.assert_(dllines[0].find("\t") > 0)
+
+                # Upgrade
+                self.pkg("install devlinktest@2.0")
+                self.pkg("verify -v")
+
+                dllines = readfile()
+
+                # Verify that there are four entries now
+                self.assert_(len(dllines) == 4)
+
+                # Verify they are what they should be
+                assertContents(dllines, ["zerg2", "zorg", "borg", "zork"])
+
+                # Remove
+                self.pkg("uninstall devlinktest")
+                self.pkg("verify -v")
+
+                # Install again
+                self.pkg("install devlinktest@1.0")
+
+                # Diddle with it
+                dllines = readfile()
+                for i, line in enumerate(dllines):
+                        if line.find("zerg") != -1:
+                                dllines[i] = "type=ddi_pseudo;name=zippy\t\D\n"
+                writefile(dllines)
+
+                # Upgrade
+                self.pkg("install devlinktest@2.0")
+
+                # Verify that we spewed a message on upgrade
+                self.assert_(self.output.find("not found") != -1)
+                self.assert_(self.output.find("name=zerg") != -1)
+
+                # Verify the new set
+                dllines = readfile()
+                self.assert_(len(dllines) == 5)
+                assertContents(dllines,
+                    ["zerg2", "zorg", "borg", "zork", "zippy"])
+
+                self.pkg("uninstall devlinktest")
+
+                # Null out the "zippy" entry
+                writefile([])
+
+                # Install again
+                self.pkg("install devlinktest@1.0")
+
+                # Diddle with it
+                dllines = readfile()
+                for i, line in enumerate(dllines):
+                        if line.find("zerg") != -1:
+                                dllines[i] = "type=ddi_pseudo;name=zippy\t\D\n"
+                writefile(dllines)
+
+                # Remove
+                self.pkg("uninstall devlinktest")
+
+                # Verify that we spewed a message on removal
+                self.assert_(self.output.find("not found") != -1)
+                self.assert_(self.output.find("name=zerg") != -1)
+
+                # Verify that the one left behind was the one we overwrote.
+                dllines = readfile()
+                self.assert_(len(dllines) == 1)
+                assertContents(dllines, ["zippy"])
+
+                # Null out the "zippy" entry, but add the "zerg" entry
+                writefile(["type=ddi_pseudo;name=zerg\t\D\n"])
+
+                # Install ... again
+                self.pkg("install devlinktest@1.0")
+
+                # Make sure we didn't get a second zerg line
+                dllines = readfile()
+                self.failUnless(len(dllines) == 3, msg=dllines)
+                assertContents(dllines, ["zerg", "borg", "warg"])
+
+                # Now for the same test on upgrade
+                dllines.append("type=ddi_pseudo;name=zorg\t\D\n")
+                writefile(dllines)
+
+                self.pkg("install devlinktest@2.0")
+                dllines = readfile()
+                self.failUnless(len(dllines) == 4, msg=dllines)
+                assertContents(dllines, ["zerg2", "zorg", "borg", "zork"])
 
 class TestDependencies(testutils.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)

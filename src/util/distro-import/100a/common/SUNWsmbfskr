@@ -1,0 +1,5 @@
+package SUNWsmbfskr
+import SUNWsmbfskr
+add driver name=nsmb perms="* 0666 root sys" \
+	devlink="type=ddi_pseudo;name=nsmb\t\D"
+end package

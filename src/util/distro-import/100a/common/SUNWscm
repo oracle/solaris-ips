@@ -1,0 +1,12 @@
+package SUNWscm
+import SUNWscmu
+import SUNWscmr
+add driver name=nskern perms="* 0666 root sys" privs=sys_devices \
+	privs=sys_config devlink="type=ddi_pseudo;name=nskern\t\D"
+add driver name=ncall perms="* 0666 root sys" privs=sys_devices \
+	privs=sys_config devlink="type=ddi_pseudo;name=ncall\t\D"
+add driver name=nsctl perms="* 0666 root sys" privs=sys_devices \
+	privs=sys_config devlink="type=ddi_pseudo;name=nsctl\t\D"
+add driver name=sdbc perms="* 0666 root sys" privs=sys_devices \
+	privs=sys_config devlink="type=ddi_pseudo;name=sdbc\t\D"
+end package

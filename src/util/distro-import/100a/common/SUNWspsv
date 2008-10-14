@@ -1,0 +1,6 @@
+package SUNWspsv
+import SUNWspsvu
+import SUNWspsvr
+add driver name=sv perms="* 0666 root sys" privs=sys_devices privs=sys_config \
+	devlink="type=ddi_pseudo;name=sv\t\D"
+end package

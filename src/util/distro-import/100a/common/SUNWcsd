@@ -1,0 +1,11 @@
+package SUNWcsd
+import SUNWcsd
+drop etc/driver_aliases
+drop etc/name_to_major
+from ./SUNWfixes import
+etc/driver_aliases
+etc/name_to_major
+chattr etc/driver_aliases opensolaris.zone=global
+chattr etc/name_to_major opensolaris.zone=global
+end import
+end package

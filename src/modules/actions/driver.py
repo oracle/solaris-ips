@@ -33,6 +33,7 @@ packaging object.
 
 import os
 import subprocess
+from tempfile import mkstemp
 
 import generic
 
@@ -154,6 +155,25 @@ class DriverAction(generic.Action):
                         self.__call(args, "driver (%(name)s) clone permission "
                             "update", {"name": self.attrs["name"]})
 
+                if "devlink" in self.attrs:
+                        dlp = os.path.normpath(os.path.join(
+                            image.get_root(), "etc/devlink.tab"))
+                        dlf = file(dlp)
+                        dllines = dlf.readlines()
+                        dlf.close()
+
+                        dlt, dltp = mkstemp(suffix=".devlink.tab",
+                            dir=image.get_root() + "/etc")
+                        dlt = os.fdopen(dlt, "w")
+                        dlt.writelines(dllines)
+                        dlt.writelines((
+                            s.replace("\\t", "\t") + "\n"
+                            for s in self.attrlist("devlink")
+                            if s.replace("\\t", "\t") + "\n" not in dllines
+                        ))
+                        dlt.close()
+                        os.rename(dltp, dlp)
+
         def __update_install(self, image, orig):
                 add_base = ( self.update_drv, "-b", image.get_root(), "-a" )
                 rem_base = ( self.update_drv, "-b", image.get_root(), "-d" )
@@ -242,6 +262,74 @@ class DriverAction(generic.Action):
                                         e[1], e[0], e[2])
                                 print "tried to add %s and remove %s" % \
                                     (add_class, rem_class)
+
+                # We have to update devlink.tab by hand, too.
+                def update_devlinks():
+                        dlp = os.path.normpath(os.path.join(
+                            image.get_root(), "etc/devlink.tab"))
+
+                        try:
+                                dlf = file(dlp)
+                                lines = dlf.readlines()
+                                dlf.close()
+                        except IOError, e:
+                                e.args += ("reading",)
+                                raise
+
+                        olines = set(orig.attrlist("devlink"))
+                        nlines = set(self.attrlist("devlink"))
+                        add_lines = nlines - olines
+                        rem_lines = olines - nlines
+
+                        missing_entries = []
+                        for line in rem_lines:
+                                try:
+                                        lineno = lines.index(line.replace("\\t", "\t") + "\n")
+                                except ValueError:
+                                        missing_entries.append(line.replace("\\t", "\t"))
+                                        continue
+                                del lines[lineno]
+
+                        # Don't put in duplicates.  Because there's no way to
+                        # tell what driver owns what line, this means that if
+                        # two drivers try to own the same line, one of them will
+                        # be unhappy if the other is uninstalled.  So don't do
+                        # that.
+                        lines.extend((
+                            s.replace("\\t", "\t") + "\n"
+                            for s in add_lines
+                            if s.replace("\\t", "\t") + "\n" not in lines
+                        ))
+
+                        try:
+                                dlt, dltp = mkstemp(suffix=".devlink.tab",
+                                    dir=image.get_root() + "/etc")
+                                dlt = os.fdopen(dlt, "w")
+                                dlt.writelines(lines)
+                                dlt.close()
+                                os.rename(dltp, dlp)
+                        except IOError, e:
+                                e.args += ("writing",)
+                                raise
+
+                        if missing_entries:
+                                raise RuntimeError, missing_entries
+
+                if "devlink" in orig.attrs or "devlink" in self.attrs:
+                        try:
+                                update_devlinks()
+                        except IOError, e:
+                                print "%s (%s) upgrade (devlinks modification) " \
+                                    "failed %s etc/devlink.tab with error: " \
+                                    "%s (%s)" % (self.name, self.attrs["name"],
+                                        e[1], e[0], e[2])
+                        except RuntimeError, e:
+                                print "%s (%s) upgrade (devlinks modification) " \
+                                    "failed modifying\netc/devlink.tab.  The " \
+                                    "following entries were to be removed, " \
+                                    "but were\nnot found:\n    " % \
+                                    (self.name, self.attrs["name"]) + \
+                                    "\n    ".join(e.args[0])
 
                 # For perms, we do removes first because of a busted starting
                 # point in build 79, where smbsrv has perms of both "* 666" and
@@ -595,6 +683,52 @@ class DriverAction(generic.Action):
                         self.__call(args, "driver (%(name)s) clone permission "
                             "update", {"name": self.attrs["name"]})
 
+                if "devlink" in self.attrs:
+                        dlp = os.path.normpath(os.path.join(
+                            image.get_root(), "etc/devlink.tab"))
+
+                        try:
+                                dlf = file(dlp)
+                                lines = dlf.readlines()
+                                dlf.close()
+                        except IOError, e:
+                                print "%s (%s) removal (devlinks modification) " \
+                                    "failed reading etc/devlink.tab with error: " \
+                                    "%s (%s)" % (self.name, self.attrs["name"],
+                                        e[0], e[1])
+                                return
+
+                        devlinks = self.attrlist("devlink")
+
+                        missing_entries = []
+                        for line in devlinks:
+                                try:
+                                        lineno = lines.index(line.replace("\\t", "\t") + "\n")
+                                except ValueError:
+                                        missing_entries.append(line.replace("\\t", "\t"))
+                                        continue
+                                del lines[lineno]
+
+                        if missing_entries:
+                                print "%s (%s) removal (devlinks modification) " \
+                                    "failed modifying\netc/devlink.tab.  The " \
+                                    "following entries were to be removed, " \
+                                    "but were\nnot found:\n    " % \
+                                    (self.name, self.attrs["name"]) + \
+                                    "\n    ".join(missing_entries)
+
+                        try:
+                                dlt, dltp = mkstemp(suffix=".devlink.tab",
+                                    dir=image.get_root() + "/etc")
+                                dlt = os.fdopen(dlt, "w")
+                                dlt.writelines(lines)
+                                dlt.close()
+                                os.rename(dltp, dlp)
+                        except IOError, e:
+                                print "%s (%s) removal (devlinks modification) " \
+                                    "failed writing etc/devlink.tab with error: " \
+                                    "%s (%s)" % (self.name, self.attrs["name"],
+                                        e[0], e[1])
 
         def generate_indices(self):
                 ret = {}

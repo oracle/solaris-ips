@@ -181,6 +181,12 @@ DESCRIPTION
      privs        This specifies privileges used by the driver.  There may
                   be more than one privs attribute for any given driver.
 
+     devlink      This specifies an entry in /etc/devlink.tab.  The value
+                  is the exact line to go into the file, with tabs denoted
+                  by "\t".  See devlinks(1M) for more information.  There
+                  may be more than one devlink attribute for any given
+                  driver.
+
   Depend actions
      The 'depend' action represents an inter-package dependency.  A package
      may depend on another package because the first requires functionality

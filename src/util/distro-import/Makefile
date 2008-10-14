@@ -50,9 +50,8 @@ SOLARIS.PY=./solaris.py -b 0.$(BUILDID) $(EXTRA_OPTIONS) -T \*.py -G smf_manifes
 # we're doing this until the necessary actions are available.  For now,
 # cache as-installed versions.
 #
-ELIDED_FILES= \
+ELIDED_FILES_BASE= \
 	boot/solaris/devicedb/master	\
-	etc/devlink.tab			\
 	etc/hba.conf			\
 	etc/ima.conf			\
 	etc/inet/services		\
@@ -60,8 +59,22 @@ ELIDED_FILES= \
 	etc/security/auth_attr		\
 	etc/security/exec_attr		\
 	etc/security/prof_attr		\
-	etc/user_attr			\
-	kernel/drv/sd.conf
+	etc/user_attr
+
+ELIDED_FILES_86 = $(ELIDED_FILES_BASE) etc/devlink.tab
+ELIDED_FILES_89 = $(ELIDED_FILES_BASE) kernel/drv/sd.conf etc/devlink.tab
+ELIDED_FILES_90 = $(ELIDED_FILES_89)
+ELIDED_FILES_91 = $(ELIDED_FILES_89)
+ELIDED_FILES_92 = $(ELIDED_FILES_89)
+ELIDED_FILES_93 = $(ELIDED_FILES_89)
+ELIDED_FILES_94 = $(ELIDED_FILES_89)
+ELIDED_FILES_95 = $(ELIDED_FILES_89)
+ELIDED_FILES_96 = $(ELIDED_FILES_89)
+ELIDED_FILES_97 = $(ELIDED_FILES_89)
+ELIDED_FILES_98 = $(ELIDED_FILES_89)
+ELIDED_FILES_99 = $(ELIDED_FILES_89)
+ELIDED_FILES_100a = $(ELIDED_FILES_BASE) kernel/drv/sd.conf
+ELIDED_FILES = $(ELIDED_FILES_$(BUILDID))
 
 #
 # these files get placed into proto area from per-build cached versions
