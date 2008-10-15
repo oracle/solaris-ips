@@ -299,6 +299,7 @@ cli.t_pkg_install.py TestPkgInstallBasics.test_bug_1338_2|pass
 cli.t_pkg_install.py TestPkgInstallBasics.test_bug_1338_3|pass
 cli.t_pkg_install.py TestPkgInstallBasics.test_bug_1338_4|pass
 cli.t_pkg_install.py TestPkgInstallBasics.test_bug_2795|pass
+cli.t_pkg_install.py TestPkgInstallBasics.test_bug_3770|pass
 cli.t_pkg_install.py TestPkgInstallBasics.test_cli|pass
 cli.t_pkg_install.py TestPkgInstallBasics.test_image_upgrade|pass
 cli.t_pkg_install.py TestPkgInstallBasics.test_install_matching|fail

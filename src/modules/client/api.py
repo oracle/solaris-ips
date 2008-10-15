@@ -33,7 +33,7 @@ from pkg.client.imageplan import EXECUTED_OK
 
 import threading
 
-CURRENT_API_VERSION = 0
+CURRENT_API_VERSION = 1
                 
 class ImageInterface(object):
         """This class presents an interface to images that clients may use.
@@ -98,9 +98,11 @@ class ImageInterface(object):
                 automatically be refreshed. noexecute determines whether the
                 history will be recorded after planning is finished. verbose
                 controls whether verbose debugging output will be printed to the
-                terminal. Its existence is temporary. If there are things to do
-                to complete the install, it returns True, otherwise it returns
-                False. It can raise InvalidCertException, PlanCreationException,
+                terminal. Its existence is temporary. It returns a tuple of
+                two things. The first is a boolean which tells the client
+                whether there is anything to do. The third is either None, or an
+                exception which indicates partial success. It can raise
+                InvalidCertException, PlanCreationException,
                 NetworkUnavailableException, and InventoryException. The
                 noexecute argument is included for compatibility with
                 operational history. The hope is it can be removed in the
@@ -121,6 +123,7 @@ class ImageInterface(object):
 
                                 self.img.load_catalogs(self.progresstracker)
 
+                                exception_caught = None
                                 if refresh_catalogs:
                                         try:
                                                 self.img.retrieve_catalogs()
@@ -173,7 +176,7 @@ class ImageInterface(object):
                 finally:
                         self.__activity_lock.release()
                 
-                return res
+                return (res, exception_caught)
 
 
         def plan_uninstall(self, pkg_list, recursive_removal, noexecute=False,

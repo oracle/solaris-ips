@@ -38,7 +38,7 @@ PACKAGE_PROGRESS_TOTAL_INCREMENTS = 95    # Total increments for loading phase
 PACKAGE_PROGRESS_PERCENT_INCREMENT = 0.01 # Amount to update progress during loading phase
 PACKAGE_PROGRESS_PERCENT_TOTAL = 1.0      # Total progress for loading phase
 
-CLIENT_API_VERSION = 0
+CLIENT_API_VERSION = 1
 PKG_CLIENT_NAME = "packagemanager"
 
 import getopt
@@ -1220,8 +1220,9 @@ class PackageManager:
                 list_of_packages = [self.ipkg_fmri, self.ipkggui_fmri]
                 ret = True
                 try:
-                        if self.api_o.plan_install(list_of_packages, \
-                            filters = []):
+                        upgrade_needed, cre = self.api_o.plan_install(
+                            list_of_packages, filters = [])
+                        if upgrade_needed:
                                 ret = False
                 except (api_errors.InvalidCertException, \
                     api_errors.PlanCreationException, \

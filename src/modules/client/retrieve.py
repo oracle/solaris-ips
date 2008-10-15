@@ -172,21 +172,22 @@ def get_datastream(img, fmri, fhash):
                 f = versioned_urlopen(url_prefix, "file", [0], fhash,
                     ssl_creds=ssl_tuple, imgtype=img.type, uuid=uuid)[0]
         except urllib2.HTTPError, e:
-                raise DatastreamRetrievalError("could not retrieve file '%s'"
-                    "from '%s'\nHTTPError, code:%s"% (hash, url_prefix, e.code))
+                raise DatastreamRetrievalError("Could not retrieve file '%s'\n"
+                    "from '%s'\nHTTPError, code:%s" %
+                    (hash, url_prefix, e.code))
         except urllib2.URLError, e:
                 if len(e.args) == 1 and isinstance(e.args[0], socket.sslerror):
                         raise RuntimeError, e
 
-                raise DatastreamRetrievalError("could not retrieve file '%s'"
+                raise DatastreamRetrievalError("Could not retrieve file '%s'\n"
                     "from '%s'\nURLError args:%s" % (hash, url_prefix,
                     " ".join([str(a) for a in e.args])))
         except KeyboardInterrupt:
                 raise
         except Exception, e:
-                raise DatastreamRetrievalError("could not retrieve manifest '%s'"
-                    "from '%s'\nException: str:%s repr:%s" % (fmri.get_url_path(),
-                    url_prefix, e, repr(e)))
+                raise DatastreamRetrievalError("Could not retrieve file '%s'\n"
+                    "from '%s'\nException: str:%s repr:%s" %
+                    (fmri.get_url_path(), url_prefix, e, repr(e)))
 
         return f
 
@@ -225,24 +226,24 @@ def get_manifest(img, fmri):
                 if e.code in retryable_http_errors:
                         raise TransferTimedOutException(url_prefix, str(e.code))
 
-                raise ManifestRetrievalError("could not retrieve manifest '%s' from '%s'\n"
-                    "HTTPError code:%s" % (fmri.get_url_path(), url_prefix, 
-                    e.code))
+                raise ManifestRetrievalError("Could not retrieve manifest '%s'\n"
+                    "from '%s'\nHTTPError code:%s" %
+                    (fmri.get_url_path(), url_prefix, e.code))
         except urllib2.URLError, e:
                 if len(e.args) == 1 and isinstance(e.args[0], socket.sslerror):
                         raise RuntimeError, e
                 elif len(e.args) == 1 and isinstance(e.args[0], socket.timeout):
                         raise TransferTimedOutException(url_prefix, e.reason)
 
-                raise ManifestRetrievalError("could not retrieve manifest '%s' from '%s'\n"
-                    "URLError, args:%s" % (fmri.get_url_path(), url_prefix,
-                    " ".join([str(a) for a in e.args])))
+                raise ManifestRetrievalError("Could not retrieve manifest '%s'\n"
+                    "from '%s'\nURLError, args:%s" % (fmri.get_url_path(),
+                    url_prefix, " ".join([str(a) for a in e.args])))
         except KeyboardInterrupt:
                 raise
         except Exception, e:
-                raise ManifestRetrievalError("could not retrieve manifest '%s' from '%s'"
-                    "Exception: str:%s repr:%s" % (fmri.get_url_path(),
-                    url_prefix, e, repr(e)))
+                raise ManifestRetrievalError("Could not retrieve manifest '%s'\n"
+                    "from '%s'\nException: str:%s repr:%s" %
+                    (fmri.get_url_path(), url_prefix, e, repr(e)))
 
         try:
                 return m.read()
@@ -251,7 +252,6 @@ def get_manifest(img, fmri):
         except EnvironmentError, e:
                 raise TransferContentException(url_prefix,
                     "Read error retrieving manifest: %s" % e)
-
 
 def touch_manifest(img, fmri):
         """Perform a HEAD operation on the manifest for the given fmri.

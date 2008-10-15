@@ -404,6 +404,16 @@ class TestPkgInstallBasics(testutils.SingleDepotTestCase):
                 self.pkg("list bar@1.0", exit=1)
                 self.pkg("list baz@1.0", exit=1)
 
+        def test_bug_3770(self):
+                """ Try to install two versions of the same package """
+
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.foo11)
+                self.image_create(durl)
+                self.dc.stop()
+                self.pkg("install foo@1.1", exit=1)
+
+
 class TestPkgInstallCircularDependencies(testutils.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
         persistent_depot = True

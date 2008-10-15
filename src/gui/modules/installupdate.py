@@ -23,7 +23,7 @@
 # Use is subject to license terms.
 #
 
-CLIENT_API_VERSION = 0
+CLIENT_API_VERSION = 1
 PKG_CLIENT_NAME = "packagemanager"
 
 import gettext # XXX Temporary workaround
@@ -284,8 +284,16 @@ class InstallUpdate(progress.ProgressTracker):
                 stuff_to_do = False
                 if self.action == enumerations.INSTALL_UPDATE:
                         try:
-                                stuff_to_do = self.api_o.plan_install(list_of_packages, \
-                                    filters = [])
+                                stuff_to_do, cre = self.api_o.plan_install( \
+                                    list_of_packages, filters = [])
+                                if cre and not cre.succeeded:
+                                        self.progress_stop_timer_thread = True
+                                        gobject.idle_add(self.w_createplan_dialog.hide)
+                                        msg = self.parent._("Unexpected failure with" + \
+                                            "\ncatalog refresh during install" + \
+                                            " while \ndetermining what to update.")
+                                        gobject.idle_add(self.parent.error_occured, msg)
+                                        return
                         except api_errors.InvalidCertException:
                                 self.progress_stop_timer_thread = True
                                 gobject.idle_add(self.w_createplan_dialog.hide)

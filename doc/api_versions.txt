@@ -1,0 +1,167 @@
+Version 1:
+Incompatible with clients using Version 0
+Changes:
+plan_install now returns a tuple of whether there is anything to do and 
+    a catalog refresh exception, if one was caught. In this, it mirrors the
+    first and third return values from plan_update_all.
+
+Version 0:
+        def __init__(self, img_path, version_id, progesstracker,
+            cancel_state_callable, pkg_client_name):
+                """Constructs an ImageInterface. img_path should point to an
+                existing image. version_id indicates the version of the api
+                the client is expecting to use. progesstracker is the
+                progresstracker the client wants the api to use for UI
+                callbacks. cancel_state_callable is a function which the client
+                wishes to have called each time whether the operation can be
+                canceled changes. It can raise VersionException and
+                ImageNotFoundException."""
+
+        def plan_install(self, pkg_list, filters, refresh_catalogs=True,
+            noexecute=False, verbose=False):
+                """Contructs a plan to install the packages provided in
+                pkg_list. pkg_list is a list of packages to install. filters
+                is a list of filters to apply to the actions of the installed
+                packages. refresh_catalogs controls whether the catalogs will
+                automatically be refreshed. noexecute determines whether the
+                history will be recorded after planning is finished. verbose
+                controls whether verbose debugging output will be printed to the
+                terminal. Its existence is temporary. If there are things to do
+                to complete the install, it returns True, otherwise it returns
+                False. It can raise InvalidCertException, PlanCreationException,
+                NetworkUnavailableException, and InventoryException. The
+                noexecute argument is included for compatibility with
+                operational history. The hope is it can be removed in the
+                future."""
+
+        def plan_uninstall(self, pkg_list, recursive_removal, noexecute=False,
+            verbose=False):
+                """Contructs a plan to uninstall the packages provided in
+                pkg_list. pkg_list is a list of packages to install.
+                recursive_removal controls whether recursive removal is
+                allowed. noexecute determines whether the history will be
+                recorded after planning is finished. verbose controls whether
+                verbose debugging output will be printed to the terminal. Its
+                existence is temporary. If there are things to do to complete
+                the uninstall, it returns True, otherwise it returns False. It
+                can raise NonLeafPackageException and PlanCreationException."""
+
+        def plan_update_all(self, actual_cmd, refresh_catalogs=True,
+            noexecute=False, force=False, pkgs_must_be_up_to_date=None,
+            verbose=False):
+                """Creates a plan to update all packages on the system to the
+                latest known versions. actual_cmd is the command used to start
+                the client. It is used to determine the image to check whether
+                SUNWipkg is up to date. refresh_catalogs controls whether the
+                catalogs will automatically be refreshed. noexecute determines
+                whether the history will be recorded after planning is finished.
+                force controls whether update should proceed even if ipkg is not
+                up to date. verbose controls whether verbose debugging output
+                will be printed to the terminal. Its existence is temporary. It
+                returns a tuple of three things. The first is a boolean which
+                tells the client whether there is anything to do. The second
+                tells whether the image is an opensolaris image. The third is
+                either None, or an exception which indicates partial success.
+                This is currently used to indicate a failure in refreshing
+                catalogs. It can raise CatalogRefreshException,
+                IpkgOutOfDateException, NetworkUnavailableException, and
+                PlanCreationException."""
+
+        def describe(self):
+                """Returns None if no plan is ready yet, otherwise returns
+                a PlanDescription"""
+
+        def prepare(self):
+                """Takes care of things which must be done before the plan
+                can be executed. This includes downloading the packages to
+                disk and preparing the indexes to be updated during
+                execution. It can raise ProblematicPermissionsIndexException,
+                and PlanMissingException. Should only be called once a
+                plan_X method has been called."""
+
+        def execute_plan(self, be_name=None):
+                """Executes the plan. This is uncancelable one it begins. It
+                can raise  CorruptedIndexException,
+                ProblematicPermissionsIndexException, ImageplanStateException,
+                ImageUpdateOnLiveImageException, and PlanMissingException.
+                Should only be called after the prepare method has been
+                called."""
+
+        def refresh(self, full_refresh, auths=None):
+                """Refreshes the catalogs. full_refresh controls whether to do
+                a full retrieval of the catalog from the authority or only
+                update the existing catalog. auths is a list of authorities to
+                refresh. Passing an empty list or using the default value means
+                all known authorities will be refreshed. While it currently
+                returns an image object, this is an expedient for allowing
+                existing code to work while the rest of the API is put into
+                place."""
+
+        def info(self, fmri_strings, local, get_licenses):
+                """Gathers information about fmris. fmri_strings is a list
+                of fmri_names for which information is desired. local
+                determines whether to retrieve the information locally.
+                get_licenses determines whether to retrieve the text of
+                the licenses. It returns a dictionary of lists. The keys
+                for the dictionary are the constants specified in the class
+                definition. The values are lists of PackageInfo objects or
+                strings."""
+
+        def can_be_canceled(self):
+                """Returns true if the API is in a cancelable state."""
+
+        def reset(self):
+                """Resets the API back the the initial state. Note:
+                this does not necessarily return the disk to its initial state
+                since the indexes or download cache may have been changed by
+                the prepare method."""
+
+        def cancel(self):
+                """Used for asynchronous cancelation. It returns the API
+                to the state it was in prior to the current method being
+                invoked.  Canceling during a plan phase returns the API to
+                its initial state. Canceling during prepare puts the API
+                into the state it was in just after planning had completed.
+                Plan execution cannot be canceled. A call to this method blocks
+                until the canelation has happened. Note: this does not
+                necessarily return the disk to its initial state since the
+                indexes or download cache may have been changed by the
+                prepare method."""
+
+class PlanDescription(object):
+        """A class which describes the changes the plan will make. It
+        provides a list of tuples of PackageInfo's. The first item in the
+        tuple is the package that is being changed. The second item in the
+        tuple is the package that will be in the image after the change."""
+
+        def get_changes(self):
+
+class LicenseInfo(object):
+        """A class representing the license information a package
+        provides."""
+
+        def get_text(self):
+
+class PackageInfo(object):
+        """A class capturing the information about packages that a client
+        could need. The fmri is guaranteed to be set. All other values may
+        be None, depending on how the PackageInfo instance was created."""
+
+        # Possible package installation states
+        INSTALLED = 1
+        NOT_INSTALLED = 2
+
+        self.pkg_stem
+        self.summary
+        self.state
+        self.authority
+        self.preferred_authority
+        self.version
+        self.build_release
+        self.branch
+        self.packaging_date
+        self.size
+        self.fmri
+        self.licenses
+
+        def __str__(self):

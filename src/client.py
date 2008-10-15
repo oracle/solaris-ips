@@ -83,7 +83,7 @@ from pkg.client.history import RESULT_FAILED_STORAGE
 from pkg.client.retrieve import ManifestRetrievalError
 from pkg.client.retrieve import DatastreamRetrievalError
 
-CLIENT_API_VERSION = 0
+CLIENT_API_VERSION = 1
 PKG_CLIENT_NAME = "pkg"
 
 def error(text):
@@ -560,7 +560,9 @@ def image_update(img_dir, args):
                             " image-update.")
         except (api_errors.PlanCreationException,
             api_errors.NetworkUnavailableException), e:
-                msg(str(e))
+                # Prepend a newline because otherwise the exception will
+                # be printed on the same line as the spinner.
+                msg("\n" + str(e))
                 return 1
         except api_errors.IpkgOutOfDateException:
                 msg(_("WARNING: pkg(5) appears to be out of date, and should " \
@@ -670,16 +672,30 @@ def install(img_dir, args):
                 return 1
 
         try:
-                if not api_inst.plan_install(pkg_list, filters,
-                    refresh_catalogs, noexecute, verbose=verbose):
-                        msg(_("Nothing to install in this image (is this "
-                            "package already installed?)"))
+                # cre is either None or a catalog refresh exception which was
+                # caught while planning.
+                stuff_to_do, cre = api_inst.plan_install(pkg_list, filters,
+                    refresh_catalogs, noexecute, verbose=verbose)
+                if cre and not display_catalog_failures(cre):
+                        raise RuntimeError("Catalog refresh failed during"
+                            " install.")
+                if not stuff_to_do:
+                        msg(_("No updates available for this image."))
                         return 0
+        except api_errors.CatalogRefreshException, e:
+                if display_catalog_failures(e) == 0:
+                        if not noexecute:
+                                return 1
+                else:
+                        raise RuntimeError("Catalog refresh failed during"
+                            " install.")
         except api_errors.InvalidCertException:
                 return 1
         except (api_errors.PlanCreationException,
             api_errors.NetworkUnavailableException), e:
-                msg(str(e))
+                # Prepend a newline because otherwise the exception will
+                # be printed on the same line as the spinner.
+                msg("\n" + str(e))
                 return 1
         except api_errors.InventoryException, e:
                 error(_("install failed (inventory exception): %s") % e)
@@ -780,9 +796,10 @@ the following packages that depend on it:""" % e[0])
                 for d in e[1]:
                         emsg("  %s" % d)
                 return 1
-        except (api_errors.PlanCreationException,
-            api_errors.NetworkUnavailableException), e:
-                msg(str(e))
+        except api_errors.PlanCreationException, e:
+                # Prepend a newline because otherwise the exception will
+                # be printed on the same line as the spinner.
+                msg("\n" + str(e))
                 return 1
 
 
@@ -1480,7 +1497,9 @@ def authority_set(img, args):
                     ssl_key=ssl_key, ssl_cert=ssl_cert,
                     refresh_allowed=refresh_catalogs, uuid=uuid)
         except api_errors.CatalogRefreshException, e:
-                error(_("set-authority failed: %s") % e)
+                text = "Could not refresh the catalog for %s" % \
+                    auth
+                error(_(text))
                 return 1
 
         if preferred:
