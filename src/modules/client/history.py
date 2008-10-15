@@ -476,7 +476,24 @@ class History(object):
                 self.__serialize_operation_data(d)
 
                 if not os.path.exists(self.path):
-                        os.makedirs(self.path, mode=0755)
+                        try:
+                                os.makedirs(self.path, mode=0755)
+                        except EnvironmentError, e:
+                                if e.errno not in (errno.EROFS,
+                                    errno.EACCES):
+                                        # Ignore read-only file system and
+                                        # access errors as it isn't critical
+                                        # to the image that this data is
+                                        # written.
+                                        raise HistoryStoreException(
+                                            e)
+                                # Return, since without the directory, the rest
+                                # of this will fail.
+                                return
+                        except KeyboardInterrupt:
+                                raise
+                        except Exception, e:
+                                raise HistoryStoreException(e)
 
                 # Repeatedly attempt to write the history (only if it's because
                 # the file already exists).  This is necessary due to multiple
@@ -509,11 +526,14 @@ class History(object):
                                         # written.
                                         raise HistoryStoreException(
                                             e)
+                                # For all other failures, return, and avoid any
+                                # further attempts.
+                                return
                         except KeyboardInterrupt:
                                 raise
                         except Exception, e:
                                 raise HistoryStoreException(e)
-        
+
         def purge(self):
                 """Removes all history information by deleting the directory
                 indicated by the value self.path and then creates a new history
