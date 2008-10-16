@@ -131,7 +131,16 @@ class InventoryException(ApiException):
                         self.illegal = illegal
                 assert(self.notfound or self.illegal)
 
-
+        def __str__(self):
+                outstr = ""
+                for x in self.illegal:
+                        # Illegal FMRIs have their own __str__ method
+                        outstr += "%s\n" % x
+                for x in self.notfound:
+                        outstr += _("No package matching '%s' could be found "
+                            "in any of the catalogs for the current "
+                            "authorities.\n""") % x
+                return outstr
 
 class IndexingException(ApiException):
         """ The base class for all exceptions that can occur while indexing. """

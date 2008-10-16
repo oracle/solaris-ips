@@ -257,7 +257,7 @@ class Image(object):
                         # (XXX - Need to deal with symlinks here too)
                         if d == oldpath:
                                 raise api_errors.ImageNotFoundException(
-                                    exact_match, startd, d, None)
+                                    exact_match, startd, d)
 
         def load_config(self):
                 """Load this image's cached configuration from the default

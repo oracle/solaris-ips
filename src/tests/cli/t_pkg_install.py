@@ -1360,6 +1360,15 @@ class TestTwoDepots(testutils.ManyDepotTestCase):
             open moo@1.0,5.11-0
             close """
 
+        quux10 = """
+            open quux@1.0,5.11-0
+            add depend type=optional fmri=optional@1.0
+            close"""
+
+        optional10 = """
+            open optional@1.0,5.11-0
+            close"""
+
         upgrade_p10 = """
             open upgrade-p@1.0,5.11-0
             close"""
@@ -1407,6 +1416,8 @@ class TestTwoDepots(testutils.ManyDepotTestCase):
                 durl1 = self.dcs[1].get_depot_url()
                 self.pkgsend_bulk(durl1, self.foo10)
                 self.pkgsend_bulk(durl1, self.moo10)
+                self.pkgsend_bulk(durl1, self.quux10)
+                self.pkgsend_bulk(durl1, self.optional10)
                 self.pkgsend_bulk(durl1, self.upgrade_p10)
                 self.pkgsend_bulk(durl1, self.upgrade_np11)
                 self.pkgsend_bulk(durl1, self.incorp_p10)
@@ -1513,6 +1524,22 @@ class TestTwoDepots(testutils.ManyDepotTestCase):
                 # Check to make sure that uninstalling using the explicit
                 # authority works
                 self.pkg("uninstall pkg://test1/foo")
+
+        def test_yyy_install_after_authority_removal(self):
+                """Install a package from an authority that has an optional
+                dependency; then change the preferred authority and remove the
+                original authority and attempt to uninstall the package."""
+                self.pkg("install quux@1.0")
+                self.pkg("set-authority -P test2")
+                self.pkg("unset-authority test1")
+                # These should fail as the optional dependency isn't in the
+                # catalog for test2.
+                self.pkg("install quux@1.0", exit=1)
+                self.pkg("image-update", exit=1)
+                # Change the image metadata back to where it was, in preparation
+                # for subsequent tests.
+                self.pkg("set-authority -O %s -P test1" % \
+                    self.dcs[1].get_depot_url())
 
         def test_zzz_uninstall_after_preferred_authority_change(self):
                 """Install a package from the preferred authority, change the

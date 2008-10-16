@@ -551,6 +551,9 @@ def image_update(img_dir, args):
                 if not stuff_to_do:
                         msg(_("No updates available for this image."))
                         return 0
+        except api_errors.InventoryException, e:
+                error(_("image-update failed (inventory exception):\n%s") % e)
+                return 1
         except api_errors.CatalogRefreshException, e:
                 if display_catalog_failures(e) == 0:
                         if not noexecute:
@@ -698,7 +701,7 @@ def install(img_dir, args):
                 msg("\n" + str(e))
                 return 1
         except api_errors.InventoryException, e:
-                error(_("install failed (inventory exception): %s") % e)
+                error(_("install failed (inventory exception):\n%s") % e)
                 return 1
         except fmri.IllegalFmri, e:
                 error(e)
@@ -790,6 +793,9 @@ def uninstall(img_dir, args):
                 if not api_inst.plan_uninstall(pkg_list, recursive_removal,
                     noexecute, verbose=verbose):
                         assert 0
+        except api_errors.InventoryException, e:
+                error(_("uninstall failed (inventory exception):\n%s") % e)
+                return 1
         except api_errors.NonLeafPackageException, e:
                 error("""Cannot remove '%s' due to
 the following packages that depend on it:""" % e[0])
