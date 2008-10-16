@@ -412,6 +412,7 @@ class TestPkgInstallBasics(testutils.SingleDepotTestCase):
                 self.image_create(durl)
                 self.dc.stop()
                 self.pkg("install foo@1.1", exit=1)
+                self.dc.start()
 
 
 class TestPkgInstallCircularDependencies(testutils.SingleDepotTestCase):
