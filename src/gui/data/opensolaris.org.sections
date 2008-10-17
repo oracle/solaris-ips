@@ -1,17 +1,24 @@
 [Meta Packages]
 category = Builds,Releases,Developer Tools,AMP Stack,Office Tools
 
-[Applications Desktop]
-category = Accessories,Control Panels,Developer Tools,Games,Graphics,Internet,Office,Panel Applets,Soudn & Video,System Tools,Universal Access
+[Applications]
+category = Accessories,Configuration and Preferences,Education,Games,Graphics and Imaging,Internet,Office,Applets,Plug-ins and Run-times,Science,Sound and Video,System Utilities,Universal Access
 
-[Applications Web-Based]
-category = Business,Composite Applications,Identity,Portal,Social Software,Web Technologies
+[Desktop (GNOME)]
+category = Documentation,File Managers,Libraries,Localizations (Desktop),Scripts,Sessions,Trusted Extensions,Window Managers
 
-[Operating System]
-category = Communication,Configuration Administration,Core,Drivers,Media,Networking,SMF (System Management Function),Storage,Virtualisation
+[Development]
+category = Integrated Development Environments,Source Code Management,Distribution Tools,C,C++,Databases,GNOME and GTK+,GNU,Java,Other Languages,Perl,PHP,Python,Ruby,System,X11
 
-[User Environment]
-category = Command lines,GNOME,KDE
+[Distributions]
+category = Desktop,Server
 
-[Web Infrastructure]
-category = AFP,Application Server,DHCP,DNS,Firewall,FTP,Mail,NAT,NetBoot,NFS,Open Directory,Print,Samba,Video Streaming,VPN,Web (HTTP),Windows
+[Drivers]
+category = Display,Input devices,Networking,Ports,Media,Storage,Other Peripherals
+
+[System]
+category = Administration and Configuration,Cluster,Core,Databases (System),Enterprise Management,File System,Fonts,Hardware,High Performance Computing,Internationalization,Libraries (System),Localizations (System),Media,Packaging,Printing,Security,Services,Shells,Software Management,Text Tools,Trusted,X11 (System),Virtualization
+
+[Web Services]
+category = Application and Web Servers,Business Applications,Identity,Portals,SOA,Social Applications 
+

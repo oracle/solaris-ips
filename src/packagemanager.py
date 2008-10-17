@@ -493,11 +493,13 @@ class PackageManager:
                 self.section_list.append([0, self._('All'), ])
                 self.section_list.append([-1, "", ])
                 self.section_list.append([2, self._('Meta Packages'), ])
-                self.section_list.append([3, self._('Applications Desktop'), ])
-                self.section_list.append([4, self._('Applications Web-Based'), ])
-                self.section_list.append([5, self._('Operating System'), ])
-                self.section_list.append([6, self._('User Environment'), ])
-                self.section_list.append([7, self._('Web Infrastructure'), ])
+                self.section_list.append([3, self._('Applications'), ])
+                self.section_list.append([4, self._('Desktop (GNOME)'), ])
+                self.section_list.append([5, self._('Development'), ])
+                self.section_list.append([6, self._('Distributions'), ])
+                self.section_list.append([7, self._('Drivers'), ])
+                self.section_list.append([8, self._('System'), ])
+                self.section_list.append([9, self._('Web Services'), ])
 
         def __init_show_filter(self):
                 self.filter_list.append([0, self._('All Packages'), ])

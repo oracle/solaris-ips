@@ -1,2667 +1,3562 @@
-[SUNWneuos]
-category = 
+[amp]
+category = Application and Web Servers
 
-[SUNWgnome-spell]
-category = GNOME
+[amp-dev]
+category = Integrated Development Environments
 
-[SUNWqlcu]
-category = 
-
-[SUNWauaow]
-category = 
-
-[SUNWfirefoxl10n-fr-FR]
-category = Localization,GNOME
-
-[SUNWauaos]
-category = 
-
-[SUNWgnome-a11y-dasher]
-category = Universal Access,GNOME
-
-[SUNWamd8111s]
-category = 
-
-[SUNWpostgr]
-category = 
-
-[SUNWxorg-client-docs]
-category = 
-
-[SUNWkvm]
-category = 
-
-[SUNWkdhcm]
-category = 
-
-[SUNWmyspell-dictionary-cs]
-category = 
-
-[SUNWsbrg]
-category = 
-
-[SUNWcos]
-category = 
-
-[SUNWnxge]
-category = 
-
-[SUNWlsimega]
-category = 
-
-[SUNWgnome-search-tool]
-category = 
-
-[SUNW1394h]
-category = 
-
-[SUNWib]
-category = 
-
-[SUNWthunderbird]
-category = Internet
-
-[SUNWfladm]
-category = 
-
-[SUNWii]
-category = 
-
-[SUNWtcat]
-category = 
-
-[SUNWxorg-compatlinks]
-category = 
-
-[SUNWebrg]
-category = 
-
-[SUNWfrdis]
-category = 
-
-[SUNWgnome-media-player]
-category = Sound & Video,GNOME
-
-[SUNWjupdatemgru]
-category = 
-
-[SUNWsvn-perl]
-category = 
-
-[SUNWgnome-gui-test]
-category = 
-
-[SUNWeupdatemgru]
-category = 
-
-[SUNWitiso1]
-category = 
-
-[SUNWvia823x]
-category = 
-
-[SUNWgnu-idn]
-category = 
-
-[SUNWkadis]
-category = 
-
-[SUNWcacaowsvr]
-category = 
-
-[SUNWthunderbirdl10n-sv-SE]
-category = Localization,GNOME
-
-[SUNWhbrg]
-category = 
-
-[SUNWfwdcu]
-category = 
-
-[SUNWitdma]
-category = 
-
-[SUNWgnome-system-tools]
-category = 
-
-[SUNWuprl]
-category = 
-
-[SUNWfchba]
-category = 
-
-[SUNWbison]
-category = 
-
-[SUNWkdc]
-category = 
-
-[SUNWweuow]
-category = 
-
-[SUNWafe]
-category = 
-
-[SUNWwsr2]
-category = 
-
-[SUNWweuos]
-category = 
-
-[SUNWfcprt]
-category = 
-
-[SUNWlocaledefsrc]
-category = 
-
-[SUNWfcip]
-category = 
-
-[SUNWkos]
-category = 
-
-[SUNWfcp]
-category = 
-
-[SUNWcladm]
-category = 
-
-[SUNWsprot]
-category = 
-
-[SUNWgnu-libiconv]
-category = 
-
-[SUNWpmdbdpg]
-category = 
-
-[SUNWgnome-component]
-category = 
-
-[SUNWmpapi]
-category = 
-
-[SUNWiupdatemgru]
-category = 
-
-[SUNWvtsts]
-category = 
-
-[SUNWpcmci]
-category = 
-
-[SUNWdmfe]
-category = 
-
-[SUNWad810]
-category = 
-
-[SUNWsvos]
-category = 
-
-[SUNWsmagt]
-category = 
-
-[SUNWgnome-media-apps]
-category = Sound & Video,GNOME
-
-[SUNWpcmcu]
-category = 
-
-[SUNWfirefoxl10n-ko-KR]
-category = Localization,GNOME
-
-[SUNWlibrsvg]
-category = 
-
-[SUNWgnome-l10nmessages-de]
-category = Localization,GNOME
-
-[SUNWevolution]
-category = Internet,Communication,GNOME,Mail
-
-[SUNWevolution-webcal]
-category = Internet,Communication,GNOME
-
-[SUNWdvdrw]
-category = 
-
-[SUNWlxml]
-category = 
-
-[SUNWrcmdc]
-category = 
-
-[SUNWPython-extra]
-category = 
-
-[SUNWgnu-automake-110]
-category = 
-
-[SUNWtlsu]
-category = 
-
-[SUNWdews2]
-category = 
-
-[SUNWj6man]
-category = 
-
-[SUNWpostgr-docs]
-category = 
-
-[SUNWgnome-doc-utils]
-category = 
-
-[SUNWi2cs]
-category = 
-
-[SUNWexplt]
-category = 
-
-[SUNWjadma]
-category = 
-
-[SUNWkwsr2]
-category = 
-
-[SUNWiscsitgt]
-category = 
-
-[SUNWzsh]
-category = 
-
-[SUNWktsu]
-category = 
-
-[SUNWthunderbirdl10n-it-IT]
-category = Localization,GNOME
-
-[SUNWpd]
-category = 
-
-[SUNWpc]
-category = 
-
-[SUNWgnome-l10nmessages-cs]
-category = Localization,GNOME
-
-[SUNWj6cfg]
-category = 
-
-[SUNWrds]
-category = 
-
-[SUNWpm]
-category = 
-
-[SUNWgpch]
-category = 
-
-[SUNWcdrw]
-category = 
-
-[SUNWgzip]
-category = 
-
-[SUNWgnome-print]
-category = 
-
-[SUNWhadma]
-category = 
-
-[SUNWmda]
-category = 
-
-[SUNWpr]
-category = 
-
-[SUNWbzip]
-category = 
-
-[SUNWmdb]
-category = 
-
-[SUNWbart]
-category = 
-
-[SUNWrdc]
-category = 
-
-[SUNWpsutils]
-category = 
-
-[SUNWwget]
-category = 
-
-[SUNWwpa]
-category = 
-
-[SUNWgnome-applets]
-category = 
-
-[SUNWmd]
-category = 
-
-[SUNWibsdpu]
-category = 
-
-[SUNWautoef]
-category = 
-
-[SUNWtnfd]
-category = 
-
-[SUNWgnome-l10nmessages-it]
-category = Localization,GNOME
-
-[SUNWcadma]
-category = 
-
-[SUNWbind]
-category = 
-
-[SUNWgnome-l10ndocument-de]
-category = Localization,GNOME
-
-[SUNWtsg]
-category = 
-
-[SUNWhiu8]
-category = 
-
-[SUNWltdl]
-category = 
-
-[SUNWibrg]
-category = 
-
-[SUNWfrws2]
-category = 
-
-[SUNWbrg]
-category = 
-
-[SUNWfrdma]
-category = 
-
-[SUNWgnome-l10nmessages-zhCN]
-category = Localization,GNOME
-
-[SUNWpostgr-pl]
-category = 
-
-[SUNWpostgr-server]
-category = 
-
-[SUNWgrubS]
-category = 
-
-[SUNWmyspell-dictionary-hu]
-category = 
-
-[SUNWhladm]
-category = 
-
-[SUNWTk]
-category = 
-
-[SUNWxscreensaver-hacks]
-category = 
-
-[SUNWnamos]
-category = 
-
-[SUNWgnome-crash-report]
-category = 
-
-[SUNWqos]
-category = 
-
-[SUNWfirefoxl10n-es-ES]
-category = Localization,GNOME
-
-[SUNWtavor]
-category = 
-
-[SUNWsviso1]
-category = 
-
-[SUNWbrltty]
-category = 
-
-[SUNWmyspell-dictionary-de]
-category = 
-
-[SUNWgnome-file-mgr]
-category = 
-
-[SUNWpostgr-contrib]
-category = 
-
-[SUNWkupdatemgru]
-category = 
-
-[SUNWgnu-diffutils]
-category = 
-
-[SUNWthunderbirdl10n-pl-PL]
-category = Localization,GNOME
-
-[SUNWipkg]
-category = 
-
-[SUNWthunderbird-calendar]
-category = Internet,Office,GNOME
-
-[SUNWpl5v]
-category = 
-
-[SUNWgnome-config]
-category = 
-
-[SUNWpl5u]
-category = 
-
-[SUNWdoc]
-category = 
-
-[SUNWpl5p]
-category = 
-
-[SUNWflexruntime]
-category = 
-
-[SUNWpl5m]
-category = 
-
-[SUNWfontconfig-docs]
-category = 
-
-[SUNWgnome-common-devel]
-category = 
-
-[SUNWppm]
-category = 
-
-[SUNWi7cs]
-category = 
-
-[SUNWj6dmo]
-category = 
-
-[SUNWpostgr-82-tcl]
-category = 
-
-[SUNWgnome-internet-applets]
-category = 
-
-[SUNWgnome-display-mgr]
-category = System Tools,GNOME
-
-[SUNWsmmgr]
-category = 
-
-[SUNWjpg]
-category = 
-
-[SUNWixgb]
-category = 
-
-[SUNWciu8]
-category = 
-
-[SUNWj6dmx]
-category = 
-
-[SUNWlibevent]
-category = 
-
-[SUNWtnetc]
-category = 
-
-[SUNWlibgpg-error]
-category = 
-
-[SUNWccinv]
-category = 
-
-[SUNWpcelx]
-category = 
-
-[SUNWman]
-category = 
-
-[SUNWfirefoxl10n-zh-CN]
-category = Localization,GNOME
-
-[SUNWnfsckr]
-category = 
-
-[SUNWGlib]
-category = 
-
-[SUNWsfman]
-category = 
-
-[SUNWadixp]
-category = 
-
-[SUNWtnetd]
-category = 
-
-[SUNWgnome-img-viewer]
-category = Graphics,GNOME
-
-[SUNWi9cs]
-category = 
-
-[SUNWsvdis]
-category = 
-
-[SUNWgnome-a11y-poke]
-category = Universal Access,GNOME
-
-[SUNWrge]
-category = 
-
-[SUNWsvn-python]
-category = 
-
-[SUNWloc]
-category = 
-
-[SUNWtoo]
-category = 
-
-[SUNWjxplt]
-category = 
-
-[SUNWstardict]
-category = 
-
-[SUNWeladm]
-category = 
-
-[SUNWthunderbirdl10n-fr-FR]
-category = Localization,GNOME
-
-[SUNWjadis]
-category = 
-
-[SUNWxge]
-category = 
-
-[SUNWpool]
-category = 
-
-[SUNWwebmin]
-category = 
-
-[SUNWukspfw]
-category = 
-
-[SUNWinplt]
-category = 
-
-[SUNWsfwhea]
-category = 
-
-[SUNWuedg]
-category = 
-
-[SUNWlibexif]
-category = 
-
-[SUNWhadis]
-category = 
-
-[SUNWgcmn]
-category = 
-
-[SUNWadmr]
-category = 
-
-[SUNWtls]
-category = 
-
-[SUNWphp524core]
-category = 
-
-[SUNWdhcs]
-category = 
-
-[SUNWgnome-keyring-manager]
-category = 
-
-[SUNWaudf]
-category = 
-
-[SUNWadmc]
-category = 
-
-[SUNWaudd]
-category = 
-
-[SUNWauda]
-category = 
-
-[SUNWgnome-log-viewer]
-category = 
-
-[SUNWts]
-category = 
-
-[SUNWastdev]
-category = 
-
-[SUNWfss]
-category = 
-
-[slim_cd]
-category = 
-
-[SUNWxvmdom]
-category = 
-
-[SUNWaudh]
-category = 
-
-[SUNWjos]
-category = 
-
-[SUNWgnome-l10ndocument-sv]
-category = Localization,GNOME
-
-[SUNWadmlib-sysid]
-category = 
-
-[SUNWidnd]
-category = 
-
-[SUNWTcl]
-category = 
-
-[SUNWslp]
-category = 
-
-[SUNWidnl]
-category = 
-
-[SUNWgnome-ps-viewer]
-category = 
-
-[SUNWhermon]
-category = 
-
-[SUNWkrb]
-category = 
-
-[SUNWidnu]
-category = 
-
-[SUNWgnome-l10nmessages-ru]
-category = Localization,GNOME
-
-[SUNWlibusbugen]
-category = 
-
-[SUNWscnprm]
-category = 
-
-[FSWxorg-devel-docs]
-category = 
-
-[SUNWkey]
-category = 
-
-[SUNWscp]
-category = 
-
-[SUNWgnome-l10ndocument-it]
-category = Localization,GNOME
-
-[SUNWagp]
-category = 
-
-[SUNWgnome-l10nmessages-extra]
-category = Localization,GNOME
-
-[SUNWhwsr2]
-category = 
-
-[SUNWuksp]
-category = 
-
-[SUNWgnome-vfs]
-category = 
-
-[SUNWspnego]
-category = 
-
-[SUNWbs]
-category = 
-
-[SUNWgssk]
-category = 
-
-[SUNWfirefoxl10n-zh-TW]
-category = Localization,GNOME
-
-[SUNWscm]
-category = 
-
-[SUNWtcpd]
-category = 
-
-[SUNWopensp]
-category = 
-
-[SUNWsfinf]
-category = 
-
-[SUNWcarx]
-category = 
-
-[SUNWapch22m-php5]
-category = 
-
-[SUNWgnome-desktop-prefs]
-category = 
-
-[SUNWscsa1394]
-category = 
-
-[SUNWlexpt]
-category = 
-
-[SUNWgnome-img-editor]
-category = Graphics,GNOME
-
-[SUNWiso-codes]
-category = 
-
-[SUNWfupdatemgru]
-category = 
-
-[SUNWvncviewer]
-category = 
-
-[SUNWluxop]
-category = 
-
-[SUNWdrmr]
-category = 
-
-[SUNWcacaodtrace]
-category = 
-
-[SUNWdeiso1]
-category = 
-
-[FSWxorg-data]
-category = 
-
-[SUNWcakr]
-category = 
-
-[SUNWspprou]
-category = 
-
-[SUNWhpijs]
-category = 
-
-[SUNWahci]
-category = 
-
-[SUNWperl584usr]
-category = 
-
-[SUNWgnome-a11y-speech-freetts]
-category = Universal Access,GNOME
-
-[SUNWgnome-python-desktop]
-category = 
-
-[SUNWgui-install]
-category = 
-
-[SUNWxorg-clientlibs]
-category = 
-
-[SUNWxorg-xkb]
-category = 
-
-[SUNWos86r]
-category = 
-
-[redistributable]
-category = 
-
-[SUNWgsfst]
-category = 
-
-[SUNWpppd]
-category = 
-
-[SUNWpppg]
-category = 
-
-[SUNWgnome-a11y-reader]
-category = Universal Access,GNOME
-
-[SUNWxorg-doc]
-category = 
-
-[SUNWgnome-l10nmessages-es]
-category = Localization,GNOME
-
-[SUNWgnome-l10nmessages-zhTW]
-category = Localization,GNOME
-
-[SUNWcwsr2]
-category = 
-
-[SUNWccccr]
-category = 
-
-[SUNWgnome-pilot]
-category = Communication,GNOME 
-
-[SUNWpiclh]
-category = 
-
-[SUNWggrp]
-category = 
-
-[SUNWpostgr-l10n-ja]
-category = Localization
-
-[SUNWbash]
-category = 
-
-[SUNWjdhcm]
-category = 
-
-[SUNWccfw]
-category = 
-
-[SUNWj6rt]
-category = 
-
-[SUNWphp524man]
-category = 
-
-[FSWxorg-client-programs]
-category = 
-
-[SUNWj6dvx]
-category = 
-
-[SUNWgnome-help-viewer]
-category = 
-
-[SUNWgnome-media-mp3]
-category = Sound & Video,GNOME
-
-[SUNWxorg-tsol-module]
-category = 
-
-[SUNWitws2]
-category = 
-
-[SUNWbcc]
-category = 
-
-[SUNWperl-xml-parser]
-category = 
-
-[SUNWscn-base]
-category = 
-
-[SUNWagph]
-category = 
-
-[SUNWfirefoxl10n-pl-PL]
-category = Localization,GNOME
-
-[FSWxorg-client-docs]
-category = 
-
-[SUNWxvm]
-category = 
-
-[SUNWiwi]
-category = 
-
-[SUNWgmake]
-category = 
-
-[SUNWgnome-desklets-extra]
-category = Accessories,GNOME
-
-[SUNWgnome-cd-burner]
-category = 
-
-[SUNWlibtool]
-category = 
-
-[SUNWtlsd]
-category = 
-
-[SUNWdpprou]
-category = 
-
-[SUNWnfsc]
-category = 
-
-[SUNWgnome-camera]
-category = 
-
-[SUNW1394]
-category = 
-
-[SUNWjws2]
-category = 
-
-[SUNWthunderbirdl10n-de-DE]
-category = Localization,GNOME
-
-[SUNWbinutils]
-category = 
-
-[SUNWfcmdb]
-category = 
-
-[SUNWserweb]
-category = 
-
-[SUNWnfss]
-category = 
-
-[SUNWpcser]
-category = 
-
-[SUNWudapl]
-category = 
-
-[SUNWlibusb]
-category = 
-
-[SUNWgnome-l10ndocument-ja]
-category = Localization,GNOME
-
-[SUNWsladm]
-category = 
-
-[SUNWftp]
-category = 
-
-[SUNWgnome-l10ndocument-extra]
-category = Localization,GNOME
-
-[SUNWmibii]
-category = 
-
-[SUNWchxge]
-category = 
-
-[SUNWgnu-gettext]
-category = 
-
-[SUNWacc]
-category = 
-
-[SUNWfcsm]
-category = 
-
-[SUNWeu8os]
-category = 
-
-[SUNWrpm]
-category = 
-
-[SUNWp7zip]
-category = 
-
-[SUNWgnome-l10ndocument-zhCN]
-category = Localization,GNOME
-
-[SUNWslim-utils]
-category = 
-
-[SUNWqlc]
-category = 
+[babel_install]
+category = Desktop
 
 [BRCMbnx]
-category = 
+category = Networking
 
-[SUNWgnome-dictionary]
-category = 
+[clustertools]
+category = High Performance Computing
 
-[SUNWfirefoxl10n-pt-BR]
-category = Localization,GNOME
+[clustertools_7.1]
+category = High Performance Computing
 
-[SUNWdupdatemgru]
-category = 
+[entire]
+category = Desktop
 
-[SUNWgss]
-category = 
+[gcc-dev]
+category = Integrated Development Environments
 
-[SUNWgnome-archive-mgr]
-category = 
+[glassfishv2]
+category = Application and Web Servers
 
-[SUNWxscreensaver-hacks-gl]
-category = 
+[hpc-dev]
+category = High Performance Computing
 
-[SUNWav1394]
-category = 
+[java-dev]
+category = Java
 
-[SUNWjavadb-core]
-category = 
+[lang-support-albanian]
+category = Localizations (System)
 
-[SUNWjpprou]
-category = 
+[lang-support-all]
+category = Localizations (System)
 
-[SUNWpicl]
-category = 
+[lang-support-arabic]
+category = Localizations (System)
 
-[SUNWsasnm]
-category = 
+[lang-support-bulgarian]
+category = Localizations (System)
 
-[SUNWusbccid]
-category = 
+[lang-support-catalan]
+category = Localizations (System)
 
-[SUNWi1cs]
-category = 
+[lang-support-chinese-CN]
+category = Localizations (System)
 
-[SUNWgnome-config-java]
-category = 
+[lang-support-chinese-HK]
+category = Localizations (System)
 
-[SUNWkpprou]
-category = 
+[lang-support-chinese-TW]
+category = Localizations (System)
 
-[SUNWnvsata]
-category = 
+[lang-support-common]
+category = Localizations (System)
 
-[SUNWlibvirt]
-category = 
+[lang-support-croatian]
+category = Localizations (System)
 
-[SUNWfirefoxl10n-sv-SE]
-category = Localization,GNOME
+[lang-support-czech]
+category = Localizations (System)
 
-[SUNWpsf]
-category = 
+[lang-support-danish]
+category = Localizations (System)
 
-[FSWxwpft]
-category = 
+[lang-support-dutch]
+category = Localizations (System)
 
-[SUNWjss]
-category = 
+[lang-support-english]
+category = Localizations (System)
 
-[SUNWmyspell-dictionary-ptBR]
-category = 
+[lang-support-estonian]
+category = Localizations (System)
 
-[SUNWpsh]
-category = 
+[lang-support-finnish]
+category = Localizations (System)
 
-[SUNWgscr]
-category = 
+[lang-support-french]
+category = Localizations (System)
 
-[SUNWcbrg]
-category = 
+[lang-support-german]
+category = Localizations (System)
 
-[SUNWfontconfig]
-category = 
+[lang-support-greek]
+category = Localizations (System)
 
-[SUNWimac]
-category = 
+[lang-support-hebrew]
+category = Localizations (System)
 
-[SUNWxorg-graphics-ddx]
-category = 
+[lang-support-hungarian]
+category = Localizations (System)
 
-[SUNWj6jmp]
-category = 
+[lang-support-icelandic]
+category = Localizations (System)
 
-[SUNWmeaos]
-category = 
+[lang-support-indic]
+category = Localizations (System)
 
-[SUNWfwflash]
-category = 
+[lang-support-italian]
+category = Localizations (System)
 
-[SUNWzlib]
-category = 
+[lang-support-japanese]
+category = Localizations (System)
 
-[SUNWmeaow]
-category = 
+[lang-support-korean]
+category = Localizations (System)
 
-[SUNWzip]
-category = 
+[lang-support-latvian]
+category = Localizations (System)
 
-[SUNWepprou]
-category = 
+[lang-support-lithuanian]
+category = Localizations (System)
 
-[SUNWvts]
-category = 
+[lang-support-macedonian]
+category = Localizations (System)
 
-[SUNWthunderbirdl10n-zh-CN]
-category = Localization,GNOME
+[lang-support-maltese]
+category = Localizations (System)
 
-[SUNWaspell]
-category = 
+[lang-support-norwegian]
+category = Localizations (System)
 
-[SUNWcacaort]
-category = 
+[lang-support-norwegian-bokmal]
+category = Localizations (System)
 
-[SUNWdmgt]
-category = 
+[lang-support-norwegian-nynorsk]
+category = Localizations (System)
 
-[SUNWgnome-themes]
-category = 
+[lang-support-polish]
+category = Localizations (System)
 
-[SUNWmyspell-dictionary-pl]
-category = 
+[lang-support-portuguese]
+category = Localizations (System)
 
-[SUNWitdis]
-category = 
+[lang-support-portuguese-BR]
+category = Localizations (System)
 
-[SUNWgnome-config-editor]
-category = 
+[lang-support-romanian]
+category = Localizations (System)
 
-[SUNWavahi-bridge-dsd]
-category = 
+[lang-support-russian]
+category = Localizations (System)
 
-[SUNWbge]
-category = 
+[lang-support-serbian]
+category = Localizations (System)
 
-[SUNWfwdc]
-category = 
+[lang-support-serbo-croatian]
+category = Localizations (System)
 
-[SUNWaconf]
-category = 
+[lang-support-slovakian]
+category = Localizations (System)
 
-[SUNWjre-config-plugin]
-category = 
+[lang-support-slovenian]
+category = Localizations (System)
 
-[SUNWmysql5test]
-category = 
+[lang-support-spanish]
+category = Localizations (System)
 
-[SUNWadmap]
-category = 
+[lang-support-swedish]
+category = Localizations (System)
 
-[SUNWgnome-l10ndocument-zhTW]
-category = Localization,GNOME
+[lang-support-thai]
+category = Localizations (System)
 
-[SUNWicdc]
-category = GNOME
+[lang-support-turkish]
+category = Localizations (System)
 
-[SUNWgrub]
-category = 
+[mq41]
+category = Services
 
-[SUNWgnome-fonts]
-category = 
+[netbeans]
+category = Integrated Development Environments
 
-[SUNWgnome-sys-suspend]
-category = 
+[netbeans-incorporation]
+category = Integrated Development Environments
 
-[SUNWdhcm]
-category = 
-
-[SUNWgnome-utility-applets]
-category = 
-
-[SUNWxwhl]
-category = 
-
-[SUNWsrh]
-category = 
-
-[SUNWgnome-remote-desktop]
-category = GNOME
-
-[SUNWccccfg]
-category = 
-
-[SUNWunzip]
-category = 
-
-[SUNWqosu]
-category = 
-
-[SUNWgnome-games]
-category = Games,GNOME
-
-[SUNWdbus-bindings]
-category = 
-
-[SUNWmkcd]
-category = 
-
-[SUNWmysqlt]
-category = 
-
-[SUNWgnome-hex-editor]
-category = Developer Tools,GNOME
-
-[SUNWlp-cmds]
-category = 
-
-[SUNWgnome-desklets]
-category = Accessories,GNOME
-
-[SUNWcsd]
-category = 
-
-[SUNWrmodr]
-category = 
-
-[FSWxorg-clientlibs]
-category = 
-
-[SUNWrmodu]
-category = 
-
-[SUNWcakrx]
-category = 
-
-[SUNWlx]
-category = 
-
-[SUNWaspell-en]
-category = 
-
-[SUNWfsexam]
-category = 
-
-[SUNWsacom]
-category = 
-
-[SUNWcctpx]
-category = 
-
-[SUNWzfskr]
-category = 
-
-[SUNWrpcib]
-category = 
-
-[SUNWsamow]
-category = 
-
-[SUNWcfpl]
-category = 
-
-[SUNWsamos]
-category = 
-
-[SUNWarbel]
-category = 
-
-[SUNWevolution-exchange]
-category = Internet,GNOME
-
-[SUNWpostgr-82-server-data-root]
-category = 
-
-[SUNWccfwctrl]
-category = 
-
-[SUNWlibsasl]
-category = 
-
-[SUNWhupdatemgru]
-category = 
-
-[SUNWfctl]
-category = 
-
-[SUNWgnome-a11y-libs]
-category = Universal Access,GNOME
-
-[SUNWthunderbirdl10n-ko-KR]
-category = Localization,GNOME
-
-[SUNWppro-plugin-sunos-base]
-category = 
-
-[SUNWnge]
-category = 
-
-[SUNWpgadmin3]
-category = 
-
-[SUNWTiff]
-category = 
-
-[SUNWpapi]
-category = 
-
-[SUNWfdhcm]
-category = 
-
-[SUNWgnome-panel]
-category = 
-
-[SUNWsolaris-devel-docs]
-category = 
-
-[SUNWmddr]
-category = 
-
-[SUNWrtw]
-category = 
-
-[SUNWpostgr-82-contrib]
-category = 
-
-[SUNWxsun-keytables]
-category = 
-
-[SUNWmdbdm]
-category = 
-
-[SUNWgnome-a11y-speech]
-category = Universal Access,GNOME
-
-[SUNWuiu8]
-category = 
-
-[SUNWseuow]
-category = 
-
-[SUNWsmedia]
-category = Sound & Video
-
-[SUNWmyspell-dictionary-sv]
-category = 
-
-[SUNWceuos]
-category = 
-
-[SUNWlibsdl]
-category = 
-
-[SUNWceuow]
-category = 
-
-[SUNWgm4]
-category = 
-
-[SUNWesiso1]
-category = 
-
-[SUNWevolution-jescs]
-category = Internet,GNOME
-
-[SUNWxsvc]
-category = 
-
-[SUNWesdis]
-category = 
-
-[SUNWspeex]
-category = Sound & Video
-
-[SUNWcnetr]
-category = 
-
-[SUNWgnome-l10nmessages-ja]
-category = Localization,GNOME
-
-[SUNWquagga]
-category = 
-
-[SUNWyp]
-category = 
-
-[SUNWgnome-base-libs-java]
-category = 
-
-[SUNWdedma]
-category = 
-
-[SUNWscplp]
-category = 
-
-[SUNWgnome-pdf-viewer]
-category = Office,GNOME
-
-[SUNWa2ps]
-category = 
-
-[SUNWIPython]
-category = 
-
-[SUNWflexlex]
-category = 
-
-[SUNWlibdaemon]
-category = 
-
-[SUNWgnome-media]
-category = Sound & Video,GNOME
-
-[SUNWpoold]
-category = 
-
-[SUNWtftp]
-category = 
-
-[SUNWcpcu]
-category = 
-
-[SUNWesdma]
-category = 
-
-[SUNWuium]
-category = 
-
-[SUNWxvnc]
-category = 
-
-[SUNWpostgr-82-client]
-category = 
-
-[SUNWnfsskr]
-category = 
-
-[SUNWedhcm]
-category = 
-
-[SUNWphp524-pgsql]
-category = 
-
-[SUNWbnu]
-category = 
-
-[SUNWsvn]
-category = 
-
-[SUNWruby18]
-category = 
-
-[SUNWhos]
-category = 
-
-[SUNWgnome-l10ndocument-fr]
-category = Localization,GNOME
-
-[SUNWcstl]
-category = 
-
-[SUNWfxplt]
-category = 
-
-[SUNWgnome-dtstart]
-category = 
-
-[SUNWimagick]
-category = 
-
-[SUNWgnome-screenshot]
-category = Graphics,GNOME
-
-[SUNWpppdt]
-category = 
-
-[SUNWidhcm]
-category = 
-
-[SUNWesws2]
-category = 
-
-[SUNWvtss]
-category = 
-
-[SUNWusbs]
-category = 
-
-[SUNWkadma]
-category = 
-
-[SUNWcupdatemgru]
-category = 
-
-[SUNWusbu]
-category = 
-
-[SUNWgetting-started-guide]
-category = 
-
-[SUNWcar]
-category = 
-
-[SUNWthunderbirdl10n-ja-JP]
-category = Localization,GNOME
-
-[FSWxorg-headers]
-category = 
-
-[SUNWmyspell-dictionary-extra]
-category = 
-
-[SUNWippcore]
-category = 
-
-[SUNWeeuow]
-category = 
-
-[SUNWamr]
-category = 
-
-[SUNWopenssl]
-category = 
-
-[SUNWeeuos]
-category = 
-
-[SUNWsbp2]
-category = 
-
-[SUNWcsl]
-category = 
-
-[SUNWkbrg]
-category = 
-
-[SUNWxwdv]
-category = 
-
-[SUNWpsdpr]
-category = 
-
-[SUNWpostgr-82-l10n-ja]
-category = Localization
-
-[SUNWGtk]
-category = 
-
-[SUNWdxplt]
-category = 
-
-[SUNWgnome-l10nmessages-sv]
-category = Localization,GNOME
-
-[SUNWpostgr-jdbc]
-category = 
-
-[SUNWgnome-a11y-gok]
-category = Universal Access,GNOME
-
-[SUNWcamow]
-category = 
-
-[SUNWcamos]
-category = 
-
-[SUNWfilebench]
-category = 
-
-[SUNWgnome-base-libs]
-category = GNOME,Core,Graphics
-
-[SUNWsdhcm]
-category = 
-
-[SUNWgimpprint]
-category = 
-
-[SUNWipprou]
-category = 
-
-[SUNWgnome-ui-designer]
-category = Developer Tools,GNOME
-
-[SUNWkiu8]
-category = 
-
-[SUNWpng]
-category = 
-
-[SUNWisolc]
-category = 
-
-[SUNWrsm]
-category = 
-
-[slim_install]
-category = 
-
-[SUNWrsg]
-category = 
-
-[SUNWtiu8]
-category = 
-
-[SUNWxorg-cfg]
-category = 
-
-[SUNWfriso1]
-category = 
-
-[SUNWcsos]
-category = 
-
-[SUNWtcpdS]
-category = 
-
-[SUNWseuos]
-category = 
-
-[SUNWthunderbirdl10n-es-ES]
-category = Localization,GNOME
-
-[SUNWapch]
-category = 
-
-[SUNWibsdp]
-category = 
-
-[SUNWcurl]
-category = 
-
-[SUNWicud]
-category = 
-
-[SUNWatfs]
-category = 
-
-[SUNWapct]
-category = 
-
-[SUNWmysql5]
-category = 
-
-[SUNWpcwl]
-category = 
-
-[SUNWjavadb-client]
-category = 
-
-[SUNWmpathadm]
-category = 
-
-[SUNWdhcsb]
-category = 
-
-[SUNWgd2]
-category = 
-
-[SUNWmysql]
-category = 
-
-[SUNWfirefoxl10n-de-DE]
-category = Localization,GNOME
-
-[SUNWrcmds]
-category = 
-
-[SUNWpsm-lpd]
-category = 
-
-[SUNWpcmem]
-category = 
-
-[SUNWesu]
-category = 
-
-[SUNWgnome-mm-applets]
-category = 
-
-[SUNWrmvolmgr]
-category = 
-
-[SUNWgtkperf]
-category = 
-
-[SUNWarc]
-category = 
-
-[SUNWbip]
-category = 
-
-[SUNWpostgr-82-libs]
-category = 
-
-[SUNWsupdatemgru]
-category = 
-
-[SUNWrsgk]
-category = 
-
-[SUNWgksu]
-category = 
-
-[SUNWgnome-freedb-libs]
-category = 
-
-[SUNWDTraceToolkit]
-category = 
-
-[SUNWkleue]
-category = 
-
-[SUNWtcsh]
-category = 
-
-[SUNWpsdir]
-category = 
-
-[SUNWgnome-terminal-java]
-category = System Tools
-
-[SUNWvirtinst]
-category = 
-
-[SUNWi15cs]
-category = 
-
-[SUNWgnome-l10nmessages-fr]
-category = Localization,GNOME
-
-[SUNWhdhcm]
-category = 
-
-[SUNWwbsup]
-category = 
-
-[SUNWxwsvr]
-category = 
-
-[SUNWsi3124]
-category = 
-
-[SUNWvtsmn]
-category = 
-
-[SUNWdcaf]
-category = 
-
-[FSWfontconfig-devel-docs]
-category = 
-
-[SUNWippl]
-category = 
-
-[SUNWi5cs]
-category = 
-
-[SUNWgnome-terminal]
-category = System Tools,GNOME
-
-[SUNWudf]
-category = 
-
-[SUNWwlan]
-category = 
-
-[SUNWjtsu]
-category = 
-
-[SUNWwpi]
-category = 
-
-[SUNWevolution-data-server]
-category = Internet,Communication,GNOME,Mail
-
-[SUNWxvmhvm]
-category = 
-
-[SUNWlibpopt]
-category = 
-
-[SUNWcfcl]
-category = 
-
-[SUNWgnome-text-editor]
-category = Accessories,GNOME
-
-[SUNWcea]
-category = 
-
-[SUNWipw]
-category = 
-
-[SUNWdtrp]
-category = 
-
-[SUNWced]
-category = 
-
-[SUNWtnfc]
-category = 
-
-[SUNWuxlcf]
-category = 
-
-[SUNWintgige]
-category = 
-
-[SUNWgnome-dialog]
-category = 
-
-[SUNWpostrun]
-category = 
-
-[SUNWusb]
-category = 
-
-[SUNWlldap]
-category = 
-
-[SUNWdtrc]
-category = 
-
-[SUNWipf]
-category = 
-
-[SUNWsfdoc]
-category = 
-
-[SUNWipc]
-category = 
-
-[SUNWmusicbrainz]
-category = Sound & Video
-
-[SUNWgtar]
-category = 
-
-[SUNWcleue]
-category = 
-
-[SUNWcs]
-category = 
-
-[SUNWtecla]
-category = 
-
-[SUNWsam]
-category = 
-
-[SUNWgnome-meeting]
-category = 
-
-[SUNWapchd]
-category = 
-
-[SUNWsmcmd]
-category = 
-
-[SUNWpostgr-82-jdbc]
-category = 
-
-[SUNWlibgtop]
-category = 
-
-[SUNWgnome-l10ndocument-ko]
-category = Localization,GNOME
-
-[SUNWzone]
-category = 
-
-[SUNWgnome-user-docs]
-category = 
-
-[SUNWucbt]
-category = 
-
-[SUNWps]
-category = 
-
-[SUNWgnome-cd]
-category = 
-
-[SUNWpostgr-libs]
-category = 
-
-[SUNWlpr-cmds]
-category = 
-
-[SUNWlibtheora]
-category = Sound & Video
-
-[SUNWgnu-coreutils]
-category = 
-
-[SUNWfirefox]
-category = Internet,GNOME
-
-[SUNWxwplr]
-category = 
-
-[SUNWjavadb-javadoc]
-category = 
-
-[SUNWgnome-audio]
-category = 
+[NVDAgraphics]
+category = Hardware
 
 [openoffice]
 category = Office
 
-[SUNWislcc]
-category = 
+[openoffice-de]
+category = Localizations (Desktop)
 
-[SUNWgnu-automake-19]
-category = 
+[openoffice-es]
+category = Localizations (Desktop)
 
-[SUNWipfh]
-category = 
+[openoffice-fr]
+category = Localizations (Desktop)
 
-[SUNWsmapi]
-category = 
+[openoffice-hu]
+category = Localizations (Desktop)
 
-[SUNWneon]
-category = 
+[openoffice-it]
+category = Localizations (Desktop)
 
-[SUNWroute]
-category = 
+[openoffice-ja]
+category = Localizations (Desktop)
 
-[SUNWthunderbirdl10n-zh-TW]
-category = Localization,GNOME
+[openoffice-ko]
+category = Localizations (Desktop)
 
-[SUNWhkeue]
-category = 
+[openoffice-nl]
+category = Localizations (Desktop)
 
-[SUNWxcursor-themes]
-category = GNOME,Graphics
+[openoffice-pl]
+category = Localizations (Desktop)
 
-[SUNWxorg-client-programs]
-category = 
+[openoffice-pt]
+category = Localizations (Desktop)
 
-[SUNWapch2]
-category = 
+[openoffice-pt-BR]
+category = Localizations (Desktop)
 
-[SUNWpcan]
-category = 
+[openoffice-ru]
+category = Localizations (Desktop)
 
-[SUNWeuxwe]
-category = 
+[openoffice-sv]
+category = Localizations (Desktop)
 
-[SUNWpostgr-82-devel]
-category = 
+[openoffice-zh-CN]
+category = Localizations (Desktop)
 
-[SUNWevolution-libs]
-category = Internet,Communication,GNOME
+[openoffice-zh-TW]
+category = Localizations (Desktop)
 
-[SUNWisns]
-category = 
+[OSOLvpanels]
+category = Configuration and Preferences
 
-[SUNWlcl]
-category = 
+[redistributable]
+category = Desktop
 
-[SUNWprd]
-category = 
+[ruby-dev]
+category = Ruby
 
-[SUNWmv88sx]
-category = 
+[slim_cd]
+category = Desktop
 
-[SUNWosdem]
-category = 
+[slim_install]
+category = Desktop
 
-[SUNWesos]
-category = 
+[ss-dev]
+category = Integrated Development Environments
 
-[SUNWpostgr-82-pl]
-category = 
+[sunstudio]
+category = Integrated Development Environments
 
-[SUNWgnome-l10nmessages-ko]
-category = Localization,GNOME
+[sunstudioexpress]
+category = Integrated Development Environments
 
-[SUNWppro]
-category = 
+[SUNW1394]
+category = Hardware
 
-[SUNWgnome-devhelp]
-category = Developer Tools,GNOME
+[SUNW1394h]
+category = System
 
-[SUNWitos]
-category = 
-
-[SUNWjavadb-docs]
-category = 
-
-[SUNWpostgr-tcl]
-category = 
-
-[SUNWfpprou]
-category = 
-
-[SUNWpcre]
-category = 
-
-[SUNWjavadb-demo]
-category = 
-
-[SUNWladm]
-category = 
-
-[SUNWddhcm]
-category = 
-
-[SUNWgnome-a11y-poke-root]
-category = Universal Access,GNOME
-
-[SUNWthunderbirdl10n-ru-RU]
-category = Localization,GNOME
-
-[SUNWpostgr-server-data]
-category = 
-
-[SUNWusbvc]
-category = 
-
-[SUNWugen]
-category = 
-
-[SUNWgnome-gtksourceview]
-category = 
-
-[SUNWtidy]
-category = 
-
-[SUNWperl584man]
-category = 
-
-[SUNWsmbskr]
-category = 
-
-[SUNWvscan]
-category = 
-
-[SUNWdfb]
-category = 
-
-[SUNWcsdhcm]
-category = 
-
-[SUNWrtls]
-category = 
-
-[SUNWxorg-headers]
-category = 
-
-[SUNWspsv]
-category = 
-
-[SUNWopenjade]
-category = 
-
-[SUNWsquid]
-category = 
-
-[SUNWgnome-intranet-applets]
-category = 
-
-[SUNWccsign]
-category = 
-
-[SUNWsensor]
-category = 
-
-[SUNWssh]
-category = 
-
-[SUNWurlgrabber]
-category = 
-
-[SUNWgnome-sound-recorder]
-category = 
-
-[SUNWgnome-l10nmessages-zhHK]
-category = Localization,GNOME
-
-[SUNWiniu8]
-category = 
-
-[SUNWfirefoxl10n-extra]
-category = Localization,GNOME
-
-[SUNWfirefoxl10n-it-IT]
-category = Localization,GNOME
-
-[SUNWfros]
-category = 
-
-[SUNWpilot-link]
-category = Communication,CLI tools
-
-[SUNWgsfot]
-category = 
-
-[SUNWugenu]
-category = 
-
-[SUNWiscsi]
-category = 
-
-[SUNWcns]
-category = 
-
-[SUNWllc]
-category = 
-
-[SUNWmyspell-dictionary-es]
-category = 
-
-[SUNWlibgcrypt]
-category = 
-
-[SUNWnca]
-category = 
-
-[SUNWxcu4]
-category = 
-
-[SUNWphp524-mysql]
-category = 
-
-[SUNWant]
-category = 
-
-[SUNWmyspell-dictionary-en]
-category = 
-
-[SUNWrsmo]
-category = 
-
-[SUNWmp]
-category = 
-
-[SUNWftdu]
-category = 
-
-[SUNWxcu6]
-category = 
-
-[SUNWfppd]
-category = 
-
-[SUNWgnome-character-map]
-category = 
-
-[SUNWlxsl]
-category = 
-
-[SUNWapch22]
-category = 
-
-[SUNWima]
-category = 
-
-[SUNWj6rtx]
-category = 
-
-[SUNWrsync]
-category = 
-
-[SUNWgnome-l10nmessages-ptBR]
-category = Localization,GNOME
-
-[SUNWphp524doc]
-category = 
-
-[SUNWgnome-libs]
-category = 
-
-[FSWxwrtl]
-category = 
-
-[SUNWpsm-ipp]
-category = 
-
-[SUNWgnome-xml-root]
-category = 
-
-[SUNWupdatemgr]
-category = 
-
-[SUNWdsd]
-category = 
-
-[SUNWrmwb]
-category = 
-
-[NVDAgraphics]
-category = 
-
-[SUNWgnome-menu-editor]
-category = System Tools,GNOME
-
-[SUNWser]
-category = 
-
-[SUNWses]
-category = 
-
-[SUNWinleu]
-category = 
-
-[SUNWcpc]
-category = 
-
-[SUNWpmdbi]
-category = 
-
-[SUNWgnome-l10ndocument-zhHK]
-category = Localization,GNOME
-
-[SUNWprint-monitor]
-category = GNOME,Print
-
-[SUNWmyspell-dictionary-it]
-category = 
-
-[SUNWcpr]
-category = 
-
-[SUNWcpp]
-category = 
-
-[SUNWgnome-disk-analyzer]
-category = 
-
-[SUNWudaplt]
-category = 
-
-[SUNWlibms]
-category = 
-
-[SUNWpostgr-82-server]
-category = 
-
-[SUNWgnome-python-libs]
-category = 
-
-[SUNWapch22d]
-category = 
-
-[SUNWdpl]
-category = 
-
-[SUNWeuluf]
-category = 
-
-[SUNWxorg-server]
-category = 
-
-[SUNWgssdh]
-category = 
-
-[SUNWpolkit]
-category = 
-
-[SUNWsolnm]
-category = 
-
-[SUNWgnome-fun-applets]
-category = 
-
-[SUNWapch2d]
-category = 
-
-[SUNWlccom]
-category = 
-
-[SUNWmpsvplr]
-category = 
-
-[SUNWflac]
-category = Sound & Video
-
-[SUNWdistro-license]
-category = 
-
-[SUNWscnsom]
-category = 
-
-[SUNWuacm]
-category = 
-
-[SUNWfmd]
-category = 
-
-[SUNWmyspell-dictionary-ru]
-category = 
-
-[SUNWgnu-which]
-category = 
-
-[SUNWsra]
-category = 
-
-[SUNWhwdata]
-category = 
-
-[SUNWlibcroco]
-category = Office
-
-[SUNWi13cs]
-category = 
-
-[SUNWmyspell-dictionary-fr]
-category = 
-
-[SUNWctpls]
-category = 
-
-[SUNWsfwdemo]
-category = 
-
-[SUNWipmi]
-category = 
-
-[SUNWdbus]
-category = 
-
-[SUNWxorg-devel-docs]
-category = 
-
-[SUNWsndm]
-category = 
-
-[SUNWdeos]
-category = 
-
-[SUNWhal]
-category = 
-
-[SUNWPython]
-category = 
-
-[SUNWindt]
-category = 
-
-[SUNWffilters]
-category = 
-
-[SUNWaudit]
-category = 
-
-[SUNWtexi]
-category = 
-
-[SUNWdbrg]
-category = 
-
-[SUNWless]
-category = 
-
-[SUNWatheros]
-category = 
-
-[SUNWadpu320]
-category = 
-
-[SUNWcedu]
-category = 
-
-[SUNWpsdcr]
-category = 
-
-[SUNWsxplt]
-category = 
-
-[SUNWckr]
-category = 
-
-[SUNWhpprou]
-category = 
-
-[SUNWsshcu]
-category = 
-
-[SUNWgccruntime]
-category = 
-
-[SUNWgcc]
-category = 
-
-[SUNWfbrg]
-category = 
-
-[SUNWproduct-registry-root]
-category = 
-
-[SUNWxorg-mesa]
-category = 
-
-[SUNWgnome-l10ndocument-es]
-category = Localization,GNOME
-
-[SUNWbtool]
-category = 
-
-[SUNWgnutls]
-category = Internet,Communication
-
-[SUNWdladm]
-category = 
-
-[SUNWgnome-calculator]
-category = Accessories,GNOME
-
-[SUNWgnome-system-monitor]
-category = 
-
-[SUNWdfbh]
-category = 
-
-[SUNWiiim]
-category = 
-
-[SUNWgnome-l10ndocument-ptBR]
-category = Localization,GNOME
-
-[SUNWperl584core]
-category = 
-
-[SUNWmercurial]
-category = 
-
-[SUNWmlib]
-category = 
-
-[SUNWfreetype2]
-category = 
-
-[SUNWipoib]
-category = 
-
-[SUNWpostgr-82-docs]
-category = 
-
-[SUNWdedis]
-category = 
-
-[SUNWpppgS]
-category = 
-
-[SUNWibsdpib]
-category = 
-
-[SUNWntp]
-category = 
-
-[SUNWsshd]
-category = 
-
-[SUNWjavadb-common]
-category = 
-
-[SUNWixplt]
-category = 
-
-[SUNWxwxft]
-category = 
-
-[SUNWmxfe]
-category = 
-
-[SUNWnamow]
-category = 
-
-[SUNWaudiohd]
-category = 
-
-[SUNWgnome-wm]
-category = GNOME,Core
-
-[SUNWphp524usr]
-category = 
-
-[SUNWogg-vorbis]
-category = Sound & Video
+[SUNWa2ps]
+category = Printing
 
 [SUNWaac]
-category = 
+category = Ports
 
-[SUNWnafos]
-category = 
+[SUNWacc]
+category = Administration and Configuration
 
-[SUNWjbrg]
-category = 
+[SUNWaclg]
+category = Application and Web Servers
 
-[SUNWgnome-xml-share]
-category = 
+[SUNWaconf]
+category = GNU
 
-[SUNWnafow]
-category = 
+[SUNWad810]
+category = Media
+
+[SUNWadixp]
+category = Media
+
+[SUNWadmap]
+category = Administration and Configuration
+
+[SUNWadmlib-sysid]
+category = Libraries (System)
+
+[SUNWadmr]
+category = Administration and Configuration
+
+[SUNWadpu320]
+category = Ports
+
+[SUNWafe]
+category = Networking
+
+[SUNWagp]
+category = Display
+
+[SUNWagph]
+category = Display
+
+[SUNWahci]
+category = Ports
+
+[SUNWamd8111s]
+category = Networking
+
+[SUNWamr]
+category = Ports
+
+[SUNWant]
+category = Distribution Tools
+
+[SUNWapch]
+category = Application and Web Servers
+
+[SUNWapch2]
+category = Application and Web Servers
+
+[SUNWapch22]
+category = Application and Web Servers
+
+[SUNWapch22d]
+category = Application and Web Servers
+
+[SUNWapch22m-dtrace]
+category = System
+
+[SUNWapch22m-fcgid]
+category = Application and Web Servers
+
+[SUNWapch22m-jk]
+category = Application and Web Servers
+
+[SUNWapch22m-php5]
+category = Application and Web Servers
+
+[SUNWapch22m-security]
+category = Application and Web Servers
+
+[SUNWapch2d]
+category = Application and Web Servers
+
+[SUNWapchd]
+category = Application and Web Servers
+
+[SUNWapct]
+category = Software Management
+
+[SUNWarbel]
+category = Other Peripherals
+
+[SUNWarc]
+category = C
+
+[SUNWarcmsr]
+category = Storage
+
+[SUNWastdev]
+category = Software Management
+
+[SUNWatfs]
+category = File System
+
+[SUNWatheros]
+category = Networking
+
+[SUNWatigfx]
+category = Display
+
+[SUNWauda]
+category = Media
+
+[SUNWaudd]
+category = Media
+
+[SUNWaudf]
+category = Media
+
+[SUNWaudh]
+category = Media
+
+[SUNWaudiohd]
+category = Media
+
+[SUNWaudit]
+category = Administration and Configuration
+
+[SUNWautoef]
+category = Text Tools
+
+[SUNWav1394]
+category = Ports
+
+[SUNWavahi-bridge-dsd]
+category = Internet
+
+[SUNWbart]
+category = Administration and Configuration
+
+[SUNWbash]
+category = Shells
+
+[SUNWbcc]
+category = Other Languages
+
+[SUNWbge]
+category = Networking
+
+[SUNWbind]
+category = Services
+
+[SUNWbinutils]
+category = GNU
+
+[SUNWbip]
+category = System Utilities
+
+[SUNWbison]
+category = Other Languages
+
+[SUNWbnu]
+category = Services
+
+[SUNWbrltty]
+category = Universal Access
+
+[SUNWbs]
+category = Core
+
+[SUNWbtool]
+category = Core
+
+[SUNWbzip]
+category = GNU
+
+[SUNWcacaodtrace]
+category = System
+
+[SUNWcacaort]
+category = Application and Web Servers
+
+[SUNWcacaowsvr]
+category = Application and Web Servers
+
+[SUNWcairomm]
+category = C++
+
+[SUNWcakr]
+category = Core
+
+[SUNWcakrx]
+category = Core
+
+[SUNWcar]
+category = Core
+
+[SUNWcarx]
+category = Core
+
+[SUNWccsm]
+category = Graphics and Imaging
 
 [SUNWcdhcm]
-category = 
+category = Services
 
-[SUNWhea]
-category = 
+[SUNWcdrw]
+category = Media
 
-[SUNWnis]
-category = 
+[SUNWcea]
+category = Networking
 
-[SUNWgssc]
-category = 
+[SUNWced]
+category = Networking
 
-[SUNWfirefoxl10n-ru-RU]
-category = Localization,GNOME
+[SUNWcedu]
+category = Networking
 
-[SUNWcpprou]
-category = 
+[SUNWcfcl]
+category = Libraries (System)
 
-[SUNWnmap]
-category = 
+[SUNWcfpl]
+category = Libraries (System)
 
-[SUNWvim]
-category = 
+[SUNWchxge]
+category = Networking
 
-[SUNWsvn-java]
-category = 
+[SUNWckr]
+category = Core
 
-[SUNWgnome-devel-docs]
-category = 
+[SUNWcnetr]
+category = Core
 
-[SUNWsmbs]
-category = 
+[SUNWcns]
+category = Services
 
-[SUNWicu]
-category = 
+[SUNWcompiz]
+category = Window Managers
 
-[SUNWfirefox-apoc-adapter]
-category = 
+[SUNWcompizconfig-gconf]
+category = Window Managers
 
-[SUNWgnome-im-client]
-category = Internet,Social Software,Communication
+[SUNWcompizconfig-python]
+category = Libraries
 
-[SUNWj6dev]
-category = 
+[SUNWcompiz-fusion-extra]
+category = Plug-ins and Run-times
 
-[SUNWpkgcmds]
-category = 
+[SUNWcompiz-fusion-main]
+category = Plug-ins and Run-times
 
-[SUNWkladm]
-category = 
+[SUNWcos]
+category = Localizations (System)
 
-[SUNWperl-authen-pam]
-category = 
+[SUNWcpc]
+category = Core
 
-[SUNWzfs]
-category = 
+[SUNWcpcu]
+category = Core
 
-[SUNWsmba]
-category = 
+[SUNWcpp]
+category = C
 
-[SUNWgnome-l10nmessages-hu]
-category = Localization,GNOME
+[SUNWcpr]
+category = Hardware
 
-[SUNWgnome-session]
-category = 
+[SUNWcs]
+category = Core
 
-[SUNWcadis]
-category = 
+[SUNWcsd]
+category = Core
 
-[SUNWthunderbirdl10n-pt-BR]
-category = Localization,GNOME
+[SUNWcsdhcm]
+category = Services
 
-[SUNWncft]
-category = 
+[SUNWcsl]
+category = Core
+
+[SUNWcsos]
+category = Localizations (System)
+
+[SUNWcstl]
+category = System
+
+[SUNWctpls]
+category = Text Tools
+
+[SUNWcups]
+category = Printing
+
+[SUNWcups-libs]
+category = Printing
+
+[SUNWcurl]
+category = Libraries (System)
+
+[SUNWcvs]
+category = Source Code Management
+
+[SUNWcxwsvr]
+category = Localizations (Desktop)
+
+[SUNWdbus]
+category = Libraries (System)
+
+[SUNWdbus-bindings]
+category = Libraries (System)
+
+[SUNWdbus-libs]
+category = Libraries (System)
+
+[SUNWdcaf]
+category = Hardware
+
+[SUNWdcopy]
+category = Other Peripherals
+
+[SUNWdcraw]
+category = Media
+
+[SUNWddhcm]
+category = Services
+
+[SUNWddu]
+category = Hardware
+
+[SUNWdeos]
+category = Localizations (System)
+
+[SUNWdesktop-cache]
+category = Services
+
+[SUNWdesktop-other-l10n-cs]
+category = Localizations (Desktop)
+
+[SUNWdesktop-other-l10n-de]
+category = Localizations (Desktop)
+
+[SUNWdesktop-other-l10n-es]
+category = Localizations (Desktop)
+
+[SUNWdesktop-other-l10n-extra]
+category = Localizations (Desktop)
+
+[SUNWdesktop-other-l10n-fr]
+category = Localizations (Desktop)
+
+[SUNWdesktop-other-l10n-hu]
+category = Localizations (Desktop)
+
+[SUNWdesktop-other-l10n-it]
+category = Localizations (Desktop)
+
+[SUNWdesktop-other-l10n-ja]
+category = Localizations (Desktop)
+
+[SUNWdesktop-other-l10n-ko]
+category = Localizations (Desktop)
+
+[SUNWdesktop-other-l10n-noinst]
+category = Localizations (Desktop)
+
+[SUNWdesktop-other-l10n-pl]
+category = Localizations (Desktop)
+
+[SUNWdesktop-other-l10n-ptBR]
+category = Localizations (Desktop)
+
+[SUNWdesktop-other-l10n-rtl]
+category = Localizations (Desktop)
+
+[SUNWdesktop-other-l10n-ru]
+category = Localizations (Desktop)
+
+[SUNWdesktop-other-l10n-sv]
+category = Localizations (Desktop)
+
+[SUNWdesktop-other-l10n-zhCN]
+category = Localizations (Desktop)
+
+[SUNWdesktop-other-l10n-zhHK]
+category = Localizations (Desktop)
+
+[SUNWdesktop-other-l10n-zhTW]
+category = Localizations (Desktop)
+
+[SUNWdesktop-search]
+category = System Utilities
+
+[SUNWdesktop-search-firefox]
+category = Plug-ins and Run-times
+
+[SUNWdesktop-search-thunderbird]
+category = Plug-ins and Run-times
+
+[SUNWdexwsvr]
+category = Localizations (Desktop)
+
+[SUNWdfb]
+category = Display
+
+[SUNWdfbh]
+category = Display
+
+[SUNWdhcm]
+category = Services
+
+[SUNWdhcs]
+category = Services
+
+[SUNWdhcsb]
+category = Services
+
+[SUNWdiffstat]
+category = Text Tools
+
+[SUNWdistro-license]
+category = Core
+
+[SUNWdistro-license-copyright]
+category = Core
+
+[SUNWdmfe]
+category = Networking
+
+[SUNWdmgt]
+category = Administration and Configuration
+
+[SUNWdoc]
+category = Text Tools
+
+[SUNWdpl]
+category = System
+
+[SUNWdrmr]
+category = Other Peripherals
+
+[SUNWdsd]
+category = Services
+
+[SUNWDTraceToolkit]
+category = System
+
+[SUNWdtrc]
+category = System
+
+[SUNWdtrp]
+category = System
+
+[SUNWdvdrw]
+category = Media
+
+[SUNWedhcm]
+category = Services
+
+[SUNWerlang]
+category = Other Languages
+
+[SUNWerlang-doc]
+category = Other Languages
+
+[SUNWesos]
+category = Localizations (System)
+
+[SUNWesu]
+category = Core
+
+[SUNWesxwsvr]
+category = Localizations (Desktop)
+
+[SUNWevolution]
+category = Internet
+
+[SUNWevolution-data-server]
+category = Internet
+
+[SUNWevolution-exchange]
+category = Internet
+
+[SUNWevolution-jescs]
+category = Internet
+
+[SUNWevolution-libs]
+category = Internet
+
+[SUNWevolution-webcal]
+category = Internet
+
+[SUNWexpect]
+category = System Utilities
+
+[SUNWfchba]
+category = Libraries (System)
+
+[SUNWfcip]
+category = Ports
+
+[SUNWfcmdb]
+category = Hardware
+
+[SUNWfcp]
+category = Ports
+
+[SUNWfcprt]
+category = Hardware
+
+[SUNWfcsm]
+category = Storage
+
+[SUNWfctl]
+category = Ports
+
+[SUNWfdhcm]
+category = Services
+
+[SUNWfetchmail]
+category = Administration and Configuration
+
+[SUNWffilters]
+category = Printing
+
+[SUNWfilebench]
+category = System
+
+[SUNWfirefox]
+category = Internet
+
+[SUNWfirefoxl10n-de-DE]
+category = Localizations (Desktop)
+
+[SUNWfirefoxl10n-es-ES]
+category = Localizations (Desktop)
+
+[SUNWfirefoxl10n-extra]
+category = Localizations (Desktop)
+
+[SUNWfirefoxl10n-fr-FR]
+category = Localizations (Desktop)
+
+[SUNWfirefoxl10n-it-IT]
+category = Localizations (Desktop)
 
 [SUNWfirefoxl10n-ja-JP]
-category = Localization,GNOME
+category = Localizations (Desktop)
 
-[SUNWter]
-category = 
+[SUNWfirefoxl10n-ko-KR]
+category = Localizations (Desktop)
 
-[SUNWgnome-img-organizer]
-category = GNOME,GTK,Graphics,Viewer,RasterGraphics,2DGraphics,Photography
+[SUNWfirefoxl10n-pl-PL]
+category = Localizations (Desktop)
 
-[SUNWjladm]
-category = 
+[SUNWfirefoxl10n-pt-BR]
+category = Localizations (Desktop)
 
-[SUNWgnome-l10nmessages-pl]
-category = Localization,GNOME
+[SUNWfirefoxl10n-ru-RU]
+category = Localizations (Desktop)
 
-[SUNWrcap]
-category = 
+[SUNWfirefoxl10n-sv-SE]
+category = Localizations (Desktop)
+
+[SUNWfirefoxl10n-zh-CN]
+category = Localizations (Desktop)
+
+[SUNWfirefoxl10n-zh-TW]
+category = Localizations (Desktop)
+
+[SUNWflac]
+category = Media
+
+[SUNWflexlex]
+category = Other Languages
+
+[SUNWflexruntime]
+category = Other Languages
+
+[SUNWfmd]
+category = Administration and Configuration
+
+[SUNWfontconfig]
+category = Libraries (System)
+
+[SUNWfontconfig-docs]
+category = X11
+
+[SUNWfppd]
+category = Printing
+
+[SUNWfreetype2]
+category = Libraries (System)
+
+[SUNWfros]
+category = Localizations (System)
+
+[SUNWfrxwsvr]
+category = Localizations (Desktop)
+
+[SUNWfsexam]
+category = File System
+
+[SUNWfss]
+category = Core
+
+[SUNWftdu]
+category = System
+
+[SUNWftp]
+category = Core
+
+[SUNWfwdc]
+category = Display
+
+[SUNWfwdcu]
+category = Media
+
+[SUNWfwflash]
+category = Core
+
+[SUNWgamin]
+category = Libraries (System)
+
+[SUNWgcc]
+category = C
+
+[SUNWgccruntime]
+category = C
+
+[SUNWgcmn]
+category = GNU
+
+[SUNWgd2]
+category = Libraries (System)
 
 [SUNWgdb]
-category = 
+category = System
 
-[FSWxorg-fonts]
-category = 
+[SUNWgetting-started-guide]
+category = Text Tools
 
-[SUNWulcf]
-category = 
+[SUNWgetting-started-l10n-de]
+category = Localizations (System)
+
+[SUNWgetting-started-l10n-es]
+category = Localizations (System)
+
+[SUNWgetting-started-l10n-fr]
+category = Localizations (System)
+
+[SUNWgetting-started-l10n-it]
+category = Localizations (System)
+
+[SUNWgetting-started-l10n-ja]
+category = Localizations (System)
+
+[SUNWgetting-started-l10n-ko]
+category = Localizations (System)
+
+[SUNWgetting-started-l10n-ptBR]
+category = Localizations (System)
+
+[SUNWgetting-started-l10n-ru]
+category = Localizations (System)
+
+[SUNWgetting-started-l10n-sv]
+category = Localizations (System)
+
+[SUNWgetting-started-l10n-zhCN]
+category = Localizations (System)
+
+[SUNWgetting-started-l10n-zhHK]
+category = Localizations (System)
+
+[SUNWgetting-started-l10n-zhTW]
+category = Localizations (System)
+
+[SUNWggrp]
+category = GNU
+
+[SUNWgimpprint]
+category = Other Peripherals
+
+[SUNWgksu]
+category = System Utilities
+
+[SUNWGlib]
+category = Libraries (System)
+
+[SUNWglibmm]
+category = C++
+
+[SUNWgm4]
+category = GNU
+
+[SUNWgmake]
+category = GNU
+
+[SUNWgnome-a11y-dasher]
+category = Universal Access
+
+[SUNWgnome-a11y-gok]
+category = Universal Access
+
+[SUNWgnome-a11y-libs]
+category = Universal Access
+
+[SUNWgnome-a11y-poke]
+category = Universal Access
+
+[SUNWgnome-a11y-poke-root]
+category = Universal Access
+
+[SUNWgnome-a11y-reader]
+category = Universal Access
+
+[SUNWgnome-a11y-speech]
+category = Universal Access
+
+[SUNWgnome-a11y-speech-freetts]
+category = Universal Access
+
+[SUNWgnome-applets]
+category = Applets
+
+[SUNWgnome-archive-mgr]
+category = Accessories
+
+[SUNWgnome-audio]
+category = Libraries
+
+[SUNWgnome-base-libs]
+category = Libraries
+
+[SUNWgnome-base-libs-java]
+category = Java
+
+[SUNWgnome-calculator]
+category = Accessories
+
+[SUNWgnome-camera]
+category = Graphics and Imaging
+
+[SUNWgnome-cd]
+category = Sound and Video
+
+[SUNWgnome-cd-burner]
+category = System Utilities
+
+[SUNWgnome-character-map]
+category = System Utilities
+
+[SUNWgnome-common-devel]
+category = GNOME and GTK+
+
+[SUNWgnome-component]
+category = Libraries
+
+[SUNWgnome-config]
+category = Libraries
+
+[SUNWgnome-config-editor]
+category = Configuration and Preferences
+
+[SUNWgnome-config-java]
+category = Java
+
+[SUNWgnome-crash-report]
+category = GNOME and GTK+
+
+[SUNWgnome-desklets]
+category = Applets
+
+[SUNWgnome-desklets-extra]
+category = Applets
+
+[SUNWgnome-desktop-prefs]
+category = Configuration and Preferences
+
+[SUNWgnome-devel-docs]
+category = GNOME and GTK+
+
+[SUNWgnome-devhelp]
+category = GNOME and GTK+
+
+[SUNWgnome-dialog]
+category = GNOME and GTK+
+
+[SUNWgnome-dictionary]
+category = Accessories
+
+[SUNWgnome-disk-analyzer]
+category = System Utilities
+
+[SUNWgnome-display-mgr]
+category = Sessions
+
+[SUNWgnome-doc-utils]
+category = GNOME and GTK+
+
+[SUNWgnome-dtstart]
+category = Scripts
+
+[SUNWgnome-file-mgr]
+category = File Managers
+
+[SUNWgnome-fonts]
+category = Fonts
+
+[SUNWgnome-freedb-libs]
+category = Libraries
+
+[SUNWgnome-fun-applets]
+category = Applets
+
+[SUNWgnome-games]
+category = Games
+
+[SUNWgnome-gtksourceview]
+category = Libraries
+
+[SUNWgnome-gui-test]
+category = X11
+
+[SUNWgnome-gvfs]
+category = Libraries
+
+[SUNWgnome-help-viewer]
+category = Documentation
+
+[SUNWgnome-hex-editor]
+category = Integrated Development Environments
+
+[SUNWgnome-im-client]
+category = Internet
+
+[SUNWgnome-img-editor]
+category = Graphics and Imaging
+
+[SUNWgnome-img-editor-help]
+category = Documentation
+
+[SUNWgnome-img-editor-help-cs]
+category = Localizations (Desktop)
+
+[SUNWgnome-img-editor-help-de]
+category = Localizations (Desktop)
+
+[SUNWgnome-img-editor-help-es]
+category = Localizations (Desktop)
+
+[SUNWgnome-img-editor-help-extra]
+category = Localizations (Desktop)
+
+[SUNWgnome-img-editor-help-fr]
+category = Localizations (Desktop)
+
+[SUNWgnome-img-editor-help-it]
+category = Localizations (Desktop)
+
+[SUNWgnome-img-editor-help-ko]
+category = Localizations (Desktop)
+
+[SUNWgnome-img-editor-help-pl]
+category = Localizations (Desktop)
+
+[SUNWgnome-img-editor-help-ru]
+category = Localizations (Desktop)
+
+[SUNWgnome-img-editor-help-sv]
+category = Localizations (Desktop)
+
+[SUNWgnome-img-editor-help-zhCN]
+category = Localizations (Desktop)
+
+[SUNWgnome-img-organizer]
+category = Graphics and Imaging
+
+[SUNWgnome-img-viewer]
+category = Graphics and Imaging
+
+[SUNWgnome-internet-applets]
+category = Applets
+
+[SUNWgnome-intranet-applets]
+category = Applets
+
+[SUNWgnome-keyring-manager]
+category = System Utilities
+
+[SUNWgnome-l10ndocument-de]
+category = Localizations (Desktop)
+
+[SUNWgnome-l10ndocument-es]
+category = Localizations (Desktop)
+
+[SUNWgnome-l10ndocument-extra]
+category = Localizations (Desktop)
+
+[SUNWgnome-l10ndocument-fr]
+category = Localizations (Desktop)
+
+[SUNWgnome-l10ndocument-it]
+category = Localizations (Desktop)
+
+[SUNWgnome-l10ndocument-ja]
+category = Localizations (Desktop)
+
+[SUNWgnome-l10ndocument-ko]
+category = Localizations (Desktop)
+
+[SUNWgnome-l10ndocument-noinst]
+category = Localizations (Desktop)
+
+[SUNWgnome-l10ndocument-ptBR]
+category = Localizations (Desktop)
+
+[SUNWgnome-l10ndocument-rtl]
+category = Localizations (Desktop)
+
+[SUNWgnome-l10ndocument-sv]
+category = Localizations (Desktop)
+
+[SUNWgnome-l10ndocument-zhCN]
+category = Localizations (Desktop)
+
+[SUNWgnome-l10ndocument-zhHK]
+category = Localizations (Desktop)
+
+[SUNWgnome-l10ndocument-zhTW]
+category = Localizations (Desktop)
+
+[SUNWgnome-l10nmessages-cs]
+category = Localizations (Desktop)
+
+[SUNWgnome-l10nmessages-de]
+category = Localizations (Desktop)
+
+[SUNWgnome-l10nmessages-es]
+category = Localizations (Desktop)
+
+[SUNWgnome-l10nmessages-extra]
+category = Localizations (Desktop)
+
+[SUNWgnome-l10nmessages-fr]
+category = Localizations (Desktop)
+
+[SUNWgnome-l10nmessages-hu]
+category = Localizations (Desktop)
+
+[SUNWgnome-l10nmessages-it]
+category = Localizations (Desktop)
+
+[SUNWgnome-l10nmessages-ja]
+category = Localizations (Desktop)
+
+[SUNWgnome-l10nmessages-ko]
+category = Localizations (Desktop)
+
+[SUNWgnome-l10nmessages-noinst]
+category = Localizations (Desktop)
+
+[SUNWgnome-l10nmessages-pl]
+category = Localizations (Desktop)
+
+[SUNWgnome-l10nmessages-ptBR]
+category = Localizations (Desktop)
+
+[SUNWgnome-l10nmessages-rtl]
+category = Localizations (Desktop)
+
+[SUNWgnome-l10nmessages-ru]
+category = Localizations (Desktop)
+
+[SUNWgnome-l10nmessages-sv]
+category = Localizations (Desktop)
+
+[SUNWgnome-l10nmessages-zhCN]
+category = Localizations (Desktop)
+
+[SUNWgnome-l10nmessages-zhHK]
+category = Localizations (Desktop)
+
+[SUNWgnome-l10nmessages-zhTW]
+category = Localizations (Desktop)
+
+[SUNWgnome-libs]
+category = GNOME and GTK+
+
+[SUNWgnome-log-viewer]
+category = System Utilities
+
+[SUNWgnome-media]
+category = Sound and Video
+
+[SUNWgnome-media-apps]
+category = Sound and Video
+
+[SUNWgnome-media-player]
+category = Sound and Video
+
+[SUNWgnome-meeting]
+category = Internet
+
+[SUNWgnome-menu-editor]
+category = Configuration and Preferences
+
+[SUNWgnome-mm-applets]
+category = Applets
+
+[SUNWgnome-panel]
+category = Libraries
+
+[SUNWgnome-pdf-viewer]
+category = Office
+
+[SUNWgnome-pilot]
+category = Accessories
+
+[SUNWgnome-power-manager]
+category = System Utilities
+
+[SUNWgnome-print]
+category = Libraries
+
+[SUNWgnome-ps-viewer]
+category = Office
+
+[SUNWgnome-python-desktop]
+category = Python
+
+[SUNWgnome-python-extras]
+category = Python
+
+[SUNWgnome-python-libs]
+category = Python
+
+[SUNWgnome-remote-desktop]
+category = X11 (System)
+
+[SUNWgnome-screenshot]
+category = Graphics and Imaging
+
+[SUNWgnome-search-tool]
+category = Accessories
+
+[SUNWgnome-session]
+category = Sessions
+
+[SUNWgnome-sound-recorder]
+category = Sound and Video
+
+[SUNWgnome-spell]
+category = Accessories
+
+[SUNWgnome-sys-suspend]
+category = System Utilities
+
+[SUNWgnome-system-monitor]
+category = System Utilities
+
+[SUNWgnome-system-tools]
+category = System Utilities
+
+[SUNWgnome-terminal]
+category = Accessories
+
+[SUNWgnome-terminal-java]
+category = Java
+
+[SUNWgnome-text-editor]
+category = Accessories
+
+[SUNWgnome-themes]
+category = Libraries
+
+[SUNWgnome-ui-designer]
+category = GNOME and GTK+
+
+[SUNWgnome-user-docs]
+category = Documentation
+
+[SUNWgnome-utility-applets]
+category = Applets
+
+[SUNWgnome-vfs]
+category = Libraries
+
+[SUNWgnome-wm]
+category = Window Managers
+
+[SUNWgnome-xml]
+category = Documentation
+
+[SUNWgnome-xml-root]
+category = Documentation
+
+[SUNWgnome-xml-share]
+category = Documentation
+
+[SUNWgnu-automake-110]
+category = GNU
+
+[SUNWgnu-automake-19]
+category = GNU
+
+[SUNWgnu-coreutils]
+category = GNU
+
+[SUNWgnu-diffutils]
+category = GNU
+
+[SUNWgnu-gettext]
+category = GNU
+
+[SUNWgnu-gperf]
+category = GNU
+
+[SUNWgnu-idn]
+category = Libraries (System)
+
+[SUNWgnu-libiconv]
+category = GNU
+
+[SUNWgnu-mc]
+category = File Managers
+
+[SUNWgnutls]
+category = GNU
+
+[SUNWgnu-which]
+category = GNU
+
+[SUNWgpch]
+category = GNU
+
+[SUNWgrub]
+category = Core
+
+[SUNWgrubS]
+category = Core
+
+[SUNWgscr]
+category = Graphics and Imaging
+
+[SUNWgsed]
+category = GNU
+
+[SUNWgsfot]
+category = Fonts
+
+[SUNWgsfst]
+category = Fonts
+
+[SUNWgss]
+category = Security
+
+[SUNWgssc]
+category = Security
+
+[SUNWgssdh]
+category = Security
+
+[SUNWgssk]
+category = Security
+
+[SUNWgst-python]
+category = Python
+
+[SUNWgtar]
+category = GNU
+
+[SUNWGtk]
+category = Graphics and Imaging
+
+[SUNWgtkmm]
+category = Libraries
+
+[SUNWgtkperf]
+category = GNOME and GTK+
+
+[SUNWgui-install]
+category = Administration and Configuration
+
+[SUNWgzip]
+category = GNU
+
+[SUNWhal]
+category = Hardware
+
+[SUNWhdhcm]
+category = Services
+
+[SUNWhea]
+category = Core
+
+[SUNWhermon]
+category = Other Peripherals
+
+[SUNWhkxwsvr]
+category = Localizations (Desktop)
+
+[SUNWhos]
+category = Localizations (System)
+
+[SUNWhpijs]
+category = Printing
+
+[SUNWhwdata]
+category = Hardware
+
+[SUNWhxge]
+category = Networking
+
+[SUNWhxwsvr]
+category = Localizations (Desktop)
+
+[SUNWib]
+category = Hardware
+
+[SUNWibsdp]
+category = Hardware
+
+[SUNWibsdpib]
+category = Hardware
+
+[SUNWibsdpu]
+category = Hardware
+
+[SUNWiconv-extra]
+category = Text Tools
+
+[SUNWiconv-unicode]
+category = Text Tools
+
+[SUNWicu]
+category = Text Tools
+
+[SUNWicud]
+category = Text Tools
+
+[SUNWid3lib]
+category = Libraries (System)
+
+[SUNWidhcm]
+category = Services
+
+[SUNWidnd]
+category = System
+
+[SUNWidnl]
+category = Libraries (System)
+
+[SUNWidnu]
+category = System Utilities
+
+[SUNWigb]
+category = Networking
+
+[SUNWii]
+category = Enterprise Management
+
+[SUNWiiim]
+category = Internationalization
+
+[SUNWiiimf]
+category = Internationalization
+
+[SUNWiiimf-ja-anthy]
+category = Internationalization
+
+[SUNWiiimf-ko-hangul]
+category = Internationalization
+
+[SUNWiiimf-th-thaile]
+category = Internationalization
+
+[SUNWiiimf-zhCN-cle-core]
+category = Internationalization
+
+[SUNWiiimf-zhCN-cle-open]
+category = Internationalization
+
+[SUNWiiimf-zhCN-cle-sunpinyin]
+category = Internationalization
+
+[SUNWiiimf-zhHK-hkle-core]
+category = Internationalization
+
+[SUNWiiimf-zhHK-hkle-open]
+category = Internationalization
+
+[SUNWiiimf-zhTW-twle-chewing]
+category = Internationalization
+
+[SUNWiiimf-zhTW-twle-core]
+category = Internationalization
+
+[SUNWiiimf-zhTW-twle-open]
+category = Internationalization
+
+[SUNWilmbase]
+category = Libraries (System)
+
+[SUNWima]
+category = Plug-ins and Run-times
+
+[SUNWimac]
+category = Libraries (System)
+
+[SUNWimagick]
+category = Graphics and Imaging
+
+[SUNWinstall-l10n]
+category = Localizations (System)
+
+[SUNWinstall-libs]
+category = Libraries (System)
+
+[SUNWintgige]
+category = Networking
+
+[SUNWipc]
+category = Core
+
+[SUNWipf]
+category = System Utilities
+
+[SUNWipfh]
+category = System
+
+[SUNWipkg]
+category = Packaging
+
+[SUNWipkg-brand]
+category = Packaging
+
+[SUNWipkg-gui]
+category = Packaging
+
+[SUNWipkg-gui-data]
+category = Packaging
+
+[SUNWipmi]
+category = Hardware
+
+[SUNWipoib]
+category = Hardware
+
+[SUNWippcore]
+category = Printing
+
+[SUNWippl]
+category = Printing
+
+[SUNWipw]
+category = Networking
+
+[SUNWIPython]
+category = Python
+
+[SUNWircii]
+category = Core
+
+[SUNWiscsi]
+category = Hardware
+
+[SUNWiscsitgt]
+category = Hardware
+
+[SUNWislcc]
+category = Text Tools
+
+[SUNWisns]
+category = Hardware
+
+[SUNWiso-codes]
+category = Text Tools
+
+[SUNWisolc]
+category = Text Tools
+
+[SUNWitos]
+category = Localizations (System)
+
+[SUNWitxwsvr]
+category = Localizations (Desktop)
+
+[SUNWiwh]
+category = Networking
+
+[SUNWiwi]
+category = Networking
+
+[SUNWiwk]
+category = Networking
+
+[SUNWixgb]
+category = Networking
+
+[SUNWixgbe]
+category = Networking
+
+[SUNWj6cfg]
+category = Java
+
+[SUNWj6dev]
+category = Java
+
+[SUNWj6dmo]
+category = Java
+
+[SUNWj6dmx]
+category = Java
+
+[SUNWj6dvx]
+category = Java
+
+[SUNWj6jmp]
+category = Java
+
+[SUNWj6man]
+category = Java
+
+[SUNWj6rt]
+category = Java
+
+[SUNWj6rtx]
+category = Java
+
+[SUNWjavadb]
+category = Databases
+
+[SUNWjavadb-client]
+category = Databases (System)
+
+[SUNWjavadb-common]
+category = Databases
+
+[SUNWjavadb-core]
+category = Databases (System)
+
+[SUNWjavadb-demo]
+category = Databases (System)
+
+[SUNWjavadb-docs]
+category = Databases (System)
+
+[SUNWjavadb-javadoc]
+category = Databases
+
+[SUNWjdhcm]
+category = Services
+
+[SUNWjdmk-base]
+category = Java
+
+[SUNWjdoc]
+category = Text Tools
+
+[SUNWjos]
+category = Localizations (System)
+
+[SUNWjpg]
+category = Media
+
+[SUNWjre-config-plugin]
+category = Plug-ins and Run-times
+
+[SUNWjss]
+category = Services
+
+[SUNWjxwsvr]
+category = Localizations (Desktop)
+
+[SUNWkdc]
+category = Security
+
+[SUNWkdhcm]
+category = Services
+
+[SUNWkey]
+category = Hardware
+
+[SUNWkos]
+category = Localizations (System)
+
+[SUNWkrb]
+category = Security
+
+[SUNWkvm]
+category = Core
+
+[SUNWkxwsvr]
+category = Localizations (Desktop)
+
+[SUNWlang-ar]
+category = Localizations (System)
+
+[SUNWlang-ar-extra]
+category = Localizations (System)
+
+[SUNWlang-bg]
+category = Localizations (System)
+
+[SUNWlang-bg-extra]
+category = Localizations (System)
+
+[SUNWlang-ca]
+category = Localizations (System)
+
+[SUNWlang-ca-extra]
+category = Localizations (System)
+
+[SUNWlang-common]
+category = Localizations (System)
+
+[SUNWlang-common-extra]
+category = Localizations (System)
+
+[SUNWlang-cs]
+category = Localizations (System)
+
+[SUNWlang-cs-extra]
+category = Localizations (System)
+
+[SUNWlang-da]
+category = Localizations (System)
+
+[SUNWlang-da-extra]
+category = Localizations (System)
+
+[SUNWlang-de]
+category = Localizations (System)
+
+[SUNWlang-de-extra]
+category = Localizations (System)
+
+[SUNWlang-el]
+category = Localizations (System)
+
+[SUNWlang-el-extra]
+category = Localizations (System)
+
+[SUNWlang-en]
+category = Localizations (System)
+
+[SUNWlang-en-extra]
+category = Localizations (System)
+
+[SUNWlang-es]
+category = Localizations (System)
+
+[SUNWlang-es-extra]
+category = Localizations (System)
+
+[SUNWlang-et]
+category = Localizations (System)
+
+[SUNWlang-et-extra]
+category = Localizations (System)
+
+[SUNWlang-fi]
+category = Localizations (System)
+
+[SUNWlang-fi-extra]
+category = Localizations (System)
+
+[SUNWlang-fr]
+category = Localizations (System)
+
+[SUNWlang-fr-extra]
+category = Localizations (System)
+
+[SUNWlang-he]
+category = Localizations (System)
+
+[SUNWlang-he-extra]
+category = Localizations (System)
+
+[SUNWlang-hi]
+category = Localizations (System)
+
+[SUNWlang-hr]
+category = Localizations (System)
+
+[SUNWlang-hr-extra]
+category = Localizations (System)
+
+[SUNWlang-hu]
+category = Localizations (System)
+
+[SUNWlang-hu-extra]
+category = Localizations (System)
+
+[SUNWlang-is]
+category = Localizations (System)
+
+[SUNWlang-is-extra]
+category = Localizations (System)
+
+[SUNWlang-it]
+category = Localizations (System)
+
+[SUNWlang-it-extra]
+category = Localizations (System)
+
+[SUNWlang-ja]
+category = Localizations (System)
+
+[SUNWlang-ja-extra]
+category = Localizations (System)
+
+[SUNWlang-kk]
+category = Localizations (System)
+
+[SUNWlang-ko]
+category = Localizations (System)
+
+[SUNWlang-ko-extra]
+category = Localizations (System)
+
+[SUNWlang-lt]
+category = Localizations (System)
+
+[SUNWlang-lt-extra]
+category = Localizations (System)
+
+[SUNWlang-lv]
+category = Localizations (System)
+
+[SUNWlang-lv-extra]
+category = Localizations (System)
+
+[SUNWlang-mk]
+category = Localizations (System)
+
+[SUNWlang-mk-extra]
+category = Localizations (System)
+
+[SUNWlang-mt]
+category = Localizations (System)
+
+[SUNWlang-nb]
+category = Localizations (System)
+
+[SUNWlang-nl]
+category = Localizations (System)
+
+[SUNWlang-nl-extra]
+category = Localizations (System)
+
+[SUNWlang-nn]
+category = Localizations (System)
+
+[SUNWlang-no-extra]
+category = Localizations (System)
+
+[SUNWlang-pl]
+category = Localizations (System)
+
+[SUNWlang-pl-extra]
+category = Localizations (System)
+
+[SUNWlang-pt]
+category = Localizations (System)
+
+[SUNWlang-ptBR]
+category = Localizations (System)
+
+[SUNWlang-ptBR-extra]
+category = Localizations (System)
+
+[SUNWlang-pt-extra]
+category = Localizations (System)
+
+[SUNWlang-ro]
+category = Localizations (System)
+
+[SUNWlang-ro-extra]
+category = Localizations (System)
+
+[SUNWlang-ru]
+category = Localizations (System)
+
+[SUNWlang-ru-extra]
+category = Localizations (System)
+
+[SUNWlang-sh]
+category = Localizations (System)
+
+[SUNWlang-sh-extra]
+category = Localizations (System)
+
+[SUNWlang-sk]
+category = Localizations (System)
+
+[SUNWlang-sk-extra]
+category = Localizations (System)
+
+[SUNWlang-sl]
+category = Localizations (System)
+
+[SUNWlang-sl-extra]
+category = Localizations (System)
+
+[SUNWlang-sq]
+category = Localizations (System)
+
+[SUNWlang-sq-extra]
+category = Localizations (System)
+
+[SUNWlang-sr]
+category = Localizations (System)
+
+[SUNWlang-sr-extra]
+category = Localizations (System)
+
+[SUNWlang-sv]
+category = Localizations (System)
+
+[SUNWlang-sv-extra]
+category = Localizations (System)
+
+[SUNWlang-th]
+category = Localizations (System)
+
+[SUNWlang-th-extra]
+category = Localizations (System)
+
+[SUNWlang-tr]
+category = Localizations (System)
+
+[SUNWlang-tr-extra]
+category = Localizations (System)
+
+[SUNWlang-uk]
+category = Localizations (System)
+
+[SUNWlang-zhCN]
+category = Localizations (System)
+
+[SUNWlang-zhCN-extra]
+category = Localizations (System)
+
+[SUNWlang-zhHK]
+category = Localizations (System)
+
+[SUNWlang-zhHK-extra]
+category = Localizations (System)
+
+[SUNWlang-zhTW]
+category = Localizations (System)
+
+[SUNWlang-zhTW-extra]
+category = Localizations (System)
+
+[SUNWlcms]
+category = Administration and Configuration
+
+[SUNWless]
+category = GNU
+
+[SUNWlexpt]
+category = Libraries (System)
+
+[SUNWlftp]
+category = System Utilities
+
+[SUNWlibanthy]
+category = Libraries (System)
 
 [SUNWlibC]
-category = 
+category = C++
 
-[SUNWneuow]
-category = 
+[SUNWlibcanberra]
+category = Media
 
-[SUNWcsmauth]
-category = 
+[SUNWlibchewing]
+category = Libraries (System)
 
-[SUNWsmdoc]
-category = 
+[SUNWlibcompizconfig]
+category = Libraries
 
-[SUNWxi18n]
-category = 
+[SUNWlibcroco]
+category = Libraries (System)
 
-[SUNWsvdma]
-category = 
+[SUNWlibdaemon]
+category = Libraries (System)
 
-[SUNWralink]
-category = 
+[SUNWlibdatrie]
+category = Libraries (System)
+
+[SUNWlibevent]
+category = Libraries (System)
+
+[SUNWlibexif]
+category = Libraries (System)
+
+[SUNWlibgc]
+category = C++
+
+[SUNWlibgcrypt]
+category = Libraries (System)
+
+[SUNWlibgmime]
+category = Libraries (System)
+
+[SUNWlibgpg-error]
+category = Libraries (System)
+
+[SUNWlibgsf]
+category = Libraries
+
+[SUNWlibgtop]
+category = Libraries (System)
+
+[SUNWlibhangul]
+category = Libraries (System)
 
 [SUNWlibm]
-category = 
+category = Libraries (System)
 
-[SUNWiladm]
-category = 
+[SUNWlibmemcached]
+category = Libraries (System)
+
+[SUNWlibmng]
+category = Libraries (System)
+
+[SUNWlibms]
+category = Libraries (System)
+
+[SUNWlibnb-apisupport1]
+category = Integrated Development Environments
+
+[SUNWlibnb-cnd1]
+category = Integrated Development Environments
+
+[SUNWlibnb-enterprise4]
+category = Integrated Development Environments
+
+[SUNWlibnb-gsf1]
+category = Integrated Development Environments
+
+[SUNWlibnb-ide8]
+category = Integrated Development Environments
+
+[SUNWlibnb-java1]
+category = Integrated Development Environments
+
+[SUNWlibnb-platform7]
+category = Integrated Development Environments
+
+[SUNWlibnb-profiler2]
+category = Integrated Development Environments
+
+[SUNWlibnb-ruby1]
+category = Integrated Development Environments
+
+[SUNWlibnb-visualweb1]
+category = Integrated Development Environments
+
+[SUNWlibnb-xml1]
+category = Integrated Development Environments
 
 [SUNWliboil]
-category = Sound & Video
+category = Libraries
 
-[SUNWhleue]
-category = 
+[SUNWlibopenusb]
+category = Libraries (System)
+
+[SUNWlibpcap]
+category = Libraries (System)
+
+[SUNWlibpopt]
+category = Libraries (System)
+
+[SUNWlibrsvg]
+category = Libraries (System)
+
+[SUNWlibrsync]
+category = Libraries (System)
+
+[SUNWlibsasl]
+category = Libraries (System)
+
+[SUNWlibsdl]
+category = Libraries (System)
+
+[SUNWlibsexy]
+category = Libraries
+
+[SUNWlibsmbclient]
+category = Libraries (System)
+
+[SUNWlibsoup]
+category = Libraries (System)
+
+[SUNWlibtasn1]
+category = Libraries (System)
+
+[SUNWlibthai]
+category = Libraries (System)
+
+[SUNWlibtheora]
+category = Libraries (System)
+
+[SUNWlibtool]
+category = GNU
+
+[SUNWlibusb]
+category = Libraries (System)
+
+[SUNWlibusbugen]
+category = Libraries (System)
+
+[SUNWlibvirt]
+category = Libraries (System)
+
+[SUNWlighttpd14]
+category = Application and Web Servers
+
+[SUNWlinks]
+category = Internet
+
+[SUNWllc]
+category = Networking
+
+[SUNWlldap]
+category = Libraries (System)
+
+[SUNWloc]
+category = Localizations (System)
+
+[SUNWlogrotate]
+category = Administration and Configuration
+
+[SUNWlp-cmds]
+category = Printing
+
+[SUNWlpr-cmds]
+category = Printing
+
+[SUNWlsimega]
+category = Storage
+
+[SUNWltdl]
+category = GNU
+
+[SUNWluxop]
+category = Enterprise Management
+
+[SUNWlx]
+category = System Utilities
+
+[SUNWlxml]
+category = Libraries (System)
+
+[SUNWlxsl]
+category = Libraries (System)
+
+[SUNWman]
+category = Text Tools
+
+[SUNWmd]
+category = Core
+
+[SUNWmda]
+category = Core
+
+[SUNWmdb]
+category = System
+
+[SUNWmdbdm]
+category = System
+
+[SUNWmddr]
+category = Libraries (System)
+
+[SUNWmegasas]
+category = Storage
+
+[SUNWmemcached]
+category = Core
+
+[SUNWmemcached-java]
+category = Java
+
+[SUNWmercurial]
+category = Source Code Management
+
+[SUNWmibii]
+category = Enterprise Management
+
+[SUNWmkcd]
+category = Hardware
+
+[SUNWmlib]
+category = Libraries (System)
+
+[SUNWmms]
+category = Media
+
+[SUNWmp]
+category = Printing
+
+[SUNWmpapi]
+category = Libraries (System)
+
+[SUNWmpathadm]
+category = System Utilities
+
+[SUNWmpsvplr]
+category = Hardware
+
+[SUNWmtx]
+category = Media
+
+[SUNWmusicbrainz]
+category = Libraries
+
+[SUNWmutt]
+category = Internet
+
+[SUNWmv88sx]
+category = Ports
+
+[SUNWmxfe]
+category = Networking
+
+[SUNWmyspell-dictionary-cs]
+category = Localizations (System)
+
+[SUNWmyspell-dictionary-de]
+category = Localizations (System)
+
+[SUNWmyspell-dictionary-en]
+category = Localizations (System)
+
+[SUNWmyspell-dictionary-es]
+category = Localizations (System)
+
+[SUNWmyspell-dictionary-extra]
+category = Localizations (System)
+
+[SUNWmyspell-dictionary-fr]
+category = Localizations (System)
+
+[SUNWmyspell-dictionary-hu]
+category = Localizations (System)
+
+[SUNWmyspell-dictionary-it]
+category = Localizations (System)
+
+[SUNWmyspell-dictionary-pl]
+category = Localizations (System)
+
+[SUNWmyspell-dictionary-ptBR]
+category = Localizations (System)
+
+[SUNWmyspell-dictionary-ru]
+category = Localizations (System)
+
+[SUNWmyspell-dictionary-sv]
+category = Localizations (System)
+
+[SUNWmysql]
+category = Databases (System)
+
+[SUNWmysql5]
+category = Databases (System)
+
+[SUNWmysql5jdbc]
+category = Databases (System)
+
+[SUNWmysql5test]
+category = Databases (System)
+
+[SUNWmysql-base]
+category = Databases (System)
+
+[SUNWmysql-python]
+category = Databases
+
+[SUNWmysqlt]
+category = Databases
+
+[SUNWnca]
+category = Core
+
+[SUNWncft]
+category = Internet
+
+[SUNWndmp]
+category = Services
+
+[SUNWneon]
+category = Libraries (System)
+
+[SUNWnetbeans-cpp]
+category = Integrated Development Environments
+
+[SUNWnetbeans-desktop]
+category = Integrated Development Environments
+
+[SUNWnetbeans-ide]
+category = Integrated Development Environments
+
+[SUNWnetbeans-javaee]
+category = Integrated Development Environments
+
+[SUNWnetbeans-javase]
+category = Integrated Development Environments
+
+[SUNWnetbeans-ruby]
+category = Integrated Development Environments
+
+[SUNWnetcat]
+category = Internet
+
+[SUNWnethack]
+category = Games
+
+[SUNWnfsc]
+category = File System
+
+[SUNWnfsckr]
+category = File System
+
+[SUNWnfss]
+category = File System
+
+[SUNWnfsskr]
+category = File System
+
+[SUNWnge]
+category = Display
+
+[SUNWnis]
+category = Administration and Configuration
+
+[SUNWnmap]
+category = Administration and Configuration
+
+[SUNWntp]
+category = Services
+
+[SUNWnvsata]
+category = Ports
+
+[SUNWnwam-manager]
+category = Administration and Configuration
+
+[SUNWnxge]
+category = Networking
+
+[SUNWogg-vorbis]
+category = Libraries (System)
+
+[SUNWopenexr]
+category = Libraries (System)
+
+[SUNWopenjade]
+category = Text Tools
+
+[SUNWopensolaris-welcome]
+category = Text Tools
+
+[SUNWopensp]
+category = Text Tools
+
+[SUNWopenssl]
+category = Security
+
+[SUNWos86r]
+category = Core
+
+[SUNWosdem]
+category = Core
+
+[SUNWp7zip]
+category = Core
+
+[SUNWpampkcs11]
+category = Security
+
+[SUNWpapi]
+category = Printing
+
+[SUNWpc]
+category = Printing
+
+[SUNWpcan]
+category = Networking
+
+[SUNWpcelx]
+category = Networking
+
+[SUNWpcmci]
+category = Hardware
+
+[SUNWpcmcu]
+category = Hardware
+
+[SUNWpcmem]
+category = Storage
+
+[SUNWpcre]
+category = Perl
+
+[SUNWpcser]
+category = Other Peripherals
+
+[SUNWpcwl]
+category = Networking
+
+[SUNWpd]
+category = Other Peripherals
+
+[SUNWperl584core]
+category = Perl
+
+[SUNWperl584man]
+category = Perl
+
+[SUNWperl584usr]
+category = Perl
+
+[SUNWperl-authen-pam]
+category = Perl
+
+[SUNWperl-xml-parser]
+category = Perl
+
+[SUNWpgadmin3]
+category = Databases (System)
+
+[SUNWpgbouncer-pg83]
+category = Administration and Configuration
+
+[SUNWphp524]
+category = PHP
+
+[SUNWphp524core]
+category = PHP
+
+[SUNWphp524doc]
+category = PHP
+
+[SUNWphp524man]
+category = PHP
+
+[SUNWphp524-mysql]
+category = PHP
+
+[SUNWphp524-pgsql]
+category = PHP
+
+[SUNWphp524usr]
+category = PHP
+
+[SUNWpicl]
+category = Core
+
+[SUNWpiclh]
+category = Core
+
+[SUNWpilot-link]
+category = System Utilities
+
+[SUNWpkgcmds]
+category = Packaging
+
+[SUNWpl5m]
+category = Perl
+
+[SUNWpl5p]
+category = Perl
+
+[SUNWpl5u]
+category = Perl
+
+[SUNWpl5v]
+category = Perl
+
+[SUNWplxwsvr]
+category = Localizations (Desktop)
+
+[SUNWpm]
+category = Administration and Configuration
+
+[SUNWpmdbdpg]
+category = Perl
+
+[SUNWpmdbi]
+category = Perl
+
+[SUNWpng]
+category = Libraries (System)
+
+[SUNWpolkit]
+category = Administration and Configuration
+
+[SUNWpool]
+category = Core
+
+[SUNWpoold]
+category = Core
+
+[SUNWpostgr]
+category = Databases (System)
+
+[SUNWpostgr-82-client]
+category = Databases (System)
+
+[SUNWpostgr-82-contrib]
+category = Databases (System)
+
+[SUNWpostgr-82-devel]
+category = Databases
+
+[SUNWpostgr-82-docs]
+category = Databases (System)
+
+[SUNWpostgr-82-jdbc]
+category = Databases (System)
+
+[SUNWpostgr-82-l10n-ja]
+category = Databases (System)
+
+[SUNWpostgr-82-libs]
+category = Databases
+
+[SUNWpostgr-82-pl]
+category = Databases
+
+[SUNWpostgr-82-server]
+category = Databases (System)
+
+[SUNWpostgr-82-server-data-root]
+category = Databases (System)
+
+[SUNWpostgr-82-tcl]
+category = Databases (System)
+
+[SUNWpostgr-83-client]
+category = Databases (System)
+
+[SUNWpostgr-83-contrib]
+category = Databases (System)
+
+[SUNWpostgr-83-devel]
+category = Databases
+
+[SUNWpostgr-83-docs]
+category = Databases (System)
+
+[SUNWpostgr-83-libs]
+category = Databases
+
+[SUNWpostgr-83-pl]
+category = Databases
+
+[SUNWpostgr-83-server]
+category = Databases (System)
+
+[SUNWpostgr-83-tcl]
+category = Databases
+
+[SUNWpostgr-contrib]
+category = Databases (System)
+
+[SUNWpostgr-docs]
+category = Databases (System)
+
+[SUNWpostgr-jdbc]
+category = Databases (System)
+
+[SUNWpostgr-l10n-ja]
+category = Databases (System)
+
+[SUNWpostgr-libs]
+category = Databases (System)
+
+[SUNWpostgr-pl]
+category = Databases
+
+[SUNWpostgr-server]
+category = Databases (System)
+
+[SUNWpostgr-server-data]
+category = Databases (System)
+
+[SUNWpostgr-tcl]
+category = Databases
+
+[SUNWpostgr-upgrade]
+category = Databases (System)
+
+[SUNWpostrun]
+category = System Utilities
+
+[SUNWppm]
+category = Printing
+
+[SUNWpppd]
+category = Networking
+
+[SUNWpppdt]
+category = Core
+
+[SUNWpppg]
+category = GNU
+
+[SUNWpppgS]
+category = GNU
+
+[SUNWpr]
+category = Libraries (System)
+
+[SUNWprd]
+category = System
+
+[SUNWprint-monitor]
+category = Printing
+
+[SUNWprocmail]
+category = Internet
+
+[SUNWproduct-registry-root]
+category = Core
+
+[SUNWps]
+category = Printing
+
+[SUNWpsdcr]
+category = Other Peripherals
+
+[SUNWpsdir]
+category = Other Peripherals
+
+[SUNWpsdpr]
+category = Other Peripherals
+
+[SUNWpsf]
+category = Printing
+
+[SUNWpsh]
+category = Other Peripherals
+
+[SUNWpsm-ipp]
+category = Printing
+
+[SUNWpsm-lpd]
+category = Printing
+
+[SUNWpsutils]
+category = Printing
+
+[SUNWptxwsvr]
+category = Localizations (Desktop)
+
+[SUNWpycups]
+category = Printing
+
+[SUNWpysqlite]
+category = Databases
+
+[SUNWPython]
+category = Python
+
+[SUNWpython-cherrypy]
+category = Python
+
+[SUNWPython-extra]
+category = Python
+
+[SUNWpython-imaging]
+category = Python
+
+[SUNWpython-pyopenssl]
+category = Python
+
+[SUNWpython-setuptools]
+category = Python
+
+[SUNWpython-twisted]
+category = Python
+
+[SUNWpython-xdg]
+category = Python
+
+[SUNWpython-zope-interface]
+category = Python
+
+[SUNWqlc]
+category = Ports
+
+[SUNWqlcu]
+category = Hardware
+
+[SUNWqos]
+category = Core
+
+[SUNWqosu]
+category = Core
+
+[SUNWquagga]
+category = Administration and Configuration
+
+[SUNWralink]
+category = Networking
+
+[SUNWrcap]
+category = Core
+
+[SUNWrcmdc]
+category = Core
+
+[SUNWrcmds]
+category = Core
+
+[SUNWrdc]
+category = Hardware
+
+[SUNWrdesktop]
+category = Internet
+
+[SUNWrds]
+category = Hardware
+
+[SUNWrge]
+category = Networking
+
+[SUNWrmodr]
+category = Core
+
+[SUNWrmodu]
+category = Core
+
+[SUNWrmvolmgr]
+category = Media
+
+[SUNWrmwb]
+category = Administration and Configuration
+
+[SUNWroute]
+category = Core
+
+[SUNWrpcib]
+category = Hardware
+
+[SUNWrpm]
+category = Packaging
+
+[SUNWrrdtool]
+category = System Utilities
+
+[SUNWrsg]
+category = Libraries (System)
+
+[SUNWrsgk]
+category = Core
+
+[SUNWrsm]
+category = Core
+
+[SUNWrsmo]
+category = Hardware
+
+[SUNWrsync]
+category = System Utilities
+
+[SUNWrtls]
+category = Hardware
+
+[SUNWrtw]
+category = Networking
+
+[SUNWruby18]
+category = Ruby
+
+[SUNWruxwsvr]
+category = Localizations (Desktop)
+
+[SUNWsacom]
+category = Enterprise Management
+
+[SUNWsane-backend]
+category = Libraries (System)
+
+[SUNWsane-frontend]
+category = Graphics and Imaging
+
+[SUNWsasnm]
+category = Enterprise Management
+
+[SUNWsbp2]
+category = Hardware
+
+[SUNWscim]
+category = Text Tools
+
+[SUNWscim-anthy]
+category = Text Tools
+
+[SUNWscim-chewing]
+category = Text Tools
+
+[SUNWscim-hangul]
+category = Text Tools
+
+[SUNWscim-pinyin]
+category = Text Tools
+
+[SUNWscim-sunpinyin]
+category = Text Tools
+
+[SUNWscim-tables]
+category = Text Tools
+
+[SUNWscim-tables-chinese]
+category = Text Tools
+
+[SUNWscim-tables-extra]
+category = Text Tools
+
+[SUNWscim-tables-india]
+category = Text Tools
+
+[SUNWscim-tables-japanese]
+category = Text Tools
+
+[SUNWscim-tables-korean]
+category = Text Tools
+
+[SUNWscim-thai]
+category = Text Tools
+
+[SUNWscm]
+category = Enterprise Management
+
+[SUNWscp]
+category = Core
+
+[SUNWscplp]
+category = Printing
+
+[SUNWscsa1394]
+category = Ports
+
+[SUNWscsip]
+category = Plug-ins and Run-times
+
+[SUNWsdcard]
+category = Storage
+
+[SUNWsdhcm]
+category = Services
+
+[SUNWser]
+category = Services
+
+[SUNWservicetag]
+category = Services
+
+[SUNWserweb]
+category = Services
+
+[SUNWses]
+category = Ports
+
+[SUNWsexy-python]
+category = Python
+
+[SUNWsfdoc]
+category = GNU
+
+[SUNWsfe]
+category = Networking
+
+[SUNWsfinf]
+category = GNU
+
+[SUNWsfman]
+category = GNU
+
+[SUNWsfwdemo]
+category = System
+
+[SUNWsfwhea]
+category = System
+
+[SUNWsi3124]
+category = Ports
+
+[SUNWsigcpp]
+category = C++
+
+[SUNWslang]
+category = Other Languages
+
+[SUNWslib]
+category = Other Languages
+
+[SUNWslim-utils]
+category = System Utilities
+
+[SUNWslp]
+category = Services
+
+[SUNWsmagt]
+category = Enterprise Management
+
+[SUNWsmapi]
+category = Enterprise Management
+
+[SUNWsmba]
+category = File System
+
+[SUNWsmbfs]
+category = File System
+
+[SUNWsmbfskr]
+category = File System
+
+[SUNWsmbs]
+category = File System
+
+[SUNWsmbskr]
+category = File System
+
+[SUNWsmcmd]
+category = Administration and Configuration
+
+[SUNWsmdoc]
+category = Text Tools
+
+[SUNWsmedia]
+category = Libraries (System)
+
+[SUNWsmmgr]
+category = Administration and Configuration
+
+[SUNWsmpd]
+category = Storage
+
+[SUNWsnack]
+category = Other Languages
+
+[SUNWsndm]
+category = Core
+
+[SUNWsolnm]
+category = Core
+
+[SUNWspeex]
+category = Sound and Video
+
+[SUNWspnego]
+category = Security
+
+[SUNWsprot]
+category = Core
+
+[SUNWspsv]
+category = Storage
+
+[SUNWsqlite3]
+category = Databases (System)
+
+[SUNWsqlite3docs]
+category = Databases (System)
+
+[SUNWsqlite3tcl]
+category = Databases
+
+[SUNWsquid]
+category = Application and Web Servers
+
+[SUNWsra]
+category = Libraries (System)
+
+[SUNWssh]
+category = Security
+
+[SUNWsshcu]
+category = Security
+
+[SUNWsshd]
+category = Security
+
+[SUNWstardict]
+category = Text Tools
+
+[SUNWstmf]
+category = Hardware
+
+[SUNWstosreg]
+category = Core
+
+[SUNWstunnel]
+category = Internet
+
+[SUNWsudo]
+category = System Utilities
+
+[SUNWsvn]
+category = Source Code Management
+
+[SUNWsvn-java]
+category = Source Code Management
+
+[SUNWsvn-perl]
+category = Source Code Management
+
+[SUNWsvn-python]
+category = Source Code Management
+
+[SUNWsvos]
+category = Localizations (System)
+
+[SUNWsvxwsvr]
+category = Localizations (Desktop)
+
+[SUNWswmt]
+category = Administration and Configuration
+
+[SUNWtavor]
+category = Other Peripherals
+
+[SUNWtcat]
+category = Application and Web Servers
+
+[SUNWTcl]
+category = Other Languages
+
+[SUNWtcltls]
+category = Other Languages
+
+[SUNWtcpd]
+category = Core
+
+[SUNWtcpdS]
+category = Core
+
+[SUNWtcsh]
+category = Shells
+
+[SUNWtecla]
+category = Libraries (System)
+
+[SUNWter]
+category = Core
+
+[SUNWtexi]
+category = GNU
+
+[SUNWtftp]
+category = System Utilities
+
+[SUNWtgnome-l10n-ui-de]
+category = Trusted
+
+[SUNWtgnome-l10n-ui-es]
+category = Trusted
+
+[SUNWtgnome-l10n-ui-fr]
+category = Trusted
+
+[SUNWtgnome-l10n-ui-it]
+category = Trusted
+
+[SUNWtgnome-l10n-ui-ja]
+category = Trusted
+
+[SUNWtgnome-l10n-ui-ko]
+category = Trusted
+
+[SUNWtgnome-l10n-ui-ptBR]
+category = Trusted
+
+[SUNWtgnome-l10n-ui-ru]
+category = Trusted
+
+[SUNWtgnome-l10n-ui-sv]
+category = Trusted
+
+[SUNWtgnome-l10n-ui-zhCN]
+category = Trusted
+
+[SUNWtgnome-l10n-ui-zhHK]
+category = Trusted
+
+[SUNWtgnome-l10n-ui-zhTW]
+category = Trusted
+
+[SUNWtgnome-tsoljdsdevmgr]
+category = Trusted
+
+[SUNWtgnome-tsoljdslabel]
+category = Trusted
+
+[SUNWtgnome-tsoljdsselmgr]
+category = Trusted
+
+[SUNWtgnome-tsol-libs]
+category = Trusted
+
+[SUNWtgnome-tstripe]
+category = Trusted
+
+[SUNWtgnome-xagent]
+category = Trusted
+
+[SUNWthunderbird]
+category = Internet
+
+[SUNWthunderbird-calendar]
+category = Internet
+
+[SUNWthunderbirdl10n-de-DE]
+category = Internet
+
+[SUNWthunderbirdl10n-es-ES]
+category = Internet
 
 [SUNWthunderbirdl10n-extra]
-category = Localization,GNOME
+category = Internet
+
+[SUNWthunderbirdl10n-fr-FR]
+category = Internet
+
+[SUNWthunderbirdl10n-it-IT]
+category = Internet
+
+[SUNWthunderbirdl10n-ja-JP]
+category = Internet
+
+[SUNWthunderbirdl10n-ko-KR]
+category = Internet
+
+[SUNWthunderbirdl10n-pl-PL]
+category = Internet
+
+[SUNWthunderbirdl10n-pt-BR]
+category = Internet
+
+[SUNWthunderbirdl10n-ru-RU]
+category = Internet
+
+[SUNWthunderbirdl10n-sv-SE]
+category = Internet
+
+[SUNWthunderbirdl10n-zh-CN]
+category = Internet
+
+[SUNWthunderbirdl10n-zh-TW]
+category = Internet
+
+[SUNWtidy]
+category = Libraries (System)
+
+[SUNWTiff]
+category = Libraries (System)
+
+[SUNWtiu8]
+category = Localizations (System)
+
+[SUNWTk]
+category = Other Languages
+
+[SUNWtls]
+category = Security
+
+[SUNWtlsd]
+category = Security
+
+[SUNWtlsu]
+category = Security
+
+[SUNWtnetc]
+category = System Utilities
+
+[SUNWtnetd]
+category = Services
+
+[SUNWtnfc]
+category = System
+
+[SUNWtnfd]
+category = System
+
+[SUNWtoo]
+category = System
+
+[SUNWts]
+category = Trusted
+
+[SUNWtsg]
+category = Trusted
+
+[SUNWttf-arabeyes]
+category = Fonts
+
+[SUNWttf-arphic-ukai]
+category = Fonts
+
+[SUNWttf-arphic-uming]
+category = Fonts
+
+[SUNWttf-ipafont]
+category = Fonts
+
+[SUNWttf-thai-scalable]
+category = Fonts
+
+[SUNWtvnc]
+category = Internet
+
+[SUNWuacm]
+category = Ports
+
+[SUNWucbt]
+category = System
+
+[SUNWudapl]
+category = Libraries (System)
+
+[SUNWudaplt]
+category = Hardware
+
+[SUNWudf]
+category = Media
+
+[SUNWuedg]
+category = Ports
+
+[SUNWugen]
+category = Ports
+
+[SUNWugenu]
+category = Hardware
+
+[SUNWuiu8]
+category = Text Tools
+
+[SUNWuium]
+category = Text Tools
+
+[SUNWuksp]
+category = Ports
+
+[SUNWukspfw]
+category = Hardware
+
+[SUNWunzip]
+category = System Utilities
+
+[SUNWuprl]
+category = Ports
+
+[SUNWural]
+category = Networking
+
+[SUNWurlgrabber]
+category = Internet
+
+[SUNWusb]
+category = Ports
+
+[SUNWusbccid]
+category = Hardware
+
+[SUNWusbs]
+category = Hardware
+
+[SUNWusbu]
+category = Hardware
+
+[SUNWusbvc]
+category = Display
+
+[SUNWvgl]
+category = Hardware
+
+[SUNWvia823x]
+category = Media
+
+[SUNWvim]
+category = Text Tools
+
+[SUNWvirtinst]
+category = Virtualization
+
+[SUNWvirt-manager]
+category = Virtualization
+
+[SUNWvncviewer]
+category = Internet
+
+[SUNWvscan]
+category = Services
+
+[SUNWvscankr]
+category = Services
+
+[SUNWvts]
+category = System
+
+[SUNWvtsmn]
+category = System
+
+[SUNWvtss]
+category = System
+
+[SUNWvtsts]
+category = System
+
+[SUNWw3m]
+category = Libraries
+
+[SUNWwbsup]
+category = Core
+
+[SUNWwebmin]
+category = Administration and Configuration
+
+[SUNWwget]
+category = Internet
+
+[SUNWwlan]
+category = Administration and Configuration
+
+[SUNWwpa]
+category = Hardware
+
+[SUNWwpi]
+category = Networking
+
+[SUNWwsr2]
+category = Administration and Configuration
+
+[SUNWxcu4]
+category = System Utilities
+
+[SUNWxcu6]
+category = System Utilities
+
+[SUNWxcursor-themes]
+category = X11 (System)
+
+[SUNWxdg-user-dirs]
+category = System Utilities
+
+[SUNWxdg-user-dirs-gtk]
+category = System Utilities
+
+[SUNWxdg-utils]
+category = System Utilities
+
+[SUNWxdt]
+category = System
+
+[SUNWxge]
+category = Networking
+
+[SUNWxorg-cfg]
+category = X11 (System)
+
+[SUNWxorg-client-docs]
+category = X11
+
+[SUNWxorg-clientlibs]
+category = X11
+
+[SUNWxorg-client-programs]
+category = X11 (System)
+
+[SUNWxorg-compatlinks]
+category = X11 (System)
+
+[SUNWxorg-devel-docs]
+category = X11
+
+[SUNWxorg-doc]
+category = X11 (System)
+
+[SUNWxorg-graphics-ddx]
+category = X11 (System)
+
+[SUNWxorg-headers]
+category = X11
+
+[SUNWxorg-mesa]
+category = X11 (System)
+
+[SUNWxorg-server]
+category = X11 (System)
+
+[SUNWxorg-tsol-module]
+category = Trusted
+
+[SUNWxorg-xkb]
+category = X11 (System)
+
+[SUNWxscreensaver-hacks]
+category = X11 (System)
+
+[SUNWxscreensaver-hacks-gl]
+category = X11 (System)
+
+[SUNWxsvc]
+category = X11 (System)
+
+[SUNWxvm]
+category = System
+
+[SUNWxvmdom]
+category = Virtualization
+
+[SUNWxvmhvm]
+category = Virtualization
+
+[SUNWxvmipa]
+category = Virtualization
+
+[SUNWxvmpv]
+category = Virtualization
+
+[SUNWxvnc]
+category = X11 (System)
+
+[SUNWxwdem]
+category = X11 (System)
+
+[SUNWxwdv]
+category = X11 (System)
+
+[SUNWxwfsw]
+category = X11 (System)
+
+[SUNWxwice]
+category = X11 (System)
+
+[SUNWxwinc]
+category = X11
+
+[SUNWxwman]
+category = X11 (System)
+
+[SUNWxwmod]
+category = X11 (System)
+
+[SUNWxwopt]
+category = X11 (System)
+
+[SUNWxwplr]
+category = X11 (System)
+
+[SUNWxwplt]
+category = X11 (System)
+
+[SUNWxwpmn]
+category = X11
+
+[SUNWxwrtl]
+category = X11 (System)
+
+[SUNWxwslb]
+category = X11
+
+[SUNWxwsvr]
+category = X11 (System)
+
+[SUNWxwxft]
+category = X11 (System)
+
+[SUNWyp]
+category = Administration and Configuration
+
+[SUNWzfs]
+category = File System
+
+[SUNWzfskr]
+category = File System
+
+[SUNWzip]
+category = System Utilities
+
+[SUNWzlib]
+category = Libraries (System)
+
+[SUNWzone]
+category = Core
+
+[SUNWzsh]
+category = Shells
+
+[webstackui]
+category = Application and Web Servers
+
 
