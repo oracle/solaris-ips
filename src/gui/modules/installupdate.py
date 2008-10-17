@@ -79,15 +79,24 @@ class InstallUpdate(progress.ProgressTracker):
                         return
                 w_tree_createplan = gtk.glade.XML(parent.gladefile, "createplandialog")
                 w_tree_installupdate = gtk.glade.XML(parent.gladefile, "installupdate")
+                w_tree_errordialog = gtk.glade.XML(parent.gladefile, "errordialog")
                 w_tree_downloadingfiles = \
                     gtk.glade.XML(parent.gladefile, "downloadingfiles")
                 w_tree_installingdialog = \
                     gtk.glade.XML(parent.gladefile, "installingdialog") 
                 w_tree_networkdown = gtk.glade.XML(parent.gladefile, "networkdown")
                 self.w_createplan_dialog = \
-                    w_tree_createplan.get_widget("createplandialog")     
+                    w_tree_createplan.get_widget("createplandialog")
+                self.w_error_dialog = \
+                    w_tree_errordialog.get_widget("errordialog")    
+                self.w_errortext_label = \
+                    w_tree_errordialog.get_widget("errortext")
+                self.w_errortext_textview = \
+                    w_tree_errordialog.get_widget("errortextdetails")
                 self.w_next_button = \
                     w_tree_installupdate.get_widget("next")
+                remove_warning_triange = \
+                    w_tree_installupdate.get_widget("warningtriangle")
                 self.w_cancel_button = \
                     w_tree_installupdate.get_widget("cancel")
                 self.w_createplan_progressbar = \
@@ -132,6 +141,7 @@ class InstallUpdate(progress.ProgressTracker):
                 installed_updated_column.pack_start(cell, True)
                 installed_updated_column.add_attribute(cell, 'text', 0)
                 self.w_review_treeview.expand_all()
+                remove_warning_triange.hide()
 
                 if self.action == enumerations.REMOVE:
                         self.w_installupdate_dialog.set_title(self.parent._(\
@@ -146,6 +156,7 @@ class InstallUpdate(progress.ProgressTracker):
                             self.parent._("Remove Check"))
                         self.w_installingdialog_label.set_text(\
                             self.parent._("Removing Packages..."))
+                        remove_warning_triange.show()
 
                 try:
                         dic_createplan = \
@@ -169,10 +180,16 @@ class InstallUpdate(progress.ProgressTracker):
                                 "on_networkdown_close_clicked": \
                                     self.__on_networkdown_close_clicked,
                             }
+                        dic_error = \
+                            {
+                                "on_error_close_clicked": \
+                                    self.__on_error_close_clicked,
+                            }
                         w_tree_createplan.signal_autoconnect(dic_createplan)
                         w_tree_installupdate.signal_autoconnect(dic_installupdate)
                         w_tree_downloadingfiles.signal_autoconnect(dic_downloadingfiles)
                         w_tree_networkdown.signal_autoconnect(dic_networkdown)
+                        w_tree_errordialog.signal_autoconnect(dic_error)
                 except AttributeError, error:
                         print self.parent._('GUI will not respond to any event! %s. \
                             Check installupdate.py signals') \
@@ -228,6 +245,9 @@ class InstallUpdate(progress.ProgressTracker):
                 there was some problem with the network connection.'''
                 self.w_networkdown_dialog.destroy()
 
+        def __on_error_close_clicked(self, widget):
+                self.w_error_dialog.destroy()
+
         def __update_createplan_progress(self, action):
                 buf = self.w_createplan_textview.get_buffer()
                 textiter = buf.get_end_iter()
@@ -264,7 +284,7 @@ class InstallUpdate(progress.ProgressTracker):
         def __plan_the_install_updateimage_ex(self, list_of_packages):
                 try:
                         self.__plan_the_install_updateimage(list_of_packages)
-                except:
+                except Exception:
                         self.progress_stop_timer_thread = True
                         gobject.idle_add(self.w_createplan_dialog.hide)
                         msg = self.parent._("An unknown error occured while " + \
@@ -303,13 +323,14 @@ class InstallUpdate(progress.ProgressTracker):
                                     "\nappropriate certificate.")
                                 gobject.idle_add(self.parent.error_occured, msg)
                                 return
-                        except api_errors.PlanCreationException:
+                        except api_errors.PlanCreationException, e:
                                 self.progress_stop_timer_thread = True
                                 gobject.idle_add(self.w_createplan_dialog.hide)
-                                msg = self.parent._("Installation failed during\n" + \
-                                   "creating plan, please check your network\n" + \
-                                   "connection and you can try to re-run the operation.")
-                                gobject.idle_add(self.parent.error_occured, msg)
+                                err_msg = self.parent._("Install/Update failure" + \
+                                   " in plan creation.")
+                                err_text = str(e)
+                                gobject.idle_add(self.__error_with_details, \
+                                    err_msg, err_text)
                                 return
                         except api_errors.InventoryException:
                                 self.progress_stop_timer_thread = True
@@ -336,13 +357,14 @@ class InstallUpdate(progress.ProgressTracker):
                                 plan_uninstall = self.api_o.plan_uninstall
                                 stuff_to_do = \
                                     plan_uninstall(list_of_packages, False, False)
-                        except api_errors.PlanCreationException:
+                        except api_errors.PlanCreationException, e:
                                 self.progress_stop_timer_thread = True
                                 gobject.idle_add(self.w_createplan_dialog.hide)
-                                msg = self.parent._("Update All failed during\n" + \
-                                   "creating plan, please check your network\n" + \
-                                   "connection and you can try to re-run the update all.")
-                                gobject.idle_add(self.parent.error_occured, msg)
+                                err_msg = self.parent._("Remove failure in plan" + \
+                                   " creation.")
+                                err_text = str(e)
+                                gobject.idle_add(self.__error_with_details, \
+                                    err_msg, err_text)
                                 return
                         except api_errors.CanceledException:
                                 self.progress_stop_timer_thread = True
@@ -384,13 +406,14 @@ class InstallUpdate(progress.ProgressTracker):
                                     "Update All.\nPlease update SUNWipkg package")
                                 gobject.idle_add(self.parent.error_occured, msg)
                                 return
-                        except api_errors.PlanCreationException:
+                        except api_errors.PlanCreationException, e:
                                 self.progress_stop_timer_thread = True
                                 gobject.idle_add(self.w_createplan_dialog.hide)
-                                msg = self.parent._("Update All failed during\n" + \
-                                   "creating plan, please check your network\n" + \
-                                   "connection and you can try to re-run the update all.")
-                                gobject.idle_add(self.parent.error_occured, msg)
+                                err_msg = self.parent._("Update All failure in plan" + \
+                                   " creation.")
+                                err_text = str(e)
+                                gobject.idle_add(self.__error_with_details, \
+                                    err_msg, err_text)
                                 return
                         except api_errors.CanceledException:
                                 self.progress_stop_timer_thread = True
@@ -405,11 +428,26 @@ class InstallUpdate(progress.ProgressTracker):
                                 return
                 if stuff_to_do:
                         gobject.idle_add(self.__afterplan_confirmation_dialog, self.api_o)
+                elif self.action == enumerations.INSTALL_UPDATE:
+                        self.progress_stop_timer_thread = True
+                        gobject.idle_add(self.w_createplan_dialog.hide)
+                        msg = self.parent._("Selected packages for update can\n" + \
+                            "only be updated using Update All.")
+                        title = self.parent._("Unable to update")
+                        gobject.idle_add(self.parent.error_occured, msg, title)
+                else:
+                        self.progress_stop_timer_thread = True
+                        gobject.idle_add(self.w_createplan_dialog.hide)
+                        msg = self.parent._("The action for selected packages " + \
+                            "could not be completed.")
+                        title = self.parent._("Unable to perform action")
+                        gobject.idle_add(self.parent.error_occured, msg, title)
+                        
 
         def __prepare_stage_ex(self, api_o):
                 try:
                         self.__prepare_stage(api_o)
-                except:
+                except Exception:
                         gobject.idle_add(self.w_downloadingfiles_dialog.hide)
                         msg = self.parent._("An unknown error occured while " + \
                             "downloading the files\n\nPlease let the developers know " + \
@@ -449,7 +487,7 @@ class InstallUpdate(progress.ProgressTracker):
         def __execute_stage_ex(self, api_o):
                 try:
                         self.__execute_stage(api_o)
-                except:
+                except Exception:
                         gobject.idle_add(self.w_installing_dialog.hide)
                         msg = self.parent._("An unknown error occured while " + \
                             "installing\nupdating or removing packages" + \
@@ -525,6 +563,14 @@ class InstallUpdate(progress.ProgressTracker):
                 textiter = buf.get_end_iter()
                 if text:
                         buf.insert(textiter, text + "\n")
+
+        def __error_with_details(self, err_msg, err_text):
+                self.w_errortext_label.set_text(err_msg)
+                buf = self.w_errortext_textview.get_buffer()
+                textiter = buf.get_end_iter()
+                buf.insert(textiter, err_text)
+                self.w_error_dialog.run()
+                self.w_error_dialog.destroy()
 
         def __add_info_to_installtext(self, text):
                 '''Function which adds another line text in the "more details" install 

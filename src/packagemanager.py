@@ -37,6 +37,7 @@ INITIAL_PROGRESS_TOTAL_PERCENTAGE = 0.05  # Total progress for start phase
 PACKAGE_PROGRESS_TOTAL_INCREMENTS = 95    # Total increments for loading phase
 PACKAGE_PROGRESS_PERCENT_INCREMENT = 0.01 # Amount to update progress during loading phase
 PACKAGE_PROGRESS_PERCENT_TOTAL = 1.0      # Total progress for loading phase
+MAX_DESC_LEN = 60     # Max lenght of the description 
 
 CLIENT_API_VERSION = 1
 PKG_CLIENT_NAME = "packagemanager"
@@ -185,6 +186,8 @@ class PackageManager:
                 self.progress_canceled = False
                 clear_search_image = w_tree_main.get_widget("clear_image")
                 clear_search_image.set_from_stock(gtk.STOCK_CLEAR, gtk.ICON_SIZE_MENU)
+                toolbar =  w_tree_main.get_widget("toolbutton2")
+                toolbar.set_expand(True)
 
                 self.__update_reload_button()
                 self.w_main_clipboard.request_text(self.__clipboard_text_received)
@@ -316,6 +319,10 @@ class PackageManager:
                 application_list_filter = application_list.filter_new()
                 application_list_sort = \
                     gtk.TreeModelSort(application_list_filter)
+                application_list_sort.set_sort_column_id(\
+                    enumerations.NAME_COLUMN, gtk.SORT_ASCENDING)
+                application_list_sort.set_sort_func(\
+                    enumerations.STATUS_ICON_COLUMN, self.__status_sort_func)
                 toggle_renderer = gtk.CellRendererToggle()
 
                 column = gtk.TreeViewColumn("", toggle_renderer, \
@@ -337,6 +344,7 @@ class PackageManager:
                 name_renderer = gtk.CellRendererText()
                 column = gtk.TreeViewColumn(self._("Name"), name_renderer, \
                     text = enumerations.NAME_COLUMN)
+                column.set_resizable(True)
                 column.set_sort_column_id(enumerations.NAME_COLUMN)
                 column.set_sort_indicator(True)
                 column.set_cell_data_func(name_renderer, self.cell_data_function, None)
@@ -350,6 +358,8 @@ class PackageManager:
                 column.add_attribute(render_pixbuf, "pixbuf", \
                     enumerations.STATUS_ICON_COLUMN)
                 column.set_fixed_width(32)
+                column.set_sort_column_id(enumerations.STATUS_ICON_COLUMN)
+                column.set_sort_indicator(True)
                 column.set_cell_data_func(render_pixbuf, self.cell_data_function, None)
                 self.w_application_treeview.append_column(column)
                 installed_version_renderer = gtk.CellRendererText()
@@ -375,6 +385,7 @@ class PackageManager:
                 description_renderer = gtk.CellRendererText()
                 column = gtk.TreeViewColumn(self._('Description'), \
                     description_renderer, text = enumerations.DESCRIPTION_COLUMN)
+                column.set_resizable(True)
                 column.set_sort_column_id(enumerations.DESCRIPTION_COLUMN)
                 column.set_sort_indicator(True)
                 column.set_cell_data_func(description_renderer, \
@@ -444,13 +455,30 @@ class PackageManager:
                 self.package_selection.connect("changed", \
                     self.__on_package_selection_changed, None)
                 self.first_run = False
-
+                
         def __disconnect_models(self):
                 self.w_application_treeview.set_model(None)
                 self.w_categories_treeview.set_model(None)
                 self.w_repository_combobox.set_model(None)
                 self.w_sections_combobox.set_model(None)
                 self.w_filter_combobox.set_model(None)
+
+        @staticmethod
+        def __status_sort_func(treemodel, iter1, iter2, user_data=None):
+                get_val = treemodel.get_value
+                lat1 = get_val(iter1, enumerations.LATEST_AVAILABLE_COLUMN)
+                ins1 = get_val(iter1, enumerations.INSTALLED_VERSION_COLUMN)
+                lat2 = get_val(iter2, enumerations.LATEST_AVAILABLE_COLUMN)
+                ins2 = get_val(iter2, enumerations.INSTALLED_VERSION_COLUMN)
+                if ins1 and not ins2:
+                        return -1
+                if ins2 and not ins1:
+                        return 1
+                if lat1 and not lat2:
+                        return -1
+                if lat2 and not lat1:
+                        return 1
+                return 0
 
         @staticmethod
         def __remove_treeview_columns(treeview):
@@ -953,7 +981,10 @@ class PackageManager:
                         infobuffer.set_text( \
                             self._("Information not available for this package..."))
                         return
-                self.w_shortdescription_label.set_text(manifest.get("description", ""))
+                description = manifest.get("description", "")
+                if len(description) > MAX_DESC_LEN:
+                        description = description[:MAX_DESC_LEN] + " ..."
+                self.w_shortdescription_label.set_text(description)
                 instbuffer.set_text(self._("Root: %s\n") % manifest.img.get_root())
                 depbuffer.set_text(self._("Dependencies:\n"))
                 if installed:
@@ -1011,7 +1042,7 @@ class PackageManager:
                         lic += licens.get_text()
                         lic += "\n"
                 self.w_info_notebook.insert_page(self.w_license_page, \
-                    gtk.Label("Licenses"), 3)
+                    gtk.Label("Legal"), 3)
                 licbuffer = self.w_license_textview.get_buffer()
                 try:
                         lic_u = unicode(lic, "utf-8")
@@ -1211,8 +1242,11 @@ class PackageManager:
                                 return False
 
         def __do_ips_uptodate_check(self):
-                self.__catalog_refresh(False)
-                self.ips_uptodate = self.__ipkg_ipkgui_uptodate()
+                ret = self.__catalog_refresh(False)
+                if ret != -1:
+                        self.ips_uptodate = self.__ipkg_ipkgui_uptodate()
+                else:
+                        self.progress_canceled = True
                 self.progress_stop_timer_thread = True
 
         def __ipkg_ipkgui_uptodate(self):
@@ -1327,7 +1361,9 @@ class PackageManager:
                 except api_errors.CatalogRefreshException, cre:
                         total = cre.total
                         succeeded = cre.succeeded
-                        ermsg = "%s/%s" % (succeeded, total) 
+                        ermsg = self._("Network problem.\n\n")
+                        ermsg += self._("Details:\n")
+                        ermsg += "%s/%s" % (succeeded, total) 
                         ermsg += self._(" catalogs successfully updated:\n") 
                         for auth, err in cre.failed:
                                 if isinstance(err, HTTPError):
@@ -1352,11 +1388,13 @@ class PackageManager:
                                         ermsg += self._("Unknown error")
 
                         gobject.idle_add(self.error_occured, ermsg)
+                        return -1
 
                 except api_errors.UnrecognizedAuthorityException:
                         raise
                 if reload_gui:
                         self.__catalog_refresh_done()
+                return 0
 
         def __get_image_obj_from_directory(self, image_directory):
                 image_obj = image.Image()
@@ -1685,15 +1723,20 @@ class PackageManager:
                     "Processing package entries: %d of %d" % (count, total)  ))
                 gobject.idle_add(self.w_progressbar.set_fraction, fraction)
 
-        def error_occured(self, error_msg):
+        def error_occured(self, error_msg, msg_title=None, msg_type=gtk.MESSAGE_ERROR):
                 msgbox = gtk.MessageDialog(parent = \
                     self.w_main_window, \
                     buttons = gtk.BUTTONS_CLOSE, \
                     flags = gtk.DIALOG_MODAL, \
-                    type = gtk.MESSAGE_ERROR, \
+                    type = msg_type, \
                     message_format = None)
                 msgbox.set_markup(error_msg)
-                msgbox.set_title(self._("Packagemanager error"))
+                title = None
+                if msg_title:
+                        title = msg_title
+                else:
+                        title = self._("Package Manager")
+                msgbox.set_title(title)
                 msgbox.run()
                 msgbox.destroy()
 
