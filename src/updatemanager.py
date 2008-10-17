@@ -52,7 +52,7 @@ import pkg.gui.beadmin as beadm
 
 IMAGE_DIRECTORY_DEFAULT = "/"   # Image default directory
 IMAGE_DIR_COMMAND = "svcprop -p update/image_dir svc:/application/pkg/update"
-API_VERSION = 0                 # API version
+CLIENT_API_VERSION = 1          # API version
 PKG_CLIENT_NAME = "pkg"         # API client name
 SELECTION_CHANGE_LIMIT = 0.5    # Time limit in seconds to cancel selection updates
 IND_DELAY = 0.05                # Time delay for printing index progress
@@ -306,6 +306,7 @@ class Updatemanager:
                 self.w_um_updateall_button = \
                         w_xmltree_um.get_widget("um_updateall_button")
                 self.w_um_expander = w_xmltree_um.get_widget("um_expander")
+                self.w_um_expander.set_expanded(True)
 
                 self.w_progress_dialog.set_transient_for(self.w_um_dialog)
 
@@ -494,6 +495,8 @@ class Updatemanager:
 
 
         def __set_initial_selection(self):
+                if len(self.um_list) == 0:
+                        return                
                 self.w_um_treeview.set_cursor(0, None)
 
         def __remove_installed(self, installed_fmris):
@@ -734,37 +737,46 @@ class Updatemanager:
                         self.__display_noupdates()
                         return          
                         
-                try:
-                        self.api_obj = api.ImageInterface(self.__get_image_path(), \
-                                API_VERSION, self.pr, self.__set_cancel_state, \
-                                PKG_CLIENT_NAME)
-                except api_errors.ImageNotFoundException, ine:
-                        self.w_um_expander.set_expanded(True)
-                        infobuffer = self.w_um_textview.get_buffer()
-                        textiter = infobuffer.get_end_iter()
-                        infobuffer.insert_with_tags_by_name(textiter, self._("Error\n"), \
-                                "bold")
-                        infobuffer.set_text(self._("'%s' is not an install image" % \
-                                ine.user_specified))
-                except api_errors.VersionException, ve:
-                        self.w_um_expander.set_expanded(True)
-                        infobuffer = self.w_um_textview.get_buffer()
-                        textiter = infobuffer.get_end_iter()
-                        infobuffer.insert_with_tags_by_name(textiter, self._("Error\n"), \
-                                "bold")
-                        infobuffer.set_text(
-                                self._("Version mismatch: expected %s received %s" % \
-                                (ve.expected_version, ve.received_version)))
-
                 # XXX: Currently this will fetch the sizes but it really slows down the
                 # app responsiveness - until we get caching I think we should just hide
                 # the size column
                 # gobject.timeout_add(1000, self.__setup_sizes)
-
+                
+        def __get_api_obj(self):
+                if self.api_obj != None:
+                        return self.api_obj
+                try:
+                        self.api_obj = api.ImageInterface(self.__get_image_path(), \
+                                CLIENT_API_VERSION, self.pr, self.__set_cancel_state, \
+                                PKG_CLIENT_NAME)
+                        return self.api_obj
+                except api_errors.ImageNotFoundException, ine:
+                        self.w_um_expander.set_expanded(True)
+                        infobuffer = self.w_um_textview.get_buffer()
+                        infobuffer.set_text("")
+                        textiter = infobuffer.get_end_iter()
+                        infobuffer.insert_with_tags_by_name(textiter, self._("Error\n"), \
+                                "bold")
+                        infobuffer.insert(textiter, self._("'%s' is not an install image\n" % \
+                                ine.user_specified))
+                except api_errors.VersionException, ve:
+                        self.w_um_expander.set_expanded(True)
+                        infobuffer = self.w_um_textview.get_buffer()
+                        infobuffer.set_text("")
+                        textiter = infobuffer.get_end_iter()
+                        infobuffer.insert_with_tags_by_name(textiter, self._("Error\n"), \
+                                "bold")
+                        infobuffer.insert(textiter, 
+                                self._("Version mismatch: expected %s received %s\n" % \
+                                (ve.expected_version, ve.received_version)))
+                return None
+                
         def __display_noupdates(self):
                 self.w_um_expander.set_expanded(True)
                 infobuffer = self.w_um_textview.get_buffer()
-                infobuffer.set_text(self._("\nNo Updates available"))
+                textiter = infobuffer.get_end_iter()
+                infobuffer.insert_with_tags_by_name(textiter, \
+                        "\nNo details available", "bold")
 
                 self.w_um_install_button.set_sensitive(False)
                 self.w_um_updateall_button.set_sensitive(False)
@@ -778,7 +790,11 @@ class Updatemanager:
                 
                 if self.fmri_description != name:
                         return None
-                ret = self.api_obj.info([name], local, get_license)
+                if self.__get_api_obj() == None:
+                        return None
+                        
+                ret = self.__get_api_obj().info([name], local, get_license)
+                
                 pis = ret[api.ImageInterface.INFO_FOUND]
                 if len(pis) == 1:
                         return pis[0]
@@ -795,9 +811,10 @@ class Updatemanager:
         def __update_details_from_info(self, name, info):
                 ver = "%s-%s" % (info.version, info.branch)
                 str_details = self._(\
-                '\nDescription: \t%s\nName:        \t%s\nFMRI:        ' + \
-                '\t%s\nVersion:     \t%s\nPackaged:    \t%s\nSize:        \t%.3f MB\n') \
-                        % (info.summary, name, info.fmri, ver, info.packaging_date, \
+                '\nDescription:\t\t%s\nFMRI:       \t\t%s' + \
+                '\nVersion:    \t\t%s\nPackaged on:\t\t%s' + \
+                '\nSize:       \t\t\t%.3f MB\n') \
+                        % (info.summary, info.fmri, ver, info.packaging_date, \
                         info.size/ 1024.0 / 1024.0)
                 self.details_cache[name] = str_details
                 return str_details
@@ -874,10 +891,16 @@ class Updatemanager:
                 details = self.__get_details_from_name(fmri)
                 if self.fmri_description == fmri and details != None:
                         infobuffer = self.w_um_textview.get_buffer()
-                        infobuffer.set_text(details)
+                        infobuffer.set_text("")
+                        textiter = infobuffer.get_end_iter()
+                        infobuffer.insert_with_tags_by_name(textiter, \
+                                "\n%s\n" % fmri, "bold")
+                        infobuffer.insert(textiter, details)
                 elif self.fmri_description == fmri and details == None:
                         infobuffer = self.w_um_textview.get_buffer()
-                        infobuffer.set_text(self._("\nNo details available"))
+                        textiter = infobuffer.get_end_iter()
+                        infobuffer.insert_with_tags_by_name(textiter, \
+                                "\nNo details available", "bold")
 
         def __on_um_dialog_close(self, widget):
                 self.cancelled = True
@@ -987,8 +1010,11 @@ class Updatemanager:
                 try:
                         gobject.idle_add(self.__update_progress_info, \
                                 self._("\nEvaluate\n"), True)
+                        if self.__get_api_obj() == None:
+                                return
+                                
                         stuff_to_do, opensolaris_image, cre = \
-                            self.api_obj.plan_update_all(sys.argv[0],
+                            self.__get_api_obj().plan_update_all(sys.argv[0],
                                 refresh_catalogs = self.do_refresh)
                             #XXX waiting for change to API to allow be name to be passed
                             # self.api_obj.plan_update_all(sys.argv[0], be_name)
@@ -1053,10 +1079,7 @@ class Updatemanager:
         def __display_update_image_success(self):
                 self.w_um_expander.set_expanded(True)
                 infobuffer = self.w_um_textview.get_buffer()
-                textiter = infobuffer.get_end_iter()
                 infobuffer.set_text("")
-
-                infobuffer = self.w_um_textview.get_buffer()
                 textiter = infobuffer.get_end_iter()
                 elapsed = (time.time() - self.ua_start)/ 60.0 
                 if elapsed > 0:
@@ -1093,6 +1116,9 @@ class Updatemanager:
                         self.__handle_update_progress_error(\
                                 self._("Nothing selected to update."))
                         return
+                        
+                if self.__get_api_obj() == None:
+                        return
       
                 if debug:
                         print self._("Updating ...")
@@ -1102,8 +1128,15 @@ class Updatemanager:
                 try:
                         gobject.idle_add(self.__update_progress_info, \
                                 self._("\nEvaluate\n"), True)
-                        ret = self.api_obj.plan_install(list_fmris_to_install, [], \
+                        ret, exception_caught = self.__get_api_obj().plan_install(list_fmris_to_install, [], \
                                 refresh_catalogs = self.do_refresh)
+                        if exception_caught != None:
+                                self.__handle_update_progress_error(\
+                                        self._("Update error in plan install:"), \
+                                        exception_caught, \
+                                        stage = self.update_stage)
+                        return
+                                
                 except (api_errors.CanceledException):
                         self.__handle_cancel_exception()
                         return
@@ -1128,7 +1161,7 @@ class Updatemanager:
                         self.__cleanup()    
                         return
                         
-                list_changes = self.api_obj.describe().get_changes()
+                list_changes = self.__get_api_obj().describe().get_changes()
                 list_planned = [x[1].pkg_stem for x in list_changes]
 
                 if len(list_planned) != len(list_fmris_to_install):
@@ -1153,7 +1186,7 @@ class Updatemanager:
                 # Download
                 try:
                         self.update_stage = UPDATE_DOWNLOAD
-                        self.api_obj.prepare()
+                        self.__get_api_obj().prepare()
                 except (api_errors.CanceledException):
                         self.__handle_cancel_exception()
                         return 1
@@ -1184,7 +1217,7 @@ class Updatemanager:
                 try:
                         self.update_stage = UPDATE_INSTALL
                         gobject.idle_add(self.w_progress_cancel.set_sensitive, False)
-                        self.api_obj.execute_plan()
+                        self.__get_api_obj().execute_plan()
                 except (api_errors.CanceledException):
                         self.__handle_cancel_exception()
                         return 1
@@ -1213,17 +1246,17 @@ class Updatemanager:
 
         def __prompt_to_load_beadm(self):
                 msgbox = gtk.MessageDialog(parent = self.w_progress_dialog, \
-                        buttons = gtk.BUTTONS_YES_NO, flags = gtk.DIALOG_MODAL, \
-                        type = gtk.MESSAGE_QUESTION, \
+                        buttons = gtk.BUTTONS_OK_CANCEL, flags = gtk.DIALOG_MODAL, \
+                        type = gtk.MESSAGE_ERROR, \
                         message_format = self._(\
                         "Not enough disc space: the Update All action cannot " +\
                         "be performed.\n\n" +\
-                        "Do you want to launch BE Management to manage your " +\
-                        "existing BE's and free up some disc space?"))
-                msgbox.set_title(self._("Update All"))
+                        "Click OK to launch BE Management to manage your " +\
+                        "existing BE's and free up disc space."))
+                msgbox.set_title(self._("Not Enough Disc Space"))
                 result = msgbox.run()
                 msgbox.destroy()
-                if result == gtk.RESPONSE_YES:
+                if result == gtk.RESPONSE_OK:
                         gobject.idle_add(self.__create_beadm)
                         
         def __create_beadm(self):

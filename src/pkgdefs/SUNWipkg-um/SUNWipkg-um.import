@@ -1,6 +1,0 @@
-package SUNWipkg-um
-import SUNWipkg-um
-depend SUNWPython@2.4.4
-depend SUNWipkg@0.5.11
-version 0.0.1
-end package
