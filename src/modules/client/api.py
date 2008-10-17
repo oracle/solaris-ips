@@ -33,7 +33,7 @@ from pkg.client.imageplan import EXECUTED_OK
 
 import threading
 
-CURRENT_API_VERSION = 1
+CURRENT_API_VERSION = 2
                 
 class ImageInterface(object):
         """This class presents an interface to images that clients may use.
@@ -68,7 +68,9 @@ class ImageInterface(object):
                 canceled changes. It can raise VersionException and
                 ImageNotFoundException."""
                 
-                if version_id != CURRENT_API_VERSION:
+                compatible_versions = set([1, 2])
+                
+                if version_id not in compatible_versions:
                         raise api_errors.VersionException(CURRENT_API_VERSION,
                             version_id)
 
@@ -90,7 +92,7 @@ class ImageInterface(object):
                 self.__activity_lock = threading.Lock()
                 
         def plan_install(self, pkg_list, filters, refresh_catalogs=True,
-            noexecute=False, verbose=False):
+            noexecute=False, verbose=False, update_index=True):
                 """Contructs a plan to install the packages provided in
                 pkg_list. pkg_list is a list of packages to install. filters
                 is a list of filters to apply to the actions of the installed
@@ -157,6 +159,7 @@ class ImageInterface(object):
                                     noexecute:
                                         self.img.history.operation_result = \
                                             history.RESULT_NOTHING_TO_DO
+                                self.img.imageplan.update_index = update_index
                                 res = not self.img.imageplan.nothingtodo()
                         except api_errors.CanceledException:
                                 self.__reset_unlock()
@@ -176,11 +179,11 @@ class ImageInterface(object):
                 finally:
                         self.__activity_lock.release()
                 
-                return (res, exception_caught)
+                return res, exception_caught
 
 
         def plan_uninstall(self, pkg_list, recursive_removal, noexecute=False,
-            verbose=False):
+            verbose=False, update_index=True):
                 """Contructs a plan to uninstall the packages provided in
                 pkg_list. pkg_list is a list of packages to install.
                 recursive_removal controls whether recursive removal is
@@ -220,6 +223,7 @@ class ImageInterface(object):
                                 if noexecute:
                                         self.img.history.operation_result = \
                                             history.RESULT_NOTHING_TO_DO
+                                self.img.imageplan.update_index = update_index
                                 res = not self.img.imageplan.nothingtodo()
                         except api_errors.CanceledException:
                                 self.__reset_unlock()
@@ -252,7 +256,7 @@ class ImageInterface(object):
                 return res
                 
         def plan_update_all(self, actual_cmd, refresh_catalogs=True,
-            noexecute=False, force=False, verbose=False):
+            noexecute=False, force=False, verbose=False, update_index=True):
                 """Creates a plan to update all packages on the system to the
                 latest known versions. actual_cmd is the command used to start
                 the client. It is used to determine the image to check whether
@@ -354,6 +358,7 @@ class ImageInterface(object):
                                     noexecute:
                                         self.img.history.operation_result = \
                                             history.RESULT_NOTHING_TO_DO
+                                self.img.imageplan.update_index = update_index
                                 res = not self.img.imageplan.nothingtodo()
                         except api_errors.CanceledException:
                                 self.__reset_unlock()
@@ -371,7 +376,7 @@ class ImageInterface(object):
                 finally:
                         self.__activity_lock.release()
                 
-                return (res, opensolaris_image, exception_caught)
+                return res, opensolaris_image, exception_caught
 
         def describe(self):
                 """Returns None if no plan is ready yet, otherwise returns

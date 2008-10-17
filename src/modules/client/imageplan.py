@@ -103,6 +103,8 @@ class ImagePlan(object):
 
                 self.actuators = None
 
+                self.update_index = True
+
         def __str__(self):
                 if self.state == UNEVALUATED:
                         s = "UNEVALUATED:\n"
@@ -590,26 +592,30 @@ class ImagePlan(object):
                 # the function will work correctly. It also repairs the index
                 # for this BE so the user can boot into this BE and have a
                 # correct index.
-                try:
-                        self.image.update_index_dir()
-                        ind = indexer.Indexer(self.image.index_dir,
-                            CLIENT_DEFAULT_MEM_USE_KB, progtrack=self.progtrack)
-                        if not ind.check_index_existence() or \
-                            not ind.check_index_has_exactly_fmris(
-                                self.image.gen_installed_pkg_names()):
-                                # XXX Once we have a framework for emitting a
-                                # message to the user in this spot in the
-                                # code, we should tell them something has gone
-                                # wrong so that we continue to get feedback to
-                                # allow us to debug the code.
-                                ind.rebuild_index_from_scratch(
-                                    self.image.get_fmri_manifest_pairs())
-                except se.IndexingException:
-                        # If there's a problem indexing, we want to attempt
-                        # to finish the installation anyway. If there's a
-                        # problem updating the index on the new image,
-                        # that error needs to be communicated to the user.
-                        pass
+                if self.update_index:
+                        try:
+                                self.image.update_index_dir()
+                                ind = indexer.Indexer(self.image.index_dir,
+                                    CLIENT_DEFAULT_MEM_USE_KB,
+                                    progtrack=self.progtrack)
+                                if not ind.check_index_existence() or \
+                                    not ind.check_index_has_exactly_fmris(
+                                        self.image.gen_installed_pkg_names()):
+                                        # XXX Once we have a framework for
+                                        # emitting a message to the user in
+                                        # this spot in the code, we should tell
+                                        # them something has gone wrong so that
+                                        # we continue to get feedback to
+                                        # allow us to debug the code.
+                                        ind.rebuild_index_from_scratch(
+                                            self.image.get_fmri_manifest_pairs())
+                        except se.IndexingException:
+                                # If there's a problem indexing, we want to
+                                # attempt to finish the installation anyway. If
+                                # there's a problem updating the index on the
+                                # new image, that error needs to be
+                                # communicated to the user.
+                                pass
 
                 try:
                         for p in self.pkg_plans:
@@ -737,38 +743,43 @@ class ImagePlan(object):
                 
                 # Perform the incremental update to the search indexes
                 # for all changed packages
-                plan_info = []
-                for p in self.pkg_plans:
-                        d_fmri = p.destination_fmri
-                        d_manifest_path = None
-                        if d_fmri:
-                                d_manifest_path = \
-                                    self.image.get_manifest_path(d_fmri)
-                        o_fmri = p.origin_fmri
-                        o_manifest_path = None
-                        o_filter_file = None
-                        if o_fmri:
-                                o_manifest_path = \
-                                    self.image.get_manifest_path(o_fmri)
-                        plan_info.append((d_fmri, d_manifest_path, o_fmri,
-                                          o_manifest_path))
-                del self.pkg_plans
-                self.progtrack.actions_set_goal("Index Phase", len(plan_info))
-                try:
-                        self.image.update_index_dir()
-                        ind = indexer.Indexer(self.image.index_dir,
-                            CLIENT_DEFAULT_MEM_USE_KB, progtrack=self.progtrack)
-                        ind.client_update_index((self.filters, plan_info))
-                except (KeyboardInterrupt,
-                    se.ProblematicPermissionsIndexException):
-                        # ProblematicPermissionsIndexException is included here
-                        # as there's little chance that trying again will fix
-                        # this problem.
-                        raise
-                except Exception, e:
-                        del(ind)
-                        # XXX Once we have a framework for emitting a message
-                        # to the user in this spot in the code, we should tell
-                        # them something has gone wrong so that we continue to
-                        # get feedback to allow us to debug the code.
-                        self.image.rebuild_search_index(self.progtrack)
+                if self.update_index:
+                        plan_info = []
+                        for p in self.pkg_plans:
+                                d_fmri = p.destination_fmri
+                                d_manifest_path = None
+                                if d_fmri:
+                                        d_manifest_path = \
+                                            self.image.get_manifest_path(d_fmri)
+                                o_fmri = p.origin_fmri
+                                o_manifest_path = None
+                                o_filter_file = None
+                                if o_fmri:
+                                        o_manifest_path = \
+                                            self.image.get_manifest_path(o_fmri)
+                                plan_info.append((d_fmri, d_manifest_path,
+                                                  o_fmri, o_manifest_path))
+                        del self.pkg_plans
+                        self.progtrack.actions_set_goal("Index Phase",
+                            len(plan_info))
+                        try:
+                                self.image.update_index_dir()
+                                ind = indexer.Indexer(self.image.index_dir,
+                                    CLIENT_DEFAULT_MEM_USE_KB,
+                                    progtrack=self.progtrack)
+                                ind.client_update_index((self.filters,
+                                    plan_info))
+                        except (KeyboardInterrupt,
+                            se.ProblematicPermissionsIndexException):
+                                # ProblematicPermissionsIndexException is
+                                # included here as there's little chance that
+                                # trying again will fix this problem.
+                                raise
+                        except Exception, e:
+                                del(ind)
+                                # XXX Once we have a framework for emitting a
+                                # message to the user in this spot in the code,
+                                # we should tell them something has gone wrong
+                                # so that we continue to get feedback to allow
+                                # us to debug the code.
+                                self.image.rebuild_search_index(self.progtrack)

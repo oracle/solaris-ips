@@ -7,8 +7,8 @@ NAME
 SYNOPSIS
      /usr/bin/pkg [options] command [cmd_options] [operands]
 
-     /usr/bin/pkg install [-nvq] [--no-refresh] pkg_fmri ...
-     /usr/bin/pkg uninstall [-nrvq] pkg_fmri ...
+     /usr/bin/pkg install [-nvq] [--no-refresh] [--no-index] pkg_fmri ...
+     /usr/bin/pkg uninstall [-nrvq] [--no-index] pkg_fmri ...
 
      /usr/bin/pkg verify [-Hvq] [pkg_fmri_pattern ...]
      /usr/bin/pkg fix [pkg_fmri_pattern ...]
@@ -22,7 +22,7 @@ SYNOPSIS
 
      /usr/bin/pkg image-create [-FPUz] [--full|--partial|--user] [--zone]
          [-k ssl_key] [-c ssl_cert] [--no-refresh] -a authority=origin_url dir
-     /usr/bin/pkg image-update [-nvq] [--no-refresh]
+     /usr/bin/pkg image-update [-nvq] [--no-refresh] [--no-index]
 
      /usr/bin/pkg set-property propname propvalue
      /usr/bin/pkg unset-property propname ...
@@ -99,7 +99,7 @@ SUBCOMMANDS
           With -f (--force), force the creation of an image over an existing
           image.  This option should be used with care.
 
-     image-update [-fnvq] [--no-refresh] 
+     image-update [-fnvq] [--no-refresh] [--no-index]
           Update all installed packages in the current image to the
           latest available version.  With the -f option, skip safety
           checks.  With the -n option, execute the requested operation
@@ -107,7 +107,8 @@ SUBCOMMANDS
           option, issue verbose progress messages during the requested
           operation.  With the -q option, be completely silent. With 
           --no-refresh, do not attempt to contact the image's authorities
-          to retrieve their catalogs.
+          to retrieve their catalogs. With --no-index do not update the
+          search indices after the operation has completed successfully.
 
      refresh [--full] [authority ...]
           Retrieve updates to the catalogs for each authority specified.
@@ -115,8 +116,8 @@ SUBCOMMANDS
           registered within the image. With --full, retrieve the full
           catalogs.
 
-     install [-nvq] [--no-refresh] pkg_fmri ...
-     uninstall [-nrvq] pkg_fmri ...
+     install [-nvq] [--no-refresh] [--no-index] pkg_fmri ...
+     uninstall [-nrvq] [--no-index] pkg_fmri ...
           Install or remove the package specified by pkg_fmri or
           matching pkg_fmri as a substring.  With the -n option, execute
           the requested operation but make no persistent changes to the
@@ -128,7 +129,8 @@ SUBCOMMANDS
           package.
 
           With --no-refresh, do not attempt to contact the image's authorities
-          to retrieve their catalogs.
+          to retrieve their catalogs. With --no-index do not update the
+          search indices after the operation has completed successfully.
 
      info [-lr] [--license] [pkg_fmri_pattern ...]
           Display information about packages in a human-readable form.

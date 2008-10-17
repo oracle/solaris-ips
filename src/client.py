@@ -83,7 +83,7 @@ from pkg.client.history import RESULT_FAILED_STORAGE
 from pkg.client.retrieve import ManifestRetrievalError
 from pkg.client.retrieve import DatastreamRetrievalError
 
-CLIENT_API_VERSION = 1
+CLIENT_API_VERSION = 2
 PKG_CLIENT_NAME = "pkg"
 
 def error(text):
@@ -113,10 +113,10 @@ Usage:
         pkg [options] command [cmd_options] [operands]
 
 Basic subcommands:
-        pkg install [-nvq] package...
-        pkg uninstall [-nrvq] package...
+        pkg install [-nvq] [--no-index] package...
+        pkg uninstall [-nrvq] [--no-index] package...
         pkg list [-aHsuvf] [package...]
-        pkg image-update [-nvq]
+        pkg image-update [-nvq] [--no-index]
         pkg refresh [--full]
         pkg version
         pkg help
@@ -504,10 +504,10 @@ def image_update(img_dir, args):
         # XXX Are filters appropriate for an image update?
         # XXX Leaf package refinements.
 
-        opts, pargs = getopt.getopt(args, "b:fnvq", ["no-refresh"])
+        opts, pargs = getopt.getopt(args, "b:fnvq", ["no-refresh", "no-index"])
 
         force = quiet = noexecute = verbose = False
-        refresh_catalogs = True
+        refresh_catalogs = update_index = True
         for opt, arg in opts:
                 if opt == "-n":
                         noexecute = True
@@ -521,6 +521,8 @@ def image_update(img_dir, args):
                         force = True
                 elif opt == "--no-refresh":
                         refresh_catalogs = False
+                elif opt == "--no-index":
+                        update_index = False
 
         if verbose and quiet:
                 usage(_("image-update: -v and -q may not be combined"))
@@ -544,7 +546,8 @@ def image_update(img_dir, args):
                 # caught while planning.
                 stuff_to_do, opensolaris_image, cre = \
                     api_inst.plan_update_all(sys.argv[0], refresh_catalogs,
-                        noexecute, force=force, verbose=verbose)
+                        noexecute, force=force, verbose=verbose,
+                        update_index=update_index)
                 if cre and not display_catalog_failures(cre):
                         raise RuntimeError("Catalog refresh failed during"
                             " image-update.")
@@ -633,10 +636,10 @@ def install(img_dir, args):
 
         # XXX Authority-catalog issues.
 
-        opts, pargs = getopt.getopt(args, "nvb:f:q", ["no-refresh"])
+        opts, pargs = getopt.getopt(args, "nvb:f:q", ["no-refresh", "no-index"])
 
         quiet = noexecute = verbose = False
-        refresh_catalogs = True
+        refresh_catalogs = update_index = True
         filters = []
         for opt, arg in opts:
                 if opt == "-n":
@@ -651,6 +654,8 @@ def install(img_dir, args):
                         quiet = True
                 elif opt == "--no-refresh":
                         refresh_catalogs = False
+                elif opt == "--no-index":
+                        update_index = False
 
         if not pargs:
                 usage(_("install: at least one package name required"))
@@ -678,7 +683,8 @@ def install(img_dir, args):
                 # cre is either None or a catalog refresh exception which was
                 # caught while planning.
                 stuff_to_do, cre = api_inst.plan_install(pkg_list, filters,
-                    refresh_catalogs, noexecute, verbose=verbose)
+                    refresh_catalogs, noexecute, verbose=verbose,
+                    update_index=update_index)
                 if cre and not display_catalog_failures(cre):
                         raise RuntimeError("Catalog refresh failed during"
                             " install.")
@@ -754,9 +760,10 @@ def install(img_dir, args):
 def uninstall(img_dir, args):
         """Attempt to take package specified to DELETED state."""
 
-        opts, pargs = getopt.getopt(args, "nrvq")
+        opts, pargs = getopt.getopt(args, "nrvq", ["no-index"])
 
         quiet = noexecute = recursive_removal = verbose = False
+        update_index = True
         for opt, arg in opts:
                 if opt == "-n":
                         noexecute = True
@@ -766,6 +773,8 @@ def uninstall(img_dir, args):
                         verbose = True
                 elif opt == "-q":
                         quiet = True
+                elif opt == "--no-index":
+                        update_index = False
 
         if not pargs:
                 usage(_("uninstall: at least one package name required"))
@@ -791,7 +800,7 @@ def uninstall(img_dir, args):
 
         try:
                 if not api_inst.plan_uninstall(pkg_list, recursive_removal,
-                    noexecute, verbose=verbose):
+                    noexecute, verbose=verbose, update_index=update_index):
                         assert 0
         except api_errors.InventoryException, e:
                 error(_("uninstall failed (inventory exception):\n%s") % e)
@@ -1019,7 +1028,7 @@ def info(img_dir, args):
                 msg(" Build Release:", pi.build_release)
                 msg("        Branch:", pi.branch)
                 msg("Packaging Date:", pi.packaging_date)
-                msg("          Size: %s", misc.bytes_to_str(pi.size))
+                msg("          Size:", misc.bytes_to_str(pi.size))
                 msg("          FMRI:", pi.fmri)
                 # XXX add license/copyright info here?
 
@@ -1503,9 +1512,8 @@ def authority_set(img, args):
                     ssl_key=ssl_key, ssl_cert=ssl_cert,
                     refresh_allowed=refresh_catalogs, uuid=uuid)
         except api_errors.CatalogRefreshException, e:
-                text = "Could not refresh the catalog for %s" % \
-                    auth
-                error(_(text))
+                text = "Could not refresh the catalog for %s"
+                error(_(text) % auth)
                 return 1
 
         if preferred:

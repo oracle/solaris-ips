@@ -1,3 +1,10 @@
+Version 2:
+Compatible with clients using Version 1
+Changes:
+Adds the optional argument update_index to plan_install, plan_uninstall, and 
+plan_update_all. When the argument is false, no automatic update to the index
+occurs. By default, the argument is true.
+
 Version 1:
 Incompatible with clients using Version 0
 Changes:

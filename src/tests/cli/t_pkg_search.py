@@ -479,6 +479,13 @@ close
                 fh.write("*")
                 fh.close()
 
+        def _check_no_index(self):
+                ind_dir, ind_dir_tmp = self._get_index_dirs()
+                if os.listdir(ind_dir):
+                        self.assert_(0)
+                if os.path.exists(ind_dir_tmp):
+                        self.assert_(0)
+
 	def test_pkg_search_cli(self):
 		"""Test search cli options."""
 
@@ -785,6 +792,39 @@ close
                 self.pkg("search with*")
                 self.pkg("search *space")
                 self.pkg("search foodir")
+
+        def test_bug_2863(self):
+                """Test local case sensitive search"""
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.example_pkg10)
+
+                self.image_create(durl)
+                self._check_no_index()
+                self.pkg("install --no-index example_pkg")
+                self._check_no_index()
+                self.pkg("rebuild-index")
+                self._run_local_tests()
+                self.pkg("uninstall --no-index example_pkg")
+                # Running empty test because search will notice the index
+                # does not match the installed packages and complain.
+                self._run_local_empty_tests()
+                self.pkg("rebuild-index") 
+                self._run_local_empty_tests()
+                self.pkg("install example_pkg")
+                self._run_local_tests()
+                self.pkgsend_bulk(durl, self.example_pkg11)
+                self.pkg("image-update --no-index")
+                # Running empty test because search will notice the index
+                # does not match the installed packages and complain.
+                self._run_local_empty_tests()
+                self.pkg("rebuild-index")
+                self._run_local_tests_example11_installed()
+                self.pkg("uninstall --no-index example_pkg")
+                # Running empty test because search will notice the index
+                # does not match the installed packages and complain.
+                self._run_local_empty_tests()
+                self.pkg("rebuild-index")
+                self._run_local_empty_tests()
                         
 
 class TestPkgSearchMulti(testutils.ManyDepotTestCase):
