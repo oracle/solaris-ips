@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.4.5 on Fri Oct 17 10:49:14 2008 -->
+<!--Generated with glade3 3.4.5 on Sat Oct 18 05:39:30 2008 -->
 <glade-interface>
   <widget class="GtkWindow" id="mainwindow">
     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
@@ -806,8 +806,8 @@
     </child>
   </widget>
   <widget class="GtkDialog" id="installupdate">
-    <property name="width_request">385</property>
-    <property name="height_request">365</property>
+    <property name="width_request">400</property>
+    <property name="height_request">375</property>
     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
     <property name="border_width">5</property>
     <property name="title" translatable="yes">Install / Update Confirmation</property>
@@ -989,7 +989,7 @@ Click Next to continue.</property>
     </child>
   </widget>
   <widget class="GtkDialog" id="downloadingfiles">
-    <property name="width_request">350</property>
+    <property name="width_request">400</property>
     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
     <property name="border_width">5</property>
     <property name="title" translatable="yes">Downloading Packages</property>
@@ -1114,7 +1114,7 @@ Click Next to continue.</property>
     </child>
   </widget>
   <widget class="GtkDialog" id="createplandialog">
-    <property name="width_request">350</property>
+    <property name="width_request">400</property>
     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
     <property name="border_width">5</property>
     <property name="title" translatable="yes">Install/Upgrade Check</property>
@@ -1144,6 +1144,7 @@ Click Next to continue.</property>
                 <property name="yalign">0</property>
                 <property name="label" translatable="yes">Checking package dependencies...</property>
                 <property name="use_markup">True</property>
+                <property name="wrap">True</property>
               </widget>
               <packing>
                 <property name="expand">False</property>
@@ -1239,7 +1240,7 @@ Click Next to continue.</property>
     </child>
   </widget>
   <widget class="GtkDialog" id="installingdialog">
-    <property name="width_request">350</property>
+    <property name="width_request">400</property>
     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
     <property name="border_width">5</property>
     <property name="title" translatable="yes">Installing Packages</property>
@@ -1832,7 +1833,7 @@ Padraig O'Briain &lt;Padraig.Obriain@Sun.Com&gt;</property>
     </child>
   </widget>
   <widget class="GtkDialog" id="progressdialog">
-    <property name="width_request">350</property>
+    <property name="width_request">400</property>
     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
     <property name="border_width">5</property>
     <property name="title" translatable="yes">Processing</property>
@@ -1984,8 +1985,10 @@ Padraig O'Briain &lt;Padraig.Obriain@Sun.Com&gt;</property>
                 <property name="xalign">0</property>
                 <property name="yalign">0</property>
                 <property name="xpad">20</property>
-                <property name="label" translatable="yes">Note: The current active BE cannot be deleted. To delete this BE, boot into another BE, then return here.</property>
+                <property name="label" translatable="yes">Note: The current active BE cannot be deleted. 
+To delete this BE, boot into another BE, then return here.</property>
                 <property name="use_markup">True</property>
+                <property name="wrap">True</property>
               </widget>
               <packing>
                 <property name="expand">False</property>
@@ -2902,6 +2905,123 @@ Note: Changes will occur upon reboot.</property>
             <property name="visible">True</property>
             <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
             <property name="layout_style">GTK_BUTTONBOX_END</property>
+          </widget>
+          <packing>
+            <property name="expand">False</property>
+            <property name="pack_type">GTK_PACK_END</property>
+          </packing>
+        </child>
+      </widget>
+    </child>
+  </widget>
+  <widget class="GtkDialog" id="ua_confirm_dialog">
+    <property name="border_width">5</property>
+    <property name="title" translatable="yes">Update All</property>
+    <property name="resizable">False</property>
+    <property name="modal">True</property>
+    <property name="window_position">GTK_WIN_POS_CENTER_ON_PARENT</property>
+    <property name="icon">PM_app_48x.png</property>
+    <property name="type_hint">GDK_WINDOW_TYPE_HINT_DIALOG</property>
+    <property name="transient_for">mainwindow</property>
+    <property name="has_separator">False</property>
+    <child internal-child="vbox">
+      <widget class="GtkVBox" id="dialog-vbox15">
+        <property name="visible">True</property>
+        <property name="spacing">2</property>
+        <child>
+          <widget class="GtkVBox" id="vbox12">
+            <property name="visible">True</property>
+            <property name="border_width">5</property>
+            <property name="spacing">4</property>
+            <child>
+              <widget class="GtkLabel" id="label6">
+                <property name="visible">True</property>
+                <property name="label" translatable="yes">&lt;b&gt;Create New Boot Environment&lt;/b&gt;
+
+Update All will create a new boot environment (BE) as a means
+of archiving older software and sets it to be the default BE when
+rebooting.
+
+An updated clone of the active BE is about to be created.</property>
+                <property name="use_markup">True</property>
+                <property name="wrap_mode">PANGO_WRAP_WORD_CHAR</property>
+              </widget>
+              <packing>
+                <property name="padding">5</property>
+              </packing>
+            </child>
+            <child>
+              <widget class="GtkHBox" id="hbox7">
+                <property name="visible">True</property>
+                <child>
+                  <widget class="GtkLabel" id="label11">
+                    <property name="label" translatable="yes">&lt;b&gt;Boot Environment Name: &lt;/b&gt;</property>
+                    <property name="use_markup">True</property>
+                    <property name="justify">GTK_JUSTIFY_RIGHT</property>
+                  </widget>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">False</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="GtkEntry" id="ua_be_name_entry">
+                    <property name="can_focus">True</property>
+                  </widget>
+                  <packing>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+              </widget>
+              <packing>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
+              <widget class="GtkHSeparator" id="hseparator7">
+                <property name="visible">True</property>
+              </widget>
+              <packing>
+                <property name="expand">False</property>
+                <property name="padding">4</property>
+                <property name="position">2</property>
+              </packing>
+            </child>
+          </widget>
+          <packing>
+            <property name="padding">2</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+        <child internal-child="action_area">
+          <widget class="GtkHButtonBox" id="dialog-action_area15">
+            <property name="visible">True</property>
+            <property name="layout_style">GTK_BUTTONBOX_END</property>
+            <child>
+              <widget class="GtkButton" id="ua_cancel_button">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="label" translatable="yes">_Cancel</property>
+                <property name="use_underline">True</property>
+                <property name="response_id">0</property>
+                <signal name="clicked" handler="on_ua_cancel_button_clicked"/>
+              </widget>
+            </child>
+            <child>
+              <widget class="GtkButton" id="ua_proceed_button">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="label" translatable="yes">_Proceed</property>
+                <property name="use_underline">True</property>
+                <property name="response_id">0</property>
+                <signal name="clicked" handler="on_ua_proceed_button_clicked"/>
+              </widget>
+              <packing>
+                <property name="position">1</property>
+              </packing>
+            </child>
           </widget>
           <packing>
             <property name="expand">False</property>

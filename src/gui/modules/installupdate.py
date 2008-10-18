@@ -23,6 +23,7 @@
 # Use is subject to license terms.
 #
 
+import errno
 import gettext # XXX Temporary workaround
 import sys
 import time
@@ -42,6 +43,7 @@ import pkg.misc
 import pkg.client.api as api
 import pkg.client.api_errors as api_errors
 from pkg.misc import TransferTimedOutException, TransportException
+import pkg.gui.beadmin as beadm
 import pkg.gui.enumerations as enumerations
 
 class InstallUpdate(progress.ProgressTracker):
@@ -55,6 +57,7 @@ class InstallUpdate(progress.ProgressTracker):
                 progress.ProgressTracker.__init__(self)
                 api_o.progresstracker = self
                 self.update_list = []
+                self.install_list = install_list
                 self.parent = parent
                 self.ips_update = ips_update
                 self.ip = None
@@ -70,7 +73,12 @@ class InstallUpdate(progress.ProgressTracker):
                     gtk.glade.XML(parent.gladefile, "downloadingfiles")
                 w_tree_installingdialog = \
                     gtk.glade.XML(parent.gladefile, "installingdialog") 
+                w_tree_uaconfirm = gtk.glade.XML(parent.gladefile, "ua_confirm_dialog")
                 w_tree_networkdown = gtk.glade.XML(parent.gladefile, "networkdown")
+                self.w_ua_confirm_dialog = \
+                        w_tree_uaconfirm.get_widget("ua_confirm_dialog")
+                self.w_ua_proceed_button = \
+                        w_tree_uaconfirm.get_widget("ua_proceed_button")
                 self.w_createplan_dialog = \
                     w_tree_createplan.get_widget("createplandialog")
                 self.w_error_dialog = \
@@ -142,6 +150,8 @@ class InstallUpdate(progress.ProgressTracker):
                             self.parent._("Remove Check"))
                         self.w_installingdialog_label.set_text(\
                             self.parent._("Removing Packages..."))
+                        self.w_next_button.set_label(\
+                            self.parent._("Proceed"))
                         remove_warning_triange.show()
 
                 try:
@@ -171,26 +181,33 @@ class InstallUpdate(progress.ProgressTracker):
                                 "on_error_close_clicked": \
                                     self.__on_error_close_clicked,
                             }
+                        dic_uaconfirm = \
+                            {
+                                "on_ua_cancel_button_clicked": \
+                                    self.__on_ua_cancel_button_clicked,
+                                "on_ua_proceed_button_clicked": \
+                                    self.__on_ua_proceed_button_clicked,
+                            }
                         w_tree_createplan.signal_autoconnect(dic_createplan)
                         w_tree_installupdate.signal_autoconnect(dic_installupdate)
                         w_tree_downloadingfiles.signal_autoconnect(dic_downloadingfiles)
                         w_tree_networkdown.signal_autoconnect(dic_networkdown)
                         w_tree_errordialog.signal_autoconnect(dic_error)
+                        w_tree_uaconfirm.signal_autoconnect(dic_uaconfirm)
                 except AttributeError, error:
                         print self.parent._('GUI will not respond to any event! %s. \
                             Check installupdate.py signals') \
                             % error
                 # XXX Hidden until progress will give information about fmri 
                 self.w_installingdialog_expander.hide()
-                pulse_t = Thread(target = self.__progressdialog_progress_pulse)
-                thread = Thread(target = self.__plan_the_install_updateimage_ex, \
-                    args = (install_list, ))
-                pulse_t.start()
-                thread.start()
                 self.w_createplan_label.set_text(\
                     self.parent._("Checking package dependencies..."))
                 self.w_createplancancel_button.set_sensitive(True)           
-                self.w_createplan_dialog.show()
+                if self.action == enumerations.IMAGE_UPDATE:
+                        self.w_ua_proceed_button.grab_focus()
+                        self.w_ua_confirm_dialog.show()
+                else:
+                        self.__on_ua_proceed_button_clicked(None)
 
         def __on_cancelcreateplan_clicked(self, widget):
                 '''Handler for signal send by cancel button, which user might press during
@@ -234,10 +251,23 @@ class InstallUpdate(progress.ProgressTracker):
         def __on_error_close_clicked(self, widget):
                 self.w_error_dialog.destroy()
 
+        def __on_ua_cancel_button_clicked(self, widget):
+                self.w_ua_confirm_dialog.hide()
+
+        def __on_ua_proceed_button_clicked(self, widget):
+                pulse_t = Thread(target = self.__progressdialog_progress_pulse)
+                thread = Thread(target = self.__plan_the_install_updateimage_ex, \
+                    args = (self.install_list, ))
+                pulse_t.start()
+                thread.start()
+                self.w_ua_confirm_dialog.hide()
+                self.w_createplan_dialog.show()
+
         def __update_createplan_progress(self, action):
                 buf = self.w_createplan_textview.get_buffer()
                 textiter = buf.get_end_iter()
                 buf.insert(textiter, action)
+                self.w_createplan_textview.scroll_to_iter(textiter, 0.0)
                 
         def __progressdialog_progress_pulse(self):
                 while not self.progress_stop_timer_thread:
@@ -433,15 +463,21 @@ class InstallUpdate(progress.ProgressTracker):
         def __prepare_stage_ex(self, api_o):
                 try:
                         self.__prepare_stage(api_o)
-                except Exception:
+                except (Exception), uex:
                         gobject.idle_add(self.w_downloadingfiles_dialog.hide)
-                        msg = self.parent._("An unknown error occured while " + \
-                            "downloading the files\n\nPlease let the developers know " + \
-                            "about this problem by filing\na bug " + \
-                            "at http://defect.opensolaris.org")
-                        msg += "\n\nException value: " + "\n" + str(sys.exc_value)
-                        gobject.idle_add(self.parent.error_occured, msg)
-                        sys.exc_clear()
+                        if uex.args[0] == errno.EDQUOT or uex.args[0] == errno.ENOSPC:
+                                gobject.idle_add(self.__prompt_to_load_beadm)
+                                return
+                        else:
+                                msg = self.parent._("An unknown error occured while " + \
+                                    "downloading the files\n\nPlease let the " + \
+                                    "developers know about this problem by filing\n" + \
+                                    "a bug at http://defect.opensolaris.org")
+                                msg += \
+                                    "\n\nException value: " + "\n" + str(sys.exc_value)
+                                gobject.idle_add(self.parent.error_occured, msg)
+                                sys.exc_clear()
+                                return
 
         def __prepare_stage(self, api_o):
                 gobject.idle_add(self.w_downloadingfiles_dialog.show)
@@ -473,16 +509,22 @@ class InstallUpdate(progress.ProgressTracker):
         def __execute_stage_ex(self, api_o):
                 try:
                         self.__execute_stage(api_o)
-                except Exception:
+                except (Exception), uex:
                         gobject.idle_add(self.w_installing_dialog.hide)
-                        msg = self.parent._("An unknown error occured while " + \
-                            "installing\nupdating or removing packages" + \
-                            "\n\nPlease let the developers know about this problem " + \
-                            "by filing\na bug at http://defect.opensolaris.org")
-                        msg += "\n\nException value: " + "\n" + str(sys.exc_value)
-                        gobject.idle_add(self.parent.error_occured, msg)
-                        sys.exc_clear()
-                        return
+                        if uex.args[0] == errno.EDQUOT or uex.args[0] == errno.ENOSPC:
+                                gobject.idle_add(self.__prompt_to_load_beadm)
+                                return
+                        else:
+                                msg = self.parent._("An unknown error occured while " + \
+                                    "installing\nupdating or removing packages" + \
+                                    "\n\nPlease let the developers know about this " + \
+                                    "problem by filing\na bug at " + \
+                                    "http://defect.opensolaris.org")
+                                msg += \
+                                    "\n\nException value: " + "\n" + str(sys.exc_value)
+                                gobject.idle_add(self.parent.error_occured, msg)
+                                sys.exc_clear()
+                                return
 
         def __execute_stage(self, api_o):
                 text = self.parent._("Installing Packages...")
@@ -549,6 +591,7 @@ class InstallUpdate(progress.ProgressTracker):
                 textiter = buf.get_end_iter()
                 if text:
                         buf.insert(textiter, text + "\n")
+                        self.w_download_textview.scroll_to_iter(textiter, 0.0)
 
         def __error_with_details(self, err_msg, err_text):
                 self.w_errortext_label.set_text(err_msg)
@@ -558,12 +601,28 @@ class InstallUpdate(progress.ProgressTracker):
                 self.w_error_dialog.run()
                 self.w_error_dialog.destroy()
 
+        def __prompt_to_load_beadm(self):
+                msgbox = gtk.MessageDialog(parent = self.parent.w_main_window, \
+                        buttons = gtk.BUTTONS_OK_CANCEL, flags = gtk.DIALOG_MODAL, \
+                        type = gtk.MESSAGE_ERROR, \
+                        message_format = self.parent._(\
+                            "Not enough disc space: selected action cannot " + \
+                            "be performed.\n\n" +\
+                            "You may click OK to launch BE Management to manage your " + \
+                            "existing BE's and free up disc space."))
+                msgbox.set_title(self.parent._("Not Enough Disc Space"))
+                result = msgbox.run()
+                msgbox.destroy()
+                if result == gtk.RESPONSE_OK:
+                        beadm.Beadmin(self.parent)
+
         def __add_info_to_installtext(self, text):
                 '''Function which adds another line text in the "more details" install 
                 dialog'''
                 buf = self.w_installing_textview.get_buffer()
                 textiter = buf.get_end_iter()
                 buf.insert(textiter, text)
+                self.w_installing_textview.scroll_to_iter(textiter, 0.0)
 
         def cat_output_start(self): 
                 return
@@ -581,8 +640,12 @@ class InstallUpdate(progress.ProgressTracker):
                 call is being done by calling progress tracker evaluate_progress() 
                 function'''
                 cur_eval_fmri = self.eval_cur_fmri
-                gobject.idle_add(self.__update_createplan_progress, \
-                    self.parent._("Evaluating: %s\n") % cur_eval_fmri)
+                if cur_eval_fmri:
+                        gobject.idle_add(self.__update_createplan_progress, \
+                            self.parent._("Evaluating: %s\n") % cur_eval_fmri)
+                        text = self.parent._("Evaluating package " + \
+                            "%s") % cur_eval_fmri.get_name()
+                        gobject.idle_add(self.w_createplan_label.set_text, text)
 
         def eval_output_done(self):
                 ninst = self.eval_goal_install_npkgs
@@ -684,6 +747,8 @@ class InstallUpdate(progress.ProgressTracker):
 
         def __get_pkgstr_from_pkginfo(self, pkginfo):
                 dt_str = self.get_datetime(pkginfo.packaging_date)
+                if not dt_str:
+                        dt_str = ""
                 s_ver = pkginfo.version
                 s_bran = pkginfo.branch
                 pkg_name = pkginfo.pkg_stem
@@ -723,6 +788,11 @@ class InstallUpdate(progress.ProgressTracker):
                 return
 
         def act_output(self):
+                if self.act_phase != self.act_phase_last:
+                        self.act_phase_last = self.act_phase
+                        gobject.idle_add(\
+                            self.w_installingdialog_label.set_text, \
+                            self.act_phase)
                 gobject.idle_add(self.__update_install_progress, \
                     self.act_cur_nactions, self.act_goal_nactions)
                 return
@@ -748,6 +818,12 @@ class InstallUpdate(progress.ProgressTracker):
         @staticmethod
         def get_datetime(date_time):
                 '''Support function for getting date from the API.'''
-                date_tmp = time.strptime(date_time, "%a %b %d %H:%M:%S %Y")
-                date_tmp2 = datetime.datetime(*date_tmp[0:5])
-                return date_tmp2.strftime(":%m%d")
+                date_tmp = None
+                try:
+                        date_tmp = time.strptime(date_time, "%a %b %d %H:%M:%S %Y")
+                except ValueError:
+                        return None
+                if date_tmp:
+                        date_tmp2 = datetime.datetime(*date_tmp[0:5])        
+                        return date_tmp2.strftime(":%m%d")
+                return None

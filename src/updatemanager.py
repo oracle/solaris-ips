@@ -31,6 +31,7 @@ import time
 import locale
 import gettext
 import pango
+import errno
 from threading import Thread
 from threading import Timer
 
@@ -58,8 +59,6 @@ SELECTION_CHANGE_LIMIT = 0.5    # Time limit in seconds to cancel selection upda
 IND_DELAY = 0.05                # Time delay for printing index progress
 UPDATES_FETCH_DELAY = 200       # Time to wait before fetching updates, allows gtk main
                                 # loop time to start and display main UI
-EX_DISC_QUOTA_EXCEEDED = 49     # Disc quota exceeded exception
-
 #UM Row Model
 (
 UM_ID,
@@ -1205,17 +1204,16 @@ class Updatemanager:
                         self.__cleanup()                
                         return 1
                 except (Exception), uex:
-                        if uex.args[0] == EX_DISC_QUOTA_EXCEEDED:
+                        if uex.args[0] == errno.EDQUOT or uex.args[0] == errno.ENOSPC:
                                 self.__handle_update_progress_error(\
                                         self._(\
-                                        "%s exceded available disc quota" % what_msg), \
+                                        "%s exceded available disc space" % what_msg), \
                                         stage = self.update_stage)
                                 gobject.idle_add(self.__prompt_to_load_beadm)
                         else:
                                 self.__handle_update_progress_error(\
                                         self._("%s unexpected error:" % (what_msg)), \
                                         uex, stage = self.update_stage)
-                                
                         return 1
 
                 # Install
@@ -1236,9 +1234,16 @@ class Updatemanager:
                         self.__cleanup()                
                         return 1
                 except (Exception), uex:
-                        self.__handle_update_progress_error(\
-                                self._("%s unexpected error:" % (what_msg)), uex, \
-                                stage = self.update_stage)
+                        if uex.args[0] == errno.EDQUOT or uex.args[0] == errno.ENOSPC:
+                                self.__handle_update_progress_error(\
+                                        self._(\
+                                        "%s exceded available disc space" % what_msg), \
+                                        stage = self.update_stage)
+                                gobject.idle_add(self.__prompt_to_load_beadm)
+                        else:
+                                self.__handle_update_progress_error(\
+                                        self._("%s unexpected error:" % (what_msg)), \
+                                        uex, stage = self.update_stage)
                         return 1
                         
                 self.__cleanup()                
