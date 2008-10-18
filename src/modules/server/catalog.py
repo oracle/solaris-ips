@@ -77,6 +77,16 @@ class ServerCatalog(catalog.Catalog):
 
                 catalog.Catalog.__init__(self, cat_root, authority, pkg_root,
                     read_only, rebuild)
+                        
+                searchdb_file = os.path.join(self.repo_root, "search")
+                try:
+                        os.unlink(searchdb_file + ".pag")
+                except OSError:
+                        pass
+                try:
+                        os.unlink(searchdb_file + ".dir")
+                except OSError:
+                        pass
 
                 if not self._search_available:
                         self._check_search()

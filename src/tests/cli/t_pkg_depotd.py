@@ -122,6 +122,29 @@ class TestPkgDepot(testutils.SingleDepotTestCase):
                 self.pkgsend(durl, "open foo@x.y", exit=1)
                 self.pkgsend(durl, "open foo@1.0,-2.0", exit=1)
 
+        def test_bug_3365(self):
+                durl = self.dc.get_depot_url()
+                depotpath = self.dc.get_repodir()
+
+                dir_file = os.path.join(depotpath, "search.dir")
+                pag_file = os.path.join(depotpath, "search.pag")
+                
+                self.assert_(not os.path.exists(dir_file))
+                self.assert_(not os.path.exists(pag_file))
+
+                f = open(dir_file, "w")
+                f.close()
+                f = open(pag_file, "w")
+                f.close()
+                self.assert_(os.path.exists(dir_file))
+                self.assert_(os.path.exists(pag_file))
+
+                self.dc.stop()
+                self.dc.start()
+                self.pkgsend_bulk(durl, self.quux10)
+                self.assert_(not os.path.exists(dir_file))
+                self.assert_(not os.path.exists(pag_file))
+
 
 class TestDepotController(testutils.CliTestCase):
 
