@@ -397,8 +397,8 @@ def fix_image(img, args):
                 try:
                         be = bootenv.BootEnv(img.get_root())
                         msg(_("Created ZFS snapshot: %s" % be.snapshot_name))
-                except RuntimeError, e:
-                        msg(_("Unable to create ZFS snapshot: %s") % e)
+                except RuntimeError:
+                        pass # Error is printed by the BootEnv call.
                 success = img.repair(repairs, progresstracker)
                 if not success:
                         return 1

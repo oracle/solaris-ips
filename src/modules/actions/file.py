@@ -205,9 +205,10 @@ class FileAction(generic.Action):
                         if e.errno == errno.ENOENT:
                                 self.replace_required = True
                                 errors.append("File does not exist")
-                        if e.errno == errno.EACCES:
+                        elif e.errno == errno.EACCES:
                                 errors.append("Skipping: Permission denied")
-                        errors.append("Unexpected OSError: %s" % e)
+                        else:
+                                errors.append("Unexpected OSError: %s" % e)
 
                 # If we have errors already there isn't much point in
                 # continuing.
