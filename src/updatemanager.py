@@ -1468,6 +1468,8 @@ class Updatemanager:
                         return
                         
                 if not ind_started:
+                        if self.update_stage != UPDATE_INSTALL:
+                                return
                         self.update_stage = UPDATE_INDEX
                         self.__progress_steps_index()                        
                         self.__update_progress_info(self._("Index\n"), True)
