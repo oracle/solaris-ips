@@ -1,31 +1,298 @@
 package openoffice
-description "OpenOffice.org 2.4"
-version 2.4.0
-import openofficeorg-base
-import openofficeorg-calc
-import openofficeorg-core01
-import openofficeorg-core02
-import openofficeorg-core03
-import openofficeorg-core04
-import openofficeorg-core05
-import openofficeorg-core06
-import openofficeorg-core07
-import openofficeorg-core08
-import openofficeorg-core09
-import openofficeorg-core10
-import openofficeorg-desktop-integratn
-import openofficeorg-draw
-import openofficeorg-emailmerge
-import openofficeorg-gnome-integration
-import openofficeorg-graphicfilter
-import openofficeorg-headless
-import openofficeorg-impress
-import openofficeorg-javafilter
-import openofficeorg-math
-import openofficeorg-onlineupdate
-import openofficeorg-pyuno
-import openofficeorg-testtool
-import openofficeorg-writer
-import openofficeorg-xsltfilter
-add link path=etc/openoffice.org2.4 target=../opt/openoffice.org2.4
+description "OpenOffice.org 3.0"
+version 3.0
+import ooobasis30-base
+import ooobasis30-binfilter
+import ooobasis30-calc
+import ooobasis30-core01
+import ooobasis30-core02
+import ooobasis30-core03
+import ooobasis30-core04
+import ooobasis30-core05
+import ooobasis30-core06
+import ooobasis30-core07
+import ooobasis30-draw
+import ooobasis30-en-US
+import ooobasis30-en-US-base
+import ooobasis30-en-US-binfilter
+import ooobasis30-en-US-calc
+import ooobasis30-en-US-draw
+import ooobasis30-en-US-help
+import ooobasis30-en-US-impress
+import ooobasis30-en-US-math
+import ooobasis30-en-US-res
+import ooobasis30-en-US-writer
+import ooobasis30-gnome-integratn
+import ooobasis30-graphicfilter
+import ooobasis30-images
+import ooobasis30-impress
+import ooobasis30-javafilter
+import ooobasis30-math
+import ooobasis30-ooofonts
+import ooobasis30-ooolinguistic
+import ooobasis30-pyuno
+import ooobasis30-testtool
+import ooobasis30-writer
+import ooobasis30-xsltfilter
+import openofficeorg3
+import openofficeorg30-desktop-int
+drop etc/mime.types
+drop etc/mailcap
+import openofficeorg3-base
+import openofficeorg3-calc
+import openofficeorg3-dict-en
+import openofficeorg3-dict-es
+import openofficeorg3-dict-fr
+import openofficeorg3-draw
+import openofficeorg3-en-US
+import openofficeorg3-impress
+import openofficeorg3-math
+import openofficeorg3-writer
+import openofficeorg-ure
+end package
+
+package openoffice-sdk
+description "Software Development Kit for OpenOffice.org 3.0"
+version 3.0
+import ooobasis30-sdk
+end package
+
+package openoffice-de
+description "German localization of OpenOffice.org 3.0"
+version 3.0
+import ooobasis30-de
+import ooobasis30-de-base
+import ooobasis30-de-binfilter
+import ooobasis30-de-calc
+import ooobasis30-de-draw
+import ooobasis30-de-help
+import ooobasis30-de-impress
+import ooobasis30-de-math
+import ooobasis30-de-res
+import ooobasis30-de-writer
+import openofficeorg3-de
+end package
+
+package openoffice-es
+description "Spanish localization for OpenOffice.org 3.0"
+version 3.0
+import ooobasis30-es
+import ooobasis30-es-base
+import ooobasis30-es-binfilter
+import ooobasis30-es-calc
+import ooobasis30-es-draw
+import ooobasis30-es-help
+import ooobasis30-es-impress
+import ooobasis30-es-math
+import ooobasis30-es-res
+import ooobasis30-es-writer
+import openofficeorg3-es
+end package
+
+package openoffice-fr
+description "French localization for OpenOffice.org 3.0"
+version 3.0
+import ooobasis30-fr
+import ooobasis30-fr-base
+import ooobasis30-fr-binfilter
+import ooobasis30-fr-calc
+import ooobasis30-fr-draw
+import ooobasis30-fr-help
+import ooobasis30-fr-impress
+import ooobasis30-fr-math
+import ooobasis30-fr-res
+import ooobasis30-fr-writer
+import openofficeorg3-fr
+end package
+
+package openoffice-hu
+description "Hungarian localization for OpenOffice.org 3.0"
+version 3.0
+import ooobasis30-hu
+import ooobasis30-hu-base
+import ooobasis30-hu-binfilter
+import ooobasis30-hu-calc
+import ooobasis30-hu-draw
+import ooobasis30-hu-help
+import ooobasis30-hu-impress
+import ooobasis30-hu-math
+import ooobasis30-hu-res
+import ooobasis30-hu-writer
+import openofficeorg3-hu
+end package
+
+package openoffice-it
+description "Italian localization for OpenOffice.org 3.0"
+version 3.0
+import ooobasis30-it
+import ooobasis30-it-base
+import ooobasis30-it-binfilter
+import ooobasis30-it-calc
+import ooobasis30-it-draw
+import ooobasis30-it-help
+import ooobasis30-it-impress
+import ooobasis30-it-math
+import ooobasis30-it-res
+import ooobasis30-it-writer
+import openofficeorg3-it
+end package
+
+package openoffice-ja
+description "Japanese localization for OpenOffice.org 3.0"
+version 3.0
+import ooobasis30-ja
+import ooobasis30-ja-base
+import ooobasis30-ja-binfilter
+import ooobasis30-ja-calc
+import ooobasis30-ja-draw
+import ooobasis30-ja-help
+import ooobasis30-ja-impress
+import ooobasis30-ja-math
+import ooobasis30-ja-res
+import ooobasis30-ja-writer
+import openofficeorg3-ja
+end package
+
+package openoffice-ko
+description "Korean localization for OpenOffice.org 3.0"
+version 3.0
+import ooobasis30-ko
+import ooobasis30-ko-base
+import ooobasis30-ko-binfilter
+import ooobasis30-ko-calc
+import ooobasis30-ko-draw
+import ooobasis30-ko-help
+import ooobasis30-ko-impress
+import ooobasis30-ko-math
+import ooobasis30-ko-res
+import ooobasis30-ko-writer
+import openofficeorg3-ko
+end package
+
+package openoffice-nl
+description "Dutch localization for OpenOffice.org 3.0"
+version 3.0
+import ooobasis30-nl
+import ooobasis30-nl-base
+import ooobasis30-nl-binfilter
+import ooobasis30-nl-calc
+import ooobasis30-nl-draw
+import ooobasis30-nl-help
+import ooobasis30-nl-impress
+import ooobasis30-nl-math
+import ooobasis30-nl-res
+import ooobasis30-nl-writer
+import openofficeorg3-nl
+end package
+
+package openoffice-pl
+description "Polish localization for OpenOffice.org 3.0"
+version 3.0
+import ooobasis30-pl
+import ooobasis30-pl-base
+import ooobasis30-pl-binfilter
+import ooobasis30-pl-calc
+import ooobasis30-pl-draw
+import ooobasis30-pl-help
+import ooobasis30-pl-impress
+import ooobasis30-pl-math
+import ooobasis30-pl-res
+import ooobasis30-pl-writer
+import openofficeorg3-pl
+end package
+
+package openoffice-pt
+description "Portuguese localization for OpenOffice.org 3.0"
+version 3.0
+import ooobasis30-pt
+import ooobasis30-pt-base
+import ooobasis30-pt-binfilter
+import ooobasis30-pt-calc
+import ooobasis30-pt-draw
+import ooobasis30-pt-help
+import ooobasis30-pt-impress
+import ooobasis30-pt-math
+import ooobasis30-pt-res
+import ooobasis30-pt-writer
+import openofficeorg3-pt
+end package
+
+package openoffice-pt-BR
+description "Portuguese Brazilian localization for OpenOffice.org 3.0"
+version 3.0
+import ooobasis30-pt-BR
+import ooobasis30-pt-BR-base
+import ooobasis30-pt-BR-binfilter
+import ooobasis30-pt-BR-calc
+import ooobasis30-pt-BR-draw
+import ooobasis30-pt-BR-help
+import ooobasis30-pt-BR-impress
+import ooobasis30-pt-BR-math
+import ooobasis30-pt-BR-res
+import ooobasis30-pt-BR-writer
+import openofficeorg3-pt-BR
+end package
+
+package openoffice-ru
+description "Russian localization for OpenOffice.org 3.0"
+version 3.0
+import ooobasis30-ru
+import ooobasis30-ru-base
+import ooobasis30-ru-binfilter
+import ooobasis30-ru-calc
+import ooobasis30-ru-draw
+import ooobasis30-ru-help
+import ooobasis30-ru-impress
+import ooobasis30-ru-math
+import ooobasis30-ru-res
+import ooobasis30-ru-writer
+import openofficeorg3-ru
+end package
+
+package openoffice-sv
+description "Swedish localization for OpenOffice.org 3.0"
+version 3.0
+import ooobasis30-sv
+import ooobasis30-sv-base
+import ooobasis30-sv-binfilter
+import ooobasis30-sv-calc
+import ooobasis30-sv-draw
+import ooobasis30-sv-help
+import ooobasis30-sv-impress
+import ooobasis30-sv-math
+import ooobasis30-sv-res
+import ooobasis30-sv-writer
+import openofficeorg3-sv
+end package
+
+package openoffice-zh-CN
+description "Simplified Chinese localization for OpenOffice.org 3.0"
+version 3.0
+import ooobasis30-zh-CN
+import ooobasis30-zh-CN-base
+import ooobasis30-zh-CN-binfilter
+import ooobasis30-zh-CN-calc
+import ooobasis30-zh-CN-draw
+import ooobasis30-zh-CN-help
+import ooobasis30-zh-CN-impress
+import ooobasis30-zh-CN-math
+import ooobasis30-zh-CN-res
+import ooobasis30-zh-CN-writer
+import openofficeorg3-zh-CN
+end package
+
+package openoffice-zh-TW
+description "Traditional Chinese localization for OpenOffice.org 3.0"
+version 3.0
+import ooobasis30-zh-TW
+import ooobasis30-zh-TW-base
+import ooobasis30-zh-TW-binfilter
+import ooobasis30-zh-TW-calc
+import ooobasis30-zh-TW-draw
+import ooobasis30-zh-TW-help
+import ooobasis30-zh-TW-impress
+import ooobasis30-zh-TW-math
+import ooobasis30-zh-TW-res
+import ooobasis30-zh-TW-writer
+import openofficeorg3-zh-TW
 end package
