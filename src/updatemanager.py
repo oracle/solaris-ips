@@ -310,6 +310,7 @@ class Updatemanager:
 
                 self.w_progress_dialog.set_transient_for(self.w_um_dialog)
 
+                self.w_um_scrolledwindow = w_xmltree_um.get_widget("um_scrolledwindow")
                 self.w_um_treeview = w_xmltree_um.get_widget("um_treeview")  
                 self.w_um_textview = w_xmltree_um.get_widget("um_textview")  
                 infobuffer = self.w_um_textview.get_buffer()
@@ -772,11 +773,13 @@ class Updatemanager:
                 return None
                 
         def __display_noupdates(self):
+                self.w_um_scrolledwindow.set_policy(gtk.POLICY_NEVER, \
+                        gtk.POLICY_AUTOMATIC)
                 self.w_um_expander.set_expanded(True)
                 infobuffer = self.w_um_textview.get_buffer()
                 textiter = infobuffer.get_end_iter()
                 infobuffer.insert_with_tags_by_name(textiter, \
-                        "\nNo details available", "bold")
+                        "\nNo Updates available", "bold")
 
                 self.w_um_install_button.set_sensitive(False)
                 self.w_um_updateall_button.set_sensitive(False)
@@ -903,17 +906,17 @@ class Updatemanager:
                                 "\nNo details available", "bold")
 
         def __on_um_dialog_close(self, widget):
-                self.cancelled = True
-                gtk.main_quit()
-                sys.exit(0)
-                return True
+                self.__exit_app()
 
         def __on_cancel_button_clicked(self, widget):
+                self.__exit_app()
+
+        def __exit_app(self):
                 self.cancelled = True
                 gtk.main_quit()
                 sys.exit(0)
                 return True
-
+        
         def __on_progressok_clicked(self, widget):
                 self.w_progress_dialog.hide()
 
@@ -1073,35 +1076,35 @@ class Updatemanager:
                         self._("Update All finished successfully.\n")) != 0:
                         return
                 
-                gobject.idle_add(self.um_list.clear)       
                 gobject.idle_add(self.__display_update_image_success)       
 
         def __display_update_image_success(self):
-                self.w_um_expander.set_expanded(True)
-                infobuffer = self.w_um_textview.get_buffer()
-                infobuffer.set_text("")
-                textiter = infobuffer.get_end_iter()
                 elapsed = (time.time() - self.ua_start)/ 60.0 
-                if elapsed > 0:
-                        infobuffer.insert_with_tags_by_name(textiter, \
+                info_str = ""
+                if elapsed >= 1.0:
+                        info_str = \
                                 self._(
                                 "\nUpdate All finished successfully in %1.f mins\n\n" % \
-                                elapsed), "bold")
+                                elapsed)
                 else:
-                        infobuffer.insert_with_tags_by_name(textiter, \
+                        info_str = \
                                 self._(
-                                "\nUpdate All finished successfully in < 1 min\n\n"), \
-                                "bold")
-                        
-                infobuffer.insert(textiter, self._(\
-                        "Please reboot after reviewing the release notes posted at:\n" +\
-                        "\thttp://opensolaris.org/os/project/indiana/resources/rn3/"))
-                self.w_um_install_button.set_sensitive(False)
-                self.w_um_updateall_button.set_sensitive(False)
-                self.w_select_checkbox.set_active(False)
-                self.w_select_checkbox.set_sensitive(False)
-                self.w_um_dialog.present()
+                                "\nUpdate All finished successfully in < 1 min\n\n")
 
+                info_str += self._(\
+                        "Please reboot after reviewing the release notes posted at:\n" +\
+                        "\thttp://opensolaris.org/os/project/indiana/resources/rn3/")
+
+                self.w_um_dialog.hide()
+                msgbox = gtk.MessageDialog(parent = self.w_um_dialog, \
+                        buttons = gtk.BUTTONS_CLOSE, flags = gtk.DIALOG_MODAL, \
+                        type = gtk.MESSAGE_INFO, \
+                        message_format = info_str)
+                msgbox.set_title(self._("Update All Completed"))
+                result = msgbox.run()
+                msgbox.destroy()                        
+                self.__exit_app()
+                
         def __handle_cancel_exception(self):
                 gobject.idle_add(self.w_progress_dialog.hide)
                 gobject.idle_add(self.w_progressinfo_expander.set_expanded, False)
