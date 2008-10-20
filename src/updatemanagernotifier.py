@@ -78,6 +78,14 @@ class UpdateManagerNotifier:
         def __init__(self):
                 # Required for pkg strings used in pkg API
                 gettext.install("pkg", "/usr/lib/locale")
+                self.pr = None
+                self.last_check_filename = None
+                self.time_until_next_check = 0
+                self.status_icon = None
+                self.notify = None
+                self.host = None
+                self.last_check_time = 0
+                self.refresh_period = 0
 
                 locale.setlocale(locale.LC_ALL, '')
                 self._ = gettext.gettext
@@ -90,10 +98,6 @@ class UpdateManagerNotifier:
                 self.check_already_running()
                 self.refresh_period  =  self.get_refresh_period()
                 self.host = socket.gethostname()
-                self.last_check_filename = None
-                self.time_until_next_check = 0
-                self.status_icon = None
-                self.notify = None
 
                 if self.get_show_icon_on_startup():
                         self.show_status_icon()
@@ -199,7 +203,7 @@ class UpdateManagerNotifier:
                 self.client.set_bool(SHOW_ICON_ON_STARTUP_PREFERENCES, True)
                 self.status_icon.set_visible(True)
 
-	def check_for_updates(self):
+        def check_for_updates(self):
                 self.set_last_check_time()
                 image_directory = os.popen(IMAGE_DIR_COMMAND).readline().rstrip()
                 if debug == True:
@@ -310,7 +314,8 @@ class UpdateManagerNotifier:
         def do_next_check(self):
                 if debug == True:
                         print "Called do_next_check"
-			print "time for check: %s - %s \n" % (time.gmtime(), self.last_check_time)
+                        print "time for check: %s - %s \n" % (time.gmtime(), \
+                                self.last_check_time)
                 if self.last_check_time == 0 or self.is_check_required():
                         gobject.idle_add(self.check_for_updates)
                 else:

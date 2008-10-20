@@ -758,7 +758,8 @@ class Updatemanager:
                         textiter = infobuffer.get_end_iter()
                         infobuffer.insert_with_tags_by_name(textiter, self._("Error\n"), \
                                 "bold")
-                        infobuffer.insert(textiter, self._("'%s' is not an install image\n" % \
+                        infobuffer.insert(textiter, \
+                                self._("'%s' is not an install image\n" % \
                                 ine.user_specified))
                 except api_errors.VersionException, ve:
                         self.w_um_expander.set_expanded(True)
@@ -1101,7 +1102,7 @@ class Updatemanager:
                         type = gtk.MESSAGE_INFO, \
                         message_format = info_str)
                 msgbox.set_title(self._("Update All Completed"))
-                result = msgbox.run()
+                msgbox.run()
                 msgbox.destroy()                        
                 self.__exit_app()
                 
@@ -1131,8 +1132,9 @@ class Updatemanager:
                 try:
                         gobject.idle_add(self.__update_progress_info, \
                                 self._("\nEvaluate\n"), True)
-                        ret, exception_caught = self.__get_api_obj().plan_install(list_fmris_to_install, [], \
-                                refresh_catalogs = self.do_refresh)
+                        ret, exception_caught = \
+                                self.__get_api_obj().plan_install(list_fmris_to_install, \
+                                [], refresh_catalogs = self.do_refresh)
                         if exception_caught != None:
                                 self.__handle_update_progress_error(\
                                         self._("Update error in plan install:"), \
