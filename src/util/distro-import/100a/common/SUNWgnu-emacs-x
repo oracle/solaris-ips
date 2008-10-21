@@ -1,0 +1,4 @@
+package SUNWgnu-emacs-x
+import SUNWgnu-emacs-x
+version 22.1
+end package

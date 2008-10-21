@@ -1,0 +1,4 @@
+package SUNWgnu-emacs-nox
+import SUNWgnu-emacs-nox
+version 22.1
+end package

@@ -1,0 +1,7 @@
+package SUNWhermon
+import SUNWhermon
+add driver name=hermon perms="* 0666 root sys" \
+	alias=pciex15b3,6340 \
+	alias=pciex15b3,634a \
+	alias=pciex15b3,6354
+end package

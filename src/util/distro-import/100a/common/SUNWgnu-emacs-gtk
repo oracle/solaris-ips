@@ -1,0 +1,4 @@
+package SUNWgnu-emacs-gtk
+import SUNWgnu-emacs-gtk
+version 22.1
+end package

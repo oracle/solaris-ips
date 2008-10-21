@@ -1,0 +1,5 @@
+package SUNWprivoxy
+import SUNWprivoxyr
+import SUNWprivoxyu
+version 3.0.8
+end package

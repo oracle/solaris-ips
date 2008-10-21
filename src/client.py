@@ -126,8 +126,8 @@ Advanced subcommands:
         pkg search [-lrI] [-s server] token
         pkg verify [-fHqv] [pkg_fmri_pattern ...]
         pkg fix [pkg_fmri_pattern ...]
-        pkg contents [-Hmr] [-o attribute ...] [-s sort_key] [-t action_type ... ]
-            pkg_fmri_pattern [...]
+        pkg contents [-Hmr] [-o attribute ...] [-s sort_key]
+            [-t action_type ... ] pkg_fmri_pattern [...]
         pkg image-create [-fFPUz] [--force] [--full|--partial|--user] [--zone]
             [-k ssl_key] [-c ssl_cert] -a <prefix>=<url> dir
 

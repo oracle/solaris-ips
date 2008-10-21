@@ -1,4 +1,4 @@
-#!/bin/ksh
+#!/sbin/sh
 #
 # CDDL HEADER START
 #
@@ -24,19 +24,24 @@
 # Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
-export PATH=../../../proto/root_$(uname -p)/usr/bin:$PATH
-export PYTHONPATH=../../../proto/root_$(uname -p)/usr/lib/python2.4/vendor-packages
-export PACKAGEPATH=../../../packages/i386
+# ident	"@(#)svc-dlmgmtd	1.1	08/01/22 SMI"
 
-# This needs to be kept in sync with the redistributable version number.
-#
-REDIST_CLUSTER_VERSION=0.1
+. /lib/svc/share/smf_include.sh
 
-buildid=$(echo $1 | tr -d '[a-z]')
-# create a temp image so we can get things from the repo
-pkg image-create -a opensolaris.org=$REPO ./temp_image
-pkg -R ./temp_image contents -o action.raw -H -t depend -r \
-	redistributable@$REDIST_CLUSTER_VERSION-0.${buildid} | \
-	sed 's/type=require/type=incorporate/'
-rm -r ./temp_image
-echo 'set name=description value="entire incorporation"'
+# The real daemon is not started in a non-global zone. But we need to
+# create a dummy background process to preserve contract lifetime.
+
+if smf_is_nonglobalzone; then
+	(while true ; do sleep 3600 ; done) & 
+	exit $SMF_EXIT_OK
+fi
+
+# Start the dlmgmtd daemon.
+/sbin/dlmgmtd
+status=$?
+ppriv -s A+file_dac_execute $(pgrep dlmgmtd)
+if [ $status = 0 ]; then
+	exit $SMF_EXIT_OK
+else
+	exit $SMF_EXIT_ERR_FATAL
+fi

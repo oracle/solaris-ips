@@ -1,0 +1,11 @@
+package SUNWcakrx
+import SUNWcakrx.i
+add driver name=xnbo alias=xnb,SUNW_mac alias=xnb
+add driver name=xdt
+add driver name=balloon perms="* 0444 root sys"
+add driver name=domcaps perms="* 0444 root sys"
+add driver name=evtchn perms="* 0666 root sys"
+add driver name=privcmd perms="* 0666 root sys"
+add driver name=xenbus perms="* 0666 root sys"
+add driver name=xpvtap perms="* 0666 root sys"
+end package

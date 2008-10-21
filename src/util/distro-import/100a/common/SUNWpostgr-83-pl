@@ -1,0 +1,4 @@
+package SUNWpostgr-83-pl
+import SUNWpostgr-83-pl
+version 8.3.4
+end package

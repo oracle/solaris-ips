@@ -1,0 +1,5 @@
+package SUNWscreen
+import SUNWscreen
+import SUNWscreenrc
+version 4.0.3
+end package

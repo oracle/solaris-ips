@@ -1,0 +1,4 @@
+package SUNWttf-hanyang-ko-core
+import SUNWttf-hanyang-ko-core exclude usr/openwin
+chattr_glob * edit path usr/openwin usr/X11
+end package

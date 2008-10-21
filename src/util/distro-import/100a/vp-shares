@@ -1,4 +1,4 @@
-#!/bin/ksh
+#!/bin/ksh -p
 #
 # CDDL HEADER START
 #
@@ -24,19 +24,12 @@
 # Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
-export PATH=../../../proto/root_$(uname -p)/usr/bin:$PATH
-export PYTHONPATH=../../../proto/root_$(uname -p)/usr/lib/python2.4/vendor-packages
-export PACKAGEPATH=../../../packages/i386
-
-# This needs to be kept in sync with the redistributable version number.
+# ident	"@(#)vp-shares	1.1	08/04/04 SMI"
 #
-REDIST_CLUSTER_VERSION=0.1
 
-buildid=$(echo $1 | tr -d '[a-z]')
-# create a temp image so we can get things from the repo
-pkg image-create -a opensolaris.org=$REPO ./temp_image
-pkg -R ./temp_image contents -o action.raw -H -t depend -r \
-	redistributable@$REDIST_CLUSTER_VERSION-0.${buildid} | \
-	sed 's/type=require/type=incorporate/'
-rm -r ./temp_image
-echo 'set name=description value="entire incorporation"'
+JAVALIB=/usr/share/lib/java
+if [[ -f $JAVALIB/vpanels-panels-sharemgr.jar ]]; then
+	exec java -client -jar $JAVALIB/vpanels-client.jar filesystem/sharemgr
+else
+	exec shares-admin
+fi

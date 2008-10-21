@@ -1,0 +1,5 @@
+package SUNWslocate
+import SUNWslocate
+import SUNWslocate-root
+add group groupname=slocate gid=95
+end package

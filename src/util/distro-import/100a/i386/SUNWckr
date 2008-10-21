@@ -1,0 +1,59 @@
+package SUNWckr
+import SUNWckr
+# BEGIN NON-REDISTRIBUTABLE
+drop kernel/drv/amd64/bmc
+drop kernel/drv/bmc
+drop kernel/drv/bmc.conf
+# END NON-REDISTRIBUTABLE
+# XXX until new clofi hits nevada
+drop kernel/drv/amd64/lofi
+drop kernel/drv/lofi
+from SUNWclofi import
+kernel/drv/amd64/lofi
+kernel/drv/lofi
+chattr kernel/drv/amd64/lofi opensolaris.zone=global
+chattr kernel/drv/lofi opensolaris.zone=global
+end import
+add driver name=llc1 clone_perms="0666 root sys"
+add driver name=mpt class=scsi \
+	alias=pci1000,30 \
+	alias=pci1000,50 \
+	alias=pci1000,54 \
+	alias=pci1000,56 \
+	alias=pci1000,58 \
+	alias=pci1000,62 \
+	alias=pciex1000,56 \
+	alias=pciex1000,58 \
+	alias=pciex1000,62
+add driver name=ptm clone_perms="ptmx 0666 root sys"
+add driver name=softmac \
+	policy="read_priv_set=net_rawaccess write_priv_set=net_rawaccess"
+add driver name=tl perms="* 0666 root sys" \
+	clone_perms="ticlts 0666 root sys" \
+	clone_perms="ticots 0666 root sys" \
+	clone_perms="ticotsord 0666 root sys"
+add driver name=vnic perms="* 0666 root sys" \
+	clone_perms="0666 root sys" \
+	policy="read_priv_set=net_rawaccess write_priv_set=net_rawaccess"
+add driver name=acpi_drv perms="* 0666 root sys"
+add driver name=scsi_vhci perms="* 0666 root sys" \
+	class=scsi-self-identifying policy="devctl write_priv_set=sys_devices"
+add driver name=aggr perms="* 0666 root sys" \
+	policy="read_priv_set=net_rawaccess write_priv_set=net_rawaccess"
+add driver name=dld perms="* 0666 root sys"
+#
+# create link since system/device/local is dependent on
+# network/datalink-management and the latter needs access to the device
+# on first boot
+#
+add link path=dev/dld target=../devices/pseudo/dld@0:ctl
+add driver name=amd_iommu perms="* 0644 root sys" alias=pci1022,11ff
+#
+# In 2008.05, etc/boot/solaris/filelist.ramdisk was created in order to
+# preserve etc/zfs/zpool.cache in the boot archive.  This is neither
+# necessary nor recommended anymore so create a zero-length version of
+# filelist.ramdisk in order to drop the ZFS cache file out of the boot
+# archive upon update.
+#
+add file path=etc/boot/solaris/filelist.ramdisk mode=0644 owner=root group=sys
+end package

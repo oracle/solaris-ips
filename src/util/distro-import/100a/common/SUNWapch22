@@ -1,0 +1,5 @@
+package SUNWapch22
+import SUNWapch22u
+import SUNWapch22r
+version 2.2.9
+end package

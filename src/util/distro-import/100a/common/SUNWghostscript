@@ -1,0 +1,5 @@
+package SUNWghostscript
+import SUNWghostscriptr
+import SUNWghostscriptu
+version 8.63
+end package

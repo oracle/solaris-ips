@@ -12,6 +12,8 @@
 ^proto
 ^packages
 # Specific build products
+^src/*.tar.gz$
+^src/CherryPy-.*$
 ^src/gui/data/packagemanager.desktop$
 ^src/man/pkg.1$
 ^src/man/pkg.5$
@@ -19,19 +21,19 @@
 ^src/man/pkgrecv.1$
 ^src/man/pkgsend.1$
 ^src/pkg$
-^src/pkgrecv$
 ^src/pkg.depotd$
 ^src/pkgdefs/.*/prototype$
-^src/CherryPy-.*$
-^src/pyOpenSSL-.*$
+^src/pkgrecv$
 ^src/pkgsend$
-^src/*.tar.gz$
+^src/pyOpenSSL-.*$
+^src/um/data/updatemanager-preferences.schemas$
+^src/um/data/updatemanager.desktop$
+^src/um/data/updatemanagernotifier.desktop$
+^src/util/distro-import/.*/entire.incorporation$
 ^src/util/distro-import/SUNWfixes/
 ^src/util/distro-import/cluster.import$
 ^src/util/distro-import/ksh-wrapper$
 ^src/util/distro-import/proto/
 ^src/util/distro-import/redist_cluster$
 ^src/util/distro-import/slim_cluster$
-^src/util/distro-import/.*/entire.incorporation$
 ^webrev
-

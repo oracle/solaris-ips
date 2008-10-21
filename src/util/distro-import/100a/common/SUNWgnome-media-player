@@ -1,0 +1,6 @@
+package SUNWgnome-media-player
+import SUNWgnome-media-player
+import SUNWgnome-media-player-devel
+import SUNWgnome-media-player-root
+depend SUNWgst-python
+end package

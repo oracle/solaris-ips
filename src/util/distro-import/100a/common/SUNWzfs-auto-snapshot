@@ -1,0 +1,6 @@
+package SUNWzfs-auto-snapshot
+import SUNWzfs-auto-snapshot
+add user username=zfssnap uid=51 group=daemon \
+	gcos-field="ZFS Automatic Snapshots Reserved UID" \
+	login-shell=/usr/bin/pfsh ftpuser=false
+end package

@@ -168,7 +168,8 @@ BUILDS=	75a			\
 	96			\
 	97			\
 	98			\
-	99
+	99			\
+	100a
 
 #
 # Starting in build 80, filelist.ramdisk began moving between various
@@ -181,7 +182,7 @@ FILELIST_RAMDISK_PKG_74		= SUNWcakr.i
 FILELIST_RAMDISK_PKG_72		= SUNWcakr.i
 FILELIST_RAMDISK_PKG_71		= SUNWcakr.i
 
-default:	99/slim_import
+default:	100a/slim_import
 
 cluster.import:	$(WOS_PKGS)/.clustertoc Makefile
 	./clustertoc2import.py $(WOS_PKGS)/.clustertoc | \
@@ -336,6 +337,7 @@ INCLUDE_PATH_96 = 96:$(INCLUDE_PATH_95)
 INCLUDE_PATH_97 = 97:$(INCLUDE_PATH_96)
 INCLUDE_PATH_98 = 98:$(INCLUDE_PATH_97)
 INCLUDE_PATH_99 = 99:$(INCLUDE_PATH_98)
+INCLUDE_PATH_100a = 100a:$(INCLUDE_PATH_99)
 
 import:	cluster.import $(TMPPKGS)
 	$(SOLARIS.PY) -s $(REPO) -w $(WOS_PKGS) $(ELIDED_FILES:%=-D %) \
@@ -374,7 +376,9 @@ $(BUILDID)/entire.incorporation: FRC
 	./build_entire_incorporation $(BUILDID) > $@
 
 entire: $(BUILDID)/entire.incorporation
-	PKG_REPO=$(REPO) ./import_manifest_file entire@0.5.11,5.11-0.$(BUILDID) $(BUILDID)/entire.incorporation
+	PKG_REPO=$(REPO) ./import_manifest_file \
+		entire@0.5.11,5.11-0.`echo $(BUILDID) | tr -d '[a-z]'` \
+		$(BUILDID)/entire.incorporation
 
 $(UNBUNDLED_TARGETS:%=$(BUILDS)/%) $(UNBUNDLED_CLUSTERS:%=$(BUILDS)/%):
 	$(MAKE) BUILDID=$(@D) $(@F)
