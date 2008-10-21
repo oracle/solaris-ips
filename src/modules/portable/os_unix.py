@@ -68,14 +68,10 @@ def get_userid():
 
         try:
                 return get_user_by_name(os.getlogin(), None, False)
-        except AttributeError:
-                # os.getlogin() not available on this platform.
+        except (EnvironmentError, AttributeError):
+                # os.getlogin() not available on this platform or does not work
+                # properly.
                 return __get_userid()
-        except OSError, e:
-                if e.errno == errno.ENOTTY:
-                        # Known failure case for gksu.
-                        return __get_userid()
-                raise
 
 def get_username():
         def __get_username():
@@ -87,14 +83,10 @@ def get_username():
 
         try:
                 return os.getlogin()
-        except AttributeError:
-                # os.getlogin() not available on this platform.
+        except (EnvironmentError, AttributeError):
+                # os.getlogin() not available on this platform or does not work
+                # properly.
                 return __get_username()
-        except OSError, e:
-                if e.errno == errno.ENOTTY:
-                        # Known failure case for gksu.
-                        return __get_username()
-                raise
 
 def is_admin():
         return os.getuid() == 0
