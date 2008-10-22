@@ -1713,7 +1713,7 @@ def property_list(img, args):
                         return 1
 
         if not pargs:
-                pargs = img.properties()
+                pargs = list(img.properties())
 
         width = max(max([len(p) for p in pargs]), 8)
         fmt = "%%-%ss %%s" % width
