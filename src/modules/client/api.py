@@ -786,6 +786,9 @@ class LicenseInfo(object):
         def get_text(self):
                 return self.__text
 
+        def __str__(self):
+                return self.__text
+
 class PackageInfo(object):
         """A class capturing the information about packages that a client
         could need. The fmri is guaranteed to be set. All other values may
