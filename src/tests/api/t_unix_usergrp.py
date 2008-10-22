@@ -164,6 +164,9 @@ moop:x:999:999:moop:/usr/moop:""")
 
         def testUser3(self):
                 """ Test with an oddball/corrupt passwd file """
+                if not os.path.exists("/etc/passwd"):
+                        return
+
                 passwd = file(os.path.join(self.tempdir, "etc", "passwd"), "w")
                 passwd.write( \
 """root:x:0:0::/root:/usr/bin/bash

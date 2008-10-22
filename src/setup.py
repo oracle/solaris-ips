@@ -472,9 +472,17 @@ class dist_func(_bdist):
 
 
 # These are set to real values based on the platform, down below
-ext_modules = None
 compile_args = None
 link_args = None
+ext_modules = [
+        Extension(
+                'actions._actions',
+                _actions_srcs,
+                include_dirs = include_dirs,
+                extra_compile_args = compile_args,
+                extra_link_args = link_args
+                ),
+        ]
 elf_libraries = None
 data_files = [ (resource_dir, web_files) ]
 cmdclasses = {
@@ -507,19 +515,12 @@ if osname == 'sunos' or osname == "linux":
         # Unix platforms which the elf extension has been ported to
         # are specified here, so they are built automatically
         elf_libraries = ['elf']
-        ext_modules = [
+        ext_modules += [
                 Extension(
                         'elf',
                         elf_srcs,
                         include_dirs = include_dirs,
                         libraries = elf_libraries,
-                        extra_compile_args = compile_args,
-                        extra_link_args = link_args
-                        ),
-                Extension(
-                        'actions._actions',
-                        _actions_srcs,
-                        include_dirs = include_dirs,
                         extra_compile_args = compile_args,
                         extra_link_args = link_args
                         ),

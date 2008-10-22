@@ -135,12 +135,13 @@ def get_trashdir(path):
         The image is cached in the module variable cached_image.
         """
         import pkg.client.image as image
+        import pkg.client.api_errors as api_errors
         global cached_image    
         if not cached_image or not path.startswith(cached_image.get_root()):
                 cached_image = image.Image()
                 try:
                         cached_image.find_root(os.path.dirname(path))
-                except ValueError:
+                except api_errors.ImageNotFoundException:
                         # if path is not within an image, revert to the 
                         # initial state
                         cached_image = None
