@@ -155,6 +155,8 @@ class TestDepotController(testutils.CliTestCase):
                 self.__pid = os.getpid()
 		self.__dc.set_depotd_path(testutils.g_proto_area + \
                     "/usr/lib/pkg.depotd")
+		self.__dc.set_depotd_content_root(testutils.g_proto_area + \
+                    "/usr/share/lib/pkg")
 
                 depotpath = os.path.join(self.get_test_prefix(), "depot")
                 logpath = os.path.join(self.get_test_prefix(), self.id())

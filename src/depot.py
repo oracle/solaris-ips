@@ -276,6 +276,9 @@ if __name__ == "__main__":
                         print "pkg.depotd: unable to bind to the specified " \
                             "port: %d. Reason: %s" % (port, msg)
                         sys.exit(1)
+        else:
+                # Not applicable for reindexing operations.
+                content_root = None
 
         scfg = config.SvrConfig(repo_path, content_root, AUTH_DEFAULT)
 
@@ -340,6 +343,15 @@ if __name__ == "__main__":
 
                 gconf[log_type_map[log_type]["param"]] = dest
 
+        cherrypy.config.update(gconf)
+
+        # Now that our logging, etc. has been setup, it's safe to perform any
+        # remaining preparation.
+        if reindex:
+                scfg.acquire_catalog(rebuild=False)
+                scfg.catalog.run_update_index()
+                sys.exit(0)
+
         # Now build our site configuration.
         conf = {
             "/": {
@@ -380,15 +392,6 @@ if __name__ == "__main__":
                 # existing configuration.
                 for entry in proxy_conf:
                         conf["/"][entry] = proxy_conf[entry]
-
-        cherrypy.config.update(gconf)
-
-        # Now that our logging, etc. has been setup, it's safe to perform any
-        # remaining preparation.
-        if reindex:
-                scfg.acquire_catalog(rebuild=False)
-                scfg.catalog.run_update_index()
-                sys.exit(0)
 
         scfg.acquire_in_flight()
         scfg.acquire_catalog()

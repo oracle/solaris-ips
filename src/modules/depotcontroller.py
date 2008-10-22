@@ -47,6 +47,7 @@ class DepotController(object):
 
         def __init__(self):
                 self.__depot_path = "/usr/lib/pkg.depotd"
+                self.__depot_content_root = None
                 self.__auto_port = True
                 self.__port = -1
                 self.__dir = None
@@ -62,6 +63,12 @@ class DepotController(object):
 
         def set_depotd_path(self, path):
                 self.__depot_path = path
+
+        def set_depotd_content_root(self, path):
+                self.__depot_content_root = path
+
+        def get_depotd_content_root(self):
+                return self.__depot_content_root
 
         def set_auto_port(self):
                 self.__auto_port = True
@@ -149,6 +156,9 @@ class DepotController(object):
                     array) for the depot as currently configured. """
 
                 args =  [ self.__depot_path ]
+                if self.__depot_content_root:
+                        args.append("--content-root")
+                        args.append(self.__depot_content_root)
                 if self.__port != -1:
                         args.append("-p")
                         args.append("%d" % self.__port)

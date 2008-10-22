@@ -446,6 +446,7 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
 
                 dc = depotcontroller.DepotController()
                 dc.set_depotd_path(g_proto_area + "/usr/lib/pkg.depotd")
+                dc.set_depotd_content_root(g_proto_area + "/usr/share/lib/pkg")
                 dc.set_repodir(depotdir)
                 dc.set_logpath(logpath)
                 dc.set_port(port)

@@ -86,7 +86,8 @@ class SvrConfig(object):
                         if not os.path.exists(d):
                                 raise RuntimeError, emsg
 
-                if not os.path.exists(self.content_root):
+                if self.content_root is not None and not \
+                    os.path.exists(self.content_root):
                         raise RuntimeError("The specified content root (%s) "
                             "does not exist." % self.content_root)
 
@@ -107,9 +108,13 @@ class SvrConfig(object):
                 self.optional_dirs = [self.index_root]
 
         def set_content_root(self, root):
-                self.content_root = os.path.abspath(root)
-                # XXX Same as content_root for now, but won't be soon...
-                self.web_static_root = self.content_root
+                if root:
+                        self.content_root = os.path.abspath(root)
+                        # XXX Same as content_root for now, but won't be soon...
+                        self.web_static_root = self.content_root
+                else:
+                        self.content_root = None
+                        self.web_static_root = None
 
         def set_read_only(self):
                 self.read_only = True
