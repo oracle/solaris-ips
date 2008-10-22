@@ -136,10 +136,15 @@ class InventoryException(ApiException):
                 for x in self.illegal:
                         # Illegal FMRIs have their own __str__ method
                         outstr += "%s\n" % x
-                for x in self.notfound:
-                        outstr += _("No package matching '%s' could be found "
-                            "in any of the catalogs for the current "
-                            "authorities.\n""") % x
+
+                if self.notfound:
+                        outstr += _("No matching package could be found for "
+                            "the following FMRIs in any of the catalogs for "
+                            "the current authorities:\n")
+
+                        for x in self.notfound:
+                                outstr += "%s\n" % x
+
                 return outstr
 
 class IndexingException(ApiException):
