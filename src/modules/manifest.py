@@ -190,6 +190,16 @@ class Manifest(object):
 
                 return (a for a in self.actions_bytype.get(type,[]))
 
+        def gen_key_attribute_value_by_type(self, type):
+                """Generate the value of the key atrribute for each action
+                of type "type" in the manifest."""
+
+                return (
+                    a.attrs.get(a.key_attr)
+                    for a
+                    in self.gen_actions_by_type(type)
+                )
+
         def filter(self, filters):
                 """Filter out actions from the manifest based on filters."""
 

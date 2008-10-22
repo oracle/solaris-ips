@@ -128,6 +128,29 @@ class TestApiInfo(testutils.SingleDepotTestCase):
                 illegals = ret[api.ImageInterface.INFO_ILLEGALS]
                 self.assert_(len(notfound) == 1)
 
+                local = True
+                get_license = False
+                get_action_info = True
+                
+                ret = api_obj.info(["jade"],
+                    local, get_license, get_action_info)
+                pis = ret[api.ImageInterface.INFO_FOUND]
+                notfound = ret[api.ImageInterface.INFO_MISSING]
+                illegals = ret[api.ImageInterface.INFO_ILLEGALS]
+                self.assert_(len(pis) == 1)
+                self.assert_(len(pis[0].dirs) == 1)
+
+                local = False
+
+                ret = api_obj.info(["jade"],
+                    local, get_license, get_action_info)
+                pis = ret[api.ImageInterface.INFO_FOUND]
+                notfound = ret[api.ImageInterface.INFO_MISSING]
+                illegals = ret[api.ImageInterface.INFO_ILLEGALS]
+                self.assert_(len(pis) == 1)
+                self.assert_(len(pis[0].dirs) == 1)
+
+                
 if __name__ == "__main__":
         unittest.main()
 

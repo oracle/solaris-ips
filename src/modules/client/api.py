@@ -33,7 +33,7 @@ from pkg.client.imageplan import EXECUTED_OK
 
 import threading
 
-CURRENT_API_VERSION = 2
+CURRENT_API_VERSION = 3
                 
 class ImageInterface(object):
         """This class presents an interface to images that clients may use.
@@ -68,7 +68,7 @@ class ImageInterface(object):
                 canceled changes. It can raise VersionException and
                 ImageNotFoundException."""
                 
-                compatible_versions = set([1, 2])
+                compatible_versions = set([1, 2, 3])
                 
                 if version_id not in compatible_versions:
                         raise api_errors.VersionException(CURRENT_API_VERSION,
@@ -580,7 +580,7 @@ class ImageInterface(object):
                         license_lst.append(LicenseInfo(text))
                 return license_lst
 
-        def info(self, fmri_strings, local, get_licenses):
+        def info(self, fmri_strings, local, get_licenses, get_action_info=False):
                 """Gathers information about fmris. fmri_strings is a list
                 of fmri_names for which information is desired. local
                 determines whether to retrieve the information locally.
@@ -673,6 +673,21 @@ class ImageInterface(object):
                                 state = PackageInfo.INSTALLED
                         else:
                                 state = PackageInfo.NOT_INSTALLED
+                        links = hardlinks = files = dirs = dependencies = None
+                        if get_action_info:
+                                links = list(
+                                    mfst.gen_key_attribute_value_by_type("link"))
+                                hardlinks = list(
+                                    mfst.gen_key_attribute_value_by_type(
+                                    "hardlink"))
+                                files = list(
+                                    mfst.gen_key_attribute_value_by_type("file"))
+                                dirs = list(
+                                    mfst.gen_key_attribute_value_by_type("dir"))
+                                dependencies = list(
+                                    mfst.gen_key_attribute_value_by_type(
+                                    "depend"))
+
                         pis.append(PackageInfo(pkg_stem=name, summary=summary,
                             state=state,
                             authority=authority,
@@ -681,7 +696,9 @@ class ImageInterface(object):
                             build_release=version.build_release,
                             branch=version.branch,
                             packaging_date=version.get_timestamp().ctime(),
-                            size=mfst.size, pfmri=str(f), licenses=licenses))
+                            size=mfst.size, pfmri=str(f), licenses=licenses,
+                            links=links, hardlinks=hardlinks, files=files,
+                            dirs=dirs, dependencies=dependencies))
                 if pis:
                         self.img.history.operation_result = \
                             history.RESULT_SUCCEEDED
@@ -801,7 +818,8 @@ class PackageInfo(object):
         def __init__(self, pfmri, pkg_stem=None, summary=None, state=None,
             authority=None, preferred_authority=None, version=None,
             build_release=None, branch=None, packaging_date=None,
-            size = None, licenses=None):
+            size=None, licenses=None, links=None, hardlinks=None, files=None,
+            dirs=None, dependencies=None):
                 self.pkg_stem = pkg_stem
                 self.summary = summary
                 self.state = state
@@ -814,6 +832,11 @@ class PackageInfo(object):
                 self.size = size
                 self.fmri = pfmri
                 self.licenses = licenses
+                self.links = links
+                self.hardlinks = hardlinks
+                self.files = files
+                self.dirs = dirs
+                self.dependencies = dependencies
 
         def __str__(self):
                 return self.fmri

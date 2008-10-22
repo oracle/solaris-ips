@@ -1,9 +1,17 @@
+Version 3:
+Compatible with clients using Versions 1 and 2
+Changes:
+Adds an optional argument to info which determines whether detailed information
+    about actions will be returned
+Adds the following new fields to PackageInfo objects: links, hardlinks,
+    files, dirs, dependencies
+
 Version 2:
 Compatible with clients using Version 1
 Changes:
 Adds the optional argument update_index to plan_install, plan_uninstall, and 
-plan_update_all. When the argument is false, no automatic update to the index
-occurs. By default, the argument is true.
+    plan_update_all. When the argument is false, no automatic update to the
+    index occurs. By default, the argument is true.
 
 Version 1:
 Incompatible with clients using Version 0
