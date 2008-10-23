@@ -23,6 +23,7 @@ f none etc/zones/SUNWdefault.xml 0444 root bin
 e none kernel/drv/sd.conf 0644 root sys
 f none lib/svc/method/sshd 0555 root bin
 f none lib/svc/method/svc-coreadm 0555 root bin
+f none lib/svc/method/svc-hostid 0555 root bin
 d none root 0700 root root
 e none root/.bashrc 0644 root root
 e none root/.profile 0644 root root
@@ -38,6 +39,7 @@ f none usr/jdk/instances/jdk1.6.0/jre/README 0644 root bin
 f none usr/jdk/instances/jdk1.6.0/jre/lib/fontconfig.properties 0644 root bin
 f none usr/lib/vp-services 0555 root bin
 f none usr/lib/vp-shares 0555 root bin
+f none usr/sbin/extract_hostid 0755 root bin
 f none usr/share/applications/services.desktop 0644 root bin
 f none usr/share/applications/shares.desktop 0644 root bin
 f none usr/share/man/man.cf 0644 root bin

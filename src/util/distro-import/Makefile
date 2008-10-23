@@ -115,6 +115,7 @@ FIXFILES=					\
 	etc/svc/nonglobal_repo.db		\
 	etc/user_attr.cdonly			\
 	lib/libc.so.1				\
+	lib/svc/method/svc-hostid		\
 	usr/bin/ksh				\
 	usr/has/bin/sh				\
 	usr/has/bin/vi				\
@@ -122,6 +123,7 @@ FIXFILES=					\
 	usr/jdk/instances/jdk1.6.0/README.html	\
 	usr/jdk/instances/jdk1.6.0/jre/LICENSE	\
 	usr/jdk/instances/jdk1.6.0/jre/README	\
+	usr/sbin/extract_hostid			\
 	usr/share/man/man.cf			\
 	usr/share/man/missing.man		\
 	usr/share/applications/services.desktop	\
@@ -240,6 +242,9 @@ proto/lib/libc.so.1: proto
 	./get_file_from_pkg.py $(WOS_PKGS)/SUNWcslr lib/libc.so.1 > $@
 	/usr/bin/elfedit -e 'cap:hw1 -and -cmp sse' $@
 
+proto/lib/svc/method/svc-hostid: proto 100a/svc-hostid
+	cp 100a/svc-hostid $@
+
 proto/usr/share/man/missing.man:	proto	missing.man
 	cp missing.man $@
 
@@ -285,6 +290,9 @@ proto/usr/has/bin/sh:	proto Makefile
 proto/usr/has/bin/vi:	proto Makefile
 	./get_file_from_pkg.py $(WOS_PKGS)/SUNWcsu usr/bin/edit > $@
 
+proto/usr/sbin/extract_hostid:	proto ../misc/extract_hostid
+	cp ../misc/extract_hostid $@
+
 $(JDKFILES:%=proto/usr/jdk/instances/jdk1.6.0/%):	proto DLJ/$(@F)
 	cp DLJ/$(@F) $@
 
@@ -310,6 +318,7 @@ proto:	Makefile
 	mkdir -p proto/usr/jdk/instances/jdk1.6.0/jre
 	mkdir -p proto/usr/jdk/instances/jdk1.6.0/jre/lib
 	mkdir -p proto/usr/lib
+	mkdir -p proto/usr/sbin
 	mkdir -p proto/usr/share/applications
 	mkdir -p proto/usr/share/man
 	mkdir -p proto/var/svc/manifest/system

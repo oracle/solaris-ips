@@ -78,4 +78,11 @@ end import
 from SUNWftpr import
 etc/ftpd/ftpusers
 end import
+# replace svc-hostid w/ modified version for build 100
+drop lib/svc/method/svc-hostid
+from ./SUNWfixes import
+lib/svc/method/svc-hostid
+usr/sbin/extract_hostid
+end import
+#
 end package

@@ -60,6 +60,7 @@ install:
 	@cd gui; pwd; $(MAKE) $(TARGET)
 	@cd um; pwd; $(MAKE) $(TARGET)
 	@cd brand; pwd; $(MAKE) $(TARGET)
+	@cd util/misc; pwd; $(MAKE) $(TARGET)
 
 packages: install
 	@cd pkgdefs; pwd; $(MAKE) $(TARGET)
