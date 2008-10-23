@@ -732,9 +732,6 @@ class Catalog(object):
 
                 self.save_attrs()
 
-        def search_available(self):
-                return self._search_available
-
         def valid_new_fmri(self, pfmri):
                 """Check that the fmri supplied as an argument would be
                 valid to add to the catalog.  This checks to make sure that

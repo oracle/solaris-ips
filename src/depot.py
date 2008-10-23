@@ -92,6 +92,7 @@ import pkg.server.config as config
 import pkg.server.depot as depot
 import pkg.server.repository as repo
 import pkg.server.repositoryconfig as rc
+import pkg.search_errors as search_errors
 from pkg.misc import port_available, msg, emsg
 
 class LogSink(object):
@@ -349,7 +350,11 @@ if __name__ == "__main__":
         # remaining preparation.
         if reindex:
                 scfg.acquire_catalog(rebuild=False)
-                scfg.catalog.run_update_index()
+                try:
+                        scfg.catalog.run_update_index()
+                except search_errors.IndexingException, e:
+                        cherrypy.log(str(e), "INDEX")
+                        sys.exit(1)
                 sys.exit(0)
 
         # Now build our site configuration.

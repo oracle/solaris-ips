@@ -168,6 +168,7 @@ class ServerCatalog(catalog.Catalog):
                     fmris_to_index)
 
                 if fmris_to_index:
+                        cherrypy.log("Updating search indices", "INDEX")
                         self.__update_searchdb_unlocked(fmris_to_index)
                 else:
                         ind = indexer.Indexer(self.index_root,
@@ -230,12 +231,20 @@ class ServerCatalog(catalog.Catalog):
                                 self.refresh_again = False
                                 self.refresh_index()
                 elif rc > 0:
-                        # XXX This should be logged instead
                         # If the refresh of the index failed, defensively
                         # declare that search is unavailable.
-                        self._search_available = False
-                        emsg(_("ERROR building search database, rc: %s"))
-                        emsg(_(self.searchdb_update_handle.stderr.read()))
+                        cherrypy.log("ERROR building search database, exit "
+                            "code: %s" % rc, "INDEX")
+                        try:
+                                cherrypy.log(
+                                    self.searchdb_update_handle.stderr.read())
+                        except KeyboardInterrupt:
+                                raise
+                        except:
+                                pass
+                        self.searchdb_update_handle_lock.acquire()
+                        self.searchdb_update_handle = None
+                        self.searchdb_update_handle_lock.release()
 
         def __update_searchdb_unlocked(self, fmri_list):
                 """ Takes a fmri_list and calls the indexer with a list of fmri
@@ -271,6 +280,9 @@ class ServerCatalog(catalog.Catalog):
                             query_e.ServerQueryEngine(self.index_root)
                 query = query_e.Query(token, case_sensitive=False)
                 return self.query_engine.search(query)
+
+        def search_available(self):
+                return self._search_available or self._check_search()
 
         @staticmethod
         def read_catalog(catalog, dir, auth=None):

@@ -432,7 +432,7 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
                                 self.pkgsend(depot_url, "close -A", exit=0)
                         raise
 
-        def start_depot(self, port, depotdir, logpath):
+        def start_depot(self, port, depotdir, logpath, refresh_index=False):
                 """ Convenience routine to help subclasses start
                     depots.  Returns a depotcontroller. """
 
@@ -450,6 +450,8 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
                 dc.set_repodir(depotdir)
                 dc.set_logpath(logpath)
                 dc.set_port(port)
+                if refresh_index:
+                        dc.set_refresh_index()
                 dc.start()
                 return dc
                 

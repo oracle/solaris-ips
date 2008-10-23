@@ -83,10 +83,9 @@ class TestPkgSearchBasics(testutils.SingleDepotTestCase):
 
         space_pkg10 = """
             open space_pkg@1.0,5.11-0
-            add file /tmp/example_file mode=0444 owner=nobody group=sys path='foo/with a space'
-            add dir mode=0755 owner=root group=bin path=foodir
+            add file /tmp/example_file mode=0444 owner=nobody group=sys path='unique/with a space'
+            add dir mode=0755 owner=root group=bin path=unique_dir
             close """
-
         
         headers = "INDEX      ACTION    VALUE                     PACKAGE\n"
 
@@ -398,6 +397,13 @@ close
                 self.pkg("search  example_path", exit=1)
                 self.pkg("search  example*", exit=1)
                 self.pkg("search  /bin", exit=1)
+
+        def _run_remote_empty_tests(self):
+                self.pkg("search -r example_pkg", exit=1)
+                self.pkg("search -r example_path", exit=1)
+                self.pkg("search -r example*", exit=1)
+                self.pkg("search -r /bin", exit=1)
+                self.pkg("search -r *unique*", exit=1)
 
         @staticmethod
         def _restore_dir(index_dir, index_dir_tmp):
@@ -782,7 +788,7 @@ close
                 self.pkg("search with", exit=1)
                 self.pkg("search with*")
                 self.pkg("search *space")
-                self.pkg("search foodir")
+                self.pkg("search unique_dir")
                 self.pkg("search -r with", exit=1)
                 self.pkg("search -r with*")
                 self.pkg("search -r *space")
@@ -791,7 +797,7 @@ close
                 self.pkg("search with", exit=1)
                 self.pkg("search with*")
                 self.pkg("search *space")
-                self.pkg("search foodir")
+                self.pkg("search unique_dir")
 
         def test_bug_2863(self):
                 """Test local case sensitive search"""
@@ -825,7 +831,41 @@ close
                 self._run_local_empty_tests()
                 self.pkg("rebuild-index")
                 self._run_local_empty_tests()
-                        
+
+        def test_bug_4048_1(self):
+                """Checks whether the server deals with partial indexing."""
+                durl = self.dc.get_depot_url()
+                depotpath = self.dc.get_repodir()
+                tmp_dir = os.path.join(depotpath, "index", "TMP")
+                os.mkdir(tmp_dir)
+                self.pkgsend_bulk(durl, self.example_pkg10)
+                self.image_create(durl)
+                self._run_remote_empty_tests()
+                os.rmdir(tmp_dir)
+                offset = 2
+                depot_logfile = os.path.join(self.get_test_prefix(),
+                    self.id(), "depot_logfile%d" % offset)
+                tmp_dc = self.start_depot(12000 + offset, depotpath, depot_logfile,
+                    refresh_index=True)
+                self._run_remote_tests()
+                tmp_dc.kill()
+
+        def test_bug_4048_2(self):
+                """Checks whether the server deals with partial indexing."""
+                durl = self.dc.get_depot_url()
+                depotpath = self.dc.get_repodir()
+                tmp_dir = os.path.join(depotpath, "index", "TMP")
+                os.mkdir(tmp_dir)
+                self.pkgsend_bulk(durl, self.space_pkg10)
+                self.image_create(durl)
+                self._run_remote_empty_tests()
+                os.rmdir(tmp_dir)
+                self.pkgsend_bulk(durl, self.example_pkg10)
+                self._run_remote_tests()
+                self.pkg("search -r unique_dir")
+                self.pkg("search -r with*")
+
+                
 
 class TestPkgSearchMulti(testutils.ManyDepotTestCase):
 

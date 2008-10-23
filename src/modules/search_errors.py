@@ -49,12 +49,10 @@ class PartialIndexingException(IndexingException):
         """ This is used when the directory the temporary files the indexer
         should write to already exists. """
         def __str__(self):
-                return "Result of partial indexing found, " \
-                    "please correct that before indexing anew. Could " \
-                    "not make: %s because it " \
-                    "already exists. Removing this directory and " \
-                    "using the --rebuild-index flag should fix this " \
-                    "problem." % self.cause
+                return "Unable to build or update search indices. Result of " \
+                    "partial indexing found:%s. Please remove this directory "\
+                    "and start a depot with the --refresh-index flag." % \
+                    self.cause
 
 class ProblematicPermissionsIndexException(IndexingException):
         """ This is used when the indexer is unable to create, move, or remove

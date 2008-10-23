@@ -198,6 +198,9 @@ class DepotController(object):
                 
         def start(self):
                 self.__initial_start()
+
+                if self.__refresh_index:
+                        return
                 
 		sleeptime = 0.05
 		contact = False
