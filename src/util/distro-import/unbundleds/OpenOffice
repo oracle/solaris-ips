@@ -1,6 +1,6 @@
 package openoffice
-description "OpenOffice.org 3.0"
-version 3.0
+description "OpenOffice.org 3.0.0"
+version 3.0.0
 import ooobasis30-base
 import ooobasis30-binfilter
 import ooobasis30-calc
@@ -52,14 +52,14 @@ import openofficeorg-ure
 end package
 
 package openoffice-sdk
-description "Software Development Kit for OpenOffice.org 3.0"
-version 3.0
+description "Software Development Kit for OpenOffice.org 3.0.0"
+version 3.0.0
 import ooobasis30-sdk
 end package
 
 package openoffice-de
-description "German localization of OpenOffice.org 3.0"
-version 3.0
+description "German localization of OpenOffice.org 3.0.0"
+version 3.0.0
 import ooobasis30-de
 import ooobasis30-de-base
 import ooobasis30-de-binfilter
@@ -74,8 +74,8 @@ import openofficeorg3-de
 end package
 
 package openoffice-es
-description "Spanish localization for OpenOffice.org 3.0"
-version 3.0
+description "Spanish localization for OpenOffice.org 3.0.0"
+version 3.0.0
 import ooobasis30-es
 import ooobasis30-es-base
 import ooobasis30-es-binfilter
@@ -90,8 +90,8 @@ import openofficeorg3-es
 end package
 
 package openoffice-fr
-description "French localization for OpenOffice.org 3.0"
-version 3.0
+description "French localization for OpenOffice.org 3.0.0"
+version 3.0.0
 import ooobasis30-fr
 import ooobasis30-fr-base
 import ooobasis30-fr-binfilter
@@ -106,8 +106,8 @@ import openofficeorg3-fr
 end package
 
 package openoffice-hu
-description "Hungarian localization for OpenOffice.org 3.0"
-version 3.0
+description "Hungarian localization for OpenOffice.org 3.0.0"
+version 3.0.0
 import ooobasis30-hu
 import ooobasis30-hu-base
 import ooobasis30-hu-binfilter
@@ -122,8 +122,8 @@ import openofficeorg3-hu
 end package
 
 package openoffice-it
-description "Italian localization for OpenOffice.org 3.0"
-version 3.0
+description "Italian localization for OpenOffice.org 3.0.0"
+version 3.0.0
 import ooobasis30-it
 import ooobasis30-it-base
 import ooobasis30-it-binfilter
@@ -138,8 +138,8 @@ import openofficeorg3-it
 end package
 
 package openoffice-ja
-description "Japanese localization for OpenOffice.org 3.0"
-version 3.0
+description "Japanese localization for OpenOffice.org 3.0.0"
+version 3.0.0
 import ooobasis30-ja
 import ooobasis30-ja-base
 import ooobasis30-ja-binfilter
@@ -154,8 +154,8 @@ import openofficeorg3-ja
 end package
 
 package openoffice-ko
-description "Korean localization for OpenOffice.org 3.0"
-version 3.0
+description "Korean localization for OpenOffice.org 3.0.0"
+version 3.0.0
 import ooobasis30-ko
 import ooobasis30-ko-base
 import ooobasis30-ko-binfilter
@@ -170,8 +170,8 @@ import openofficeorg3-ko
 end package
 
 package openoffice-nl
-description "Dutch localization for OpenOffice.org 3.0"
-version 3.0
+description "Dutch localization for OpenOffice.org 3.0.0"
+version 3.0.0
 import ooobasis30-nl
 import ooobasis30-nl-base
 import ooobasis30-nl-binfilter
@@ -186,8 +186,8 @@ import openofficeorg3-nl
 end package
 
 package openoffice-pl
-description "Polish localization for OpenOffice.org 3.0"
-version 3.0
+description "Polish localization for OpenOffice.org 3.0.0"
+version 3.0.0
 import ooobasis30-pl
 import ooobasis30-pl-base
 import ooobasis30-pl-binfilter
@@ -202,8 +202,8 @@ import openofficeorg3-pl
 end package
 
 package openoffice-pt
-description "Portuguese localization for OpenOffice.org 3.0"
-version 3.0
+description "Portuguese localization for OpenOffice.org 3.0.0"
+version 3.0.0
 import ooobasis30-pt
 import ooobasis30-pt-base
 import ooobasis30-pt-binfilter
@@ -218,8 +218,8 @@ import openofficeorg3-pt
 end package
 
 package openoffice-pt-BR
-description "Portuguese Brazilian localization for OpenOffice.org 3.0"
-version 3.0
+description "Portuguese Brazilian localization for OpenOffice.org 3.0.0"
+version 3.0.0
 import ooobasis30-pt-BR
 import ooobasis30-pt-BR-base
 import ooobasis30-pt-BR-binfilter
@@ -234,8 +234,8 @@ import openofficeorg3-pt-BR
 end package
 
 package openoffice-ru
-description "Russian localization for OpenOffice.org 3.0"
-version 3.0
+description "Russian localization for OpenOffice.org 3.0.0"
+version 3.0.0
 import ooobasis30-ru
 import ooobasis30-ru-base
 import ooobasis30-ru-binfilter
@@ -250,8 +250,8 @@ import openofficeorg3-ru
 end package
 
 package openoffice-sv
-description "Swedish localization for OpenOffice.org 3.0"
-version 3.0
+description "Swedish localization for OpenOffice.org 3.0.0"
+version 3.0.0
 import ooobasis30-sv
 import ooobasis30-sv-base
 import ooobasis30-sv-binfilter
@@ -266,8 +266,8 @@ import openofficeorg3-sv
 end package
 
 package openoffice-zh-CN
-description "Simplified Chinese localization for OpenOffice.org 3.0"
-version 3.0
+description "Simplified Chinese localization for OpenOffice.org 3.0.0"
+version 3.0.0
 import ooobasis30-zh-CN
 import ooobasis30-zh-CN-base
 import ooobasis30-zh-CN-binfilter
@@ -282,8 +282,8 @@ import openofficeorg3-zh-CN
 end package
 
 package openoffice-zh-TW
-description "Traditional Chinese localization for OpenOffice.org 3.0"
-version 3.0
+description "Traditional Chinese localization for OpenOffice.org 3.0.0"
+version 3.0.0
 import ooobasis30-zh-TW
 import ooobasis30-zh-TW-base
 import ooobasis30-zh-TW-binfilter
