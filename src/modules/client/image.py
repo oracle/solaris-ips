@@ -2093,15 +2093,25 @@ class Image(object):
 
                 unfound_fmris = []
                 multiple_matches = []
-                
+                illegal_fmris = []
+
                 for p in pkg_list:
                         try:
                                 conp = self.apply_optional_dependencies(p)
+                        except pkg.fmri.IllegalMatchingFmri:
+                                illegal_fmris.append(p)
+                                continue
+                        try:
                                 matches = list(self.inventory([ conp ],
                                     all_known = True))
-                        except api_errors.InventoryException:
+                        except api_errors.InventoryException, e:
+                                assert(not (e.notfound and e.illegal))
+                                assert(e.notfound or e.illegal)
                                 error = 1
-                                unfound_fmris.append(p)
+                                if e.notfound:
+                                        unfound_fmris.append(p)
+                                else:
+                                        illegal_fmris.append(p)
                                 continue
 
                         pnames = {}
@@ -2134,7 +2144,7 @@ class Image(object):
 
                 if error != 0:
                         raise api_errors.PlanCreationException(unfound_fmris,
-                            multiple_matches, None)
+                            multiple_matches, [], illegal_fmris)
 
                 if verbose:
                         msg(_("Before evaluation:"))
@@ -2166,12 +2176,26 @@ class Image(object):
                 unfound_fmris = []
                 multiple_matches = []
                 missing_matches = []
+                illegal_fmris = []
 
                 for ppat in fmri_list:
                         try:
                                 matches = list(self.inventory([ppat]))
-                        except api_errors.InventoryException:
-                                unfound_fmris.append(ppat)
+                        except api_errors.InventoryException, e:
+                                assert(not (e.notfound and e.illegal))
+                                if e.notfound:
+                                        try:
+                                                list(self.inventory([ppat],
+                                                    all_known=True))
+                                                missing_matches.append(ppat)
+                                        except api_errors.InventoryException:
+                                                unfound_fmris.append(ppat)
+                                elif e.illegal:
+                                        illegal_fmris.append(ppat)
+                                else:
+                                        raise RuntimeError("Caught inventory "
+                                            "exception without unfound or "
+                                            "illegal fmris set.")
                                 err = 1
                                 continue
 
@@ -2180,17 +2204,12 @@ class Image(object):
                                 err = 1
                                 continue
 
-                        if len(matches) < 1:
-                                missing_matches.append(ppat)
-                                err = 1
-                                continue
-
                         # Propose the removal of the first (and only!) match.
                         ip.propose_fmri_removal(matches[0][0])
 
                 if err == 1:
                         raise api_errors.PlanCreationException(unfound_fmris,
-                            multiple_matches, missing_matches)
+                            multiple_matches, missing_matches, illegal_fmris)
                 if verbose:
                         msg(_("Before evaluation:"))
                         msg(ip)

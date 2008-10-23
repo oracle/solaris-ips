@@ -29,6 +29,9 @@ import string
 import sys
 import time
 import unittest
+import gettext
+
+gettext.install("pkg", "/usr/lib/locale")
 
 OUTPUT_DOTS=0           # Dots ...
 OUTPUT_VERBOSE=1        # Verbose

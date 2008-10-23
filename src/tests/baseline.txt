@@ -202,6 +202,7 @@ cli.t_fix.py TestFix.test_fix1|pass
 cli.t_fix.py TestFix.test_fix2|pass
 cli.t_pkg_R_option.py TestROption.test_1|pass
 cli.t_pkg_R_option.py TestROption.test_bad_cli_options|pass
+cli.t_pkg_api_install.py TestPkgApiInstall.test_bad_fmris|pass
 cli.t_pkg_api_install.py TestPkgApiInstall.test_basics_1|pass
 cli.t_pkg_api_install.py TestPkgApiInstall.test_basics_2|pass
 cli.t_pkg_api_install.py TestPkgApiInstall.test_basics_3|pass
@@ -212,6 +213,7 @@ cli.t_pkg_api_install.py TestPkgApiInstall.test_bug_1338_2|pass
 cli.t_pkg_api_install.py TestPkgApiInstall.test_bug_1338_3|pass
 cli.t_pkg_api_install.py TestPkgApiInstall.test_bug_1338_4|pass
 cli.t_pkg_api_install.py TestPkgApiInstall.test_bug_2795|pass
+cli.t_pkg_api_install.py TestPkgApiInstall.test_bug_4109|error
 cli.t_pkg_api_install.py TestPkgApiInstall.test_image_upgrade|pass
 cli.t_pkg_api_install.py TestPkgApiInstall.test_install_matching|error
 cli.t_pkg_api_install.py TestPkgApiInstall.test_nonrecursive_dependent_uninstall|pass

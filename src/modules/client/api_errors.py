@@ -90,17 +90,21 @@ class NoPackagesInstalledException(ApiException):
         pass
 
 class PlanCreationException(ApiException):
-        def __init__(self, unfound_fmris, multiple_matches, missing_matches):
+        def __init__(self, unfound_fmris, multiple_matches, missing_matches, illegal):
                 ApiException.__init__(self)
                 self.unfound_fmris = unfound_fmris
                 self.multiple_matches = multiple_matches
                 self.missing_matches = missing_matches
+                self.illegal = illegal
 
         def __str__(self):
-                s = _("""\
-        pkg: no package matching '%s' could be found in current catalog
-        suggest relaxing pattern, refreshing and/or examining catalogs""")
-                res = [ s % p for p in self.unfound_fmris ]
+                res = []
+                if self.unfound_fmris:
+                        s = _("""\
+pkg: The following pattern(s) did not match any packages in the current
+catalog. Try relaxing the pattern, refreshing and/or examining the catalogs""")
+                        res += [ s ]
+                        res += [ "\t%s" % p for p in self.unfound_fmris ]
 
                 if self.multiple_matches:
                         s = _("pkg: '%s' matches multiple packages")
@@ -108,6 +112,13 @@ class PlanCreationException(ApiException):
                                 res.append( s % p)
                                 for k in lst:
                                         res.append("\t%s" % k)
+
+                s = _("pkg: '%s' matches no installed packages")
+                res += [ s % p for p in self.missing_matches ]
+
+                s = _("pkg: '%s' is an illegal fmri")
+                res += [ s % p for p in self.illegal ]
+
                 return '\n'.join(res)
 
 class CatalogRefreshException(ApiException):

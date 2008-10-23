@@ -160,6 +160,15 @@ class TestPkgApiInstall(testutils.SingleDepotTestCase):
                 api_obj.prepare()
                 api_obj.execute_plan()
 
+        @staticmethod
+        def __eval_assert_raises(ex_type, eval_ex_func, func, *args):
+                try:
+                        func(*args)
+                except ex_type, e:
+                        print str(e)
+                        if not eval_ex_func(e):
+                                raise
+
         def test_basics_1(self):
                 """ Send empty package foo@1.0, install and uninstall """
 
@@ -472,6 +481,72 @@ class TestPkgApiInstall(testutils.SingleDepotTestCase):
                 self.pkg("list foo@1.0", exit=0)
                 self.pkg("list bar@1.0", exit=1)
                 self.pkg("list baz@1.0", exit=1)
+
+        def test_bad_fmris(self):
+                """ Test passing problematic fmris into the api """
+
+                durl = self.dc.get_depot_url()
+                self.image_create(durl)
+                progresstracker = progress.NullProgressTracker()
+                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
+                    progresstracker, lambda x: True, PKG_CLIENT_NAME)
+
+                def check_unfound(e):
+                        return e.unfound_fmris
+
+                def check_illegal(e):
+                        return e.illegal
+
+                def check_missing(e):
+                        return e.missing_matches
+                
+                self.__eval_assert_raises(api_errors.PlanCreationException,
+                    check_unfound, api_obj.plan_install, ["foo"], [])
+
+                api_obj.reset()
+                self.__eval_assert_raises(api_errors.PlanCreationException,
+                    check_unfound, api_obj.plan_uninstall, ["foo"], [])
+
+                api_obj.reset()
+                self.__eval_assert_raises(api_errors.PlanCreationException,
+                    check_illegal, api_obj.plan_install, ["@/foo"], [])
+                
+                api_obj.reset()
+                self.__eval_assert_raises(api_errors.PlanCreationException,
+                    check_illegal, api_obj.plan_uninstall, ["/foo"], [])
+
+                self.pkgsend_bulk(durl, self.foo10)
+
+                api_obj.refresh(False)
+                self.__eval_assert_raises(api_errors.PlanCreationException,
+                    check_missing, api_obj.plan_uninstall, ["foo"], [])
+
+                api_obj.reset()
+                self.__eval_assert_raises(api_errors.PlanCreationException,
+                    check_illegal, api_obj.plan_uninstall, ["/foo"], [])
+
+                api_obj.reset()
+                self.__do_install(api_obj, ["foo"])
+                self.__do_uninstall(api_obj, ["foo"])
+
+                api_obj.reset()                
+                self.__eval_assert_raises(api_errors.PlanCreationException,
+                    check_missing, api_obj.plan_uninstall, ["foo"], [])
+
+        def test_bug_4109(self):
+                durl = self.dc.get_depot_url()
+                self.image_create(durl)
+                progresstracker = progress.NullProgressTracker()
+                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
+                    progresstracker, lambda x: True, PKG_CLIENT_NAME)
+
+                def check_illegal(e):
+                        return e.illegal
+
+                api_obj.reset()
+                self.__eval_assert_raises(api_errors.PlanCreationException,
+                    check_illegal, api_obj.plan_install, ["/foo"], [])
+
 
 if __name__ == "__main__":
         unittest.main()
