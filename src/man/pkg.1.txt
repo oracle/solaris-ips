@@ -12,7 +12,7 @@ SYNOPSIS
 
      /usr/bin/pkg verify [-Hvq] [pkg_fmri_pattern ...]
      /usr/bin/pkg fix [pkg_fmri_pattern ...]
-     /usr/bin/pkg info [-lrv] [--license] [pkg_fmri_pattern ...]
+     /usr/bin/pkg info [-lr] [--license] [pkg_fmri_pattern ...]
      /usr/bin/pkg contents [-Hmr] [-o attribute ...] [-s sort_key]
          [-t action_type ... ] [pkg_fmri_pattern ...]
      /usr/bin/pkg list [-aHsuvf] [pkg_fmri_pattern ...]
@@ -132,7 +132,7 @@ SUBCOMMANDS
           to retrieve their catalogs. With --no-index do not update the
           search indices after the operation has completed successfully.
 
-     info [-lrv] [--license] [pkg_fmri_pattern ...]
+     info [-lr] [--license] [pkg_fmri_pattern ...]
           Display information about packages in a human-readable form.
           Multiple FMRI patterns may be specified; with no patterns,
           display information on all installed packages in the image.
@@ -142,10 +142,6 @@ SUBCOMMANDS
 
           With -r, retrieve the data from the servers.  Note that you must
           specify one or more package patterns in this case.
-
-	  With -v, display detailed information about a package.  This shows
-          the files, directories, links, and hardlinks delivered and the 
-          package's dependencies.  This may be combined with -l or -r.
 
           With --license, print out the license text(s) for the package.
           This may be combined with -l or -r.

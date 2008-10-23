@@ -964,9 +964,8 @@ def info(img_dir, args):
         display_license = False
         info_local = False
         info_remote = False
-        verbose = False
 
-        opts, pargs = getopt.getopt(args, "lrv", ["license"])
+        opts, pargs = getopt.getopt(args, "lr", ["license"])
         for opt, arg in opts:
                 if opt == "-l":
                         info_local = True
@@ -974,8 +973,6 @@ def info(img_dir, args):
                         info_remote = True
                 elif opt == "--license":
                         display_license = True
-                elif opt == "-v":
-                        verbose = True
 
         if not info_local and not info_remote:
                 info_local = True
@@ -994,7 +991,7 @@ def info(img_dir, args):
             progress.NullProgressTracker(), None, PKG_CLIENT_NAME)
 
         try:
-                ret = api_inst.info(pargs, info_local, display_license, verbose)
+                ret = api_inst.info(pargs, info_local, display_license)
                 pis = ret[api.ImageInterface.INFO_FOUND]
                 notfound = ret[api.ImageInterface.INFO_MISSING]
                 illegals = ret[api.ImageInterface.INFO_ILLEGALS]
@@ -1034,28 +1031,7 @@ def info(img_dir, args):
                 msg(_("          Size:"), misc.bytes_to_str(pi.size))
                 msg(_("          FMRI:"), pi.fmri)
                 # XXX add license/copyright info here?
-                if verbose:
-                        if pi.dependencies:
-                                msg(_("  Dependencies:"))
-                                for d in pi.dependencies:
-                                        msg(_(d))
-                        if pi.links:
-                                msg(_("         Links:"))
-                                for d in pi.links:
-                                        msg(_(d))
 
-                        if pi.hardlinks:
-                                msg(_("     Hardlinks:"))
-                                for d in pi.hardlinks:
-                                        msg(_(d))
-                        if pi.files:
-                                msg(_("         Files:"))
-                                for d in pi.files:
-                                        msg(_(d))
-                        if pi.dirs:
-                                msg(_("   Directories:"))
-                                for d in pi.dirs:
-                                        msg(_(d))
         if notfound:
                 err = 1
                 if pis:

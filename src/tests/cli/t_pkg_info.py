@@ -149,8 +149,6 @@ class TestPkgInfoBasics(testutils.SingleDepotTestCase):
                 
                 # Check local info
                 self.pkg("info jade | grep 'State: Installed'")
-                self.pkg("info -v jade | grep 'bin'")
-                self.pkg("info jade | grep 'bin'", exit=1)
                 self.pkg("info turquoise 2>&1 | grep 'no packages matching'")
                 self.pkg("info emerald", exit=1)
                 self.pkg("info emerald 2>&1 | grep 'no packages matching'")
@@ -160,8 +158,6 @@ class TestPkgInfoBasics(testutils.SingleDepotTestCase):
                 # Check remote info
                 self.pkg("info -r jade | grep 'State: Installed'")
                 self.pkg("info -r turquoise| grep 'State: Not installed'")
-                self.pkg("info -r -v turquoise| grep 'bin'")
-                self.pkg("info -r turquoise| grep 'bin'", exit=1)
                 self.pkg("info -r emerald", exit=1)
                 self.pkg("info -r emerald 2>&1 | grep 'no packages matching'")
 
