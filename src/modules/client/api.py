@@ -33,7 +33,7 @@ from pkg.client.imageplan import EXECUTED_OK
 
 import threading
 
-CURRENT_API_VERSION = 3
+CURRENT_API_VERSION = 4
                 
 class ImageInterface(object):
         """This class presents an interface to images that clients may use.
@@ -68,7 +68,7 @@ class ImageInterface(object):
                 canceled changes. It can raise VersionException and
                 ImageNotFoundException."""
                 
-                compatible_versions = set([1, 2, 3])
+                compatible_versions = set([1, 2, 3, 4])
                 
                 if version_id not in compatible_versions:
                         raise api_errors.VersionException(CURRENT_API_VERSION,
@@ -128,7 +128,8 @@ class ImageInterface(object):
                                 exception_caught = None
                                 if refresh_catalogs:
                                         try:
-                                                self.img.retrieve_catalogs()
+                                                self.img.retrieve_catalogs(
+                                                    progtrack=self.progresstracker)
                                         except api_errors.CatalogRefreshException, e:
                                                 if not e.succeeded:
                                                         raise
@@ -289,12 +290,13 @@ class ImageInterface(object):
                                 # attempting network operations
                                 if not self.img.check_cert_validity():
                                         raise api_errors.InvalidCertException()
-                                
+
                                 self.img.load_catalogs(self.progresstracker)
 
                                 if refresh_catalogs:
                                         try:
-                                                self.img.retrieve_catalogs()
+                                                self.img.retrieve_catalogs(
+                                                    progtrack=self.progresstracker)
                                         except api_errors.CatalogRefreshException, e:
                                                 if not e.succeeded:
                                                         raise
@@ -324,7 +326,7 @@ class ImageInterface(object):
                                                     actual_cmd,
                                                     self.__check_cancelation,
                                                     noexecute,
-                                                    refresh_catalogs):
+                                                    refresh_catalogs, self.progresstracker):
                                                         self.img.history.operation_result = \
                                                             history.RESULT_FAILED_CONSTRAINED
                                                         raise api_errors.IpkgOutOfDateException()

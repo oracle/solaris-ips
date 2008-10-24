@@ -418,7 +418,6 @@ class ImagePlan(object):
                 
                 evaluate_npkgs = len(self.target_fmris) + \
                     len(self.target_rem_fmris)
-                self.progtrack.evaluate_start(evaluate_npkgs)
 
                 outstring = ""
 

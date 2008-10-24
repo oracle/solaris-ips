@@ -84,7 +84,7 @@ from pkg.client.retrieve import ManifestRetrievalError
 from pkg.client.retrieve import DatastreamRetrievalError
 from pkg.client.filelist import FileListRetrievalError
 
-CLIENT_API_VERSION = 2
+CLIENT_API_VERSION = 4
 PKG_CLIENT_NAME = "pkg"
 
 def error(text):

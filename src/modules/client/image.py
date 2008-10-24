@@ -711,6 +711,7 @@ class Image(object):
                         pps.append(pp)
 
                 ip = imageplan.ImagePlan(self, progtrack, False)
+                progtrack.evaluate_start()
                 ip.pkg_plans = pps
                 try:
                         ip.evaluate()
@@ -1295,7 +1296,7 @@ class Image(object):
                                         raise failures
 
         def retrieve_catalogs(self, full_refresh = False,
-            auths = None):
+            auths = None, progtrack = None):
                 failed = []
                 total = 0
                 succeeded = 0
@@ -1303,10 +1304,15 @@ class Image(object):
                 ts = 0
 
                 if not auths:
-                        auths = self.gen_authorities()
+                        auths = list(self.gen_authorities())
+
+                if progtrack:
+                        progtrack.refresh_start(len(auths))
 
                 for auth in auths:
                         total += 1
+                        if progtrack:
+                                progtrack.refresh_progress(auth["prefix"])
 
                         full_refresh_this_auth = False
 
@@ -1337,6 +1343,9 @@ class Image(object):
                                 succeeded += 1
 
                 self.cache_catalogs()
+
+                if progtrack:
+                        progtrack.refresh_done()
 
                 if failed:
                         raise api_errors.CatalogRefreshException(failed, total,
@@ -1634,10 +1643,11 @@ class Image(object):
                         return minfmri
                 return myfmri
 
-        def load_optional_dependencies(self):
+        def load_optional_dependencies(self, progtrack):
                 for fmri in self.gen_installed_pkgs():
                         mfst = self.get_manifest(fmri, filtered = True)
                         for dep in mfst.gen_actions_by_type("depend"):
+                                progtrack.evaluate_progress()
                                 required, min_fmri, max_fmri = dep.parse(self)
                                 if required == False:
                                         self.update_optional_dependency(min_fmri)
@@ -2061,7 +2071,7 @@ class Image(object):
                 return out
 
 
-        def make_install_plan(self, pkg_list, prtrack, check_cancelation,
+        def make_install_plan(self, pkg_list, progtrack, check_cancelation,
             noexecute, filters = None, verbose=False):
                 """Take a list of packages, specified in pkg_list, and attempt
                 to assemble an appropriate image plan.  This is a helper
@@ -2078,16 +2088,19 @@ class Image(object):
                         filters = []
                 
                 error = 0
-                ip = imageplan.ImagePlan(self, prtrack, check_cancelation,
+                ip = imageplan.ImagePlan(self, progtrack, check_cancelation,
                     filters=filters, noexecute=noexecute)
 
-                self.load_optional_dependencies()
+                progtrack.evaluate_start()
+
+                self.load_optional_dependencies(progtrack)
 
                 unfound_fmris = []
                 multiple_matches = []
                 illegal_fmris = []
 
                 for p in pkg_list:
+                        progtrack.evaluate_progress()
                         try:
                                 conp = self.apply_optional_dependencies(p)
                         except pkg.fmri.IllegalMatchingFmri:
@@ -2170,7 +2183,10 @@ class Image(object):
                 missing_matches = []
                 illegal_fmris = []
 
+                progresstracker.evaluate_start()
+
                 for ppat in fmri_list:
+                        progresstracker.evaluate_progress()
                         try:
                                 matches = list(self.inventory([ppat]))
                         except api_errors.InventoryException, e:
@@ -2216,7 +2232,7 @@ class Image(object):
                         ip.display()
 
         def ipkg_is_up_to_date(self, actual_cmd, check_cancelation, noexecute,
-            refresh_catalogs):
+            refresh_catalogs, progtrack=None):
                 """ Test whether SUNWipkg is updated to the latest version
                     known to be available for this image """
                 #
@@ -2240,8 +2256,8 @@ class Image(object):
                 # which represents "/" on the system.
                 #
 
-                # always quiet for this part of the code.
-                progresstracker = progress.QuietProgressTracker()
+                if not progtrack:
+                        progtrack = progress.QuietProgressTracker()
 
                 img = self
                 
@@ -2270,12 +2286,12 @@ class Image(object):
                                         raise
 
                         # Load catalog.
-                        newimg.load_catalogs(progresstracker)
+                        newimg.load_catalogs(progtrack)
                         img = newimg
 
                 # XXX call to progress tracker that SUNWipkg is being checked
 
-                img.make_install_plan(["SUNWipkg"], progresstracker,
+                img.make_install_plan(["SUNWipkg"], progtrack,
                     check_cancelation, noexecute, filters = [])
 
                 return img.imageplan.nothingtodo()

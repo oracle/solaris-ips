@@ -58,6 +58,10 @@ class ProgressTracker(object):
         def reset(self):
                 self.cat_cur_catalog = None
 
+                self.refresh_auth_cnt = 0
+                self.refresh_cur_auth_cnt = 0
+                self.refresh_cur_auth = None
+
                 self.ver_cur_fmri = None
 
                 self.eval_cur_fmri = None
@@ -92,6 +96,19 @@ class ProgressTracker(object):
 
         def catalog_done(self):
                 self.cat_output_done()
+
+        def refresh_start(self, auth_cnt):
+                self.refresh_auth_cnt = auth_cnt
+                self.refresh_cur_auth_cnt = 0
+                self.refresh_output_start()
+
+        def refresh_progress(self, auth):
+                self.refresh_cur_auth = auth
+                self.refresh_cur_auth_cnt += 1
+                self.refresh_output_progress()
+
+        def refresh_done(self):
+                self.refresh_output_done()
 
         def evaluate_start(self, npkgs=-1):
                 self.eval_prop_npkgs = npkgs
@@ -195,6 +212,15 @@ class ProgressTracker(object):
         def cat_output_done(self):
                 raise NotImplementedError("cat_output_done() not implemented in superclass")
 
+        def refresh_output_start(self):
+                return
+
+        def refresh_output_progress(self):
+                return
+
+        def refresh_output_done(self):
+                return
+
         def eval_output_start(self):
                 raise NotImplementedError("eval_output_start() not implemented in superclass")
 
@@ -227,7 +253,6 @@ class ProgressTracker(object):
 
         def ind_output_done(self):
                 raise NotImplementedError("ind_output_done() not implemented in superclass")
-
 
 
 class ProgressTrackerException(Exception):
@@ -419,6 +444,42 @@ class FancyUNIXProgressTracker(ProgressTracker):
                 try:
                         print self.cr,
                         print ("%" + str(self.cat_curstrlen) + "s") % "",
+                        print self.cr,
+                        sys.stdout.flush()
+                except IOError, e:
+                        if e.errno == errno.EPIPE:
+                                raise PipeError, e
+                        raise
+
+        def refresh_output_start(self):
+                s = "Refreshing Catalog"
+                self.cat_curstrlen = len(s)
+                try:
+                        print "%s" % s,
+                        sys.stdout.flush()
+                except IOError, e:
+                        if e.errno == errno.EPIPE:
+                                raise PipeError, e
+                        raise
+
+        def refresh_output_progress(self):
+                try:
+                        print self.cr,
+                        s = "Refreshing Catalog %d/%d %s" % \
+                            (self.refresh_cur_auth_cnt, self.refresh_auth_cnt,
+                            self.refresh_cur_auth)
+                        self.cat_curstrlen = len(s)
+                        print "%s" % s,
+                        sys.stdout.flush()
+                except IOError, e:
+                        if e.errno == errno.EPIPE:
+                                raise PipeError, e
+                        raise
+
+        def refresh_output_done(self):
+                try:
+                        print self.cr,
+                        print " " * self.cat_curstrlen,
                         print self.cr,
                         sys.stdout.flush()
                 except IOError, e:

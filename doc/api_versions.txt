@@ -1,3 +1,11 @@
+Version 4:
+Compatible with clients using versions 1, 2, and 3
+Changes:
+Modifies where certain progress tracking calls were made, calling 
+    evaluate_start much sooner.
+Adds refresh tracking to progress.py. This allows for active feedback when
+    the catalogs of authorities are being refreshed.
+
 Version 3:
 Compatible with clients using Versions 1 and 2
 Changes:
