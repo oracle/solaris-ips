@@ -465,6 +465,8 @@ class FancyUNIXProgressTracker(ProgressTracker):
         def refresh_output_progress(self):
                 try:
                         print self.cr,
+                        print " " * self.cat_curstrlen,
+                        print self.cr,
                         s = "Refreshing Catalog %d/%d %s" % \
                             (self.refresh_cur_auth_cnt, self.refresh_auth_cnt,
                             self.refresh_cur_auth)
