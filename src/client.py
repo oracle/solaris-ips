@@ -2179,8 +2179,8 @@ if __name__ == "__main__":
                 traceback.print_exc()
                 error(
                     _("\n\nThis is an internal error.  Please let the "
-                    "developers know about this\nproblem by filing a bug at"
-                    "http://defect.opensolaris.org and including the\nabove"
+                    "developers know about this\nproblem by filing a bug at "
+                    "http://defect.opensolaris.org and including the\nabove "
                     "traceback and this message.  The version of pkg(5) is "
                     "'%s'.") % pkg.VERSION)
                 __ret = 99
