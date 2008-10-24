@@ -39,6 +39,8 @@ import openofficeorg3
 import openofficeorg30-desktop-int
 drop etc/mime.types
 drop etc/mailcap
+chattr usr/share/applications/openoffice.org3-printeradmin.desktop \
+    target=../../../opt/openoffice.org3/share/xdg/printeradmin.desktop
 import openofficeorg3-base
 import openofficeorg3-calc
 import openofficeorg3-dict-en
