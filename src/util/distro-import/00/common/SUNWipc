@@ -1,3 +1,4 @@
 package SUNWipc
+classification "System/Core"
 import SUNWipc
 end package

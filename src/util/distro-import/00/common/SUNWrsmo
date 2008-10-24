@@ -1,3 +1,4 @@
 package SUNWrsmo
+classification "System/Hardware"
 import SUNWrsmo
 end package

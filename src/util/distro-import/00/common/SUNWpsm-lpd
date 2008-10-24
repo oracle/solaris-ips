@@ -1,3 +1,4 @@
 package SUNWpsm-lpd
+classification "System/Printing"
 import SUNWpsm-lpd
 end package

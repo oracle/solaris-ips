@@ -1,4 +1,5 @@
 package SUNWsigcpp
+classification "Development/C++"
 import SUNWsigcpp
 import SUNWsigcpp-devel
 end package

@@ -1,4 +1,5 @@
 package SUNWgnu-diffutils
+classification "Applications/System Utilities"
 import SUNWgnu-diffutils
 version 2.8.1
 end package

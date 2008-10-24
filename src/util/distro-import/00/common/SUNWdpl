@@ -1,3 +1,4 @@
 package SUNWdpl
+classification "Development/System"
 import SUNWdpl
 end package

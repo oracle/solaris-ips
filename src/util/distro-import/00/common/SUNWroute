@@ -1,4 +1,5 @@
 package SUNWroute
+classification "System/Core"
 import SUNWroute
 import SUNWroutr
 end package

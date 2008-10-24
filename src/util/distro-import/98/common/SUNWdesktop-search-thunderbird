@@ -1,3 +1,4 @@
 package SUNWdesktop-search-thunderbird
+classification "Applications/Plug-ins and Run-times"
 import SUNWdesktop-search-thunderbird
 end package

@@ -1,4 +1,5 @@
 package SUNWscim-pinyin
+classification "System/Text Tools"
 import SUNWscim-pinyin
 version 0.5.91
 end package

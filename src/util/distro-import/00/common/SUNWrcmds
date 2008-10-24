@@ -1,4 +1,5 @@
 package SUNWrcmds
+classification "System/Core"
 import SUNWrcmds
 import SUNWrcmdr
 end package

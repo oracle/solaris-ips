@@ -1,4 +1,5 @@
 package SUNWtcltls
+classification "Development/Other Languages"
 import SUNWtcltls
 version 1.6
 end package

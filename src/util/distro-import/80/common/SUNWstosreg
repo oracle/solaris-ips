@@ -1,3 +1,4 @@
 package SUNWstosreg
+classification "System/Core"
 import SUNWstosreg
 end package

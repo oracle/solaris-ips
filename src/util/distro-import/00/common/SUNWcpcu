@@ -1,3 +1,4 @@
 package SUNWcpcu
+classification "System/Core"
 import SUNWcpcu
 end package

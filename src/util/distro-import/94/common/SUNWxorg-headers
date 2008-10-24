@@ -1,4 +1,5 @@
 package SUNWxorg-headers
+classification "Development/X11"
 import SUNWxorg-headers
 depend SUNWhea
 depend SUNWxwinc

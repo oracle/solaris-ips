@@ -1,4 +1,5 @@
 package SUNWmda
+classification "System/Core"
 import SUNWmdau
 import SUNWmdar
 end package

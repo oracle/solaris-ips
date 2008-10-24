@@ -1,4 +1,5 @@
 package SUNWgsfot
+classification "System/Fonts"
 import SUNWgsfot
 version 6.0
 end package

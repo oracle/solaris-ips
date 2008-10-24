@@ -1,3 +1,4 @@
 package SUNWlang-zhHK
+classification "System/Localizations (System)"
 import SUNWlang-zhHK
 end package

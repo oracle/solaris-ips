@@ -1,4 +1,5 @@
 package SUNWippl
+classification "System/Printing"
 import SUNWipplu
 import SUNWipplr
 end package

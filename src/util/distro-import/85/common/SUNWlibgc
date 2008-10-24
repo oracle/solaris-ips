@@ -1,4 +1,5 @@
 package SUNWlibgc
+classification "Development/C++"
 import SUNWlibgc
 import SUNWlibgc-devel
 end package

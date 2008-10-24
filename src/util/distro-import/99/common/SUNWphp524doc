@@ -5,6 +5,7 @@
 # on the package with the new name.
 #
 package SUNWphp524doc
+classification "Development/PHP"
 version 5.2.4
 depend SUNWphp52d
 end package

@@ -1,3 +1,4 @@
 package SUNWxwplr
+classification "System/X11 (System)"
 import SUNWxwplr exclude var/svc/manifest/application/x11/xvnc-inetd.xml
 end package

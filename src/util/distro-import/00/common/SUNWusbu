@@ -1,3 +1,4 @@
 package SUNWusbu
+classification "System/Hardware"
 import SUNWusbu
 end package

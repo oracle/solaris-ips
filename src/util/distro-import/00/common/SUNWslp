@@ -1,4 +1,5 @@
 package SUNWslp
+classification "System/Services"
 import SUNWslpu
 import SUNWslpr
 end package

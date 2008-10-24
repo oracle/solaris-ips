@@ -1,4 +1,5 @@
 package SUNWgnome-log-viewer
+classification "Applications/System Utilities"
 import SUNWgnome-log-viewer
 import SUNWgnome-log-viewer-devel
 import SUNWgnome-log-viewer-root

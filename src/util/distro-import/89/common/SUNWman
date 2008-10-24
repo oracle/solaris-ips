@@ -1,4 +1,5 @@
 package SUNWman
+classification "System/Text Tools"
 import SUNWman exclude usr/share/man/man1/ex.1 usr/share/man/man1/sh.1 usr/share/man/man1/vi.1 usr/share/man/man1/view.1
 drop usr/share/man/man.cf
 from ./SUNWfixes import

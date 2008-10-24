@@ -1,3 +1,4 @@
 package SUNWpiclh
+classification "System/Core"
 import SUNWpiclh
 end package

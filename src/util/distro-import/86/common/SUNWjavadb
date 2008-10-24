@@ -1,4 +1,5 @@
 package SUNWjavadb
+classification "Development/Databases"
 import SUNWjavadb-client
 import SUNWjavadb-common
 import SUNWjavadb-core

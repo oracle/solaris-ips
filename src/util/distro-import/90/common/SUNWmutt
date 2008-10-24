@@ -1,4 +1,5 @@
 package SUNWmutt
+classification "Applications/Internet"
 import SUNWmutt
 import SUNWmuttr
 version 1.5.17

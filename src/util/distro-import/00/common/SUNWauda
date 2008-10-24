@@ -1,3 +1,4 @@
 package SUNWauda
+classification "System/Media"
 import SUNWauda
 end package

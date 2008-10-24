@@ -1,3 +1,4 @@
 package SUNWlang-zhCN
+classification "System/Localizations (System)"
 import SUNWlang-zhCN
 end package

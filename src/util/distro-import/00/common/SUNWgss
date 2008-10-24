@@ -1,3 +1,4 @@
 package SUNWgss
+classification "System/Security"
 import SUNWgss
 end package

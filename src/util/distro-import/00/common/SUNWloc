@@ -1,3 +1,4 @@
 package SUNWloc
+classification "System/Localizations (System)"
 import SUNWloc
 end package

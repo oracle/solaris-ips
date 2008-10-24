@@ -1,4 +1,5 @@
 package SUNWpsdcr
+classification "Drivers/Other Peripherals"
 import SUNWpsdcr
 add driver name=ecpp perms="* 0666 root sys" alias=lp
 # By rights, we should also have perms="*,cu 0600 uucp uucp" here, too, but

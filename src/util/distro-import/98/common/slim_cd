@@ -2,6 +2,7 @@
 # slim_cd continues to deliver these files to keep upgrades from breaking
 #
 package slim_cd
+classification "Distributions/Desktop"
 from ./SUNWfixes import
 etc/shadow
 etc/passwd

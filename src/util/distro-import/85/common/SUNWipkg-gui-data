@@ -1,3 +1,4 @@
 package SUNWipkg-gui-data
+classification "System/Packaging"
 import SUNWipkg-gui-data
 end package

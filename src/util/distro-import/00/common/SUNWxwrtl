@@ -1,3 +1,4 @@
 package SUNWxwrtl
+classification "System/X11 (System)"
 import SUNWxwrtl
 end package

@@ -1,4 +1,5 @@
 package SUNWj6dev
+classification "Development/Java"
 import SUNWj6dev
 drop usr/jdk/instances/jdk1.6.0/LICENSE
 drop usr/jdk/instances/jdk1.6.0/README.html

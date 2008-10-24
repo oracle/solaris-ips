@@ -1,3 +1,4 @@
 package SUNWesu
+classification "System/Core"
 import SUNWesu
 end package

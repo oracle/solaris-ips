@@ -1,3 +1,4 @@
 package SUNWiiimf-th-thaile
+classification "System/Internationalization"
 import SUNWiiimf-th-thaile
 end package

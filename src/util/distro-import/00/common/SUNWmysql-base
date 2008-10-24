@@ -1,4 +1,5 @@
 package SUNWmysql-base
+classification "System/Databases (System)"
 description "MySQL Database Management System (Base)"
 add group groupname=mysql gid=70
 add user username=mysql password=NP uid=70 group=mysql gcos-field="MySQL Reserved UID" ftpuser=false

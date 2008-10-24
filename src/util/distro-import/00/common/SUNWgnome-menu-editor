@@ -1,3 +1,4 @@
 package SUNWgnome-menu-editor
+classification "Applications/Configuration and Preferences"
 import SUNWgnome-menu-editor
 end package

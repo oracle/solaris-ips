@@ -1,3 +1,4 @@
 package SUNWidnu
+classification "Applications/System Utilities"
 import SUNWidnu
 end package

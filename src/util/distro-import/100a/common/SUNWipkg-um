@@ -1,3 +1,4 @@
 package SUNWipkg-um
+classification "System/Packaging"
 import SUNWipkg-um
 end package

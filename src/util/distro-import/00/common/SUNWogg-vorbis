@@ -1,4 +1,5 @@
 package SUNWogg-vorbis
+classification "System/Libraries (System)"
 import SUNWogg-vorbis
 import SUNWogg-vorbis-devel
 end package

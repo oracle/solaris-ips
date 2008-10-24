@@ -1,3 +1,4 @@
 package SUNWsfdoc
+classification "Development/GNU"
 import SUNWsfdoc
 end package

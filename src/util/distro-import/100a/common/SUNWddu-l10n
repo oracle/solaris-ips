@@ -1,3 +1,4 @@
 package SUNWddu-l10n
+classification "System/Localizations (System)"
 import SUNWddu-l10n
 end package

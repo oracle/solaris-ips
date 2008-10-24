@@ -1,4 +1,5 @@
 package SUNWpostgr-82-libs
+classification "Development/Databases"
 import SUNWpostgr-82-libs
 version 8.2.10
 end package

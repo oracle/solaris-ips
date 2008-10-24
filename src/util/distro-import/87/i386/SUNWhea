@@ -1,3 +1,4 @@
 package SUNWhea
+classification "System/Core"
 import SUNWhea
 end package

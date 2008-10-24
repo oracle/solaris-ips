@@ -1,3 +1,4 @@
 package SUNWxsane
+classification "Applications/System Utilities"
 import SUNWxsane
 end package

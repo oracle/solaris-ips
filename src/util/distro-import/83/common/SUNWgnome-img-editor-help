@@ -1,3 +1,4 @@
 package SUNWgnome-img-editor-help
+classification "Desktop (GNOME)/Documentation"
 import SUNWgnome-img-editor-help
 end package

@@ -1,4 +1,5 @@
 package SUNWgnome-crash-report
+classification "Development/GNOME and GTK+"
 import SUNWgnome-crash-report
 import SUNWgnome-crash-report-root
 end package

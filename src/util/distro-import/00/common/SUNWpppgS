@@ -1,3 +1,4 @@
 package SUNWpppgS
+classification "Development/GNU"
 import SUNWpppgS
 end package

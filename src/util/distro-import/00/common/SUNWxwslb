@@ -1,3 +1,4 @@
 package SUNWxwslb
+classification "Development/X11"
 import SUNWxwslb
 end package

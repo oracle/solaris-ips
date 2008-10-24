@@ -1,3 +1,4 @@
 package SUNWevolution-jescs
+classification "Applications/Internet"
 import SUNWevolution-jescs
 end package

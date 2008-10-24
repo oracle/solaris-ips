@@ -1,4 +1,5 @@
 package SUNWgnome-print
+classification "Desktop (GNOME)/Libraries"
 import SUNWgnome-print
 import SUNWgnome-print-devel
 import SUNWgnome-print-root

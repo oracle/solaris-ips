@@ -4,5 +4,6 @@
 # be deleted when the newer package is installed.
 #
 package SUNWdistro-license
+classification "System/Core"
 depend SUNWdistro-license-copyright
 end package

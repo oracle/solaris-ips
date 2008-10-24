@@ -1,4 +1,5 @@
 package SUNWxvm
+classification "System/Virtualization"
 import SUNWxvmh
 import SUNWxvmhvm
 import SUNWxvmr

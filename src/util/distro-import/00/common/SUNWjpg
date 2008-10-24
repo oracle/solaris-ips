@@ -1,4 +1,5 @@
 package SUNWjpg
+classification "System/Media"
 import SUNWjpg
 import SUNWjpg-devel
 end package

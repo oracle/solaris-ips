@@ -1,3 +1,4 @@
 package SUNWpsutils
+classification "System/Printing"
 import SUNWpsutils
 end package

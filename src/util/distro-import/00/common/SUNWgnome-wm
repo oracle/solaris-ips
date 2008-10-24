@@ -1,4 +1,5 @@
 package SUNWgnome-wm
+classification "Desktop (GNOME)/Window Managers"
 import SUNWgnome-wm
 import SUNWgnome-wm-devel
 import SUNWgnome-wm-root

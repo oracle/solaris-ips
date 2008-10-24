@@ -1,3 +1,4 @@
 package SUNWdesktop-cache
+classification "System/Services"
 import SUNWdesktop-cache
 end package

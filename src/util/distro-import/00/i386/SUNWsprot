@@ -1,3 +1,4 @@
 package SUNWsprot
+classification "System/Core"
 import SUNWsprot
 end package

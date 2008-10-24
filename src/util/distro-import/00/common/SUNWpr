@@ -1,3 +1,4 @@
 package SUNWpr
+classification "System/Libraries (System)"
 import SUNWpr
 end package

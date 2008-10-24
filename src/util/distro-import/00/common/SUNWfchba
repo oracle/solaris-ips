@@ -1,4 +1,5 @@
 package SUNWfchba
+classification "System/Libraries (System)"
 import SUNWfchba
 import SUNWfchbar
 end package

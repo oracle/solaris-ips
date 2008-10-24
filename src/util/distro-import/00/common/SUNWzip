@@ -1,4 +1,5 @@
 package SUNWzip
+classification "Applications/System Utilities"
 import SUNWzip
 version 2.32
 end package

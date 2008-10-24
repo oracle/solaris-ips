@@ -1,4 +1,5 @@
 package SUNWgsed
+classification "Applications/System Utilities"
 import SUNWgsed
 version 4.1.5
 end package

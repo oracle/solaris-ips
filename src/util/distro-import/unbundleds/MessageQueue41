@@ -1,5 +1,6 @@
 package mq41
 version 4.1
+classification "System/Services"
 description "Message Queue 4.1"
 import SUNWiqdoc
 import SUNWiqfs

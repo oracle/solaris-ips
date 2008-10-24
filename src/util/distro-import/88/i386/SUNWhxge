@@ -1,4 +1,5 @@
 package SUNWhxge
+classification "Drivers/Networking"
 import SUNWhxge
 add driver name=hxge perms="* 0600 root sys" alias=pci108e,aaaa
 end package

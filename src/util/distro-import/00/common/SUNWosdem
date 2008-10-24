@@ -1,3 +1,4 @@
 package SUNWosdem
+classification "System/Core"
 import SUNWosdem
 end package

@@ -1,3 +1,4 @@
 package SUNWadmlib-sysid
+classification "System/Libraries (System)"
 import SUNWadmlib-sysid
 end package

@@ -1,3 +1,4 @@
 package SUNWfwflash
+classification "System/Core"
 import SUNWfwflash
 end package

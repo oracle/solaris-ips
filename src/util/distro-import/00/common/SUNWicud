@@ -1,3 +1,4 @@
 package SUNWicud
+classification "System/Text Tools"
 import SUNWicud
 end package

@@ -1,4 +1,5 @@
 package SUNWpostgr-server
+classification "System/Databases (System)"
 import SUNWpostgr-server
 import SUNWpostgr-server-data
 version 8.1.11

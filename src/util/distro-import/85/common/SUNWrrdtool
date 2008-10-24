@@ -1,3 +1,4 @@
 package SUNWrrdtool
+classification "Applications/System Utilities"
 import SUNWrrdtool
 end package

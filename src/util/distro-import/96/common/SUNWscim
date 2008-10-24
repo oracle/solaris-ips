@@ -1,4 +1,5 @@
 package SUNWscim
+classification "System/Text Tools"
 import SUNWscim
 import SUNWscim-bridge
 import SUNWscim-devel

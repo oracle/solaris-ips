@@ -1,4 +1,5 @@
 package SUNWgnome-python-libs
+classification "Development/Python"
 import SUNWgnome-python-libs
 import SUNWgnome-python-libs-devel
 end package

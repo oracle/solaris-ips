@@ -1,3 +1,4 @@
 package SUNWxorg-graphics-ddx
+classification "Drivers/Display"
 import SUNWxorg-graphics-ddx
 end package

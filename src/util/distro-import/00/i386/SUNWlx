@@ -1,4 +1,5 @@
 package SUNWlx
+classification "Applications/System Utilities"
 import SUNWlxu
 import SUNWlxr
 end package

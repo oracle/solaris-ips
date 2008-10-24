@@ -1,4 +1,5 @@
 package SUNWagp
+classification "Drivers/Display"
 import SUNWagp
 add driver name=agptarget perms="* 0644 root sys" \
 	alias=pci8086,7124 \

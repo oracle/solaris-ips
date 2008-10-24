@@ -1,4 +1,5 @@
 package SUNWstardict
+classification "System/Text Tools"
 import SUNWstardict
 import SUNWstardict-root
 end package

@@ -1,3 +1,4 @@
 package SUNW1394h
+classification "Development/System"
 import SUNW1394h
 end package

@@ -1,4 +1,5 @@
 package SUNWtgnome-tsol-libs
+classification "Desktop (GNOME)/Trusted"
 import SUNWtgnome-tsol-libs
 import SUNWtgnome-tsol-libs-devel
 end package

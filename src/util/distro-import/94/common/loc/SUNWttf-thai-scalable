@@ -1,4 +1,5 @@
 package SUNWttf-thai-scalable
+classification "System/Fonts"
 import SUNWttf-thai-scalable exclude usr/openwin
 chattr_glob * edit path usr/openwin usr/X11
 end package

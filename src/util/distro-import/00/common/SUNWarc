@@ -1,4 +1,5 @@
 package SUNWarc
+classification "Development/C"
 import SUNWarc
 import SUNWarcr
 end package

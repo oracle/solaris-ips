@@ -1,3 +1,4 @@
 package SUNWDTraceToolkit
+classification "Development/System"
 import SUNWDTraceToolkit
 end package

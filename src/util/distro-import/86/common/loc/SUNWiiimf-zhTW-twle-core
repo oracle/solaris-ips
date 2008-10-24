@@ -1,3 +1,4 @@
 package SUNWiiimf-zhTW-twle-core
+classification "System/Internationalization"
 import SUNWiiimf-zhTW-twle-core
 end package

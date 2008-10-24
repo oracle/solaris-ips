@@ -1,3 +1,4 @@
 package SUNWfros
+classification "System/Localizations (System)"
 import SUNWfros
 end package

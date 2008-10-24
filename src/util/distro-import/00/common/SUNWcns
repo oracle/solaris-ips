@@ -1,4 +1,5 @@
 package SUNWcns
+classification "System/Services"
 import SUNWcnsu
 import SUNWcnsr
 end package

@@ -1,3 +1,4 @@
 package SUNWbart
+classification "System/Administration and Configuration"
 import SUNWbart
 end package

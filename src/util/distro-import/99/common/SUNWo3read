@@ -1,3 +1,4 @@
 package SUNWo3read
+classification "Applications/Office"
 import SUNWo3read
 end package

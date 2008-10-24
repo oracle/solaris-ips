@@ -1,3 +1,4 @@
 package SUNWcnetr
+classification "System/Core"
 import SUNWcnetr
 end package

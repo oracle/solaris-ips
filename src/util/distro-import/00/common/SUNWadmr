@@ -1,3 +1,4 @@
 package SUNWadmr
+classification "System/Administration and Configuration"
 import SUNWadmr
 end package

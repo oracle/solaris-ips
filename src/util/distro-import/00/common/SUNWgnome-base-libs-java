@@ -1,4 +1,5 @@
 package SUNWgnome-base-libs-java
+classification "Development/Java"
 import SUNWgnome-base-libs-java
 import SUNWgnome-base-libs-java-devel
 end package

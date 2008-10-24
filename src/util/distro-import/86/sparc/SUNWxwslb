@@ -1,4 +1,5 @@
 package SUNWxwslb
+classification "Development/X11"
 import SUNWxwslb exclude usr/openwin
 # Obsolete - replaced by /usr/openwin -> X11 symlink
 drop usr/openwin/lib

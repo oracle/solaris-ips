@@ -1,4 +1,5 @@
 package SUNWlang-zhHK-extra
+classification "System/Localizations (System)"
 import SUNWlang-zhHK-extra exclude usr/openwin
 chattr_glob * edit path usr/openwin/lib usr/X11/share/X11
 end package

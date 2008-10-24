@@ -1,3 +1,4 @@
 package SUNWgnome-gvfs
+classification "Desktop (GNOME)/Libraries"
 import SUNWgnome-gvfs
 end package

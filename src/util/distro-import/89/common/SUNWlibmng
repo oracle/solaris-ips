@@ -1,4 +1,5 @@
 package SUNWlibmng
+classification "System/Libraries (System)"
 import SUNWlibmng
 version 1.0.10
 end package

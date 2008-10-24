@@ -1,3 +1,4 @@
 package SUNWpowertop
+classification "Applications/System Utilities"
 import SUNWpowertop
 end package

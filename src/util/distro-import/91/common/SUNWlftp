@@ -1,4 +1,5 @@
 package SUNWlftp
+classification "Applications/System Utilities"
 import SUNWlftpr
 import SUNWlftpu
 version 3.6.3

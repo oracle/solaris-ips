@@ -1,3 +1,4 @@
 package SUNWgnome-dialog
+classification "Development/GNOME and GTK+"
 import SUNWgnome-dialog
 end package

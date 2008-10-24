@@ -1,3 +1,4 @@
 package SUNWbtool
+classification "System/Core"
 import SUNWbtool
 end package

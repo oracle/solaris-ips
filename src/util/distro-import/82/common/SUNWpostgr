@@ -1,4 +1,5 @@
 package SUNWpostgr
+classification "System/Databases (System)"
 import SUNWpostgr
 import SUNWpostgr-devel
 version 8.1.11

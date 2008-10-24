@@ -1,3 +1,4 @@
 package SUNWpsf
+classification "System/Printing"
 import SUNWpsf
 end package

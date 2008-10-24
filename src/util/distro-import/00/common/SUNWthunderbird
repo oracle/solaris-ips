@@ -1,3 +1,4 @@
 package SUNWthunderbird
+classification "Applications/Internet"
 import SUNWthunderbird
 end package

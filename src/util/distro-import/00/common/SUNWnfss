@@ -1,4 +1,5 @@
 package SUNWnfss
+classification "System/File System"
 import SUNWnfssu
 import SUNWnfssr
 end package

@@ -1,4 +1,5 @@
 package SUNWmysql
+classification "System/Databases (System)"
 import SUNWmysqlu
 import SUNWmysqlr
 version 4.0.24

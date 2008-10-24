@@ -1,4 +1,5 @@
 package SUNWgnome-terminal
+classification "Applications/Accessories"
 import SUNWgnome-terminal
 import SUNWgnome-terminal-devel
 import SUNWgnome-terminal-root

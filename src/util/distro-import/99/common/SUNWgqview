@@ -1,3 +1,4 @@
 package SUNWgqview
+classification "Applications/Graphics and Imaging"
 import SUNWgqview
 end package

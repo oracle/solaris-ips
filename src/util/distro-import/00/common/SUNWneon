@@ -1,4 +1,5 @@
 package SUNWneon
+classification "System/Libraries (System)"
 import SUNWneon
 version 0.25.5
 end package

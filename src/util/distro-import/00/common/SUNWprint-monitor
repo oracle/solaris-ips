@@ -1,4 +1,5 @@
 package SUNWprint-monitor
+classification "System/Printing"
 import SUNWprint-monitor
 import SUNWprint-monitor-root
 end package

@@ -1,4 +1,5 @@
 package SUNWdoc
+classification "System/Text Tools"
 import SUNWdoc
 # BEGIN NON-REDISTRIBUTABLE
 drop usr/share/lib/sgml/locale/C/dtds/docbook

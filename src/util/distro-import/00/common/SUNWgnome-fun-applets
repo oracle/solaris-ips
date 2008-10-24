@@ -1,4 +1,5 @@
 package SUNWgnome-fun-applets
+classification "Applications/Applets"
 import SUNWgnome-fun-applets
 import SUNWgnome-fun-applets-root
 end package

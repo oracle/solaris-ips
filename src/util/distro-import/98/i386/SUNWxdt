@@ -1,3 +1,4 @@
 package SUNWxdt
+classification "Development/System"
 import SUNWxdt
 end package

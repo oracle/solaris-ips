@@ -1,3 +1,4 @@
 package SUNWsmapi
+classification "System/Enterprise Management"
 import SUNWsmapi
 end package

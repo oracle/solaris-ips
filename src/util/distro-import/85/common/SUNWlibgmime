@@ -1,4 +1,5 @@
 package SUNWlibgmime
+classification "System/Libraries (System)"
 import SUNWlibgmime
 import SUNWlibgmime-devel
 end package

@@ -1,4 +1,5 @@
 package SUNWgnome-terminal-java
+classification "Development/Java"
 import SUNWgnome-terminal-java
 import SUNWgnome-terminal-java-devel
 end package

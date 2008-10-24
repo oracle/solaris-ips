@@ -1,4 +1,5 @@
 package SUNWpostrun
+classification "Applications/System Utilities"
 import SUNWpostrun
 import SUNWpostrun-root
 end package

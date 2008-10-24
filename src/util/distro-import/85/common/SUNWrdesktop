@@ -1,3 +1,4 @@
 package SUNWrdesktop
+classification "Applications/Internet"
 import SUNWrdesktop
 end package

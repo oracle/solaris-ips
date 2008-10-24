@@ -1,4 +1,5 @@
 package SUNWgnome-disk-analyzer
+classification "Applications/System Utilities"
 import SUNWgnome-disk-analyzer
 import SUNWgnome-disk-analyzer-root
 end package

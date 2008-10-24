@@ -1,3 +1,4 @@
 package SUNWopensolaris-welcome
+classification "System/Text Tools"
 import SUNWopensolaris-welcome
 end package

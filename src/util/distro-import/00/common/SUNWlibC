@@ -1,3 +1,4 @@
 package SUNWlibC
+classification "Development/C++"
 import SUNWlibC
 end package

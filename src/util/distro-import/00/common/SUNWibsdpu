@@ -1,3 +1,4 @@
 package SUNWibsdpu
+classification "System/Hardware"
 import SUNWibsdpu
 end package

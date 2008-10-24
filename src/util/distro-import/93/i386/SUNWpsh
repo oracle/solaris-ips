@@ -1,3 +1,4 @@
 package SUNWpsh
+classification "Drivers/Other Peripherals"
 import SUNWpsh
 end package

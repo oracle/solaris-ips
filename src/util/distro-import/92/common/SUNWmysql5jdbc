@@ -1,4 +1,5 @@
 package SUNWmysql5jdbc
+classification "System/Databases (System)"
 import SUNWmysql5jdbc
 version 5.1.5
 end package

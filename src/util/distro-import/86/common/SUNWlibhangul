@@ -1,4 +1,5 @@
 package SUNWlibhangul
+classification "System/Libraries (System)"
 import SUNWlibhangul
 import SUNWlibhangul-devel
 end package

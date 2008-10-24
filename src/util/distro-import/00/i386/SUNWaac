@@ -1,4 +1,5 @@
 package SUNWaac
+classification "Drivers/Ports"
 import SUNWaac
 add driver name=aac class=scsi alias=pci1028,3 alias=pci1028,a alias=pci9005,285 alias=pci9005,286
 end package

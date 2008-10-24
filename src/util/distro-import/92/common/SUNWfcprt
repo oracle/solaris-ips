@@ -1,4 +1,5 @@
 package SUNWfcprt
+classification "System/Hardware"
 import SUNWfcprt
 import SUNWfcprtr
 end package

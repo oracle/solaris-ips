@@ -1,4 +1,5 @@
 package SUNWbrltty
+classification "Applications/Universal Access"
 import SUNWbrltty
 import SUNWbrltty-devel
 import SUNWbrltty-root

@@ -1,3 +1,4 @@
 package SUNWscsip
+classification "Applications/Plug-ins and Run-times"
 import SUNWscsip
 end package

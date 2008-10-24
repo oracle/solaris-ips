@@ -1,4 +1,5 @@
 package SUNWapchd
+classification "Web Services/Application and Web Servers"
 import SUNWapchd
 version 1.3.41
 end package

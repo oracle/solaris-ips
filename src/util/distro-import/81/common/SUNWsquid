@@ -1,4 +1,5 @@
 package SUNWsquid
+classification "Web Services/Application and Web Servers"
 import SUNWsquidu
 import SUNWsquidr
 version 2.6.17

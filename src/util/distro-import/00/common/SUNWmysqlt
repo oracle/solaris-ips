@@ -1,4 +1,5 @@
 package SUNWmysqlt
+classification "Development/Databases"
 import SUNWmysqlt
 version 4.0.24
 add link path=usr/bin/mysqltest target=../sfw/bin/mysqltest

@@ -1,4 +1,5 @@
 package SUNWscim-tables-japanese
+classification "System/Text Tools"
 import SUNWscim-tables-japanese
 version 0.5.7
 end package

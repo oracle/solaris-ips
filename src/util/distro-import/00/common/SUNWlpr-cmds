@@ -1,3 +1,4 @@
 package SUNWlpr-cmds
+classification "System/Printing"
 import SUNWlpr-cmds
 end package

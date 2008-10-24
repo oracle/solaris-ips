@@ -1,4 +1,5 @@
 package SUNWltdl
+classification "Development/GNU"
 import SUNWltdl
 version 1.5.22
 end package

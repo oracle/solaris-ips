@@ -1,4 +1,5 @@
 package SUNWssh
+classification "System/Security"
 import SUNWsshu
 import SUNWsshr
 end package

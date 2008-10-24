@@ -1,4 +1,5 @@
 package SUNWlibcanberra
+classification "System/Media"
 import SUNWlibcanberra
 import SUNWlibcanberra-devel
 end package

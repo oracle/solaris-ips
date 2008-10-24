@@ -1,4 +1,5 @@
 package SUNWkdc
+classification "System/Security"
 import SUNWkdcu
 import SUNWkdcr
 depend SUNWlldap

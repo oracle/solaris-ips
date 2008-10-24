@@ -1,4 +1,5 @@
 package SUNWttf-arabeyes
+classification "System/Fonts"
 import SUNWttf-arabeyes exclude usr/openwin
 chattr_glob * edit path usr/openwin usr/X11
 end package

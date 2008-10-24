@@ -1,3 +1,4 @@
 package SUNWagph
+classification "Development/System"
 import SUNWagph
 end package

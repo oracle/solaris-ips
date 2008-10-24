@@ -1,4 +1,5 @@
 package SUNWgnu-emacs-nox
+classification "System/Text Tools"
 import SUNWgnu-emacs-nox
 version 22.1
 end package

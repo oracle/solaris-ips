@@ -1,3 +1,4 @@
 package SUNWarbel
+classification "Drivers/Other Peripherals"
 import SUNWarbel
 end package

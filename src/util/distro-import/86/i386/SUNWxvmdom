@@ -1,4 +1,5 @@
 package SUNWxvmdom
+classification "System/Virtualization"
 import SUNWxvmdomu
 import SUNWxvmdomr
 version 3.1

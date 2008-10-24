@@ -1,4 +1,5 @@
 package SUNWcs
+classification "System/Core"
 import SUNWcsu exclude usr/openwin
 # BEGIN NON-REDISTRIBUTABLE
 drop usr/bin/ksh

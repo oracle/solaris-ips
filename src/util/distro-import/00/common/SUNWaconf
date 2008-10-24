@@ -1,4 +1,5 @@
 package SUNWaconf
+classification "Development/GNU"
 import SUNWaconf
 version 2.61
 end package

@@ -1,4 +1,5 @@
 package SUNWlibrsvg
+classification "System/Libraries (System)"
 import SUNWlibrsvg
 import SUNWlibrsvg-devel
 end package

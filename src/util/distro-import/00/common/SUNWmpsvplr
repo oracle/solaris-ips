@@ -1,3 +1,4 @@
 package SUNWmpsvplr
+classification "System/Hardware"
 import SUNWmpsvplr
 end package

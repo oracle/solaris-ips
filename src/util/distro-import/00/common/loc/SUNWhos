@@ -1,3 +1,4 @@
 package SUNWhos
+classification "System/Localizations (System)"
 import SUNWhos
 end package

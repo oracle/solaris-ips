@@ -1,4 +1,5 @@
 package SUNWlibdaemon
+classification "System/Libraries (System)"
 import SUNWlibdaemon
 import SUNWlibdaemon-devel
 end package

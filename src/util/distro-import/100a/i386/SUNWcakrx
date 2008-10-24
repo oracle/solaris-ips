@@ -1,4 +1,5 @@
 package SUNWcakrx
+classification "System/Core"
 import SUNWcakrx.i
 add driver name=xnbo alias=xnb,SUNW_mac alias=xnb
 add driver name=xdt

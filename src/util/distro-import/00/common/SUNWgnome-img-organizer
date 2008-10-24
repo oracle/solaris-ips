@@ -1,4 +1,5 @@
 package SUNWgnome-img-organizer
+classification "Applications/Graphics and Imaging"
 import SUNWgnome-img-organizer
 import SUNWgnome-img-organizer-root
 end package

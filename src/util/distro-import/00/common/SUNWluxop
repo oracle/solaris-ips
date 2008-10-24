@@ -1,3 +1,4 @@
 package SUNWluxop
+classification "System/Enterprise Management"
 import SUNWluxop
 end package

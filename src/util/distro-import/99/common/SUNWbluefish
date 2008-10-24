@@ -1,3 +1,4 @@
 package SUNWbluefish
+classification "System/Text Tools"
 import SUNWbluefish
 end package

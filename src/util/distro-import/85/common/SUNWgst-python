@@ -1,3 +1,4 @@
 package SUNWgst-python
+classification "Development/Python"
 import SUNWgst-python
 end package

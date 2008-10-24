@@ -1,3 +1,4 @@
 package SUNWxwice
+classification "System/X11 (System)"
 import SUNWxwice
 end package

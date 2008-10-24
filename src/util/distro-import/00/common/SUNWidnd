@@ -1,3 +1,4 @@
 package SUNWidnd
+classification "Development/System"
 import SUNWidnd
 end package

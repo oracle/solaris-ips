@@ -1,4 +1,5 @@
 package SUNWos86r
+classification "System/Core"
 import SUNWos86r
 add driver name=dnet perms="* 0666 root sys" clone_perms="0666 root sys" alias=pci1011,2 alias=pci1011,9 alias=pci1011,14 alias=pci1011,19 alias=pci1109,1400 alias=pci1109,2400 alias=pci10b8,2001 alias=pci2646,1 policy="read_priv_set=net_rawaccess write_priv_set=net_rawaccess"
 add driver name=elxl perms="* 0666 root sys" clone_perms="0666 root sys" alias=pci10b7,9000 alias=pci10b7,9001 alias=pci10b7,9004 alias=pci10b7,9005 alias=pci10b7,9006 alias=pci10b7,9050 alias=pci10b7,9051 alias=pci10b7,9055 alias=pci10b7,9056 alias=pci10b7,9200 alias=pci10b7,9800 alias=pci10b7,9805 policy="read_priv_set=net_rawaccess write_priv_set=net_rawaccess"

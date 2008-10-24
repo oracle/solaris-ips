@@ -1,4 +1,5 @@
 package SUNWtnetd
+classification "System/Services"
 import SUNWtnetd
 import SUNWtnetr
 end package

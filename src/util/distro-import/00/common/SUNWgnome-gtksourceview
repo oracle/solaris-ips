@@ -1,4 +1,5 @@
 package SUNWgnome-gtksourceview
+classification "Desktop (GNOME)/Libraries"
 import SUNWgnome-gtksourceview
 import SUNWgnome-gtksourceview-devel
 end package

@@ -1,4 +1,5 @@
 package SUNWgnu-mc
+classification "Desktop (GNOME)/File Managers"
 import SUNWgnu-mc
 version 4.6.1
 end package

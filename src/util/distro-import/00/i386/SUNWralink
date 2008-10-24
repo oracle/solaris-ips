@@ -1,4 +1,5 @@
 package SUNWralink
+classification "Drivers/Networking"
 import SUNWralink
 add driver name=ral perms="* 0666 root sys" clone_perms="0666 root sys" alias=pci1814,201
 end package

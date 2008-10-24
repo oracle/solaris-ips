@@ -1,3 +1,4 @@
 package SUNWtgnome-tsoljdslabel
+classification "Desktop (GNOME)/Trusted"
 import SUNWtgnome-tsoljdslabel
 end package

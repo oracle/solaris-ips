@@ -1,4 +1,5 @@
 package SUNWbge
+classification "Drivers/Networking"
 import SUNWbge
 add driver name=bge perms="* 0666 root sys" clone_perms="0666 root sys" \
 	alias=SUNW,bge \

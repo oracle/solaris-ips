@@ -1,3 +1,4 @@
 package SUNWlibusbugen
+classification "System/Libraries (System)"
 import SUNWlibusbugen
 end package

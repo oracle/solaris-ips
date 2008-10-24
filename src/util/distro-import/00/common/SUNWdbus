@@ -1,4 +1,5 @@
 package SUNWdbus
+classification "System/Libraries (System)"
 import SUNWdbus
 import SUNWdbus-devel
 import SUNWdbus-root

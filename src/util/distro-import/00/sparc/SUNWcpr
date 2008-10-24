@@ -1,3 +1,4 @@
 package SUNWcpr
+classification "System/Hardware"
 import SUNWcpr.u
 end package

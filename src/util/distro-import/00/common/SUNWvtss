@@ -1,3 +1,4 @@
 package SUNWvtss
+classification "System/Hardware"
 import SUNWvtss
 end package

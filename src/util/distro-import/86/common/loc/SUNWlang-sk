@@ -1,3 +1,4 @@
 package SUNWlang-sk
+classification "System/Localizations (System)"
 import SUNWlang-sk
 end package

@@ -1,4 +1,5 @@
 package SUNWiscsi
+classification "System/Hardware"
 import SUNWiscsiu
 import SUNWiscsir
 add driver name=iscsi perms="* 0600 root sys"

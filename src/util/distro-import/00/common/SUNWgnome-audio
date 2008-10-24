@@ -1,4 +1,5 @@
 package SUNWgnome-audio
+classification "Desktop (GNOME)/Libraries"
 import SUNWgnome-audio
 import SUNWgnome-audio-devel
 import SUNWgnome-audio-root

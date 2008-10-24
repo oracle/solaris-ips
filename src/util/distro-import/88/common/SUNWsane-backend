@@ -1,4 +1,5 @@
 package SUNWsane-backend
+classification "System/Libraries (System)"
 import SUNWsane-backendu
 import SUNWsane-backendr
 version 1.0.19

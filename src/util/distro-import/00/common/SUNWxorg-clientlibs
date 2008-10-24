@@ -1,3 +1,4 @@
 package SUNWxorg-clientlibs
+classification "Development/X11"
 import SUNWxorg-clientlibs
 end package

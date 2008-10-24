@@ -1,3 +1,4 @@
 package SUNWitos
+classification "System/Localizations (System)"
 import SUNWitos
 end package

@@ -4,5 +4,6 @@
 # be deleted when the newer package is installed.
 #
 package SUNWjavadb-docs
+classification "System/Databases (System)"
 depend SUNWjavadb
 end package

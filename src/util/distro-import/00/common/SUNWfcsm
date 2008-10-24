@@ -1,4 +1,5 @@
 package SUNWfcsm
+classification "Drivers/Storage"
 import SUNWfcsm
 add driver name=fcsm perm="* 0600 root sys"
 end package

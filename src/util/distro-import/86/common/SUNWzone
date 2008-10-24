@@ -1,4 +1,5 @@
 package SUNWzone
+classification "System/Core"
 import SUNWzoneu
 import SUNWzoner
 drop etc/zones/SUNWblank.xml

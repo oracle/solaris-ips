@@ -1,3 +1,4 @@
 package SUNWautoef
+classification "System/Text Tools"
 import SUNWautoef
 end package

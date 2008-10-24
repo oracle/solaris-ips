@@ -1,4 +1,5 @@
 package SUNWperl584usr
+classification "Development/Perl"
 import SUNWperl584usr
 version 5.8.4
 end package

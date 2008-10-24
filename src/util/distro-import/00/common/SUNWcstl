@@ -1,3 +1,4 @@
 package SUNWcstl
+classification "Development/System"
 import SUNWcstl
 end package

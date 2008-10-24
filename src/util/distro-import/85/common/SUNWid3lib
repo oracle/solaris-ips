@@ -1,4 +1,5 @@
 package SUNWid3lib
+classification "System/Libraries (System)"
 import SUNWid3lib
 import SUNWid3lib-devel
 end package

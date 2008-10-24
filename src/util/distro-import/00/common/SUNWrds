@@ -1,4 +1,5 @@
 package SUNWrds
+classification "System/Hardware"
 import SUNWrds
 add driver name=rds perms="* 0644 root sys"
 add driver name=rdsib perms="* 0644 root sys"

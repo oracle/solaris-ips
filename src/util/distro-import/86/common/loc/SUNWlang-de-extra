@@ -1,3 +1,4 @@
 package SUNWlang-de-extra
+classification "System/Localizations (System)"
 import SUNWlang-de-extra
 end package

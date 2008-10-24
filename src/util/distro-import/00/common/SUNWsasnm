@@ -1,3 +1,4 @@
 package SUNWsasnm
+classification "System/Enterprise Management"
 import SUNWsasnm
 end package

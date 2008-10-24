@@ -1,4 +1,5 @@
 package SUNWunzip
+classification "Applications/System Utilities"
 import SUNWunzip
 version 5.53.7
 end package

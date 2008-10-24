@@ -1,3 +1,4 @@
 package SUNWsongbird
+classification "Applications/Sound and Video"
 import SUNWsongbird
 end package

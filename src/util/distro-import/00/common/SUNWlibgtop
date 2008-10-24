@@ -1,4 +1,5 @@
 package SUNWlibgtop
+classification "System/Libraries (System)"
 import SUNWlibgtop
 import SUNWlibgtop-devel
 end package

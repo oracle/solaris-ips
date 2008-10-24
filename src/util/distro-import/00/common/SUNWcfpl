@@ -1,4 +1,5 @@
 package SUNWcfpl
+classification "System/Libraries (System)"
 import SUNWcfpl
 import SUNWcfplr
 end package

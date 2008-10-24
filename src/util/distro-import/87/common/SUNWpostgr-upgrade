@@ -1,3 +1,4 @@
 package SUNWpostgr-upgrade
+classification "System/Databases (System)"
 import SUNWpostgr-upgrade
 end package

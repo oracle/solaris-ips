@@ -1,4 +1,5 @@
 package SUNWbinutils
+classification "Development/GNU"
 import SUNWbinutils
 version 2.15
 add link path=usr/bin/gaddr2line target=../sfw/bin/gaddr2line

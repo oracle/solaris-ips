@@ -1,4 +1,5 @@
 package SUNWdbus-bindings
+classification "System/Libraries (System)"
 import SUNWdbus-bindings
 import SUNWdbus-bindings-devel
 end package

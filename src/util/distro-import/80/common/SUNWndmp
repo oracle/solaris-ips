@@ -1,4 +1,5 @@
 package SUNWndmp
+classification "System/Services"
 import SUNWndmpu
 import SUNWndmpr
 end package

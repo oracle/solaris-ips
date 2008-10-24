@@ -1,4 +1,5 @@
 package SUNWgnome-keyring-manager
+classification "Applications/System Utilities"
 import SUNWgnome-keyring-manager
 import SUNWgnome-keyring-manager-root
 end package

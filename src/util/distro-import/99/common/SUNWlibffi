@@ -1,4 +1,5 @@
 package SUNWlibffi
+classification "System/Libraries (System)"
 import SUNWlibffi
 import SUNWlibffi-devel
 end package

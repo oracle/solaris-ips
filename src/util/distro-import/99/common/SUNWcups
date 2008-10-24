@@ -1,4 +1,5 @@
 package SUNWcups
+classification "System/Printing"
 import SUNWcupsu
 drop usr/lib/amd64/libcups.so
 drop usr/lib/amd64/libcups.so.2

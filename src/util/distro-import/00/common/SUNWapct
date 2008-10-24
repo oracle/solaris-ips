@@ -1,3 +1,4 @@
 package SUNWapct
+classification "System/Software Management"
 import SUNWapct
 end package

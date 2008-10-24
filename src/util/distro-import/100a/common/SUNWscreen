@@ -1,4 +1,5 @@
 package SUNWscreen
+classification "Applications/System Utilities"
 import SUNWscreen
 import SUNWscreenrc
 version 4.0.3

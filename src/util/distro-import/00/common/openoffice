@@ -1,4 +1,5 @@
 package openoffice
+classification "Applications/Office"
 import openofficeorg-base
 import openofficeorg-calc
 import openofficeorg-core01

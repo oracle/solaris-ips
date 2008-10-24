@@ -1,3 +1,4 @@
 package SUNWqosu
+classification "System/Core"
 import SUNWqosu
 end package

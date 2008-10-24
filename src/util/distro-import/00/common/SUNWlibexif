@@ -1,4 +1,5 @@
 package SUNWlibexif
+classification "System/Libraries (System)"
 import SUNWlibexif
 import SUNWlibexif-devel
 end package

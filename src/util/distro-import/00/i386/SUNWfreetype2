@@ -1,4 +1,5 @@
 package SUNWfreetype2
+classification "System/Libraries (System)"
 import SUNWfreetype2
 add link path=usr/bin/freetype-config target=../sfw/bin/freetype-config
 add link path=usr/include/freetype2 target=../sfw/include/freetype2

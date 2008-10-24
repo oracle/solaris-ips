@@ -1,3 +1,4 @@
 package SUNWmibii
+classification "System/Enterprise Management"
 import SUNWmibii
 end package

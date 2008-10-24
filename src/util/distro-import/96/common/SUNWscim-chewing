@@ -1,4 +1,5 @@
 package SUNWscim-chewing
+classification "System/Text Tools"
 import SUNWscim-chewing
 version 0.3.1
 end package

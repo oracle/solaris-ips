@@ -1,4 +1,5 @@
 package SUNWipkg-brand
+classification "System/Packaging"
 import SUNWipkg-brand
 depend SUNWesu
 depend SUNWipkg

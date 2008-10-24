@@ -1,4 +1,5 @@
 package SUNWspeex
+classification "Applications/Sound and Video"
 import SUNWspeex
 import SUNWspeex-devel
 end package

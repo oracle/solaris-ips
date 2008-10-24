@@ -1,4 +1,5 @@
 package SUNWant
+classification "Development/Distribution Tools"
 import SUNWant
 version 1.6.5
 end package

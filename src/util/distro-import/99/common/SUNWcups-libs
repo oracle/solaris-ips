@@ -1,4 +1,5 @@
 package SUNWcups-libs
+classification "System/Printing"
 description "CUPS (Runtime Libraries)"
 version 1.3.7
 from SUNWcupsu import

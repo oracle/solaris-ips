@@ -1,3 +1,4 @@
 package SUNWgobby
+classification "System/Text Tools"
 import SUNWgobby
 end package

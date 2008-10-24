@@ -1,4 +1,5 @@
 package SUNWiso-codes
+classification "System/Text Tools"
 import SUNWiso-codes
 import SUNWiso-codes-devel
 end package

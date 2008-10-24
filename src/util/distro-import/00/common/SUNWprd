@@ -1,3 +1,4 @@
 package SUNWprd
+classification "Development/System"
 import SUNWprd
 end package

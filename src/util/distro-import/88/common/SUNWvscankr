@@ -1,4 +1,5 @@
 package SUNWvscankr
+classification "System/Services"
 import SUNWvscankr
 add driver name=vscan perms="* 0640 root sys"
 end package

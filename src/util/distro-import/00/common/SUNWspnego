@@ -1,3 +1,4 @@
 package SUNWspnego
+classification "System/Security"
 import SUNWspnego
 end package

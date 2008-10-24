@@ -1,4 +1,5 @@
 package SUNWgnome-libs
+classification "Development/GNOME and GTK+"
 import SUNWgnome-libs-devel
 import SUNWgnome-libs
 import SUNWgnome-libs-root

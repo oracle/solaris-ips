@@ -1,4 +1,5 @@
 package SUNWscim-tables
+classification "System/Text Tools"
 import SUNWscim-tables
 version 0.5.7
 end package

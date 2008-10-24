@@ -1,4 +1,5 @@
 package SUNWiscsitgt
+classification "System/Hardware"
 import SUNWiscsitgtu
 import SUNWiscsitgtr
 end package

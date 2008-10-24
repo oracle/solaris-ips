@@ -1,4 +1,5 @@
 package SUNWlibgpg-error
+classification "System/Libraries (System)"
 import SUNWlibgpg-error
 import SUNWlibgpg-error-devel
 end package

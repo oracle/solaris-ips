@@ -4,5 +4,6 @@
 # be deleted when the newer package is installed.
 #
 package SUNWiiim
+classification "System/Internationalization"
 depend SUNWiiimf
 end package

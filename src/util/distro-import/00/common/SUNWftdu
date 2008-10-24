@@ -1,4 +1,5 @@
 package SUNWftdu
+classification "Development/System"
 import SUNWftduu
 import SUNWftdur
 add driver name=bofi perms="* 0600 bin bin"

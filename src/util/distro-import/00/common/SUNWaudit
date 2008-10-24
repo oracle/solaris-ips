@@ -1,3 +1,4 @@
 package SUNWaudit
+classification "System/Administration and Configuration"
 import SUNWaudit
 end package

@@ -1,4 +1,5 @@
 package SUNWsmba
+classification "System/File System"
 import SUNWsmbau exclude usr/sfw/include/libsmbclient.h usr/sfw/lib/libsmbclient.so usr/sfw/lib/libsmbclient.so.0 usr/sfw/swat/help/manpages/libsmbclient.7.html
 import SUNWsmbar
 version 3.0.32

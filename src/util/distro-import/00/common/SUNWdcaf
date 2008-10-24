@@ -1,4 +1,5 @@
 package SUNWdcaf
+classification "System/Hardware"
 import SUNWdcaf
 import SUNWdcar
 add driver name=dca alias=pci14e4,5820 alias=pci14e4,5821 alias=pci14e4,5822 alias=pci14e4,5825 alias=pci108e,5454 alias=pci108e,5455 alias=pci108e,5456 alias=pci108e,5457

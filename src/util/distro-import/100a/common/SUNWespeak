@@ -1,4 +1,5 @@
 package SUNWespeak
+classification "Applications/Universal Access"
 import SUNWespeak
 import SUNWespeak-devel
 end package

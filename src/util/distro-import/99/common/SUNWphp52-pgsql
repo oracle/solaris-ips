@@ -1,4 +1,5 @@
 package SUNWphp52-pgsql
+classification "Development/PHP"
 import SUNWphp52r-pgsql
 import SUNWphp52u-pgsql
 version 5.2.6

@@ -1,3 +1,4 @@
 package SUNWlang-sk-extra
+classification "System/Localizations (System)"
 import SUNWlang-sk-extra
 end package

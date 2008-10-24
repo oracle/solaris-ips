@@ -1,4 +1,5 @@
 package SUNWPython25
+classification "Development/Python"
 import SUNWPython25
 import SUNWPython25-devel
 version 2.5

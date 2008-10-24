@@ -1,3 +1,4 @@
 package SUNWucbt
+classification "Development/System"
 import SUNWucbt
 end package

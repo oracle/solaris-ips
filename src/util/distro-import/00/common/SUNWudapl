@@ -1,4 +1,5 @@
 package SUNWudapl
+classification "System/Libraries (System)"
 import SUNWudaplu
 import SUNWudaplr
 end package

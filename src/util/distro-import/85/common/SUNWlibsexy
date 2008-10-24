@@ -1,4 +1,5 @@
 package SUNWlibsexy
+classification "Desktop (GNOME)/Libraries"
 import SUNWlibsexy
 import SUNWlibsexy-devel
 end package

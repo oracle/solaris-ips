@@ -1,3 +1,4 @@
 package SUNWcdrw
+classification "System/Media"
 import SUNWcdrw
 end package

@@ -1,4 +1,5 @@
 package SUNWgccruntime
+classification "Development/C"
 import SUNWgccruntime
 version 3.4.3
 end package

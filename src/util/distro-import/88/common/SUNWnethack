@@ -1,4 +1,5 @@
 package SUNWnethack
+classification "Applications/Games"
 import SUNWnethack
 import SUNWnethackr
 version 3.4.3

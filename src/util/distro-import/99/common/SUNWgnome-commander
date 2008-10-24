@@ -1,3 +1,4 @@
 package SUNWgnome-commander
+classification "Desktop (GNOME)/File Managers"
 import SUNWgnome-commander
 end package

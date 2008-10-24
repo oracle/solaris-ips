@@ -1,4 +1,5 @@
 package SUNWpostgr-82-jdbc
+classification "System/Databases (System)"
 import SUNWpostgr-82-jdbc
 version 8.2.504
 end package

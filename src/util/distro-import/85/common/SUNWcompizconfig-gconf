@@ -1,3 +1,4 @@
 package SUNWcompizconfig-gconf
+classification "Desktop (GNOME)/Window Managers"
 import SUNWcompizconfig-gconf
 end package

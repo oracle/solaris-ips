@@ -1,3 +1,4 @@
 package SUNWpolkit
+classification "System/Administration and Configuration"
 import SUNWpolkit
 end package

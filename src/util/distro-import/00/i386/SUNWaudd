@@ -1,4 +1,5 @@
 package SUNWaudd
+classification "Drivers/Media"
 import SUNWaudd
 # BEGIN NON-REDISTRIBUTABLE
 # add driver name=audioens alias=pci1274,1371 alias=pci1274,5880

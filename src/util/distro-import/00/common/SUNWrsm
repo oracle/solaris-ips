@@ -1,3 +1,4 @@
 package SUNWrsm
+classification "System/Core"
 import SUNWrsm
 end package

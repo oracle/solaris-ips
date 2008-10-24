@@ -1,4 +1,5 @@
 package SUNWbind
+classification "System/Services"
 import SUNWbind
 import SUNWbindr
 version 9.3.5.2

@@ -1,3 +1,4 @@
 package SUNWtgnome-l10n-ui-ko
+classification "Desktop (GNOME)/Trusted"
 import SUNWtgnome-l10n-ui-ko
 end package

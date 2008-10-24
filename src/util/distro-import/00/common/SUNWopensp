@@ -1,4 +1,5 @@
 package SUNWopensp
+classification "System/Text Tools"
 import SUNWopensp
 import SUNWopensp-devel
 import SUNWopensp-root

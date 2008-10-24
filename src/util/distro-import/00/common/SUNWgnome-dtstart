@@ -1,3 +1,4 @@
 package SUNWgnome-dtstart
+classification "Desktop (GNOME)/Scripts"
 import SUNWgnome-dtstart
 end package

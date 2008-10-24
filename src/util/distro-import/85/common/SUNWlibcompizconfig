@@ -1,4 +1,5 @@
 package SUNWlibcompizconfig
+classification "Desktop (GNOME)/Libraries"
 import SUNWlibcompizconfig
 import SUNWlibcompizconfig-devel
 import SUNWlibcompizconfig-root

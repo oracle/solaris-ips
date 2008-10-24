@@ -1,4 +1,5 @@
 package SUNWdrmr
+classification "Drivers/Display"
 import SUNWdrmr
 add driver name=i915 perms="* 0644 root sys" \
 	alias=pci8086,2562 \

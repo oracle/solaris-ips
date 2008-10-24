@@ -1,4 +1,5 @@
 package SUNWcsl
+classification "System/Core"
 import SUNWcsl
 import SUNWcslr
 # tag libc as needing reboot for now; this will change

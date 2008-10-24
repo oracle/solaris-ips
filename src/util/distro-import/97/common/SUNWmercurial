@@ -1,4 +1,5 @@
 package SUNWmercurial
+classification "Development/Source Code Management"
 import SUNWmercurial
 version 1.0.2
 end package

@@ -1,3 +1,4 @@
 package SUNWqos
+classification "System/Core"
 import SUNWqos
 end package

@@ -1,3 +1,4 @@
 package SUNWxwmod
+classification "System/X11 (System)"
 import SUNWxwmod
 end package

@@ -1,4 +1,5 @@
 package SUNWcompiz-fusion-extra
+classification "Applications/Plug-ins and Run-times"
 import SUNWcompiz-fusion-extra
 import SUNWcompiz-fusion-extra-root
 end package

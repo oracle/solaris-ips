@@ -1,4 +1,5 @@
 package SUNWurlgrabber
+classification "Applications/Internet"
 import SUNWurlgrabber
 version 3.1.0
 end package

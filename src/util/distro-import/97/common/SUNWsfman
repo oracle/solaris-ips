@@ -1,4 +1,5 @@
 package SUNWsfman
+classification "Development/GNU"
 import SUNWsfman exclude usr/sfw/share/man/man7/libsmbclient.7
 add dir path=usr/gnu mode=0755 owner=root group=bin
 add dir path=usr/gnu/share mode=0755 owner=root group=sys

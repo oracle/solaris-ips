@@ -1,4 +1,5 @@
 package SUNWlibcroco
+classification "System/Libraries (System)"
 import SUNWlibcroco
 import SUNWlibcroco-devel
 end package

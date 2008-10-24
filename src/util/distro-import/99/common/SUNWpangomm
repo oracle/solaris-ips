@@ -1,4 +1,5 @@
 package SUNWpangomm
+classification "Development/C++"
 import SUNWpangomm
 import SUNWpangomm-devel
 end package

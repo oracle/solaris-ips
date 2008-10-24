@@ -1,4 +1,5 @@
 package SUNWpython-notify
+classification "Development/Python"
 import SUNWpython-notify
 import SUNWpython-notify-devel
 end package

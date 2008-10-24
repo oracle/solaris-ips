@@ -1,4 +1,5 @@
 package SUNWtftp
+classification "Applications/System Utilities"
 import SUNWtftp
 import SUNWtftpr
 end package

@@ -1,3 +1,4 @@
 package SUNWicu
+classification "System/Text Tools"
 import SUNWicu
 end package

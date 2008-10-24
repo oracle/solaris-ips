@@ -1,4 +1,5 @@
 package SUNWlibgoffice
+classification "Development/System"
 import SUNWlibgoffice
 import SUNWlibgoffice-devel
 end package

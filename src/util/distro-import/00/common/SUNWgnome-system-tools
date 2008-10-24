@@ -1,4 +1,5 @@
 package SUNWgnome-system-tools
+classification "Applications/System Utilities"
 import SUNWgnome-system-tools
 drop usr/share/applications/services.desktop
 drop usr/share/applications/shares.desktop

@@ -1,3 +1,4 @@
 package SUNWugenu
+classification "System/Hardware"
 import SUNWugenu
 end package

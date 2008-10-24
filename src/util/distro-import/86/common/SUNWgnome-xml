@@ -1,4 +1,5 @@
 package SUNWgnome-xml
+classification "Desktop (GNOME)/Documentation"
 import SUNWgnome-xml-share
 import SUNWgnome-xml-root
 end package

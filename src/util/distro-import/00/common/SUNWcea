@@ -1,3 +1,4 @@
 package SUNWcea
+classification "Drivers/Networking"
 import SUNWcea
 end package

@@ -1,3 +1,4 @@
 package SUNWuium
+classification "System/Text Tools"
 import SUNWuium
 end package

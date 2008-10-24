@@ -1,3 +1,4 @@
 package SUNWgui-install
+classification "System/Administration and Configuration"
 import SUNWinstall
 end package

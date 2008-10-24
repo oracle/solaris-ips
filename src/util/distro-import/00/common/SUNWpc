@@ -1,4 +1,5 @@
 package SUNWpc
+classification "System/Printing"
 import SUNWpcu
 import SUNWpcr
 end package

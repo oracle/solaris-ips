@@ -1,3 +1,4 @@
 package SUNWcarx
+classification "System/Core"
 import SUNWcarx.i
 end package

@@ -1,4 +1,5 @@
 package SUNWwsr2
+classification "System/Administration and Configuration"
 import SUNWwsr2
 import SUNWproduct-registry-root
 end package

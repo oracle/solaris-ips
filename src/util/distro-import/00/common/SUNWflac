@@ -1,4 +1,5 @@
 package SUNWflac
+classification "System/Media"
 import SUNWflac
 import SUNWflac-devel
 end package

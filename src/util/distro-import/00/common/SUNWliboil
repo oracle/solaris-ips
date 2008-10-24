@@ -1,4 +1,5 @@
 package SUNWliboil
+classification "Desktop (GNOME)/Libraries"
 import SUNWliboil
 import SUNWliboil-devel
 end package

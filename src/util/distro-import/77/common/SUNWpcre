@@ -1,4 +1,5 @@
 package SUNWpcre
+classification "Development/Perl"
 import SUNWpcre
 version 7.4
 end package

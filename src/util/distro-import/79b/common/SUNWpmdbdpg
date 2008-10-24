@@ -1,4 +1,5 @@
 package SUNWpmdbdpg
+classification "Development/Perl"
 import SUNWpmdbdpg
 version 1.49
 end package

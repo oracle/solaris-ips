@@ -1,3 +1,4 @@
 package SUNWtls
+classification "System/Security"
 import SUNWtls
 end package

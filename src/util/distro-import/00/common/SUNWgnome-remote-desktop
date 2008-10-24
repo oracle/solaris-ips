@@ -1,4 +1,5 @@
 package SUNWgnome-remote-desktop
+classification "System/X11 (System)"
 import SUNWgnome-remote-desktop
 import SUNWgnome-remote-desktop-root
 end package

@@ -1,4 +1,5 @@
 package SUNWlibsdl
+classification "System/Libraries (System)"
 import SUNWlibsdl
 import SUNWlibsdl-devel
 end package

@@ -1,3 +1,4 @@
 package SUNWgnome-gui-test
+classification "Development/X11"
 import SUNWgnome-gui-test
 end package

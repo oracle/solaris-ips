@@ -1,3 +1,4 @@
 package SUNWperl-authen-pam
+classification "Development/Perl"
 import SUNWperl-authen-pam
 end package

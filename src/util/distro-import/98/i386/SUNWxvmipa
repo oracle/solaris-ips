@@ -1,4 +1,5 @@
 package SUNWxvmipa
+classification "System/Virtualization"
 import SUNWxvmipar
 import SUNWxvmipau
 end package

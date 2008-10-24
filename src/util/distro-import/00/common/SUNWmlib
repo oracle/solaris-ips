@@ -1,4 +1,5 @@
 package SUNWmlib
+classification "System/Libraries (System)"
 import SUNWmlib
 import SUNWmlibe
 import SUNWmlibh

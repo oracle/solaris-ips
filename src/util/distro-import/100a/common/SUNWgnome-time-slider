@@ -1,4 +1,5 @@
 package SUNWgnome-time-slider
+classification "Applications/Configuration and Preferences"
 import SUNWgnome-time-slider
 import SUNWgnome-time-slider-root
 end package

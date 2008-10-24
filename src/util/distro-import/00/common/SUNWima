@@ -1,4 +1,5 @@
 package SUNWima
+classification "Applications/Plug-ins and Run-times"
 import SUNWima
 import SUNWimar
 end package

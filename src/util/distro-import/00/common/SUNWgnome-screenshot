@@ -1,4 +1,5 @@
 package SUNWgnome-screenshot
+classification "Applications/Graphics and Imaging"
 import SUNWgnome-screenshot
 import SUNWgnome-screenshot-root
 end package

@@ -1,3 +1,4 @@
 package SUNWpython-xdg
+classification "Development/Python"
 import SUNWpython-xdg
 end package

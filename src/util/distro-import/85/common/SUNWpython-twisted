@@ -1,3 +1,4 @@
 package SUNWpython-twisted
+classification "Development/Python"
 import SUNWpython-twisted
 end package

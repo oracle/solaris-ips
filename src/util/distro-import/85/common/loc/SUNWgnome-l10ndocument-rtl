@@ -1,3 +1,4 @@
 package SUNWgnome-l10ndocument-rtl
+classification "Desktop (GNOME)/Localizations (Desktop)"
 import SUNWgnome-l10ndocument-rtl
 end package

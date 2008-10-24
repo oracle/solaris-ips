@@ -1,4 +1,5 @@
 package SUNWusb
+classification "Drivers/Ports"
 import SUNWusb
 add driver name=hid perms="* 0600 root sys" alias=usbif,class3
 add driver name=hubd perms="* 0644 root sys" alias=usbif,class9

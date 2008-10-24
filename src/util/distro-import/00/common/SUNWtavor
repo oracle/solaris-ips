@@ -1,4 +1,5 @@
 package SUNWtavor
+classification "Drivers/Other Peripherals"
 import SUNWtavor
 add driver name=tavor perms="* 0666 root sys" alias=pci15b3,5a44 alias=pci15b3,5a45 alias=pci15b3,6278 alias=pci15b3,6279 alias=pciex15b3,6278 alias=pciex15b3,6279
 end package

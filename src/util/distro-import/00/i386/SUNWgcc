@@ -1,4 +1,5 @@
 package SUNWgcc
+classification "Development/C"
 import SUNWgcc
 version 3.4.3
 add link path=usr/bin/c++ target=../sfw/bin/c++

@@ -1,3 +1,4 @@
 package SUNWfdhcm
+classification "System/Services"
 import SUNWfdhcm
 end package

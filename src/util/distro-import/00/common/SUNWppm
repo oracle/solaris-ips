@@ -1,3 +1,4 @@
 package SUNWppm
+classification "System/Printing"
 import SUNWppm
 end package

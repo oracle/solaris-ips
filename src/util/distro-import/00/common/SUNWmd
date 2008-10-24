@@ -1,4 +1,5 @@
 package SUNWmd
+classification "System/Core"
 import SUNWmdu
 import SUNWmdr
 end package

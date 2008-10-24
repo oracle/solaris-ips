@@ -1,3 +1,4 @@
 package SUNWaudf
+classification "System/Media"
 import SUNWaudf
 end package

@@ -1,4 +1,5 @@
 package SUNWlibtasn1
+classification "System/Libraries (System)"
 import SUNWlibtasn1
 import SUNWlibtasn1-devel
 end package

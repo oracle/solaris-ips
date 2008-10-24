@@ -1,4 +1,5 @@
 package SUNWsudo
+classification "Applications/System Utilities"
 import SUNWsudor
 import SUNWsudou
 version 1.6.9.17

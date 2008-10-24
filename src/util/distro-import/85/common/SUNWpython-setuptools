@@ -1,3 +1,4 @@
 package SUNWpython-setuptools
+classification "Development/Python"
 import SUNWpython-setuptools
 end package

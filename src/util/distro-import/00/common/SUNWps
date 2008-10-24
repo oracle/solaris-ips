@@ -1,4 +1,5 @@
 package SUNWps
+classification "System/Printing"
 import SUNWpsu
 import SUNWpsr
 end package

@@ -1,4 +1,5 @@
 package SUNWgnome-sound-recorder
+classification "Applications/Sound and Video"
 import SUNWgnome-sound-recorder
 import SUNWgnome-sound-recorder-root
 end package

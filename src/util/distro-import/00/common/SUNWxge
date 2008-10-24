@@ -1,4 +1,5 @@
 package SUNWxge
+classification "Drivers/Networking"
 import SUNWxge
 add driver name=xge clone_perms="0666 root sys" perms="* 0666 root sys" alias=pci17d5,5731 alias=pci17d5,5831 alias=pci17d5,5832
 end package

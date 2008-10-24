@@ -1,3 +1,4 @@
 package SUNWgnome-ps-viewer
+classification "Applications/Office"
 import SUNWgnome-ps-viewer
 end package

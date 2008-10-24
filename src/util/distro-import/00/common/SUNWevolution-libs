@@ -1,4 +1,5 @@
 package SUNWevolution-libs
+classification "Applications/Internet"
 import SUNWevolution-libs
 import SUNWevolution-libs-devel
 end package

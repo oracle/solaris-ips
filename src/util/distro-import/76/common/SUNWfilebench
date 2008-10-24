@@ -1,3 +1,4 @@
 package SUNWfilebench
+classification "Development/System"
 import SUNWfilebench
 end package

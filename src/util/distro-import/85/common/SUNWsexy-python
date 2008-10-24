@@ -1,3 +1,4 @@
 package SUNWsexy-python
+classification "Development/Python"
 import SUNWsexy-python
 end package

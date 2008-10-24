@@ -1,3 +1,4 @@
 package SUNWjre-config-plugin
+classification "Applications/Plug-ins and Run-times"
 import SUNWjre-config-plugin
 end package

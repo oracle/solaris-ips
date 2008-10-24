@@ -1,4 +1,5 @@
 package SUNWglibmm
+classification "Development/C++"
 import SUNWglibmm
 import SUNWglibmm-devel
 end package

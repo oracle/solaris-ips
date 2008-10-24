@@ -1,4 +1,5 @@
 package SUNWzlib
+classification "System/Libraries (System)"
 import SUNWzlib
 import SUNWzlibr
 version 1.2.3

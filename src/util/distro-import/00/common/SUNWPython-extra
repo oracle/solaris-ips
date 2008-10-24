@@ -1,3 +1,4 @@
 package SUNWPython-extra
+classification "Development/Python"
 import SUNWPython-extra
 end package

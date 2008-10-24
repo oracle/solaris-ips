@@ -1,3 +1,4 @@
 package SUNWgnome-user-docs
+classification "Desktop (GNOME)/Documentation"
 import SUNWgnome-user-docs
 end package

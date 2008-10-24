@@ -1,4 +1,5 @@
 package SUNWttf-hanyang-ko
+classification "System/Fonts"
 import SUNWttf-hanyang-ko exclude usr/openwin
 chattr_glob * edit path usr/openwin usr/X11
 end package

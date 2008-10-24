@@ -1,3 +1,4 @@
 package SUNWccsm
+classification "Applications/Graphics and Imaging"
 import SUNWccsm
 end package

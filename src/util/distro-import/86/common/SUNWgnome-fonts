@@ -1,4 +1,5 @@
 package SUNWgnome-fonts
+classification "System/Fonts"
 import SUNWgnome-fonts exclude usr/openwin
 chattr_glob * edit path usr/openwin usr/X11
 end package

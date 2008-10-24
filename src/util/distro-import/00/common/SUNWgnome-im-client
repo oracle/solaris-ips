@@ -1,4 +1,5 @@
 package SUNWgnome-im-client
+classification "Applications/Internet"
 import SUNWgnome-im-client
 import SUNWgnome-im-client-devel
 import SUNWgnome-im-client-root

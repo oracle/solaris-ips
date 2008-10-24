@@ -1,4 +1,5 @@
 package SUNWipkg-gui
+classification "System/Packaging"
 import SUNWipkg-gui
 import SUNWipkg-gui-data
 import SUNWipkg-gui-l10n

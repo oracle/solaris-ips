@@ -1,3 +1,4 @@
 package SUNWgnome-l10ndocument-extra
+classification "Desktop (GNOME)/Localizations (Desktop)"
 import SUNWgnome-l10ndocument-extra
 end package

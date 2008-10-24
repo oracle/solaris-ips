@@ -1,4 +1,5 @@
 package SUNWcvs
+classification "Development/Source Code Management"
 import SUNWcvs
 version 1.12.13
 end package

@@ -1,4 +1,5 @@
 package SUNWrcap
+classification "System/Core"
 import SUNWrcapu
 import SUNWrcapr
 end package

@@ -1,3 +1,4 @@
 package SUNWtsclient
+classification "Applications/Internet"
 import SUNWtsclient
 end package

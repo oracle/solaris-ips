@@ -1,4 +1,5 @@
 package SUNWdesktop-search
+classification "Applications/System Utilities"
 import SUNWdesktop-search
 import SUNWdesktop-search-devel
 import SUNWdesktop-search-root

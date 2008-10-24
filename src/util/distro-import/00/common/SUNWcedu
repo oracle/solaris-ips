@@ -1,3 +1,4 @@
 package SUNWcedu
+classification "Drivers/Networking"
 import SUNWcedu
 end package

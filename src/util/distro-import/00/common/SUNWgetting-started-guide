@@ -1,3 +1,4 @@
 package SUNWgetting-started-guide
+classification "System/Text Tools"
 import SUNWgetting-started-guide
 end package

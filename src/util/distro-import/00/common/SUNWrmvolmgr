@@ -1,4 +1,5 @@
 package SUNWrmvolmgr
+classification "System/Media"
 import SUNWrmvolmgr
 import SUNWrmvolmgrr
 end package

@@ -1,3 +1,4 @@
 package SUNWsacom
+classification "System/Enterprise Management"
 import SUNWsacom
 end package

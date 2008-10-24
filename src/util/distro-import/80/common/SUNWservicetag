@@ -1,4 +1,5 @@
 package SUNWservicetag
+classification "System/Services"
 import SUNWservicetagu
 import SUNWservicetagr
 add user username=svctag uid=95 group=daemon gcos-field="Service Tag UID"

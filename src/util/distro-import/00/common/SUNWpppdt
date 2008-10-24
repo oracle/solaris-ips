@@ -1,3 +1,4 @@
 package SUNWpppdt
+classification "System/Core"
 import SUNWpppdt
 end package

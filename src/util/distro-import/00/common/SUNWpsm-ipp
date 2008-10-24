@@ -1,3 +1,4 @@
 package SUNWpsm-ipp
+classification "System/Printing"
 import SUNWpsm-ipp
 end package

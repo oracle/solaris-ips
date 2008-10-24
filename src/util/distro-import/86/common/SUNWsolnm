@@ -1,3 +1,4 @@
 package SUNWsolnm
+classification "System/Core"
 import SUNWsolnm
 end package

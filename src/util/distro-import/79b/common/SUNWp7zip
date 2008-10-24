@@ -1,4 +1,5 @@
 package SUNWp7zip
+classification "System/Core"
 import SUNWp7zip
 version 4.55
 end package

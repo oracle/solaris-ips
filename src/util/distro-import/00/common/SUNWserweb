@@ -1,3 +1,4 @@
 package SUNWserweb
+classification "System/Services"
 import SUNWserweb
 end package

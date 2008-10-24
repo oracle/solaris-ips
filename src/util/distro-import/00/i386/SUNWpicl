@@ -1,4 +1,5 @@
 package SUNWpicl
+classification "System/Core"
 import SUNWpiclu
 import SUNWpiclr
 end package

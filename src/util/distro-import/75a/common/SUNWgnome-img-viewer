@@ -1,4 +1,5 @@
 package SUNWgnome-img-viewer
+classification "Applications/Graphics and Imaging"
 import SUNWgnome-img-viewer
 import SUNWgnome-img-viewer-devel
 import SUNWgnome-img-viewer-root

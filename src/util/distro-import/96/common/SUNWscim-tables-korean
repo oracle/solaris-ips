@@ -1,4 +1,5 @@
 package SUNWscim-tables-korean
+classification "System/Text Tools"
 import SUNWscim-tables-korean
 version 0.5.7
 end package

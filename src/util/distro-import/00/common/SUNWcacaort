@@ -1,4 +1,5 @@
 package SUNWcacaort
+classification "Web Services/Application and Web Servers"
 import SUNWcacaort
 depend SUNWjdmk-base
 add dir group=sys mode=0755 owner=root path=etc

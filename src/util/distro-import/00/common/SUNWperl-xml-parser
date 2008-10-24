@@ -1,3 +1,4 @@
 package SUNWperl-xml-parser
+classification "Development/Perl"
 import SUNWperl-xml-parser
 end package

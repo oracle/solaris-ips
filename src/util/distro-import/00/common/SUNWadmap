@@ -1,3 +1,4 @@
 package SUNWadmap
+classification "System/Administration and Configuration"
 import SUNWadmap
 end package

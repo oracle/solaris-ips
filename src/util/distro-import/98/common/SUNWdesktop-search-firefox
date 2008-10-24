@@ -1,3 +1,4 @@
 package SUNWdesktop-search-firefox
+classification "Applications/Plug-ins and Run-times"
 import SUNWdesktop-search-firefox
 end package

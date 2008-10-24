@@ -1,3 +1,4 @@
 package SUNWdtrc
+classification "Development/System"
 import SUNWdtrc
 end package

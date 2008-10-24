@@ -1,4 +1,5 @@
 package SUNWopenssl
+classification "System/Security"
 import SUNWopenssl-commands
 import SUNWopenssl-include
 import SUNWopenssl-libraries

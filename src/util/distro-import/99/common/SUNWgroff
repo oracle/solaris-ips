@@ -1,3 +1,4 @@
 package SUNWgroff
+classification "System/Text Tools"
 import SUNWgroff
 end package

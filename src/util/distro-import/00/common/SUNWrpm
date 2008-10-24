@@ -1,3 +1,4 @@
 package SUNWrpm
+classification "System/Packaging"
 import SUNWrpm
 end package

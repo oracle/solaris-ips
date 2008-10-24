@@ -1,3 +1,4 @@
 package SUNWlang-bg
+classification "System/Localizations (System)"
 import SUNWlang-bg
 end package

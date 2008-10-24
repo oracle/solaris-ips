@@ -1,4 +1,5 @@
 package SUNWgnutls
+classification "Development/GNU"
 import SUNWgnutls
 import SUNWgnutls-devel
 end package

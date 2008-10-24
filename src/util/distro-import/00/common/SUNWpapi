@@ -1,3 +1,4 @@
 package SUNWpapi
+classification "System/Printing"
 import SUNWpapi
 end package

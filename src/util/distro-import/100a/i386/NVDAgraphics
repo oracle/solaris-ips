@@ -1,4 +1,5 @@
 package NVDAgraphics
+classification "Drivers/Display"
 import NVDAgraphics
 import NVDAgraphicsr
 add driver name=nvidia perms="* 0666 root root" \

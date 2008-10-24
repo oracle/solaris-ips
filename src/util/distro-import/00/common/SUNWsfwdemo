@@ -1,3 +1,4 @@
 package SUNWsfwdemo
+classification "Development/System"
 import SUNWsfwdemo
 end package

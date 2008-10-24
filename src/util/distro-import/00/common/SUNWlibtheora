@@ -1,4 +1,5 @@
 package SUNWlibtheora
+classification "System/Libraries (System)"
 import SUNWlibtheora
 import SUNWlibtheora-devel
 end package

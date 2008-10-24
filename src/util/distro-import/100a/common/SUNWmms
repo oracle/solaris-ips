@@ -1,4 +1,5 @@
 package SUNWmms
+classification "System/Media"
 import SUNWmmsr
 import SUNWmmsu
 add driver name=dmd

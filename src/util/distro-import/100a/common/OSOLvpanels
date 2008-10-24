@@ -1,4 +1,5 @@
 package OSOLvpanels
+classification "Applications/Configuration and Preferences"
 import OSOLvpin
 depend SUNWapch22
 depend SUNWapch22m-php52

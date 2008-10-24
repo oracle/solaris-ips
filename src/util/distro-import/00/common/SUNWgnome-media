@@ -1,4 +1,5 @@
 package SUNWgnome-media
+classification "Applications/Sound and Video"
 import SUNWgnome-media
 import SUNWgnome-media-devel
 import SUNWgnome-media-root

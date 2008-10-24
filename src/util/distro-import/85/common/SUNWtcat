@@ -1,4 +1,5 @@
 package SUNWtcat
+classification "Web Services/Application and Web Servers"
 import SUNWtcatu
 import SUNWtcatr
 version 5.5.26

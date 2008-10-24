@@ -1,4 +1,5 @@
 package SUNWadixp
+classification "Drivers/Media"
 import SUNWadixp
 add driver name=audioixp alias=pci1002,4370 alias=pci1002,4341
 end package

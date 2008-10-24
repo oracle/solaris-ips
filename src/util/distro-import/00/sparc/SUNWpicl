@@ -1,4 +1,5 @@
 package SUNWpicl
+classification "System/Core"
 import SUNWpiclu
 # BEGIN NON-REDISTRIBUTABLE
 drop usr/platform/SUNW,Netra-T12

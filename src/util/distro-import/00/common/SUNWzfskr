@@ -1,3 +1,4 @@
 package SUNWzfskr
+classification "System/File System"
 import SUNWzfskr
 end package

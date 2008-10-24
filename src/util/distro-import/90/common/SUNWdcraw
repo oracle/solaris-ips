@@ -1,4 +1,5 @@
 package SUNWdcraw
+classification "System/Media"
 import SUNWdcraw
 version 8.81
 end package

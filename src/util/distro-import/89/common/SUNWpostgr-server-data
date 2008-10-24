@@ -4,6 +4,7 @@
 # be deleted when the newer package is installed.
 #
 package SUNWpostgr-server-data
+classification "System/Databases (System)"
 version 8.1.11
 depend SUNWpostgr-server
 end package

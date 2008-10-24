@@ -1,4 +1,5 @@
 package SUNWbash
+classification "System/Shells"
 import SUNWbash
 version 3.2.25
 end package

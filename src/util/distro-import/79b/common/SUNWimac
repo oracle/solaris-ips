@@ -1,4 +1,5 @@
 package SUNWimac
+classification "System/Libraries (System)"
 import SUNWimac
 import SUNWimacr
 from ./SUNWfixes import

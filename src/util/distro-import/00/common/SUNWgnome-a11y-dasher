@@ -1,4 +1,5 @@
 package SUNWgnome-a11y-dasher
+classification "Applications/Universal Access"
 import SUNWgnome-a11y-dasher
 import SUNWgnome-a11y-dasher-root
 end package

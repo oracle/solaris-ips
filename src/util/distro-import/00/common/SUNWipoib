@@ -1,4 +1,5 @@
 package SUNWipoib
+classification "System/Hardware"
 import SUNWipoib
 add driver name=ibd perms="* 0666 root sys" clone_perms="0666 root sys" alias=ib.ipib policy="read_priv_set=net_rawaccess write_priv_set=net_rawaccess"
 end package

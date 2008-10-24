@@ -1,4 +1,5 @@
 package SUNWts
+classification "System/Trusted"
 import SUNWtsu
 import SUNWtsr
 end package

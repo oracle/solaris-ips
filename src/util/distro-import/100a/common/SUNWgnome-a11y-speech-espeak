@@ -1,3 +1,4 @@
 package SUNWgnome-a11y-speech-espeak
+classification "Applications/Universal Access"
 import SUNWgnome-a11y-speech-espeak
 end package

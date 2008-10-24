@@ -1,4 +1,5 @@
 package SUNWevolution-webcal
+classification "Applications/Internet"
 import SUNWevolution-webcal
 import SUNWevolution-webcal-root
 end package

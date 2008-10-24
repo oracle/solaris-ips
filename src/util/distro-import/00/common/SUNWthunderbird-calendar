@@ -1,3 +1,4 @@
 package SUNWthunderbird-calendar
+classification "Applications/Internet"
 import SUNWthunderbird-calendar
 end package

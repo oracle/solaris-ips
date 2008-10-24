@@ -1,4 +1,5 @@
 package SUNWxsvc
+classification "System/X11 (System)"
 import SUNWxsvc
 add driver name=xsvc
 end package

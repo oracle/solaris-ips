@@ -1,4 +1,5 @@
 package SUNWslocate
+classification "Applications/System Utilities"
 import SUNWslocate
 import SUNWslocate-root
 add group groupname=slocate gid=95

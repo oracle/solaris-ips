@@ -1,4 +1,5 @@
 package SUNWav1394
+classification "Drivers/Ports"
 import SUNWav1394
 add driver name=av1394 perms="* 0600 root sys" alias=firewire00a02d,010000 alias=firewire00a02d,010001
 end package

@@ -1,3 +1,4 @@
 package SUNWterminator
+classification "Applications/System Utilities"
 import SUNWterminator
 end package

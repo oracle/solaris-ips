@@ -1,4 +1,5 @@
 package SUNWgnome-a11y-poke
+classification "Applications/Universal Access"
 import SUNWgnome-a11y-poke
 import SUNWgnome-a11y-poke-root
 end package

@@ -1,4 +1,5 @@
 package SUNWipkg
+classification "System/Packaging"
 import ../../../packages/sparc/SUNWipkg
 depend SUNWpython-cherrypy
 end package

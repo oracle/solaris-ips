@@ -1,3 +1,4 @@
 package SUNWinstall-libs
+classification "System/Libraries (System)"
 import SUNWinstall-libs
 end package

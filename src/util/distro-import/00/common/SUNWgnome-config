@@ -1,4 +1,5 @@
 package SUNWgnome-config
+classification "Desktop (GNOME)/Libraries"
 import SUNWgnome-config
 import SUNWgnome-config-devel
 import SUNWgnome-config-root

@@ -1,4 +1,5 @@
 package SUNWmdb
+classification "Development/System"
 import SUNWmdb
 import SUNWmdbr
 # BEGIN NON-REDISTRIBUTABLE

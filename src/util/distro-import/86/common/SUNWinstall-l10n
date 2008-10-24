@@ -1,3 +1,4 @@
 package SUNWinstall-l10n
+classification "System/Localizations (System)"
 import SUNWinstall-l10n
 end package

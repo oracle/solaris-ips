@@ -1,3 +1,4 @@
 package SUNWgcmn
+classification "Development/GNU"
 import SUNWgcmn
 end package

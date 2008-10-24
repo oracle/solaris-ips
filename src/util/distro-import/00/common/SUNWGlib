@@ -1,4 +1,5 @@
 package SUNWGlib
+classification "System/Libraries (System)"
 import SUNWGlib
 version 1.2.10
 add link path=usr/bin/glib-config target=../sfw/bin/glib-config

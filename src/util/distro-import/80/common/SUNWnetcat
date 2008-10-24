@@ -1,3 +1,4 @@
 package SUNWnetcat
+classification "Applications/Internet"
 import SUNWnetcat
 end package

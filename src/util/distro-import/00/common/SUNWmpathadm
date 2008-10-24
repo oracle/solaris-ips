@@ -1,4 +1,5 @@
 package SUNWmpathadm
+classification "Applications/System Utilities"
 import SUNWmpathadm
 import SUNWmpathadmr
 end package

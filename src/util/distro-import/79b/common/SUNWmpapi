@@ -1,4 +1,5 @@
 package SUNWmpapi
+classification "System/Libraries (System)"
 import SUNWmpapi
 import SUNWmpapir
 from ./SUNWfixes import

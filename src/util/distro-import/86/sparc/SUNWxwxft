@@ -1,4 +1,5 @@
 package SUNWxwxft
+classification "System/X11 (System)"
 import SUNWxwxft exclude usr/openwin
 version 2.1.12
 # Obsolete - replaced by /usr/openwin -> X11 symlink

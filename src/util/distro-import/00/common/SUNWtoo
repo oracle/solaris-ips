@@ -1,3 +1,4 @@
 package SUNWtoo
+classification "Development/System"
 import SUNWtoo
 end package

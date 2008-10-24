@@ -1,3 +1,4 @@
 package SUNWddu
+classification "System/Hardware"
 import SUNWddu
 end package

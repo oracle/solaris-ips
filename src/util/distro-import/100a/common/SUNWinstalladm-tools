@@ -1,3 +1,4 @@
 package SUNWinstalladm-tools
+classification "System/Administration and Configuration"
 import SUNWinstalladm-tools
 end package

@@ -1,3 +1,4 @@
 package SUNWgnome-nettool
+classification "Applications/Internet"
 import SUNWgnome-nettool
 end package

@@ -1,3 +1,4 @@
 package SUNWgnome-applets
+classification "Applications/Applets"
 import SUNWgnome-applets
 end package

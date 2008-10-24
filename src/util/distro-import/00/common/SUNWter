@@ -1,3 +1,4 @@
 package SUNWter
+classification "System/Core"
 import SUNWter
 end package

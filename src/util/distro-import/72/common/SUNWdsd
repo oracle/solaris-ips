@@ -1,4 +1,5 @@
 package SUNWdsd
+classification "System/Services"
 import SUNWdsdr
 import SUNWdsdu
 end package

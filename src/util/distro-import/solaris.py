@@ -52,6 +52,7 @@ class pkg(object):
                 self.extra = []
                 self.nonhollow_dirs = {}
                 self.srcpkgs = []
+                self.classification = ""
                 self.desc = ""
                 self.version = ""
                 self.imppkg = None
@@ -368,6 +369,7 @@ def end_package(pkg):
         print "Package '%s'" % pkg.name
         print "  Version:", pkg.version
         print "  Description:", pkg.desc
+        print "  Classification: ", pkg.classification
 
 def publish_pkg(pkg):
 
@@ -604,6 +606,14 @@ def publish_pkg(pkg):
                 print "    %s add set description=%s" % (pkg.name, pkg.desc)
                 action = actions.attribute.AttributeAction(None,
                     description = pkg.desc)
+                t.add(cfg, id, action)
+
+        if pkg.classification:
+                print "    %s add set info.classification=%s" % \
+                    (pkg.name, pkg.classification)
+                attrs = dict(name="info.classification",
+                             value=pkg.classification)
+                action = actions.attribute.AttributeAction(None, **attrs)
                 t.add(cfg, id, action)
 
         if pkg.name != "SUNWipkg":
@@ -1011,6 +1021,11 @@ def SolarisParse(mf):
                         assert junk == "import"
                         in_multiline_import = True
 
+                elif token == "classification":
+                        cat_subcat = lexer.get_token()
+                        curpkg.classification = \
+                            "org.opensolaris.category.2008:%s" % cat_subcat
+
                 elif token == "description":
                         curpkg.desc = lexer.get_token()
 
@@ -1126,6 +1141,7 @@ for p in sorted(newpkgs):
         print "Package '%s'" % p.name
         print "  Version:", p.version
         print "  Description:", p.desc
+        print "  Classification:", p.classification
         publish_pkg(p)
 
 # Ensure that the feed is updated and cached to reflect changes.

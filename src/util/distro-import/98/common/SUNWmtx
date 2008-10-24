@@ -1,4 +1,5 @@
 package SUNWmtx
+classification "System/Media"
 import SUNWmtx
 version 1.3.11
 end package

@@ -1,4 +1,5 @@
 package SUNWlibgsf
+classification "Desktop (GNOME)/Libraries"
 import SUNWlibgsf
 import SUNWlibgsf-devel
 import SUNWlibgsf-root

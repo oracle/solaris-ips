@@ -1,4 +1,5 @@
 package SUNWxwplt
+classification "System/X11 (System)"
 import SUNWxwplt exclude usr/openwin
 # Obsolete - replaced by /usr/openwin -> X11 symlink
 drop usr/openwin/bin

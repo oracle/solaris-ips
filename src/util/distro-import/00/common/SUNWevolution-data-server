@@ -1,4 +1,5 @@
 package SUNWevolution-data-server
+classification "Applications/Internet"
 import SUNWevolution-data-server
 import SUNWevolution-data-server-devel
 end package

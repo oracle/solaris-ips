@@ -1,3 +1,4 @@
 package SUNWIPython
+classification "Development/Python"
 import SUNWIPython
 end package

@@ -1,4 +1,5 @@
 package SUNWscim-anthy
+classification "System/Text Tools"
 import SUNWscim-anthy
 version 1.2.4
 end package

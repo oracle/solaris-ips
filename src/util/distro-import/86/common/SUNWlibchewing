@@ -1,4 +1,5 @@
 package SUNWlibchewing
+classification "System/Libraries (System)"
 import SUNWlibchewing
 import SUNWlibchewing-devel
 end package

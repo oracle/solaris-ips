@@ -1,4 +1,5 @@
 package SUNWgnome-a11y-speech
+classification "Applications/Universal Access"
 import SUNWgnome-a11y-speech
 import SUNWgnome-a11y-speech-devel
 end package

@@ -4,5 +4,6 @@
 # be deleted when the newer package is installed.
 #
 package SUNWgnome-xml-root
+classification "Desktop (GNOME)/Documentation"
 depend SUNWgnome-xml
 end package

@@ -1,4 +1,5 @@
 package SUNWapch22m-fcgid
+classification "Web Services/Application and Web Servers"
 import SUNWapch22m-fcgid
 import SUNWapch22r-fcgid
 version 2.2

@@ -1,4 +1,5 @@
 package SUNWcsd
+classification "System/Core"
 import SUNWcsd
 drop etc/driver_aliases
 drop etc/name_to_major

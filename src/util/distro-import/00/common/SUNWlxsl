@@ -1,4 +1,5 @@
 package SUNWlxsl
+classification "System/Libraries (System)"
 import SUNWlxsl
 import SUNWlxsl-devel
 import SUNWlxsl-python

@@ -1,4 +1,5 @@
 package SUNWaudd
+classification "Drivers/Media"
 import SUNWaudd
 add driver name=audiocs alias=SUNW,CS4231
 # BEGIN NON-REDISTRIBUTABLE

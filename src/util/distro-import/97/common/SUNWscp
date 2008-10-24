@@ -1,4 +1,5 @@
 package SUNWscp
+classification "System/Core"
 import SUNWscpu exclude usr/ucb/ex usr/ucb/vi usr/ucb/view
 drop usr/ucb/cc
 drop usr/ucb/ld

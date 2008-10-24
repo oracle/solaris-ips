@@ -1,3 +1,4 @@
 package SUNWmysql-python
+classification "Development/Databases"
 import SUNWmysql-python
 end package

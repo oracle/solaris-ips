@@ -1,3 +1,4 @@
 package SUNWukspfw
+classification "System/Hardware"
 import SUNWukspfw
 end package

@@ -1,4 +1,5 @@
 package SUNWlibxmlpp
+classification "Development/C++"
 import SUNWlibxmlpp
 import SUNWlibxmlpp-devel
 end package

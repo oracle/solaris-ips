@@ -1,4 +1,5 @@
 package SUNWpcmci
+classification "System/Hardware"
 import SUNWpcmci
 add driver name=pcs
 add driver name=pcic class=pcmcia alias=pciclass,060500 alias=pciclass,060700

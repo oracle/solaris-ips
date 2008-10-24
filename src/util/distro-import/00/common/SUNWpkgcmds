@@ -1,4 +1,5 @@
 package SUNWpkgcmds
+classification "System/Packaging"
 import SUNWpkgcmdsu
 import SUNWpkgcmdsr
 end package

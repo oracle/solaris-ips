@@ -1,4 +1,5 @@
 package SUNWrmodr
+classification "System/Core"
 import SUNWrmodr
 from ./SUNWfixes import
 boot/solaris/devicedb/master

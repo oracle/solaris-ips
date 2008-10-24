@@ -1,4 +1,5 @@
 package SUNWlibsoup
+classification "System/Libraries (System)"
 import SUNWlibsoup
 import SUNWlibsoup-devel
 end package

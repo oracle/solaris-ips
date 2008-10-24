@@ -1,4 +1,5 @@
 package SUNWipkg
+classification "System/Packaging"
 import ../../../packages/i386/SUNWipkg
 depend SUNWpython-cherrypy
 end package

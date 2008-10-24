@@ -1,4 +1,5 @@
 package SUNWllc
+classification "Drivers/Networking"
 import SUNWllc
 import SUNWllcr
 add driver name=llc2 perms="* 0666 root sys"

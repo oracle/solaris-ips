@@ -1,3 +1,4 @@
 package SUNWlang-sq
+classification "System/Localizations (System)"
 import SUNWlang-sq
 end package

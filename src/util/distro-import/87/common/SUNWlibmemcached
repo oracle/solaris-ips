@@ -1,4 +1,5 @@
 package SUNWlibmemcached
+classification "System/Libraries (System)"
 import SUNWlibmemcached
 version 0.16
 end package

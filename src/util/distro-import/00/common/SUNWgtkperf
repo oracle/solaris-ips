@@ -1,3 +1,4 @@
 package SUNWgtkperf
+classification "Development/GNOME and GTK+"
 import SUNWgtkperf
 end package

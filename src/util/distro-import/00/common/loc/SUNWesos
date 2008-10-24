@@ -1,3 +1,4 @@
 package SUNWesos
+classification "System/Localizations (System)"
 import SUNWesos
 end package

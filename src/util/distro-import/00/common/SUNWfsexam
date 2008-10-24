@@ -1,4 +1,5 @@
 package SUNWfsexam
+classification "System/File System"
 import SUNWfsexam
 import SUNWfsexam-root
 end package

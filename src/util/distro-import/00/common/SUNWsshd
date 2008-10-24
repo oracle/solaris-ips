@@ -1,4 +1,5 @@
 package SUNWsshd
+classification "System/Security"
 import SUNWsshdu
 import SUNWsshdr
 # Replace method script to support generating keys on live CD

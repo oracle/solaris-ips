@@ -1,3 +1,4 @@
 package SUNWlang-zhTW
+classification "System/Localizations (System)"
 import SUNWlang-zhTW
 end package

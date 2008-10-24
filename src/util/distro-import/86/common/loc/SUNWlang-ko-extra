@@ -1,3 +1,4 @@
 package SUNWlang-ko-extra
+classification "System/Localizations (System)"
 import SUNWlang-ko-extra
 end package

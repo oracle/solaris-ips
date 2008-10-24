@@ -1,4 +1,5 @@
 package SUNWsmcmd
+classification "System/Administration and Configuration"
 import SUNWsmcmd
 version 5.0.9
 add link path=usr/bin/fixproc target=../sfw/bin/fixproc

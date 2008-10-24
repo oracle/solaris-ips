@@ -1,4 +1,5 @@
 package SUNWcairomm
+classification "Development/C++"
 import SUNWcairomm
 import SUNWcairomm-devel
 end package

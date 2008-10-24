@@ -1,3 +1,4 @@
 package SUNWdbus-libs
+classification "System/Libraries (System)"
 import SUNWdbus-libs
 end package

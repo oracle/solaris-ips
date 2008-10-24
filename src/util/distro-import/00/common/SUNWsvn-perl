@@ -1,4 +1,5 @@
 package SUNWsvn-perl
+classification "Development/Source Code Management"
 import SUNWsvn-perl
 version 1.4.3
 end package

@@ -1,4 +1,5 @@
 package SUNWgksu
+classification "Applications/System Utilities"
 import SUNWgksu
 import SUNWgksu-devel
 import SUNWgksu-root

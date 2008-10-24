@@ -1,4 +1,5 @@
 package SUNWa2ps
+classification "System/Printing"
 import SUNWa2psu
 import SUNWa2psr
 version 4.13

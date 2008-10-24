@@ -1,4 +1,5 @@
 package SUNWvim
+classification "System/Text Tools"
 import SUNWvim
 version 7.1.284
 add link path=usr/bin/ex target=vim

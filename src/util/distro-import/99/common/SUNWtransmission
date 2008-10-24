@@ -1,3 +1,4 @@
 package SUNWtransmission
+classification "Applications/Internet"
 import SUNWtransmission
 end package

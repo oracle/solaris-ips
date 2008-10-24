@@ -1,4 +1,5 @@
 package SUNWudaplt
+classification "System/Hardware"
 import SUNWudapltu
 import SUNWudapltr
 add driver name=daplt perms="* 0644 root sys"

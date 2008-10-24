@@ -1,3 +1,4 @@
 package SUNWjss
+classification "System/Services"
 import SUNWjss
 end package

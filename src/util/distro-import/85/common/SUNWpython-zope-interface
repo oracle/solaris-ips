@@ -1,3 +1,4 @@
 package SUNWpython-zope-interface
+classification "Development/Python"
 import SUNWpython-zope-interface
 end package

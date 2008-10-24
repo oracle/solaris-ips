@@ -1,3 +1,4 @@
 package SUNWpython-imaging
+classification "Development/Python"
 import SUNWpython-imaging
 end package

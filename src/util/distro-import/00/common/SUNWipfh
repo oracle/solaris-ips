@@ -1,3 +1,4 @@
 package SUNWipfh
+classification "Development/System"
 import SUNWipfh
 end package

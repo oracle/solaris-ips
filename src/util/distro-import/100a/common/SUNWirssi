@@ -1,3 +1,4 @@
 package SUNWirssi
+classification "Applications/Internet"
 import SUNWirssi
 end package

@@ -1,3 +1,4 @@
 package SUNWpcmcu
+classification "System/Hardware"
 import SUNWpcmcu
 end package

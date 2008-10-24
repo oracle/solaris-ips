@@ -1,3 +1,4 @@
 package SUNWtlsd
+classification "System/Security"
 import SUNWtlsd
 end package

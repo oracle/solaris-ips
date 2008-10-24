@@ -1,3 +1,4 @@
 package SUNWidhcm
+classification "System/Services"
 import SUNWidhcm
 end package

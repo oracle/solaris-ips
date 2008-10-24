@@ -1,3 +1,4 @@
 package SUNWsbp2
+classification "System/Hardware"
 import SUNWsbp2
 end package

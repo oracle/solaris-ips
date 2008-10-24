@@ -1,4 +1,5 @@
 package SUNWsqlite3
+classification "System/Databases (System)"
 import SUNWsqlite3
 version 3.5.4
 end package

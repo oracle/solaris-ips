@@ -1,3 +1,4 @@
 package SUNWfcmdb
+classification "System/Hardware"
 import SUNWfcmdb
 end package

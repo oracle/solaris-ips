@@ -1,3 +1,4 @@
 package SUNWgnome-desklets-extra
+classification "Applications/Applets"
 import SUNWgnome-desklets-extra
 end package

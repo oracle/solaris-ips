@@ -1,3 +1,4 @@
 package SUNWisolc
+classification "System/Text Tools"
 import SUNWisolc
 end package

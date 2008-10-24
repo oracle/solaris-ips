@@ -1,4 +1,5 @@
 package SUNWfirefox
+classification "Applications/Internet"
 import SUNWfirefox
 import SUNWfirefox-devel
 end package

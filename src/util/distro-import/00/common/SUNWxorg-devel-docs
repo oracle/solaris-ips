@@ -1,3 +1,4 @@
 package SUNWxorg-devel-docs
+classification "Development/X11"
 import SUNWxorg-devel-docs
 end package

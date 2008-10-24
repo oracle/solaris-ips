@@ -1,4 +1,5 @@
 package SUNWatfs
+classification "System/File System"
 import SUNWatfsu
 import SUNWatfsr
 end package

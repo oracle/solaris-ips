@@ -1,4 +1,5 @@
 package SUNWwpa
+classification "System/Hardware"
 import SUNWwpau
 import SUNWwpar
 end package

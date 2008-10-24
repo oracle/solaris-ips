@@ -1,3 +1,4 @@
 package SUNWhwdata
+classification "System/Hardware"
 import SUNWhwdata
 end package

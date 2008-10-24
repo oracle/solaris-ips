@@ -1,3 +1,4 @@
 package SUNWxorg-client-docs
+classification "Development/X11"
 import SUNWxorg-client-docs
 end package

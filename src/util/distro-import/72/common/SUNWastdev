@@ -1,3 +1,4 @@
 package SUNWastdev
+classification "System/Software Management"
 import SUNWastdev
 end package

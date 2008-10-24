@@ -1,4 +1,5 @@
 package SUNWigb
+classification "Drivers/Networking"
 import SUNWigb
 add driver name=igb perms="* 0666 root sys" clone_perms="0666 root sys" alias=pciex8086,10a7 alias=pciex8086,10a9 alias=pciex8086,10d6
 end package

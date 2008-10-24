@@ -1,3 +1,4 @@
 package SUNWxorg-tsol-module
+classification "System/Trusted"
 import SUNWxorg-tsol-module
 end package

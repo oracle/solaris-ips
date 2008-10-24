@@ -1,3 +1,4 @@
 package SUNWtnfd
+classification "Development/System"
 import SUNWtnfd
 end package

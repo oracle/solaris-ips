@@ -1,4 +1,5 @@
 package SUNWwget
+classification "Applications/Internet"
 import SUNWwgetu
 import SUNWwgetr
 version 1.10.2

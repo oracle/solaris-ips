@@ -1,4 +1,5 @@
 package SUNWsmagt
+classification "System/Enterprise Management"
 import SUNWsmagt
 version 5.0.9
 add link path=usr/lib/amd64/libnetsnmp.a target=../../sfw/lib/amd64/libnetsnmp.a

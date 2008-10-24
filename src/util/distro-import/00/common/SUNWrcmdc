@@ -1,3 +1,4 @@
 package SUNWrcmdc
+classification "System/Core"
 import SUNWrcmdc
 end package

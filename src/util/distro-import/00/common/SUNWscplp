@@ -1,3 +1,4 @@
 package SUNWscplp
+classification "System/Printing"
 import SUNWscplp
 end package

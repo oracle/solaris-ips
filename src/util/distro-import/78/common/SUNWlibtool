@@ -1,4 +1,5 @@
 package SUNWlibtool
+classification "Development/GNU"
 import SUNWlibtool
 version 1.5.22
 end package

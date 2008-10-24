@@ -1,4 +1,5 @@
 package SUNWgtkspell
+classification "Applications/Accessories"
 import SUNWgtkspell
 import SUNWgtkspell-devel
 end package

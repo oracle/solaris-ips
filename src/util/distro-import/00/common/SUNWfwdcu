@@ -1,3 +1,4 @@
 package SUNWfwdcu
+classification "System/Media"
 import SUNWfwdcu
 end package

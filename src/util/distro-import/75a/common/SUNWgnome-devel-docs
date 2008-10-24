@@ -1,3 +1,4 @@
 package SUNWgnome-devel-docs
+classification "Development/GNOME and GTK+"
 import SUNWgnome-devel-docs
 end package

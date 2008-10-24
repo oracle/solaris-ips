@@ -1,4 +1,5 @@
 package SUNWlibusb
+classification "System/Libraries (System)"
 import SUNWlibusb
 add link path=usr/bin/libusb-config target=../sfw/bin/libusb-config
 add link path=usr/lib/libusb.so target=../sfw/lib/libusb.so

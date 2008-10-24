@@ -1,4 +1,5 @@
 package SUNWgnu-which
+classification "Applications/System Utilities"
 import SUNWgnu-which
 version 2.16
 end package

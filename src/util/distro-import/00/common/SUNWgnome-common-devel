@@ -1,3 +1,4 @@
 package SUNWgnome-common-devel
+classification "Development/GNOME and GTK+"
 import SUNWgnome-common-devel
 end package

@@ -1,4 +1,5 @@
 package SUNWtcpdS
+classification "System/Core"
 import SUNWtcpdS
 version 7.6
 end package

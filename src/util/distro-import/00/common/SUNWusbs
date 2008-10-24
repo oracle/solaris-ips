@@ -1,3 +1,4 @@
 package SUNWusbs
+classification "System/Hardware"
 import SUNWusbs
 end package

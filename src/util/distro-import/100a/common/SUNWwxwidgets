@@ -1,4 +1,5 @@
 package SUNWwxwidgets
+classification "Desktop (GNOME)/Libraries"
 import SUNWwxwidgets
 import SUNWwxwidgets-devel
 version 2.8.8

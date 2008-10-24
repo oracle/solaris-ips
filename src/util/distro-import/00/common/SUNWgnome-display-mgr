@@ -1,4 +1,5 @@
 package SUNWgnome-display-mgr
+classification "Desktop (GNOME)/Sessions"
 import SUNWgnome-display-mgr
 import SUNWgnome-display-mgr-root
 end package

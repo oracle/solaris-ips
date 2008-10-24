@@ -5,6 +5,7 @@
 # on the package with the new name.
 #
 package SUNWapch22m-php5
+classification "Web Services/Application and Web Servers"
 version 2.2.6
 depend SUNWapch22m-php52
 end package

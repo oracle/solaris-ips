@@ -1,4 +1,5 @@
 package SUNWpng
+classification "System/Libraries (System)"
 import SUNWpng
 import SUNWpng-devel
 end package

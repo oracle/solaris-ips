@@ -1,4 +1,5 @@
 package SUNWslang
+classification "Development/Other Languages"
 import SUNWslang
 import SUNWslangr
 version 2.1.3

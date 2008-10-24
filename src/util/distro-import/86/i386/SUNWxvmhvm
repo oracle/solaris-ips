@@ -4,5 +4,6 @@
 # be deleted when the newer package is installed.
 #
 package SUNWxvmhvm
+classification "System/Virtualization"
 depend SUNWxvm
 end package

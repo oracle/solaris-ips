@@ -1,4 +1,5 @@
 package SUNWlibgcrypt
+classification "System/Libraries (System)"
 import SUNWlibgcrypt
 import SUNWlibgcrypt-devel
 end package

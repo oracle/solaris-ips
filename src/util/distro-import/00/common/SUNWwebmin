@@ -1,4 +1,5 @@
 package SUNWwebmin
+classification "System/Administration and Configuration"
 import SUNWwebminu
 import SUNWwebminr
 version 1.340

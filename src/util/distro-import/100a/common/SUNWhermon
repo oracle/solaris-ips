@@ -1,4 +1,5 @@
 package SUNWhermon
+classification "Drivers/Other Peripherals"
 import SUNWhermon
 add driver name=hermon perms="* 0666 root sys" \
 	alias=pciex15b3,6340 \

@@ -1,3 +1,4 @@
 package SUNWxorg-doc
+classification "System/X11 (System)"
 import SUNWxorg-doc
 end package

@@ -1,3 +1,4 @@
 package SUNWjos
+classification "System/Localizations (System)"
 import SUNWjos
 end package

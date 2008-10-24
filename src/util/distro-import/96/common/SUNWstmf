@@ -1,4 +1,5 @@
 package SUNWstmf
+classification "System/Hardware"
 import SUNWstmf
 import SUNWstmfu
 add driver name=stmf perms="* 0666 root sys"

@@ -1,4 +1,5 @@
 package SUNWtlsu
+classification "System/Security"
 import SUNWtlsu
 add link path=usr/bin/addbuiltin target=../sfw/bin/addbuiltin
 add link path=usr/bin/certutil target=../sfw/bin/certutil

@@ -1,4 +1,5 @@
 package SUNWbnu
+classification "System/Services"
 import SUNWbnuu
 import SUNWbnur
 end package

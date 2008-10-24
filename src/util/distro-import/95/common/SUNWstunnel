@@ -1,4 +1,5 @@
 package SUNWstunnel
+classification "Applications/Internet"
 import SUNWstunnelr
 import SUNWstunnelu
 version 4.25

@@ -1,4 +1,5 @@
 package SUNWprivoxy
+classification "Web Services/Application and Web Servers"
 import SUNWprivoxyr
 import SUNWprivoxyu
 version 3.0.8

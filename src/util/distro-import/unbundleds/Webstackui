@@ -1,4 +1,5 @@
 package webstackui
+classification "Web Services/Application and Web Servers"
 description "Web Stack Options and Desktop Menus"
 import SUNWwebstackui
 depend SUNWapch22d

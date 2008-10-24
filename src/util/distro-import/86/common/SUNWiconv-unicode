@@ -1,3 +1,4 @@
 package SUNWiconv-unicode
+classification "System/Text Tools"
 import SUNWiconv-unicode
 end package

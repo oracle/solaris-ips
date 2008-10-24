@@ -1,4 +1,5 @@
 package SUNWgnu-emacs
+classification "System/Text Tools"
 import SUNWgnu-emacs
 version 22.1
 end package

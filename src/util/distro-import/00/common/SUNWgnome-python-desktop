@@ -1,4 +1,5 @@
 package SUNWgnome-python-desktop
+classification "Development/Python"
 import SUNWgnome-python-desktop
 import SUNWgnome-python-desktop-devel
 end package
