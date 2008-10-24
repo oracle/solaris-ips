@@ -28,7 +28,6 @@
 import os
 import errno
 import time
-import stat
 import sha
 import urllib
 
@@ -186,8 +185,8 @@ class IndexStoreBase(object):
                 stat_info = os.stat(self._file_path)
                 if self._mtime != stat_info.st_mtime or \
                     self._size != stat_info.st_size:
-                        self._mtime = stat_info[stat.ST_MTIME]
-                        self._size = stat_info[stat.ST_SIZE]
+                        self._mtime = stat_info.st_mtime
+                        self._size = stat_info.st_size
                         return True
                 return False
 

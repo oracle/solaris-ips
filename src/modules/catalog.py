@@ -38,6 +38,7 @@ import pkg.fmri as fmri
 import pkg.misc as misc
 import pkg.version as version
 import pkg.portable as portable
+from pkg.misc import TruncatedTransferException
 
 class CatalogException(Exception):
         def __init__(self, args=None):
@@ -111,6 +112,7 @@ class Catalog(object):
                 self.renamed = None
                 self.pkg_root = pkg_root
                 self.read_only = read_only
+                self.__size = -1
 
                 assert not (read_only and rebuild)
 
@@ -182,6 +184,10 @@ class Catalog(object):
                         tfile.close()
 
                 portable.rename(tmpfile, pathstr)
+
+                # Catalog size has changed, force recalculation on
+                # next send()
+                self.__size = -1
 
                 self.catalog_lock.release()
 
@@ -501,21 +507,31 @@ class Catalog(object):
                 return self.attrs.get("origin", None)
 
         @staticmethod
-        def recv(filep, path, auth=None):
+        def recv(filep, path, auth=None, content_size=-1):
                 """A static method that takes a file-like object and
                 a path.  This is the other half of catalog.send().  It
                 reads a stream as an incoming catalog and lays it down
-                on disk."""
+                on disk. Content_size is the size in bytes, if known,
+                of the transfer that is being received.  The default
+                value of -1 means that the size is not known."""
+
+                size = 0
 
                 if not os.path.exists(path):
                         os.makedirs(path)
 
-                attrf = file(os.path.normpath(
-                    os.path.join(path, "attrs")), "w+")
-                catf = file(os.path.normpath(
-                    os.path.join(path, "catalog")), "w+")
+                afd, attrpath = tempfile.mkstemp(dir=path)
+                cfd, catpath = tempfile.mkstemp(dir=path)
+
+                attrf = os.fdopen(afd, "w")
+                catf = os.fdopen(cfd, "w")
+
+                attrpath_final = os.path.normpath(os.path.join(path, "attrs"))
+                catpath_final = os.path.normpath(os.path.join(path, "catalog"))
 
                 for s in filep:
+                        size += len(s)
+
                         if not s[1].isspace():
                                 continue
                         elif not s[0] in known_prefixes:
@@ -531,6 +547,19 @@ class Catalog(object):
                                 catf.write("%s %s %s %s\n" %
                                     (s[0], "pkg", f.pkg_name, f.version))
 
+                # Check that content was properly received before
+                # modifying any files.
+                if content_size > -1 and size != content_size:
+                        url = None
+                        if hasattr(filep, "geturl") and callable(filep.geturl):
+                                url = filep.geturl()
+                        attrf.close()
+                        catf.close()
+                        os.remove(attrpath)
+                        os.remove(catpath)
+                        raise TruncatedTransferException(url, size,
+                            content_size)
+
                 # Write the authority's origin into our attributes
                 if auth:
                         origstr = "S origin: %s\n" % auth["origin"]
@@ -538,6 +567,9 @@ class Catalog(object):
 
                 attrf.close()
                 catf.close()
+
+                os.rename(attrpath, attrpath_final)
+                os.rename(catpath, catpath_final)
 
         def rename_package(self, srcname, srcvers, destname, destvers):
                 """Record that the name of package oldname has been changed
@@ -585,6 +617,9 @@ class Catalog(object):
                 pfile = file(pathstr, "a+")
                 pfile.write("%s\n" % rr)
                 pfile.close()
+
+                # Recalculate size on next send()
+                self.__size = -1
 
                 self.renamed.append(rr)
 
@@ -685,11 +720,17 @@ class Catalog(object):
                         s = "S %s: %s\n" % (a, self.attrs[a])
                         afile.write(s)
 
+                # Recalculate size on next send()
+                self.__size = -1
+
                 afile.close()
 
-        def send(self, filep):
+        def send(self, filep, rspobj=None):
                 """Send the contents of this catalog out to the filep
                 specified as an argument."""
+
+                if rspobj is not None:
+                        rspobj.headers['Content-Length'] = str(self.size())
 
                 def output():
                         # Send attributes first.
@@ -731,6 +772,34 @@ class Catalog(object):
                         self.attrs["Last-Modified"] = timestamp()
 
                 self.save_attrs()
+
+
+        def size(self):
+                """Return the size in bytes of the catalog and attributes."""
+
+                if self.__size < 0:
+                        try:
+                                attr_stat = os.stat(os.path.normpath(
+                                    os.path.join(self.catalog_root, "attrs")))
+                                attr_sz = attr_stat.st_size
+                        except OSError, e:
+                                if e.errno == errno.ENOENT:
+                                        attr_sz = 0
+                                else:
+                                        raise
+                        try:
+                                cat_stat =  os.stat(os.path.normpath(
+                                    os.path.join(self.catalog_root, "catalog")))
+                                cat_sz = cat_stat.st_size
+                        except OSError, e:
+                                if e.errno == errno.ENOENT:
+                                        cat_sz = 0
+                                else:
+                                        raise
+
+                        self.__size = attr_sz + cat_sz
+
+                return self.__size
 
         def valid_new_fmri(self, pfmri):
                 """Check that the fmri supplied as an argument would be

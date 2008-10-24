@@ -1,4 +1,4 @@
-#!/usr/bin/python2.4
+#!/usr/bin/python2.dir=pat4
 #
 # CDDL HEADER START
 #
@@ -34,7 +34,7 @@ import os
 import errno
 import sha
 import tempfile
-from stat import *
+import stat
 import generic
 import pkg.misc as misc
 import pkg.portable as portable
@@ -200,7 +200,7 @@ class FileAction(generic.Action):
                 errors = []
 
                 try:
-                        stat = os.lstat(path)
+                        fs = os.lstat(path)
                 except OSError, e:
                         if e.errno == errno.ENOENT:
                                 self.replace_required = True
@@ -219,26 +219,26 @@ class FileAction(generic.Action):
                         errors.append("Warning: package may contain bobcat!  "
                             "(http://xkcd.com/325/)")
 
-                if not S_ISREG(stat[ST_MODE]):
+                if not stat.S_ISREG(fs.st_mode):
                         errors.append("%s is not a regular file" % self.attrs["path"])
                         self.replace_required = True
 
-                if stat[ST_UID] != owner:
+                if fs.st_uid != owner:
                         errors.append("Owner: '%s' should be '%s'" % \
-                            (img.get_name_by_uid(stat[ST_UID], True),
+                            (img.get_name_by_uid(fs.st_uid, True),
                              img.get_name_by_uid(owner, True)))
-                if stat[ST_GID] != group:
+                if fs.st_gid != group:
                         errors.append("Group: '%s' should be '%s'" % \
-                            (img.get_name_by_gid(stat[ST_GID], True),
+                            (img.get_name_by_gid(fs.st_gid, True),
                              img.get_name_by_gid(group, True)))
-                if S_IMODE(stat[ST_MODE]) != mode:
+                if stat.S_IMODE(fs.st_mode) != mode:
                         errors.append("Mode: 0%.3o should be 0%.3o" % \
-                            (S_IMODE(stat[ST_MODE]), mode))
+                            (stat.S_IMODE(fs.st_mode), mode))
 
-                if "timestamp" in self.attrs and stat[ST_MTIME] != \
+                if "timestamp" in self.attrs and fs.st_mtime != \
                     misc.timestamp_to_time(self.attrs["timestamp"]):
                         errors.append("Timestamp: %s should be %s" %
-                            (misc.time_to_timestamp(stat[ST_MTIME]), 
+                            (misc.time_to_timestamp(fs.st_mtime), 
                             self.attrs["timestamp"]))
                              
                 # avoid checking pkg.size if elfhash present;
@@ -246,9 +246,9 @@ class FileAction(generic.Action):
                 if "preserve" not in self.attrs and \
                     "pkg.size" in self.attrs and    \
                     "elfhash" not in self.attrs and \
-                    stat[ST_SIZE] != int(self.attrs["pkg.size"]):
+                    fs.st_size != int(self.attrs["pkg.size"]):
                         errors.append("Size: %d bytes should be %d" % \
-                            (stat[ST_SIZE], int(self.attrs["pkg.size"])))
+                            (fs.st_size, int(self.attrs["pkg.size"])))
 
                 if "preserve" in self.attrs:
                         return errors
@@ -330,7 +330,7 @@ class FileAction(generic.Action):
 
                 try:
                         # Make file writable so it can be deleted
-                        os.chmod(path, S_IWRITE|S_IREAD)
+                        os.chmod(path, stat.S_IWRITE|stat.S_IREAD)
                         portable.remove(path)
                 except OSError,e:
                         if e.errno != errno.ENOENT:

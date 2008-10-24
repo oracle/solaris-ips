@@ -33,7 +33,6 @@ import shutil
 import datetime
 import calendar
 import urllib
-import stat
 
 import pkg.actions
 import pkg.fmri as fmri
@@ -325,7 +324,7 @@ class Transaction(object):
                         # size and store that as an attribute in the manifest
                         # for the file.
                         fs = os.stat(opath)
-                        action.attrs["pkg.csize"] = str(fs[stat.ST_SIZE])
+                        action.attrs["pkg.csize"] = str(fs.st_size)
 
                         # Compute the SHA hash of the compressed file.
                         # Store this as the chash attribute of the file's

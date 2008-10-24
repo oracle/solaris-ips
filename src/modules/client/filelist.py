@@ -32,12 +32,14 @@ import httplib
 import socket
 import time
 import sha
+import zlib
 from tarfile import ReadError
 
 import pkg.pkgtarfile as ptf
 import pkg.portable as portable
 import pkg.fmri
 import pkg.client.api_errors as api_errors
+import pkg.misc as misc
 from pkg.client import global_settings
 from pkg.misc import versioned_urlopen
 from pkg.misc import hash_file_name
@@ -47,7 +49,9 @@ from pkg.misc import TransportFailures
 from pkg.misc import TransferTimedOutException
 from pkg.misc import TransferContentException
 from pkg.misc import InvalidContentException
+from pkg.misc import TruncatedTransferException
 from pkg.misc import retryable_http_errors
+from pkg.misc import retryable_socket_errors
 
 class FileList(object):
         """A FileList maintains mappings between files and Actions.
@@ -278,27 +282,31 @@ class FileList(object):
 
                 # Now that the file has been successfully extracted, move
                 # it to the cached content directory.
+                dl_path = os.path.join(download_dir, hashval)
                 final_path = os.path.normpath(os.path.join(completed_dir,
                     hash_file_name(hashval)))
 
-                if not os.path.exists(os.path.dirname(final_path)):
-                        os.makedirs(os.path.dirname(final_path))
-
-                portable.rename(os.path.join(download_dir, hashval), final_path)
-
-                # assign opener to actions in the list
+                # Check that hashval is in the list of files we requested
                 try:
                         l = self.fhash[hashval]
                 except KeyError:
                         # If the key isn't in the dictionary, the server sent us
                         # a file we didn't ask for.  In this case, we can't
-                        # create an opener for it, nor should we leave it in the
-                        # cache.
-                        os.remove(final_path)
+                        # create an opener for it, nor should we hold onto it.
+                        os.remove(dl_path)
                         return
 
-                self._verify_content(l[0], final_path)
+                # Verify downloaded content
+                self._verify_content(l[0], dl_path)
 
+                if not os.path.exists(os.path.dirname(final_path)):
+                        os.makedirs(os.path.dirname(final_path))
+
+                # Content has been verified and was requested from server.
+                # Move into content cache
+                portable.rename(dl_path, final_path)
+
+                # assign opener to actions in the list
                 for action in l:
                         action.data = self._make_opener(final_path)
 
@@ -349,19 +357,52 @@ class FileList(object):
                             data=req_str, ssl_creds=self.ssl_tuple,
                             imgtype=self.image.type, uuid=self.uuid)
                 except RuntimeError:
-                        raise FileListException, "No server-side support" 
+                        raise FileListRetrievalError, "No server-side support" 
                 except urllib2.HTTPError, e:
                         # Must check for HTTPError before URLError
+                        self.image.cleanup_downloads()
                         if e.code in retryable_http_errors:
                                 raise TransferTimedOutException(url_prefix,
-                                    str(e.code))
-                        raise
+                                    "%d - %s" % (e.code, e.msg))
+
+                        raise FileListRetrievalError("Could not retrieve"
+                            " filelist from '%s'\nHTTPError code: %d - %s" % 
+                            (url_prefix, e.code, e.msg))
                 except urllib2.URLError, e:
-                        if len(e.args) == 1 and \
-                            isinstance(e.args[0], socket.timeout):
-                                self.image.cleanup_downloads()
-                                raise TransferTimedOutException(url_prefix)
+                        self.image.cleanup_downloads()
+                        if isinstance(e.args[0], socket.timeout):
+                                raise TransferTimedOutException(url_prefix,
+                                    e.reason)
+                        elif isinstance(e.args[0], socket.error):
+                                sockerr = e.args[0]
+                                if isinstance(sockerr.args, tuple) and \
+                                    sockerr.args[0] in retryable_socket_errors:
+                                        raise TransferContentException(
+                                            url_prefix,
+                                            "Retryable socket error: %s" %
+                                            e.reason)
+                                else:
+                                        raise FileListRetrievalError(
+                                            "Could not retrieve filelist from"
+                                            " '%s'\nURLError, reason: %s" %
+                                            (url_prefix, e.reason))
+
+                        raise FileListRetrievalError("Could not retrieve"
+                            " filelist from '%s'\nURLError reason: %d" % 
+                            (url_prefix, e.reason))
+                except (ValueError, httplib.IncompleteRead):
+                        self.image.cleanup_downloads()
+                        raise TransferContentException(url_prefix,
+                            "Incomplete Read from remote host")
+                except KeyboardInterrupt:
+                        self.image.cleanup_downloads()
                         raise
+                except Exception, e:
+                        self.image.cleanup_downloads()
+                        raise FileListRetrievalError("Could not retrieve"
+                            " filelist from '%s'\nException: str:%s repr:%s" %
+                            (url_prefix, e, repr(e)))
+
 
                 # Exception handling here is a bit complicated.  The finally
                 # block makes sure we always close our file objects.  If we get
@@ -379,10 +420,32 @@ class FileList(object):
                         except socket.timeout, e:
                                 self.image.cleanup_downloads()
                                 raise TransferTimedOutException(url_prefix)
+                        except socket.error, e:
+                                self.image.cleanup_downloads()
+                                if isinstance(e.args, tuple) and \
+                                    e.args[0] in retryable_socket_errors:
+                                        raise TransferContentException(
+                                            url_prefix,
+                                            "Retryable socket error: %s" % e)
+                                else:
+                                        raise FileListRetrievalError(
+                                            "Could not retrieve filelist from"
+                                            " '%s'\nsocket error, reason: %s" %
+                                            (url_prefix, e))
+                        except (ValueError, httplib.IncompleteRead):
+                                self.image.cleanup_downloads()
+                                raise TransferContentException(url_prefix,
+                                    "Incomplete Read from remote host")
                         except ReadError:
+                                self.image.cleanup_downloads()
                                 raise TransferContentException(url_prefix,
                                     "Read error on tar stream")
-
+                        except EnvironmentError, e:
+                                self.image.cleanup_downloads()
+                                raise FileListRetrievalError(
+                                    "Could not retrieve filelist from '%s'\n"
+                                    "Exception: str:%s repr:%s" %
+                                    (url_prefix, e, repr(e)))
                 finally:
                         if tar_stream:
                                 tar_stream.close()
@@ -439,7 +502,29 @@ class FileList(object):
                 remove the file and raise an InvalidContentException."""
 
                 chash = action.attrs.get("chash", None)
+                path = action.attrs.get("path", None)
                 if not chash:
+                        # Compressed hash doesn't exist.  Decompress and
+                        # generate hash of uncompressed content.
+                        ifile = open(filepath, "rb")
+                        ofile = open(os.devnull, "wb")
+
+                        try:
+                                hash = misc.gunzip_from_stream(ifile, ofile)
+                        except zlib.error, e:
+                                os.remove(filepath)
+                                raise InvalidContentException(path,
+                                    "zlib.error:%s" %
+                                    (" ".join([str(a) for a in e.args])))
+
+                        ifile.close()
+                        ofile.close()
+
+                        if action.hash != hash:
+                                os.remove(filepath)
+                                raise InvalidContentException(action.path,
+                                    "hash failure:  expected: %s"
+                                    "computed: %s" % (action.hash, hash))
                         return
 
                 cfile = open(filepath, "rb")
@@ -451,12 +536,24 @@ class FileList(object):
 
                 if chash != newhash:
                        os.remove(filepath)
-                       raise InvalidContentException(action, newhash)
+                       raise InvalidContentException(path,
+                           "chash failure: expected: %s computed: %s" %
+                           (chash, newhash))
 
 
 class FileListException(Exception):
         def __init__(self, args=None):
+                Exception.__init__(self)
                 self.args = args
 
 class FileListFullException(FileListException):
         pass
+
+class FileListRetrievalError(FileListException):
+        """Used when filelist retrieval fails"""
+        def __init__(self, data):
+                FileListException.__init__(self)
+                self.data = data
+
+        def __str__(self):
+                return str(self.data)

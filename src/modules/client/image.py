@@ -1275,6 +1275,25 @@ class Image(object):
                                 dependents.extend(self.__req_dependents[f])
                 return dependents
 
+        def _do_get_catalog(self, auth, hdr, ts):
+                """An internal method that is a wrapper around get_catalog.
+                This handles retryable exceptions and timeouts."""
+
+                retry_count = global_settings.PKG_TIMEOUT_MAX
+                failures = TransportFailures()
+                success = False
+
+                while not success:
+                        try:
+                                success = retrieve.get_catalog(self, auth,
+                                    hdr, ts)
+                        except TransportException, e:
+                                retry_count -= 1
+                                failures.append(e)
+
+                                if retry_count <= 0:
+                                        raise failures
+
         def retrieve_catalogs(self, full_refresh = False,
             auths = None):
                 failed = []
@@ -1308,38 +1327,11 @@ class Image(object):
                         else:
                                 hdr = {}
 
-                        ssl_tuple = self.get_ssl_credentials(auth["prefix"])
-
-                        # XXX Mirror selection and retrieval policy?
                         try:
-                                c, v = versioned_urlopen(auth["origin"],
-                                    "catalog", [0], ssl_creds=ssl_tuple,
-                                    headers=hdr, imgtype=self.type,
-                                    uuid=self.get_uuid(auth["prefix"]))
-                        except urllib2.HTTPError, e:
-                                # Server returns NOT_MODIFIED if catalog is up
-                                # to date
-                                if e.code == httplib.NOT_MODIFIED:
-                                        succeeded += 1
-                                else:
-                                        failed.append((auth, e))
-                                continue
-
-                        except urllib2.URLError, e:
+                                self._do_get_catalog(auth, hdr, ts)
+                        except retrieve.CatalogRetrievalError, e:
                                 failed.append((auth, e))
-                                continue
-                        except ValueError, e:
-                                failed.append((auth, e))
-                                continue
-
-                        # root for this catalog
-                        croot = "%s/catalog/%s" % (self.imgdir, auth["prefix"])
-
-                        try:
-                                updatelog.recv(c, croot, ts, auth)
-                        except IOError, e:
-                                failed.append((auth, e))
-                        except socket.timeout, e:
+                        except TransportFailures, e:
                                 failed.append((auth, e))
                         else:
                                 succeeded += 1

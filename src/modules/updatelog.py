@@ -31,6 +31,7 @@ import time
 
 import pkg.fmri as fmri
 import pkg.catalog as catalog
+from pkg.misc import TruncatedTransferException
 
 class UpdateLogException(Exception):
         def __init__(self, args=None):
@@ -70,6 +71,7 @@ class UpdateLog(object):
 
                 self.rootdir = update_root
                 self.logfd = None
+                self.log_filename = None
                 self.maxfiles = maxfiles
                 self.catalog = cat
                 self.close_time = None
@@ -77,6 +79,7 @@ class UpdateLog(object):
                 self.last_update = None
                 self.curfiles = 0
                 self.logfiles = []
+                self.logfile_size = {}
 
                 if not os.path.exists(update_root):
                         os.makedirs(update_root)
@@ -120,6 +123,9 @@ class UpdateLog(object):
                 self.logfd.write(logstr)
                 self.logfd.flush()
 
+                if self.log_filename in self.logfile_size:
+                        del self.logfile_size[self.log_filename]
+
                 self.last_update = ts
 
                 return ts
@@ -146,6 +152,9 @@ class UpdateLog(object):
                 self.logfd.write(logstr)
                 self.logfd.flush()
 
+                if self.log_filename in self.logfile_size:
+                        del self.logfile_size[self.log_filename]
+
                 self.last_update = ts
 
                 return ts
@@ -162,6 +171,7 @@ class UpdateLog(object):
 
                 self.close_time = ftime + delta
 
+                self.log_filename = filenm
                 self.logfd = file(os.path.join(self.rootdir, filenm), "a")
 
                 if filenm not in self.logfiles:
@@ -179,6 +189,7 @@ class UpdateLog(object):
                 if self.logfd and self.close_time < datetime.datetime.now():
                         self.logfd.close()
                         self.logfd = None
+                        self.log_filename = None
                         self.close_time = 0
 
                 if self.curfiles < self.maxfiles:
@@ -192,6 +203,8 @@ class UpdateLog(object):
                         filepath = os.path.join(self.rootdir, "%s" % r)
                         os.unlink(filepath)
                         self.curfiles -= 1
+                        if r in self.logfile_size:
+                                del self.logfile_size[r]
 
                 del self.logfiles[0:excess]
 
@@ -224,14 +237,16 @@ class UpdateLog(object):
 
                 update_type = c.info().getheader("X-Catalog-Type", "full")
 
+                cl_size = int(c.info().getheader("Content-Length", "-1"))
+
                 if update_type == 'incremental':
-                        UpdateLog._recv_updates(c, path, ts)
+                        UpdateLog._recv_updates(c, path, ts, cl_size)
                 else:
-                        catalog.recv(c, path, auth)
+                        catalog.recv(c, path, auth, cl_size)
 
 
         @staticmethod
-        def _recv_updates(filep, path, cts):
+        def _recv_updates(filep, path, cts, content_size=-1):
                 """A static method that takes a file-like object,
                 a path, and a timestamp.  This is the other half of
                 send_updates().  It reads a stream as an incoming updatelog and
@@ -250,8 +265,12 @@ class UpdateLog(object):
                 add_lines = []
                 unknown_lines = []
                 attrs = {}
+                size = 0
 
                 for s in filep:
+
+                        size += len(s)
+
                         l = s.split(None, 3)
                         if len(l) < 4:
                                 continue
@@ -296,6 +315,15 @@ class UpdateLog(object):
                                                 line = "%s %s %s %s %s\n" % \
                                                     (l[2], sf, sv, rf, rv)
                                                 add_lines.append(line)
+
+                # Check that content was properly received before
+                # modifying any files.
+                if content_size > -1 and size != content_size:
+                        url = None
+                        if hasattr(filep, "geturl") and callable(filep.geturl):
+                                url = filep.geturl()
+                        raise TruncatedTransferException(url, size,
+                            content_size)
 
                 # Verify that they aren't already in the catalog
                 catf = file(os.path.normpath(
@@ -371,11 +399,11 @@ class UpdateLog(object):
                         response.headers['Last-Modified'] = \
                             self.catalog.last_modified()
                         response.headers['X-Catalog-Type'] = 'incremental'
-                        return self._send_updates(ts, None)
+                        return self._send_updates(ts, None, response)
                 else:
                         # Not enough history, or full catalog requested
                         response.headers['X-Catalog-Type'] = 'full'
-                        return self.catalog.send(None)
+                        return self.catalog.send(None, response)
 
         def _gen_updates(self, ts):
                 """Look through the logs for updates that have occurred after
@@ -393,13 +421,12 @@ class UpdateLog(object):
                 # to download full catalog.
                 #
                 # 3. Timestamp falls within a range for which update records
-                # exist.  If the timestamp is in the middle of a log-file, open
-                # that file, send updates newer than timestamp, and then send
-                # all newer files.  Otherwise, just send updates from the newer
-                # log files.
+                # exist.  If the timestamp is in the middle of a log-file, send
+                # the entire file -- the client will pick what entries to add.
+                # Then send all newer files.
 
                 rts = datetime.datetime(ts.year, ts.month, ts.day, ts.hour)
-                assert rts < ts
+                assert rts <= ts
 
                 # send data from logfiles newer or equal to rts
                 for lf in self.logfiles:
@@ -430,13 +457,16 @@ class UpdateLog(object):
 
                         yield ret
 
-        def _send_updates(self, ts, filep):
+        def _send_updates(self, ts, filep, rspobj=None):
                 """Look through the logs for updates that have occurred after
                 timestamp.  Write these changes to the file-like object
                 supplied in filep."""
 
                 if self.up_to_date(ts) or not self.enough_history(ts):
                         return
+
+                if rspobj is not None:
+                        rspobj.headers['Content-Length'] = str(self.size(ts))
 
                 if filep:
                         for line in self._gen_updates(ts):
@@ -480,6 +510,31 @@ class UpdateLog(object):
                 self.last_update = last_update
                 self.first_update = datetime.datetime(
                     *time.strptime(self.logfiles[0], "%Y%m%d%H")[0:6])
+
+        def size(self, ts):
+                """Return the size in bytes of an update starting at time
+                ts."""
+
+                size = 0
+                rts = datetime.datetime(ts.year, ts.month, ts.day, ts.hour)
+                assert rts <= ts
+
+                for lf in self.logfiles:
+
+                        lf_time = datetime.datetime(
+                            *time.strptime(lf, "%Y%m%d%H")[0:6])
+
+                        if lf_time >= rts:
+
+                                if lf in self.logfile_size:
+                                        size += self.logfile_size[lf]
+                                else:
+                                        stat_logf = os.stat(os.path.join(
+                                            self.rootdir, lf))
+                                        entsz = stat_logf.st_size
+                                        self.logfile_size[lf] = entsz
+                                        size += entsz
+                return size
 
         def up_to_date(self, ts):
                 """Returns true if the timestamp is up to date."""

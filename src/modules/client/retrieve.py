@@ -24,13 +24,27 @@
 #
 
 import socket
+import httplib
 import urllib2
 
 import pkg.fmri
 import pkg.client.imagestate as imagestate
+import pkg.updatelog as updatelog
 from pkg.misc import versioned_urlopen
 from pkg.misc import TransferTimedOutException
+from pkg.misc import TruncatedTransferException
+from pkg.misc import TransferContentException
 from pkg.misc import retryable_http_errors
+from pkg.misc import retryable_socket_errors
+
+class CatalogRetrievalError(Exception):
+        """Used when catalog retrieval fails"""
+        def __init__(self, data):
+                Exception.__init__(self)
+                self.data = data
+
+        def __str__(self):
+                return str(self.data)
 
 class ManifestRetrievalError(Exception):
         """Used when manifest retrieval fails"""
@@ -52,6 +66,89 @@ class DatastreamRetrievalError(Exception):
 
 # client/retrieve.py - collected methods for retrieval of pkg components
 # from repositories
+
+def get_catalog(img, auth, hdr, ts):
+        """Get a catalog from a remote host.  Img is the image object
+        that we're updating.  Auth is the authority from which the
+        catalog will be retrieved.  Additional headers are contained
+        in hdr.  Ts is the timestamp if we're performing an incremental
+        catalog operation."""
+
+        prefix = auth["prefix"]
+        ssl_tuple = img.get_ssl_credentials(prefix)
+
+        try:
+                c, v = versioned_urlopen(auth["origin"],
+                    "catalog", [0], ssl_creds=ssl_tuple,
+                    headers=hdr, imgtype=img.type,
+                    uuid=img.get_uuid(prefix))
+        except urllib2.HTTPError, e:
+                # Server returns NOT_MODIFIED if catalog is up
+                # to date
+                if e.code == httplib.NOT_MODIFIED:
+                        # success
+                        return True
+                elif e.code in retryable_http_errors:
+                        raise TransferTimedOutException(prefix, "%d - %s" %
+                            (e.code, e.msg))
+
+                raise CatalogRetrievalError("Could not retrieve catalog from"
+                    " '%s'\nHTTPError code: %d - %s" % (prefix, e.code, e.msg))
+        except urllib2.URLError, e:
+                if isinstance(e.args[0], socket.sslerror):
+                        raise RuntimeError, e
+                elif isinstance(e.args[0], socket.timeout):
+                        raise TransferTimedOutException(prefix, e.reason)
+                elif isinstance(e.args[0], socket.error):
+                        sockerr = e.args[0]
+                        if isinstance(sockerr.args, tuple) and \
+                            sockerr.args[0] in retryable_socket_errors:
+                                raise TransferContentException(prefix,
+                                    "Retryable socket error: %s" % e.reason)
+                        else:
+                                raise CatalogRetrievalError(
+                                    "Could not retrieve catalog from"
+                                    " '%s'\nURLError, reason: %s" %
+                                    (prefix, e.reason))
+
+                raise CatalogRetrievalError("Could not retrieve catalog from"
+                    " '%s'\nURLError, reason: %s" % (prefix, e.reason))
+        except (ValueError, httplib.IncompleteRead):
+                raise TransferContentException(prefix,
+                    "Incomplete Read from remote host")
+        except KeyboardInterrupt:
+                raise
+        except Exception, e:
+                raise CatalogRetrievalError("Could not retrieve catalog "
+                    "from '%s'\nException: str:%s repr:%r" % (prefix,
+                    e, e))
+
+        # root for this catalog
+        croot = "%s/catalog/%s" % (img.imgdir, prefix)
+
+        try:
+                updatelog.recv(c, croot, ts, auth)
+        except (ValueError, httplib.IncompleteRead):
+                raise TransferContentException(prefix,
+                    "Incomplete Read from remote host")
+        except socket.timeout, e:
+                raise TransferTimedOutException(prefix)
+        except socket.error, e:
+                if isinstance(e.args, tuple) \
+                     and e.args[0] in retryable_socket_errors:
+                        raise TransferContentException(prefix,
+                            "Retryable socket error: %s" % e)
+                else:
+                        raise CatalogRetrievalError("Could not retrieve catalog"
+                            " from '%s'\nsocket error, reason: %s" %
+                            (prefix, e))
+        except EnvironmentError, e:
+                raise CatalogRetrievalError("Could not retrieve catalog "
+                    "from '%s'\nException: str:%s repr:%r" % (prefix,
+                    e, e))
+ 
+        return True
+
 def __get_intent_str(img, fmri):
         """Returns a string representing the intent of the client in retrieving
         information based on the operation information provided by the image
@@ -173,21 +270,21 @@ def get_datastream(img, fmri, fhash):
                     ssl_creds=ssl_tuple, imgtype=img.type, uuid=uuid)[0]
         except urllib2.HTTPError, e:
                 raise DatastreamRetrievalError("Could not retrieve file '%s'\n"
-                    "from '%s'\nHTTPError, code:%s" %
-                    (hash, url_prefix, e.code))
+                    "from '%s'\nHTTPError, code: %d" %
+                    (fhash, url_prefix, e.code))
         except urllib2.URLError, e:
-                if len(e.args) == 1 and isinstance(e.args[0], socket.sslerror):
+                if isinstance(e.args[0], socket.sslerror):
                         raise RuntimeError, e
 
                 raise DatastreamRetrievalError("Could not retrieve file '%s'\n"
-                    "from '%s'\nURLError args:%s" % (hash, url_prefix,
+                    "from '%s'\nURLError args:%s" % (fhash, url_prefix,
                     " ".join([str(a) for a in e.args])))
         except KeyboardInterrupt:
                 raise
         except Exception, e:
                 raise DatastreamRetrievalError("Could not retrieve file '%s'\n"
-                    "from '%s'\nException: str:%s repr:%s" %
-                    (fmri.get_url_path(), url_prefix, e, repr(e)))
+                    "from '%s'\nException: str:%s repr:%r" %
+                    (fmri.get_url_path(), url_prefix, e, e))
 
         return f
 
@@ -224,34 +321,70 @@ def get_manifest(img, fmri):
                 m = __get_manifest(img, fmri, "GET")
         except urllib2.HTTPError, e:
                 if e.code in retryable_http_errors:
-                        raise TransferTimedOutException(url_prefix, str(e.code))
+                        raise TransferTimedOutException(url_prefix, "%d - %s" %
+                            (e.code, e.msg))
 
-                raise ManifestRetrievalError("Could not retrieve manifest '%s'\n"
-                    "from '%s'\nHTTPError code:%s" %
-                    (fmri.get_url_path(), url_prefix, e.code))
+                raise ManifestRetrievalError("Could not retrieve manifest"
+                    " '%s' from '%s'\nHTTPError code: %d - %s" % 
+                    (fmri.get_url_path(), url_prefix, e.code, e.msg))
         except urllib2.URLError, e:
-                if len(e.args) == 1 and isinstance(e.args[0], socket.sslerror):
+                if isinstance(e.args[0], socket.sslerror):
                         raise RuntimeError, e
-                elif len(e.args) == 1 and isinstance(e.args[0], socket.timeout):
+                elif isinstance(e.args[0], socket.timeout):
                         raise TransferTimedOutException(url_prefix, e.reason)
+                elif isinstance(e.args[0], socket.error):
+                        sockerr = e.args[0]
+                        if isinstance(sockerr.args, tuple) and \
+                            sockerr.args[0] in retryable_socket_errors:
+                                raise TransferContentException(url_prefix,
+                                    "Retryable socket error: %s" % e.reason)
+                        else:
+                                raise ManifestRetrievalError(
+                                    "Could not retrieve manifest from"
+                                    " '%s'\nURLError, reason: %s" %
+                                    (url_prefix, e.reason))
 
-                raise ManifestRetrievalError("Could not retrieve manifest '%s'\n"
-                    "from '%s'\nURLError, args:%s" % (fmri.get_url_path(),
-                    url_prefix, " ".join([str(a) for a in e.args])))
+                raise ManifestRetrievalError("Could not retrieve manifest"
+                    " '%s' from '%s'\nURLError, reason: %s" %
+                    (fmri.get_url_path(), url_prefix, e.reason))
+        except (ValueError, httplib.IncompleteRead):
+                raise TransferContentException(url_prefix,
+                    "Incomplete Read from remote host")
         except KeyboardInterrupt:
                 raise
         except Exception, e:
-                raise ManifestRetrievalError("Could not retrieve manifest '%s'\n"
-                    "from '%s'\nException: str:%s repr:%s" %
-                    (fmri.get_url_path(), url_prefix, e, repr(e)))
+                raise ManifestRetrievalError("Could not retrieve manifest"
+                    " '%s' from '%s'\nException: str:%s repr:%r" %
+                    (fmri.get_url_path(), url_prefix, e, e))
+
+        cl_size = int(m.info().getheader("Content-Length", "-1"))
 
         try:
-                return m.read()
+                mfst = m.read()
+                mfst_len = len(mfst)
         except socket.timeout, e:
-                raise TransferTimedOutException(url_prefix, str(e))
-        except EnvironmentError, e:
+                raise TransferTimedOutException(url_prefix)
+        except socket.error, e:
+                if isinstance(e.args, tuple) \
+                     and e.args[0] in retryable_socket_errors:
+                        raise TransferContentException(url_prefix,
+                            "Retryable socket error: %s" % e)
+                else:
+                        raise ManifestRetrievalError("Could not retrieve"
+                            " manifest from '%s'\nsocket error, reason: %s" %
+                            (url_prefix, e))
+        except (ValueError, httplib.IncompleteRead):
                 raise TransferContentException(url_prefix,
-                    "Read error retrieving manifest: %s" % e)
+                    "Incomplete Read from remote host")
+        except EnvironmentError, e:
+                raise ManifestRetrievalError("Could not retrieve manifest"
+                    " '%s' from '%s'\nException: str:%s repr:%r" %
+                    (fmri.get_url_path(), url_prefix, e, e))
+
+        if cl_size > -1 and mfst_len != cl_size:
+                raise TruncatedTransferException(m.geturl(), mfst_len, cl_size)
+
+        return mfst
 
 def touch_manifest(img, fmri):
         """Perform a HEAD operation on the manifest for the given fmri.

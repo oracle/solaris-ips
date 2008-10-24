@@ -224,10 +224,10 @@ def gunzip_from_stream(gz, outfile):
         # Read the header
         magic = gz.read(2)
         if magic != "\037\213":
-                raise IOError, "Not a gzipped file"
+                raise zlib.error, "Not a gzipped file"
         method = ord(gz.read(1))
         if method != 8:
-                raise IOError, "Unknown compression method"
+                raise zlib.error, "Unknown compression method"
         flag = ord(gz.read(1))
         gz.read(6) # Discard modtime, extraflag, os
 
@@ -461,6 +461,8 @@ class TransportFailures(TransportException):
 
 
 class TransferTimedOutException(TransportException):
+        """Raised when the transfer times out, or is terminated with a
+        retryable error."""
         def __init__(self, url, reason=None):
                 TransportException.__init__(self)
                 self.url = url
@@ -489,9 +491,12 @@ class TransferTimedOutException(TransportException):
 # XXX consider moving to pkg.client module
 retryable_http_errors = set((httplib.REQUEST_TIMEOUT, httplib.BAD_GATEWAY,
         httplib.GATEWAY_TIMEOUT))
+retryable_socket_errors = set((errno.ECONNABORTED, errno.ECONNRESET,
+        errno.ECONNREFUSED))
 
 
 class TransferContentException(TransportException):
+        """Raised when there are problems downloading the requested content."""
         def __init__(self, url, reason=None):
                 TransportException.__init__(self)
                 self.url = url
@@ -512,23 +517,56 @@ class TransferContentException(TransportException):
                         return r
                 return cmp(self.reason, other.reason)
 
-
-class InvalidContentException(TransportException):
-        def __init__(self, action, hashval):
+class TruncatedTransferException(TransportException):
+        """Raised when the transfer that was received doesn't match the
+        expected length."""
+        def __init__(self, url, recd=-1, expected=-1):
                 TransportException.__init__(self)
-                self.action = action
-                self.hashval = hashval
+                self.url = url
+                self.recd = recd
+                self.expected = expected
 
         def __str__(self):
-                s = "Action with path %s should have hash %s. Computed " \
-                    "hash %s instead." % (self.action.attrs["path"],
-                    self.action.attrs["chash"], self.hashval)
+                s = "Transfer from '%s' unexpectedly terminated" % self.url
+                if self.recd > -1 and self.expected > -1:
+                        s += ": received %d of %d bytes" % (self.recd,
+                            self.expected)
+                s += "."
+                return s
+
+        def __cmp__(self, other):
+                if not isinstance(other, TruncatedTransferException):
+                        return -1        
+                r = cmp(self.url, other.url)
+                if r != 0:
+                        return r
+                r = cmp(self.expected, other.expected)
+                if r != 0:
+                        return r
+                return cmp(self.recd, other.recd)
+
+
+class InvalidContentException(TransportException):
+        """Raised when the content's hash/chash doesn't verify, or the
+        content is received in an unreadable format."""
+        def __init__(self, path, data):
+                TransportException.__init__(self)
+                self.path = path
+                self.data = data
+
+        def __str__(self):
+                s = "Invalid content for action with path %s" % self.path
+                if self.data:
+                        s += " %s." % self.data
                 return s
 
         def __cmp__(self, other):
                 if not isinstance(other, InvalidContentException):
                         return -1        
-                return cmp(self.hashval, other.hashval)
+                r = cmp(self.path, other.path)
+                if r != 0:
+                        return r
+                return cmp(self.data, other.data)
 
 
 # Default maximum memory useage during indexing

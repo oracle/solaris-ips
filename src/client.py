@@ -82,6 +82,7 @@ from pkg.client.history import RESULT_FAILED_SEARCH
 from pkg.client.history import RESULT_FAILED_STORAGE
 from pkg.client.retrieve import ManifestRetrievalError
 from pkg.client.retrieve import DatastreamRetrievalError
+from pkg.client.filelist import FileListRetrievalError
 
 CLIENT_API_VERSION = 2
 PKG_CLIENT_NAME = "pkg"
@@ -2137,7 +2138,7 @@ if __name__ == "__main__":
                       (global_settings.PKG_TIMEOUT_MAX, __e))
                 __ret = 1
         except (ManifestRetrievalError,
-            DatastreamRetrievalError), __e:
+            DatastreamRetrievalError, FileListRetrievalError), __e:
                 if __img:
                         __img.history.abort(RESULT_FAILED_TRANSPORT)
                 error(_("An error was encountered while attempting to retrieve"
