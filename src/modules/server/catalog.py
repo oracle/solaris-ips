@@ -126,7 +126,8 @@ class ServerCatalog(catalog.Catalog):
                         if fmris_to_index:
                                 if os.name == 'posix':
                                         cmd = self.whence(sys.argv[0])
-                                        args = (cmd, "--refresh-index", "-d",
+                                        args = (sys.executable, cmd,
+                                            "--refresh-index", "-d",
                                             self.repo_root)
                                         try:
                                                 self.searchdb_update_handle = \
