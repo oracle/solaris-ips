@@ -34,21 +34,33 @@ static int
 add_to_attrs(PyObject *attrs, PyObject *key, PyObject *attr)
 {
 	int contains;
+	int ret;
 
 	contains = PyDict_Contains(attrs, key);
-	if (contains == 0)
-		return (PyDict_SetItem(attrs, key, attr));
-	else if (contains == 1) {
+	if (contains == 0) {
+		ret = PyDict_SetItem(attrs, key, attr);
+		Py_DECREF(key);
+		Py_DECREF(attr);
+		return (ret);
+	} else if (contains == 1) {
 		PyObject *av = PyDict_GetItem(attrs, key);
+		Py_INCREF(av);
 		if (PyList_Check(av)) {
-			return (PyList_Append(av, attr));
+			ret = PyList_Append(av, attr);
+			Py_DECREF(av);
+			Py_DECREF(key);
+			Py_DECREF(attr);
+			return (ret);
 		} else {
 			PyObject *list;
 			if ((list = PyList_New(2)) == NULL)
 				return (-1);
 			PyList_SET_ITEM(list, 0, av);
 			PyList_SET_ITEM(list, 1, attr);
-			return (PyDict_SetItem(attrs, key, list));
+			ret = PyDict_SetItem(attrs, key, list);
+			Py_DECREF(list);
+			Py_DECREF(key);
+			return (ret);
 		}
 	} else if (contains == -1)
 		return (-1);
@@ -62,8 +74,10 @@ set_malformederr(const char *str, int pos, const char *msg)
 {
 	PyObject *val;
 
-	if ((val = Py_BuildValue("sis", str, pos, msg)) != NULL)
+	if ((val = Py_BuildValue("sis", str, pos, msg)) != NULL) {
 		PyErr_SetObject(MalformedActionError, val);
+		Py_DECREF(val);
+	}
 	return (NULL);
 }
 
@@ -106,13 +120,19 @@ _fromstr(PyObject *self, PyObject *args)
 
 	ks = vs = s - str;
 	state = WS;
-	if ((attrs = PyDict_New()) == NULL)
+	if ((attrs = PyDict_New()) == NULL) {
+		Py_DECREF(type);
 		return (NULL);
+	}
 	for (i = s - str; str[i]; i++) {
 		if (state == KEY) {
 			if (str[i] == ' ' || str[i] == '\t') {
-				if (PyDict_Size(attrs) > 0 || hash != NULL)
+				if (PyDict_Size(attrs) > 0 || hash != NULL) {
+					Py_DECREF(type);
+					Py_DECREF(attrs);
+					Py_XDECREF(hash);
 					return (malformed("whitespace in key"));
+				}
 				else {
 					if ((hash = PyString_FromStringAndSize(
 						&str[ks], i - ks)) == NULL)
@@ -123,22 +143,41 @@ _fromstr(PyObject *self, PyObject *args)
 				if ((key = PyString_FromStringAndSize(
 					&str[ks], i - ks)) == NULL)
 					return (NULL);
-				if (i == ks)
-					return (malformed("missing key"));
-				else if (++i == strl)
+				if (i == ks) {
+					Py_DECREF(key);
+					Py_DECREF(type);
+					Py_DECREF(attrs);
+					Py_XDECREF(hash);
+					return (malformed("impossible: missing key"));
+				}
+				else if (++i == strl) {
+					Py_DECREF(key);
+					Py_DECREF(type);
+					Py_DECREF(attrs);
+					Py_XDECREF(hash);
 					return (malformed("missing value"));
+				}
 				if (str[i] == '\'' || str[i] == '\"') {
 					state = QVAL;
 					quote = str[i];
 					vs = i + 1;
-				} else if (str[i] == ' ' || str[i] == '\t')
+				} else if (str[i] == ' ' || str[i] == '\t') {
+					Py_DECREF(key);
+					Py_DECREF(type);
+					Py_DECREF(attrs);
+					Py_XDECREF(hash);
 					return (malformed("missing value"));
+				}
 				else {
 					state = UQVAL;
 					vs = i;
 				}
-			} else if (str[i] == '\'' || str[i] == '\"')
+			} else if (str[i] == '\'' || str[i] == '\"') {
+				Py_DECREF(type);
+				Py_DECREF(attrs);
+				Py_XDECREF(hash);
 				return (malformed("quote in key"));
+			}
 		} else if (state == QVAL) {
 			if (str[i] == '\\') {
 				if (i == strl - 1)
@@ -211,8 +250,12 @@ _fromstr(PyObject *self, PyObject *args)
 			if (str[i] != ' ' && str[i] != '\t') {
 				state = KEY;
 				ks = i;
-				if (str[i] == '=')
+				if (str[i] == '=') {
+					Py_DECREF(type);
+					Py_DECREF(attrs);
+					Py_XDECREF(hash);
 					return (malformed("missing key"));
+				}
 			}
 		}
 	}
@@ -221,10 +264,18 @@ _fromstr(PyObject *self, PyObject *args)
 		if (slashmap != NULL)
 			free(slashmap);
 
+		Py_DECREF(key);
+		Py_DECREF(type);
+		Py_DECREF(attrs);
+		Py_XDECREF(hash);
 		return (malformed("unfinished quoted value"));
 	}
-	if (state == KEY)
+	if (state == KEY) {
+		Py_DECREF(type);
+		Py_DECREF(attrs);
+		Py_XDECREF(hash);
 		return (malformed("missing value"));
+	}
 
 	if (state == UQVAL) {
 		attr = PyString_FromStringAndSize(&str[vs], i - vs);
@@ -236,6 +287,10 @@ _fromstr(PyObject *self, PyObject *args)
 		hash = Py_None;
 
 	ret = Py_BuildValue("OOO", type, hash, attrs);
+	Py_DECREF(type);
+	Py_DECREF(attrs);
+	if (hash != Py_None)
+		Py_DECREF(hash);
 	return (ret);
 }
 
