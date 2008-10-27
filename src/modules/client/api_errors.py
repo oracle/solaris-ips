@@ -110,8 +110,8 @@ catalog. Try relaxing the pattern, refreshing and/or examining the catalogs""")
                         s = _("pkg: '%s' matches multiple packages")
                         for p, lst in self.multiple_matches:
                                 res.append( s % p)
-                                for k in lst:
-                                        res.append("\t%s" % k)
+                                for pfmri, state in lst:
+                                        res.append("\t%s" % pfmri)
 
                 s = _("pkg: '%s' matches no installed packages")
                 res += [ s % p for p in self.missing_matches ]
