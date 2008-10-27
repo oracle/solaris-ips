@@ -1,4 +1,4 @@
 package SUNWlang-nl-extra
-classification "System/Localizations (System)"
+classification "System/Localizations"
 import SUNWlang-nl-extra
 end package

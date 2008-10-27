@@ -1,5 +1,5 @@
 package SUNWsmedia
-classification "System/Libraries (System)"
+classification "System/Libraries"
 import SUNWsmedia
 import SUNWsmediar
 end package

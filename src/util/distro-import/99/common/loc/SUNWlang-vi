@@ -1,4 +1,4 @@
 package SUNWlang-vi
-classification "System/Localizations (System)"
+classification "System/Localizations"
 import SUNWlang-vi
 end package

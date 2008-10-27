@@ -1,5 +1,5 @@
 package SUNWmysql5test
-classification "Development/Databases (System)"
+classification "Development/Databases"
 import SUNWmysql5test
 version 5.0.67
 end package

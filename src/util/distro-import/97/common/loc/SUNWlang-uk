@@ -1,4 +1,4 @@
 package SUNWlang-uk
-classification "System/Localizations (System)"
+classification "System/Localizations"
 import SUNWlang-uk
 end package

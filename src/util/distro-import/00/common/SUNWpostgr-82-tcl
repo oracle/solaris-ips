@@ -1,5 +1,5 @@
 package SUNWpostgr-82-tcl
-classification "System/Databases (System)"
+classification "System/Databases"
 import SUNWpostgr-82-tcl
 version 1.5
 end package

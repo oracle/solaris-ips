@@ -1,5 +1,5 @@
 package SUNWlibthai
-classification "System/Libraries (System)"
+classification "System/Libraries"
 import SUNWlibthai
 import SUNWlibthai-devel
 version 0.1.9

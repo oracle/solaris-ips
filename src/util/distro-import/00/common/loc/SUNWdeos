@@ -1,4 +1,4 @@
 package SUNWdeos
-classification "System/Localizations (System)"
+classification "System/Localizations"
 import SUNWdeos
 end package

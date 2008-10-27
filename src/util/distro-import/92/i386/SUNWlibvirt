@@ -1,5 +1,5 @@
 package SUNWlibvirt
-classification "System/Libraries (System)"
+classification "System/Libraries"
 import SUNWlibvirt
 import SUNWlibvirtr
 end package

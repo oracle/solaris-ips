@@ -1,4 +1,4 @@
 package SUNWgetting-started-l10n-sv
-classification "System/Localizations (System)"
+classification "System/Localizations"
 import SUNWgetting-started-l10n-sv
 end package

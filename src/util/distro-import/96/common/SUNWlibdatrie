@@ -1,5 +1,5 @@
 package SUNWlibdatrie
-classification "System/Libraries (System)"
+classification "System/Libraries"
 import SUNWlibdatrie
 import SUNWlibdatrie-devel
 version 0.1.2

@@ -1,4 +1,4 @@
 package SUNWitxwsvr
-classification "Desktop (GNOME)/Localizations (Desktop)"
+classification "Desktop (GNOME)/Localizations"
 import SUNWitxwsvr
 end package

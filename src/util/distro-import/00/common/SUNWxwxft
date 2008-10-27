@@ -1,4 +1,4 @@
 package SUNWxwxft
-classification "System/X11 (System)"
+classification "System/X11"
 import SUNWxwxft
 end package

@@ -1,4 +1,4 @@
 package SUNWxorg-cfg
-classification "System/X11 (System)"
+classification "System/X11"
 import SUNWxorg-cfg
 end package

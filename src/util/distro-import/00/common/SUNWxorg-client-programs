@@ -1,4 +1,4 @@
 package SUNWxorg-client-programs
-classification "System/X11 (System)"
+classification "System/X11"
 import SUNWxorg-client-programs
 end package

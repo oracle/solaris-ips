@@ -1,4 +1,4 @@
 package SUNWxorg-compatlinks
-classification "System/X11 (System)"
+classification "System/X11"
 import SUNWxorg-compatlinks
 end package

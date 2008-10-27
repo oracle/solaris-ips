@@ -1,4 +1,4 @@
 package SUNWsra
-classification "System/Libraries (System)"
+classification "System/Libraries"
 import SUNWsra
 end package

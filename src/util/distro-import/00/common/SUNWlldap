@@ -1,4 +1,4 @@
 package SUNWlldap
-classification "System/Libraries (System)"
+classification "System/Libraries"
 import SUNWlldap
 end package

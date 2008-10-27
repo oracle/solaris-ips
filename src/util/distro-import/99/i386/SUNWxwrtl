@@ -1,5 +1,5 @@
 package SUNWxwrtl
-classification "System/X11 (System)"
+classification "System/X11"
 import SUNWxwrtl exclude usr/openwin
 # X libraries not yet included
 drop usr/lib/amd64/libxkbfile.so

@@ -1,4 +1,4 @@
 package SUNWlang-cs
-classification "System/Localizations (System)"
+classification "System/Localizations"
 import SUNWlang-cs
 end package

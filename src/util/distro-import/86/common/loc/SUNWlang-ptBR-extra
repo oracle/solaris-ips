@@ -1,4 +1,4 @@
 package SUNWlang-ptBR-extra
-classification "System/Localizations (System)"
+classification "System/Localizations"
 import SUNWlang-ptBR-extra
 end package

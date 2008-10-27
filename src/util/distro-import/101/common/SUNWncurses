@@ -1,5 +1,5 @@
 package SUNWncurses
-classification "System/Libraries (System)"
+classification "System/Libraries"
 import SUNWncurses
 import SUNWncurses-devel
 end package

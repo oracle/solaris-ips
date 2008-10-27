@@ -1,5 +1,5 @@
 package SUNWtecla
-classification "System/Libraries (System)"
+classification "System/Libraries"
 import SUNWtecla
 version 1.6.0
 end package

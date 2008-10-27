@@ -1,5 +1,5 @@
 package SUNWtidy
-classification "System/Libraries (System)"
+classification "System/Libraries"
 import SUNWtidy
 version 1.0.0
 end package

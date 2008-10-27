@@ -1,5 +1,5 @@
 package SUNWgamin
-classification "System/Libraries (System)"
+classification "System/Libraries"
 import SUNWgamin
 import SUNWgamin-devel
 end package

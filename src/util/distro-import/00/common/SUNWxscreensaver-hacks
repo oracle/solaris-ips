@@ -1,4 +1,4 @@
 package SUNWxscreensaver-hacks
-classification "System/X11 (System)"
+classification "System/X11"
 import SUNWxscreensaver-hacks
 end package

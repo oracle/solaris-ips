@@ -1,5 +1,5 @@
 package SUNWxorg-mesa
-classification "System/X11 (System)"
+classification "System/X11"
 import SUNWxorg-mesa exclude usr/openwin
 version 7.0.4
 # Depends on ogl-select service from SUNWxwplr to create links at boot

@@ -6,5 +6,5 @@
 # SUNWtiu8 was EOFed in snv_86.
 #
 package SUNWtiu8
-classification "System/Localizations (System)"
+classification "System/Localizations"
 end package

@@ -1,4 +1,4 @@
 package SUNWgnome-l10ndocument-ja
-classification "Desktop (GNOME)/Localizations (Desktop)"
+classification "Desktop (GNOME)/Localizations"
 import SUNWgnome-l10ndocument-ja
 end package

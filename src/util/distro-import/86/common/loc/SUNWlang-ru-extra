@@ -1,4 +1,4 @@
 package SUNWlang-ru-extra
-classification "System/Localizations (System)"
+classification "System/Localizations"
 import SUNWlang-ru-extra
 end package

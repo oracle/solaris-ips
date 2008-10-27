@@ -1,4 +1,4 @@
 package SUNWlibsasl
-classification "System/Libraries (System)"
+classification "System/Libraries"
 import SUNWlibsasl
 end package

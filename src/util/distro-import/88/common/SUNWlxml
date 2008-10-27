@@ -1,5 +1,5 @@
 package SUNWlxml
-classification "System/Libraries (System)"
+classification "System/Libraries"
 import SUNWlxml
 import SUNWlxml-devel
 import SUNWlxml-python

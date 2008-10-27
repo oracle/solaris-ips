@@ -1,4 +1,4 @@
 package SUNWcos
-classification "System/Localizations (System)"
+classification "System/Localizations"
 import SUNWcos
 end package

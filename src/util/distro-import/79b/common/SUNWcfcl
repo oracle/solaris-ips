@@ -1,5 +1,5 @@
 package SUNWcfcl
-classification "System/Libraries (System)"
+classification "System/Libraries"
 import SUNWcfcl
 import SUNWcfclr
 from ./SUNWfixes import

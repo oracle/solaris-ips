@@ -1,5 +1,5 @@
 package SUNWxwsvr
-classification "System/X11 (System)"
+classification "System/X11"
 import SUNWxwsvr exclude usr/openwin
 # Replace Solaris logo with OpenSolaris logo
 drop usr/X11/lib/xscreensaver/config/trusted-logo.png

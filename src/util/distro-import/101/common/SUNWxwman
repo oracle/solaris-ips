@@ -1,5 +1,5 @@
 package SUNWxwman
-classification "System/X11 (System)"
+classification "System/X11"
 import SUNWxwman exclude usr/openwin
 # Not yet confirmed redistributable
 drop usr/openwin/man

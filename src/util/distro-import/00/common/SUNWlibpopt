@@ -1,5 +1,5 @@
 package SUNWlibpopt
-classification "System/Libraries (System)"
+classification "System/Libraries"
 import SUNWlibpopt
 import SUNWlibpopt-devel
 end package

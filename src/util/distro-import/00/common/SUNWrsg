@@ -1,4 +1,4 @@
 package SUNWrsg
-classification "System/Libraries (System)"
+classification "System/Libraries"
 import SUNWrsg
 end package

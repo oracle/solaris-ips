@@ -1,5 +1,5 @@
 package SUNWxwfsw
-classification "System/X11 (System)"
+classification "System/X11"
 import SUNWxwfsw exclude usr/openwin
 # Obsolete - replaced by /usr/openwin -> X11 symlink
 drop usr/openwin/bin

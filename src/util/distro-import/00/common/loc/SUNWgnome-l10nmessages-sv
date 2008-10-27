@@ -1,4 +1,4 @@
 package SUNWgnome-l10nmessages-sv
-classification "Desktop (GNOME)/Localizations (Desktop)"
+classification "Desktop (GNOME)/Localizations"
 import SUNWgnome-l10nmessages-sv
 end package

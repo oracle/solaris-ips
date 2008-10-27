@@ -1,4 +1,4 @@
 package SUNWlang-it
-classification "System/Localizations (System)"
+classification "System/Localizations"
 import SUNWlang-it
 end package

@@ -1,5 +1,5 @@
 package SUNWpostgr-libs
-classification "System/Databases (System)"
+classification "System/Databases"
 import SUNWpostgr-libs
 version 8.1.11
 end package

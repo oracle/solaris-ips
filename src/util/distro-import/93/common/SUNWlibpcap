@@ -1,5 +1,5 @@
 package SUNWlibpcap
-classification "System/Libraries (System)"
+classification "System/Libraries"
 import SUNWlibpcap
 version 0.9.8
 end package

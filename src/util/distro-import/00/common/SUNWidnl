@@ -1,4 +1,4 @@
 package SUNWidnl
-classification "System/Libraries (System)"
+classification "System/Libraries"
 import SUNWidnl
 end package

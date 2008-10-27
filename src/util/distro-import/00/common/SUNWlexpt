@@ -1,5 +1,5 @@
 package SUNWlexpt
-classification "System/Libraries (System)"
+classification "System/Libraries"
 import SUNWlexpt
 version 2.0.1
 end package

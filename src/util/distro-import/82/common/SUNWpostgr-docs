@@ -1,5 +1,5 @@
 package SUNWpostgr-docs
-classification "System/Databases (System)"
+classification "System/Databases"
 import SUNWpostgr-docs
 version 8.1.11
 end package

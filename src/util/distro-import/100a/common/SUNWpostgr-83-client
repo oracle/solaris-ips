@@ -1,5 +1,5 @@
 package SUNWpostgr-83-client
-classification "System/Databases (System)"
+classification "System/Databases"
 import SUNWpostgr-83-client
 version 8.3.4
 end package

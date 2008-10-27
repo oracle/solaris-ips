@@ -1,4 +1,4 @@
 package SUNWmyspell-dictionary-it
-classification "System/Localizations (System)"
+classification "System/Localizations"
 import SUNWmyspell-dictionary-it
 end package

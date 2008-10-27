@@ -1,5 +1,5 @@
 package SUNWlibmikmod
-classification "System/Libraries (System)"
+classification "System/Libraries"
 import SUNWlibmikmod
 import SUNWlibmikmod-devel
 end package

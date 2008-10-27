@@ -1,4 +1,4 @@
 package SUNWlang-da
-classification "System/Localizations (System)"
+classification "System/Localizations"
 import SUNWlang-da
 end package

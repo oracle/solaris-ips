@@ -1,4 +1,4 @@
 package SUNWxwplt
-classification "System/X11 (System)"
+classification "System/X11"
 import SUNWxwplt
 end package

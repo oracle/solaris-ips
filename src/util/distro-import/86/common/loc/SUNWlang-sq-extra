@@ -1,4 +1,4 @@
 package SUNWlang-sq-extra
-classification "System/Localizations (System)"
+classification "System/Localizations"
 import SUNWlang-sq-extra
 end package

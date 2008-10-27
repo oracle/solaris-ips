@@ -1,4 +1,4 @@
 package SUNWsvos
-classification "System/Localizations (System)"
+classification "System/Localizations"
 import SUNWsvos
 end package

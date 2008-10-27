@@ -1,4 +1,4 @@
 package SUNWcxwsvr
-classification "Development/Localizations (Desktop)"
+classification "Development/Localizations"
 import SUNWcxwsvr
 end package

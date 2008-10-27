@@ -1,4 +1,4 @@
 package SUNWmyspell-dictionary-cs
-classification "System/Localizations (System)"
+classification "System/Localizations"
 import SUNWmyspell-dictionary-cs
 end package

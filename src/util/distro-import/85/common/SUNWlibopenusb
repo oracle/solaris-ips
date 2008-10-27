@@ -1,5 +1,5 @@
 package SUNWlibopenusb
-classification "System/Libraries (System)"
+classification "System/Libraries"
 import SUNWlibopenusb
 version 1.0.1
 end package

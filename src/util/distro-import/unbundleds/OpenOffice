@@ -62,7 +62,7 @@ import ooobasis30-sdk
 end package
 
 package openoffice-de
-classification "Desktop (GNOME)/Localizations (Desktop)"
+classification "Desktop (GNOME)/Localizations"
 description "German localization of OpenOffice.org 3.0.0"
 version 3.0.0
 import ooobasis30-de
@@ -79,7 +79,7 @@ import openofficeorg3-de
 end package
 
 package openoffice-es
-classification "Desktop (GNOME)/Localizations (Desktop)"
+classification "Desktop (GNOME)/Localizations"
 description "Spanish localization for OpenOffice.org 3.0.0"
 version 3.0.0
 import ooobasis30-es
@@ -96,7 +96,7 @@ import openofficeorg3-es
 end package
 
 package openoffice-fr
-classification "Desktop (GNOME)/Localizations (Desktop)"
+classification "Desktop (GNOME)/Localizations"
 description "French localization for OpenOffice.org 3.0.0"
 version 3.0.0
 import ooobasis30-fr
@@ -113,7 +113,7 @@ import openofficeorg3-fr
 end package
 
 package openoffice-hu
-classification "Desktop (GNOME)/Localizations (Desktop)"
+classification "Desktop (GNOME)/Localizations"
 description "Hungarian localization for OpenOffice.org 3.0.0"
 version 3.0.0
 import ooobasis30-hu
@@ -130,7 +130,7 @@ import openofficeorg3-hu
 end package
 
 package openoffice-it
-classification "Desktop (GNOME)/Localizations (Desktop)"
+classification "Desktop (GNOME)/Localizations"
 description "Italian localization for OpenOffice.org 3.0.0"
 version 3.0.0
 import ooobasis30-it
@@ -147,7 +147,7 @@ import openofficeorg3-it
 end package
 
 package openoffice-ja
-classification "Desktop (GNOME)/Localizations (Desktop)"
+classification "Desktop (GNOME)/Localizations"
 description "Japanese localization for OpenOffice.org 3.0.0"
 version 3.0.0
 import ooobasis30-ja
@@ -164,7 +164,7 @@ import openofficeorg3-ja
 end package
 
 package openoffice-ko
-classification "Desktop (GNOME)/Localizations (Desktop)"
+classification "Desktop (GNOME)/Localizations"
 description "Korean localization for OpenOffice.org 3.0.0"
 version 3.0.0
 import ooobasis30-ko
@@ -181,7 +181,7 @@ import openofficeorg3-ko
 end package
 
 package openoffice-nl
-classification "Desktop (GNOME)/Localizations (Desktop)"
+classification "Desktop (GNOME)/Localizations"
 description "Dutch localization for OpenOffice.org 3.0.0"
 version 3.0.0
 import ooobasis30-nl
@@ -198,7 +198,7 @@ import openofficeorg3-nl
 end package
 
 package openoffice-pl
-classification "Desktop (GNOME)/Localizations (Desktop)"
+classification "Desktop (GNOME)/Localizations"
 description "Polish localization for OpenOffice.org 3.0.0"
 version 3.0.0
 import ooobasis30-pl
@@ -215,7 +215,7 @@ import openofficeorg3-pl
 end package
 
 package openoffice-pt
-classification "Desktop (GNOME)/Localizations (Desktop)"
+classification "Desktop (GNOME)/Localizations"
 description "Portuguese localization for OpenOffice.org 3.0.0"
 version 3.0.0
 import ooobasis30-pt
@@ -232,7 +232,7 @@ import openofficeorg3-pt
 end package
 
 package openoffice-pt-BR
-classification "Desktop (GNOME)/Localizations (Desktop)"
+classification "Desktop (GNOME)/Localizations"
 description "Portuguese Brazilian localization for OpenOffice.org 3.0.0"
 version 3.0.0
 import ooobasis30-pt-BR
@@ -249,7 +249,7 @@ import openofficeorg3-pt-BR
 end package
 
 package openoffice-ru
-classification "Desktop (GNOME)/Localizations (Desktop)"
+classification "Desktop (GNOME)/Localizations"
 description "Russian localization for OpenOffice.org 3.0.0"
 version 3.0.0
 import ooobasis30-ru
@@ -266,7 +266,7 @@ import openofficeorg3-ru
 end package
 
 package openoffice-sv
-classification "Desktop (GNOME)/Localizations (Desktop)"
+classification "Desktop (GNOME)/Localizations"
 description "Swedish localization for OpenOffice.org 3.0.0"
 version 3.0.0
 import ooobasis30-sv
@@ -283,7 +283,7 @@ import openofficeorg3-sv
 end package
 
 package openoffice-zh-CN
-classification "Desktop (GNOME)/Localizations (Desktop)"
+classification "Desktop (GNOME)/Localizations"
 description "Simplified Chinese localization for OpenOffice.org 3.0.0"
 version 3.0.0
 import ooobasis30-zh-CN
@@ -300,7 +300,7 @@ import openofficeorg3-zh-CN
 end package
 
 package openoffice-zh-TW
-classification "Desktop (GNOME)/Localizations (Desktop)"
+classification "Desktop (GNOME)/Localizations"
 description "Traditional Chinese localization for OpenOffice.org 3.0.0"
 version 3.0.0
 import ooobasis30-zh-TW
