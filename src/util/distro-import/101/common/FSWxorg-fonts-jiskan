@@ -1,0 +1,8 @@
+package FSWxorg-fonts-jiskan
+classification "System/Fonts"
+import FSWxorg-fonts-jiskan
+add link path=etc/X11/fontpath.d/jiskan:pri=84 \
+	target=../../../usr/X11/lib/X11/fonts/jiskan
+add link path=etc/X11/fontpath.d/jiskan:unscaled:pri=14 \
+	target=../../../usr/X11/lib/X11/fonts/jiskan
+end package

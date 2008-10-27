@@ -1,3 +1,4 @@
 package SUNWxprint-server
+classification "System/X11 (System)"
 import SUNWxprint-server
 end package

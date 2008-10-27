@@ -1,0 +1,16 @@
+package FSWxorg-fonts-iso8859-10
+classification "System/Fonts"
+import FSWxorg-fonts-iso8859-10
+add link path=etc/X11/fontpath.d/100dpi-ISO8859-10:pri=91 \
+	target=../../../usr/X11/lib/X11/fonts/100dpi-ISO8859-10
+add link path=etc/X11/fontpath.d/100dpi-ISO8859-10:unscaled:pri=21 \
+	target=../../../usr/X11/lib/X11/fonts/100dpi-ISO8859-10
+add link path=etc/X11/fontpath.d/75dpi-ISO8859-10:pri=96 \
+	target=../../../usr/X11/lib/X11/fonts/75dpi-ISO8859-10
+add link path=etc/X11/fontpath.d/75dpi-ISO8859-10:unscaled:pri=26 \
+	target=../../../usr/X11/lib/X11/fonts/75dpi-ISO8859-10
+add link path=etc/X11/fontpath.d/misc-ISO8859-10:pri=86 \
+	target=../../../usr/X11/lib/X11/fonts/misc-ISO8859-10
+add link path=etc/X11/fontpath.d/misc-ISO8859-10:unscaled:pri=16 \
+	target=../../../usr/X11/lib/X11/fonts/misc-ISO8859-10
+end package

@@ -1,0 +1,6 @@
+package SUNWruby18
+classification "Development/Ruby"
+import SUNWruby18u
+import SUNWruby18r
+version 1.8.6.287
+end package

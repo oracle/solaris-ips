@@ -1,0 +1,4 @@
+package SUNWlang-enUS
+classification "System/Localizations (System)"
+import SUNWlang-enUS
+end package

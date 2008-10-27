@@ -1,0 +1,6 @@
+package SUNWxorg-server
+classification "System/X11 (System)"
+import SUNWxorg-server
+depend SUNWxorg-xkb
+depend SUNWxsvc
+end package

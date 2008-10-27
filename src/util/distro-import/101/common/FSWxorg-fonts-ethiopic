@@ -1,0 +1,6 @@
+package FSWxorg-fonts-ethiopic
+classification "System/Fonts"
+import FSWxorg-fonts-ethiopic
+add link path=etc/X11/fontpath.d/ethiopic:pri=60 \
+	target=../../../usr/X11/lib/X11/fonts/ethiopic
+end package

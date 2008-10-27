@@ -1,0 +1,7 @@
+package SUNWxwacx
+classification "System/X11 (System)"
+import SUNWxwacx exclude usr/openwin
+# Obsolete - replaced by /usr/openwin -> X11 symlink
+drop usr/openwin/bin
+drop usr/openwin/bin/accessx
+end package

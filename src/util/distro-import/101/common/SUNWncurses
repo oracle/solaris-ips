@@ -1,0 +1,5 @@
+package SUNWncurses
+classification "System/Libraries (System)"
+import SUNWncurses
+import SUNWncurses-devel
+end package

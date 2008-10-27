@@ -1,0 +1,6 @@
+package FSWxorg-fonts-cyrillic
+classification "System/Fonts"
+import FSWxorg-fonts-cyrillic
+add link path=etc/X11/fontpath.d/cyrillic:pri=75 \
+	target=../../../usr/X11/lib/X11/fonts/cyrillic
+end package

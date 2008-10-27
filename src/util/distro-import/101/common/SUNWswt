@@ -1,0 +1,4 @@
+package SUNWswt
+classification "Desktop (GNOME)/Libraries"
+import SUNWswt
+end package

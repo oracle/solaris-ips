@@ -74,6 +74,7 @@ ELIDED_FILES_97 = $(ELIDED_FILES_89)
 ELIDED_FILES_98 = $(ELIDED_FILES_89)
 ELIDED_FILES_99 = $(ELIDED_FILES_89)
 ELIDED_FILES_100a = $(ELIDED_FILES_BASE) kernel/drv/sd.conf
+ELIDED_FILES_101 = $(ELIDED_FILES_100a)
 ELIDED_FILES = $(ELIDED_FILES_$(BUILDID))
 
 #
@@ -171,7 +172,8 @@ BUILDS=	75a			\
 	97			\
 	98			\
 	99			\
-	100a
+	100a			\
+	101
 
 #
 # Starting in build 80, filelist.ramdisk began moving between various
@@ -184,7 +186,7 @@ FILELIST_RAMDISK_PKG_74		= SUNWcakr.i
 FILELIST_RAMDISK_PKG_72		= SUNWcakr.i
 FILELIST_RAMDISK_PKG_71		= SUNWcakr.i
 
-default:	100a/slim_import
+default:	101/slim_import
 
 cluster.import:	$(WOS_PKGS)/.clustertoc Makefile
 	./clustertoc2import.py $(WOS_PKGS)/.clustertoc | \
@@ -347,6 +349,7 @@ INCLUDE_PATH_97 = 97:$(INCLUDE_PATH_96)
 INCLUDE_PATH_98 = 98:$(INCLUDE_PATH_97)
 INCLUDE_PATH_99 = 99:$(INCLUDE_PATH_98)
 INCLUDE_PATH_100a = 100a:$(INCLUDE_PATH_99)
+INCLUDE_PATH_101 = 101:$(INCLUDE_PATH_100a)
 
 import:	cluster.import $(TMPPKGS)
 	$(SOLARIS.PY) -s $(REPO) -w $(WOS_PKGS) $(ELIDED_FILES:%=-D %) \

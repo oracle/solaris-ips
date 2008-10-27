@@ -1,0 +1,4 @@
+package SUNWlang-deDE
+classification "System/Localizations (System)"
+import SUNWlang-deDE
+end package

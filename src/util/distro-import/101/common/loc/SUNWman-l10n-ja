@@ -1,0 +1,4 @@
+package SUNWman-l10n-ja
+classification "System/Text Tools"
+import SUNWman-l10n-ja
+end package

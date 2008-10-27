@@ -1,0 +1,4 @@
+package SUNWlang-esES
+classification "System/Localizations (System)"
+import SUNWlang-esES
+end package
