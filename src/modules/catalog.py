@@ -706,7 +706,7 @@ class Catalog(object):
 
                 try:
                         afile = file(os.path.normpath(
-                            os.path.join(self.catalog_root, filenm)), "w+")
+                            os.path.join(self.catalog_root, filenm)), "wb+")
                 except IOError, e:
                         # This may get called in a situation where
                         # the user does not have write access to the attrs
