@@ -52,8 +52,8 @@ import pkg.gui.beadmin as beadm
 
 IMAGE_DIRECTORY_DEFAULT = "/"   # Image default directory
 IMAGE_DIR_COMMAND = "svcprop -p update/image_dir svc:/application/pkg/update"
-CLIENT_API_VERSION = 1          # API version
-PKG_CLIENT_NAME = "pkg"         # API client name
+CLIENT_API_VERSION = 4          # API version
+PKG_CLIENT_NAME = "updatemanager" # API client name
 SELECTION_CHANGE_LIMIT = 0.5    # Time limit in seconds to cancel selection updates
 IND_DELAY = 0.05                # Time delay for printing index progress
 UPDATES_FETCH_DELAY = 200       # Time to wait before fetching updates, allows gtk main

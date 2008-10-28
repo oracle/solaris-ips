@@ -42,7 +42,7 @@ import pkg.misc as misc
 class Repository:
         def __init__(self, parent):
                 self.parent = parent
-                self.img = parent.image_o
+                self.img = parent.api_o.img
 
                 self.repository_list = \
                     gtk.ListStore(

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.4.5 on Fri Oct 17 02:03:56 2008 -->
+<!--Generated with glade3 3.4.5 on Fri Oct 17 10:49:14 2008 -->
 <glade-interface>
   <widget class="GtkWindow" id="mainwindow">
     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
@@ -642,6 +642,7 @@
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+                            <signal name="switch_page" handler="on_notebook1_switch_page"/>
                             <child>
                               <widget class="GtkScrolledWindow" id="scrolledwindow7">
                                 <property name="visible">True</property>
@@ -754,7 +755,7 @@
                             <child>
                               <widget class="GtkLabel" id="label23">
                                 <property name="visible">True</property>
-                                <property name="label" translatable="yes">Licenses</property>
+                                <property name="label" translatable="yes">Legal</property>
                               </widget>
                               <packing>
                                 <property name="type">tab</property>

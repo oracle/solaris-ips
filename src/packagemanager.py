@@ -37,9 +37,10 @@ INITIAL_PROGRESS_TOTAL_PERCENTAGE = 0.05  # Total progress for start phase
 PACKAGE_PROGRESS_TOTAL_INCREMENTS = 95    # Total increments for loading phase
 PACKAGE_PROGRESS_PERCENT_INCREMENT = 0.01 # Amount to update progress during loading phase
 PACKAGE_PROGRESS_PERCENT_TOTAL = 1.0      # Total progress for loading phase
-MAX_DESC_LEN = 60     # Max lenght of the description 
+MAX_DESC_LEN = 60                         # Max length of the description
+MAX_INFO_CACHE_LIMIT = 100                # Max number of package descriptions to cache
 
-CLIENT_API_VERSION = 1
+CLIENT_API_VERSION = 4
 PKG_CLIENT_NAME = "packagemanager"
 
 import getopt
@@ -80,7 +81,6 @@ from pkg.client import global_settings
 
 class PackageManager:
         def __init__(self):
-                self.image_o = None
                 self.api_o = None
                 socket.setdefaulttimeout(
                     int(os.environ.get("PKG_CLIENT_TIMEOUT", "30"))) # in seconds
@@ -118,7 +118,9 @@ class PackageManager:
                 self.application_path = None
                 self.first_run = True
                 self.provided_image_dir = True
-
+                self.selected_pkgname = None
+                self.info_cache = {}
+                
                 self.section_list = self.__get_new_section_liststore()
                 self.filter_list = self.__get_new_filter_liststore()
                 self.application_list = None
@@ -192,8 +194,6 @@ class PackageManager:
                 self.__update_reload_button()
                 self.w_main_clipboard.request_text(self.__clipboard_text_received)
                 self.w_main_window.set_title(main_window_title)
-                self.w_license_page = self.w_info_notebook.get_nth_page(3)
-                self.w_info_notebook.remove_page(3)
 
                 try:
                         dic_mainwindow = \
@@ -239,7 +239,9 @@ class PackageManager:
                                 "on_reload_button_clicked":self.__on_reload,
                                 "on_install_update_button_clicked": \
                                     self.__on_install_update,
-                                "on_remove_button_clicked":self.__on_remove
+                                "on_remove_button_clicked":self.__on_remove,
+                                "on_notebook1_switch_page": \
+                                    self.__on_notebook_change,
                             }
                         dic_progress = \
                             {
@@ -572,6 +574,14 @@ class PackageManager:
                 self.w_searchentry_dialog.delete_text(0, -1)
                 return
 
+        def __on_notebook_change(self, widget, event, pagenum):
+                if pagenum == 3:
+                        licbuffer = self.w_license_textview.get_buffer()
+                        leg_txt = self._("Fetching legal information...")
+                        licbuffer.set_text(leg_txt)
+                        Thread(target = self.__show_package_licenses, \
+                            args = (self.pkginfo_thread,)).start()
+
         def __on_select_all(self, widget):
                 sort_filt_model = \
                     self.w_application_treeview.get_model() #gtk.TreeModelSort
@@ -678,11 +688,12 @@ class PackageManager:
                 model, itr = selection.get_selected()
                 if itr:
                         self.pkginfo_thread += 1
-                        self.w_info_notebook.remove_page(3)
+                        self.selected_pkgname = \
+                               model.get_value(itr, enumerations.NAME_COLUMN)
                         Thread(target = self.__show_package_info, \
                             args = (model, itr, self.pkginfo_thread)).start()
-                        Thread(target = self.__show_package_licenses, \
-                            args = (model, itr, self.pkginfo_thread)).start()
+                        if self.w_info_notebook.get_current_page() == 3:
+                                self.__on_notebook_change(None, None, 3)
 
 
         def __on_filtercombobox_changed(self, widget):
@@ -732,19 +743,20 @@ class PackageManager:
                 self.__enable_disable_selection_menus()
 
         def __on_install_update(self, widget):
+                self.api_o.reset()
                 install_update = []
                 for row in self.application_list:
                         if row[enumerations.MARK_COLUMN]:
                                 install_update.append(row[\
                                     enumerations.NAME_COLUMN])
                 installupdate.InstallUpdate(install_update, self, \
-                    self.image_directory, ips_update = False, \
+                    self.api_o, ips_update = False, \
                     action = enumerations.INSTALL_UPDATE)
 
         def __on_update_all(self, widget):
                 opensolaris_image = True
                 self.progress_stop_timer_thread = False
-                notfound = self.__installed_fmris_from_args(self.image_o, \
+                notfound = self.__installed_fmris_from_args(self.api_o, \
                     ["SUNWipkg", "SUNWcs"])
 
                 if notfound:
@@ -781,8 +793,9 @@ class PackageManager:
                         msgbox.destroy()
                         if result == gtk.RESPONSE_YES:
                                 pkg_list = [self.ipkg_fmri, self.ipkggui_fmri]
+                                self.api_o.reset()
                                 installupdate.InstallUpdate(pkg_list, \
-                                    self, self.image_directory, \
+                                    self, self.api_o, \
                                     ips_update = True, \
                                     action = enumerations.INSTALL_UPDATE)
                         else:
@@ -796,8 +809,9 @@ class PackageManager:
                                 result = msgbox.run()
                                 msgbox.destroy()
                 else:
+                        self.api_o.reset()
                         installupdate.InstallUpdate([], self, \
-                            self.image_directory, ips_update = False, \
+                            self.api_o, ips_update = False, \
                             action = enumerations.IMAGE_UPDATE)
 
         def __on_help_about(self, widget):
@@ -814,6 +828,7 @@ class PackageManager:
                 gnome.help_display('package-manager') 
 
         def __on_remove(self, widget):
+                self.api_o.reset()
                 remove_list = []
                 for pkg in self.application_list:
                         if pkg[enumerations.MARK_COLUMN] and \
@@ -821,7 +836,7 @@ class PackageManager:
                                 remove_list.append(\
                                     pkg[enumerations.NAME_COLUMN])
                 installupdate.InstallUpdate(remove_list, self, \
-                    self.image_directory, ips_update = False, \
+                    self.api_o, ips_update = False, \
                     action = enumerations.REMOVE)
 
         def __on_reload(self, widget):
@@ -875,7 +890,8 @@ class PackageManager:
                                 return True
                 return False
 
-        def __setup_repositories_combobox(self, img, repositories_list):
+        def __setup_repositories_combobox(self, api_o, repositories_list):
+                img = api_o.img
                 if self.in_setup or img == None:
                         return
                 repositories = img.catalogs
@@ -955,25 +971,64 @@ class PackageManager:
                                 self.w_remove_button.set_sensitive(False)
                                 self.w_remove_menuitem.set_sensitive(False)
 
-        def __update_package_info(self, pkg, icon, installed, manifest):
+        def __show_fetching_package_info(self, pkg, icon):
+                pkg_name = pkg.get_name()
                 if icon and icon != pkg:
                         self.w_packageicon_image.set_from_pixbuf(icon)
                 else:
                         self.w_packageicon_image.set_from_pixbuf( \
                             self.__get_pixbuf_from_path("/usr/share/package-manager/", \
                             "PM_package_36x"))
-                self.w_packagename_label.set_markup("<b>" + pkg.get_name() + "</b>")
+                self.w_packagename_label.set_markup("<b>" + pkg_name + "</b>")
+                
+                if self.__setting_from_cache(pkg_name):
+                        return
+                        
+                self.w_shortdescription_label.set_text( \
+                    self._("Fetching description..."))
                 instbuffer = self.w_installedfiles_textview.get_buffer()
                 depbuffer = self.w_dependencies_textview.get_buffer()
                 infobuffer = self.w_generalinfo_textview.get_buffer()
-                if not manifest:
-                        self.w_shortdescription_label.set_text( \
-                            self._("Fetching description..."))
-                        instbuffer.set_text(self._("Fetching information..."))
-                        depbuffer.set_text(self._("Fetching information..."))
-                        infobuffer.set_text(self._("Fetching information..."))
+                instbuffer.set_text(self._("Fetching information..."))
+                depbuffer.set_text(self._("Fetching information..."))
+                infobuffer.set_text(self._("Fetching information..."))
+                return
+                
+        def __setting_from_cache(self, pkg_name):
+                if len(self.info_cache) > MAX_INFO_CACHE_LIMIT:
+                        self.info_cache = {}
+
+                if self.info_cache.has_key(pkg_name):
+                        self.w_shortdescription_label.set_text(\
+                                self.info_cache[pkg_name][0])
+                        instbuffer = self.w_installedfiles_textview.get_buffer()
+                        depbuffer = self.w_dependencies_textview.get_buffer()
+                        infobuffer = self.w_generalinfo_textview.get_buffer()
+                        infobuffer.set_text(self.info_cache[pkg_name][1])
+                        instbuffer.set_text(self.info_cache[pkg_name][2])
+                        depbuffer.set_text(self.info_cache[pkg_name][3])
+                        return True
+                else:
+                        return False
+                
+        def __update_package_info(self, pkg, icon, installed, pkg_info):
+                pkg_name = pkg.get_name()
+                if icon and icon != pkg:
+                        self.w_packageicon_image.set_from_pixbuf(icon)
+                else:
+                        self.w_packageicon_image.set_from_pixbuf( \
+                            self.__get_pixbuf_from_path("/usr/share/package-manager/", \
+                            "PM_package_36x"))
+                self.w_packagename_label.set_markup("<b>" + pkg_name + "</b>")
+                
+                if self.__setting_from_cache(pkg_name):
                         return
-                if manifest == "NotAvailable":
+                        
+                instbuffer = self.w_installedfiles_textview.get_buffer()
+                depbuffer = self.w_dependencies_textview.get_buffer()
+                infobuffer = self.w_generalinfo_textview.get_buffer()
+
+                if not pkg_info:
                         self.w_shortdescription_label.set_text( \
                             self._("Description not available for this package..."))
                         instbuffer.set_text( \
@@ -983,73 +1038,67 @@ class PackageManager:
                         infobuffer.set_text( \
                             self._("Information not available for this package..."))
                         return
-                description = manifest.get("description", "")
+                description = pkg_info.summary
+                #XXX long term need to have something more robust here for multi byte
                 if len(description) > MAX_DESC_LEN:
                         description = description[:MAX_DESC_LEN] + " ..."
                 self.w_shortdescription_label.set_text(description)
-                instbuffer.set_text(self._("Root: %s\n") % manifest.img.get_root())
-                depbuffer.set_text(self._("Dependencies:\n"))
+                inst_str = self._("Root: %s\n") % self.api_o.img.get_root()
+                dep_str = self._("Dependencies:\n")
+
                 if installed:
-                        infobuffer.set_text( \
-                            self._("Information for installed package:\n\n"))
+                        info_str = self._("Information for installed package:\n\n")
                 else:
-                        infobuffer.set_text( \
-                            self._("Information for latest available package:\n\n"))
-                depiter = depbuffer.get_end_iter()
-                institer = instbuffer.get_end_iter()
-                infoiter = infobuffer.get_end_iter()
+                        info_str = self._("Information for latest available package:\n\n")
                 #Name: SUNWckr 
                 #FMRI: pkg://opensolaris.org/SUNWckr@0.5.11,5.11-0.75:20071114T203148Z
                 #Version: 0.5.11
                 #Branch: 0.75
                 #Packaging Date: 2007-11-14 20:31:48
-                #Size: 29369698
+                #Size: 293696981024
                 #Summary: Core Solaris Kernel (Root)
-                for a in manifest.actions:
-                        if cmp(a.name, self.n_("depend")) == 0:
-                                #Remove "depend: " -> [8:]
-                                depbuffer.insert(depiter, "\t" + \
-                                    self.__locale_distinguished_name(a)[8:]+"\n")
-                        elif cmp(a.name,self.n_("dir")) == 0:
-                                instbuffer.insert(institer, "\t" + \
-                                    self.__locale_distinguished_name(a)+"\n")
-                        elif cmp(a.name,self.n_("file")) == 0:
-                                instbuffer.insert(institer, "\t" + \
-                                    self.__locale_distinguished_name(a)+"\n")
-                        elif cmp(a.name,self.n_("hardlink")) == 0:
-                                instbuffer.insert(institer, "\t" + \
-                                    self.__locale_distinguished_name(a)+"\n")
-                        elif cmp(a.name,self.n_("link")) == 0:
-                                instbuffer.insert(institer, "\t" + \
-                                    self.__locale_distinguished_name(a)+"\n")
-                        elif cmp(a.name,self.n_("legacy")) == 0:
-                                if cmp(a.attrlist(self.n_("pkg"))[0], \
-                                    pkg.get_name()) == 0:
-                                        desc = a.attrlist(self.n_("desc"))
-                                        infobuffer.insert(infoiter, \
-                                            self._("  Description:\t%s\n") % desc[0])
-                        else:
-                                pass
-                infobuffer.insert(infoiter, self._("  Name:\t\t%s\n") % pkg.get_name())
-                infobuffer.insert(infoiter, self._("  FMRI:\t\t%s\n") % pkg.get_fmri())
-                infobuffer.insert(infoiter, self._("  Version:\t\t%s\n") % \
-                    pkg.version.get_short_version())
-                infobuffer.insert(infoiter, self._("  Packaged:\t%s\n") % \
-                    self.get_datetime(pkg.version))
+                
+                if pkg_info.dependencies:
+                        dep_str += ''.join(["\t%s\n" % x for x in pkg_info.dependencies])
+                if pkg_info.dirs:
+                        inst_str += ''.join(["\t%s\n" % x for x in pkg_info.dirs])
+                if pkg_info.files:
+                        inst_str += ''.join(["\t%s\n" % x for x in pkg_info.files])
+                if pkg_info.hardlinks:
+                        inst_str += ''.join(["\t%s\n" % x for x in pkg_info.hardlinks])
+                if pkg_info.links:
+                        inst_str += ''.join(["\t%s\n" % x for x in pkg_info.links])
+                        
+                if description:
+                        info_str += self._("  Description:\t%s\n") % description
+                info_str += self._("  Name:\t\t%s\n") % pkg_name
+                info_str += self._("  FMRI:\t\t%s\n") % pkg.get_fmri()
+                info_str +=  self._("  Version:\t\t%s\n") % \
+                    pkg.version.get_short_version()
+                info_str +=  self._("  Packaged:\t%s\n") % \
+                    self.get_datetime(pkg.version)
+                
+                infobuffer.set_text(info_str)
+                instbuffer.set_text(inst_str)
+                depbuffer.set_text(dep_str)
 
+                self.info_cache[pkg_name] = \
+                        (description, info_str, inst_str, dep_str)
+                
         def __update_package_license(self, licenses):
                 lic = ""
                 lic_u = ""
-                for licens in licenses:
-                        lic += licens.get_text()
-                        lic += "\n"
-                self.w_info_notebook.insert_page(self.w_license_page, \
-                    gtk.Label("Legal"), 3)
+                if licenses == None:
+                        lic_u = self._("Not available")
+                else:
+                        for licens in licenses:
+                                lic += licens.get_text()
+                                lic += "\n"
+                        try:
+                                lic_u = unicode(lic, "utf-8")
+                        except UnicodeDecodeError:
+                                lic_u += ""
                 licbuffer = self.w_license_textview.get_buffer()
-                try:
-                        lic_u = unicode(lic, "utf-8")
-                except UnicodeDecodeError:
-                        lic_u += ""
                 licbuffer.set_text(lic_u)
 
         def __update_description(self, description, package):
@@ -1060,14 +1109,18 @@ class PackageManager:
                                 pkg[enumerations.DESCRIPTION_COLUMN] = description
                                 return
 
-        def __show_package_licenses(self, model, itr, th_no):
-                pkg_name = model.get_value(itr, enumerations.NAME_COLUMN)
-                # sleep for a little time, this id done for tue users which are
+        def __show_package_licenses(self, th_no):
+                #XXX revisit this and replace with gobject.timer_add() instead of sleep
+                # sleep for a little time, this is done for the users who are
                 # fast browsing the list of the packages.
                 time.sleep(1)
                 if th_no != self.pkginfo_thread:
                         return
-                info = self.api_o.info([pkg_name], True, True)
+                if self.selected_pkgname == None:
+                        gobject.idle_add(self.__update_package_license, \
+                            None)
+                        return
+                info = self.api_o.info([self.selected_pkgname], True, True)
                 pkgs_info = None
                 package_info = None
                 no_licenses = 0
@@ -1078,10 +1131,26 @@ class PackageManager:
                 if package_info:
                         no_licenses = len(package_info.licenses)
                 if no_licenses == 0:
+                        gobject.idle_add(self.__update_package_license, \
+                            None)
                         return
                 if th_no == self.pkginfo_thread:
                         gobject.idle_add(self.__update_package_license, \
                             package_info.licenses)
+                else:
+                        return
+
+        def __get_pkg_info(self, pkg_name, installed):
+                info = self.api_o.info([pkg_name], installed, get_licenses=False, \
+                                get_action_info=True)
+                pkgs_info = None
+                package_info = None
+                if info:
+                        pkgs_info = info[0]
+                if pkgs_info:
+                        package_info = pkgs_info[0]
+                if package_info:
+                        return package_info
                 else:
                         return
 
@@ -1093,43 +1162,33 @@ class PackageManager:
                         packages = model.get_value(itr, \
                             enumerations.PACKAGE_OBJECT_COLUMN)
                         pkg = max(packages)
-                        gobject.idle_add(self.__update_package_info, pkg, icon, False, \
-                            None)
+                        gobject.idle_add( \
+                                self.__show_fetching_package_info, pkg, icon)
                 else:
-                        gobject.idle_add(self.__update_package_info, pkg, icon,
-                            True, None)
+                        gobject.idle_add( \
+                                self.__show_fetching_package_info, pkg, icon)
                         installed = True
+                        
+                if self.info_cache.has_key(pkg.get_name()):
+                        return
+
                 # sleep for a little time, this is done for the users which are
                 # fast browsing the list of the packages.
                 time.sleep(1)
                 if th_no != self.pkginfo_thread:
                         return
                 man = None
-                img = self.image_o
+                img = self.api_o.img
                 img.history.operation_name = "info"
 
-                try:
-                        man = self.image_o.get_manifest(pkg, filtered = True)
-                except IOError:
-                        man = "NotAvailable"
-                        img.history.operation_result = \
-                            history.RESULT_FAILED_STORAGE
-                except:
-                        if not img.history.operation_name:
-                                img.history.operation_name = "info"
-                        img.history.operation_result = \
-                            history.RESULT_FAILED_UNKNOWN
-
-                if not img.history.operation_name:
-                        img.history.operation_name = "info"
-
+                pkg_info = self.__get_pkg_info(pkg.get_name(), installed)
                 if th_no == self.pkginfo_thread:
                         if not pkg:
                                 gobject.idle_add(self.__update_package_info, pkg, icon, \
-                                    installed, man)
+                                    installed, pkg_info)
                         else:
                                 gobject.idle_add(self.__update_package_info, pkg, icon, \
-                                    installed, man)
+                                    installed, pkg_info)
                         img.history.operation_result = \
                             history.RESULT_SUCCEEDED
                 else:
@@ -1355,7 +1414,7 @@ class PackageManager:
                 full_refresh = True
                 try:
                         self.api_o.refresh(full_refresh)
-                        self.image_o.load_catalogs(self.pr)
+                        self.api_o.img.load_catalogs(self.pr)
                 except api_errors.UnrecognizedAuthorityException:
                         # In current implementation, this will never happen
                         # We are not refrehsing specific authority
@@ -1398,25 +1457,7 @@ class PackageManager:
                         self.__catalog_refresh_done()
                 return 0
 
-        def __get_image_obj_from_directory(self, image_directory):
-                image_obj = image.Image()
-                try:
-                        image_obj.find_root(image_directory,
-                            self.provided_image_dir)
-                        image_obj.load_config()
-                        image_obj.load_catalogs(self.pr)
-                except api_errors.ImageNotFoundException, infe:
-                        print self._("%s is not a valid root image, return "
-                            "None") % infe.user_dir
-                        image_obj = None
-
-                # Tell the image the name of the client performing operations.
-                if image_obj is not None:
-                        image_obj.history.client_name = PKG_CLIENT_NAME
-
-                return image_obj
-
-        def __get_image_from_directory(self, image_obj, progressdialog_progress):
+        def __get_image_from_directory(self, api_o, progressdialog_progress):
                 """ This method set up image from the given directory and
                 returns the image object or None"""
                 application_list = self.__get_new_application_liststore()
@@ -1425,7 +1466,7 @@ class PackageManager:
 
                 try:
                         pkgs_known = [ pf[0] for pf in
-                            sorted(image_obj.inventory(all_known = True)) ]
+                            sorted(api_o.img.inventory(all_known = True)) ]
                 except api_errors.InventoryException:
                         # Can't happen when all_known is true and no args,
                         # but here for completeness.
@@ -1440,7 +1481,7 @@ class PackageManager:
                 #Imageinfo for categories
                 imginfo = imageinfo.ImageInfo()
                 sectioninfo = imageinfo.ImageInfo()
-                catalogs = image_obj.catalogs
+                catalogs = api_o.img.catalogs
                 categories = {}
                 sections = {}
                 for cat in catalogs:
@@ -1490,7 +1531,7 @@ class PackageManager:
                                 status_icon = None
                                 fmris = [pkg, ]
                                 package_installed = \
-                                    self.get_installed_version(image_obj, pkg)
+                                    self.get_installed_version(api_o, pkg)
                                 if package_installed:
                                         version_installed = \
                                             package_installed.version.get_short_version()
@@ -1610,7 +1651,7 @@ class PackageManager:
 
                 progressdialog_progress(PACKAGE_PROGRESS_PERCENT_TOTAL, pkg_count, \
                     total_pkg_count)
-                gobject.idle_add(self.process_package_list_end, image_obj, \
+                gobject.idle_add(self.process_package_list_end, api_o, \
                     application_list, category_list, repositories_list)
 
         def __add_package_to_category(self, category_name, category_description, \
@@ -1755,11 +1796,11 @@ class PackageManager:
                 return cmp(a[1], b[1])
 
         @staticmethod
-        def __installed_fmris_from_args(img, args_f):
+        def __installed_fmris_from_args(api_o, args_f):
                 found = []
                 notfound = []
                 try:
-                        for m in img.inventory(args_f):
+                        for m in api_o.img.inventory(args_f):
                                 found.append(m[0])
                 except api_errors.InventoryException, e:
                         notfound = e.notfound
@@ -1810,8 +1851,8 @@ class PackageManager:
                 return dt
 
         @staticmethod
-        def get_installed_version(img, pkg):
-                return img.get_version_installed(pkg)
+        def get_installed_version(api_o, pkg):
+                return api_o.img.get_version_installed(pkg)
 
         @staticmethod
         def get_manifest(img, package, filtered = True):
@@ -1869,12 +1910,12 @@ class PackageManager:
                         gtk.main_iteration(False)
                 self.image_directory = image_directory
                 # Create our image object based on image directory.
-                image_obj = self.__get_image_obj_from_directory(image_directory)
-                self.image_o = image_obj
+                api_o = self.__get_api_object(image_directory, self.pr)
+                api_o.img.load_catalogs(self.pr)
+                self.api_o = api_o
                 # Acquire image contents and update progress bar as you do so.
-                Thread(target = self.__get_image_from_directory, args = (image_obj,
+                Thread(target = self.__get_image_from_directory, args = (api_o,
                         self.__progressdialog_progress_percent)).start()
-                self.api_o = self.__get_api_object(image_directory, self.pr)
 
         @staticmethod
         def __get_api_object(img_dir, progtrack):
@@ -1888,12 +1929,12 @@ class PackageManager:
                         raise
                 return api_o
 
-        def process_package_list_end(self, image_object, application_list, \
+        def process_package_list_end(self, api_o, application_list, \
             category_list, repositories_list):
                 self.__init_tree_views(application_list, category_list, repositories_list)
                 self.update_statusbar()
                 self.in_setup = False
-                self.__setup_repositories_combobox(image_object, repositories_list)
+                self.__setup_repositories_combobox(api_o, repositories_list)
                 self.cancelled = False
                 while gtk.events_pending():
                         gtk.main_iteration(False)
@@ -1923,19 +1964,20 @@ class PackageManager:
                 not installed than the newest one'''
                 time.sleep(3)
                 self.description_thread_running = True
-                img = self.image_o
+                img = self.api_o.img
                 img.history.operation_name = "info"
                 for pkg in self.application_list:
                         if self.cancelled:
                                 self.description_thread_running = False
                                 return
                         info = None
-                        img = self.image_o
+                        img = self.api_o.img
                         package = pkg[enumerations.PACKAGE_OBJECT_COLUMN][0]
                         if (img and package):
                                 version = img.has_version_installed(package)
                                 if version:
-                                        version = self.get_installed_version(img, \
+                                        version = \
+                                            self.get_installed_version(self.api_o, \
                                             package)
                                         man = self.get_manifest(img, version, \
                                             filtered = True)
@@ -1952,7 +1994,7 @@ class PackageManager:
                         gobject.idle_add(self.update_desc, info, pkg, package)
                         time.sleep(0.01)
                 img.history.operation_name = "info"
-                img = self.image_o
+                img = self.api_o.img
                 img.history.operation_result = history.RESULT_SUCCEEDED
                 self.description_thread_running = False
                 
@@ -1975,7 +2017,7 @@ class PackageManager:
 
 
         def update_package_list(self, update_list):
-                img = self.image_o
+                img = self.api_o.img
                 img.clear_pkg_state()
                 img.load_catalogs(self.pr)
                 installed_icon = self.get_icon_pixbuf("status_installed")
@@ -1984,7 +2026,8 @@ class PackageManager:
                         if row[enumerations.MARK_COLUMN] or \
                             row[enumerations.NAME_COLUMN] in update_list:
                                 pkg = row[enumerations.PACKAGE_OBJECT_COLUMN][0]
-                                package_installed = self.get_installed_version(img, pkg)
+                                package_installed = \
+                                    self.get_installed_version(self.api_o, pkg)
                                 version_installed = None
                                 if package_installed:
                                         status_icon = installed_icon
@@ -2135,7 +2178,7 @@ class PackageManager:
                     self.category_list)
                 self.__add_category_to_section(self._("Office2"), "Progs", \
                     self.category_list)
-                self.__setup_repositories_combobox(self.image_o)
+                self.__setup_repositories_combobox(self.api_o)
                 self.in_setup = False
 
 ###############################################################################

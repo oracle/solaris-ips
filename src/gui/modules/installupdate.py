@@ -23,9 +23,6 @@
 # Use is subject to license terms.
 #
 
-CLIENT_API_VERSION = 1
-PKG_CLIENT_NAME = "packagemanager"
-
 import gettext # XXX Temporary workaround
 import sys
 import time
@@ -48,7 +45,7 @@ from pkg.misc import TransferTimedOutException, TransportException
 import pkg.gui.enumerations as enumerations
 
 class InstallUpdate(progress.ProgressTracker):
-        def __init__(self, install_list, parent, image_dir, \
+        def __init__(self, install_list, parent, api_o, \
             ips_update = False, action = -1):
                 if action == -1:
                         return
@@ -56,6 +53,7 @@ class InstallUpdate(progress.ProgressTracker):
                 # which bypasses the self._ mechanism the GUI is using
                 gettext.install("pkg","/usr/lib/locale")
                 progress.ProgressTracker.__init__(self)
+                api_o.progresstracker = self
                 self.update_list = []
                 self.parent = parent
                 self.ips_update = ips_update
@@ -64,19 +62,7 @@ class InstallUpdate(progress.ProgressTracker):
                 self.progress_stop_timer_running = False
                 self.prev_pkg = None
                 self.action = action
-                try:
-                        self.api_o =  api.ImageInterface(image_dir, \
-                                    CLIENT_API_VERSION, \
-                                    self, None, PKG_CLIENT_NAME)
-                except api_errors.VersionException:
-                        msg = self.parent._("The version of the API is not correct.\n" + \
-                           "Package Manager can't continue this operation.\n")
-                        self.parent.error_occured(msg)
-                        return
-                except api_errors.ImageNotFoundException:
-                        msg = self.parent._("The image was not found.")
-                        self.parent.error_occured(msg)
-                        return
+                self.api_o = api_o
                 w_tree_createplan = gtk.glade.XML(parent.gladefile, "createplandialog")
                 w_tree_installupdate = gtk.glade.XML(parent.gladefile, "installupdate")
                 w_tree_errordialog = gtk.glade.XML(parent.gladefile, "errordialog")
