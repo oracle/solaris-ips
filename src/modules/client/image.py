@@ -936,11 +936,18 @@ class Image(object):
                 """Find on-disk manifest and create in-memory Manifest
                 object, applying appropriate filters as needed."""
 
-                if fmri in self.__manifest_cache:
-                        m = self.__manifest_cache[fmri]
+                # XXX This is a temporary workaround so that GUI api consumsers
+                # are not negatively impacted by manifest caching.  This should
+                # be removed by bug 4231 whenever a better way to handle caching
+                # is found.
+                if self.history.client_name == "pkg":
+                        if fmri in self.__manifest_cache:
+                                m = self.__manifest_cache[fmri]
+                        else:
+                                m = self.__get_manifest(fmri)
+                                self.__manifest_cache[fmri] = m
                 else:
                         m = self.__get_manifest(fmri)
-                        self.__manifest_cache[fmri] = m
 
                 self.__touch_manifest(fmri)
 
