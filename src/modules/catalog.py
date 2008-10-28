@@ -32,6 +32,7 @@ import errno
 import datetime
 import threading
 import tempfile
+import stat
 import bisect
 
 import pkg.fmri as fmri
@@ -516,6 +517,7 @@ class Catalog(object):
                 value of -1 means that the size is not known."""
 
                 size = 0
+                mode = stat.S_IRUSR|stat.S_IWUSR|stat.S_IRGRP|stat.S_IROTH
 
                 if not os.path.exists(path):
                         os.makedirs(path)
@@ -567,6 +569,12 @@ class Catalog(object):
 
                 attrf.close()
                 catf.close()
+
+                # Mkstemp sets mode 600 on these files by default.
+                # Restore them to 644, so that unpriviliged users
+                # may read these files.
+                os.chmod(attrpath, mode)
+                os.chmod(catpath, mode)
 
                 os.rename(attrpath, attrpath_final)
                 os.rename(catpath, catpath_final)
