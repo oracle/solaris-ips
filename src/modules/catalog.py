@@ -576,8 +576,8 @@ class Catalog(object):
                 os.chmod(attrpath, mode)
                 os.chmod(catpath, mode)
 
-                os.rename(attrpath, attrpath_final)
-                os.rename(catpath, catpath_final)
+                portable.rename(attrpath, attrpath_final)
+                portable.rename(catpath, catpath_final)
 
         def rename_package(self, srcname, srcvers, destname, destvers):
                 """Record that the name of package oldname has been changed
