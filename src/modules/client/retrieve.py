@@ -95,9 +95,7 @@ def get_catalog(img, auth, hdr, ts):
                 raise CatalogRetrievalError("Could not retrieve catalog from"
                     " '%s'\nHTTPError code: %d - %s" % (prefix, e.code, e.msg))
         except urllib2.URLError, e:
-                if isinstance(e.args[0], socket.sslerror):
-                        raise RuntimeError, e
-                elif isinstance(e.args[0], socket.timeout):
+                if isinstance(e.args[0], socket.timeout):
                         raise TransferTimedOutException(prefix, e.reason)
                 elif isinstance(e.args[0], socket.error):
                         sockerr = e.args[0]
@@ -273,9 +271,6 @@ def get_datastream(img, fmri, fhash):
                     "from '%s'\nHTTPError, code: %d" %
                     (fhash, url_prefix, e.code))
         except urllib2.URLError, e:
-                if isinstance(e.args[0], socket.sslerror):
-                        raise RuntimeError, e
-
                 raise DatastreamRetrievalError("Could not retrieve file '%s'\n"
                     "from '%s'\nURLError args:%s" % (fhash, url_prefix,
                     " ".join([str(a) for a in e.args])))
@@ -328,9 +323,7 @@ def get_manifest(img, fmri):
                     " '%s' from '%s'\nHTTPError code: %d - %s" % 
                     (fmri.get_url_path(), url_prefix, e.code, e.msg))
         except urllib2.URLError, e:
-                if isinstance(e.args[0], socket.sslerror):
-                        raise RuntimeError, e
-                elif isinstance(e.args[0], socket.timeout):
+                if isinstance(e.args[0], socket.timeout):
                         raise TransferTimedOutException(url_prefix, e.reason)
                 elif isinstance(e.args[0], socket.error):
                         sockerr = e.args[0]
