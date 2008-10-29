@@ -86,7 +86,6 @@ from pkg.client.filelist import FileListRetrievalError
 
 CLIENT_API_VERSION = 4
 PKG_CLIENT_NAME = "pkg"
-_ = gettext.gettext
 
 def error(text):
         """Emit an error message prefixed by the command name """
@@ -1792,7 +1791,7 @@ def image_create(img, args):
                         return 1
 
         if not auth_name and not auth_url:
-                usage(_("image-create requires an authority argument"))
+                usage("image-create requires an authority argument")
 
         if not auth_name or not auth_url:
                 usage(_("image-create requires authority argument to be of "
@@ -1964,8 +1963,8 @@ def main_func():
         __img = img = image.Image()
         img.history.client_name = PKG_CLIENT_NAME
 
-        gettext.bindtextdomain("pkg", "/usr/share/locale")
-        gettext.domain("pkg")
+        # XXX /usr/lib/locale is OpenSolaris-specific.
+        gettext.install("pkg", "/usr/lib/locale")
 
         try:
                 opts, pargs = getopt.getopt(sys.argv[1:], "R:D:", ["debug="])

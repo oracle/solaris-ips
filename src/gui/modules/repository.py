@@ -220,8 +220,8 @@ class Repository:
                                                 row[1] = False
                                         model.set_value(itr, 1, not preferred)
                                 except RuntimeError:
-                                        err = self.parent._("Couldn't change" \
-                                            " the preffered authority.\n" \
+                                        err = self.parent._("Couldn't change" + \
+                                            " the preffered authority.\n" + \
                                             "Please check your permissions.")
                                         self.__error_occured(err) 
                                         self.__prepare_repository_list()
@@ -374,8 +374,8 @@ class Repository:
                 except RuntimeError:
                         # Do nothing
                         somn = self.old_modify_name
-                        err = (self.parent._("Failed to modify %s.") % somn) + \
-                        self.parent._("\nPlease check your permissions.")
+                        err = self.parent._("Failed to modify %s." % somn + \
+                        "\nPlease check your permissions.")
                         gobject.idle_add(self.__error_occured, err)
                         sel = None
                         selection = self.w_repository_treeview.get_selection()
@@ -388,8 +388,8 @@ class Repository:
                         try:
                                 somn = self.old_modify_name
                                 self.__add_repository(somn, self.old_modify_url, False)
-                                err = self.parent._("Failed to modify %s.") % somn + \
-                                self.parent._("\nPlease check the network connection or URL.\n" \
+                                err = self.parent._("Failed to modify %s." % somn + \
+                                "\nPlease check the network connection or URL.\n" + \
                                 "Is the repository accessible?")
                                 gobject.idle_add(self.__error_occured, err)
                         except api_errors.CatalogRefreshException:
@@ -432,8 +432,8 @@ class Repository:
                 except RuntimeError:
                         if not silent:
                                 raise
-                        err = (self.parent._("Failed to add %s.") % auth) + \
-                        self.parent._("\nPlease check your permissions.")
+                        err = self.parent._("Failed to add %s." % auth + \
+                        "\nPlease check your permissions.")
                         gobject.idle_add(self.__error_occured, err)
                         sel = None
                         selection = self.w_repository_treeview.get_selection()
@@ -445,8 +445,8 @@ class Repository:
                         if not silent:
                                 raise
                         self.__delete_repository(auth)
-                        err = self.parent._("Failed to add %s.") % auth + \
-                        self.parent._("\nPlease check the network connection or URL.\nIs the " \
+                        err = self.parent._("Failed to add %s." % auth + \
+                        "\nPlease check the network connection or URL.\nIs the " + \
                         "repository accessible?")
                         gobject.idle_add(self.__error_occured, err)
                         sel = None
@@ -466,8 +466,8 @@ class Repository:
                 except RuntimeError:
                         if not silent:
                                 raise
-                        err = (self.parent._("Failed to delete %s.") % name) + \
-                        self.parent._("\nPlease check your permissions.")
+                        err = self.parent._("Failed to delete %s." % name + \
+                        "\nPlease check your permissions.")
                         sel = None
                         selection = self.w_repository_treeview.get_selection()
                         model, ite = selection.get_selected()

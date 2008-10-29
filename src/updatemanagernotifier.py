@@ -77,8 +77,7 @@ MONTHLY_SECS = 30*24*60*60
 class UpdateManagerNotifier:
         def __init__(self):
                 # Required for pkg strings used in pkg API
-                gettext.bindtextdomain("pkg", "/usr/share/locale")
-                gettext.textdomain("pkg")
+                gettext.install("pkg", "/usr/lib/locale")
                 self.pr = None
                 self.last_check_filename = None
                 self.time_until_next_check = 0

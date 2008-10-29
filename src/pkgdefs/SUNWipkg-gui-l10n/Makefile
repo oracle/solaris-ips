@@ -54,13 +54,10 @@ prototype: FRC
 			$$5 = "root"; \
 			$$6 = "other"; \
 		} \
-		$$3 ~ /share\/gnome\/help\/package\-manager/ { \
-			$$6 = "bin"; \
-		} \
 		$$3 ~ /^(etc(\/zones)?|usr(\/share(\/lib)?)?|var(\/svc(\/manifest)?)?)$$/ { \
 			$$6 = "sys"; \
 		} \
-		$$3 ~ /^usr\/share(\/locale|\/gnome\/help\/package\-manager($$|\/[^C]))/ { \
+		$$3 ~ /^usr\/share\/locale/ { \
 			print \
 		}' > prototype
 

@@ -114,9 +114,9 @@ link-clean := TARGET = link-clean
 
 all:
 	cd data; pwd;\
-	  LC_ALL=C intltool-merge -d -u -c ../../po/.intltool-merge-cache ../../po updatemanager.desktop.in updatemanager.desktop;\
-	  LC_ALL=C intltool-merge -d -u -c ../../po/.intltool-merge-cache ../../po updatemanagernotifier.desktop.in updatemanagernotifier.desktop;\
-	  LC_ALL=C intltool-merge -d -u -c ../../po/.intltool-merge-cache ../../po updatemanager-preferences.schemas.in updatemanager-preferences.schemas
+	  LC_ALL=C intltool-merge -d -u -c ../po/.intltool-merge-cache ../po updatemanager.desktop.in updatemanager.desktop;\
+	  LC_ALL=C intltool-merge -d -u -c ../po/.intltool-merge-cache ../po updatemanagernotifier.desktop.in updatemanagernotifier.desktop;\
+	  LC_ALL=C intltool-merge -d -u -c ../po/.intltool-merge-cache ../po updatemanager-preferences.schemas.in updatemanager-preferences.schemas
 
 install: all $(ROOTCOMPONENTS)
 	#@cd po; pwd;\

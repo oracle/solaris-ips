@@ -1,7 +1,7 @@
 [Desktop Entry]
-_Name=Update Manager Notifier
-_GenericName=Update Manager Notifier
-_Comment=Notify user when updates are available
+Name=Update Manager Notifier
+GenericName=Update Manager Notifier
+Comment=Notify user when updates are available
 Exec=/usr/lib/updatemanagernotifier
 Terminal=false
 MultipleArgs=false

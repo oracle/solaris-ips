@@ -46,24 +46,20 @@ all:
 	$(PYTHON) setup.py build
 	@cd gui; pwd; $(MAKE) $(TARGET)
 	@cd um; pwd; $(MAKE) $(TARGET)
-	@cd po; pwd; $(MAKE) $(TARGET)
 
 clean:
 	$(PYTHON) setup.py $(TARGET)
 	@cd gui; pwd; $(MAKE) $(TARGET)
-	@cd po; pwd; $(MAKE) $(TARGET)
 
 clobber: clean
 	$(PYTHON) setup.py $(TARGET)
 	@cd gui; pwd; $(MAKE) $(TARGET)
-	@cd po; pwd; $(MAKE) $(TARGET)
 
 install:
 	$(PYTHON) setup.py $(TARGET)
 	@cd gui; pwd; $(MAKE) $(TARGET)
 	@cd um; pwd; $(MAKE) $(TARGET)
 	@cd brand; pwd; $(MAKE) $(TARGET)
-	@cd po; pwd; $(MAKE) $(TARGET)
 	@cd util/misc; pwd; $(MAKE) $(TARGET)
 
 packages: install

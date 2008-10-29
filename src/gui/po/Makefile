@@ -24,14 +24,13 @@
 
 MACH:sh = uname -p
 
-top_srcdir = ..
-ROOT = ../../proto/root_$(MACH)
+ROOT = ../../../proto/root_$(MACH)
 ROOTLOCALE = $(ROOT)/usr/share/locale
 
 POFILES:sh = echo *.po
 MOFILES = $(POFILES:%.po=%.mo)
 LINGUAS = $(POFILES:%.po=%)
-MOFILENAME = pkg.mo
+MOFILENAME = packagemanager.mo
 
 ROOTLOCALEDIRS = $(LINGUAS:%=$(ROOTLOCALE)/%)
 ROOTMESSAGEDIRS = $(ROOTLOCALEDIRS:%=%/LC_MESSAGES)
