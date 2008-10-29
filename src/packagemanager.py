@@ -96,9 +96,9 @@ class PackageManager:
                         self.application_dir = "/"
                 locale.setlocale(locale.LC_ALL, '')
                 for module in (gettext, gtk.glade):
-                        module.bindtextdomain("packagemanager", self.application_dir + \
+                        module.bindtextdomain("pkg", self.application_dir + \
                             "/usr/share/locale")
-                        module.textdomain("packagemanager")
+                        module.textdomain("pkg")
                 self._ = gettext.gettext
                 main_window_title = self._('Package Manager')
                 self.user_rights = portable.is_admin()
@@ -767,7 +767,7 @@ class PackageManager:
                         # running tasks so need a progress dialog
                         self.w_progress_dialog.set_title(self._("Update All"))
                         self.w_progressinfo_label.set_text(self._( \
-                            "Checking SUNWipkg and SUNWipkg-gui versions\n" + \
+                            "Checking SUNWipkg and SUNWipkg-gui versions\n" \
                             "\nPlease wait ..."))
                         Thread(target = self.__progressdialog_progress_pulse).start()
                         Thread(target = self.__do_ips_uptodate_check).start()
@@ -784,9 +784,9 @@ class PackageManager:
                         msgbox = gtk.MessageDialog(parent = self.w_main_window, \
                             buttons = gtk.BUTTONS_YES_NO, \
                             flags = gtk.DIALOG_MODAL, type = gtk.MESSAGE_QUESTION, \
-                            message_format = self._("Newer versions of SUNWipkg and " + \
-                            "SUNWipkg-gui\n" + "are available and must be updated " + \
-                            "before\nrunning Update All.\n\nDo you want to update " + \
+                            message_format = self._("Newer versions of SUNWipkg and " \
+                            "SUNWipkg-gui\n" + "are available and must be updated " \
+                            "before\nrunning Update All.\n\nDo you want to update " \
                             "them now?"))
                         msgbox.set_title(self._("Update All"))
                         result = msgbox.run()
@@ -802,8 +802,8 @@ class PackageManager:
                                 msgbox = gtk.MessageDialog(parent = self.w_main_window, \
                                     buttons = gtk.BUTTONS_OK, \
                                     flags = gtk.DIALOG_MODAL, type = gtk.MESSAGE_INFO, \
-                                    message_format = self._("Update All was not " + \
-                                    "run.\n\nIt can not be run until SUNWipkg and " + \
+                                    message_format = self._("Update All was not " \
+                                    "run.\n\nIt can not be run until SUNWipkg and " \
                                     "SUNWipkg-gui have been updated."))
                                 msgbox.set_title(self._("Update All"))
                                 result = msgbox.run()
@@ -1763,7 +1763,7 @@ class PackageManager:
 
         def __progressdialog_progress_percent(self, fraction, count, total):
                 gobject.idle_add(self.w_progressinfo_label.set_text, self._( \
-                    "Processing package entries: %d of %d" % (count, total)  ))
+                    "Processing package entries: %d of %d") % (count, total)  )
                 gobject.idle_add(self.w_progressbar.set_fraction, fraction)
 
         def error_occured(self, error_msg, msg_title=None, msg_type=gtk.MESSAGE_ERROR):
@@ -1788,7 +1788,7 @@ class PackageManager:
 #-----------------------------------------------------------------------------#
 
         @staticmethod
-        def n_(message): 
+        def N_(message): 
                 return message
 
         @staticmethod
@@ -2064,8 +2064,8 @@ class PackageManager:
                 msgbox = gtk.MessageDialog(parent = self.w_main_window, \
                     buttons = gtk.BUTTONS_OK, \
                     flags = gtk.DIALOG_MODAL, type = gtk.MESSAGE_INFO, \
-                    message_format = self._("SUNWipkg and SUNWipkg-gui have been " + \
-                    "updated and Package Manager will now be restarted.\n\nAfter " + \
+                    message_format = self._("SUNWipkg and SUNWipkg-gui have been " \
+                    "updated and Package Manager will now be restarted.\n\nAfter " \
                     "restart select Update All to continue."))
                 msgbox.set_title(self._("Update All"))
                 msgbox.run()
@@ -2077,9 +2077,9 @@ class PackageManager:
                 msgbox = gtk.MessageDialog(parent = self.w_main_window, \
                     buttons = gtk.BUTTONS_OK, \
                     flags = gtk.DIALOG_MODAL, type = gtk.MESSAGE_INFO, \
-                    message_format = self._("Update All has completed and Package " + \
-                    "Manager will now exit.\n\nPlease review posted release notes " + \
-                    "before rebooting:\n\n" + \
+                    message_format = self._("Update All has completed and Package " \
+                    "Manager will now exit.\n\nPlease review posted release notes " \
+                    "before rebooting:\n\n" \
                     "   http://opensolaris.org/os/project/indiana/resources/rn3/"))
                 msgbox.set_title(self._("Update All"))
                 msgbox.run()

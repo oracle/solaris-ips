@@ -490,9 +490,9 @@ class Image(object):
                                         raise
                         # OpenSSL.crypto.Error
                         except osc.Error, e:
-                                emsg(_("Certificate for authority %s at" \
-                                    " %s has an invalid format.") % \
-                                    (pfx, ssl_cert))
+                                emsg(_("Certificate for authority %(pfx)s at" \
+                                    " %(ssl_cert)s has an invalid format.") % \
+                                    vars())
                                 return False
 
                         if cert.has_expired():

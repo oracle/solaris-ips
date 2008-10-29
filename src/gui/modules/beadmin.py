@@ -28,6 +28,7 @@ import subprocess
 import pango
 import time
 import datetime
+import locale
 from threading import Thread
 
 try:
@@ -65,8 +66,8 @@ class Beadmin:
                 self.parent = parent
 
                 if nobe:
-                        msg = self.parent._("The <b>libbe</b> library was not " + \
-                            "found on your system." + \
+                        msg = self.parent._("The <b>libbe</b> library was not " \
+                            "found on your system." \
                             "\nAll functions for managing Boot Environments are disabled")
                         msgbox = gtk.MessageDialog(
                             buttons = gtk.BUTTONS_CLOSE, \
@@ -335,12 +336,12 @@ class Beadmin:
                         self.progress_stop_thread = True
                         msg = ""
                         if not_default:
-                                msg += self.parent._("<b>Couldn't change Active " + \
+                                msg += self.parent._("<b>Couldn't change Active " \
                                     "Boot Environment to:</b>\n") + not_default
                         if len(not_deleted) > 0:
                                 if not_default:
                                         msg += "\n\n"
-                                msg += self.parent._("<b>Couldn't delete Boot " + \
+                                msg += self.parent._("<b>Couldn't delete Boot " \
                                     "Environments:</b>\n")
                                 for row in not_deleted:
                                         msg += row + "\n"
@@ -406,8 +407,8 @@ class Beadmin:
                 if error_code != None and error_code == 0:
                         be_list_loop = be_list[1]
                 elif error_code != None and error_code != 0:
-                        msg = self.parent._("The <b>libbe</b> library couldn't  " + \
-                            "prepare list of Boot Environments." + \
+                        msg = self.parent._("The <b>libbe</b> library couldn't  " \
+                            "prepare list of Boot Environments." \
                             "\nAll functions for managing Boot Environments are disabled")
                         self.__error_occured(msg, False)
                         return
@@ -433,20 +434,43 @@ class Beadmin:
                                                     "%a %b %d %H:%M %Y")
                                                 date_tmp2 = \
                                                     datetime.datetime(*date_tmp[0:5])
+                                                try:
+                                                    date_format = \
+                                                        unicode(self.parent._("%m/%d/%y %H:%M"), \
+                                                            "utf-8").encode(locale.getpreferredencoding())
+                                                except (UnicodeError, LookupError):
+                                                    print self.parent._("Error conversion from UTF-8 to %s.") \
+                                                    % locale.getpreferredencoding()
+                                                    date_format = "%F %H:%M"
                                                 date_time = \
-                                                    date_tmp2.strftime("%m/%d/%y %H:%M")
+                                                    date_tmp2.strftime(date_format)
                                                 i += 1
                                         except (NameError, ValueError, TypeError):
                                                 date_time = None
                                 else:
                                         date_tmp = time.gmtime(be_date)
+                                        try:
+                                                date_format = \
+                                                    unicode(self.parent._("%m/%d/%y %H:%M"), \
+                                                        "utf-8").encode(locale.getpreferredencoding())
+                                        except (UnicodeError, LookupError):
+                                            print self.parent._("Error conversion from UTF-8 to %s.") \
+                                            % locale.getpreferredencoding()
+                                            date_format = "%F %H:%M"
                                         date_time = \
-                                            time.strftime("%m/%d/%y %H:%M", date_tmp)
+                                            time.strftime(date_format, date_tmp)
                                 if active:
                                         active_img = self.active_image
                                         self.initial_active = j
                                 if active_boot:
                                         self.initial_default = j
+                                if date_time != None:
+                                        try:
+                                            date_time = unicode(date_time, \
+                                                locale.getpreferredencoding()).encode("utf-8")
+                                        except (UnicodeError, LookupError):
+                                            print self.parent._("Error conversion from %s to UTF-8.") \
+                                            % locale.getpreferredencoding()
                                 self.be_list.insert(j, [j, False, \
                                     name, \
                                     date_time, active_img, \

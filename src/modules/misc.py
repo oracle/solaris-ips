@@ -38,12 +38,15 @@ import zlib
 import time
 import calendar
 import shutil
+import gettext
 from stat import *
 
 import pkg.urlhelpers as urlhelpers
 import pkg.portable as portable
 from pkg.client.imagetypes import img_type_names, IMG_NONE
 from pkg import VERSION
+
+_ = gettext.gettext
 
 def time_to_timestamp(t):
         """convert seconds since epoch to %Y%m%dT%H%M%SZ format"""
@@ -378,13 +381,13 @@ def bytes_to_str(bytes):
         in the largest unit possible."""
 
         units = [
-            ("B", 2**10),
-            ("kB", 2**20),
-            ("MB", 2**30),
-            ("GB", 2**40),
-            ("TB", 2**50),
-            ("PB", 2**60),
-            ("EB", 2**70)
+            (_("B"), 2**10),
+            (_("kB"), 2**20),
+            (_("MB"), 2**30),
+            (_("GB"), 2**40),
+            (_("TB"), 2**50),
+            (_("PB"), 2**60),
+            (_("EB"), 2**70)
         ]
 
         for uom, limit in units:
