@@ -6,6 +6,8 @@ e none etc/hba.conf 0644 root bin
 e none etc/ima.conf 0644 root bin
 e none etc/inet/hosts 0444 root sys
 e none etc/inet/services 0444 root sys
+e none etc/mailcap 0644 root bin
+e none etc/mime.types 0644 root bin
 e none etc/mpapi.conf 0644 root bin
 e none etc/name_to_major 0644 root sys
 e none etc/nsswitch.conf 0644 root sys

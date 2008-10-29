@@ -25,4 +25,10 @@ add link path=usr/bin/tnameserv target=../java/bin/tnameserv
 add link path=usr/java target=jdk/jdk1.6.0_10
 add link path=usr/jdk/jdk1.6.0_10 target=instances/jdk1.6.0
 add link path=usr/jdk/latest target=jdk1.6.0_10
+add link path=usr/share/applications/sun_java.desktop \
+    target=../../jdk/instances/jdk1.6.0/jre/lib/desktop/applications/sun_java.desktop
+add link path=usr/share/applications/sun-java.desktop \
+    target=../../jdk/instances/jdk1.6.0/jre/lib/desktop/applications/sun-java.desktop
+add link path=usr/share/applications/sun-javaws.desktop \
+    target=../../jdk/instances/jdk1.6.0/jre/lib/desktop/applications/sun-javaws.desktop
 end package

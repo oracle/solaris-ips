@@ -84,6 +84,8 @@ CACHED_FILES=								\
 	$(ELIDED_FILES)							\
 	boot/grub/menu.lst						\
 	boot/grub/splash.xpm.gz						\
+	etc/mailcap							\
+	etc/mime.types							\
 	etc/inet/hosts							\
 	etc/security/policy.conf					\
 	etc/zones/SUNWblank.xml						\
