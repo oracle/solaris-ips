@@ -63,8 +63,7 @@ install:
 	@cd gui; pwd; $(MAKE) $(TARGET)
 	@cd um; pwd; $(MAKE) $(TARGET)
 	@cd brand; pwd; $(MAKE) $(TARGET)
-	hg status
-@cd po; pwd; $(MAKE) $(TARGET)
+	@cd po; pwd; $(MAKE) $(TARGET)
 	@cd util/misc; pwd; $(MAKE) $(TARGET)
 
 packages: install
