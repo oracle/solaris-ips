@@ -1,0 +1,65 @@
+#
+# CDDL HEADER START
+#
+# The contents of this file are subject to the terms of the
+# Common Development and Distribution License (the "License").
+# You may not use this file except in compliance with the License.
+#
+# You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+# or http://www.opensolaris.org/os/licensing.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+#
+# When distributing Covered Code, include this CDDL HEADER in each
+# file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+# If applicable, add the following below this CDDL HEADER, with the
+# fields enclosed by brackets "[]" replaced with your own identifying
+# information: Portions Copyright [yyyy] [name of copyright owner]
+#
+# CDDL HEADER END
+#
+
+# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Use is subject to license terms.
+
+These scripts are used to gather data and generate reports from the logs of
+apaache servers sitting in front of pkg(5) depots.
+
+To get started:
+
+0) Get and install GeoIP
+  - Retrieve GeoIP-1.4.5.tar.gz from:
+    http://www.maxmind.com/download/geoip/api/c/
+  - Retrieve GeoIP-Python-1.2.3.tar.gz from:
+    http://www.maxmind.com/download/geoip/api/python/
+  - Install those.
+
+1) Set up directories/paths
+  mkdir $HOME/mylogdir  # Path you will run the scripts from
+  ln -s `pwd`/Makefile.data $HOME/mylogdir/Makefile
+  ln -s `pwd`/site-config $HOME/mylogdir/site-config
+
+2) Tell Makefile about these new paths (and other options)
+  <edit Makefile.data>
+  - change LOG_HOME to point to where the scripts live
+  - change DATA_HOME to point to $HOME/mylogdir
+  - change RSYNC_* to match your log path/server configuration
+  - (optional) change AN_FLAGS to suit your needs:
+        '-w <int>'  specifies the window (default 30 days)
+        '-a <date>' specifies the start date for analysis
+
+3) Site configuration
+  <edit site-config>
+  - change the hostname to the hostname of your depot server
+  - modify excluded to your liking (country codes excluded from analysis)
+
+4) Retrieve your logs
+cd $HOME/mylogdir
+make retrieve
+
+5) Run the analysis scripts
+make empty
+make
+
+This should generate you an index.html file, which you can serve via apache or
+some other http server.
