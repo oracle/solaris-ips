@@ -1997,7 +1997,7 @@ class Image(object):
 
                         try:
                                 for line in res.read().splitlines():
-                                        fields = line.split()
+                                        fields = line.split(None, 3)
                                         if len(fields) < 4:
                                                 yield fields[:2] + [ "", "" ]
                                         else:

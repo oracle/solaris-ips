@@ -353,6 +353,7 @@ cli.t_pkg_search.py TestPkgSearchBasics.test_bug_2989_4|pass
 cli.t_pkg_search.py TestPkgSearchBasics.test_bug_3046|pass
 cli.t_pkg_search.py TestPkgSearchBasics.test_bug_4048_1|pass
 cli.t_pkg_search.py TestPkgSearchBasics.test_bug_4048_2|pass
+cli.t_pkg_search.py TestPkgSearchBasics.test_bug_4239|pass
 cli.t_pkg_search.py TestPkgSearchBasics.test_bug_983|pass
 cli.t_pkg_search.py TestPkgSearchBasics.test_local|pass
 cli.t_pkg_search.py TestPkgSearchBasics.test_local_case_sensitive|pass

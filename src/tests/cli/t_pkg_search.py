@@ -86,7 +86,32 @@ class TestPkgSearchBasics(testutils.SingleDepotTestCase):
             add file /tmp/example_file mode=0444 owner=nobody group=sys path='unique/with a space'
             add dir mode=0755 owner=root group=bin path=unique_dir
             close """
-        
+
+        cat_pkg10 = """
+            open cat@1.0,5.11-0
+            add set name=info.classification value=org.opensolaris.category.2008:System/Security
+            close """
+
+        cat2_pkg10 = """
+            open cat2@1.0,5.11-0
+            add set name=info.classification value="org.opensolaris.category.2008:Applications/Sound and Video"
+            close """
+
+        cat3_pkg10 = """
+            open cat3@1.0,5.11-0
+            add set name=info.classification value="org.opensolaris.category.2008:foo/bar/baz/bill/beam/asda"
+            close """
+
+        bad_cat_pkg10 = """
+            open badcat@1.0,5.11-0
+            add set name=info.classification value="TestBad1/TestBad2"
+            close """
+
+        bad_cat2_pkg10 = """
+            open badcat2@1.0,5.11-0
+            add set name=info.classification value="org.opensolaris.category.2008:TestBad1:TestBad2"
+            close """
+
         headers = "INDEX      ACTION    VALUE                     PACKAGE\n"
 
         res_remote_path = set([
@@ -222,6 +247,21 @@ class TestPkgSearchBasics(testutils.SingleDepotTestCase):
         res_local_pkg_example11 = set([
             headers,
             "fmri       set       fmri                      pkg:/example_pkg@1.1-0\n"
+        ])
+
+        res_cat_pkg10 = set([
+            headers,
+            "info.classification set       System/Security           pkg:/cat@1.0-0\n"
+        ])
+
+        res_cat2_pkg10 = set([
+            headers,
+            "info.classification set       Applications/Sound and Video pkg:/cat2@1.0-0\n"
+        ])
+
+        res_cat3_pkg10 = set([
+            headers,
+            "info.classification set       foo/bar/baz/bill/beam/asda pkg:/cat3@1.0-0\n"
         ])
 
 
@@ -865,7 +905,70 @@ close
                 self.pkg("search -r unique_dir")
                 self.pkg("search -r with*")
 
+        def test_bug_4239(self):
+                """Tests whether categories are indexed and searched for
+                correctly."""
+
+                def _run_cat_tests(self, remote):
+                        self._search_op(remote, "System",
+                            self.res_cat_pkg10, case_sensitive=False)
+                        self._search_op(remote, "Security",
+                            self.res_cat_pkg10, case_sensitive=False)
+                        self._search_op(remote, "System/Security",
+                            self.res_cat_pkg10, case_sensitive=False)
+
+                def _run_cat2_tests(self, remote):
+                        self._search_op(remote, "Applications",
+                            self.res_cat2_pkg10, case_sensitive=False)
+                        self.pkg("search -r Sound", exit=1)
+                        self._search_op(remote, "'Sound and Video'",
+                            self.res_cat2_pkg10, case_sensitive=False)
+                        self._search_op(remote, "Sound*",
+                            self.res_cat2_pkg10, case_sensitive=False)
+                        self._search_op(remote, "*Video",
+                            self.res_cat2_pkg10, case_sensitive=False)
+                        self._search_op(remote,
+                            "'Applications/Sound and Video'",
+                            self.res_cat2_pkg10, case_sensitive=False)
+                def _run_cat3_tests(self, remote):
+                        self._search_op(remote, "foo",
+                            self.res_cat3_pkg10,case_sensitive=False)
+                        self._search_op(remote, "baz",
+                            self.res_cat3_pkg10, case_sensitive=False)
+                        self._search_op(remote, "asda",
+                            self.res_cat3_pkg10, case_sensitive=False)
+                        self._search_op(remote, "foo/bar/baz/bill/beam/asda",
+                            self.res_cat3_pkg10, case_sensitive=False)
+
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.cat_pkg10)
+                self.pkgsend_bulk(durl, self.cat2_pkg10)
+                self.pkgsend_bulk(durl, self.cat3_pkg10)
+                self.pkgsend_bulk(durl, self.bad_cat_pkg10)
+                self.pkgsend_bulk(durl, self.bad_cat2_pkg10)
+                self.image_create(durl)
+
+                remote = True
+                _run_cat_tests(self, remote)
+                _run_cat2_tests(self, remote)
+                _run_cat3_tests(self, remote)
+
+                remote = False
+                self.pkg("install cat")
+                _run_cat_tests(self, remote)
+
+                self.pkg("install cat2")
+                _run_cat2_tests(self, remote)
                 
+                self.pkg("install cat3")
+                _run_cat3_tests(self, remote)
+                
+                self.pkg("install badcat")
+                self.pkg("install badcat2")
+                _run_cat_tests(self, remote)
+                _run_cat2_tests(self, remote)
+                _run_cat3_tests(self, remote)
+
 
 class TestPkgSearchMulti(testutils.ManyDepotTestCase):
 

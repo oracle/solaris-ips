@@ -63,6 +63,15 @@ class AttributeAction(generic.Action):
 
         def generate_indices(self):
                 """Generates the indices needed by the search dictionary."""
+                if self.attrs["name"] == "info.classification":
+                        try:
+                                scheme, cats = self.attrs["value"].split(":", 1)
+                                return {
+                                    cats: cats.split("/") + [cats]
+                                }
+                        except ValueError:
+                                pass
+
                 if self.attrs["name"] == "description" or \
                     " " in self.attrs["value"]:
                         return dict(
