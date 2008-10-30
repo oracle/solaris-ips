@@ -31,6 +31,37 @@
 FMRI="svc:/application/pkg/update:default"
 REFRESH_PROG="/usr/lib/update-manager/update-refresh.sh"
 
+# Given the exit status of a command, an integer, 0 if the command completed
+# without errors. If the command exited with errors we degrade the
+# state of this service into maintenance mode. If a 3rd argument is presented
+# we don't degrade the service. We also log an error message as passed into
+# this function.
+#
+function check_failure { # integer exit status, error message to display, be fatal
+
+	typeset RESULT=$1
+	typeset ERR_MSG=$2
+	typeset NON_FATAL=$3
+
+	if [ $RESULT -ne 0 ] ; then
+	    print_log "Error: $ERR_MSG"
+	    if [ -z "${NON_FATAL}" ] ; then
+		print_log "Moving service $FMRI to maintenance mode."
+	        svcadm mark maintenance $FMRI
+	    fi
+	fi
+
+}
+
+# A function we use to emit output. Right now, this goes to syslog via logger(1)
+# but it would be much nicer to be able to print it to the svc log file for
+# each individual service instance - tricky because we're being called from
+# cron, most of the time and are detached from smf. Working around this by
+# appending to the $LOG file
+function print_log { # message to display
+	logger -t update-manager -p daemon.notice $*
+}
+
 function add_refresh_cronjob {
 	# Call intermittently  
 	SCHEDULE="30 0,9,12,18,21 * * *"
