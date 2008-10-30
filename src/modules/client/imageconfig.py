@@ -178,7 +178,6 @@ class ImageConfig(object):
 
                                 for mirror in a["mirrors"]:
                                         ms.append(DepotStatus(k, mirror))
-                                ms.append(self.authority_status[k])
 
                                 self.mirror_status[k] = ms
                                 

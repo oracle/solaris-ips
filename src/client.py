@@ -629,7 +629,19 @@ def image_update(img_dir, args):
                     "resources/rn3/"))
                 msg("-" * 75 + "\n")
 
+        if bool(os.environ.get("PKG_MIRROR_STATS", False)):
+                print_mirror_stats(api_inst)
+
         return ret_code
+
+def print_mirror_stats(api_inst):
+        """Given an api_inst object, print depot status information."""
+
+        status_fmt = "%-10s %-35s %10s %10s"
+        print status_fmt % ("Authority", "URL", "Success", "Failure")
+
+        for ds in api_inst.img.gen_depot_status():
+               print status_fmt % (ds.auth, ds.url, ds.good_tx, ds.errors) 
 
 def install(img_dir, args):
         """Attempt to take package specified to INSTALLED state.  The operands
@@ -754,6 +766,9 @@ def install(img_dir, args):
                 error(_("An unexpected error happened during " \
                     "installation: %s") % e)
                 raise
+
+        if bool(os.environ.get("PKG_MIRROR_STATS", False)):
+                print_mirror_stats(api_inst)
 
         return ret_code
 

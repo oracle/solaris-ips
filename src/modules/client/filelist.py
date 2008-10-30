@@ -227,9 +227,14 @@ class FileList(object):
                 """A wrapper around _get_files.  This handles exceptions
                 that might occur and deals with timeouts."""
 
-                retry_count = global_settings.PKG_TIMEOUT_MAX
-                files_extracted = 0
+                num_mirrors = self.image.num_mirrors(self.authority)
+                max_timeout = global_settings.PKG_TIMEOUT_MAX
+                if num_mirrors > 0:
+                        retry_count = max_timeout * (num_mirrors + 1)
+                else:
+                        retry_count = max_timeout
 
+                files_extracted = 0
                 nfiles = self._get_nfiles()
                 nbytes = self._get_nbytes()
                 chosen_mirrors = set()

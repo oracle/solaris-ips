@@ -375,6 +375,28 @@ class Image(object):
 
                 return o.rstrip("/")
 
+        def gen_depot_status(self):
+                """Walk all authorities and return all depot status
+                objects for both mirrors and primary authorities."""
+
+                auths = self.cfg_cache.authorities
+                # return depot status objects in authority order
+                for auth in auths.keys():
+                        # first yield authority origin
+                        yield self.cfg_cache.authority_status[auth]
+                        # then return mirrors
+                        for ds in self.cfg_cache.mirror_status[auth]:
+                                yield ds
+
+        def num_mirrors(self, auth):
+                """Return the number of mirrors configured for the
+                given authority."""
+
+                if auth == None:
+                        auth = self.cfg_cache.preferred_authority
+
+                return len(self.cfg_cache.mirror_status[auth])
+
         def select_mirror(self, auth = None, chosen_set = None):
                 """For the given authority, look through the status of
                 the mirrors.  Pick the best one.  This method returns
@@ -414,9 +436,12 @@ class Image(object):
 
                 slst.sort(cmp = cmp_depotstatus)
 
+                # All mirrors in the chosen_set have already been
+                # selected.  Try the authority origin instead.
+                # Empty chosen_set, next time we start over.
                 if chosen_set and len(chosen_set) == len(slst):
                         chosen_set.clear()
-                        chosen_set = None
+                        return self.cfg_cache.authority_status[auth]
 
                 if chosen_set and slst[0] in chosen_set:
                         for ds in slst:
