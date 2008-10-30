@@ -212,11 +212,11 @@ class BootEnv(object):
                                     
                         os.rmdir(self.clone_dir)
                         
-                        msg(_("A clone of %s exists and has been "
-                            "updated and activated. On next boot "
-                            "the Boot Environment %s will be mounted "
-                            "on '/'. Reboot when ready to switch to "
-                            "this updated BE.") % \
+                        msg(_("""
+A clone of %s exists and has been updated and activated.
+On the next boot the Boot Environment %s will be mounted on '/'.
+Reboot when ready to switch to this updated BE.
+""") % \
                             (self.be_name, self.be_name_clone))
 
                 else:                        
