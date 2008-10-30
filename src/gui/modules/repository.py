@@ -236,13 +236,16 @@ class Repository:
 
 
         def __on_repositoryurl_changed(self, widget):
-                if len(widget.get_text()) != 0 and self.is_name_valid:
+                url = widget.get_text()
+                if len(url) != 0 and self.is_name_valid and misc.valid_auth_url(url):
                         self.w_repository_add_button.set_sensitive(True)
                 else:
                         self.w_repository_add_button.set_sensitive(False)
                         
         def __is_name_valid(self, name):
                 if len(name) == 0:
+                        return False
+                if not misc.valid_auth_prefix(name):
                         return False
 
                 model = self.w_repository_treeview.get_model()
