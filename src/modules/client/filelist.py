@@ -346,10 +346,10 @@ class FileList(object):
                 try:
                         if not os.path.exists(download_dir):
                                 os.makedirs(download_dir)
-                except OSError, (errno, errorstr):
-                        raise RuntimeError("unable to create " \
+                except EnvironmentError, e:
+                        raise FileListRetrievalError("Unable to create " \
                                 "download directory %s: %s" % 
-                                (download_dir, errorstr))
+                                (download_dir, e.strerror))
 
                 for i, k in enumerate(self.fhash.keys()):
                         fstr = "File-Name-%s" % i
