@@ -45,6 +45,8 @@
 	<verify_adm></verify_adm>
 	<postclone></postclone>
 	<postinstall></postinstall>
+	<attach>/usr/lib/brand/ipkg/attach -z %z -R %R</attach>
+	<detach>/usr/lib/brand/ipkg/detach -z %z -R %R</detach>
 	<clone>/usr/lib/brand/ipkg/clone -z %z -R %R</clone>
 	<uninstall>/usr/lib/brand/ipkg/uninstall %z %R</uninstall>
 	<prestatechange>/usr/lib/brand/ipkg/prestate %z %R</prestatechange>

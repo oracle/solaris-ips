@@ -56,7 +56,7 @@ if [ $cmd -eq 0 ]; then
 	get_zonepath_ds $zonepath
 	get_active_ds $CURRENT_GZBE $ZONEPATH_DS
 
-	/usr/sbin/mount -F zfs $ACTIVE_DS $zonepath/root || \
+	/usr/sbin/mount -F zfs -O $ACTIVE_DS $zonepath/root || \
 	    fail_fatal "$f_mount"
 fi
 

@@ -1,0 +1,365 @@
+#!/bin/ksh -p
+#
+# CDDL HEADER START
+#
+# The contents of this file are subject to the terms of the
+# Common Development and Distribution License (the "License").
+# You may not use this file except in compliance with the License.
+#
+# You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+# or http://www.opensolaris.org/os/licensing.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+#
+# When distributing Covered Code, include this CDDL HEADER in each
+# file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+# If applicable, add the following below this CDDL HEADER, with the
+# fields enclosed by brackets "[]" replaced with your own identifying
+# information: Portions Copyright [yyyy] [name of copyright owner]
+#
+# CDDL HEADER END
+#
+#
+# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Use is subject to license terms.
+#
+
+m_cache=$(gettext  "                     Cache: Using %s.")
+m_installing=$(gettext "Installing...")
+m_usage=$(gettext  "ipkg brand attach arguments [-a archive] [-n] [-r zfs-recv] [-u]\n\tThe -a archive option specifies a tar file or cpio archive.\n\tThe -r zfs-recv option receives the output of a 'zfs send' command\n\tof an existing zone root dataset.\n\tThe -u option indicates that the software should be updated to match\n\tthe current host.")
+m_gzinc=$(gettext "       Global zone version: %s")
+m_zinc=$(gettext "       Non-Global zone version: %s")
+m_insync=$(gettext "%s is in sync with global zone (%s)")
+m_complete=$(gettext "attach complete.")
+m_updating=$(gettext "  Updating non-global zone: Output follows")
+
+f_option_no_ds=$(gettext "The -a or -r option is required when there is no active root dataset.")
+f_option_ds=$(gettext "The -a or -r option is invalid when there is already an active root dataset.")
+f_bad_archive=$(gettext "Unknown archive format.")
+f_unpack=$(gettext "Unable to install the archive.")
+f_nogzinc=$(gettext "Could not find 'entire' incorporation for global zone.")
+f_nozinc=$(gettext "Could not find 'entire' incorporation for attaching zone.")
+f_downrev=$(gettext "ERROR: Zone is downrev of global zone.  Specify -u to update it.")
+f_update=$(gettext "Could not update attaching zone")
+
+#set -o xtrace
+
+. /usr/lib/brand/ipkg/common.ksh
+
+aarg=0
+noexecute=0
+rarg=0
+
+# Other brand attach options are invalid for this brand.
+while getopts "a:nR:r:uz:" opt; do
+	case $opt in
+		a)	ARCHIVE="$OPTARG"
+			if [ $rarg -eq 1 ]; then
+				fail_usage "$m_usage"
+			fi
+			aarg=1
+			;;
+		n)	noexecute=1 ;;
+		R)	zonepath="$OPTARG" ;;
+		r)	ZFSRCV="$OPTARG"
+			if [ $aarg -eq 1 ]; then
+				fail_usage "$m_usage"
+			fi
+			rarg=1
+			;;
+		u)	allow_update=1 ;;
+		z)	zonename="$OPTARG" ;;
+		?)	fail_usage "$m_usage" ;;
+		*)	fail_usage "$m_usage";;
+	esac
+done
+shift $((OPTIND-1))
+
+zoneroot=$zonepath/root
+
+if [ $noexecute -eq 1 ]; then
+	#
+	# The zone doesn't have to exist when the -n option is used, so do
+	# this work early.
+	#
+	if [ $aarg -eq 1 -o $rarg -eq 1 -o $allow_update -eq 1 ]; then
+		fail_usage "$m_usage";
+	fi
+
+	# XXX There is no sw validation for IPS right now, so just pretend
+	# everything will be ok.
+	exit 0
+fi
+
+get_current_gzbe
+
+#
+# XXX we can't do the following since 'zoneadm verify' depends on the zonepath
+# already existing - maybe we can fix this in zoneadm in the future.
+#
+# First make the top-level zonepath dataset and be sure to tolerate errors
+# since this dataset could already exist from a different BE.
+#
+#pdir=`/usr/bin/dirname $zonepath`
+#zpname=`/usr/bin/basename $zonepath`
+#
+#get_zonepath_ds $pdir
+#zpds=$ZONEPATH_DS
+#
+# Note, this dataset might already exist so tolerate an error.
+#/usr/sbin/zfs create $zpds/$zpname
+#
+
+fail_zonepath_in_rootds $zpds
+
+# Top-level zonepath dataset should now exist.
+get_zonepath_ds $zonepath
+
+#
+# Note that the root dataset might already exist and be populated from either
+# a SNAP clone or from an earlier attach that failed because the sw was
+# out of sync but the -u option was not provided.  The user might be
+# re-running the attach with the -u option this time.  We need to be sure
+# to handle this case gracefully.
+#
+
+#
+# We first want to see if there is a pre-existing active root dataset, but
+# we can't call get_active_ds() since it errors out if there is no active
+# dataset.
+#
+ACTIVE_DS=`/usr/sbin/zfs list -H -r -t filesystem \
+    -o name,$PROP_PARENT,$PROP_ACTIVE $ZONEPATH_DS/ROOT | \
+    /usr/bin/nawk -v gzbe=$CURRENT_GZBE ' {
+	if ($1 ~ /ROOT\/[^\/]+$/ && $2 == gzbe && $3 == "on") {
+		print $1
+		if (found == 1)
+			exit 1
+		found = 1
+	}
+    }'`
+
+if [ $? -ne 0 ]; then
+	fail_fatal "$f_multiple_ds"
+fi
+
+if [ -z "$ACTIVE_DS" ]; then
+	#
+	# There is no pre-existing active dataset.  In this case we need either
+	# the -a or -r option to populate a newly created dataset.
+	#
+	if [ $aarg -eq 1 -o $rarg -eq 1 ]; then
+		/usr/sbin/zfs create -o mountpoint=legacy -o zoned=on \
+		    $ZONEPATH_DS/ROOT
+
+		BENAME=zbe
+		BENUM=0
+		# Try 100 different names before giving up.
+		while [ $BENUM -lt 100 ]; do
+		        /usr/sbin/zfs create -o $PROP_ACTIVE=on \
+			    -o $PROP_PARENT=$CURRENT_GZBE \
+			    -o canmount=noauto $ZONEPATH_DS/ROOT/$BENAME
+			if [ $? = 0 ]; then
+		                break
+			fi
+		        BENUM=`expr $BENUM + 1`
+			BENAME="zbe-$BENUM"
+		done
+
+		if [ $BENUM -ge 100 ]; then
+			fail_fatal "$f_zfs_create"
+		fi
+
+		ACTIVE_DS=$ZONEPATH_DS/ROOT/$BENAME
+
+	else
+		#
+		# There is no pre-existing active dataset and no
+		# -a or -r option so this is an error.
+		#
+		fail_fatal "$f_option_no_ds"
+	fi
+
+elif [ $aarg -eq 1 -o $rarg -eq 1 ]; then
+	#
+	# We already have an active root dataset.  In this case the -a or -r
+	# option is invalid (XXX unless we want to overwrite the contents of
+	# the pre-existing dataset).
+	#
+	fail_fatal "$f_option_ds"
+fi
+
+if [ $aarg -eq 1 ]; then
+	#
+	# Given a tar or cpio archive, unpack the archive into the dataset.
+	#
+	ftype="`LC_ALL=C file $ARCHIVE | cut -d: -f 2`"
+	case "$ftype" in
+	*cpio*)		filetype="cpio"
+			stage1="cat"
+			filetypename="cpio archive"
+		;;
+	*bzip2*)	filetype="cpio"
+			stage1="bzcat"
+			filetypename="bzipped cpio archive"
+		;;
+	*gzip*)		filetype="cpio"
+			stage1="gzcat"
+			filetypename="gzipped cpio archive"
+		;;
+	*USTAR\ tar\ archive)
+			filetype="tar"
+			filetypename="tar archive"
+		;;
+	*USTAR\ tar\ archive\ extended\ format*)
+			filetype="xustar"
+			filetypename="pax (xustar) archive"
+		;;
+	*)		fail_fatal "$f_bad_archive"
+		;;
+	esac
+
+	if [ ! -d $zoneroot ]; then
+		/usr/bin/mkdir -p $zoneroot
+		/usr/bin/chmod 700 $zonepath
+	fi
+
+	/usr/sbin/mount -F zfs $ACTIVE_DS $zoneroot || fail_fatal "$f_zfs_mount"
+
+	echo $m_installing
+	echo $filetypename
+
+	#
+	# XXX What does the archive contain?  Do we just get stuff under
+	# zonepath/root or do we get zonepath?  For zfs send, we send the
+	# zonepath/root dataset, so maybe we should assume only zonepath/root
+	# here as well?
+	#
+
+	unpack_result=0
+	if [[ "$filetype" = "cpio" ]]; then
+		cpioopts="-idm"
+		(cd "$zonepath" && $stage1 "$ARCHIVE" | cpio $cpioopts)
+		unpack_result=$?
+
+	elif [[ "$filetype" = "tar" ]]; then
+		(cd "$zonepath" && tar -xf "$ARCHIVE")
+		unpack_result=$?
+
+	elif [[ "$filetype" = "xustar" ]]; then
+		(cd "$zonepath" && pax -r -f "$ARCHIVE")
+		unpack_result=$?
+	fi
+
+	/usr/sbin/umount $zoneroot
+
+	if [[ $unpack_result -ne 0 ]]; then
+		fail_fatal "$f_unpack"
+	fi
+
+elif [ $rarg -eq 1 ]; then
+	#
+	# Given 'zfs send' output, receive the snapshot into the new dataset.
+	# XXX handle piped input
+	#
+	/usr/sbin/zfs receive -F $ACTIVE_DS < $ZFSRCV || \
+	    fail_fatal "$f_zfs_create"
+
+else
+	#
+	# If neither of the -a or -r options are provided, assume
+	# detach/attach behavior with an existing SNAP clone dataset already
+	# in existence, or possibly the dataset exists from a previous
+	# attach run that did not finish successfully because the sw was not
+	# updated (due to missing -u option).
+	#
+
+	#
+	# We know we already have a valid dataset from earlier validation.
+	#
+
+	#
+	# If we are attaching a zone that was previously detached on this
+	# system, then the dataset is not zoned and is mounted at this point.
+	# Look to see if the dataset is in this state.
+	#
+	zoned=`/usr/sbin/zfs list -H -o zoned $ACTIVE_DS`
+
+	if [ "$zoned" = "off" ]; then
+		#
+		# When we detached the SNAP clone zone, we changed some of the
+		# properties and then left it mounted.  Undo that work now.
+		#
+		/usr/sbin/umount $zonepath/root >/dev/null 2>&1
+
+		/usr/sbin/zfs set zoned=on $ACTIVE_DS || \
+			fail_fatal "$f_zfs_create"
+
+		/usr/sbin/zfs set mountpoint=legacy $ACTIVE_DS || \
+			fail_incomplete "$f_zfs_create"
+
+		/usr/sbin/zfs set canmount=noauto $ACTIVE_DS || \
+			fail_fatal "$f_zfs_create"
+	fi
+fi
+
+if [ ! -d $zoneroot ]; then
+	/usr/bin/mkdir -p $zoneroot
+	/usr/bin/chmod 700 $zonepath
+fi
+
+/usr/sbin/mount -F zfs $ACTIVE_DS $zoneroot || fail_fatal "$f_zfs_mount"
+
+# XXX the rest is a hack for now
+
+gz_entire=`pkg -R / list -Hv entire| nawk '{print $1}'`
+if [ $? -ne 0 ]; then
+	/usr/sbin/umount $zoneroot
+	fail_fatal $f_nogzinc
+fi
+printf "$m_gzinc\n" $gz_entire
+
+ngz_entire=`pkg -R $zoneroot list -Hv entire| nawk '{print $1}'`
+if [ $? -ne 0 ]; then
+	/usr/sbin/umount $zoneroot
+	fail_fatal $f_nozinc
+fi
+printf "$m_zinc\n" $ngz_entire
+
+if [ $gz_entire = $ngz_entire ]; then
+	printf "$m_insync\n" $zonename $gz_entire
+	echo $m_complete
+	/usr/sbin/umount $zoneroot || fail_fatal "$f_umount"
+	exit $ZONE_SUBPROC_OK
+fi
+
+#
+# XXX later we need to check that gz_entire is uprev of ngz_entire.
+# But implementing that in ksh right now will be too much effort--
+# the way to do that is with some python code which can compare FMRI
+# versions to each other.
+#
+if [ -z $allow_update ]; then
+	# zone is downrev
+	/usr/sbin/umount $zoneroot
+	fail_fatal "$f_downrev"
+fi
+
+echo $m_updating
+
+if [ -d /var/pkg/download ]; then
+        PKG_CACHEDIR=/var/pkg/download
+        export PKG_CACHEDIR
+        printf "$m_cache\n" $PKG_CACHEDIR
+fi
+
+pkg -R $zoneroot install $gz_entire
+if [ $? -ne 0 ]; then
+	/usr/sbin/umount $zoneroot
+	fail_fatal "$f_update"
+fi
+echo $ngz_entire
+
+/usr/sbin/umount $zoneroot || fail_fatal "$f_umount"
+
+exit $ZONE_SUBPROC_OK

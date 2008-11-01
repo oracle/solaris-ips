@@ -49,8 +49,10 @@ ROOTFILES = \
 	$(ROOTETCZONES)/SUNWipkg.xml \
 	$(ROOTBRANDPKG)/config.xml \
 	$(ROOTBRANDPKG)/platform.xml \
+	$(ROOTBRANDPKG)/attach \
 	$(ROOTBRANDPKG)/clone \
 	$(ROOTBRANDPKG)/common.ksh \
+	$(ROOTBRANDPKG)/detach \
 	$(ROOTBRANDPKG)/pkgcreatezone \
 	$(ROOTBRANDPKG)/poststate \
 	$(ROOTBRANDPKG)/prestate \
@@ -77,8 +79,10 @@ link:
 	mkdir -p /usr/lib/brand/ipkg
 	ln -sf $(PWD)/config.xml /usr/lib/brand/ipkg/config.xml
 	ln -sf $(PWD)/platform.xml /usr/lib/brand/ipkg/platform.xml
+	ln -sf $(PWD)/attach /usr/lib/brand/ipkg/attach
 	ln -sf $(PWD)/clone /usr/lib/brand/ipkg/clone
 	ln -sf $(PWD)/common.ksh /usr/lib/brand/ipkg/common.ksh
+	ln -sf $(PWD)/detach /usr/lib/brand/ipkg/detach
 	ln -sf $(PWD)/pkgcreatezone /usr/lib/brand/ipkg/pkgcreatezone
 	ln -sf $(PWD)/poststate /usr/lib/brand/ipkg/poststate
 	ln -sf $(PWD)/prestate /usr/lib/brand/ipkg/prestate
