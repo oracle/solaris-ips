@@ -2188,6 +2188,16 @@ if __name__ == "__main__":
                     "client history."))
                 error(__e)
                 __ret = 1
+        except api_errors.VersionException, __e:
+                if __img:
+                        __img.history.abort(RESULT_FAILED_UNKNOWN)
+                error(_("The pkg command appears out of sync with the "
+                    "libraries provided \nby SUNWipkg. The client version is "
+                    "%(client)s while the library API version is %(api)s") %
+                    {'client': __e.received_version,
+                     'api': __e.expected_version
+                    })
+                __ret = 1
         except:
                 if __img:
                         __img.history.abort(RESULT_FAILED_UNKNOWN)
