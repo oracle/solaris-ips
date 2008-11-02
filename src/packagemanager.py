@@ -2077,10 +2077,11 @@ class PackageManager:
                 msgbox = gtk.MessageDialog(parent = self.w_main_window, \
                     buttons = gtk.BUTTONS_OK, \
                     flags = gtk.DIALOG_MODAL, type = gtk.MESSAGE_INFO, \
-                    message_format = self._("Update All has completed and Package " + \
-                    "Manager will now exit.\n\nPlease review posted release notes " + \
-                    "before rebooting:\n\n" + \
-                    "   http://opensolaris.org/os/project/indiana/resources/rn3/"))
+                    message_format = self._("Update All has completed and Package " \
+                    "Manager will now exit.\n\nPlease reboot after reviewing the " \
+                    "release notes posted at:\n\n" \
+                    "http://opensolaris.org/os/project/indiana/resources/" \
+                    "relnotes/200811/x86/"))
                 msgbox.set_title(self._("Update All"))
                 msgbox.run()
                 msgbox.destroy()

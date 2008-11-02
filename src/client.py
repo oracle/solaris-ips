@@ -626,7 +626,7 @@ def image_update(img_dir, args):
                 msg("\n" + "-" * 75)
                 msg(_("NOTE: Please review release notes posted at:\n" \
                     "   http://opensolaris.org/os/project/indiana/" \
-                    "resources/rn3/"))
+                    "resources/relnotes/200811/x86/"))
                 msg("-" * 75 + "\n")
 
         if bool(os.environ.get("PKG_MIRROR_STATS", False)):

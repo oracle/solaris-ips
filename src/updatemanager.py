@@ -1092,8 +1092,9 @@ class Updatemanager:
                                 "\nUpdate All finished successfully in < 1 min\n\n")
 
                 info_str += self._(\
-                        "Please reboot after reviewing the release notes posted at:\n" +\
-                        "\thttp://opensolaris.org/os/project/indiana/resources/rn3/")
+                        "Please reboot after reviewing the release notes posted at:\n\n" \
+                        "http://opensolaris.org/os/project/indiana/resources/" \
+                        "relnotes/200811/x86/")
 
                 self.w_um_dialog.hide()
                 msgbox = gtk.MessageDialog(parent = self.w_um_dialog, \
