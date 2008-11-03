@@ -1106,6 +1106,18 @@ class Image(object):
                 $META/pkg/stem/version directory, to the $META/state/installed
                 summary directory form."""
 
+                # If the directory is empty or it doesn't exist, we should
+                # populate it.  The easy test is to try to remove the directory,
+                # which will fail if it's already got entries in it, or doesn't
+                # exist.  Other errors are beyond our capability to handle.
+                try:
+                        os.rmdir("%s/state/installed" % self.imgdir)
+                except EnvironmentError, e:
+                        if e.errno == errno.EEXIST:
+                                return
+                        elif e.errno != errno.ENOENT:
+                                raise
+
                 tmpdir = "%s/state/installed.build" % self.imgdir
 
                 # Create the link forest in a temporary directory.  We should
@@ -1374,6 +1386,7 @@ class Image(object):
                                 succeeded += 1
 
                 self.cache_catalogs()
+                self.update_installed_pkgs()
 
                 if progtrack:
                         progtrack.refresh_done()
