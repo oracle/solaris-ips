@@ -47,6 +47,7 @@ from pkg.misc import get_pkg_otw_size
 from pkg.misc import TransportException
 from pkg.misc import TransportFailures
 from pkg.misc import TransferTimedOutException
+from pkg.misc import TransferIOException
 from pkg.misc import TransferContentException
 from pkg.misc import InvalidContentException
 from pkg.misc import TruncatedTransferException
@@ -382,15 +383,10 @@ class FileList(object):
                                 sockerr = e.args[0]
                                 if isinstance(sockerr.args, tuple) and \
                                     sockerr.args[0] in retryable_socket_errors:
-                                        raise TransferContentException(
+                                        raise TransferIOException(
                                             url_prefix,
                                             "Retryable socket error: %s" %
                                             e.reason)
-                                else:
-                                        raise FileListRetrievalError(
-                                            "Could not retrieve filelist from"
-                                            " '%s'\nURLError, reason: %s" %
-                                            (url_prefix, e.reason))
 
                         raise FileListRetrievalError("Could not retrieve"
                             " filelist from '%s'\nURLError reason: %d" % 
@@ -429,14 +425,14 @@ class FileList(object):
                                 self.image.cleanup_downloads()
                                 if isinstance(e.args, tuple) and \
                                     e.args[0] in retryable_socket_errors:
-                                        raise TransferContentException(
+                                        raise TransferIOException(
                                             url_prefix,
                                             "Retryable socket error: %s" % e)
-                                else:
-                                        raise FileListRetrievalError(
-                                            "Could not retrieve filelist from"
-                                            " '%s'\nsocket error, reason: %s" %
-                                            (url_prefix, e))
+
+                                raise FileListRetrievalError(
+                                    "Could not retrieve filelist from"
+                                    " '%s'\nsocket error, reason: %s" %
+                                    (url_prefix, e))
                         except (ValueError, httplib.IncompleteRead):
                                 self.image.cleanup_downloads()
                                 raise TransferContentException(url_prefix,

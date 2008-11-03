@@ -32,6 +32,7 @@ import pkg.client.imagestate as imagestate
 import pkg.updatelog as updatelog
 from pkg.misc import versioned_urlopen
 from pkg.misc import TransferTimedOutException
+from pkg.misc import TransferIOException
 from pkg.misc import TruncatedTransferException
 from pkg.misc import TransferContentException
 from pkg.misc import retryable_http_errors
@@ -101,13 +102,8 @@ def get_catalog(img, auth, hdr, ts):
                         sockerr = e.args[0]
                         if isinstance(sockerr.args, tuple) and \
                             sockerr.args[0] in retryable_socket_errors:
-                                raise TransferContentException(prefix,
+                                raise TransferIOException(prefix,
                                     "Retryable socket error: %s" % e.reason)
-                        else:
-                                raise CatalogRetrievalError(
-                                    "Could not retrieve catalog from"
-                                    " '%s'\nURLError, reason: %s" %
-                                    (prefix, e.reason))
 
                 raise CatalogRetrievalError("Could not retrieve catalog from"
                     " '%s'\nURLError, reason: %s" % (prefix, e.reason))
@@ -134,12 +130,11 @@ def get_catalog(img, auth, hdr, ts):
         except socket.error, e:
                 if isinstance(e.args, tuple) \
                      and e.args[0] in retryable_socket_errors:
-                        raise TransferContentException(prefix,
+                        raise TransferIOException(prefix,
                             "Retryable socket error: %s" % e)
-                else:
-                        raise CatalogRetrievalError("Could not retrieve catalog"
-                            " from '%s'\nsocket error, reason: %s" %
-                            (prefix, e))
+
+                raise CatalogRetrievalError("Could not retrieve catalog"
+                    " from '%s'\nsocket error, reason: %s" % (prefix, e))
         except EnvironmentError, e:
                 raise CatalogRetrievalError("Could not retrieve catalog "
                     "from '%s'\nException: str:%s repr:%r" % (prefix,
@@ -329,13 +324,8 @@ def get_manifest(img, fmri):
                         sockerr = e.args[0]
                         if isinstance(sockerr.args, tuple) and \
                             sockerr.args[0] in retryable_socket_errors:
-                                raise TransferContentException(url_prefix,
+                                raise TransferIOException(url_prefix,
                                     "Retryable socket error: %s" % e.reason)
-                        else:
-                                raise ManifestRetrievalError(
-                                    "Could not retrieve manifest from"
-                                    " '%s'\nURLError, reason: %s" %
-                                    (url_prefix, e.reason))
 
                 raise ManifestRetrievalError("Could not retrieve manifest"
                     " '%s' from '%s'\nURLError, reason: %s" %
@@ -360,12 +350,12 @@ def get_manifest(img, fmri):
         except socket.error, e:
                 if isinstance(e.args, tuple) \
                      and e.args[0] in retryable_socket_errors:
-                        raise TransferContentException(url_prefix,
+                        raise TransferIOException(url_prefix,
                             "Retryable socket error: %s" % e)
-                else:
-                        raise ManifestRetrievalError("Could not retrieve"
-                            " manifest from '%s'\nsocket error, reason: %s" %
-                            (url_prefix, e))
+
+                raise ManifestRetrievalError("Could not retrieve"
+                    " manifest from '%s'\nsocket error, reason: %s" %
+                    (url_prefix, e))
         except (ValueError, httplib.IncompleteRead):
                 raise TransferContentException(url_prefix,
                     "Incomplete Read from remote host")

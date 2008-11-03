@@ -459,6 +459,29 @@ class TransportFailures(TransportException):
                         s += "\n"
                 return s
 
+class TransferIOException(TransportException):
+        """Raised for retryable IO errors on underlying transport.
+        Protocol errors are TransferContentExceptions, timeouts
+        are TransferTimedOutExceptions."""
+        def __init__(self, url, reason=None):
+                TransportException.__init__(self)
+                self.url = url
+                self.reason = reason
+
+        def __str__(self):
+                s = "IO Error while communicating with '%s'" % self.url
+                if self.reason:
+                        s += ": %s" % self.reason
+                s += "."
+                return s
+
+        def __cmp__(self, other):
+                if not isinstance(other, TransferIOException):
+                        return -1        
+                r = cmp(self.url, other.url)
+                if r != 0:
+                        return r
+                return cmp(self.reason, other.reason)
 
 class TransferTimedOutException(TransportException):
         """Raised when the transfer times out, or is terminated with a
