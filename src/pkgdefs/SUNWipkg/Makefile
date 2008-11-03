@@ -47,7 +47,7 @@ prototype: FRC
 		$$1 == "f" { \
 			$$4 = "444" \
 		} \
-		$$1 == "f" && $$3 ~ /usr\/lib\/pkg.depotd|usr\/bin\/pkg(send)?/ { \
+		$$1 == "f" && $$3 ~ /usr\/lib\/pkg.depotd|usr\/bin\/pkg(send)?|lib\/svc\/method\/svc-pkg-depot/ { \
 			$$4 = "755" \
 		} \
 		{ \
