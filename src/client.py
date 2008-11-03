@@ -44,6 +44,7 @@
 
 import getopt
 import gettext
+import locale
 import itertools
 import os
 import socket
@@ -1806,7 +1807,7 @@ def image_create(img, args):
                         return 1
 
         if not auth_name and not auth_url:
-                usage("image-create requires an authority argument")
+                usage(_("image-create requires an authority argument"))
 
         if not auth_name or not auth_url:
                 usage(_("image-create requires authority argument to be of "
@@ -1978,8 +1979,8 @@ def main_func():
         __img = img = image.Image()
         img.history.client_name = PKG_CLIENT_NAME
 
-        # XXX /usr/lib/locale is OpenSolaris-specific.
-        gettext.install("pkg", "/usr/lib/locale")
+        locale.setlocale(locale.LC_ALL, '')
+        gettext.install("pkg", "/usr/share/locale")
 
         try:
                 opts, pargs = getopt.getopt(sys.argv[1:], "R:D:", ["debug="])

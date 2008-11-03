@@ -48,6 +48,10 @@ except ImportError:
 import pkg.client.image as image
 import pkg.client.progress as progress
 
+# Put _() in the global namespace
+import __builtin__
+__builtin__._ = gettext.gettext
+
 START_DELAY_DEFAULT = 120
 REFRESH_PERIOD_DEFAULT = "Never"
 SHOW_NOTIFY_ICON_DEFAULT = True
@@ -76,8 +80,18 @@ MONTHLY_SECS = 30*24*60*60
 
 class UpdateManagerNotifier:
         def __init__(self):
-                # Required for pkg strings used in pkg API
-                gettext.install("pkg", "/usr/lib/locale")
+                try:
+                        self.application_dir = os.environ["UPDATE_MANAGER_NOTIFIER_ROOT"]
+                except KeyError:
+                        self.application_dir = "/"
+                locale.setlocale(locale.LC_ALL, '')
+                for module in (gettext, gtk.glade):
+                        module.bindtextdomain("pkg", self.application_dir + \
+                            "/usr/share/locale")
+                        module.textdomain("pkg")
+                # XXX Remove and use _() where self._ and self.parent._ are being used
+                self._ = gettext.gettext
+
                 self.pr = None
                 self.last_check_filename = None
                 self.time_until_next_check = 0
@@ -87,8 +101,6 @@ class UpdateManagerNotifier:
                 self.last_check_time = 0
                 self.refresh_period = 0
 
-                locale.setlocale(locale.LC_ALL, '')
-                self._ = gettext.gettext
                 self.client = gconf.client_get_default()
                 self.start_delay  =  self.get_start_delay()
                 # Allow gtk.main loop to start as quickly as possible

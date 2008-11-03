@@ -1,0 +1,892 @@
+# Copyright (C) 2008 Sun Microsystems, Inc
+# This file is distributed under the same license as the packagemanager package.
+#
+# Desktop Discuss <desktop-discuss@opensolaris.org>
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: packagemanager HEAD\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2008-05-29 17:42+0900\n"
+"PO-Revision-Date: 2008-05-13 22:01+0900\n"
+"Last-Translator: desktop-discuss@opensolaris.org\n"
+"Language-Team: desktop-discuss@opensolaris.org\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../data/l10n.py:6
+msgid "Communication"
+msgstr "通信"
+
+#: ../data/l10n.py:7
+msgid "Mail"
+msgstr "メール"
+
+#: ../data/l10n.py:8
+msgid "Localization"
+msgstr "ローカリゼーション"
+
+#: ../data/l10n.py:9
+msgid "Social Software"
+msgstr "ソーシャルソフトウェア"
+
+#: ../data/l10n.py:10
+msgid "Viewer"
+msgstr "ビューア"
+
+#: ../data/l10n.py:11
+msgid "RasterGraphics"
+msgstr "ラスターグラフィックス"
+
+#: ../data/l10n.py:12
+msgid "2DGraphics"
+msgstr "2D グラフィックス"
+
+#: ../data/l10n.py:13
+msgid "Photography"
+msgstr "写真"
+
+#: ../data/l10n.py:14
+msgid "CLI tools"
+msgstr "CLI ツール"
+
+#: ../data/l10n.py:15
+msgid "Print"
+msgstr "印刷"
+
+#: ../data/packagemanager.desktop.in.h:1
+msgid "Install, update and remove software packages"
+msgstr "ソフトウエアパッケージをインストール、更新または削除します"
+
+#: ../data/packagemanager.desktop.in.h:2 ../locale/packagemanager.glade.h:33
+#: ../packagemanager.glade.h:44
+msgid "Package Manager"
+msgstr "パッケージマネージャー"
+
+#: ../gui/installupdate.py:127 ../gui/remove.py:115
+#, python-format
+msgid ""
+"GUI will not respond to any event! %s.                                 Check "
+"create_plan_dialog_gui()"
+msgstr ""
+"GUI がイベントに応答しません。%s。                                 "
+"create_plan_dialog_gui() をチェックしてください"
+
+#: ../gui/installupdate.py:142
+#, python-format
+msgid ""
+"GUI will not respond to any event! %s.                                 Check "
+"create_network_down_gui()"
+msgstr ""
+"GUI がイベントに応答しません。%s。                                 "
+"create_network_down_gui() をチェックしてください"
+
+#: ../gui/installupdate.py:167
+#, python-format
+msgid "GUI will not respond to any event! %s.Check create_installupdate_gui()"
+msgstr ""
+"GUI がイベントに応答しません。%s。create_installupdate_gui() をチェックしてく"
+"ださい"
+
+#: ../gui/installupdate.py:184
+#, python-format
+msgid "GUI will not respond to any event! %s.Check create_downloaddialog_gui()"
+msgstr ""
+"GUI がイベントに応答しません。%s。create_downloaddialog_gui() をチェックして"
+"ください"
+
+#. print "Updating" + p.destination_fmri.get_name()
+#: ../gui/installupdate.py:264
+msgid "Updating:  "
+msgstr "更新中:  "
+
+#. print "Installing" + p.destination_fmri.get_name()
+#: ../gui/installupdate.py:279
+msgid "Installing:  "
+msgstr "インストール中:  "
+
+#: ../gui/installupdate.py:350 ../gui/remove.py:197
+#, python-format
+msgid "Evaluating: %s\n"
+msgstr "評価中: %s\n"
+
+#: ../gui/installupdate.py:524
+msgid "Downloading: "
+msgstr "ダウンロード中: "
+
+#: ../gui/installupdate.py:572
+#, python-format
+msgid "%d packages will be updated\n"
+msgstr "%d パッケージが更新されます\n"
+
+#: ../gui/installupdate.py:574
+#, python-format
+msgid "%d package will be updated\n"
+msgstr "%d パッケージが更新されます\n"
+
+#: ../gui/installupdate.py:576
+#, python-format
+msgid ""
+"%d packages will be installed\n"
+"\n"
+msgstr ""
+"%d パッケージがインストールされます\n"
+"\n"
+
+#: ../gui/installupdate.py:578
+#, python-format
+msgid ""
+"%d package will be installed\n"
+"\n"
+msgstr ""
+"%d パッケージがインストールされます\n"
+"\n"
+
+#: ../gui/installupdate.py:581
+#, python-format
+msgid "%d MB will be downloaded"
+msgstr "%dM バイトがダウンロードされます"
+
+#: ../gui/remove.py:140
+#, python-format
+msgid "GUI will not respond to any event! %s.Check create_remove_gui()"
+msgstr ""
+"GUI がイベントに応答しません。%s。create_remove_gui() をチェックしてください"
+
+#: ../gui/remove.py:237
+#, python-format
+msgid ""
+"%d packages will be removed\n"
+"\n"
+msgstr ""
+"%d パッケージが削除されます\n"
+"\n"
+
+#: ../gui/remove.py:239
+#, python-format
+msgid ""
+"%d package will be removed\n"
+"\n"
+msgstr ""
+"%d パッケージが削除されます\n"
+"\n"
+
+#: ../locale/packagemanager.glade.h:1 ../packagemanager.glade.h:1
+msgid ""
+"6 packages will be installed\n"
+"28 packages will be updated\n"
+"\n"
+"20.1 MB will be downloaded"
+msgstr ""
+"6 パッケージがインストールされます\n"
+"28 パッケージが更新されます\n"
+"\n"
+"20.1M バイトがダウンロードされます"
+
+#: ../locale/packagemanager.glade.h:5
+msgid "<b>Apply the following changes?</b>"
+msgstr "<b>次の変更を適用しますか ?</b>"
+
+#: ../locale/packagemanager.glade.h:6 ../packagemanager.glade.h:6
+msgid "<b>PACKAGE NAME</b>"
+msgstr "<b>パッケージ名</b>"
+
+#: ../locale/packagemanager.glade.h:7 ../packagemanager.glade.h:7
+msgid "<b>Summary</b>"
+msgstr "<b>概要</b>"
+
+#: ../locale/packagemanager.glade.h:8 ../packagemanager.glade.h:8
+msgid "<i>Repository:</i>"
+msgstr "<i>リポジトリ:</i>"
+
+#: ../locale/packagemanager.glade.h:9 ../packagemanager.glade.h:9
+msgid "About"
+msgstr "バージョン情報"
+
+#: ../locale/packagemanager.glade.h:10 ../packagemanager.glade.h:11
+msgid "About dialog"
+msgstr "ダイアログについて"
+
+#: ../locale/packagemanager.glade.h:11
+msgid "Apply"
+msgstr "適用"
+
+#: ../locale/packagemanager.glade.h:12
+msgid "Applying changes"
+msgstr "変更を適用する"
+
+#: ../locale/packagemanager.glade.h:13 ../packagemanager.glade.h:14
+msgid "Cancel"
+msgstr "キャンセル"
+
+#: ../locale/packagemanager.glade.h:14
+msgid "Changes applied"
+msgstr "変更が適用されました"
+
+#: ../locale/packagemanager.glade.h:15 ../packagemanager.glade.h:26
+msgid "Dependencies"
+msgstr "依存関係"
+
+#: ../locale/packagemanager.glade.h:16 ../packagemanager.glade.h:27
+msgid "Deselect"
+msgstr "選択解除"
+
+#: ../locale/packagemanager.glade.h:17 ../packagemanager.glade.h:28
+msgid "Deselect selected packages"
+msgstr "選択したパッケージを選択解除します"
+
+#: ../locale/packagemanager.glade.h:18
+msgid "Download Preferences"
+msgstr "設定のダウンロード"
+
+#: ../locale/packagemanager.glade.h:19
+msgid "Download Preferences..."
+msgstr "設定のダウンロード..."
+
+#: ../locale/packagemanager.glade.h:20
+msgid "Downloading Files"
+msgstr "ファイルのダウンロード中"
+
+#: ../locale/packagemanager.glade.h:21
+msgid "Downloading Package Information"
+msgstr "パッケージ情報のダウンロード中"
+
+#: ../locale/packagemanager.glade.h:22 ../packagemanager.glade.h:32
+msgid "General Info"
+msgstr "一般情報"
+
+#: ../locale/packagemanager.glade.h:23
+msgid "History..."
+msgstr "履歴..."
+
+#: ../locale/packagemanager.glade.h:24 ../packagemanager.glade.h:33
+msgid "Install / Update"
+msgstr "インストール/更新"
+
+#: ../locale/packagemanager.glade.h:25 ../packagemanager.glade.h:34
+msgid "Install / Update Confirmation"
+msgstr "インストール/更新の確認"
+
+#: ../locale/packagemanager.glade.h:26 ../packagemanager.glade.h:35
+msgid "Install or Update selected packages"
+msgstr "選択したパッケージをインストールまたは更新します"
+
+#: ../locale/packagemanager.glade.h:27 ../packagemanager.glade.h:36
+msgid "Install/Update"
+msgstr "インストール/更新"
+
+#: ../locale/packagemanager.glade.h:28
+msgid "Installed Files"
+msgstr "インストール済みファイル"
+
+#: ../locale/packagemanager.glade.h:29
+msgid "Lock"
+msgstr "ロック"
+
+#: ../locale/packagemanager.glade.h:30
+msgid "Lock selected packages"
+msgstr "選択したパッケージをロックします"
+
+#: ../locale/packagemanager.glade.h:31
+msgid "Manage Repositories"
+msgstr "リポジトリの管理"
+
+#: ../locale/packagemanager.glade.h:32
+msgid "Online Help"
+msgstr "オンラインヘルプ"
+
+#: ../locale/packagemanager.glade.h:34
+msgid "Preferences options for download"
+msgstr "ダウンロード用の設定オプション"
+
+#: ../locale/packagemanager.glade.h:35 ../packagemanager.glade.h:47
+msgid "Quit"
+msgstr "終了"
+
+#: ../locale/packagemanager.glade.h:36 ../packagemanager.glade.h:48
+msgid "Quit application"
+msgstr "アプリケーションを終了します"
+
+#: ../locale/packagemanager.glade.h:37
+msgid "Redo"
+msgstr "再実行"
+
+#: ../locale/packagemanager.glade.h:38
+msgid "Redo last action"
+msgstr "最後のアクションを再実行します"
+
+#: ../locale/packagemanager.glade.h:39 ../packagemanager.glade.h:49
+msgid "Reload"
+msgstr "再読み込み"
+
+#: ../locale/packagemanager.glade.h:40 ../packagemanager.glade.h:50
+msgid "Remove"
+msgstr "削除"
+
+#: ../locale/packagemanager.glade.h:41 ../packagemanager.glade.h:53
+msgid "Remove selected packages"
+msgstr "選択したパッケージを削除します"
+
+#: ../locale/packagemanager.glade.h:42
+msgid "Repositories"
+msgstr "リポジトリ"
+
+#: ../locale/packagemanager.glade.h:43
+msgid "Repositories..."
+msgstr "リポジトリ..."
+
+#: ../locale/packagemanager.glade.h:44 ../packagemanager.glade.h:58
+msgid "Search:"
+msgstr "検索:"
+
+#: ../locale/packagemanager.glade.h:45 ../packagemanager.glade.h:59
+msgid "Select All"
+msgstr "すべて選択"
+
+#: ../locale/packagemanager.glade.h:46 ../packagemanager.glade.h:60
+msgid "Select All Items"
+msgstr "すべての項目を選択"
+
+#: ../locale/packagemanager.glade.h:47 ../packagemanager.glade.h:64
+msgid "Short description"
+msgstr "簡単な説明"
+
+#: ../locale/packagemanager.glade.h:48 ../packagemanager.glade.h:66
+msgid "Show:"
+msgstr "表示:"
+
+#: ../locale/packagemanager.glade.h:49
+msgid ""
+"The chosen action also affects other packages. The following changes are "
+"required to proceed:"
+msgstr ""
+"選択したアクションは他のパッケージにも影響を与えます。続行するには次の変更が"
+"必要です。"
+
+#: ../locale/packagemanager.glade.h:50
+msgid "Undo"
+msgstr "元に戻す"
+
+#: ../locale/packagemanager.glade.h:51
+msgid "Undo action"
+msgstr "アクションを元に戻す"
+
+#: ../locale/packagemanager.glade.h:52
+msgid "Unlock"
+msgstr "ロック解除"
+
+#: ../locale/packagemanager.glade.h:53
+msgid "Unlock selected packages"
+msgstr "選択したパッケージのロックを解除します"
+
+#: ../locale/packagemanager.glade.h:54 ../packagemanager.glade.h:73
+msgid "Update All"
+msgstr "すべて更新"
+
+#: ../locale/packagemanager.glade.h:55 ../packagemanager.glade.h:74
+msgid "Update all packages"
+msgstr "すべてのパッケージを更新します"
+
+#: ../locale/packagemanager.glade.h:56
+msgid "View History"
+msgstr "履歴の表示"
+
+#: ../locale/packagemanager.glade.h:57 ../packagemanager.glade.h:76
+msgid "_Edit"
+msgstr "編集(_E)"
+
+#: ../locale/packagemanager.glade.h:58 ../packagemanager.glade.h:77
+msgid "_File"
+msgstr "ファイル(_F)"
+
+#: ../locale/packagemanager.glade.h:59 ../packagemanager.glade.h:78
+msgid "_Help"
+msgstr "ヘルプ(_H)"
+
+#: ../locale/packagemanager.glade.h:60 ../packagemanager.glade.h:79
+msgid "_Package"
+msgstr "パッケージ(_P)"
+
+#: ../locale/packagemanager.glade.h:61
+msgid "_Settings"
+msgstr "設定(_S)"
+
+#: ../packagemanager.glade.h:5
+msgid "<b>Can't establish a connection to the repository</b>"
+msgstr "<b>リポジトリへの接続を確立できません</b>"
+
+#: ../packagemanager.glade.h:10
+msgid "About Glade"
+msgstr "グレードについて"
+
+#: ../packagemanager.glade.h:12
+msgid "Architecture (CPU):"
+msgstr "アーキテクチャ (CPU):"
+
+#: ../packagemanager.glade.h:13
+msgid "Build type:"
+msgstr "ビルドタイプ:"
+
+#: ../packagemanager.glade.h:15
+msgid "Checking package dependencies..."
+msgstr "パッケージの依存関係をチェック中..."
+
+#: ../packagemanager.glade.h:16
+msgid "Clear"
+msgstr "クリア"
+
+#: ../packagemanager.glade.h:17
+msgid "Close"
+msgstr "閉じる"
+
+#: ../packagemanager.glade.h:18
+msgid "Copy"
+msgstr "コピー"
+
+#: ../packagemanager.glade.h:19
+msgid ""
+"Copyright 2008 Sun Microsystems, Inc.  \n"
+"All rights reserved.\n"
+"Use is subject to license terms."
+msgstr ""
+"Copyright 2008 Sun Microsystems, Inc.  \n"
+"All rights reserved.\n"
+"使用はライセンス契約条件に従うものとします。"
+
+#: ../packagemanager.glade.h:22
+msgid "Custom Package Options"
+msgstr "カスタムパッケージのオプション"
+
+#: ../packagemanager.glade.h:23
+msgid "Cut"
+msgstr "カット"
+
+#: ../packagemanager.glade.h:24
+msgid "Cut action"
+msgstr "アクションのカット"
+
+#: ../packagemanager.glade.h:25
+msgid "Debug"
+msgstr "デバッグ"
+
+#: ../packagemanager.glade.h:29
+msgid "Downloading Packages"
+msgstr "パッケージのダウンロード中"
+
+#: ../packagemanager.glade.h:30
+msgid "Downloading files..."
+msgstr "ファイルのダウンロード中..."
+
+#: ../packagemanager.glade.h:31
+msgid "Files Details"
+msgstr "ファイルの詳細"
+
+#: ../packagemanager.glade.h:37
+msgid "Install/Upgrade Check"
+msgstr "インストール/更新のチェック"
+
+#: ../packagemanager.glade.h:38
+msgid "Installing Packages"
+msgstr "パッケージのインストール中"
+
+#: ../packagemanager.glade.h:39
+msgid "Installing Packages..."
+msgstr "パッケージのインストール中..."
+
+#: ../packagemanager.glade.h:40
+msgid "Network Problem"
+msgstr "ネットワークの問題"
+
+#: ../packagemanager.glade.h:41
+msgid "Next"
+msgstr "次へ"
+
+#: ../packagemanager.glade.h:42
+msgid "Non-Debug"
+msgstr "デバッグなし"
+
+#: ../packagemanager.glade.h:43
+msgid "Package Download Preferences"
+msgstr "パッケージダウンロードの設定"
+
+#: ../packagemanager.glade.h:45
+msgid "Paste"
+msgstr "ペースト"
+
+#: ../packagemanager.glade.h:46
+msgid "Please check your Internet settings."
+msgstr "インターネット設定をチェックしてください。"
+
+#: ../packagemanager.glade.h:51
+msgid "Remove Check"
+msgstr "チェックの削除"
+
+#: ../packagemanager.glade.h:52
+msgid "Remove Confirmation"
+msgstr "確認の削除"
+
+#: ../packagemanager.glade.h:54
+msgid "Removing Packages"
+msgstr "パッケージを削除中"
+
+#: ../packagemanager.glade.h:55
+msgid "Removing Packages..."
+msgstr "パッケージを削除中..."
+
+#: ../packagemanager.glade.h:56
+msgid "Reset"
+msgstr "リセット"
+
+#: ../packagemanager.glade.h:57
+msgid "SPARC"
+msgstr "SPARC"
+
+#: ../packagemanager.glade.h:61
+msgid "Select Updates"
+msgstr "更新を選択"
+
+#: ../packagemanager.glade.h:62
+msgid ""
+"Select default download preferences for all packages.\n"
+"Click Reset to reset download preferences to the initial settings."
+msgstr ""
+"すべてのパッケージ用にデフォルトのダウンロード設定を選択します。\n"
+"ダウンロード設定を初期設定に戻すには「リセット」をクリックします。"
+
+#: ../packagemanager.glade.h:65
+msgid "Show Details"
+msgstr "詳細を表示"
+
+#: ../packagemanager.glade.h:67
+msgid ""
+"This action affects other packages.\n"
+"Review the packages to be installed or updated.\n"
+"Click Next to continue."
+msgstr ""
+"このアクションは他のパッケージに影響を与えます。\n"
+"インストールまたは更新されるパッケージを確認します。\n"
+"続行するには「次へ」をクリックします。"
+
+#: ../packagemanager.glade.h:70
+msgid ""
+"This action affects other packages.\n"
+"Review the packages to be removed.\n"
+"Click Next to continue."
+msgstr ""
+"このアクションは他のパッケージに影響を与えます。\n"
+"削除されるパッケージを確認します。\n"
+"続行するには「次へ」をクリックします。"
+
+#: ../packagemanager.glade.h:75
+msgid "X86"
+msgstr "X86"
+
+#. self.pkgconfig = packagemanagerconfig.PackageManagerConfig() #Config
+#. self.pkgconfig.set_config_file_path(os.path.expanduser("~")+"/.packagemanager/config")  #Config path
+#: ../packagemanager.py:103
+msgid "Package Manager - revision 0.1"
+msgstr "パッケージマネージャー - バージョン 0.1"
+
+#: ../packagemanager.py:126
+#, python-format
+msgid "GUI will not respond to any event! %s.Check declare_signals()"
+msgstr ""
+"GUI がイベントに応答しません。%s。declare_signals() をチェックしてください"
+
+#: ../packagemanager.py:255 ../packagemanager.py:300
+msgid "Name"
+msgstr "名前"
+
+#: ../packagemanager.py:263
+msgid "Installed Version"
+msgstr "インストール済みバージョン"
+
+#: ../packagemanager.py:269
+msgid "Latest Version"
+msgstr "最新バージョン"
+
+#: ../packagemanager.py:275
+msgid "Rating"
+msgstr "定格"
+
+#: ../packagemanager.py:281
+msgid "Description"
+msgstr "説明"
+
+#. TODO: check if needed
+#: ../packagemanager.py:440 ../packagemanager.py:448 ../packagemanager.py:899
+#: ../packagemanager.py:904 ../packagemanager.py:972 ../packagemanager.py:977
+#: ../packagemanager.py:979 ../packagemanager.py:1467
+#: ../packagemanager.py:1472 ../packagemanager.py:1540
+msgid "All"
+msgstr "すべて"
+
+#: ../packagemanager.py:442
+msgid "Meta Packages"
+msgstr "メタパッケージ"
+
+#: ../packagemanager.py:443 ../packagemanager.py:1571
+#: ../packagemanager.py:1572 ../packagemanager.py:1573
+#: ../packagemanager.py:1574 ../packagemanager.py:1575
+#: ../packagemanager.py:1576 ../packagemanager.py:1577
+#: ../packagemanager.py:1578 ../packagemanager.py:1579
+msgid "Applications Desktop"
+msgstr "アプリケーションデスクトップ"
+
+#: ../packagemanager.py:444
+msgid "Applications Web-Based"
+msgstr "アプリケーション Web ベース"
+
+#: ../packagemanager.py:445 ../packagemanager.py:1581
+#: ../packagemanager.py:1582 ../packagemanager.py:1583
+#: ../packagemanager.py:1585
+msgid "Operating System"
+msgstr "オペレーティングシステム"
+
+#: ../packagemanager.py:446
+msgid "User Environment"
+msgstr "ユーザーの環境"
+
+#: ../packagemanager.py:447
+msgid "Web Infrastructure"
+msgstr "Web インフラストラクチャー"
+
+#: ../packagemanager.py:452 ../packagemanager.py:936
+msgid "All Packages"
+msgstr "すべてのパッケージ"
+
+#: ../packagemanager.py:454 ../packagemanager.py:938
+msgid "Installed Packages"
+msgstr "インストール済みパッケージ"
+
+#: ../packagemanager.py:455 ../packagemanager.py:940
+msgid "Updates"
+msgstr "更新"
+
+#. self.filter_list.append([self._('Locked Packages'),])
+#. self.filter_list.append(["",])
+#: ../packagemanager.py:459 ../packagemanager.py:946
+msgid "Selected Packages"
+msgstr "選択したパッケージ"
+
+#: ../packagemanager.py:548
+#, python-format
+msgid "%d packages listed"
+msgstr "%d パッケージがリストされました"
+
+#: ../packagemanager.py:549
+#, python-format
+msgid "%d installed"
+msgstr "%d がインストールされました"
+
+#: ../packagemanager.py:550
+#, python-format
+msgid "%d selected"
+msgstr "%d が選択されました"
+
+#: ../packagemanager.py:551
+#, python-format
+msgid "%d broken"
+msgstr "%d が壊れています"
+
+#: ../packagemanager.py:819
+msgid "Fetching description..."
+msgstr "説明を取得中..."
+
+#: ../packagemanager.py:820 ../packagemanager.py:821 ../packagemanager.py:822
+msgid "Fetching information..."
+msgstr "情報を取得中..."
+
+#: ../packagemanager.py:826
+msgid "Description not available for this package..."
+msgstr "このパッケージの説明がありません..."
+
+#: ../packagemanager.py:827
+msgid "Files Details not available for this package..."
+msgstr "このパッケージのファイルの詳細がありません..."
+
+#: ../packagemanager.py:828
+msgid "Dependencies info not available for this package..."
+msgstr "このパッケージの依存性の情報がありません..."
+
+#: ../packagemanager.py:829
+msgid "Information not available for this package..."
+msgstr "このパッケージの情報がありません..."
+
+#: ../packagemanager.py:834
+#, python-format
+msgid "Root: %s\n"
+msgstr "ルート: %s\n"
+
+#: ../packagemanager.py:835
+msgid "Dependencies:\n"
+msgstr "依存関係:\n"
+
+#: ../packagemanager.py:838
+msgid ""
+"Information for installed package:\n"
+"\n"
+msgstr ""
+"インストール済みパッケージの情報:\n"
+"\n"
+
+#: ../packagemanager.py:840
+msgid ""
+"Information for latest available package:\n"
+"\n"
+msgstr ""
+"最新の利用可能なパッケージの情報:\n"
+"\n"
+
+#: ../packagemanager.py:857
+msgid "depend"
+msgstr "従属"
+
+#: ../packagemanager.py:860
+msgid "dir"
+msgstr "ディレクトリ"
+
+#: ../packagemanager.py:862
+msgid "file"
+msgstr "ファイル"
+
+#. instbuffer.insert(institer,"\t"+self.locale_distinguished_name(a)+"\n")
+#. elif cmp(a.name,self.N_("driver")) == 0:
+#. print a.distinguished_name()
+#: ../packagemanager.py:867
+msgid "hardlink"
+msgstr "ハードリンク"
+
+#: ../packagemanager.py:869
+msgid "link"
+msgstr "リンク"
+
+#: ../packagemanager.py:871
+msgid "legacy"
+msgstr "旧バージョン"
+
+#: ../packagemanager.py:872 ../packagemanager.py:874
+msgid "pkg"
+msgstr "パッケージ"
+
+#: ../packagemanager.py:875
+msgid "name"
+msgstr "名前"
+
+#: ../packagemanager.py:876
+msgid "desc"
+msgstr "説明"
+
+#: ../packagemanager.py:877
+#, python-format
+msgid "  Description:\t%s\n"
+msgstr "  説明:\t%s\n"
+
+#: ../packagemanager.py:885
+#, python-format
+msgid "  Name:\t\t%s\n"
+msgstr "  名前:\t\t%s\n"
+
+#: ../packagemanager.py:886
+#, python-format
+msgid "  FMRI:\t\t%s\n"
+msgstr "  FMRI:\t\t%s\n"
+
+#: ../packagemanager.py:887
+#, python-format
+msgid "  Version:\t\t%s\n"
+msgstr "  バージョン:\t\t%s\n"
+
+#: ../packagemanager.py:888
+#, python-format
+msgid "  Packaged:\t%s\n"
+msgstr "  パッケージ化されました:\t%s\n"
+
+#: ../packagemanager.py:943
+msgid "Locked Packages"
+msgstr "ロックされたパッケージ"
+
+#: ../packagemanager.py:1311
+msgid "..."
+msgstr "..."
+
+#. TODO Instead trying root image, maybe popup window
+#. with question to which image switch??
+#: ../packagemanager.py:1385
+#, python-format
+msgid "%s is not valid image, trying root image"
+msgstr "%s は有効なイメージではありません。ルートイメージを試しています"
+
+#. TODO if this function returns None, the popup gui with catalog
+#. Add/remove/select should be shown.
+#: ../packagemanager.py:1401
+#, python-format
+msgid "%s is not valid root image, return None"
+msgstr "%s は有効なルートイメージではありません。None を返します"
+
+#: ../packagemanager.py:1473
+msgid "All packages"
+msgstr "すべてのパッケージ"
+
+#. self.add_package_to_category(_("All"),None,None,None);
+#. Category names until xdg is imported.
+#. from xdg.DesktopEntry import *
+#. entry = DesktopEntry ()
+#. directory = '/usr/share/desktop-directories'
+#. for root, dirs, files in os.walk (directory):
+#. for name in files:
+#. entry.parse (os.path.join (root, name))
+#. self.add_category_to_section (entry.getName (), self._('Applications Desktop'))
+#: ../packagemanager.py:1553 ../packagemanager.py:1554
+#: ../packagemanager.py:1571
+msgid "Accessories"
+msgstr "アクセサリ"
+
+#: ../packagemanager.py:1555 ../packagemanager.py:1557
+#: ../packagemanager.py:1559 ../packagemanager.py:1572
+msgid "Games"
+msgstr "ゲーム"
+
+#: ../packagemanager.py:1556 ../packagemanager.py:1558
+#: ../packagemanager.py:1560 ../packagemanager.py:1573
+#: ../packagemanager.py:1582
+msgid "Graphics"
+msgstr "グラフィックス"
+
+#: ../packagemanager.py:1574
+msgid "Internet"
+msgstr "インターネット"
+
+#: ../packagemanager.py:1575 ../packagemanager.py:1587
+msgid "Office"
+msgstr "オフィス"
+
+#: ../packagemanager.py:1576
+msgid "Sound & Video"
+msgstr "サウンドとビデオ"
+
+#: ../packagemanager.py:1577
+msgid "System Tools"
+msgstr "システムツール"
+
+#: ../packagemanager.py:1578
+msgid "Universal Access"
+msgstr "ユニバーサルアクセス"
+
+#. Can be twice :)
+#: ../packagemanager.py:1579 ../packagemanager.py:1585
+msgid "Developer Tools"
+msgstr "開発者ツール"
+
+#: ../packagemanager.py:1581
+msgid "Core"
+msgstr "コア"
+
+#: ../packagemanager.py:1583
+msgid "Media"
+msgstr "メディア"
+
+#: ../packagemanager.py:1588
+msgid "Office2"
+msgstr "オフィス 2"

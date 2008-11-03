@@ -514,9 +514,9 @@ class Image(object):
                                         raise
                         # OpenSSL.crypto.Error
                         except osc.Error, e:
-                                emsg(_("Certificate for authority %s at" \
-                                    " %s has an invalid format.") % \
-                                    (pfx, ssl_cert))
+                                emsg(_("Certificate for authority %(pfx)s at" \
+                                    " %(ssl_cert)s has an invalid format.") % \
+                                    vars())
                                 return False
 
                         if cert.has_expired():
@@ -2012,7 +2012,7 @@ class Image(object):
 
                         try:
                                 for line in res.read().splitlines():
-                                        fields = line.split(None, 3)
+                                        fields = line.split()
                                         if len(fields) < 4:
                                                 yield fields[:2] + [ "", "" ]
                                         else:

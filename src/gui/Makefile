@@ -31,7 +31,7 @@ INSTALL = /usr/sbin/install
 ROOT = ../../proto/root_${MACH}/usr
 ROOTUSRLIB = $(ROOT)/lib
 ROOTSHARE = $(ROOT)/share/package-manager
-ROOTHELPSHARE = $(ROOT)/share/gnome/help/package-manager/C
+ROOTHELPSHARE = $(ROOT)/share/gnome/help/package-manager
 ROOTDESKTOPSHARE = $(ROOT)/share/applications
 ROOTDATASHARE = $(ROOTSHARE)/data
 ROOTPYTHON = $(ROOTUSRLIB)/python2.4
@@ -61,9 +61,11 @@ ICONS = \
    data/icons/status_installed.png \
    data/icons/status_newupdate.png 
 
+HELP_DIR:sh = echo help/*
+
 HELP = \
-   data/package-manager.xml \
-   data/legal.xml 
+   package-manager.xml \
+   legal.xml 
 
 GLADEICONS = \
    data/PM_app_48x.png \
@@ -90,7 +92,7 @@ ROOTCATALOG = $(CATALOG:data/%=$(ROOTDATASHARE)/%)
 
 ROOTGLADEICONS = $(GLADEICONS:data/%=$(ROOTSHARE)/%)
 
-ROOTHELP = $(HELP:data/%=$(ROOTHELPSHARE)/%)
+ROOTHELP = $(HELP_DIR:help/%=$(ROOTHELPSHARE)/%)
 
 ROOTPYGLADE = $(ROOTSHARE)/packagemanager.glade
 
@@ -117,23 +119,20 @@ link := TARGET = link
 link-clean := TARGET = link-clean
 
 all: data/packagemanager.desktop
-	cd po; pwd; $(MAKE) $(TARGET)
 
 install: all $(ROOTCOMPONENTS)
-	cd po; pwd; $(MAKE) $(TARGET)
 
 clean clobber:
-	cd po; pwd; $(MAKE) $(TARGET)
 	rm -f $(PYCMODS)
 	rm -f $(DESKTOP)
-	rm -f po/.intltool-merge-cache
+	rm -f ../po/.intltool-merge-cache
    
 modules/%.pyc: modules/%.py
 	python -m compileall -l $(@D)
 
 data/packagemanager.desktop: data/packagemanager.desktop.in
 	cd data; pwd; \
-	  LC_ALL=C intltool-merge -d -u -c ../po/.intltool-merge-cache ../po packagemanager.desktop.in packagemanager.desktop
+	  LC_ALL=C intltool-merge -d -u -c ../../po/.intltool-merge-cache ../../po packagemanager.desktop.in packagemanager.desktop
 
 PWD:sh = pwd
 
@@ -159,8 +158,17 @@ proto: $(ROOT)
 $(ROOTDIRS):
 	mkdir -m 0755 -p $@
 
-$(ROOTHELPSHARE)/%: data/%
-	rm -f $@; $(INSTALL) -f $(ROOTHELPSHARE) -m 0644 $<
+help/%/%.mo: help/%/%.po
+	msgfmt -o $@ $<
+
+help/%/package-manager.xml: help/%/%.mo
+	xml2po -t $< -o $@ $@.in
+
+$(ROOTHELPSHARE)/%: help/%/package-manager.xml
+	rm -rf $@
+	$(INSTALL) -d -m 0755 $@
+	$(INSTALL) -f $@ -m 0644 $<
+	$(INSTALL) -f $@ -m 0644 $(<D)/legal.xml
 
 $(ROOTDATASHARE)/%: data/%
 	rm -f $@; $(INSTALL) -f $(ROOTDATASHARE) -m 0644 $<

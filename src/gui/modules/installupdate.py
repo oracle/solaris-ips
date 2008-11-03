@@ -24,7 +24,6 @@
 #
 
 import errno
-import gettext # XXX Temporary workaround
 import sys
 import time
 import datetime
@@ -51,9 +50,6 @@ class InstallUpdate(progress.ProgressTracker):
             ips_update = False, action = -1):
                 if action == -1:
                         return
-                # XXX Workaround as BE is using msg(_("message")) 
-                # which bypasses the self._ mechanism the GUI is using
-                gettext.install("pkg","/usr/lib/locale")
                 progress.ProgressTracker.__init__(self)
                 api_o.progresstracker = self
                 self.update_list = []
@@ -141,8 +137,8 @@ class InstallUpdate(progress.ProgressTracker):
                         self.w_installupdate_dialog.set_title(self.parent._(\
                             "Remove Confirmation"))
                         self.w_information_label.set_text(\
-                            self.parent._("This action affects other packages.\n" + \
-                            "Review the packages to be removed.\n" + \
+                            self.parent._("This action affects other packages.\n" \
+                            "Review the packages to be removed.\n" \
                             "Click Next to continue."))
                         self.w_installing_dialog.set_title(\
                             self.parent._("Removing Packages"))
@@ -303,11 +299,11 @@ class InstallUpdate(progress.ProgressTracker):
                 except Exception:
                         self.progress_stop_timer_thread = True
                         gobject.idle_add(self.w_createplan_dialog.hide)
-                        msg = self.parent._("An unknown error occured while " + \
-                            "preparing the\nlist of packages\n\nPlease let the " + \
-                            "developers know about this problem by filing\n" + \
+                        msg = self.parent._("An unknown error occured while " \
+                            "preparing the\nlist of packages\n\nPlease let the " \
+                            "developers know about this problem by filing\n" \
                             "a bug at http://defect.opensolaris.org")
-                        msg += "\n\nException value: " + "\n" + str(sys.exc_value)
+                        msg += self.parent._("\n\nException value: ") + "\n" + str(sys.exc_value)
                         gobject.idle_add(self.parent.error_occured, msg)
                         sys.exc_clear()
                         return
@@ -315,7 +311,7 @@ class InstallUpdate(progress.ProgressTracker):
         def __plan_the_install_updateimage(self, list_of_packages):
                 '''Function which plans the image'''
                 gobject.idle_add(self.__update_createplan_progress, \
-                    self.parent._("Evaluation started.\n" + \
+                    self.parent._("Evaluation started.\n" \
                         "Gathering packages information, please wait...\n"))
                 stuff_to_do = False
                 if self.action == enumerations.INSTALL_UPDATE:
@@ -325,24 +321,24 @@ class InstallUpdate(progress.ProgressTracker):
                                 if cre and not cre.succeeded:
                                         self.progress_stop_timer_thread = True
                                         gobject.idle_add(self.w_createplan_dialog.hide)
-                                        msg = self.parent._("Unexpected failure with" + \
-                                            "\ncatalog refresh during install" + \
+                                        msg = self.parent._("Unexpected failure with" \
+                                            "\ncatalog refresh during install" \
                                             " while \ndetermining what to update.")
                                         gobject.idle_add(self.parent.error_occured, msg)
                                         return
                         except api_errors.InvalidCertException:
                                 self.progress_stop_timer_thread = True
                                 gobject.idle_add(self.w_createplan_dialog.hide)
-                                msg = self.parent._("Invalid repository certificate." + \
-                                    "\nYou can not install packages from the" + \
-                                    "\nrepopsitory, which doesn't have" + \
+                                msg = self.parent._("Invalid repository certificate." \
+                                    "\nYou can not install packages from the" \
+                                    "\nrepopsitory, which doesn't have" \
                                     "\nappropriate certificate.")
                                 gobject.idle_add(self.parent.error_occured, msg)
                                 return
                         except api_errors.PlanCreationException, e:
                                 self.progress_stop_timer_thread = True
                                 gobject.idle_add(self.w_createplan_dialog.hide)
-                                err_msg = self.parent._("Install/Update failure" + \
+                                err_msg = self.parent._("Install/Update failure" \
                                    " in plan creation.")
                                 err_text = str(e)
                                 gobject.idle_add(self.__error_with_details, \
@@ -351,7 +347,7 @@ class InstallUpdate(progress.ProgressTracker):
                         except api_errors.InventoryException:
                                 self.progress_stop_timer_thread = True
                                 gobject.idle_add(self.w_createplan_dialog.hide)
-                                msg = self.parent._("Install failed.\n" + \
+                                msg = self.parent._("Install failed.\n" \
                                    "The inventory is not correct.")
                                 gobject.idle_add(self.parent.error_occured, msg)
                                 return
@@ -363,7 +359,7 @@ class InstallUpdate(progress.ProgressTracker):
                                 # network problem
                                 self.progress_stop_timer_thread = True
                                 gobject.idle_add(self.w_createplan_dialog.hide)
-                                msg = self.parent._("Please check the network " + \
+                                msg = self.parent._("Please check the network " \
                                     "connection.\nIs the repository accessible?")
                                 gobject.idle_add(self.parent.error_occured, msg)
                                 return
@@ -376,7 +372,7 @@ class InstallUpdate(progress.ProgressTracker):
                         except api_errors.PlanCreationException, e:
                                 self.progress_stop_timer_thread = True
                                 gobject.idle_add(self.w_createplan_dialog.hide)
-                                err_msg = self.parent._("Remove failure in plan" + \
+                                err_msg = self.parent._("Remove failure in plan" \
                                    " creation.")
                                 err_text = str(e)
                                 gobject.idle_add(self.__error_with_details, \
@@ -402,30 +398,30 @@ class InstallUpdate(progress.ProgressTracker):
                                 if cre and not cre.succeeded:
                                         self.progress_stop_timer_thread = True
                                         gobject.idle_add(self.w_createplan_dialog.hide)
-                                        msg = self.parent._("Unexpected failure with" + \
-                                            "\ncatalog refresh during image-update" + \
+                                        msg = self.parent._("Unexpected failure with" \
+                                            "\ncatalog refresh during image-update" \
                                             " while \ndetermining what to update.")
                                         gobject.idle_add(self.parent.error_occured, msg)
                                         return
                         except api_errors.CatalogRefreshException:
                                 self.progress_stop_timer_thread = True
                                 gobject.idle_add(self.w_createplan_dialog.hide)
-                                msg = self.parent._("Update All failed during " + \
+                                msg = self.parent._("Update All failed during " \
                                     "catalog refresh\n")
                                 gobject.idle_add(self.parent.error_occured, msg)
                                 return
                         except api_errors.IpkgOutOfDateException:
                                 self.progress_stop_timer_thread = True
                                 gobject.idle_add(self.w_createplan_dialog.hide)
-                                msg = self.parent._("pkg(5) appears to be out of " + \
-                                    "date and should be\n updated before running " + \
+                                msg = self.parent._("pkg(5) appears to be out of " \
+                                    "date and should be\n updated before running " \
                                     "Update All.\nPlease update SUNWipkg package")
                                 gobject.idle_add(self.parent.error_occured, msg)
                                 return
                         except api_errors.PlanCreationException, e:
                                 self.progress_stop_timer_thread = True
                                 gobject.idle_add(self.w_createplan_dialog.hide)
-                                err_msg = self.parent._("Update All failure in plan" + \
+                                err_msg = self.parent._("Update All failure in plan" \
                                    " creation.")
                                 err_text = str(e)
                                 gobject.idle_add(self.__error_with_details, \
@@ -438,7 +434,7 @@ class InstallUpdate(progress.ProgressTracker):
                         except api_errors.NetworkUnavailableException:
                                 self.progress_stop_timer_thread = True
                                 gobject.idle_add(self.w_createplan_dialog.hide)
-                                msg = self.parent._("Please check the network " + \
+                                msg = self.parent._("Please check the network " \
                                     "connection.\nIs the repository accessible?")
                                 gobject.idle_add(self.parent.error_occured, msg)
                                 return
@@ -447,14 +443,14 @@ class InstallUpdate(progress.ProgressTracker):
                 elif self.action == enumerations.INSTALL_UPDATE:
                         self.progress_stop_timer_thread = True
                         gobject.idle_add(self.w_createplan_dialog.hide)
-                        msg = self.parent._("Selected packages for update can\n" + \
+                        msg = self.parent._("Selected packages for update can\n" \
                             "only be updated using Update All.")
                         title = self.parent._("Unable to update")
                         gobject.idle_add(self.parent.error_occured, msg, title)
                 else:
                         self.progress_stop_timer_thread = True
                         gobject.idle_add(self.w_createplan_dialog.hide)
-                        msg = self.parent._("The action for selected packages " + \
+                        msg = self.parent._("The action for selected packages " \
                             "could not be completed.")
                         title = self.parent._("Unable to perform action")
                         gobject.idle_add(self.parent.error_occured, msg, title)
@@ -469,12 +465,13 @@ class InstallUpdate(progress.ProgressTracker):
                                 gobject.idle_add(self.__prompt_to_load_beadm)
                                 return
                         else:
-                                msg = self.parent._("An unknown error occured while " + \
-                                    "downloading the files\n\nPlease let the " + \
-                                    "developers know about this problem by filing\n" + \
+                                msg = self.parent._("An unknown error occured while " \
+                                    "downloading the files\n\nPlease let the " \
+                                    "developers know about this problem by filing\n" \
                                     "a bug at http://defect.opensolaris.org")
                                 msg += \
-                                    "\n\nException value: " + "\n" + str(sys.exc_value)
+                                    self.parent._("\n\nException value: ") + "\n" + \
+                                    str(sys.exc_value)
                                 gobject.idle_add(self.parent.error_occured, msg)
                                 sys.exc_clear()
                                 return
@@ -488,8 +485,8 @@ class InstallUpdate(progress.ProgressTracker):
                 except (api_errors.ProblematicPermissionsIndexException, \
                     api_errors.PlanMissingException):
                         gobject.idle_add(self.w_downloadingfiles_dialog.hide)
-                        msg = self.parent._("An error occured while " + \
-                            "downloading the files\nPlease check your permissions and" + \
+                        msg = self.parent._("An error occured while " \
+                            "downloading the files\nPlease check your permissions and" \
                             "\nnetwork connection.")
                         gobject.idle_add(self.parent.error_occured, msg)
                         return
@@ -515,13 +512,14 @@ class InstallUpdate(progress.ProgressTracker):
                                 gobject.idle_add(self.__prompt_to_load_beadm)
                                 return
                         else:
-                                msg = self.parent._("An unknown error occured while " + \
-                                    "installing\nupdating or removing packages" + \
-                                    "\n\nPlease let the developers know about this " + \
-                                    "problem by filing\na bug at " + \
+                                msg = self.parent._("An unknown error occured while " \
+                                    "installing\nupdating or removing packages" \
+                                    "\n\nPlease let the developers know about this " \
+                                    "problem by filing\na bug at " \
                                     "http://defect.opensolaris.org")
                                 msg += \
-                                    "\n\nException value: " + "\n" + str(sys.exc_value)
+                                    self.parent._("\n\nException value: ") + "\n" + \
+                                    str(sys.exc_value)
                                 gobject.idle_add(self.parent.error_occured, msg)
                                 sys.exc_clear()
                                 return
@@ -535,35 +533,35 @@ class InstallUpdate(progress.ProgressTracker):
                         api_o.execute_plan()
                 except api_errors.CorruptedIndexException:
                         gobject.idle_add(self.w_installing_dialog.hide)
-                        msg = self.parent._("There was an error during installation." + \
-                            "\nThe index is corrupted. You might wan't try to fix" + \
-                            "\nthis problem by running command:" + \
+                        msg = self.parent._("There was an error during installation." \
+                            "\nThe index is corrupted. You might wan't try to fix" \
+                            "\nthis problem by running command:" \
                             "\npfexec pkg rebuild-index")
                         gobject.idle_add(self.parent.error_occured, msg)
                         return
                 except api_errors.ProblematicPermissionsIndexException:
                         gobject.idle_add(self.w_installing_dialog.hide)
-                        msg = self.parent._("An error occured while " + \
+                        msg = self.parent._("An error occured while " \
                             "installing the files\nPlease check your permissions")
                         gobject.idle_add(self.parent.error_occured, msg)
                         return
                 except api_errors.ImageplanStateException:
                         gobject.idle_add(self.w_installing_dialog.hide)
-                        msg = self.parent._("There was an error during installation." + \
-                            "\nThe State of the image is incorrect and the operation" + \
+                        msg = self.parent._("There was an error during installation." \
+                            "\nThe State of the image is incorrect and the operation" \
                             "\ncan't be finished.")
                         gobject.idle_add(self.parent.error_occured, msg)
                         return
                 except api_errors.ImageUpdateOnLiveImageException:
                         gobject.idle_add(self.w_installing_dialog.hide)
-                        msg = self.parent._("This is an Live Image. The install" + \
+                        msg = self.parent._("This is an Live Image. The install" \
                             "\noperation can't be performed.")
                         gobject.idle_add(self.parent.error_occured, msg)
                         return
                 except api_errors.PlanMissingException:
                         gobject.idle_add(self.w_installing_dialog.hide)
-                        msg = self.parent._("There was an error during installation." + \
-                            "\nThe Plan of the operation is missing and the operation" + \
+                        msg = self.parent._("There was an error during installation." \
+                            "\nThe Plan of the operation is missing and the operation" \
                             "\ncan't be finished.")
                         gobject.idle_add(self.parent.error_occured, msg)
                         return
@@ -686,8 +684,8 @@ class InstallUpdate(progress.ProgressTracker):
                 self.w_installupdate_dialog.set_title(self.parent._(\
                     "Remove Confirmation"))
                 self.w_information_label.set_text(\
-                    self.parent._("This action couldn't be finished.\n" + \
-                    "Some of the selected packages depends on other.\n" + \
+                    self.parent._("This action couldn't be finished.\n" \
+                    "Some of the selected packages depends on other.\n" \
                     "Please review the dependencies."))
                 self.w_next_button.hide()
                 self.w_cancel_button.set_label(self.parent._("Close"))

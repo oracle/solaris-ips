@@ -1,0 +1,896 @@
+# Copyright (C) 2008 Sun Microsystems, Inc
+# This file is distributed under the same license as the packagemanager package.
+#
+# Desktop Discuss <desktop-discuss@opensolaris.org>
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: packagemanager HEAD\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2008-05-29 17:42+0900\n"
+"PO-Revision-Date: 2008-05-27 11:45+0100\n"
+"Last-Translator: \n"
+"Language-Team: desktop-discuss@opensolaris.org\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../data/l10n.py:6
+msgid "Communication"
+msgstr "Comunicación"
+
+#: ../data/l10n.py:7
+msgid "Mail"
+msgstr "Correo"
+
+#: ../data/l10n.py:8
+msgid "Localization"
+msgstr "Localización"
+
+#: ../data/l10n.py:9
+msgid "Social Software"
+msgstr "Software social"
+
+#: ../data/l10n.py:10
+msgid "Viewer"
+msgstr "Visor"
+
+#: ../data/l10n.py:11
+msgid "RasterGraphics"
+msgstr "Gráficos de barrido"
+
+#: ../data/l10n.py:12
+msgid "2DGraphics"
+msgstr "Gráficos 2D"
+
+#: ../data/l10n.py:13
+msgid "Photography"
+msgstr "Fotografía"
+
+#: ../data/l10n.py:14
+msgid "CLI tools"
+msgstr "Herramientas de CLI"
+
+#: ../data/l10n.py:15
+msgid "Print"
+msgstr "Imprimir"
+
+#: ../data/packagemanager.desktop.in.h:1
+msgid "Install, update and remove software packages"
+msgstr "Instalar, actualizar y eliminar paquetes de software"
+
+#: ../data/packagemanager.desktop.in.h:2 ../locale/packagemanager.glade.h:33
+#: ../packagemanager.glade.h:44
+msgid "Package Manager"
+msgstr "Package Manager"
+
+#: ../gui/installupdate.py:127 ../gui/remove.py:115
+#, python-format
+msgid ""
+"GUI will not respond to any event! %s.                                 Check "
+"create_plan_dialog_gui()"
+msgstr ""
+"La interfaz gráfica no responderá a ningún evento. %"
+"s.                                 Compruebe create_plan_dialog_gui()"
+
+#: ../gui/installupdate.py:142
+#, python-format
+msgid ""
+"GUI will not respond to any event! %s.                                 Check "
+"create_network_down_gui()"
+msgstr ""
+"La interfaz gráfica no responderá a ningún evento. %"
+"s.                                 Compruebe create_network_down_gui()"
+
+#: ../gui/installupdate.py:167
+#, python-format
+msgid "GUI will not respond to any event! %s.Check create_installupdate_gui()"
+msgstr ""
+"La interfaz gráfica no responderá a ningún evento. %s.Compruebe "
+"create_installupdate_gui()"
+
+#: ../gui/installupdate.py:184
+#, python-format
+msgid "GUI will not respond to any event! %s.Check create_downloaddialog_gui()"
+msgstr ""
+"La interfaz gráfica no responderá a ningún evento. %s.Compruebe "
+"create_downloaddialog_gui()"
+
+#. print "Updating" + p.destination_fmri.get_name()
+#: ../gui/installupdate.py:264
+msgid "Updating:  "
+msgstr "Actualizando:  "
+
+#. print "Installing" + p.destination_fmri.get_name()
+#: ../gui/installupdate.py:279
+msgid "Installing:  "
+msgstr "Instalando:  "
+
+#: ../gui/installupdate.py:350 ../gui/remove.py:197
+#, python-format
+msgid "Evaluating: %s\n"
+msgstr "Evaluando: %s\n"
+
+#: ../gui/installupdate.py:524
+msgid "Downloading: "
+msgstr "Descargando: "
+
+#: ../gui/installupdate.py:572
+#, python-format
+msgid "%d packages will be updated\n"
+msgstr "Se actualizarán %d paquetes\n"
+
+#: ../gui/installupdate.py:574
+#, python-format
+msgid "%d package will be updated\n"
+msgstr "Se actualizará el paquete %d\n"
+
+#: ../gui/installupdate.py:576
+#, python-format
+msgid ""
+"%d packages will be installed\n"
+"\n"
+msgstr ""
+"Se instalarán %d paquetes\n"
+"\n"
+
+#: ../gui/installupdate.py:578
+#, python-format
+msgid ""
+"%d package will be installed\n"
+"\n"
+msgstr ""
+"Se instalará el paquete %d\n"
+"\n"
+
+#: ../gui/installupdate.py:581
+#, python-format
+msgid "%d MB will be downloaded"
+msgstr "Se descargarán %d MB"
+
+#: ../gui/remove.py:140
+#, python-format
+msgid "GUI will not respond to any event! %s.Check create_remove_gui()"
+msgstr ""
+"La interfaz gráfica no responderá a ningún evento. %s.Compruebe "
+"create_remove_gui()"
+
+#: ../gui/remove.py:237
+#, python-format
+msgid ""
+"%d packages will be removed\n"
+"\n"
+msgstr ""
+"Se eliminarán %d paquetes\n"
+"\n"
+
+#: ../gui/remove.py:239
+#, python-format
+msgid ""
+"%d package will be removed\n"
+"\n"
+msgstr ""
+"Se eliminará el paquete %d\n"
+"\n"
+
+#: ../locale/packagemanager.glade.h:1 ../packagemanager.glade.h:1
+msgid ""
+"6 packages will be installed\n"
+"28 packages will be updated\n"
+"\n"
+"20.1 MB will be downloaded"
+msgstr ""
+"Se instalarán 6 paquetes\n"
+"Se actualizarán 28 paquetes\n"
+"\n"
+"Se descargarán 20,1 MB"
+
+#: ../locale/packagemanager.glade.h:5
+msgid "<b>Apply the following changes?</b>"
+msgstr "<b>¿Desea aplicar los cambios siguientes?</b>"
+
+#: ../locale/packagemanager.glade.h:6 ../packagemanager.glade.h:6
+msgid "<b>PACKAGE NAME</b>"
+msgstr "<b>NOMBRE PAQUETE</b>"
+
+#: ../locale/packagemanager.glade.h:7 ../packagemanager.glade.h:7
+msgid "<b>Summary</b>"
+msgstr "<b>Resumen</b>"
+
+#: ../locale/packagemanager.glade.h:8 ../packagemanager.glade.h:8
+msgid "<i>Repository:</i>"
+msgstr "<i>Depósito:</i>"
+
+#: ../locale/packagemanager.glade.h:9 ../packagemanager.glade.h:9
+msgid "About"
+msgstr "Acerca de"
+
+#: ../locale/packagemanager.glade.h:10 ../packagemanager.glade.h:11
+msgid "About dialog"
+msgstr "Cuadro de diálogo Acerca de"
+
+#: ../locale/packagemanager.glade.h:11
+msgid "Apply"
+msgstr "Aplicar"
+
+#: ../locale/packagemanager.glade.h:12
+msgid "Applying changes"
+msgstr "Aplicando cambios"
+
+#: ../locale/packagemanager.glade.h:13 ../packagemanager.glade.h:14
+msgid "Cancel"
+msgstr "Cancelar"
+
+#: ../locale/packagemanager.glade.h:14
+msgid "Changes applied"
+msgstr "Cambios aplicados"
+
+#: ../locale/packagemanager.glade.h:15 ../packagemanager.glade.h:26
+msgid "Dependencies"
+msgstr "Dependencias"
+
+#: ../locale/packagemanager.glade.h:16 ../packagemanager.glade.h:27
+msgid "Deselect"
+msgstr "Deseleccionar"
+
+#: ../locale/packagemanager.glade.h:17 ../packagemanager.glade.h:28
+msgid "Deselect selected packages"
+msgstr "Deseleccionar los paquetes seleccionados"
+
+#: ../locale/packagemanager.glade.h:18
+msgid "Download Preferences"
+msgstr "Preferencias de descarga"
+
+#: ../locale/packagemanager.glade.h:19
+msgid "Download Preferences..."
+msgstr "Preferencias de descarga..."
+
+#: ../locale/packagemanager.glade.h:20
+msgid "Downloading Files"
+msgstr "Descargando archivos"
+
+#: ../locale/packagemanager.glade.h:21
+msgid "Downloading Package Information"
+msgstr "Descargando información de paquete"
+
+#: ../locale/packagemanager.glade.h:22 ../packagemanager.glade.h:32
+msgid "General Info"
+msgstr "Información general"
+
+#: ../locale/packagemanager.glade.h:23
+msgid "History..."
+msgstr "Historial..."
+
+#: ../locale/packagemanager.glade.h:24 ../packagemanager.glade.h:33
+msgid "Install / Update"
+msgstr "Instalar/Actualizar"
+
+#: ../locale/packagemanager.glade.h:25 ../packagemanager.glade.h:34
+msgid "Install / Update Confirmation"
+msgstr "Confirmación de instalación/actualización"
+
+#: ../locale/packagemanager.glade.h:26 ../packagemanager.glade.h:35
+msgid "Install or Update selected packages"
+msgstr "Instalar o actualizar los paquetes seleccionados"
+
+#: ../locale/packagemanager.glade.h:27 ../packagemanager.glade.h:36
+msgid "Install/Update"
+msgstr "Instalar/Actualizar"
+
+#: ../locale/packagemanager.glade.h:28
+msgid "Installed Files"
+msgstr "Archivos instalados"
+
+#: ../locale/packagemanager.glade.h:29
+msgid "Lock"
+msgstr "Bloquear"
+
+#: ../locale/packagemanager.glade.h:30
+msgid "Lock selected packages"
+msgstr "Bloquear los paquetes seleccionados"
+
+#: ../locale/packagemanager.glade.h:31
+msgid "Manage Repositories"
+msgstr "Administrar depósitos"
+
+#: ../locale/packagemanager.glade.h:32
+msgid "Online Help"
+msgstr "Ayuda en línea"
+
+#: ../locale/packagemanager.glade.h:34
+msgid "Preferences options for download"
+msgstr "Opciones de preferencias para descargar"
+
+#: ../locale/packagemanager.glade.h:35 ../packagemanager.glade.h:47
+msgid "Quit"
+msgstr "Salir"
+
+#: ../locale/packagemanager.glade.h:36 ../packagemanager.glade.h:48
+msgid "Quit application"
+msgstr "Salir de la aplicación"
+
+#: ../locale/packagemanager.glade.h:37
+msgid "Redo"
+msgstr "Rehacer"
+
+#: ../locale/packagemanager.glade.h:38
+msgid "Redo last action"
+msgstr "Rehacer la última acción"
+
+#: ../locale/packagemanager.glade.h:39 ../packagemanager.glade.h:49
+msgid "Reload"
+msgstr "Recargar"
+
+#: ../locale/packagemanager.glade.h:40 ../packagemanager.glade.h:50
+msgid "Remove"
+msgstr "Eliminar"
+
+#: ../locale/packagemanager.glade.h:41 ../packagemanager.glade.h:53
+msgid "Remove selected packages"
+msgstr "Eliminar los paquetes seleccionados"
+
+#: ../locale/packagemanager.glade.h:42
+msgid "Repositories"
+msgstr "Depósitos"
+
+#: ../locale/packagemanager.glade.h:43
+msgid "Repositories..."
+msgstr "Depósitos..."
+
+#: ../locale/packagemanager.glade.h:44 ../packagemanager.glade.h:58
+msgid "Search:"
+msgstr "Buscar:"
+
+#: ../locale/packagemanager.glade.h:45 ../packagemanager.glade.h:59
+msgid "Select All"
+msgstr "Seleccionar todo"
+
+#: ../locale/packagemanager.glade.h:46 ../packagemanager.glade.h:60
+msgid "Select All Items"
+msgstr "Seleccionar todos los elementos"
+
+#: ../locale/packagemanager.glade.h:47 ../packagemanager.glade.h:64
+msgid "Short description"
+msgstr "Descripción breve"
+
+#: ../locale/packagemanager.glade.h:48 ../packagemanager.glade.h:66
+msgid "Show:"
+msgstr "Mostrar:"
+
+#: ../locale/packagemanager.glade.h:49
+msgid ""
+"The chosen action also affects other packages. The following changes are "
+"required to proceed:"
+msgstr ""
+"La acción elegida repercute también en otros paquetes. Para continuar se "
+"necesitan los cambios siguientes:"
+
+#: ../locale/packagemanager.glade.h:50
+msgid "Undo"
+msgstr "Deshacer"
+
+#: ../locale/packagemanager.glade.h:51
+msgid "Undo action"
+msgstr "Acción de deshacer"
+
+#: ../locale/packagemanager.glade.h:52
+msgid "Unlock"
+msgstr "Desbloquear"
+
+#: ../locale/packagemanager.glade.h:53
+msgid "Unlock selected packages"
+msgstr "Desbloquear los paquetes seleccionados"
+
+#: ../locale/packagemanager.glade.h:54 ../packagemanager.glade.h:73
+msgid "Update All"
+msgstr "Actualizar todo"
+
+#: ../locale/packagemanager.glade.h:55 ../packagemanager.glade.h:74
+msgid "Update all packages"
+msgstr "Actualizar todos los paquetes"
+
+#: ../locale/packagemanager.glade.h:56
+msgid "View History"
+msgstr "Ver historial"
+
+#: ../locale/packagemanager.glade.h:57 ../packagemanager.glade.h:76
+msgid "_Edit"
+msgstr "_Edición"
+
+#: ../locale/packagemanager.glade.h:58 ../packagemanager.glade.h:77
+msgid "_File"
+msgstr "_Archivo"
+
+#: ../locale/packagemanager.glade.h:59 ../packagemanager.glade.h:78
+msgid "_Help"
+msgstr "_Ayuda"
+
+#: ../locale/packagemanager.glade.h:60 ../packagemanager.glade.h:79
+msgid "_Package"
+msgstr "_Paquete"
+
+#: ../locale/packagemanager.glade.h:61
+msgid "_Settings"
+msgstr "_Configuración"
+
+#: ../packagemanager.glade.h:5
+msgid "<b>Can't establish a connection to the repository</b>"
+msgstr "<b>No se puede establecer una conexión con el depósito</b>"
+
+#: ../packagemanager.glade.h:10
+msgid "About Glade"
+msgstr "Acerca de Glade"
+
+#: ../packagemanager.glade.h:12
+msgid "Architecture (CPU):"
+msgstr "Arquitectura (CPU):"
+
+#: ../packagemanager.glade.h:13
+msgid "Build type:"
+msgstr "Tipo de compilación:"
+
+#: ../packagemanager.glade.h:15
+msgid "Checking package dependencies..."
+msgstr "Comprobando dependencias de paquetes..."
+
+#: ../packagemanager.glade.h:16
+msgid "Clear"
+msgstr "Borrar"
+
+#: ../packagemanager.glade.h:17
+msgid "Close"
+msgstr "Cerrar"
+
+#: ../packagemanager.glade.h:18
+msgid "Copy"
+msgstr "Copiar"
+
+#: ../packagemanager.glade.h:19
+msgid ""
+"Copyright 2008 Sun Microsystems, Inc.  \n"
+"All rights reserved.\n"
+"Use is subject to license terms."
+msgstr ""
+"Copyright 2008 Sun Microsystems, Inc.  \n"
+"Reservados todos los derechos.\n"
+"Use is subject to license terms."
+
+#: ../packagemanager.glade.h:22
+msgid "Custom Package Options"
+msgstr "Opciones personalizadas de paquetes"
+
+#: ../packagemanager.glade.h:23
+msgid "Cut"
+msgstr "Cortar"
+
+#: ../packagemanager.glade.h:24
+msgid "Cut action"
+msgstr "Acción de cortar"
+
+#: ../packagemanager.glade.h:25
+msgid "Debug"
+msgstr "Depurar"
+
+#: ../packagemanager.glade.h:29
+msgid "Downloading Packages"
+msgstr "Descargando paquetes"
+
+#: ../packagemanager.glade.h:30
+msgid "Downloading files..."
+msgstr "Descargando archivos..."
+
+#: ../packagemanager.glade.h:31
+msgid "Files Details"
+msgstr "Detalles de archivos"
+
+#: ../packagemanager.glade.h:37
+msgid "Install/Upgrade Check"
+msgstr "Comprobación de instalación/actualización"
+
+#: ../packagemanager.glade.h:38
+msgid "Installing Packages"
+msgstr "Instalando paquetes"
+
+#: ../packagemanager.glade.h:39
+msgid "Installing Packages..."
+msgstr "Instalando paquetes..."
+
+#: ../packagemanager.glade.h:40
+msgid "Network Problem"
+msgstr "Problema en la red"
+
+#: ../packagemanager.glade.h:41
+msgid "Next"
+msgstr "Siguiente"
+
+#: ../packagemanager.glade.h:42
+msgid "Non-Debug"
+msgstr "No depurar"
+
+#: ../packagemanager.glade.h:43
+msgid "Package Download Preferences"
+msgstr "Preferencias de descarga de paquetes"
+
+#: ../packagemanager.glade.h:45
+msgid "Paste"
+msgstr "Pegar"
+
+#: ../packagemanager.glade.h:46
+msgid "Please check your Internet settings."
+msgstr "Compruebe la configuración de Internet."
+
+#: ../packagemanager.glade.h:51
+msgid "Remove Check"
+msgstr "Eliminar comprobación"
+
+#: ../packagemanager.glade.h:52
+msgid "Remove Confirmation"
+msgstr "Confirmación de eliminación"
+
+#: ../packagemanager.glade.h:54
+msgid "Removing Packages"
+msgstr "Eliminación de paquetes"
+
+#: ../packagemanager.glade.h:55
+msgid "Removing Packages..."
+msgstr "Eliminando paquetes..."
+
+#: ../packagemanager.glade.h:56
+msgid "Reset"
+msgstr "Restablecer"
+
+#: ../packagemanager.glade.h:57
+msgid "SPARC"
+msgstr "SPARC"
+
+#: ../packagemanager.glade.h:61
+msgid "Select Updates"
+msgstr "Seleccionar actualizaciones"
+
+#: ../packagemanager.glade.h:62
+msgid ""
+"Select default download preferences for all packages.\n"
+"Click Reset to reset download preferences to the initial settings."
+msgstr ""
+"Seleccione las preferencias de descarga predeterminadas para todos los "
+"paquetes.\n"
+"Haga clic en Restablecer para restaurar la configuración inicial en las "
+"preferencias de descarga."
+
+#: ../packagemanager.glade.h:65
+msgid "Show Details"
+msgstr "Mostrar detalles"
+
+#: ../packagemanager.glade.h:67
+msgid ""
+"This action affects other packages.\n"
+"Review the packages to be installed or updated.\n"
+"Click Next to continue."
+msgstr ""
+"Esta acción afecta a otros paquetes.\n"
+"Verifique los paquetes que se deben instalar o actualizar.\n"
+"Haga clic en Siguiente para continuar."
+
+#: ../packagemanager.glade.h:70
+msgid ""
+"This action affects other packages.\n"
+"Review the packages to be removed.\n"
+"Click Next to continue."
+msgstr ""
+"Esta acción afecta a otros paquetes.\n"
+"Verifique los paquetes que se deben eliminar.\n"
+"Haga clic en Siguiente para continuar."
+
+#: ../packagemanager.glade.h:75
+msgid "X86"
+msgstr "X86"
+
+#. self.pkgconfig = packagemanagerconfig.PackageManagerConfig() #Config
+#. self.pkgconfig.set_config_file_path(os.path.expanduser("~")+"/.packagemanager/config")  #Config path
+#: ../packagemanager.py:103
+msgid "Package Manager - revision 0.1"
+msgstr "Package Manager - revisión 0.1"
+
+#: ../packagemanager.py:126
+#, python-format
+msgid "GUI will not respond to any event! %s.Check declare_signals()"
+msgstr ""
+"La interfaz gráfica no responderá a ningún evento. %s.Compruebe "
+"declare_signals()"
+
+#: ../packagemanager.py:255 ../packagemanager.py:300
+msgid "Name"
+msgstr "Nombre"
+
+#: ../packagemanager.py:263
+msgid "Installed Version"
+msgstr "Versión instalada"
+
+#: ../packagemanager.py:269
+msgid "Latest Version"
+msgstr "Versión más reciente"
+
+#: ../packagemanager.py:275
+msgid "Rating"
+msgstr "Clasificación"
+
+#: ../packagemanager.py:281
+msgid "Description"
+msgstr "Descripción"
+
+#. TODO: check if needed
+#: ../packagemanager.py:440 ../packagemanager.py:448 ../packagemanager.py:899
+#: ../packagemanager.py:904 ../packagemanager.py:972 ../packagemanager.py:977
+#: ../packagemanager.py:979 ../packagemanager.py:1467
+#: ../packagemanager.py:1472 ../packagemanager.py:1540
+msgid "All"
+msgstr "Todos"
+
+#: ../packagemanager.py:442
+msgid "Meta Packages"
+msgstr "Metapaquetes"
+
+#: ../packagemanager.py:443 ../packagemanager.py:1571
+#: ../packagemanager.py:1572 ../packagemanager.py:1573
+#: ../packagemanager.py:1574 ../packagemanager.py:1575
+#: ../packagemanager.py:1576 ../packagemanager.py:1577
+#: ../packagemanager.py:1578 ../packagemanager.py:1579
+msgid "Applications Desktop"
+msgstr "Aplicaciones de escritorio"
+
+#: ../packagemanager.py:444
+msgid "Applications Web-Based"
+msgstr "Aplicaciones web"
+
+#: ../packagemanager.py:445 ../packagemanager.py:1581
+#: ../packagemanager.py:1582 ../packagemanager.py:1583
+#: ../packagemanager.py:1585
+msgid "Operating System"
+msgstr "Sistema operativo"
+
+#: ../packagemanager.py:446
+msgid "User Environment"
+msgstr "Entorno de usuario"
+
+#: ../packagemanager.py:447
+msgid "Web Infrastructure"
+msgstr "Infraestructura en Internet"
+
+#: ../packagemanager.py:452 ../packagemanager.py:936
+msgid "All Packages"
+msgstr "Todos los paquetes"
+
+#: ../packagemanager.py:454 ../packagemanager.py:938
+msgid "Installed Packages"
+msgstr "Paquetes instalados"
+
+#: ../packagemanager.py:455 ../packagemanager.py:940
+msgid "Updates"
+msgstr "Actualizaciones"
+
+#. self.filter_list.append([self._('Locked Packages'),])
+#. self.filter_list.append(["",])
+#: ../packagemanager.py:459 ../packagemanager.py:946
+msgid "Selected Packages"
+msgstr "Paquetes seleccionados"
+
+#: ../packagemanager.py:548
+#, python-format
+msgid "%d packages listed"
+msgstr "Han aparecido %d paquetes"
+
+#: ../packagemanager.py:549
+#, python-format
+msgid "%d installed"
+msgstr "%d instalados"
+
+#: ../packagemanager.py:550
+#, python-format
+msgid "%d selected"
+msgstr "%d seleccionados"
+
+#: ../packagemanager.py:551
+#, python-format
+msgid "%d broken"
+msgstr "%d interrumpidos"
+
+#: ../packagemanager.py:819
+msgid "Fetching description..."
+msgstr "Obteniendo descripción..."
+
+#: ../packagemanager.py:820 ../packagemanager.py:821 ../packagemanager.py:822
+msgid "Fetching information..."
+msgstr "Obteniendo información..."
+
+#: ../packagemanager.py:826
+msgid "Description not available for this package..."
+msgstr "No se dispone de descripción para este paquete..."
+
+#: ../packagemanager.py:827
+msgid "Files Details not available for this package..."
+msgstr "No se dispone de detalles de archivos para este paquete..."
+
+#: ../packagemanager.py:828
+msgid "Dependencies info not available for this package..."
+msgstr "No se dispone de dependencias para este paquete..."
+
+#: ../packagemanager.py:829
+msgid "Information not available for this package..."
+msgstr "No se dispone de información para este paquete..."
+
+#: ../packagemanager.py:834
+#, python-format
+msgid "Root: %s\n"
+msgstr "Root: %s\n"
+
+#: ../packagemanager.py:835
+msgid "Dependencies:\n"
+msgstr "Dependencias:\n"
+
+#: ../packagemanager.py:838
+msgid ""
+"Information for installed package:\n"
+"\n"
+msgstr ""
+"Información del paquete instalado:\n"
+"\n"
+
+#: ../packagemanager.py:840
+msgid ""
+"Information for latest available package:\n"
+"\n"
+msgstr ""
+"Información del paquete más reciente disponible:\n"
+"\n"
+
+#: ../packagemanager.py:857
+msgid "depend"
+msgstr "depend"
+
+#: ../packagemanager.py:860
+msgid "dir"
+msgstr "dir"
+
+#: ../packagemanager.py:862
+msgid "file"
+msgstr "file"
+
+#. instbuffer.insert(institer,"\t"+self.locale_distinguished_name(a)+"\n")
+#. elif cmp(a.name,self.N_("driver")) == 0:
+#. print a.distinguished_name()
+#: ../packagemanager.py:867
+msgid "hardlink"
+msgstr "hardlink"
+
+#: ../packagemanager.py:869
+msgid "link"
+msgstr "link"
+
+#: ../packagemanager.py:871
+msgid "legacy"
+msgstr "legacy"
+
+#: ../packagemanager.py:872 ../packagemanager.py:874
+msgid "pkg"
+msgstr "pkg"
+
+#: ../packagemanager.py:875
+msgid "name"
+msgstr "name"
+
+#: ../packagemanager.py:876
+msgid "desc"
+msgstr "desc"
+
+#: ../packagemanager.py:877
+#, python-format
+msgid "  Description:\t%s\n"
+msgstr "  Descripción:\t%s\n"
+
+#: ../packagemanager.py:885
+#, python-format
+msgid "  Name:\t\t%s\n"
+msgstr "  Nombre:\t\t%s\n"
+
+#: ../packagemanager.py:886
+#, python-format
+msgid "  FMRI:\t\t%s\n"
+msgstr "  FMRI:\t\t%s\n"
+
+#: ../packagemanager.py:887
+#, python-format
+msgid "  Version:\t\t%s\n"
+msgstr "  Versión:\t\t%s\n"
+
+#: ../packagemanager.py:888
+#, python-format
+msgid "  Packaged:\t%s\n"
+msgstr "  Empaquetado:\t%s\n"
+
+#: ../packagemanager.py:943
+msgid "Locked Packages"
+msgstr "Paquetes bloqueados"
+
+#: ../packagemanager.py:1311
+msgid "..."
+msgstr "..."
+
+#. TODO Instead trying root image, maybe popup window
+#. with question to which image switch??
+#: ../packagemanager.py:1385
+#, python-format
+msgid "%s is not valid image, trying root image"
+msgstr "%s no es una imagen válida, intentando imagen root"
+
+#. TODO if this function returns None, the popup gui with catalog
+#. Add/remove/select should be shown.
+#: ../packagemanager.py:1401
+#, python-format
+msgid "%s is not valid root image, return None"
+msgstr "%s no es una imagen root válida, el resultado es Ninguna"
+
+#: ../packagemanager.py:1473
+msgid "All packages"
+msgstr "Todos los paquetes"
+
+#. self.add_package_to_category(_("All"),None,None,None);
+#. Category names until xdg is imported.
+#. from xdg.DesktopEntry import *
+#. entry = DesktopEntry ()
+#. directory = '/usr/share/desktop-directories'
+#. for root, dirs, files in os.walk (directory):
+#. for name in files:
+#. entry.parse (os.path.join (root, name))
+#. self.add_category_to_section (entry.getName (), self._('Applications Desktop'))
+#: ../packagemanager.py:1553 ../packagemanager.py:1554
+#: ../packagemanager.py:1571
+msgid "Accessories"
+msgstr "Accesorios"
+
+#: ../packagemanager.py:1555 ../packagemanager.py:1557
+#: ../packagemanager.py:1559 ../packagemanager.py:1572
+msgid "Games"
+msgstr "Juegos"
+
+#: ../packagemanager.py:1556 ../packagemanager.py:1558
+#: ../packagemanager.py:1560 ../packagemanager.py:1573
+#: ../packagemanager.py:1582
+msgid "Graphics"
+msgstr "Gráficos"
+
+#: ../packagemanager.py:1574
+msgid "Internet"
+msgstr "Internet"
+
+#: ../packagemanager.py:1575 ../packagemanager.py:1587
+msgid "Office"
+msgstr "Office"
+
+#: ../packagemanager.py:1576
+msgid "Sound & Video"
+msgstr "Sonido y vídeo"
+
+#: ../packagemanager.py:1577
+msgid "System Tools"
+msgstr "Herramientas del sistema"
+
+#: ../packagemanager.py:1578
+msgid "Universal Access"
+msgstr "Acceso universal"
+
+#. Can be twice :)
+#: ../packagemanager.py:1579 ../packagemanager.py:1585
+msgid "Developer Tools"
+msgstr "Herramientas para desarrolladores"
+
+#: ../packagemanager.py:1581
+msgid "Core"
+msgstr "Principal"
+
+#: ../packagemanager.py:1583
+msgid "Media"
+msgstr "Medios"
+
+#: ../packagemanager.py:1588
+msgid "Office2"
+msgstr "Office2"
