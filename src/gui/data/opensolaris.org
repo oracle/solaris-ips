@@ -595,6 +595,9 @@ category = Media
 [SUNWedhcm]
 category = Services
 
+[SUNWemlxs]
+category = Storage
+
 [SUNWerlang]
 category = Other Languages
 
@@ -884,6 +887,9 @@ category = Java
 category = Accessories
 
 [SUNWgnome-camera]
+category = Graphics and Imaging
+
+[SUNWgnome-camera-img-editor-plugin]
 category = Graphics and Imaging
 
 [SUNWgnome-cd]
@@ -2717,6 +2723,9 @@ category = Databases
 category = Python
 
 [SUNWpython-imaging]
+category = Python
+
+[SUNWpython-lxml]
 category = Python
 
 [SUNWpython-notify]

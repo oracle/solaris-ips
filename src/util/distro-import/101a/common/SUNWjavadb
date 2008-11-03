@@ -1,0 +1,11 @@
+package SUNWjavadb
+classification "Development/Databases"
+import SUNWjavadb-client
+import SUNWjavadb-common
+import SUNWjavadb-core
+import SUNWjavadb-demo
+import SUNWjavadb-docs
+import SUNWjavadb-javadoc
+import SUNWjavadb-service
+version 10.4.1.3
+end package

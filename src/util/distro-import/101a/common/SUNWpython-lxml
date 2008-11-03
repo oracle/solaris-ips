@@ -1,0 +1,5 @@
+package SUNWpython-lxml
+classification "Development/Python"
+import SUNWpython-lxml
+version 2.1.2
+end package

@@ -75,6 +75,7 @@ ELIDED_FILES_98 = $(ELIDED_FILES_89)
 ELIDED_FILES_99 = $(ELIDED_FILES_89)
 ELIDED_FILES_100a = $(ELIDED_FILES_BASE) kernel/drv/sd.conf
 ELIDED_FILES_101 = $(ELIDED_FILES_100a)
+ELIDED_FILES_101a = $(ELIDED_FILES_100a)
 ELIDED_FILES = $(ELIDED_FILES_$(BUILDID))
 
 #
@@ -84,10 +85,12 @@ CACHED_FILES=								\
 	$(ELIDED_FILES)							\
 	boot/grub/menu.lst						\
 	boot/grub/splash.xpm.gz						\
+	etc/inet/hosts							\
 	etc/mailcap							\
 	etc/mime.types							\
-	etc/inet/hosts							\
 	etc/security/policy.conf					\
+	etc/skel/.bashrc						\
+	etc/skel/.profile						\
 	etc/zones/SUNWblank.xml						\
 	etc/zones/SUNWdefault.xml					\
 	lib/svc/method/fs-usr						\
@@ -175,7 +178,8 @@ BUILDS=	75a			\
 	98			\
 	99			\
 	100a			\
-	101
+	101			\
+	101a
 
 #
 # Starting in build 80, filelist.ramdisk began moving between various
@@ -188,7 +192,7 @@ FILELIST_RAMDISK_PKG_74		= SUNWcakr.i
 FILELIST_RAMDISK_PKG_72		= SUNWcakr.i
 FILELIST_RAMDISK_PKG_71		= SUNWcakr.i
 
-default:	101/slim_import
+default:	101a/slim_import
 
 cluster.import:	$(WOS_PKGS)/.clustertoc Makefile
 	./clustertoc2import.py $(WOS_PKGS)/.clustertoc | \
@@ -312,6 +316,7 @@ proto:	Makefile
 	mkdir -p proto/etc/X11/gdm
 	mkdir -p proto/etc/inet
 	mkdir -p proto/etc/security
+	mkdir -p proto/etc/skel
 	mkdir -p proto/etc/svc
 	mkdir -p proto/etc/zones
 	mkdir -p proto/kernel/drv
@@ -352,6 +357,7 @@ INCLUDE_PATH_98 = 98:$(INCLUDE_PATH_97)
 INCLUDE_PATH_99 = 99:$(INCLUDE_PATH_98)
 INCLUDE_PATH_100a = 100a:$(INCLUDE_PATH_99)
 INCLUDE_PATH_101 = 101:$(INCLUDE_PATH_100a)
+INCLUDE_PATH_101a = 101a:$(INCLUDE_PATH_101)
 
 import:	cluster.import $(TMPPKGS)
 	$(SOLARIS.PY) -s $(REPO) -w $(WOS_PKGS) $(ELIDED_FILES:%=-D %) \
