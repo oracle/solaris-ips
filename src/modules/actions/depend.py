@@ -224,15 +224,18 @@ class DependencyAction(generic.Action):
 
                 if installed_version:
                         vi = installed_version.version
-                        if min_fmri and not vi.is_successor(min_fmri.version, pkg.version.CONSTRAINT_NONE):
+                        if min_fmri and min_fmri.version and \
+                            min_fmri.version.is_successor(vi,
+                            pkg.version.CONSTRAINT_NONE):
                                 return ["%s dependency %s is downrev (%s)" %
-                                        (type, min_fmri, installed_version)]
+                                    (type, min_fmri, installed_version)]
                         if max_fmri and vi > max_fmri.version and \
-                                    not vi.is_successor(max_fmri.version, pkg.version.CONSTRAINT_AUTO):
-                                        return ["%s dependency %s is uprev (%s)" %
-                                            (type, max_fmri, installed_version)]
+                            not vi.is_successor(max_fmri.version, 
+                            pkg.version.CONSTRAINT_AUTO):
+                                return ["%s dependency %s is uprev (%s)" %
+                                    (type, max_fmri, installed_version)]
                 elif required:
-                        return ["Required dependency %s is not installed" % f]                        
+                        return ["Required dependency %s is not installed" % f]
 
                 return []
 
