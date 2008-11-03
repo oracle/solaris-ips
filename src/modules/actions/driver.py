@@ -59,6 +59,37 @@ class DriverAction(generic.Action):
         def __init__(self, data=None, **attrs):
                 generic.Action.__init__(self, data, **attrs)
 
+                #
+                # Clean up clone_perms.  This attribute may been specified either as:
+                # 
+                #  <minorname> <mode> <owner> <group>
+                #
+                # or
+                #
+                #  <mode> <owner> <group>
+                # 
+                # In the latter case, the <minorname> is assumed to be
+                # the same as the driver name.  Correct any such instances
+                # here so that there is only one form, so that we can cleanly
+                # compare, verify, etc.
+                #
+                if not self.attrlist("clone_perms"):
+                        return
+
+                new_cloneperms = []
+                for cp in self.attrlist("clone_perms"):
+                        # If we're given three fields, assume the minor node
+                        # name is the same as the driver name.
+                        if len(cp.split()) == 3:
+                                new_cloneperms.append(
+                                    self.attrs["name"] + " " + cp)
+                        else:
+                                new_cloneperms.append(cp)
+                if len(new_cloneperms) == 1:
+                        self.attrs["clone_perms"] = new_cloneperms[0]
+                else:
+                        self.attrs["clone_perms"] = new_cloneperms
+
         @staticmethod
         def __call(args, fmt, fmtargs):
                 proc = subprocess.Popen(args, stdout = subprocess.PIPE,
@@ -84,15 +115,17 @@ class DriverAction(generic.Action):
 		if image.is_zone():
 			return
 
-                n2m = os.path.normpath(os.path.sep.join(
-                    (image.get_root(), "etc/name_to_major")))
-
-                # Check to see if the driver has already been installed.
-                major = [
-                    line.rstrip()
-                    for line in file(n2m)
-                    if line.split()[0] == self.attrs["name"]
-                ]
+                # See if it's installed
+                major = False
+                try:
+                        for fields in DriverAction.__gen_read_binding_file(
+                            image, "etc/name_to_major", minfields=2,
+                            maxfields=2):
+                                if fields[0] == self.attrs["name"]:
+                                        major = True
+                                        break
+                except IOError:
+                        pass
 
                 # In the case where the the packaging system thinks the driver
                 # is installed and the driver database doesn't, do a fresh
@@ -144,10 +177,6 @@ class DriverAction(generic.Action):
                     {"name": self.attrs["name"]})
 
                 for cp in self.attrlist("clone_perms"):
-                        # If we're given three fields, assume the minor node
-                        # name is the same as the driver name.
-                        if len(cp.split()) == 3:
-                                cp = self.attrs["name"] + " " + cp
                         args = (
                             self.update_drv, "-b", image.get_root(), "-a",
                             "-m", cp, "clone"
@@ -405,20 +434,47 @@ class DriverAction(generic.Action):
                             {"name": self.attrs["name"], "policy": i})
 
                 for i in rem_clone:
-                        if len(i.split()) == 3:
-                                i = self.attrs["name"] + " " + i
                         args = rem_base + ("-m", i, "clone")
                         self.__call(args, "driver (%(name)s) upgrade (removal "
                             "of clone permission '%(perm)s')",
                             {"name": self.attrs["name"], "perm": i})
 
                 for i in add_clone:
-                        if len(i.split()) == 3:
-                                i = self.attrs["name"] + " " + i
                         args = add_base + ("-m", i, "clone")
                         self.__call(args, "driver (%(name)s) upgrade (addition "
                             "of clone permission '%(perm)s')",
                             {"name": self.attrs["name"], "perm": i})
+
+        @staticmethod
+        def __gen_read_binding_file(img, path, minfields=None, maxfields=None):
+
+                myfile = file(os.path.normpath(os.path.join(
+                    img.get_root(), path)))
+                for line in myfile:
+                        line = line.strip()
+                        fields = line.split()
+                        result_fields = []
+                        for field in fields:
+                                # This is a compromise, for now.  In fact,
+                                # comments can begin anywhere in the line,
+                                # except inside of quoted material.
+                                if field[0] == "#":
+                                        break
+                                field = field.strip('"')
+                                result_fields.append(field)
+
+                        if minfields is not None:
+                                if len(result_fields) < minfields:
+                                        continue
+
+                        if maxfields is not None:
+                                if len(result_fields) > maxfields:
+                                        continue
+
+                        if result_fields:
+                                yield result_fields
+                myfile.close()
+
 
         @classmethod
         def __get_image_data(cls, img, name, collect_errs = False):
@@ -428,19 +484,15 @@ class DriverAction(generic.Action):
                 exceptions and return them in a tuple with the action.
                 """
 
-                errors = [ ]
+                errors = []
 
                 # See if it's installed
+                found_major = 0
                 try:
-                        n2mf = file(os.path.normpath(os.path.join(
-                            img.get_root(), "etc/name_to_major")))
-
-                        major = [
-                            line.rstrip()
-                            for line in n2mf
-                            if line.split()[0] == name
-                        ]
-                        n2mf.close()
+                        for fields in DriverAction.__gen_read_binding_file(img,
+                             "etc/name_to_major", minfields=2, maxfields=2):
+                                if fields[0] == name:
+                                        found_major += 1
                 except IOError, e:
                         e.args += ("etc/name_to_major",)
                         if collect_errs:
@@ -448,13 +500,13 @@ class DriverAction(generic.Action):
                         else:
                                 raise
 
-                if not major:
+                if found_major == 0:
                         if collect_errs:
                                 return None, []
                         else:
                                 return None
 
-                if len(major) > 1:
+                if found_major > 1:
                         try:
                                 raise RuntimeError, \
                                     "More than one entry for driver '%s' in " \
@@ -470,64 +522,56 @@ class DriverAction(generic.Action):
 
                 # Grab aliases
                 try:
-                        daf = file(os.path.normpath(os.path.join(
-                            img.get_root(), "etc/driver_aliases")))
+                        act.attrs["alias"] = []
+                        for fields in DriverAction.__gen_read_binding_file(img,
+                             "etc/driver_aliases", minfields=2, maxfields=2):
+                                if fields[0] == name:
+                                        act.attrs["alias"].append(fields[1])
                 except IOError, e:
                         e.args += ("etc/driver_aliases",)
                         if collect_errs:
                                 errors.append(e)
                         else:
                                 raise
-                else:
-                        act.attrs["alias"] = [
-                            line.split()[1].strip('"')
-                            for line in daf
-                            if line.split()[0] == name
-                        ]
-                        daf.close()
 
                 # Grab classes
                 try:
-                        dcf = file(os.path.normpath(os.path.join(
-                            img.get_root(), "etc/driver_classes")))
+                        act.attrs["class"] = []
+                        for fields in DriverAction.__gen_read_binding_file(img,
+                             "etc/driver_classes", minfields=2, maxfields=2):
+                                if fields[0] == name:
+                                        act.attrs["class"].append(fields[1])
                 except IOError, e:
                         e.args += ("etc/driver_classes",)
                         if collect_errs:
                                 errors.append(e)
                         else:
                                 raise
-                else:
-                        act.attrs["class"] = [ ]
-                        for line in dcf:
-                                larr = line.rstrip().split()
-                                if len(larr) == 2 and larr[0] == name:
-                                        act.attrs["class"].append(larr[1])
-                        dcf.close()
 
                 # Grab minor node permissions
                 try:
-                        dmf = file(os.path.normpath(os.path.join(
-                            img.get_root(), "etc/minor_perm")))
+                        act.attrs["perms"] = []
+                        act.attrs["clone_perms"] = []
+                        for fields in DriverAction.__gen_read_binding_file(img,
+                             "etc/minor_perm", minfields=4, maxfields=4):
+                                # Break first field into pieces.
+                                namefields = fields[0].split(":")
+                                if len(namefields) != 2:
+                                        continue
+                                major = namefields[0]
+                                minor = namefields[1]
+                                if major == name:
+                                        act.attrs["perms"].append(
+                                            minor + " " + " ".join(fields[1:]))
+                                elif major == "clone":
+                                        act.attrs["clone_perms"].append(
+                                            minor + " " + " ".join(fields[1:]))
                 except IOError, e:
                         e.args += ("etc/minor_perm",)
                         if collect_errs:
                                 errors.append(e)
                         else:
                                 raise
-                else:
-                        act.attrs["perms"] = [ ]
-                        act.attrs["clone_perms"] = [ ]
-                        for line in dmf:
-                                maj, perm = line.rstrip().split(":", 1)
-                                if maj == name:
-                                        act.attrs["perms"].append(perm)
-                                # Although some clone_perms might by rights
-                                # belong to a driver whose name is not the minor
-                                # name here, there's no way to figure that out.
-                                elif maj == "clone" and perm.split()[0] == name:
-                                        act.attrs["clone_perms"].append(
-                                            " ".join(perm.split()[1:]))
-                        dmf.close()
 
                 # Grab device policy
                 try:
@@ -542,7 +586,12 @@ class DriverAction(generic.Action):
                 else:
                         act.attrs["policy"] = [ ]
                         for line in dpf:
-                                fields = line.rstrip().split()
+                                line = line.strip()
+                                if line.startswith("#"):
+                                        continue
+                                fields = line.split()
+                                if len(fields) < 2:
+                                        continue
                                 n = ""
                                 try:
                                         n, c = fields[0].split(":", 1)
@@ -574,11 +623,16 @@ class DriverAction(generic.Action):
                         else:
                                 raise
                 else:
-                        act.attrs["privs"] = [
-                            line.rstrip().split(":", 1)[1]
-                            for line in dpf
-                            if line.split(":", 1)[0] == name
-                        ]
+                        act.attrs["privs"] = [ ]
+                        for line in dpf:
+                                line = line.strip()
+                                if line.startswith("#"):
+                                        continue
+                                fields = line.split(":", 1)
+                                if len(fields) != 2:
+                                        continue
+                                if fields[0] == name:
+                                        act.attrs["privs"].append(fields[1])
                         dpf.close()
 
                 if collect_errs:
@@ -637,6 +691,15 @@ class DriverAction(generic.Action):
                         errors.append("minor node permission '%s' missing "
                             "from etc/minor_perm" % a)
 
+                onfs_perms = set(onfs.attrlist("clone_perms"))
+                mfst_perms = set(self.attrlist("clone_perms"))
+                # Due to the way we harvest clone nodes (we have to grab them
+                # all) we can't easily look for extra clone nodes.  So we only
+                # flag those which are missing.
+                for a in mfst_perms - onfs_perms:
+                        errors.append("clone minor node permission '%s' missing "
+                            "from etc/minor_perm" % a)
+
                 onfs_policy = set(onfs.attrlist("policy"))
                 # Canonicalize "*" minorspecs to empty
                 policylist = list(self.attrlist("policy"))
@@ -680,8 +743,6 @@ class DriverAction(generic.Action):
                     {"name": self.attrs["name"]})
 
                 for cp in self.attrlist("clone_perms"):
-                        if len(cp.split()) == 3:
-                                cp = self.attrs["name"] + " " + cp
                         args = (
                             self.update_drv, "-b", image.get_root(),
                             "-d", "-m", cp, "clone"
