@@ -80,7 +80,8 @@ CATALOG = \
    data/opensolaris.org.sections
 
 DESKTOP = \
-   data/packagemanager.desktop
+   data/packagemanager.desktop \
+   data/addmoresoftware.desktop
 
 ROOTPYMODS = $(PYMODS:modules/%=$(ROOTPYTHONPKG)/%)
 
@@ -118,7 +119,7 @@ clobber := TARGET = clobber
 link := TARGET = link
 link-clean := TARGET = link-clean
 
-all: data/packagemanager.desktop
+all: data/packagemanager.desktop data/addmoresoftware.desktop
 
 install: all $(ROOTCOMPONENTS)
 
@@ -134,6 +135,10 @@ data/packagemanager.desktop: data/packagemanager.desktop.in
 	cd data; pwd; \
 	  LC_ALL=C intltool-merge -d -u -c ../../po/.intltool-merge-cache ../../po packagemanager.desktop.in packagemanager.desktop
 
+data/addmoresoftware.desktop: data/addmoresoftware.desktop.in
+	cd data; pwd; \
+	  LC_ALL=C intltool-merge -d -u -c ../../po/.intltool-merge-cache ../../po addmoresoftware.desktop.in addmoresoftware.desktop
+
 PWD:sh = pwd
 
 #This will not link l10n files
@@ -144,6 +149,7 @@ link:
 	ln -sf $(PWD)/data/opensolaris.org /usr/share/package-manager/data/opensolaris.org
 	ln -sf $(PWD)/data/opensolaris.org.sections /usr/share/package-manager/data/opensolaris.org.sections
 	ln -sf $(PWD)/data/packagemanager.desktop /usr/share/applications/packagemanager.desktop
+	ln -sf $(PWD)/data/addmoresoftware.desktop /usr/share/applications/addmoresoftware.desktop
 	ln -sf $(PWD)/data/icons /usr/share/icons/package-manager
 	ln -sf $(PWD)/modules /usr/lib/python2.4/vendor-packages/pkg/gui
 
@@ -151,6 +157,7 @@ link-clean:
 	rm -rf /usr/share/lib/package-manager
 	rm -rf /usr/lib/python2.4/vendor-packages/pkg/gui
 	rm -f /usr/share/applications/packagemanager.desktop
+	rm -f /usr/share/applications/addmoresoftware.desktop
 	rm -f /usr/bin/packagemanager
 
 proto: $(ROOT)
@@ -169,6 +176,9 @@ $(ROOTHELPSHARE)/%: help/%/package-manager.xml
 	$(INSTALL) -d -m 0755 $@
 	$(INSTALL) -f $@ -m 0644 $<
 	$(INSTALL) -f $@ -m 0644 $(<D)/legal.xml
+	$(INSTALL) -d -m 0755 $@/figures
+	$(INSTALL) -f $@/figures -m 0644 $(<D)/figures/package_manager.png
+	$(INSTALL) -f $@/figures -m 0644 $(<D)/figures/update_all.png
 
 $(ROOTDATASHARE)/%: data/%
 	rm -f $@; $(INSTALL) -f $(ROOTDATASHARE) -m 0644 $<

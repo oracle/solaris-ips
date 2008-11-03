@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN" "http://www.oasis-open.org/docbook/xml/4.0/docbookx.dtd">
-<book id="package_manager_online_help" lang="en"><title>Getting Started With Package Manager</title>
+<book id="package_manager_online_help" lang="en"><title>Getting Started With OpenSolaris 2008.11 Package Manager</title>
 <bookinfo><authorgroup><author><firstname>IPS</firstname>
 <surname>Documentation Team</surname>
 </author>
 </authorgroup>
 <pubsnumber>820-6570</pubsnumber>
-<releaseinfo>v 1.0</releaseinfo>
+<releaseinfo>v 0.1</releaseinfo>
 <pubdate>Nov 2008</pubdate>
 <publisher><publishername>Sun Microsystems, Inc.</publishername>
 <address><street>4150 Network Circle</street>
@@ -40,22 +40,23 @@
 </legalnotice>
 </bookinfo>
 <chapter id="pkg_mgr_online_help"><title>Introduction</title>
-<highlights><para>Welcome to the OpenSolaris 2008.11 Package Manager Online Help!</para>
+<highlights><para>Welcome to the <trademark>OpenSolaris 2008.11</trademark> Package Manager Online Help!</para>
 <para>Use this help contents to learn how to use the Package Manager. Navigate through this help by clicking on the topics displayed in the side bar.</para>
-<para>The OpenSolaris 2008.11 <application>Package Manager</application> application is a graphical user interface for the Image Packaging System (IPS) software. </para>
+<para>The OpenSolaris 2008.11 <application>Package Manager</application> application is a graphical user interface for the Image Packaging System (IPS) software. IPS is a network-centric packaging system that enables users to download and install packages, create and manage repositories, mirror repositories, and create and publish their own packages to a repository.</para>
+<para>See the <ulink url="http://dlc.sun.com/osol/docs/content/2008.11/IMGPACKAGESYS/"><citetitle>Image Packaging System Guide</citetitle></ulink> for information on IPS.</para>
 <para>The <application>Package Manager</application> enables you to perform the following tasks:</para>
-<itemizedlist><listitem><para>Search, install and remove packages.</para>
+<itemizedlist><listitem><para>Search, install, update, and remove packages.</para>
 </listitem>
 <listitem><para>Add and modify repositories.</para>
 </listitem>
 <listitem><para>Create, remove and manage boot environments.</para>
 </listitem>
 </itemizedlist>
-<note><para>See the <xref linkend="glossary-1"/> for a table of terms and definitions used in the Package Manager Online Help document.</para>
+<note><para>See the <xref linkend="glossary-1"/> for definitions of the terms used in this document.</para>
 </note>
 </highlights>
 <sect1 id="ghoap"><title>Package Manager Screencast</title>
-<para>Learn how to use the OpenSolaris 2008.11 Package Manager through a screencast. Click here to go the Package Manager screencast.</para>
+<para>Learn how to use the OpenSolaris 2008.11 Package Manager through a screencast. Click <ulink url="http://webcast-west.sun.com/interactive/09B01790/index.html">here</ulink> to go the Package Manager screencast.</para>
 </sect1>
 <sect1><title>Starting Package Manager</title>
 <para>You can start the <application>Package Manager</application> in the following ways:</para>
@@ -72,8 +73,8 @@
 </sect1>
 <sect1 id="ghmbh"><title>Package Manager Window</title>
 <para>When you start the <application>Package Manager</application>, the following window is displayed: </para>
-<figure id="ghobw"><title>Package Manager Main Window</title>
-<mediaobject><imageobject><imagedata fileref="figures/PM.png" /></imageobject>
+<figure id="ghpto"><title>Package Manager Main Window</title>
+<mediaobject><imageobject><imagedata fileref="figures/package_manager.png" /></imageobject>
 </mediaobject>
 </figure>
 <para>The main window of the <application>Package Manager</application> consists of the following elements :</para>
@@ -83,7 +84,7 @@
 </varlistentry>
 <varlistentry><term><emphasis role="strong">List of Packages by Status</emphasis></term>
 <listitem><para>The <guilabel>Show</guilabel> drop-down menu enables you to filter the list of packages by the following options:</para>
-<itemizedlist><listitem><para><emphasis role="strong">All Packages</emphasis>– Shows the list of all packages available in the current (todo) repository.</para>
+<itemizedlist><listitem><para><emphasis role="strong">All Packages</emphasis>– Shows the list of all packages available in the current repository.</para>
 </listitem>
 <listitem><para><emphasis role="strong">Installed Packages</emphasis> – Shows the list of packages installed on your system.</para>
 </listitem>
@@ -123,39 +124,37 @@
 </variablelist>
 </sect1>
 </chapter>
-<chapter><title>Working With The Package Manager</title>
+<chapter><title>Working With the Package Manager</title>
 <highlights><para>The following sections document the tasks that can be performed with the <application>Package Manager</application>.</para>
 </highlights>
 <sect1 id="ghmzf"><title>Install a Package</title>
 <para>Perform the following steps to install a package:</para>
 <orderedlist><listitem><para>In the main window of the <application>Package Manager</application>, click the <guibutton>Reload</guibutton> button to view the latest list of packages available to you.</para>
 </listitem>
-<listitem><para>Check the box next to the package(s) to select it.</para>
+<listitem><para>Check the box next to the package to select it.</para>
 </listitem>
 <listitem><para>Click <guibutton>Install/Update</guibutton> in the toolbar to start the package installation process.</para>
 <para>You can also choose <menuchoice><guimenu>Package</guimenu><guimenuitem>Install/Update</guimenuitem></menuchoice> to start the package installation process.</para>
 </listitem>
-<listitem><para>The <application>Package Manager</application> checks for dependencies. Click <guilabel>Show Details</guilabel> to view the details.</para>
-<para>Click <guibutton>Cancel</guibutton> to cancel the package installation. No changes are made and you are returned to the main window. </para>
+<listitem><para>The <application>Package Manager</application> checks for dependencies. Click <guilabel>Show Details</guilabel> to see more information about the package and its dependencies .</para>
 </listitem>
-<listitem><para>The <literal>Install Confirmation</literal> dialog box is displayed. Review the package installation information and the package dependencies details.</para>
+<listitem><para>Review the package installation information and the package dependencies details in the <guilabel>Install Confirmation</guilabel> dialog.</para>
 <para>Click <guibutton>Next</guibutton> to proceed with the package installation.</para>
 <para>Click <guibutton>Cancel</guibutton> to cancel the package installation. No changes are made and you are returned to the main window.</para>
 </listitem>
-<listitem><para>The <literal>Downloading Packages</literal> dialog box is displayed.</para>
-<para>Click <guibutton>Cancel</guibutton> to cancel the package installation. No changes are made and you are returned to the main window.</para>
+<listitem><para>The <guilabel>Downloading Packages</guilabel> dialog is displayed. Click <guibutton>Cancel</guibutton> if you want to cancel the package installation. No changes are made and you are returned to the main window.</para>
 </listitem>
 </orderedlist>
 <para>The packages are installed. The updated list of packages are displayed in the main window.</para>
 </sect1>
 <sect1 id="ghmyo"><title>Remove a Package</title>
 <para>Perform the following steps to remove a package:</para>
-<orderedlist><listitem><para>Check the box next to the package(s) that you want to remove.</para>
+<orderedlist><listitem><para>Check the box next to the package or packages that you want to remove.</para>
 </listitem>
 <listitem><para>Click the <guibutton>Remove</guibutton> button in the toolbar to start the process.</para>
 <para>You can also choose <menuchoice><guimenu>Package</guimenu><guimenuitem>Remove</guimenuitem></menuchoice> to remove a package.</para>
 </listitem>
-<listitem><para>The <literal>Remove Confirmation</literal> dialog box is displayed. Review the packages to be removed and the package dependencies details.</para>
+<listitem><para>Review the packages to be removed and the package dependencies details in the <guilabel>Remove Confirmation</guilabel> dialog.</para>
 </listitem>
 <listitem><para>Click <guibutton>Proceed</guibutton> to confirm. After you click the <guibutton>OK</guibutton> button, you cannot undo the package removal.</para>
 <para>Click <guibutton>Cancel</guibutton> to cancel the process. No changes are made and you are returned to the main window.</para>
@@ -163,21 +162,20 @@
 </orderedlist>
 </sect1>
 <sect1 id="ghmxy"><title>Search for a Package</title>
-<para>Type the name of the package that you want to search for in the <guilabel>Search</guilabel> box.</para>
-<para>The following search parameters are available:</para>
-<itemizedlist><listitem><para><emphasis role="strong">Name, Description</emphasis> – </para>
+<para>Type the name of the package that you want to search for in the <guilabel>Search</guilabel> box. Enter the complete name, description, or a partial name to search for the package. For example, you might enter one of the following search terms to search for <filename>SUNWgnome-games</filename> :</para>
+<itemizedlist><listitem><para>SUNWgames</para>
 </listitem>
-<listitem><para><emphasis role="strong">Maintainer</emphasis> – </para>
+<listitem><para>games</para>
 </listitem>
-<listitem><para><emphasis role="strong">Dependencies</emphasis> – </para>
-</listitem>
-<listitem><para><emphasis role="strong">Commands</emphasis> – </para>
+<listitem><para>GNOME-games</para>
 </listitem>
 </itemizedlist>
-<para></para>
-<tip><para>Use the button on the right hand side of the <guilabel>Search</guilabel> tab to clear the search results.</para>
+<tip><itemizedlist><listitem><para>Use the submenus under the <menuchoice><guimenu>Edit</guimenu></menuchoice> menu to cut, copy, paste, or clear text in the <guilabel>Search</guilabel> tab.</para>
+</listitem>
+<listitem><para>Use the icon on the right hand side of the <guilabel>Search</guilabel> tab to clear the search results.</para>
+</listitem>
+</itemizedlist>
 </tip>
-<para>Use the submenus under the <menuchoice><guimenu>Edit</guimenu></menuchoice> menu to cut, copy, paste, or clear text in the <guilabel>Search</guilabel> tab.</para>
 </sect1>
 <sect1 id="ghmzc"><title>Update a Package</title>
 <para>Look for the green icon next to the installed package name. This icon indicates that updates are available for the package in the currently selected repository. Select the package and click the <guibutton>Install/Update</guibutton> button to install the latest version of the package.</para>
@@ -185,34 +183,47 @@
 <sect1 id="ghmym"><title>Switch Between Configured Repositories</title>
 <para>Use the <guilabel>Repositories</guilabel> drop-down menu on the toolbar to view a list of configured repositories. Click a repository name to switch to a different repository.</para>
 </sect1>
+<sect1 id="ghqub"><title>Introduction to Boot Environments</title>
+<para>The OpenSolaris 2008.11 release is a boot environment.</para>
+<para> A boot environment is an image that is bootable. The boot environment consists of a root file system and, optionally, other file systems, such as <filename>/usr</filename>, <filename>/var</filename>, or <filename>/export</filename>. These other file systems are mounted below the root file system. The root file system and all other file systems of the boot environment that contain system software are required to be zfs datasets.</para>
+<para> You can maintain multiple boot environments on your system. The primary reason to have more than one boot environment on your system is to create backups of your existing boot environments before you modify them. Then, you have the option of booting a backup boot environment when needed. Use the <command>beadm(1)</command> utility to create, and manage your boot environments. </para>
+<para>For detailed instructions about the <command>beadm</command> utility, see the <literal>beadm</literal>(1M) man page.</para>
+<para> See the <ulink url="http://dlc.sun.com/osol/docs/content/2008.11/snapupgrade/snap3.html"><citetitle>Upgrading and Managing Boot Environments</citetitle></ulink> document for more information on boot environments.</para>
+<para>The <application>Package Manager</application> creates a clone of the active boot environment when an image is updated.</para>
+</sect1>
 <sect1 id="ghmyp"><title>Update the Current Image (Update All Packages)</title>
-<para>&lt;insert link about BEs here>.</para>
 <para>Perform the following steps to update all the packages in your image.</para>
 <orderedlist><listitem><para>Click the <guilabel>Update All</guilabel> button to start the process of updating <emphasis role="strong">all</emphasis> the packages in your image.</para>
 <para>You can also choose <menuchoice><guimenu>File</guimenu><guimenuitem>Update All</guimenuitem></menuchoice> to start the process.</para>
 <note><para>The <guilabel>Update All</guilabel> button is enabled when updates are available to the installed packages.</para>
 </note>
 </listitem>
-<listitem><para id="step_2">The <literal>Update All Confirmation</literal> dialog box is displayed.</para>
-<para>During the <emphasis role="strong">Update All</emphasis> process, a clone of the active boot environment is created. This clone enables the user to boot into the boot environment state that existed before the <guilabel>Update All</guilabel> process was started.</para>
-<note><para>A name for the new boot environment is automatically created.</para>
+<listitem><para>The <guilabel>Update All</guilabel> window is displayed. Click <guibutton>Proceed</guibutton> to create a new boot environment and proceed with the Update All process.</para>
+<para>During the Update All process, a clone of the active boot environment is created. This clone enables the user to boot into the boot environment state that existed before the Update All process was started. If the Package Manager is unable to create a new boot environment, an error message will be displayed. See the <xref linkend="ghmyd"/> section on how to rectify the error and continue with updating your image.</para>
+<note><para>A name for the new boot environment is automatically generated.</para>
 </note>
+<para>Click <guibutton>Cancel</guibutton> to cancel the process.</para>
 </listitem>
-<listitem><para>Click <guibutton>Proceed</guibutton> to continue the <emphasis role="strong">Update All</emphasis> process.</para>
-<para>Click <guibutton>Cancel</guibutton> to cancel the process. No changes are made to the boot environment and you are returned to the main window of the <application>Package Manager</application>.</para>
+<listitem><para id="step_2">If you chose to proceed, the Package Manager checks for dependencies and the <guilabel>Install/Update Confirmation</guilabel> dialog is displayed.</para>
+<para>Review the packages to be installed and click <guibutton>Next</guibutton> to proceed.</para>
+<para>Click <guibutton>Cancel</guibutton> to cancel the process.</para>
 </listitem>
-<listitem><para><emphasis role="strong">Reboot your system for the changes to become effective.</emphasis></para>
+<listitem><para>The packages are downloaded and installed.</para>
+</listitem>
+<listitem><para>Read the <ulink url="http://opensolaris.org/os/project/indiana/resources/relnotes/200811/x86/">Release Notes</ulink> before rebooting your system.</para>
+<warning role="caution"><para>You must reboot your system for the changes to take effect.</para>
+</warning>
 </listitem>
 </orderedlist>
 <sect2 id="ghmyd"><title>Update All Errors</title>
-<para>A new boot environment clone <emphasis role="strong">must</emphasis> be created for the Update All process to be completed. An error message dialog box is displayed if a boot environment clone cannot be created. You might see an error message such as :</para>
-<para><literal>Not enough disk space: the Update All action cannot be performed. You may choose to return to BE Management to manage your boot environments and free up disk space</literal>.</para>
+<para>A new boot environment clone <emphasis role="strong">must</emphasis> be created for the Update All process to be completed. An error message is displayed if a boot environment clone cannot be created. You might see an error message such as :</para>
+<para><literal>Not enough disk space: the selected action cannot be performed. You may choose to return to BE Management to manage your boot environments and free up disk space</literal>.</para>
+<para>Click <guibutton>Cancel</guibutton> to cancel the Update All process and return to the main window.</para>
 <para>Perform the following steps if you want to rectify the error and continue with the Update All process: </para>
-<orderedlist><listitem><para>Click the <guibutton>BE Management</guibutton> button in the error dialog box to open the <literal>BE Management</literal> dialog box.</para>
+<orderedlist><listitem><para>Click <guibutton>BE Management</guibutton> to go to the <guilabel>Boot Environment Management</guilabel> dialog.</para>
+<para>Click <guibutton>Close</guibutton> to cancel the process and return to the main window.</para>
 </listitem>
-<listitem><para>Follow the steps listed in <xref linkend="ghmya"/> to delete old or unused boot environments and free up disk space.</para>
-</listitem>
-<listitem><para>Reboot your system.</para>
+<listitem><para>If you chose to rectify the error, go to step 2 in the <xref linkend="ghmya"/> section. Follow instructions to delete old or unused boot environments and free up disk space.</para>
 </listitem>
 <listitem><para>Click the <guibutton>Update All</guibutton> icon to restart the process of updating all packages.</para>
 </listitem>
@@ -220,28 +231,30 @@
 </sect2>
 </sect1>
 <sect1 id="ghmya"><title>Manage Boot Environments</title>
-<para>Perform the following steps to manage your boot environments (BEs) :</para>
-<orderedlist><listitem><para>Click <menuchoice><guimenu>File</guimenu><guimenuitem>Boot Environment Management</guimenuitem></menuchoice> .</para>
+<para>Perform the following steps to manage your boot environments :</para>
+<orderedlist><listitem><para>Click <menuchoice><guimenu>File</guimenu><guimenuitem>Boot Environment Management</guimenuitem></menuchoice> to open the <guilabel>Boot Environment Management</guilabel> dialog.</para>
 </listitem>
-<listitem><para>The <literal>Boot Environment Management</literal> dialog box is displayed. In this dialog box, you can perform the following actions:</para>
+<listitem><para id="be_step2">In this dialog, you can perform the following actions:</para>
 <variablelist><varlistentry><term><emphasis role="strong">Change the default boot environment.</emphasis></term>
 <listitem><para>Select the boot environment that you want to be active on system reboot. This is the default boot environment.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><emphasis role="strong">Remove old or unused boot environments to free up disk space.</emphasis></term>
-<listitem><para>Select the boot environment(s) you want to delete.</para>
+<listitem><para>Select the boot environments that you want to delete.</para>
+<note><para>You do not need to reboot your system if you are only deleting some of your boot environments.</para>
+</note>
 </listitem>
 </varlistentry>
 </variablelist>
 </listitem>
 <listitem><para>Click <guibutton>OK</guibutton> to proceed.</para>
-<para>Click <guibutton>Reset</guibutton> to reset the changes and show the initial state.</para>
+<para>Click <guibutton>Reset</guibutton> to reset the changes and show the initial state of the boot environments.</para>
 <para>Click <guibutton>Cancel</guibutton> to cancel all changes and return to the main window.</para>
 </listitem>
-<listitem><para>If you clicked OK , the <literal>BE Management Confirmation</literal> dialog box is displayed. Review the changes to the boot environment(s) and click <guibutton>OK</guibutton> to proceed.</para>
-<warning role="caution"><para>After you click <guibutton>OK</guibutton>, you cannot undo any changes you made to the the boot environment(s).</para>
+<listitem><para>If you chose to proceed, the <guilabel>BE Management Confirmation</guilabel> dialog is displayed. Review the boot environment changes and click <guibutton>OK</guibutton> to proceed.</para>
+<warning role="caution"><para>After you click <guibutton>OK</guibutton>, you cannot undo any changes you made to the boot environments.</para>
 </warning>
-<note><para>The changes that you made to the <emphasis role="strong">default boot environment</emphasis> setting are effective only after system reboot.</para>
+<note><para>The changes that you made to the <emphasis role="strong">default boot environment</emphasis> setting is effective only after system reboot.</para>
 </note>
 <para>Click <guibutton>Cancel</guibutton> to cancel the changes and return to the <literal>BE Management</literal> dialog box.</para>
 </listitem>
@@ -251,17 +264,16 @@
 </sect1>
 <sect1 id="ghmzn"><title>Edit Repositories</title>
 <para>Perform the following steps to add, remove, or configure repositories:</para>
-<orderedlist><listitem><para>Choose <menuchoice><guimenu>Settings</guimenu><guimenuitem>Edit Repositories</guimenuitem></menuchoice>.</para>
+<orderedlist><listitem><para>Choose <menuchoice><guimenu>Settings</guimenu><guimenuitem>Edit Repositories</guimenuitem></menuchoice> to open the <guilabel>Manage Repositories</guilabel> dialog.</para>
 </listitem>
-<listitem><para>The <literal>Manage Repositories</literal> dialog box is displayed. In this dialog box, you can perform the following actions :</para>
+<listitem><para>In this dialog box, you can perform the following actions :</para>
 <orderedlist><listitem><para><emphasis role="strong">Add a Repository</emphasis> – To add a new repository, type the name and the address (URL) of the repository. Click <guibutton>Add</guibutton>.</para>
 </listitem>
 <listitem><para><emphasis role="strong">Remove a Repository</emphasis> – To remove a repository, click a repository name from the list to select it. Click <guibutton>Remove</guibutton>.</para>
-<note><para>A repository that has been set as preferred repository cannot be removed. To remove a preferred repository, set a nonpreferred repository as preferred, and then remove the repository.</para>
+<note><para>A repository that has been set as the preferred repository cannot be removed. To remove a preferred repository, set a nonpreferred repository as preferred, and then remove the repository.</para>
 </note>
 </listitem>
-<listitem><para><emphasis role="strong">Set a Preferred Repository.</emphasis></para>
-<para>To set a repository as a preferred repository, click the radio button next to the repository that you would like to set as the preferred repository. Click <guibutton>Close</guibutton> if you are not making any other changes to the repository information.</para>
+<listitem><para><emphasis role="strong">Set a Preferred Repository</emphasis> – To set a repository as a preferred repository, click the radio button next to the repository that you would like to set as the preferred repository. Click <guibutton>Close</guibutton> if you are not making any other changes to the repository information.</para>
 </listitem>
 <listitem><para><emphasis role="strong">Modify a Repository</emphasis> – Perform the following steps to modify a repository :</para>
 <orderedlist><listitem><para>Select the repository that you want to modify.</para>
@@ -269,11 +281,11 @@
 <listitem><para>Click the <guibutton>Modify</guibutton> button.</para>
 <para> The <guilabel>Modify Repository</guilabel> dialog box is displayed.</para>
 </listitem>
-<listitem><para>Type a valid name for the repository and the URL of the repository.</para>
+<listitem><para>Type a valid name and URL for the repository.</para>
 <para>A repository name is considered valid if it does not exist in the current list of repositories.</para>
 </listitem>
-<listitem><para>Click <guibutton>OK</guibutton> to save the changes and return to the <literal>Manage Repositories</literal> dialog box.</para>
-<para>Click <guibutton>Cancel</guibutton> to cancel your changes. You are returned to the <literal>Manage Repositories</literal> dialog box.</para>
+<listitem><para>Click <guibutton>OK</guibutton> to save the changes and return to the <guilabel>Manage Repositories</guilabel> dialog box.</para>
+<para>Click <guibutton>Cancel</guibutton> to cancel your changes. You are returned to the <guilabel>Manage Repositories</guilabel> dialog box.</para>
 </listitem>
 </orderedlist>
 </listitem>
@@ -283,37 +295,73 @@
 </sect1>
 </chapter>
 <chapter><title>Update Manager</title>
-<highlights><para>The <application>Update Manager</application> is a separate application that launches automatically from the desktop when updates to the installed packages are available.</para>
+<highlights><para>The <application>Update Manager</application> is a separate application that launches from the desktop when updates to the installed packages are available in the repository.</para>
 </highlights>
-<sect1><title>Working With The Update Manager</title>
-<para>You can use the <application>Update Manager</application> application to update your image. When an image is updated, all packages installed in that image will be updated.</para>
-<para>During the Update All process, a clone of the active boot environment is created.</para>
-<para>For additional information about boot environments, see &lt;insert link here>.</para>
-<orderedlist><listitem><para>1. Click the <guibutton>Update All</guibutton> button in the <literal>Update All</literal> window to begin the process of updating your image.</para>
+<sect1><title>Working With Update Manager</title>
+<figure id="ghqbx"><title>Update Manager Main Window</title>
+<mediaobject><imageobject><imagedata fileref="figures/update_all.png" /></imageobject>
+</mediaobject>
+</figure>
+<para>You can use the <application>Update Manager</application> application to update the installed packages in your image.</para>
+<note><para>For the OpenSolaris 2008.11 release, the <application>Update Manager</application> updates <emphasis role="strong">all</emphasis> installed packages in the image. This is equivalent to updating the image.</para>
+</note>
+<orderedlist><listitem><para>When updates are available to the installed packages, a notification icon is displayed in the notification panel on the OpenSolaris desktop and the <guilabel>Update Manager</guilabel> window is displayed.</para>
+<para> You can also click <menuchoice><guimenu>System</guimenu><guisubmenu>Administration</guisubmenu><guimenuitem>Update Manager</guimenuitem></menuchoice> to manually launch the Update Manager.</para>
+</listitem>
+<listitem><para>Click the <guibutton>Update All</guibutton> button in the <guilabel>Update All</guilabel> window to begin the process of updating your image.</para>
+<para>Select a package and click the <guilabel>Details</guilabel> panel if you want to view more information about the package.</para>
+</listitem>
+<listitem><para>The <guilabel>Update All</guilabel> window is displayed. Click <guibutton>Proceed</guibutton> to create a new boot environment and update all packages in the current image.</para>
+<para>During the Update All process, a clone of the active boot environment is created. This clone enables the user to boot into the boot environment state that existed before the Update All process was started. </para>
+<para>Click <guibutton>Cancel</guibutton> to cancel the process.</para>
+<para>If the Package Manager is unable to create a new boot environment, an error message will be displayed. See the <xref linkend="ghquj"/> section on how to rectify the error and continue with updating your image.</para>
+<note><para>A name for the new boot environment is automatically generated.</para>
+</note>
+</listitem>
+<listitem><para>If you chose to proceed, the <guilabel>Installing Updates</guilabel> windows are displayed. There are four stages to the package installation process:</para>
+<orderedlist><listitem><para>Evaluate.</para>
+</listitem>
+<listitem><para>Download.</para>
+</listitem>
+<listitem><para>Install.</para>
+</listitem>
+<listitem><para>Index.</para>
 </listitem>
 </orderedlist>
-<para>Follow the steps detailed in the <xref linkend="ghmyp"/> section to complete updating your image.</para>
+<para>You can choose to cancel the process only during the Evaluate and Download stages. Click the <guibutton>Cancel</guibutton> button to cancel the installation process. No changes are made and you are returned to the main window of the Update Manager.</para>
+<note><para>If an error occurs during any of the stages, the <guilabel>Details</guilabel> panel is expanded and the details of the error are displayed. An error status indicator is shown next to the failed stage.</para>
+</note>
+</listitem>
+<listitem><para>Click the <guilabel>Details</guilabel> panel to view more information on each of the installation processes.</para>
+</listitem>
+<listitem><para>Read the <ulink url="http://opensolaris.org/os/project/indiana/resources/relnotes/200811/x86/">Release Notes</ulink> before rebooting your system.</para>
+<warning role="caution"><para>You must reboot your system for the changes to take effect.</para>
+</warning>
+</listitem>
+</orderedlist>
+<sect2 id="ghquj"><title>Update All Errors (Update Manager)</title>
+<para>A new boot environment clone <emphasis role="strong">must</emphasis> be created for the Update All process to be completed. An error message is displayed if a boot environment clone cannot be created. You might see an error message such as :</para>
+<para><literal>Not enough disk space: the Update All action cannot be performed. Click OK to launch BE Management to manage your existing BEs and free up disk space.</literal>.</para>
+<para>Click <guibutton>No</guibutton> to cancel the Update All process and return to the Update Manager main window.</para>
+<para>Perform the following steps if you want to rectify the error and continue with the Update All process: </para>
+<orderedlist><listitem><para>Click <guibutton>Yes</guibutton> in the error dialog to go to the <literal>Boot Environment Management</literal> dialog.</para>
+<para>Click <guibutton>Close</guibutton> to cancel the process and return to the main window.</para>
+</listitem>
+<listitem><para>If you chose to rectify the error, go to step 2 in the <xref linkend="ghmya"/> section. Follow instructions to delete old or unused boot environments and free up disk space.</para>
+</listitem>
+<listitem><para>Click the <guibutton>Update All</guibutton> button in the <literal>Update Manager</literal> window to restart the process of updating all packages.</para>
+</listitem>
+</orderedlist>
+</sect2>
 </sect1>
 </chapter>
 <glossary id="glossary-1"><title>Image Packaging System Glossary</title>
-<glossentry><glossterm>package</glossterm>
-<glossdef><para>A package is a collection of files, directories, links, drivers and dependencies in a defined format.</para>
-</glossdef>
-</glossentry>
 <glossentry><glossterm>authority</glossterm>
-<glossdef lang="en"><itemizedlist><listitem><para>An authority designs, creates, and publishes a package to a repository.</para>
+<glossdef lang="en"><itemizedlist><listitem><para>A person, group, or corporation that designs, creates, and publishes a package to a repository.</para>
 </listitem>
-<listitem><para>An authority can also be a location that is configured to point to a repository and may contain additional information about the package such as the publisher of the package. The repository, in turn, serves the packages from the (default) authority, for downloading purposes</para>
+<listitem><para>A location that is configured to point to a repository and might contain additional information about the package, such as the publisher of the package. The repository, in turn, serves the packages from the (default) authority, for downloading purposes. The developer-quality packages managed by Sun and made available through http://pkg.opensolaris.com is an example of an authority.</para>
 </listitem>
 </itemizedlist>
-</glossdef>
-</glossentry>
-<glossentry><glossterm>preferred authority</glossterm>
-<glossdef><para>A default repository that is the source for packages. If a user does not explicitly specify a repository, the preferred authority is chosen as the source for packages.</para>
-</glossdef>
-</glossentry>
-<glossentry><glossterm>repository</glossterm>
-<glossdef><para>A repository is a location where packages are available for download.</para>
 </glossdef>
 </glossentry>
 <glossentry><glossterm>boot environment</glossterm>
@@ -322,13 +370,30 @@
 </glossdef>
 </glossentry>
 <glossentry><glossterm>clone</glossterm>
-<glossdef><para>A clone is an exact copy. For installation, this could be an exact copy of an operating system, a file system, or a volume. This copy has 100% compatibility with the original.</para>
+<glossdef><para>An exact copy. </para>
+<para>For installation, a clone could be an exact copy of an operating system, a file system, or a volume. This copy has 100% compatibility with the original.</para>
 </glossdef>
 </glossentry>
-<glossentry><glossterm>update</glossterm>
-<glossdef><para>A limited installation of package files. Only those files that have been modified are installed. If files have been removed from the package that is to be installed, those same files are removed from the package that is being updated.</para>
+<glossentry><glossterm>dataset</glossterm>
+<glossdef><para>A generic name for the following ZFS entities: clones, file systems, snapshots, or volumes. Each dataset is identified by a unique name in the ZFS namespace.</para>
+</glossdef>
+</glossentry>
+<glossentry><glossterm>image</glossterm>
+<glossdef><para>A collection of software in a package that comprises an entire operating system. The package is suitable for installation.</para>
+</glossdef>
+</glossentry>
+<glossentry><glossterm>package</glossterm>
+<glossdef><para>A collection of files, directories, links, drivers, and dependencies in a defined format.</para>
+</glossdef>
+</glossentry>
+<glossentry><glossterm>preferred repository</glossterm>
+<glossdef><para>A default repository that is the source for packages. If a user does not explicitly specify a repository when installing and updating packages, the preferred authority is chosen as the source for packages. </para>
+<para>During the creation of an image, the initially specified authority is marked as the preferred authority. Any one of the authorities associated with an image can be set as the preferred authority by using the <command>set-authority</command> command with the <option>P</option> option.</para>
+</glossdef>
+</glossentry>
+<glossentry><glossterm>repository</glossterm>
+<glossdef><para>A location where packages are available for download. A repository can contain packages from many authorities. Conversely, many repositories can contain packages from a single authority. Also called the depot server.</para>
 </glossdef>
 </glossentry>
 </glossary>
 </book>
-

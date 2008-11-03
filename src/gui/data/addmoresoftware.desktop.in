@@ -1,0 +1,15 @@
+[Desktop Entry]
+_Name=Add More Software
+_GenericName=Add More Software
+_Comment=Install, update and remove software packages
+Exec=gksu /usr/bin/packagemanager
+Icon=/usr/share/package-manager/PM_app_48x.png
+Terminal=false
+MultipleArgs=false
+StartupNotify=true
+Type=Application
+Encoding=UTF-8
+NoDisplay=true
+Categories=PackageManager;Applications;GTK;System;Settings
+NotShowIn=KDE
+X-KDE-SubstituteUID=true
