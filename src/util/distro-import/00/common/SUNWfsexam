@@ -1,5 +1,5 @@
 package SUNWfsexam
-classification "System/File System"
+classification "Applications/System Utilities"
 import SUNWfsexam
 import SUNWfsexam-root
 end package

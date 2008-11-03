@@ -1,4 +1,4 @@
 package SUNWcxwsvr
-classification "Development/Localizations"
+classification "System/X11"
 import SUNWcxwsvr
 end package

@@ -1,5 +1,5 @@
 package SUNWlibchewing
-classification "System/Libraries"
+classification "System/Localizations"
 import SUNWlibchewing
 import SUNWlibchewing-devel
 end package

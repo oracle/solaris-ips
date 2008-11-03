@@ -1,5 +1,5 @@
 package SUNWscim-hangul
-classification "System/Text Tools"
+classification "System/Localizations"
 import SUNWscim-hangul
 version 0.3.2
 end package

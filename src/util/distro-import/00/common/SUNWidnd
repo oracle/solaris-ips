@@ -1,4 +1,4 @@
 package SUNWidnd
-classification "Development/System"
+classification "System/Internationalization"
 import SUNWidnd
 end package

@@ -1,4 +1,4 @@
 package SUNWiconv-unicode
-classification "System/Text Tools"
+classification "System/Internationalization"
 import SUNWiconv-unicode
 end package

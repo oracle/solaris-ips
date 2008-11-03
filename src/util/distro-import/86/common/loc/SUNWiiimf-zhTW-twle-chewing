@@ -1,4 +1,4 @@
 package SUNWiiimf-zhTW-twle-chewing
-classification "System/Internationalization"
+classification "System/Localizations"
 import SUNWiiimf-zhTW-twle-chewing
 end package

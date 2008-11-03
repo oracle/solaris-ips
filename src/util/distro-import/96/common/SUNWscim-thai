@@ -1,5 +1,5 @@
 package SUNWscim-thai
-classification "System/Text Tools"
+classification "System/Localizations"
 import SUNWscim-thai
 version 0.1.0
 end package

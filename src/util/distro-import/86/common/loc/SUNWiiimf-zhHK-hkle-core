@@ -1,4 +1,4 @@
 package SUNWiiimf-zhHK-hkle-core
-classification "System/Internationalization"
+classification "System/Localizations"
 import SUNWiiimf-zhHK-hkle-core
 end package

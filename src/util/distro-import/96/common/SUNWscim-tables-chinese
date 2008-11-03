@@ -1,5 +1,5 @@
 package SUNWscim-tables-chinese
-classification "System/Text Tools"
+classification "System/Localizations"
 import SUNWscim-tables-chinese
 version 0.5.7
 end package

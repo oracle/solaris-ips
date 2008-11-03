@@ -1,5 +1,5 @@
 package SUNWscim-tables-extra
-classification "System/Text Tools"
+classification "System/Localizations"
 import SUNWscim-tables-extra
 version 0.5.7
 end package

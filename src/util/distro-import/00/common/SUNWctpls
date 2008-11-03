@@ -1,4 +1,4 @@
 package SUNWctpls
-classification "System/Text Tools"
+classification "System/Internationalization"
 import SUNWctpls
 end package

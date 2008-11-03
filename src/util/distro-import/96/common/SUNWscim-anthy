@@ -1,5 +1,5 @@
 package SUNWscim-anthy
-classification "System/Text Tools"
+classification "System/Localizations"
 import SUNWscim-anthy
 version 1.2.4
 end package

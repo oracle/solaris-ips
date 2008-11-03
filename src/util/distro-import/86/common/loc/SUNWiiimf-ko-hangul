@@ -1,4 +1,4 @@
 package SUNWiiimf-ko-hangul
-classification "System/Internationalization"
+classification "System/Localizations"
 import SUNWiiimf-ko-hangul
 end package

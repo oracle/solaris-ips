@@ -1,4 +1,4 @@
 package SUNWfrxwsvr
-classification "Desktop (GNOME)/Localizations"
+classification "System/X11"
 import SUNWfrxwsvr
 end package

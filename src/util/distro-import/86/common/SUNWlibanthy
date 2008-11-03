@@ -1,5 +1,5 @@
 package SUNWlibanthy
-classification "System/Libraries"
+classification "System/Localizations"
 import SUNWlibanthy
 import SUNWlibanthy-devel
 import SUNWlibanthy-root

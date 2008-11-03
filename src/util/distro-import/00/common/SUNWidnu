@@ -1,4 +1,4 @@
 package SUNWidnu
-classification "Applications/System Utilities"
+classification "System/Internationalization"
 import SUNWidnu
 end package

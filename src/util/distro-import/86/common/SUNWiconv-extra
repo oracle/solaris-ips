@@ -1,4 +1,4 @@
 package SUNWiconv-extra
-classification "System/Text Tools"
+classification "System/Internationalization"
 import SUNWiconv-extra
 end package
