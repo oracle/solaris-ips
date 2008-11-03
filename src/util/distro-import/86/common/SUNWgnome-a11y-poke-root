@@ -4,6 +4,5 @@
 # be deleted when the newer package is installed.
 #
 package SUNWgnome-a11y-poke-root
-classification "Applications/Universal Access"
 depend SUNWgnome-a11y-poke
 end package

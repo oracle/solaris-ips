@@ -4,6 +4,5 @@
 # be deleted when the newer package is installed.
 #
 package SUNWjavadb-client
-classification "System/Databases"
 depend SUNWjavadb
 end package

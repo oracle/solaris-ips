@@ -5,7 +5,6 @@
 # on the package with the new name.
 #
 package FSWxorg-fonts
-classification "System/Fonts"
 depend FSWxorg-fonts-core
 depend FSWxorg-fonts-cyrillic
 depend FSWxorg-fonts-daewoo

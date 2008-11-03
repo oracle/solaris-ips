@@ -4,6 +4,5 @@
 # be deleted when the newer package is installed.
 #
 package SUNWproduct-registry-root
-classification "System/Core"
 depend SUNWwsr2
 end package
