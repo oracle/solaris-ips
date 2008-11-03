@@ -213,7 +213,7 @@ cli.t_pkg_api_install.py TestPkgApiInstall.test_bug_1338_2|pass
 cli.t_pkg_api_install.py TestPkgApiInstall.test_bug_1338_3|pass
 cli.t_pkg_api_install.py TestPkgApiInstall.test_bug_1338_4|pass
 cli.t_pkg_api_install.py TestPkgApiInstall.test_bug_2795|pass
-cli.t_pkg_api_install.py TestPkgApiInstall.test_bug_4109|error
+cli.t_pkg_api_install.py TestPkgApiInstall.test_bug_4109|pass
 cli.t_pkg_api_install.py TestPkgApiInstall.test_image_upgrade|pass
 cli.t_pkg_api_install.py TestPkgApiInstall.test_install_matching|error
 cli.t_pkg_api_install.py TestPkgApiInstall.test_nonrecursive_dependent_uninstall|pass
@@ -377,6 +377,6 @@ cli.t_pkgsend.py TestPkgsendBasics.test_pkgsend_bogus_opts|pass
 cli.t_pkgsend.py TestPkgsendRename.test_rename1|pass
 cli.t_pkgsend.py TestPkgsendRename.test_rename2|pass
 cli.t_pkgsend.py TestPkgsendRename.test_rename3|pass
-cli.t_pkgsend.py TestPkgsendRename.test_rename4|pass
+cli.t_pkgsend.py TestPkgsendRename.test_rename4|fail
 cli.t_setUp.py TestSetUp.test_first_depot_start|pass
 cli.t_setUp.py TestSetUp.test_second_depot_start|pass

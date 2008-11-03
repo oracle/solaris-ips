@@ -34,9 +34,9 @@ relationship between the package containing the action and another package.
 import urllib
 import generic
 import pkg.fmri as fmri
-
-# for fmri correction hack
-import re
+import pkg.version
+import pkg.client.constraint as constraint
+from pkg.client.imageconfig import REQUIRE_OPTIONAL
 
 class DependencyAction(generic.Action):
         """Class representing a dependency packaging object.  The fmri attribute
@@ -51,7 +51,9 @@ class DependencyAction(generic.Action):
         transfer - dependency on minimum version of other package that donated
         components to this package at earlier version.  Other package need not
         be installed, but if it is, it must be at the specified version.  Effect
-        is the same as optional, but semantics are different.
+        is the same as optional, but the semantics are different.  OpenSolaris 
+        doesn't use these for bundled packages, as incorporations are 
+        preferred.
 
         incorporate - optional freeze at specified version
 
@@ -152,31 +154,53 @@ class DependencyAction(generic.Action):
                 #           (fmri_string, cleanfmri)
                 self.attrs["fmri"] = cleanfmri
 
+        def get_constrained_fmri(self, image):
+                """ returns fmri of incorporation pkg or None if not
+                an incorporation"""
 
-        def parse(self, image):
-                """ decodes attributes into tuple whose contents are
-                (boolean required, minimum fmri, maximum fmri)
-                XXX still needs exclude support....
-                """
                 type = self.attrs["type"]
+                if type != "incorporate":
+                        return None
 
                 pkgfmri = self.attrs["fmri"]
                 f = fmri.PkgFmri(pkgfmri, image.attrs["Build-Release"])
                 image.fmri_set_default_authority(f)
+        
+                return f
 
-                min_fmri = f
-                max_fmri = None
-                required = True
-                if type == "optional" or type == "transfer":
-                        required = False
+        def parse(self, image, source_name):
+                """decode depend action into fmri & constraint"""
+                type = self.attrs["type"]
+                fmristr = self.attrs["fmri"]
+                f = fmri.PkgFmri(fmristr, image.attrs["Build-Release"])
+                min_ver = f.version
+
+                if min_ver == None:
+                        min_ver = pkg.version.Version("0", image.attrs["Build-Release"])
+
+                name = f.get_name()
+                max_ver = None
+
+                if type == "require":
+                        presence = constraint.Constraint.ALWAYS
+                elif type == "exclude":
+                        presence = constraint.Constraint.NEVER
                 elif type == "incorporate":
-                        required = False
-                        max_fmri = f
-                return required, min_fmri, max_fmri
+                        presence = constraint.Constraint.MAYBE
+                        max_ver = min_ver
+                elif type == "optional":
+                        if image.cfg_cache.get_policy(REQUIRE_OPTIONAL):
+                                presence = constraint.Constraint.ALWAYS
+                        else:
+                                presence = constraint.Constraint.MAYBE                        
+                if type == "transfer":
+                        presence = constraint.Constraint.MAYBE
 
+                return f, constraint.Constraint(name, min_ver, max_ver, 
+                    presence, source_name)
 
         def verify(self, image, **args):
-                # XXX maybe too loose w/ early versions
+                # XXX Exclude and range between min and max not yet handled
 
                 type = self.attrs["type"]
 
@@ -185,22 +209,31 @@ class DependencyAction(generic.Action):
 
                 pkgfmri = self.attrs["fmri"]
                 f = fmri.PkgFmri(pkgfmri, image.attrs["Build-Release"])
-                installed_version = image.has_version_installed(f)
 
-                if not installed_version:
-                        if type == "require":
-                                return ["Required dependency %s is not installed" % f]
-                        installed_version = image.older_version_installed(f)
-                        if installed_version:
+                installed_version = image.get_version_installed(f)
+
+                min_fmri, cons = self.parse(image, "")
+
+                if cons.max_ver:
+                        max_fmri = min_fmri.copy()
+                        max_fmri.version = cons.max_ver 
+                else:
+                        max_fmri = None
+
+                required = (cons.presence == constraint.Constraint.ALWAYS)
+
+                if installed_version:
+                        vi = installed_version.version
+                        if min_fmri and not vi.is_successor(min_fmri.version, pkg.version.CONSTRAINT_NONE):
                                 return ["%s dependency %s is downrev (%s)" %
-                                        (type, f, installed_version)]
+                                        (type, min_fmri, installed_version)]
+                        if max_fmri and vi > max_fmri.version and \
+                                    not vi.is_successor(max_fmri.version, pkg.version.CONSTRAINT_AUTO):
+                                        return ["%s dependency %s is uprev (%s)" %
+                                            (type, max_fmri, installed_version)]
+                elif required:
+                        return ["Required dependency %s is not installed" % f]                        
 
-                #XXX - leave off for now since we can't handle max
-                # fmri constraint w/o backtracking
-                #elif type == "incorporate":
-                #        if not image.is_installed(f):
-                #                return ["%s dependency %s is uprev (%s)" %
-                #                        (type, f, installed_version)]
                 return []
 
         def generate_indices(self):

@@ -268,7 +268,7 @@ class Actuator(GenericActuator):
                         buf = proc.stdout.readlines()
                         ret = proc.wait()
                 except OSError, e:
-                        raise RuntimeError, "cannot execute %s" % args
+                        raise RuntimeError, "cannot execute %s" % (args,)
 
                 if ret != 0:
                         raise RuntimeError, "Subprocess (%s) non-zero exit code: %s" \

@@ -88,7 +88,7 @@ class ImagePlan(object):
                 self.target_rem_fmris = []
                 self.pkg_plans = []
                 self.target_insall_count = 0
-		self.target_update_count = 0
+                self.target_update_count = 0
 
                 self.__directories = None
                 self.__link_actions = None
@@ -162,8 +162,9 @@ class ImagePlan(object):
                 # update so that we meet any optional dependencies
                 #
 
-                fmri = self.image.apply_optional_dependencies(fmri)
-
+                fmri = self.image.constraints.apply_constraints_to_fmri(fmri)
+                self.image.fmri_set_default_authority(fmri)
+                
                 # Add fmri to target list only if it (or a successor) isn't
                 # there already.
                 for i, p in enumerate(self.target_fmris):
@@ -176,6 +177,15 @@ class ImagePlan(object):
                         self.target_fmris.append(fmri)
 
                 return
+
+        def get_proposed_version(self, fmri):
+                """ Return version of fmri already proposed, or None
+                if not proposed yet."""
+                for p in self.target_fmris:
+                        if fmri.get_name() == p.get_name():
+                                return p
+                else:
+                        return None
 
         def older_version_proposed(self, fmri):
                 # returns true if older version of this fmri has been
@@ -257,76 +267,44 @@ class ImagePlan(object):
                 return self.__link_actions
                 
         def evaluate_fmri(self, pfmri):
-
                 self.progtrack.evaluate_progress(pfmri)
                 self.image.state.set_target(pfmri, self.__intent)
 
                 if self.check_cancelation():
                         raise api_errors.CanceledException()
-                
+
+                self.image.fmri_set_default_authority(pfmri)
+
                 m = self.image.get_manifest(pfmri)
 
-                # [manifest] examine manifest for dependencies
-                for a in m.gen_actions_by_type("depend"):
+                # build list of (action, fmri, constraint) of dependencies
+                a_list = [
+                    (a,) + a.parse(self.image, pfmri.get_name())                           
+                    for a in m.gen_actions_by_type("depend")
+                ]
 
-                        type = a.attrs["type"]
+                # Update constraints first to avoid problems w/ depth first
+                # traversal of dependencies; we may violate an existing constraint
+                # here.
+                if self.image.constraints.start_loading(pfmri):
+                        for a, f, constraint in a_list:
+                                self.image.constraints.update_constraints(constraint)
+                        self.image.constraints.finish_loading(pfmri)
 
-                        f = fmri.PkgFmri(a.attrs["fmri"],
-                            self.image.attrs["Build-Release"])
+                # now check what work is required
+                for a, f, constraint in a_list:
+ 
+                        # discover if we have an installed or proposed
+                        # version of this pkg already; proposed fmris 
+                        # will always be newer
+                        ref_fmri = self.get_proposed_version(f)
+                        if not ref_fmri:
+                                ref_fmri = self.image.get_version_installed(f)
 
-                        if self.image.has_version_installed(f) and \
-                                    type != "exclude":
+                        # check if new constraint requires us to make any changes
+                        # to already proposed pkgs or existing ones.
+                        if not constraint.check_for_work(ref_fmri):
                                 continue
-
-                        # XXX This alone only prevents infinite recursion when a
-                        # cycle member is on the commandline, as we never update
-                        # target_fmris.  Is target_fmris supposed to be just
-                        # what was specified on the commandline, or include what
-                        # we've found while processing dependencies?
-                        # XXX probably should just use propose_fmri() here
-                        # instead of this and the has_version_installed() call
-                        # above.
-                        if self.is_proposed_fmri(f):
-                                continue
-
-                        # XXX LOG  "%s not in pending transaction;
-                        # checking catalog" % f
-
-                        required = True
-                        excluded = False
-                        if type == "optional" and \
-                            not self.image.cfg_cache.get_policy(REQUIRE_OPTIONAL):
-                                required = False
-                        elif type == "transfer" and \
-                            not self.image.older_version_installed(f):
-                                required = False
-                        elif type == "exclude":
-                                excluded = True
-                        elif type == "incorporate":
-                                self.image.update_optional_dependency(f)
-                                if self.image.older_version_installed(f) or \
-                                    self.older_version_proposed(f):
-                                        required = True
-                                else:
-                                        required = False
-
-                        if not required:
-                                continue
-
-                        if excluded:
-                                self.image.state.set_target()
-                                raise RuntimeError, "excluded by '%s'" % f
-
-                        # treat-as-required, treat-as-required-unless-pinned,
-                        # ignore
-                        # skip if ignoring
-                        #     if pinned
-                        #       ignore if treat-as-required-unless-pinned
-                        #     else
-                        #       **evaluation of incorporations**
-                        #     [imageplan] pursue installation of this package
-                        #     -->
-                        #     backtrack or reset??
 
                         # This will be the newest version of the specified
                         # dependency package, coming from the preferred
@@ -718,10 +696,10 @@ class ImagePlan(object):
                         for p in self.pkg_plans:
                                 p.postexecute()
 
-                	self.image.clear_pkg_state()
-                        
+                        self.image.clear_pkg_state()
+
                 except:
-                        self.actuators.exec_fail_actuators(self.image)                        
+                        self.actuators.exec_fail_actuators(self.image)
                         raise
                 else:
                         self.actuators.exec_post_actuators(self.image)

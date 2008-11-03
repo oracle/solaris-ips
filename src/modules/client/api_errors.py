@@ -90,13 +90,18 @@ class NoPackagesInstalledException(ApiException):
         pass
 
 class PlanCreationException(ApiException):
-        def __init__(self, unfound_fmris, multiple_matches, missing_matches, illegal):
+        def __init__(self, unfound_fmris, multiple_matches,
+            missing_matches, illegal, constraint_violations=None):
                 ApiException.__init__(self)
                 self.unfound_fmris = unfound_fmris
                 self.multiple_matches = multiple_matches
                 self.missing_matches = missing_matches
                 self.illegal = illegal
-
+                # avoid [] as default
+                if constraint_violations:
+                        self.constraint_violations = constraint_violations
+                else:
+                        self.constraint_violations = []
         def __str__(self):
                 res = []
                 if self.unfound_fmris:
@@ -118,6 +123,11 @@ catalog. Try relaxing the pattern, refreshing and/or examining the catalogs""")
 
                 s = _("pkg: '%s' is an illegal fmri")
                 res += [ s % p for p in self.illegal ]
+
+                if self.constraint_violations:
+                        s = _("pkg: the following package(s) violated constraints:")
+                        res += [ s ] 
+                        res += [ "\t%s" % p for p in self.constraint_violations ]
 
                 return '\n'.join(res)
 

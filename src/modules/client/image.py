@@ -42,25 +42,26 @@ from pkg.misc import msg, emsg
 
 # import uuid           # XXX interesting 2.5 module
 
-import pkg.catalog as catalog
-import pkg.updatelog as updatelog
-import pkg.fmri
-import pkg.manifest as manifest
-import pkg.misc as misc
 import pkg.Uuid25
-import pkg.version
-import pkg.client.history as history
-import pkg.client.imageconfig as imageconfig
-import pkg.client.imageplan as imageplan
-import pkg.client.pkgplan as pkgplan
-import pkg.client.imagestate as imagestate
-import pkg.client.retrieve as retrieve
-import pkg.client.progress as progress
-import pkg.portable as portable
+import pkg.catalog             as catalog
+import pkg.client.api_errors   as api_errors
+import pkg.client.constraint   as constraint
+import pkg.client.history      as history
+import pkg.client.imageconfig  as imageconfig
+import pkg.client.imageplan    as imageplan
+import pkg.client.imagestate   as imagestate
+import pkg.client.indexer      as indexer
+import pkg.client.pkgplan      as pkgplan
+import pkg.client.progress     as progress
 import pkg.client.query_engine as query_e
-import pkg.client.indexer as indexer
-import pkg.search_errors as search_errors
-import pkg.client.api_errors as api_errors
+import pkg.client.retrieve     as retrieve
+import pkg.fmri
+import pkg.manifest            as manifest
+import pkg.misc                as misc
+import pkg.portable            as portable
+import pkg.search_errors       as search_errors
+import pkg.updatelog           as updatelog
+import pkg.version
 
 from pkg.misc import versioned_urlopen
 from pkg.misc import TransportException
@@ -178,9 +179,7 @@ class Image(object):
 
                 self.imageplan = None # valid after evaluation succeeds
 
-                # contains a dictionary w/ key = pkgname, value is miminum
-                # frmi.XXX  Needs rewrite using graph follower
-                self.optional_dependencies = {}
+                self.constraints = constraint.ConstraintSet()
 
                 # a place to keep info about saved_files; needed by file action
                 self.saved_files = {}
@@ -1625,64 +1624,42 @@ class Image(object):
         def strtomatchingfmri(self, myfmri):
                 return pkg.fmri.MatchingPkgFmri(myfmri, self.attrs["Build-Release"])
 
-        def update_optional_dependency(self, inputfmri):
-                """Updates pkgname to min fmri mapping if fmri is newer"""
-
-                myfmri = inputfmri
-
-                try:
-                        name = myfmri.get_name()
-                except AttributeError:
-                        name = pkg.fmri.extract_pkg_name(myfmri)
-                        myfmri = self.strtomatchingfmri(myfmri)
-
-                try:
-                        myfmri = self.inventory([ myfmri ], all_known = True,
-                            matcher = pkg.fmri.exact_name_match).next()[0]
-                except api_errors.InventoryException:
-                        # If we didn't find the package in the authority it's
-                        # currently installed from, try again without specifying
-                        # the authority.  This will get the first available
-                        # instance of the package preferring the preferred
-                        # authority.  Make sure to unset the authority on a copy
-                        # of myfmri, just in case myfmri is the same object as
-                        # the input fmri.
-                        myfmri = myfmri.copy()
-                        myfmri.set_authority(None)
-                        myfmri = self.inventory([ myfmri ], all_known = True,
-                            matcher = pkg.fmri.exact_name_match).next()[0]
-
-                ofmri = self.optional_dependencies.get(name, None)
-                if not ofmri or self.fmri_is_successor(myfmri, ofmri):
-                        self.optional_dependencies[name] = myfmri
-
-        def apply_optional_dependencies(self, myfmri):
-                """Updates an fmri if optional dependencies require a newer version.
-                Doesn't handle catalog renames... to ease programming for now,
-                unversioned fmris are returned upgraded"""
-
-                try:
-                        name = myfmri.get_name()
-                except AttributeError:
-                        name = pkg.fmri.extract_pkg_name(myfmri)
-                        myfmri = self.strtomatchingfmri(myfmri)
-
-                minfmri = self.optional_dependencies.get(name, None)
-                if not minfmri:
-                        return myfmri
-
-                if self.fmri_is_successor(minfmri, myfmri):
-                        return minfmri
-                return myfmri
-
-        def load_optional_dependencies(self, progtrack):
+        def load_constraints(self, progtrack):
+                """Load constraints for all install pkgs"""
                 for fmri in self.gen_installed_pkgs():
+                        # skip loading if already done
+                        if self.constraints.start_loading(fmri):
+                                mfst = self.get_manifest(fmri, filtered = True)
+                                for dep in mfst.gen_actions_by_type("depend"):
+                                        progtrack.evaluate_progress()
+                                        f, constraint = dep.parse(self, fmri.get_name())
+                                        self.constraints.update_constraints(constraint)
+                                self.constraints.finish_loading(fmri)
+
+        def get_installed_unbound_inc_list(self):
+                """Returns list of packages containing incorporation dependencies
+                on which no other pkgs depend."""
+
+                inc_tuples = []
+                dependents = set()
+
+                for fmri in self.gen_installed_pkgs():
+                        fmri_name = fmri.get_pkg_stem()
                         mfst = self.get_manifest(fmri, filtered = True)
                         for dep in mfst.gen_actions_by_type("depend"):
-                                progtrack.evaluate_progress()
-                                required, min_fmri, max_fmri = dep.parse(self)
-                                if required == False:
-                                        self.update_optional_dependency(min_fmri)
+                                con_fmri = dep.get_constrained_fmri(self)
+                                if con_fmri:
+                                        con_name = con_fmri.get_pkg_stem()
+                                        dependents.add(con_name)
+                                        inc_tuples.append((fmri_name, con_name))
+                # remove those incorporations which are depended on by other 
+                # incorporations.
+                deletions = 0
+                for i, a in enumerate(inc_tuples[:]):
+                        if a[0] in dependents:
+                                del inc_tuples[i - deletions]
+                                
+                return list(set([ a[0] for a in inc_tuples ]))
 
         def get_user_by_name(self, name):
                 return portable.get_user_by_name(name, self.root,
@@ -2124,19 +2101,47 @@ class Image(object):
                     filters=filters, noexecute=noexecute)
 
                 progtrack.evaluate_start()
-
-                self.load_optional_dependencies(progtrack)
+                self.load_constraints(progtrack)
 
                 unfound_fmris = []
                 multiple_matches = []
                 illegal_fmris = []
+                constraint_violations = []
+
+                # order package list so that any unbound incorporations are
+                # done first
+
+                inc_list = self.get_installed_unbound_inc_list()
+                
+                head = []
+                tail = []
+
+
+                for p in pkg_list:
+                        if p in inc_list:
+                                head.append(p)
+                        else:
+                                tail.append(p)
+                pkg_list = head + tail
+
+                # This approach works only for cases w/ simple
+                # incorporations; the apply_constraints_to_fmri
+                # call below binds the version too quickly.  This
+                # awaits a proper solver.
 
                 for p in pkg_list:
                         progtrack.evaluate_progress()
                         try:
-                                conp = self.apply_optional_dependencies(p)
-                        except pkg.fmri.IllegalMatchingFmri:
+                                conp = pkg.fmri.PkgFmri(p, self.attrs["Build-Release"])
+                        except pkg.fmri.IllegalFmri:
                                 illegal_fmris.append(p)
+                                error = 1
+                                continue
+                        try:
+                                conp = self.constraints.apply_constraints_to_fmri(conp)
+                        except constraint.ConstraintException, e:
+                                error = 1
+                                constraint_violations.extend(str(e).split("\n"))                               
                                 continue
                         try:
                                 matches = list(self.inventory([ conp ],
@@ -2181,7 +2186,8 @@ class Image(object):
 
                 if error != 0:
                         raise api_errors.PlanCreationException(unfound_fmris,
-                            multiple_matches, [], illegal_fmris)
+                            multiple_matches, [], illegal_fmris, 
+                            constraint_violations=constraint_violations)
 
                 if verbose:
                         msg(_("Before evaluation:"))
@@ -2192,7 +2198,13 @@ class Image(object):
                 if self.history.operation_name:
                         self.history.operation_start_state = ip.get_plan()
 
-                ip.evaluate()
+                try:
+                        ip.evaluate()
+                except constraint.ConstraintException, e:
+                        raise api_errors.PlanCreationException(
+                            [], [], [], [], 
+                            constraint_violations=str(e).split("\n"))
+
                 self.imageplan = ip
 
                 if self.history.operation_name:

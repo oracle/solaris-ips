@@ -334,9 +334,11 @@ class ImageInterface(object):
                                                 # We can't answer in this case,
                                                 # so we proceed
                                                 pass
-                                pkg_list = [ ipkg.get_pkg_stem()
-                                             for ipkg
-                                             in self.img.gen_installed_pkgs() ]
+
+                                pkg_list = [ 
+                                        ipkg.get_pkg_stem()
+                                        for ipkg in self.img.gen_installed_pkgs() 
+                                ]
 
                                 self.img.make_install_plan(pkg_list,
                                     self.progresstracker,

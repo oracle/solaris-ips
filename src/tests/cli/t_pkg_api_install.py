@@ -471,7 +471,6 @@ class TestPkgApiInstall(testutils.SingleDepotTestCase):
                 progresstracker = progress.NullProgressTracker()
                 api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
                     progresstracker, lambda x: True, PKG_CLIENT_NAME)
-
                 self.__do_install(api_obj, ['ba*'])
                 self.pkg("list foo@1.0", exit=0)
                 self.pkg("list bar@1.0", exit=0)

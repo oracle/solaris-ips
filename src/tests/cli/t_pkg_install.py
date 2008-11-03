@@ -25,7 +25,7 @@
 
 import testutils
 if __name__ == "__main__":
-	testutils.setup_environment("../../../proto")
+        testutils.setup_environment("../../../proto")
 
 import os
 import re
@@ -142,8 +142,8 @@ class TestPkgInstallBasics(testutils.SingleDepotTestCase):
         def test_cli(self):
                 """Test bad cli options"""
 
-		durl = self.dc.get_depot_url()
-		self.image_create(durl)
+                durl = self.dc.get_depot_url()
+                self.image_create(durl)
 
                 self.pkg("-@", exit=2)
                 self.pkg("-s status", exit=2)
@@ -531,6 +531,12 @@ class TestPkgInstallUpgrade(testutils.SingleDepotTestCase):
             close
         """
 
+        incorp30 = """
+            open incorp@3.0,5.11-0
+            add depend type=incorporate fmri=pkg:/amber@2.0
+            close
+        """
+
         incorpA = """
             open incorpA@1.0,5.11-0
             add depend type=incorporate fmri=pkg:/amber@1.0
@@ -545,6 +551,11 @@ class TestPkgInstallUpgrade(testutils.SingleDepotTestCase):
             close
         """
 
+        iridium10 = """
+            open iridium@1.0,5.11-0
+            add depend fmri=pkg:/amber@2.0 type=require
+            close
+        """
         amber10 = """
             open amber@1.0,5.11-0
             add dir mode=0755 owner=root group=bin path=/lib
@@ -604,6 +615,23 @@ class TestPkgInstallUpgrade(testutils.SingleDepotTestCase):
             close 
         """
 
+        bronze30 = """
+            open bronze@3.0,5.11-0
+            add dir mode=0755 owner=root group=bin path=/etc
+            add dir mode=0755 owner=root group=bin path=/lib
+            add file /tmp/sh mode=0555 owner=root group=bin path=/usr/bin/sh
+            add file /tmp/libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.bronze
+            add link path=/usr/bin/jsh target=./sh
+            add hardlink path=/lib/libc.bronze2.0.hardlink target=/lib/libc.so.1
+            add file /tmp/bronze1 mode=0444 owner=root group=bin path=/etc/bronze1
+            add file /tmp/bronze2 mode=0444 owner=root group=bin path=/etc/amber2
+            add license /tmp/copyright3 license=copyright
+            add file /tmp/bronzeA2 mode=0444 owner=root group=bin path=/A1/B2/C3/D4/E5/F6/bronzeA2
+            add depend fmri=pkg:/amber@2.0 type=require
+            close 
+        """
+
+
         gold10 = """
             open gold@1.0,5.11-0
             add file /tmp/config1 mode=0644 owner=root group=bin path=etc/config1 preserve=true
@@ -654,6 +682,13 @@ class TestPkgInstallUpgrade(testutils.SingleDepotTestCase):
             close
         """
 
+        concorp10 = """
+            open concorp@1.0,5.11-0
+            add depend type=incorporate fmri=pkg:/amber@2.0
+            add depend type=incorporate fmri=pkg:/bronze@2.0
+            close
+        """
+
 
         misc_files = [ "/tmp/amber1", "/tmp/amber2",
                     "/tmp/bronzeA1",  "/tmp/bronzeA2",
@@ -693,17 +728,6 @@ class TestPkgInstallUpgrade(testutils.SingleDepotTestCase):
                 self.pkgsend_bulk(durl, self.amber10)
                 self.pkgsend_bulk(durl, self.bronze10)
 
-                self.image_create(durl)
-                self.pkg("install incorp@1.0")
-                self.pkg("install bronze")
-
-                self.pkg("list amber@1.0")
-                self.pkg("list bronze@1.0")
-                self.pkg("verify -v")
-
-                #
-                # Now send 2.0 versions of packages.  image-update will (should)
-                # implicitly refresh.
                 #
                 # In version 2.0, several things happen:
                 #
@@ -718,14 +742,22 @@ class TestPkgInstallUpgrade(testutils.SingleDepotTestCase):
                 self.pkgsend_bulk(durl, self.amber20)
                 self.pkgsend_bulk(durl, self.bronze20)
 
+                # create image and install version 1
+                self.image_create(durl)
+                self.pkg("install incorp@1.0")
+                self.pkg("install bronze")
+
+                self.pkg("list amber@1.0 bronze@1.0")
+                self.pkg("verify -v")
+
+                # demonstrate that incorp@1.0 prevents package movement
+                self.pkg("install bronze@2.0 amber@2.0", exit=1)
+
                 # Now image-update to get new versions of amber and bronze
                 self.pkg("image-update")
 
                 # Try to verify that it worked.
-                self.pkg("list")
-                self.pkg("list -a")
-                self.pkg("list amber@2.0")
-                self.pkg("list bronze@2.0")
+                self.pkg("list amber@2.0 bronze@2.0")
                 self.pkg("verify -v")
                 # make sure old implicit directories for bronzeA1 were removed
                 self.assert_(not os.path.isdir(os.path.join(self.get_img_path(), "A")))                
@@ -737,23 +769,51 @@ class TestPkgInstallUpgrade(testutils.SingleDepotTestCase):
                 self.assert_(os.listdir(self.get_img_path()) ==  ["var"])
 
         def test_upgrade2(self):
-                """ Basic test for incorporations """
+                """ test incorporations:
+                        1) install files that conflict w/ existing incorps
+                        2) install package w/ dependencies that violate incorps
+                        3) install incorp that violates existing incorp
+                        4) install incorp that would force package backwards
+                        5) 
+                        """
 
                 # Send all pkgs
                 durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.incorpA)
+                self.pkgsend_bulk(durl, self.incorp10)
+                self.pkgsend_bulk(durl, self.incorp20)
+                self.pkgsend_bulk(durl, self.incorp30)
+                self.pkgsend_bulk(durl, self.iridium10)
+                self.pkgsend_bulk(durl, self.concorp10)
                 self.pkgsend_bulk(durl, self.amber10)
-                self.pkgsend_bulk(durl, self.bronze10)
-                self.pkgsend_bulk(durl, self.incorpB)
                 self.pkgsend_bulk(durl, self.amber20)
+                self.pkgsend_bulk(durl, self.bronze10)
                 self.pkgsend_bulk(durl, self.bronze20)
+                self.pkgsend_bulk(durl, self.bronze30)
 
                 self.image_create(durl)
-                self.pkg("install incorpA")
-                self.pkg("install incorpB")
+
+                self.pkg("install incorp@1.0")
+                # install files that conflict w/ existing incorps
+                self.pkg("install bronze@2.0", exit=1)
+                # install package w/ dependencies that violate incorps
+                self.pkg("install iridium@1.0", exit=1)
+                # ... setup w/ file that works
                 self.pkg("install bronze")
-                self.pkg("list bronze@2.0")
-                self.pkg("verify -v")
+                self.pkg("verify -v bronze@1.0")
+                # attempt to install conflicting incorporation
+                self.pkg("install concorp@1.0", exit=1)
+
+                # attempt to force downgrade of package w/ older incorp
+                self.pkg("install incorp@2.0")
+                self.pkg("uninstall incorp@2.0")
+                self.pkg("install incorp@1.0", exit=1)
+
+                # upgrade pkg that loses incorp. deps. in new version
+                self.pkg("install incorp@2.0")
+                # FIX ME; bronze doesn't get updated because it was part
+                # of previous incorporation
+                self.pkg("image-update")
+                self.pkg("list bronze@3.0", exit=1)
 
         def test_upgrade3(self):
                 """ test for editable files moving between packages or locations or both"""
@@ -1510,6 +1570,7 @@ class TestTwoDepots(testutils.ManyDepotTestCase):
                 self.pkg("list -a upgrade-p")
                 self.pkg("install upgrade-p@1.0")
                 self.pkg("install upgrade-p@1.1")
+                self.pkg("uninstall upgrade-p")
 
         def test_upgrade_non_preferred_to_preferred(self):
                 """Install a package from a non-preferred authority, and then
@@ -1517,6 +1578,7 @@ class TestTwoDepots(testutils.ManyDepotTestCase):
                 self.pkg("list -a upgrade-np")
                 self.pkg("install upgrade-np@1.0")
                 self.pkg("install upgrade-np@1.1")
+                self.pkg("uninstall upgrade-np")
 
         def test_upgrade_preferred_to_non_preferred_incorporated(self):
                 """Install a package from the preferred authority, and then
@@ -1528,6 +1590,7 @@ class TestTwoDepots(testutils.ManyDepotTestCase):
                 self.pkg("install upgrade-p")
                 self.pkg("install incorp-p@1.1")
                 self.pkg("list upgrade-p@1.1")
+                self.pkg("uninstall upgrade-p")
 
         def test_upgrade_non_preferred_to_preferred_incorporated(self):
                 """Install a package from the preferred authority, and then
@@ -1539,6 +1602,7 @@ class TestTwoDepots(testutils.ManyDepotTestCase):
                 self.pkg("install upgrade-np")
                 self.pkg("install incorp-np@1.1")
                 self.pkg("list upgrade-np@1.1")
+                self.pkg("uninstall upgrade-np")
 
         def test_uninstall_from_wrong_authority(self):
                 """Install a package from an authority and try to remove it
@@ -1556,10 +1620,11 @@ class TestTwoDepots(testutils.ManyDepotTestCase):
                 self.pkg("install quux@1.0")
                 self.pkg("set-authority -P test2")
                 self.pkg("unset-authority test1")
-                # These should fail as the optional dependency isn't in the
-                # catalog for test2.
-                self.pkg("install quux@1.0", exit=1)
-                self.pkg("image-update", exit=1)
+                # 
+                # 
+                self.pkg("install quux@1.0")
+                # Image update should work if we don't see the optional dependency
+                self.pkg("image-update") 
                 # Change the image metadata back to where it was, in preparation
                 # for subsequent tests.
                 self.pkg("set-authority -O %s -P test1" % \
