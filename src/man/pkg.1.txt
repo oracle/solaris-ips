@@ -20,18 +20,21 @@ SYNOPSIS
 
      /usr/bin/pkg refresh [--full] [authority ...]
 
-     /usr/bin/pkg image-create [-FPUz] [--full|--partial|--user] [--zone]
-         [-k ssl_key] [-c ssl_cert] [--no-refresh] -a authority=origin_url dir
-     /usr/bin/pkg image-update [-nvq] [--no-refresh] [--no-index]
+     /usr/bin/pkg image-create [-fFPUz] [--force] [--full|--partial|--user]
+         [--zone] [-k ssl_key] [-c ssl_cert] [--no-refresh]
+         -a authority=origin_url dir
+     /usr/bin/pkg image-update [-fnvq] [--no-refresh] [--no-index]
 
      /usr/bin/pkg set-property propname propvalue
      /usr/bin/pkg unset-property propname ...
      /usr/bin/pkg property [-H] [propname ...]
 
      /usr/bin/pkg set-authority [-P] [-k ssl_key] [-c ssl_cert]
-         [-O origin_url] [--no-refresh] [--reset-uuid] authority
+         [-O origin_url] [-m mirror_to_add | --add-mirror=mirror_to_add]
+         [-M mirror_to_remove | --remove-mirror=mirror_to_remove]
+         [--no-refresh] [--reset-uuid] authority
      /usr/bin/pkg unset-authority authority ...
-     /usr/bin/pkg authority [-HP] [authname ...]
+     /usr/bin/pkg authority [-HP] [authority ...]
 
      /usr/bin/pkg history [-Hl]
      /usr/bin/pkg purge-history
@@ -252,8 +255,10 @@ SUBCOMMANDS
           property names is requested, display the names and values for those
           properties.  With -H, omit the headers from the listing.
 
-     set-authority [-P] [-k ssl_key] [-c ssl_cert] [-O origin_url] 
-                   [--no-refresh] [--reset-uuid] authority
+     set-authority [-P] [-k ssl_key] [-c ssl_cert] [-O origin_url]
+       [-m mirror_to_add | --add-mirror=mirror_to_add]
+       [-M mirror_to_remove | --remove-mirror=mirror_to_remove]
+       [--no-refresh] [--reset-uuid] authority
           Update an existing authority or add an additional package
           authority.  With -P, set the specified authority as the
           preferred authority.  With -c and -k, specify client SSL
@@ -263,20 +268,26 @@ SUBCOMMANDS
           With --no-refresh, do not attempt to contact the authority
           specified to retrieve its catalog.
 
-          With --reset-uuid, choose a new unique identifier to identify
-          this image to the authority. 
+          With --reset-uuid, choose a new unique identifier that identifies
+          this image to its authority.
+
+          With -m (--add-mirror), add the URL as a mirror for the given
+          authority.
+
+          With -M (--remove-mirror), remove the URL from the list of mirrors
+          for the given authority.
 
      unset-authority authority ...
           Remove the configuration associated with the given authority
           or authorities.
 
-     authority [-HP] [authname]
+     authority [-HP] [authority ...]
           Display authority information.  With no arguments, display the
-          list of configured authorities, and their origin URLs.  If a
-          specific authority is requested, display the configuration
-          values associated with that authority.  With -H, omit the
-          headers from the listing.  With -P, display only the preferred
-          authority.
+          list of configured authorities, and their origin URLs.  If
+          specific authorities are requested, display the configuration
+          values, including mirrors, associated with those authorities.  With
+          -H, omit the headers from the listing.  With -P, display only the
+          preferred authority.
 
      history [-Hl]
           Displays the command history of the applicable image.  With -H, omit

@@ -115,33 +115,34 @@ Usage:
         pkg [options] command [cmd_options] [operands]
 
 Basic subcommands:
-        pkg install [-nvq] [--no-index] package...
+        pkg install [-nvq] [--no-refresh] [--no-index] package...
         pkg uninstall [-nrvq] [--no-index] package...
         pkg list [-aHsuvf] [package...]
-        pkg image-update [-nvq] [--no-index]
-        pkg refresh [--full]
+        pkg image-update [-fnvq] [--no-refresh] [--no-index]
+        pkg refresh [--full] [authority ...]
         pkg version
         pkg help
 
 Advanced subcommands:
         pkg info [-lr] [--license] [pkg_fmri_pattern ...]
         pkg search [-lrI] [-s server] token
-        pkg verify [-fHqv] [pkg_fmri_pattern ...]
+        pkg verify [-Hqv] [pkg_fmri_pattern ...]
         pkg fix [pkg_fmri_pattern ...]
         pkg contents [-Hmr] [-o attribute ...] [-s sort_key]
-            [-t action_type ... ] pkg_fmri_pattern [...]
+            [-t action_type ... ] [pkg_fmri_pattern ...]
         pkg image-create [-fFPUz] [--force] [--full|--partial|--user] [--zone]
-            [-k ssl_key] [-c ssl_cert] -a <prefix>=<url> dir
+            [-k ssl_key] [-c ssl_cert] [--no-refresh] -a <prefix>=<url> dir
 
         pkg set-property propname propvalue
         pkg unset-property propname ...
         pkg property [-H] [propname ...]
 
         pkg set-authority [-P] [-k ssl_key] [-c ssl_cert] [--reset-uuid]
-            [-O origin_url] [-m mirror to add | --add-mirror=mirror to add]
-            [-M mirror to remove | --remove-mirror=mirror to remove] authority
+            [-O origin_url] [-m mirror_to_add | --add-mirror=mirror_to_add]
+            [-M mirror_to_remove | --remove-mirror=mirror_to_remove]
+            [--no-refresh] authority
         pkg unset-authority authority ...
-        pkg authority [-HP] [authname]
+        pkg authority [-HP] [authority ...]
         pkg history [-Hl]
         pkg purge-history
         pkg rebuild-index
