@@ -244,7 +244,7 @@ get_dynamic(PyObject *self, PyObject *args)
 		pdep = PyList_New(0);
 		if (liblist_foreach(
 			dyn->deps, pythonify_2dliblist_cb, pdep, dyn) == -1)
-			goto out;
+			goto err;
 		PyDict_SetItemString(pdict, "deps", pdep);
 	}
 	if (dyn->def) {
@@ -253,12 +253,12 @@ get_dynamic(PyObject *self, PyObject *args)
 		pdef = PyList_New(0);
 		if (liblist_foreach(
 			dyn->vers, pythonify_1dliblist_cb, pdef, dyn) == -1)
-			goto out;
+			goto err;
 		PyDict_SetItemString(pdict, "vers", pdef);
 		if ((str = elf_strptr(
 			dyn->elf, dyn->dynstr, dyn->def)) == NULL) {
 			PyErr_SetString(ElfError, elf_errmsg(-1));
-			goto out;
+			goto err;
 		}
 		PyDict_SetItemString(pdict, "def", Py_BuildValue("s", str));
 	}
@@ -268,7 +268,7 @@ get_dynamic(PyObject *self, PyObject *args)
 		if ((str = elf_strptr(
 			dyn->elf, dyn->dynstr, dyn->runpath)) == NULL) {
 			PyErr_SetString(ElfError, elf_errmsg(-1));
-			goto out;
+			goto err;
 		}
 		PyDict_SetItemString(pdict, "runpath", Py_BuildValue("s", str));
 	}
@@ -280,6 +280,12 @@ get_dynamic(PyObject *self, PyObject *args)
 	hexhash[40] = '\0';
 
 	PyDict_SetItemString(pdict, "hash", Py_BuildValue("s", hexhash));
+	goto out;
+
+err:
+	PyDict_Clear(pdict);
+	Py_DECREF(pdict);
+	pdict = NULL;
 
 out:
 	if (dyn != NULL)
