@@ -36,6 +36,7 @@ try:
         gobject.threads_init()
         import gconf
         import gtk
+        import gtk.glade
         import pygtk
         pygtk.require("2.0")
 except ImportError:
