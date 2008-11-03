@@ -1,263 +1,92 @@
-[amp]
-category = Application and Web Servers
-
-[amp-dev]
-category = Integrated Development Environments
-
-[babel_install]
-category = Desktop
-
 [BRCMbnx]
 category = Networking
 
-[clustertools]
-category = High Performance Computing
+[FSWxorg-fonts-core]
+category = Fonts
 
-[clustertools_7.1]
-category = High Performance Computing
+[FSWxorg-fonts-cyrillic]
+category = Fonts
 
-[entire]
-category = Desktop
+[FSWxorg-fonts-daewoo]
+category = Fonts
 
-[gcc-dev]
-category = Integrated Development Environments
+[FSWxorg-fonts-ethiopic]
+category = Fonts
 
-[glassfishv2]
-category = Application and Web Servers
+[FSWxorg-fonts-iso8859-10]
+category = Fonts
 
-[hpc-dev]
-category = High Performance Computing
+[FSWxorg-fonts-iso8859-13]
+category = Fonts
 
-[java-dev]
-category = Java
+[FSWxorg-fonts-iso8859-14]
+category = Fonts
 
-[lang-support-albanian]
-category = Localizations (System)
+[FSWxorg-fonts-iso8859-16]
+category = Fonts
 
-[lang-support-all]
-category = Localizations (System)
+[FSWxorg-fonts-iso8859-2]
+category = Fonts
 
-[lang-support-arabic]
-category = Localizations (System)
+[FSWxorg-fonts-iso8859-3]
+category = Fonts
 
-[lang-support-bulgarian]
-category = Localizations (System)
+[FSWxorg-fonts-iso8859-4]
+category = Fonts
 
-[lang-support-catalan]
-category = Localizations (System)
+[FSWxorg-fonts-iso8859-9]
+category = Fonts
 
-[lang-support-chinese-CN]
-category = Localizations (System)
+[FSWxorg-fonts-jiskan]
+category = Fonts
 
-[lang-support-chinese-HK]
-category = Localizations (System)
+[FSWxorg-fonts-syriac]
+category = Fonts
 
-[lang-support-chinese-TW]
-category = Localizations (System)
-
-[lang-support-common]
-category = Localizations (System)
-
-[lang-support-croatian]
-category = Localizations (System)
-
-[lang-support-czech]
-category = Localizations (System)
-
-[lang-support-danish]
-category = Localizations (System)
-
-[lang-support-dutch]
-category = Localizations (System)
-
-[lang-support-english]
-category = Localizations (System)
-
-[lang-support-estonian]
-category = Localizations (System)
-
-[lang-support-finnish]
-category = Localizations (System)
-
-[lang-support-french]
-category = Localizations (System)
-
-[lang-support-german]
-category = Localizations (System)
-
-[lang-support-greek]
-category = Localizations (System)
-
-[lang-support-hebrew]
-category = Localizations (System)
-
-[lang-support-hungarian]
-category = Localizations (System)
-
-[lang-support-icelandic]
-category = Localizations (System)
-
-[lang-support-indic]
-category = Localizations (System)
-
-[lang-support-italian]
-category = Localizations (System)
-
-[lang-support-japanese]
-category = Localizations (System)
-
-[lang-support-korean]
-category = Localizations (System)
-
-[lang-support-latvian]
-category = Localizations (System)
-
-[lang-support-lithuanian]
-category = Localizations (System)
-
-[lang-support-macedonian]
-category = Localizations (System)
-
-[lang-support-maltese]
-category = Localizations (System)
-
-[lang-support-norwegian]
-category = Localizations (System)
-
-[lang-support-norwegian-bokmal]
-category = Localizations (System)
-
-[lang-support-norwegian-nynorsk]
-category = Localizations (System)
-
-[lang-support-polish]
-category = Localizations (System)
-
-[lang-support-portuguese]
-category = Localizations (System)
-
-[lang-support-portuguese-BR]
-category = Localizations (System)
-
-[lang-support-romanian]
-category = Localizations (System)
-
-[lang-support-russian]
-category = Localizations (System)
-
-[lang-support-serbian]
-category = Localizations (System)
-
-[lang-support-serbo-croatian]
-category = Localizations (System)
-
-[lang-support-slovakian]
-category = Localizations (System)
-
-[lang-support-slovenian]
-category = Localizations (System)
-
-[lang-support-spanish]
-category = Localizations (System)
-
-[lang-support-swedish]
-category = Localizations (System)
-
-[lang-support-thai]
-category = Localizations (System)
-
-[lang-support-turkish]
-category = Localizations (System)
-
-[mq41]
-category = Services
-
-[netbeans]
-category = Integrated Development Environments
-
-[netbeans-incorporation]
-category = Integrated Development Environments
+[FSWxorg-fonts-vera]
+category = Fonts
 
 [NVDAgraphics]
-category = Hardware
-
-[openoffice]
-category = Office
-
-[openoffice-de]
-category = Localizations (Desktop)
-
-[openoffice-es]
-category = Localizations (Desktop)
-
-[openoffice-fr]
-category = Localizations (Desktop)
-
-[openoffice-hu]
-category = Localizations (Desktop)
-
-[openoffice-it]
-category = Localizations (Desktop)
-
-[openoffice-ja]
-category = Localizations (Desktop)
-
-[openoffice-ko]
-category = Localizations (Desktop)
-
-[openoffice-nl]
-category = Localizations (Desktop)
-
-[openoffice-pl]
-category = Localizations (Desktop)
-
-[openoffice-pt]
-category = Localizations (Desktop)
-
-[openoffice-pt-BR]
-category = Localizations (Desktop)
-
-[openoffice-ru]
-category = Localizations (Desktop)
-
-[openoffice-sv]
-category = Localizations (Desktop)
-
-[openoffice-zh-CN]
-category = Localizations (Desktop)
-
-[openoffice-zh-TW]
-category = Localizations (Desktop)
+category = Display
 
 [OSOLvpanels]
 category = Configuration and Preferences
-
-[redistributable]
-category = Desktop
-
-[ruby-dev]
-category = Ruby
-
-[slim_cd]
-category = Desktop
-
-[slim_install]
-category = Desktop
-
-[ss-dev]
-category = Integrated Development Environments
-
-[sunstudio]
-category = Integrated Development Environments
-
-[sunstudioexpress]
-category = Integrated Development Environments
 
 [SUNW1394]
 category = Hardware
 
 [SUNW1394h]
 category = System
+
+[SUNWDTraceToolkit]
+category = System
+
+[SUNWGlib]
+category = Libraries (System)
+
+[SUNWGtk]
+category = Graphics and Imaging
+
+[SUNWIPython]
+category = Python
+
+[SUNWPython]
+category = Python
+
+[SUNWPython-extra]
+category = Python
+
+[SUNWPython25]
+category = Python
+
+[SUNWTcl]
+category = Other Languages
+
+[SUNWTiff]
+category = Libraries (System)
+
+[SUNWTk]
+category = Other Languages
 
 [SUNWa2ps]
 category = Printing
@@ -299,7 +128,7 @@ category = Networking
 category = Display
 
 [SUNWagph]
-category = Display
+category = System
 
 [SUNWahci]
 category = Ports
@@ -337,6 +166,9 @@ category = Application and Web Servers
 [SUNWapch22m-php5]
 category = Application and Web Servers
 
+[SUNWapch22m-php52]
+category = Application and Web Servers
+
 [SUNWapch22m-security]
 category = Application and Web Servers
 
@@ -348,6 +180,30 @@ category = Application and Web Servers
 
 [SUNWapct]
 category = Software Management
+
+[SUNWapr13]
+category = Application and Web Servers
+
+[SUNWapr13doc]
+category = Application and Web Servers
+
+[SUNWapu13]
+category = Application and Web Servers
+
+[SUNWapu13-ldap]
+category = Application and Web Servers
+
+[SUNWapu13dbd-mysql]
+category = Application and Web Servers
+
+[SUNWapu13dbd-pgsql]
+category = Application and Web Servers
+
+[SUNWapu13dbd-sqlite]
+category = Application and Web Servers
+
+[SUNWapu13doc]
+category = Application and Web Servers
 
 [SUNWarbel]
 category = Other Peripherals
@@ -388,6 +244,9 @@ category = Media
 [SUNWaudit]
 category = Administration and Configuration
 
+[SUNWauto-install]
+category = Core
+
 [SUNWautoef]
 category = Text Tools
 
@@ -397,6 +256,9 @@ category = Ports
 [SUNWavahi-bridge-dsd]
 category = Internet
 
+[SUNWavant]
+category = Configuration and Preferences
+
 [SUNWbart]
 category = Administration and Configuration
 
@@ -405,6 +267,9 @@ category = Shells
 
 [SUNWbcc]
 category = Other Languages
+
+[SUNWbeadm]
+category = Core
 
 [SUNWbge]
 category = Networking
@@ -421,8 +286,14 @@ category = System Utilities
 [SUNWbison]
 category = Other Languages
 
+[SUNWbluefish]
+category = Text Tools
+
 [SUNWbnu]
 category = Services
+
+[SUNWbrasero]
+category = Media
 
 [SUNWbrltty]
 category = Universal Access
@@ -434,7 +305,7 @@ category = Core
 category = Core
 
 [SUNWbzip]
-category = GNU
+category = System Utilities
 
 [SUNWcacaodtrace]
 category = System
@@ -484,6 +355,9 @@ category = Libraries (System)
 [SUNWcfpl]
 category = Libraries (System)
 
+[SUNWcheese]
+category = Graphics and Imaging
+
 [SUNWchxge]
 category = Networking
 
@@ -499,17 +373,20 @@ category = Services
 [SUNWcompiz]
 category = Window Managers
 
+[SUNWcompiz-fusion-extra]
+category = Plug-ins and Run-times
+
+[SUNWcompiz-fusion-main]
+category = Plug-ins and Run-times
+
 [SUNWcompizconfig-gconf]
 category = Window Managers
 
 [SUNWcompizconfig-python]
 category = Libraries
 
-[SUNWcompiz-fusion-extra]
-category = Plug-ins and Run-times
-
-[SUNWcompiz-fusion-main]
-category = Plug-ins and Run-times
+[SUNWcontact-lookup-applet]
+category = Applets
 
 [SUNWcos]
 category = Localizations (System)
@@ -545,7 +422,7 @@ category = Localizations (System)
 category = System
 
 [SUNWctpls]
-category = Text Tools
+category = Internationalization
 
 [SUNWcups]
 category = Printing
@@ -560,7 +437,7 @@ category = Libraries (System)
 category = Source Code Management
 
 [SUNWcxwsvr]
-category = Localizations (Desktop)
+category = X11
 
 [SUNWdbus]
 category = Libraries (System)
@@ -585,6 +462,9 @@ category = Services
 
 [SUNWddu]
 category = Hardware
+
+[SUNWddu-l10n]
+category = Localizations (System)
 
 [SUNWdeos]
 category = Localizations (System)
@@ -656,13 +536,13 @@ category = Plug-ins and Run-times
 category = Plug-ins and Run-times
 
 [SUNWdexwsvr]
-category = Localizations (Desktop)
+category = X11
 
 [SUNWdfb]
 category = Display
 
 [SUNWdfbh]
-category = Display
+category = System
 
 [SUNWdhcm]
 category = Services
@@ -673,10 +553,13 @@ category = Services
 [SUNWdhcsb]
 category = Services
 
+[SUNWdialog]
+category = System Utilities
+
 [SUNWdiffstat]
 category = Text Tools
 
-[SUNWdistro-license]
+[SUNWdistro-const]
 category = Core
 
 [SUNWdistro-license-copyright]
@@ -695,13 +578,10 @@ category = Text Tools
 category = System
 
 [SUNWdrmr]
-category = Other Peripherals
+category = Display
 
 [SUNWdsd]
 category = Services
-
-[SUNWDTraceToolkit]
-category = System
 
 [SUNWdtrc]
 category = System
@@ -724,11 +604,14 @@ category = Other Languages
 [SUNWesos]
 category = Localizations (System)
 
+[SUNWespeak]
+category = Universal Access
+
 [SUNWesu]
 category = Core
 
 [SUNWesxwsvr]
-category = Localizations (Desktop)
+category = X11
 
 [SUNWevolution]
 category = Internet
@@ -776,7 +659,7 @@ category = Ports
 category = Services
 
 [SUNWfetchmail]
-category = Administration and Configuration
+category = Internet
 
 [SUNWffilters]
 category = Printing
@@ -854,10 +737,10 @@ category = Libraries (System)
 category = Localizations (System)
 
 [SUNWfrxwsvr]
-category = Localizations (Desktop)
+category = X11
 
 [SUNWfsexam]
-category = File System
+category = System Utilities
 
 [SUNWfss]
 category = Core
@@ -869,7 +752,7 @@ category = System
 category = Core
 
 [SUNWfwdc]
-category = Display
+category = Media
 
 [SUNWfwdcu]
 category = Media
@@ -879,6 +762,9 @@ category = Core
 
 [SUNWgamin]
 category = Libraries (System)
+
+[SUNWgawk]
+category = System Utilities
 
 [SUNWgcc]
 category = C
@@ -935,16 +821,16 @@ category = Localizations (System)
 category = Localizations (System)
 
 [SUNWggrp]
-category = GNU
+category = System Utilities
+
+[SUNWghostscript]
+category = System Utilities
 
 [SUNWgimpprint]
 category = Other Peripherals
 
 [SUNWgksu]
 category = System Utilities
-
-[SUNWGlib]
-category = Libraries (System)
 
 [SUNWglibmm]
 category = C++
@@ -967,13 +853,13 @@ category = Universal Access
 [SUNWgnome-a11y-poke]
 category = Universal Access
 
-[SUNWgnome-a11y-poke-root]
-category = Universal Access
-
 [SUNWgnome-a11y-reader]
 category = Universal Access
 
 [SUNWgnome-a11y-speech]
+category = Universal Access
+
+[SUNWgnome-a11y-speech-espeak]
 category = Universal Access
 
 [SUNWgnome-a11y-speech-freetts]
@@ -1008,6 +894,9 @@ category = System Utilities
 
 [SUNWgnome-character-map]
 category = System Utilities
+
+[SUNWgnome-commander]
+category = File Managers
 
 [SUNWgnome-common-devel]
 category = GNOME and GTK+
@@ -1267,6 +1156,9 @@ category = Configuration and Preferences
 [SUNWgnome-mm-applets]
 category = Applets
 
+[SUNWgnome-nettool]
+category = Internet
+
 [SUNWgnome-panel]
 category = Libraries
 
@@ -1295,7 +1187,7 @@ category = Python
 category = Python
 
 [SUNWgnome-remote-desktop]
-category = X11 (System)
+category = X11
 
 [SUNWgnome-screenshot]
 category = Graphics and Imaging
@@ -1333,6 +1225,12 @@ category = Accessories
 [SUNWgnome-themes]
 category = Libraries
 
+[SUNWgnome-themes-hires]
+category = Libraries
+
+[SUNWgnome-time-slider]
+category = Configuration and Preferences
+
 [SUNWgnome-ui-designer]
 category = GNOME and GTK+
 
@@ -1351,12 +1249,6 @@ category = Window Managers
 [SUNWgnome-xml]
 category = Documentation
 
-[SUNWgnome-xml-root]
-category = Documentation
-
-[SUNWgnome-xml-share]
-category = Documentation
-
 [SUNWgnu-automake-110]
 category = GNU
 
@@ -1364,10 +1256,25 @@ category = GNU
 category = GNU
 
 [SUNWgnu-coreutils]
-category = GNU
+category = System Utilities
 
 [SUNWgnu-diffutils]
-category = GNU
+category = System Utilities
+
+[SUNWgnu-emacs]
+category = Text Tools
+
+[SUNWgnu-emacs-el]
+category = Text Tools
+
+[SUNWgnu-emacs-gtk]
+category = Text Tools
+
+[SUNWgnu-emacs-nox]
+category = Text Tools
+
+[SUNWgnu-emacs-x]
+category = Text Tools
 
 [SUNWgnu-gettext]
 category = GNU
@@ -1384,14 +1291,23 @@ category = GNU
 [SUNWgnu-mc]
 category = File Managers
 
+[SUNWgnu-which]
+category = System Utilities
+
 [SUNWgnutls]
 category = GNU
 
-[SUNWgnu-which]
-category = GNU
+[SUNWgobby]
+category = Text Tools
 
 [SUNWgpch]
 category = GNU
+
+[SUNWgqview]
+category = Graphics and Imaging
+
+[SUNWgroff]
+category = Text Tools
 
 [SUNWgrub]
 category = Core
@@ -1403,7 +1319,7 @@ category = Core
 category = Graphics and Imaging
 
 [SUNWgsed]
-category = GNU
+category = System Utilities
 
 [SUNWgsfot]
 category = Fonts
@@ -1429,20 +1345,20 @@ category = Python
 [SUNWgtar]
 category = GNU
 
-[SUNWGtk]
-category = Graphics and Imaging
-
 [SUNWgtkmm]
 category = Libraries
 
 [SUNWgtkperf]
 category = GNOME and GTK+
 
+[SUNWgtkspell]
+category = Accessories
+
 [SUNWgui-install]
 category = Administration and Configuration
 
 [SUNWgzip]
-category = GNU
+category = System Utilities
 
 [SUNWhal]
 category = Hardware
@@ -1457,7 +1373,7 @@ category = Core
 category = Other Peripherals
 
 [SUNWhkxwsvr]
-category = Localizations (Desktop)
+category = X11
 
 [SUNWhos]
 category = Localizations (System)
@@ -1472,7 +1388,7 @@ category = Hardware
 category = Networking
 
 [SUNWhxwsvr]
-category = Localizations (Desktop)
+category = X11
 
 [SUNWib]
 category = Hardware
@@ -1487,16 +1403,16 @@ category = Hardware
 category = Hardware
 
 [SUNWiconv-extra]
-category = Text Tools
+category = Internationalization
 
 [SUNWiconv-unicode]
-category = Text Tools
+category = Internationalization
 
 [SUNWicu]
-category = Text Tools
+category = Internationalization
 
 [SUNWicud]
-category = Text Tools
+category = Internationalization
 
 [SUNWid3lib]
 category = Libraries (System)
@@ -1505,13 +1421,13 @@ category = Libraries (System)
 category = Services
 
 [SUNWidnd]
-category = System
+category = Internationalization
 
 [SUNWidnl]
-category = Libraries (System)
+category = Internationalization
 
 [SUNWidnu]
-category = System Utilities
+category = Internationalization
 
 [SUNWigb]
 category = Networking
@@ -1519,44 +1435,41 @@ category = Networking
 [SUNWii]
 category = Enterprise Management
 
-[SUNWiiim]
-category = Internationalization
-
 [SUNWiiimf]
 category = Internationalization
 
 [SUNWiiimf-ja-anthy]
-category = Internationalization
+category = Localizations (System)
 
 [SUNWiiimf-ko-hangul]
-category = Internationalization
+category = Localizations (System)
 
 [SUNWiiimf-th-thaile]
-category = Internationalization
+category = Localizations (System)
 
 [SUNWiiimf-zhCN-cle-core]
-category = Internationalization
+category = Localizations (System)
 
 [SUNWiiimf-zhCN-cle-open]
-category = Internationalization
+category = Localizations (System)
 
 [SUNWiiimf-zhCN-cle-sunpinyin]
-category = Internationalization
+category = Localizations (System)
 
 [SUNWiiimf-zhHK-hkle-core]
-category = Internationalization
+category = Localizations (System)
 
 [SUNWiiimf-zhHK-hkle-open]
-category = Internationalization
+category = Localizations (System)
 
 [SUNWiiimf-zhTW-twle-chewing]
-category = Internationalization
+category = Localizations (System)
 
 [SUNWiiimf-zhTW-twle-core]
-category = Internationalization
+category = Localizations (System)
 
 [SUNWiiimf-zhTW-twle-open]
-category = Internationalization
+category = Localizations (System)
 
 [SUNWilmbase]
 category = Libraries (System)
@@ -1575,6 +1488,9 @@ category = Localizations (System)
 
 [SUNWinstall-libs]
 category = Libraries (System)
+
+[SUNWinstalladm-tools]
+category = Administration and Configuration
 
 [SUNWintgige]
 category = Networking
@@ -1600,6 +1516,9 @@ category = Packaging
 [SUNWipkg-gui-data]
 category = Packaging
 
+[SUNWipkg-um]
+category = Packaging
+
 [SUNWipmi]
 category = Hardware
 
@@ -1615,11 +1534,11 @@ category = Printing
 [SUNWipw]
 category = Networking
 
-[SUNWIPython]
-category = Python
-
 [SUNWircii]
-category = Core
+category = Internet
+
+[SUNWirssi]
+category = Internet
 
 [SUNWiscsi]
 category = Hardware
@@ -1628,7 +1547,7 @@ category = Hardware
 category = Hardware
 
 [SUNWislcc]
-category = Text Tools
+category = Internationalization
 
 [SUNWisns]
 category = Hardware
@@ -1643,7 +1562,7 @@ category = Text Tools
 category = Localizations (System)
 
 [SUNWitxwsvr]
-category = Localizations (Desktop)
+category = X11
 
 [SUNWiwh]
 category = Networking
@@ -1690,24 +1609,6 @@ category = Java
 [SUNWjavadb]
 category = Databases
 
-[SUNWjavadb-client]
-category = Databases (System)
-
-[SUNWjavadb-common]
-category = Databases
-
-[SUNWjavadb-core]
-category = Databases (System)
-
-[SUNWjavadb-demo]
-category = Databases (System)
-
-[SUNWjavadb-docs]
-category = Databases (System)
-
-[SUNWjavadb-javadoc]
-category = Databases
-
 [SUNWjdhcm]
 category = Services
 
@@ -1716,6 +1617,9 @@ category = Java
 
 [SUNWjdoc]
 category = Text Tools
+
+[SUNWjhrt]
+category = Documentation
 
 [SUNWjos]
 category = Localizations (System)
@@ -1726,11 +1630,14 @@ category = Media
 [SUNWjre-config-plugin]
 category = Plug-ins and Run-times
 
+[SUNWjruby]
+category = Ruby
+
 [SUNWjss]
 category = Services
 
 [SUNWjxwsvr]
-category = Localizations (Desktop)
+category = X11
 
 [SUNWkdc]
 category = Security
@@ -1751,7 +1658,7 @@ category = Security
 category = Core
 
 [SUNWkxwsvr]
-category = Localizations (Desktop)
+category = X11
 
 [SUNWlang-ar]
 category = Localizations (System)
@@ -1795,6 +1702,9 @@ category = Localizations (System)
 [SUNWlang-de-extra]
 category = Localizations (System)
 
+[SUNWlang-deDE]
+category = Localizations (System)
+
 [SUNWlang-el]
 category = Localizations (System)
 
@@ -1807,10 +1717,16 @@ category = Localizations (System)
 [SUNWlang-en-extra]
 category = Localizations (System)
 
+[SUNWlang-enUS]
+category = Localizations (System)
+
 [SUNWlang-es]
 category = Localizations (System)
 
 [SUNWlang-es-extra]
+category = Localizations (System)
+
+[SUNWlang-esES]
 category = Localizations (System)
 
 [SUNWlang-et]
@@ -1829,6 +1745,9 @@ category = Localizations (System)
 category = Localizations (System)
 
 [SUNWlang-fr-extra]
+category = Localizations (System)
+
+[SUNWlang-frFR]
 category = Localizations (System)
 
 [SUNWlang-he]
@@ -1850,6 +1769,9 @@ category = Localizations (System)
 category = Localizations (System)
 
 [SUNWlang-hu-extra]
+category = Localizations (System)
+
+[SUNWlang-id]
 category = Localizations (System)
 
 [SUNWlang-is]
@@ -1897,6 +1819,9 @@ category = Localizations (System)
 [SUNWlang-mk-extra]
 category = Localizations (System)
 
+[SUNWlang-ms]
+category = Localizations (System)
+
 [SUNWlang-mt]
 category = Localizations (System)
 
@@ -1924,13 +1849,13 @@ category = Localizations (System)
 [SUNWlang-pt]
 category = Localizations (System)
 
+[SUNWlang-pt-extra]
+category = Localizations (System)
+
 [SUNWlang-ptBR]
 category = Localizations (System)
 
 [SUNWlang-ptBR-extra]
-category = Localizations (System)
-
-[SUNWlang-pt-extra]
 category = Localizations (System)
 
 [SUNWlang-ro]
@@ -1996,6 +1921,9 @@ category = Localizations (System)
 [SUNWlang-uk]
 category = Localizations (System)
 
+[SUNWlang-vi]
+category = Localizations (System)
+
 [SUNWlang-zhCN]
 category = Localizations (System)
 
@@ -2026,17 +1954,17 @@ category = Libraries (System)
 [SUNWlftp]
 category = System Utilities
 
-[SUNWlibanthy]
-category = Libraries (System)
-
 [SUNWlibC]
 category = C++
+
+[SUNWlibanthy]
+category = Localizations (System)
 
 [SUNWlibcanberra]
 category = Media
 
 [SUNWlibchewing]
-category = Libraries (System)
+category = Localizations (System)
 
 [SUNWlibcompizconfig]
 category = Libraries
@@ -2048,12 +1976,15 @@ category = Libraries (System)
 category = Libraries (System)
 
 [SUNWlibdatrie]
-category = Libraries (System)
+category = Localizations (System)
 
 [SUNWlibevent]
 category = Libraries (System)
 
 [SUNWlibexif]
+category = Libraries (System)
+
+[SUNWlibffi]
 category = Libraries (System)
 
 [SUNWlibgc]
@@ -2065,6 +1996,9 @@ category = Libraries (System)
 [SUNWlibgmime]
 category = Libraries (System)
 
+[SUNWlibgoffice]
+category = System
+
 [SUNWlibgpg-error]
 category = Libraries (System)
 
@@ -2075,12 +2009,15 @@ category = Libraries
 category = Libraries (System)
 
 [SUNWlibhangul]
-category = Libraries (System)
+category = Localizations (System)
 
 [SUNWlibm]
 category = Libraries (System)
 
 [SUNWlibmemcached]
+category = Libraries (System)
+
+[SUNWlibmikmod]
 category = Libraries (System)
 
 [SUNWlibmng]
@@ -2122,6 +2059,9 @@ category = Integrated Development Environments
 [SUNWlibnb-xml1]
 category = Integrated Development Environments
 
+[SUNWlibnet]
+category = Libraries (System)
+
 [SUNWliboil]
 category = Libraries
 
@@ -2159,7 +2099,7 @@ category = Libraries (System)
 category = Libraries (System)
 
 [SUNWlibthai]
-category = Libraries (System)
+category = Localizations (System)
 
 [SUNWlibtheora]
 category = Libraries (System)
@@ -2175,6 +2115,9 @@ category = Libraries (System)
 
 [SUNWlibvirt]
 category = Libraries (System)
+
+[SUNWlibxmlpp]
+category = C++
 
 [SUNWlighttpd14]
 category = Application and Web Servers
@@ -2221,6 +2164,9 @@ category = Libraries (System)
 [SUNWman]
 category = Text Tools
 
+[SUNWman-l10n-ja]
+category = Text Tools
+
 [SUNWmd]
 category = Core
 
@@ -2239,8 +2185,11 @@ category = Libraries (System)
 [SUNWmegasas]
 category = Storage
 
+[SUNWmeld]
+category = System U
+
 [SUNWmemcached]
-category = Core
+category = Application and Web Servers
 
 [SUNWmemcached-java]
 category = Java
@@ -2324,21 +2273,21 @@ category = Localizations (System)
 category = Localizations (System)
 
 [SUNWmysql]
-category = Databases (System)
-
-[SUNWmysql5]
-category = Databases (System)
-
-[SUNWmysql5jdbc]
-category = Databases (System)
-
-[SUNWmysql5test]
-category = Databases (System)
+category = Databases
 
 [SUNWmysql-base]
-category = Databases (System)
+category = Databases
 
 [SUNWmysql-python]
+category = Databases
+
+[SUNWmysql5]
+category = Databases
+
+[SUNWmysql5jdbc]
+category = Databases
+
+[SUNWmysql5test]
 category = Databases
 
 [SUNWmysqlt]
@@ -2350,11 +2299,17 @@ category = Core
 [SUNWncft]
 category = Internet
 
+[SUNWncurses]
+category = Libraries (System)
+
 [SUNWndmp]
 category = Services
 
 [SUNWneon]
 category = Libraries (System)
+
+[SUNWnet6]
+category = System
 
 [SUNWnetbeans-cpp]
 category = Integrated Development Environments
@@ -2393,7 +2348,7 @@ category = File System
 category = File System
 
 [SUNWnge]
-category = Display
+category = Networking
 
 [SUNWnis]
 category = Administration and Configuration
@@ -2413,6 +2368,12 @@ category = Administration and Configuration
 [SUNWnxge]
 category = Networking
 
+[SUNWo3read]
+category = Office
+
+[SUNWobby]
+category = System
+
 [SUNWogg-vorbis]
 category = Libraries (System)
 
@@ -2421,6 +2382,9 @@ category = Libraries (System)
 
 [SUNWopenjade]
 category = Text Tools
+
+[SUNWopenproj]
+category = System Utilities
 
 [SUNWopensolaris-welcome]
 category = Text Tools
@@ -2442,6 +2406,9 @@ category = Core
 
 [SUNWpampkcs11]
 category = Security
+
+[SUNWpangomm]
+category = C++
 
 [SUNWpapi]
 category = Printing
@@ -2476,6 +2443,12 @@ category = Networking
 [SUNWpd]
 category = Other Peripherals
 
+[SUNWperl-authen-pam]
+category = Perl
+
+[SUNWperl-xml-parser]
+category = Perl
+
 [SUNWperl584core]
 category = Perl
 
@@ -2485,19 +2458,31 @@ category = Perl
 [SUNWperl584usr]
 category = Perl
 
-[SUNWperl-authen-pam]
-category = Perl
-
-[SUNWperl-xml-parser]
-category = Perl
-
 [SUNWpgadmin3]
-category = Databases (System)
+category = Databases
 
 [SUNWpgbouncer-pg83]
 category = Administration and Configuration
 
+[SUNWphp52]
+category = PHP
+
+[SUNWphp52-mysql]
+category = PHP
+
+[SUNWphp52-pear]
+category = PHP
+
+[SUNWphp52-pgsql]
+category = PHP
+
 [SUNWphp524]
+category = PHP
+
+[SUNWphp524-mysql]
+category = PHP
+
+[SUNWphp524-pgsql]
 category = PHP
 
 [SUNWphp524core]
@@ -2509,13 +2494,10 @@ category = PHP
 [SUNWphp524man]
 category = PHP
 
-[SUNWphp524-mysql]
-category = PHP
-
-[SUNWphp524-pgsql]
-category = PHP
-
 [SUNWphp524usr]
+category = PHP
+
+[SUNWphp52d]
 category = PHP
 
 [SUNWpicl]
@@ -2542,8 +2524,11 @@ category = Perl
 [SUNWpl5v]
 category = Perl
 
+[SUNWplanner]
+category = System Utilities
+
 [SUNWplxwsvr]
-category = Localizations (Desktop)
+category = X11
 
 [SUNWpm]
 category = Administration and Configuration
@@ -2567,25 +2552,25 @@ category = Core
 category = Core
 
 [SUNWpostgr]
-category = Databases (System)
+category = Databases
 
 [SUNWpostgr-82-client]
-category = Databases (System)
+category = Databases
 
 [SUNWpostgr-82-contrib]
-category = Databases (System)
+category = Databases
 
 [SUNWpostgr-82-devel]
 category = Databases
 
 [SUNWpostgr-82-docs]
-category = Databases (System)
+category = Databases
 
 [SUNWpostgr-82-jdbc]
-category = Databases (System)
+category = Databases
 
 [SUNWpostgr-82-l10n-ja]
-category = Databases (System)
+category = Databases
 
 [SUNWpostgr-82-libs]
 category = Databases
@@ -2594,25 +2579,25 @@ category = Databases
 category = Databases
 
 [SUNWpostgr-82-server]
-category = Databases (System)
+category = Databases
 
 [SUNWpostgr-82-server-data-root]
-category = Databases (System)
+category = Databases
 
 [SUNWpostgr-82-tcl]
-category = Databases (System)
+category = Databases
 
 [SUNWpostgr-83-client]
-category = Databases (System)
+category = Databases
 
 [SUNWpostgr-83-contrib]
-category = Databases (System)
+category = Databases
 
 [SUNWpostgr-83-devel]
 category = Databases
 
 [SUNWpostgr-83-docs]
-category = Databases (System)
+category = Databases
 
 [SUNWpostgr-83-libs]
 category = Databases
@@ -2621,42 +2606,45 @@ category = Databases
 category = Databases
 
 [SUNWpostgr-83-server]
-category = Databases (System)
+category = Databases
 
 [SUNWpostgr-83-tcl]
 category = Databases
 
 [SUNWpostgr-contrib]
-category = Databases (System)
+category = Databases
 
 [SUNWpostgr-docs]
-category = Databases (System)
+category = Databases
 
 [SUNWpostgr-jdbc]
-category = Databases (System)
+category = Databases
 
 [SUNWpostgr-l10n-ja]
-category = Databases (System)
+category = Databases
 
 [SUNWpostgr-libs]
-category = Databases (System)
+category = Databases
 
 [SUNWpostgr-pl]
 category = Databases
 
 [SUNWpostgr-server]
-category = Databases (System)
+category = Databases
 
 [SUNWpostgr-server-data]
-category = Databases (System)
+category = Databases
 
 [SUNWpostgr-tcl]
 category = Databases
 
 [SUNWpostgr-upgrade]
-category = Databases (System)
+category = Databases
 
 [SUNWpostrun]
+category = System Utilities
+
+[SUNWpowertop]
 category = System Utilities
 
 [SUNWppm]
@@ -2683,11 +2671,11 @@ category = System
 [SUNWprint-monitor]
 category = Printing
 
+[SUNWprivoxy]
+category = Application and Web Servers
+
 [SUNWprocmail]
 category = Internet
-
-[SUNWproduct-registry-root]
-category = Core
 
 [SUNWps]
 category = Printing
@@ -2717,7 +2705,7 @@ category = Printing
 category = Printing
 
 [SUNWptxwsvr]
-category = Localizations (Desktop)
+category = X11
 
 [SUNWpycups]
 category = Printing
@@ -2725,16 +2713,13 @@ category = Printing
 [SUNWpysqlite]
 category = Databases
 
-[SUNWPython]
-category = Python
-
 [SUNWpython-cherrypy]
 category = Python
 
-[SUNWPython-extra]
+[SUNWpython-imaging]
 category = Python
 
-[SUNWpython-imaging]
+[SUNWpython-notify]
 category = Python
 
 [SUNWpython-pyopenssl]
@@ -2840,7 +2825,7 @@ category = Networking
 category = Ruby
 
 [SUNWruxwsvr]
-category = Localizations (Desktop)
+category = X11
 
 [SUNWsacom]
 category = Enterprise Management
@@ -2858,16 +2843,16 @@ category = Enterprise Management
 category = Hardware
 
 [SUNWscim]
-category = Text Tools
+category = Internationalization
 
 [SUNWscim-anthy]
-category = Text Tools
+category = Localizations (System)
 
 [SUNWscim-chewing]
-category = Text Tools
+category = Localizations (System)
 
 [SUNWscim-hangul]
-category = Text Tools
+category = Localizations (System)
 
 [SUNWscim-pinyin]
 category = Text Tools
@@ -2876,25 +2861,25 @@ category = Text Tools
 category = Text Tools
 
 [SUNWscim-tables]
-category = Text Tools
+category = Internationalization
 
 [SUNWscim-tables-chinese]
-category = Text Tools
+category = Localizations (System)
 
 [SUNWscim-tables-extra]
-category = Text Tools
+category = Localizations (System)
 
 [SUNWscim-tables-india]
-category = Text Tools
+category = Localizations (System)
 
 [SUNWscim-tables-japanese]
-category = Text Tools
+category = Localizations (System)
 
 [SUNWscim-tables-korean]
-category = Text Tools
+category = Localizations (System)
 
 [SUNWscim-thai]
-category = Text Tools
+category = Localizations (System)
 
 [SUNWscm]
 category = Enterprise Management
@@ -2904,6 +2889,9 @@ category = Core
 
 [SUNWscplp]
 category = Printing
+
+[SUNWscreen]
+category = System Utilities
 
 [SUNWscsa1394]
 category = Ports
@@ -2965,6 +2953,9 @@ category = Other Languages
 [SUNWslim-utils]
 category = System Utilities
 
+[SUNWslocate]
+category = System Utilities
+
 [SUNWslp]
 category = Services
 
@@ -3013,6 +3004,9 @@ category = Core
 [SUNWsolnm]
 category = Core
 
+[SUNWsongbird]
+category = Sound and Video
+
 [SUNWspeex]
 category = Sound and Video
 
@@ -3026,10 +3020,10 @@ category = Core
 category = Storage
 
 [SUNWsqlite3]
-category = Databases (System)
+category = Databases
 
 [SUNWsqlite3docs]
-category = Databases (System)
+category = Databases
 
 [SUNWsqlite3tcl]
 category = Databases
@@ -3050,7 +3044,7 @@ category = Security
 category = Security
 
 [SUNWstardict]
-category = Text Tools
+category = Accessories
 
 [SUNWstmf]
 category = Hardware
@@ -3080,19 +3074,22 @@ category = Source Code Management
 category = Localizations (System)
 
 [SUNWsvxwsvr]
-category = Localizations (Desktop)
+category = X11
+
+[SUNWswig]
+category = Other Languages
 
 [SUNWswmt]
 category = Administration and Configuration
+
+[SUNWswt]
+category = Libraries
 
 [SUNWtavor]
 category = Other Peripherals
 
 [SUNWtcat]
 category = Application and Web Servers
-
-[SUNWTcl]
-category = Other Languages
 
 [SUNWtcltls]
 category = Other Languages
@@ -3111,6 +3108,9 @@ category = Libraries (System)
 
 [SUNWter]
 category = Core
+
+[SUNWterminator]
+category = System Utilities
 
 [SUNWtexi]
 category = GNU
@@ -3154,6 +3154,9 @@ category = Trusted
 [SUNWtgnome-l10n-ui-zhTW]
 category = Trusted
 
+[SUNWtgnome-tsol-libs]
+category = Trusted
+
 [SUNWtgnome-tsoljdsdevmgr]
 category = Trusted
 
@@ -3161,9 +3164,6 @@ category = Trusted
 category = Trusted
 
 [SUNWtgnome-tsoljdsselmgr]
-category = Trusted
-
-[SUNWtgnome-tsol-libs]
 category = Trusted
 
 [SUNWtgnome-tstripe]
@@ -3220,15 +3220,6 @@ category = Internet
 [SUNWtidy]
 category = Libraries (System)
 
-[SUNWTiff]
-category = Libraries (System)
-
-[SUNWtiu8]
-category = Localizations (System)
-
-[SUNWTk]
-category = Other Languages
-
 [SUNWtls]
 category = Security
 
@@ -3253,8 +3244,17 @@ category = System
 [SUNWtoo]
 category = System
 
+[SUNWtop]
+category = System Utilities
+
+[SUNWtransmission]
+category = Internet
+
 [SUNWts]
 category = Trusted
+
+[SUNWtsclient]
+category = Internet
 
 [SUNWtsg]
 category = Trusted
@@ -3266,6 +3266,15 @@ category = Fonts
 category = Fonts
 
 [SUNWttf-arphic-uming]
+category = Fonts
+
+[SUNWttf-hanyang-ko]
+category = Fonts
+
+[SUNWttf-hanyang-ko-core]
+category = Fonts
+
+[SUNWttf-indic-fonts-core]
 category = Fonts
 
 [SUNWttf-ipafont]
@@ -3302,7 +3311,7 @@ category = Ports
 category = Hardware
 
 [SUNWuiu8]
-category = Text Tools
+category = Internationalization
 
 [SUNWuium]
 category = Text Tools
@@ -3338,7 +3347,10 @@ category = Hardware
 category = Hardware
 
 [SUNWusbvc]
-category = Display
+category = Media
+
+[SUNWvdisk]
+category = System Utilities
 
 [SUNWvgl]
 category = Hardware
@@ -3349,10 +3361,10 @@ category = Media
 [SUNWvim]
 category = Text Tools
 
-[SUNWvirtinst]
+[SUNWvirt-manager]
 category = Virtualization
 
-[SUNWvirt-manager]
+[SUNWvirtinst]
 category = Virtualization
 
 [SUNWvncviewer]
@@ -3365,16 +3377,16 @@ category = Services
 category = Services
 
 [SUNWvts]
-category = System
+category = Hardware
 
 [SUNWvtsmn]
-category = System
+category = Hardware
 
 [SUNWvtss]
-category = System
+category = Hardware
 
 [SUNWvtsts]
-category = System
+category = Hardware
 
 [SUNWw3m]
 category = Libraries
@@ -3400,6 +3412,12 @@ category = Networking
 [SUNWwsr2]
 category = Administration and Configuration
 
+[SUNWwxwidgets]
+category = Libraries
+
+[SUNWxchat]
+category = Internet
+
 [SUNWxcu4]
 category = System Utilities
 
@@ -3407,7 +3425,10 @@ category = System Utilities
 category = System Utilities
 
 [SUNWxcursor-themes]
-category = X11 (System)
+category = X11
+
+[SUNWxdg-sound-theme]
+category = Libraries
 
 [SUNWxdg-user-dirs]
 category = System Utilities
@@ -3425,60 +3446,63 @@ category = System
 category = Networking
 
 [SUNWxorg-cfg]
-category = X11 (System)
+category = X11
 
 [SUNWxorg-client-docs]
+category = X11
+
+[SUNWxorg-client-programs]
 category = X11
 
 [SUNWxorg-clientlibs]
 category = X11
 
-[SUNWxorg-client-programs]
-category = X11 (System)
-
 [SUNWxorg-compatlinks]
-category = X11 (System)
+category = X11
 
 [SUNWxorg-devel-docs]
 category = X11
 
 [SUNWxorg-doc]
-category = X11 (System)
+category = X11
 
 [SUNWxorg-graphics-ddx]
-category = X11 (System)
+category = Display
 
 [SUNWxorg-headers]
 category = X11
 
 [SUNWxorg-mesa]
-category = X11 (System)
+category = X11
 
 [SUNWxorg-server]
-category = X11 (System)
+category = X11
 
 [SUNWxorg-tsol-module]
 category = Trusted
 
 [SUNWxorg-xkb]
-category = X11 (System)
+category = X11
+
+[SUNWxprint-server]
+category = X11
+
+[SUNWxsane]
+category = System Utilities
 
 [SUNWxscreensaver-hacks]
-category = X11 (System)
+category = X11
 
 [SUNWxscreensaver-hacks-gl]
-category = X11 (System)
+category = X11
 
 [SUNWxsvc]
-category = X11 (System)
+category = X11
 
 [SUNWxvm]
-category = System
-
-[SUNWxvmdom]
 category = Virtualization
 
-[SUNWxvmhvm]
+[SUNWxvmdom]
 category = Virtualization
 
 [SUNWxvmipa]
@@ -3488,57 +3512,66 @@ category = Virtualization
 category = Virtualization
 
 [SUNWxvnc]
-category = X11 (System)
+category = X11
+
+[SUNWxwacx]
+category = X11
 
 [SUNWxwdem]
-category = X11 (System)
+category = X11
 
 [SUNWxwdv]
-category = X11 (System)
+category = X11
 
 [SUNWxwfsw]
-category = X11 (System)
+category = X11
 
 [SUNWxwice]
-category = X11 (System)
+category = X11
 
 [SUNWxwinc]
 category = X11
 
 [SUNWxwman]
-category = X11 (System)
+category = X11
 
 [SUNWxwmod]
-category = X11 (System)
+category = X11
 
 [SUNWxwopt]
-category = X11 (System)
+category = X11
+
+[SUNWxwpft]
+category = X11
 
 [SUNWxwplr]
-category = X11 (System)
+category = X11
 
 [SUNWxwplt]
-category = X11 (System)
+category = X11
 
 [SUNWxwpmn]
 category = X11
 
 [SUNWxwrtl]
-category = X11 (System)
+category = X11
 
 [SUNWxwslb]
 category = X11
 
 [SUNWxwsvr]
-category = X11 (System)
+category = X11
 
 [SUNWxwxft]
-category = X11 (System)
+category = X11
 
 [SUNWyp]
 category = Administration and Configuration
 
 [SUNWzfs]
+category = File System
+
+[SUNWzfs-auto-snapshot]
 category = File System
 
 [SUNWzfskr]
@@ -3556,7 +3589,243 @@ category = Core
 [SUNWzsh]
 category = Shells
 
-[webstackui]
+[amp]
 category = Application and Web Servers
 
+[amp-dev]
+category = Integrated Development Environments
+
+[clustertools]
+category = High Performance Computing
+
+[clustertools_7.1]
+category = High Performance Computing
+
+[gcc-dev]
+category = Integrated Development Environments
+
+[glassfishv2]
+category = Application and Web Servers
+
+[hpc-dev]
+category = High Performance Computing
+
+[java-dev]
+category = Java
+
+[lang-support-albanian]
+category = Localizations (System)
+
+[lang-support-all]
+category = Localizations (System)
+
+[lang-support-arabic]
+category = Localizations (System)
+
+[lang-support-bulgarian]
+category = Localizations (System)
+
+[lang-support-catalan]
+category = Localizations (System)
+
+[lang-support-chinese-CN]
+category = Localizations (System)
+
+[lang-support-chinese-HK]
+category = Localizations (System)
+
+[lang-support-chinese-TW]
+category = Localizations (System)
+
+[lang-support-common]
+category = Localizations (System)
+
+[lang-support-croatian]
+category = Localizations (System)
+
+[lang-support-czech]
+category = Localizations (System)
+
+[lang-support-danish]
+category = Localizations (System)
+
+[lang-support-dutch]
+category = Localizations (System)
+
+[lang-support-english]
+category = Localizations (System)
+
+[lang-support-estonian]
+category = Localizations (System)
+
+[lang-support-finnish]
+category = Localizations (System)
+
+[lang-support-french]
+category = Localizations (System)
+
+[lang-support-german]
+category = Localizations (System)
+
+[lang-support-greek]
+category = Localizations (System)
+
+[lang-support-hebrew]
+category = Localizations (System)
+
+[lang-support-hungarian]
+category = Localizations (System)
+
+[lang-support-icelandic]
+category = Localizations (System)
+
+[lang-support-indic]
+category = Localizations (System)
+
+[lang-support-italian]
+category = Localizations (System)
+
+[lang-support-japanese]
+category = Localizations (System)
+
+[lang-support-korean]
+category = Localizations (System)
+
+[lang-support-latvian]
+category = Localizations (System)
+
+[lang-support-lithuanian]
+category = Localizations (System)
+
+[lang-support-macedonian]
+category = Localizations (System)
+
+[lang-support-maltese]
+category = Localizations (System)
+
+[lang-support-norwegian]
+category = Localizations (System)
+
+[lang-support-norwegian-bokmal]
+category = Localizations (System)
+
+[lang-support-norwegian-nynorsk]
+category = Localizations (System)
+
+[lang-support-polish]
+category = Localizations (System)
+
+[lang-support-portuguese]
+category = Localizations (System)
+
+[lang-support-portuguese-BR]
+category = Localizations (System)
+
+[lang-support-romanian]
+category = Localizations (System)
+
+[lang-support-russian]
+category = Localizations (System)
+
+[lang-support-serbian]
+category = Localizations (System)
+
+[lang-support-serbo-croatian]
+category = Localizations (System)
+
+[lang-support-slovakian]
+category = Localizations (System)
+
+[lang-support-slovenian]
+category = Localizations (System)
+
+[lang-support-spanish]
+category = Localizations (System)
+
+[lang-support-swedish]
+category = Localizations (System)
+
+[lang-support-thai]
+category = Localizations (System)
+
+[lang-support-turkish]
+category = Localizations (System)
+
+[mq41]
+category = Services
+
+[netbeans]
+category = Integrated Development Environments
+
+[netbeans-incorporation]
+category = Integrated Development Environments
+
+[openoffice]
+category = Office
+
+[openoffice-de]
+category = Localizations (Desktop)
+
+[openoffice-es]
+category = Localizations (Desktop)
+
+[openoffice-fr]
+category = Localizations (Desktop)
+
+[openoffice-hu]
+category = Localizations (Desktop)
+
+[openoffice-it]
+category = Localizations (Desktop)
+
+[openoffice-ja]
+category = Localizations (Desktop)
+
+[openoffice-ko]
+category = Localizations (Desktop)
+
+[openoffice-nl]
+category = Localizations (Desktop)
+
+[openoffice-pl]
+category = Localizations (Desktop)
+
+[openoffice-pt]
+category = Localizations (Desktop)
+
+[openoffice-pt-BR]
+category = Localizations (Desktop)
+
+[openoffice-ru]
+category = Localizations (Desktop)
+
+[openoffice-sdk]
+category = Office
+
+[openoffice-sv]
+category = Localizations (Desktop)
+
+[openoffice-zh-CN]
+category = Localizations (Desktop)
+
+[openoffice-zh-TW]
+category = Localizations (Desktop)
+
+[ruby-dev]
+category = Ruby
+
+[slim_cd]
+category = Desktop
+
+[ss-dev]
+category = Integrated Development Environments
+
+[storage-nas]
+category = Storage
+
+[sunstudioexpress]
+category = Integrated Development Environments
+
+[webstackui]
+category = Application and Web Servers
 
