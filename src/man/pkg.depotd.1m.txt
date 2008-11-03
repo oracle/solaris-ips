@@ -46,6 +46,13 @@ DESCRIPTION
                                 stdout, none, or an absolute pathname.
                                 The default value is stderr.
 
+     pkg/mirror                 (boolean) Sets whether package mirror mode 
+                                is used. When true, publishing and metadata
+                                operations are disabled and only a limited
+                                browser user interface is provided. This
+                                property may not be true when pkg/readonly is
+                                true. The default value is false.
+
      pkg/port                   (count) The port number on which the
                                 instance should listen for incoming
                                 package requests.  The default value is
@@ -56,6 +63,13 @@ DESCRIPTION
                                 running behind Apache or some other
                                 webserver in a reverse proxy
                                 configuration.
+
+     pkg/readonly               (boolean) Sets whether modifying operations, 
+                                such as those initiated by pkgsend(1M) are 
+                                disabled. Retrieval operations are still 
+                                available. This property may not be true
+                                when pkg/mirror is true. The default value
+                                is false.
 
      pkg/socket_timeout         (count) The maximum number of seconds the
                                 server should wait for a response from a
@@ -92,22 +106,13 @@ OPTIONS
      --content-root root_dir    Overrides pkg/content_root with the value
                                 given by root_dir.
 
-     --mirror                   Package mirror mode; publishing and
-                                metadata operations are disabled and
-                                only a limited browser user interface is
-                                provided.  This option may not be
-                                combined with the --readonly or
-                                --rebuild options.
+     --mirror                   Overrides pkg/mirror and sets it to be true.
 
      --proxy-base url           Overrides pkg/proxy_base with the value
                                 given by url.  Ignored if empty value is
                                 provided.
 
-     --readonly                 Modifying operations, such as those
-                                initiated by pkgsend(1M) are disabled.
-                                Retrieval operations are still available.
-                                This option may not be combined with the
-                                --mirror or --rebuild options.
+     --readonly                 Overrides pkg/readonly and sets it to be true.
 
      --rebuild                  Any existing repository catalog will be
                                 destroyed and then recreated on startup.

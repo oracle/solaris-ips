@@ -1,0 +1,123 @@
+#!/usr/bin/ksh
+#
+# CDDL HEADER START
+#
+# The contents of this file are subject to the terms of the
+# Common Development and Distribution License (the "License").
+# You may not use this file except in compliance with the License.
+#
+# You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+# or http://www.opensolaris.org/os/licensing.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+#
+# When distributing Covered Code, include this CDDL HEADER in each
+# file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+# If applicable, add the following below this CDDL HEADER, with the
+# fields enclosed by brackets "[]" replaced with your own identifying
+# information: Portions Copyright [yyyy] [name of copyright owner]
+#
+# CDDL HEADER END
+#
+# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Use is subject to license terms.
+
+# Load SMF constants and functions
+. /lib/svc/share/smf_include.sh
+
+if [[ -z "$SMF_FMRI" ]]; then
+	echo "this script can only be invoked by smf(5)"	
+	exit $SMF_EXIT_ERR_NOSMF
+fi
+
+case "$1" in
+'start')
+	# Handles depot startup
+
+	# boolean_props are properties which are communicated to the depot
+	# via a flag being present or absent on the command line.
+	boolean_props="mirror readonly"
+	set -A boolean_cmd_line "mirror" "readonly"
+
+	# short_option_props are properties which are communicated to the depot
+	# via a single character flag which takes an argument.
+	short_option_props="inst_root port threads socket_timeout"
+	set -A short_option_cmd_line "d" "p" "s" "t"
+
+	# short_option_props are properties which are communicated to the depot
+	# via a long option flag which takes an argument.
+	long_option_props="content_root log_access log_errors proxy_base"
+	set -A long_option_cmd_line "content-root" "log-access" \
+            "log-errors" "proxy-base"
+
+	bool_ops=""
+	option_props=""
+
+	# Go through each property in boolean_props and, if its value is set
+	# to true in SMF, add the appropriate command line flag to the string.
+	cnt=0
+	for b in $boolean_props; do
+	    val=$(svcprop -p pkg/$b $SMF_FMRI)
+	    if [[ $? -ne 0 ]]; then
+		echo "service property pkg/$b not defined for service: $SMF_FMRI"
+		exit $SMF_EXIT_ERR_CONFIG
+	    fi
+	    # If the property is set to true, add the flag.
+	    if [[ $val == 'true' ]]; then
+		bool_ops="$bool_ops --${boolean_cmd_line[$cnt]}"
+	    fi
+	    cnt=$(($cnt + 1))
+	done
+
+	# Go through each property in short_option_props and, if its value is
+	# set to something other than none, add the appropriate command line
+        # flag and argument to the string.
+	cnt=0
+	for o in $short_option_props; do
+	    val=$(svcprop -p pkg/$o $SMF_FMRI)
+	    if [[ $? -ne 0 ]]; then
+		echo "service property pkg/$o not defined for service: $SMF_FMRI"
+		exit $SMF_EXIT_ERR_CONFIG
+	    fi
+	    # If the SMF property is set to something other than 'none', add 
+            # the flag and its argument to the command.
+	    if [[ $val != '""' ]]; then
+		option_ops="$option_ops -${short_option_cmd_line[$cnt]} $val"
+	    fi
+	    cnt=$(($cnt + 1))
+	done
+
+	# Go through each property in long_option_props and, if its value is
+	# set to something other than none, add the appropriate command line
+        # flag and argument to the string.
+	cnt=0
+	for o in $long_option_props; do
+	    val=$(svcprop -p pkg/$o $SMF_FMRI)
+	    if [[ $? -ne 0 ]]; then
+		echo "service property pkg/$o not defined for service: $SMF_FMRI"
+		exit $SMF_EXIT_ERR_CONFIG
+	    fi
+	    # If the SMF property is set to something other than 'none', add
+            # the flag and its argument to the command.
+	    if [[ $val != '""' ]]; then
+		option_ops="$option_ops --${long_option_cmd_line[$cnt]}=$val"
+	    fi
+	    cnt=$(($cnt + 1))
+	done
+
+	# Build the command to start pkg.depotd with the specified options.
+	cmd="/usr/lib/pkg.depotd $bool_ops $option_ops"
+	# Echo the command so that the log contains the command used to start
+	# the depot.
+	echo $cmd
+
+	exec $cmd
+
+	;;
+*)
+	echo "Usage: $0 start"
+	exit $SMF_EXIT_ERR_CONFIG
+	;;
+
+esac
+exit $SMF_EXIT_OK

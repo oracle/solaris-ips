@@ -39,8 +39,6 @@
 
 	<create_default_instance enabled='false' />
 
-	<single_instance/>
-
 	<dependency
 		name='fs'
 		grouping='require_all'
@@ -85,7 +83,7 @@
 	<exec_method
 		type='method'
 		name='start'
-		exec='/usr/lib/pkg.depotd -d %{pkg/inst_root} -p %{pkg/port} -s %{pkg/threads} -t %{pkg/socket_timeout} --content-root=%{pkg/content_root} --log-access=%{pkg/log_access} --log-errors=%{pkg/log_errors} --proxy-base=%{pkg/proxy_base}'
+                exec='/lib/svc/method/svc-pkg-depot start'
 		timeout_seconds='0' />
 
 	<exec_method
@@ -111,6 +109,8 @@
 			value='none' />
 		<propval name='log_errors' type='astring'
 			value='stderr' />
+		<propval name='mirror' type='boolean' value='false'/>
+		<propval name='readonly' type='boolean' value='false'/>
 	</property_group>
 
 	<stability value='Unstable' />

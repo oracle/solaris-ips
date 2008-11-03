@@ -96,6 +96,7 @@ py_install_dir = 'usr/lib/python2.4/vendor-packages'
 
 scripts_dir = 'usr/bin'
 lib_dir = 'usr/lib'
+svc_method_dir = 'lib/svc/method'
 
 man1_dir = 'usr/share/man/cat1'
 man1m_dir = 'usr/share/man/cat1m'
@@ -116,6 +117,9 @@ scripts_sunos = {
         lib_dir: [
                 ['depot.py', 'pkg.depotd'],
                 ['updatemanagernotifier.py', 'updatemanagernotifier'],
+                ],
+        svc_method_dir: [
+                ['svc-pkg-depot', 'svc-pkg-depot'],
                 ],
         }
             
