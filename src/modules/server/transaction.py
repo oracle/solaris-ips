@@ -277,10 +277,16 @@ class Transaction(object):
                                 elf_file.write(data)
                                 elf_file.close()
                                 elf_info = elf.get_info(elf_name)
-                                elf_hash = elf.get_dynamic(elf_name)["hash"]
+                                try:
+                                    elf_hash = elf.get_dynamic(elf_name)["hash"]
+                                    try:
+                                        action.attrs["elfhash"] = elf_hash
+                                    except KeyError:
+                                        pass
+                                except elf.ElfError:
+                                    pass
                                 action.attrs["elfbits"] = str(elf_info["bits"])
                                 action.attrs["elfarch"] = elf_info["arch"]
-                                action.attrs["elfhash"] = elf_hash
                                 os.unlink(elf_name)
 
                         #

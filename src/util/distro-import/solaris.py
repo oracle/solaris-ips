@@ -674,14 +674,20 @@ def process_dependencies(file, path):
                 return [], []
 
         ei = elf.get_info(file)
-        ed = elf.get_dynamic(file)
-        deps = [
-            d[0]
-            for d in ed.get("deps", [])
-        ]
-        rp = ed.get("runpath", "").split(":")
-        if len(rp) == 1 and rp[0] == "":
-                rp = []
+        try:
+            ed = elf.get_dynamic(file)
+        except elf.ElfError:
+            deps = []
+            rp = []
+        else:
+            deps = [
+                d[0]
+                for d in ed.get("deps", [])
+            ]
+            rp = ed.get("runpath", "").split(":")
+            if len(rp) == 1 and rp[0] == "":
+                    rp = []
+
         rp = [
             os.path.normpath(p.replace("$ORIGIN", "/" + os.path.dirname(path)))
             for p in rp
