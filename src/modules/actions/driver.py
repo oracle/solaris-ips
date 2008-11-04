@@ -563,7 +563,7 @@ class DriverAction(generic.Action):
                                 if major == name:
                                         act.attrs["perms"].append(
                                             minor + " " + " ".join(fields[1:]))
-                                elif major == "clone":
+                                elif major == "clone" and minor == name:
                                         act.attrs["clone_perms"].append(
                                             minor + " " + " ".join(fields[1:]))
                 except IOError, e:
@@ -689,15 +689,6 @@ class DriverAction(generic.Action):
                             "in etc/minor_perm" % a)
                 for a in mfst_perms - onfs_perms:
                         errors.append("minor node permission '%s' missing "
-                            "from etc/minor_perm" % a)
-
-                onfs_perms = set(onfs.attrlist("clone_perms"))
-                mfst_perms = set(self.attrlist("clone_perms"))
-                # Due to the way we harvest clone nodes (we have to grab them
-                # all) we can't easily look for extra clone nodes.  So we only
-                # flag those which are missing.
-                for a in mfst_perms - onfs_perms:
-                        errors.append("clone minor node permission '%s' missing "
                             "from etc/minor_perm" % a)
 
                 onfs_policy = set(onfs.attrlist("policy"))
