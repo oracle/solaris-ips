@@ -125,7 +125,8 @@ SUBCOMMANDS
           matching pkg_fmri as a substring.  With the -n option, execute
           the requested operation but make no persistent changes to the
           image.  With the -v option, issue verbose progress messages
-          during the requested operation.
+          during the requested operation.  With the -q option, issue no
+          progress messages during the requested operation.
 
           In the case of uninstall, the -r option will recursively
           uninstall any packages which are dependent on the initial
