@@ -190,6 +190,11 @@ class Image(object):
 
                 self.__manifest_cache = {}
 
+                # right now we don't explicitly set dir/file modes everywhere;
+                # set umask to proper value to prevent problems w/ overly
+                # locked down umask.  
+                os.umask(0022)
+
         def _check_subdirs(self, sub_d, prefix):
                 for n in self.required_subdirs:
                         if not os.path.isdir(os.path.join(sub_d, prefix, n)):
