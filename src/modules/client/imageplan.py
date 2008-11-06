@@ -305,11 +305,15 @@ class ImagePlan(object):
                         # to already proposed pkgs or existing ones.
                         if not constraint.check_for_work(ref_fmri):
                                 continue
+                        # Apply any active optional/incorporation constraints 
+                        # from other packages
 
+                        cf = self.image.constraints.apply_constraints_to_fmri(f)
+                         
                         # This will be the newest version of the specified
                         # dependency package, coming from the preferred
                         # authority, if it's available there.
-                        cf = self.image.inventory([ a.attrs["fmri"] ],
+                        cf = self.image.inventory([ cf ],
                             all_known = True, preferred = True,
                             first_only = True).next()[0]
 

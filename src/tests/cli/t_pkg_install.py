@@ -569,6 +569,12 @@ class TestPkgInstallUpgrade(testutils.SingleDepotTestCase):
             close
         """
 
+        brass10 = """
+            open brass@1.0,5.11-0
+            add depend fmri=pkg:/bronze type=require
+            close
+        """
+
         bronze10 = """
             open bronze@1.0,5.11-0
             add dir mode=0755 owner=root group=bin path=/usr
@@ -789,6 +795,7 @@ class TestPkgInstallUpgrade(testutils.SingleDepotTestCase):
                 self.pkgsend_bulk(durl, self.bronze10)
                 self.pkgsend_bulk(durl, self.bronze20)
                 self.pkgsend_bulk(durl, self.bronze30)
+                self.pkgsend_bulk(durl, self.brass10)
 
                 self.image_create(durl)
 
@@ -797,9 +804,10 @@ class TestPkgInstallUpgrade(testutils.SingleDepotTestCase):
                 self.pkg("install bronze@2.0", exit=1)
                 # install package w/ dependencies that violate incorps
                 self.pkg("install iridium@1.0", exit=1)
-                # ... setup w/ file that works
-                self.pkg("install bronze")
-                self.pkg("verify -v bronze@1.0")
+                # install package w/ unspecified dependency that pulls
+                # in bronze
+                self.pkg("install brass")
+                self.pkg("verify brass@1.0 bronze@1.0")
                 # attempt to install conflicting incorporation
                 self.pkg("install concorp@1.0", exit=1)
 
