@@ -15,165 +15,671 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../data/l10n.py:6
+#: ../client.py:109
+msgid ""
+"Usage:\n"
+"        pkg [options] command [cmd_options] [operands]\n"
+"\n"
+"Basic subcommands:\n"
+"        pkg install [-nvq] [--no-refresh] [--no-index] package...\n"
+"        pkg uninstall [-nrvq] [--no-index] package...\n"
+"        pkg list [-aHsuvf] [package...]\n"
+"        pkg image-update [-fnvq] [--no-refresh] [--no-index]\n"
+"        pkg refresh [--full] [authority ...]\n"
+"        pkg version\n"
+"        pkg help\n"
+"\n"
+"Advanced subcommands:\n"
+"        pkg info [-lr] [--license] [pkg_fmri_pattern ...]\n"
+"        pkg search [-lrI] [-s server] token\n"
+"        pkg verify [-Hqv] [pkg_fmri_pattern ...]\n"
+"        pkg fix [pkg_fmri_pattern ...]\n"
+"        pkg contents [-Hmr] [-o attribute ...] [-s sort_key]\n"
+"            [-t action_type ... ] [pkg_fmri_pattern ...]\n"
+"        pkg image-create [-fFPUz] [--force] [--full|--partial|--user] [--"
+"zone]\n"
+"            [-k ssl_key] [-c ssl_cert] [--no-refresh] -a <prefix>=<url> dir\n"
+"\n"
+"        pkg set-property propname propvalue\n"
+"        pkg unset-property propname ...\n"
+"        pkg property [-H] [propname ...]\n"
+"\n"
+"        pkg set-authority [-P] [-k ssl_key] [-c ssl_cert] [--reset-uuid]\n"
+"            [-O origin_url] [-m mirror_to_add | --add-mirror=mirror_to_add]\n"
+"            [-M mirror_to_remove | --remove-mirror=mirror_to_remove]\n"
+"            [--no-refresh] authority\n"
+"        pkg unset-authority authority ...\n"
+"        pkg authority [-HP] [authority ...]\n"
+"        pkg history [-Hl]\n"
+"        pkg purge-history\n"
+"        pkg rebuild-index\n"
+"\n"
+"Options:\n"
+"        -R dir\n"
+"        -D/--debug name=value\n"
+"\n"
+"Environment:\n"
+"        PKG_IMAGE"
+msgstr ""
+"사용법:\n"
+"        pkg [options] command [cmd_options] [operands]\n"
+"\n"
+"기본 하위 명령:\n"
+"        pkg install [-nvq] [--no-refresh] [--no-index] package...\n"
+"        pkg uninstall [-nrvq] [--no-index] package...\n"
+"        pkg list [-aHsuvf] [package...]\n"
+"        pkg image-update [-fnvq] [--no-refresh] [--no-index]\n"
+"        pkg refresh [--full] [authority ...]\n"
+"        pkg version\n"
+"        pkg help\n"
+"\n"
+"고급 하위 명령:\n"
+"        pkg info [-lr] [--license] [pkg_fmri_pattern ...]\n"
+"        pkg search [-lrI] [-s server] token\n"
+"        pkg verify [-Hqv] [pkg_fmri_pattern ...]\n"
+"        pkg fix [pkg_fmri_pattern ...]\n"
+"        pkg contents [-Hmr] [-o attribute ...] [-s sort_key]\n"
+"            [-t action_type ... ] [pkg_fmri_pattern ...]\n"
+"        pkg image-create [-fFPUz] [--force] [--full|--partial|--user] [--"
+"zone]\n"
+"            [-k ssl_key] [-c ssl_cert] [--no-refresh] -a <prefix>=<url> dir\n"
+"\n"
+"        pkg set-property propname propvalue\n"
+"        pkg unset-property propname ...\n"
+"        pkg property [-H] [propname ...]\n"
+"\n"
+"        pkg set-authority [-P] [-k ssl_key] [-c ssl_cert] [--reset-uuid]\n"
+"            [-O origin_url] [-m mirror_to_add | --add-mirror=mirror_to_add]\n"
+"            [-M mirror_to_remove | --remove-mirror=mirror_to_remove]\n"
+"            [--no-refresh] 인증 기관\n"
+"        pkg unset-authority authority ...\n"
+"        pkg authority [-HP] [authority ...]\n"
+"        pkg history [-Hl]\n"
+"        pkg purge-history\n"
+"        pkg rebuild-index\n"
+"\n"
+"옵션:\n"
+"        -R dir\n"
+"        -D/--debug name=value\n"
+"\n"
+"환경:\n"
+"        PKG_IMAGE"
+
+#: ../client.py:203
+msgid "-s and -v may not be combined"
+msgstr "-s 및 -v를 결합할 수 없습니다."
+
+#: ../client.py:317 ../client.py:930 ../client.py:1190
+msgid "no packages installed"
+msgstr "패키지가 설치되어 있지 않습니다."
+
+#: ../client.py:324
+msgid "No specified packages have available updates"
+msgstr "지정된 패키지에 사용 가능한 업데이트가 없습니다."
+
+#: ../client.py:327
+msgid "No installed packages have available updates"
+msgstr "설치된 패키지에 사용 가능한 업데이트가 없습니다."
+
+#: ../client.py:353
+#, python-format
+msgid "no packages matching '%s' %s"
+msgstr "'%s' %s과(와) 일치하는 패키지가 없습니다."
+
+#: ../client.py:387
+msgid "verify: -v and -q may not be combined"
+msgstr "verify: -v 및 -q를 결합할 수 없습니다."
+
+#: ../client.py:442
+msgid ""
+"pkg: no packages matching the following patterns you specified are\n"
+"installed on the system.\n"
+msgstr ""
+"pkg: 시스템에는 지정된 다음 패턴과 일치하는 패키지가\n"
+"설치되어 있지 않습니다.\n"
+
+#: ../client.py:452
+#, python-format
+msgid ""
+"\n"
+"All other patterns matched installed packages.  %s"
+msgstr ""
+"\n"
+"일치하는 다른 모든 패턴에서 패키지를 설치했습니다.  %s"
+
+#: ../client.py:487
+msgid "image-update: -v and -q may not be combined"
+msgstr "image-update: -v 및 -q를 결합할 수 없습니다."
+
+#: ../client.py:490
+#, python-format
+msgid "image-update: command does not take operands ('%s')"
+msgstr "image-update: 명령이 피연산자('%s')를 가져오지 않습니다."
+
+#: ../client.py:500 ../client.py:533
+#, python-format
+msgid "No image rooted at '%s'"
+msgstr "%s'에 루트 지정된 이미지가 없습니다."
+
+#: ../client.py:513 ../updatemanager.py:1008
+msgid "No updates available for this image."
+msgstr "이 이미지에 사용 가능한 업데이트가 없습니다."
+
+#: ../client.py:559
+#, python-format
+msgid ""
+"image-update failed (inventory exception):\n"
+"%s"
+msgstr ""
+
+#: ../client.py:527
+msgid ""
+"WARNING: pkg(5) appears to be out of date, and should be updated before\n"
+"running image-update.\n"
+msgstr ""
+"경고: pkg(5)가 최신 버전이 아닌 것 같습니다. image-update를 실행하기 전에\n"
+"업데이트해야 합니다.\n"
+
+#: ../client.py:529
+msgid ""
+"Please update pkg(5) using 'pfexec pkg install SUNWipkg' and then retry\n"
+"the image-update."
+msgstr ""
+"'pfexec pkg install SUNWipkg'를 사용하여 pkg(5)를 업데이트한 후\n"
+"image-update를 시도하십시오."
+
+#: ../client.py:552
+msgid ""
+"\n"
+"An unexpected error happened while preparing for image-update:"
+msgstr ""
+"\n"
+"image-update를 준비하는 중에 예기치 않은 오류가 발생했습니다."
+
+#: ../client.py:559
+#, python-format
+msgid "image-update failed: %s"
+msgstr "image-update 실패: %s"
+
+#: ../client.py:562
+msgid "image-update cannot be done on live image"
+msgstr "라이브 이미지에서 image-update를 실행할 수 없습니다."
+
+#: ../client.py:573
+#, python-format
+msgid ""
+"\n"
+"An unexpected error happened during image-update: %s"
+msgstr ""
+"\n"
+"image-update를 실행하는 중에 예기치 않은 오류가 발생했습니다. %s"
+
+#: ../client.py:579
+msgid ""
+"NOTE: Please review release notes posted at:\n"
+"   http://opensolaris.org/os/project/indiana/resources/relnotes/200811/x86/"
+msgstr ""
+"주: http://opensolaris.org/os/project/indiana/resources/relnotes/200811/x86/에\n"
+" 게시된 릴리스 노트를 참조하십시오."
+
+#: ../client.py:612
+msgid "install: at least one package name required"
+msgstr "install: 하나 이상의 패키지 이름이 필요합니다."
+
+#: ../client.py:615
+msgid "install: -v and -q may not be combined"
+msgstr "install: -v 및 -q를 결합할 수 없습니다."
+
+#: ../client.py:630 ../client.py:731 ../client.py:1346 ../updatemanager.py:746
+#, python-format
+msgid "'%s' is not an install image"
+msgstr "'%s'이(가) 설치 이미지가 아닙니다."
+
+#: ../client.py:636
+msgid "Nothing to install in this image (is this package already installed?)"
+msgstr "이 이미지에 설치할 항목이 없습니다(이 패키지가 이미 설치되어 있습니까?)."
+
+#: ../client.py:646
+#, python-format
+msgid ""
+"install failed (inventory exception):\n"
+"%s"
+msgstr ""
+"설치 실패(인벤토리 예외):\n"
+"%s"
+
+#: ../client.py:669 ../client.py:766
+msgid ""
+"\n"
+"An unexpected error happened while preparing for install:"
+msgstr ""
+"\n"
+"설치를 준비하는 중에 예기치 않은 오류가 발생했습니다."
+
+#: ../client.py:678
+#, python-format
+msgid "installation failed: %s"
+msgstr "설치 실패: %s"
+
+#: ../client.py:689
+#, python-format
+msgid "An unexpected error happened during installation: %s"
+msgstr "설치 중에 예기치 않은 오류가 발생했습니다. %s"
+
+#: ../client.py:713
+msgid "uninstall: at least one package name required"
+msgstr "uninstall: 하나 이상의 패키지 이름이 필요합니다."
+
+#: ../client.py:716
+msgid "uninstall: -v and -q may not be combined"
+msgstr "uninstall: -v 및 -q를 결합할 수 없습니다."
+
+#: ../client.py:822
+#, python-format
+msgid ""
+"uninstall failed (inventory exception):\n"
+"%s"
+msgstr ""
+
+#: ../client.py:775
+#, python-format
+msgid "uninstallation failed: %s"
+msgstr "설치 제거 실패: %s"
+
+#: ../client.py:786
+#, python-format
+msgid "An unexpected error happened during uninstallation: %s"
+msgstr "설치 제거 중에 예기치 않은 오류가 발생했습니다. %s"
+
+#: ../client.py:909
+msgid "info: -l and -r may not be combined"
+msgstr "info: -l 및 -r을 결합할 수 없습니다."
+
+#: ../client.py:912
+msgid "info: must request remote info for specific packages"
+msgstr "info: 특정 패키지에 대해 원격 정보를 요청해야 합니다."
+
+#: ../client.py:943
+msgid "Installed"
+msgstr "설치됨"
+
+#: ../client.py:945
+msgid "Not installed"
+msgstr "설치되지 않음"
+
+#: ../client.py:969 ../client.py:1284
+msgid ""
+"pkg: no packages matching the following patterns you specified are\n"
+"installed on the system.  Try specifying -r to query remotely:"
+msgstr ""
+"pkg: 시스템에는 지정된 다음 패턴과 일치하는 패키지가\n"
+"설치되어 있지 않습니다.  -r을 지정하여 원격으로 쿼리를 시도하십시오."
+
+#: ../client.py:973 ../client.py:1288
+msgid ""
+"pkg: no packages matching the following patterns you specified were\n"
+"found in the catalog.  Try relaxing the patterns, refreshing, and/or\n"
+"examining the catalogs:"
+msgstr ""
+"pkg: 카탈로그에 지정된 다음 패턴과 일치하는 패키지가\n"
+"없습니다.  패턴 완화, 새로 고침 및/또는 카탈로그 검사를\n"
+"시도하십시오."
+
+#: ../client.py:989
+#, python-format
+msgid "'%s' matches multiple packages"
+msgstr "'%s'이(가) 여러 패키지에 일치합니다."
+
+#: ../client.py:1146
+msgid "contents: -l and -r may not be combined"
+msgstr "contents: -l 및 -r을 결합할 수 없습니다."
+
+#: ../client.py:1149
+msgid "contents: must request remote contents for specific packages"
+msgstr "contents: 특정 패키지에 대해 원격 내용을 요청해야 합니다."
+
+#: ../client.py:1163
+#, python-format
+msgid "contents: -m and %s may not be specified at the same time"
+msgstr "contents: -m과 %s을(를) 동시에 지정할 수 없습니다."
+
+#: ../client.py:1168 ../client.py:1171
+#, python-format
+msgid "Invalid attribute '%s'"
+msgstr "잘못된 속성 '%s'"
+
+#: ../client.py:1229 ../client.py:1235 ../modules/client/api_errors.py:106
+#, python-format
+msgid "pkg: '%s' matches multiple packages"
+msgstr "pkg: '%s'이(가) 여러 패키지에 일치합니다."
+
+#: ../client.py:1303
+#, python-format
+msgid "pkg: %s/%s catalogs successfully updated:"
+msgstr "pkg: %s/%s 카탈로그가 성공적으로 업데이트되었습니다."
+
+#: ../client.py:1352
+#, python-format
+msgid ""
+"%s is not a recognized authority to refresh. \n"
+"'pkg authority' will show a list of authorities."
+msgstr ""
+"%s이(가) 새로 고칠 알려진 인증 기관이 아닙니다. \n"
+"'pkg authority'는 인증 기관 목록을 표시합니다."
+
+#: ../client.py:1402
+msgid "pkg: set-authority: one and only one authority may be set"
+msgstr "pkg: set-authority: 하나의 인증 기관만 설정할 수 있습니다."
+
+#: ../client.py:1410
+#, python-format
+msgid "set-authority: SSL key file '%s' does not exist"
+msgstr "set-authority: SSL 키 파일 '%s'이(가) 없습니다."
+
+#: ../client.py:1417
+#, python-format
+msgid "set-authority: SSL key cert '%s' does not exist"
+msgstr "set-authority: SSL 키 인증서 '%s'이(가) 없습니다."
+
+#: ../client.py:1423
+msgid ""
+"set-authority: authority does not exist. Use -O to define origin URL for new "
+"authority"
+msgstr ""
+"set-authority: 인증 기관이 없습니다. -O를 사용하여 새 인증 기관에 대한 원래 URL을 "
+"정의하십시오."
+
+#: ../client.py:1428
+msgid "set-authority: authority name has invalid characters"
+msgstr "set-authority: 인증 기관 이름에 잘못된 문자가 있습니다."
+
+#: ../client.py:1432
+msgid "set-authority: authority URL is invalid"
+msgstr "set-authority: 인증 기관 URL이 잘못되었습니다."
+
+#: ../client.py:1444
+#, python-format
+msgid "set-authority failed: %s"
+msgstr "set-authority 실패: %s"
+
+#: ../client.py:1454
+msgid "set-authority: added mirror's URL is invalid"
+msgstr "set-authority: 추가된 미러의 URL이 잘못되었습니다."
+
+#: ../client.py:1458
+msgid "set-authority: mirror already exists"
+msgstr "set-authority: 미러가 이미 있습니다."
+
+#: ../client.py:1466
+msgid "set-authority: removed mirror has bad URL"
+msgstr "set-authority: 제거된 미러에 잘못된 URL이 있습니다."
+
+#: ../client.py:1470
+msgid "set-authority: mirror does not exist"
+msgstr "set-authority: 미러가 없습니다."
+
+#: ../client.py:1492
+#, python-format
+msgid "unset-authority: no such authority: %s"
+msgstr "unset-authority: 해당 인증 기관이 없습니다. %s"
+
+#: ../client.py:1497
+msgid "unset-authority: removal of preferred authority not allowed."
+msgstr "unset-authority: 원하는 인증 기관 제거가 허용되지 않습니다."
+
+#: ../client.py:1540
+#, python-format
+msgid "authority: no such authority: %s"
+msgstr "authority: 해당 인증 기관이 없습니다. %s"
+
+#: ../client.py:1556
+#, python-format
+msgid "SSL certificate for %sis invalid or non-existent."
+msgstr "%s에 대한 SSL 인증서가 잘못되었거나 존재하지 않습니다."
+
+#: ../client.py:1559
+#, python-format
+msgid "Please check file at %s"
+msgstr "%s의 파일을 확인하십시오."
+
+#: ../client.py:1598
+msgid "pkg: set-property: requires a property name and value"
+msgstr "pkg: set-property: 등록 정보 이름과 값이 필요합니다."
+
+#: ../client.py:1603
+#, python-format
+msgid "set-property failed: %s"
+msgstr "set-property 실패: %s"
+
+#: ../client.py:1618
+msgid "pkg: unset-property requires at least one property name"
+msgstr "pkg: unset-property에 하나 이상의 등록 정보 이름이 필요합니다."
+
+#: ../client.py:1624
+#, python-format
+msgid "unset-property: no such property: %s"
+msgstr "unset-property: 해당 등록 정보가 없습니다. %s"
+
+#: ../client.py:1640
+#, python-format
+msgid "property: no such property: %s"
+msgstr "property: 해당 등록 정보가 없습니다. %s"
+
+#: ../client.py:1695 ../client.py:1720
+msgid ""
+"image-create requires authority argument to be of the form '<prefix>=<url>'."
+msgstr ""
+"image-create에 '<prefix>=<url>' 형식의 인증 기관 인수가 필요합니다."
+
+#: ../client.py:1700
+msgid "image-create requires a single image directory path"
+msgstr "image-create에 단일 이미지 디렉토리 경로가 필요합니다."
+
+#: ../client.py:1705
+#, python-format
+msgid "pkg: set-authority: SSL key file '%s' does not exist"
+msgstr "pkg: set-authority: SSL 키 파일 '%s'이(가) 없습니다."
+
+#: ../client.py:1712
+#, python-format
+msgid "pkg: set-authority: SSL key cert '%s' does not exist"
+msgstr "pkg: set-authority: SSL 키 인증서 '%s'이(가) 없습니다."
+
+#: ../client.py:1724
+#, python-format
+msgid "image-create requires that a prefix not match: %s"
+msgstr "image-create에는 다음과 일치하지 않는 접두사가 필요합니다. %s"
+
+#: ../client.py:1729
+msgid "image-create: authority prefix has invalid characters"
+msgstr "image-create: 인증 기관 접두사에 잘못된 문자가 있습니다."
+
+#: ../client.py:1734
+msgid "image-create: authority URL is invalid"
+msgstr "image-create: 인증 기관 URL이 잘못되었습니다."
+
+#: ../client.py:1741
+#, python-format
+msgid "cannot create image at %s: %s"
+msgstr "%s에서 이미지를 만들 수 없습니다. %s"
+
+#: ../client.py:1764
+#, python-format
+msgid "rebuild-index: command does not take operands ('%s')"
+msgstr "rebuild-index: 명령이 피연산자('%s')를 가져오지 않습니다."
+
+#: ../client.py:1797
+msgid "history: -H and -l may not be combined"
+msgstr "history: -H 및 -l을 결합할 수 없습니다."
+
+#: ../client.py:1801
+msgid "TIME"
+msgstr "TIME"
+
+#: ../client.py:1802
+msgid "OPERATION"
+msgstr "OPERATION"
+
+#: ../client.py:1802
+msgid "CLIENT"
+msgstr "CLIENT"
+
+#: ../client.py:1802
+msgid "OUTCOME"
+msgstr "OUTCOME"
+
+#: ../client.py:1879
+#, python-format
+msgid "illegal global option -- %s"
+msgstr "잘못된 글로벌 옵션 -- %s"
+
+#: ../client.py:1899 ../client.py:2005
+#, python-format
+msgid "illegal %s option -- %s"
+msgstr "잘못된 %s 옵션 -- %s"
+
+#: ../client.py:1904
+#, python-format
+msgid "version: command does not take operands ('%s')"
+msgstr "version: 명령이 피연산자('%s')를 가져오지 않습니다."
+
+#: ../client.py:1938
+msgid ""
+"Could not find image.  Use the -R option or set $PKG_IMAGE to point\n"
+"to an image, or change the working directory to one inside the image."
+msgstr ""
+"이미지를 찾을 수 없습니다.  -R 옵션을 사용하거나 $PKG_IMAGE를 설정하여 이미지를\n"
+"가리키거나 작업 디렉토리를 이미지 내부의 디렉토리로 변경하십시오."
+
+#: ../client.py:1952
+msgid "No image found."
+msgstr "이미지를 찾을 수 없습니다."
+
+#: ../client.py:1997
+msgid "History purged."
+msgstr "내역이 제거되었습니다."
+
+#: ../client.py:2002
+#, python-format
+msgid "unknown subcommand '%s'"
+msgstr "알 수 없는 하위 명령 '%s'"
+
+#: ../client.py:2028
+#, python-format
+msgid ""
+"\n"
+"Maximum (%d) network retries exceeded during download. Details follow:\n"
+"%s"
+msgstr ""
+"\n"
+"다운로드 도중 최대(%d) 네트워크 재시도 횟수를 초과했습니다. 자세한 내용은 다음과 같습니다.\n"
+"%s"
+
+#: ../client.py:2036
+msgid ""
+"An error was encountered while attempting to retrieve package or file data "
+"for the requested operation."
+msgstr ""
+"요청된 작업에 대해 패키지나 파일 데이터 검색을 시도하는 중에 오류가 "
+"발생했습니다."
+
+#: ../client.py:2045
+msgid ""
+"An error was encountered while attempting to load history information\n"
+"about past client operations."
+msgstr ""
+"지난 클라이언트 작업에 대한 내역 정보를 로드하는 중에 오류가\n"
+"발생했습니다."
+
+#: ../client.py:2054
+msgid ""
+"An error was encountered while attempting to store information about the\n"
+"current operation in client history."
+msgstr ""
+"클라이언트 내역에서 현재 작업에 대한 정보를 저장하는 중에 오류가\n"
+"발생했습니다."
+
+#: ../client.py:2064
+msgid "An error was encountered while attempting to purge client history."
+msgstr "클라이언트 내역을 제거하는 중에 오류가 발생했습니다."
+
+#: ../client.py:2073
+#, python-format
+msgid ""
+"\n"
+"\n"
+"This is an internal error.  Please let the developers know about this\n"
+"problem by filing a bug athttp://defect.opensolaris.org and including the\n"
+"abovetraceback and this message.  The version of pkg(5) is '%s'."
+msgstr ""
+"\n"
+"\n"
+"이것은 내부 오류입니다.  개발자가 이 문제를 파악할 수 있도록 \n"
+"http://defect.opensolaris.org에서 abovetraceback 및 이 메시지를 \n"
+"포함하여 버그를 기록해 주십시오.  pkg(5) 버전은 '%s'입니다."
+
+#: ../gui/data/l10n.py:6
 msgid "Communication"
 msgstr "통신"
 
-#: ../data/l10n.py:7
+#: ../gui/data/l10n.py:7
 msgid "Mail"
 msgstr "메일"
 
-#: ../data/l10n.py:8
+#: ../gui/data/l10n.py:8
 msgid "Localization"
 msgstr "지역화"
 
-#: ../data/l10n.py:9
+#: ../gui/data/l10n.py:9
 msgid "Social Software"
 msgstr "사회적 소프트웨어"
 
-#: ../data/l10n.py:10
+#: ../gui/data/l10n.py:10
 msgid "Viewer"
 msgstr "뷰어"
 
-#: ../data/l10n.py:11
+#: ../gui/data/l10n.py:11
 msgid "RasterGraphics"
 msgstr "래스터 그래픽"
 
-#: ../data/l10n.py:12
+#: ../gui/data/l10n.py:12
 msgid "2DGraphics"
 msgstr "2차원 그래픽"
 
-#: ../data/l10n.py:13
+#: ../gui/data/l10n.py:13
 msgid "Photography"
 msgstr "사진"
 
-#: ../data/l10n.py:14
+#: ../gui/data/l10n.py:14
 msgid "CLI tools"
 msgstr "CLI 도구"
 
-#: ../data/l10n.py:15
+#: ../gui/data/l10n.py:15
 msgid "Print"
 msgstr "인쇄"
 
-#: ../data/packagemanager.desktop.in.h:1
+#: ../gui/data/packagemanager.desktop.in.h:1
 msgid "Install, update and remove software packages"
 msgstr "소프트웨어 패키지를 설치, 업데이트 및 제거"
 
-#: ../data/packagemanager.desktop.in.h:2 ../locale/packagemanager.glade.h:33
-#: ../packagemanager.glade.h:44
+#: ../gui/data/packagemanager.desktop.in.h:2
+#: ../gui/data/packagemanager.glade.h:67 ../packagemanager.py:102
 msgid "Package Manager"
 msgstr "패키지 관리자"
 
-#: ../gui/installupdate.py:127 ../gui/remove.py:115
-#, python-format
+#: ../gui/data/packagemanager.glade.h:1
+msgid "\n"
+msgstr "\n"
+
+#: ../gui/data/packagemanager.glade.h:3
 msgid ""
-"GUI will not respond to any event! %s.                                 Check "
-"create_plan_dialog_gui()"
+"- Delete old Boot Environments to free up disk space.\n"
+"- Set the Active BE for next reboot."
 msgstr ""
-"GUI가 어떤 이벤트에도 응답하지 않습니다! %s.                                 "
-"create_plan_dialog_gui()를 확인하십시오."
+"- 이전 부트 환경을 삭제하여 디스크 공간을 확보하십시오.\n"
+"- 다음 재부트 시 활성 BE를 설정하십시오."
 
-#: ../gui/installupdate.py:142
-#, python-format
-msgid ""
-"GUI will not respond to any event! %s.                                 Check "
-"create_network_down_gui()"
-msgstr ""
-"GUI가 어떤 이벤트에도 응답하지 않습니다! %s.                                 "
-"create_network_down_gui()를 확인하십시오."
-
-#: ../gui/installupdate.py:167
-#, python-format
-msgid "GUI will not respond to any event! %s.Check create_installupdate_gui()"
-msgstr ""
-"GUI가 어떤 이벤트에도 응답하지 않습니다! %s. create_installupdate_gui()를 확"
-"인하십시오."
-
-#: ../gui/installupdate.py:184
-#, python-format
-msgid "GUI will not respond to any event! %s.Check create_downloaddialog_gui()"
-msgstr ""
-"GUI가 어떤 이벤트에도 응답하지 않습니다! %s. create_downloaddialog_gui()를 확"
-"인하십시오."
-
-#. print "Updating" + p.destination_fmri.get_name()
-#: ../gui/installupdate.py:264
-msgid "Updating:  "
-msgstr "업데이트 중:  "
-
-#. print "Installing" + p.destination_fmri.get_name()
-#: ../gui/installupdate.py:279
-msgid "Installing:  "
-msgstr "설치 중:  "
-
-#: ../gui/installupdate.py:350 ../gui/remove.py:197
-#, python-format
-msgid "Evaluating: %s\n"
-msgstr "평가 중: %s\n"
-
-#: ../gui/installupdate.py:524
-msgid "Downloading: "
-msgstr "다운로드 중: "
-
-#: ../gui/installupdate.py:572
-#, python-format
-msgid "%d packages will be updated\n"
-msgstr "%d개의 패키지가 업데이트됩니다.\n"
-
-#: ../gui/installupdate.py:574
-#, python-format
-msgid "%d package will be updated\n"
-msgstr "%d개의 패키지가 업데이트됩니다.\n"
-
-#: ../gui/installupdate.py:576
-#, python-format
-msgid ""
-"%d packages will be installed\n"
-"\n"
-msgstr ""
-" %d개의 패키지가 설치됩니다.\n"
-" \n"
-
-#: ../gui/installupdate.py:578
-#, python-format
-msgid ""
-"%d package will be installed\n"
-"\n"
-msgstr ""
-" %d개의 패키지가 설치됩니다.\n"
-" \n"
-
-#: ../gui/installupdate.py:581
-#, python-format
-msgid "%d MB will be downloaded"
-msgstr "%dMB가 다운로드됩니다."
-
-#: ../gui/remove.py:140
-#, python-format
-msgid "GUI will not respond to any event! %s.Check create_remove_gui()"
-msgstr ""
-"GUI가 어떤 이벤트에도 응답하지 않습니다! %s. create_remove_gui()를 확인하십시"
-"오."
-
-#: ../gui/remove.py:237
-#, python-format
-msgid ""
-"%d packages will be removed\n"
-"\n"
-msgstr ""
-"%d개의 패키지가 제거됩니다.\n"
-" \n"
-
-#: ../gui/remove.py:239
-#, python-format
-msgid ""
-"%d package will be removed\n"
-"\n"
-msgstr ""
-"%d개의 패키지가 제거됩니다.\n"
-"\n"
-
-#: ../locale/packagemanager.glade.h:1 ../packagemanager.glade.h:1
+#: ../gui/data/packagemanager.glade.h:5
 msgid ""
 "6 packages will be installed\n"
 "28 packages will be updated\n"
@@ -185,267 +691,95 @@ msgstr ""
 "\n"
 "20.1MB가 다운로드됩니다."
 
-#: ../locale/packagemanager.glade.h:5
-msgid "<b>Apply the following changes?</b>"
-msgstr "<b>다음 변경 사항을 적용하시겠습니까?</b>"
+#: ../gui/data/packagemanager.glade.h:9
+msgid "<b>Active Boot Environment changed to:</b>"
+msgstr "<b>활성 부트 환경 변경 대상:</b>"
 
-#: ../locale/packagemanager.glade.h:6 ../packagemanager.glade.h:6
-msgid "<b>PACKAGE NAME</b>"
-msgstr "<b>패키지 이름</b>"
+#: ../gui/data/packagemanager.glade.h:10
+msgid "<b>Boot Environments to be deleted:</b>"
+msgstr "<b>삭제될 부트 환경:</b>"
 
-#: ../locale/packagemanager.glade.h:7 ../packagemanager.glade.h:7
-msgid "<b>Summary</b>"
-msgstr "<b>요약</b>"
-
-#: ../locale/packagemanager.glade.h:8 ../packagemanager.glade.h:8
-msgid "<i>Repository:</i>"
-msgstr "<i>저장소:</i>"
-
-#: ../locale/packagemanager.glade.h:9 ../packagemanager.glade.h:9
-msgid "About"
-msgstr "정보"
-
-#: ../locale/packagemanager.glade.h:10 ../packagemanager.glade.h:11
-msgid "About dialog"
-msgstr "정보 대화 상자"
-
-#: ../locale/packagemanager.glade.h:11
-msgid "Apply"
-msgstr "적용"
-
-#: ../locale/packagemanager.glade.h:12
-msgid "Applying changes"
-msgstr "변경 사항 적용 중"
-
-#: ../locale/packagemanager.glade.h:13 ../packagemanager.glade.h:14
-msgid "Cancel"
-msgstr "취소"
-
-#: ../locale/packagemanager.glade.h:14
-msgid "Changes applied"
-msgstr "변경 사항 적용됨"
-
-#: ../locale/packagemanager.glade.h:15 ../packagemanager.glade.h:26
-msgid "Dependencies"
-msgstr "종속성"
-
-#: ../locale/packagemanager.glade.h:16 ../packagemanager.glade.h:27
-msgid "Deselect"
-msgstr "선택 취소"
-
-#: ../locale/packagemanager.glade.h:17 ../packagemanager.glade.h:28
-msgid "Deselect selected packages"
-msgstr "선택된 패키지 선택 취소"
-
-#: ../locale/packagemanager.glade.h:18
-msgid "Download Preferences"
-msgstr "다운로드 기본 설정"
-
-#: ../locale/packagemanager.glade.h:19
-msgid "Download Preferences..."
-msgstr "다운로드 기본 설정..."
-
-#: ../locale/packagemanager.glade.h:20
-msgid "Downloading Files"
-msgstr "파일 다운로드 중"
-
-#: ../locale/packagemanager.glade.h:21
-msgid "Downloading Package Information"
-msgstr "패키지 정보 다운로드 중"
-
-#: ../locale/packagemanager.glade.h:22 ../packagemanager.glade.h:32
-msgid "General Info"
-msgstr "일반 정보"
-
-#: ../locale/packagemanager.glade.h:23
-msgid "History..."
-msgstr "내역..."
-
-#: ../locale/packagemanager.glade.h:24 ../packagemanager.glade.h:33
-msgid "Install / Update"
-msgstr "설치 / 업데이트"
-
-#: ../locale/packagemanager.glade.h:25 ../packagemanager.glade.h:34
-msgid "Install / Update Confirmation"
-msgstr "설치 / 업데이트 확인"
-
-#: ../locale/packagemanager.glade.h:26 ../packagemanager.glade.h:35
-msgid "Install or Update selected packages"
-msgstr "선택된 패키지 설치 또는 업데이트"
-
-#: ../locale/packagemanager.glade.h:27 ../packagemanager.glade.h:36
-msgid "Install/Update"
-msgstr "설치 / 업데이트"
-
-#: ../locale/packagemanager.glade.h:28
-msgid "Installed Files"
-msgstr "설치된 파일"
-
-#: ../locale/packagemanager.glade.h:29
-msgid "Lock"
-msgstr "잠그기"
-
-#: ../locale/packagemanager.glade.h:30
-msgid "Lock selected packages"
-msgstr "선택된 패키지 잠그기"
-
-#: ../locale/packagemanager.glade.h:31
-msgid "Manage Repositories"
-msgstr "저장소 관리"
-
-#: ../locale/packagemanager.glade.h:32
-msgid "Online Help"
-msgstr "온라인 도움말"
-
-#: ../locale/packagemanager.glade.h:34
-msgid "Preferences options for download"
-msgstr "다운로드 기본 설정 옵션"
-
-#: ../locale/packagemanager.glade.h:35 ../packagemanager.glade.h:47
-msgid "Quit"
-msgstr "종료"
-
-#: ../locale/packagemanager.glade.h:36 ../packagemanager.glade.h:48
-msgid "Quit application"
-msgstr "응용 프로그램 종료"
-
-#: ../locale/packagemanager.glade.h:37
-msgid "Redo"
-msgstr "다시 실행"
-
-#: ../locale/packagemanager.glade.h:38
-msgid "Redo last action"
-msgstr "마지막 작업 다시 실행"
-
-#: ../locale/packagemanager.glade.h:39 ../packagemanager.glade.h:49
-msgid "Reload"
-msgstr "다시 로드"
-
-#: ../locale/packagemanager.glade.h:40 ../packagemanager.glade.h:50
-msgid "Remove"
-msgstr "제거"
-
-#: ../locale/packagemanager.glade.h:41 ../packagemanager.glade.h:53
-msgid "Remove selected packages"
-msgstr "선택된 패키지 제거"
-
-#: ../locale/packagemanager.glade.h:42
-msgid "Repositories"
-msgstr "저장소"
-
-#: ../locale/packagemanager.glade.h:43
-msgid "Repositories..."
-msgstr "저장소..."
-
-#: ../locale/packagemanager.glade.h:44 ../packagemanager.glade.h:58
-msgid "Search:"
-msgstr "검색:"
-
-#: ../locale/packagemanager.glade.h:45 ../packagemanager.glade.h:59
-msgid "Select All"
-msgstr "모두 선택"
-
-#: ../locale/packagemanager.glade.h:46 ../packagemanager.glade.h:60
-msgid "Select All Items"
-msgstr "모든 항목 선택"
-
-#: ../locale/packagemanager.glade.h:47 ../packagemanager.glade.h:64
-msgid "Short description"
-msgstr "간략한 설명"
-
-#: ../locale/packagemanager.glade.h:48 ../packagemanager.glade.h:66
-msgid "Show:"
-msgstr "표시:"
-
-#: ../locale/packagemanager.glade.h:49
-msgid ""
-"The chosen action also affects other packages. The following changes are "
-"required to proceed:"
-msgstr ""
-"선택된 작업은 다른 패키지에도 영향을 미칩니다. 계속하려면 다음 변경 사항이 필"
-"요합니다."
-
-#: ../locale/packagemanager.glade.h:50
-msgid "Undo"
-msgstr "실행 취소"
-
-#: ../locale/packagemanager.glade.h:51
-msgid "Undo action"
-msgstr "작업 실행 취소"
-
-#: ../locale/packagemanager.glade.h:52
-msgid "Unlock"
-msgstr "잠금 해제"
-
-#: ../locale/packagemanager.glade.h:53
-msgid "Unlock selected packages"
-msgstr "선택된 패키지 잠금 해제"
-
-#: ../locale/packagemanager.glade.h:54 ../packagemanager.glade.h:73
-msgid "Update All"
-msgstr "모두 업데이트"
-
-#: ../locale/packagemanager.glade.h:55 ../packagemanager.glade.h:74
-msgid "Update all packages"
-msgstr "모든 패키지 업데이트"
-
-#: ../locale/packagemanager.glade.h:56
-msgid "View History"
-msgstr "내역 보기"
-
-#: ../locale/packagemanager.glade.h:57 ../packagemanager.glade.h:76
-msgid "_Edit"
-msgstr "편집(_E)"
-
-#: ../locale/packagemanager.glade.h:58 ../packagemanager.glade.h:77
-msgid "_File"
-msgstr "파일(_F)"
-
-#: ../locale/packagemanager.glade.h:59 ../packagemanager.glade.h:78
-msgid "_Help"
-msgstr "도움말(_H)"
-
-#: ../locale/packagemanager.glade.h:60 ../packagemanager.glade.h:79
-msgid "_Package"
-msgstr "패키지(_P)"
-
-#: ../locale/packagemanager.glade.h:61
-msgid "_Settings"
-msgstr "설정(_S)"
-
-#: ../packagemanager.glade.h:5
+#: ../gui/data/packagemanager.glade.h:11
 msgid "<b>Can't establish a connection to the repository</b>"
 msgstr "<b>저장소와의 연결을 설정할 수 없습니다.</b>"
 
-#: ../packagemanager.glade.h:10
+#: ../gui/data/packagemanager.glade.h:12
+msgid "<b>Edit Repositories</b>"
+msgstr "<b>저장소 편집</b>"
+
+#: ../gui/data/packagemanager.glade.h:13
+msgid "<b>Manage Your Boot Environments</b>"
+msgstr "<b>부트 환경 관리</b>"
+
+#: ../gui/data/packagemanager.glade.h:14
+msgid "<b>Modify Repository</b>"
+msgstr "<b>저장소 수정</b>"
+
+#: ../gui/data/packagemanager.glade.h:15
+msgid "<b>PACKAGE NAME</b>"
+msgstr "<b>패키지 이름</b>"
+
+#: ../gui/data/packagemanager.glade.h:16
+msgid "<b>Summary</b>"
+msgstr "<b>요약</b>"
+
+#: ../gui/data/packagemanager.glade.h:17
+msgid "<i>Repository:</i>"
+msgstr "<i>저장소:</i>"
+
+#: ../gui/data/packagemanager.glade.h:18
+msgid "About"
+msgstr "정보"
+
+#: ../gui/data/packagemanager.glade.h:19
 msgid "About Glade"
 msgstr "글레이드 정보"
 
-#: ../packagemanager.glade.h:12
+#: ../gui/data/packagemanager.glade.h:20
 msgid "Architecture (CPU):"
 msgstr "아키텍처(CPU):"
 
-#: ../packagemanager.glade.h:13
+#: ../gui/data/packagemanager.glade.h:21
+msgid "BE Management Changes Confirmation"
+msgstr "BE 관리 변경 사항 확인"
+
+#: ../gui/data/packagemanager.glade.h:22
+msgid "Boot Environment Management"
+msgstr "부트 환경 관리"
+
+#: ../gui/data/packagemanager.glade.h:23
 msgid "Build type:"
 msgstr "빌드 유형:"
 
-#: ../packagemanager.glade.h:15
+#: ../gui/data/packagemanager.glade.h:24
+msgid "By managing Boot Environments you may:"
+msgstr "부트 환경을 관리하여 다음을 수행할 수 있습니다."
+
+#: ../gui/data/packagemanager.glade.h:25
+msgid "Cancel"
+msgstr "취소"
+
+#: ../gui/data/packagemanager.glade.h:26 ../um/data/updatemanager.glade.h:11
+msgid "Checking for latest SUNWipkg and SUNWipkg-gui, please wait..."
+msgstr "최신 SUNWipkg 및 SUNWipkg-gui를 확인하는 중입니다. 잠시 기다려 주십시오..."
+
+#: ../gui/data/packagemanager.glade.h:27 ../gui/modules/installupdate.py:188
 msgid "Checking package dependencies..."
 msgstr "패키지 종속성 확인 중…"
 
-#: ../packagemanager.glade.h:16
+#: ../gui/data/packagemanager.glade.h:28
 msgid "Clear"
 msgstr "지우기"
 
-#: ../packagemanager.glade.h:17
+#: ../gui/data/packagemanager.glade.h:29 ../gui/modules/installupdate.py:590
 msgid "Close"
 msgstr "닫기"
 
-#: ../packagemanager.glade.h:18
+#: ../gui/data/packagemanager.glade.h:30
 msgid "Copy"
 msgstr "복사"
 
-#: ../packagemanager.glade.h:19
+#: ../gui/data/packagemanager.glade.h:31
 msgid ""
 "Copyright 2008 Sun Microsystems, Inc.  \n"
 "All rights reserved.\n"
@@ -455,99 +789,224 @@ msgstr ""
 "모든 권리는 저작권자의 소유입니다.\n"
 "라이센스 계약 조건이 적용됩니다."
 
-#: ../packagemanager.glade.h:22
+#: ../gui/data/packagemanager.glade.h:34
+msgid "Currently Active Boot Environment"
+msgstr "현재 활성 부트 환경"
+
+#: ../gui/data/packagemanager.glade.h:35
 msgid "Custom Package Options"
 msgstr "사용자 정의 패키지 옵션"
 
-#: ../packagemanager.glade.h:23
+#: ../gui/data/packagemanager.glade.h:36
 msgid "Cut"
 msgstr "잘라내기"
 
-#: ../packagemanager.glade.h:24
+#: ../gui/data/packagemanager.glade.h:37
 msgid "Cut action"
 msgstr "잘라내기 작업"
 
-#: ../packagemanager.glade.h:25
+#: ../gui/data/packagemanager.glade.h:38
 msgid "Debug"
 msgstr "디버그"
 
-#: ../packagemanager.glade.h:29
+#: ../gui/data/packagemanager.glade.h:39
+msgid "Dependencies"
+msgstr "종속성"
+
+#: ../gui/data/packagemanager.glade.h:40
+msgid "Deselect"
+msgstr "선택 취소"
+
+#: ../gui/data/packagemanager.glade.h:41
+msgid "Deselect selected packages"
+msgstr "선택된 패키지 선택 취소"
+
+#: ../gui/data/packagemanager.glade.h:42
 msgid "Downloading Packages"
 msgstr "패키지 다운로드 중"
 
-#: ../packagemanager.glade.h:30
+#: ../gui/data/packagemanager.glade.h:43
 msgid "Downloading files..."
 msgstr "파일 다운로드 중..."
 
-#: ../packagemanager.glade.h:31
+#: ../gui/data/packagemanager.glade.h:44
+msgid "Edit Repositories"
+msgstr "저장소 편집"
+
+#: ../gui/data/packagemanager.glade.h:45
+msgid "Edit Repositories..."
+msgstr "저장소 편집..."
+
+#: ../gui/data/packagemanager.glade.h:46
+msgid ""
+"Enter the repository name and URL you want to add as a new package source. \n"
+"Select from the list to modify or remove existing repositories."
+msgstr ""
+"새 패키지 소스로 추가하려는 저장소 이름과 URL을 입력하십시오. \n"
+"목록에서 선택하여 기존 저장소를 수정하거나 제거합니다."
+
+#: ../gui/data/packagemanager.glade.h:48
 msgid "Files Details"
 msgstr "파일 세부 정보"
 
-#: ../packagemanager.glade.h:37
+#: ../gui/data/packagemanager.glade.h:49
+msgid "General Info"
+msgstr "일반 정보"
+
+#: ../gui/data/packagemanager.glade.h:50
+msgid ""
+"In some cases, when Update action is performed, a new Boot Environment is "
+"created."
+msgstr ""
+"경우에 따라 업데이트 작업을 수행할 때 새 부트 환경이 "
+"만들어집니다."
+
+#: ../gui/data/packagemanager.glade.h:51
+msgid "Install / Update"
+msgstr "설치 / 업데이트"
+
+#: ../gui/data/packagemanager.glade.h:52
+msgid "Install / Update Confirmation"
+msgstr "설치 / 업데이트 확인"
+
+#: ../gui/data/packagemanager.glade.h:53
+msgid "Install or Update selected packages"
+msgstr "선택된 패키지 설치 또는 업데이트"
+
+#: ../gui/data/packagemanager.glade.h:54
+msgid "Install/Update"
+msgstr "설치 / 업데이트"
+
+#: ../gui/data/packagemanager.glade.h:55
 msgid "Install/Upgrade Check"
 msgstr "설치/업그레이드 확인"
 
-#: ../packagemanager.glade.h:38
+#: ../gui/data/packagemanager.glade.h:56
 msgid "Installing Packages"
 msgstr "패키지 설치 중"
 
-#: ../packagemanager.glade.h:39
+#: ../gui/data/packagemanager.glade.h:57 ../gui/modules/installupdate.py:456
 msgid "Installing Packages..."
 msgstr "패키지 설치 중..."
 
-#: ../packagemanager.glade.h:40
+#: ../gui/data/packagemanager.glade.h:58 ../packagemanager.py:1014
+msgid "Licenses"
+msgstr "라이센스"
+
+#: ../gui/data/packagemanager.glade.h:59
+msgid "Modify Repository"
+msgstr "저장소 수정"
+
+#: ../gui/data/packagemanager.glade.h:60
 msgid "Network Problem"
 msgstr "네트워크 문제"
 
-#: ../packagemanager.glade.h:41
+#: ../gui/data/packagemanager.glade.h:61
 msgid "Next"
 msgstr "다음"
 
-#: ../packagemanager.glade.h:42
+#: ../gui/data/packagemanager.glade.h:62
 msgid "Non-Debug"
 msgstr "디버그 없음"
 
-#: ../packagemanager.glade.h:43
+#: ../gui/data/packagemanager.glade.h:63
+msgid "OK"
+msgstr "확인"
+
+#: ../gui/data/packagemanager.glade.h:64
+msgid "Ok"
+msgstr "확인"
+
+#: ../gui/data/packagemanager.glade.h:65
+msgid "Online Help"
+msgstr "온라인 도움말"
+
+#: ../gui/data/packagemanager.glade.h:66
 msgid "Package Download Preferences"
 msgstr "패키지 다운로드 기본 설정"
 
-#: ../packagemanager.glade.h:45
+#: ../gui/data/packagemanager.glade.h:68
 msgid "Paste"
 msgstr "붙여넣기"
 
-#: ../packagemanager.glade.h:46
+#: ../gui/data/packagemanager.glade.h:69
 msgid "Please check your Internet settings."
 msgstr "인터넷 설정을 확인하십시오."
 
-#: ../packagemanager.glade.h:51
+#: ../gui/data/packagemanager.glade.h:70 ../um/data/updatemanager.glade.h:16
+msgid "Processing"
+msgstr "처리 중"
+
+#: ../gui/data/packagemanager.glade.h:71
+msgid "Quit"
+msgstr "종료"
+
+#: ../gui/data/packagemanager.glade.h:72
+msgid "Quit application"
+msgstr "응용 프로그램 종료"
+
+#: ../gui/data/packagemanager.glade.h:73
+msgid "Reload"
+msgstr "다시 로드"
+
+#: ../gui/data/packagemanager.glade.h:74
+msgid "Remove"
+msgstr "제거"
+
+#: ../gui/data/packagemanager.glade.h:75 ../gui/modules/installupdate.py:146
 msgid "Remove Check"
 msgstr "확인 표시 제거"
 
-#: ../packagemanager.glade.h:52
+#: ../gui/data/packagemanager.glade.h:76 ../gui/modules/installupdate.py:138
+#: ../gui/modules/installupdate.py:584
 msgid "Remove Confirmation"
 msgstr "확인 제거"
 
-#: ../packagemanager.glade.h:54
+#: ../gui/data/packagemanager.glade.h:77
+msgid "Remove selected packages"
+msgstr "선택된 패키지 제거"
+
+#: ../gui/data/packagemanager.glade.h:78 ../gui/modules/installupdate.py:144
 msgid "Removing Packages"
 msgstr "패키지 제거 중"
 
-#: ../packagemanager.glade.h:55
+#: ../gui/data/packagemanager.glade.h:79 ../gui/modules/installupdate.py:148
 msgid "Removing Packages..."
 msgstr "패키지 제거 중..."
 
-#: ../packagemanager.glade.h:56
+#: ../gui/data/packagemanager.glade.h:80
 msgid "Reset"
 msgstr "재설정"
 
-#: ../packagemanager.glade.h:57
+#: ../gui/data/packagemanager.glade.h:81
+msgid ""
+"Review the Boot Environments to change\n"
+"Click OK to proceed"
+msgstr ""
+"변경할 부트 환경을 검토하고\n"
+"계속하려면 확인을 누릅니다."
+
+#: ../gui/data/packagemanager.glade.h:83
 msgid "SPARC"
 msgstr "SPARC"
 
-#: ../packagemanager.glade.h:61
+#: ../gui/data/packagemanager.glade.h:84
+msgid "Search:"
+msgstr "검색:"
+
+#: ../gui/data/packagemanager.glade.h:85
+msgid "Select All"
+msgstr "모두 선택"
+
+#: ../gui/data/packagemanager.glade.h:86
+msgid "Select All Items"
+msgstr "모든 항목 선택"
+
+#: ../gui/data/packagemanager.glade.h:87
 msgid "Select Updates"
 msgstr "업데이트 선택"
 
-#: ../packagemanager.glade.h:62
+#: ../gui/data/packagemanager.glade.h:88
 msgid ""
 "Select default download preferences for all packages.\n"
 "Click Reset to reset download preferences to the initial settings."
@@ -555,11 +1014,19 @@ msgstr ""
 "모든 패키지의 기본 다운로드 설정을 선택합니다.\n"
 "다운로드 기본 설정을 초기 설정으로 되돌리려면 재설정을 클릭합니다."
 
-#: ../packagemanager.glade.h:65
+#: ../gui/data/packagemanager.glade.h:90
+msgid "Short description"
+msgstr "간략한 설명"
+
+#: ../gui/data/packagemanager.glade.h:91
 msgid "Show Details"
 msgstr "세부 정보 표시"
 
-#: ../packagemanager.glade.h:67
+#: ../gui/data/packagemanager.glade.h:92
+msgid "Show:"
+msgstr "표시:"
+
+#: ../gui/data/packagemanager.glade.h:93
 msgid ""
 "This action affects other packages.\n"
 "Review the packages to be installed or updated.\n"
@@ -569,7 +1036,7 @@ msgstr ""
 "설치하거나 업데이트할 패키지를 검토하십시오.\n"
 "계속하려면 다음을 클릭하십시오."
 
-#: ../packagemanager.glade.h:70
+#: ../gui/data/packagemanager.glade.h:96
 msgid ""
 "This action affects other packages.\n"
 "Review the packages to be removed.\n"
@@ -579,153 +1046,747 @@ msgstr ""
 "제거할 패키지를 검토하십시오.\n"
 "계속하려면 다음을 클릭하십시오."
 
-#: ../packagemanager.glade.h:75
+#. Load the catalogs from the repository, its a long
+#. running tasks so need a progress dialog
+#: ../gui/data/packagemanager.glade.h:99 ../packagemanager.py:178
+#: ../packagemanager.py:726 ../packagemanager.py:749 ../packagemanager.py:765
+#: ../packagemanager.py:1981 ../packagemanager.py:1995
+#: ../um/data/updatemanager.glade.h:17 ../updatemanager.py:928
+#: ../updatemanager.py:1045 ../updatemanager.py:1222
+msgid "Update All"
+msgstr "모두 업데이트"
+
+#: ../gui/data/packagemanager.glade.h:100
+msgid "Update all packages"
+msgstr "모든 패키지 업데이트"
+
+#: ../gui/data/packagemanager.glade.h:101
 msgid "X86"
 msgstr "X86"
 
-#. self.pkgconfig = packagemanagerconfig.PackageManagerConfig() #Config
-#. self.pkgconfig.set_config_file_path(os.path.expanduser("~")+"/.packagemanager/config")  #Config path
-#: ../packagemanager.py:103
-msgid "Package Manager - revision 0.1"
-msgstr "패키지 관리자 - 개정판 0.1"
+#: ../gui/data/packagemanager.glade.h:102
+msgid "_Add"
+msgstr "추가(_A)"
 
-#: ../packagemanager.py:126
+#: ../gui/data/packagemanager.glade.h:103 ../um/data/updatemanager.glade.h:21
+msgid "_Cancel"
+msgstr "취소(_C)"
+
+#: ../gui/data/packagemanager.glade.h:104
+msgid "_Close"
+msgstr "닫기(_C)"
+
+#: ../gui/data/packagemanager.glade.h:105
+msgid "_Edit"
+msgstr "편집(_E)"
+
+#: ../gui/data/packagemanager.glade.h:106
+msgid "_File"
+msgstr "파일(_F)"
+
+#: ../gui/data/packagemanager.glade.h:107
+msgid "_Help"
+msgstr "도움말(_H)"
+
+#: ../gui/data/packagemanager.glade.h:108
+msgid "_Modify..."
+msgstr "수정(_M)..."
+
+#: ../gui/data/packagemanager.glade.h:109
+msgid "_Name: "
+msgstr "이름(_N): "
+
+#: ../gui/data/packagemanager.glade.h:110 ../um/data/updatemanager.glade.h:23
+msgid "_OK"
+msgstr "확인(_O)"
+
+#: ../gui/data/packagemanager.glade.h:111
+msgid "_Package"
+msgstr "패키지(_P)"
+
+#: ../gui/data/packagemanager.glade.h:112
+msgid "_Remove"
+msgstr "제거(_R)"
+
+#: ../gui/data/packagemanager.glade.h:113
+msgid "_Settings"
+msgstr "설정(_S)"
+
+#: ../gui/data/packagemanager.glade.h:114
+msgid "_URL: "
+msgstr "URL(_U): "
+
+#: ../gui/modules/beadmin.py:69
+msgid "The <b>libbe</b> library was not "
+msgstr "<b>libbe</b> 라이브러리가 시스템에 없습니다. "
+
+#: ../gui/modules/beadmin.py:77
+msgid "BE management"
+msgstr "BE 관리"
+
+#: ../gui/modules/beadmin.py:150
 #, python-format
-msgid "GUI will not respond to any event! %s.Check declare_signals()"
+msgid ""
+"GUI will not respond to any event! %s.                             Check "
+"beadmin.py signals"
 msgstr ""
-"GUI가 어떤 이벤트에도 응답하지 않습니다! %s. declare_signals()를 확인하십시"
-"오."
+"GUI에서 이벤트에 응답하지 않습니다! %s.                             beadmin.py "
+"신호를 확인하십시오."
 
-#: ../packagemanager.py:255 ../packagemanager.py:300
+#: ../gui/modules/beadmin.py:162
+msgid "Loading Boot Environment Information"
+msgstr "부트 환경 정보를 로드하는 중"
+
+#: ../gui/modules/beadmin.py:164
+msgid "Fetching BE entries..."
+msgstr "BE 항목을 불러오는 중..."
+
+#: ../gui/modules/beadmin.py:192
+msgid "Boot Environment"
+msgstr "부트 환경"
+
+#: ../gui/modules/beadmin.py:200
+msgid "Created"
+msgstr "작성됨"
+
+#: ../gui/modules/beadmin.py:209
+msgid "Size"
+msgstr "크기"
+
+#: ../gui/modules/beadmin.py:217
+msgid "Active on Reboot"
+msgstr "재부트 시 활성"
+
+#: ../gui/modules/beadmin.py:228
+msgid "Delete"
+msgstr "삭제"
+
+#: ../gui/modules/beadmin.py:245 ../gui/modules/repository.py:286
+#: ../gui/modules/repository.py:302 ../gui/modules/repository.py:332
+msgid "Applying changes"
+msgstr "변경 사항 적용 중"
+
+#: ../gui/modules/beadmin.py:247 ../gui/modules/repository.py:287
+#: ../gui/modules/repository.py:303 ../gui/modules/repository.py:333
+msgid "Applying changes, please wait ..."
+msgstr "변경 사항을 적용하는 중입니다. 잠시 기다려 주십시오..."
+
+#: ../gui/modules/beadmin.py:287
+msgid "No change"
+msgstr "변경 사항 없음"
+
+#: ../gui/modules/beadmin.py:291
+#, python-format
+msgid "%d BE's will be deleted"
+msgstr "%d BE가 삭제됩니다."
+
+#: ../gui/modules/beadmin.py:299
+msgid "The Active BE will be changed upon reboot"
+msgstr "재부트 시 활성 BE가 변경됩니다."
+
+#: ../gui/modules/beadmin.py:303
+msgid "No change\n"
+msgstr "변경 사항 없음\n"
+
+#: ../gui/modules/beadmin.py:339
+msgid "<b>Couldn't change Active "
+msgstr "<b>활성을 변경할 수 없습니다. "
+
+#: ../gui/modules/beadmin.py:344
+msgid "<b>Couldn't delete Boot "
+msgstr "<b>부트를 삭제할 수 없습니다. "
+
+#: ../gui/modules/beadmin.py:410
+msgid "The <b>libbe</b> library couldn't  "
+msgstr "<b>libbe</b> 라이브러리에서 다음을 수행할 수 없습니다. "
+
+#: ../gui/modules/beadmin.py:434
+msgid "%a %b %d %H:%M %Y"
+msgstr "%x %A %H:%M"
+
+#: ../gui/modules/beadmin.py:441 ../gui/modules/beadmin.py:451
+msgid "%m/%d/%y %H:%M"
+msgstr "%y-%m-%d %H:%M"
+
+#: ../gui/modules/installupdate.py:72
+msgid "The version of the API is not correct.\n"
+msgstr "API 버전이 올바르지 않습니다.\n"
+
+#: ../gui/modules/installupdate.py:77
+msgid "The image was not found."
+msgstr "이미지를 찾을 수 없습니다."
+
+#: ../gui/modules/installupdate.py:140
+msgid "This action affects other packages.\n"
+msgstr "이 작업은 다른 패키지에 영향을 줍니다.\n"
+
+#: ../gui/modules/installupdate.py:177
+#, python-format
+msgid ""
+"GUI will not respond to any event! %s.                             Check "
+"installupdate.py signals"
+msgstr ""
+"GUI에서 이벤트에 응답하지 않습니다! %s.                             installupdate.py "
+"신호를 확인하십시오."
+
+#: ../gui/modules/installupdate.py:198 ../gui/modules/installupdate.py:223
+msgid "Canceling..."
+msgstr "취소하는 중..."
+
+#: ../gui/modules/installupdate.py:270 ../gui/modules/installupdate.py:406
+#: ../gui/modules/installupdate.py:446
+msgid "An unknown error occured while "
+msgstr "다음을 실행하는 중에 알 수 없는 오류가 발생했습니다. "
+
+#: ../gui/modules/installupdate.py:282
+msgid "Evaluation started.\n"
+msgstr "평가가 시작되었습니다.\n"
+
+#: ../gui/modules/installupdate.py:292
+msgid "Invalid repository certificate."
+msgstr "잘못된 저장소 인증서입니다."
+
+#: ../gui/modules/installupdate.py:301
+msgid "Installation failed during\n"
+msgstr "계획을 만드는 중에 설치가\n"
+
+#: ../gui/modules/installupdate.py:309
+msgid "Install failed.\n"
+msgstr "설치가 실패했습니다.\n"
+
+#: ../gui/modules/installupdate.py:321 ../gui/modules/installupdate.py:394
+msgid "Please check the network "
+msgstr "네트워크 연결을 확인하십시오. "
+
+#: ../gui/modules/installupdate.py:334 ../gui/modules/installupdate.py:382
+msgid "Update All failed during\n"
+msgstr "계획을 만드는 중에 모두 업데이트가\n"
+
+#: ../gui/modules/installupdate.py:359
+msgid "Unexpected failure with"
+msgstr "어떤 업데이트를 수행할지 결정하는 동안"
+
+#: ../gui/modules/installupdate.py:367
+msgid "Update All failed during "
+msgstr "카탈로그를 새로 고치는 중에 모두 업데이트가 실패했습니다. "
+
+#: ../gui/modules/installupdate.py:374
+msgid "pkg(5) appears to be out of "
+msgstr "pkg(5)가 최신 버전이 아닌 것 같습니다. "
+
+#: ../gui/modules/installupdate.py:416
+msgid "Preparing to download packages, please wait..."
+msgstr "패키지 다운로드 준비 중입니다. 잠시 기다려 주십시오..."
+
+#: ../gui/modules/installupdate.py:423 ../gui/modules/installupdate.py:472
+msgid "An error occured while "
+msgstr "파일을 다운로드하는 중에 오류가 발생했습니다. "
+
+#: ../gui/modules/installupdate.py:464 ../gui/modules/installupdate.py:478
+#: ../gui/modules/installupdate.py:491
+msgid "There was an error during installation."
+msgstr "설치 중에 오류가 발생했습니다."
+
+#: ../gui/modules/installupdate.py:485
+msgid "This is an Live Image. The install"
+msgstr "이것은 라이브 이미지입니다. 설치"
+
+#: ../gui/modules/installupdate.py:545
+#, python-format
+msgid "Evaluating: %s\n"
+msgstr "평가 중: %s\n"
+
+#: ../gui/modules/installupdate.py:559
+#, python-format
+msgid "%d packages will be updated\n"
+msgstr "%d개의 패키지가 업데이트됩니다.\n"
+
+#: ../gui/modules/installupdate.py:562
+#, python-format
+msgid "%d package will be updated\n"
+msgstr "%d개의 패키지가 업데이트됩니다.\n"
+
+#: ../gui/modules/installupdate.py:565
+#, python-format
+msgid ""
+"%d packages will be installed\n"
+"\n"
+msgstr ""
+" %d개의 패키지가 설치됩니다.\n"
+" \n"
+
+#: ../gui/modules/installupdate.py:568
+#, python-format
+msgid ""
+"%d package will be installed\n"
+"\n"
+msgstr ""
+" %d개의 패키지가 설치됩니다.\n"
+" \n"
+
+#: ../gui/modules/installupdate.py:571
+#, python-format
+msgid ""
+"%d packages will be removed\n"
+"\n"
+msgstr ""
+"%d개의 패키지가 제거됩니다.\n"
+" \n"
+
+#: ../gui/modules/installupdate.py:574
+#, python-format
+msgid ""
+"%d package will be removed\n"
+"\n"
+msgstr ""
+"%d개의 패키지가 제거됩니다.\n"
+"\n"
+
+#: ../gui/modules/installupdate.py:579
+#, python-format
+msgid "%s will be downloaded"
+msgstr "%s이(가) 다운로드됩니다."
+
+#: ../gui/modules/installupdate.py:586
+msgid "This action couldn't be finished.\n"
+msgstr "이 작업을 완료할 수 없습니다.\n"
+
+#: ../gui/modules/installupdate.py:598
+msgid "None of the packages will be removed"
+msgstr "패키지가 제거되지 않습니다."
+
+#: ../gui/modules/installupdate.py:678
+msgid "Downloading: "
+msgstr "다운로드 중: "
+
+#: ../gui/modules/installupdate.py:701
+msgid "Creating packages index..."
+msgstr "패키지 색인을 만드는 중..."
+
+#: ../gui/modules/repository.py:137
+#, python-format
+msgid ""
+"GUI will not respond to any event! %s.                             Check "
+"repository.py signals"
+msgstr ""
+"GUI에서 이벤트에 응답하지 않습니다! %s.                             repository.py "
+"신호를 확인하십시오."
+
+#: ../gui/modules/repository.py:150
+msgid "Repository Name"
+msgstr "저장소 이름"
+
+#: ../gui/modules/repository.py:155
+msgid "Preferred"
+msgstr "기본 설정"
+
+#: ../gui/modules/repository.py:223
+msgid "Couldn't change"
+msgstr "변경할 수 없음"
+
+#: ../gui/modules/repository.py:377 ../gui/modules/repository.py:391
+#, python-format
+msgid "Failed to modify %s."
+msgstr "%s을(를) 수정하지 못했습니다."
+
+#: ../gui/modules/repository.py:419
+#, python-format
+msgid ""
+"Invalid URL:\n"
+"%s"
+msgstr ""
+"잘못된 URL:\n"
+"%s"
+
+#: ../gui/modules/repository.py:435 ../gui/modules/repository.py:448
+#, python-format
+msgid "Failed to add %s."
+msgstr "%s을(를) 추가하지 못했습니다."
+
+#: ../gui/modules/repository.py:469
+#, python-format
+msgid "Failed to delete %s."
+msgstr "%s을(를) 삭제하지 못했습니다."
+
+#: ../modules/client/api_errors.py:100
+#, python-format
+msgid ""
+"        pkg: no package matching '%s' could be found in current catalog\n"
+"        suggest relaxing pattern, refreshing and/or examining catalogs"
+msgstr ""
+"        pkg: 현재 카탈로그에서 '%s'과(와) 일치하는 패키지를 찾을 수 없습니다.\n"
+"        패턴 완화, 새로 고침 및/또는 카탈로그를 검사하십시오."
+
+#: ../modules/client/bootenv.py:130
+msgid "pkg: unable to create an auto snapshot. pkg recovery is disabled."
+msgstr "pkg: 자동 스냅샷을 만들 수 없습니다. pkg 복구가 비활성화됩니다."
+
+#: ../modules/client/bootenv.py:165 ../modules/client/bootenv.py:308
+#, python-format
+msgid "pkg: unable to create BE %s"
+msgstr "pkg: BE %s을(를) 만들 수 없습니다."
+
+#: ../modules/client/bootenv.py:170
+#, python-format
+msgid "pkg: attempt to mount %s failed."
+msgstr "pkg: %s 마운트를 시도하는 데 실패했습니다."
+
+#: ../modules/client/bootenv.py:195
+#, python-format
+msgid "pkg: A system error %s was caught executing %s"
+msgstr "pkg: 시스템 오류 %s이(가) %s 실행 도중 발견되었습니다."
+
+#: ../modules/client/bootenv.py:195
+#, python-format
+msgid "pkg: A system error %(e)s was caught executing %(join_cmd)s"
+msgstr "pkg: 시스템 오류 %(e)s이(가) %(join_cmd)s 실행 도중 발견되었습니다."
+
+#: ../modules/client/bootenv.py:199
+#, python-format
+msgid ""
+"pkg: '%s' failed. \n"
+"with a return code of %d."
+msgstr ""
+"pkg: '%s'이(가) 실패했습니다. \n"
+"반환 코드는 %d입니다."
+
+#: ../modules/client/bootenv.py:204
+#, python-format
+msgid "pkg: unable to activate %s"
+msgstr "pkg: %s을(를) 활성화할 수 없습니다."
+
+#: ../modules/client/bootenv.py:209
+#, python-format
+msgid "pkg: unable to unmount %s"
+msgstr "pkg: %s을(를) 마운트 해제할 수 없습니다."
+
+#: ../modules/client/bootenv.py:215
+#, python-format
+msgid ""
+"A clone of %s exists and has been updated and activated. On next boot the "
+"Boot Environment %s will be mounted on '/'. Reboot when ready to switch to "
+"this updated BE."
+msgstr ""
+"%s의 복제본이 있으며 업데이트 및 활성화되었습니다. 다음 부트 시 부트 환경 "
+"%s이(가) '/'에 마운트됩니다. 이 업데이트 BE로 전환할 준비가 완료되면 "
+"재부트하십시오."
+
+#: ../modules/client/bootenv.py:232
+#, python-format
+msgid "pkg: The system error %s was caught executing %s"
+msgstr "pkg: 시스템 오류 %s이(가) %s 실행 도중 발견되었습니다."
+
+#: ../modules/client/bootenv.py:232
+#, python-format
+msgid "pkg: The system error %(e)s was caught executing %(join_cmd)s"
+msgstr "pkg: 시스템 오류 %(e)s이(가) %(join_cmd)s 실행 도중 발견되었습니다."
+
+#: ../modules/client/bootenv.py:236
+#, python-format
+msgid ""
+"pkg: '%s' failed \n"
+"with a return code of %d."
+msgstr ""
+"pkg: '%s'이(가) 실패했습니다. \n"
+"반환 코드는 %d입니다."
+
+#: ../modules/client/bootenv.py:240
+#, python-format
+msgid "%s has been updated successfully"
+msgstr "%s이(가) 성공적으로 업데이트되었습니다."
+
+#: ../modules/client/bootenv.py:253
+#, python-format
+msgid ""
+" The running system has not been modified. Modifications were only made to a "
+"clone of the running system.  This clone is mounted at %s should you wish to "
+"inspect it."
+msgstr ""
+" 실행 중인 시스템이 수정되지 않았습니다. 실행 중인 시스템의 복제본만 "
+"수정되었습니다. 이 복제본이 %s에 마운트되었습니다. 해당 복제본을 "
+"검사하십시오."
+
+#: ../modules/client/bootenv.py:261
+#, python-format
+msgid "pkg: unable to rollback BE %s and restore image"
+msgstr "pkg: BE %s을(를) 롤백하고 이미지를 복원할 수 없습니다."
+
+#: ../modules/client/bootenv.py:267
+#, python-format
+msgid "%s failed to be updated. No changes have been made to %s."
+msgstr "%s 업데이트에 실패했습니다. %s이(가) 변경되지 않았습니다."
+
+#: ../modules/client/bootenv.py:279
+#, python-format
+msgid "pkg: unable to destroy snapshot %s"
+msgstr "pkg: 스냅샷 %s을(를) 삭제할 수 없습니다."
+
+#: ../modules/client/bootenv.py:313
+#, python-format
+msgid "pkg: unable to mount BE %s on %s"
+msgstr "pkg: BE %s을(를) %s에 마운트할 수 없습니다."
+
+#: ../modules/client/bootenv.py:317
+#, python-format
+msgid ""
+"The Boot Environment %s failed to be updated. A snapshot was taken before "
+"the failed attempt and is mounted here %s. Use 'beadm unmount %s' and then "
+"'beadm activate %s' if you wish to boot to this BE."
+msgstr ""
+"부트 환경 %s 업데이트에 실패했습니다. 실패하기 전에 스냅샷을 가져와서 "
+"여기 %s에 마운트됩니다. 이 BE를 부트하려면 'beadm unmount %s'을(를) 사용한 다음 "
+"'beadm activate %s'을(를) 사용하십시오."
+
+#: ../modules/client/bootenv.py:330
+#, python-format
+msgid ""
+"The Boot Environment %s failed to be updated. A snapshot was taken before "
+"the failed attempt and has been restored so no changes have been made to %s."
+msgstr ""
+"부트 환경 %s 업데이트에 실패했습니다. 실패하기 전에 스냅샷을 가져와서 "
+"복원되었기 때문에 %s이(가) 변경되지 않았습니다."
+
+#: ../modules/client/image.py:475
+#, python-format
+msgid "Certificate for authority %s not found"
+msgstr "인증 기관 %s의 인증서를 찾을 수 없습니다."
+
+#: ../modules/client/image.py:477
+#, python-format
+msgid "File was supposed to exist at  path %s"
+msgstr "파일은 %s 경로에 있어야 합니다."
+
+#: ../modules/client/image.py:484
+#, python-format
+msgid "Certificate for authority %s at %s has an invalid format."
+msgstr "인증 기관 %s의 인증서(%s 위치)의 형식이 잘못되었습니다."
+
+#: ../modules/client/image.py:518
+#, python-format
+msgid ""
+"Certificate for authority %(pfx)s at %(ssl_cert)s has an invalid format."
+msgstr ""
+"인증 기관 %(pfx)s의 인증서(%(ssl_cert)s 위치)의 형식이 잘못되었습니다."
+
+#: ../modules/client/image.py:490
+#, python-format
+msgid "Certificate for authority %s has expired"
+msgstr "인증 기관 %s의 인증서가 만료되었습니다."
+
+#: ../modules/client/image.py:492
+msgid "Please install a valid certificate"
+msgstr "유효한 인증서를 설치하십시오."
+
+#: ../modules/client/image.py:505
+#, python-format
+msgid "Certificate for authority %s is invalid"
+msgstr "인증 기관 %s의 인증서가 잘못되었습니다."
+
+#: ../modules/client/image.py:507
+msgid "Certificate effective date is in the future"
+msgstr "인증서 발효일은 나중입니다."
+
+#: ../modules/client/image.py:519
+#, python-format
+msgid "Certificate for authority %s will expire in %d days"
+msgstr "인증 기관 %s의 인증서가 %d일 후에 만료됩니다."
+
+#: ../modules/client/image.py:2106 ../modules/client/image.py:2161
+msgid "Before evaluation:"
+msgstr "평가 전:"
+
+#: ../modules/client/image.py:2122 ../modules/client/image.py:2170
+msgid "After evaluation:"
+msgstr "평가 후:"
+
+#: ../modules/client/image.py:2224
+msgid "SUNWipkg update check failed."
+msgstr "SUNWipkg 업데이트 확인에 실패했습니다."
+
+#: ../modules/misc.py:384
+msgid "B"
+msgstr "B"
+
+#: ../modules/misc.py:385
+msgid "kB"
+msgstr "kB"
+
+#: ../modules/misc.py:386
+msgid "MB"
+msgstr "MB"
+
+#: ../modules/misc.py:387
+msgid "GB"
+msgstr "GB"
+
+#: ../modules/misc.py:388
+msgid "TB"
+msgstr "TB"
+
+#: ../modules/misc.py:389
+msgid "PB"
+msgstr "PB"
+
+#: ../modules/misc.py:390
+msgid "EB"
+msgstr "EB"
+
+#: ../modules/server/catalog.py:227
+#, python-format
+msgid "ERROR building search database, rc: %s"
+msgstr "검색 데이터베이스를 빌드하는 중에 오류가 발생했습니다. rc: %s"
+
+#: ../packagemanager.py:181
+msgid ""
+"Checking SUNWipkg and SUNWipkg-gui versions\n"
+"\n"
+"Please wait ..."
+msgstr ""
+"SUNWipkg 및 SUNWipkg-gui 버전을 확인하는 중입니다.\n"
+"\n"
+"잠시 기다려 주십시오..."
+
+#: ../packagemanager.py:250
+#, python-format
+msgid "GUI will not respond to any event! %s."
+msgstr "GUI에서 이벤트에 응답하지 않습니다! %s."
+
+#: ../packagemanager.py:338 ../packagemanager.py:390 ../updatemanager.py:620
 msgid "Name"
 msgstr "이름"
 
-#: ../packagemanager.py:263
+#: ../packagemanager.py:345
+msgid "Status"
+msgstr "상태"
+
+#: ../packagemanager.py:356
 msgid "Installed Version"
 msgstr "설치된 버전"
 
-#: ../packagemanager.py:269
+#: ../packagemanager.py:364 ../updatemanager.py:635
 msgid "Latest Version"
 msgstr "최신 버전"
 
-#: ../packagemanager.py:275
+#: ../packagemanager.py:372
 msgid "Rating"
 msgstr "등급"
 
-#: ../packagemanager.py:281
+#: ../packagemanager.py:376
 msgid "Description"
 msgstr "설명"
 
-#. TODO: check if needed
-#: ../packagemanager.py:440 ../packagemanager.py:448 ../packagemanager.py:899
-#: ../packagemanager.py:904 ../packagemanager.py:972 ../packagemanager.py:977
-#: ../packagemanager.py:979 ../packagemanager.py:1467
-#: ../packagemanager.py:1472 ../packagemanager.py:1540
+#: ../packagemanager.py:465 ../packagemanager.py:1568
+#: ../packagemanager.py:1577 ../packagemanager.py:2016
 msgid "All"
 msgstr "모두"
 
-#: ../packagemanager.py:442
+#: ../packagemanager.py:467
 msgid "Meta Packages"
 msgstr "메타 패키지"
 
-#: ../packagemanager.py:443 ../packagemanager.py:1571
-#: ../packagemanager.py:1572 ../packagemanager.py:1573
-#: ../packagemanager.py:1574 ../packagemanager.py:1575
-#: ../packagemanager.py:1576 ../packagemanager.py:1577
-#: ../packagemanager.py:1578 ../packagemanager.py:1579
+#: ../packagemanager.py:468 ../packagemanager.py:2062
+#: ../packagemanager.py:2064 ../packagemanager.py:2066
+#: ../packagemanager.py:2068 ../packagemanager.py:2070
+#: ../packagemanager.py:2072 ../packagemanager.py:2074
+#: ../packagemanager.py:2076 ../packagemanager.py:2078
 msgid "Applications Desktop"
 msgstr "응용 프로그램 데스크탑"
 
-#: ../packagemanager.py:444
+#: ../packagemanager.py:469
 msgid "Applications Web-Based"
 msgstr "응용 프로그램 웹 기반"
 
-#: ../packagemanager.py:445 ../packagemanager.py:1581
-#: ../packagemanager.py:1582 ../packagemanager.py:1583
-#: ../packagemanager.py:1585
+#: ../packagemanager.py:470 ../packagemanager.py:2080
+#: ../packagemanager.py:2082 ../packagemanager.py:2084
+#: ../packagemanager.py:2087
 msgid "Operating System"
 msgstr "운영 체제"
 
-#: ../packagemanager.py:446
+#: ../packagemanager.py:471
 msgid "User Environment"
 msgstr "사용자 환경"
 
-#: ../packagemanager.py:447
+#: ../packagemanager.py:472
 msgid "Web Infrastructure"
 msgstr "웹 인프라"
 
-#: ../packagemanager.py:452 ../packagemanager.py:936
+#: ../packagemanager.py:475
 msgid "All Packages"
 msgstr "모든 패키지"
 
-#: ../packagemanager.py:454 ../packagemanager.py:938
+#: ../packagemanager.py:477
 msgid "Installed Packages"
 msgstr "설치된 패키지"
 
-#: ../packagemanager.py:455 ../packagemanager.py:940
+#: ../packagemanager.py:478
 msgid "Updates"
 msgstr "업데이트"
 
-#. self.filter_list.append([self._('Locked Packages'),])
-#. self.filter_list.append(["",])
-#: ../packagemanager.py:459 ../packagemanager.py:946
+#: ../packagemanager.py:479
+msgid "Non-installed Packages"
+msgstr "설치되지 않은 패키지"
+
+#. self.filter_list.append([self._('Locked Packages'), ])
+#. self.filter_list.append(["", ])
+#: ../packagemanager.py:483
 msgid "Selected Packages"
 msgstr "선택된 패키지"
 
-#: ../packagemanager.py:548
-#, python-format
-msgid "%d packages listed"
-msgstr "%d개의 패키지가 나열됨"
+#: ../packagemanager.py:728
+msgid "Checking SUNWipkg and SUNWipkg-gui versions\n"
+msgstr "SUNWipkg 및 SUNWipkg-gui 버전 확인 중\n"
 
-#: ../packagemanager.py:549
-#, python-format
-msgid "%d installed"
-msgstr "%d개 설치됨"
+#. Prompt user
+#: ../packagemanager.py:745
+msgid "Newer versions of SUNWipkg and "
+msgstr "SUNWipkg 및 SUNWipkg-gui의 최신 버전 및 "
 
-#: ../packagemanager.py:550
-#, python-format
-msgid "%d selected"
-msgstr "%d개 선택됨"
+#: ../packagemanager.py:762
+msgid "Update All was not "
+msgstr "모두 업데이트가 실행되지 않았습니다. "
 
-#: ../packagemanager.py:551
-#, python-format
-msgid "%d broken"
-msgstr "%d개 깨짐"
+#: ../packagemanager.py:801
+msgid "Refreshing catalogs"
+msgstr "카탈로그를 새로 고치는 중"
 
-#: ../packagemanager.py:819
+#: ../packagemanager.py:802
+msgid "Refreshing catalogs..."
+msgstr "카탈로그를 새로 고치는 중..."
+
+#: ../packagemanager.py:941
 msgid "Fetching description..."
 msgstr "설명을 불러오는 중..."
 
-#: ../packagemanager.py:820 ../packagemanager.py:821 ../packagemanager.py:822
+#: ../packagemanager.py:942 ../packagemanager.py:943 ../packagemanager.py:944
 msgid "Fetching information..."
 msgstr "정보를 불러오는 중…"
 
-#: ../packagemanager.py:826
+#: ../packagemanager.py:948
 msgid "Description not available for this package..."
 msgstr "이 패키지에 대한 설명 없음..."
 
-#: ../packagemanager.py:827
+#: ../packagemanager.py:950
 msgid "Files Details not available for this package..."
 msgstr "이 패키지에 대한 파일 세부 정보 없음..."
 
-#: ../packagemanager.py:828
+#: ../packagemanager.py:952
 msgid "Dependencies info not available for this package..."
 msgstr "이 패키지에 대한 종속성 정보 없음..."
 
-#: ../packagemanager.py:829
+#: ../packagemanager.py:954
 msgid "Information not available for this package..."
 msgstr "이 패키지에 대한 정보 없음..."
 
-#: ../packagemanager.py:834
+#: ../packagemanager.py:957
 #, python-format
 msgid "Root: %s\n"
 msgstr "루트: %s\n"
 
-#: ../packagemanager.py:835
+#: ../packagemanager.py:958
 msgid "Dependencies:\n"
 msgstr "종속성:\n"
 
-#: ../packagemanager.py:838
+#: ../packagemanager.py:961
 msgid ""
 "Information for installed package:\n"
 "\n"
@@ -733,7 +1794,7 @@ msgstr ""
 "설치된 패키지 정보:\n"
 "\n"
 
-#: ../packagemanager.py:840
+#: ../packagemanager.py:964
 msgid ""
 "Information for latest available package:\n"
 "\n"
@@ -741,97 +1802,130 @@ msgstr ""
 "최근에 제공된 패키지 정보:\n"
 "\n"
 
-#: ../packagemanager.py:857
+#: ../packagemanager.py:976
 msgid "depend"
 msgstr "종속"
 
-#: ../packagemanager.py:860
+#: ../packagemanager.py:980
 msgid "dir"
 msgstr "디렉토리"
 
-#: ../packagemanager.py:862
+#: ../packagemanager.py:983
 msgid "file"
 msgstr "파일"
 
-#. instbuffer.insert(institer,"\t"+self.locale_distinguished_name(a)+"\n")
-#. elif cmp(a.name,self.N_("driver")) == 0:
-#. print a.distinguished_name()
-#: ../packagemanager.py:867
+#: ../packagemanager.py:986
 msgid "hardlink"
 msgstr "하드링크"
 
-#: ../packagemanager.py:869
+#: ../packagemanager.py:989
 msgid "link"
 msgstr "링크"
 
-#: ../packagemanager.py:871
+#: ../packagemanager.py:992
 msgid "legacy"
 msgstr "레거시"
 
-#: ../packagemanager.py:872 ../packagemanager.py:874
+#: ../packagemanager.py:993
 msgid "pkg"
 msgstr "패키지"
 
-#: ../packagemanager.py:875
-msgid "name"
-msgstr "이름"
-
-#: ../packagemanager.py:876
+#: ../packagemanager.py:995
 msgid "desc"
 msgstr "설명"
 
-#: ../packagemanager.py:877
+#: ../packagemanager.py:997
 #, python-format
 msgid "  Description:\t%s\n"
 msgstr "  설명:\t%s\n"
 
-#: ../packagemanager.py:885
+#: ../packagemanager.py:1000
 #, python-format
 msgid "  Name:\t\t%s\n"
 msgstr "  이름:\t\t%s\n"
 
-#: ../packagemanager.py:886
+#: ../packagemanager.py:1001
 #, python-format
 msgid "  FMRI:\t\t%s\n"
 msgstr "  FMRI:\t\t%s\n"
 
-#: ../packagemanager.py:887
+#: ../packagemanager.py:1002
 #, python-format
 msgid "  Version:\t\t%s\n"
 msgstr "  버전:\t\t%s\n"
 
-#: ../packagemanager.py:888
+#: ../packagemanager.py:1004
 #, python-format
 msgid "  Packaged:\t%s\n"
 msgstr "  패키지화됨:\t%s\n"
 
-#: ../packagemanager.py:943
-msgid "Locked Packages"
-msgstr "잠긴 패키지"
+#: ../packagemanager.py:1330
+msgid " catalogs successfully updated:\n"
+msgstr " 카탈로그가 성공적으로 업데이트됨:\n"
 
-#: ../packagemanager.py:1311
-msgid "..."
-msgstr "..."
+#: ../packagemanager.py:1351
+msgid "Unknown error"
+msgstr "알 수 없는 오류"
 
-#. TODO Instead trying root image, maybe popup window
-#. with question to which image switch??
-#: ../packagemanager.py:1385
+#: ../packagemanager.py:1368
 #, python-format
-msgid "%s is not valid image, trying root image"
-msgstr "%s은(는) 유효한 이미지가 아닙니다. 루트 이미지 시도 중"
+msgid "%s is not a valid root image, return None"
+msgstr "%s은(는) 유효한 루트 이미지가 아닙니다. None을 반환합니다."
 
-#. TODO if this function returns None, the popup gui with catalog
-#. Add/remove/select should be shown.
-#: ../packagemanager.py:1401
+#. Can't happen when all_known is true and no args,
+#. but here for completeness.
+#: ../packagemanager.py:1391
+msgid "Error occured while getting list of packages"
+msgstr "패키지 목록을 가져오는 중에 오류가 발생했습니다."
+
+#: ../packagemanager.py:1684
 #, python-format
-msgid "%s is not valid root image, return None"
-msgstr "%s은(는) 유효한 루트 이미지가 아닙니다. None 값 반환"
+msgid "Processing package entries: %d of %d"
+msgstr "패키지 항목 처리 중: %d/%d"
 
-#: ../packagemanager.py:1473
-msgid "All packages"
-msgstr "모든 패키지"
+#: ../packagemanager.py:1695
+msgid "Packagemanager error"
+msgstr "패키지 관리자 오류"
 
-#. self.add_package_to_category(_("All"),None,None,None);
+#: ../packagemanager.py:1802
+msgid "Loading Repository Information"
+msgstr "저장소 정보를 로드하는 중"
+
+#: ../packagemanager.py:1804
+msgid "Fetching package entries ..."
+msgstr "패키지 항목을 불러오는 중..."
+
+#: ../packagemanager.py:1923
+#, python-format
+msgid "%d packages listed"
+msgstr "%d개의 패키지가 나열됨"
+
+#: ../packagemanager.py:1924
+#, python-format
+msgid "%d installed"
+msgstr "%d개 설치됨"
+
+#: ../packagemanager.py:1925
+#, python-format
+msgid "%d selected"
+msgstr "%d개 선택됨"
+
+#: ../packagemanager.py:1926
+#, python-format
+msgid "%d broken"
+msgstr "%d개 깨짐"
+
+#. 2790: As IPS and IPS-GUI have been updated the IPS GUI must be shutdown
+#. and restarted
+#: ../packagemanager.py:1978
+msgid "SUNWipkg and SUNWipkg-gui have been "
+msgstr "SUNWipkg 및 SUNWipkg-gui가 "
+
+#: ../packagemanager.py:1991
+msgid "Update All has completed and Package "
+msgstr "모두 업데이트가 완료되고 패키지 "
+
+#. self.__add_package_to_category(_("All"),None,None,None);
 #. Category names until xdg is imported.
 #. from xdg.DesktopEntry import *
 #. entry = DesktopEntry ()
@@ -839,56 +1933,741 @@ msgstr "모든 패키지"
 #. for root, dirs, files in os.walk (directory):
 #. for name in files:
 #. entry.parse (os.path.join (root, name))
-#. self.add_category_to_section (entry.getName (), self._('Applications Desktop'))
-#: ../packagemanager.py:1553 ../packagemanager.py:1554
-#: ../packagemanager.py:1571
+#. self.__add_category_to_section (entry.getName (), \
+#. self._('Applications Desktop'))
+#: ../packagemanager.py:2034 ../packagemanager.py:2036
+#: ../packagemanager.py:2061
 msgid "Accessories"
 msgstr "보조 프로그램"
 
-#: ../packagemanager.py:1555 ../packagemanager.py:1557
-#: ../packagemanager.py:1559 ../packagemanager.py:1572
+#: ../packagemanager.py:2038 ../packagemanager.py:2042
+#: ../packagemanager.py:2046 ../packagemanager.py:2063
 msgid "Games"
 msgstr "게임"
 
-#: ../packagemanager.py:1556 ../packagemanager.py:1558
-#: ../packagemanager.py:1560 ../packagemanager.py:1573
-#: ../packagemanager.py:1582
+#: ../packagemanager.py:2040 ../packagemanager.py:2044
+#: ../packagemanager.py:2048 ../packagemanager.py:2065
+#: ../packagemanager.py:2081
 msgid "Graphics"
 msgstr "그래픽"
 
-#: ../packagemanager.py:1574
+#: ../packagemanager.py:2067
 msgid "Internet"
 msgstr "인터넷"
 
-#: ../packagemanager.py:1575 ../packagemanager.py:1587
+#: ../packagemanager.py:2069 ../packagemanager.py:2088
 msgid "Office"
 msgstr "오피스"
 
-#: ../packagemanager.py:1576
+#: ../packagemanager.py:2071
 msgid "Sound & Video"
 msgstr "음악과 비디오"
 
-#: ../packagemanager.py:1577
+#: ../packagemanager.py:2073
 msgid "System Tools"
 msgstr "시스템 도구"
 
-#: ../packagemanager.py:1578
+#: ../packagemanager.py:2075
 msgid "Universal Access"
 msgstr "범용 액세스"
 
 #. Can be twice :)
-#: ../packagemanager.py:1579 ../packagemanager.py:1585
+#: ../packagemanager.py:2077 ../packagemanager.py:2086
 msgid "Developer Tools"
 msgstr "개발자 도구"
 
-#: ../packagemanager.py:1581
+#: ../packagemanager.py:2079
 msgid "Core"
 msgstr "코어"
 
-#: ../packagemanager.py:1583
+#: ../packagemanager.py:2083
 msgid "Media"
 msgstr "매체"
 
-#: ../packagemanager.py:1588
+#: ../packagemanager.py:2090
 msgid "Office2"
 msgstr "오피스2"
+
+#: ../publish.py:56
+msgid ""
+"Usage:\n"
+"        pkgsend [options] command [cmd_options] [operands]\n"
+"\n"
+"Packager subcommands:\n"
+"        pkgsend open [-en] pkg_fmri\n"
+"        pkgsend add action arguments \n"
+"        pkgsend import [-T file_pattern] bundlefile ...\n"
+"        pkgsend include [-d basedir] manifest ...\n"
+"        pkgsend close [-A]\n"
+"\n"
+"        pkgsend rename src_fmri dest_fmri\n"
+"\n"
+"Options:\n"
+"        -s repo_url     destination repository server URL prefix\n"
+"\n"
+"Environment:\n"
+"        PKG_REPO"
+msgstr ""
+"사용법:\n"
+"        pkgsend [options] command [cmd_options] [operands]\n"
+"\n"
+"패키저 하위 명령:\n"
+"        pkgsend open [-en] pkg_fmri\n"
+"        pkgsend add action arguments \n"
+"        pkgsend import [-T file_pattern] bundlefile ...\n"
+"        pkgsend include [-d basedir] manifest ...\n"
+"        pkgsend close [-A]\n"
+"\n"
+"        pkgsend rename src_fmri dest_fmri\n"
+"\n"
+"옵션:\n"
+"        -s repo_url     대상 저장소 서버 URL 접두사\n"
+"\n"
+"환경:\n"
+"        PKG_REPO"
+
+#: ../publish.py:83
+#, python-format
+msgid "pkgsend: %s failed (status %s)%s"
+msgstr "pkgsend: %s 실패(상태 %s)%s"
+
+#: ../publish.py:99
+msgid "pkgsend: open requires one package name"
+msgstr "pkgsend: open 명령에는 하나의 패키지 이름이 필요합니다."
+
+#: ../publish.py:109
+msgid "pkgsend: no transaction ID provided in response"
+msgstr "pkgsend: 응답으로 제공된 트랜잭션 ID가 없습니다."
+
+#: ../publish.py:135
+msgid "No transaction ID specified"
+msgstr "트랜잭션 ID가 지정되지 않았습니다."
+
+#: ../publish.py:155 ../publish.py:197 ../publish.py:248
+msgid "No transaction ID specified in $PKG_TRANS_ID"
+msgstr "$PKG_TRANS_ID에 트랜잭션 ID가 지정되지 않았습니다."
+
+#: ../publish.py:306
+#, python-format
+msgid "pkgsend: illegal global option -- %s"
+msgstr "pkgsend: 잘못된 글로벌 옵션 -- %s"
+
+#: ../publish.py:332
+#, python-format
+msgid "pkgsend: unknown subcommand '%s'"
+msgstr "pkgsend: 알 수 없는 하위 명령 '%s''"
+
+#: ../publish.py:336
+#, python-format
+msgid "pkgsend: illegal %s option -- %s"
+msgstr "pkgsend: 잘못된 %s 옵션 -- %s"
+
+#: ../pull.py:51
+msgid ""
+"Usage:\n"
+"        pkgrecv -s server [-d dir] pkgfmri ...\n"
+"        pkgrecv -s server -n"
+msgstr ""
+"사용법:\n"
+"        pkgrecv -s server [-d dir] pkgfmri ...\n"
+"        pkgrecv -s server -n"
+
+#: ../pull.py:74
+#, python-format
+msgid "Unable to open manifest: %s"
+msgstr "다음 매니페스트를 열 수 없습니다. %s"
+
+#: ../pull.py:110
+#, python-format
+msgid "Unable to download files from: %s"
+msgstr "다음에서 파일을 다운로드할 수 없습니다. %s"
+
+#: ../pull.py:119 ../pull.py:164
+#, python-format
+msgid "Unable to create directory: %s"
+msgstr "다음 디렉토리를 만들 수 없습니다. %s"
+
+#: ../pull.py:137
+#, python-format
+msgid "Unable to extract file: %s"
+msgstr "다음 파일을 추출할 수 없습니다. %s"
+
+#: ../pull.py:152
+#, python-format
+msgid "Unable to download manifest %s from %s"
+msgstr "매니페스트 %s을(를) %s에서 다운로드할 수 없습니다."
+
+#: ../pull.py:152
+#, python-format
+msgid "Unable to download manifest %(get_url_path)s from %(server_url)s"
+msgstr "매니페스트 %(get_url_path)s을(를) %(server_url)s에서 다운로드할 수 없습니다."
+
+#: ../pull.py:172
+#, python-format
+msgid "Unable to open file: %s"
+msgstr "다음 파일을 열 수 없습니다. %s"
+
+#: ../pull.py:179
+#, python-format
+msgid "Error occurred while reading from: %s"
+msgstr "다음에서 읽는 중에 오류가 발생했습니다. %s"
+
+#: ../pull.py:185
+#, python-format
+msgid "Error occurred while writing to: %s"
+msgstr "다음에 쓰는 중에 오류가 발생했습니다. %s"
+
+#: ../pull.py:224
+#, python-format
+msgid "Unable to download catalog from: %s"
+msgstr "다음에서 카탈로그를 다운로드할 수 없습니다. %s"
+
+#: ../pull.py:234
+#, python-format
+msgid "Error while reading from: %s"
+msgstr "다음에서 읽는 중에 오류가 발생했습니다. %s"
+
+#: ../pull.py:259
+#, python-format
+msgid "Illegal option -- %s"
+msgstr "잘못된 옵션 -- %s"
+
+#: ../pull.py:272
+msgid "must specify a server"
+msgstr "서버를 지정해야 합니다."
+
+#: ../pull.py:279
+msgid "-n takes no options"
+msgstr "-n에는 옵션을 사용하지 않습니다."
+
+#: ../pull.py:287
+msgid "must specify at least one pkgfmri"
+msgstr "하나 이상의 pkgfmri를 지정해야 합니다."
+
+#: ../pull.py:299
+#, python-format
+msgid "pkgfmri %s needs a version string"
+msgstr "pkgfmri %s에 버전 문자열이 필요합니다."
+
+#: ../pull.py:311
+msgid "No files to retrieve."
+msgstr "검색할 파일이 없습니다."
+
+#: ../um/data/updatemanager-preferences.schemas.in.h:1
+msgid ""
+"A text message describing the updates is displayed near the panel's "
+"Notification Area when updates become available if set to true."
+msgstr ""
+"True로 설정된 경우 업데이트를 사용할 수 있을 때 패널의 알림 영역 옆에 "
+"해당 업데이트를 설명하는 텍스트 메시지가 표시됩니다."
+
+#: ../um/data/updatemanager-preferences.schemas.in.h:2
+msgid "How often to check for updates"
+msgstr "업데이트 확인 주기"
+
+#: ../um/data/updatemanager-preferences.schemas.in.h:3
+msgid ""
+"How often to check for updates. The valid values are Daily, Weekly, Monthly, "
+"Never"
+msgstr ""
+"업데이트 확인 주기입니다. 유효한 값은 일별, 주별, 월별, "
+"안 함입니다."
+
+#: ../um/data/updatemanager-preferences.schemas.in.h:4
+msgid "Start delay"
+msgstr "시작 지연"
+
+#: ../um/data/updatemanager-preferences.schemas.in.h:5
+msgid "The notify icon is displayed on startup if set to true."
+msgstr "True로 설정된 경우 시작 시 알림 아이콘이 표시됩니다."
+
+#: ../um/data/updatemanager-preferences.schemas.in.h:6
+msgid ""
+"The time, in seconds, that the updatemanagernotifier should wait, after "
+"starting, before checking for updates."
+msgstr ""
+"시작한 후 업데이트를 확인하기 전에 업데이트 관리자 알림 표시자에서 "
+"대기하는 시간(초)입니다."
+
+#: ../um/data/updatemanager-preferences.schemas.in.h:7
+msgid "Whether to always display the icon on startup"
+msgstr "시작 시 아이콘을 항상 표시할지 여부"
+
+#: ../um/data/updatemanager-preferences.schemas.in.h:8
+msgid "Whether to display text message when updates are available"
+msgstr "업데이트가 사용 가능할 경우 텍스트 메시지를 표시할지 여부"
+
+#: ../um/data/updatemanager.desktop.in.h:1
+msgid "Install available updates"
+msgstr "사용 가능한 업데이트 설치"
+
+#: ../um/data/updatemanager.desktop.in.h:2 ../um/data/updatemanager.glade.h:18
+#: ../updatemanagernotifier.py:266
+msgid "Update Manager"
+msgstr "업데이트 관리자"
+
+#: ../um/data/updatemanager.glade.h:1
+msgid "<b>Boot Environment Name: </b>"
+msgstr "<b>부트 환경 이름: </b>"
+
+#: ../um/data/updatemanager.glade.h:2
+msgid ""
+"<b>Create New Boot Environment</b>\n"
+"\n"
+"Update All will create a new boot environment (BE) as a means\n"
+"of archiving older software and sets it to be the default BE when\n"
+"rebooting.\n"
+"\n"
+"An updated clone of the active BE is about to be created."
+msgstr ""
+"<b>새 부트 환경 만들기</b>\n"
+"\n"
+"모두 업데이트는 이전 소프트웨어를 아카이브하는 도구로 \n"
+"새 부트 환경(Boot Environment, BE)을 만들고 재부트 시 이를 기본 BE로\n"
+"설정합니다.\n"
+"\n"
+"활성 BE의 업데이트된 복제본이 만들어집니다."
+
+#: ../um/data/updatemanager.glade.h:9
+msgid "<b>Evaluate</b>"
+msgstr "<b>평가</b>"
+
+#: ../um/data/updatemanager.glade.h:10
+msgid "<b>_Details</b>"
+msgstr "<b>세부 정보(_D)</b>"
+
+#: ../um/data/updatemanager.glade.h:12
+msgid "Close dialog when _finished"
+msgstr "완료 시 대화 상자 닫기(_F)"
+
+#: ../um/data/updatemanager.glade.h:13 ../updatemanager.py:168
+#: ../updatemanager.py:408 ../updatemanager.py:415 ../updatemanager.py:422
+#: ../updatemanager.py:429 ../updatemanager.py:436
+msgid "Download"
+msgstr "다운로드"
+
+#: ../um/data/updatemanager.glade.h:14 ../updatemanager.py:200
+#: ../updatemanager.py:410 ../updatemanager.py:417 ../updatemanager.py:424
+#: ../updatemanager.py:431 ../updatemanager.py:438
+msgid "Index"
+msgstr "색인"
+
+#: ../um/data/updatemanager.glade.h:15
+msgid "Install Update"
+msgstr "업데이트 설치"
+
+#: ../um/data/updatemanager.glade.h:19 ../updatemanager.py:599
+msgid ""
+"Updates are available for the following packages.\n"
+"Select the packages you want to update and click Install."
+msgstr ""
+"다음 패키지에 대해 업데이트를 사용할 수 있습니다.\n"
+"업데이트하려는 패키지를 선택하고 설치를 누르십시오."
+
+#: ../um/data/updatemanager.glade.h:22
+msgid "_Install Updates"
+msgstr "업데이트 설치(_I)"
+
+#: ../um/data/updatemanager.glade.h:24
+msgid "_Proceed"
+msgstr "진행(_P)"
+
+#: ../um/data/updatemanager.glade.h:25
+msgid "_Select all Updates"
+msgstr "모든 업데이트 선택(_S)"
+
+#: ../um/data/updatemanager.glade.h:26
+msgid "_Update All"
+msgstr "모두 업데이트(_U)"
+
+#: ../um/data/updatemanagernotifier.desktop.in.h:1
+msgid "Notify user when updates are available"
+msgstr "업데이트 사용 가능 시 사용자에게 알림"
+
+#: ../um/data/updatemanagernotifier.desktop.in.h:2
+msgid "Update Manager Notifier"
+msgstr "업데이트 관리자 알림 표시자"
+
+#: ../updatemanager.py:116
+#, python-format
+msgid "Fetching catalog: '%s' ..."
+msgstr "카탈로그를 불러오는 중: '%s' ..."
+
+#: ../updatemanager.py:120
+msgid "Fetching catalog"
+msgstr "카탈로그를 불러오는 중"
+
+#: ../updatemanager.py:123
+msgid "Creating Plan ... "
+msgstr "계획을 만드는 중... "
+
+#: ../updatemanager.py:134
+msgid "Creating Plan"
+msgstr "계획을 만드는 중"
+
+#: ../updatemanager.py:145
+#, python-format
+msgid "Verifying: %s ..."
+msgstr "확인 중: %s ..."
+
+#: ../updatemanager.py:152
+msgid "Verifying"
+msgstr "확인 중"
+
+#: ../updatemanager.py:166
+msgid "Completed"
+msgstr "완료됨"
+
+#: ../updatemanager.py:184 ../updatemanager.py:409 ../updatemanager.py:416
+#: ../updatemanager.py:423 ../updatemanager.py:430 ../updatemanager.py:437
+msgid "Install"
+msgstr "설치"
+
+#: ../updatemanager.py:368
+#, python-format
+msgid ""
+"GUI will not respond to any event! %s.                             Check "
+"updatemanager.py signals"
+msgstr ""
+"GUI에서 이벤트에 응답하지 않습니다! %s.                             updatemanager.py "
+"신호를 확인하십시오."
+
+#: ../updatemanager.py:407 ../updatemanager.py:414 ../updatemanager.py:421
+#: ../updatemanager.py:428 ../updatemanager.py:435
+msgid "Evaluate"
+msgstr "평가"
+
+#: ../updatemanager.py:443
+msgid "Evaluate - canceling..."
+msgstr "평가 - 취소하는 중..."
+
+#: ../updatemanager.py:447
+msgid "Download - canceling..."
+msgstr "다운로드 - 취소하는 중... "
+
+#: ../updatemanager.py:452
+msgid "Evaluate - failed"
+msgstr "평가 - 실패함"
+
+#: ../updatemanager.py:456
+msgid "Download - failed"
+msgstr "다운로드 - 실패함"
+
+#: ../updatemanager.py:460
+msgid "Install - failed"
+msgstr "설치 - 실패함"
+
+#: ../updatemanager.py:464
+msgid "Index - failed"
+msgstr "색인 - 실패함"
+
+#: ../updatemanager.py:606
+msgid ""
+"Updates are available for the following packages.\n"
+"Click Update All to create a new boot environment and install all packages "
+"into it."
+msgstr ""
+"다음 패키지에 사용 가능한 업데이트가 없습니다.\n"
+"새 부트 환경을 만들고 해당 환경에 모든 패키지를 설치하려면 모두 업데이트를 "
+"누르십시오."
+
+#: ../updatemanager.py:644
+msgid "Size (Meg)"
+msgstr "크기(MB)"
+
+#: ../updatemanager.py:725
+#, python-format
+msgid "count: %d"
+msgstr "개수: %d"
+
+#: ../updatemanager.py:744 ../updatemanager.py:752
+msgid "Error\n"
+msgstr "오류\n"
+
+#: ../updatemanager.py:761
+#, python-format
+msgid "'%s' is not an install image\n"
+msgstr "'%s'이(가) 설치 이미지가 아닙니다.\n"
+
+#: ../updatemanager.py:755
+#, python-format
+msgid "Version mismatch: expected %s received %s\n"
+msgstr "버전 불일치: %s을(를) 예상했지만 %s을(를) 받음\n"
+
+#: ../updatemanager.py:766
+msgid ""
+"\n"
+"No Updates available"
+msgstr ""
+"\n"
+"사용 가능한 업데이트 없음"
+
+#: ../updatemanager.py:797
+#, python-format
+msgid ""
+"\n"
+"Description: \t%s\n"
+"Name:        \t%s\n"
+"FMRI:        "
+msgstr ""
+"\n"
+"설명: \t%s\n"
+"이름:        \t%s\n"
+"FMRI:        "
+
+#: ../updatemanager.py:819 ../updatemanagernotifier.py:227
+#, python-format
+msgid "%s is not valid image, trying root image"
+msgstr "%s은(는) 유효한 이미지가 아닙니다. 루트 이미지 시도 중"
+
+#: ../updatemanager.py:829 ../updatemanagernotifier.py:237
+#, python-format
+msgid "%s is not valid root image, return None"
+msgstr "%s은(는) 유효한 루트 이미지가 아닙니다. None 값 반환"
+
+#: ../updatemanager.py:863
+#, python-format
+msgid ""
+"\n"
+"Fetching details for %s ..."
+msgstr ""
+"\n"
+"%s에 대한 세부 정보를 불러오는 중..."
+
+#: ../updatemanager.py:879
+msgid ""
+"\n"
+"No details available"
+msgstr ""
+"\n"
+"사용 가능한 세부 정보 없음"
+
+#: ../updatemanager.py:908
+msgid ""
+"\n"
+"Canceling update, please wait ..."
+msgstr ""
+"\n"
+"업데이트를 취소하는 중입니다. 잠시 기다려 주십시오..."
+
+#: ../updatemanager.py:913
+msgid ""
+"\n"
+"Unable to cancel at this time."
+msgstr ""
+"\n"
+"지금은 취소할 수 없습니다."
+
+#: ../updatemanager.py:916
+msgid "Installing Updates"
+msgstr "업데이트를 설치하는 중"
+
+#: ../updatemanager.py:948
+msgid "ERROR"
+msgstr "오류"
+
+#: ../updatemanager.py:950
+msgid "Following Incorporated package(s) cannot be updated:"
+msgstr "다음 통합 패키지를 업데이트할 수 없습니다."
+
+#: ../updatemanager.py:954
+msgid "Update using: Update All\n"
+msgstr "사용 중인 업데이트: 모두 업데이트\n"
+
+#: ../updatemanager.py:971 ../updatemanager.py:1163 ../updatemanager.py:1194
+msgid ""
+"\n"
+"ERROR"
+msgstr ""
+"\n"
+"오류"
+
+#: ../updatemanager.py:974
+#, python-format
+msgid ""
+"%s\n"
+"%s"
+msgstr ""
+"%s\n"
+"%s"
+
+#: ../updatemanager.py:977
+#, python-format
+msgid "%s\n"
+msgstr "%s\n"
+
+#: ../updatemanager.py:988 ../updatemanager.py:1103
+msgid ""
+"\n"
+"Evaluate\n"
+msgstr ""
+"\n"
+"평가\n"
+
+#: ../updatemanager.py:997 ../updatemanager.py:1016
+msgid "Update All failed during catalog refresh\n"
+msgstr "카탈로그를 새로 고치는 중에 모두 업데이트가 실패했습니다.\n"
+
+#: ../updatemanager.py:1003
+msgid "This is not an opensolaris image\n"
+msgstr "opensolaris 이미지가 아닙니다.\n"
+
+#: ../updatemanager.py:1021
+msgid "Update All failure in plan creation:"
+msgstr "계획을 만드는 중에 모두 업데이트 실패:"
+
+#: ../updatemanager.py:1027
+msgid "pkg(5) appears to be out of date and should be\n"
+msgstr "pkg(5)가 최신 버전이 아닌 것 같습니다.\n"
+
+#: ../updatemanager.py:1036
+msgid "Update All API failure in evaluation:"
+msgstr "평가 시 모두 업데이트 API 실패:"
+
+#: ../updatemanager.py:1041
+msgid "Update All unexpected error in evaluation:"
+msgstr "평가 시 모두 업데이트 예기치 않은 오류:"
+
+#: ../updatemanager.py:1046
+msgid "Update All finished successfully.\n"
+msgstr "모두 업데이트를 성공적으로 완료했습니다.\n"
+
+#: ../updatemanager.py:1064
+#, python-format
+msgid ""
+"\n"
+"Update All finished successfully in %1.f mins\n"
+"\n"
+msgstr ""
+"\n"
+"%1.f분에 모두 업데이트가 성공적으로 완료되었습니다.\n"
+"\n"
+
+#: ../updatemanager.py:1069
+msgid ""
+"\n"
+"Update All finished successfully in < 1 min\n"
+"\n"
+msgstr ""
+"\n"
+"1분 이내에 모두 업데이트가 성공적으로 완료되었습니다.\n"
+"\n"
+
+#: ../updatemanager.py:1073
+msgid "Please reboot after reviewing the release notes posted at:\n"
+msgstr "다음 사이트에 게시된 릴리스 노트를 검토한 후 재부트하십시오.\n"
+
+#: ../updatemanager.py:1093
+msgid "Nothing selected to update."
+msgstr "업데이트할 항목이 선택되지 않았습니다."
+
+#: ../updatemanager.py:1097
+msgid "Updating ..."
+msgstr "업데이트 중 ..."
+
+#: ../updatemanager.py:1111
+msgid "Update unexpected API error:"
+msgstr "업데이트 예기치 않은 API 오류:"
+
+#: ../updatemanager.py:1116
+msgid "Update unexpected error:"
+msgstr "업데이트 예기치 않은 오류:"
+
+#: ../updatemanager.py:1139
+msgid "Packages to be installed:"
+msgstr "설치할 패키지:"
+
+#: ../updatemanager.py:1143
+msgid "Update"
+msgstr "업데이트"
+
+#: ../updatemanager.py:1144
+msgid "Update finished successfully."
+msgstr "업데이트를 성공적으로 완료했습니다."
+
+#: ../updatemanager.py:1165
+#, python-format
+msgid ""
+"%s Download failed:\n"
+"%s"
+msgstr ""
+"%s 다운로드 실패:\n"
+"%s"
+
+#: ../updatemanager.py:1172
+#, python-format
+msgid "%s exceded available disc quota"
+msgstr "%s에서 사용 가능한 디스크 할당량을 초과했습니다."
+
+#: ../updatemanager.py:1177 ../updatemanager.py:1201
+#, python-format
+msgid "%s unexpected error:"
+msgstr "%s 예기치 않은 오류:"
+
+#: ../updatemanager.py:1196
+#, python-format
+msgid ""
+"%s Execute plan failed:\n"
+"%s"
+msgstr ""
+"%s 실행 계획 실패:\n"
+"%s"
+
+#: ../updatemanager.py:1218
+msgid "Not enough disc space: the Update All action cannot "
+msgstr "디스크 공간 부족: 모두 업데이트 작업을 수행할 수 없습니다. "
+
+#: ../updatemanager.py:1390
+msgid ""
+"\n"
+"Download\n"
+msgstr ""
+"\n"
+"다운로드\n"
+
+#: ../updatemanager.py:1397
+#, python-format
+msgid "\tpkg %d/%d: \tfiles %d/%d \txfer %.2f/%.2f(meg)"
+msgstr "\tpkg %d/%d: \t파일 %d/%d \txfer %.2f/%.2f(MB)"
+
+#: ../updatemanager.py:1414
+msgid ""
+"\n"
+"Install\n"
+msgstr ""
+"\n"
+"설치\n"
+
+#: ../updatemanager.py:1416 ../updatemanager.py:1420
+#, python-format
+msgid "\t%s\t%d/%d actions"
+msgstr "\t%s\t%d/%d개의 작업"
+
+#: ../updatemanager.py:1436
+msgid "Index\n"
+msgstr "색인\n"
+
+#: ../updatemanager.py:1437 ../updatemanager.py:1441
+#, python-format
+msgid "\t%-25s\t%d/%d actions"
+msgstr "\t%-25s\t%d/%d개의 작업"
+
+#: ../updatemanager.py:1505
+msgid "Checking for new software"
+msgstr "새 소프트웨어 확인"
+
+#: ../updatemanagernotifier.py:247
+msgid "Updates are available"
+msgstr "업데이트를 사용할 수 있습니다."
+
+#: ../updatemanagernotifier.py:267
+msgid ""
+"Updates available\n"
+"Please click on icon to update."
+msgstr ""
+"사용 가능한 업데이트\n"
+"업데이트하려면 아이콘을 누르십시오."
+
+#: ../updatemanagernotifier.py:331
+msgid "Another instance of UpdateManagerNotify is running"
+msgstr "다른 UpdateManagerNotify 인스턴스가 실행 중입니다."

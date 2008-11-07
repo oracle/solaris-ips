@@ -1,0 +1,1065 @@
+# Copyright (C) 2008 Sun Microsystems, Inc
+# This file is distributed under the same license as the pkg help package.
+#
+# Desktop Discuss <desktop-discuss@opensolaris.org>
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: pkg help HEAD\n"
+"POT-Creation-Date: 2008-10-10 23:30+0900\n"
+"PO-Revision-Date: 2008-10-10 23:30+0900\n"
+"Last-Translator: desktop-discuss@opensolaris.org\n"
+"Language-Team: desktop-discuss@opensolaris.org\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../C/package-manager.xml:3(title)
+msgid "Getting Started with Package Manager"
+msgstr "Introduzione a Package Manager"
+
+#: ../C/package-manager.xml:4(firstname)
+msgid "Jyothi"
+msgstr "Jyothi"
+
+#: ../C/package-manager.xml:5(surname)
+msgid "Srinath"
+msgstr "Srinath"
+
+#: ../C/package-manager.xml:11(publishername)
+#: ../C/package-manager.xml:20(holder)
+msgid "Sun Microsystems, Inc."
+msgstr "Sun Microsystems, Inc."
+
+#: ../C/package-manager.xml:12(street)
+msgid "4150 Network Circle"
+msgstr "4150 Network Circle"
+
+#: ../C/package-manager.xml:13(city)
+msgid "Santa Clara"
+msgstr "Santa Clara"
+
+#: ../C/package-manager.xml:14(state)
+msgid "CA"
+msgstr "California"
+
+#: ../C/package-manager.xml:15(postcode)
+msgid "95054"
+msgstr "95054"
+
+#: ../C/package-manager.xml:16(country)
+msgid "U.S.A."
+msgstr "U.S.A."
+
+#: ../C/package-manager.xml:19(year)
+msgid "2008"
+msgstr "2008"
+
+#: ../C/package-manager.xml:24(para)
+msgid ""
+"Sun Microsystems, Inc. has intellectual property rights relating to "
+"technology embodied in the product that is described in this document. In "
+"particular, and without limitation, these intellectual property rights may "
+"include one or more U.S. patents or pending patent applications in the U.S. "
+"and in other countries."
+msgstr ""
+"Sun Microsystems, Inc. detiene diritti di proprietà intellettuale sulla "
+"tecnologia incorporata nel prodotto descritto nel presente documento. In "
+"particolare, e senza limitazione, tali diritti di proprietà intellettuale possono "
+"includere uno o più brevetti statunitensi o applicazioni in attesa di brevetto negli "
+"Stati Uniti e in altri paesi."
+
+#: ../C/package-manager.xml:25(para)
+msgid ""
+"U.S. Government Rights – Commercial software. Government users are subject "
+"to the Sun Microsystems, Inc. standard license agreement and applicable "
+"provisions of the FAR and its supplements."
+msgstr ""
+"Diritti del governo statunitense – Software commerciale: gli utenti governativi "
+"sono soggetti al contratto di licenza standard di Sun Microsystems, Inc. e alle "
+"normative FAR e relative integrazioni."
+
+#: ../C/package-manager.xml:26(para)
+msgid "This distribution may include materials developed by third parties."
+msgstr "Questa distribuzione può includere materiale sviluppato da terzi."
+
+#: ../C/package-manager.xml:27(para)
+msgid ""
+"Parts of the product may be derived from Berkeley BSD systems, licensed from "
+"the University of California. UNIX is a registered trademark in the U.S. and "
+"other countries, exclusively licensed through X/Open Company, Ltd."
+msgstr ""
+"Alcune parti del prodotto potrebbero derivare dai sistemi Berkeley BSD, concessi in "
+"licenza dall'università della California. UNIX è un marchio registrato negli Stati "
+"Uniti e in altri paesi ed è distribuito in licenza esclusivamente da X/Open Company, Ltd."
+
+#: ../C/package-manager.xml:28(para)
+msgid ""
+"Sun, Sun Microsystems, the Sun logo, the Solaris logo, the Java Coffee Cup "
+"logo, docs.sun.com, Java, and Solaris are trademarks or registered "
+"trademarks of Sun Microsystems, Inc. or its subsidiaries in the U.S. and "
+"other countries. All SPARC trademarks are used under license and are "
+"trademarks or registered trademarks of SPARC International, Inc. in the U.S. "
+"and other countries. Products bearing SPARC trademarks are based upon an "
+"architecture developed by Sun Microsystems, Inc."
+msgstr ""
+"Sun, Sun Microsystems, il logo Sun, il logo Solaris, il logo Java Coffee Cup, "
+"docs.sun.com, Java e Solaris sono marchi o marchi registrati di "
+"Sun Microsystems, Inc. o delle filiali negli Stati Uniti e in altri "
+"paesi. Tutti i marchi SPARC sono utilizzati su licenza e sono marchi "
+"o marchi registrati di SPARC International, Inc. negli Stati Uniti e in altri"
+"paesi. I prodotti con il marchio SPARC sono basati su un'architettura "
+"sviluppata da Sun Microsystems, Inc."
+
+#: ../C/package-manager.xml:29(para)
+msgid ""
+"The OPEN LOOK and <trademark>Sun</trademark> Graphical User Interface was "
+"developed by Sun Microsystems, Inc. for its users and licensees. Sun "
+"acknowledges the pioneering efforts of Xerox in researching and developing "
+"the concept of visual or graphical user interfaces for the computer "
+"industry. Sun holds a non-exclusive license from Xerox to the Xerox "
+"Graphical User Interface, which license also covers Sun's licensees who "
+"implement OPEN LOOK GUIs and otherwise comply with Sun's written license "
+"agreements."
+msgstr ""
+"Le interfacce utente grafiche OPEN LOOK e <trademark>Sun</trademark> sono "
+"state sviluppate da Sun Microsystems, Inc. per i propri utenti e licenziatari. Sun "
+"riconosce gli sforzi innovativi di Xerox nella ricerca e nello sviluppo del concetto "
+"di interfaccia utente grafica o visiva per l'industria informatica. "
+"Sun possiede una licenza non esclusiva di Xerox per l'interfaccia utente "
+"grafica Xerox, estesa anche ai licenziatari di Sun che implementano le interfacce"
+"utente grafiche OPEN LOOK e che comunque rispettano i contratti di licenza "
+"scritti di Sun."
+
+#: ../C/package-manager.xml:30(para)
+msgid ""
+"Products covered by and information contained in this publication are "
+"controlled by U.S. Export Control laws and may be subject to the export or "
+"import laws in other countries. Nuclear, missile, chemical or biological "
+"weapons or nuclear maritime end uses or end users, whether direct or "
+"indirect, are strictly prohibited. Export or reexport to countries subject "
+"to U.S. embargo or to entities identified on U.S. export exclusion lists, "
+"including, but not limited to, the denied persons and specially designated "
+"nationals lists is strictly prohibited."
+msgstr ""
+"I prodotti descritti e le informazioni contenute nel presente documento sono "
+"controllati dalle leggi degli Stati Uniti sul controllo delle esportazioni e possono "
+"essere soggetti alle leggi sull'esportazione e sull'importazione in altri paesi. Gli usi "
+"finalizzati ad armi nucleari, missilistiche, chimiche o biologiche o all'impiego di "
+"energia nucleare nel settore marittimo, sia diretti sia indiretti, sono severamente "
+"vietati. L'esportazione o la riesportazione in paesi soggetti all'embargo da parte "
+"degli Stati Uniti o verso entità, identificate negli elenchi statunitensi di esclusione "
+"dall'esportazione, inclusi, senza limitazioni, le persone non autorizzate o gli elenchi nazionali specifici, sono severamente vietate."
+
+#: ../C/package-manager.xml:31(para)
+msgid ""
+"DOCUMENTATION IS PROVIDED “AS IS” AND ALL EXPRESS OR IMPLIED CONDITIONS, "
+"REPRESENTATIONS AND WARRANTIES, INCLUDING ANY IMPLIED WARRANTY OF "
+"MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE OR NON-INFRINGEMENT, ARE "
+"DISCLAIMED, EXCEPT TO THE EXTENT THAT SUCH DISCLAIMERS ARE HELD TO BE "
+"LEGALLY INVALID."
+msgstr ""
+"LA DOCUMENTAZIONE VIENE FORNITA “COSÌ COM'È”. NON SONO RICONOSCIUTE LE CONDIZIONI, "
+"LE DICHIARAZIONI E LE GARANZIE, ESPLICITE O IMPLICITE, COMPRESE LE GARANZIE IMPLICITE "
+"DI COMMERCIABILITÀ, IDONEITÀ PER UNO SCOPO SPECIFICO O NON VIOLAZIONE, "
+"ECCETTO NELLA MISURA IN CUI IL MANCATO RICONOSCIMENTO SIA CONSIDERATO "
+"NULLO AI SENSI DI LEGGE."
+
+#: ../C/package-manager.xml:33(para)
+msgid ""
+"Sun Microsystems, Inc. détient les droits de propriété intellectuelle "
+"relatifs à la technologie incorporée dans le produit qui est décrit dans ce "
+"document. En particulier, et ce sans limitation, ces droits de propriété "
+"intellectuelle peuvent inclure un ou plusieurs brevets américains ou des "
+"applications de brevet en attente aux Etats-Unis et dans d'autres pays."
+msgstr ""
+"Sun Microsystems, Inc. détient les droits de propriété intellectuelle "
+"relatifs à la technologie incorporée dans le produit qui est décrit dans ce "
+"document. En particulier, et ce sans limitation, ces droits de propriété "
+"intellectuelle peuvent inclure un ou plusieurs brevets américains ou des "
+"applications de brevet en attente aux Etats-Unis et dans d'autres pays."
+
+#: ../C/package-manager.xml:34(para)
+msgid ""
+"Cette distribution peut comprendre des composants développés par des tierces "
+"personnes."
+msgstr ""
+"Cette distribution peut comprendre des composants développés par des tierces "
+"personnes."
+
+#: ../C/package-manager.xml:35(para)
+msgid ""
+"Certaines composants de ce produit peuvent être dérivées du logiciel "
+"Berkeley BSD, licenciés par l'Université de Californie. UNIX est une marque "
+"déposée aux Etats-Unis et dans d'autres pays; elle est licenciée "
+"exclusivement par X/Open Company, Ltd."
+msgstr ""
+"Certaines composants de ce produit peuvent être dérivées du logiciel "
+"Berkeley BSD, licenciés par l'Université de Californie. UNIX est une marque "
+"déposée aux Etats-Unis et dans d'autres pays; elle est licenciée "
+"exclusivement par X/Open Company, Ltd."
+
+#: ../C/package-manager.xml:36(para)
+msgid ""
+"Sun, Sun Microsystems, le logo Sun, le logo Solaris, le logo Java Coffee "
+"Cup, docs.sun.com, Java et Solaris sont des marques de fabrique ou des "
+"marques déposées de Sun Microsystems, Inc., ou ses filiales, aux Etats-Unis "
+"et dans d'autres pays. Toutes les marques SPARC sont utilisées sous licence "
+"et sont des marques de fabrique ou des marques déposées de SPARC "
+"International, Inc. aux Etats-Unis et dans d'autres pays. Les produits "
+"portant les marques SPARC sont basés sur une architecture développée par Sun "
+"Microsystems, Inc."
+msgstr ""
+"Sun, Sun Microsystems, le logo Sun, le logo Solaris, le logo Java Coffee "
+"Cup, docs.sun.com, Java et Solaris sont des marques de fabrique ou des "
+"marques déposées de Sun Microsystems, Inc., ou ses filiales, aux Etats-Unis "
+"et dans d'autres pays. Toutes les marques SPARC sont utilisées sous licence "
+"et sont des marques de fabrique ou des marques déposées de SPARC "
+"International, Inc. aux Etats-Unis et dans d'autres pays. Les produits "
+"portant les marques SPARC sont basés sur une architecture développée par Sun "
+"Microsystems, Inc."
+
+#: ../C/package-manager.xml:37(para)
+msgid ""
+"L'interface d'utilisation graphique OPEN LOOK et Sun a été développée par "
+"Sun Microsystems, Inc. pour ses utilisateurs et licenciés. Sun reconnaît les "
+"efforts de pionniers de Xerox pour la recherche et le développement du "
+"concept des interfaces d'utilisation visuelle ou graphique pour l'industrie "
+"de l'informatique. Sun détient une licence non exclusive de Xerox sur "
+"l'interface d'utilisation graphique Xerox, cette licence couvrant également "
+"les licenciés de Sun qui mettent en place l'interface d'utilisation "
+"graphique OPEN LOOK et qui, en outre, se conforment aux licences écrites de "
+"Sun."
+msgstr ""
+"L'interface d'utilisation graphique OPEN LOOK et Sun a été développée par "
+"Sun Microsystems, Inc. pour ses utilisateurs et licenciés. Sun reconnaît les "
+"efforts de pionniers de Xerox pour la recherche et le développement du "
+"concept des interfaces d'utilisation visuelle ou graphique pour l'industrie "
+"de l'informatique. Sun détient une licence non exclusive de Xerox sur "
+"l'interface d'utilisation graphique Xerox, cette licence couvrant également "
+"les licenciés de Sun qui mettent en place l'interface d'utilisation "
+"graphique OPEN LOOK et qui, en outre, se conforment aux licences écrites de "
+"Sun."
+
+#: ../C/package-manager.xml:38(para)
+msgid ""
+"Les produits qui font l'objet de cette publication et les informations qu'il "
+"contient sont régis par la legislation américaine en matière de contrôle des "
+"exportations et peuvent être soumis au droit d'autres pays dans le domaine "
+"des exportations et importations. Les utilisations finales, ou utilisateurs "
+"finaux, pour des armes nucléaires, des missiles, des armes chimiques ou "
+"biologiques ou pour le nucléaire maritime, directement ou indirectement, "
+"sont strictement interdites. Les exportations ou réexportations vers des "
+"pays sous embargo des Etats-Unis, ou vers des entités figurant sur les "
+"listes d'exclusion d'exportation américaines, y compris, mais de manière non "
+"exclusive, la liste de personnes qui font objet d'un ordre de ne pas "
+"participer, d'une façon directe ou indirecte, aux exportations des produits "
+"ou des services qui sont régis par la legislation américaine en matière de "
+"contrôle des exportations et la liste de ressortissants spécifiquement "
+"designés, sont rigoureusement interdites."
+msgstr ""
+"Les produits qui font l'objet de cette publication et les informations qu'il "
+"contient sont régis par la legislation américaine en matière de contrôle des "
+"exportations et peuvent être soumis au droit d'autres pays dans le domaine "
+"des exportations et importations. Les utilisations finales, ou utilisateurs "
+"finaux, pour des armes nucléaires, des missiles, des armes chimiques ou "
+"biologiques ou pour le nucléaire maritime, directement ou indirectement, "
+"sont strictement interdites. Les exportations ou réexportations vers des "
+"pays sous embargo des Etats-Unis, ou vers des entités figurant sur les "
+"listes d'exclusion d'exportation américaines, y compris, mais de manière non "
+"exclusive, la liste de personnes qui font objet d'un ordre de ne pas "
+"participer, d'une façon directe ou indirecte, aux exportations des produits "
+"ou des services qui sont régis par la legislation américaine en matière de "
+"contrôle des exportations et la liste de ressortissants spécifiquement "
+"designés, sont rigoureusement interdites."
+
+#: ../C/package-manager.xml:39(para)
+msgid ""
+"LA DOCUMENTATION EST FOURNIE \"EN L'ETAT\" ET TOUTES AUTRES CONDITIONS, "
+"DECLARATIONS ET GARANTIES EXPRESSES OU TACITES SONT FORMELLEMENT EXCLUES, "
+"DANS LA MESURE AUTORISEE PAR LA LOI APPLICABLE, Y COMPRIS NOTAMMENT TOUTE "
+"GARANTIE IMPLICITE RELATIVE A LA QUALITE MARCHANDE, A L'APTITUDE A UNE "
+"UTILISATION PARTICULIERE OU A L'ABSENCE DE CONTREFACON."
+msgstr ""
+"LA DOCUMENTATION EST FOURNIE \"EN L'ETAT\" ET TOUTES AUTRES CONDITIONS, "
+"DECLARATIONS ET GARANTIES EXPRESSES OU TACITES SONT FORMELLEMENT EXCLUES, "
+"DANS LA MESURE AUTORISEE PAR LA LOI APPLICABLE, Y COMPRIS NOTAMMENT TOUTE "
+"GARANTIE IMPLICITE RELATIVE A LA QUALITE MARCHANDE, A L'APTITUDE A UNE "
+"UTILISATION PARTICULIERE OU A L'ABSENCE DE CONTREFACON."
+
+#: ../C/package-manager.xml:42(title)
+msgid "Introduction"
+msgstr "Introduzione"
+
+#: ../C/package-manager.xml:43(para)
+msgid ""
+"The <application>Package Manager</application> application is a graphical "
+"user interface for the Image Packaging System (IPS) software. The Package "
+"Manger allows you to search, install, and remove packages; add, and modify "
+"repositories; and create and remove boot environments."
+msgstr ""
+"L'applicazione <application>Package Manager</application> è un'interfaccia utente "
+"grafica per il software IPS (Image Packaging System). Consente di cercare, installare "
+"e rimuovere pacchetti, aggiungere e modificare repository, nonché creare e rimuovere"
+"ambienti di avvio."
+
+#: ../C/package-manager.xml:45(title)
+msgid "To Start Package Manager"
+msgstr "Per avviare Package Manager"
+
+#: ../C/package-manager.xml:46(para)
+msgid ""
+"You can start the <application>Package Manager</application> in the "
+"following ways:"
+msgstr ""
+"È possibile avviare <application>Package Manager</application> nei "
+"seguenti modi."
+
+#: ../C/package-manager.xml:47(emphasis)
+msgid "Desktop Menu"
+msgstr "Menu del desktop"
+
+#: ../C/package-manager.xml:48(para)
+msgid ""
+"Click <guimenu>System</guimenu><guisubmenu>Administration</"
+"guisubmenu><guisubmenu>Package Manager</guisubmenu>."
+msgstr ""
+"Fare clic su <guimenu>Sistema</guimenu><guisubmenu>Amministrazione</"
+"guisubmenu><guisubmenu>Package Manager</guisubmenu>."
+
+#: ../C/package-manager.xml:51(emphasis)
+msgid "Command line"
+msgstr "Riga di comando"
+
+#: ../C/package-manager.xml:52(para)
+msgid "Execute the following command at the prompt:"
+msgstr "Al prompt eseguire il seguente comando:"
+
+#: ../C/package-manager.xml:53(userinput)
+#, no-wrap
+msgid "$ packagemanager &amp;"
+msgstr "$ packagemanager &amp;"
+
+#: ../C/package-manager.xml:58(title)
+msgid "When You Start Package Manager"
+msgstr "Quando si avvia Package Manager"
+
+#: ../C/package-manager.xml:59(para)
+msgid ""
+"When you start the <application>Package Manager</application> ,the following "
+"window is displayed:"
+msgstr ""
+"Quando si avvia <application>Package Manager</application>, viene visualizzata "
+"la seguente finestra:"
+
+#: ../C/package-manager.xml:60(para)
+msgid ""
+"The main window of the <application>Package Manager</application> is divided "
+"into the following elements :"
+msgstr ""
+"La finestra principale di <application>Package Manager</application> è composta dai "
+"seguenti elementi."
+
+#: ../C/package-manager.xml:61(emphasis)
+msgid "List of Packages by Category"
+msgstr "Elenco di pacchetti per categoria"
+
+#: ../C/package-manager.xml:62(para)
+msgid ""
+"You can browse the available packages by category. The dropdown menu shows "
+"the list of categories available."
+msgstr ""
+"È possibile sfogliare i pacchetti disponibili in base alla categoria. Nel menu a discesa "
+"viene visualizzato l'elenco delle categorie disponibili."
+
+#: ../C/package-manager.xml:65(emphasis)
+msgid "List of Packages by Status"
+msgstr "Elenco di pacchetti per stato"
+
+#: ../C/package-manager.xml:66(para)
+msgid ""
+"The <guilabel>Show</guilabel> dropdown menu allows you to filter the list of "
+"packages by the options listed below:"
+msgstr ""
+"Nel menu a discesa <guilabel>Mostra</guilabel> è possibile filtrare l'elenco dei "
+"pacchetti in base alle seguenti opzioni."
+
+#: ../C/package-manager.xml:67(para)
+msgid ""
+"<emphasis role=\"strong\">All Packages</emphasis>– Shows the list of all "
+"packages available in the current repository."
+msgstr ""
+"<emphasis role=\"strong\">Tutti i pacchetti</emphasis>: consente di visualizzare "
+"l'elenco di tutti i pacchetti disponibili nel repository corrente."
+
+#: ../C/package-manager.xml:69(para)
+msgid ""
+"<emphasis role=\"strong\">Installed Packages</emphasis> – Shows the list of "
+"packages installed on your system."
+msgstr ""
+"<emphasis role=\"strong\">Pacchetti installati</emphasis>: consente di visualizzare "
+"l'elenco dei pacchetti installati sul sistema."
+
+#: ../C/package-manager.xml:71(para)
+msgid ""
+"<emphasis role=\"strong\">Selected Packages</emphasis> – Shows the list of "
+"packages you have selected."
+msgstr ""
+"<emphasis role=\"strong\">Pacchetti selezionati</emphasis>: consente di visualizzare "
+"l'elenco dei pacchetti selezionati."
+
+#: ../C/package-manager.xml:73(para)
+msgid ""
+"<emphasis role=\"strong\">Updates Available</emphasis> — Shows the list of "
+"packages that have newer versions available in the current repository."
+msgstr ""
+"<emphasis role=\"strong\">Aggiornamenti disponibili</emphasis>: consente di "
+"visualizzare l'elenco dei pacchetti per cui sono disponibili versioni più recenti nel repository corrente."
+
+#: ../C/package-manager.xml:78(emphasis)
+msgid "Toolbar"
+msgstr "Barra degli strumenti"
+
+#: ../C/package-manager.xml:79(para)
+msgid ""
+"The toolbar contains the icons for a subset of the commands that can be "
+"performed by using the menus on the menubar."
+msgstr ""
+"La barra degli strumenti contiene le icone per un sottoinsieme di comandi che possono "
+"essere eseguiti con i menu della barra dei menu."
+
+#: ../C/package-manager.xml:82(emphasis)
+msgid "Menubar"
+msgstr "Barra dei menu"
+
+#: ../C/package-manager.xml:83(para)
+msgid ""
+"You can access the menus on the menubar to perform all of the commands "
+"related to the Package Manager."
+msgstr ""
+"È possibile accedere ai menu della barra dei menu per eseguire tutti i comandi "
+"relativi a Package Manager."
+
+#: ../C/package-manager.xml:87(emphasis)
+msgid "Package Name and Description"
+msgstr "Nome pacchetto e descrizione"
+
+#: ../C/package-manager.xml:88(para)
+msgid ""
+"The list of packages in the selected category and a brief description are "
+"displayed here."
+msgstr ""
+"Qui sono visualizzati l'elenco dei pacchetti nella categoria selezionata e una "
+"breve descrizione."
+
+#: ../C/package-manager.xml:91(emphasis)
+msgid "Package Details"
+msgstr "Dettagli pacchetto"
+
+#: ../C/package-manager.xml:92(para)
+msgid ""
+"Click on a package to select it. Details of the selected package such as "
+"name, version, file dependencies, are displayed in this window."
+msgstr ""
+"Fare clic su un pacchetto per selezionarlo. In questa finestra sono visualizzati i dettagli "
+"del pacchetto selezionato, ad esempio il nome, la versione e le dipendenze dei file."
+
+#: ../C/package-manager.xml:95(emphasis)
+msgid "Repository Dropdown Menu"
+msgstr "Menu a discesa Repository"
+
+#: ../C/package-manager.xml:96(para)
+msgid ""
+"The list of available repositories are shown in the repository dropdown "
+"menu. Click on a repository name to select it."
+msgstr ""
+"In questo menu a discesa è visualizzato l'elenco dei repository disponibili."
+"Fare clic sul nome di un repository per selezionarlo."
+
+#: ../C/package-manager.xml:97(para)
+msgid ""
+"Click the <guilabel>Reload</guilabel> button to reload the Package Manager "
+"and view the list of the packages from the newly—selected repository."
+msgstr ""
+"Fare clic sul pulsante <guilabel>Ricarica</guilabel> per ricaricare Package Manager "
+"e visualizzare l'elenco dei pacchetti del repository appena selezionato."
+
+#: ../C/package-manager.xml:103(title)
+msgid "Install a Package"
+msgstr "Installazione di un pacchetto"
+
+#: ../C/package-manager.xml:104(para)
+msgid "Perform the following steps to install a package:"
+msgstr "Per installare un pacchetto, attenersi alla seguente procedura."
+
+#: ../C/package-manager.xml:105(para)
+msgid ""
+"In the main window of the <application>Package Manager</application>, click "
+"the <guibutton>Reload</guibutton> button in order to view the latest list of "
+"the packages available to you."
+msgstr ""
+"Nella finestra principale di <application>Package Manager</application> fare clic "
+"sul pulsante <guibutton>Ricarica</guibutton> per visualizzare l'elenco aggiornato dei "
+"pacchetti disponibili."
+
+#: ../C/package-manager.xml:107(para)
+msgid "Check the box next to the package to select it."
+msgstr "Selezionare la casella di controllo accanto al pacchetto desiderato per selezionarlo."
+
+#: ../C/package-manager.xml:109(para)
+msgid ""
+"Click on <guibutton>Install/Update</guibutton> in the toolbar to start the "
+"package installation process."
+msgstr ""
+"Fare clic su <guibutton>Installa/Aggiorna</guibutton> nella barra degli strumenti per "
+"avviare il processo di installazione del pacchetto."
+
+#: ../C/package-manager.xml:110(para)
+msgid ""
+"You can also choose <guimenu>Package</guimenu><guimenuitem>Install/Update</"
+"guimenuitem> to start the package installation process."
+msgstr ""
+"In alternativa selezionare <guimenu>Pacchetto</guimenu><guimenuitem>Installa/"
+"Aggiorna</guimenuitem>."
+
+#: ../C/package-manager.xml:112(para)
+msgid ""
+"The Package Manager checks for dependencies. Click <emphasis>Show Details</"
+"emphasis> to view the details."
+msgstr ""
+"Package Manager cercherà le dipendenze. Fare clic su <emphasis>Mostra dettagli</"
+"emphasis> per visualizzare i dettagli."
+
+#: ../C/package-manager.xml:113(para) ../C/package-manager.xml:116(para)
+msgid ""
+"Click <guibutton>Cancel</guibutton> to cancel the package installation. No "
+"changes are made and you are returned to the main window."
+msgstr ""
+"Fare clic su <guibutton>Annulla</guibutton> per annullare l'installazione del pacchetto. "
+"Non verrà apportata alcuna modifica e verrà visualizzata la finestra principale."
+
+#: ../C/package-manager.xml:115(para)
+msgid ""
+"The <literal>Install Confirmation</literal> dialog box is displayed. Review "
+"the package installation information and the package dependencies."
+msgstr ""
+"Verrà visualizzata la finestra di dialogo <literal>Conferma installazione/aggiornamento"
+"</literal>. Verificare le informazioni sull'installazione del pacchetto e le dipendenze del pacchetto."
+
+#: ../C/package-manager.xml:118(para)
+msgid "The packages are downloaded and installed."
+msgstr "I pacchetti verranno scaricati e installati."
+
+#: ../C/package-manager.xml:120(para) ../C/package-manager.xml:136(para)
+msgid ""
+"Click the <guibutton>Reload</guibutton> button to view the updated list of "
+"packages."
+msgstr ""
+"Fare clic sul pulsante <guibutton>Ricarica</guibutton> per visualizzare l'elenco aggiornato "
+"dei pacchetti."
+
+#: ../C/package-manager.xml:124(title)
+msgid "Remove a Package"
+msgstr "Rimozione di un pacchetto"
+
+#: ../C/package-manager.xml:125(para)
+msgid "Perform the following steps to remove a package:"
+msgstr "Per rimuovere un pacchetto, attenersi alla seguente procedura."
+
+#: ../C/package-manager.xml:126(para)
+msgid "Check the box next to the package you want to remove."
+msgstr "Selezionare la casella di controllo accanto al pacchetto che si desidera rimuovere."
+
+#: ../C/package-manager.xml:128(para)
+msgid ""
+"Click the <guibutton>Remove</guibutton> button in the toolbar to start the "
+"process."
+msgstr ""
+"Fare clic sul pulsante <guibutton>Rimuovi</guibutton> nella barra degli strumenti per "
+"avviare il processo di rimozione."
+
+#: ../C/package-manager.xml:129(para)
+msgid ""
+"You can also choose <guimenu>Package</guimenu><guimenuitem>Remove</"
+"guimenuitem> to remove a package."
+msgstr ""
+"In alternativa selezionare <guimenu>Pacchetto</guimenu><guimenuitem>Rimuovi</"
+"guimenuitem>."
+
+#: ../C/package-manager.xml:131(para)
+msgid ""
+"The <literal>Remove Confirmation</literal> dialog box is displayed. Review "
+"the packages to be removed and the package dependencies."
+msgstr ""
+"Verrà visualizzata la finestra di dialogo <literal>Conferma rimozione</literal>. Verificare "
+"i pacchetti da rimuovere e le dipendenze del pacchetto."
+
+#: ../C/package-manager.xml:133(para)
+msgid ""
+"Click <guibutton>OK</guibutton> to proceed. After you click the "
+"<guibutton>OK</guibutton> button, you cannot undo the package removal."
+msgstr ""
+"Fare clic su <guibutton>OK</guibutton> per continuare. Dopo che si è fatto clic sul "
+"pulsante <guibutton>OK</guibutton>, non è possibile annullare la rimozione del pacchetto."
+
+#: ../C/package-manager.xml:134(para)
+msgid ""
+"Click <guibutton>Cancel</guibutton> to cancel the process. No changes are "
+"made and you are returned to the main window."
+msgstr ""
+"Fare clic su <guibutton>Annulla</guibutton> per annullare il processo. Non verrà "
+"apportata alcuna modifica e verrà visualizzata la finestra principale."
+
+#: ../C/package-manager.xml:140(title)
+msgid "Search for a Package"
+msgstr "Ricerca di un pacchetto"
+
+#: ../C/package-manager.xml:141(para)
+msgid ""
+"Type the name of the package you want to search for in the <guilabel>Search</"
+"guilabel> box."
+msgstr ""
+"Digitare il nome del pacchetto che si desidera cercare nella casella <guilabel>Cerca</"
+"guilabel>."
+
+#: ../C/package-manager.xml:142(para)
+msgid "The following search parameters are available:"
+msgstr "Sono disponibili i seguenti parametri di ricerca:"
+
+#: ../C/package-manager.xml:143(para)
+msgid "<emphasis role=\"strong\">Name, Description or Keyword</emphasis> –"
+msgstr "<emphasis role=\"strong\">Nome, Descrizione o Parola chiave</emphasis>"
+
+#: ../C/package-manager.xml:145(para)
+msgid "<emphasis role=\"strong\">Maintainer</emphasis> –"
+msgstr "<emphasis role=\"strong\">Maintainer</emphasis>"
+
+#: ../C/package-manager.xml:147(para)
+msgid "<emphasis role=\"strong\">Dependencies</emphasis> –"
+msgstr "<emphasis role=\"strong\">Dipendenze</emphasis>"
+
+#: ../C/package-manager.xml:149(para)
+msgid "<emphasis role=\"strong\">Commands</emphasis> –"
+msgstr "<emphasis role=\"strong\">Comandi</emphasis>"
+
+#: ../C/package-manager.xml:152(para)
+msgid ""
+"Use the submenus under the <guimenu>Edit</guimenu> menu to cut, copy, paste, "
+"or clear text in the Search tab."
+msgstr ""
+"Usare i comandi del menu <guimenu>Modifica</guimenu> per tagliare, copiare, "
+"incollare o cancellare il testo nella scheda Cerca."
+
+#: ../C/package-manager.xml:154(title)
+msgid "Update a Package"
+msgstr "Aggiornamento di un pacchetto"
+
+#: ../C/package-manager.xml:155(para)
+msgid ""
+"Look for the green icon next to the installed package name. This icon "
+"indicates that updates are available for the package in the currently "
+"selected repository. Select the package and click on the <guibutton>Install/"
+"Update</guibutton> button to install the latest version of the package."
+msgstr ""
+"Individuare l'icona verde accanto al nome del pacchetto installato. Questa icona "
+"indica che sono disponibili degli aggiornamenti per il pacchetto nel repository "
+"correntemente selezionato. Selezionare il pacchetto e fare clic sul pulsante <guibutton>"
+"Installa/Aggiorna</guibutton> per installare l'ultima versione del pacchetto."
+
+#: ../C/package-manager.xml:157(title)
+msgid "Switch Between Configured Repositories"
+msgstr "Passaggio da un repository configurato all'altro"
+
+#: ../C/package-manager.xml:158(para)
+msgid ""
+"Use the <guilabel>Repositories</guilabel> drop-down menu on the toolbar to "
+"view a list of configured repositories. Click on a repository name to switch "
+"to a different repository."
+msgstr ""
+"Usare il menu a discesa <guilabel>Repository</guilabel> della barra degli strumenti "
+"per visualizzare un elenco dei repository configurati. Fare clic sul nome di un repository "
+"diverso per selezionarlo."
+
+#: ../C/package-manager.xml:160(title)
+msgid "Update the Current Image (Update All Packages)"
+msgstr "Aggiornamento dell'immagine corrente (Aggiorna tutti i pacchetti)"
+
+#: ../C/package-manager.xml:161(para)
+msgid "Perform the following steps to update your entire image :"
+msgstr "Per aggiornare l'intera immagine, attenersi alla seguente procedura."
+
+#: ../C/package-manager.xml:162(para)
+msgid ""
+"Click <guimenu>File</guimenu><guimenuitem>Update All</guimenuitem> or the "
+"<guilabel>Update All</guilabel> button to start the process of updating "
+"<emphasis role=\"strong\">all</emphasis> the packages in your image."
+msgstr ""
+"Selezionare <guimenu>File</guimenu><guimenuitem>Aggiorna tutto</guimenuitem> o "
+"fare clic sul pulsante <guilabel>Aggiorna tutto</guilabel> per avviare il processo di "
+"aggiornamento di <emphasis role=\"strong\">tutti</emphasis> i pacchetti nell'immagine."
+
+#: ../C/package-manager.xml:163(para)
+msgid ""
+"The <guilabel>Update All</guilabel> button is enabled when updates are "
+"available to the installed packages."
+msgstr ""
+"Il pulsante <guilabel>Aggiorna tutto</guilabel> viene abilitato quando sono disponibili "
+"degli aggiornamenti per i pacchetti installati."
+
+#: ../C/package-manager.xml:166(para)
+msgid ""
+"The <guilabel>Update All Confirmation</guilabel> dialog box is displayed."
+msgstr ""
+"Verrà visualizzata la finestra di dialogo <guilabel>Conferma processo Aggiorna tutto</guilabel>."
+
+#: ../C/package-manager.xml:167(para)
+msgid ""
+"During the <emphasis>Update All</emphasis> process, a clone of the active "
+"boot environment is created. This clone enables the user to "
+"<emphasis>rollback</emphasis> the system to the current boot environment if "
+"the Update All process fails to complete or if it or corrupts the system."
+msgstr ""
+"Durante il processo <emphasis>Aggiorna tutto</emphasis> viene creata una copia "
+"dell'ambiente di avvio attivo. Questa copia consente di eseguire il "
+"<emphasis>rollback</emphasis> del sistema in base all'ambiente di avvio corrente se "
+"il processo Aggiorna tutto non viene completato o se danneggia il sistema."
+
+#: ../C/package-manager.xml:169(para)
+msgid "Enter a name for the new boot environment clone that will be created."
+msgstr "Immettere un nome per la nuova copia dell'ambiente di avvio che verrà creata."
+
+#: ../C/package-manager.xml:170(para)
+msgid ""
+"It is recommended that users enter meaningful names for the boot environment "
+"clone. For example, <emphasis>OpenSolaris_11/15/08</emphasis> , clearly "
+"shows that the boot environment clone is a clone of the OpenSolaris OS and "
+"was created on <literal>11/15/08</literal>."
+msgstr ""
+"Si consiglia di immettere nomi significativi per la copia dell'ambiente di avvio. "
+"Ad esempio, <emphasis>OpenSolaris_11/15/08</emphasis> indica chiaramente "
+"che la copia dell'ambiente di avvio è una copia del sistema operativo OpenSolaris ed "
+"è stata creata il <literal>15/11/08</literal>."
+
+#: ../C/package-manager.xml:173(para)
+msgid ""
+"Click <guibutton>Proceed</guibutton> to continue the <emphasis>Update All</"
+"emphasis> process."
+msgstr ""
+"Fare clic su <guibutton>Continua</guibutton> per continuare il processo "
+"<emphasis>Aggiorna tutto</emphasis>."
+
+#: ../C/package-manager.xml:174(para)
+msgid ""
+"Click <guibutton>Cancel</guibutton> to cancel the process. No changes are "
+"made to the boot environment and the you are returned to the main window of "
+"the <application>Package Manager</application>."
+msgstr ""
+"Fare clic su <guibutton>Annulla</guibutton> per annullare il processo. Non "
+"verrà apportata alcuna modifica all'ambiente di avvio e verrà visualizzata la finestra "
+"principale di <application>Package Manager</application>."
+
+#: ../C/package-manager.xml:177(title)
+msgid "Update All Errors"
+msgstr "Errori del processo Aggiorna tutto"
+
+#: ../C/package-manager.xml:178(para)
+msgid ""
+"A new boot environment clone <emphasis role=\"strong\">must</emphasis> be "
+"created for the Update All process to be completed. An error message is "
+"displayed if a boot environment clone cannot be created. You may see the "
+"following error message dialog box:"
+msgstr ""
+"Per completare il processo Aggiorna tutto, è <emphasis role=\"strong\">necessario"
+"</emphasis> creare una nuova copia dell'ambiente di avvio. Se non è possibile creare "
+"una copia dell'ambiente di avvio, viene visualizzato un messaggio di errore. Può darsi "
+"che venga visualizzato il seguente messaggio di errore:"
+
+#: ../C/package-manager.xml:179(para)
+msgid ""
+"<literal>Not enough disk space: the Update All action cannot be performed. "
+"You may choose to return BE Management to manage your boot environments and "
+"free up disk space</literal>."
+msgstr ""
+"<literal>Spazio su disco insufficiente: il processo Aggiorna tutto non può essere eseguito. "
+"È possibile visualizzare Gestione ambiente di avvio per gestire gli ambienti di avvio e "
+"liberare dello spazio su disco</literal>."
+
+#: ../C/package-manager.xml:180(para)
+msgid ""
+"Perform the following steps if you wish to rectify the error and continue "
+"with the Update All process:"
+msgstr ""
+"Per correggere l'errore e continuare il processo Aggiorna tutto, attenersi alla seguente "
+"procedura."
+
+#: ../C/package-manager.xml:181(para)
+msgid ""
+"Click <guibutton>BE Management</guibutton> to go to the BE Management dialog "
+"box."
+msgstr ""
+"Fare clic su <guibutton>Gestione ambiente di avvio</guibutton> per visualizzare la "
+"finestra di dialogo Gestione ambiente di avvio."
+
+#: ../C/package-manager.xml:183(para)
+msgid ""
+"Follow the steps listed in <xref linkend=\"ghlik\"/> to delete old or unused "
+"boot environments and free up disk space."
+msgstr ""
+"Per eliminare gli ambienti di avvio precedenti o inutilizzati e liberare dello spazio su disco, "
+"attenersi alla procedura descritta in <xref linkend=\"ghlik\"/>."
+
+#: ../C/package-manager.xml:185(para)
+msgid ""
+"After you have rebooted your system, click the <guilabel>Update All</"
+"guilabel> icon to restart the process of updating all packages."
+msgstr ""
+"Dopo avere riavviato il sistema, fare clic sull'icona <guilabel>Aggiorna tutto</"
+"guilabel> per riavviare il processo di aggiornamento di tutti i pacchetti."
+
+#: ../C/package-manager.xml:190(title)
+msgid "Manage Boot Environments"
+msgstr "Gestione degli ambienti di avvio"
+
+#: ../C/package-manager.xml:191(para)
+msgid ""
+"For an OpenSolaris release, a boot environment is an instance of a bootable "
+"OpenSolaris environment. The boot environment consists of a root file system "
+"and, optionally, other file systems, such as <filename>/usr</filename>, "
+"<filename>/var</filename>, or <filename>/export</filename>. These other file "
+"systems are mounted below the root file system. The root file system and all "
+"other file systems of the boot environment that contain system software are "
+"required to be zfs datasets."
+msgstr ""
+"Per una versione di OpenSolaris, un ambiente di avvio è un'istanza di un ambiente "
+"OpenSolaris avviabile. L'ambiente di avvio consiste di un file system root ed, "
+"eventualmente, di altri file system, ad esempio <filename>/usr</filename>, "
+"<filename>/var</filename> o <filename>/export</filename>. Questi altri file "
+"system vengono attivati sotto il file system root. Il file system root e tutti gli altri "
+"file system dell'ambiente di avvio che contengono software di sistema devono "
+"essere set di dati zfs."
+
+#: ../C/package-manager.xml:192(para)
+msgid ""
+"An active boot environment is the one that is currently booted. Exactly one "
+"active boot environment can be booted. An inactive boot environment is not "
+"currently booted, but can be in a state of waiting for activation on the "
+"next reboot."
+msgstr ""
+"Un ambiente di avvio attivo è un ambiente correntemente avviato. È possibile avviare "
+"un solo ambiente di avvio attivo. Un ambiente di avvio inattivo non è un ambiente "
+"correntemente avviato, ma può essere in uno stato di attesa dell'attivazione "
+"al riavvio successivo."
+
+#: ../C/package-manager.xml:193(para)
+msgid "Link to GSG BE section."
+msgstr "Collegamento alla sezione relativa all'ambiente di avvio della guida introduttiva."
+
+#: ../C/package-manager.xml:194(para)
+msgid "Perform the following steps to manage your Boot Environments (BE):"
+msgstr "Per gestire gli ambienti di avvio, attenersi alla seguente procedura."
+
+#: ../C/package-manager.xml:195(para)
+msgid ""
+"Click on <guimenu>File</guimenu><guimenuitem>Boot Environment Management</"
+"guimenuitem>."
+msgstr ""
+"Selezionare <guimenu>File</guimenu><guimenuitem>Gestione ambiente di avvio</"
+"guimenuitem>."
+
+#: ../C/package-manager.xml:197(para)
+msgid ""
+"The <guilabel>Boot Environment Management</guilabel> dialog box is "
+"displayed. In this dialog box, you can perform the following actions:"
+msgstr ""
+"Verrà visualizzata la finestra di dialogo <guilabel>Gestione ambiente di avvio</guilabel>, "
+"nella quale è possibile seguire le seguenti operazioni."
+
+#: ../C/package-manager.xml:198(emphasis)
+msgid "Change the default boot environment."
+msgstr "Modificare l'ambiente di avvio predefinito."
+
+#: ../C/package-manager.xml:199(para)
+msgid ""
+"Select the radio button next to the boot environment that you want to boot "
+"into upon system reboot. This is the default boot environment."
+msgstr ""
+"Selezionare il pulsante di scelta accanto all'ambiente di avvio in cui si desidera eseguire "
+"il riavvio del sistema. Questo sarà l'ambiente di avvio predefinito."
+
+#: ../C/package-manager.xml:202(emphasis)
+msgid "Remove old or unused boot environments to free up disk space."
+msgstr "Rimuovere gli ambienti di avvio precedenti o inutilizzati per liberare dello spazio su disco."
+
+#: ../C/package-manager.xml:203(para)
+msgid "Select the checkbox next to the boot environment you want to delete."
+msgstr "Selezionare la casella di controllo accanto all'ambiente di avvio che si desidera eliminare."
+
+#: ../C/package-manager.xml:208(para)
+msgid "Click <guibutton>OK</guibutton> to proceed."
+msgstr "Fare clic su <guibutton>OK</guibutton> per continuare."
+
+#: ../C/package-manager.xml:209(para)
+msgid ""
+"Click <guibutton>Reset</guibutton> to revert the changes to the opening "
+"state."
+msgstr ""
+"Fare clic su <guibutton>Ripristina</guibutton> per ripristinare lo stato iniziale delle "
+"modifiche."
+
+#: ../C/package-manager.xml:210(para)
+msgid ""
+"Click <guibutton>Cancel</guibutton> to cancel all changes and return to the "
+"main window."
+msgstr ""
+"Fare clic su <guibutton>Annulla</guibutton> per annullare tutte le modifiche e "
+"visualizzare la finestra principale."
+
+#: ../C/package-manager.xml:212(para)
+msgid ""
+"If you clicked OK , the BE Management Confirmation dialog box is displayed. "
+"Review the changes to the boot environment and click <guibutton>OK</"
+"guibutton> to proceed."
+msgstr ""
+"Se si è fatto clic su OK , viene visualizzata la finestra d dialogo Conferma modifica "
+"gestione ambiente di avvio. Verificare le modifiche apportate all'ambiente di avvio, quindi "
+"fare clic su <guibutton>OK</guibutton> per continuare."
+
+#: ../C/package-manager.xml:213(para)
+msgid "The changes made will take effect only after system reboot."
+msgstr "Le modifiche apportate avranno effetto solo dopo il riavvio del sistema."
+
+#: ../C/package-manager.xml:215(para)
+msgid ""
+"Click <guibutton>Cancel</guibutton> to cancel the changes and return to the "
+"BE Management dialog box."
+msgstr ""
+"Fare clic su <guibutton>Annulla</guibutton> per annullare le modifiche e visualizzare la "
+"finestra di dialogo Conferma modifica gestione ambiente di avvio."
+
+#: ../C/package-manager.xml:217(para)
+msgid "Reboot your system."
+msgstr "Riavviare il sistema."
+
+#: ../C/package-manager.xml:221(title)
+msgid "Edit Repositories"
+msgstr "Modifica repository"
+
+#: ../C/package-manager.xml:222(para)
+msgid "Perform the following steps to add, remove, or configure repositories:"
+msgstr "Per aggiungere, rimuovere o configurare i repository, attenersi alla seguente procedura."
+
+#: ../C/package-manager.xml:223(para)
+msgid ""
+"Click <guimenu>Settings</guimenu><guimenuitem>Edit Repositories</"
+"guimenuitem>."
+msgstr ""
+"Selezionare <guimenu>Impostazioni</guimenu><guimenuitem>Modifica repository</"
+"guimenuitem>."
+
+#: ../C/package-manager.xml:225(para)
+msgid ""
+"The <literal>Manage Repositories</literal> dialog box is displayed. The "
+"following actions can be performed in this dialog box:"
+msgstr ""
+"Verrà visualizzata la finestra di dialogo <literal>Gestisci repository</literal>, nella quale "
+"è possibile eseguire le seguenti operazioni."
+
+#: ../C/package-manager.xml:226(para)
+msgid ""
+"<emphasis role=\"strong\">Add a Repository</emphasis> – To add a new "
+"repository, enter the name and the address (URL) of the repository. Click "
+"<guibutton>Add</guibutton>."
+msgstr ""
+"<emphasis role=\"strong\">Aggiunta di un repository</emphasis>: per aggiungere un "
+"nuovo repository, immettere il nome e l'indirizzo (URL) del repository, quindi fare clic su "
+"<guibutton>Aggiungi</guibutton>."
+
+#: ../C/package-manager.xml:228(para)
+msgid ""
+"<emphasis role=\"strong\">Remove a Repository</emphasis> – To remove a "
+"repository, click on a repository name from the list to select it. Click "
+"<guibutton>Remove</guibutton>."
+msgstr ""
+"<emphasis role=\"strong\">Rimozione di un repository</emphasis>: per rimuovere un "
+"repository, fare clic sul nome di un repository nell'elenco per selezionarlo, quindi fare clic "
+"su <guibutton>Rimuovi</guibutton>."
+
+#: ../C/package-manager.xml:229(para)
+msgid ""
+"A repository that has been set as preferred repository cannot be removed. To "
+"remove a preferred repository, set a non-preferred repository as preferred, "
+"and then remove the repository."
+msgstr ""
+"Non è possibile rimuovere un repository impostato come preferito. Per rimuovere un "
+"repository preferito, impostare un repository non preferito come preferito, quindi "
+"rimuovere il repository precedentemente impostato come preferito."
+
+#: ../C/package-manager.xml:232(emphasis)
+msgid "Set a Preferred Repository"
+msgstr "Impostazione di un repository preferito"
+
+#: ../C/package-manager.xml:233(para)
+msgid ""
+"A preferred repository is the default repository where the source for the "
+"packages are downloaded from."
+msgstr ""
+"Un repository preferito è il repository predefinito da cui viene scaricata l'origine dei "
+"pacchetti."
+
+#: ../C/package-manager.xml:234(para)
+msgid ""
+"To set a repository as a preferred repository, click the radio button next "
+"to the repository you would like to set as preferred repository. Click "
+"<guibutton>Close</guibutton> if you are not making any other changes to the "
+"repository information."
+msgstr ""
+"Per impostare un repository come preferito, selezionare il pulsante di scelta "
+"accanto al repository da impostare come preferito. Fare clic su <guibutton>"
+"Chiudi</guibutton> se non si desidera apportare alcuna altra modifica alle "
+"informazioni sul repository."
+
+#: ../C/package-manager.xml:236(para)
+msgid ""
+"<emphasis role=\"strong\">Modify a Repository</emphasis> – Perform the "
+"following steps to modify a repository :"
+msgstr ""
+"<emphasis role=\"strong\">Modifica di un repository</emphasis>: per modificare un "
+"repository, attenersi alla seguente procedura."
+
+#: ../C/package-manager.xml:237(para)
+msgid "Select the repository you want to modify."
+msgstr "Selezionare il repository da modificare."
+
+#: ../C/package-manager.xml:239(para)
+msgid ""
+"Click the <guibutton>Modify</guibutton> button. The <literal>Modify "
+"Repository</literal> dialog box is displayed."
+msgstr ""
+"Fare clic sul pulsante <guibutton>Modifica</guibutton>. Verrà visualizzata la finestra "
+"di dialogo <literal>Modifica repository</literal>."
+
+#: ../C/package-manager.xml:241(para)
+msgid ""
+"Type a valid name for the repository and the URL of the repository. A "
+"repository name is considered valid if it does not exist in the current list "
+"of repositories."
+msgstr ""
+"Digitare un nome valido e l'URL per il repository. Il nome "
+"di un repository è considerato valido se non esiste nell'elenco corrente di "
+"repository."
+
+#: ../C/package-manager.xml:243(para)
+msgid ""
+"Click <guibutton>OK</guibutton> to save the changes and return to the "
+"<literal>Manage Repositories</literal> dialog box."
+msgstr ""
+"Fare clic su <guibutton>OK</guibutton> per salvare le modifiche e visualizzare la finestra "
+"di dialogo <literal>Gestisci repository</literal>."
+
+#: ../C/package-manager.xml:244(para)
+msgid ""
+"Click <guibutton>Cancel</guibutton> to cancel your changes. You are returned "
+"to the <literal>Manage Repositories</literal> dialog box."
+msgstr ""
+"Fare clic su <guibutton>Annulla</guibutton> per annullare le modifiche. Verrà visualizzata "
+"la finestra di dialogo <literal>Gestisci repository</literal>."
