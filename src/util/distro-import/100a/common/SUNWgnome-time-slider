@@ -2,4 +2,8 @@ package SUNWgnome-time-slider
 classification "Applications/Configuration and Preferences"
 import SUNWgnome-time-slider
 import SUNWgnome-time-slider-root
+depend SUNWgksu
+depend SUNWgnome-python-libs
+depend SUNWPython
+depend SUNWzfs-auto-snapshot
 end package
