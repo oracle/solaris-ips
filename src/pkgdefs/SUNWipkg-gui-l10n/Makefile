@@ -54,19 +54,13 @@ prototype: FRC
 			$$5 = "root"; \
 			$$6 = "other"; \
 		} \
-		$$3 ~ /share\/gnome\/help/ { \
+		$$3 ~ /share\/gnome\/help\/package\-manager/ { \
 			$$6 = "bin"; \
 		} \
 		$$3 ~ /^(etc(\/zones)?|usr(\/share(\/lib)?)?|var(\/svc(\/manifest)?)?)$$/ { \
 			$$6 = "sys"; \
 		} \
-		$$3 ~ /^usr\/share\/locale/ { \
-			print \
-		} \
-		$$3 ~ /^usr\/share(\/gnome(\/help(\/package\-manager)?)?)?$$/ { \
-			print \
-		} \
-		$$3 ~ /^usr\/share\/gnome\/help\/package\-manager\/[a-z]+_?[A-Z]*($$|\/.*\.xml)/ { \
+		$$3 ~ /^usr\/share(\/locale|\/gnome\/help\/package\-manager($$|\/[^C]))/ { \
 			print \
 		}' > prototype
 
