@@ -180,11 +180,12 @@ class Repository:
                 self.w_repository_name.grab_focus()
                 j = 0
                 select_auth = -1
-                preferred_authority = self.img.get_default_authority()
+                preferred = self.img.get_default_authority()
                 for a in auths:
                         l = self.img.split_authority(a)
                         name = l[0]
-                        is_preferred = name == preferred_authority
+                        is_preferred = \
+                            name == preferred
                         if is_preferred:
                                 self.initial_default = j
                         if selected_auth:
@@ -271,7 +272,8 @@ class Repository:
                 if itr != None:
                         model = selection[0]
                         preferred = model.get_value(itr, 1)
-                        self.w_repository_remove_button.set_sensitive(not preferred)
+                        if len(self.repository_list) > 1:
+                                self.w_repository_remove_button.set_sensitive(not preferred)
 
         def __on_repositorytreeview_button_release_event(self, widget, event):
                 if event.type == gtk.gdk.BUTTON_RELEASE:
@@ -360,37 +362,46 @@ class Repository:
                                 return
                         try:
                                 self.__delete_repository(self.old_modify_name, False)
-                        except RuntimeError:
-                                # Do nothing
-                                err = strt("Failed to modify %s." % omn + \
-                                "\nPlease check your permissions.")
-                                gobject.idle_add(self.__error_occured, err)
-                                sel = None
-                                selection = self.w_repository_treeview.get_selection()
-                                model, ite = selection.get_selected()
-                                if ite:
-                                        sel = model.get_value(ite, 0)
-                                self.__prepare_repository_list(False, sel)
-                                return
+                        except RuntimeError, ex:
+                                if "Permission denied" in str(ex):
+                                        # Do nothing
+                                        err = strt("Failed to modify %s." % omn + \
+                                            "\nPlease check your permissions.")
+                                        self.__error_with_reset_repo_selection(err)
+                                        return
+                                elif "no defined authorities" in str(ex):
+                                        pass
+                                else:
+                                        err = str(ex)
+                                        self.__error_with_reset_repo_selection(err)
+                                        return
                 try:
                         self.__add_repository(name, url, False)
-                except RuntimeError:
+                        if self.old_modify_preferred:
+                                self.img.set_preferred_authority(name)
+                                self.__prepare_repository_list(False)
+                except RuntimeError, ex:
                         # Do nothing
                         somn = self.old_modify_name
-                        err = (self.parent._("Failed to modify %s.") % somn) + \
-                        self.parent._("\nPlease check your permissions.")
-                        gobject.idle_add(self.__error_occured, err)
-                        sel = None
-                        selection = self.w_repository_treeview.get_selection()
-                        model, ite = selection.get_selected()
-                        if ite:
-                                sel = model.get_value(ite, 0)
-                        self.__prepare_repository_list(False, sel)
-                        return
+                        if "Permission denied" in str(ex):
+                                # Do nothing
+                                err = strt("Failed to modify %s." % somn + \
+                                    "\nPlease check your permissions.")
+                                self.__error_with_reset_repo_selection(err)
+                                return
+                        elif "no defined authorities" in str(ex):
+                                pass
+                        else:
+                                err = str(ex)
+                                self.__error_with_reset_repo_selection(err)
+                                return
                 except api_errors.CatalogRefreshException:
                         try:
                                 somn = self.old_modify_name
-                                self.__add_repository(somn, self.old_modify_url, False)
+                                self.__add_repository(somn, \
+                                    self.old_modify_url, False, stop_thread=False)
+                                if somn != name:
+                                        self.__delete_repository(name, False)
                                 err = self.parent._("Failed to modify %s.") % somn + \
                                 self.parent._("\nPlease check the network connection or URL.\n" \
                                 "Is the repository accessible?")
@@ -416,7 +427,7 @@ class Repository:
                         name = model.get_value(itr, 0)
                         self.__delete_repository(name)
 
-        def __add_repository(self, auth, origin_url, silent=True):
+        def __add_repository(self, auth, origin_url, silent=True, stop_thread=True):
 
                 if not misc.valid_auth_url(origin_url):
                         err = self.parent._("Invalid URL:\n%s" % origin_url)
@@ -431,19 +442,14 @@ class Repository:
                         self.img.set_authority(auth, origin_url=origin_url,
                             ssl_key=ssl_key, ssl_cert=ssl_cert,
                             refresh_allowed=refresh_catalogs)
-                        self.__prepare_repository_list(silent, auth)
+                        self.__prepare_repository_list(silent, \
+                            auth, stop_thread=stop_thread)
                 except RuntimeError:
                         if not silent:
                                 raise
                         err = (self.parent._("Failed to add %s.") % auth) + \
                         self.parent._("\nPlease check your permissions.")
-                        gobject.idle_add(self.__error_occured, err)
-                        sel = None
-                        selection = self.w_repository_treeview.get_selection()
-                        model, ite = selection.get_selected()
-                        if ite:
-                                sel = model.get_value(ite, 0)
-                        self.__prepare_repository_list(False, sel)
+                        self.__error_with_reset_repo_selection(err)
                 except api_errors.CatalogRefreshException:
                         if not silent:
                                 raise
@@ -451,15 +457,7 @@ class Repository:
                         err = self.parent._("Failed to add %s.") % auth + \
                         self.parent._("\nPlease check the network connection or URL.\nIs the " \
                         "repository accessible?")
-                        gobject.idle_add(self.__error_occured, err)
-                        sel = None
-                        selection = self.w_repository_treeview.get_selection()
-                        model, ite = selection.get_selected()
-                        if ite:
-                                sel = model.get_value(ite, 0)
-                        self.__prepare_repository_list(False, sel)
-
-
+                        self.__error_with_reset_repo_selection(err)
 
         def __delete_repository(self, name, silent=True):
                 try:
@@ -471,13 +469,19 @@ class Repository:
                                 raise
                         err = (self.parent._("Failed to delete %s.") % name) + \
                         self.parent._("\nPlease check your permissions.")
-                        sel = None
-                        selection = self.w_repository_treeview.get_selection()
-                        model, ite = selection.get_selected()
-                        if ite:
-                                sel = model.get_value(ite, 0)
-                        gobject.idle_add(self.__error_occured, err)
-                        self.__prepare_repository_list(False, sel)
+                        self.__error_with_reset_repo_selection(err)
+
+        def __error_with_reset_repo_selection(self, error_msg):
+                gobject.idle_add(self.__error_occured, error_msg)
+                self.__reset_repo_selection()
+
+        def __reset_repo_selection(self):
+                sel = None
+                selection = self.w_repository_treeview.get_selection()
+                model, ite = selection.get_selected()
+                if ite:
+                        sel = model.get_value(ite, 0)
+                self.__prepare_repository_list(False, sel)
 
         def __error_occured(self, error_msg):
                 msgbox = gtk.MessageDialog(parent = \

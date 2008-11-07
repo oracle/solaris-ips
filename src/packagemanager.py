@@ -1511,12 +1511,19 @@ class PackageManager:
                 catalogs = api_o.img.catalogs
                 categories = {}
                 sections = {}
+                share_path = "/usr/share/package-manager/data/"
                 for cat in catalogs:
                         category = imginfo.read(self.application_dir + \
-                            "/usr/share/package-manager/data/" + cat)
+                            share_path + cat)
+                        if len(category) == 0:
+                                category = imginfo.read(self.application_dir + \
+                                    share_path + "opensolaris.org")                                
                         categories[cat] = category
                         section = sectioninfo.read(self.application_dir + \
-                            "/usr/share/package-manager/data/" + cat + ".sections")
+                            share_path + cat + ".sections")
+                        if len(section) == 0:
+                                section = sectioninfo.read(self.application_dir + \
+                                    share_path + "opensolaris.org.sections")
                         sections[cat] = section
                 # Speedup, instead of checking if the pkg is already in the list, 
                 # iterating through all elements, we will only compare to the previous
