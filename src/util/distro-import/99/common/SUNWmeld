@@ -1,5 +1,5 @@
 package SUNWmeld
-classification "Applications/System U"
+classification "Applications/System Utilities"
 import SUNWmeld
 version 1.1.5.1
 end package

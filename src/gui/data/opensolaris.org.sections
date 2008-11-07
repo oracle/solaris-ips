@@ -2,23 +2,23 @@
 category = Builds,Releases,Developer Tools,AMP Stack,Office Tools
 
 [Applications]
-category = Accessories,Configuration and Preferences,Education,Games,Graphics and Imaging,Internet,Office,Applets,Plug-ins and Run-times,Science,Sound and Video,System Utilities,Universal Access
+category = Accessories,Applets,Configuration and Preferences,Games,Graphics and Imaging,Internet,Office,Plug-ins and Run-times,Sound and Video,System Utilities,Universal Access
 
 [Desktop (GNOME)]
 category = Documentation,File Managers,Libraries,Localizations (Desktop),Scripts,Sessions,Trusted Extensions,Window Managers
 
 [Development]
-category = Integrated Development Environments,Source Code Management,Distribution Tools,C,C++,Databases,GNOME and GTK+,GNU,Java,Other Languages,Perl,PHP,Python,Ruby,System,X11
+category = C,C++,Databases,Distribution Tools,GNOME and GTK+,GNU,Integrated Development Environments,Java,Other Languages,PHP,Perl,Python,Ruby,Source Code Management,System,X11
 
 [Distributions]
-category = Desktop,Server
+category = Desktop
 
 [Drivers]
-category = Display,Input devices,Networking,Ports,Media,Storage,Other Peripherals
+category = Display,Media,Networking,Other Peripherals,Ports,Storage
 
 [System]
-category = Administration and Configuration,Cluster,Core,Databases (System),Enterprise Management,File System,Fonts,Hardware,High Performance Computing,Internationalization,Libraries (System),Localizations (System),Media,Packaging,Printing,Security,Services,Shells,Software Management,Text Tools,Trusted,X11 (System),Virtualization
+category = Administration and Configuration,Core,Databases (System),Enterprise Management,File System,Fonts,Hardware,High Performance Computing,Internationalization,Libraries (System),Localizations (System),Media,Packaging,Printing,Security,Services,Shells,Software Management,Text Tools,Trusted,Virtualization,X11 (System)
 
 [Web Services]
-category = Application and Web Servers,Business Applications,Identity,Portals,SOA,Social Applications 
+category = Application and Web Servers
 

@@ -1,4 +1,4 @@
 package SUNWtgnome-l10n-ui-sv
-classification "Desktop (GNOME)/Trusted"
+classification "Desktop (GNOME)/Trusted Extensions"
 import SUNWtgnome-l10n-ui-sv
 end package

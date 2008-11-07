@@ -1,4 +1,4 @@
 package SUNWtgnome-xagent
-classification "Desktop (GNOME)/Trusted"
+classification "Desktop (GNOME)/Trusted Extensions"
 import SUNWtgnome-xagent
 end package

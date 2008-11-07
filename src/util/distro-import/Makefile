@@ -424,6 +424,13 @@ all_unbundleds:	$(UNBUNDLED_TARGETS:%=$(BUILDID)/%)
 	$(MAKE) $(BUILDID)/$(UNBUNDLED_CLUSTERS)
 
 
+#
+# Used to generate the GUI Package Manager classification files from the
+# current package classifications.
+#
+guiclassification:
+	./gen_os_files.py
+
 %/SUNWipkg %/backpublish:
 	$(MAKE) BUILDID=$(@D) $(@F)
 

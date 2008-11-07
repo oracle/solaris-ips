@@ -437,7 +437,7 @@ category = Libraries (System)
 category = Source Code Management
 
 [SUNWcxwsvr]
-category = X11
+category = X11 (System)
 
 [SUNWdbus]
 category = Libraries (System)
@@ -536,7 +536,7 @@ category = Plug-ins and Run-times
 category = Plug-ins and Run-times
 
 [SUNWdexwsvr]
-category = X11
+category = X11 (System)
 
 [SUNWdfb]
 category = Display
@@ -614,7 +614,7 @@ category = Universal Access
 category = Core
 
 [SUNWesxwsvr]
-category = X11
+category = X11 (System)
 
 [SUNWevolution]
 category = Internet
@@ -740,7 +740,7 @@ category = Libraries (System)
 category = Localizations (System)
 
 [SUNWfrxwsvr]
-category = X11
+category = X11 (System)
 
 [SUNWfsexam]
 category = System Utilities
@@ -1193,7 +1193,7 @@ category = Python
 category = Python
 
 [SUNWgnome-remote-desktop]
-category = X11
+category = X11 (System)
 
 [SUNWgnome-screenshot]
 category = Graphics and Imaging
@@ -1379,7 +1379,7 @@ category = Core
 category = Other Peripherals
 
 [SUNWhkxwsvr]
-category = X11
+category = X11 (System)
 
 [SUNWhos]
 category = Localizations (System)
@@ -1394,7 +1394,7 @@ category = Hardware
 category = Networking
 
 [SUNWhxwsvr]
-category = X11
+category = X11 (System)
 
 [SUNWib]
 category = Hardware
@@ -1568,7 +1568,7 @@ category = Text Tools
 category = Localizations (System)
 
 [SUNWitxwsvr]
-category = X11
+category = X11 (System)
 
 [SUNWiwh]
 category = Networking
@@ -1643,7 +1643,7 @@ category = Ruby
 category = Services
 
 [SUNWjxwsvr]
-category = X11
+category = X11 (System)
 
 [SUNWkdc]
 category = Security
@@ -1664,7 +1664,7 @@ category = Security
 category = Core
 
 [SUNWkxwsvr]
-category = X11
+category = X11 (System)
 
 [SUNWlang-ar]
 category = Localizations (System)
@@ -2192,7 +2192,7 @@ category = Libraries (System)
 category = Storage
 
 [SUNWmeld]
-category = System U
+category = System Utilities
 
 [SUNWmemcached]
 category = Application and Web Servers
@@ -2279,19 +2279,19 @@ category = Localizations (System)
 category = Localizations (System)
 
 [SUNWmysql]
-category = Databases
+category = Databases (System)
 
 [SUNWmysql-base]
-category = Databases
+category = Databases (System)
 
 [SUNWmysql-python]
 category = Databases
 
 [SUNWmysql5]
-category = Databases
+category = Databases (System)
 
 [SUNWmysql5jdbc]
-category = Databases
+category = Databases (System)
 
 [SUNWmysql5test]
 category = Databases
@@ -2465,7 +2465,7 @@ category = Perl
 category = Perl
 
 [SUNWpgadmin3]
-category = Databases
+category = Databases (System)
 
 [SUNWpgbouncer-pg83]
 category = Administration and Configuration
@@ -2534,7 +2534,7 @@ category = Perl
 category = System Utilities
 
 [SUNWplxwsvr]
-category = X11
+category = X11 (System)
 
 [SUNWpm]
 category = Administration and Configuration
@@ -2558,25 +2558,25 @@ category = Core
 category = Core
 
 [SUNWpostgr]
-category = Databases
+category = Databases (System)
 
 [SUNWpostgr-82-client]
-category = Databases
+category = Databases (System)
 
 [SUNWpostgr-82-contrib]
-category = Databases
+category = Databases (System)
 
 [SUNWpostgr-82-devel]
 category = Databases
 
 [SUNWpostgr-82-docs]
-category = Databases
+category = Databases (System)
 
 [SUNWpostgr-82-jdbc]
-category = Databases
+category = Databases (System)
 
 [SUNWpostgr-82-l10n-ja]
-category = Databases
+category = Databases (System)
 
 [SUNWpostgr-82-libs]
 category = Databases
@@ -2585,25 +2585,25 @@ category = Databases
 category = Databases
 
 [SUNWpostgr-82-server]
-category = Databases
+category = Databases (System)
 
 [SUNWpostgr-82-server-data-root]
-category = Databases
+category = Databases (System)
 
 [SUNWpostgr-82-tcl]
-category = Databases
+category = Databases (System)
 
 [SUNWpostgr-83-client]
-category = Databases
+category = Databases (System)
 
 [SUNWpostgr-83-contrib]
-category = Databases
+category = Databases (System)
 
 [SUNWpostgr-83-devel]
 category = Databases
 
 [SUNWpostgr-83-docs]
-category = Databases
+category = Databases (System)
 
 [SUNWpostgr-83-libs]
 category = Databases
@@ -2612,40 +2612,40 @@ category = Databases
 category = Databases
 
 [SUNWpostgr-83-server]
-category = Databases
+category = Databases (System)
 
 [SUNWpostgr-83-tcl]
 category = Databases
 
 [SUNWpostgr-contrib]
-category = Databases
+category = Databases (System)
 
 [SUNWpostgr-docs]
-category = Databases
+category = Databases (System)
 
 [SUNWpostgr-jdbc]
-category = Databases
+category = Databases (System)
 
 [SUNWpostgr-l10n-ja]
-category = Databases
+category = Databases (System)
 
 [SUNWpostgr-libs]
-category = Databases
+category = Databases (System)
 
 [SUNWpostgr-pl]
 category = Databases
 
 [SUNWpostgr-server]
-category = Databases
+category = Databases (System)
 
 [SUNWpostgr-server-data]
-category = Databases
+category = Databases (System)
 
 [SUNWpostgr-tcl]
 category = Databases
 
 [SUNWpostgr-upgrade]
-category = Databases
+category = Databases (System)
 
 [SUNWpostrun]
 category = System Utilities
@@ -2711,7 +2711,7 @@ category = Printing
 category = Printing
 
 [SUNWptxwsvr]
-category = X11
+category = X11 (System)
 
 [SUNWpycups]
 category = Printing
@@ -2834,7 +2834,7 @@ category = Networking
 category = Ruby
 
 [SUNWruxwsvr]
-category = X11
+category = X11 (System)
 
 [SUNWsacom]
 category = Enterprise Management
@@ -3029,10 +3029,10 @@ category = Core
 category = Storage
 
 [SUNWsqlite3]
-category = Databases
+category = Databases (System)
 
 [SUNWsqlite3docs]
-category = Databases
+category = Databases (System)
 
 [SUNWsqlite3tcl]
 category = Databases
@@ -3083,7 +3083,7 @@ category = Source Code Management
 category = Localizations (System)
 
 [SUNWsvxwsvr]
-category = X11
+category = X11 (System)
 
 [SUNWswig]
 category = Other Languages
@@ -3128,58 +3128,58 @@ category = GNU
 category = System Utilities
 
 [SUNWtgnome-l10n-ui-de]
-category = Trusted
+category = Trusted Extensions
 
 [SUNWtgnome-l10n-ui-es]
-category = Trusted
+category = Trusted Extensions
 
 [SUNWtgnome-l10n-ui-fr]
-category = Trusted
+category = Trusted Extensions
 
 [SUNWtgnome-l10n-ui-it]
-category = Trusted
+category = Trusted Extensions
 
 [SUNWtgnome-l10n-ui-ja]
-category = Trusted
+category = Trusted Extensions
 
 [SUNWtgnome-l10n-ui-ko]
-category = Trusted
+category = Trusted Extensions
 
 [SUNWtgnome-l10n-ui-ptBR]
-category = Trusted
+category = Trusted Extensions
 
 [SUNWtgnome-l10n-ui-ru]
-category = Trusted
+category = Trusted Extensions
 
 [SUNWtgnome-l10n-ui-sv]
-category = Trusted
+category = Trusted Extensions
 
 [SUNWtgnome-l10n-ui-zhCN]
-category = Trusted
+category = Trusted Extensions
 
 [SUNWtgnome-l10n-ui-zhHK]
-category = Trusted
+category = Trusted Extensions
 
 [SUNWtgnome-l10n-ui-zhTW]
-category = Trusted
+category = Trusted Extensions
 
 [SUNWtgnome-tsol-libs]
-category = Trusted
+category = Trusted Extensions
 
 [SUNWtgnome-tsoljdsdevmgr]
-category = Trusted
+category = Trusted Extensions
 
 [SUNWtgnome-tsoljdslabel]
-category = Trusted
+category = Trusted Extensions
 
 [SUNWtgnome-tsoljdsselmgr]
-category = Trusted
+category = Trusted Extensions
 
 [SUNWtgnome-tstripe]
-category = Trusted
+category = Trusted Extensions
 
 [SUNWtgnome-xagent]
-category = Trusted
+category = Trusted Extensions
 
 [SUNWthunderbird]
 category = Internet
@@ -3434,7 +3434,7 @@ category = System Utilities
 category = System Utilities
 
 [SUNWxcursor-themes]
-category = X11
+category = X11 (System)
 
 [SUNWxdg-sound-theme]
 category = Libraries
@@ -3455,25 +3455,25 @@ category = System
 category = Networking
 
 [SUNWxorg-cfg]
-category = X11
+category = X11 (System)
 
 [SUNWxorg-client-docs]
 category = X11
 
 [SUNWxorg-client-programs]
-category = X11
+category = X11 (System)
 
 [SUNWxorg-clientlibs]
 category = X11
 
 [SUNWxorg-compatlinks]
-category = X11
+category = X11 (System)
 
 [SUNWxorg-devel-docs]
 category = X11
 
 [SUNWxorg-doc]
-category = X11
+category = X11 (System)
 
 [SUNWxorg-graphics-ddx]
 category = Display
@@ -3482,31 +3482,31 @@ category = Display
 category = X11
 
 [SUNWxorg-mesa]
-category = X11
+category = X11 (System)
 
 [SUNWxorg-server]
-category = X11
+category = X11 (System)
 
 [SUNWxorg-tsol-module]
 category = Trusted
 
 [SUNWxorg-xkb]
-category = X11
+category = X11 (System)
 
 [SUNWxprint-server]
-category = X11
+category = X11 (System)
 
 [SUNWxsane]
 category = System Utilities
 
 [SUNWxscreensaver-hacks]
-category = X11
+category = X11 (System)
 
 [SUNWxscreensaver-hacks-gl]
-category = X11
+category = X11 (System)
 
 [SUNWxsvc]
-category = X11
+category = X11 (System)
 
 [SUNWxvm]
 category = Virtualization
@@ -3521,58 +3521,58 @@ category = Virtualization
 category = Virtualization
 
 [SUNWxvnc]
-category = X11
+category = X11 (System)
 
 [SUNWxwacx]
-category = X11
+category = X11 (System)
 
 [SUNWxwdem]
-category = X11
+category = X11 (System)
 
 [SUNWxwdv]
-category = X11
+category = X11 (System)
 
 [SUNWxwfsw]
-category = X11
+category = X11 (System)
 
 [SUNWxwice]
-category = X11
+category = X11 (System)
 
 [SUNWxwinc]
 category = X11
 
 [SUNWxwman]
-category = X11
+category = X11 (System)
 
 [SUNWxwmod]
-category = X11
+category = X11 (System)
 
 [SUNWxwopt]
-category = X11
+category = X11 (System)
 
 [SUNWxwpft]
-category = X11
+category = X11 (System)
 
 [SUNWxwplr]
-category = X11
+category = X11 (System)
 
 [SUNWxwplt]
-category = X11
+category = X11 (System)
 
 [SUNWxwpmn]
 category = X11
 
 [SUNWxwrtl]
-category = X11
+category = X11 (System)
 
 [SUNWxwslb]
 category = X11
 
 [SUNWxwsvr]
-category = X11
+category = X11 (System)
 
 [SUNWxwxft]
-category = X11
+category = X11 (System)
 
 [SUNWyp]
 category = Administration and Configuration
