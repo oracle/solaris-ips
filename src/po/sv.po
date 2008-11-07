@@ -15,548 +15,1019 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../data/l10n.py:6
+#: ../client.py:109
+msgid ""
+"Usage:\n"
+"        pkg [options] command [cmd_options] [operands]\n"
+"\n"
+"Basic subcommands:\n"
+"        pkg install [-nvq] [--no-refresh] [--no-index] package...\n"
+"        pkg uninstall [-nrvq] [--no-index] package...\n"
+"        pkg list [-aHsuvf] [package...]\n"
+"        pkg image-update [-fnvq] [--no-refresh] [--no-index]\n"
+"        pkg refresh [--full] [authority ...]\n"
+"        pkg version\n"
+"        pkg help\n"
+"\n"
+"Advanced subcommands:\n"
+"        pkg info [-lr] [--license] [pkg_fmri_pattern ...]\n"
+"        pkg search [-lrI] [-s server] token\n"
+"        pkg verify [-Hqv] [pkg_fmri_pattern ...]\n"
+"        pkg fix [pkg_fmri_pattern ...]\n"
+"        pkg contents [-Hmr] [-o attribute ...] [-s sort_key]\n"
+"            [-t action_type ... ] [pkg_fmri_pattern ...]\n"
+"        pkg image-create [-fFPUz] [--force] [--full|--partial|--user] [--"
+"zone]\n"
+"            [-k ssl_key] [-c ssl_cert] [--no-refresh] -a <prefix>=<url> dir\n"
+"\n"
+"        pkg set-property propname propvalue\n"
+"        pkg unset-property propname ...\n"
+"        pkg property [-H] [propname ...]\n"
+"\n"
+"        pkg set-authority [-P] [-k ssl_key] [-c ssl_cert] [--reset-uuid]\n"
+"            [-O origin_url] [-m mirror_to_add | --add-mirror=mirror_to_add]\n"
+"            [-M mirror_to_remove | --remove-mirror=mirror_to_remove]\n"
+"            [--no-refresh] authority\n"
+"        pkg unset-authority authority ...\n"
+"        pkg authority [-HP] [authority ...]\n"
+"        pkg history [-Hl]\n"
+"        pkg purge-history\n"
+"        pkg rebuild-index\n"
+"\n"
+"Options:\n"
+"        -R dir\n"
+"        -D/--debug name=value\n"
+"\n"
+"Environment:\n"
+"        PKG_IMAGE"
+msgstr ""
+"Användning:\n"
+"        pkg [alternativ] kommando [kommandoalternativ] [operander]\n"
+"Grundläggande underkommandon:\n"
+"        pkg install [-nvq] [--no-refresh] [--no-index] paket...\n"
+"        pkg uninstall [-nrvq] [--no-index] paket...\n"
+"        pkg list [-aHsuvf] [paket...]\n"
+"        pkg image-update [-fnvq] [--no-refresh] [--no-index]\n"
+"        pkg refresh [--full] [authority ...]\n"
+"        pkg version\n"
+"        pkg help\n"
+"\n"
+"Avancerade underkommandon:\n"
+"        pkg info [-lr] [--licence] [pkg_fmri_mönster ...]\n"
+"        pkg search [-lrI] [-s server] token\n"
+"        pkg verify [-Hqv] [pkg_fmri_mönster ...]\n"
+"        pkg fix [pkg_fmri_mönster ...]\n"
+"        pkg contents [-Hmr] [-o attribut ...] [-s sorteringsnyckel]\n"
+"            -t [åtgärdstyp... ] [pkg_fmri_mönster ...]\n"
+"        pkg image-create [-fFPUz] [--force] [--full|--partial|--user] [--"
+"zone]\n"
+"            [-k ssl-nyckel] [-c ssl-certifikat] [--no-refresh] -a <prefix>=<url> kat\n"
+"\n"
+"        pkg set-property egenskapsnamn egenskapsvärde\n"
+"        pkg unset-property egenskapsnamn ...\n"
+"        pkg property [-H] [egenskapsnamn ...]\n"
+"\n"
+"        pkg set-authority [-P] [-k ssl-nyckel] [-c ssl-certifikat] [--reset-uuid]\n"
+"            [-O källwebbadress] [-m spegling_som_ska läggas_till | --add-mirror=spegling_som_ska_läggas_till]\n"
+"            [-M spegling_som_ska_tas_bort | --remove-mirror=spegling_som_ska_tas_bort]\n"
+"            [--no-refresh] behörighet\n"
+"        pkg unset-authority behörighet ...\n"
+"        pkg authority [-HP] [behörighet ...]\n"
+"        pkg history [-Hl]\n"
+"        pkg purge-history\n"
+"        pkg rebuild-index\n"
+"\n"
+"Alternativ:\n"
+"        -R kat\n"
+"        -D/--debug name=value\n"
+"\n"
+"Miljö:\n"
+"        PKG_IMAGE"
+
+#: ../client.py:203
+msgid "-s and -v may not be combined"
+msgstr "-s och -v kan inte kombineras"
+
+#: ../client.py:317 ../client.py:930 ../client.py:1190
+msgid "no packages installed"
+msgstr "inga paket har installerats"
+
+#: ../client.py:324
+msgid "No specified packages have available updates"
+msgstr "Det finns inga uppdateringar av angivna paket"
+
+#: ../client.py:327
+msgid "No installed packages have available updates"
+msgstr "Det finns uppdateringar av installerade paket"
+
+#: ../client.py:353
+#, python-format
+msgid "no packages matching '%s' %s"
+msgstr "inga paket passar in på '%s' %s"
+
+#: ../client.py:387
+msgid "verify: -v and -q may not be combined"
+msgstr "verify: -v och -q kan inte kombineras"
+
+#: ../client.py:442
+msgid ""
+"pkg: no packages matching the following patterns you specified are\n"
+"installed on the system.\n"
+msgstr ""
+"pkg: inga paket som passar in på följande angivna mönster finns\n"
+"installerade på systemet.\n"
+
+#: ../client.py:452
+#, python-format
+msgid ""
+"\n"
+"All other patterns matched installed packages.  %s"
+msgstr ""
+"\n"
+"Alla övriga mönster passar in på paket som finns installerade. %s"
+
+#: ../client.py:487
+msgid "image-update: -v and -q may not be combined"
+msgstr "image-update: -v och -q kan inte kombineras"
+
+#: ../client.py:490
+#, python-format
+msgid "image-update: command does not take operands ('%s')"
+msgstr "image-update: kommandot kan inte användas med operander ('%s')"
+
+#: ../client.py:500 ../client.py:533
+#, python-format
+msgid "No image rooted at '%s'"
+msgstr "Ingen bild i rotkatalogen  '%s'"
+
+#: ../client.py:513 ../updatemanager.py:1008
+msgid "No updates available for this image."
+msgstr "Det finns inga tillgängliga uppdateringar för den här bilden."
+
+#: ../client.py:559
+#, python-format
+msgid ""
+"image-update failed (inventory exception):\n"
+"%s"
+msgstr ""
+"image-update misslyckades (lagerundantag):\n"
+"%s"
+
+#: ../client.py:527
+msgid ""
+"WARNING: pkg(5) appears to be out of date, and should be updated before\n"
+"running image-update.\n"
+msgstr ""
+"VARNING: pkg(5) verkar vara föråldrad och bör uppdateras innan\n"
+"image-update körs.\n"
+
+#: ../client.py:529
+msgid ""
+"Please update pkg(5) using 'pfexec pkg install SUNWipkg' and then retry\n"
+"the image-update."
+msgstr ""
+"Uppdatera pkg(5) med hjälp av 'pfexec pkg install SUNWipkg' och försök igen med\n"
+"image-update."
+
+#: ../client.py:552
+msgid ""
+"\n"
+"An unexpected error happened while preparing for image-update:"
+msgstr ""
+"\n"
+"Ett oväntat fel inträffade då image-update förbereddes:"
+
+#: ../client.py:559
+#, python-format
+msgid "image-update failed: %s"
+msgstr "image-update misslyckades:  %s"
+
+#: ../client.py:562
+msgid "image-update cannot be done on live image"
+msgstr "image-update kunde inte användas med live-bilden"
+
+#: ../client.py:573
+#, python-format
+msgid ""
+"\n"
+"An unexpected error happened during image-update: %s"
+msgstr ""
+"\n"
+"Ett oväntat fel inträffade i samband med image-update: %s"
+
+#: ../client.py:579
+msgid ""
+"NOTE: Please review release notes posted at:\n"
+"   http://opensolaris.org/os/project/indiana/resources/relnotes/200811/x86/"
+msgstr ""
+"Obs! Läs igenom versionsinformationen på:\n"
+"   http://opensolaris.org/os/project/indiana/resources/relnotes/200811/x86/"
+
+#: ../client.py:612
+msgid "install: at least one package name required"
+msgstr "install: du måste ange åtminstone ett paket"
+
+#: ../client.py:615
+msgid "install: -v and -q may not be combined"
+msgstr "install: -v och -q kan inte kombineras"
+
+#: ../client.py:630 ../client.py:731 ../client.py:1346 ../updatemanager.py:746
+#, python-format
+msgid "'%s' is not an install image"
+msgstr "'%s' är inte en installationsbild"
+
+#: ../client.py:636
+msgid "Nothing to install in this image (is this package already installed?)"
+msgstr "Det finns inget som kan installeras på den här bilden (har paketet redan installerats?)"
+
+#: ../client.py:646
+#, python-format
+msgid ""
+"install failed (inventory exception):\n"
+"%s"
+msgstr ""
+"install misslyckades (lagerundantag):\n"
+"%s"
+
+#: ../client.py:669 ../client.py:766
+msgid ""
+"\n"
+"An unexpected error happened while preparing for install:"
+msgstr ""
+"\n"
+"Ett oväntat fel inträffade då installationen förbereddes:"
+
+#: ../client.py:678
+#, python-format
+msgid "installation failed: %s"
+msgstr "installationen misslyckades: %s"
+
+#: ../client.py:689
+#, python-format
+msgid "An unexpected error happened during installation: %s"
+msgstr "Ett oväntat fel inträffade under installationen: %s"
+
+#: ../client.py:713
+msgid "uninstall: at least one package name required"
+msgstr "uninstall: du måste ange åtminstone ett paket"
+
+#: ../client.py:716
+msgid "uninstall: -v and -q may not be combined"
+msgstr "uninstall: -v och -q kan inte kombineras"
+
+#: ../client.py:822
+#, python-format
+msgid ""
+"uninstall failed (inventory exception):\n"
+"%s"
+msgstr ""
+"uninstall misslyckades (lagerundantag):\n"
+"%s"
+
+#: ../client.py:775
+#, python-format
+msgid "uninstallation failed: %s"
+msgstr "avinstallationen misslyckades: %s"
+
+#: ../client.py:786
+#, python-format
+msgid "An unexpected error happened during uninstallation: %s"
+msgstr "Ett oväntat fel inträffade under avinstallationen: %s"
+
+#: ../client.py:909
+msgid "info: -l and -r may not be combined"
+msgstr "info: -l och -r kan inte kombineras"
+
+#: ../client.py:912
+msgid "info: must request remote info for specific packages"
+msgstr "info: fjärrbegäran krävs för specifika paket"
+
+#: ../client.py:943
+msgid "Installed"
+msgstr "Installerat"
+
+#: ../client.py:945
+msgid "Not installed"
+msgstr "Ej installerat"
+
+#: ../client.py:969 ../client.py:1284
+msgid ""
+"pkg: no packages matching the following patterns you specified are\n"
+"installed on the system.  Try specifying -r to query remotely:"
+msgstr ""
+"pkg:  inga paket som passar in på följande mönster som du angivit finns\n"
+"installerade på systemet. Ange -r för att skicka en fjärrbegäran:"
+
+#: ../client.py:973 ../client.py:1288
+msgid ""
+"pkg: no packages matching the following patterns you specified were\n"
+"found in the catalog.  Try relaxing the patterns, refreshing, and/or\n"
+"examining the catalogs:"
+msgstr ""
+"pkg: inga paket som passar in på följande mönster som du angivit finns\n"
+"i katalogen. Försök med ett annat sökmönster, uppdatera och/eller\n"
+"undersök katalogerna på nytt:"
+
+#: ../client.py:989
+#, python-format
+msgid "'%s' matches multiple packages"
+msgstr "'%s' passar in på flera paket"
+
+#: ../client.py:1146
+msgid "contents: -l and -r may not be combined"
+msgstr "contents: -l och -r kan inte kombineras"
+
+#: ../client.py:1149
+msgid "contents: must request remote contents for specific packages"
+msgstr "contents: fjärrbegäran krävs för specifika paket"
+
+#: ../client.py:1163
+#, python-format
+msgid "contents: -m and %s may not be specified at the same time"
+msgstr "contents: -m och %s kan inte anges samtidigt"
+
+#: ../client.py:1168 ../client.py:1171
+#, python-format
+msgid "Invalid attribute '%s'"
+msgstr "Felaktigt attribut '%s'"
+
+#: ../client.py:1229 ../client.py:1235 ../modules/client/api_errors.py:106
+#, python-format
+msgid "pkg: '%s' matches multiple packages"
+msgstr "pkg: '%s' stämmer in på flera paket"
+
+#: ../client.py:1303
+#, python-format
+msgid "pkg: %s/%s catalogs successfully updated:"
+msgstr "pkg: %s/%s-katalogerna uppdaterades:"
+
+#: ../client.py:1352
+#, python-format
+msgid ""
+"%s is not a recognized authority to refresh. \n"
+"'pkg authority' will show a list of authorities."
+msgstr ""
+"%s har inte behörighet att uppdatera. \n"
+"'pkg authority'visar en lista över behörigheter."
+
+#: ../client.py:1402
+msgid "pkg: set-authority: one and only one authority may be set"
+msgstr "pkg: set-authority: det går endast att ställa in en behörighet"
+
+#: ../client.py:1410
+#, python-format
+msgid "set-authority: SSL key file '%s' does not exist"
+msgstr "set-authority: SSL-nyckelfilen '%s' saknas"
+
+#: ../client.py:1417
+#, python-format
+msgid "set-authority: SSL key cert '%s' does not exist"
+msgstr "set-authority: SSL-nyckelcertifikatet '%s' saknas"
+
+#: ../client.py:1423
+msgid ""
+"set-authority: authority does not exist. Use -O to define origin URL for new "
+"authority"
+msgstr ""
+"set-authority: behörighet saknas. Använd -O för att definiera käll-webbadress för ny "
+"behörighet"
+
+#: ../client.py:1428
+msgid "set-authority: authority name has invalid characters"
+msgstr "set-authority: behörighetsnamnet innehåller ogiltiga tecken"
+
+#: ../client.py:1432
+msgid "set-authority: authority URL is invalid"
+msgstr "set-authority: webbadressen för behörigheten är ogiltig"
+
+#: ../client.py:1444
+#, python-format
+msgid "set-authority failed: %s"
+msgstr "set-authority misslyckades: %s"
+
+#: ../client.py:1454
+msgid "set-authority: added mirror's URL is invalid"
+msgstr "set-authority: webbadressen för speglingen är ogiltig"
+
+#: ../client.py:1458
+msgid "set-authority: mirror already exists"
+msgstr "set-authority: speglingen finns redan"
+
+#: ../client.py:1466
+msgid "set-authority: removed mirror has bad URL"
+msgstr "set-authority: webbadressen för den borttagna speglingen är ogiltig"
+
+#: ../client.py:1470
+msgid "set-authority: mirror does not exist"
+msgstr "set-authority: speglingen saknas"
+
+#: ../client.py:1492
+#, python-format
+msgid "unset-authority: no such authority: %s"
+msgstr "unset-authority: behörigheten saknas: %s"
+
+#: ../client.py:1497
+msgid "unset-authority: removal of preferred authority not allowed."
+msgstr "unset-authority: det är inte tillåtet att ta bort önskad behörighet."
+
+#: ../client.py:1540
+#, python-format
+msgid "authority: no such authority: %s"
+msgstr "authority: behörighet saknas: %s"
+
+#: ../client.py:1556
+#, python-format
+msgid "SSL certificate for %sis invalid or non-existent."
+msgstr "SSL-certifikatet för %sär ogiltigt eller saknas."
+
+#: ../client.py:1559
+#, python-format
+msgid "Please check file at %s"
+msgstr "Kontrollera filen i %s"
+
+#: ../client.py:1598
+msgid "pkg: set-property: requires a property name and value"
+msgstr "pkg: set-property: kräver ett egenskapsnamn och ett värde"
+
+#: ../client.py:1603
+#, python-format
+msgid "set-property failed: %s"
+msgstr "set-property misslyckades: %s"
+
+#: ../client.py:1618
+msgid "pkg: unset-property requires at least one property name"
+msgstr "pkg: unset-property kräver åtminstone ett egenskapsnamn"
+
+#: ../client.py:1624
+#, python-format
+msgid "unset-property: no such property: %s"
+msgstr "unset-property: egenskapen saknas: %s"
+
+#: ../client.py:1640
+#, python-format
+msgid "property: no such property: %s"
+msgstr "property: egenskapen saknas: %s"
+
+#: ../client.py:1695 ../client.py:1720
+msgid ""
+"image-create requires authority argument to be of the form '<prefix>=<url>'."
+msgstr ""
+"image-create kräver ett behörighetsargument av formen '<prefix>=<url>'."
+
+#: ../client.py:1700
+msgid "image-create requires a single image directory path"
+msgstr "image-create kräver en sökväg till bildkatalogen"
+
+#: ../client.py:1705
+#, python-format
+msgid "pkg: set-authority: SSL key file '%s' does not exist"
+msgstr "pkg: set-authority: SSL-nyckelfilen  '%s' saknas"
+
+#: ../client.py:1712
+#, python-format
+msgid "pkg: set-authority: SSL key cert '%s' does not exist"
+msgstr "pkg: set-authority: SSL-nyckelcertifikatet '%s' saknas"
+
+#: ../client.py:1724
+#, python-format
+msgid "image-create requires that a prefix not match: %s"
+msgstr "image-create kräver ett prefix som inte passar in på: %s"
+
+#: ../client.py:1729
+msgid "image-create: authority prefix has invalid characters"
+msgstr "image-create: behörighetsprefixet innehåller ogiltiga tecken"
+
+#: ../client.py:1734
+msgid "image-create: authority URL is invalid"
+msgstr "image-create: webbadressen för behörigheten är ogiltig"
+
+#: ../client.py:1741
+#, python-format
+msgid "cannot create image at %s: %s"
+msgstr "det gick inte att skapa en bild på %s: %s"
+
+#: ../client.py:1764
+#, python-format
+msgid "rebuild-index: command does not take operands ('%s')"
+msgstr "rebuild-index: kommandot kan inte användas med operander ('%s')"
+
+#: ../client.py:1797
+msgid "history: -H and -l may not be combined"
+msgstr "history: -H och -l kan inte kombineras"
+
+#: ../client.py:1801
+msgid "TIME"
+msgstr "TID"
+
+#: ../client.py:1802
+msgid "OPERATION"
+msgstr "ÅTGÄRD"
+
+#: ../client.py:1802
+msgid "CLIENT"
+msgstr "KLIENT"
+
+#: ../client.py:1802
+msgid "OUTCOME"
+msgstr "RESULTAT"
+
+#: ../client.py:1879
+#, python-format
+msgid "illegal global option -- %s"
+msgstr "otillåtet globalt alternativ  -- %s"
+
+#: ../client.py:1899 ../client.py:2005
+#, python-format
+msgid "illegal %s option -- %s"
+msgstr "otillåtet %s alternativ -- %s"
+
+#: ../client.py:1904
+#, python-format
+msgid "version: command does not take operands ('%s')"
+msgstr "version: kommandot kan inte användas med operander ('%s')"
+
+#: ../client.py:1938
+msgid ""
+"Could not find image.  Use the -R option or set $PKG_IMAGE to point\n"
+"to an image, or change the working directory to one inside the image."
+msgstr ""
+"Bilden hittades inte. Använd alternativet -R eller ställ in så att $PKG_IMAGE pekar\n"
+"på en bild eller byt arbetskatalog till en som finns i bilden."
+
+#: ../client.py:1952
+msgid "No image found."
+msgstr "Ingen bild hittades."
+
+#: ../client.py:1997
+msgid "History purged."
+msgstr "Historiken har rensats."
+
+#: ../client.py:2002
+#, python-format
+msgid "unknown subcommand '%s'"
+msgstr "okänt underkommando '%s'"
+
+#: ../client.py:2028
+#, python-format
+msgid ""
+"\n"
+"Maximum (%d) network retries exceeded during download. Details follow:\n"
+"%s"
+msgstr ""
+"\n"
+"Maximalt antal (%d) åtkomstförsök för nätverket har överskridits under nedladdningen. Mer information följer:\n"
+"%s"
+
+#: ../client.py:2036
+msgid ""
+"An error was encountered while attempting to retrieve package or file data "
+"for the requested operation."
+msgstr ""
+"Ett fel inträffade vid hämtning av paket- eller fildata "
+"för den begärda åtgärden."
+
+#: ../client.py:2045
+msgid ""
+"An error was encountered while attempting to load history information\n"
+"about past client operations."
+msgstr ""
+"Ett fel inträffade vid inläsning av historikinformation\n"
+"om tidigare klientåtgärder."
+
+#: ../client.py:2054
+msgid ""
+"An error was encountered while attempting to store information about the\n"
+"current operation in client history."
+msgstr ""
+"Ett fel inträffade vid lagring av information\n"
+"om aktuella åtgärder i klienthistoriken."
+
+#: ../client.py:2064
+msgid "An error was encountered while attempting to purge client history."
+msgstr "Ett fel inträffade vid rensning av klienthistoriken"
+
+#: ../client.py:2073
+#, python-format
+msgid ""
+"\n"
+"\n"
+"This is an internal error.  Please let the developers know about this\n"
+"problem by filing a bug athttp://defect.opensolaris.org and including the\n"
+"abovetraceback and this message.  The version of pkg(5) is '%s'."
+msgstr ""
+"\n"
+"\n"
+"Det här är ett internt fel. Det vore bra om utvecklarna fick information om problemet\n"
+"Skicka en buggrapport viahttp://defect.opensolaris.org och inkludera\n"
+"traceback ovan i meddelandet. Pkg(5)-versionen är '%s'."
+
+#: ../gui/data/l10n.py:6
 msgid "Communication"
 msgstr "Kommunikation"
 
-#: ../data/l10n.py:7
+#: ../gui/data/l10n.py:7
 msgid "Mail"
-msgstr "Post"
+msgstr "E-post"
 
-#: ../data/l10n.py:8
+#: ../gui/data/l10n.py:8
 msgid "Localization"
 msgstr "Lokalisering"
 
-#: ../data/l10n.py:9
+#: ../gui/data/l10n.py:9
 msgid "Social Software"
-msgstr "Social programvara"
+msgstr "Programvara för sociala nätverk"
 
-#: ../data/l10n.py:10
+#: ../gui/data/l10n.py:10
 msgid "Viewer"
 msgstr "Visningsprogram"
 
-#: ../data/l10n.py:11
+#: ../gui/data/l10n.py:11
 msgid "RasterGraphics"
 msgstr "Rastergrafik"
 
-#: ../data/l10n.py:12
+#: ../gui/data/l10n.py:12
 msgid "2DGraphics"
-msgstr "2D-grafik"
+msgstr "2d-grafik"
 
-#: ../data/l10n.py:13
+#: ../gui/data/l10n.py:13
 msgid "Photography"
 msgstr "Fotografi"
 
-#: ../data/l10n.py:14
+#: ../gui/data/l10n.py:14
 msgid "CLI tools"
 msgstr "Kommandoradsverktyg"
 
-#: ../data/l10n.py:15
+#: ../gui/data/l10n.py:15
 msgid "Print"
 msgstr "Skriv ut"
 
-#: ../data/packagemanager.desktop.in.h:1
+#: ../gui/data/packagemanager.desktop.in.h:1
 msgid "Install, update and remove software packages"
 msgstr "Installera, uppdatera och ta bort programpaket"
 
-#: ../data/packagemanager.desktop.in.h:2 ../locale/packagemanager.glade.h:33
-#: ../packagemanager.glade.h:44
+#: ../gui/data/packagemanager.desktop.in.h:2
+#: ../gui/data/packagemanager.glade.h:67 ../packagemanager.py:102
 msgid "Package Manager"
 msgstr "Pakethanteraren"
 
-#: ../gui/installupdate.py:127 ../gui/remove.py:115
-#, python-format
+#: ../gui/data/packagemanager.glade.h:1
+msgid "\n"
+msgstr "\n"
+
+#: ../gui/data/packagemanager.glade.h:3
 msgid ""
-"GUI will not respond to any event! %s.                                 Check "
-"create_plan_dialog_gui()"
+"- Delete old Boot Environments to free up disk space.\n"
+"- Set the Active BE for next reboot."
 msgstr ""
-"GUI svarar inte på någon händelse! %s.                                 "
-"Kontrollera create_plan_dialog_gui()"
+"– Ta bort den gamla startmiljön för att frigöra diskutrymme.\n"
+"- Ställ in aktiv startmiljö för nästa omstart."
 
-#: ../gui/installupdate.py:142
-#, python-format
-msgid ""
-"GUI will not respond to any event! %s.                                 Check "
-"create_network_down_gui()"
-msgstr ""
-"GUI svarar inte på någon händelse! %s.                                 "
-"Kontrollera create_network_down_gui()"
-
-#: ../gui/installupdate.py:167
-#, python-format
-msgid "GUI will not respond to any event! %s.Check create_installupdate_gui()"
-msgstr ""
-"GUI svarar inte på någon händelse! %s. Kontrollera create_installupdate_gui()"
-
-#: ../gui/installupdate.py:184
-#, python-format
-msgid "GUI will not respond to any event! %s.Check create_downloaddialog_gui()"
-msgstr ""
-"GUI svarar inte på någon händelse! %s. Kontrollera create_downloaddialog_gui"
-"()"
-
-#. print "Updating" + p.destination_fmri.get_name()
-#: ../gui/installupdate.py:264
-msgid "Updating:  "
-msgstr "Uppdatera:  "
-
-#. print "Installing" + p.destination_fmri.get_name()
-#: ../gui/installupdate.py:279
-msgid "Installing:  "
-msgstr "Installera:   "
-
-#: ../gui/installupdate.py:350 ../gui/remove.py:197
-#, python-format
-msgid "Evaluating: %s\n"
-msgstr "Utvärdera: %s\n"
-
-#: ../gui/installupdate.py:524
-msgid "Downloading: "
-msgstr "Ladda ned:  "
-
-#: ../gui/installupdate.py:572
-#, python-format
-msgid "%d packages will be updated\n"
-msgstr "%d paket uppdateras\n"
-
-#: ../gui/installupdate.py:574
-#, python-format
-msgid "%d package will be updated\n"
-msgstr "%d paket uppdateras\n"
-
-#: ../gui/installupdate.py:576
-#, python-format
-msgid ""
-"%d packages will be installed\n"
-"\n"
-msgstr ""
-"%d paket installeras\n"
-"\n"
-
-#: ../gui/installupdate.py:578
-#, python-format
-msgid ""
-"%d package will be installed\n"
-"\n"
-msgstr ""
-"%d paket installeras\n"
-"\n"
-
-#: ../gui/installupdate.py:581
-#, python-format
-msgid "%d MB will be downloaded"
-msgstr "%d MB laddas ned"
-
-#: ../gui/remove.py:140
-#, python-format
-msgid "GUI will not respond to any event! %s.Check create_remove_gui()"
-msgstr "GUI svarar inte på någon händelse! %s. Kontrollera create_remove_gui()"
-
-#: ../gui/remove.py:237
-#, python-format
-msgid ""
-"%d packages will be removed\n"
-"\n"
-msgstr ""
-"%d paket tas bort\n"
-"\n"
-
-#: ../gui/remove.py:239
-#, python-format
-msgid ""
-"%d package will be removed\n"
-"\n"
-msgstr ""
-"%d paket tas bort\n"
-"\n"
-
-#: ../locale/packagemanager.glade.h:1 ../packagemanager.glade.h:1
+#: ../gui/data/packagemanager.glade.h:5
 msgid ""
 "6 packages will be installed\n"
 "28 packages will be updated\n"
 "\n"
 "20.1 MB will be downloaded"
 msgstr ""
-"6 paket installeras\n"
-"28 paket uppdateras\n"
+"6 paket ska installeras\n"
+"28 paket ska uppdateras\n"
 "\n"
 "20,1 MB laddas ned"
 
-#: ../locale/packagemanager.glade.h:5
-msgid "<b>Apply the following changes?</b>"
-msgstr "<b>Ska följande ändringar tillämpas?</b>"
+#: ../gui/data/packagemanager.glade.h:9
+msgid "<b>Active Boot Environment changed to:</b>"
+msgstr "<b>Aktiv startmiljö har ändrats till:</b>"
 
-#: ../locale/packagemanager.glade.h:6 ../packagemanager.glade.h:6
+#: ../gui/data/packagemanager.glade.h:10
+msgid "<b>Boot Environments to be deleted:</b>"
+msgstr "<b>Startmiljöer som kommer att tas bort:</b>"
+
+#: ../gui/data/packagemanager.glade.h:11
+msgid "<b>Can't establish a connection to the repository</b>"
+msgstr "<b>Det gick inte att upprätta en anslutning till databasen</b>"
+
+#: ../gui/data/packagemanager.glade.h:12
+msgid "<b>Edit Repositories</b>"
+msgstr "<b>Redigera databaser</b>"
+
+#: ../gui/data/packagemanager.glade.h:13
+msgid "<b>Manage Your Boot Environments</b>"
+msgstr "<b>Hantera startmiljöer</b>"
+
+#: ../gui/data/packagemanager.glade.h:14
+msgid "<b>Modify Repository</b>"
+msgstr "<b>Ändra databas</b>"
+
+#: ../gui/data/packagemanager.glade.h:15
 msgid "<b>PACKAGE NAME</b>"
 msgstr "<b>PAKETNAMN</b>"
 
-#: ../locale/packagemanager.glade.h:7 ../packagemanager.glade.h:7
+#: ../gui/data/packagemanager.glade.h:16
 msgid "<b>Summary</b>"
 msgstr "<b>Sammanfattning </b>"
 
-#: ../locale/packagemanager.glade.h:8 ../packagemanager.glade.h:8
+#: ../gui/data/packagemanager.glade.h:17
 msgid "<i>Repository:</i>"
 msgstr "<i>Databas:</i>"
 
-#: ../locale/packagemanager.glade.h:9 ../packagemanager.glade.h:9
+#: ../gui/data/packagemanager.glade.h:18
 msgid "About"
 msgstr "Om"
 
-#: ../locale/packagemanager.glade.h:10 ../packagemanager.glade.h:11
-msgid "About dialog"
-msgstr "Om dialog"
-
-#: ../locale/packagemanager.glade.h:11
-msgid "Apply"
-msgstr "Tillämpa"
-
-#: ../locale/packagemanager.glade.h:12
-msgid "Applying changes"
-msgstr "Tillämpa ändringarna"
-
-#: ../locale/packagemanager.glade.h:13 ../packagemanager.glade.h:14
-msgid "Cancel"
-msgstr "Avbryt"
-
-#: ../locale/packagemanager.glade.h:14
-msgid "Changes applied"
-msgstr "Ändringarna har utförts"
-
-#: ../locale/packagemanager.glade.h:15 ../packagemanager.glade.h:26
-msgid "Dependencies"
-msgstr "Beroenden"
-
-#: ../locale/packagemanager.glade.h:16 ../packagemanager.glade.h:27
-msgid "Deselect"
-msgstr "Avmarkera"
-
-#: ../locale/packagemanager.glade.h:17 ../packagemanager.glade.h:28
-msgid "Deselect selected packages"
-msgstr "Avmarkera markerade paket"
-
-#: ../locale/packagemanager.glade.h:18
-msgid "Download Preferences"
-msgstr "Inställningar för nedladdning"
-
-#: ../locale/packagemanager.glade.h:19
-msgid "Download Preferences..."
-msgstr "Inställningar för nedladdning ..."
-
-#: ../locale/packagemanager.glade.h:20
-msgid "Downloading Files"
-msgstr "Ladda ned filer"
-
-#: ../locale/packagemanager.glade.h:21
-msgid "Downloading Package Information"
-msgstr "Ladda ned paketinformation"
-
-#: ../locale/packagemanager.glade.h:22 ../packagemanager.glade.h:32
-msgid "General Info"
-msgstr "Allmän information"
-
-#: ../locale/packagemanager.glade.h:23
-msgid "History..."
-msgstr "Historik ..."
-
-#: ../locale/packagemanager.glade.h:24 ../packagemanager.glade.h:33
-msgid "Install / Update"
-msgstr "Installera/uppdatera"
-
-#: ../locale/packagemanager.glade.h:25 ../packagemanager.glade.h:34
-msgid "Install / Update Confirmation"
-msgstr "Bekräfta installation/uppdatering"
-
-#: ../locale/packagemanager.glade.h:26 ../packagemanager.glade.h:35
-msgid "Install or Update selected packages"
-msgstr "Installera eller uppdatera markerade paket"
-
-#: ../locale/packagemanager.glade.h:27 ../packagemanager.glade.h:36
-msgid "Install/Update"
-msgstr "Installera/uppdatera"
-
-#: ../locale/packagemanager.glade.h:28
-msgid "Installed Files"
-msgstr "Installerade filer"
-
-#: ../locale/packagemanager.glade.h:29
-msgid "Lock"
-msgstr "Lås"
-
-#: ../locale/packagemanager.glade.h:30
-msgid "Lock selected packages"
-msgstr "Lås markerade paket"
-
-#: ../locale/packagemanager.glade.h:31
-msgid "Manage Repositories"
-msgstr "Hantera databaser"
-
-#: ../locale/packagemanager.glade.h:32
-msgid "Online Help"
-msgstr "Onlinehjälp"
-
-#: ../locale/packagemanager.glade.h:34
-msgid "Preferences options for download"
-msgstr "Inställningsalternativ för nedladdning"
-
-#: ../locale/packagemanager.glade.h:35 ../packagemanager.glade.h:47
-msgid "Quit"
-msgstr "Avsluta"
-
-#: ../locale/packagemanager.glade.h:36 ../packagemanager.glade.h:48
-msgid "Quit application"
-msgstr "Avsluta programmet"
-
-#: ../locale/packagemanager.glade.h:37
-msgid "Redo"
-msgstr "Gör om"
-
-#: ../locale/packagemanager.glade.h:38
-msgid "Redo last action"
-msgstr "Gör om den senaste åtgärden"
-
-#: ../locale/packagemanager.glade.h:39 ../packagemanager.glade.h:49
-msgid "Reload"
-msgstr "Ladda ned igen"
-
-#: ../locale/packagemanager.glade.h:40 ../packagemanager.glade.h:50
-msgid "Remove"
-msgstr "Ta bort"
-
-#: ../locale/packagemanager.glade.h:41 ../packagemanager.glade.h:53
-msgid "Remove selected packages"
-msgstr "Ta bort markerade paket"
-
-#: ../locale/packagemanager.glade.h:42
-msgid "Repositories"
-msgstr "Databaser"
-
-#: ../locale/packagemanager.glade.h:43
-msgid "Repositories..."
-msgstr "Databaser ..."
-
-#: ../locale/packagemanager.glade.h:44 ../packagemanager.glade.h:58
-msgid "Search:"
-msgstr "Sök:"
-
-#: ../locale/packagemanager.glade.h:45 ../packagemanager.glade.h:59
-msgid "Select All"
-msgstr "Markera alla"
-
-#: ../locale/packagemanager.glade.h:46 ../packagemanager.glade.h:60
-msgid "Select All Items"
-msgstr "Markera alla objekt"
-
-#: ../locale/packagemanager.glade.h:47 ../packagemanager.glade.h:64
-msgid "Short description"
-msgstr "Kort beskrivning"
-
-#: ../locale/packagemanager.glade.h:48 ../packagemanager.glade.h:66
-msgid "Show:"
-msgstr "Visa:"
-
-#: ../locale/packagemanager.glade.h:49
-msgid ""
-"The chosen action also affects other packages. The following changes are "
-"required to proceed:"
-msgstr ""
-"Den valda åtgärden påverkar också andra paket. Följande ändringar krävs för "
-"att fortsätta:"
-
-#: ../locale/packagemanager.glade.h:50
-msgid "Undo"
-msgstr "Ångra"
-
-#: ../locale/packagemanager.glade.h:51
-msgid "Undo action"
-msgstr "Ångra åtgärd"
-
-#: ../locale/packagemanager.glade.h:52
-msgid "Unlock"
-msgstr "Lås upp"
-
-#: ../locale/packagemanager.glade.h:53
-msgid "Unlock selected packages"
-msgstr "Lås upp markerade paket"
-
-#: ../locale/packagemanager.glade.h:54 ../packagemanager.glade.h:73
-msgid "Update All"
-msgstr "Uppdatera alla"
-
-#: ../locale/packagemanager.glade.h:55 ../packagemanager.glade.h:74
-msgid "Update all packages"
-msgstr "Uppdatera alla paket"
-
-#: ../locale/packagemanager.glade.h:56
-msgid "View History"
-msgstr "Visa historik"
-
-#: ../locale/packagemanager.glade.h:57 ../packagemanager.glade.h:76
-msgid "_Edit"
-msgstr "_Redigera"
-
-#: ../locale/packagemanager.glade.h:58 ../packagemanager.glade.h:77
-msgid "_File"
-msgstr "_Arkiv"
-
-#: ../locale/packagemanager.glade.h:59 ../packagemanager.glade.h:78
-msgid "_Help"
-msgstr "_Hjälp"
-
-#: ../locale/packagemanager.glade.h:60 ../packagemanager.glade.h:79
-msgid "_Package"
-msgstr "_Paket"
-
-#: ../locale/packagemanager.glade.h:61
-msgid "_Settings"
-msgstr "_Inställningar"
-
-#: ../packagemanager.glade.h:5
-msgid "<b>Can't establish a connection to the repository</b>"
-msgstr "<b>Det går inte att skapa en anslutning till databasen</b>"
-
-#: ../packagemanager.glade.h:10
+#: ../gui/data/packagemanager.glade.h:19
 msgid "About Glade"
 msgstr "Om Glade"
 
-#: ../packagemanager.glade.h:12
+#: ../gui/data/packagemanager.glade.h:20
 msgid "Architecture (CPU):"
 msgstr "Arkitektur (processor):"
 
-#: ../packagemanager.glade.h:13
+#: ../gui/data/packagemanager.glade.h:21
+msgid "BE Management Changes Confirmation"
+msgstr "Bekräftelse på ändringar i Hantering av startmiljö"
+
+#: ../gui/data/packagemanager.glade.h:22
+msgid "Boot Environment Management"
+msgstr "Hantering av startmiljö"
+
+#: ../gui/data/packagemanager.glade.h:23
 msgid "Build type:"
 msgstr "Build-typ:"
 
-#: ../packagemanager.glade.h:15
+#: ../gui/data/packagemanager.glade.h:24
+msgid "By managing Boot Environments you may:"
+msgstr "Genom att hantera startmiljöerna kan du:"
+
+#: ../gui/data/packagemanager.glade.h:25
+msgid "Cancel"
+msgstr "Avbryt"
+
+#: ../gui/data/packagemanager.glade.h:26 ../um/data/updatemanager.glade.h:11
+msgid "Checking for latest SUNWipkg and SUNWipkg-gui, please wait..."
+msgstr "Ett ögonblick, söker efter senaste SUNWipkg och SUNWipkg-gui ..."
+
+#: ../gui/data/packagemanager.glade.h:27 ../gui/modules/installupdate.py:188
 msgid "Checking package dependencies..."
 msgstr "Kontrollerar paketberoenden ..."
 
-#: ../packagemanager.glade.h:16
+#: ../gui/data/packagemanager.glade.h:28
 msgid "Clear"
 msgstr "Rensa"
 
-#: ../packagemanager.glade.h:17
+#: ../gui/data/packagemanager.glade.h:29 ../gui/modules/installupdate.py:590
 msgid "Close"
 msgstr "Stäng"
 
-#: ../packagemanager.glade.h:18
+#: ../gui/data/packagemanager.glade.h:30
 msgid "Copy"
 msgstr "Kopiera"
 
-#: ../packagemanager.glade.h:19
+#: ../gui/data/packagemanager.glade.h:31
 msgid ""
 "Copyright 2008 Sun Microsystems, Inc.  \n"
 "All rights reserved.\n"
 "Use is subject to license terms."
 msgstr ""
 "Copyright 2008 Sun Microsystems, Inc.  \n"
-"Med ensamrätt.Användningsvillkoren finns angivna i licensavtalet."
+"Med ensamrätt. Användningsvillkoren finns angivna i licensavtalet."
 
-#: ../packagemanager.glade.h:22
+#: ../gui/data/packagemanager.glade.h:34
+msgid "Currently Active Boot Environment"
+msgstr "Aktiv startmiljö"
+
+#: ../gui/data/packagemanager.glade.h:35
 msgid "Custom Package Options"
 msgstr "Anpassade paketalternativ"
 
-#: ../packagemanager.glade.h:23
+#: ../gui/data/packagemanager.glade.h:36
 msgid "Cut"
 msgstr "Klipp ut"
 
-#: ../packagemanager.glade.h:24
+#: ../gui/data/packagemanager.glade.h:37
 msgid "Cut action"
 msgstr "Utklippsåtgärd"
 
-#: ../packagemanager.glade.h:25
+#: ../gui/data/packagemanager.glade.h:38
 msgid "Debug"
 msgstr "Felsökning"
 
-#: ../packagemanager.glade.h:29
+#: ../gui/data/packagemanager.glade.h:39
+msgid "Dependencies"
+msgstr "Beroenden"
+
+#: ../gui/data/packagemanager.glade.h:40
+msgid "Deselect"
+msgstr "Avmarkera"
+
+#: ../gui/data/packagemanager.glade.h:41
+msgid "Deselect selected packages"
+msgstr "Avmarkera markerade paket"
+
+#: ../gui/data/packagemanager.glade.h:42
 msgid "Downloading Packages"
 msgstr "Ladda ned paket"
 
-#: ../packagemanager.glade.h:30
+#: ../gui/data/packagemanager.glade.h:43
 msgid "Downloading files..."
 msgstr "Ladda ned filer ..."
 
-#: ../packagemanager.glade.h:31
+#: ../gui/data/packagemanager.glade.h:44
+msgid "Edit Repositories"
+msgstr "Redigera databaser"
+
+#: ../gui/data/packagemanager.glade.h:45
+msgid "Edit Repositories..."
+msgstr "Redigera databaser ..."
+
+#: ../gui/data/packagemanager.glade.h:46
+msgid ""
+"Enter the repository name and URL you want to add as a new package source. \n"
+"Select from the list to modify or remove existing repositories."
+msgstr ""
+"Ange namn och webbadress för databasen som du vill lägga till som ny paketkälla. \n"
+"Välj från listan om du vill ändra eller ta bort befintliga databaser."
+
+#: ../gui/data/packagemanager.glade.h:48
 msgid "Files Details"
 msgstr "Filinformation"
 
-#: ../packagemanager.glade.h:37
+#: ../gui/data/packagemanager.glade.h:49
+msgid "General Info"
+msgstr "Allmän information"
+
+#: ../gui/data/packagemanager.glade.h:50
+msgid ""
+"In some cases, when Update action is performed, a new Boot Environment is "
+"created."
+msgstr ""
+"I vissa fall skapas en ny startmiljö när en uppdateringsåtgärd utförs"
+
+#: ../gui/data/packagemanager.glade.h:51
+msgid "Install / Update"
+msgstr "Installera/uppdatera"
+
+#: ../gui/data/packagemanager.glade.h:52
+msgid "Install / Update Confirmation"
+msgstr "Bekräfta installation/uppdatering"
+
+#: ../gui/data/packagemanager.glade.h:53
+msgid "Install or Update selected packages"
+msgstr "Installera eller uppdatera markerade paket"
+
+#: ../gui/data/packagemanager.glade.h:54
+msgid "Install/Update"
+msgstr "Installera/uppdatera"
+
+#: ../gui/data/packagemanager.glade.h:55
 msgid "Install/Upgrade Check"
 msgstr "Kontroll av installation/uppgradering"
 
-#: ../packagemanager.glade.h:38
+#: ../gui/data/packagemanager.glade.h:56
 msgid "Installing Packages"
 msgstr "Installera paket"
 
-#: ../packagemanager.glade.h:39
+#: ../gui/data/packagemanager.glade.h:57 ../gui/modules/installupdate.py:456
 msgid "Installing Packages..."
 msgstr "Installerar paket ..."
 
-#: ../packagemanager.glade.h:40
+#: ../gui/data/packagemanager.glade.h:58 ../packagemanager.py:1014
+msgid "Licenses"
+msgstr "Licenser"
+
+#: ../gui/data/packagemanager.glade.h:59
+msgid "Modify Repository"
+msgstr "Ändra databas"
+
+#: ../gui/data/packagemanager.glade.h:60
 msgid "Network Problem"
 msgstr "Nätverksproblem"
 
-#: ../packagemanager.glade.h:41
+#: ../gui/data/packagemanager.glade.h:61
 msgid "Next"
 msgstr "Nästa"
 
-#: ../packagemanager.glade.h:42
+#: ../gui/data/packagemanager.glade.h:62
 msgid "Non-Debug"
 msgstr "Utan felsökning"
 
-#: ../packagemanager.glade.h:43
+#: ../gui/data/packagemanager.glade.h:63
+msgid "OK"
+msgstr "OK"
+
+#: ../gui/data/packagemanager.glade.h:64
+msgid "Ok"
+msgstr "Ok"
+
+#: ../gui/data/packagemanager.glade.h:65
+msgid "Online Help"
+msgstr "Onlinehjälp"
+
+#: ../gui/data/packagemanager.glade.h:66
 msgid "Package Download Preferences"
 msgstr "Inställningar för nedladdning av paket"
 
-#: ../packagemanager.glade.h:45
+#: ../gui/data/packagemanager.glade.h:68
 msgid "Paste"
 msgstr "Klistra in"
 
-#: ../packagemanager.glade.h:46
+#: ../gui/data/packagemanager.glade.h:69
 msgid "Please check your Internet settings."
 msgstr "Kontrollera inställningarna för Internet."
 
-#: ../packagemanager.glade.h:51
+#: ../gui/data/packagemanager.glade.h:70 ../um/data/updatemanager.glade.h:16
+msgid "Processing"
+msgstr "Arbetar"
+
+#: ../gui/data/packagemanager.glade.h:71
+msgid "Quit"
+msgstr "Avsluta"
+
+#: ../gui/data/packagemanager.glade.h:72
+msgid "Quit application"
+msgstr "Avsluta programmet"
+
+#: ../gui/data/packagemanager.glade.h:73
+msgid "Reload"
+msgstr "Ladda om"
+
+#: ../gui/data/packagemanager.glade.h:74
+msgid "Remove"
+msgstr "Ta bort"
+
+#: ../gui/data/packagemanager.glade.h:75 ../gui/modules/installupdate.py:146
 msgid "Remove Check"
 msgstr "Kontroll av borttagning"
 
-#: ../packagemanager.glade.h:52
+#: ../gui/data/packagemanager.glade.h:76 ../gui/modules/installupdate.py:138
+#: ../gui/modules/installupdate.py:584
 msgid "Remove Confirmation"
 msgstr "Bekräfta borttagning"
 
-#: ../packagemanager.glade.h:54
-msgid "Removing Packages"
-msgstr "Ta bort paket"
+#: ../gui/data/packagemanager.glade.h:77
+msgid "Remove selected packages"
+msgstr "Ta bort markerade paket"
 
-#: ../packagemanager.glade.h:55
+#: ../gui/data/packagemanager.glade.h:78 ../gui/modules/installupdate.py:144
+msgid "Removing Packages"
+msgstr "Tar bort paket"
+
+#: ../gui/data/packagemanager.glade.h:79 ../gui/modules/installupdate.py:148
 msgid "Removing Packages..."
 msgstr "Tar bort paket ..."
 
-#: ../packagemanager.glade.h:56
+#: ../gui/data/packagemanager.glade.h:80
 msgid "Reset"
 msgstr "Återställ"
 
-#: ../packagemanager.glade.h:57
+#: ../gui/data/packagemanager.glade.h:81
+msgid ""
+"Review the Boot Environments to change\n"
+"Click OK to proceed"
+msgstr ""
+"Granska startmiljön som ska ändras\n"
+"Klicka OK för att fortsätta"
+
+#: ../gui/data/packagemanager.glade.h:83
 msgid "SPARC"
 msgstr "SPARC"
 
-#: ../packagemanager.glade.h:61
+#: ../gui/data/packagemanager.glade.h:84
+msgid "Search:"
+msgstr "Sök:"
+
+#: ../gui/data/packagemanager.glade.h:85
+msgid "Select All"
+msgstr "Markera alla"
+
+#: ../gui/data/packagemanager.glade.h:86
+msgid "Select All Items"
+msgstr "Markera alla objekt"
+
+#: ../gui/data/packagemanager.glade.h:87
 msgid "Select Updates"
 msgstr "Välj uppdateringar"
 
-#: ../packagemanager.glade.h:62
+#: ../gui/data/packagemanager.glade.h:88
 msgid ""
 "Select default download preferences for all packages.\n"
 "Click Reset to reset download preferences to the initial settings."
 msgstr ""
-"Välj standardinställningar för nedladdning för alla paket.\n"
-"Klicka på Återställ för att återställa de ursprungliga inställningarna för "
-"nedladdning."
+"Välj standardinställningar för nedladdning av alla paket.\n"
+"Klicka på Återställ för att återställa de ursprungliga inställningarna för nedladdning."
 
-#: ../packagemanager.glade.h:65
+#: ../gui/data/packagemanager.glade.h:90
+msgid "Short description"
+msgstr "Kort beskrivning"
+
+#: ../gui/data/packagemanager.glade.h:91
 msgid "Show Details"
 msgstr "Visa information"
 
-#: ../packagemanager.glade.h:67
+#: ../gui/data/packagemanager.glade.h:92
+msgid "Show:"
+msgstr "Visa:"
+
+#: ../gui/data/packagemanager.glade.h:93
 msgid ""
 "This action affects other packages.\n"
 "Review the packages to be installed or updated.\n"
@@ -566,7 +1037,7 @@ msgstr ""
 "Granska paketen som ska installeras eller uppdateras.\n"
 "Klicka på Nästa för att fortsätta."
 
-#: ../packagemanager.glade.h:70
+#: ../gui/data/packagemanager.glade.h:96
 msgid ""
 "This action affects other packages.\n"
 "Review the packages to be removed.\n"
@@ -576,151 +1047,746 @@ msgstr ""
 "Granska paketen som ska tas bort.\n"
 "Klicka på Nästa för att fortsätta."
 
-#: ../packagemanager.glade.h:75
+#. Load the catalogs from the repository, its a long
+#. running tasks so need a progress dialog
+#: ../gui/data/packagemanager.glade.h:99 ../packagemanager.py:178
+#: ../packagemanager.py:726 ../packagemanager.py:749 ../packagemanager.py:765
+#: ../packagemanager.py:1981 ../packagemanager.py:1995
+#: ../um/data/updatemanager.glade.h:17 ../updatemanager.py:928
+#: ../updatemanager.py:1045 ../updatemanager.py:1222
+msgid "Update All"
+msgstr "Uppdatera alla"
+
+#: ../gui/data/packagemanager.glade.h:100
+msgid "Update all packages"
+msgstr "Uppdatera alla paket"
+
+#: ../gui/data/packagemanager.glade.h:101
 msgid "X86"
 msgstr "X86"
 
-#. self.pkgconfig = packagemanagerconfig.PackageManagerConfig() #Config
-#. self.pkgconfig.set_config_file_path(os.path.expanduser("~")+"/.packagemanager/config")  #Config path
-#: ../packagemanager.py:103
-msgid "Package Manager - revision 0.1"
-msgstr "Pakethanteraren - revision 0.1"
+#: ../gui/data/packagemanager.glade.h:102
+msgid "_Add"
+msgstr "_Lägg till"
 
-#: ../packagemanager.py:126
+#: ../gui/data/packagemanager.glade.h:103 ../um/data/updatemanager.glade.h:21
+msgid "_Cancel"
+msgstr "_Avbryt"
+
+#: ../gui/data/packagemanager.glade.h:104
+msgid "_Close"
+msgstr "_Stäng"
+
+#: ../gui/data/packagemanager.glade.h:105
+msgid "_Edit"
+msgstr "_Redigera"
+
+#: ../gui/data/packagemanager.glade.h:106
+msgid "_File"
+msgstr "_Arkiv"
+
+#: ../gui/data/packagemanager.glade.h:107
+msgid "_Help"
+msgstr "_Hjälp"
+
+#: ../gui/data/packagemanager.glade.h:108
+msgid "_Modify..."
+msgstr "_Ändra ..."
+
+#: ../gui/data/packagemanager.glade.h:109
+msgid "_Name: "
+msgstr "_Namn: "
+
+#: ../gui/data/packagemanager.glade.h:110 ../um/data/updatemanager.glade.h:23
+msgid "_OK"
+msgstr "_OK"
+
+#: ../gui/data/packagemanager.glade.h:111
+msgid "_Package"
+msgstr "_Paket"
+
+#: ../gui/data/packagemanager.glade.h:112
+msgid "_Remove"
+msgstr "_Ta bort"
+
+#: ../gui/data/packagemanager.glade.h:113
+msgid "_Settings"
+msgstr "_Inställningar"
+
+#: ../gui/data/packagemanager.glade.h:114
+msgid "_URL: "
+msgstr "_Webbadress: "
+
+#: ../gui/modules/beadmin.py:69
+msgid "The <b>libbe</b> library was not "
+msgstr "Biblioteket <b>libbe</b> var inte "
+
+#: ../gui/modules/beadmin.py:77
+msgid "BE management"
+msgstr "Hantering av startmiljö"
+
+#: ../gui/modules/beadmin.py:150
 #, python-format
-msgid "GUI will not respond to any event! %s.Check declare_signals()"
-msgstr "GUI svarar inte på någon händelse! %s. Kontrollera declare_signals()"
+msgid ""
+"GUI will not respond to any event! %s.                             Check "
+"beadmin.py signals"
+msgstr ""
+"Det grafiska användargränssnittet svarar inte! %s.                             Kontrollera "
+"beadmin.py-signalerna"
 
-#: ../packagemanager.py:255 ../packagemanager.py:300
+#: ../gui/modules/beadmin.py:162
+msgid "Loading Boot Environment Information"
+msgstr "Läser in information om startmiljö"
+
+#: ../gui/modules/beadmin.py:164
+msgid "Fetching BE entries..."
+msgstr "Hämtar startmiljöposter ..."
+
+#: ../gui/modules/beadmin.py:192
+msgid "Boot Environment"
+msgstr "Startmiljö"
+
+#: ../gui/modules/beadmin.py:200
+msgid "Created"
+msgstr "Skapad"
+
+#: ../gui/modules/beadmin.py:209
+msgid "Size"
+msgstr "Storlek"
+
+#: ../gui/modules/beadmin.py:217
+msgid "Active on Reboot"
+msgstr "Aktiv vid omstart"
+
+#: ../gui/modules/beadmin.py:228
+msgid "Delete"
+msgstr "Ta bort"
+
+#: ../gui/modules/beadmin.py:245 ../gui/modules/repository.py:286
+#: ../gui/modules/repository.py:302 ../gui/modules/repository.py:332
+msgid "Applying changes"
+msgstr "Tillämpar ändringarna"
+
+#: ../gui/modules/beadmin.py:247 ../gui/modules/repository.py:287
+#: ../gui/modules/repository.py:303 ../gui/modules/repository.py:333
+msgid "Applying changes, please wait ..."
+msgstr "Tillämpar ändringarna, ett ögonblick ..."
+
+#: ../gui/modules/beadmin.py:287
+msgid "No change"
+msgstr "Ingen förändring"
+
+#: ../gui/modules/beadmin.py:291
+#, python-format
+msgid "%d BE's will be deleted"
+msgstr "%d startmiljöer kommer att tas bort"
+
+#: ../gui/modules/beadmin.py:299
+msgid "The Active BE will be changed upon reboot"
+msgstr "Den aktiva startmiljön kommer att ändras vid uppstart"
+
+#: ../gui/modules/beadmin.py:303
+msgid "No change\n"
+msgstr "Ingen förändring\n"
+
+#: ../gui/modules/beadmin.py:339
+msgid "<b>Couldn't change Active "
+msgstr "<b>Aktiv kunde inte ändras "
+
+#: ../gui/modules/beadmin.py:344
+msgid "<b>Couldn't delete Boot "
+msgstr "<b>Start kunde inte tas bort "
+
+#: ../gui/modules/beadmin.py:410
+msgid "The <b>libbe</b> library couldn't  "
+msgstr "Biblioteket <b>libbe</b> kunde inte "
+
+#: ../gui/modules/beadmin.py:434
+msgid "%a %b %d %H:%M %Y"
+msgstr "%a %b %d %H:%M %Y"
+
+#: ../gui/modules/beadmin.py:441 ../gui/modules/beadmin.py:451
+msgid "%m/%d/%y %H:%M"
+msgstr "%m/%d/%y %H:%M"
+
+#: ../gui/modules/installupdate.py:72
+msgid "The version of the API is not correct.\n"
+msgstr "API-versionen är inte korrekt.\n"
+
+#: ../gui/modules/installupdate.py:77
+msgid "The image was not found."
+msgstr "Bilden hittades inte."
+
+#: ../gui/modules/installupdate.py:140
+msgid "This action affects other packages.\n"
+msgstr "Den här åtgärden påverkar andra paket.\n"
+
+#: ../gui/modules/installupdate.py:177
+#, python-format
+msgid ""
+"GUI will not respond to any event! %s.                             Check "
+"installupdate.py signals"
+msgstr ""
+"Det grafiska användargränssnittet svarar inte! %s.                             Kontrollera "
+"installupdate.py-signalerna"
+
+#: ../gui/modules/installupdate.py:198 ../gui/modules/installupdate.py:223
+msgid "Canceling..."
+msgstr "Avbryter ..."
+
+#: ../gui/modules/installupdate.py:270 ../gui/modules/installupdate.py:406
+#: ../gui/modules/installupdate.py:446
+msgid "An unknown error occured while "
+msgstr "Ett okänt fel inträffade när "
+
+#: ../gui/modules/installupdate.py:282
+msgid "Evaluation started.\n"
+msgstr "Utvärderingen påbörjades.\n"
+
+#: ../gui/modules/installupdate.py:292
+msgid "Invalid repository certificate."
+msgstr "Felaktigt databascertifikat"
+
+#: ../gui/modules/installupdate.py:301
+msgid "Installation failed during\n"
+msgstr "Installationen misslyckades under\n"
+
+#: ../gui/modules/installupdate.py:309
+msgid "Install failed.\n"
+msgstr "Installationen misslyckades.\n"
+
+#: ../gui/modules/installupdate.py:321 ../gui/modules/installupdate.py:394
+msgid "Please check the network "
+msgstr "Kontrollera nätverket "
+
+#: ../gui/modules/installupdate.py:334 ../gui/modules/installupdate.py:382
+msgid "Update All failed during\n"
+msgstr "Uppdateringen av alla paket misslyckades under\n"
+
+#: ../gui/modules/installupdate.py:359
+msgid "Unexpected failure with"
+msgstr "Oväntat fel med"
+
+#: ../gui/modules/installupdate.py:367
+msgid "Update All failed during "
+msgstr "Uppdatering av alla misslyckades under "
+
+#: ../gui/modules/installupdate.py:374
+msgid "pkg(5) appears to be out of "
+msgstr "pkg(5) verkar sakna "
+
+#: ../gui/modules/installupdate.py:416
+msgid "Preparing to download packages, please wait..."
+msgstr "Förbereder för nedladdning av paket, ett ögonblick ..."
+
+#: ../gui/modules/installupdate.py:423 ../gui/modules/installupdate.py:472
+msgid "An error occured while "
+msgstr "Ett fel inträffade under "
+
+#: ../gui/modules/installupdate.py:464 ../gui/modules/installupdate.py:478
+#: ../gui/modules/installupdate.py:491
+msgid "There was an error during installation."
+msgstr "Det interäffafade ett fel under installationen."
+
+#: ../gui/modules/installupdate.py:485
+msgid "This is an Live Image. The install"
+msgstr "Det här är en live-bild. Installationen"
+
+#: ../gui/modules/installupdate.py:545
+#, python-format
+msgid "Evaluating: %s\n"
+msgstr "Utvärderar: %s\n"
+
+#: ../gui/modules/installupdate.py:559
+#, python-format
+msgid "%d packages will be updated\n"
+msgstr "%d paket uppdateras\n"
+
+#: ../gui/modules/installupdate.py:562
+#, python-format
+msgid "%d package will be updated\n"
+msgstr "%d paket uppdateras\n"
+
+#: ../gui/modules/installupdate.py:565
+#, python-format
+msgid ""
+"%d packages will be installed\n"
+"\n"
+msgstr ""
+"%d paket installeras\n"
+"\n"
+
+#: ../gui/modules/installupdate.py:568
+#, python-format
+msgid ""
+"%d package will be installed\n"
+"\n"
+msgstr ""
+"%d paket installeras\n"
+"\n"
+
+#: ../gui/modules/installupdate.py:571
+#, python-format
+msgid ""
+"%d packages will be removed\n"
+"\n"
+msgstr ""
+"%d paket tas bort\n"
+"\n"
+
+#: ../gui/modules/installupdate.py:574
+#, python-format
+msgid ""
+"%d package will be removed\n"
+"\n"
+msgstr ""
+"%d paket tas bort\n"
+"\n"
+
+#: ../gui/modules/installupdate.py:579
+#, python-format
+msgid "%s will be downloaded"
+msgstr "%s laddas ned"
+
+#: ../gui/modules/installupdate.py:586
+msgid "This action couldn't be finished.\n"
+msgstr "Åtgärden kunde inte slutföras.\n"
+
+#: ../gui/modules/installupdate.py:598
+msgid "None of the packages will be removed"
+msgstr "Inget paket kommer att tas bort"
+
+#: ../gui/modules/installupdate.py:678
+msgid "Downloading: "
+msgstr "Laddar ned:  "
+
+#: ../gui/modules/installupdate.py:701
+msgid "Creating packages index..."
+msgstr "Skapar paketindex ..."
+
+#: ../gui/modules/repository.py:137
+#, python-format
+msgid ""
+"GUI will not respond to any event! %s.                             Check "
+"repository.py signals"
+msgstr ""
+"Det grafiska användargränssnittet svarar inte! %s.                             Kontrollera "
+"repository.py-signalerna"
+
+#: ../gui/modules/repository.py:150
+msgid "Repository Name"
+msgstr "Databasnamn"
+
+#: ../gui/modules/repository.py:155
+msgid "Preferred"
+msgstr "Önskat"
+
+#: ../gui/modules/repository.py:223
+msgid "Couldn't change"
+msgstr "Det gick inte att ändra"
+
+#: ../gui/modules/repository.py:377 ../gui/modules/repository.py:391
+#, python-format
+msgid "Failed to modify %s."
+msgstr "Det gick inte att ändra %s."
+
+#: ../gui/modules/repository.py:419
+#, python-format
+msgid ""
+"Invalid URL:\n"
+"%s"
+msgstr ""
+"Felaktig webbadress:\n"
+"%s"
+
+#: ../gui/modules/repository.py:435 ../gui/modules/repository.py:448
+#, python-format
+msgid "Failed to add %s."
+msgstr "Det gick inte att lägga till %s."
+
+#: ../gui/modules/repository.py:469
+#, python-format
+msgid "Failed to delete %s."
+msgstr "Det gick inte att ta bort %s."
+
+#: ../modules/client/api_errors.py:100
+#, python-format
+msgid ""
+"        pkg: no package matching '%s' could be found in current catalog\n"
+"        suggest relaxing pattern, refreshing and/or examining catalogs"
+msgstr ""
+"        pkg: inga paket som passar in på '%s' hittades i den aktuella katalogen\n"
+"        välj ett annat sökmönster, uppdatera och/eller undersök katalogerna"
+
+#: ../modules/client/bootenv.py:130
+msgid "pkg: unable to create an auto snapshot. pkg recovery is disabled."
+msgstr "pkg: det gick inte att skapa automatisk ögonblicksbild. Pkg-återställningen är avaktiverad."
+
+#: ../modules/client/bootenv.py:165 ../modules/client/bootenv.py:308
+#, python-format
+msgid "pkg: unable to create BE %s"
+msgstr "pkg: det gick inte att skapa startmiljö %s"
+
+#: ../modules/client/bootenv.py:170
+#, python-format
+msgid "pkg: attempt to mount %s failed."
+msgstr "pkg: det gick inte att montera %s."
+
+#: ../modules/client/bootenv.py:195
+#, python-format
+msgid "pkg: A system error %s was caught executing %s"
+msgstr "pkg: Ett systemfel %s upptäcktes vid körning av %s"
+
+#: ../modules/client/bootenv.py:195
+#, python-format
+msgid "pkg: A system error %(e)s was caught executing %(join_cmd)s"
+msgstr "pkg: Ett systemfel %(e)s upptäcktes vid körning av %(join_cmd)s"
+
+#: ../modules/client/bootenv.py:199
+#, python-format
+msgid ""
+"pkg: '%s' failed. \n"
+"with a return code of %d."
+msgstr ""
+"pkg: '%s' misslyckades. \n"
+"med felkod %d."
+
+#: ../modules/client/bootenv.py:204
+#, python-format
+msgid "pkg: unable to activate %s"
+msgstr "pkg: det gick inte att aktivera %s"
+
+#: ../modules/client/bootenv.py:209
+#, python-format
+msgid "pkg: unable to unmount %s"
+msgstr "pkg: det gick inte att demontera %s"
+
+#: ../modules/client/bootenv.py:215
+#, python-format
+msgid ""
+"A clone of %s exists and has been updated and activated. On next boot the "
+"Boot Environment %s will be mounted on '/'. Reboot when ready to switch to "
+"this updated BE."
+msgstr ""
+"Det finns redan en klon av %s som uppdaterats och aktiverats. Vid nästa uppstart "
+"kommer startmiljön %s att monteras på '/'. Starta om när det är dags att byta till "
+"den uppdaterade startmiljön."
+
+#: ../modules/client/bootenv.py:232
+#, python-format
+msgid "pkg: The system error %s was caught executing %s"
+msgstr "pkg: Systemfelet %s inträffade vid körning av %s"
+
+#: ../modules/client/bootenv.py:232
+#, python-format
+msgid "pkg: The system error %(e)s was caught executing %(join_cmd)s"
+msgstr "pkg: Systemfelet %(e)s inträffade vid körning av %(join_cmd)s"
+
+#: ../modules/client/bootenv.py:236
+#, python-format
+msgid ""
+"pkg: '%s' failed \n"
+"with a return code of %d."
+msgstr ""
+"pkg: '%s' misslyckades \n"
+"med felkoden %d."
+
+#: ../modules/client/bootenv.py:240
+#, python-format
+msgid "%s has been updated successfully"
+msgstr "%s uppdaterades"
+
+#: ../modules/client/bootenv.py:253
+#, python-format
+msgid ""
+" The running system has not been modified. Modifications were only made to a "
+"clone of the running system.  This clone is mounted at %s should you wish to "
+"inspect it."
+msgstr ""
+" Det aktiva systemet har inte ändrats. Endast en klon av det aktiva systemet "
+"ändrades. Klonen är monterad vid %s om du vill kontrollera den."
+
+#: ../modules/client/bootenv.py:261
+#, python-format
+msgid "pkg: unable to rollback BE %s and restore image"
+msgstr "pkg: det gick inte att återställa startmiljön %s och återskapa bilden"
+
+#: ../modules/client/bootenv.py:267
+#, python-format
+msgid "%s failed to be updated. No changes have been made to %s."
+msgstr "%s kunde inte uppdateras. %s har inte ändrats."
+
+#: ../modules/client/bootenv.py:279
+#, python-format
+msgid "pkg: unable to destroy snapshot %s"
+msgstr "pkg: det gick inte att förstöra ögonblicksbilden %s"
+
+#: ../modules/client/bootenv.py:313
+#, python-format
+msgid "pkg: unable to mount BE %s on %s"
+msgstr "pkg: det gick inte att montera startmiljön %s på %s"
+
+#: ../modules/client/bootenv.py:317
+#, python-format
+msgid ""
+"The Boot Environment %s failed to be updated. A snapshot was taken before "
+"the failed attempt and is mounted here %s. Use 'beadm unmount %s' and then "
+"'beadm activate %s' if you wish to boot to this BE."
+msgstr ""
+"Startmiljön %s kunde inte uppdateras. En ögonblicksbild som togs före"
+"det misslyckade försöket finns monterad här %s. Ange kommandot "
+"'beadm unmount %s' och sedan 'beadm activate %s' för att starta från den miljön."
+
+#: ../modules/client/bootenv.py:330
+#, python-format
+msgid ""
+"The Boot Environment %s failed to be updated. A snapshot was taken before "
+"the failed attempt and has been restored so no changes have been made to %s."
+msgstr ""
+"Startmiljön %s kunde inte uppdateras. En ögonblicksbild som togs före "
+"det misslyckade försöket har återställts. %s har inte ändrats."
+
+#: ../modules/client/image.py:475
+#, python-format
+msgid "Certificate for authority %s not found"
+msgstr "Inget certifikat hittades för behörighet %s "
+
+#: ../modules/client/image.py:477
+#, python-format
+msgid "File was supposed to exist at  path %s"
+msgstr "Filen skulle finnas i sökvägen %s"
+
+#: ../modules/client/image.py:484
+#, python-format
+msgid "Certificate for authority %s at %s has an invalid format."
+msgstr "Certifikatet för behörigheten %s på %s har ett ogiltigt format."
+
+#: ../modules/client/image.py:518
+#, python-format
+msgid ""
+"Certificate for authority %(pfx)s at %(ssl_cert)s has an invalid format."
+msgstr ""
+"Certifikatet för behörigheten %(pfx)s på %(ssl_cert)s har ett ogiltigt format."
+
+#: ../modules/client/image.py:490
+#, python-format
+msgid "Certificate for authority %s has expired"
+msgstr "Certifikatet för behörighet %s har löpt ut"
+
+#: ../modules/client/image.py:492
+msgid "Please install a valid certificate"
+msgstr "Installera ett giltigt certifikat"
+
+#: ../modules/client/image.py:505
+#, python-format
+msgid "Certificate for authority %s is invalid"
+msgstr "Certifikatet för behörighet %s är ogiltigt"
+
+#: ../modules/client/image.py:507
+msgid "Certificate effective date is in the future"
+msgstr "Certifikatet har ett framtida startdatum"
+
+#: ../modules/client/image.py:519
+#, python-format
+msgid "Certificate for authority %s will expire in %d days"
+msgstr "Certifikatet för behörighet %s löper ut om %d dagar"
+
+#: ../modules/client/image.py:2106 ../modules/client/image.py:2161
+msgid "Before evaluation:"
+msgstr "Före utvärdering:"
+
+#: ../modules/client/image.py:2122 ../modules/client/image.py:2170
+msgid "After evaluation:"
+msgstr "Efter utvärdering:"
+
+#: ../modules/client/image.py:2224
+msgid "SUNWipkg update check failed."
+msgstr "Uppdateringskontroll av SUNWipkg misslyckades."
+
+#: ../modules/misc.py:384
+msgid "B"
+msgstr "B"
+
+#: ../modules/misc.py:385
+msgid "kB"
+msgstr "kB"
+
+#: ../modules/misc.py:386
+msgid "MB"
+msgstr "MB"
+
+#: ../modules/misc.py:387
+msgid "GB"
+msgstr "GB"
+
+#: ../modules/misc.py:388
+msgid "TB"
+msgstr "TB"
+
+#: ../modules/misc.py:389
+msgid "PB"
+msgstr "PB"
+
+#: ../modules/misc.py:390
+msgid "EB"
+msgstr "EB"
+
+#: ../modules/server/catalog.py:227
+#, python-format
+msgid "ERROR building search database, rc: %s"
+msgstr "FEL när sökdatabas skulle skapas, rc: %s"
+
+#: ../packagemanager.py:181
+msgid ""
+"Checking SUNWipkg and SUNWipkg-gui versions\n"
+"\n"
+"Please wait ..."
+msgstr ""
+"Kontrollerar SUNWipkg- och SUNWipkg-gui-versioner\n"
+"\n"
+"Ett ögonblick ..."
+
+#: ../packagemanager.py:250
+#, python-format
+msgid "GUI will not respond to any event! %s."
+msgstr "Det grafiska användargränssnittet svarar inte! %s."
+
+#: ../packagemanager.py:338 ../packagemanager.py:390 ../updatemanager.py:620
 msgid "Name"
 msgstr "Namn"
 
-#: ../packagemanager.py:263
+#: ../packagemanager.py:345
+msgid "Status"
+msgstr "Status"
+
+#: ../packagemanager.py:356
 msgid "Installed Version"
 msgstr "Installerad version"
 
-#: ../packagemanager.py:269
+#: ../packagemanager.py:364 ../updatemanager.py:635
 msgid "Latest Version"
 msgstr "Senaste versionen"
 
-#: ../packagemanager.py:275
+#: ../packagemanager.py:372
 msgid "Rating"
 msgstr "Klassificering"
 
-#: ../packagemanager.py:281
+#: ../packagemanager.py:376
 msgid "Description"
 msgstr "Beskrivning"
 
-#. TODO: check if needed
-#: ../packagemanager.py:440 ../packagemanager.py:448 ../packagemanager.py:899
-#: ../packagemanager.py:904 ../packagemanager.py:972 ../packagemanager.py:977
-#: ../packagemanager.py:979 ../packagemanager.py:1467
-#: ../packagemanager.py:1472 ../packagemanager.py:1540
+#: ../packagemanager.py:465 ../packagemanager.py:1568
+#: ../packagemanager.py:1577 ../packagemanager.py:2016
 msgid "All"
 msgstr "Alla"
 
-#: ../packagemanager.py:442
+#: ../packagemanager.py:467
 msgid "Meta Packages"
 msgstr "Metapaket"
 
-#: ../packagemanager.py:443 ../packagemanager.py:1571
-#: ../packagemanager.py:1572 ../packagemanager.py:1573
-#: ../packagemanager.py:1574 ../packagemanager.py:1575
-#: ../packagemanager.py:1576 ../packagemanager.py:1577
-#: ../packagemanager.py:1578 ../packagemanager.py:1579
+#: ../packagemanager.py:468 ../packagemanager.py:2062
+#: ../packagemanager.py:2064 ../packagemanager.py:2066
+#: ../packagemanager.py:2068 ../packagemanager.py:2070
+#: ../packagemanager.py:2072 ../packagemanager.py:2074
+#: ../packagemanager.py:2076 ../packagemanager.py:2078
 msgid "Applications Desktop"
 msgstr "Skrivbordsprogram"
 
-#: ../packagemanager.py:444
+#: ../packagemanager.py:469
 msgid "Applications Web-Based"
 msgstr "Webbaserade program"
 
-#: ../packagemanager.py:445 ../packagemanager.py:1581
-#: ../packagemanager.py:1582 ../packagemanager.py:1583
-#: ../packagemanager.py:1585
+#: ../packagemanager.py:470 ../packagemanager.py:2080
+#: ../packagemanager.py:2082 ../packagemanager.py:2084
+#: ../packagemanager.py:2087
 msgid "Operating System"
 msgstr "Operativsystem"
 
-#: ../packagemanager.py:446
+#: ../packagemanager.py:471
 msgid "User Environment"
 msgstr "Användarmiljö"
 
-#: ../packagemanager.py:447
+#: ../packagemanager.py:472
 msgid "Web Infrastructure"
 msgstr "Webbinfrastruktur"
 
-#: ../packagemanager.py:452 ../packagemanager.py:936
+#: ../packagemanager.py:475
 msgid "All Packages"
 msgstr "Alla paket"
 
-#: ../packagemanager.py:454 ../packagemanager.py:938
+#: ../packagemanager.py:477
 msgid "Installed Packages"
 msgstr "Installerade paket"
 
-#: ../packagemanager.py:455 ../packagemanager.py:940
+#: ../packagemanager.py:478
 msgid "Updates"
 msgstr "Uppdateringar"
 
-#. self.filter_list.append([self._('Locked Packages'),])
-#. self.filter_list.append(["",])
-#: ../packagemanager.py:459 ../packagemanager.py:946
+#: ../packagemanager.py:479
+msgid "Non-installed Packages"
+msgstr "Paket som inte installerats"
+
+#. self.filter_list.append([self._('Locked Packages'), ])
+#. self.filter_list.append(["", ])
+#: ../packagemanager.py:483
 msgid "Selected Packages"
 msgstr "Valda paket"
 
-#: ../packagemanager.py:548
-#, python-format
-msgid "%d packages listed"
-msgstr "%d visade paket"
+#: ../packagemanager.py:728
+msgid "Checking SUNWipkg and SUNWipkg-gui versions\n"
+msgstr "Kontrollerar SUNWipkg- och SUNWipkg-gui-versioner\n"
 
-#: ../packagemanager.py:549
-#, python-format
-msgid "%d installed"
-msgstr "%d installerade"
+#. Prompt user
+#: ../packagemanager.py:745
+msgid "Newer versions of SUNWipkg and "
+msgstr "Nyare versioner av SUNWipkg och "
 
-#: ../packagemanager.py:550
-#, python-format
-msgid "%d selected"
-msgstr "%d valda"
+#: ../packagemanager.py:762
+msgid "Update All was not "
+msgstr "Uppdatering av alla var inte "
 
-#: ../packagemanager.py:551
-#, python-format
-msgid "%d broken"
-msgstr "%d felaktiga"
+#: ../packagemanager.py:801
+msgid "Refreshing catalogs"
+msgstr "Uppdaterar kataloger"
 
-#: ../packagemanager.py:819
+#: ../packagemanager.py:802
+msgid "Refreshing catalogs..."
+msgstr "Uppdaterar kataloger ..."
+
+#: ../packagemanager.py:941
 msgid "Fetching description..."
 msgstr "Hämtar beskrivning ..."
 
-#: ../packagemanager.py:820 ../packagemanager.py:821 ../packagemanager.py:822
+#: ../packagemanager.py:942 ../packagemanager.py:943 ../packagemanager.py:944
 msgid "Fetching information..."
 msgstr "Hämtar information ..."
 
-#: ../packagemanager.py:826
+#: ../packagemanager.py:948
 msgid "Description not available for this package..."
-msgstr "Det finns ingen beskrivning för det här paketet ..."
+msgstr "Det finns ingen beskrivning av det här paketet ..."
 
-#: ../packagemanager.py:827
+#: ../packagemanager.py:950
 msgid "Files Details not available for this package..."
 msgstr "Det finns ingen filinformation för det här paketet ..."
 
-#: ../packagemanager.py:828
+#: ../packagemanager.py:952
 msgid "Dependencies info not available for this package..."
 msgstr "Det finns inga beroenden för det här paketet ..."
 
-#: ../packagemanager.py:829
+#: ../packagemanager.py:954
 msgid "Information not available for this package..."
 msgstr "Det finns ingen information om det här paketet ..."
 
-#: ../packagemanager.py:834
+#: ../packagemanager.py:957
 #, python-format
 msgid "Root: %s\n"
 msgstr "Rot: %s\n"
 
-#: ../packagemanager.py:835
+#: ../packagemanager.py:958
 msgid "Dependencies:\n"
 msgstr "Beroenden:\n"
 
-#: ../packagemanager.py:838
+#: ../packagemanager.py:961
 msgid ""
 "Information for installed package:\n"
 "\n"
@@ -728,7 +1794,7 @@ msgstr ""
 "Information om installerade paket:\n"
 "\n"
 
-#: ../packagemanager.py:840
+#: ../packagemanager.py:964
 msgid ""
 "Information for latest available package:\n"
 "\n"
@@ -736,97 +1802,130 @@ msgstr ""
 "Information om senast tillgängliga paket:\n"
 "\n"
 
-#: ../packagemanager.py:857
+#: ../packagemanager.py:976
 msgid "depend"
 msgstr "beroende"
 
-#: ../packagemanager.py:860
+#: ../packagemanager.py:980
 msgid "dir"
 msgstr "kat"
 
-#: ../packagemanager.py:862
+#: ../packagemanager.py:983
 msgid "file"
 msgstr "fil"
 
-#. instbuffer.insert(institer,"\t"+self.locale_distinguished_name(a)+"\n")
-#. elif cmp(a.name,self.N_("driver")) == 0:
-#. print a.distinguished_name()
-#: ../packagemanager.py:867
+#: ../packagemanager.py:986
 msgid "hardlink"
 msgstr "hård länk"
 
-#: ../packagemanager.py:869
+#: ../packagemanager.py:989
 msgid "link"
 msgstr "länk"
 
-#: ../packagemanager.py:871
+#: ../packagemanager.py:992
 msgid "legacy"
 msgstr "äldre"
 
-#: ../packagemanager.py:872 ../packagemanager.py:874
+#: ../packagemanager.py:993
 msgid "pkg"
-msgstr "pkt"
+msgstr "pkg"
 
-#: ../packagemanager.py:875
-msgid "name"
-msgstr "namn"
-
-#: ../packagemanager.py:876
+#: ../packagemanager.py:995
 msgid "desc"
 msgstr "beskr"
 
-#: ../packagemanager.py:877
+#: ../packagemanager.py:997
 #, python-format
 msgid "  Description:\t%s\n"
 msgstr "  Beskrivning:\t%s\n"
 
-#: ../packagemanager.py:885
+#: ../packagemanager.py:1000
 #, python-format
 msgid "  Name:\t\t%s\n"
 msgstr "  Namn:\t\t%s\n"
 
-#: ../packagemanager.py:886
+#: ../packagemanager.py:1001
 #, python-format
 msgid "  FMRI:\t\t%s\n"
 msgstr "  FMRI:\t\t%s\n"
 
-#: ../packagemanager.py:887
+#: ../packagemanager.py:1002
 #, python-format
 msgid "  Version:\t\t%s\n"
 msgstr "  Version:\t\t%s\n"
 
-#: ../packagemanager.py:888
+#: ../packagemanager.py:1004
 #, python-format
 msgid "  Packaged:\t%s\n"
 msgstr "  Paketerat:\t%s\n"
 
-#: ../packagemanager.py:943
-msgid "Locked Packages"
-msgstr "Låsta paket"
+#: ../packagemanager.py:1330
+msgid " catalogs successfully updated:\n"
+msgstr " katalogerna uppdaterades:\n"
 
-#: ../packagemanager.py:1311
-msgid "..."
-msgstr "..."
+#: ../packagemanager.py:1351
+msgid "Unknown error"
+msgstr "Okänt fel"
 
-#. TODO Instead trying root image, maybe popup window
-#. with question to which image switch??
-#: ../packagemanager.py:1385
+#: ../packagemanager.py:1368
 #, python-format
-msgid "%s is not valid image, trying root image"
-msgstr "%s är inte en giltig bild, försök med en rotbild"
+msgid "%s is not a valid root image, return None"
+msgstr "%s är inte en giltig rotbild, inget returneras"
 
-#. TODO if this function returns None, the popup gui with catalog
-#. Add/remove/select should be shown.
-#: ../packagemanager.py:1401
+#. Can't happen when all_known is true and no args,
+#. but here for completeness.
+#: ../packagemanager.py:1391
+msgid "Error occured while getting list of packages"
+msgstr "Ett fel inträffade vid hämtning av paketlista"
+
+#: ../packagemanager.py:1684
 #, python-format
-msgid "%s is not valid root image, return None"
-msgstr "%s är inte en giltig rotbild, ingen retur"
+msgid "Processing package entries: %d of %d"
+msgstr "Bearbetar processposter: %d av %d"
 
-#: ../packagemanager.py:1473
-msgid "All packages"
-msgstr "Alla paket"
+#: ../packagemanager.py:1695
+msgid "Packagemanager error"
+msgstr "Pakethanteringsfel"
 
-#. self.add_package_to_category(_("All"),None,None,None);
+#: ../packagemanager.py:1802
+msgid "Loading Repository Information"
+msgstr "Läser in databasinformation"
+
+#: ../packagemanager.py:1804
+msgid "Fetching package entries ..."
+msgstr "Hämtar paketposter ..."
+
+#: ../packagemanager.py:1923
+#, python-format
+msgid "%d packages listed"
+msgstr "%d visade paket"
+
+#: ../packagemanager.py:1924
+#, python-format
+msgid "%d installed"
+msgstr "%d installerade"
+
+#: ../packagemanager.py:1925
+#, python-format
+msgid "%d selected"
+msgstr "%d valda"
+
+#: ../packagemanager.py:1926
+#, python-format
+msgid "%d broken"
+msgstr "%d felaktiga"
+
+#. 2790: As IPS and IPS-GUI have been updated the IPS GUI must be shutdown
+#. and restarted
+#: ../packagemanager.py:1978
+msgid "SUNWipkg and SUNWipkg-gui have been "
+msgstr "SUNWipkg och SUNWipkg-gui har "
+
+#: ../packagemanager.py:1991
+msgid "Update All has completed and Package "
+msgstr "Uppdatering av alla har utförts och paket "
+
+#. self.__add_package_to_category(_("All"),None,None,None);
 #. Category names until xdg is imported.
 #. from xdg.DesktopEntry import *
 #. entry = DesktopEntry ()
@@ -834,56 +1933,741 @@ msgstr "Alla paket"
 #. for root, dirs, files in os.walk (directory):
 #. for name in files:
 #. entry.parse (os.path.join (root, name))
-#. self.add_category_to_section (entry.getName (), self._('Applications Desktop'))
-#: ../packagemanager.py:1553 ../packagemanager.py:1554
-#: ../packagemanager.py:1571
+#. self.__add_category_to_section (entry.getName (), \
+#. self._('Applications Desktop'))
+#: ../packagemanager.py:2034 ../packagemanager.py:2036
+#: ../packagemanager.py:2061
 msgid "Accessories"
 msgstr "Tillbehör"
 
-#: ../packagemanager.py:1555 ../packagemanager.py:1557
-#: ../packagemanager.py:1559 ../packagemanager.py:1572
+#: ../packagemanager.py:2038 ../packagemanager.py:2042
+#: ../packagemanager.py:2046 ../packagemanager.py:2063
 msgid "Games"
 msgstr "Spel"
 
-#: ../packagemanager.py:1556 ../packagemanager.py:1558
-#: ../packagemanager.py:1560 ../packagemanager.py:1573
-#: ../packagemanager.py:1582
+#: ../packagemanager.py:2040 ../packagemanager.py:2044
+#: ../packagemanager.py:2048 ../packagemanager.py:2065
+#: ../packagemanager.py:2081
 msgid "Graphics"
 msgstr "Grafik"
 
-#: ../packagemanager.py:1574
+#: ../packagemanager.py:2067
 msgid "Internet"
 msgstr "Internet"
 
-#: ../packagemanager.py:1575 ../packagemanager.py:1587
+#: ../packagemanager.py:2069 ../packagemanager.py:2088
 msgid "Office"
 msgstr "Kontor"
 
-#: ../packagemanager.py:1576
+#: ../packagemanager.py:2071
 msgid "Sound & Video"
 msgstr "Ljud och video"
 
-#: ../packagemanager.py:1577
+#: ../packagemanager.py:2073
 msgid "System Tools"
 msgstr "Systemverktyg"
 
-#: ../packagemanager.py:1578
+#: ../packagemanager.py:2075
 msgid "Universal Access"
 msgstr "Allmän åtkomst"
 
 #. Can be twice :)
-#: ../packagemanager.py:1579 ../packagemanager.py:1585
+#: ../packagemanager.py:2077 ../packagemanager.py:2086
 msgid "Developer Tools"
 msgstr "Utvecklingsverktyg"
 
-#: ../packagemanager.py:1581
+#: ../packagemanager.py:2079
 msgid "Core"
 msgstr "Kärna"
 
-#: ../packagemanager.py:1583
+#: ../packagemanager.py:2083
 msgid "Media"
 msgstr "Medier"
 
-#: ../packagemanager.py:1588
+#: ../packagemanager.py:2090
 msgid "Office2"
 msgstr "Kontor 2"
+
+#: ../publish.py:56
+msgid ""
+"Usage:\n"
+"        pkgsend [options] command [cmd_options] [operands]\n"
+"\n"
+"Packager subcommands:\n"
+"        pkgsend open [-en] pkg_fmri\n"
+"        pkgsend add action arguments \n"
+"        pkgsend import [-T file_pattern] bundlefile ...\n"
+"        pkgsend include [-d basedir] manifest ...\n"
+"        pkgsend close [-A]\n"
+"\n"
+"        pkgsend rename src_fmri dest_fmri\n"
+"\n"
+"Options:\n"
+"        -s repo_url     destination repository server URL prefix\n"
+"\n"
+"Environment:\n"
+"        PKG_REPO"
+msgstr ""
+"Användning:\n"
+"        pkgsend [alternativ] kommando [kommandoalternativ] [operander]\n"
+"\n"
+"Packager-underkommandon:\n"
+"        pkgsend open [-en] pkg_fmri\n"
+"        pkgsend add åtgärd argument \n"
+"        pkgsend import [-T filmönster] paketfil ...\n"
+"        pkgsend include [-d baskatalog] manifest ...\n"
+"        pkgsend close [-A]\n"
+"\n"
+"        pkgsend rename src_fmri dest_fmri\n"
+"\n"
+"Alternativ:\n"
+"        -s repo_url   webbadressprefix för måldatabas\n"
+"\n"
+"Miljö:\n"
+"        PKG_REPO"
+
+#: ../publish.py:83
+#, python-format
+msgid "pkgsend: %s failed (status %s)%s"
+msgstr "pkgsend: %s misslyckades (status %s)%s"
+
+#: ../publish.py:99
+msgid "pkgsend: open requires one package name"
+msgstr "pkgsend: open kräver namnet på ett paket"
+
+#: ../publish.py:109
+msgid "pkgsend: no transaction ID provided in response"
+msgstr "pkgsend: inget transaktions-id i svaret"
+
+#: ../publish.py:135
+msgid "No transaction ID specified"
+msgstr "Inget transaktions-id har angivits"
+
+#: ../publish.py:155 ../publish.py:197 ../publish.py:248
+msgid "No transaction ID specified in $PKG_TRANS_ID"
+msgstr "Inget transaktions-id har angivits i $PKG_TRANS_ID"
+
+#: ../publish.py:306
+#, python-format
+msgid "pkgsend: illegal global option -- %s"
+msgstr "pkgsend: ogiltigt globalt alternativ -- %s"
+
+#: ../publish.py:332
+#, python-format
+msgid "pkgsend: unknown subcommand '%s'"
+msgstr "pkgsend: okänt underkommando '%s'"
+
+#: ../publish.py:336
+#, python-format
+msgid "pkgsend: illegal %s option -- %s"
+msgstr "pkgsend: ogiltigt %s alternativ -- %s"
+
+#: ../pull.py:51
+msgid ""
+"Usage:\n"
+"        pkgrecv -s server [-d dir] pkgfmri ...\n"
+"        pkgrecv -s server -n"
+msgstr ""
+"Användning:\n"
+"        pkgrecv -s server [-d kat] pkgfmri ...\n"
+"        pkgrecv -s server -n"
+
+#: ../pull.py:74
+#, python-format
+msgid "Unable to open manifest: %s"
+msgstr "Det gick inte att öppna manifest:  %s"
+
+#: ../pull.py:110
+#, python-format
+msgid "Unable to download files from: %s"
+msgstr "Det gick inte att ladda ned filer från:  %s"
+
+#: ../pull.py:119 ../pull.py:164
+#, python-format
+msgid "Unable to create directory: %s"
+msgstr "Det gick inte att skapa katalogen:  %s"
+
+#: ../pull.py:137
+#, python-format
+msgid "Unable to extract file: %s"
+msgstr "Det gick inte att packa upp filen: %s"
+
+#: ../pull.py:152
+#, python-format
+msgid "Unable to download manifest %s from %s"
+msgstr "Det gick inte att ladda ned manifest %s från %s"
+
+#: ../pull.py:152
+#, python-format
+msgid "Unable to download manifest %(get_url_path)s from %(server_url)s"
+msgstr "Det gick inte att ladda ned manifest %(get_url_path)s från %(server_url)s"
+
+#: ../pull.py:172
+#, python-format
+msgid "Unable to open file: %s"
+msgstr "Det gick inte att öppna filen: %s"
+
+#: ../pull.py:179
+#, python-format
+msgid "Error occurred while reading from: %s"
+msgstr "Ett fel inträffade vid läsning av: %s"
+
+#: ../pull.py:185
+#, python-format
+msgid "Error occurred while writing to: %s"
+msgstr "Ett fel inträffade vid skrivning till: %s"
+
+#: ../pull.py:224
+#, python-format
+msgid "Unable to download catalog from: %s"
+msgstr "Det gick inte att ladda ned katalogen från: %s"
+
+#: ../pull.py:234
+#, python-format
+msgid "Error while reading from: %s"
+msgstr "Ett fel inträffade vid läsning av: %s"
+
+#: ../pull.py:259
+#, python-format
+msgid "Illegal option -- %s"
+msgstr "Felaktigt alternativ -- %s"
+
+#: ../pull.py:272
+msgid "must specify a server"
+msgstr "måste ange en server"
+
+#: ../pull.py:279
+msgid "-n takes no options"
+msgstr "-n kan inte användas med alternativ"
+
+#: ../pull.py:287
+msgid "must specify at least one pkgfmri"
+msgstr "måste ange åtminstone en pkgfmri"
+
+#: ../pull.py:299
+#, python-format
+msgid "pkgfmri %s needs a version string"
+msgstr "pkgfmri %s kräver en versionssträng"
+
+#: ../pull.py:311
+msgid "No files to retrieve."
+msgstr "Det finns inga filer att hämta."
+
+#: ../um/data/updatemanager-preferences.schemas.in.h:1
+msgid ""
+"A text message describing the updates is displayed near the panel's "
+"Notification Area when updates become available if set to true."
+msgstr ""
+"Ett textmeddelande som beskriver uppdateringarna visas nära panelens"
+"meddelandefält om funktionen är aktiverad."
+
+#: ../um/data/updatemanager-preferences.schemas.in.h:2
+msgid "How often to check for updates"
+msgstr "Hur ofta ska programmet söka efter uppdateringar?"
+
+#: ../um/data/updatemanager-preferences.schemas.in.h:3
+msgid ""
+"How often to check for updates. The valid values are Daily, Weekly, Monthly, "
+"Never"
+msgstr ""
+"Hur ofta ska programmet söka efter uppdateringar? Giltiga värden är Dagligen, En gång i veckan, En gång i månaden, "
+"samt Aldrig"
+
+#: ../um/data/updatemanager-preferences.schemas.in.h:4
+msgid "Start delay"
+msgstr "Starta fördröjning"
+
+#: ../um/data/updatemanager-preferences.schemas.in.h:5
+msgid "The notify icon is displayed on startup if set to true."
+msgstr "Meddelandeikonen visas vid uppstart om funktionen är aktiverad."
+
+#: ../um/data/updatemanager-preferences.schemas.in.h:6
+msgid ""
+"The time, in seconds, that the updatemanagernotifier should wait, after "
+"starting, before checking for updates."
+msgstr ""
+"Den tid (i sekunder) som uppdateringshanteraren väntar "
+"innan den söker efter uppdateringar."
+
+#: ../um/data/updatemanager-preferences.schemas.in.h:7
+msgid "Whether to always display the icon on startup"
+msgstr "Om ikonen alltid ska visas vid uppstart"
+
+#: ../um/data/updatemanager-preferences.schemas.in.h:8
+msgid "Whether to display text message when updates are available"
+msgstr "Om ett textmeddelande ska visas då uppdateringar finns tillgängliga"
+
+#: ../um/data/updatemanager.desktop.in.h:1
+msgid "Install available updates"
+msgstr "Installera tillgängliga uppdateringar"
+
+#: ../um/data/updatemanager.desktop.in.h:2 ../um/data/updatemanager.glade.h:18
+#: ../updatemanagernotifier.py:266
+msgid "Update Manager"
+msgstr "Uppdateringshanteraren"
+
+#: ../um/data/updatemanager.glade.h:1
+msgid "<b>Boot Environment Name: </b>"
+msgstr "<b>Startmiljöns namn: </b>"
+
+#: ../um/data/updatemanager.glade.h:2
+msgid ""
+"<b>Create New Boot Environment</b>\n"
+"\n"
+"Update All will create a new boot environment (BE) as a means\n"
+"of archiving older software and sets it to be the default BE when\n"
+"rebooting.\n"
+"\n"
+"An updated clone of the active BE is about to be created."
+msgstr ""
+"<b>Skapa en ny startmiljö</b>\n"
+"\n"
+"Uppdatera alla skapar en ny startmiljö för att kunna\n"
+"arkivera äldre program. Den nya miljön blir standardmiljö efter\n"
+"omstart.\n"
+"\n"
+"En uppdaterad klon av den aktiva startmiljön kommer att skapas."
+
+#: ../um/data/updatemanager.glade.h:9
+msgid "<b>Evaluate</b>"
+msgstr "<b>Utvärdera</b>"
+
+#: ../um/data/updatemanager.glade.h:10
+msgid "<b>_Details</b>"
+msgstr "<b>_Detaljer</b>"
+
+#: ../um/data/updatemanager.glade.h:12
+msgid "Close dialog when _finished"
+msgstr "Stäng dialogrutan när du är _färdig"
+
+#: ../um/data/updatemanager.glade.h:13 ../updatemanager.py:168
+#: ../updatemanager.py:408 ../updatemanager.py:415 ../updatemanager.py:422
+#: ../updatemanager.py:429 ../updatemanager.py:436
+msgid "Download"
+msgstr "Ladda ned"
+
+#: ../um/data/updatemanager.glade.h:14 ../updatemanager.py:200
+#: ../updatemanager.py:410 ../updatemanager.py:417 ../updatemanager.py:424
+#: ../updatemanager.py:431 ../updatemanager.py:438
+msgid "Index"
+msgstr "Index"
+
+#: ../um/data/updatemanager.glade.h:15
+msgid "Install Update"
+msgstr "Installera uppdatering"
+
+#: ../um/data/updatemanager.glade.h:19 ../updatemanager.py:599
+msgid ""
+"Updates are available for the following packages.\n"
+"Select the packages you want to update and click Install."
+msgstr ""
+"Det finns tillgängliga uppdateringar till följande paket:\n"
+"Välj de paket du vill uppdatera och klicka på Installera."
+
+#: ../um/data/updatemanager.glade.h:22
+msgid "_Install Updates"
+msgstr "_Installera uppdateringar"
+
+#: ../um/data/updatemanager.glade.h:24
+msgid "_Proceed"
+msgstr "_Gå vidare"
+
+#: ../um/data/updatemanager.glade.h:25
+msgid "_Select all Updates"
+msgstr "_Välj alla uppdateringar"
+
+#: ../um/data/updatemanager.glade.h:26
+msgid "_Update All"
+msgstr "_Uppdatera alla"
+
+#: ../um/data/updatemanagernotifier.desktop.in.h:1
+msgid "Notify user when updates are available"
+msgstr "Meddela användaren när det finns tillgängliga uppdateringar"
+
+#: ../um/data/updatemanagernotifier.desktop.in.h:2
+msgid "Update Manager Notifier"
+msgstr "Meddelandefunktion för uppdateringshanteraren"
+
+#: ../updatemanager.py:116
+#, python-format
+msgid "Fetching catalog: '%s' ..."
+msgstr "Hämtar katalog: '%s' ..."
+
+#: ../updatemanager.py:120
+msgid "Fetching catalog"
+msgstr "Hämtar katalog"
+
+#: ../updatemanager.py:123
+msgid "Creating Plan ... "
+msgstr "Skapar plan ... "
+
+#: ../updatemanager.py:134
+msgid "Creating Plan"
+msgstr "Skapar plan"
+
+#: ../updatemanager.py:145
+#, python-format
+msgid "Verifying: %s ..."
+msgstr "Verifierar: %s ..."
+
+#: ../updatemanager.py:152
+msgid "Verifying"
+msgstr "Verifierar"
+
+#: ../updatemanager.py:166
+msgid "Completed"
+msgstr "Slutfört"
+
+#: ../updatemanager.py:184 ../updatemanager.py:409 ../updatemanager.py:416
+#: ../updatemanager.py:423 ../updatemanager.py:430 ../updatemanager.py:437
+msgid "Install"
+msgstr "Installera"
+
+#: ../updatemanager.py:368
+#, python-format
+msgid ""
+"GUI will not respond to any event! %s.                             Check "
+"updatemanager.py signals"
+msgstr ""
+"Det grafiska användargränssnittet svarar inte! %s.                             Kontrollera "
+"updatemanager.py-signalerna"
+
+#: ../updatemanager.py:407 ../updatemanager.py:414 ../updatemanager.py:421
+#: ../updatemanager.py:428 ../updatemanager.py:435
+msgid "Evaluate"
+msgstr "Utvärdera"
+
+#: ../updatemanager.py:443
+msgid "Evaluate - canceling..."
+msgstr "Utvärdera – avbryter ..."
+
+#: ../updatemanager.py:447
+msgid "Download - canceling..."
+msgstr "Ladda ned – avbryter ..."
+
+#: ../updatemanager.py:452
+msgid "Evaluate - failed"
+msgstr "Utvärdera – misslyckades"
+
+#: ../updatemanager.py:456
+msgid "Download - failed"
+msgstr "Ladda ned – misslyckades"
+
+#: ../updatemanager.py:460
+msgid "Install - failed"
+msgstr "Installera – misslyckades"
+
+#: ../updatemanager.py:464
+msgid "Index - failed"
+msgstr "Indexera – misslyckades"
+
+#: ../updatemanager.py:606
+msgid ""
+"Updates are available for the following packages.\n"
+"Click Update All to create a new boot environment and install all packages "
+"into it."
+msgstr ""
+"Uppdateringar finns tillgängliga för följande paket:\n"
+"Klicka på Uppdatera alla för att skapa en ny startmiljö och installera alla paket "
+"där."
+
+#: ../updatemanager.py:644
+msgid "Size (Meg)"
+msgstr "Storlek (MB)"
+
+#: ../updatemanager.py:725
+#, python-format
+msgid "count: %d"
+msgstr "antal: %d"
+
+#: ../updatemanager.py:744 ../updatemanager.py:752
+msgid "Error\n"
+msgstr "Fel\n"
+
+#: ../updatemanager.py:761
+#, python-format
+msgid "'%s' is not an install image\n"
+msgstr "'%s' är inte en installationsbild\n"
+
+#: ../updatemanager.py:755
+#, python-format
+msgid "Version mismatch: expected %s received %s\n"
+msgstr "Sammanblandning av versioner: %s förväntades istället för  %s\n"
+
+#: ../updatemanager.py:766
+msgid ""
+"\n"
+"No Updates available"
+msgstr ""
+"\n"
+"Inga uppdateringar tillgängliga"
+
+#: ../updatemanager.py:797
+#, python-format
+msgid ""
+"\n"
+"Description: \t%s\n"
+"Name:        \t%s\n"
+"FMRI:        "
+msgstr ""
+"\n"
+"Beskrivning: \t%s\n"
+"Namn:        \t%s\n"
+"FMRI:        "
+
+#: ../updatemanager.py:819 ../updatemanagernotifier.py:227
+#, python-format
+msgid "%s is not valid image, trying root image"
+msgstr "%s är inte en giltig bild, försök med en rotbild"
+
+#: ../updatemanager.py:829 ../updatemanagernotifier.py:237
+#, python-format
+msgid "%s is not valid root image, return None"
+msgstr "%s är inte en giltig rotbild, inget returnerades"
+
+#: ../updatemanager.py:863
+#, python-format
+msgid ""
+"\n"
+"Fetching details for %s ..."
+msgstr ""
+"\n"
+"Hämtar detaljer om %s ..."
+
+#: ../updatemanager.py:879
+msgid ""
+"\n"
+"No details available"
+msgstr ""
+"\n"
+"Inga detaljer tillgängliga"
+
+#: ../updatemanager.py:908
+msgid ""
+"\n"
+"Canceling update, please wait ..."
+msgstr ""
+"\n"
+"Uppdateringen avbryts, ett ögonblick ..."
+
+#: ../updatemanager.py:913
+msgid ""
+"\n"
+"Unable to cancel at this time."
+msgstr ""
+"\n"
+"Det går inte att avbryta nu."
+
+#: ../updatemanager.py:916
+msgid "Installing Updates"
+msgstr "Installerar uppdateringar"
+
+#: ../updatemanager.py:948
+msgid "ERROR"
+msgstr "FEL"
+
+#: ../updatemanager.py:950
+msgid "Following Incorporated package(s) cannot be updated:"
+msgstr "Följande paket som lagts till kunde inte uppdateras:"
+
+#: ../updatemanager.py:954
+msgid "Update using: Update All\n"
+msgstr "Uppdaterar med hjälp av: Uppdatera alla\n"
+
+#: ../updatemanager.py:971 ../updatemanager.py:1163 ../updatemanager.py:1194
+msgid ""
+"\n"
+"ERROR"
+msgstr ""
+"\n"
+"FEL"
+
+#: ../updatemanager.py:974
+#, python-format
+msgid ""
+"%s\n"
+"%s"
+msgstr ""
+"%s\n"
+"%s"
+
+#: ../updatemanager.py:977
+#, python-format
+msgid "%s\n"
+msgstr "%s\n"
+
+#: ../updatemanager.py:988 ../updatemanager.py:1103
+msgid ""
+"\n"
+"Evaluate\n"
+msgstr ""
+"\n"
+"Utvärdera\n"
+
+#: ../updatemanager.py:997 ../updatemanager.py:1016
+msgid "Update All failed during catalog refresh\n"
+msgstr "Uppdatera alla: misslyckades vid kataloguppdatering\n"
+
+#: ../updatemanager.py:1003
+msgid "This is not an opensolaris image\n"
+msgstr "Det här är inte en opensolaris-bild\n"
+
+#: ../updatemanager.py:1021
+msgid "Update All failure in plan creation:"
+msgstr "Uppdatera alla: misslyckades att skapa en plan"
+
+#: ../updatemanager.py:1027
+msgid "pkg(5) appears to be out of date and should be\n"
+msgstr "pkg(5) verkar vara föråldrad och borde\n"
+
+#: ../updatemanager.py:1036
+msgid "Update All API failure in evaluation:"
+msgstr "Uppdatera alla: API-fel vid utvärdering"
+
+#: ../updatemanager.py:1041
+msgid "Update All unexpected error in evaluation:"
+msgstr "Uppdatera alla: oväntat fel vid utvärdering:"
+
+#: ../updatemanager.py:1046
+msgid "Update All finished successfully.\n"
+msgstr "Uppdatera alla: slutfördes.\n"
+
+#: ../updatemanager.py:1064
+#, python-format
+msgid ""
+"\n"
+"Update All finished successfully in %1.f mins\n"
+"\n"
+msgstr ""
+"\n"
+"Uppdatera alla: slutfördes på %1.f minuter\n"
+"\n"
+
+#: ../updatemanager.py:1069
+msgid ""
+"\n"
+"Update All finished successfully in < 1 min\n"
+"\n"
+msgstr ""
+"\n"
+"Uppdatera alla: slutfördes på < 1 minut\n"
+"\n"
+
+#: ../updatemanager.py:1073
+msgid "Please reboot after reviewing the release notes posted at:\n"
+msgstr "Starta om när du har läst versionsinformationen på:\n"
+
+#: ../updatemanager.py:1093
+msgid "Nothing selected to update."
+msgstr "Inget har valts för uppdatering"
+
+#: ../updatemanager.py:1097
+msgid "Updating ..."
+msgstr "Uppdaterar ..."
+
+#: ../updatemanager.py:1111
+msgid "Update unexpected API error:"
+msgstr "Uppdatera: oväntat API-fel"
+
+#: ../updatemanager.py:1116
+msgid "Update unexpected error:"
+msgstr "Uppdatera: oväntat fel"
+
+#: ../updatemanager.py:1139
+msgid "Packages to be installed:"
+msgstr "Paket som ska installeras:"
+
+#: ../updatemanager.py:1143
+msgid "Update"
+msgstr "Uppdatera"
+
+#: ../updatemanager.py:1144
+msgid "Update finished successfully."
+msgstr "Uppdateringen slutfördes."
+
+#: ../updatemanager.py:1165
+#, python-format
+msgid ""
+"%s Download failed:\n"
+"%s"
+msgstr ""
+"%s Nedladdningen misslyckades:\n"
+"%s"
+
+#: ../updatemanager.py:1172
+#, python-format
+msgid "%s exceded available disc quota"
+msgstr "%s översteg tillgänglig diskkvot"
+
+#: ../updatemanager.py:1177 ../updatemanager.py:1201
+#, python-format
+msgid "%s unexpected error:"
+msgstr "%s oväntat fel:"
+
+#: ../updatemanager.py:1196
+#, python-format
+msgid ""
+"%s Execute plan failed:\n"
+"%s"
+msgstr ""
+"%s Planen kunde inte köras:\n"
+"%s"
+
+#: ../updatemanager.py:1218
+msgid "Not enough disc space: the Update All action cannot "
+msgstr "Det finns inte tillräckligt med diskutrymme: åtgärden Uppdatera alla kunde inte "
+
+#: ../updatemanager.py:1390
+msgid ""
+"\n"
+"Download\n"
+msgstr ""
+"\n"
+"Ladda ned\n"
+
+#: ../updatemanager.py:1397
+#, python-format
+msgid "\tpkg %d/%d: \tfiles %d/%d \txfer %.2f/%.2f(meg)"
+msgstr "\tpkg %d/%d: \tfiles %d/%d \txfer %.2f/%.2f(meg)"
+
+#: ../updatemanager.py:1414
+msgid ""
+"\n"
+"Install\n"
+msgstr ""
+"\n"
+"Installera\n"
+
+#: ../updatemanager.py:1416 ../updatemanager.py:1420
+#, python-format
+msgid "\t%s\t%d/%d actions"
+msgstr "\t%s\t%d/%d-åtgärder"
+
+#: ../updatemanager.py:1436
+msgid "Index\n"
+msgstr "Index\n"
+
+#: ../updatemanager.py:1437 ../updatemanager.py:1441
+#, python-format
+msgid "\t%-25s\t%d/%d actions"
+msgstr "\t%-25s\t%d/%d-åtgärder"
+
+#: ../updatemanager.py:1505
+msgid "Checking for new software"
+msgstr "Söker efter ny programvara"
+
+#: ../updatemanagernotifier.py:247
+msgid "Updates are available"
+msgstr "Det finns tillgängliga uppdateringar"
+
+#: ../updatemanagernotifier.py:267
+msgid ""
+"Updates available\n"
+"Please click on icon to update."
+msgstr ""
+"Tillgängliga uppdateringar\n"
+"Klicka på en ikon för att uppdatera."
+
+#: ../updatemanagernotifier.py:331
+msgid "Another instance of UpdateManagerNotify is running"
+msgstr " Uppdateringshanterarens meddelandeprogram körs redan"

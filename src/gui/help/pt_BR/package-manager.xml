@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN" "http://www.oasis-open.org/docbook/xml/4.0/docbookx.dtd">
+<book id="package_manager_online_help" lang="pt_BR"><title>Introdução ao Gerenciador de Pacotes</title>
+<bookinfo><authorgroup><author><firstname>Jyothi</firstname>
+<surname>Srinath</surname>
+</author>
+</authorgroup>
+<pubsnumber/>
+<releaseinfo/>
+<pubdate/>
+<publisher><publishername>Sun Microsystems, Inc.</publishername>
+<address><street>4150 Network Circle</street>
+<city>Santa Clara</city>
+<state>CA</state>
+<postcode>95054</postcode>
+<country>U.S.A.</country>
+</address>
+</publisher>
+<copyright><year>2008</year>
+<holder>Sun Microsystems, Inc.</holder>
+</copyright>
+<abstract><para/>
+</abstract>
+<legalnotice><para>A Sun Microsystems, Inc. possui direitos de propriedade intelectual sobre a tecnologia incluída no produto que está descrito neste documento. Em particular e sem limitação, esses direitos de propriedade intelectual podem incluir uma ou mais patentes norte-americanas ou pedidos de patente pendentes  nos E.U.A. e em outros países.</para>
+<para>Direitos do governo dos E.U.A. –  software comercial. Os usuários do governo estãosujeitos ao contrato de licença padrão da Sun Microsystems, Inc. e as provisões aplicáveis da FAR e seus suplementos.</para>
+<para>Esta distribuição pode incluir materiais desenvolvidos por terceiros.</para>
+<para>Partes do produto podem ser derivadas dos sistemas Berkeley BSD, licenciadas na Universidade da Califórnia. UNIX é uma marca comercial registrada nos E.U.A. e em outros países, exclusivamente licenciada através da X/Open Company, Ltd.</para>
+<para>Sun, Sun Microsystems, o logotipo da Sun, o logotipo do Solaris, o logotipo da Java Coffee Cup, docs.sun.com, Java e Solaris são marcas comerciais ou marcas comerciais registradas da Sun Microsystems, Inc. ou suas subsidiárias nos E.U.A. e em outros países. Todas as marcas comerciais da SPARC são usadas sob licença e são marcas comerciais ou marcas comerciais registradas da SPARC International, Inc. nos E.U.A e em outros países. Os produtos que possuem marcas comerciais da SPARC são usados com base em uma arquitetura desenvolvida pela Sun Microsystems, Inc.</para>
+<para>A interface gráfica de usuário OPEN LOOK e <trademark>Sun</trademark> foi desenvolvida pela Sun Microsystems, Inc. para seus usuários e licenciados. A Sun reconhece os esforços pioneiros da Xerox na pesquisa e desenvolvimento do conceito de interfaces de usuário visuais ou gráficas para a indústria de computador. A Sun possui uma licença não-exclusiva da Xerox para a interface gráfica de usuário da Xerox, cuja licença também cobre as licenças da Sun queimplementam GUIs OPEN LOOK e estão em conformidade com os contratos delicença da Sun.</para>
+<para>Os produtos cobertos e as informações contidas nesta publicação são controlados pelas leis de controle de exportação dos E.U.A. e podem estar sujeitos a leis de exportação e importação em outros países. São estritamente proibidos para usuários finais ou usos específicos, diretos ou indiretos, em armas nucleares,marítimo nucleares, químicas, biológicas ou mísseis.  É estritamente proibida a exportação ou reexportação para países sujeitos a embargo dos E.U.A. ou para entidades identificadas nas listasde exclusão de exportação dos E.U.A, incluindo, mas não se limitando, a pessoas negadas e listas de nacionalidades especialmente designadas.</para>
+<para>A DOCUMENTAÇÃO É FORNECIDA “NO ESTADO” E TODAS AS CONDIÇÕES EXPRESSAS OU IMPLÍCITAS, REPRESENTAÇÕES DE GARANTIAS, INCLUINDO QUALQUER GARANTIA IMPLÍCITA DE COMERCIABILIDADE, ADEQUAÇÃO PARA UM DETERMINADO PROPÓSITO DE NÃO INFRAÇÃO, SÃORENUNCIADOS, COM EXCEÇÃO NA EXTENSÃO QUE TAIS RENUNCIAS SEJAM DETERMINADAS COMO LEGALMENTE INVÁLIDAS.</para>
+<para lang="fr"/>
+<para>Sun Microsystems, Inc. détient les droits de propriété intellectuelle relatifs à la technologie incorporée dans le produit qui est décrit dans ce document. En particulier, et ce sans limitation, ces droits de propriété intellectuelle peuvent inclure un ou plusieurs brevets américains ou des applications de brevet en attente aux Etats-Unis et dans d'autres pays.</para>
+<para>Cette distribution peut comprendre des composants développés par des tierces personnes.</para>
+<para>Certaines composants de ce produit peuvent être dérivées du logiciel Berkeley BSD, licenciés par l'Université de Californie. UNIX est une marque déposée aux Etats-Unis et dans d'autres pays; elle est licenciée exclusivement par X/Open Company, Ltd.</para>
+<para>Sun, Sun Microsystems, le logo Sun, le logo Solaris, le logo Java Coffee Cup, docs.sun.com, Java et Solaris sont des marques de fabrique ou des marques déposées de Sun Microsystems, Inc., ou ses filiales, aux Etats-Unis et dans d'autres pays. Toutes les marques SPARC sont utilisées sous licence et sont des marques de fabrique ou des marques déposées de SPARC International, Inc. aux Etats-Unis et dans d'autres pays. Les produits portant les marques SPARC sont basés sur une architecture développée par Sun Microsystems, Inc.</para>
+<para>L'interface d'utilisation graphique OPEN LOOK et Sun a été développée par Sun Microsystems, Inc. pour ses utilisateurs et licenciés. Sun reconnaît les efforts de pionniers de Xerox pour la recherche et le développement du concept des interfaces d'utilisation visuelle ou graphique pour l'industrie de l'informatique. Sun détient une licence non exclusive de Xerox sur l'interface d'utilisation graphique Xerox, cette licence couvrant également les licenciés de Sun qui mettent en place l'interface d'utilisation graphique OPEN LOOK et qui, en outre, se conforment aux licences écrites de Sun.</para>
+<para>Les produits qui font l'objet de cette publication et les informations qu'il contient sont régis par la legislation américaine en matière de contrôle des exportations et peuvent être soumis au droit d'autres pays dans le domaine des exportations et importations. Les utilisations finales, ou utilisateurs finaux, pour des armes nucléaires, des missiles, des armes chimiques ou biologiques ou pour le nucléaire maritime, directement ou indirectement, sont strictement interdites. Les exportations ou réexportations vers des pays sous embargo des Etats-Unis, ou vers des entités figurant sur les listes d'exclusion d'exportation américaines, y compris, mais de manière non exclusive, la liste de personnes qui font objet d'un ordre de ne pas participer, d'une façon directe ou indirecte, aux exportations des produits ou des services qui sont régis par la legislation américaine en matière de contrôle des exportations et la liste de ressortissants spécifiquement designés, sont rigoureusement interdites.</para>
+<para>LA DOCUMENTATION EST FOURNIE "EN L'ETAT" ET TOUTES AUTRES CONDITIONS, DECLARATIONS ET GARANTIES EXPRESSES OU TACITES SONT FORMELLEMENT EXCLUES, DANS LA MESURE AUTORISEE PAR LA LOI APPLICABLE, Y COMPRIS NOTAMMENT TOUTE GARANTIE IMPLICITE RELATIVE A LA QUALITE MARCHANDE, A L'APTITUDE A UNE UTILISATION PARTICULIERE OU A L'ABSENCE DE CONTREFACON.</para>
+</legalnotice>
+</bookinfo>
+<chapter><title>Introdução</title>
+<highlights><para>O aplicativo <application>Gerenciador de Pacotes</application> é uma interface gráficade usuário para o software Image Packaging System (IPS). O Gerenciador de Pacotes permite que você pesquise, instale e remova pacotes; adicione e modifique repositórios; crie e remova ambientes de inicialização.</para>
+</highlights>
+<sect1><title>Para iniciar o Gerenciador de Pacotes</title>
+<para>Você pode iniciar o <application>Gerenciador de Pacotes</application> das seguintes formas:</para>
+<variablelist><varlistentry><term><emphasis role="strong">Menu Área de trabalho</emphasis></term>
+<listitem><para>Clique em <guimenu>Sistema</guimenu><guisubmenu>Administração</guisubmenu><guisubmenu>Gerenciador de Pacotes</guisubmenu>.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><emphasis role="strong">Linha de comando</emphasis></term>
+<listitem><para>Execute o seguinte comando no prompt:</para>
+<para><userinput>$ packagemanager &amp;</userinput></para>
+</listitem>
+</varlistentry>
+</variablelist>
+</sect1>
+<sect1 id="ghmbh"><title>Ao iniciar o Gerenciador de Pacotes</title>
+<para>Ao inciar o <application>Gerenciador de Pacotes</application>, é exibida a janela seguinte:</para>
+<figure id="ghpto">
+<mediaobject><imageobject><imagedata fileref="../C/figures/package_manager.png"/></imageobject>
+</mediaobject>
+</figure>
+<para>A janela principal do <application>Gerenciador de Pacotes</application> é dividida nos seguintes elementos:</para>
+<variablelist><varlistentry><term><emphasis role="strong">Lista de pacotes por categoria</emphasis></term>
+<listitem><para>Você pode explorar os pacotes disponíveis por categoria. O menu suspenso mostra a lista de categorias disponíveis.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><emphasis role="strong">Lista de pacotes por status</emphasis></term>
+<listitem><para>O menu suspenso <guilabel>Mostrar</guilabel> permite que você filtre a lista de pacotes pelas opções listadas abaixo:</para>
+<itemizedlist><listitem><para><emphasis role="strong">Todos os pacotes</emphasis>– Mostra a lista de todos os pacotes disponíveis no repositório atual.</para>
+</listitem>
+<listitem><para><emphasis role="strong">Pacotes instalados</emphasis> – Mostra a lista de pacotes instalados em seu sistema.</para>
+</listitem>
+<listitem><para><emphasis role="strong">Pacotes selecionados</emphasis> – Mostra a lista de pacotes que você selecionou.</para>
+</listitem>
+<listitem><para><emphasis role="strong">Atualizações disponíveis</emphasis> — Mostra a lista de pacotes que possuem versões mais recentes disponíveis no repositório atual.</para>
+</listitem>
+</itemizedlist>
+</listitem>
+</varlistentry>
+<varlistentry><term><emphasis role="strong">Barra de ferramentas</emphasis></term>
+<listitem><para>A barra de ferramentas contém os ícones de um subconjunto dos comandos que podem ser realizados com os menus da barra de menus.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><emphasis role="strong">Barra de menus</emphasis></term>
+<listitem><para>Você pode acessar os menus da barra de menus para realizar todos os comandos relacionados ao Gerenciador de Pacotes.</para>
+<para/>
+</listitem>
+</varlistentry>
+<varlistentry><term><emphasis role="strong">Nome e descrição do pacote</emphasis></term>
+<listitem><para>A lista de  pacotes na categoria selecionada e uma descrição resumida são exibidos aqui.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><emphasis role="strong">Detalhes do pacote</emphasis></term>
+<listitem><para>Clique no pacote para selecioná-lo. Os detalhes do pacote selecionado tais como nome, versão, dependências de arquivo são exibidos nesta janela.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><emphasis role="strong">Menu suspenso do repositório</emphasis></term>
+<listitem><para>A lista de repositórios disponíveis é mostrada no menu suspenso do repositório. Clique em um nome de repositório para selecioná-lo.</para>
+<note><para>Clique no botão <guilabel>Recarregar</guilabel> para recarregar o Gerenciador de Pacotes e visualizar a lista dos pacotes a partir do repositório recém-selecionado.</para>
+</note>
+</listitem>
+</varlistentry>
+</variablelist>
+</sect1>
+<sect1 id="ghmzf"><title>Instalar um pacote</title>
+<para>Realize as etapas seguintes para instalar um pacote:</para>
+<orderedlist><listitem><para>Na janela principal do <application>Gerenciador de Pacotes/application&gt;, clique no botão <guibutton>Recarregar</guibutton> para visualizar a lista mais recente de pacotes disponíveis para você.</application></para>
+</listitem>
+<listitem><para>Marque a caixa ao lado do pacote para selecioná-lo.</para>
+</listitem>
+<listitem><para>Clique em <guibutton>Instalar/Atualizar</guibutton> na barra de ferramentas para iniciar o processo de instalação do pacote.</para>
+<para>Você também pode escolher <guimenu>Pacote</guimenu><guimenuitem>Instalar/Atualizar</guimenuitem> para iniciar o processo de instalação do pacote.</para>
+</listitem>
+<listitem><para>O Gerenciador de Pacotes verifica se há dependências. Clique em <emphasis>Mostrar detalhes</emphasis> para visualizar os detalhes.</para>
+<para>Clique em <guibutton>Cancelar</guibutton> para cancelar a instalação do pacote. Nenhuma alteração é feita e você volta para a janela principal.</para>
+</listitem>
+<listitem><para>A caixa de diálogo <literal>Confirmação de instalação</literal> é exibida. Consulte as informações de instalação e as dependências do pacote.</para>
+<para>Clique em <guibutton>Cancelar</guibutton> para cancelar a instalação do pacote. Nenhuma alteração é feita e você volta para a janela principal.</para>
+</listitem>
+<listitem><para>Os pacotes são baixados e instalados.</para>
+</listitem>
+<listitem><para>Clique no botão <guibutton>Recarregar</guibutton> para visualizar a lista de pacotes atualizada.</para>
+</listitem>
+</orderedlist>
+</sect1>
+<sect1 id="ghmyo"><title>Remover um pacote</title>
+<para>Realize as seguintes etapas para remover um pacote:</para>
+<orderedlist><listitem><para>Marque a caixa ao lado do pacote que você deseja remover.</para>
+</listitem>
+<listitem><para>Clique no botão <guibutton>Remover</guibutton> na barra de ferramentas para iniciar o processo.</para>
+<para>Você também pode escolher <guimenu>Pacote</guimenu><guimenuitem>Remover</guimenuitem> para remover um pacote.</para>
+</listitem>
+<listitem><para>A caixa de diálogo <literal>Confirmação de remoção</literal> é exibida. Consulte os pacotes a serem removidos e as dependências do pacote.</para>
+</listitem>
+<listitem><para>Clique em <guibutton>OK</guibutton> para prosseguir. Depois que você clica no botão <guibutton>OK</guibutton>, não é possível desfazer a remoção do pacote.</para>
+<para>Clique em <guibutton>Cancelar</guibutton> para cancelar o processo. Nenhuma alteração é feita e você volta para a janela principal.</para>
+</listitem>
+<listitem><para>Clique no botão <guibutton>Recarregar</guibutton> para visualizar a lista de pacotes atualizada.</para>
+</listitem>
+</orderedlist>
+</sect1>
+<sect1 id="ghmxy"><title>Procurar um pacote</title>
+<para>Digite o nome do pacote que você deseja procurar na caixa <guilabel>Pesquisar</guilabel> box.</para>
+<para>Os parâmetros de pesquisa seguintes estão disponíveis:</para>
+<itemizedlist><listitem><para><emphasis role="strong">Nome, descrição ou palavra-chave</emphasis> –</para>
+</listitem>
+<listitem><para><emphasis role="strong">Mantenedor</emphasis> –</para>
+</listitem>
+<listitem><para><emphasis role="strong">Dependências</emphasis> –</para>
+</listitem>
+<listitem><para><emphasis role="strong">Comandos</emphasis> –</para>
+</listitem>
+</itemizedlist>
+<para>Use os submenus do menu <guimenu>Editar</guimenu> para recortar, copiar, colar ou limpar o texto na guia Pesquisar.</para>
+</sect1>
+<sect1 id="ghmzc"><title>Atualizar um pacote</title>
+<para>Procure o ícone verde ao lado do nome do pacote instalado. Esse ícone indica que há atualizações disponíveis para o pacote no repositório selecionado no momento. Selecione o pacote e clique no botão <guibutton>Instalar/Atualizar</guibutton> para instalar a versão mais recente do pacote.</para>
+</sect1>
+<sect1 id="ghmym"><title>Alternar entre os repositórios configurados</title>
+<para>Use o menu suspenso <guilabel>Repositórios</guilabel> na barra de ferramentas para visualizar uma lista de repositórios configurados. Clique em um nome de repositório a fim de alternar para um repositório diferente.</para>
+</sect1>
+<sect1 id="ghmyp"><title>Atualizar a imagem atual (Atualizar todos os pacotes)</title>
+<para>Realize as etapas seguintes para atualizar a imagem inteira:</para>
+<orderedlist><listitem><para>Clique em <guimenu>Arquivo</guimenu><guimenuitem>Atualizar tudo</guimenuitem> ou no botão <guilabel>Atualizar tudo</guilabel> para iniciar o processo de atualização <emphasis role="strong">all</emphasis> dos pacotes em sua imagem.</para>
+<note><para>O botão <guilabel>Atualizar tudo</guilabel> é ativado quando as atualizações estão disponíveis para os pacotes instalados.</para>
+</note>
+</listitem>
+<listitem><para>A caixa de diálogo <guilabel>Confirmação de atualizar tudo</guilabel> é exibida.</para>
+<para>Durante o processo de <emphasis>Atualizar tudo</emphasis>, é criado um clone do ambiente de inicialização ativo. Esse clone permite que o usuário <emphasis>reverta</emphasis> o sistema para o ambiente de inicializaçãoatual se o processo de Atualizar tudo não for concluído ou se ele corromper o sistema.</para>
+</listitem>
+<listitem><para>Indique um nome para o clone do novo ambiente de inicialização que será criado.</para>
+<note><para>Recomenda-se que os usuários indiquem nomes significativos para o clone do ambiente de inicialização. Por exemplo, <emphasis>OpenSolaris_15/11/08</emphasis> mostra claramente que o clone do ambiente de inicialização é um clone do OpenSolaris OS e foi criado em <literal>15/11/08</literal>.</para>
+</note>
+</listitem>
+<listitem><para>Clique em <guibutton>Prosseguir</guibutton> para continuar o processo de <emphasis>Atualizar tudo</emphasis>.</para>
+<para>Clique em <guibutton>Cancelar</guibutton> para cancelar o processo. Nenhumaalteração é feita no ambiente de inicialização e você volta para a janela principal do <application>Gerenciador de Pacotes</application>.</para>
+</listitem>
+</orderedlist>
+<sect2 id="ghmyd"><title>Erros ao atualizar tudo</title>
+<para>Um clone do novo ambiente de inicialização <emphasis role="strong">deve</emphasis> ser criado para que o processo de Atualizar tudo seja concluído. Uma mensagem de erro é exibida caso um clone do ambiente de inicialização não possa ser criado. Você deve ver a seguinte caixa de diálogo de mensagem de erro:</para>
+<para><literal>Não há espaço em disco suficiente: a ação Atualizar tudo não pode ser realizada. Você pode optar por retornar ao Gerenciador do BE para gerenciar os ambientes de inicialização e liberar espaço em disco</literal>.</para>
+<para>Realize as etapas seguintes, se você quiser retificar o erro e continuar com o processo de Atualizar tudo:</para>
+<orderedlist><listitem><para>Clique em <guibutton>Gerenciamento do BE</guibutton> para ir para a caixa de diálogo Gerenciamento do BE.</para>
+</listitem>
+<listitem><para>Siga as etapas listadas em <xref linkend="ghlik"/> para excluir ambientes de inicialização antigos ou não usados e liberar espaço em disco.</para>
+</listitem>
+<listitem><para>Depois de reinicializar o sistema, clique no ícone <guilabel>Atualizar tudo</guilabel> para reiniciar o processo de atualização de todos os pacotes.</para>
+</listitem>
+</orderedlist>
+</sect2>
+</sect1>
+<sect1 id="ghmya"><title>Gerenciar ambientes de inicialização</title>
+<para>Para uma versão do OpenSolaris, um ambiente de inicialização é uma instância de um ambiente OpenSolaris inicializável. O ambiente de inicialização consiste em um sistema de arquivos raiz e, opcionalmente, outros sistemas de arquivos, tais como<filename>/usr</filename>, <filename>/var</filename> ou <filename>/export</filename>. Esses outros sistemas de arquivos são montados abaixo do sistema de arquivos raiz . O sistema de arquivos raiz e todos os outros sistemas de arquivos do ambiente de inicialização que contêm o software do sistema precisam ser conjuntos de dados zfs.</para>
+<para>Um ambiente de inicialização ativo é aquele que é inicializado no momento. Somente um ambiente de inicialização ativo pode ser inicializado. Um ambiente de inicialização inativo não está inicializado no momento, mas pode estar em um estado de espera pela ativação na próxima reinicialização.</para>
+<para>Seção Vincular ao BE GSG.</para>
+<para>Siga as etapas seguintes para gerenciar os ambientes de inicialização (BE):</para>
+<orderedlist><listitem><para>Clique em <guimenu>Arquivo</guimenu><guimenuitem>Gerenciamento do ambiente de inicialização</guimenuitem>.</para>
+</listitem>
+<listitem><para>A caixa de diálogo <guilabel>Gerenciamento do ambiente de inicialização</guilabel> é exibida. Nessa caixa de diálogo, você pode realizar as seguintes ações:</para>
+<variablelist><varlistentry><term><emphasis role="strong">Altere o ambiente de inicialização padrão.</emphasis></term>
+<listitem><para>Selecione o botão de opção ao lado do ambiente de inicialização em que você deseja reinicializar o sistema. Este é o ambiente de inicialização padrão.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><emphasis role="strong">Remova os ambientes de inicialização antigos ou não usados para liberar espaço em disco.</emphasis></term>
+<listitem><para>Marque a caixa de seleção ao lado do ambiente de inicialização que você deseja excluir.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</listitem>
+<listitem><para>Clique em <guibutton>OK</guibutton> para prosseguir.</para>
+<para>Clique em <guibutton>Redefinir</guibutton> para reverter as alterações para oestado de abertura.</para>
+<para>Clique em <guibutton>Cancelar</guibutton> para cancelar todas as alterações e retornar à janela principal.</para>
+</listitem>
+<listitem><para>Se você clicou em OK, a caixa de diálogo Confirmação do gerenciamento do BE é exibida Reveja as alterações do ambiente de inicialização e clique em <guibutton>OK</guibutton> para prosseguir.</para>
+<note><para>As alterações feitas só terão efeito após a reinicialização do sistema.</para>
+</note>
+<para>Clique em <guibutton>Cancelar</guibutton> para cancelar as alterações e retornar à caixa de diálogo Gerenciamento do BE.</para>
+</listitem>
+<listitem><para>Reinicialize o sistema.</para>
+</listitem>
+</orderedlist>
+</sect1>
+<sect1 id="ghmzn"><title>Editar repositórios</title>
+<para>Realize as etapas seguintes para adicionar, remover ou configurar repositórios:</para>
+<orderedlist><listitem><para>Clique em <guimenu>Configurações</guimenu><guimenuitem>Editar repositórios</guimenuitem>.</para>
+</listitem>
+<listitem><para>A caixa de diálogo <literal>Gerenciar repositórios</literal> é exibida. As ações seguintes podem ser realizadas nesta caixa de diálogo:</para>
+<orderedlist><listitem><para><emphasis role="strong">Adicionar um repositório</emphasis> – Para adicionar um novo repositório, indique o nome e o endereço (URL) do repositório. Clique em <guibutton>Adicionar</guibutton>.</para>
+</listitem>
+<listitem><para><emphasis role="strong">Remover um repositório</emphasis> – Para remover um repositório, clique em um nome de repositório na lista para selecioná-lo. Clique em <guibutton>Remover</guibutton>.</para>
+<note><para>Um repositório que foi definido como repositório preferido não pode ser removido. Para remover um repositório preferido, definida um repositório não-preferencial como preferido e remova o repositório.</para>
+</note>
+</listitem>
+<listitem><para><emphasis role="strong">Definir um repositório preferido</emphasis></para>
+<para>Um repositório preferido é o repositório padrão de onde o código-fonte dos pacotes é baixado.</para>
+<para>Para definir um repositório como preferido, clique no botão de opção ao lado do repositório que você gostaria de definir como preferido. Clique em <guibutton>Fechar</guibutton> caso não esteja fazendo outras alterações nas informações do repositório.</para>
+</listitem>
+<listitem><para><emphasis role="strong">Modificar um repositório</emphasis> – Realize as etapas seguintes para modificar um repositório:</para>
+<orderedlist><listitem><para>Selecione o repositório que você deseja modificar.</para>
+</listitem>
+<listitem><para>Clique no botão <guibutton>Modificar</guibutton>. A caixa de diálogo <literal>Modificarrepositório</literal> é exibida.</para>
+</listitem>
+<listitem><para>Digite um nome válido para o repositório e a URL do repositório. Um nome de repositório é considerado válido caso não exista na lista atual de repositórios.</para>
+</listitem>
+<listitem><para>Clique em <guibutton>OK</guibutton> para salvar as alterações e retornar à caixa de diálogo <literal>Gerenciar repositórios</literal>.</para>
+<para>Clique em <guibutton>Cancelar</guibutton> para cancelar suas alterações. Vocêretorna à caixa de diálogo <literal>Gerenciar repositórios</literal>.</para>
+</listitem>
+</orderedlist>
+</listitem>
+</orderedlist>
+</listitem>
+</orderedlist>
+</sect1>
+</chapter>
+</book>

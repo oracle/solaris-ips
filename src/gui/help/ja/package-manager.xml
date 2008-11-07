@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN" "http://www.oasis-open.org/docbook/xml/4.0/docbookx.dtd">
+<book id="package_manager_online_help" lang="ja"><title>パッケージマネージャー入門</title>
+<bookinfo><authorgroup><author><firstname>Jyothi</firstname>
+<surname>Srinath</surname>
+</author>
+</authorgroup>
+<pubsnumber/>
+<releaseinfo/>
+<pubdate/>
+<publisher><publishername>Sun Microsystems, Inc.</publishername>
+<address><street>4150 Network Circle</street>
+<city>Santa Clara</city>
+<state>CA</state>
+<postcode>95054</postcode>
+<country>U.S.A.</country>
+</address>
+</publisher>
+<copyright><year>2008</year>
+<holder>Sun Microsystems, Inc.</holder>
+</copyright>
+<abstract><para/>
+</abstract>
+<legalnotice><para>本書で説明する製品で使用されている技術に関連した知的所有権は、SunMicrosystems, Inc. に帰属します。特に、制限を受けることなく、この知的所有権には、米国特許、および米国をはじめとする他の国々で申請中の特許が含まれています。</para>
+<para>U.S. Government Rights – Commercial software. Government users are subject to the Sun Microsystems, Inc. standard license agreement and applicable provisions of the FAR and its supplements.</para>
+<para>本製品には、サードパーティーが開発した技術が含まれている場合があります。</para>
+<para>本製品の一部はBerkeley BSD システムより派生したもので、カリフォルニア大学よりライセンスを受けています。UNIX は、X/Open Company, Ltd. が独占的にライセンスしている米国ならびにほかの国における登録商標です。</para>
+<para>Sun、Sun Microsystems、Sun のロゴマーク、Solaris のロゴマーク、Java Coffee Cup のロゴマーク、docs.sun.com、Java、および Solaris は、米国およびその他の国における米国 Sun Microsystems 社またはその子会社の商標または登録商標です。すべての SPARC 商標は、米国 SPARC International, Inc. のライセンスを受けて使用している同社の米国およびその他の国における商標または登録商標です。SPARC 商標が付いた製品は、米国 Sun Microsystems 社が開発したアーキテクチャーに基づくものです。</para>
+<para>OPEN LOOK および <trademark>Sun</trademark> Graphical User Interface は、米国 Sun Microsystems 社が自社のユーザーおよびライセンス実施権者向けに開発しました。米国 Sun Microsystems 社は、コンピュータ産業用のビジュアルまたはグラフィカルユーザーインタフェースの概念の研究開発における米国 Xerox 社の先駆者としての成果を認めるものです。米国 Sun Microsystems 社は米国 Xerox 社から Xerox Graphical User Interface の非独占的ライセンスを取得しており、このライセンスは、OPEN LOOK GUI を実装するか、または米国 Sun Microsystems 社の書面によるライセンス契約に従う米国 Sun Microsystems 社のライセンス実施権者にも適用されます。</para>
+<para>この製品は、米国の輸出規制に関する法規の適用および管理下にあり、また、米国以外の国の輸出および輸入規制に関する法規の制限を受ける場合があります。核、ミサイル、生物化学兵器もしくは原子力船に関連した使用またはかかる使用者への提供は、直接的にも間接的にも、禁止されています。このソフトウェアを、米国の輸出禁止国へ輸出または再輸出すること、および米国輸出制限対象リスト(輸出が禁止されている個人リスト、特別に指定された国籍者リストを含む) に指定された、法人、または団体に輸出または再輸出することは一切禁止されています。</para>
+<para>本書は、「現状のまま」をベースとして提供され、商品性、特定目的への適合性または第三者の権利の非侵害の黙示の保証を含みそれに限定されない、明示的であるか黙示的であるかを問わない、なんらの保証も行われないものとします。</para>
+<para lang="fr"/>
+<para>Sun Microsystems, Inc. détient les droits de propriété intellectuelle relatifs à la technologie incorporée dans le produit qui est décrit dans ce document. En particulier, et ce sans limitation, ces droits de propriété intellectuelle peuvent inclure un ou plusieurs brevets américains ou des applications de brevet en attente aux Etats-Unis et dans d'autres pays.</para>
+<para>Cette distribution peut comprendre des composants développés par des tierces personnes.</para>
+<para>Certaines composants de ce produit peuvent être dérivées du logiciel Berkeley BSD, licenciés par l'Université de Californie. UNIX est une marque déposée aux Etats-Unis et dans d'autres pays; elle est licenciée exclusivement par X/Open Company, Ltd.</para>
+<para>Sun, Sun Microsystems, le logo Sun, le logo Solaris, le logo Java Coffee Cup, docs.sun.com, Java et Solaris sont des marques de fabrique ou des marques déposées de Sun Microsystems, Inc., ou ses filiales, aux Etats-Unis et dans d'autres pays. Toutes les marques SPARC sont utilisées sous licence et sont des marques de fabrique ou des marques déposées de SPARC International, Inc. aux Etats-Unis et dans d'autres pays. Les produits portant les marques SPARC sont basés sur une architecture développée par Sun Microsystems, Inc.</para>
+<para>L'interface d'utilisation graphique OPEN LOOK et Sun a été développée par Sun Microsystems, Inc. pour ses utilisateurs et licenciés. Sun reconnaît les efforts de pionniers de Xerox pour la recherche et le développement du concept des interfaces d'utilisation visuelle ou graphique pour l'industrie de l'informatique. Sun détient une licence non exclusive de Xerox sur l'interface d'utilisation graphique Xerox, cette licence couvrant également les licenciés de Sun qui mettent en place l'interface d'utilisation graphique OPEN LOOK et qui, en outre, se conforment aux licences écrites de Sun.</para>
+<para>Les produits qui font l'objet de cette publication et les informations qu'il contient sont régis par la legislation américaine en matière de contrôle des exportations et peuvent être soumis au droit d'autres pays dans le domaine des exportations et importations. Les utilisations finales, ou utilisateurs finaux, pour des armes nucléaires, des missiles, des armes chimiques ou biologiques ou pour le nucléaire maritime, directement ou indirectement, sont strictement interdites. Les exportations ou réexportations vers des pays sous embargo des Etats-Unis, ou vers des entités figurant sur les listes d'exclusion d'exportation américaines, y compris, mais de manière non exclusive, la liste de personnes qui font objet d'un ordre de ne pas participer, d'une façon directe ou indirecte, aux exportations des produits ou des services qui sont régis par la legislation américaine en matière de contrôle des exportations et la liste de ressortissants spécifiquement designés, sont rigoureusement interdites.</para>
+<para>LA DOCUMENTATION EST FOURNIE "EN L'ETAT" ET TOUTES AUTRES CONDITIONS, DECLARATIONS ET GARANTIES EXPRESSES OU TACITES SONT FORMELLEMENT EXCLUES, DANS LA MESURE AUTORISEE PAR LA LOI APPLICABLE, Y COMPRIS NOTAMMENT TOUTE GARANTIE IMPLICITE RELATIVE A LA QUALITE MARCHANDE, A L'APTITUDE A UNE UTILISATION PARTICULIERE OU A L'ABSENCE DE CONTREFACON.</para>
+</legalnotice>
+</bookinfo>
+<chapter><title>はじめに</title>
+<highlights><para><application>パッケージマネージャー</application>アプリケーションは、Image Packaging System (IPS) ソフトウェアのグラフィカルユーザーインタフェースです。パッケージマネージャーを使えば、パッケージの検索、インストール、および削除を行なったり、リポジトリの追加や変更を行なったり、ブート環境の作成や削除を行なったりできます。</para>
+</highlights>
+<sect1><title>パッケージマネージャーを起動するには</title>
+<para><application>パッケージマネージャー</application>は次の方法で起動できます。</para>
+<variablelist><varlistentry><term><emphasis role="strong">デスクトップメニュー</emphasis></term>
+<listitem><para><guimenu>「システム」</guimenu><guisubmenu>「システム管理」</guisubmenu><guisubmenu>「パッケージマネージャー」</guisubmenu>をクリックします。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><emphasis role="strong">コマンド行</emphasis></term>
+<listitem><para>プロンプトで次のコマンドを実行します。</para>
+<para><userinput>$ packagemanager &amp;</userinput></para>
+</listitem>
+</varlistentry>
+</variablelist>
+</sect1>
+<sect1 id="ghmbh"><title>パッケージマネージャーを起動した場合</title>
+<para><application>パッケージマネージャー</application>を起動すると、次のウィンドウが表示されます。</para>
+<figure id="ghpto">
+<mediaobject><imageobject><imagedata fileref="../C/figures/package_manager.png"/></imageobject>
+</mediaobject>
+</figure>
+<para><application>パッケージマネージャー</application>のメインウィンドウは、次の各要素に分割されています。</para>
+<variablelist><varlistentry><term><emphasis role="strong">カテゴリ別のパッケージ一覧</emphasis></term>
+<listitem><para>使用可能なパッケージをカテゴリ別に参照できます。ドロップダウンメニューに、使用可能なカテゴリの一覧が表示されます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><emphasis role="strong">状態別のパッケージ一覧</emphasis></term>
+<listitem><para><guilabel>「表示」</guilabel>ドロップダウンメニューでは、次に示すオプションによってパッケージの一覧をフィルタリングできます。</para>
+<itemizedlist><listitem><para><emphasis role="strong">「すべてのパッケージ」</emphasis> – 現在のリポジトリ内で使用可能なすべてのパッケージの一覧を表示します。</para>
+</listitem>
+<listitem><para><emphasis role="strong">「インストール済みパッケージ」</emphasis> – システムにインストールされているパッケージの一覧を表示します。</para>
+</listitem>
+<listitem><para><emphasis role="strong">「選択されたパッケージ」</emphasis> – ユーザーが選択したパッケージの一覧を表示します。</para>
+</listitem>
+<listitem><para><emphasis role="strong">「更新が使用可能」</emphasis> — 現在のリポジトリ内で新しいバージョンが使用可能になっているパッケージの一覧を表示します。</para>
+</listitem>
+</itemizedlist>
+</listitem>
+</varlistentry>
+<varlistentry><term><emphasis role="strong">ツールバー</emphasis></term>
+<listitem><para>ツールバーには、メニューバー上のメニューを使って実行可能なコマンドのサブセット用アイコンが含まれています。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><emphasis role="strong">メニューバー</emphasis></term>
+<listitem><para>メニューバー上のメニューにアクセスすれば、パッケージマネージャーに関係するすべてのコマンドを実行できます。</para>
+<para/>
+</listitem>
+</varlistentry>
+<varlistentry><term><emphasis role="strong">パッケージ名と説明</emphasis></term>
+<listitem><para>選択されたカテゴリに含まれるパッケージの一覧と各パッケージの簡単な説明が、ここに表示されます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><emphasis role="strong">パッケージの詳細</emphasis></term>
+<listitem><para>パッケージをクリックして選択します。名前、バージョン、ファイルの依存関係など、選択されたパッケージの詳細がこのウィンドウに表示されます。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><emphasis role="strong">「リポジトリ」ドロップダウンメニュー</emphasis></term>
+<listitem><para>「リポジトリ」ドロップダウンメニューには、使用可能なリポジトリの一覧が表示されます。リポジトリ名をクリックして選択します。</para>
+<note><para><guilabel>「再読み込み」</guilabel>ボタンをクリックすると、パッケージマネージャーの再読み込みが行われ、新しく選択されたリポジトリに含まれるパッケージの一覧が表示されます。</para>
+</note>
+</listitem>
+</varlistentry>
+</variablelist>
+</sect1>
+<sect1 id="ghmzf"><title>パッケージをインストールする</title>
+<para>パッケージをインストールするには、次の手順を実行します。</para>
+<orderedlist><listitem><para><application>パッケージマネージャー</application>のメインウィンドウで、<guibutton>「再読み込み」</guibutton>ボタンをクリックして、使用可能なパッケージの最新の一覧を表示します。</para>
+</listitem>
+<listitem><para>パッケージの隣にあるチェックボックスにチェックマークを付けて選択します。</para>
+</listitem>
+<listitem><para>ツールバーで<guibutton>「インストール/更新」</guibutton>をクリックしてパッケージインストール処理を開始します。</para>
+<para><guimenu>「パッケージ」</guimenu><guimenuitem>「インストール/更新」</guimenuitem>を選択しても、パッケージインストール処理を開始することができます。</para>
+</listitem>
+<listitem><para>パッケージマネージャーは依存関係をチェックします。詳細を表示するには、<emphasis>「詳細を表示」</emphasis>をクリックします。</para>
+<para>パッケージのインストールを取り消すには、<guibutton>「キャンセル」</guibutton>をクリックします。変更は行われず、メインウィンドウに戻ります。</para>
+</listitem>
+<listitem><para><literal>「インストールの確認」</literal>ダイアログボックスが表示されます。パッケージインストール情報とパッケージ依存関係を確認してください。</para>
+<para>パッケージのインストールを取り消すには、<guibutton>「キャンセル」</guibutton>をクリックします。変更は行われず、メインウィンドウに戻ります。</para>
+</listitem>
+<listitem><para>パッケージのダウンロードとインストールが行われます。</para>
+</listitem>
+<listitem><para><guibutton>「再読み込み」</guibutton>ボタンをクリックして、更新されたパッケージの一覧を表示します。</para>
+</listitem>
+</orderedlist>
+</sect1>
+<sect1 id="ghmyo"><title>パッケージを削除する</title>
+<para>パッケージを削除するには、次の手順を実行します。</para>
+<orderedlist><listitem><para>削除するパッケージの隣にあるチェックボックスにチェックを付けます。</para>
+</listitem>
+<listitem><para>ツールバーの<guibutton>「削除」</guibutton>ボタンをクリックして処理を開始します。</para>
+<para><guimenu>「パッケージ」</guimenu><guimenuitem>「削除」</guimenuitem>を選択しても、パッケージを削除できます。</para>
+</listitem>
+<listitem><para><literal>「削除の確認」</literal>ダイアログボックスが表示されます。削除されるパッケージとパッケージ依存関係を確認してください。</para>
+</listitem>
+<listitem><para>処理を続行するには、<guibutton>「了解」</guibutton>をクリックします。<guibutton>「了解」</guibutton>ボタンをクリックしたあとでパッケージの削除を取り消すことはできません。</para>
+<para>処理を取り消すには、<guibutton>「キャンセル」</guibutton>をクリックします。変更は行われず、メインウィンドウに戻ります。</para>
+</listitem>
+<listitem><para><guibutton>「再読み込み」</guibutton>ボタンをクリックして、更新されたパッケージの一覧を表示します。</para>
+</listitem>
+</orderedlist>
+</sect1>
+<sect1 id="ghmxy"><title>パッケージを検索する</title>
+<para>検索するパッケージの名前を<guilabel>「検索」</guilabel>ボックスに入力します。</para>
+<para>使用可能な検索パラメータは次のとおりです。</para>
+<itemizedlist><listitem><para><emphasis role="strong">名前、説明、またはキーワード</emphasis> –</para>
+</listitem>
+<listitem><para><emphasis role="strong">メンテナ</emphasis> –</para>
+</listitem>
+<listitem><para><emphasis role="strong">依存関係</emphasis> –</para>
+</listitem>
+<listitem><para><emphasis role="strong">コマンド</emphasis> –</para>
+</listitem>
+</itemizedlist>
+<para>「検索」タブ内のテキストをカット、コピー、ペースト、または消去するには、<guimenu>「編集」</guimenu>メニューの下のサブメニューを使用します。</para>
+</sect1>
+<sect1 id="ghmzc"><title>パッケージを更新する</title>
+<para>インストール済みパッケージ名の隣にある緑色のアイコンを探してください。このアイコンは、現在選択されているリポジトリ内にそのパッケージの使用可能な更新が存在することを示しています。パッケージの最新版をインストールするには、パッケージを選択し、<guibutton>「インストール/更新」</guibutton>ボタンをクリックします。</para>
+</sect1>
+<sect1 id="ghmym"><title>設定済みリポジトリ間の切り替えを行う</title>
+<para>設定済みリポジトリの一覧を表示するには、ツールバーの<guilabel>「リポジトリ」</guilabel>ドロップダウンメニューを使用します。別のリポジトリに切り替えるには、そのリポジトリ名をクリックします。</para>
+</sect1>
+<sect1 id="ghmyp"><title>現在のイメージを更新する (すべてのパッケージを更新する)</title>
+<para>イメージの全体を更新するには、次の手順を実行します。</para>
+<orderedlist><listitem><para><guimenu>「ファイル」</guimenu><guimenuitem>「すべて更新」</guimenuitem>または<guilabel>「すべて更新」</guilabel>ボタンをクリックすることで、イメージ内の<emphasis role="strong">すべて</emphasis>のパッケージの更新処理を開始します。</para>
+<note><para><guilabel>「すべて更新」</guilabel>ボタンが有効になるのは、インストール済みパッケージの更新が使用可能になっている場合です。</para>
+</note>
+</listitem>
+<listitem><para><guilabel>「すべて更新の確認」</guilabel>ダイアログボックスが表示されます。</para>
+<para><emphasis>「すべて更新」</emphasis>の処理中に、アクティブブート環境のクローンが作成されます。このクローンがあれば、「すべて更新」処理の完了に失敗した場合やシステムが壊れた場合に、システムを現在のブート環境に<emphasis>ロールバック</emphasis>できます。</para>
+</listitem>
+<listitem><para>作成される新しいブート環境クローンの名前を入力します。</para>
+<note><para>ブート環境クローンの名前は、意味があるものを入力することをお勧めします。たとえば、<emphasis>OpenSolaris_11/15/08</emphasis> は、そのブート環境クローンが OpenSolaris OS のクローンであり、かつ <literal>2008 年 11 月 15 日</literal>に作成されたものであることを、明確に示しています。</para>
+</note>
+</listitem>
+<listitem><para><emphasis>「すべて更新」</emphasis>処理を続行するには、<guibutton>「続行」</guibutton>をクリックします。</para>
+<para>処理を取り消すには、<guibutton>「キャンセル」</guibutton>をクリックします。ブート環境への変更は行われず、<application>パッケージマネージャー</application>のメインウィンドウに戻ります。</para>
+</listitem>
+</orderedlist>
+<sect2 id="ghmyd"><title>「すべて更新」のエラー</title>
+<para>「すべて更新」処理が完了するには、新しいブート環境クローンが作成される<emphasis role="strong">必要があります</emphasis>。ブート環境クローンを作成できない場合はエラーメッセージが表示されます。次のエラーメッセージダイアログボックスが表示されることがあります。</para>
+<para><literal>ディスク容量が不足しています: 「すべて更新」アクションを実行できません。「BE 管理」に戻れば、ブート環境の管理とディスク容量の確保が行えます。</literal></para>
+<para>エラーを修正して「すべて更新」処理を続行するには、次の手順を実行します。</para>
+<orderedlist><listitem><para><guibutton>「BE 管理」</guibutton>をクリックして「BE 管理」ダイアログボックスを表示させます。</para>
+</listitem>
+<listitem><para><xref linkend="ghlik"/>に記載された手順に従って古いブート環境や未使用のブート環境を削除し、ディスク領域を解放します。</para>
+</listitem>
+<listitem><para>システムのリブート後に<guilabel>「すべて更新」</guilabel>アイコンをクリックして、すべてのパッケージの更新処理を再開させます。</para>
+</listitem>
+</orderedlist>
+</sect2>
+</sect1>
+<sect1 id="ghmya"><title>ブート環境を管理する</title>
+<para>OpenSolaris リリースのブート環境とは、ブート可能な OpenSolaris 環境のインスタンスのことです。ブート環境は、ルートファイルシステムと必要に応じて<filename>/usr</filename>、<filename>/var</filename>、<filename>/export</filename>など、ほかのファイルシステムから構成されます。これらのほかのファイルシステムは、ルートファイルシステムの下にマウントされます。ブート環境の、システムソフトウェアを含むルートファイルシステムとその他のすべてのファイルシステムは、ZFS データセットである必要があります。</para>
+<para>アクティブブート環境とは、現在ブートされているブート環境のことです。ちょうど 1 つのアクティブブート環境しかブートできません。アクティブでないブート環境は現在ブートされていませんが、その状態を、次回リブート時のアクティブ化待ちの状態にすることが可能です。</para>
+<para>GSG ブート環境のセクションへのリンク。</para>
+<para>ブート環境 (BE) を管理するには、次の手順を実行します。</para>
+<orderedlist><listitem><para><guimenu>「ファイル」</guimenu><guimenuitem>「ブート環境の管理」</guimenuitem>をクリックします。</para>
+</listitem>
+<listitem><para><guilabel>「ブート環境の管理」</guilabel>ダイアログボックスが表示されます。このダイアログボックスで実行可能なアクションは、次のとおりです。</para>
+<variablelist><varlistentry><term><emphasis role="strong">デフォルトのブート環境を変更します。</emphasis></term>
+<listitem><para>システムリブート時のブート先となるブート環境の隣にあるラジオボタンを選択します。これがデフォルトのブート環境になります。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><emphasis role="strong">古いブート環境や未使用のブート環境を削除してディスク領域を解放します。</emphasis></term>
+<listitem><para>削除するブート環境の隣にあるチェックボックスにチェックを付けます。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</listitem>
+<listitem><para><guibutton>「了解」</guibutton>をクリックして処理を続行します。</para>
+<para>変更を取り消してオープン時の状態に戻すには、<guibutton>「リセット」</guibutton>をクリックします。</para>
+<para>すべての変更を取り消してメインウィンドウに戻るには、<guibutton>「キャンセル」</guibutton>をクリックします。</para>
+</listitem>
+<listitem><para>「了解」をクリックした場合、「BE 管理の確認」ダイアログボックスが表示されます。ブート環境に対する変更内容を確認し、<guibutton>「了解」</guibutton>をクリックして処理を続行します。</para>
+<note><para>システムをリブートしないと、行なった変更が有効になりません。</para>
+</note>
+<para>変更を取り消して「BE 管理」ダイアログボックスに戻るには、<guibutton>「キャンセル」</guibutton>をクリックします。</para>
+</listitem>
+<listitem><para>システムをリブートします。</para>
+</listitem>
+</orderedlist>
+</sect1>
+<sect1 id="ghmzn"><title>リポジトリを編集する</title>
+<para>リポジトリの追加、削除、または設定を行うには、次の手順を実行します。</para>
+<orderedlist><listitem><para><guimenu>「設定」</guimenu><guimenuitem>「リポジトリの編集」</guimenuitem>をクリックします。</para>
+</listitem>
+<listitem><para><literal>「リポジトリの管理」</literal>ダイアログボックスが表示されます。このダイアログボックスで実行可能なアクションは、次のとおりです。</para>
+<orderedlist><listitem><para><emphasis role="strong">リポジトリを追加する</emphasis> – 新しいリポジトリを追加するには、そのリポジトリの名前とアドレス (URL) を入力します。<guibutton>「追加」</guibutton>をクリックします。</para>
+</listitem>
+<listitem><para><emphasis role="strong">リポジトリを削除する</emphasis> – あるリポジトリを削除するには、リストからそのリポジトリ名をクリックして選択します。<guibutton>「削除」</guibutton>をクリックします。</para>
+<note><para>優先リポジトリとして設定されたリポジトリを削除することはできません。優先リポジトリを削除するには、それ以外のリポジトリを優先リポジトリとして設定したあとで、そのリポジトリを削除します。</para>
+</note>
+</listitem>
+<listitem><para><emphasis role="strong">優先リポジトリを設定する</emphasis></para>
+<para>優先リポジトリとは、パッケージのソースのダウンロード元となるデフォルトリポジトリのことです。</para>
+<para>あるリポジトリを優先リポジトリとして設定するには、そのリポジトリの隣にあるラジオボタンをクリックします。リポジトリ情報に対してその他の変更を行わない場合には、<guibutton>「閉じる」</guibutton>をクリックします。</para>
+</listitem>
+<listitem><para><emphasis role="strong">リポジトリを変更する</emphasis> – リポジトリを変更するには、次の手順を実行します。</para>
+<orderedlist><listitem><para>変更するリポジトリを選択します。</para>
+</listitem>
+<listitem><para><guibutton>「変更」</guibutton>ボタンをクリックします。<literal>「リポジトリの変更」</literal>ダイアログボックスが表示されます。</para>
+</listitem>
+<listitem><para>リポジトリの有効な名前とリポジトリの URL を入力します。リポジトリ名が有効であるとみなされるのは、その名前が現在のリポジトリリスト内に存在していない場合です。</para>
+</listitem>
+<listitem><para><guibutton>「了解」</guibutton>をクリックして、変更を保存して<literal>「リポジトリの管理」</literal>ダイアログボックスに戻ります。</para>
+<para>変更を取り消すには、<guibutton>「キャンセル」</guibutton>をクリックします。<literal>「リポジトリの管理」</literal>ダイアログボックスに戻ります。</para>
+</listitem>
+</orderedlist>
+</listitem>
+</orderedlist>
+</listitem>
+</orderedlist>
+</sect1>
+</chapter>
+</book>

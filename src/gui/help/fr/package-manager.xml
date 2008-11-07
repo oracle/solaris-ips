@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN" "http://www.oasis-open.org/docbook/xml/4.0/docbookx.dtd">
+<book id="package_manager_online_help" lang="fr"><title>Démarrage du Gestionnaire de packages</title>
+<bookinfo><authorgroup><author><firstname>Jyothi</firstname>
+<surname>Srinath</surname>
+</author>
+</authorgroup>
+<pubsnumber/>
+<releaseinfo/>
+<pubdate/>
+<publisher><publishername>Sun Microsystems, Inc.</publishername>
+<address><street>4150 Network Circle</street>
+<city>Santa Clara</city>
+<state>CA</state>
+<postcode>95054</postcode>
+<country>États-Unis</country>
+</address>
+</publisher>
+<copyright><year>2008</year>
+<holder>Sun Microsystems, Inc.</holder>
+</copyright>
+<abstract><para/>
+</abstract>
+<legalnotice><para>Sun Microsystems, Inc. possède les droits de propriété intellectuelle relatifs à la technologie incorporée dans le produit décrit dans le présent document. En particulier, et sans limitation, ces droits de propriété intellectuelle peuvent inclure des brevets américains ou dépôts de brevets en cours d'homologation aux États-Unis et dans d'autres pays.</para>
+<para>Droits du gouvernement américain – logiciel commercial. Les utilisateurs gouvernementaux sont soumis au contrat de licence standard de Sun Microsystems, Inc. et aux dispositions du Federal Acquisition Regulation (FAR, règlements des marchés publics fédéraux) et de leurs suppléments.</para>
+<para>Cette distribution peut contenir des éléments développés par des tiers.</para>
+<para>Des parties du produit peuvent être dérivées de systèmes Berkeley-BSD, sous licence de l'Université de Californie. UNIX est une marque déposée aux États-Unis et dans d'autres pays, exclusivement concédée en licence par X/Open Company, Ltd.</para>
+<para>Sun, Sun Microsystems, le logo Sun, le logo Solaris, le logo Java Coffee Cup, docs.sun.com, Java et Solaris sont des marques de fabrique ou des marques déposées de Sun Microsystems, Inc. aux États-Unis et dans d'autres pays. Toutes les marques SPARC sont utilisées sous licence et sont des marques de fabrique ou des marques déposées de SPARC International, Inc. aux États-Unis et dans d'autres pays. Les produits portant les marques SPARC utilisent une architecture développée par Sun Microsystems, Inc.</para>
+<para>L'interface graphique OPEN LOOK et <trademark>Sun</trademark> a été développée par Sun Microsystems, Inc. pour ses utilisateurs et détenteurs de licences. Sun reconnaît le travail précurseur de Xerox en matière de recherche et de développement du concept d'interfaces utilisateur visuelles ou graphiques pour le secteur de l'informatique. Sun détient une licence Xerox non exclusive sur l'interface graphique Xerox. Cette licence englobe également les détenteurs de licences Sun qui implémentent l’interface graphique OPEN LOOK et qui, en outre, se conforment aux accords de licence écrits de Sun.</para>
+<para>Les produits cités dans la présente publication et les informations qu'elle contient sont soumis à la législation américaine relative au contrôle sur les exportations et, le cas échéant, aux lois sur les importations ou exportations dans d'autres pays. Il est strictement interdit d'employer ce produit conjointement à des missiles ou armes biologiques, chimiques, nucléaires ou de marine nucléaire, directement ou indirectement. Il est strictement interdit d'effectuer des exportations et réexportations vers des pays soumis à l'embargo américain ou vers des entités identifiées sur les listes noires des exportations américaines, notamment les individus non autorisées et les listes nationales désignées.</para>
+<para>LA DOCUMENTATION EST FOURNIE “EN L'ÉTAT“ ET TOUTES AUTRES CONDITIONS, REPRÉSENTATIONS ET GARANTIES EXPRESSES OU TACITES, Y COMPRIS TOUTE GARANTIE IMPLICITE RELATIVE À LA COMMERCIALISATION, L'ADÉQUATION À UN USAGE PARTICULIER OU LA NON-VIOLATION DE DROIT, SONT FORMELLEMENT EXCLUES. CETTE EXCLUSION DE GARANTIE NE S'APPLIQUERAIT PAS DANS LA MESURE OÙ ELLE SERAIT TENUE JURIDIQUEMENT NULLE ET NON AVENUE.</para>
+<para lang="fr"/>
+<para> </para>
+<para> </para>
+<para> </para>
+<para> </para>
+<para> </para>
+<para> </para>
+<para> </para>
+</legalnotice>
+</bookinfo>
+<chapter><title>Introduction</title>
+<highlights><para>Le <application>Gestionnaire de packages</application> est une interface graphique dédiée au logiciel IPS (Image Packaging System, système d'empaquetage d'images). Il permet de rechercher, d'installer et de supprimer des packages, d'ajouter et de modifier des référentiels et de créer et supprimer des environnements d'initialisation.</para>
+</highlights>
+<sect1><title>Démarrage du Gestionnaire de packages</title>
+<para>Pour démarrer le <application>Gestionnaire de packages</application>, vous avez le choix entre les méthodes suivantes :</para>
+<variablelist><varlistentry><term><emphasis role="strong">Menu du bureau</emphasis></term>
+<listitem><para>Cliquez sur <guimenu>Système</guimenu><guisubmenu>Administration</guisubmenu><guisubmenu>Gestionnaire de packages</guisubmenu>.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><emphasis role="strong">Ligne de commande</emphasis></term>
+<listitem><para>Exécutez la commande suivante à l'invite :</para>
+<para><userinput>$ packagemanager &amp;</userinput></para>
+</listitem>
+</varlistentry>
+</variablelist>
+</sect1>
+<sect1 id="ghmbh"><title>Au démarrage du Gestionnaire de packages</title>
+<para>Lorsque vous démarrez le <application>Gestionnaire de packages</application>, la fenêtre suivante s'affiche :</para>
+<figure id="ghpto">
+<mediaobject><imageobject><imagedata fileref="../C/figures/package_manager.png"/></imageobject>
+</mediaobject>
+</figure>
+<para>La fenêtre principale du <application>Gestionnaire de packages</application> se compose des éléments suivants :</para>
+<variablelist><varlistentry><term><emphasis role="strong">Liste des packages par catégorie</emphasis></term>
+<listitem><para>Vous pouvez parcourir les packages disponibles par catégorie. Le menu déroulant affiche la liste des catégories disponibles.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><emphasis role="strong">Liste des packages par statut</emphasis></term>
+<listitem><para>Le menu déroulant <guilabel>Afficher</guilabel> permet de filtrer la liste des packages selon les options ci-dessous :</para>
+<itemizedlist><listitem><para><emphasis role="strong">Tous les packages</emphasis> : affiche la liste des packages disponibles dans le référentiel actuel.</para>
+</listitem>
+<listitem><para><emphasis role="strong">Packages installés</emphasis> : affiche la liste des packages installés sur le système.</para>
+</listitem>
+<listitem><para><emphasis role="strong">Packages sélectionnés</emphasis>: affiche la liste des packages que vous avez sélectionnés.</para>
+</listitem>
+<listitem><para><emphasis role="strong">Mises à jour disponibles</emphasis> : affiche la liste des packages pour lesquels il existe des versions plus récentes dans le référentiel actuel.</para>
+</listitem>
+</itemizedlist>
+</listitem>
+</varlistentry>
+<varlistentry><term><emphasis role="strong">Barre d'outils</emphasis></term>
+<listitem><para>Les icônes de la barre d'outils correspondent à un sous-ensemble des commandes exécutables à l'aide de la barre de menu.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><emphasis role="strong">Barre de menu</emphasis></term>
+<listitem><para>Vous pouvez exécuter toutes les commandes liées au Gestionnaire de packages à l'aide de la barre de menu.</para>
+<para/>
+</listitem>
+</varlistentry>
+<varlistentry><term><emphasis role="strong">Nom et description des packages</emphasis></term>
+<listitem><para>Les packages de la catégorie sélectionnée sont répertoriés ici avec une brève description.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><emphasis role="strong">Détails du package</emphasis></term>
+<listitem><para>Cliquez sur un package pour le sélectionner. Des détails relatifs au package sélectionné, tels que son nom, sa version et les dépendances de fichier, s'affichent dans cette fenêtre.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><emphasis role="strong">Menu déroulant des référentiels</emphasis></term>
+<listitem><para>La liste des référentiels disponibles s'affiche dans le menu déroulant des référentiels. Pour sélectionner un référentiel, cliquez sur son nom.</para>
+<note><para>Cliquez sur <guilabel>Recharger</guilabel> afin de recharger le Gestionnaire de packages et d'afficher la liste des packages du référentiel que vous venez de sélectionner.</para>
+</note>
+</listitem>
+</varlistentry>
+</variablelist>
+</sect1>
+<sect1 id="ghmzf"><title>Installation d'un package</title>
+<para>Pour installer un package, suivez la procédure ci-dessous :</para>
+<orderedlist><listitem><para>Dans la fenêtre principale du <application>Gestionnaire de packages</application>, cliquez sur <guibutton>Recharger</guibutton> afin d'afficher la dernière liste des packages à votre disposition.</para>
+</listitem>
+<listitem><para>Cochez la case en regard du package pour le sélectionner.</para>
+</listitem>
+<listitem><para>Cliquez sur <guibutton>Installer/Mettre à jour</guibutton> dans la barre d'outils afin de lancer l'installation du package.</para>
+<para>Vous pouvez également lancer l'installation du package en choisissant <guimenu>Package</guimenu><guimenuitem>Installer/Mettre à jour</guimenuitem>.</para>
+</listitem>
+<listitem><para>Le Gestionnaire de packages vérifie les dépendances. Pour afficher les détails, cliquez sur <emphasis>Afficher les détails</emphasis>.</para>
+<para>Pour annuler l'installation du package, cliquez sur <guibutton>Annuler</guibutton>. Aucune modification n'est effectuée et vous êtes renvoyé à la fenêtre principale.</para>
+</listitem>
+<listitem><para>La boîte de dialogue <literal>Confirmation de l'installation</literal> s'affiche. Vérifiez les informations d'installation du package et les dépendances du package.</para>
+<para>Pour annuler l'installation du package, cliquez sur <guibutton>Annuler</guibutton>. Aucune modification n'est effectuée et vous êtes renvoyé à la fenêtre principale.</para>
+</listitem>
+<listitem><para>Les packages sont téléchargés et installés.</para>
+</listitem>
+<listitem><para>Cliquez sur <guibutton>Recharger</guibutton> pour afficher la liste mise à jour des packages.</para>
+</listitem>
+</orderedlist>
+</sect1>
+<sect1 id="ghmyo"><title>Suppression d'un package</title>
+<para>Pour supprimer un package, suivez la procédure ci-dessous :</para>
+<orderedlist><listitem><para>Cochez la case en regard du package à supprimer.</para>
+</listitem>
+<listitem><para>Cliquez sur <guibutton>Supprimer</guibutton> dans la barre d'outils afin de lancer le processus.</para>
+<para>Vous pouvez également supprimer un package en choisissant <guimenu>Package</guimenu><guimenuitem>Supprimer</guimenuitem>.</para>
+</listitem>
+<listitem><para>La boîte de dialogue <literal>Confirmation de la suppression</literal> s'affiche. Vérifiez les packages à supprimer et les dépendances du package.</para>
+</listitem>
+<listitem><para>Cliquez sur <guibutton>OK</guibutton> pour continuer. Après avoir cliqué sur <guibutton>OK</guibutton>, vous ne pouvez plus annuler la suppression du package.</para>
+<para>Pour annuler le processus, cliquez sur <guibutton>Annuler</guibutton>. Aucune modification n'est effectuée et vous êtes renvoyé à la fenêtre principale.</para>
+</listitem>
+<listitem><para>Cliquez sur <guibutton>Recharger</guibutton> pour afficher la liste mise à jour des packages.</para>
+</listitem>
+</orderedlist>
+</sect1>
+<sect1 id="ghmxy"><title>Recherche d'un package</title>
+<para>Tapez le nom du package à rechercher dans la zone <guilabel>Rechercher</guilabel>.</para>
+<para>Les paramètres de recherche suivants sont disponibles :</para>
+<itemizedlist><listitem><para><emphasis role="strong">Nom, description ou mot-clé</emphasis></para>
+</listitem>
+<listitem><para><emphasis role="strong">Programme de maintenance</emphasis></para>
+</listitem>
+<listitem><para><emphasis role="strong">Dépendances</emphasis></para>
+</listitem>
+<listitem><para><emphasis role="strong">Commandes</emphasis></para>
+</listitem>
+</itemizedlist>
+<para>Pour couper, copier, coller ou supprimer du texte dans l'onglet de recherche, utilisez les sous-menus du menu <guimenu>Édition</guimenu>.</para>
+</sect1>
+<sect1 id="ghmzc"><title>Mise à jour d'un package</title>
+<para>Recherchez l'icône verte en regard des noms des packages installés. Cette icône indique que des mises à jour sont disponibles pour le package dans le référentiel actuellement sélectionné. Sélectionnez le package et cliquez sur <guibutton>Installer/Mettre à jour</guibutton> pour installer la dernière version du package.</para>
+</sect1>
+<sect1 id="ghmym"><title>Basculement entre les référentiels configurés</title>
+<para>Affichez la liste de référentiels configurés à l'aide du menu déroulant <guilabel>Référentiels</guilabel> de la barre d'outils. Pour passer à un autre référentiel, cliquez sur son nom.</para>
+</sect1>
+<sect1 id="ghmyp"><title>Mise à jour de l'image actuelle (Mettre à jour tous les packages)</title>
+<para>Pour mettre à jour une image entière, suivez la procédure ci-dessous :</para>
+<orderedlist><listitem><para>Choisissez <guimenu>Fichier</guimenu><guimenuitem>Tout mettre à jour</guimenuitem> ou cliquez sur le bouton <guilabel>Tout mettre à jour</guilabel> pour lancer le processus de mise à jour de <emphasis role="strong">tous</emphasis> les packages de l'image.</para>
+<note><para>Le bouton <guilabel>Tout mettre à jour</guilabel> est activé lorsque des mises à jour sont disponibles pour les packages installés.</para>
+</note>
+</listitem>
+<listitem><para>La boîte de dialogue de confirmation de la mise à jour de tous les packages<guilabel/> s'affiche.</para>
+<para>Lors du processus <emphasis>Tout mettre à jour</emphasis>, un clone de l'environnement d'initialisation actif est créé. Ce clone permet à l'utilisateur de <emphasis>rétablir</emphasis> l'environnement d'initialisation actuel sur le système en cas d'échec du processus Tout mettre à jour ou si le processus affecte l'intégrité du système.</para>
+</listitem>
+<listitem><para>Saisissez le nom du clone qui sera créé pour le nouvel environnement d'initialisation.</para>
+<note><para>Il est recommandé d'attribuer un nom significatif au clone de l'environnement d'initialisation. Par exemple, <emphasis>OpenSolaris_11/15/08</emphasis> indique clairement que le clone de l'environnement d'initialisation est un clone du SE OpenSolaris et qu'il a été créé le <literal>11/15/08</literal>.</para>
+</note>
+</listitem>
+<listitem><para>Cliquez sur <guibutton>Continuer</guibutton> pour poursuivre le processus <emphasis>Tout mettre à jour</emphasis>.</para>
+<para>Pour annuler le processus, cliquez sur <guibutton>Annuler</guibutton>. Aucune modification n'est apportée à l'environnement d'initialisation et vous êtes renvoyé à la fenêtre principale du <application>Gestionnaire de packages</application>.</para>
+</listitem>
+</orderedlist>
+<sect2 id="ghmyd"><title>Erreurs du processus Tout mettre à jour</title>
+<para>Pour que le processus Tout mettre à jour s'effectue correctement, il est <emphasis role="strong">indispensable</emphasis> qu'un clone du nouvel environnement d'initialisation soit créé. Un message d'erreur s'affiche s'il s'avère impossible de créer un clone de l'environnement d'initialisation. Il est possible que le message d'erreur suivant s'affiche :</para>
+<para><literal>Espace disque insuffisant : l'action Tout mettre à jour ne peut pas s'effectuer.Vous pouvez revenir à la gestion de l'environnement d'initialisation afin de gérer les environnements d'initialisation et libérer de l'espace disque</literal>.</para>
+<para>Si vous souhaitez rectifier l'erreur et poursuivre le processus Tout mettre à jour, suivez la procédure ci-dessous :</para>
+<orderedlist><listitem><para>Cliquez sur <guibutton>Gestion de l'environnement d'initialisation</guibutton> pour accéder à la boîte de dialogue Gestion de l'environnement d'initialisation.</para>
+</listitem>
+<listitem><para>Pour supprimer des environnements d'initialisation anciens ou inutilisés et libérer de l'espace disque, suivez la procédure décrite à la rubrique <xref linkend="ghlik"/>.</para>
+</listitem>
+<listitem><para>Une fois le système réinitialisé, cliquez sur l'icône <guilabel>Tout mettre à jour</guilabel> afin de relancer le processus de mise à jour de tous les packages.</para>
+</listitem>
+</orderedlist>
+</sect2>
+</sect1>
+<sect1 id="ghmya"><title>Gestion des environnements d'initialisation</title>
+<para>Pour une version d'OpenSolaris, un environnement d'initialisation est une instance d'environnement OpenSolaris amorçable. L'environnement d'initialisation se constitue d'un système de fichiers racine et, éventuellement, d'autres systèmes de fichiers, tels que <filename>/usr</filename>, <filename>/var</filename> ou <filename>/export</filename>. Ces autres systèmes de fichiers sont montés sous le système de fichiers racine. Ce dernier et tous les autres systèmes de fichiers de l'environnement d'initialisation contenant un logiciel système doivent constituer des jeux de données ZFS.</para>
+<para>Un environnement d'initialisation est dit actif lorsqu'il est initialisé. Un et un seul environnement d'initialisation peut être initialisé. Un environnement d'initialisation est dit inactif lorsqu'il n'est pas initialisé. Il peut cependant être en attente d'activation et sera activé à la prochaine réinitialisation.</para>
+<para>Lien vers la rubrique relative à l'environnement d'initialisation du guide de démarrage.</para>
+<para>Pour gérer l'environnement d'initialisation, suivez la procédure ci-dessous :</para>
+<orderedlist><listitem><para>Cliquez sur <guimenu>Fichier</guimenu><guimenuitem>Gestion de l'environnement d'initialisation</guimenuitem>.</para>
+</listitem>
+<listitem><para>La boîte de dialogue <guilabel>Gestion de l'environnement d'initialisation</guilabel> s'affiche. Dans cette boîte de dialogue, vous pouvez effectuer les opérations suivantes :</para>
+<variablelist><varlistentry><term><emphasis role="strong">Modifier l'environnement d'initialisation par défaut.</emphasis></term>
+<listitem><para>Sélectionnez le bouton radio en regard de l'environnement d'initialisation à initialiser lors de la réinitialisation du système. Il s'agit de l'environnement d'initialisation par défaut.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><emphasis role="strong">Supprimer les environnements d'initialisation anciens ou inutilisés afin de libérer de l'espace disque.</emphasis></term>
+<listitem><para>Sélectionnez la case à cocher en regard de l'environnement d'initialisation à supprimer.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</listitem>
+<listitem><para>Pour continuer, cliquez sur <guibutton>OK</guibutton>.</para>
+<para>Pour annuler les modifications apportées à l'état d'ouverture, cliquez sur <guibutton>Réinitialiser</guibutton>.</para>
+<para>Pour annuler toutes les modifications et revenir à la fenêtre principale, cliquez sur <guibutton>Annuler</guibutton>.</para>
+</listitem>
+<listitem><para>Si vous avez cliqué sur OK, la boîte de dialogue de confirmation de la gestion de l'environnement d'initialisation s'affiche. Vérifiez les modifications apportées à l'environnement d'initialisation et cliquez sur <guibutton>OK</guibutton> pour continuer.</para>
+<note><para>Les modifications effectuées ne prendront effet qu'une fois le système réinitialisé.</para>
+</note>
+<para>Pour annuler les modifications et revenir à la boîte de dialogue Gestion de l'environnement d'initialisation, cliquez sur <guibutton>Annuler</guibutton>.</para>
+</listitem>
+<listitem><para>Réinitialisez le système.</para>
+</listitem>
+</orderedlist>
+</sect1>
+<sect1 id="ghmzn"><title>Édition des référentiels</title>
+<para>Pour ajouter, supprimer ou configurer des référentiels, procédez comme suit :</para>
+<orderedlist><listitem><para>Cliquez sur <guimenu>Paramètres</guimenu><guimenuitem>Éditer les référentiels</guimenuitem>.</para>
+</listitem>
+<listitem><para>La boîte de dialogue <literal>Gérer les référentiels</literal> s'affiche. Elle permet d'effectuer les opérations suivantes :</para>
+<orderedlist><listitem><para><emphasis role="strong">Ajout d'un référentiel</emphasis> : pour ajouter un nouveau référentiel, entrez le nom et l'adresse (URL) du référentiel. Cliquez sur <guibutton>Ajouter</guibutton>.</para>
+</listitem>
+<listitem><para><emphasis role="strong">Suppression d'un référentiel</emphasis> : pour supprimer un référentiel, sélectionnez-le en cliquant sur son nom dans la liste, puis cliquez sur <guibutton>Supprimer</guibutton>.</para>
+<note><para>Il est impossible de supprimer un référentiel défini en tant que référentiel préféré. Pour supprimer un référentiel préféré, définissez un référentiel non préféré en tant que référentiel préféré, puis supprimez le référentiel.</para>
+</note>
+</listitem>
+<listitem><para><emphasis role="strong">Définition d'un référentiel en tant que référentiel préféré</emphasis></para>
+<para>Un référentiel préféré est le référentiel par défaut à partir duquel la source des packages est téléchargée.</para>
+<para>Pour définir un référentiel en tant que référentiel préféré, cliquez sur le bouton radio en regard du référentiel. Si vous ne souhaitez pas apporter d'autres modifications aux informations relatives au référentiel, cliquez sur <guibutton>Fermer</guibutton>.</para>
+</listitem>
+<listitem><para><emphasis role="strong">Modification d'un référentiel</emphasis> : pour modifier un référentiel, suivez la procédure ci-dessous :</para>
+<orderedlist><listitem><para>Sélectionnez le référentiel à modifier.</para>
+</listitem>
+<listitem><para>Cliquez sur <guibutton>Modifier</guibutton>. La boîte de dialogue <literal>Modifier le référentiel</literal> s'affiche.</para>
+</listitem>
+<listitem><para>Tapez un nom valide pour le référentiel, ainsi que l'URL du référentiel. Un nom de référentiel est considéré comme étant valide s'il n'existe pas dans la liste actuelle des référentiels.</para>
+</listitem>
+<listitem><para>Cliquez sur <guibutton>OK</guibutton> pour enregistrer les modifications et revenir à la boîte de dialogue <literal>Gérer les référentiels</literal>.</para>
+<para>Pour annuler les modifications, cliquez sur <guibutton>Annuler</guibutton>. Vous êtes alors renvoyé à la boîte de dialogue <literal>Gérer les référentiels</literal>.</para>
+</listitem>
+</orderedlist>
+</listitem>
+</orderedlist>
+</listitem>
+</orderedlist>
+</sect1>
+</chapter>
+</book>

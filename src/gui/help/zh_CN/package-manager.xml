@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN" "http://www.oasis-open.org/docbook/xml/4.0/docbookx.dtd">
+<book id="package_manager_online_help" lang="zh_CN"><title>软件包管理器入门</title>
+<bookinfo><authorgroup><author><firstname>Jyothi</firstname>
+<surname>Srinath</surname>
+</author>
+</authorgroup>
+<pubsnumber/>
+<releaseinfo/>
+<pubdate/>
+<publisher><publishername>Sun Microsystems, Inc.</publishername>
+<address><street>4150 Network Circle</street>
+<city>Santa Clara</city>
+<state>CA</state>
+<postcode>95054</postcode>
+<country>U.S.A.</country>
+</address>
+</publisher>
+<copyright><year>2008</year>
+<holder>Sun Microsystems, Inc.</holder>
+</copyright>
+<abstract><para/>
+</abstract>
+<legalnotice><para>对于本文档中介绍的产品，Sun Microsystems, Inc. 对其所涉及的技术拥有相关的知识产权。需特别指出的是（但不局限于此），这些知识产权可能包含一项或多项美国专利，或在美国和其他国家/地区申请的待批专利。</para>
+<para>美国政府权利－商业软件。政府用户应遵循 Sun Microsystems, Inc. 的标准许可协议，以及 FAR（Federal Acquisition Regulations，即“联邦政府采购法规”）的适用条款及其补充条款。</para>
+<para>本发行版可能包含由第三方开发的内容。</para>
+<para>本产品的某些部分可能是从 Berkeley BSD 系统衍生出来的，并获得了加利福尼亚大学的许可。UNIX 是 X/Open Company, Ltd. 在美国和其他国家/地区独家许可的注册商标。</para>
+<para>Sun、Sun Microsystems、Sun 徽标、Solaris 徽标、Java 咖啡杯徽标、docs.sun.com、Java 和 Solaris 是 Sun Microsystems, Inc. 或其子公司在美国和其他国家/地区的商标或注册商标。所有 SPARC 商标的使用均已获得许可，它们是 SPARC International, Inc. 在美国和其他国家/地区的商标或注册商标。标有 SPARC 商标的产品均基于由 Sun Microsystems, Inc. 开发的体系结构。</para>
+<para>OPEN LOOK 和 <trademark>Sun</trademark> 图形用户界面是 Sun Microsystems, Inc. 为其用户和许可证持有者开发的。Sun 感谢 Xerox 在研究和开发可视或图形用户界面的概念方面为计算机行业所做的开拓性贡献。Sun 已从 Xerox 获得了对 Xerox 图形用户界面的非独占性许可证，该许可证还适用于实现 OPEN LOOK GUI 和在其他方面遵守 Sun 书面许可协议的 Sun 许可证持有者。</para>
+<para>本出版物所介绍的产品以及所包含的信息受美国出口控制法制约，并应遵守其他国家/地区的进出口法律。严禁将本产品直接或间接地用于核设施、导弹、生化武器或海上核设施，也不能直接或间接地出口给核设施、导弹、生化武器或海上核设施的最终用户。严禁出口或转口到美国禁运的国家/地区以及美国禁止出口清单中所包含的实体，包括但不限于被禁止的个人以及特别指定的国家/地区的公民。</para>
+<para>本文档按“原样”提供，对于所有明示或默示的条件、陈述和担保，包括对适销性、适用性或非侵权性的默示保证，均不承担任何责任，除非此免责声明的适用范围在法律上无效。</para>
+<para lang="fr"/>
+<para>Sun Microsystems, Inc. détient les droits de propriété intellectuelle relatifs à la technologie incorporée dans le produit qui est décrit dans ce document. En particulier, et ce sans limitation, ces droits de propriété intellectuelle peuvent inclure un ou plusieurs brevets américains ou des applications de brevet en attente aux Etats-Unis et dans d'autres pays.</para>
+<para>Cette distribution peut comprendre des composants développés par des tierces personnes.</para>
+<para>Certaines composants de ce produit peuvent être dérivées du logiciel Berkeley BSD, licenciés par l'Université de Californie. UNIX est une marque déposée aux Etats-Unis et dans d'autres pays; elle est licenciée exclusivement par X/Open Company, Ltd.</para>
+<para>Sun, Sun Microsystems, le logo Sun, le logo Solaris, le logo Java Coffee Cup, docs.sun.com, Java et Solaris sont des marques de fabrique ou des marques déposées de Sun Microsystems, Inc., ou ses filiales, aux Etats-Unis et dans d'autres pays. Toutes les marques SPARC sont utilisées sous licence et sont des marques de fabrique ou des marques déposées de SPARC International, Inc. aux Etats-Unis et dans d'autres pays. Les produits portant les marques SPARC sont basés sur une architecture développée par Sun Microsystems, Inc.</para>
+<para>L'interface d'utilisation graphique OPEN LOOK et Sun a été développée par Sun Microsystems, Inc. pour ses utilisateurs et licenciés. Sun reconnaît les efforts de pionniers de Xerox pour la recherche et le développement du concept des interfaces d'utilisation visuelle ou graphique pour l'industrie de l'informatique. Sun détient une licence non exclusive de Xerox sur l'interface d'utilisation graphique Xerox, cette licence couvrant également les licenciés de Sun qui mettent en place l'interface d'utilisation graphique OPEN LOOK et qui, en outre, se conforment aux licences écrites de Sun.</para>
+<para>Les produits qui font l'objet de cette publication et les informations qu'il contient sont régis par la legislation américaine en matière de contrôle des exportations et peuvent être soumis au droit d'autres pays dans le domaine des exportations et importations. Les utilisations finales, ou utilisateurs finaux, pour des armes nucléaires, des missiles, des armes chimiques ou biologiques ou pour le nucléaire maritime, directement ou indirectement, sont strictement interdites. Les exportations ou réexportations vers des pays sous embargo des Etats-Unis, ou vers des entités figurant sur les listes d'exclusion d'exportation américaines, y compris, mais de manière non exclusive, la liste de personnes qui font objet d'un ordre de ne pas participer, d'une façon directe ou indirecte, aux exportations des produits ou des services qui sont régis par la legislation américaine en matière de contrôle des exportations et la liste de ressortissants spécifiquement designés, sont rigoureusement interdites.</para>
+<para>LA DOCUMENTATION EST FOURNIE "EN L'ETAT" ET TOUTES AUTRES CONDITIONS, DECLARATIONS ET GARANTIES EXPRESSES OU TACITES SONT FORMELLEMENT EXCLUES, DANS LA MESURE AUTORISEE PAR LA LOI APPLICABLE, Y COMPRIS NOTAMMENT TOUTE GARANTIE IMPLICITE RELATIVE A LA QUALITE MARCHANDE, A L'APTITUDE A UNE UTILISATION PARTICULIERE OU A L'ABSENCE DE CONTREFACON.</para>
+</legalnotice>
+</bookinfo>
+<chapter><title>介绍</title>
+<highlights><para><application>软件包管理器</application>应用程序是映像包管理系统 (Image Packaging System, IPS) 软件的图形用户界面。使用软件包管理器可以搜索、安装和删除软件包；添加和修改系统信息库；并创建和删除引导环境。</para>
+</highlights>
+<sect1><title>启动软件包管理器</title>
+<para>您可以通过以下方式启动<application>软件包管理器</application>：</para>
+<variablelist><varlistentry><term><emphasis role="strong">桌面菜单</emphasis></term>
+<listitem><para>单击<guimenu>系统</guimenu><guisubmenu>管理</guisubmenu><guisubmenu>软件包管理器</guisubmenu>。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><emphasis role="strong">命令行</emphasis></term>
+<listitem><para>在提示符下执行以下命令：</para>
+<para><userinput>$ packagemanager &amp;</userinput></para>
+</listitem>
+</varlistentry>
+</variablelist>
+</sect1>
+<sect1 id="ghmbh"><title>启动软件包管理器时</title>
+<para>在启动<application>软件包管理器</application>时，将显示以下窗口：</para>
+<figure id="ghpto">
+<mediaobject><imageobject><imagedata fileref="../C/figures/package_manager.png"/></imageobject>
+</mediaobject>
+</figure>
+<para><application>软件包管理器</application>的主窗口分为以下几个部分：</para>
+<variablelist><varlistentry><term><emphasis role="strong">按类别显示的软件包列表</emphasis></term>
+<listitem><para>您可以按类别浏览可用软件包。下拉式菜单中列出了可用的类别。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><emphasis role="strong">按状态显示的软件包列表</emphasis></term>
+<listitem><para><guilabel>显示</guilabel>下拉式菜单允许您按下列选项过滤软件包列表：</para>
+<itemizedlist><listitem><para><emphasis role="strong">所有软件包</emphasis>－显示当前系统信息库中可用的所有软件包的列表。</para>
+</listitem>
+<listitem><para><emphasis role="strong">安装的软件包</emphasis>－显示系统中已安装的软件包的列表。</para>
+</listitem>
+<listitem><para><emphasis role="strong">选定的软件包</emphasis>－显示您已选定的软件包的列表。</para>
+</listitem>
+<listitem><para><emphasis role="strong">可用的更新</emphasis>－显示当前系统信息库中提供了更新版本的软件包的列表。</para>
+</listitem>
+</itemizedlist>
+</listitem>
+</varlistentry>
+<varlistentry><term><emphasis role="strong">工具栏</emphasis></term>
+<listitem><para>工具栏中包含命令子集的图标，这些命令也可使用菜单条上的菜单来执行。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><emphasis role="strong">菜单条</emphasis></term>
+<listitem><para>可以使用菜单条上的菜单来执行与软件包管理器相关的所有命令。</para>
+<para/>
+</listitem>
+</varlistentry>
+<varlistentry><term><emphasis role="strong">软件包名称和说明</emphasis></term>
+<listitem><para>此处将显示选定类别的软件包列表以及简要说明。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><emphasis role="strong">软件包详细信息</emphasis></term>
+<listitem><para>单击某个软件包以将其选中。所选软件包的详细信息，如名称、版本、文件相关性将显示在此窗口中。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><emphasis role="strong">系统信息库下拉式菜单</emphasis></term>
+<listitem><para>可用系统信息库列表显示在系统信息库下拉式菜单中。单击某个系统信息库名称以将其选中。</para>
+<note><para>单击<guilabel>重新装入</guilabel>按钮可重新装入软件包管理器，并查看新选定的系统信息库中的软件包列表。</para>
+</note>
+</listitem>
+</varlistentry>
+</variablelist>
+</sect1>
+<sect1 id="ghmzf"><title>安装软件包</title>
+<para>执行以下步骤来安装软件包：</para>
+<orderedlist><listitem><para>在<application>软件包管理器</application>主窗口中，单击<guibutton>重新装入</guibutton>按钮以查看可用的最新软件包列表。</para>
+</listitem>
+<listitem><para>选择软件包旁边的复选框以将其选中。</para>
+</listitem>
+<listitem><para>单击工具栏中的<guibutton>安装/更新</guibutton>以启动软件包安装过程。</para>
+<para>还可以通过选择<guimenu>软件包</guimenu><guimenuitem>安装/更新</guimenuitem>来启动软件包安装过程。</para>
+</listitem>
+<listitem><para>软件包管理器将检查相关性。单击<emphasis>显示详细信息</emphasis>以查看详细信息。</para>
+<para>单击<guibutton>取消</guibutton>可取消软件包安装。此时不会进行任何更改，并返回到主窗口。</para>
+</listitem>
+<listitem><para>将显示<literal>安装确认</literal>对话框。查看软件包安装信息和软件包相关性。</para>
+<para>单击<guibutton>取消</guibutton>可取消软件包安装。此时不会进行任何更改，并返回到主窗口。</para>
+</listitem>
+<listitem><para>已下载并安装软件包。</para>
+</listitem>
+<listitem><para>单击<guibutton>重新装入</guibutton>按钮以查看软件包的更新列表。</para>
+</listitem>
+</orderedlist>
+</sect1>
+<sect1 id="ghmyo"><title>删除软件包</title>
+<para>执行以下步骤来删除软件包：</para>
+<orderedlist><listitem><para>选中要删除的软件包旁边的复选框。</para>
+</listitem>
+<listitem><para>单击工具栏中的<guibutton>删除</guibutton>按钮以启动软件包删除过程。</para>
+<para>还可以通过选择<guimenu>软件包</guimenu><guimenuitem>删除</guimenuitem>来删除软件包。</para>
+</listitem>
+<listitem><para>将显示<literal>删除确认</literal>对话框。查看要删除的软件包和软件包相关性。</para>
+</listitem>
+<listitem><para>单击<guibutton>确定</guibutton>以继续。单击<guibutton>确定</guibutton>按钮后，无法撤消软件包删除操作。</para>
+<para>单击<guibutton>取消</guibutton>可取消此过程。此时不会进行任何更改，并返回到主窗口。</para>
+</listitem>
+<listitem><para>单击<guibutton>重新装入</guibutton>按钮以查看软件包的更新列表。</para>
+</listitem>
+</orderedlist>
+</sect1>
+<sect1 id="ghmxy"><title>搜索软件包</title>
+<para>在<guilabel>搜索</guilabel>框中键入要搜索的软件包名称。</para>
+<para>可使用以下搜索参数：</para>
+<itemizedlist><listitem><para><emphasis role="strong">名称、说明或关键字</emphasis>－</para>
+</listitem>
+<listitem><para><emphasis role="strong">维护者</emphasis>－</para>
+</listitem>
+<listitem><para><emphasis role="strong">相关性</emphasis>－</para>
+</listitem>
+<listitem><para><emphasis role="strong">命令</emphasis>－</para>
+</listitem>
+</itemizedlist>
+<para>可使用<guimenu>编辑</guimenu>菜单下的子菜单来剪切、复制、粘贴或清除“搜索”选项卡中的文本。</para>
+</sect1>
+<sect1 id="ghmzc"><title>更新软件包</title>
+<para>找到已安装软件包名称旁边的绿色图标。此图标指示当前选定的系统信息库中有可用于该软件包的更新。选择该软件包并单击<guibutton>安装/更新</guibutton>按钮来安装最新版本的软件包。</para>
+</sect1>
+<sect1 id="ghmym"><title>在已配置的系统信息库之间切换</title>
+<para>使用工具栏中的<guilabel>系统信息库</guilabel>下拉式菜单查看已配置的系统信息库列表。单击系统信息库名称可切换到不同的系统信息库。</para>
+</sect1>
+<sect1 id="ghmyp"><title>更新当前映像（更新所有软件包）</title>
+<para>执行以下步骤来更新整个映像：</para>
+<orderedlist><listitem><para>单击<guimenu>文件</guimenu><guimenuitem>全部更新</guimenuitem>或单击<guilabel>全部更新</guilabel>按钮以启动更新映像中<emphasis role="strong">所有</emphasis>软件包的过程。</para>
+<note><para>当已安装软件包有可用更新时，将启用<guilabel>全部更新</guilabel>按钮。</para>
+</note>
+</listitem>
+<listitem><para>将显示<guilabel>全部更新确认</guilabel>对话框。</para>
+<para>在执行<emphasis>全部更新</emphasis>过程中，将会创建活动引导环境的克隆。如果“全部更新”过程无法完成或导致系统破坏，用户可使用此克隆将系统<emphasis>回滚</emphasis>至当前引导环境。</para>
+</listitem>
+<listitem><para>为将要创建的新的引导环境克隆输入名称。</para>
+<note><para>建议用户为此引导环境克隆输入有意义的名称。例如，<emphasis>OpenSolaris_11/15/08</emphasis>，该名称可清楚地表明此引导环境克隆是 OpenSolaris OS 的克隆，创建时间是 <literal>11/15/08</literal>。</para>
+</note>
+</listitem>
+<listitem><para>单击<guibutton>继续</guibutton>以继续执行<emphasis>全部更新</emphasis>过程。</para>
+<para>单击<guibutton>取消</guibutton>可取消此过程。此时不会对引导环境进行任何更改，并返回到<application>软件包管理器</application>主窗口。</para>
+</listitem>
+</orderedlist>
+<sect2 id="ghmyd"><title>“全部更新”错误</title>
+<para><emphasis role="strong">必须</emphasis>为所要完成的“全部更新”过程创建一个新的引导环境克隆。如果无法创建引导环境克隆，则会显示一条错误消息。您可以看到以下错误消息对话框：</para>
+<para><literal>磁盘空间不足：“全部更新”操作无法执行。您可以选择返回“引导环境管理”来管理引导环境并释放磁盘空间</literal>。</para>
+<para>如果要纠正错误并继续执行“全部更新”过程，请执行以下步骤：</para>
+<orderedlist><listitem><para>单击<guibutton>引导环境管理</guibutton>转到“引导环境管理”对话框。</para>
+</listitem>
+<listitem><para>按照 <xref linkend="ghlik"/> 中列出的步骤删除旧的或未使用的引导环境，并释放磁盘空间。</para>
+</listitem>
+<listitem><para>在重新引导系统之后，单击<guilabel>全部更新</guilabel>图标以重新启动更新所有软件包的过程。</para>
+</listitem>
+</orderedlist>
+</sect2>
+</sect1>
+<sect1 id="ghmya"><title>管理引导环境</title>
+<para>对于 OpenSolaris 发行版，引导环境指的是可引导的 OpenSolaris 环境的实例。该引导环境中包含一个根文件系统和一些可选的其他文件系统，如 <filename>/usr</filename>、<filename>/var</filename> 或 <filename>/export</filename>。这些可选的文件系统挂载在根文件系统下面。包含系统软件的引导环境中的根文件系统和所有其他文件系统必需是 zfs 数据集。</para>
+<para>活动引导环境是指当前引导的环境。只能引导一个活动引导环境。非活动引导环境当前没有进行引导，但是可以等待在下次重新引导时将其激活。</para>
+<para>Link to GSG BE section.</para>
+<para>执行以下步骤来管理您的引导环境 (Boot Environment, BE)：</para>
+<orderedlist><listitem><para>单击<guimenu>文件</guimenu><guimenuitem>引导环境管理</guimenuitem>。</para>
+</listitem>
+<listitem><para>将显示<guilabel>引导环境管理</guilabel>对话框。可在此对话框中执行以下操作：</para>
+<variablelist><varlistentry><term><emphasis role="strong">更改缺省引导环境。</emphasis></term>
+<listitem><para>选择要在系统重新引导时进行引导的引导环境旁的单选按钮。这是缺省的引导环境。</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><emphasis role="strong">删除旧的或未使用的引导环境，以释放磁盘空间。</emphasis></term>
+<listitem><para>选中要删除的引导环境旁边的复选框。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</listitem>
+<listitem><para>单击<guibutton>确定</guibutton>以继续。</para>
+<para>单击<guibutton>重置</guibutton>可将更改还原至初始状态。</para>
+<para>单击<guibutton>取消</guibutton>可取消所有更改，并返回到主窗口。</para>
+</listitem>
+<listitem><para>如果单击“确定”，将显示“引导环境管理确认”对话框。查看对引导环境所做的更改，然后单击<guibutton>确定</guibutton>以继续。</para>
+<note><para>在系统重新引导之后，所做的更改才会生效。</para>
+</note>
+<para>单击<guibutton>取消</guibutton>可取消更改，并返回到“引导环境管理”对话框。</para>
+</listitem>
+<listitem><para>重新引导系统。</para>
+</listitem>
+</orderedlist>
+</sect1>
+<sect1 id="ghmzn"><title>编辑系统信息库</title>
+<para>执行以下步骤来添加、删除或配置系统信息库：</para>
+<orderedlist><listitem><para>单击<guimenu>设置</guimenu><guimenuitem>编辑系统信息库</guimenuitem>。</para>
+</listitem>
+<listitem><para>将显示<literal>管理系统信息库</literal>对话框。可在此对话框中执行以下操作：</para>
+<orderedlist><listitem><para><emphasis role="strong">添加系统信息库</emphasis>－要添加新的系统信息库，请输入该系统信息库的名称和地址 (URL)。单击<guibutton>添加</guibutton>。</para>
+</listitem>
+<listitem><para><emphasis role="strong">删除系统信息库</emphasis>－要删除系统信息库，请从列表中单击系统信息库名称以将其选中。单击<guibutton>删除</guibutton>。</para>
+<note><para>无法删除设置为首选系统信息库的系统信息库。要删除首选系统信息库，请先将一个非首选系统信息库设置为首选项，然后删除该系统信息库。</para>
+</note>
+</listitem>
+<listitem><para><emphasis role="strong">设置首选系统信息库</emphasis></para>
+<para>首选系统信息库是缺省系统信息库，可以从中下载软件包的源代码。</para>
+<para>要将一个系统信息库设置为首选系统信息库，请单击要设置为首选系统信息库的系统信息库旁的单选按钮。如果不想对系统信息库信息进行任何其他更改，请单击<guibutton>关闭</guibutton>。</para>
+</listitem>
+<listitem><para><emphasis role="strong">修改系统信息库</emphasis>－执行以下步骤来修改系统信息库：</para>
+<orderedlist><listitem><para>选择要修改的系统信息库。</para>
+</listitem>
+<listitem><para>单击<guibutton>修改</guibutton>按钮。将显示<literal>修改系统信息库</literal>对话框。</para>
+</listitem>
+<listitem><para>键入系统信息库的有效名称和系统信息库的 URL。如果键入的系统信息库名称在当前系统信息库列表中不存在，则将其视为有效名称。</para>
+</listitem>
+<listitem><para>单击<guibutton>确定</guibutton>保存更改，并返回到<literal>管理系统信息库</literal>对话框。</para>
+<para>单击<guibutton>取消</guibutton>可取消更改。此时将返回到<literal>管理系统信息库</literal>对话框。</para>
+</listitem>
+</orderedlist>
+</listitem>
+</orderedlist>
+</listitem>
+</orderedlist>
+</sect1>
+</chapter>
+</book>

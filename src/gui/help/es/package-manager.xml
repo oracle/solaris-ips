@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN" "http://www.oasis-open.org/docbook/xml/4.0/docbookx.dtd">
+<book id="package_manager_online_help" lang="es"><title>Guía de inicio de Package Manager</title>
+<bookinfo><authorgroup><author><firstname>Jyothi</firstname>
+<surname>Srinath</surname>
+</author>
+</authorgroup>
+<pubsnumber/>
+<releaseinfo/>
+<pubdate/>
+<publisher><publishername>Sun Microsystems, Inc.</publishername>
+<address><street>4150 Network Circle</street>
+<city>Santa Clara</city>
+<state>CA</state>
+<postcode>95054</postcode>
+<country>U.S.A.</country>
+</address>
+</publisher>
+<copyright><year>2008</year>
+<holder>Sun Microsystems, Inc.</holder>
+</copyright>
+<abstract><para/>
+</abstract>
+<legalnotice><para>Sun Microsystems, Inc. tiene derechos de propiedad intelectual relativos a tecnología incrustada en el producto que se describe en este documento. En particular, y sin limitación, estos derechos de propiedad intelectual pueden incluir una o varias patentes de EE.UU. o aplicaciones pendientes de patentes en EE.UU. y en otros países.</para>
+<para>Derechos del gobierno de EE.UU. – Software comercial. Los usuarios del gobierno están sujetos al acuerdo de licencia estándar de Sun Microsystems, Inc. y las correspondientes disposiciones de FAR y sus suplementos.</para>
+<para>Esta distribución puede contener material desarrollado por terceros.</para>
+<para>Partes del producto pueden derivarse de los sistemas Berkeley BSD, con licencia de la Universidad de California. UNIX es una marca comercial registrada en EE.UU. y otros países, que se concede bajo licencia exclusiva de X/Open Company, Ltd.</para>
+<para>Sun, Sun Microsystems, el logotipo de Sun, el logotipo de Solaris, el logotipo de la taza de café de Java, docs.sun.com, Java y Solaris son marcas comerciales o marcas comerciales registradas de Sun Microsystems, Inc. o sus filiales en EE.UU. y otros países. Todas las marcas comerciales de SPARC se utilizan bajo licencia y son marcas comerciales o marcas comerciales registradas de SPARC International, Inc. en EE.UU. y otros países. Los productos con marcas SPARC se basan en una arquitectura desarrollada por Sun Microsystems, Inc.</para>
+<para>OPEN LOOK y <trademark>Sun</trademark> Graphical User Interface los ha desarrollado Sun Microsystems, Inc. para sus usuarios y licenciatarios. Sun reconoce los esfuerzos pioneros de Xerox en la investigación y desarrollo del concepto de interfaces gráficas de usuario o visuales para el sector de la informática. Sun dispone de una licencia no exclusiva de Xerox para la interfaz gráfica de usuario de Xerox, que también cubre a los licenciatarios de Sun que implementen las GUI de OPEN LOOK y que, por otra parte, cumplan con los acuerdos de licencia por escrito de Sun.</para>
+<para>Los productos comentados y la información contenida en esta publicación se someten a las leyes de control de exportación de EE.UU. y pueden estar sujetos a leyes de exportación o importación en otros países. Queda terminantemente prohibido el uso final (directo o indirecto) de esta documentación para el desarrollo dede armas nucleares, químicas, biológicas, de uso marítimonuclear o misiles. Queda terminantemente prohibida la exportación o reexportación a países sujetos  al embargo de EE.UU. o a entidades identificadas en las listas de exclusión de exportación de EE.UU., incluidas, aunque sin limitarse a, las personas con acceso denegado y las listas de ciudadanos designados con carácter especial.</para>
+<para>ESTA DOCUMENTACIÓN SE PROPORCIONA “TAL CUAL” Y SE RENUNCIA A TODAS LAS CONDICIONES EXPRESAS O IMPLÍCITAS, REPRESENTACIONES Y GARANTÍAS, INCLUIDAS CUALQUIER GARANTÍA IMPLÍCITA DE COMERCIALIZACIÓN, ADECUACIÓN PARA UNA FINALIDAD DETERMINADA O DE NO CONTRAVENCIÓN, EXCEPTO EN AQUELLOS CASOS EN QUE DICHA RENUNCIA NO FUERA LEGALMENTE VÁLIDA.</para>
+<para lang="fr"/>
+<para>Sun Microsystems, Inc. détient les droits de propriété intellectuelle relatifs à la technologie incorporée dans le produit qui est décrit dans ce document. En particulier, et ce sans limitation, ces droits de propriété intellectuelle peuvent inclure un ou plusieurs brevets américains ou des applications de brevet en attente aux Etats-Unis et dans d'autres pays.</para>
+<para>Cette distribution peut comprendre des composants développés par des tierces personnes.</para>
+<para>Certaines composants de ce produit peuvent être dérivées du logiciel Berkeley BSD, licenciés par l'Université de Californie. UNIX est une marque déposée aux Etats-Unis et dans d'autres pays; elle est licenciée exclusivement par X/Open Company, Ltd.</para>
+<para>Sun, Sun Microsystems, le logo Sun, le logo Solaris, le logo Java Coffee Cup, docs.sun.com, Java et Solaris sont des marques de fabrique ou des marques déposées de Sun Microsystems, Inc., ou ses filiales, aux Etats-Unis et dans d'autres pays. Toutes les marques SPARC sont utilisées sous licence et sont des marques de fabrique ou des marques déposées de SPARC International, Inc. aux Etats-Unis et dans d'autres pays. Les produits portant les marques SPARC sont basés sur une architecture développée par Sun Microsystems, Inc.</para>
+<para>L'interface d'utilisation graphique OPEN LOOK et Sun a été développée par Sun Microsystems, Inc. pour ses utilisateurs et licenciés. Sun reconnaît les efforts de pionniers de Xerox pour la recherche et le développement du concept des interfaces d'utilisation visuelle ou graphique pour l'industrie de l'informatique. Sun détient une licence non exclusive de Xerox sur l'interface d'utilisation graphique Xerox, cette licence couvrant également les licenciés de Sun qui mettent en place l'interface d'utilisation graphique OPEN LOOK et qui, en outre, se conforment aux licences écrites de Sun.</para>
+<para>Les produits qui font l'objet de cette publication et les informations qu'il contient sont régis par la legislation américaine en matière de contrôle des exportations et peuvent être soumis au droit d'autres pays dans le domaine des exportations et importations. Les utilisations finales, ou utilisateurs finaux, pour des armes nucléaires, des missiles, des armes chimiques ou biologiques ou pour le nucléaire maritime, directement ou indirectement, sont strictement interdites. Les exportations ou réexportations vers des pays sous embargo des Etats-Unis, ou vers des entités figurant sur les listes d'exclusion d'exportation américaines, y compris, mais de manière non exclusive, la liste de personnes qui font objet d'un ordre de ne pas participer, d'une façon directe ou indirecte, aux exportations des produits ou des services qui sont régis par la legislation américaine en matière de contrôle des exportations et la liste de ressortissants spécifiquement designés, sont rigoureusement interdites.</para>
+<para>LA DOCUMENTATION EST FOURNIE "EN L'ETAT" ET TOUTES AUTRES CONDITIONS, DECLARATIONS ET GARANTIES EXPRESSES OU TACITES SONT FORMELLEMENT EXCLUES, DANS LA MESURE AUTORISEE PAR LA LOI APPLICABLE, Y COMPRIS NOTAMMENT TOUTE GARANTIE IMPLICITE RELATIVE A LA QUALITE MARCHANDE, A L'APTITUDE A UNE UTILISATION PARTICULIERE OU A L'ABSENCE DE CONTREFACON.</para>
+</legalnotice>
+</bookinfo>
+<chapter><title>Introducción</title>
+<highlights><para>La aplicación <application>Package Manager</application> es una interfaz gráfica de usuario para el software IPS (Image Packaging System). Package Manager permite buscar, instalar y eliminar paquetes; agregar y modificar depósitos; crear y eliminar entornos de arranque.</para>
+</highlights>
+<sect1><title>Para iniciar Package Manager</title>
+<para>Los procedimientos siguientes permiten iniciar la aplicación <application>Package Manager</application>:</para>
+<variablelist><varlistentry><term><emphasis role="strong">Menú del escritorio</emphasis></term>
+<listitem><para>Haga clic en <guimenu>Sistema</guimenu><guisubmenu>Administración</guisubmenu><guisubmenu>Package Manager</guisubmenu>.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><emphasis role="strong">Línea de comandos</emphasis></term>
+<listitem><para>En el símbolo del sistema, ejecute el comando siguiente:</para>
+<para><userinput>$ packagemanager &amp;</userinput></para>
+</listitem>
+</varlistentry>
+</variablelist>
+</sect1>
+<sect1 id="ghmbh"><title>Al iniciar Package Manager</title>
+<para>Al iniciar <application>Package Manager</application>, aparece la ventana siguiente:</para>
+<figure id="ghpto">
+<mediaobject><imageobject><imagedata fileref="../C/figures/package_manager.png"/></imageobject>
+</mediaobject>
+</figure>
+<para>La ventana principal de <application>Package Manager</application> se divide en los elementos siguientes:</para>
+<variablelist><varlistentry><term><emphasis role="strong">Lista de paquetes por categoría</emphasis></term>
+<listitem><para>Puede buscar los paquetes por categoría. El menú desplegable muestra la lista de categorías disponibles.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><emphasis role="strong">Lista de paquetes por estado</emphasis></term>
+<listitem><para>El menú desplegable <guilabel>Mostrar</guilabel> permite filtrar la lista de paquetes según las opciones siguientes:</para>
+<itemizedlist><listitem><para><emphasis role="strong">Todos los paquetes</emphasis>: muestra la lista de todos los paquetes disponibles en el depósito actual.</para>
+</listitem>
+<listitem><para><emphasis role="strong">Paquetes instalados</emphasis>: muestra la lista de los paquetes instalados en el sistema.</para>
+</listitem>
+<listitem><para><emphasis role="strong">Paquetes seleccionados</emphasis>: muestra la lista de los paquetes que haya seleccionado.</para>
+</listitem>
+<listitem><para><emphasis role="strong">Actualizaciones disponibles</emphasis>: muestra la lista de paquetes que tienen versiones más nuevas en el depósito actual.</para>
+</listitem>
+</itemizedlist>
+</listitem>
+</varlistentry>
+<varlistentry><term><emphasis role="strong">Barra de herramientas</emphasis></term>
+<listitem><para>La barra de herramientas contiene los iconos de un subconjunto de los comandos que se pueden efectuar con los menús de la barra de menús.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><emphasis role="strong">Barra de menús</emphasis></term>
+<listitem><para>Puede acceder a los menús de la barra de menús para efectuar todos los comandos relativos a Package Manager.</para>
+<para/>
+</listitem>
+</varlistentry>
+<varlistentry><term><emphasis role="strong">Nombre y descripción de los paquetes</emphasis></term>
+<listitem><para>Se muestra la lista de paquetes de la categoría seleccionada junto con una breve descripción.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><emphasis role="strong">Detalles del paquete</emphasis></term>
+<listitem><para>Haga clic en un paquete para seleccionarlo. En esta ventana aparece información del paquete seleccionado como nombre, versión y dependencias de archivos.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><emphasis role="strong">Menú desplegable de depósitos</emphasis></term>
+<listitem><para>En el menú desplegable de depósitos hay una lista con los depósitos disponibles. Haga clic en un nombre de depósito para seleccionarlo.</para>
+<note><para>Haga clic en el botón <guilabel>Recargar</guilabel> para volver a cargar Package Manager y ver la lista de los paquetes en el depósito seleccionado de nuevo.</para>
+</note>
+</listitem>
+</varlistentry>
+</variablelist>
+</sect1>
+<sect1 id="ghmzf"><title>Instalar un paquete</title>
+<para>Para instalar un paquete, realice los pasos siguientes:</para>
+<orderedlist><listitem><para>En la ventana principal de <application>Package Manager</application>, haga clic en el botón <guibutton>Recargar</guibutton> para ver la lista más reciente de los paquetes disponibles.</para>
+</listitem>
+<listitem><para>Marque la casilla junto al paquete para seleccionarlo.</para>
+</listitem>
+<listitem><para>En la barra de herramientas, haga clic en el botón <guibutton>Instalar/Actualizar</guibutton> para iniciar el proceso de instalación de paquetes.</para>
+<para>Asimismo, para iniciar el proceso de instalación de paquetes puede elegir el <guimenu>Paquete</guimenu><guimenuitem>Instalar/Actualizar</guimenuitem>.</para>
+</listitem>
+<listitem><para>Package Manager comprueba las dependencias. Haga clic en <emphasis>Mostrar detalles</emphasis> para ver los detalles.</para>
+<para>Haga clic en <guibutton>Cancelar</guibutton> para cancelar la instalación de paquetes. No se efectúan cambios y se vuelve a la ventana principal.</para>
+</listitem>
+<listitem><para>Aparece el cuadro de diálogo <literal>Confirmación de instalación</literal>. Examine la información de la instalación de paquetes y las dependencias de paquetes.</para>
+<para>Haga clic en <guibutton>Cancelar</guibutton> para cancelar la instalación de paquetes. No se efectúan cambios y se vuelve a la ventana principal.</para>
+</listitem>
+<listitem><para>Los paquetes se descargan e instalan.</para>
+</listitem>
+<listitem><para>Haga clic en el botón <guibutton>Recargar</guibutton> para ver la lista actualizada de paquetes.</para>
+</listitem>
+</orderedlist>
+</sect1>
+<sect1 id="ghmyo"><title>Eliminar un paquete</title>
+<para>Para eliminar un paquete, realice los pasos siguientes:</para>
+<orderedlist><listitem><para>Marque la casilla que hay al lado del paquete que desea eliminar.</para>
+</listitem>
+<listitem><para>En la barra de herramientas, haga clic en el botón <guibutton>Eliminar</guibutton> para iniciar el proceso.</para>
+<para>También puede elegir <guimenu>Paquete</guimenu><guimenuitem>Eliminar</guimenuitem> para eliminar un paquete.</para>
+</listitem>
+<listitem><para>Aparece el cuadro de diálogo <literal>Confirmación de eliminación</literal>. Examine los paquetes que se van a eliminar y las dependencias de paquetes.</para>
+</listitem>
+<listitem><para>Haga clic en <guibutton>Aceptar</guibutton> para continuar. Tras hacer clic en el botón <guibutton>Aceptar</guibutton>, la eliminación de paquetes es irreversible.</para>
+<para>Haga clic en <guibutton>Cancelar</guibutton> para cancelar el proceso. No se efectúan cambios y se vuelve a la ventana principal.</para>
+</listitem>
+<listitem><para>Haga clic en el botón <guibutton>Recargar</guibutton> para ver la lista actualizada de paquetes.</para>
+</listitem>
+</orderedlist>
+</sect1>
+<sect1 id="ghmxy"><title>Buscar un paquete</title>
+<para>Escriba el nombre del paquete que quiera buscar en el cuadro <guilabel>Buscar</guilabel>.</para>
+<para>Están disponibles los parámetros siguientes:</para>
+<itemizedlist><listitem><para><emphasis role="strong">Nombre, Descripción o Palabra clave</emphasis> –</para>
+</listitem>
+<listitem><para><emphasis role="strong">Mantenedor</emphasis> –</para>
+</listitem>
+<listitem><para><emphasis role="strong">Dependencias</emphasis> –</para>
+</listitem>
+<listitem><para><emphasis role="strong">Comandos</emphasis> –</para>
+</listitem>
+</itemizedlist>
+<para>Use los submenús del menú <guimenu>Editar</guimenu> para cortar, copiar, pegar o borrar texto en la ficha Buscar.</para>
+</sect1>
+<sect1 id="ghmzc"><title>Actualizar un paquete</title>
+<para>Busque el icono de color verde junto al nombre del paquete instalado. Este icono indica que hay actualizaciones disponibles para el paquete en el depósito seleccionado. Seleccione el paquete y haga clic en el botón <guibutton>Instalar/Actualizar</guibutton> para instalar la versión más reciente del paquete.</para>
+</sect1>
+<sect1 id="ghmym"><title>Cambiar entre depósitos configurados</title>
+<para>Use el menú desplegable <guilabel>Depósitos</guilabel> de la barra de herramientas para ver una lista de depósitos configurados. Haga clic en un nombre de depósito para cambiar a otro.</para>
+</sect1>
+<sect1 id="ghmyp"><title>Actualizar la imagen actual (Actualizar todos los paquetes)</title>
+<para>Para actualizar toda la imagen, realice los pasos siguientes:</para>
+<orderedlist><listitem><para>Haga clic en <guimenu>Archivo</guimenu><guimenuitem>Actualizar todo</guimenuitem> o en el botón <guilabel>Actualizar todo</guilabel> para iniciar el proceso de actualizar <emphasis role="strong">todos</emphasis> los paquetes de la imagen.</para>
+<note><para>El botón <guilabel>Actualizar todo</guilabel> se habilita si hay actualizaciones para los paquetes instalados.</para>
+</note>
+</listitem>
+<listitem><para>Aparece el cuadro de diálogo <guilabel>Confirmación de Actualizar todo</guilabel>.</para>
+<para>Durante el proceso de <emphasis>Actualizar todo</emphasis>, se crea un clónico del entorno de arranque que permite <emphasis>invertir</emphasis> el sistema al entorno de arranque actual si el proceso Actualizar todo no llega a completarse o si daña el sistema.</para>
+</listitem>
+<listitem><para>Especifique un nombre para el nuevo entorno de arranque clónico que se creará.</para>
+<note><para>Se recomienda asignar al clónico del entorno de arranque un nombre fácil de asociar. Por ejemplo, <emphasis>OpenSolaris_11/15/08</emphasis>, denota claramente que el entorno de arranque se trata de un clónico del sistema operativo OpenSolaris y se creó el <literal>11/15/08</literal>.</para>
+</note>
+</listitem>
+<listitem><para>Haga clic en <guibutton>Continuar</guibutton> para proseguir el proceso <emphasis>Actualizar todo </emphasis>.</para>
+<para>Haga clic en <guibutton>Cancelar</guibutton> para cancelar el proceso. No se efectúan cambios en el entorno de arranque y se vuelve a la ventana principal de <application>Package Manager</application>.</para>
+</listitem>
+</orderedlist>
+<sect2 id="ghmyd"><title>Errores del proceso Actualizar todo</title>
+<para>Se <emphasis role="strong">debe</emphasis> crear un clónico del entorno de arranque del proceso Actualizar todo que va a completarse. Se muestra un mensaje de error si no se puede crear un clónico del entorno de arranque. Puede ver el siguiente cuadro de diálogo del mensaje de error:</para>
+<para><literal>No hay suficiente espacio en disco: la acción Actualizar todo no se puede realizar. Puede volver a la administración de entornos de arranque para administrar los entornos y liberar espacio en el disco</literal>.</para>
+<para>Efectúe los pasos siguientes si desea rectificar el error y continuar con el proceso Actualizar todo:</para>
+<orderedlist><listitem><para>Haga clic en el botón <guibutton>Administración de entornos de arranque</guibutton> para acceder al cuadro de diálogo Administración de entornos de arranque.</para>
+</listitem>
+<listitem><para>Siga los pasos que se indican en <xref linkend="ghlik"/> para eliminar los entornos de arranque antiguos o sin usar, y liberar espacio en disco.</para>
+</listitem>
+<listitem><para>Después de rearrancar el sistema, haga clic en el icono <guilabel>Actualizar todo</guilabel> para reiniciar el proceso de actualizar todos los paquetes.</para>
+</listitem>
+</orderedlist>
+</sect2>
+</sect1>
+<sect1 id="ghmya"><title>Administrar entornos de arranque</title>
+<para>En OpenSolaris, un entorno de arranque consiste en una instancia de un entorno de arranque de OpenSolaris que se puede arrancar. El entorno de arranque se compone de un sistema de archivos root y, de forma opcional, otros sistemas de archivos como <filename>/usr</filename>, <filename>/var</filename> o <filename>/export</filename>. Estos otros sistemas de archivos se montan por debajo del sistema de archivos root. El sistema de archivos root y todos los demás sistemas de archivos del entorno de arranque que contienen software del sistema deben ser conjuntos de datos de zfs.</para>
+<para>Un entorno de arranque activo es el que está arrancado actualmente. Sólo se puede arrancar un entorno de arranque activo. Un entorno de arranque inactivo no está arrancado actualmente, pero puede estar en estado de espera para activarse en el próximo arranque.</para>
+<para>Vincular con sección Guía de inicio de entornos de arranque</para>
+<para>Para administrar los entornos de arranque, realice los pasos siguientes:</para>
+<orderedlist><listitem><para>Haga clic en <guimenu>Archivo</guimenu><guimenuitem>Administración de entornos de arranque</guimenuitem>.</para>
+</listitem>
+<listitem><para>Se muestra el cuadro de diálogo <guilabel>Administración de entornos de arranque</guilabel>.  En él puede efectuar las acciones siguientes:</para>
+<variablelist><varlistentry><term><emphasis role="strong">Cambiar el entorno de arranque predeterminado.</emphasis></term>
+<listitem><para>Marque el botón de selección junto al entorno de arranque que desea arrancar cuando rearranque el sistema. Es el entorno de arranque predeterminado.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><emphasis role="strong">Eliminar entornos de arranque antiguos o sin utilizar para liberar espacio en disco.</emphasis></term>
+<listitem><para>Marque la casilla de verificación junto al entorno de arranque que desea eliminar.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</listitem>
+<listitem><para>Haga clic en el botón <guibutton>Aceptar</guibutton> para continuar.</para>
+<para>Haga clic en <guibutton>Restablecer</guibutton> para invertir los cambios al estado de apertura.</para>
+<para>Haga clic en el botón <guibutton>Cancelar</guibutton> para cancelar todos los cambios y volver a la ventana principal.</para>
+</listitem>
+<listitem><para>Si hace clic en Aceptar, aparece el cuadro de diálogo de confirmación de administración de entornos de arranque. Examine los cambios en el entorno de arranque y haga clic en <guibutton>Aceptar</guibutton> para continuar.</para>
+<note><para>Los cambios efectuados sólo surtirán efecto después de rearrancar el sistema.</para>
+</note>
+<para>Haga clic en el botón <guibutton>Cancelar</guibutton> para cancelar los cambios y volver al cuadro de diálogo Administración de entornos de arranque.</para>
+</listitem>
+<listitem><para>Rearranque el sistema.</para>
+</listitem>
+</orderedlist>
+</sect1>
+<sect1 id="ghmzn"><title>Editar depósitos</title>
+<para>Para agregar, eliminar o configurar depósitos, realice los pasos siguientes:</para>
+<orderedlist><listitem><para>Haga clic en <guimenu>Configuración</guimenu><guimenuitem>Editar depósitos</guimenuitem>.</para>
+</listitem>
+<listitem><para>Se muestra el cuadro de diálogo <literal>Administrar depósitos</literal>. En este cuadro de diálogo se pueden realizar las acciones siguientes:</para>
+<orderedlist><listitem><para><emphasis role="strong">Agregar un depósito</emphasis>: para agregar un depósito, indique el nombre y la dirección (URL) del depósito. Haga clic en <guibutton>Agregar</guibutton>.</para>
+</listitem>
+<listitem><para><emphasis role="strong">Eliminar un depósito</emphasis>: para eliminar un depósito, en la lista haga clic en un nombre de depósito para seleccionarlo y haga clic en el botón <guibutton>Eliminar</guibutton>.</para>
+<note><para>No se puede eliminar un depósito designado como preferido. Para eliminar un depósito preferido, establezca como tal uno que no lo sea y elimine el depósito.</para>
+</note>
+</listitem>
+<listitem><para><emphasis role="strong">Establecer un depósito preferido</emphasis></para>
+<para>Un depósito preferido es el depósito predeterminado en el que se descarga el origen de los paquetes.</para>
+<para>Para establecer como preferido un depósito, haga clic en el botón de selección junto al depósito que desea establecer como preferido. Haga clic en <guibutton>Cerrar</guibutton> si no efectúa más cambios en la información del depósito.</para>
+</listitem>
+<listitem><para><emphasis role="strong">Modificar un depósito</emphasis>: para modificar un depósito, realice los siguientes pasos:</para>
+<orderedlist><listitem><para>Seleccione el depósito que desea modificar.</para>
+</listitem>
+<listitem><para>Haga clic en el botón <guibutton>Modificar</guibutton>. Aparece el cuadro de diálogo <literal>Modificar depósito</literal>.</para>
+</listitem>
+<listitem><para>Especifique un nombre válido y la dirección URL del depósito. Se considera válido el nombre si no figura en la lista vigente de depósitos.</para>
+</listitem>
+<listitem><para>Haga clic en <guibutton>Aceptar</guibutton> para guardar los cambios y volver al cuadro de diálogo <literal>Administrar depósitos</literal>.</para>
+<para>Haga clic en <guibutton>Cancelar</guibutton> para cancelar los cambios. Se vuelve al cuadro de diálogo <literal>Administrar depósitos</literal>.</para>
+</listitem>
+</orderedlist>
+</listitem>
+</orderedlist>
+</listitem>
+</orderedlist>
+</sect1>
+</chapter>
+</book>
