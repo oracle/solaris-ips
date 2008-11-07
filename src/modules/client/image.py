@@ -1120,6 +1120,8 @@ class Image(object):
                 except EnvironmentError, e:
                         if e.errno == errno.EEXIST:
                                 return
+                        elif e.errno == errno.EACCES:
+                                raise api_errors.PermissionsException(e.filename)
                         elif e.errno != errno.ENOENT:
                                 raise
 

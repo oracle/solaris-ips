@@ -40,9 +40,11 @@ from pkg.misc import retryable_socket_errors
 
 class CatalogRetrievalError(Exception):
         """Used when catalog retrieval fails"""
-        def __init__(self, data):
+        def __init__(self, data, exc=None, auth=None):
                 Exception.__init__(self)
                 self.data = data
+                self.exc = exc
+                self.auth = auth
 
         def __str__(self):
                 return str(self.data)
@@ -115,7 +117,7 @@ def get_catalog(img, auth, hdr, ts):
         except Exception, e:
                 raise CatalogRetrievalError("Could not retrieve catalog "
                     "from '%s'\nException: str:%s repr:%r" % (prefix,
-                    e, e))
+                    e, e), e, prefix)
 
         # root for this catalog
         croot = "%s/catalog/%s" % (img.imgdir, prefix)
@@ -138,7 +140,7 @@ def get_catalog(img, auth, hdr, ts):
         except EnvironmentError, e:
                 raise CatalogRetrievalError("Could not retrieve catalog "
                     "from '%s'\nException: str:%s repr:%r" % (prefix,
-                    e, e))
+                    e, e), e, prefix)
  
         return True
 

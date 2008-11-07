@@ -1,3 +1,9 @@
+Version 5:
+Compatible with clients using versions 1-4 as long as they have a generic
+APIException. This is the case for PackageManager and UpdateManaget.
+Changes:
+plan_install and plan_update_all can now raise PermissionsException.
+
 Version 4:
 Compatible with clients using versions 1, 2, and 3
 Changes:

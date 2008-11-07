@@ -33,7 +33,7 @@ from pkg.client.imageplan import EXECUTED_OK
 
 import threading
 
-CURRENT_API_VERSION = 4
+CURRENT_API_VERSION = 5
                 
 class ImageInterface(object):
         """This class presents an interface to images that clients may use.
@@ -68,7 +68,7 @@ class ImageInterface(object):
                 canceled changes. It can raise VersionException and
                 ImageNotFoundException."""
                 
-                compatible_versions = set([1, 2, 3, 4])
+                compatible_versions = set([1, 2, 3, 4, 5])
                 
                 if version_id not in compatible_versions:
                         raise api_errors.VersionException(CURRENT_API_VERSION,
@@ -105,10 +105,10 @@ class ImageInterface(object):
                 whether there is anything to do. The third is either None, or an
                 exception which indicates partial success. It can raise
                 InvalidCertException, PlanCreationException,
-                NetworkUnavailableException, and InventoryException. The
-                noexecute argument is included for compatibility with
-                operational history. The hope is it can be removed in the
-                future."""
+                NetworkUnavailableException, PermissionsException and
+                InventoryException. The noexecute argument is included for
+                compatibility with operational history. The hope is it can be
+                removed in the future."""
 
                 self.__activity_lock.acquire()
                 try:
@@ -273,8 +273,8 @@ class ImageInterface(object):
                 either None, or an exception which indicates partial success.
                 This is currently used to indicate a failure in refreshing
                 catalogs. It can raise CatalogRefreshException,
-                IpkgOutOfDateException, NetworkUnavailableException, and
-                PlanCreationException."""
+                IpkgOutOfDateException, NetworkUnavailableException,
+                PlanCreationException and PermissionsException."""
 
                 self.__activity_lock.acquire()
                 try:

@@ -55,6 +55,7 @@ import urlparse
 import datetime
 import time
 import calendar
+import errno
 
 import OpenSSL.crypto
 
@@ -83,9 +84,10 @@ from pkg.client.history import RESULT_FAILED_SEARCH
 from pkg.client.history import RESULT_FAILED_STORAGE
 from pkg.client.retrieve import ManifestRetrievalError
 from pkg.client.retrieve import DatastreamRetrievalError
+from pkg.client.retrieve import CatalogRetrievalError
 from pkg.client.filelist import FileListRetrievalError
 
-CLIENT_API_VERSION = 4
+CLIENT_API_VERSION = 5
 PKG_CLIENT_NAME = "pkg"
 
 def error(text):
@@ -568,7 +570,8 @@ def image_update(img_dir, args):
                         raise RuntimeError("Catalog refresh failed during"
                             " image-update.")
         except (api_errors.PlanCreationException,
-            api_errors.NetworkUnavailableException), e:
+            api_errors.NetworkUnavailableException,
+            api_errors.PermissionsException), e:
                 # Prepend a newline because otherwise the exception will
                 # be printed on the same line as the spinner.
                 msg("\n" + str(e))
@@ -716,7 +719,8 @@ def install(img_dir, args):
         except api_errors.InvalidCertException:
                 return 1
         except (api_errors.PlanCreationException,
-            api_errors.NetworkUnavailableException), e:
+            api_errors.NetworkUnavailableException,
+            api_errors.PermissionsException), e:
                 # Prepend a newline because otherwise the exception will
                 # be printed on the same line as the spinner.
                 msg("\n" + str(e))
@@ -1408,6 +1412,20 @@ def display_catalog_failures(cre):
                                 else:
                                         emsg("    %s: %s" % \
                                             (auth["origin"], err.args[0][1]))
+                elif isinstance(err, CatalogRetrievalError) and \
+                    isinstance(err.exc, EnvironmentError) and \
+                    err.exc.errno == errno.EACCES:
+                        if err.auth:
+                                emsg("   ", _("Could not update catalog "
+                                     "for '%s' due to insufficient "
+                                     "permissions.") % err.auth)
+                        else:
+                                emsg("   ", _("Could not update a catalog "
+                                     "due to insufficient permissions."))
+
+                        emsg("   ", _("Please try the command again "
+                        "using pfexec, or otherwise increase \n    your "
+                        "permissions."))
                 else:
                         emsg("   ", err)
 

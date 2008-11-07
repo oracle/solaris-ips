@@ -89,6 +89,22 @@ class UnrecognizedAuthorityException(ApiException):
 class NoPackagesInstalledException(ApiException):
         pass
 
+class PermissionsException(ApiException):
+        def __init__(self, path):
+                ApiException.__init__(self)
+                self.path = path
+
+        def __str__(self):
+                if self.path:
+                        return _("Could not operate on %s because\nof insufficient "
+                                "permissions. Please try the command again using pfexec "
+                                "or\notherwise increase your permissions.") % self.path
+                else:
+                        return _("""
+Could not complete the operation because of insufficient permissions. Please
+try the command again using pfexec or otherwise increase your permissions.
+""")
+
 class PlanCreationException(ApiException):
         def __init__(self, unfound_fmris, multiple_matches,
             missing_matches, illegal, constraint_violations=None):
