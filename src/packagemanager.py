@@ -1438,6 +1438,11 @@ class PackageManager:
                         # We are not refrehsing specific authority
                         self.__catalog_refresh_done()
                         raise
+                except api_errors.PermissionsException, pe:
+                        #Error will already have been reported in 
+                        #Manage Repository dialog
+                        self.__catalog_refresh_done()
+                        return -1
                 except api_errors.CatalogRefreshException, cre:
                         total = cre.total
                         succeeded = cre.succeeded
@@ -1464,13 +1469,14 @@ class PackageManager:
                                                         ermsg += "    %s: %s\n" % \
                                                             (auth["origin"], \
                                                             err.args[0][1])
-                                elif err.data:
+                                elif "data" in err.__dict__ and err.data:
                                         ermsg += err.data
                                 else:
                                         ermsg += self._("Unknown error")
                                         ermsg += "\n"
 
-                        gobject.idle_add(self.error_occured, ermsg)
+                        gobject.idle_add(self.error_occured, ermsg, \
+                            None, gtk.MESSAGE_INFO)
                         self.__catalog_refresh_done()
                         return -1
 

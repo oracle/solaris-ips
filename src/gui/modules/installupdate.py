@@ -39,6 +39,9 @@ except ImportError:
         sys.exit(1)
 import pkg.client.progress as progress
 import pkg.misc
+from pkg.client.retrieve import ManifestRetrievalError
+from pkg.client.retrieve import DatastreamRetrievalError
+from pkg.client.filelist import FileListRetrievalError
 import pkg.client.api as api
 import pkg.client.api_errors as api_errors
 from pkg.misc import TransferTimedOutException, TransportException
@@ -329,11 +332,12 @@ class InstallUpdate(progress.ProgressTracker):
                         except api_errors.InvalidCertException:
                                 self.progress_stop_timer_thread = True
                                 gobject.idle_add(self.w_createplan_dialog.hide)
-                                msg = self.parent._("Invalid repository certificate." \
-                                    "\nYou can not install packages from the" \
-                                    "\nrepopsitory, which doesn't have" \
-                                    "\nappropriate certificate.")
-                                gobject.idle_add(self.parent.error_occured, msg)
+                                msg = self.parent._("Accessing this restricted repository failed." \
+                                    "\nYou either need to register to access this repository," \
+                                    "\nthe certificate expired, or you need to accept the repository" \
+                                    "\ncertificate.")
+                                gobject.idle_add(self.parent.error_occured, msg, \
+                                    None, gtk.MESSAGE_INFO)
                                 return
                         except api_errors.PlanCreationException, e:
                                 self.progress_stop_timer_thread = True
@@ -361,7 +365,8 @@ class InstallUpdate(progress.ProgressTracker):
                                 gobject.idle_add(self.w_createplan_dialog.hide)
                                 msg = self.parent._("Please check the network " \
                                     "connection.\nIs the repository accessible?")
-                                gobject.idle_add(self.parent.error_occured, msg)
+                                gobject.idle_add(self.parent.error_occured, msg, \
+                                    None, gtk.MESSAGE_INFO)
                                 return
 
                 elif self.action == enumerations.REMOVE:
@@ -406,9 +411,10 @@ class InstallUpdate(progress.ProgressTracker):
                         except api_errors.CatalogRefreshException:
                                 self.progress_stop_timer_thread = True
                                 gobject.idle_add(self.w_createplan_dialog.hide)
-                                msg = self.parent._("Update All failed during " \
-                                    "catalog refresh\n")
-                                gobject.idle_add(self.parent.error_occured, msg)
+                                msg = self.parent._("Please check the network " \
+                                    "connection.\nIs the repository accessible?")
+                                gobject.idle_add(self.parent.error_occured, msg, \
+                                    None, gtk.MESSAGE_INFO)
                                 return
                         except api_errors.IpkgOutOfDateException:
                                 self.progress_stop_timer_thread = True
@@ -416,7 +422,8 @@ class InstallUpdate(progress.ProgressTracker):
                                 msg = self.parent._("pkg(5) appears to be out of " \
                                     "date and should be\n updated before running " \
                                     "Update All.\nPlease update SUNWipkg package")
-                                gobject.idle_add(self.parent.error_occured, msg)
+                                gobject.idle_add(self.parent.error_occured, msg, \
+                                    None, gtk.MESSAGE_INFO)
                                 return
                         except api_errors.PlanCreationException, e:
                                 self.progress_stop_timer_thread = True
@@ -436,7 +443,8 @@ class InstallUpdate(progress.ProgressTracker):
                                 gobject.idle_add(self.w_createplan_dialog.hide)
                                 msg = self.parent._("Please check the network " \
                                     "connection.\nIs the repository accessible?")
-                                gobject.idle_add(self.parent.error_occured, msg)
+                                gobject.idle_add(self.parent.error_occured, msg, \
+                                    None, gtk.MESSAGE_INFO)
                                 return
                 if stuff_to_do:
                         gobject.idle_add(self.__afterplan_confirmation_dialog, self.api_o)
@@ -446,7 +454,8 @@ class InstallUpdate(progress.ProgressTracker):
                         msg = self.parent._("Selected packages for update can\n" \
                             "only be updated using Update All.")
                         title = self.parent._("Unable to update")
-                        gobject.idle_add(self.parent.error_occured, msg, title)
+                        gobject.idle_add(self.parent.error_occured, msg, title, \
+                            gtk.MESSAGE_INFO)
                 else:
                         self.progress_stop_timer_thread = True
                         gobject.idle_add(self.w_createplan_dialog.hide)
@@ -461,7 +470,8 @@ class InstallUpdate(progress.ProgressTracker):
                         self.__prepare_stage(api_o)
                 except (Exception), uex:
                         gobject.idle_add(self.w_downloadingfiles_dialog.hide)
-                        if uex.args[0] == errno.EDQUOT or uex.args[0] == errno.ENOSPC:
+                        if uex.args and \
+                            (uex.args[0] == errno.EDQUOT or uex.args[0] == errno.ENOSPC):
                                 gobject.idle_add(self.__prompt_to_load_beadm)
                                 return
                         else:
@@ -482,13 +492,18 @@ class InstallUpdate(progress.ProgressTracker):
                 gobject.idle_add(self.__add_info_to_downloadtext, text)
                 try:
                         api_o.prepare()
-                except (api_errors.ProblematicPermissionsIndexException, \
-                    api_errors.PlanMissingException):
+                except api_errors.ProblematicPermissionsIndexException:
                         gobject.idle_add(self.w_downloadingfiles_dialog.hide)
                         msg = self.parent._("An error occured while " \
-                            "downloading the files\nPlease check your permissions and" \
-                            "\nnetwork connection.")
+                            "downloading the files\nPlease check your permissions.")
                         gobject.idle_add(self.parent.error_occured, msg)
+                        return
+                except api_errors.PlanMissingException, e:
+                        gobject.idle_add(self.w_downloadingfiles_dialog.hide)
+                        err_msg = self.parent._("Download failure.")
+                        err_text = str(e)
+                        gobject.idle_add(self.__error_with_details, \
+                            err_msg, err_text)
                         return
                 except api_errors.CanceledException:
                         gobject.idle_add(self.w_downloadingfiles_dialog.hide)
@@ -497,7 +512,8 @@ class InstallUpdate(progress.ProgressTracker):
                         gobject.idle_add(self.w_downloadingfiles_dialog.hide)
                         gobject.idle_add(self.w_networkdown_dialog.show)
                         return
-                except URLError:
+                except (URLError, ManifestRetrievalError, \
+                    DatastreamRetrievalError, FileListRetrievalError):
                         gobject.idle_add(self.w_downloadingfiles_dialog.hide)
                         gobject.idle_add(self.w_networkdown_dialog.show)
                         return

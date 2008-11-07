@@ -90,6 +90,9 @@ class Repository:
                 self.w_repositorymodify_cancel_button = \
                         w_tree_repositorymodify.get_widget("repositorymodifycancel")
 
+                #Modify name of the repository is disabled, see #4990
+                self.w_repositorymodify_name.set_sensitive(False)
+
                 self.w_repository_url.connect('focus-in-event', self.on_focus_in)
                 self.w_repository_name.connect('focus-in-event', self.on_focus_in)
                 self.w_repository_add_button.connect('focus-in-event', self.on_focus_in)
@@ -220,11 +223,12 @@ class Repository:
                                         for row in model:
                                                 row[1] = False
                                         model.set_value(itr, 1, not preferred)
-                                except RuntimeError:
+                                except api_errors.PermissionsException:
                                         err = self.parent._("Couldn't change" \
-                                            " the preffered authority.\n" \
+                                            " the preferred authority.\n" \
                                             "Please check your permissions.")
-                                        self.__error_occured(err) 
+                                        self.__error_occured(err,  \
+                                            msg_type=gtk.MESSAGE_INFO) 
                                         self.__prepare_repository_list()
 
         def __progress_pulse(self):
@@ -342,6 +346,7 @@ class Repository:
         def __update_repository(self, name, url):
                 url_same = True
                 name_same = True
+                strt = self.parent._
                 if name != self.old_modify_name:
                         name_same = False
                 if url != self.old_modify_url:
@@ -349,8 +354,10 @@ class Repository:
                 if url_same and name_same:
                         self.progress_stop_thread = True
                         return
+                #we don't enable changing the name of the repository
+                #so this part of the code should be skipped in the current
+                #implementation.
                 if not name_same:
-                        strt = self.parent._
                         omn = self.old_modify_name
                         if not self.__is_name_valid(name):
                                 self.progress_stop_thread = True
@@ -362,14 +369,15 @@ class Repository:
                                 return
                         try:
                                 self.__delete_repository(self.old_modify_name, False)
-                        except RuntimeError, ex:
-                                if "Permission denied" in str(ex):
+                        except api_errors.PermissionsException:
                                         # Do nothing
                                         err = strt("Failed to modify %s." % omn + \
                                             "\nPlease check your permissions.")
-                                        self.__error_with_reset_repo_selection(err)
+                                        self.__error_with_reset_repo_selection(err, \
+                                            gtk.MESSAGE_INFO)
                                         return
-                                elif "no defined authorities" in str(ex):
+                        except RuntimeError, ex:
+                                if "no defined authorities" in str(ex):
                                         pass
                                 else:
                                         err = str(ex)
@@ -380,16 +388,19 @@ class Repository:
                         if self.old_modify_preferred:
                                 self.img.set_preferred_authority(name)
                                 self.__prepare_repository_list(False)
-                except RuntimeError, ex:
+                except api_errors.PermissionsException:
                         # Do nothing
                         somn = self.old_modify_name
-                        if "Permission denied" in str(ex):
-                                # Do nothing
-                                err = strt("Failed to modify %s." % somn + \
-                                    "\nPlease check your permissions.")
-                                self.__error_with_reset_repo_selection(err)
-                                return
-                        elif "no defined authorities" in str(ex):
+                        err = strt("Failed to modify %s." % somn + \
+                            "\nPlease check your permissions.")
+                        self.__error_with_reset_repo_selection(err, \
+                            gtk.MESSAGE_INFO)
+                        return
+                except RuntimeError, ex:
+                        #The "no defined authorities" should never happen
+                        #Because we skipped removal of repository during name
+                        #change as we disabled name changing.
+                        if "no defined authorities" in str(ex):
                                 pass
                         else:
                                 err = str(ex)
@@ -405,11 +416,16 @@ class Repository:
                                 err = self.parent._("Failed to modify %s.") % somn + \
                                 self.parent._("\nPlease check the network connection or URL.\n" \
                                 "Is the repository accessible?")
-                                gobject.idle_add(self.__error_occured, err)
+                                gobject.idle_add(self.__error_occured, err, gtk.MESSAGE_INFO)
                         except api_errors.CatalogRefreshException:
-                                # We are restoring the original repo, so silently...
-                                self.progress_stop_thread = True
-                                return
+                                #We need to show at least one warning dialog
+                                #This is for repository which didn't existed and was modified
+                                #To not existed repository
+                                somn = self.old_modify_name
+                                err = self.parent._("Failed to modify %s.") % somn + \
+                                self.parent._("\nPlease check the network connection or URL.\n" \
+                                "Is the repository accessible?")
+                                gobject.idle_add(self.__error_occured, err, gtk.MESSAGE_INFO)
                 self.progress_stop_thread = True
                 return
 
@@ -444,35 +460,52 @@ class Repository:
                             refresh_allowed=refresh_catalogs)
                         self.__prepare_repository_list(silent, \
                             auth, stop_thread=stop_thread)
-                except RuntimeError:
+                except RuntimeError, ex:
+                        if not silent:
+                                raise
+                        err = (self.parent._("Failed to add %s.") % auth)
+                        err += str(ex)
+                        self.__error_with_reset_repo_selection(err)
+                        return
+                except api_errors.PermissionsException:
                         if not silent:
                                 raise
                         err = (self.parent._("Failed to add %s.") % auth) + \
                         self.parent._("\nPlease check your permissions.")
-                        self.__error_with_reset_repo_selection(err)
+                        self.__error_with_reset_repo_selection(err, \
+                            gtk.MESSAGE_INFO)
                 except api_errors.CatalogRefreshException:
                         if not silent:
                                 raise
                         self.__delete_repository(auth)
                         err = self.parent._("Failed to add %s.") % auth + \
                         self.parent._("\nPlease check the network connection or URL.\nIs the " \
-                        "repository accessible?")
-                        self.__error_with_reset_repo_selection(err)
+                            "repository accessible?")
+                        self.__error_with_reset_repo_selection(err, gtk.MESSAGE_INFO)
 
         def __delete_repository(self, name, silent=True):
                 try:
                         self.img.delete_authority(name)
                         self.__prepare_repository_list(clear_add_entries = False, \
                             stop_thread = silent)
-                except RuntimeError:
+                except RuntimeError, ex:
+                        if not silent:
+                                raise
+                        err = (self.parent._("Failed to delete %s.") % name)
+                        err += str(ex)
+                        self.__error_with_reset_repo_selection(err)
+                        return
+                except api_errors.PermissionsException:
                         if not silent:
                                 raise
                         err = (self.parent._("Failed to delete %s.") % name) + \
                         self.parent._("\nPlease check your permissions.")
-                        self.__error_with_reset_repo_selection(err)
+                        self.__error_with_reset_repo_selection(err, \
+                            gtk.MESSAGE_INFO)
 
-        def __error_with_reset_repo_selection(self, error_msg):
-                gobject.idle_add(self.__error_occured, error_msg)
+        def __error_with_reset_repo_selection(self, error_msg, \
+            msg_type=gtk.MESSAGE_ERROR):
+                gobject.idle_add(self.__error_occured, error_msg, msg_type)
                 self.__reset_repo_selection()
 
         def __reset_repo_selection(self):
@@ -483,12 +516,12 @@ class Repository:
                         sel = model.get_value(ite, 0)
                 self.__prepare_repository_list(False, sel)
 
-        def __error_occured(self, error_msg):
+        def __error_occured(self, error_msg, msg_type=gtk.MESSAGE_ERROR):
                 msgbox = gtk.MessageDialog(parent = \
                     self.w_repository_dialog, \
                     buttons = gtk.BUTTONS_CLOSE, \
                     flags = gtk.DIALOG_MODAL, \
-                    type = gtk.MESSAGE_ERROR, \
+                    type = msg_type, \
                     message_format = None)
                 msgbox.set_markup(error_msg)
                 msgbox.set_title("Edit Repositories error")
