@@ -50,6 +50,8 @@ class Pkg5TestCase(unittest.TestCase):
         # Needed for compatability
         failureException = AssertionError
 
+        bogus_url = "test.invalid"
+
         def __init__(self, methodName='runTest'):
                 super(Pkg5TestCase, self).__init__(methodName)
                 self.__testMethodName = methodName

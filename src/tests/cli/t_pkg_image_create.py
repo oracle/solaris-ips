@@ -131,16 +131,19 @@ class TestImageCreateNoDepot(testutils.CliTestCase):
                 """More tests that abuse the authority prefix and URL."""
 
                 self.assertRaises(testutils.UnexpectedExitCodeException, \
-                    self.pkg, "image-create -a $%^8=http://test1")
+                    self.pkg, "image-create -a $%^8" + ("=http://%s1" %
+                    self.bogus_url))
 
                 self.assertRaises(testutils.UnexpectedExitCodeException, \
                     self.pkg, "image-create -a test1=http://$%^8")
 
                 self.assertRaises(testutils.UnexpectedExitCodeException, \
-                    self.pkg, "image-create -a test1=http://test1:abcde")
+                    self.pkg, "image-create -a test1=http://%s1:abcde" %
+                    self.bogus_url)
 
                 self.assertRaises(testutils.UnexpectedExitCodeException, \
-                    self.pkg, "image-create -a test1=ftp://test1")
+                    self.pkg, "image-create -a test1=ftp://%s1" %
+                    self.bogus_url)
 
 if __name__ == "__main__":
         unittest.main()
@@ -185,16 +188,19 @@ class TestPkgImageCreateNoDepot(testutils.CliTestCase):
                 """More tests that abuse the authority prefix and URL."""
 
                 self.assertRaises(testutils.UnexpectedExitCodeException, \
-                    self.pkg, "image-create -a $%^8=http://test1")
+                    self.pkg, "image-create -a $%^8" + ("=http://%s1" %
+                    self.bogus_url))
 
                 self.assertRaises(testutils.UnexpectedExitCodeException, \
                     self.pkg, "image-create -a test1=http://$%^8")
 
                 self.assertRaises(testutils.UnexpectedExitCodeException, \
-                    self.pkg, "image-create -a test1=http://test1:abcde")
+                    self.pkg, "image-create -a test1=http://%s1:abcde" %
+                    self.bogus_url)
 
                 self.assertRaises(testutils.UnexpectedExitCodeException, \
-                    self.pkg, "image-create -a test1=ftp://test1")
+                    self.pkg, "image-create -a test1=ftp://%s1" %
+                    self.bogus_url)
 
 if __name__ == "__main__":
         unittest.main()

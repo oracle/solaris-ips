@@ -53,11 +53,15 @@ class TestPkgAuthorityBasics(testutils.SingleDepotTestCase):
                 durl = self.dc.get_depot_url()
                 self.image_create(durl)
 
-                self.pkg("set-authority -O http://test1 test1", exit=1)
-                self.pkg("set-authority --no-refresh -O http://test1 test1")
+                self.pkg("set-authority -O http://%s1 test1" % self.bogus_url,
+                    exit=1)
+                self.pkg("set-authority --no-refresh -O http://%s1 test1" %
+                    self.bogus_url)
                 self.pkg("authority | grep test")
-                self.pkg("set-authority -P -O http://test2 test2", exit=1)
-                self.pkg("set-authority -P --no-refresh -O http://test2 test2")
+                self.pkg("set-authority -P -O http://%s2 test2" %
+                    self.bogus_url, exit=1)
+                self.pkg("set-authority -P --no-refresh -O http://%s2 test2" %
+                    self.bogus_url)
                 self.pkg("authority | grep test2")
                 self.pkg("unset-authority test1")
                 self.pkg("authority | grep test1", exit=1)
@@ -67,7 +71,8 @@ class TestPkgAuthorityBasics(testutils.SingleDepotTestCase):
                 """pkg: set the uuid for an authority"""
                 durl = self.dc.get_depot_url()
                 self.image_create(durl)
-                self.pkg("set-authority -O http://test1 --no-refresh --reset-uuid test1")
+                self.pkg("set-authority -O http://%s1 --no-refresh --reset-uuid test1" %
+                    self.bogus_url)
                 self.pkg("set-authority --no-refresh --reset-uuid test1")
 
         def test_authority_bad_opts(self):
@@ -79,13 +84,17 @@ class TestPkgAuthorityBasics(testutils.SingleDepotTestCase):
                 cert_fh, cert_path = tempfile.mkstemp()
 
                 self.pkg(
-                    "set-authority -O http://test1 test1 -O http://test2 test2",
-                     exit=2)
+                    "set-authority -O http://%s1 test1 -O http://%s2 test2" %
+                    (self.bogus_url, self.bogus_url), exit=2)
 
-                self.pkg("set-authority -O http://test1 test1", exit=1)
-                self.pkg("set-authority -O http://test2 test2", exit=1)
-                self.pkg("set-authority --no-refresh -O http://test1 test1")
-                self.pkg("set-authority --no-refresh -O http://test2 test2")
+                self.pkg("set-authority -O http://%s1 test1" % self.bogus_url,
+                    exit=1)
+                self.pkg("set-authority -O http://%s2 test2" % self.bogus_url,
+                    exit=1)
+                self.pkg("set-authority --no-refresh -O http://%s1 test1" %
+                    self.bogus_url)
+                self.pkg("set-authority --no-refresh -O http://%s2 test2" %
+                    self.bogus_url)
 
                 self.pkg("set-authority -k %s test1" % key_path)
                 os.close(key_fh)
@@ -106,14 +115,20 @@ class TestPkgAuthorityBasics(testutils.SingleDepotTestCase):
                 durl = self.dc.get_depot_url()
                 self.image_create(durl)
 
-                self.pkg("set-authority -O http://test1 test1", exit=1)
-                self.pkg("set-authority --no-refresh -O http://test1 test1")
+                self.pkg("set-authority -O http://%s1 test1" % self.bogus_url,
+                    exit=1)
+                self.pkg("set-authority --no-refresh -O http://%s1 test1" %
+                    self.bogus_url)
 
-                self.pkg("set-authority -O http://test2 $%^8", exit=1)
-                self.pkg("set-authority -O http://test2 8^$%", exit=1)
+                self.pkg(("set-authority -O http://%s2 " % self.bogus_url) +
+                    "$%^8", exit=1)
+                self.pkg(("set-authority -O http://%s2 " % self.bogus_url) +
+                    "8^$%", exit=1)
                 self.pkg("set-authority -O http://*^5$% test2", exit=1)
-                self.pkg("set-authority -O http://test1:abcde test2", exit=1)
-                self.pkg("set-authority -O ftp://test2 test2", exit=1)
+                self.pkg("set-authority -O http://%s1:abcde test2" %
+                    self.bogus_url, exit=1)
+                self.pkg("set-authority -O ftp://%s2 test2" % self.bogus_url,
+                    exit=1)
 
         def test_mirror(self):
                 """Test set-mirror and unset-mirror."""
@@ -121,23 +136,29 @@ class TestPkgAuthorityBasics(testutils.SingleDepotTestCase):
                 pfx = "mtest"
                 self.image_create(durl, prefix = pfx)
 
-                self.pkg("set-authority -m http://test1 mtest")
-                self.pkg("set-authority -m http://test2.test.com mtest")
-                self.pkg("set-authority -m http://test5", exit=2)
+                self.pkg("set-authority -m http://%s1 mtest" % self.bogus_url)
+                self.pkg("set-authority -m http://%s2.test.com mtest" %
+                    self.bogus_url)
+                self.pkg("set-authority -m http://%s5" % self.bogus_url, exit=2)
                 self.pkg("set-authority -m mtest", exit=2)
-                self.pkg("set-authority -m http://test1 mtest", exit=1)
-                self.pkg("set-authority -m http://test5 test", exit=1)
-                self.pkg("set-authority -m test7 mtest", exit=1)
+                self.pkg("set-authority -m http://%s1 mtest" % self.bogus_url,
+                    exit=1)
+                self.pkg("set-authority -m http://%s5 test" % self.bogus_url,
+                    exit=1)
+                self.pkg("set-authority -m %s7 mtest" % self.bogus_url, exit=1)
 
-                self.pkg("set-authority -M http://test1 mtest")
-                self.pkg("set-authority -M http://test2.test.com mtest")
-                self.pkg("set-authority -M mtest http://test2 http://test4",
-                    exit=2)
-                self.pkg("set-authority -M http://test5", exit=2)
+                self.pkg("set-authority -M http://%s1 mtest" % self.bogus_url)
+                self.pkg("set-authority -M http://%s2.test.com mtest" %
+                    self.bogus_url)
+                self.pkg("set-authority -M mtest http://%s2 http://%s4" %
+                    (self.bogus_url, self.bogus_url), exit=2)
+                self.pkg("set-authority -M http://%s5" % self.bogus_url, exit=2)
                 self.pkg("set-authority -M mtest", exit=2)
-                self.pkg("set-authority -M http://test5 test", exit=1)
-                self.pkg("set-authority -M http://test6 mtest", exit=1)
-                self.pkg("set-authority -M test7 mtest", exit=1)
+                self.pkg("set-authority -M http://%s5 test" % self.bogus_url,
+                    exit=1)
+                self.pkg("set-authority -M http://%s6 mtest" % self.bogus_url,
+                    exit=1)
+                self.pkg("set-authority -M %s7 mtest" % self.bogus_url, exit=1)
 
         def test_mirror_longopt(self):
                 """Test set-mirror and unset-mirror."""
@@ -145,26 +166,29 @@ class TestPkgAuthorityBasics(testutils.SingleDepotTestCase):
                 pfx = "mtest"
                 self.image_create(durl, prefix = pfx)
 
-                self.pkg("set-authority --add-mirror=http://test1 mtest")
-                self.pkg("set-authority --add-mirror=http://test2.test.com mtest")
-                self.pkg("set-authority --add-mirror=http://test5", exit=2)
-                self.pkg("set-authority --add-mirror mtest", exit=2)
-                self.pkg("set-authority --add-mirror=http://test1 mtest",
+                self.pkg("set-authority --add-mirror=http://%s1 mtest" % self.bogus_url)
+                self.pkg("set-authority --add-mirror=http://%s2.test.com mtest" %
+                    self.bogus_url)
+                self.pkg("set-authority --add-mirror=http://%s5" % self.bogus_url, exit=2)
+                self.pkg("set-authority --add-mirror=mtest", exit=2)
+                self.pkg("set-authority --add-mirror=http://%s1 mtest" % self.bogus_url,
                     exit=1)
-                self.pkg("set-authority --add-mirror=http://test5 test", exit=1)
-                self.pkg("set-authority --add-mirror=test7 mtest", exit=1)
+                self.pkg("set-authority --add-mirror=http://%s5 test" % self.bogus_url,
+                    exit=1)
+                self.pkg("set-authority --add-mirror=%s7 mtest" % self.bogus_url, exit=1)
 
-                self.pkg("set-authority --remove-mirror=http://test1 mtest")
-                self.pkg("set-authority --remove-mirror=http://test2.test.com mtest")
-                self.pkg("set-authority --remove-mirror=mtest http://test2 http://test4",
-                    exit=2)
-                self.pkg("set-authority --remove-mirror=http://test5", exit=2)
-                self.pkg("set-authority --remove-mirror mtest", exit=2)
-                self.pkg("set-authority --remove-mirror=http://test5 test",
+                self.pkg("set-authority --remove-mirror=http://%s1 mtest" % self.bogus_url)
+                self.pkg("set-authority --remove-mirror=http://%s2.test.com mtest" %
+                    self.bogus_url)
+                self.pkg("set-authority --remove-mirror=mtest http://%s2 http://%s4" %
+                    (self.bogus_url, self.bogus_url), exit=2)
+                self.pkg("set-authority --remove-mirror=http://%s5" % self.bogus_url, exit=2)
+                self.pkg("set-authority --remove-mirror=mtest", exit=2)
+                self.pkg("set-authority --remove-mirror=http://%s5 test" % self.bogus_url,
                     exit=1)
-                self.pkg("set-authority --remove-mirror=http://test6 mtest",
+                self.pkg("set-authority --remove-mirror=http://%s6 mtest" % self.bogus_url,
                     exit=1)
-                self.pkg("set-authority --remove-mirror=test7 mtest", exit=1)
+                self.pkg("set-authority --remove-mirror=%s7 mtest" % self.bogus_url, exit=1)
 
 if __name__ == "__main__":
         unittest.main()
