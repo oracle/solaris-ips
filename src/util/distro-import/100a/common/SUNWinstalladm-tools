@@ -1,4 +1,11 @@
 package SUNWinstalladm-tools
 classification "System/Administration and Configuration"
 import SUNWinstalladm-tools
+depend SUNWapch22
+depend SUNWdhcs
+depend SUNWdsd
+depend SUNWpysqlite
+depend SUNWpython-cherrypy
+depend SUNWsqlite3
+depend SUNWtftp
 end package

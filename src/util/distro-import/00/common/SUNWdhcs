@@ -2,4 +2,5 @@ package SUNWdhcs
 classification "System/Services"
 import SUNWdhcsu
 import SUNWdhcsr
+depend SUNWdhcm
 end package
