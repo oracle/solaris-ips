@@ -23,7 +23,7 @@
 # Use is subject to license terms.
 
 fmri=svc:/application/pkg/update
-image_dir=$(svcprop -p update/image_dir $fmri)
+image_dir=`svcprop -p update/image_dir $fmri`
 
 cd $image_dir
 
