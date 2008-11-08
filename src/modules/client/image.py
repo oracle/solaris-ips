@@ -729,27 +729,26 @@ class Image(object):
 
         def repair(self, repairs, progtrack):
                 """Repair any actions in the fmri that failed a verify."""
+                # XXX: This (lambda x: False) is temporary until we move pkg fix
+                # into the api and can actually use the
+                # api::__check_cancelation() function.
                 pps = []
                 for fmri, actions in repairs:
                         msg("Repairing: %-50s" % fmri.get_pkg_stem())
                         m = self.get_manifest(fmri, filtered=True)
-                        pp = pkgplan.PkgPlan(self, progtrack, False)
+                        pp = pkgplan.PkgPlan(self, progtrack, lambda x: False)
 
                         pp.propose_repair(fmri, m, actions)
                         pp.evaluate()
                         pps.append(pp)
 
-                ip = imageplan.ImagePlan(self, progtrack, False)
+                ip = imageplan.ImagePlan(self, progtrack, lambda x: False)
                 progtrack.evaluate_start()
                 ip.pkg_plans = pps
-                try:
-                        ip.evaluate()
-                        ip.preexecute()
-                        ip.execute()
-                except KeyboardInterrupt:
-                        raise
-                except:
-                        return False
+
+                ip.evaluate()
+                ip.preexecute()
+                ip.execute()
 
                 return True
 
