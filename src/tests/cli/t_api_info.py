@@ -37,7 +37,7 @@ import pkg.client.api as api
 import pkg.client.api_errors as api_errors
 import pkg.client.progress as progress
 
-API_VERSION = 1
+API_VERSION = 6
 PKG_CLIENT_NAME = "pkg"
 
 class TestApiInfo(testutils.SingleDepotTestCase):
@@ -56,12 +56,14 @@ class TestApiInfo(testutils.SingleDepotTestCase):
                 pkg1 = """
                     open jade@1.0,5.11-0
                     add dir mode=0755 owner=root group=bin path=/bin
+                    add set name=info.classification value="org.opensolaris.category.2008:Applications/Sound and Video
                     close
                 """
 
                 pkg2 = """
                     open turquoise@1.0,5.11-0
                     add dir mode=0755 owner=root group=bin path=/bin
+                    add set name=info.classification value=org.opensolaris.category.2008:System/Security/Foo/bar/Baz
                     close
                 """
 
@@ -93,6 +95,7 @@ class TestApiInfo(testutils.SingleDepotTestCase):
                 self.assert_(pis[0].pkg_stem == 'jade')
                 self.assert_(len(notfound) == 2)
                 self.assert_(len(illegals) == 0)
+                self.assert_(len(pis[0].category_info_list) == 1)
 
                 ret = api_obj.info(["j*"], local, get_license)
                 pis = ret[api.ImageInterface.INFO_FOUND]
@@ -114,6 +117,7 @@ class TestApiInfo(testutils.SingleDepotTestCase):
                 illegals = ret[api.ImageInterface.INFO_ILLEGALS]
                 self.assert_(len(pis) == 1)
                 self.assert_(pis[0].state == api.PackageInfo.INSTALLED)
+                self.assert_(len(pis[0].category_info_list) == 1)
 
                 ret = api_obj.info(["turquoise"], local, get_license)
                 pis = ret[api.ImageInterface.INFO_FOUND]
@@ -121,6 +125,7 @@ class TestApiInfo(testutils.SingleDepotTestCase):
                 illegals = ret[api.ImageInterface.INFO_ILLEGALS]
                 self.assert_(len(pis) == 1)
                 self.assert_(pis[0].state == api.PackageInfo.NOT_INSTALLED)
+                self.assert_(len(pis[0].category_info_list) == 1)
 
                 ret = api_obj.info(["emerald"], local, get_license)
                 pis = ret[api.ImageInterface.INFO_FOUND]

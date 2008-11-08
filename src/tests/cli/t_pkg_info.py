@@ -127,12 +127,14 @@ class TestPkgInfoBasics(testutils.SingleDepotTestCase):
                 pkg1 = """
                     open jade@1.0,5.11-0
                     add dir mode=0755 owner=root group=bin path=/bin
+                    add set name=info.classification value="org.opensolaris.category.2008:Applications/Sound and Video
                     close
                 """
 
                 pkg2 = """
                     open turquoise@1.0,5.11-0
                     add dir mode=0755 owner=root group=bin path=/bin
+                    add set name=info.classification value=org.opensolaris.category.2008:System/Security/Foo/bar/Baz
                     close
                 """
 
@@ -149,6 +151,8 @@ class TestPkgInfoBasics(testutils.SingleDepotTestCase):
                 
                 # Check local info
                 self.pkg("info jade | grep 'State: Installed'")
+                self.pkg("info jade | grep '      Category: Applications/Sound and Video'")
+                self.pkg("info jade | grep '      Category: Applications/Sound and Video (org.opensolaris.category.2008)'", exit=1)
                 self.pkg("info turquoise 2>&1 | grep 'no packages matching'")
                 self.pkg("info emerald", exit=1)
                 self.pkg("info emerald 2>&1 | grep 'no packages matching'")
@@ -157,7 +161,11 @@ class TestPkgInfoBasics(testutils.SingleDepotTestCase):
 
                 # Check remote info
                 self.pkg("info -r jade | grep 'State: Installed'")
-                self.pkg("info -r turquoise| grep 'State: Not installed'")
+                self.pkg("info -r jade | grep '      Category: Applications/Sound and Video'")
+                self.pkg("info -r jade | grep '      Category: Applications/Sound and Video (org.opensolaris.category.2008)'", exit=1)
+                self.pkg("info -r turquoise | grep 'State: Not installed'")
+                self.pkg("info -r turquoise | grep '      Category: System/Security/Foo/bar/Baz'")
+                self.pkg("info -r turquoise | grep '      Category: System/Security/Foo/bar/Baz (org.opensolaris.category.2008)'", exit=1)
                 self.pkg("info -r emerald", exit=1)
                 self.pkg("info -r emerald 2>&1 | grep 'no packages matching'")
 

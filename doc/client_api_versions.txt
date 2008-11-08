@@ -1,3 +1,10 @@
+Version 6:
+Compatible with clients using versions 1-5
+Changes:
+Adds a new field to PackageInfo, category_info_list, which is a list of 
+     PackageCategory objects. These objects contain the scheme and category
+     information for packages.
+
 Version 5:
 Compatible with clients using versions 1-4 as long as they have a generic
 APIException. This is the case for PackageManager and UpdateManaget.

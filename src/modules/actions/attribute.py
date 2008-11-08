@@ -63,12 +63,13 @@ class AttributeAction(generic.Action):
 
         def generate_indices(self):
                 """Generates the indices needed by the search dictionary."""
-                if self.attrs["name"] == "info.classification":
+                if self.has_category_info():
                         try:
-                                scheme, cats = self.attrs["value"].split(":", 1)
-                                return {
-                                    cats: cats.split("/") + [cats]
-                                }
+                                return dict(
+                                    (all_levels, [all_levels] + all_levels.split("/"))
+                                    for scheme, all_levels
+                                    in self.parse_category_info()
+                                )
                         except ValueError:
                                 pass
 
@@ -104,3 +105,16 @@ class AttributeAction(generic.Action):
                         return {
                              self.attrs["value"]: self.attrs["value"]
                         }
+
+        def has_category_info(self):
+                return self.attrs["name"] == "info.classification"
+
+        def parse_category_info(self):
+                if not self.has_category_info():
+                        return []
+                else:
+                        try:
+                                scheme, cats = self.attrs["value"].split(":", 1)
+                                return [ (scheme, cats) ]
+                        except ValueError:
+                                return []

@@ -87,7 +87,7 @@ from pkg.client.retrieve import DatastreamRetrievalError
 from pkg.client.retrieve import CatalogRetrievalError
 from pkg.client.filelist import FileListRetrievalError
 
-CLIENT_API_VERSION = 5
+CLIENT_API_VERSION = 6
 PKG_CLIENT_NAME = "pkg"
 
 def error(text):
@@ -1039,9 +1039,18 @@ def info(img_dir, args):
                 else:
                         raise RuntimeError("Encountered unknown package "
                             "information state: %d" % pi.state )
-                
-                msg(_("          Name:"), pi.pkg_stem)
+                name_str = _("          Name:")
+                msg(name_str, pi.pkg_stem)
                 msg(_("       Summary:"), pi.summary)
+                if pi.category_info_list:
+                        verbose = len(pi.category_info_list) > 1
+                        msg(_("      Category:"),
+                            pi.category_info_list[0].__str__(verbose))
+                        if len(pi.category_info_list) > 1:
+                                for ci in pi.category_info_list[1:]:
+                                        msg(" " * len(name_str),
+                                            ci.__str__(verbose))
+
                 msg(_("         State:"), state)
 
                 # XXX even more info on the authority would be nice?
