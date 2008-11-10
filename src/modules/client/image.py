@@ -736,13 +736,13 @@ class Image(object):
                 for fmri, actions in repairs:
                         msg("Repairing: %-50s" % fmri.get_pkg_stem())
                         m = self.get_manifest(fmri, filtered=True)
-                        pp = pkgplan.PkgPlan(self, progtrack, lambda x: False)
+                        pp = pkgplan.PkgPlan(self, progtrack, lambda: False)
 
                         pp.propose_repair(fmri, m, actions)
                         pp.evaluate()
                         pps.append(pp)
 
-                ip = imageplan.ImagePlan(self, progtrack, lambda x: False)
+                ip = imageplan.ImagePlan(self, progtrack, lambda: False)
                 progtrack.evaluate_start()
                 ip.pkg_plans = pps
 
