@@ -3085,6 +3085,7 @@ depend SUNWxorg-mesa
 depend SUNWxorg-server
 depend SUNWxorg-xkb
 depend SUNWxsvc
+depend SUNWxvmdom
 depend SUNWxvmipa
 depend SUNWxvmpv
 depend SUNWxvnc

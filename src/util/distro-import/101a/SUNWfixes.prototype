@@ -27,6 +27,7 @@ f none etc/zones/SUNWdefault.xml 0444 root bin
 e none kernel/drv/sd.conf 0644 root sys
 f none lib/svc/method/sshd 0555 root bin
 f none lib/svc/method/svc-coreadm 0555 root bin
+f none lib/svc/method/xvm-vnc-config 0555 root bin
 d none root 0700 root root
 e none root/.bashrc 0644 root root
 e none root/.profile 0644 root root
@@ -45,6 +46,8 @@ f none usr/lib/vp-shares 0555 root bin
 f none usr/share/applications/services.desktop 0644 root bin
 f none usr/share/applications/shares.desktop 0644 root bin
 f none usr/share/man/man.cf 0644 root bin
+f none var/svc/manifest/application/graphical-login/gdm.xml 444 root sys
 f none var/svc/manifest/system/coreadm.xml 444 root sys
+f none var/svc/manifest/system/xvm/vnc-config.xml 444 root sys
 f none var/svc/profile/generic_limited_net.xml 0444 root sys
 f none var/svc/profile/generic_open.xml 0444 root sys

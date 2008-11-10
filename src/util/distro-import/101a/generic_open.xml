@@ -184,4 +184,12 @@
       Include inetd(1M) services profile.
   -->
   <xi:include href='file:/var/svc/profile/inetd_services.xml' />
+
+  <!--
+      Enable VNC config service for xVM
+  -->
+  <service name='system/xvm/vnc-config' version='1' type='service'>
+     <instance name='default' enabled='true'/>
+  </service>
+
 </service_bundle>

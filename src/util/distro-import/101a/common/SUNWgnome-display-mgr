@@ -1,0 +1,9 @@
+package SUNWgnome-display-mgr
+classification "Desktop (GNOME)/Sessions"
+import SUNWgnome-display-mgr
+import SUNWgnome-display-mgr-root
+drop var/svc/manifest/application/graphical-login/gdm.xml
+from SUNWfixes import
+var/svc/manifest/application/graphical-login/gdm.xml
+end import
+end package

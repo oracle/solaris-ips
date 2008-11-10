@@ -105,12 +105,15 @@ CACHED_FILES=								\
 	lib/svc/method/sshd						\
 	lib/svc/method/svc-coreadm					\
 	lib/svc/method/svc-dlmgmtd					\
+	lib/svc/method/xvm-vnc-config					\
 	root/.bashrc							\
 	root/.profile							\
 	usr/jdk/instances/jdk1.6.0/jre/lib/fontconfig.properties	\
 	usr/lib/vp-services						\
 	usr/lib/vp-shares						\
+	var/svc/manifest/application/graphical-login/gdm.xml		\
 	var/svc/manifest/system/coreadm.xml				\
+	var/svc/manifest/system/xvm/vnc-config.xml			\
 	var/svc/profile/generic_limited_net.xml				\
 	var/svc/profile/generic_open.xml
 
@@ -338,7 +341,8 @@ proto:	Makefile
 	mkdir -p proto/usr/sbin
 	mkdir -p proto/usr/share/applications
 	mkdir -p proto/usr/share/man
-	mkdir -p proto/var/svc/manifest/system
+	mkdir -p proto/var/svc/manifest/application/graphical-login
+	mkdir -p proto/var/svc/manifest/system/xvm
 	mkdir -p proto/var/svc/profile
 
 %/$(TMPPKGS):

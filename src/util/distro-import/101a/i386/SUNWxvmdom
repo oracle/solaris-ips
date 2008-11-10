@@ -1,0 +1,10 @@
+package SUNWxvmdom
+classification "System/Virtualization"
+import SUNWxvmdomu
+import SUNWxvmdomr
+from SUNWfixes import
+lib/svc/method/xvm-vnc-config
+var/svc/manifest/system/xvm/vnc-config.xml
+end import
+version 3.1
+end package

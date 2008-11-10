@@ -336,4 +336,11 @@
     <instance name='default' enabled='false'/>
   </service>
 
+  <!--
+      Enable VNC config service for xVM
+  -->
+  <service name='system/xvm/vnc-config' version='1' type='service'>
+     <instance name='default' enabled='true'/>
+  </service>
+
 </service_bundle>

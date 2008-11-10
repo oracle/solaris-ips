@@ -596,6 +596,7 @@ include i386/SUNWwpi
 include i386/SUNWxorg-mesa
 include i386/SUNWxorg-server
 include i386/SUNWxsvc
+include i386/SUNWxvmdom
 include i386/SUNWxvmipa
 include i386/SUNWxvmpv
 include i386/SUNWxwice
@@ -1133,6 +1134,7 @@ depend SUNWxorg-mesa
 depend SUNWxorg-server
 depend SUNWxorg-xkb
 depend SUNWxsvc
+depend SUNWxvmdom
 depend SUNWxvmipa
 depend SUNWxvmpv
 depend SUNWxvnc
