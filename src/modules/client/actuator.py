@@ -108,6 +108,14 @@ class Actuator(GenericActuator):
                 self.do_nothing = True
                 self.cmd_path = ""
 
+        def __str__(self):
+                return "\n".join([
+                    "  %16s: %s" % (fmri, smf)
+                    for d in [self.removal, self.update, self.install]
+                    for fmri in d
+                    for smf in d[fmri]
+                    ])
+
         def clone_required(self):
                 return "reboot_on_update" in self.update
 

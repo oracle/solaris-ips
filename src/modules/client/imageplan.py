@@ -135,7 +135,7 @@ class ImagePlan(object):
         def display(self):
                 for pp in self.pkg_plans:
                         msg("%s -> %s" % (pp.origin_fmri, pp.destination_fmri))
-                msg("Actuators:\n" % self.actuators)
+                msg("Actuators:\n%s" % self.actuators)
 
         def is_proposed_fmri(self, fmri):
                 for pf in self.target_fmris:
