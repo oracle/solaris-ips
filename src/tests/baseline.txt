@@ -237,6 +237,7 @@ cli.t_pkg_depotd.py TestPkgDepot.testStartStop|pass
 cli.t_pkg_depotd.py TestPkgDepot.test_bad_fmris|pass
 cli.t_pkg_depotd.py TestPkgDepot.test_bug_1876|pass
 cli.t_pkg_depotd.py TestPkgDepot.test_bug_3365|pass
+cli.t_pkg_depotd.py TestPkgDepot.test_bug_4489|pass
 cli.t_pkg_depotd.py TestPkgDepot.test_depot_ping|pass
 cli.t_pkg_history.py TestPkgHistory.test_1_history_options|pass
 cli.t_pkg_history.py TestPkgHistory.test_2_history_record|pass

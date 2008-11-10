@@ -69,6 +69,8 @@ REINDEX_DEFAULT = False
 MIRROR_DEFAULT = False
 
 import getopt
+import gettext
+import locale
 import logging
 import os
 import os.path
@@ -149,6 +151,9 @@ class OptionError(Exception):
                 Exception.__init__(self, *args)
 
 if __name__ == "__main__":
+
+        locale.setlocale(locale.LC_ALL, "")
+        gettext.install("pkg", "/usr/share/locale")
 
         port = PORT_DEFAULT
         threads = THREADS_DEFAULT

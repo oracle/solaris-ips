@@ -372,6 +372,7 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
 
                 # XXX may need to be smarter.
                 output = ""
+                published = None
                 if command.startswith("open "):
                         p = subprocess.Popen(cmdline,
                             shell = True,
@@ -401,8 +402,12 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
                         retcode = p.wait()
                         self.debugresult(retcode, output)
 
-                        if retcode == 0 and command.startswith("close "):
+                        if retcode == 0 and command.startswith("close"):
                                 os.environ["PKG_TRANS_ID"] = ""
+                                for l in output.splitlines():
+                                        if l.startswith("pkg:/"):
+                                                published = l
+                                                break
 
                 if retcode == 99:
                         raise TracebackException(cmdline, output, comment,
@@ -412,25 +417,31 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
                         raise UnexpectedExitCodeException(cmdline, exit,
                             retcode, output, comment, debug=self.get_debugbuf())
 
-                return retcode
+                return retcode, published
 
         def pkgsend_bulk(self, depot_url, commands, exit=0, comment=""):
-                """ Send a series of packaging commands; useful for
-                    quickly doing a bulk-load of stuff into the repo.
-                    We expect that the commands will all work; if not,
-                    the transaction is abandoned. """
+                """ Send a series of packaging commands; useful for quickly
+                    doing a bulk-load of stuff into the repo.  All commands are
+                    expected to work; if not, the transaction is abandoned.  A
+                    list containing the fmris of any packages that were
+                    published as a result of the commands executed will be
+                    returned; it will be empty if none were. """
 
+                plist = []
                 try:
                         for line in commands.split("\n"):
                                 line = line.strip()
                                 if line == "":
                                         continue
-                                self.pkgsend(depot_url, line, exit=exit)
+                                retcode, published = self.pkgsend(depot_url, line, exit=exit)
+                                if retcode == 0 and published:
+                                        plist.append(published[len("pkg:/"):])
 
                 except (TracebackException, UnexpectedExitCodeException):
                         if os.environ.get("PKG_TRANS_ID", None):
                                 self.pkgsend(depot_url, "close -A", exit=0)
                         raise
+                return plist
 
         def start_depot(self, port, depotdir, logpath, refresh_index=False):
                 """ Convenience routine to help subclasses start

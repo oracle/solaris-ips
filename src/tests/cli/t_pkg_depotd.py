@@ -29,6 +29,7 @@ if __name__ == "__main__":
 
 import unittest
 import os
+import pkg.misc as misc
 import shutil
 
 import pkg.depotcontroller as dc
@@ -42,6 +43,10 @@ class TestPkgDepot(testutils.SingleDepotTestCase):
             add dir mode=0755 owner=root group=bin path=/bin
             add file /tmp/cat mode=0555 owner=root group=bin path=/bin/cat
             add file /tmp/libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.so.1
+            close """
+
+        info10 = """
+            open info@1.0,5.11-0
             close """
 
         misc_files = [ "/tmp/libc.so.1", "/tmp/cat" ]
@@ -145,6 +150,12 @@ class TestPkgDepot(testutils.SingleDepotTestCase):
                 self.assert_(not os.path.exists(dir_file))
                 self.assert_(not os.path.exists(pag_file))
 
+        def test_bug_4489(self):
+                """Publish a package and then verify that the depot /info
+                operation doesn't fail."""
+                depot_url = self.dc.get_depot_url()
+                plist = self.pkgsend_bulk(depot_url, self.info10)
+                misc.versioned_urlopen(depot_url, "info", [0], plist[0])
 
 class TestDepotController(testutils.CliTestCase):
 
