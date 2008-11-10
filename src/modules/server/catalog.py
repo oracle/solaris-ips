@@ -22,13 +22,13 @@
 # Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
-import subprocess
 import threading
 import signal
 import os
 import sys
 import cherrypy
 
+import pkg.pkgsubprocess as subprocess
 import pkg.catalog as catalog
 import pkg.fmri as fmri
 import pkg.indexer as indexer

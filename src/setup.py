@@ -201,6 +201,9 @@ smf_files = [
         'pkg-server.xml',
         'pkg-update.xml',
         ]
+pspawn_srcs = [
+        'modules/pspawn.c'
+        ]
 elf_srcs = [
         'modules/elf.c',
         'modules/elfextract.c',
@@ -247,6 +250,10 @@ class lint_func(Command):
                             ["%s%s" % ("-I", k) for k in include_dirs] + \
                             ['-I' + self.escape(get_python_inc())] + \
                             _actions_srcs
+                        pspawncmd = ['lint'] + lint_flags + ['-D_FILE_OFFSET_BITS=64'] + \
+                            ["%s%s" % ("-I", k) for k in include_dirs] + \
+                            ['-I' + self.escape(get_python_inc())] + \
+                            pspawn_srcs
 
                         print(" ".join(archcmd))
                         os.system(" ".join(archcmd))
@@ -254,6 +261,8 @@ class lint_func(Command):
                         os.system(" ".join(elfcmd))
                         print(" ".join(_actionscmd))
                         os.system(" ".join(_actionscmd))
+                        print(" ".join(pspawncmd))
+                        os.system(" ".join(pspawncmd))
 
                         proto = os.path.join(root_dir, py_install_dir)
                         sys.path.insert(0, proto)
@@ -538,6 +547,14 @@ if osname == 'sunos' or osname == "linux":
                     Extension(
                             'arch',
                             arch_srcs,
+                            include_dirs = include_dirs,
+                            extra_compile_args = compile_args,
+                            extra_link_args = link_args,
+                            define_macros = [('_FILE_OFFSET_BITS', '64')]
+                            ),
+                    Extension(
+                            'pspawn',
+                            pspawn_srcs,
                             include_dirs = include_dirs,
                             extra_compile_args = compile_args,
                             extra_link_args = link_args,

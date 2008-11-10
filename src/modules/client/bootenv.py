@@ -23,11 +23,11 @@
 # Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
-import subprocess
 import sys
 import os
 import tempfile
 
+import pkg.pkgsubprocess as subprocess
 from pkg.misc import msg, emsg
 
 # Since pkg(1) may be installed without libbe installed

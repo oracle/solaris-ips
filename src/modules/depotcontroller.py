@@ -28,10 +28,10 @@ import os
 import sys
 import signal
 import time
-import subprocess
 import socket
 import urllib2
 import httplib
+import pkg.pkgsubprocess as subprocess
 from pkg.misc import versioned_urlopen
 
 class DepotStateException(Exception):

@@ -32,10 +32,10 @@ packaging object.
 """
 
 import os
-import subprocess
 from tempfile import mkstemp
 
 import generic
+import pkg.pkgsubprocess as subprocess
 
 class DriverAction(generic.Action):
         """Class representing a driver-type packaging object."""

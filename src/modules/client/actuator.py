@@ -84,7 +84,7 @@ SMF_SVC_TMP_ENABLED  = 4
 SMF_SVC_ENABLED      = 5
 
 import os
-import subprocess
+import pkg.pkgsubprocess as subprocess
 from pkg.client.debugvalues import DebugValues
 
 svcprop_path = "/usr/bin/svcprop"

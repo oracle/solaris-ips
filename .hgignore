@@ -15,6 +15,7 @@
 ^src/*.tar.gz$
 ^src/CherryPy-.*$
 ^src/gui/data/packagemanager.desktop$
+^src/gui/help/.*/package-manager.xml$
 ^src/man/pkg.1$
 ^src/man/pkg.5$
 ^src/man/pkg.depotd.1m$

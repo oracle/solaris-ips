@@ -36,12 +36,12 @@
 #---------
 # Imports
 #---------
-import subprocess
 import sys
 import os
 import stat
 import time
 import struct
+import pkg.pkgsubprocess as subprocess
 
 # cpio magic numbers
 # XXX matches actual cpio archives and /etc/magic, but not archives.h

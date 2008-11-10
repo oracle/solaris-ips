@@ -24,11 +24,11 @@
 #
 
 import sys
-import subprocess
 import pango
 import time
 import datetime
 import locale
+import pkg.pkgsubprocess as subprocess
 from threading import Thread
 
 try:

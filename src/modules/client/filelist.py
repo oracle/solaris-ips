@@ -389,7 +389,7 @@ class FileList(object):
                                             e.reason)
 
                         raise FileListRetrievalError("Could not retrieve"
-                            " filelist from '%s'\nURLError reason: %d" % 
+                            " filelist from '%s'\nURLError reason: %s" % 
                             (url_prefix, e.reason))
                 except (ValueError, httplib.IncompleteRead):
                         self.image.cleanup_downloads()
