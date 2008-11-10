@@ -255,7 +255,6 @@ include common/SUNWluxop
 include common/SUNWlxml
 include common/SUNWlxsl
 include common/SUNWman
-include common/SUNWman-l10n-ja
 include common/SUNWmd
 include common/SUNWmkcd
 include common/SUNWmlib
@@ -518,6 +517,7 @@ include common/loc/SUNWlang-vi
 include common/loc/SUNWlang-zhCN
 include common/loc/SUNWlang-zhHK
 include common/loc/SUNWlang-zhTW
+include common/loc/SUNWman-l10n-ja
 include common/loc/SUNWthunderbirdl10n-de-DE
 include common/loc/SUNWthunderbirdl10n-es-ES
 include common/loc/SUNWthunderbirdl10n-extra
