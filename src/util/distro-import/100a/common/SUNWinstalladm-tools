@@ -6,6 +6,7 @@ depend SUNWdhcs
 depend SUNWdsd
 depend SUNWpysqlite
 depend SUNWpython-cherrypy
+depend SUNWpython-lxml
 depend SUNWsqlite3
 depend SUNWtftp
 end package
