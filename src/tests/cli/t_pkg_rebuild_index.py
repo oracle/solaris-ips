@@ -44,5 +44,14 @@ class TestPkgRebuildIndex(testutils.SingleDepotTestCase):
                 self.pkg("rebuild-index foo", exit=2)
                 self.pkg("rebuild-index --", exit=2)
 
+        def test_rebuild_index_bad_perms(self):
+                """Testing for bug 4570."""
+
+		durl = self.dc.get_depot_url()
+                self.image_create(durl)
+                self.pkg("rebuild-index")
+                self.pkg("rebuild-index", exit=1, su_wrap="noaccess")
+
+
 if __name__ == "__main__":
         unittest.main()

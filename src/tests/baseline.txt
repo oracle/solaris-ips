@@ -340,6 +340,7 @@ cli.t_pkg_list.py TestPkgList.test_list_z_empty_image|pass
 cli.t_pkg_list.py TestPkgList.test_pkg_list_cli_opts|pass
 cli.t_pkg_property.py TestPkgInfoBasics.test_pkg_properties|pass
 cli.t_pkg_rebuild_index.py TestPkgRebuildIndex.test_rebuild_index_bad_opts|pass
+cli.t_pkg_rebuild_index.py TestPkgRebuildIndex.test_rebuild_index_bad_perms|pass
 cli.t_pkg_refresh.py TestPkgRefreshMulti.test_general_refresh|pass
 cli.t_pkg_refresh.py TestPkgRefreshMulti.test_refresh_cli_options|pass
 cli.t_pkg_refresh.py TestPkgRefreshMulti.test_set_authority_induces_delayed_full_refresh|pass

@@ -165,8 +165,8 @@ Environment:
 INCONSISTENT_INDEX_ERROR_MESSAGE = "The search index appears corrupted.  " + \
     "Please rebuild the index with 'pkg rebuild-index'."
 
-PROBLEMATIC_PERMISSIONS_ERROR_MESSAGE = " (Failure of consistent use " + \
-    "of pfexec when running pkg commands is often a source of this problem.)"
+PROBLEMATIC_PERMISSIONS_ERROR_MESSAGE = "\n(Failure of consistent use " + \
+    "of pfexec when executing pkg commands is often a\nsource of this problem.)"
 
 def check_fmri_args(args):
         """ Convenience routine to check that input args are valid fmris. """
@@ -1907,7 +1907,10 @@ def rebuild_index(img, pargs):
                 img.history.operation_result = RESULT_FAILED_SEARCH
                 error(INCONSISTENT_INDEX_ERROR_MESSAGE)
                 return 1
-        except api_errors.ProblematicPermissionsIndexException, e:
+        # Because rebuild_index is not currently running through the API, it's
+        # necessary to catch the search_error version.
+        except (api_errors.ProblematicPermissionsIndexException,
+            search_errors.ProblematicPermissionsIndexException), e:
                 img.history.operation_result = RESULT_FAILED_STORAGE
                 error(str(e) + PROBLEMATIC_PERMISSIONS_ERROR_MESSAGE)
                 return 1

@@ -312,12 +312,20 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
                 if os.path.exists(self.img_path):
                         shutil.rmtree(self.img_path)
 
-        def pkg(self, command, exit = 0, comment = "", prefix = ""):
-
-                if prefix:
-                        cmdline = "%s;pkg %s" % (prefix, command)
+        def pkg(self, command, exit=0, comment="", prefix="", su_wrap=None):
+                if su_wrap:
+                        if su_wrap == True:
+                                su_wrap = "noaccess"
+                        su_wrap = "su %s -c '" % su_wrap
+                        su_end = "'"
                 else:
-                        cmdline = "pkg %s" % command
+                        su_wrap = ""
+                        su_end = ""
+                if prefix:
+                        cmdline = "%s;%spkg %s%s" % (prefix, su_wrap, command,
+                            su_end)
+                else:
+                        cmdline = "%spkg %s%s" % (su_wrap, command, su_end)
                 self.debugcmd(cmdline)
 
                 p = subprocess.Popen(cmdline, shell = True,

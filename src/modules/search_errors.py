@@ -59,7 +59,7 @@ class ProblematicPermissionsIndexException(IndexingException):
         files or directories it should be able to. """
         def __str__(self):
                 return "Could not remove or create " \
-                    "%s because of incorrect " \
+                    "%s because of\nincorrect " \
                     "permissions. Please correct this issue then " \
                     "rebuild the index." % self.cause
 
