@@ -267,6 +267,10 @@ class History(object):
                 # bypass our setattr override by calling object.
                 object.__setattr__(self, "client_args", [])
 
+                # Initialize client_name to what the client thinks it is.  This
+                # will be overridden if we load history entries off disk.
+                self.client_name = pkg.client.global_settings.client_name
+
                 self.root_dir = root_dir
                 if filename:
                         self.__load(filename)

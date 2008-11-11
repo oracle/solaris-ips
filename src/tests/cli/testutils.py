@@ -111,6 +111,8 @@ def setup_environment(path_to_proto):
                 if k.startswith("PKG_"):
                         del os.environ[k]
 
+        from pkg.client import global_settings
+        global_settings.client_name = "pkg"
 
 
 topdivider = \

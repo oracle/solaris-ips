@@ -50,6 +50,7 @@ import pkg.client.api as api
 import pkg.client.api_errors as api_errors
 import pkg.client.progress as progress
 import pkg.gui.beadmin as beadm
+from pkg.client import global_settings
 
 # Put _() in the global namespace
 import __builtin__
@@ -203,6 +204,8 @@ class GUIProgressTracker(progress.ProgressTracker):
 
 class Updatemanager:
         def __init__(self):
+                global_settings.client_name = PKG_CLIENT_NAME
+                    
                 try:
                         self.application_dir = os.environ["UPDATE_MANAGER_ROOT"]
                 except KeyError:

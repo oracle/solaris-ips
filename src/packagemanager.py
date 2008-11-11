@@ -92,6 +92,8 @@ class PackageManager:
                 # in the environment.
                 global_settings.PKG_TIMEOUT_MAX = int(os.environ.get("PKG_TIMEOUT_MAX",
                     global_settings.PKG_TIMEOUT_MAX))
+
+                global_settings.client_name = PKG_CLIENT_NAME
                     
                 try:
                         self.application_dir = os.environ["PACKAGE_MANAGER_ROOT"]

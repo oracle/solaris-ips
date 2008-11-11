@@ -2006,9 +2006,10 @@ def history_list(img, args):
 __img = None
 
 def main_func():
+        global_settings.client_name = PKG_CLIENT_NAME
+
         global __img
         __img = img = image.Image()
-        img.history.client_name = PKG_CLIENT_NAME
 
         locale.setlocale(locale.LC_ALL, '')
         gettext.install("pkg", "/usr/share/locale")

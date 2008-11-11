@@ -30,11 +30,12 @@ import pkg.client.history as history
 import pkg.misc as misc
 import pkg.fmri as fmri
 from pkg.client.imageplan import EXECUTED_OK
+from pkg.client import global_settings
 
 import threading
 
-CURRENT_API_VERSION = 6
-                
+CURRENT_API_VERSION = 7
+
 class ImageInterface(object):
         """This class presents an interface to images that clients may use.
         There is a specific order of methods which must be used to install
@@ -56,7 +57,7 @@ class ImageInterface(object):
         __INSTALL = 1
         __UNINSTALL = 2
         __IMAGE_UPDATE = 3
-        
+
         def __init__(self, img_path, version_id, progesstracker,
             cancel_state_callable, pkg_client_name):
                 """Constructs an ImageInterface. img_path should point to an
@@ -67,16 +68,21 @@ class ImageInterface(object):
                 wishes to have called each time whether the operation can be
                 canceled changes. It can raise VersionException and
                 ImageNotFoundException."""
-                
-                compatible_versions = set([1, 2, 3, 4, 5, 6])
-                
+
+                compatible_versions = set([1, 2, 3, 4, 5, 6, 7])
+
                 if version_id not in compatible_versions:
                         raise api_errors.VersionException(CURRENT_API_VERSION,
                             version_id)
 
+                # The image's History object will use client_name from
+                # global_settings, but if the program forgot to set it,
+                # we'll go ahead and do so here.
+                if global_settings.client_name is None:
+                        global_settings.client_name = pkg_client_name
+
                 # These variables are private and not part of the API.
                 self.img = image.Image()
-                self.img.history.client_name = pkg_client_name
                 self.img.find_root(img_path)
                 self.img.load_config()
                 self.progresstracker = progesstracker

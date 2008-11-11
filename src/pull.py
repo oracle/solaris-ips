@@ -39,6 +39,7 @@ import pkg.pkgtarfile as ptf
 import pkg.catalog as catalog
 import pkg.actions as actions
 from pkg.misc import versioned_urlopen, gunzip_from_stream, msg, PipeError
+from pkg.client import global_settings
 
 def usage(usage_error = None):
         """ Emit a usage message and optionally prefix it with a more
@@ -252,6 +253,8 @@ def main_func():
 
         # XXX /usr/lib/locale is OpenSolaris-specific.
         gettext.install("pkgrecv", "/usr/lib/locale")
+
+        global_settings.client_name = "pkgrecv"
 
         try:
                opts, pargs = getopt.getopt(sys.argv[1:], "s:d:nk")

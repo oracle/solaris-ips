@@ -1,3 +1,11 @@
+Version 7:
+Compatible with clients using versions 1-6.
+Changes:
+    Ignore the pkg_client_name parameter passed to api.ImageInterface() if
+    pkg.client.global_settings.client_name isn't None.  This latter object
+    is now the preferred way to set the client name, and the
+    pkg_client_name parameter may be ignored or removed in the future.
+
 Version 6:
 Compatible with clients using versions 1-5
 Changes:

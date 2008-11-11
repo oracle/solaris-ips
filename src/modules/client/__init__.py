@@ -22,7 +22,6 @@
 
 # Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
-#
 
 __all__ = ["global_settings"]
 
@@ -33,5 +32,6 @@ class GlobalSettings(object):
         def __init__(self):
                 object.__init__(self)
                 self.PKG_TIMEOUT_MAX = 4
+                self.client_name = None
 
 global_settings = GlobalSettings()

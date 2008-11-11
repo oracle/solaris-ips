@@ -968,7 +968,7 @@ class Image(object):
                 # are not negatively impacted by manifest caching.  This should
                 # be removed by bug 4231 whenever a better way to handle caching
                 # is found.
-                if self.history.client_name == "pkg":
+                if global_settings.client_name == "pkg":
                         if fmri in self.__manifest_cache:
                                 m = self.__manifest_cache[fmri]
                         else:

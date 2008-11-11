@@ -43,6 +43,7 @@ from stat import *
 import pkg.urlhelpers as urlhelpers
 import pkg.portable as portable
 from pkg.client.imagetypes import img_type_names, IMG_NONE
+from pkg.client import global_settings
 from pkg import VERSION
 
 def time_to_timestamp(t):
@@ -76,7 +77,7 @@ def url_affix_trailing_slash(u):
 
         return u
 
-_client_version = "pkg/%s (%s %s; %s %s; %%s)" % \
+_client_version = "pkg/%s (%s %s; %s %s; %%s; %%s)" % \
     (VERSION, portable.util.get_canonical_os_name(), platform.machine(),
     portable.util.get_os_release(), platform.version())
 
@@ -132,7 +133,8 @@ def versioned_urlopen(base_uri, operation, versions = None, tail = None,
                             (operation, version))
 
                 headers["User-Agent"] = \
-                    _client_version % img_type_names[imgtype]
+                    _client_version % (img_type_names[imgtype],
+                        global_settings.client_name)
                 if uuid:
                         headers["X-IPkg-UUID"] = uuid
                 req = urllib2.Request(url = uri, headers = headers)
