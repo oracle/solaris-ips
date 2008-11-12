@@ -39,6 +39,7 @@ PACKAGE_PROGRESS_PERCENT_INCREMENT = 0.01 # Amount to update progress during loa
 PACKAGE_PROGRESS_PERCENT_TOTAL = 1.0      # Total progress for loading phase
 MAX_DESC_LEN = 60                         # Max length of the description
 MAX_INFO_CACHE_LIMIT = 100                # Max number of package descriptions to cache
+TYPE_AHEAD_DELAY = 600    # Time of the last type in search box after which search is performed
 
 CLIENT_API_VERSION = 4
 PKG_CLIENT_NAME = "packagemanager"
@@ -264,7 +265,8 @@ class PackageManager:
                             
                 self.package_selection = None
                 self.category_list_filter = None
-                self.application_list_filter = None 
+                self.application_list_filter = None
+                self.application_refilter_id = 0 
                 self.in_setup = True
                 self.w_main_window.show_all()
 
@@ -548,11 +550,21 @@ class PackageManager:
 
         def __on_searchentry_changed(self, widget):
                 '''On text search field changed we should refilter the main view'''
-                Thread(target = self.__on_searchentry_threaded, args = ()).start()
+                if self.application_refilter_id != 0:
+                        gobject.source_remove(self.application_refilter_id)
+                        self.application_refilter_id = 0
+                if self.w_searchentry_dialog.get_text() == "":
+                        self.application_refilter_id = \
+                            gobject.idle_add(self.__application_refilter)
+                else:
+                        self.application_refilter_id = \
+                            gobject.timeout_add(TYPE_AHEAD_DELAY, self.__application_refilter)
 
-        def __on_searchentry_threaded(self):
-                gobject.idle_add(self.application_list_filter.refilter)
+        def __application_refilter(self):
+                self.application_list_filter.refilter()
                 gobject.idle_add(self.__enable_disable_selection_menus)
+                self.application_refilter_id = 0
+                return False
 
         def __on_edit_paste(self, widget):
                 self.w_searchentry_dialog.insert_text(self.main_clipboard_text, \
