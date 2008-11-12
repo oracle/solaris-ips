@@ -242,7 +242,7 @@ SUBCOMMANDS
           The -H option causes the headers to be omitted.
 
      fix [pkg_fmri_pattern ...]
-          Fix any any errors reported by pkg verify.
+          Fix any errors reported by pkg verify.
 
      set-property propname propvalue
           Update an existing image property or add a new image property.
