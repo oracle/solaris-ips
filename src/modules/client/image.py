@@ -1859,13 +1859,14 @@ class Image(object):
                                                 nfmri = pfmri.copy()
                                                 nfmri.set_authority(rauth,
                                                     auth == pauth)
+                                                st = state.copy()
                                                 if auth == inst_auth:
-                                                        state["state"] = \
+                                                        st["state"] = \
                                                             PKG_STATE_INSTALLED
                                                 else:
-                                                        state["state"] = \
+                                                        st["state"] = \
                                                             PKG_STATE_KNOWN
-                                                yield nfmri, state
+                                                yield nfmri, st
                                                 yielded = True
                                 elif inst_state == PKG_STATE_INSTALLED:
                                         nfmri = pfmri.copy()
