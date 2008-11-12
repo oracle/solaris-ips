@@ -196,7 +196,7 @@ class UpdateManagerNotifier:
                 elif self.refresh_period == MONTHLY:
                         delta = MONTHLY_SECS
                 else:
-                        self.time_until_next_check = 0
+                        self.time_until_next_check = DAILY_SECS
                         return False
                 current_time = time.time()
                 if debug == True:
