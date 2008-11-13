@@ -56,37 +56,21 @@ def get_platform():
         return platform.uname()[4]
 
 def get_userid():
-        def __get_userid():
-                user = os.getenv('USER') or os.getenv('LOGNAME') or \
-                    os.getenv('USERNAME')
-                if user:
-                        try:
-                                return get_user_by_name(user, None, False)
-                        except KeyError:
-                                pass
-                return os.getuid()
-
-        try:
-                return get_user_by_name(os.getlogin(), None, False)
-        except (EnvironmentError, AttributeError):
-                # os.getlogin() not available on this platform or does not work
-                # properly.
-                return __get_userid()
+        # If the software is being executed with pfexec, the uid or euid will
+        # likely be 0 which is of no use.  Since the os.getlogin() interface
+        # provided by Python breaks in a number of interesting ways, their
+        # recommendation is to pull the username from the environment instead.
+        user = os.getenv('USER', os.getenv('LOGNAME', os.getenv('USERNAME')))
+        if user:
+                try:
+                        return get_user_by_name(user, None, False)
+                except KeyError:
+                        # The environment username wasn't valid.
+                        pass
+        return os.getuid()
 
 def get_username():
-        def __get_username():
-                user = os.getenv('USER') or os.getenv('LOGNAME') or \
-                    os.getenv('USERNAME')
-                if not user:
-                        return pwd.getpwuid(os.getuid())[0]
-                return user
-
-        try:
-                return os.getlogin()
-        except (EnvironmentError, AttributeError):
-                # os.getlogin() not available on this platform or does not work
-                # properly.
-                return __get_username()
+        return pwd.getpwuid(get_userid()).pw_name
 
 def is_admin():
         return os.getuid() == 0
