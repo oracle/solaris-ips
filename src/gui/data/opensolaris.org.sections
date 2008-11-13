@@ -10,9 +10,6 @@ category = Documentation,File Managers,Libraries,Localizations (Desktop),Scripts
 [Development]
 category = C,C++,Databases,Distribution Tools,GNOME and GTK+,GNU,Integrated Development Environments,Java,Other Languages,PHP,Perl,Python,Ruby,Source Code Management,System,X11
 
-[Distributions]
-category = Desktop
-
 [Drivers]
 category = Display,Media,Networking,Other Peripherals,Ports,Storage
 

@@ -42,7 +42,7 @@ class GenOSFiles:
  
     Usage:
       $ cd .../gate/src/util/distro-import
-      $ python gen_os_file.py
+      $ python gen_os_files.py
  
     By default, it will automatically overwrite:
       ../../gui/data/opensolaris.org   and

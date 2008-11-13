@@ -52,6 +52,12 @@ category = Display
 [OSOLvpanels]
 category = Configuration and Preferences
 
+[OSOLvpanels-mysql]
+category = Configuration and Preferences
+
+[OSOLvpanels-sysid]
+category = Configuration and Preferences
+
 [SUNW1394]
 category = Hardware
 
@@ -145,9 +151,6 @@ category = Distribution Tools
 [SUNWapch]
 category = Application and Web Servers
 
-[SUNWapch2]
-category = Application and Web Servers
-
 [SUNWapch22]
 category = Application and Web Servers
 
@@ -163,16 +166,10 @@ category = Application and Web Servers
 [SUNWapch22m-jk]
 category = Application and Web Servers
 
-[SUNWapch22m-php5]
-category = Application and Web Servers
-
 [SUNWapch22m-php52]
 category = Application and Web Servers
 
 [SUNWapch22m-security]
-category = Application and Web Servers
-
-[SUNWapch2d]
 category = Application and Web Servers
 
 [SUNWapchd]
@@ -961,9 +958,6 @@ category = File Managers
 [SUNWgnome-fonts]
 category = Fonts
 
-[SUNWgnome-freedb-libs]
-category = Libraries
-
 [SUNWgnome-fun-applets]
 category = Applets
 
@@ -1320,9 +1314,6 @@ category = Core
 
 [SUNWgrubS]
 category = Core
-
-[SUNWgscr]
-category = Graphics and Imaging
 
 [SUNWgsed]
 category = System Utilities
@@ -2482,27 +2473,6 @@ category = PHP
 [SUNWphp52-pgsql]
 category = PHP
 
-[SUNWphp524]
-category = PHP
-
-[SUNWphp524-mysql]
-category = PHP
-
-[SUNWphp524-pgsql]
-category = PHP
-
-[SUNWphp524core]
-category = PHP
-
-[SUNWphp524doc]
-category = PHP
-
-[SUNWphp524man]
-category = PHP
-
-[SUNWphp524usr]
-category = PHP
-
 [SUNWphp52d]
 category = PHP
 
@@ -2587,9 +2557,6 @@ category = Databases
 [SUNWpostgr-82-server]
 category = Databases (System)
 
-[SUNWpostgr-82-server-data-root]
-category = Databases (System)
-
 [SUNWpostgr-82-tcl]
 category = Databases (System)
 
@@ -2636,9 +2603,6 @@ category = Databases (System)
 category = Databases
 
 [SUNWpostgr-server]
-category = Databases (System)
-
-[SUNWpostgr-server-data]
 category = Databases (System)
 
 [SUNWpostgr-tcl]
@@ -3822,9 +3786,6 @@ category = Localizations (Desktop)
 
 [ruby-dev]
 category = Ruby
-
-[slim_cd]
-category = Desktop
 
 [ss-dev]
 category = Integrated Development Environments
