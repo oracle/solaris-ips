@@ -630,8 +630,12 @@ class ImageInterface(object):
                                         matches = list(self.img.inventory([ p ],
                                             all_known = True))
                                 except api_errors.InventoryException, e:
-                                        assert(len(e.notfound) == 1)
-                                        notfound.append(e.notfound[0])
+                                        assert(len(e.notfound) == 1 or \
+                                            len(e.illegal) == 1)
+                                        if e.notfound:
+                                                notfound.append(e.notfound[0])
+                                        else:
+                                                illegals.append(e.illegal[0])
                                         err = 1
                                         continue
 

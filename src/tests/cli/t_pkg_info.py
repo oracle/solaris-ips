@@ -104,6 +104,10 @@ class TestPkgInfoBasics(testutils.SingleDepotTestCase):
                 self.pkg("info pkg:/man@-", exit=1)
                 self.pkg("info pkg:/man@", exit=1)
 
+                # Bug 4878
+                self.pkg("info -r /usr/bin/stunnel", exit=1)
+                self.pkg("info /usr/bin/stunnel", exit=1)
+
 		# bad version
 		self.pkg("install jade")
                 self.pkg("info pkg:/foo@bar.baz", exit=1)

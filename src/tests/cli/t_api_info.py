@@ -155,7 +155,17 @@ class TestApiInfo(testutils.SingleDepotTestCase):
                 self.assert_(len(pis) == 1)
                 self.assert_(len(pis[0].dirs) == 1)
 
+                ret = api_obj.info(["/usr/bin/stunnel"], local, get_license)
+                illegals = ret[api.ImageInterface.INFO_ILLEGALS]
+                self.assert_(len(illegals) == 1)
+
+                local = True
                 
+                ret = api_obj.info(["/usr/bin/stunnel"], local, get_license)
+                illegals = ret[api.ImageInterface.INFO_ILLEGALS]
+                self.assert_(len(illegals) == 1)
+
+
 if __name__ == "__main__":
         unittest.main()
 
