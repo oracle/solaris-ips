@@ -315,6 +315,10 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
                         shutil.rmtree(self.img_path)
 
         def pkg(self, command, exit=0, comment="", prefix="", su_wrap=None):
+                wrapper = ""
+                if os.environ.has_key("PKGCOVERAGE"):
+                        wrapper = "figleaf"
+
                 if su_wrap:
                         if su_wrap == True:
                                 su_wrap = "noaccess"
@@ -324,10 +328,11 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
                         su_wrap = ""
                         su_end = ""
                 if prefix:
-                        cmdline = "%s;%spkg %s%s" % (prefix, su_wrap, command,
-                            su_end)
+                        cmdline = "%s;%s%s %s/usr/bin/pkg %s" % (prefix,
+                            su_wrap, wrapper, g_proto_area, command)
                 else:
-                        cmdline = "%spkg %s%s" % (su_wrap, command, su_end)
+                        cmdline = "%s%s %s/usr/bin/pkg %s" % (su_wrap, wrapper,
+                            g_proto_area, command)
                 self.debugcmd(cmdline)
 
                 p = subprocess.Popen(cmdline, shell = True,
@@ -351,7 +356,12 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
         def pkgrecv(self, server_url, command, exit = 0, out = False,
             comment = ""):
 
-                cmdline = "pkgrecv -s %s %s" % (server_url, command)
+                wrapper = ""
+                if os.environ.has_key("PKGCOVERAGE"):
+                        wrapper = "figleaf"
+
+                cmdline = "%s %s/usr/bin/pkgrecv -s %s %s" % (wrapper,
+                    g_proto_area, server_url, command)
                 self.debugcmd(cmdline)
 
                 p = subprocess.Popen(cmdline, shell = True,
@@ -377,7 +387,12 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
 
         def pkgsend(self, depot_url, command, exit = 0, comment = ""):
 
-                cmdline = "pkgsend -s %s %s" % (depot_url, command)
+                wrapper = ""
+                if os.environ.has_key("PKGCOVERAGE"):
+                        wrapper = "figleaf"
+
+                cmdline = "%s %s/usr/bin/pkgsend -s %s %s" % (wrapper,
+                    g_proto_area, depot_url, command)
                 self.debugcmd(cmdline)
 
                 # XXX may need to be smarter.

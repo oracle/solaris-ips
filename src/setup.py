@@ -63,6 +63,13 @@ POARC = '%s-%s.tar.gz' % (PO, POVER)
 PODIR = '%s-%s' % (PO, POVER)
 POURL = 'http://downloads.sourceforge.net/pyopenssl/%s' % (POARC)
 
+FL = 'figleaf'
+FLIDIR = 'figleaf'
+FLVER = 'latest'
+FLARC = '%s-%s.tar.gz' % (FL, FLVER)
+FLDIR = '%s-%s' % (FL, FLVER)
+FLURL = 'http://darcs.idyll.org/~t/projects/%s' % FLARC
+
 osname = platform.uname()[0].lower()
 ostype = arch = 'unknown'
 if osname == 'sunos':
@@ -217,6 +224,30 @@ _actions_srcs = [
         ]
 include_dirs = [ 'modules' ]
 lint_flags = [ '-u', '-axms', '-erroff=E_NAME_DEF_NOT_USED2' ]
+
+# Runs the test suite with the code coverage suite (figleaf) turned on, and
+# outputs a coverage report.
+# TODO: Make the cov report format an option (html, ast, cov, etc)
+class cov_func(Command):
+        description = "Runs figleaf code coverage suite"
+        user_options = []
+        def initialize_options(self):
+                pass
+        def finalize_options(self):
+                pass
+        def run(self):
+                if not os.path.isdir(FLDIR):
+                        install_sw(FL, FLVER, FLARC, FLDIR, FLURL, FLIDIR)
+                # Run the test suite with coverage enabled        
+                os.putenv('PYEXE', sys.executable)
+                os.chdir(os.path.join(pwd, "tests"))
+                # Reconstruct the cmdline and send that to run.py
+                os.environ["PKGCOVERAGE"] = "1"
+                cmd = [sys.executable, "run.py"]
+                subprocess.call(cmd)
+                print "Generating coverage report in directory: '%s/cov_report'" % \
+                    pwd
+                os.system("figleaf2html -d cov_report .figleaf")
 
 # Runs lint on the extension module source code
 class lint_func(Command):
@@ -506,6 +537,7 @@ cmdclasses = {
         'lint': lint_func,
         'clean': clean_func,
         'clobber': clobber_func,
+        'coverage': cov_func,
         'test': test_func,
         }
 

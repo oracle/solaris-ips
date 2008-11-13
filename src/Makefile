@@ -37,6 +37,7 @@ install packages := TARGET = install
 link-clean := TARGET = link-clean
 clean := TARGET = clean
 clobber := TARGET = clobber
+coverage := TARGET = coverage
 test := TARGET = test
 test-verbose := TARGET = test-verbose
 test-generate := TARGET = test-generate
@@ -112,3 +113,6 @@ test-generate:
 
 test-leaks:
 	@cd tests; pwd; /bin/ksh memleaks.ksh
+
+coverage:
+	$(PYTHON) setup.py coverage

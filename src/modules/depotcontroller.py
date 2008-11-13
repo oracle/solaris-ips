@@ -155,7 +155,11 @@ class DepotController(object):
                 """ Return the equivalent command line invocation (as an
                     array) for the depot as currently configured. """
 
-                args =  [ self.__depot_path ]
+                args = []
+                if os.environ.has_key("PKGCOVERAGE"):
+                        wrapper = "figleaf"
+                        args.append("figleaf")
+                args.append(self.__depot_path)
                 if self.__depot_content_root:
                         args.append("--content-root")
                         args.append(self.__depot_content_root)
