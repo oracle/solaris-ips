@@ -1564,6 +1564,11 @@ def authority_set(img, args):
                 text = "Could not refresh the catalog for %s"
                 error(_(text) % auth)
                 return 1
+        except api_errors.PermissionsException, e:
+                # Prepend a newline because otherwise the exception will
+                # be printed on the same line as the spinner.
+                msg("\n" + str(e))
+                return 1
 
         if preferred:
                 img.set_preferred_authority(auth)
@@ -1618,8 +1623,13 @@ def authority_unset(img, args):
                         error(_("unset-authority: removal of preferred " \
                             "authority not allowed."))
                         return 1
-
-                img.delete_authority(a)
+                try:
+                        img.delete_authority(a)
+                except api_errors.PermissionsException, e:
+                        # Prepend a newline because otherwise the exception
+                        # will be printed on the same line as the spinner.
+                        msg("\n" + str(e))
+                        return 1
 
         return 0
 
@@ -1720,9 +1730,12 @@ def property_set(img, args):
 
         try:
                 img.set_property(propname, propvalue)
-        except RuntimeError, e:
-                error(_("set-property failed: %s") % e)
+        except api_errors.PermissionsException, e:
+                # Prepend a newline because otherwise the exception will
+                # be printed on the same line as the spinner.
+                msg("\nset-property failed:\n" + str(e))
                 return 1
+
         return 0
 
 def property_unset(img, args):
@@ -1743,6 +1756,11 @@ def property_unset(img, args):
                         img.delete_property(p)
                 except KeyError:
                         error(_("unset-property: no such property: %s") % p)
+                        return 1
+                except api_errors.PermissionsException, e:
+                        # Prepend a newline because otherwise the exception
+                        # will be printed on the same line as the spinner.
+                        msg("\n" + str(e))
                         return 1
 
         return 0

@@ -224,6 +224,7 @@ cli.t_pkg_authority.py TestPkgAuthorityBasics.test_authority_uuid|pass
 cli.t_pkg_authority.py TestPkgAuthorityBasics.test_authority_validation|pass
 cli.t_pkg_authority.py TestPkgAuthorityBasics.test_mirror|pass
 cli.t_pkg_authority.py TestPkgAuthorityBasics.test_mirror_longopt|pass
+cli.t_pkg_authority.py TestPkgAuthorityBasics.test_missing_perms|pass
 cli.t_pkg_authority.py TestPkgAuthorityBasics.test_pkg_authority_bogus_opts|pass
 cli.t_pkg_contents.py TestPkgContentsBasics.test_contents_1|pass
 cli.t_pkg_contents.py TestPkgContentsBasics.test_contents_2|pass
@@ -338,6 +339,7 @@ cli.t_pkg_list.py TestPkgList.test_list_matching|pass
 cli.t_pkg_list.py TestPkgList.test_list_multi_name|pass
 cli.t_pkg_list.py TestPkgList.test_list_z_empty_image|pass
 cli.t_pkg_list.py TestPkgList.test_pkg_list_cli_opts|pass
+cli.t_pkg_property.py TestPkgInfoBasics.test_missing_permssions|pass
 cli.t_pkg_property.py TestPkgInfoBasics.test_pkg_properties|pass
 cli.t_pkg_rebuild_index.py TestPkgRebuildIndex.test_rebuild_index_bad_opts|pass
 cli.t_pkg_rebuild_index.py TestPkgRebuildIndex.test_rebuild_index_bad_perms|pass

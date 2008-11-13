@@ -137,7 +137,7 @@ class TestPkgAuthorityBasics(testutils.SingleDepotTestCase):
                 self.image_create(durl, prefix = pfx)
 
                 self.pkg("set-authority -m http://%s1 mtest" % self.bogus_url)
-                self.pkg("set-authority -m http://%s2.test.com mtest" %
+                self.pkg("set-authority -m http://%s2 mtest" %
                     self.bogus_url)
                 self.pkg("set-authority -m http://%s5" % self.bogus_url, exit=2)
                 self.pkg("set-authority -m mtest", exit=2)
@@ -148,7 +148,7 @@ class TestPkgAuthorityBasics(testutils.SingleDepotTestCase):
                 self.pkg("set-authority -m %s7 mtest" % self.bogus_url, exit=1)
 
                 self.pkg("set-authority -M http://%s1 mtest" % self.bogus_url)
-                self.pkg("set-authority -M http://%s2.test.com mtest" %
+                self.pkg("set-authority -M http://%s2 mtest" %
                     self.bogus_url)
                 self.pkg("set-authority -M mtest http://%s2 http://%s4" %
                     (self.bogus_url, self.bogus_url), exit=2)
@@ -160,35 +160,67 @@ class TestPkgAuthorityBasics(testutils.SingleDepotTestCase):
                     exit=1)
                 self.pkg("set-authority -M %s7 mtest" % self.bogus_url, exit=1)
 
+        def test_missing_perms(self):
+                """Bug 2393"""
+                durl = self.dc.get_depot_url()
+                pfx = "mtest"
+                self.image_create(durl, prefix=pfx)
+
+                self.pkg("set-authority --no-refresh -O http://%s1 test1" %
+                    self.bogus_url, su_wrap="noaccess", exit=1)
+                self.pkg("set-authority --no-refresh -O http://%s1 foo" %
+                    self.bogus_url)
+                self.pkg("authority | grep foo")
+                self.pkg("set-authority -P --no-refresh -O http://%s2 test2" %
+                    self.bogus_url, su_wrap="noaccess", exit=1)
+                self.pkg("unset-authority foo", su_wrap="noaccess", exit=1)
+                self.pkg("unset-authority foo")
+
+                self.pkg("set-authority -m http://%s1 mtest" % self.bogus_url, \
+                    su_wrap="noaccess", exit=1)
+                self.pkg("set-authority -m http://%s2 mtest" %
+                    self.bogus_url)
+
+                self.pkg("set-authority -M http://%s2 mtest" %
+                    self.bogus_url, su_wrap="noaccess", exit=1)
+                self.pkg("set-authority -M http://%s2 mtest" %
+                    self.bogus_url)
+
         def test_mirror_longopt(self):
                 """Test set-mirror and unset-mirror."""
                 durl = self.dc.get_depot_url()
                 pfx = "mtest"
                 self.image_create(durl, prefix = pfx)
 
-                self.pkg("set-authority --add-mirror=http://%s1 mtest" % self.bogus_url)
-                self.pkg("set-authority --add-mirror=http://%s2.test.com mtest" %
+                self.pkg("set-authority --add-mirror=http://%s1 mtest" %
                     self.bogus_url)
-                self.pkg("set-authority --add-mirror=http://%s5" % self.bogus_url, exit=2)
+                self.pkg("set-authority --add-mirror=http://%s2 mtest" %
+                    self.bogus_url)
+                self.pkg("set-authority --add-mirror=http://%s5" %
+                    self.bogus_url, exit=2)
                 self.pkg("set-authority --add-mirror=mtest", exit=2)
-                self.pkg("set-authority --add-mirror=http://%s1 mtest" % self.bogus_url,
-                    exit=1)
-                self.pkg("set-authority --add-mirror=http://%s5 test" % self.bogus_url,
-                    exit=1)
-                self.pkg("set-authority --add-mirror=%s7 mtest" % self.bogus_url, exit=1)
+                self.pkg("set-authority --add-mirror=http://%s1 mtest" %
+                    self.bogus_url, exit=1)
+                self.pkg("set-authority --add-mirror=http://%s5 test" %
+                    self.bogus_url, exit=1)
+                self.pkg("set-authority --add-mirror=%s7 mtest" %
+                    self.bogus_url, exit=1)
 
-                self.pkg("set-authority --remove-mirror=http://%s1 mtest" % self.bogus_url)
-                self.pkg("set-authority --remove-mirror=http://%s2.test.com mtest" %
+                self.pkg("set-authority --remove-mirror=http://%s1 mtest" %
+                    self.bogus_url)
+                self.pkg("set-authority --remove-mirror=http://%s2 mtest" %
                     self.bogus_url)
                 self.pkg("set-authority --remove-mirror=mtest http://%s2 http://%s4" %
                     (self.bogus_url, self.bogus_url), exit=2)
-                self.pkg("set-authority --remove-mirror=http://%s5" % self.bogus_url, exit=2)
+                self.pkg("set-authority --remove-mirror=http://%s5" %
+                    self.bogus_url, exit=2)
                 self.pkg("set-authority --remove-mirror=mtest", exit=2)
-                self.pkg("set-authority --remove-mirror=http://%s5 test" % self.bogus_url,
-                    exit=1)
-                self.pkg("set-authority --remove-mirror=http://%s6 mtest" % self.bogus_url,
-                    exit=1)
-                self.pkg("set-authority --remove-mirror=%s7 mtest" % self.bogus_url, exit=1)
+                self.pkg("set-authority --remove-mirror=http://%s5 test" %
+                    self.bogus_url, exit=1)
+                self.pkg("set-authority --remove-mirror=http://%s6 mtest" %
+                    self.bogus_url, exit=1)
+                self.pkg("set-authority --remove-mirror=%s7 mtest" %
+                    self.bogus_url, exit=1)
 
 if __name__ == "__main__":
         unittest.main()

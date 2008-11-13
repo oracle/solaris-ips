@@ -25,8 +25,10 @@
 
 import ConfigParser
 import re
+import errno
 import pkg.fmri as fmri
 import pkg.misc as misc
+import pkg.client.api_errors as api_errors
 from pkg.misc import msg
 
 class DepotStatus(object):
@@ -237,9 +239,11 @@ class ImageConfig(object):
 
                 try:
                         f = open(path, "w")
-                except IOError, (errno, strerror):
-                        raise RuntimeError("unable to open %s for writing: %s" %
-                                (path, strerror))
+                except EnvironmentError, e:
+                        if e.errno == errno.EACCES:
+                                raise api_errors.PermissionsException(
+                                    e.filename)
+                        raise
                 cp.write(f)
 
         def delete_authority(self, auth):

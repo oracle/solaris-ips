@@ -62,5 +62,16 @@ class TestPkgInfoBasics(testutils.SingleDepotTestCase):
                 self.pkg("unset-property description", exit=1)
                 self.pkg("unset-property", exit=2)
 
+        def test_missing_permssions(self):
+                """Bug 2393"""
+                durl = self.dc.get_depot_url()
+                self.image_create(durl)
+
+                self.pkg("property")
+                self.pkg("set-property require-optional True", su_wrap="noaccess", exit=1)
+                self.pkg("set-property require-optional True")
+                self.pkg("unset-property require-optional", su_wrap="noaccess", exit=1)
+                self.pkg("unset-property require-optional")
+
 if __name__ == "__main__":
         unittest.main()
