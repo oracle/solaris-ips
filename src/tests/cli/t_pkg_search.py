@@ -540,6 +540,10 @@ close
 
 		self.pkg("search", exit=2)
 
+                # Bug 1541
+                self.pkg("search -s httP://pkg.opensolaris.org bge")
+                self.pkg("search -s ftp://pkg.opensolaris.org:88 bge", exit=1)
+
         def test_remote(self):
                 """Test remote search."""
                 durl = self.dc.get_depot_url()

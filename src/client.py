@@ -909,9 +909,13 @@ def search(img, args):
                 elif opt == "-r":
                         remote = True
                 elif opt == "-s":
-                        if not arg.startswith("http://") and \
-                            not arg.startswith("https://"):
+                        if not misc.valid_auth_url(arg):
+                                orig_arg = arg
                                 arg = "http://" + arg
+                                if not misc.valid_auth_url(arg):
+                                        error(_("%s is not a valid "
+                                            "server URL.") % orig_arg)
+                                        return 1
                         remote = True
                         servers.append({"origin": arg})
                 elif opt == "-I":
