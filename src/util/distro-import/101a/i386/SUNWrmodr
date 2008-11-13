@@ -1,0 +1,9 @@
+package SUNWrmodr
+classification "System/Core"
+import SUNWrmodr
+drop boot/solaris.xpm
+from SUNWfixes import
+boot/solaris.xpm
+boot/solaris/devicedb/master
+end import
+end package

@@ -93,6 +93,7 @@ CACHED_FILES=								\
 	$(ELIDED_FILES)							\
 	boot/grub/menu.lst						\
 	boot/grub/splash.xpm.gz						\
+	boot/solaris.xpm						\
 	etc/inet/hosts							\
 	etc/mailcap							\
 	etc/mime.types							\
@@ -108,6 +109,7 @@ CACHED_FILES=								\
 	lib/svc/method/xvm-vnc-config					\
 	root/.bashrc							\
 	root/.profile							\
+	usr/X11/lib/xscreensaver/config/opensolaris-logo.png		\
 	usr/jdk/instances/jdk1.6.0/jre/lib/fontconfig.properties	\
 	usr/lib/vp-services						\
 	usr/lib/vp-shares						\
@@ -333,9 +335,9 @@ proto:	Makefile
 	mkdir -p proto/kernel/drv
 	mkdir -p proto/lib/svc/method
 	mkdir -p proto/root
+	mkdir -p proto/usr/X11/lib/xscreensaver/config
 	mkdir -p proto/usr/bin
 	mkdir -p proto/usr/has/bin
-	mkdir -p proto/usr/jdk/instances/jdk1.6.0/jre
 	mkdir -p proto/usr/jdk/instances/jdk1.6.0/jre/lib
 	mkdir -p proto/usr/lib
 	mkdir -p proto/usr/sbin

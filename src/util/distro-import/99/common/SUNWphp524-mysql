@@ -5,7 +5,6 @@
 # on the package with the new name.
 #
 package SUNWphp524-mysql
-classification "Development/PHP"
 version 5.2.4
 depend SUNWphp52-mysql
 end package

@@ -6,5 +6,4 @@
 # SUNWgnome-freedb-libs was EOFed in snv_99.
 #
 package SUNWgnome-freedb-libs
-classification "Desktop (GNOME)/Libraries"
 end package

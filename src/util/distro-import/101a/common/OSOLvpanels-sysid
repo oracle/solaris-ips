@@ -1,0 +1,5 @@
+package OSOLvpanels-sysid
+classification "Applications/Configuration and Preferences"
+import OSOLvpin-sysid
+depend OSOLvpanels
+end package

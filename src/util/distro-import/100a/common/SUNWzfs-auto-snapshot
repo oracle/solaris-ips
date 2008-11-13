@@ -1,7 +1,7 @@
 package SUNWzfs-auto-snapshot
 classification "System/File System"
 import SUNWzfs-auto-snapshot
-add user username=zfssnap uid=51 group=daemon \
+add user username=zfssnap password=NP uid=51 group=daemon \
 	gcos-field="ZFS Automatic Snapshots Reserved UID" \
 	login-shell=/usr/bin/pfsh ftpuser=false
 end package

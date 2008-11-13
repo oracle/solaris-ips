@@ -1,5 +1,4 @@
 package SUNWphp524usr
-classification "Development/PHP"
 version 5.2.4
 depend SUNWphp524
 end package

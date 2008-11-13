@@ -1,5 +1,6 @@
 i pkginfo=SUNWfixes.pkginfo
 f none boot/grub/splash.xpm.gz 0644 root sys
+f none boot/solaris.xpm 0644 root sys
 e none boot/solaris/devicedb/master 0644 root sys
 e none etc/driver_aliases 0644 root sys
 e none etc/hba.conf 0644 root bin
@@ -31,6 +32,7 @@ f none lib/svc/method/xvm-vnc-config 0555 root bin
 d none root 0700 root root
 e none root/.bashrc 0644 root root
 e none root/.profile 0644 root root
+f none usr/X11/lib/xscreensaver/config/opensolaris-logo.png 0444 root bin
 f none usr/bin/ksh 0755 root bin
 l none usr/has/bin/ex=vi
 f none usr/has/bin/sh 0755 root root

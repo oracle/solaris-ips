@@ -24,6 +24,8 @@ include common/FSWxorg-headers
 include common/FSWxwpft
 include common/FSWxwrtl
 include common/OSOLvpanels
+include common/OSOLvpanels-mysql
+include common/OSOLvpanels-sysid
 include common/SUNW1394
 include common/SUNW1394h
 include common/SUNWDTraceToolkit
@@ -389,6 +391,7 @@ include common/SUNWipfh
 include common/SUNWipkg
 include common/SUNWipkg-brand
 include common/SUNWipkg-gui
+include common/SUNWipkg-gui-data
 include common/SUNWipkg-gui-l10n
 include common/SUNWipkg-um
 include common/SUNWipmi
@@ -412,6 +415,12 @@ include common/SUNWj6dmx
 include common/SUNWj6dvx
 include common/SUNWj6man
 include common/SUNWjavadb
+include common/SUNWjavadb-client
+include common/SUNWjavadb-common
+include common/SUNWjavadb-core
+include common/SUNWjavadb-demo
+include common/SUNWjavadb-docs
+include common/SUNWjavadb-javadoc
 include common/SUNWjdmk-base
 include common/SUNWjhrt
 include common/SUNWjpg
@@ -1377,6 +1386,8 @@ depend FSWxorg-fonts-syriac
 depend FSWxorg-fonts-vera
 depend NVDAgraphics
 depend OSOLvpanels
+depend OSOLvpanels-mysql
+depend OSOLvpanels-sysid
 depend SUNW1394
 depend SUNW1394h
 depend SUNWDTraceToolkit
@@ -2722,6 +2733,7 @@ depend SUNWgnome-dialog
 depend SUNWgnome-dictionary
 depend SUNWgnome-disk-analyzer
 depend SUNWgnome-display-mgr
+depend SUNWgnome-doc-utils
 depend SUNWgnome-dtstart
 depend SUNWgnome-file-mgr
 depend SUNWgnome-fun-applets
@@ -2837,6 +2849,7 @@ depend SUNWiwk
 depend SUNWixgb
 depend SUNWixgbe
 depend SUNWj6rt
+depend SUNWjdoc
 depend SUNWjpg
 depend SUNWjre-config-plugin
 depend SUNWjss
@@ -2970,6 +2983,7 @@ depend SUNWpsm-ipp
 depend SUNWpsm-lpd
 depend SUNWpsutils
 depend SUNWpython-cherrypy
+depend SUNWpython-notify
 depend SUNWpython-pyopenssl
 depend SUNWqlc
 depend SUNWqlcu
@@ -3043,6 +3057,7 @@ depend SUNWtoo
 depend SUNWtop
 depend SUNWttf-arphic-uming
 depend SUNWttf-hanyang-ko-core
+depend SUNWttf-indic-fonts-core
 depend SUNWttf-ipafont
 depend SUNWuacm
 depend SUNWudapl

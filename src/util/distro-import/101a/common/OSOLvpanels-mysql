@@ -1,0 +1,7 @@
+package OSOLvpanels-mysql
+classification "Applications/Configuration and Preferences"
+import OSOLvpin-mysql
+depend OSOLvpanels
+depend SUNWmysql5
+depend SUNWmysql5jdbc
+end package

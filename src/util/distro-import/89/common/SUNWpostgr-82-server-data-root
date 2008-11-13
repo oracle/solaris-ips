@@ -4,7 +4,6 @@
 # be deleted when the newer package is installed.
 #
 package SUNWpostgr-82-server-data-root
-classification "System/Databases"
 version 8.2.6
 depend SUNWpostgr-82-server
 end package
