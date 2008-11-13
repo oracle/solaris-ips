@@ -270,7 +270,34 @@ class pkg(object):
                                 print "Updating attributes on " + \
                                     "'%s' in '%s' with '%s'" % \
                                     (f.pathname, curpkg.name, a)
-                        f.changed_attrs = a.attrs
+                        orig_action = self.file_to_action(f)
+
+                        if not hasattr(f, "changed_attrs"):
+                                f.changed_attrs = {}
+
+                        # each chattr produces a dictionary of actions
+                        # including a path=xxxx and whatever modifications
+                        # are made.  Note that the path value may be a list in
+                        # the case of modifications to the path... since 
+                        # each chattr produces another path= entry and results
+                        # from applying the changes to the original file spec,
+                        # we need to ignore path if it hasn't changed... for
+                        # generality, we ignore all unchanged attributes in
+                        # the code below, adding into changed_attrs only those
+                        # that are different from the original... this also 
+                        # insulates us from the possibility of actions.fromstr
+                        # adding additional attributes in the constructor...
+
+                        for key in a.attrs.keys():
+                                if key not in orig_action.attrs or \
+                                    orig_action.attrs[key] != a.attrs[key]:
+                                        if key in f.changed_attrs:
+                                                print "Warning: overwriting changed attr %s on %s from %s to %s" % \
+                                                    (key, f.pathname, 
+                                                     f.changed_attrs[key], 
+                                                     a.attrs[key])
+                                        f.changed_attrs[key] = a.attrs[key]
+
 
         # apply a chattr to wildcarded files/dirs
         # also allows package specification, wildcarding, regexp edit
@@ -314,11 +341,10 @@ class pkg(object):
 
                 for f in o:
                         file = f.pathname
-
+                        orig_action = self.file_to_action(f)
                         if edit:
-                                a = self.file_to_action(f)
-                                if target in a.attrs:
-                                        old_value = a.attrs[target]
+                                if target in orig_action.attrs:
+                                        old_value = orig_action.attrs[target]
                                         new_value = regexp.sub(replace, \
                                             old_value)
                                         if old_value == new_value:
@@ -335,8 +361,31 @@ class pkg(object):
                         s = "%s path=%s %s" % (self.convert_type(f.type), \
                            file, chattr_line)
                         a = actions.fromstr(s)
-                        f.changed_attrs = a.attrs
 
+                        # each chattr produces a dictionary of actions
+                        # including a path=xxxx and whatever modifications
+                        # are made.  Note that the path value may be a list in
+                        # the case of modifications to the path... since 
+                        # each chattr produces another path= entry and results
+                        # from applying the changes to the original file spec,
+                        # we need to ignore path if it hasn't changed... for
+                        # generality, we ignore all unchanged attributes in
+                        # the code below, adding into changed_attrs only those
+                        # that are different from the original... this also 
+                        # insulates us from the possibility of actions.fromstr
+                        # adding additional attributes in the constructor...
+
+                        if not hasattr(f, "changed_attrs"):
+                                f.changed_attrs = {}
+                        for key in a.attrs.keys():
+                                if key not in orig_action.attrs or \
+                                    orig_action.attrs[key] != a.attrs[key]:
+                                        if key in f.changed_attrs:
+                                                print "Warning: overwriting changed attr %s on %s from %s to %s" % \
+                                                    (key, f.pathname, 
+                                                     f.changed_attrs[key], 
+                                                     a.attrs[key])
+                                        f.changed_attrs[key] = a.attrs[key]
 
 pkgpaths = {}
 
