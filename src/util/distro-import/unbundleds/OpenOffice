@@ -37,8 +37,10 @@ import ooobasis30-writer
 import ooobasis30-xsltfilter
 import openofficeorg3
 import openofficeorg30-desktop-int
-drop etc/mime.types
 drop etc/mailcap
+drop etc/mime.types
+drop share/mime
+drop share/mime/packages
 chattr usr/share/applications/openoffice.org3-printeradmin.desktop \
     target=../../../opt/openoffice.org3/share/xdg/printeradmin.desktop
 import openofficeorg3-base
