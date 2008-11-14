@@ -105,8 +105,33 @@ case "$1" in
 	    cnt=$(($cnt + 1))
 	done
 
+	#
+	# If we're in --readonly mode, drop fork and exec.
+	#
+	forkexec=""
+	val=$(svcprop -p pkg/readonly $SMF_FMRI)
+	if [[ $? -eq 0 && $val == 'true' ]]; then
+		forkexec=",-proc_fork,-proc_exec"
+	fi
+
+	#
+	# If this process has net_privaddr, then we pass it along.
+	# If not, we ensure that we don't specify it, since that will
+	# cause ppriv to throw an error.
+	#
+	privaddr=""
+	ppriv -v $$ | grep 'E: ' | grep net_privaddr > /dev/null 2>&1
+	if [[ $? == 0 ]]; then
+		privaddr=",net_privaddr"
+	fi
+	#
+	# We build up the privileges available starting with "basic".
+	# This provides some protection even when the depot runs as root.
+	#
+	wrapper="ppriv -s A=basic,-file_link_any,-proc_info,-proc_session$privaddr$forkexec -e"
+
 	# Build the command to start pkg.depotd with the specified options.
-	cmd="/usr/lib/pkg.depotd $bool_ops $option_ops"
+	cmd="$wrapper /usr/lib/pkg.depotd $bool_ops $option_ops"
 	# Echo the command so that the log contains the command used to start
 	# the depot.
 	echo $cmd
