@@ -32,6 +32,7 @@ import os
 import re
 import shutil
 import difflib
+import time
 
 import pkg.client.api as api
 import pkg.client.api_errors as api_errors
@@ -67,6 +68,11 @@ class TestApiInfo(testutils.SingleDepotTestCase):
                     close
                 """
 
+                pkg3 = """
+                    open foo@1.0,5.11-0
+                    close
+                """
+
                 durl = self.dc.get_depot_url()
 
                 self.pkgsend_bulk(durl, pkg1)
@@ -75,15 +81,19 @@ class TestApiInfo(testutils.SingleDepotTestCase):
                 self.image_create(durl)
 
                 filters = []
+
+                local = True
+                get_license = False
+                
+                ret = api_obj.info(["jade"], local, get_license)
+                self.assert_(not ret[api.ImageInterface.INFO_FOUND])
+                self.assert_(len(ret[api.ImageInterface.INFO_MISSING]) == 1)
                 
                 api_obj.plan_install(["jade"], filters)
                 api_obj.prepare()
                 api_obj.execute_plan()
 
                 self.pkg("verify -v")
-
-                local = True
-                get_license = False
                 
                 ret = api_obj.info(["jade", "turquoise", "emerald"],
                     local, get_license)
@@ -155,15 +165,18 @@ class TestApiInfo(testutils.SingleDepotTestCase):
                 self.assert_(len(pis) == 1)
                 self.assert_(len(pis[0].dirs) == 1)
 
-                ret = api_obj.info(["/usr/bin/stunnel"], local, get_license)
-                illegals = ret[api.ImageInterface.INFO_ILLEGALS]
-                self.assert_(len(illegals) == 1)
+                # Test as part of bug 4886.
+                # Makes sure that the catalog.pkl files is reread when
+                # necessary.
+                self.pkgsend_bulk(durl, pkg3)
+                time.sleep(1)
+                api_obj2 = api.ImageInterface(self.get_img_path(), API_VERSION,
+                    progress.NullProgressTracker(), lambda x: False, PKG_CLIENT_NAME)
+                api_obj2.refresh(False)
 
-                local = True
-                
-                ret = api_obj.info(["/usr/bin/stunnel"], local, get_license)
-                illegals = ret[api.ImageInterface.INFO_ILLEGALS]
-                self.assert_(len(illegals) == 1)
+                ret = api_obj.info(["foo"], local, get_license)
+                pis = ret[api.ImageInterface.INFO_FOUND]
+                self.assert_(len(pis) == 1)
 
 
 if __name__ == "__main__":

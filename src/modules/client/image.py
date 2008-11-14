@@ -176,6 +176,7 @@ class Image(object):
                     "Policy-Require-Optional": False,
                     "Policy-Pursue-Latest": True
                 }
+                self._catalog_cache_mod_time = None
 
                 self.imageplan = None # valid after evaluation succeeds
 
@@ -1445,27 +1446,29 @@ class Image(object):
 
                 cache_file = os.path.join(self.imgdir, "catalog/catalog.pkl")
                 try:
-                        version, self._catalog = \
-                            cPickle.load(file(cache_file, "rb"))
-                except (cPickle.PickleError, EnvironmentError):
-                        raise RuntimeError
+                        mod_time = os.stat(cache_file).st_mtime
+                except EnvironmentError, e:
+                        if e.errno == errno.ENOENT:
+                                mod_time = None
+                        else:
+                                raise
 
-                # If we don't recognize the version, complain.
-                if version != self.CATALOG_CACHE_VERSION:
-                        raise RuntimeError
+                if not self._catalog or \
+                    mod_time != self._catalog_cache_mod_time:
 
-                # Add the packages which are installed, but not in the catalog.
-                # XXX Should we have a different state for these, so we can flag
-                # them to the user?
-                for state, f in self.pkg_states.values():
-                        if state != PKG_STATE_INSTALLED:
-                                continue
-                        auth, name, vers = f.tuple()
+                        try:
+                                version, self._catalog = \
+                                    cPickle.load(file(cache_file, "rb"))
+                        except (cPickle.PickleError, EnvironmentError):
+                                self._catalog = {}
+                                self._catalog_cache_mod_time = None
+                                raise RuntimeError
 
-                        if name not in self._catalog or \
-                            vers not in self._catalog[name]["versions"]:
-                                catalog.Catalog.cache_fmri(self._catalog, f,
-                                    f.get_authority())
+                        self._catalog_cache_mod_time = mod_time
+                        
+                        # If we don't recognize the version, complain.
+                        if version != self.CATALOG_CACHE_VERSION:
+                                raise RuntimeError
 
         def load_catalogs(self, progresstracker):
                 for auth in self.gen_authorities():
@@ -1490,6 +1493,19 @@ class Image(object):
                         self.load_catalog_cache()
                 except RuntimeError:
                         self.cache_catalogs()
+
+                # Add the packages which are installed, but not in the catalog.
+                # XXX Should we have a different state for these, so we can flag
+                # them to the user?
+                for state, f in self.pkg_states.values():
+                        if state != PKG_STATE_INSTALLED:
+                                continue
+                        auth, name, vers = f.tuple()
+
+                        if name not in self._catalog or \
+                            vers not in self._catalog[name]["versions"]:
+                                catalog.Catalog.cache_fmri(self._catalog, f,
+                                    f.get_authority())
 
         def destroy_catalog_cache(self):
                 pickle_file = os.path.join(self.imgdir, "catalog/catalog.pkl")
