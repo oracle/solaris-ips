@@ -173,6 +173,10 @@ class ImageInterface(object):
                                 self.img.history.operation_result = \
                                     history.RESULT_CANCELED
                                 raise
+                        except api_errors.PlanCreationException, e:
+                                self.__reset_unlock()
+                                self.__set_history_PlanCreationException(e)
+                                raise
                         except fmri.IllegalFmri:
                                 self.__reset_unlock()
                                 self.img.history.operation_result = \
@@ -242,10 +246,9 @@ class ImageInterface(object):
                                 self.img.history.operation_result = \
                                     history.RESULT_FAILED_CONSTRAINED
                                 raise
-                        except api_errors.PlanCreationException:
+                        except api_errors.PlanCreationException, e:
                                 self.__reset_unlock()
-                                self.img.history.operation_result = \
-                                    history.RESULT_FAILED_BAD_REQUEST
+                                self.__set_history_PlanCreationException(e)
                                 raise
                         except fmri.IllegalFmri:
                                 self.__reset_unlock()
@@ -374,6 +377,10 @@ class ImageInterface(object):
                                 self.__reset_unlock()
                                 self.img.history.operation_result = \
                                     history.RESULT_CANCELED
+                                raise
+                        except api_errors.PlanCreationException, e:
+                                self.__reset_unlock()
+                                self.__set_history_PlanCreationException(e)
                                 raise
                         except api_errors.IpkgOutOfDateException:
                                 self.__reset_unlock()
@@ -797,6 +804,18 @@ class ImageInterface(object):
                 self.__activity_lock.release()
                 self.__canceling = False
                 return True
+
+        def __set_history_PlanCreationException(self, e):
+                if e.unfound_fmris or e.multiple_matches or \
+                    e.missing_matches or e.illegal:
+                        self.img.history.operation_result = \
+                            history.RESULT_FAILED_BAD_REQUEST
+                elif e.constraint_violations:
+                        self.img.history.operation_result = \
+                            history.RESULT_FAILED_CONSTRAINED
+                else:
+                        self.img.history.operation_result = \
+                            history.RESULT_FAILED_UNKNOWN
 
 
 class PlanDescription(object):

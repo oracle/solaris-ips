@@ -40,6 +40,16 @@ class TestPkgHistory(testutils.ManyDepotTestCase):
             open foo@1,5.11-0
             close """
 
+        foo2 = """
+            open foo@2,5.11-0
+            close """
+
+        bar1 = """
+            open bar@1,5.11-0
+            add depend type=incorporate fmri=pkg:/foo@1
+            close """
+
+        
         def setUp(self):
                 testutils.ManyDepotTestCase.setUp(self, 2)
 
@@ -134,6 +144,45 @@ class TestPkgHistory(testutils.ManyDepotTestCase):
                 # purge-history.
                 self.assert_(
                     re.search("purge-history", o.splitlines()[0]) != None)
+
+        def test_bug_4369(self):
+                """Test that install and uninstall of non-existent packages
+                both make the same history entry.
+                """
+
+                self.pkg("purge-history")
+                self.pkg("uninstall doesnt_exist", exit=1)
+                self.pkg("install doesnt_exist", exit=1)
+                self.pkg("history -H")
+                o = self.output
+                for l in o.splitlines():
+                        tmp = l.split()
+                        res = " ".join(tmp[3:])
+                        if tmp[1] == "install" or tmp[1] == "uninstall":
+                                self.assert_(res == "Failed (Bad Request)")
+                        else:
+                                self.assert_(tmp[1] == "purge-history")
+
+        def test_bug_5024(self):
+                """Test that install and uninstall of non-existent packages
+                both make the same history entry.
+                """
+                durl1 = self.dcs[1].get_depot_url()
+                self.pkgsend_bulk(durl1, self.bar1)
+                self.pkg("install bar")
+                self.pkg("install foo")
+                self.pkgsend_bulk(durl1, self.foo2)
+                self.pkg("purge-history")
+                self.pkg("install foo@2", exit=1)
+                self.pkg("history -H")
+                o = self.output
+                for l in o.splitlines():
+                        tmp = l.split()
+                        res = " ".join(tmp[3:])
+                        if tmp[1] == "install":
+                                self.assert_(res == "Failed (Constrained)")
+                        else:
+                                self.assert_(tmp[1] == "purge-history")
 
 if __name__ == "__main__":
         unittest.main()

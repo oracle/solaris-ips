@@ -243,6 +243,8 @@ cli.t_pkg_depotd.py TestPkgDepot.test_depot_ping|pass
 cli.t_pkg_history.py TestPkgHistory.test_1_history_options|pass
 cli.t_pkg_history.py TestPkgHistory.test_2_history_record|pass
 cli.t_pkg_history.py TestPkgHistory.test_3_purge_history|pass
+cli.t_pkg_history.py TestPkgHistory.test_bug_4369|pass
+cli.t_pkg_history.py TestPkgHistory.test_bug_5024|pass
 cli.t_pkg_image_create.py TestImageCreateNoDepot.test_763a|pass
 cli.t_pkg_image_create.py TestImageCreateNoDepot.test_763c|pass
 cli.t_pkg_image_create.py TestImageCreateNoDepot.test_765|pass
