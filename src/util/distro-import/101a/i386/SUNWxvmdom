@@ -1,7 +1,7 @@
 package SUNWxvmdom
 classification "System/Virtualization"
 import SUNWxvmdomu
-import SUNWxvmdomr
+import SUNWxvmdomr exclude var var/log var/log/xen
 from SUNWfixes import
 lib/svc/method/xvm-vnc-config
 var/svc/manifest/system/xvm/vnc-config.xml
