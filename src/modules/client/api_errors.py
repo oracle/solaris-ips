@@ -96,9 +96,9 @@ class PermissionsException(ApiException):
 
         def __str__(self):
                 if self.path:
-                        return _("Could not operate on %s because\nof insufficient "
-                                "permissions. Please try the command again using pfexec "
-                                "or\notherwise increase your permissions.") % self.path
+                        return _("Could not operate on %s\nbecause of insufficient "
+                                "permissions. Please try the command again using pfexec\n"
+                                "or otherwise increase your permissions.") % self.path
                 else:
                         return _("""
 Could not complete the operation because of insufficient permissions. Please

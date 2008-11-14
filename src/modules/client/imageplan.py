@@ -24,6 +24,7 @@
 # Use is subject to license terms.
 
 import os
+import errno
 import pkg.fmri as fmri
 import pkg.client.api_errors as api_errors
 import pkg.client.imagestate as imagestate
@@ -599,11 +600,17 @@ class ImagePlan(object):
                                 pass
 
                 try:
-                        for p in self.pkg_plans:
-                                p.preexecute()
+                        try:
+                                for p in self.pkg_plans:
+                                        p.preexecute()
 
-                        for p in self.pkg_plans:
-                                p.download()
+                                for p in self.pkg_plans:
+                                        p.download()
+                        except EnvironmentError, e:
+                                if e.errno == errno.EACCES:
+                                        raise api_errors.PermissionsException(
+                                            e.filename)
+                                raise
 
                         self.progtrack.download_done()
                 except:
@@ -664,44 +671,50 @@ class ImagePlan(object):
                 self.actuators.exec_pre_actuators(self.image)
 
                 try:
+                        try:
                 
-                        # execute removals
+                                # execute removals
 
-                        self.progtrack.actions_set_goal("Removal Phase",
-                            len(self.removal_actions))
-                        for p, src, dest in self.removal_actions:
-                                p.execute_removal(src, dest)
-                                self.progtrack.actions_add_progress()
-                        self.progtrack.actions_done()
+                                self.progtrack.actions_set_goal("Removal Phase",
+                                    len(self.removal_actions))
+                                for p, src, dest in self.removal_actions:
+                                        p.execute_removal(src, dest)
+                                        self.progtrack.actions_add_progress()
+                                self.progtrack.actions_done()
 
-                        # execute installs
+                                # execute installs
 
-                        self.progtrack.actions_set_goal("Install Phase",
-                            len(self.install_actions))
+                                self.progtrack.actions_set_goal("Install Phase",
+                                    len(self.install_actions))
 
-                        for p, src, dest in self.install_actions:
-                                p.execute_install(src, dest)
-                                self.progtrack.actions_add_progress()
-                        self.progtrack.actions_done()
+                                for p, src, dest in self.install_actions:
+                                        p.execute_install(src, dest)
+                                        self.progtrack.actions_add_progress()
+                                self.progtrack.actions_done()
 
-                        # execute updates
+                                # execute updates
 
-                        self.progtrack.actions_set_goal("Update Phase",
-                            len(self.update_actions))
+                                self.progtrack.actions_set_goal("Update Phase",
+                                    len(self.update_actions))
 
-                        for p, src, dest in self.update_actions:
-                                p.execute_update(src, dest)
-                                self.progtrack.actions_add_progress()
+                                for p, src, dest in self.update_actions:
+                                        p.execute_update(src, dest)
+                                        self.progtrack.actions_add_progress()
 
-                        self.progtrack.actions_done()
+                                self.progtrack.actions_done()
 
-                        # handle any postexecute operations
+                                # handle any postexecute operations
 
-                        for p in self.pkg_plans:
-                                p.postexecute()
+                                for p in self.pkg_plans:
+                                        p.postexecute()
 
-                        self.image.clear_pkg_state()
-
+                                self.image.clear_pkg_state()
+                        except EnvironmentError, e:
+                                if e.errno == errno.EACCES or \
+                                    e.errno == errno.EPERM:
+                                        raise api_errors.PermissionsException(
+                                            e.filename)
+                                raise
                 except:
                         self.actuators.exec_fail_actuators(self.image)
                         raise

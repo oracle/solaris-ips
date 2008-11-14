@@ -601,6 +601,11 @@ def image_update(img_dir, args):
                 raise
         except KeyboardInterrupt:
                 raise
+        except api_errors.PermissionsException, e:
+                # Prepend a newline because otherwise the exception will
+                # be printed on the same line as the spinner.
+                error("\n" + str(e))
+                return 1
         except:
                 error(_("\nAn unexpected error happened while preparing for " \
                     "image-update:"))
@@ -619,6 +624,11 @@ def image_update(img_dir, args):
                 ret_code = 1
         except api_errors.ProblematicPermissionsIndexException, e:
                 error(str(e) + PROBLEMATIC_PERMISSIONS_ERROR_MESSAGE)
+                ret_code = 1
+        except api_errors.PermissionsException, e:
+                # Prepend a newline because otherwise the exception will
+                # be printed on the same line as the spinner.
+                error("\n" + str(e))
                 ret_code = 1
         except KeyboardInterrupt:
                 raise
@@ -732,8 +742,6 @@ def install(img_dir, args):
                 error(e)
                 return 1
 
-
-
         if noexecute:
                 return 0
 
@@ -748,6 +756,11 @@ def install(img_dir, args):
                 raise
         except KeyboardInterrupt:
                 raise
+        except api_errors.PermissionsException, e:
+                # Prepend a newline because otherwise the exception will
+                # be printed on the same line as the spinner.
+                error("\n" + str(e))
+                return 1
         except:
                 error(_("\nAn unexpected error happened while preparing for " \
                     "install:"))
@@ -765,6 +778,11 @@ def install(img_dir, args):
                 ret_code = 1
         except api_errors.ProblematicPermissionsIndexException, e:
                 error(str(e) + PROBLEMATIC_PERMISSIONS_ERROR_MESSAGE)
+                ret_code = 1
+        except api_errors.PermissionsException, e:
+                # Prepend a newline because otherwise the exception will
+                # be printed on the same line as the spinner.
+                error("\n" + str(e))
                 ret_code = 1
         except KeyboardInterrupt:
                 raise
@@ -833,7 +851,8 @@ the following packages that depend on it:""" % e[0])
                 for d in e[1]:
                         emsg("  %s" % d)
                 return 1
-        except api_errors.PlanCreationException, e:
+        except (api_errors.PlanCreationException,
+            api_errors.PermissionsException), e:
                 # Prepend a newline because otherwise the exception will
                 # be printed on the same line as the spinner.
                 msg("\n" + str(e))
@@ -872,6 +891,11 @@ the following packages that depend on it:""" % e[0])
                 ret_code = 1
         except api_errors.ProblematicPermissionsIndexException, e:
                 error(str(e) + PROBLEMATIC_PERMISSIONS_ERROR_MESSAGE)
+                ret_code = 1
+        except api_errors.PermissionsException, e:
+                # Prepend a newline because otherwise the exception will
+                # be printed on the same line as the spinner.
+                error("\n" + str(e))
                 ret_code = 1
         except KeyboardInterrupt:
                 raise

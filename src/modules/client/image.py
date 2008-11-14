@@ -1074,7 +1074,18 @@ class Image(object):
                 if not os.path.isdir("%s/state/installed" % self.imgdir):
                         self.update_installed_pkgs()
 
-                f = file(self._install_file(fmri), "w")
+                try:
+                        f = file(self._install_file(fmri), "w")
+                except EnvironmentError:
+                        try:
+                                os.makedirs(os.path.dirname(
+                                    self._install_file(fmri)))
+                        except EnvironmentError, e:
+                                if e.errno == errno.EACCES:
+                                        raise api_errors.PermissionsException(
+                                            e.filename)
+                                raise
+                        f = file(self._install_file(fmri), "w")
 
                 f.writelines(["VERSION_1\n", fmri.get_authority_str()])
                 f.close()

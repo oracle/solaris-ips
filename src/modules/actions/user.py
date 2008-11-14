@@ -178,8 +178,8 @@ class UserAction(generic.Action):
                         return
                 
                 root = pkgplan.image.get_root()
+                pw = PasswordFile(root, lock=True)
                 try:
-                        pw = PasswordFile(root, lock=True)
                         gr = GroupFile(root)
                         ftp = FtpusersFile(root)
 
@@ -190,10 +190,8 @@ class UserAction(generic.Action):
                         pw.writefile()
                         gr.writefile()
                         ftp.writefile()
-                except:
+                finally:
                         pw.unlockfile()
-                        raise
-                pw.unlockfile()
 
         def generate_indices(self):
                 return {

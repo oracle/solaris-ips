@@ -969,9 +969,60 @@ sys:NP:6445::::::
 adm:NP:6445::::::
 """
 
+        cat_data = " "
+        
+        foo10 = """
+            open foo@1.0,5.11-0
+            close """
+
+        only_attr10 = """
+            open only_attr@1.0,5.11-0
+            add set name=foo value=bar
+            close """
+
+        only_depend10 = """
+            open only_depend@1.0,5.11-0
+            add depend type=require fmri=foo@1.0,5.11-0
+            close """
+
+        only_directory10 = """
+            open only_dir@1.0,5.11-0
+            add dir mode=0755 owner=root group=bin path=/bin
+            close """
+
+        only_driver10 = """
+            open only_driver@1.0,5.11-0
+            add driver name=zerg devlink="type=ddi_pseudo;name=zerg\\t\D"
+            close """
+
+        only_group10 = """
+            open only_group@1.0,5.11-0
+            add group groupname=lp gid=8
+            close """
+
+        only_hardlink10 = """
+            open only_hardlink@1.0,5.11-0
+            add hardlink path=/cat.hardlink target=/cat
+            close """
+
+        only_legacy10 = """
+            open only_legacy@1.0,5.11-0
+            add legacy arch=i386 category=system desc="GNU make - A utility used to build software (gmake) 3.81" hotline="Please contact your local service provider" name="gmake - GNU make" pkg=SUNWgmake vendor="Sun Microsystems, Inc." version=11.11.0,REV=2008.04.29.02.08
+            close """
+
+        only_link10 = """
+            open only_link@1.0,5.11-0
+            add link path=/link target=/tmp/cat
+            close """
+
+        only_user10 = """
+            open only_user@1.0,5.11-0
+            add user username=Kermit group=adm home-dir=/export/home/Kermit
+            close """
+
         empty_data = ""
         
-        misc_files = [ "empty", "ftpusers", "group", "passwd", "shadow" ]
+        misc_files = [ "empty", "ftpusers", "group", "passwd", "shadow", "cat" ]
  
         testdata_dir = None
 
@@ -989,6 +1040,17 @@ adm:NP:6445::::::
                 self.testdata_dir = os.path.join(tp, "testdata")
                 os.mkdir(self.testdata_dir)
 
+
+                self.only_file10 = """
+                    open only_file@1.0,5.11-0
+                    add file """ + self.testdata_dir + """/cat mode=0555 owner=root group=bin path=/cat
+                    close """
+                    
+                self.only_license10 = """
+                    open only_license@1.0,5.11-0
+                    add license """ + self.testdata_dir + """/cat license=copyright
+                    close """
+                
                 self.basics0 = """
                     open basics@1.0,5.11-0
                     add file """ + self.testdata_dir + """/passwd mode=0644 owner=root group=sys path=etc/passwd preserve=true
@@ -1365,6 +1427,76 @@ adm:NP:6445::::::
                 dllines = readfile()
                 self.failUnless(len(dllines) == 4, msg=dllines)
                 assertContents(dllines, ["zerg2", "zorg", "borg", "zork"])
+
+        def test_uninstall_without_perms(self):
+                """Test for bug 4569"""
+                durl = self.dc.get_depot_url()
+
+                pkg_list = [self.foo10, self.only_attr10, self.only_depend10,
+                    self.only_directory10, self.only_driver10, self.only_file10,
+                    self.only_group10, self.only_hardlink10, self.only_legacy10,
+                    self.only_license10, self.only_link10, self.only_user10]
+                
+                for p in pkg_list:
+                        self.pkgsend_bulk(durl, p)
+                self.pkgsend_bulk(durl, self.devicebase)
+                self.pkgsend_bulk(durl, self.basics0)
+
+                self.image_create(durl)
+
+                name_pat = re.compile("^\s+open\s+(\S+)\@.*$")
+
+                def __manually_check_deps(name, install=True):
+                        cmd = "install --no-refresh"
+                        if not install:
+                                cmd = "uninstall"
+                        if name == "only_depend" and not install:
+                                self.pkg("uninstall foo")
+                        elif name == "only_driver":
+                                self.pkg("%s devicebase" % cmd)
+                        elif name == "only_group":
+                                self.pkg("%s basics" % cmd)
+                        elif name == "only_hardlink":
+                                self.pkg("%s only_file" % cmd)
+                        elif name == "only_user":
+                                if install:
+                                        self.pkg("%s basics" % cmd)
+                                        self.pkg("%s only_group" % cmd)
+                                else:
+                                        self.pkg("%s only_group" % cmd)
+                                        self.pkg("%s basics" % cmd)
+                for p in pkg_list:
+                        name_mat = name_pat.match(p.splitlines()[1])
+                        pname = name_mat.group(1)
+                        __manually_check_deps(pname)
+                        self.pkg("install --no-refresh %s" % pname,
+                            su_wrap="noaccess", exit=1)
+                        self.pkg("install %s" % pname, su_wrap="noaccess",
+                            exit=1)
+                        self.pkg("install --no-refresh %s" % pname)
+                        self.pkg("uninstall %s" % pname, su_wrap="noaccess",
+                            exit=1)
+                        self.pkg("uninstall %s" % pname)
+                        __manually_check_deps(pname, install=False)
+
+                for p in pkg_list:
+                        name_mat = name_pat.match(p.splitlines()[1])
+                        pname = name_mat.group(1)
+                        __manually_check_deps(pname)
+                        self.pkg("install --no-refresh %s" % pname)
+
+                for p in pkg_list:
+                        self.pkgsend_bulk(durl, p)
+                self.pkgsend_bulk(durl, self.devicebase)
+                self.pkgsend_bulk(durl, self.basics0)
+
+                self.pkg("image-update --no-refresh", su_wrap="noaccess")
+                self.pkg("image-update", su_wrap="noaccess", exit=1)
+                self.pkg("refresh", su_wrap="noaccess", exit=1)
+                self.pkg("refresh")
+                self.pkg("image-update --no-refresh", su_wrap="noaccess",
+                    exit=1)
+                self.pkg("image-update")
 
 class TestDependencies(testutils.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
