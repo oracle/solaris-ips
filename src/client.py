@@ -1541,10 +1541,12 @@ def authority_set(img, args):
                 if opt == "--reset-uuid":
                         reset_uuid = True
 
-        if len(pargs) != 1:
+        if len(pargs) == 0:
                 usage(
-                    _("pkg: set-authority: one and only one authority " \
-                        "may be set"))
+                    _("set-authority: requires an authority name"))
+        elif len(pargs) > 1:
+                usage(
+                    _("set-authority: only one authority name may be specified"))
 
         auth = pargs[0]
 
@@ -1750,7 +1752,7 @@ def property_set(img, args):
                 propname, propvalue = pargs
         except ValueError:
                 usage(
-                    _("pkg: set-property: requires a property name and value"))
+                    _("set-property: requires a property name and value"))
 
         try:
                 img.set_property(propname, propvalue)
@@ -1773,7 +1775,7 @@ def property_unset(img, args):
         opts, pargs = getopt.getopt(args, "")
         if not pargs:
                 usage(
-                    _("pkg: unset-property requires at least one property name"))
+                    _("unset-property: requires at least one property name"))
 
         for p in pargs:
                 try:
