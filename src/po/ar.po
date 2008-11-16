@@ -1,0 +1,49 @@
+# Copyright (C) 2008 Sun Microsystems, Inc
+# This file is distributed under the same license as the packagemanager package.
+#
+# Desktop Discuss <desktop-discuss@opensolaris.org>
+# Róbert Malovec <Robert.Malovec@Sun.COM>
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: packagemanager HEAD\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2008-11-12 19:00+0900\n"
+"PO-Revision-Date: 2008-05-13 22:01+0900\n"
+"Last-Translator: desktop-discuss@opensolaris.org\n"
+"Language-Team: desktop-discuss@opensolaris.org\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../gui/data/addmoresoftware.desktop.in.h:1
+msgid "Add More Software"
+msgstr "أضف المزيد من البرمجيات"
+
+#: ../gui/data/addmoresoftware.desktop.in.h:2
+#: ../gui/data/packagemanager.desktop.in.h:1
+msgid "Install, update and remove software packages"
+msgstr "نصّب، طوّر وأزل حزم البرمجيات"
+
+#: ../gui/data/packagemanager.desktop.in.h:2
+#: ../gui/data/packagemanager.glade.h:68 ../packagemanager.py:107
+#: ../packagemanager.py:1794
+msgid "Package Manager"
+msgstr "مدير الحزم"
+
+#: ../um/data/updatemanager.desktop.in.h:1
+msgid "Install available updates"
+msgstr "نصّب التطويرات المتوفرة"
+
+#: ../um/data/updatemanager.desktop.in.h:2 ../um/data/updatemanager.glade.h:18
+#: ../updatemanagernotifier.py:298
+msgid "Update Manager"
+msgstr "مدير التطوير"
+
+#: ../um/data/updatemanagernotifier.desktop.in.h:1
+msgid "Notify user when updates are available"
+msgstr "أبلغ المستخدم عند توفر التطويرات"
+
+#: ../um/data/updatemanagernotifier.desktop.in.h:2
+msgid "Update Manager Notifier"
+msgstr "مبلّغ مدير التطويرات"

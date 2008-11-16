@@ -1,7 +1,9 @@
 # Files with translatable strings.
 # Please keep this file in alphabetical order.
+[encoding: UTF-8]
 client.py
 gui/data/l10n.py
+gui/data/addmoresoftware.desktop.in
 gui/data/packagemanager.desktop.in
 gui/data/packagemanager.glade
 gui/modules/beadmin.py

@@ -2424,6 +2424,10 @@ msgstr ""
 msgid "       Summary:"
 msgstr ""
 
+#: ../client.py:1047
+msgid "      Category:"
+msgstr ""
+
 #: ../client.py:1041
 msgid "         State:"
 msgstr ""
@@ -2529,6 +2533,10 @@ msgstr ""
 
 #: ../gui/data/l10n.py:39
 msgid "Databases"
+msgstr ""
+
+#: ../gui/data/l10n.py:40
+msgid "Databases (System)"
 msgstr ""
 
 #: ../gui/data/l10n.py:40
@@ -2711,6 +2719,10 @@ msgstr ""
 msgid "Trusted"
 msgstr ""
 
+#: ../gui/data/l10n.py:89
+msgid "Trusted Extensions"
+msgstr ""
+
 #: ../gui/data/l10n.py:90
 msgid "Virtualization"
 msgstr ""
@@ -2721,6 +2733,10 @@ msgstr ""
 
 #: ../gui/data/l10n.py:92
 msgid "X11"
+msgstr ""
+
+#: ../gui/data/l10n.py:94
+msgid "X11 (System)"
 msgstr ""
 
 #: ../gui/data/addmoresoftware.desktop.in.h:1
@@ -3019,6 +3035,12 @@ msgid ""
 "Please check your permissions."
 msgstr ""
 
+#: ../gui/modules/repository.py:223
+msgid ""
+"Couldn't change the preferred authority.\n"
+"Please check your permissions."
+msgstr ""
+
 #: ../gui/modules/repository.py:381 ../gui/modules/repository.py:439
 #: ../gui/modules/repository.py:473
 msgid ""
@@ -3182,3 +3204,22 @@ msgid ""
 "Click OK to launch BE Management to manage your existing BE's and free up "
 "disc space."
 msgstr ""
+
+#, python-format
+msgid ""
+"Accessing this restricted repository failed."
+"\nYou either need to register to access this repository,"
+"\nthe certificate expired, or you need to accept the repository"
+"\ncertificate."
+msgstr ""
+
+#, python-format
+msgid ""
+"An error occured while "
+"downloading the files\nPlease check your permissions."
+msgstr ""
+
+#, python-format
+msgid "Download failure."
+msgstr ""
+

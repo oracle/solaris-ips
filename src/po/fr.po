@@ -375,6 +375,10 @@ msgstr ""
 msgid "pkg: set-authority: one and only one authority may be set"
 msgstr "pkg : set-authority : vous devez définir une et une seule autorité"
 
+#: ../client.py:1402
+msgid "set-authority: one and only one authority may be set"
+msgstr "set-authority : vous devez définir une et une seule autorité"
+
 #: ../client.py:1410
 #, python-format
 msgid "set-authority: SSL key file '%s' does not exist"
@@ -450,6 +454,10 @@ msgstr "Vérifiez le fichier dans %s"
 msgid "pkg: set-property: requires a property name and value"
 msgstr "pkg : set-property : requiert un nom et une valeur de propriété"
 
+#: ../client.py:1598
+msgid "set-property: requires a property name and value"
+msgstr "set-property : requiert un nom et une valeur de propriété"
+
 #: ../client.py:1603
 #, python-format
 msgid "set-property failed: %s"
@@ -458,6 +466,10 @@ msgstr "échec de set-property : %s"
 #: ../client.py:1618
 msgid "pkg: unset-property requires at least one property name"
 msgstr "pkg : unset-property requiert au moins un nom de propriété"
+
+#: ../client.py:1618
+msgid "unset-property: requires at least one property name"
+msgstr "unset-property : requiert au moins un nom de propriété"
 
 #: ../client.py:1624
 #, python-format
@@ -1092,7 +1104,7 @@ msgstr "_Fichier"
 
 #: ../gui/data/packagemanager.glade.h:107
 msgid "_Help"
-msgstr "_Aide"
+msgstr "Aid_e"
 
 #: ../gui/data/packagemanager.glade.h:108
 msgid "_Modify..."
@@ -1116,7 +1128,7 @@ msgstr "Supp_rimer"
 
 #: ../gui/data/packagemanager.glade.h:113
 msgid "_Settings"
-msgstr "_Paramètres"
+msgstr "Paramètre_s"
 
 #: ../gui/data/packagemanager.glade.h:114
 msgid "_URL: "
@@ -1239,11 +1251,6 @@ msgstr ""
 msgid "Canceling..."
 msgstr "Annulation..."
 
-#: ../gui/modules/installupdate.py:270 ../gui/modules/installupdate.py:406
-#: ../gui/modules/installupdate.py:446
-msgid "An unknown error occured while "
-msgstr "Une erreur inconnue s'est produite lors de "
-
 #: ../gui/modules/installupdate.py:282
 msgid "Evaluation started.\n"
 msgstr "Évaluation commencée.\n"
@@ -1251,10 +1258,6 @@ msgstr "Évaluation commencée.\n"
 #: ../gui/modules/installupdate.py:292
 msgid "Invalid repository certificate."
 msgstr "Certificat de référentiel non valide."
-
-#: ../gui/modules/installupdate.py:301
-msgid "Installation failed during\n"
-msgstr "Échec de l'installation au cours de\n"
 
 #: ../gui/modules/installupdate.py:309
 msgid "Install failed.\n"
@@ -1264,38 +1267,14 @@ msgstr "Échec de l'installation.\n"
 msgid "Please check the network "
 msgstr "Vérifiez le réseau "
 
-#: ../gui/modules/installupdate.py:334 ../gui/modules/installupdate.py:382
-msgid "Update All failed during\n"
-msgstr "Échec de l'opération Tout mettre à jour au cours de\n"
-
-#: ../gui/modules/installupdate.py:359
-msgid "Unexpected failure with"
-msgstr "Échec inattendu avec"
-
-#: ../gui/modules/installupdate.py:367
-msgid "Update All failed during "
-msgstr "Échec de l'opération Tout mettre à jour au cours de "
-
-#: ../gui/modules/installupdate.py:374
-msgid "pkg(5) appears to be out of "
-msgstr "pkg(5) est hors de "
-
 #: ../gui/modules/installupdate.py:416
 msgid "Preparing to download packages, please wait..."
 msgstr "Préparation du téléchargement des packages, veuillez patienter..."
-
-#: ../gui/modules/installupdate.py:423 ../gui/modules/installupdate.py:472
-msgid "An error occured while "
-msgstr "Une erreur s'est produite lors de "
 
 #: ../gui/modules/installupdate.py:464 ../gui/modules/installupdate.py:478
 #: ../gui/modules/installupdate.py:491
 msgid "There was an error during installation."
 msgstr "Une erreur s'est produite au cours de l'installation."
-
-#: ../gui/modules/installupdate.py:485
-msgid "This is an Live Image. The install"
-msgstr "Il s'agit d'une image Live. L'installation"
 
 #: ../gui/modules/installupdate.py:545
 #, python-format
@@ -1939,8 +1918,7 @@ msgstr "L'opération Tout mettre à jour a été effectuée et le package "
 #. for root, dirs, files in os.walk (directory):
 #. for name in files:
 #. entry.parse (os.path.join (root, name))
-#. self.__add_category_to_section (entry.getName (), \
-#. self._('Applications Desktop'))
+#. self.__add_category_to_section (entry.getName (), #. self._('Applications Desktop'))
 #: ../packagemanager.py:2034 ../packagemanager.py:2036
 #: ../packagemanager.py:2061
 msgid "Accessories"
@@ -2677,3 +2655,942 @@ msgstr ""
 #: ../updatemanagernotifier.py:331
 msgid "Another instance of UpdateManagerNotify is running"
 msgstr "Une autre instance de UpdateManagerNotify est en cours d'exécution"
+
+#: ../client.py:402
+#, python-format
+msgid "Created ZFS snapshot: %s"
+msgstr "Nouvel instantané ZFS : %s"
+
+#: ../client.py:1039
+msgid "          Name:"
+msgstr "                                 Nom :"
+
+#: ../client.py:1040
+msgid "       Summary:"
+msgstr "                           Résumé :"
+
+#: ../client.py:1047
+msgid "      Category:"
+msgstr "                        Catégorie :"
+
+#: ../client.py:1041
+msgid "         State:"
+msgstr "                                 État :"
+
+#. XXX even more info on the authority would be nice?
+#: ../client.py:1044
+msgid "     Authority:"
+msgstr "                           Autorité :"
+
+#: ../client.py:1045
+msgid "       Version:"
+msgstr "                            Version :"
+
+#: ../client.py:1046
+msgid " Build Release:"
+msgstr "    Version de compilation :"
+
+#: ../client.py:1047
+msgid "        Branch:"
+msgstr "                           Branche :"
+
+#: ../client.py:1048
+msgid "Packaging Date:"
+msgstr "Date de conditionnement :"
+
+#: ../client.py:1049
+msgid "          Size:"
+msgstr "                                Taille :"
+
+#: ../client.py:1050
+msgid "          FMRI:"
+msgstr "                                FMRI :"
+
+#: ../client.py:1811
+msgid "image-create requires an authority argument"
+msgstr "image-create requiert un argument d'autorité"
+
+#: ../client.py:1835
+#, python-format
+msgid "there is already an image at: %s"
+msgstr "Il existe déjà une image à l'emplacement suivant : %s"
+
+#: ../client.py:1836 ../client.py:1843
+msgid "To override, use the -f (force) option."
+msgstr "Pour procéder au remplacement, utilisez l'option -f (force)."
+
+#: ../client.py:1842
+#, python-format
+msgid "Non-empty directory: %s"
+msgstr "Le répertoire %s n'est pas vide."
+
+#: ../client.py:1996
+#, python-format
+msgid "%s takes argument of form name=value, not %s"
+msgstr "%s requiert un argument de la forme nom=valeur. %s n'est pas un argument valide."
+
+#: ../client.py:2018 ../client.py:2028
+#, python-format
+msgid "-R not allowed for %s subcommand"
+msgstr "-R n'est pas autorisé pour la sous-commande %s."
+
+#: ../client.py:2196
+#, python-format
+msgid ""
+"The pkg command appears out of sync with the libraries provided \n"
+"by SUNWipkg. The client version is %(client)s while the library API version "
+"is %(api)s"
+msgstr ""
+"La commande pkg n'est pas synchronisée avec les bibliothèques fournies\n"
+"par SUNWipkg. La version client est %(client)s, tandis que la version de l'API de la bibliothèque est "
+"%(api)s."
+
+#: ../client.py:2208
+#, python-format
+msgid ""
+"\n"
+"\n"
+"This is an internal error.  Please let the developers know about this\n"
+"problem by filing a bug at http://defect.opensolaris.org and including the\n"
+"above traceback and this message.  The version of pkg(5) is '%s'."
+msgstr ""
+"\n"
+"\n"
+"Il s'agit d'une erreur interne. Signalez ce problème\n"
+"aux développeurs en envoyant un rapport de bogue à l'adresse http://defect.opensolaris.org et en incluant le\n"
+"suivi ci-dessus et ce message. La version de pkg(5) est '%s'."
+
+#: ../gui/data/l10n.py:32
+msgid "Administration and Configuration"
+msgstr "Administration et configuration"
+
+#: ../gui/data/l10n.py:33
+msgid "Applets"
+msgstr "Applets"
+
+#: ../gui/data/l10n.py:34
+msgid "Application and Web Servers"
+msgstr "Serveurs d'applications et serveurs Web"
+
+#: ../gui/data/l10n.py:35
+msgid "C"
+msgstr "C"
+
+#: ../gui/data/l10n.py:36
+msgid "C++"
+msgstr "C++"
+
+#: ../gui/data/l10n.py:37
+msgid "Configuration and Preferences"
+msgstr "Configuration et préférences"
+
+#: ../gui/data/l10n.py:39
+msgid "Databases"
+msgstr "Bases de données"
+
+#: ../gui/data/l10n.py:40
+msgid "Databases (System)"
+msgstr "Bases de données (système)"
+
+#: ../gui/data/l10n.py:40
+msgid "Desktop"
+msgstr "Bureau"
+
+#: ../gui/data/l10n.py:41
+msgid "Display"
+msgstr "Affichage"
+
+#: ../gui/data/l10n.py:42
+msgid "Distribution Tools"
+msgstr "Outils de distribution"
+
+#: ../gui/data/l10n.py:43
+msgid "Documentation"
+msgstr "Documentation"
+
+#: ../gui/data/l10n.py:44
+msgid "Enterprise Management"
+msgstr "Gestion d'entreprise"
+
+#: ../gui/data/l10n.py:45
+msgid "File Managers"
+msgstr "Gestionnaires de fichiers"
+
+#: ../gui/data/l10n.py:46
+msgid "File System"
+msgstr "Système de fichiers"
+
+#: ../gui/data/l10n.py:47
+msgid "Fonts"
+msgstr "Polices"
+
+#: ../gui/data/l10n.py:48
+msgid "GNOME and GTK+"
+msgstr "GNOME et GTK+"
+
+#: ../gui/data/l10n.py:49
+msgid "GNU"
+msgstr "GNU"
+
+#: ../gui/data/l10n.py:51
+msgid "Graphics and Imaging"
+msgstr "Graphiques et traitement d'image"
+
+#: ../gui/data/l10n.py:52
+msgid "Hardware"
+msgstr "Matériel"
+
+#: ../gui/data/l10n.py:53
+msgid "High Performance Computing"
+msgstr "Informatique hautes performances"
+
+#: ../gui/data/l10n.py:54
+msgid "Integrated Development Environments"
+msgstr "Environnements de développement intégrés"
+
+#: ../gui/data/l10n.py:55
+msgid "Internationalization"
+msgstr "Internationalisation"
+
+#: ../gui/data/l10n.py:57
+msgid "Java"
+msgstr "Java"
+
+#: ../gui/data/l10n.py:58
+msgid "Libraries"
+msgstr "Bibliothèques"
+
+#: ../gui/data/l10n.py:59
+msgid "Libraries (System)"
+msgstr "Bibliothèques (système)"
+
+#: ../gui/data/l10n.py:60
+msgid "Localizations (Desktop)"
+msgstr "Localisations (bureau)"
+
+#: ../gui/data/l10n.py:61
+msgid "Localizations (System)"
+msgstr "Localisations (système)"
+
+#: ../gui/data/l10n.py:63
+msgid "Networking"
+msgstr "Gestion de réseaux"
+
+#: ../gui/data/l10n.py:65
+msgid "Other Languages"
+msgstr "Autres langues"
+
+#: ../gui/data/l10n.py:66
+msgid "Other Peripherals"
+msgstr "Autres périphériques"
+
+#: ../gui/data/l10n.py:67
+msgid "PHP"
+msgstr "PHP"
+
+#: ../gui/data/l10n.py:68
+msgid "Packaging"
+msgstr "Conditionnement"
+
+#: ../gui/data/l10n.py:69
+msgid "Perl"
+msgstr "Perl"
+
+#: ../gui/data/l10n.py:70
+msgid "Plug-ins and Run-times"
+msgstr "Plug-ins et temps d'exécution"
+
+#: ../gui/data/l10n.py:71
+msgid "Ports"
+msgstr "Ports"
+
+#: ../gui/data/l10n.py:72
+msgid "Printing"
+msgstr "Impression"
+
+#: ../gui/data/l10n.py:73
+msgid "Python"
+msgstr "Python"
+
+#: ../gui/data/l10n.py:74
+msgid "Ruby"
+msgstr "Ruby"
+
+#: ../gui/data/l10n.py:75
+msgid "Scripts"
+msgstr "Scripts"
+
+#: ../gui/data/l10n.py:76
+msgid "Security"
+msgstr "Sécurité"
+
+#: ../gui/data/l10n.py:77
+msgid "Services"
+msgstr "Services"
+
+#: ../gui/data/l10n.py:78
+msgid "Sessions"
+msgstr "Sessions"
+
+#: ../gui/data/l10n.py:79
+msgid "Shells"
+msgstr "Shells"
+
+#: ../gui/data/l10n.py:80
+msgid "Software Management"
+msgstr "Gestion des logiciels"
+
+#: ../gui/data/l10n.py:81
+msgid "Sound and Video"
+msgstr "Son et vidéo"
+
+#: ../gui/data/l10n.py:82
+msgid "Source Code Management"
+msgstr "Gestion du code source"
+
+#: ../gui/data/l10n.py:83
+msgid "Storage"
+msgstr "Stockage"
+
+#: ../gui/data/l10n.py:84 ../packagemanager.py:507
+msgid "System"
+msgstr "Système"
+
+#: ../gui/data/l10n.py:85
+msgid "System U"
+msgstr "Système U"
+
+#: ../gui/data/l10n.py:86
+msgid "System Utilities"
+msgstr "Utilitaires système"
+
+#: ../gui/data/l10n.py:87
+msgid "Text Tools"
+msgstr "Outils texte"
+
+#: ../gui/data/l10n.py:88
+msgid "Trusted"
+msgstr "De confiance"
+
+#: ../gui/data/l10n.py:89
+msgid "Trusted Extensions"
+msgstr "Trusted Extensions"
+
+#: ../gui/data/l10n.py:90
+msgid "Virtualization"
+msgstr "Virtualisation"
+
+#: ../gui/data/l10n.py:91
+msgid "Window Managers"
+msgstr "Gestionnaires Windows"
+
+#: ../gui/data/l10n.py:92
+msgid "X11"
+msgstr "X11"
+
+#: ../gui/data/l10n.py:94
+msgid "X11 (System)"
+msgstr "X11 (système)"
+
+#: ../gui/data/addmoresoftware.desktop.in.h:1
+msgid "Add More Software"
+msgstr "Ajouter des logiciels"
+
+#: ../gui/data/packagemanager.glade.h:3
+msgid "1. Delete old and unused BEs to free up disk space."
+msgstr "1. Supprimer les environnements d'initialisation obsolètes et non utilisés pour libérer de l'espace."
+
+#: ../gui/data/packagemanager.glade.h:4
+msgid "2. Change the default BE on your system."
+msgstr "2. Modifier l'environnement d'initialisation par défaut de votre système."
+
+#: ../gui/data/packagemanager.glade.h:20
+msgid "<b>Manage your BEs to:</b>"
+msgstr "<b>Gérer les environnements d'initialisation afin de :</b>"
+
+#: ../gui/data/packagemanager.glade.h:33
+msgid "Click to get list of newest packages."
+msgstr "Cliquer pour obtenir la liste des packages les plus récents."
+
+#: ../gui/data/packagemanager.glade.h:34
+msgid "Click to update all installed packages."
+msgstr "Cliquer pour mettre à jour tous les packages installés."
+
+#: ../gui/data/packagemanager.glade.h:57
+msgid "Legal"
+msgstr "Texte juridique"
+
+#: ../gui/data/packagemanager.glade.h:58
+msgid "Manage Repositories"
+msgstr "Gestion des référentiels"
+
+#: ../gui/data/packagemanager.glade.h:59
+msgid "Manage Repositories..."
+msgstr "Gérer les référentiels..."
+
+#: ../gui/data/packagemanager.glade.h:63
+msgid ""
+"Note: The current active BE cannot be deleted. \n"
+"To delete this BE, boot into another BE, then return here."
+msgstr ""
+"Remarque : l'environnement d'initialisation actuellement actif ne peut pas être supprimé.\n"
+"Pour le supprimer, initialisez un autre environnement puis revenez dans cette fenêtre."
+
+#: ../gui/data/packagemanager.glade.h:70
+msgid "Plan creation error."
+msgstr "Une erreur s'est produite lors de la création du plan."
+
+#: ../gui/data/packagemanager.glade.h:79
+msgid ""
+"Review the information below.\n"
+"Click OK to proceed.\n"
+"Click Cancel to return to the Boot Environment\n"
+"Management panel.\n"
+"\n"
+"Note: Changes will occur upon reboot."
+msgstr ""
+"Vérifiez les informations ci-dessous.\n"
+"Pour continuer, cliquez sur OK.\n"
+"Pour revenir au panneau Gestion de l'environnement\n"
+"d'initialisation, cliquez sur Annuler.\n"
+"\n"
+"Remarque : les modifications seront appliquées après la réinitialisation."
+
+#: ../gui/data/packagemanager.glade.h:89
+msgid "Select from the list to modify or remove existing repositories."
+msgstr "Dans la liste, sélectionnez le ou les référentiels existants que vous souhaitez modifier ou supprimer."
+
+#: ../gui/data/packagemanager.glade.h:90
+msgid "Select packages by marking the checkbox and click to Install/Update."
+msgstr "Sélectionnez les packages puis cliquez sur Installer/Mettre à jour."
+
+#: ../gui/data/packagemanager.glade.h:91
+msgid "Select packages by marking the checkbox and click to Remove selected."
+msgstr "Sélectionnez les packages puis cliquez sur Supprimer les éléments sélectionnés."
+
+#: ../gui/data/packagemanager.glade.h:95
+msgid "The following BEs are available on your system:"
+msgstr "Les environnements d'initialisation suivants sont disponibles sur votre système :"
+
+#: ../gui/data/packagemanager.glade.h:99
+msgid "Type text to search name and description of the package."
+msgstr "Pour trouver le nom ou la description d'un package, saisissez un critère de recherche."
+
+#: ../gui/data/packagemanager.glade.h:100
+msgid ""
+"Type the repository name and URL you want to add as a new package source."
+msgstr ""
+"Saisissez le nom du référentiel et l'URL à ajouter comme nouvelle source de package."
+
+#: ../gui/data/packagemanager.glade.h:102 ../gui/modules/installupdate.py:424
+msgid "Update All failure in plan creation."
+msgstr "Échec de l'opération Tout mettre à jour lors de la création du plan."
+
+#: ../gui/data/packagemanager.glade.h:118
+msgid "gtk-close"
+msgstr "gtk-close"
+
+#: ../gui/modules/beadmin.py:69
+msgid ""
+"The <b>libbe</b> library was not found on your system.\n"
+"All functions for managing Boot Environments are disabled"
+msgstr ""
+"La bibliothèque <b>libbe</b> est introuvable sur votre système.\n"
+"Toutes les fonctions de gestion des environnements d'initialisation sont désactivées."
+
+#: ../gui/modules/beadmin.py:339
+msgid "<b>Couldn't change Active Boot Environment to:</b>\n"
+msgstr "<b>Impossible de modifier les environnements d'initialisation actifs en :</b>\n"
+
+#: ../gui/modules/beadmin.py:344
+msgid "<b>Couldn't delete Boot Environments:</b>\n"
+msgstr "<b>Impossible de supprimer les environnements d'initialisation :</b>\n"
+
+#: ../gui/modules/beadmin.py:410
+msgid ""
+"The <b>libbe</b> library couldn't  prepare list of Boot Environments.\n"
+"All functions for managing Boot Environments are disabled"
+msgstr ""
+"La bibliothèque <b>libbe</b> n'a pas pu préparer la liste des environnements d'initialisation.\n"
+"Toutes les fonctions de gestion des environnements d'initialisation sont désactivées."
+
+#: ../gui/modules/beadmin.py:445 ../gui/modules/beadmin.py:464
+#, python-format
+msgid "Error conversion from UTF-8 to %s."
+msgstr "Erreur de conversion du format UTF-8 à %s."
+
+#: ../gui/modules/beadmin.py:481
+#, python-format
+msgid "Error conversion from %s to UTF-8."
+msgstr "Erreur de conversion du format %s à UTF-8."
+
+#: ../gui/modules/installupdate.py:150
+msgid "Proceed"
+msgstr "Continuer"
+
+#: ../gui/modules/installupdate.py:302
+msgid ""
+"An unknown error occured while preparing the\n"
+"list of packages\n"
+"\n"
+"Please let the developers know about this problem by filing\n"
+"a bug at http://defect.opensolaris.org"
+msgstr ""
+"Une erreur inconnue s'est produite lors de la préparation de\n"
+"la liste des packages.\n"
+"\n"
+"Signalez ce problème aux développeurs en envoyant un rapport de bogue\n"
+"à l'adresse http://defect.opensolaris.org."
+
+#: ../gui/modules/installupdate.py:306 ../gui/modules/installupdate.py:473
+#: ../gui/modules/installupdate.py:521
+msgid ""
+"\n"
+"\n"
+"Exception value: "
+msgstr ""
+"\n"
+"\n"
+"Valeur d'exception : "
+
+#: ../gui/modules/installupdate.py:314
+msgid ""
+"Evaluation started.\n"
+"Gathering packages information, please wait...\n"
+msgstr ""
+"Démarrage de l'évaluation\n"
+"Veuillez patienter los de la récupération des informations de packages...\n"
+
+#: ../gui/modules/installupdate.py:324
+msgid ""
+"Unexpected failure with\n"
+"catalog refresh during install while \n"
+"determining what to update."
+msgstr ""
+"Une erreur inattendue d'actualisation du catalogue s'est produite\n"
+"lors de l'installation, pendant la recherche d'éléments\n"
+"à mettre à jour."
+
+#: ../gui/modules/installupdate.py:332
+msgid ""
+"Invalid repository certificate.\n"
+"You can not install packages from the\n"
+"repopsitory, which doesn't have\n"
+"appropriate certificate."
+msgstr ""
+"Le certificat du référentiel n'est pas valide.\n"
+"Vous ne pouvez pas installer de packages à partir\n"
+"du référentiel si ce dernier ne dispose pas d'un certificat\n"
+"approprié."
+
+#: ../gui/modules/installupdate.py:341
+msgid "Install/Update failure in plan creation."
+msgstr "Échec de l'installation ou de la mise à jour lors de la création du plan."
+
+#: ../gui/modules/installupdate.py:350
+msgid ""
+"Install failed.\n"
+"The inventory is not correct."
+msgstr ""
+"Échec de l'installation.\n"
+"L'inventaire n'est pas correct."
+
+#: ../gui/modules/installupdate.py:362 ../gui/modules/installupdate.py:437
+msgid ""
+"Please check the network connection.\n"
+"Is the repository accessible?"
+msgstr ""
+"Vérifiez la connexion au réseau.\n"
+"Le référentiel est-il accessible ?"
+
+#: ../gui/modules/installupdate.py:375
+msgid "Remove failure in plan creation."
+msgstr "Échec de la suppression lors de la création du plan."
+
+#: ../gui/modules/installupdate.py:401
+msgid ""
+"Unexpected failure with\n"
+"catalog refresh during image-update while \n"
+"determining what to update."
+msgstr ""
+"Une erreur inattendue d'actualisation du catalogue\n"
+"s'est produite lors de l'exécution de image-update,\n"
+"pendant la recherche d'éléments à mettre à jour."
+
+#: ../gui/modules/installupdate.py:416
+msgid ""
+"pkg(5) appears to be out of date and should be\n"
+" updated before running Update All.\n"
+"Please update SUNWipkg package"
+msgstr ""
+"pkg(5) est obsolète et doit être\n"
+"mis à jour avant d'exécuter Tout mettre à jour.\n"
+"Mettez à jour le package SUNWipkg."
+
+#: ../gui/modules/installupdate.py:446
+msgid ""
+"Selected packages for update can\n"
+"only be updated using Update All."
+msgstr ""
+"Les packages sélectionnés pour la mise à jour peuvent être\n"
+"mis à jour uniquement à l'aide de Tout mettre à jour."
+
+#: ../gui/modules/installupdate.py:448
+msgid "Unable to update"
+msgstr "Impossible d'effectuer la mise à jour."
+
+#: ../gui/modules/installupdate.py:453
+msgid "The action for selected packages could not be completed."
+msgstr "L'action n'a pas pu être effectuée pour les packages sélectionnés."
+
+#: ../gui/modules/installupdate.py:455
+msgid "Unable to perform action"
+msgstr "Impossible d'effectuer l'action."
+
+#: ../gui/modules/installupdate.py:468
+msgid ""
+"An unknown error occured while downloading the files\n"
+"\n"
+"Please let the developers know about this problem by filing\n"
+"a bug at http://defect.opensolaris.org"
+msgstr ""
+"Une erreur inconnue s'est produite lors du téléchargement des fichiers.\n"
+"\n"
+"Signalez ce problème aux développeurs en envoyant\n"
+"un rapport de bogue à l'adresse http://defect.opensolaris.org."
+
+#: ../gui/modules/installupdate.py:488
+msgid ""
+"An error occured while downloading the files\n"
+"Please check your permissions and\n"
+"network connection."
+msgstr ""
+"Une erreur inconnue s'est produite lors du téléchargement des fichiers.\n"
+"Vérifiez vos autorisations ainsi que\n"
+"la connexion au réseau."
+
+#: ../gui/modules/installupdate.py:515
+msgid ""
+"An unknown error occured while installing\n"
+"updating or removing packages\n"
+"\n"
+"Please let the developers know about this problem by filing\n"
+"a bug at http://defect.opensolaris.org"
+msgstr ""
+"Une erreur inconnue s'est produite lors l'installation,\n"
+"la mise à jour et la suppression des packages.\n"
+"\n"
+"Signalez ce problème aux développeurs en envoyant\n"
+"un rapport de bogue à l'adresse http://defect.opensolaris.org."
+
+#: ../gui/modules/installupdate.py:536
+msgid ""
+"There was an error during installation.\n"
+"The index is corrupted. You might wan't try to fix\n"
+"this problem by running command:\n"
+"pfexec pkg rebuild-index"
+msgstr ""
+"Une erreur s'est produite lors de l'installation.\n"
+"L'index est corrompu. Vous pouvez tenter de résoudre\n"
+"ce problème en exécutant la commande :\n"
+"pfexec pkg rebuild-index"
+
+#: ../gui/modules/installupdate.py:544
+msgid ""
+"An error occured while installing the files\n"
+"Please check your permissions"
+msgstr ""
+"Une erreur inconnue s'est produite lors de l'installation des fichiers.\n"
+"Vérifiez vos autorisations."
+
+#: ../gui/modules/installupdate.py:550
+msgid ""
+"There was an error during installation.\n"
+"The State of the image is incorrect and the operation\n"
+"can't be finished."
+msgstr ""
+"Une erreur s'est produite lors de l'installation.\n"
+"L'état de l'image n'est pas correct et l'opération\n"
+"ne peut pas être terminée."
+
+#: ../gui/modules/installupdate.py:557
+msgid ""
+"This is an Live Image. The install\n"
+"operation can't be performed."
+msgstr ""
+"Il s'agit d'une image Live. L'installation\n"
+"ne peut pas être effectuée."
+
+#: ../gui/modules/installupdate.py:563
+msgid ""
+"There was an error during installation.\n"
+"The Plan of the operation is missing and the operation\n"
+"can't be finished."
+msgstr ""
+"Une erreur s'est produite lors de l'installation.\n"
+"Le plan de l'opération est manquant et l'opération\n"
+"ne peut pas être terminée."
+
+#: ../gui/modules/installupdate.py:607
+msgid "Not enough disc space: selected action cannot "
+msgstr "L'espace disque est insuffisant : l'action sélectionnée ne peut être "
+
+#: ../gui/modules/installupdate.py:611 ../updatemanager.py:1269
+msgid "Not Enough Disc Space"
+msgstr "Espace disque insuffisant"
+
+#: ../gui/modules/installupdate.py:644
+msgid "Evaluating package "
+msgstr "Évaluation du package "
+
+#: ../gui/modules/installupdate.py:687
+msgid ""
+"This action couldn't be finished.\n"
+"Some of the selected packages depends on other.\n"
+"Please review the dependencies."
+msgstr ""
+"Cette action n'a pas pu être terminée.\n"
+"Certains packages sélectionnés sont dépendants des autres.\n"
+"Vérifiez les dépendances."
+
+#: ../gui/modules/repository.py:223
+msgid ""
+"Couldn't change the preffered authority.\n"
+"Please check your permissions."
+msgstr ""
+"Impossible de modifier l'autorité préférée.\n"
+"Vérifiez vos autorisations."
+
+#: ../gui/modules/repository.py:223
+msgid ""
+"Couldn't change the preferred authority.\n"
+"Please check your permissions."
+msgstr ""
+"Impossible de modifier l'autorité préférée.\n"
+"Vérifiez vos autorisations."
+
+#: ../gui/modules/repository.py:381 ../gui/modules/repository.py:439
+#: ../gui/modules/repository.py:473
+msgid ""
+"\n"
+"Please check your permissions."
+msgstr ""
+"\n"
+"Vérifiez vos autorisations."
+
+#: ../gui/modules/repository.py:395 ../gui/modules/repository.py:452
+msgid ""
+"\n"
+"Please check the network connection or URL.\n"
+"Is the repository accessible?"
+msgstr ""
+"\n"
+"Vérifiez la connexion au réseau ou l'URL.\n"
+"Le référentiel est-il accessible ?"
+
+#: ../modules/client/api_errors.py:108
+msgid ""
+"pkg: The following pattern(s) did not match any packages in the current\n"
+"catalog. Try relaxing the pattern, refreshing and/or examining the catalogs"
+msgstr ""
+"pkg : le ou les modèles suivants ne correspondent à aucun package dans le catalogue\n"
+"actuel. Essayez d'assouplir le modèle, et d'actualiser et/ou d'examiner les catalogues."
+
+#: ../modules/client/api_errors.py:121
+#, python-format
+msgid "pkg: '%s' matches no installed packages"
+msgstr "pkg : '%s' ne correspond à aucun package installé."
+
+#: ../modules/client/api_errors.py:124
+#, python-format
+msgid "pkg: '%s' is an illegal fmri"
+msgstr "pkg : '%s' est un FMRI non autorisé."
+
+#: ../modules/client/api_errors.py:128
+msgid "pkg: the following package(s) violated constraints:"
+msgstr "pkg : le ou les packages suivants ne respectent pas les contraintes :"
+
+#: ../modules/client/api_errors.py:162
+msgid ""
+"No matching package could be found for the following FMRIs in any of the "
+"catalogs for the current authorities:\n"
+msgstr ""
+"Aucun package n'a été trouvé dans les catalogues des autorités actuelles pour les FMRI suivants :\n"
+
+#: ../modules/client/bootenv.py:215
+#, python-format
+msgid ""
+"\n"
+"A clone of %s exists and has been updated and activated.\n"
+"On the next boot the Boot Environment %s will be mounted on '/'.\n"
+"Reboot when ready to switch to this updated BE.\n"
+msgstr ""
+"\n"
+"Un clone de %s existe et a été mis à jour et activé.\n"
+"À la prochaine initialisation, l'environnement d'initialisation %s sera monté sur '/'.\n"
+"Réinitialisez dès que vous êtes prêt à passer à cet environnement d'initialisation.\n"
+
+#: ../packagemanager.py:502
+msgid "Applications"
+msgstr "Applications"
+
+#: ../packagemanager.py:503
+msgid "Desktop (GNOME)"
+msgstr "Bureau (GNOME)"
+
+#: ../packagemanager.py:504
+msgid "Development"
+msgstr "Développement"
+
+#: ../packagemanager.py:505
+msgid "Distributions"
+msgstr "Distributions"
+
+#: ../packagemanager.py:506
+msgid "Drivers"
+msgstr "Pilotes"
+
+#: ../packagemanager.py:508
+msgid "Web Services"
+msgstr "Services Web"
+
+#: ../packagemanager.py:584
+msgid "Fetching legal information..."
+msgstr "Récupérations des informations juridiques..."
+
+#. Prompt user
+#: ../packagemanager.py:791
+msgid "Newer versions of SUNWipkg and SUNWipkg-gui\n"
+msgstr "Versions plus récentes de SUNWipkg et SUNWipkg-gui\n"
+
+#: ../packagemanager.py:809
+msgid ""
+"Update All was not run.\n"
+"\n"
+"It can not be run until SUNWipkg and SUNWipkg-gui have been updated."
+msgstr ""
+"Opération Tout mettre à jour non exécutée.\n"
+"\n"
+"Pour pouvoir exécuter cette opération, vous devez mettre à jour SUNWipkg et SUNWipkg-gui."
+
+#: ../packagemanager.py:1096
+msgid "Not available"
+msgstr "Non disponible"
+
+#: ../packagemanager.py:1430
+msgid ""
+"Network problem.\n"
+"\n"
+msgstr ""
+"Problème de réseau\n"
+"\n"
+
+#: ../packagemanager.py:1431
+msgid "Details:\n"
+msgstr "Détails :\n"
+
+#. 2790: As IPS and IPS-GUI have been updated the IPS GUI must be shutdown
+#. and restarted
+#: ../packagemanager.py:2080
+msgid ""
+"SUNWipkg and SUNWipkg-gui have been updated and Package Manager will now be "
+"restarted.\n"
+"\n"
+"After restart select Update All to continue."
+msgstr ""
+"SUNWipkg et SUNWipkg-gui ont été mis à jour. Le gestionnaire de packages va être à présent "
+"redémarré.\n"
+"\n"
+"Après le redémarrage, sélectionnez Tout mettre à jour pour continuer."
+
+#: ../packagemanager.py:2093
+msgid ""
+"Update All has completed and Package Manager will now exit.\n"
+"\n"
+"Please reboot after reviewing the release notes posted at:\n"
+"\n"
+"http://opensolaris.org/os/project/indiana/resources/relnotes/200811/x86/"
+msgstr ""
+"L'opération Tout mettre à jour est terminée. Le gestionnaire de packages va maintenant se fermer.\n"
+"\n"
+"Réinitialisez le système après avoir consulté les notes de version disponibles à la page :\n"
+"\n"
+"http://opensolaris.org/os/project/indiana/resources/relnotes/200811/x86/"
+
+#: ../updatemanager.py:815
+#, python-format
+msgid ""
+"\n"
+"Description:\t\t%s\n"
+"FMRI:       \t\t%s"
+msgstr ""
+"\n"
+"Description :\t\t%s\n"
+"FMRI :       \t\t%s"
+
+#: ../updatemanager.py:1029 ../updatemanager.py:1048
+msgid ""
+"Update All failed during catalog refresh\n"
+"while determining what to update:"
+msgstr ""
+"Échec de l'opération Tout mettre à jour au cours de \n"
+"l'actualisation du catalogue pour la recherche d'éléments à mettre à jour :"
+
+#: ../updatemanager.py:1097
+msgid ""
+"Please reboot after reviewing the release notes posted at:\n"
+"\n"
+"http://opensolaris.org/os/project/indiana/resources/relnotes/200811/x86/"
+msgstr ""
+"Veuillez réinitialiser votre système après avoir consulté les notes de version disponibles à la page :\n"
+"\n"
+"http://opensolaris.org/os/project/indiana/resources/relnotes/200811/x86/"
+
+#: ../updatemanager.py:1106
+msgid "Update All Completed"
+msgstr "L'opération Tout mettre à jour est terminée."
+
+#: ../updatemanager.py:1142
+msgid "Update error in plan install:"
+msgstr "Erreur de mise à jour lors de l'installation du plan :"
+
+#: ../updatemanager.py:1213 ../updatemanager.py:1243
+#, python-format
+msgid "%s exceded available disc space"
+msgstr "%s dépasse l'espace disque disponible."
+
+#: ../updatemanager.py:1265
+msgid ""
+"Not enough disc space: the Update All action cannot be performed.\n"
+"\n"
+"Click OK to launch BE Management to manage your existing BE's and free up "
+"disc space."
+msgstr ""
+"Espace disque insuffisant : l'action Tout mettre à jour ne peut pas être effectuée.\n"
+"\n"
+"Pour gérer votre environnement d'initialisation actuel et libérer de l'espace, cliquez sur OK."
+
+#, python-format
+msgid ""
+"Accessing this restricted repository failed."
+"\nYou either need to register to access this repository,"
+"\nthe certificate expired, or you need to accept the repository"
+"\ncertificate."
+msgstr ""
+"Échec de l'accès au référentiel à accès restreint."
+"\nPour accéder au référentiel, enregistrez-vous le cas échéant,"
+"\nvérifiez que le certificat n'a pas expiré, et assurez-vous d'accepter"
+"\nle certificat du référentiel."
+
+#, python-format
+msgid ""
+"An error occured while "
+"downloading the files\nPlease check your permissions."
+msgstr ""
+"Une erreur s'est produite lors"
+"du téléchargement des fichiers.\nVérifiez vos autorisations."
+
+#, python-format
+msgid "Download failure."
+msgstr "Échec du téléchargement."
+

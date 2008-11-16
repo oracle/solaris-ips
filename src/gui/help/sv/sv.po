@@ -14,48 +14,73 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../C/package-manager.xml:3(title)
-msgid "Getting Started with Package Manager"
-msgstr "Komma igång med pakethanteraren"
+#. When image changes, this message will be marked fuzzy or untranslated for you.
+#. It doesn't matter what you translate it to: it's not used at all.
+#: package-manager.xml:77 (None)
+msgid ""
+"@@image: 'figures/package_manager.png'; md5=47f19c63c45c2d5d14a07732879a8c6c"
+msgstr ""
+"@@image: 'figures/package_manager.png'; md5=47f19c63c45c2d5d14a07732879a8c6c"
 
-#: ../C/package-manager.xml:4(firstname)
-msgid "Jyothi"
-msgstr "Jyothi"
+#. When image changes, this message will be marked fuzzy or untranslated for you.
+#. It doesn't matter what you translate it to: it's not used at all.
+#: package-manager.xml:302 (None)
+msgid "@@image: 'figures/update_all.png'; md5=bfc40396ac45fc30b994d306307ead96"
+msgstr "@@image: 'figures/update_all.png'; md5=bfc40396ac45fc30b994d306307ead96"
 
-#: ../C/package-manager.xml:5(surname)
-msgid "Srinath"
-msgstr "Srinath"
+#: package-manager.xml:3 (title)
+msgid "Getting Started With OpenSolaris 2008.11 Package Manager"
+msgstr "Komma igång med Pakethanteraren i OpenSolaris 2008.11"
 
-#: ../C/package-manager.xml:11(publishername)
-#: ../C/package-manager.xml:20(holder)
+#: package-manager.xml:4 (firstname)
+msgid "IPS"
+msgstr "IPS"
+
+#: package-manager.xml:5 (surname)
+msgid "Documentation Team"
+msgstr "Dokumentationsteam"
+
+#: package-manager.xml:8 (pubsnumber)
+msgid "820-6570"
+msgstr "820-6570"
+
+#: package-manager.xml:9 (releaseinfo)
+msgid "v 0.1"
+msgstr "v 0.1"
+
+#: package-manager.xml:10 (pubdate)
+msgid "Nov 2008"
+msgstr "Nov 2008"
+
+#: package-manager.xml:11 (publishername) package-manager.xml:20 (holder)
 msgid "Sun Microsystems, Inc."
 msgstr "Sun Microsystems, Inc."
 
-#: ../C/package-manager.xml:12(street)
+#: package-manager.xml:12 (street)
 msgid "4150 Network Circle"
 msgstr "4150 Network Circle"
 
-#: ../C/package-manager.xml:13(city)
+#: package-manager.xml:13 (city)
 msgid "Santa Clara"
 msgstr "Santa Clara"
 
-#: ../C/package-manager.xml:14(state)
+#: package-manager.xml:14 (state)
 msgid "CA"
 msgstr "Ca"
 
-#: ../C/package-manager.xml:15(postcode)
+#: package-manager.xml:15 (postcode)
 msgid "95054"
 msgstr "95054"
 
-#: ../C/package-manager.xml:16(country)
+#: package-manager.xml:16 (country)
 msgid "U.S.A."
 msgstr "USA"
 
-#: ../C/package-manager.xml:19(year)
+#: package-manager.xml:19 (year)
 msgid "2008"
 msgstr "2008"
 
-#: ../C/package-manager.xml:24(para)
+#: package-manager.xml:24 (para)
 msgid ""
 "Sun Microsystems, Inc. has intellectual property rights relating to "
 "technology embodied in the product that is described in this document. In "
@@ -69,7 +94,7 @@ msgstr ""
 "ett eller flera USA-patent eller en eller flera patentansökningar i USA "
 "eller andra länder."
 
-#: ../C/package-manager.xml:25(para)
+#: package-manager.xml:25 (para)
 msgid ""
 "U.S. Government Rights – Commercial software. Government users are subject "
 "to the Sun Microsystems, Inc. standard license agreement and applicable "
@@ -79,11 +104,11 @@ msgstr ""
 "skall lyda under standardlicensavtalet från Microsystems, Inc. och under tillämpliga "
 "avsnitt ur upphandlingsföreskrifterna FAR med tillägg."
 
-#: ../C/package-manager.xml:26(para)
+#: package-manager.xml:26 (para)
 msgid "This distribution may include materials developed by third parties."
 msgstr "Distributionen kan innehålla material som utvecklats av tredje part."
 
-#: ../C/package-manager.xml:27(para)
+#: package-manager.xml:27 (para)
 msgid ""
 "Parts of the product may be derived from Berkeley BSD systems, licensed from "
 "the University of California. UNIX is a registered trademark in the U.S. and "
@@ -93,7 +118,7 @@ msgstr ""
 "University of California. UNIX är ett registrerat varumärke i USA och i"
 "andra länder, licensierat med ensamrätt genom X/Open Company, Ltd."
 
-#: ../C/package-manager.xml:28(para)
+#: package-manager.xml:28 (para)
 msgid ""
 "Sun, Sun Microsystems, the Sun logo, the Solaris logo, the Java Coffee Cup "
 "logo, docs.sun.com, Java, and Solaris are trademarks or registered "
@@ -109,7 +134,7 @@ msgstr ""
 "Alla SPARC-varumärken används under licens och är varumärken eller registrerade varumärken som tillhör SPARC International, Inc. i USA och andra länder. "
 "Produkter med SPARC:s varumärken är baserade på arkitektur som utvecklats av Sun Microsystems, Inc."
 
-#: ../C/package-manager.xml:29(para)
+#: package-manager.xml:29 (para)
 msgid ""
 "The OPEN LOOK and <trademark>Sun</trademark> Graphical User Interface was "
 "developed by Sun Microsystems, Inc. for its users and licensees. Sun "
@@ -128,7 +153,7 @@ msgstr ""
 "Suns licenstagare som implementerar OPEN LOOK-gränssnitt och som annars "
 "lyder under Suns skriftliga licensavtal."
 
-#: ../C/package-manager.xml:30(para)
+#: package-manager.xml:30 (para)
 msgid ""
 "Products covered by and information contained in this publication are "
 "controlled by U.S. Export Control laws and may be subject to the export or "
@@ -148,7 +173,7 @@ msgstr ""
 "på USA:s exportförbudlista, vilket innefattar listorna över specifika personer "
 "och nationaliteter, är strängt förbjuden."
 
-#: ../C/package-manager.xml:31(para)
+#: package-manager.xml:31 (para)
 msgid ""
 "DOCUMENTATION IS PROVIDED “AS IS” AND ALL EXPRESS OR IMPLIED CONDITIONS, "
 "REPRESENTATIONS AND WARRANTIES, INCLUDING ANY IMPLIED WARRANTY OF "
@@ -161,7 +186,7 @@ msgstr ""
 "FÖR SÄLJBARHET, LÄMPLIGHET FÖR ETT VISST SYFTE ELLER ICKE-INTRÅNG, AVSTÅS FRÅN, "
 "FÖRUTOM I DEN UTSTRÄCKNING SÅDANA AVSTÅENDEN HÅLLS FÖR ATT VARA RÄTTSLIGT OGILTIGA."
 
-#: ../C/package-manager.xml:33(para)
+#: package-manager.xml:33 (para)
 msgid ""
 "Sun Microsystems, Inc. détient les droits de propriété intellectuelle "
 "relatifs à la technologie incorporée dans le produit qui est décrit dans ce "
@@ -175,7 +200,7 @@ msgstr ""
 "intellectuelle peuvent inclure un ou plusieurs brevets américains ou des "
 "applications de brevet en attente aux Etats-Unis et dans d'autres pays."
 
-#: ../C/package-manager.xml:34(para)
+#: package-manager.xml:34 (para)
 msgid ""
 "Cette distribution peut comprendre des composants développés par des tierces "
 "personnes."
@@ -183,7 +208,7 @@ msgstr ""
 "Cette distribution peut comprendre des composants développés par des tierces "
 "personnes."
 
-#: ../C/package-manager.xml:35(para)
+#: package-manager.xml:35 (para)
 msgid ""
 "Certaines composants de ce produit peuvent être dérivées du logiciel "
 "Berkeley BSD, licenciés par l'Université de Californie. UNIX est une marque "
@@ -195,7 +220,7 @@ msgstr ""
 "déposée aux Etats-Unis et dans d'autres pays; elle est licenciée "
 "exclusivement par X/Open Company, Ltd."
 
-#: ../C/package-manager.xml:36(para)
+#: package-manager.xml:36 (para)
 msgid ""
 "Sun, Sun Microsystems, le logo Sun, le logo Solaris, le logo Java Coffee "
 "Cup, docs.sun.com, Java et Solaris sont des marques de fabrique ou des "
@@ -215,7 +240,7 @@ msgstr ""
 "portant les marques SPARC sont basés sur une architecture développée par Sun "
 "Microsystems, Inc."
 
-#: ../C/package-manager.xml:37(para)
+#: package-manager.xml:37 (para)
 msgid ""
 "L'interface d'utilisation graphique OPEN LOOK et Sun a été développée par "
 "Sun Microsystems, Inc. pour ses utilisateurs et licenciés. Sun reconnaît les "
@@ -237,7 +262,7 @@ msgstr ""
 "graphique OPEN LOOK et qui, en outre, se conforment aux licences écrites de "
 "Sun."
 
-#: ../C/package-manager.xml:38(para)
+#: package-manager.xml:38 (para)
 msgid ""
 "Les produits qui font l'objet de cette publication et les informations qu'il "
 "contient sont régis par la legislation américaine en matière de contrôle des "
@@ -269,7 +294,7 @@ msgstr ""
 "contrôle des exportations et la liste de ressortissants spécifiquement "
 "designés, sont rigoureusement interdites."
 
-#: ../C/package-manager.xml:39(para)
+#: package-manager.xml:39 (para)
 msgid ""
 "LA DOCUMENTATION EST FOURNIE \"EN L'ETAT\" ET TOUTES AUTRES CONDITIONS, "
 "DECLARATIONS ET GARANTIES EXPRESSES OU TACITES SONT FORMELLEMENT EXCLUES, "
@@ -283,109 +308,190 @@ msgstr ""
 "GARANTIE IMPLICITE RELATIVE A LA QUALITE MARCHANDE, A L'APTITUDE A UNE "
 "UTILISATION PARTICULIERE OU A L'ABSENCE DE CONTREFACON."
 
-#: ../C/package-manager.xml:42(title)
+#: package-manager.xml:42 (title)
 msgid "Introduction"
 msgstr "Inledning"
 
-#: ../C/package-manager.xml:43(para)
+#: package-manager.xml:43 (para)
 msgid ""
-"The <application>Package Manager</application> application is a graphical "
-"user interface for the Image Packaging System (IPS) software. The Package "
-"Manger allows you to search, install, and remove packages; add, and modify "
-"repositories; and create and remove boot environments."
+"Welcome to the <trademark>OpenSolaris 2008.11</trademark> Package Manager "
+"Online Help!"
 msgstr ""
-"<application>Pakethanteraren</application> är ett grafiskt användargränssnitt "
-"för programvaran Image Packaging System (IPS). Med hjälp av Pakethanteraren "
-"kan du söka efter, installera eller ta bort paket. Du kan även lägga till och ändra "
-"databaser samt skapa och ta bort startmiljöer."
+"Välkommen till onlinehjälpen för Pakethanteraren i <trademark>OpenSolaris 2008.11</trademark>!"
 
-#: ../C/package-manager.xml:45(title)
-msgid "To Start Package Manager"
-msgstr "Så här startar du Pakethanteraren"
+#: package-manager.xml:44 (para)
+msgid ""
+"Use this help contents to learn how to use the Package Manager. Navigate "
+"through this help by clicking on the topics displayed in the side bar."
+msgstr ""
+"I den här hjälpen kan du lära dig hur Pakethanteraren fungerar. Du navigerar "
+"genom hjälpen genom att välja ämnen i sidopanelen."
 
-#: ../C/package-manager.xml:46(para)
+#: package-manager.xml:45 (para)
+msgid ""
+"The OpenSolaris 2008.11 <application>Package Manager</application> "
+"application is a graphical user interface for the Image Packaging System "
+"(IPS) software. IPS is a network-centric packaging system that enables users "
+"to download and install packages, create and manage repositories, mirror "
+"repositories, and create and publish their own packages to a repository."
+msgstr ""
+"<application>Pakethanteraren</application> i OpenSolaris 2008.11 "
+"är ett grafiskt gränssnitt för IPS (Image Packaging System) – ett "
+"nätverkscentrerat paketsystem som låter användaren ladda ned "
+"och installera paket, skapa, hantera och spegla databaser "
+"samt skapa och lägga upp egna paket i en databas."
+
+#: package-manager.xml:46 (para)
+msgid ""
+"See the <ulink url=\"http://dlc.sun.com/osol/docs/content/2008.11/"
+"IMGPACKAGESYS/\"><citetitle>Image Packaging System Guide</citetitle></ulink> "
+"for information on IPS."
+msgstr ""
+"Se <ulink url=\"http://dlc.sun.com/osol/docs/content/2008.11/"
+"IMGPACKAGESYS/\"><citetitle>Image Packaging System Guide</citetitle></ulink> "
+"för information om IPS."
+
+#: package-manager.xml:47 (para)
+msgid ""
+"The <application>Package Manager</application> enables you to perform the "
+"following tasks:"
+msgstr ""
+"Med <application>Pakethanteraren</application> kan du göra följande:"
+
+#: package-manager.xml:48 (para)
+msgid "Search, install, update, and remove packages."
+msgstr "Söka efter, installera, uppdatera och ta bort paket."
+
+#: package-manager.xml:50 (para)
+msgid "Add and modify repositories."
+msgstr "Lägga till och redigera databaser."
+
+#: package-manager.xml:52 (para)
+msgid "Create, remove and manage boot environments."
+msgstr "Skapa, ta bort och hantera startmiljöer."
+
+#: package-manager.xml:55 (para)
+msgid ""
+"See the <xref linkend=\"glossary-1\"/> for definitions of the terms used in "
+"this document."
+msgstr ""
+"Se <xref linkend=\"ordlista-1\"/> för förklaringar av de begrepp som används "
+" i det här dokumentet."
+
+#: package-manager.xml:58 (title)
+msgid "Package Manager Screencast"
+msgstr "Videodemonstration av Pakethanteraren"
+
+#: package-manager.xml:59 (para)
+msgid ""
+"Learn how to use the OpenSolaris 2008.11 Package Manager through a "
+"screencast. Click <ulink url=\"http://webcast-west.sun.com/"
+"interactive/09B01790/index.html\">here</ulink> to go the Package Manager "
+"screencast."
+msgstr ""
+"Lär dig mer om Pakethanteraren för OpenSolaris 2008.11 via en "
+"videodemonstration. Klicka <ulink url=\"http://webcast-west.sun.com/"
+"interactive/09B01790/index.html\">här</ulink> för att gå till demonstrationen "
+"av Pakethanteraren."
+
+#: package-manager.xml:61 (title)
+msgid "Starting Package Manager"
+msgstr "Starta Pakethanteraren"
+
+#: package-manager.xml:62 (para)
 msgid ""
 "You can start the <application>Package Manager</application> in the "
 "following ways:"
 msgstr ""
 "Du kan starta <application>Pakethanteraren</application> på följande sätt:"
 
-#: ../C/package-manager.xml:47(emphasis)
+#: package-manager.xml:63 (emphasis)
 msgid "Desktop Menu"
 msgstr "Från skrivbordsmenyn:"
 
-#: ../C/package-manager.xml:48(para)
+#: package-manager.xml:64 (para)
 msgid ""
-"Click <guimenu>System</guimenu><guisubmenu>Administration</"
-"guisubmenu><guisubmenu>Package Manager</guisubmenu>."
+"Click <menuchoice><guimenu>System</guimenu><guisubmenu>Administration</"
+"guisubmenu><guimenuitem>Package Manager</guimenuitem></menuchoice>."
 msgstr ""
-"Klicka på <guimenu>System</guimenu><guisubmenu>Administration</"
-"guisubmenu><guisubmenu>Pakethanteraren</guisubmenu>."
+"Klicka på <menuchoice><guimenu>System</guimenu><guisubmenu>Administration</"
+"guisubmenu><guimenuitem>Pakethanteraren</guimenuitem></menuchoice>."
 
-#: ../C/package-manager.xml:51(emphasis)
+#: package-manager.xml:67 (emphasis)
 msgid "Command line"
-msgstr "Kommandorad"
+msgstr "Från kommandoraden:"
 
-#: ../C/package-manager.xml:52(para)
-msgid "Execute the following command at the prompt:"
+#: package-manager.xml:68 (para)
+msgid "Run the following command :"
 msgstr "Ange följande kommando:"
 
-#: ../C/package-manager.xml:53(userinput)
+#: package-manager.xml:69 (userinput)
 #, no-wrap
-msgid "$ packagemanager &amp;"
-msgstr "$ packagemanager &amp;"
+msgid "$ gksu packagemanager &amp;"
+msgstr "$ gksu packagemanager &amp;"
 
-#: ../C/package-manager.xml:58(title)
-msgid "When You Start Package Manager"
-msgstr "När du startar pakethanteraren"
+#: package-manager.xml:74 (title)
+msgid "Package Manager Window"
+msgstr "Pakethanterarens fönster"
 
-#: ../C/package-manager.xml:59(para)
+#: package-manager.xml:75 (para)
 msgid ""
-"When you start the <application>Package Manager</application> ,the following "
+"When you start the <application>Package Manager</application>, the following "
 "window is displayed:"
 msgstr ""
 "Följande fönster visas när du startar <application>Pakethanteraren</application>:"
 
-#: ../C/package-manager.xml:60(para)
-msgid ""
-"The main window of the <application>Package Manager</application> is divided "
-"into the following elements :"
-msgstr ""
-"<application>Pakethanterarens</application> huvudfönster består av följande delar:"
+#: package-manager.xml:76 (title)
+msgid "Package Manager Main Window"
+msgstr "Pakethanterarens huvudfönster"
 
-#: ../C/package-manager.xml:61(emphasis)
+#: package-manager.xml:80 (para)
+msgid ""
+"The main window of the <application>Package Manager</application> consists "
+"of the following elements :"
+msgstr ""
+"<application>Pakethanterarens</application> huvudfönster "
+"består av följande:"
+
+#: package-manager.xml:81 (emphasis)
 msgid "List of Packages by Category"
 msgstr "Lista över paket sorterade efter kategorier"
 
-#: ../C/package-manager.xml:62(para)
+#: package-manager.xml:82 (para)
 msgid ""
-"You can browse the available packages by category. The dropdown menu shows "
-"the list of categories available."
+"You can browse the available packages by category in the left hand side drop-"
+"down menu. The drop-down menu shows the list of categories available such as "
+"<emphasis role=\"strong\">Applications-Desktop</emphasis>, <emphasis role="
+"\"strong\">Applications Web based</emphasis>, and <emphasis role=\"strong"
+"\">Operating System</emphasis>."
 msgstr ""
-"Du kan bläddra bland paketen utifrån kategorier. De tillgängliga kategorierna "
-"visas i listrutan."
+"I den vänstra nedrullningsbara menyn kan du bläddra igenom de tillgängliga "
+"paketen efter kategori. I menyn visas de olika kategorierna, såsom "
+"<emphasis role=\"strong\">Skrivbordsprogram</emphasis>, <emphasis role="
+"\"strong\">Webbaserade program</emphasis> och <emphasis role=\"strong"
+"\">Operativsystem</emphasis>."
 
-#: ../C/package-manager.xml:65(emphasis)
+#: package-manager.xml:85 (emphasis)
 msgid "List of Packages by Status"
 msgstr "Lista över paket sorterade efter status"
 
-#: ../C/package-manager.xml:66(para)
+#: package-manager.xml:86 (para)
 msgid ""
-"The <guilabel>Show</guilabel> dropdown menu allows you to filter the list of "
-"packages by the options listed below:"
+"The <guilabel>Show</guilabel> drop-down menu enables you to filter the list "
+"of packages by the following options:"
 msgstr ""
-"Med listrutan <guilabel>Visa</guilabel> kan du filtrera de paket som visas i listan utifrån "
-"alternativen nedan:"
+"Använd den nedrullningsbara menyn <guilabel>Visa</guilabel> för att filtrera "
+"listan utifrån alternativen nedan:"
 
-#: ../C/package-manager.xml:67(para)
+#: package-manager.xml:87 (para)
 msgid ""
 "<emphasis role=\"strong\">All Packages</emphasis>– Shows the list of all "
 "packages available in the current repository."
 msgstr ""
-"<emphasis role=\"strong\">Alla paket</emphasis> – Visar en lista över "
+"<emphasis role=\"strong\">Alla paket</emphasis> – Visar en lista över alla "
 "paket som finns tillgängliga i den aktuella databasen."
 
-#: ../C/package-manager.xml:69(para)
+#: package-manager.xml:89 (para)
 msgid ""
 "<emphasis role=\"strong\">Installed Packages</emphasis> – Shows the list of "
 "packages installed on your system."
@@ -393,15 +499,7 @@ msgstr ""
 "<emphasis role=\"strong\">Installerade paket</emphasis> – Visar en lista över "
 "paket som finns installerade på systemet."
 
-#: ../C/package-manager.xml:71(para)
-msgid ""
-"<emphasis role=\"strong\">Selected Packages</emphasis> – Shows the list of "
-"packages you have selected."
-msgstr ""
-"<emphasis role=\"strong\">Valda paket</emphasis> – Visar en lista över "
-"paket du har valt."
-
-#: ../C/package-manager.xml:73(para)
+#: package-manager.xml:91 (para)
 msgid ""
 "<emphasis role=\"strong\">Updates Available</emphasis> — Shows the list of "
 "packages that have newer versions available in the current repository."
@@ -409,119 +507,175 @@ msgstr ""
 "<emphasis role=\"strong\">Tillgängliga uppdateringar</emphasis> – Visar en lista över "
 "paket med nyare versionsnummer i den aktuella databasen."
 
-#: ../C/package-manager.xml:78(emphasis)
+#: package-manager.xml:93 (para)
+msgid ""
+"<emphasis role=\"strong\">Non-installed Packages</emphasis> – Shows the list "
+"of packages that are not installed, but are available in the currently "
+"selected repository."
+msgstr ""
+"<emphasis role=\"strong\">Paket som inte installerats</emphasis> – Visar en lista över "
+"paket som inte är installerade, men som finns tillgängliga i den aktuella "
+"databasen som har valts."
+
+#: package-manager.xml:95 (para)
+msgid ""
+"<emphasis role=\"strong\">Selected Packages</emphasis> – Shows the list of "
+"packages that you have selected."
+msgstr ""
+"<emphasis role=\"strong\">Valda paket</emphasis> – Visar en lista över "
+"paket du har valt."
+
+#: package-manager.xml:100 (emphasis)
 msgid "Toolbar"
 msgstr "Verktygsfält"
 
-#: ../C/package-manager.xml:79(para)
+#: package-manager.xml:101 (para)
 msgid ""
 "The toolbar contains the icons for a subset of the commands that can be "
 "performed by using the menus on the menubar."
 msgstr ""
-"På verktygsfältet finns det ikoner för en del av de kommandon som kan utföras "
+"På verktygsfältet finns ikoner för vissa av de kommandon som kan utföras "
 "från menyraden."
 
-#: ../C/package-manager.xml:82(emphasis)
+#: package-manager.xml:102 (para)
+msgid ""
+"The <guilabel>Repositories</guilabel> drop-down menu is also located on the "
+"toolbar."
+msgstr ""
+"Den nedrullningsbara menyn <guilabel>Databaser</guilabel> finns även i "
+"verktygsfältet."
+
+#: package-manager.xml:105 (emphasis)
 msgid "Menubar"
 msgstr "Menyrad"
 
-#: ../C/package-manager.xml:83(para)
+#: package-manager.xml:106 (para)
 msgid ""
 "You can access the menus on the menubar to perform all of the commands "
 "related to the Package Manager."
 msgstr ""
 "Via menyn på menyraden kan du utföra alla kommandon i Pakethanteraren."
 
-#: ../C/package-manager.xml:87(emphasis)
+#: package-manager.xml:110 (emphasis)
 msgid "Package Name and Description"
 msgstr "Paketnamn och beskrivning"
 
-#: ../C/package-manager.xml:88(para)
+#: package-manager.xml:111 (para)
 msgid ""
-"The list of packages in the selected category and a brief description are "
-"displayed here."
+"The list of packages in the selected category, a brief description, and "
+"their status are displayed here."
 msgstr ""
-"Här visas listan över paket i den valda kategorin och en kort beskrivning."
+"Här visas listan över paket i den valda kategorin, en kort beskrivning samt "
+"statusen på dem."
 
-#: ../C/package-manager.xml:91(emphasis)
+#: package-manager.xml:114 (emphasis)
 msgid "Package Details"
 msgstr "Paketinformation"
 
-#: ../C/package-manager.xml:92(para)
+#: package-manager.xml:115 (para)
 msgid ""
-"Click on a package to select it. Details of the selected package such as "
-"name, version, file dependencies, are displayed in this window."
+"Click a package to select it. Details of the selected package such as name, "
+"version, file dependencies, and license are displayed in this window."
 msgstr ""
-"Klicka på ett paket för att välja det. I det här fönstret visas information om paket "
-"såsom namn, version och filberoenden."
+"Klicka på ett paket för att välja det. I det fönstret visas information om "
+"paket, såsom namn, version, filberoenden och licens."
 
-#: ../C/package-manager.xml:95(emphasis)
-msgid "Repository Dropdown Menu"
-msgstr "Listrutan Databas"
+#: package-manager.xml:118 (emphasis)
+msgid "Repository Drop-down Menu"
+msgstr "Den nedrullningsbara menyn Databas"
 
-#: ../C/package-manager.xml:96(para)
+#: package-manager.xml:119 (para)
 msgid ""
-"The list of available repositories are shown in the repository dropdown "
-"menu. Click on a repository name to select it."
+"The list of available repositories is shown in the repository drop-down "
+"menu. Click a repository name to select it."
 msgstr ""
-"I listrutan Databas visas en lista över tillgängliga databaser "
-"Klicka på en databas för att välja den."
+"I den nedrullningsbara menyn Databas visas en lista över tillgängliga databaser "
 
-#: ../C/package-manager.xml:97(para)
+#: package-manager.xml:120 (para)
 msgid ""
 "Click the <guilabel>Reload</guilabel> button to reload the Package Manager "
-"and view the list of the packages from the newly—selected repository."
+"and view the list of packages from the newly selected repository."
 msgstr ""
-"Klicka på knappen Ladda ned igen för att ladda ned Pakethanteraren på nytt. "
-"Då visas listan över paket från databasen du nyss valde."
+"Klicka på knappen <guilabel>Ladda ned igen</guilabel> för att öppna Pakethanteraren "
+"på nytt och visa listan över paket i den databas som nyligen valts."
 
-#: ../C/package-manager.xml:103(title)
+#: package-manager.xml:127 (title)
+msgid "Working With the Package Manager"
+msgstr "Arbeta med Pakethanteraren"
+
+#: package-manager.xml:128 (para)
+msgid ""
+"The following sections document the tasks that can be performed with the "
+"<application>Package Manager</application>."
+msgstr ""
+"I följande avsnitt beskrivs de uppgifter som kan utföras med programmet "
+"<application>Pakethanteraren</application>."
+
+#: package-manager.xml:130 (title)
 msgid "Install a Package"
 msgstr "Installera paket"
 
-#: ../C/package-manager.xml:104(para)
+#: package-manager.xml:131 (para)
 msgid "Perform the following steps to install a package:"
 msgstr "Så här installerar du paket:"
 
-#: ../C/package-manager.xml:105(para)
+#: package-manager.xml:132 (para)
 msgid ""
 "In the main window of the <application>Package Manager</application>, click "
-"the <guibutton>Reload</guibutton> button in order to view the latest list of "
-"the packages available to you."
+"the <guibutton>Reload</guibutton> button to view the latest list of packages "
+"available to you."
 msgstr ""
 "Klicka på <guibutton>Ladda ned igen</guibutton> i huvudfönstret i "
 "<application>Pakethanteraren</application>. Då visas den senaste"
 "listan över tillgängliga paket."
 
-#: ../C/package-manager.xml:107(para)
+#: package-manager.xml:134 (para)
 msgid "Check the box next to the package to select it."
-msgstr "Markera kryssrutan bredvid paket för att välja det."
+msgstr "Markera kryssrutan bredvid paketet för att välja det."
 
-#: ../C/package-manager.xml:109(para)
+#: package-manager.xml:136 (para)
 msgid ""
-"Click on <guibutton>Install/Update</guibutton> in the toolbar to start the "
+"Click <guibutton>Install/Update</guibutton> in the toolbar to start the "
 "package installation process."
 msgstr ""
 "Klicka på knappen <guibutton>Installera/uppdatera</guibutton> på verktygsfältet "
 "för att påbörja paketinstallationen."
 
-#: ../C/package-manager.xml:110(para)
+#: package-manager.xml:137 (para)
 msgid ""
-"You can also choose <guimenu>Package</guimenu><guimenuitem>Install/Update</"
-"guimenuitem> to start the package installation process."
+"You can also choose <menuchoice><guimenu>Package</"
+"guimenu><guimenuitem>Install/Update</guimenuitem></menuchoice> to start the "
+"package installation process."
 msgstr ""
-"Du kan även välja <guimenu>Paket</guimenu><guimenuitem>Installera/uppdatera</"
-"guimenuitem> för att påbörja paketinstallationen."
+"Du kan även välja <menuchoice><guimenu>Paket</"
+"guimenu><guimenuitem>Installera/uppdatera</guimenuitem></menuchoice> "
+"för att påbörja paketinstallationen."
 
-#: ../C/package-manager.xml:112(para)
+#: package-manager.xml:139 (para)
 msgid ""
-"The Package Manager checks for dependencies. Click <emphasis>Show Details</"
-"emphasis> to view the details."
+"The <application>Package Manager</application> checks for dependencies. "
+"Click <guilabel>Show Details</guilabel> to see more information about the "
+"package and its dependencies ."
 msgstr ""
-"Pakethanteraren kontrollerar beroenden. Klicka på <emphasis>Visa information</"
-"emphasis> om du vill se informationen."
+"<application>Pakethanteraren</application> kontrollerar beroenden. "
+"Klicka på <guilabel>Visa detaljer</guilabel> för mer information om "
+"paketet och dess beroenden."
 
-#: ../C/package-manager.xml:113(para) ../C/package-manager.xml:116(para)
+#: package-manager.xml:141 (para)
+msgid ""
+"Review the package installation information and the package dependencies "
+"details in the <guilabel>Install Confirmation</guilabel> dialog."
+msgstr ""
+"Läs igenom installationsanvisningarna för paketet och kontrollera dess "
+"beroenden i dialogrutan <guilabel>Bekräfta installation</guilabel>"
+
+#: package-manager.xml:142 (para)
+msgid ""
+"Click <guibutton>Next</guibutton> to proceed with the package installation."
+msgstr ""
+"Klicka på <guibutton>Nästa</guibutton> för att gå vidare med paketinstallationen."
+
+#: package-manager.xml:143 (para)
 msgid ""
 "Click <guibutton>Cancel</guibutton> to cancel the package installation. No "
 "changes are made and you are returned to the main window."
@@ -529,39 +683,36 @@ msgstr ""
 "Klicka på <guibutton>Avbryt</guibutton> för att avbryta paketinstallationen. "
 "Huvudfönstret visas och allt förblir oförändrat"
 
-#: ../C/package-manager.xml:115(para)
+#: package-manager.xml:145 (para)
 msgid ""
-"The <literal>Install Confirmation</literal> dialog box is displayed. Review "
-"the package installation information and the package dependencies."
+"The <guilabel>Downloading Packages</guilabel> dialog is displayed. Click "
+"<guibutton>Cancel</guibutton> if you want to cancel the package "
+"installation. No changes are made and you are returned to the main window."
 msgstr ""
-"Dialogrutan <literal>Bekräfta installation</literal> visas. Kontrollera "
-"informationen om paketen som ska installeras och deras beroenden."
+"Dialogrutan <guilabel>Ladda ned paket</guilabel> visas. Klicka på "
+"<guibutton>Avbryt</guibutton> för att avbryta installationen av "
+"paketet. Huvudfönstret visas och allt förblir oförändrat."
 
-#: ../C/package-manager.xml:118(para)
-msgid "The packages are downloaded and installed."
-msgstr "Paketen laddas ned och installeras."
-
-#: ../C/package-manager.xml:120(para) ../C/package-manager.xml:136(para)
+#: package-manager.xml:148 (para)
 msgid ""
-"Click the <guibutton>Reload</guibutton> button to view the updated list of "
-"packages."
+"The packages are installed. The updated list of packages are displayed in "
+"the main window."
 msgstr ""
-"Klicka på <guibutton>Ladda ned igen</guibutton> för att få en uppdaterad "
-"lista över paket."
+"Paketen installeras. Den uppdaterade listan visas i huvudfönstret."
 
-#: ../C/package-manager.xml:124(title)
+#: package-manager.xml:150 (title)
 msgid "Remove a Package"
 msgstr "Ta bort paket"
 
-#: ../C/package-manager.xml:125(para)
+#: package-manager.xml:151 (para)
 msgid "Perform the following steps to remove a package:"
 msgstr "Så här tar du bort paket:"
 
-#: ../C/package-manager.xml:126(para)
-msgid "Check the box next to the package you want to remove."
-msgstr "Markera kryssrutan bredvid det paket du vill ta bort."
+#: package-manager.xml:152 (para)
+msgid "Check the box next to the package or packages that you want to remove."
+msgstr "Markera kryssrutan bredvid det eller de paket du vill ta bort."
 
-#: ../C/package-manager.xml:128(para)
+#: package-manager.xml:154 (para)
 msgid ""
 "Click the <guibutton>Remove</guibutton> button in the toolbar to start the "
 "process."
@@ -569,31 +720,31 @@ msgstr ""
 "Klicka på knappen <guibutton>Ta bort</guibutton> i verktygsfältet " 
 "för att starta processen."
 
-#: ../C/package-manager.xml:129(para)
+#: package-manager.xml:155 (para)
 msgid ""
-"You can also choose <guimenu>Package</guimenu><guimenuitem>Remove</"
-"guimenuitem> to remove a package."
+"You can also choose <menuchoice><guimenu>Package</"
+"guimenu><guimenuitem>Remove</guimenuitem></menuchoice> to remove a package."
 msgstr ""
-"Du kan även välja <guimenu>Paket</guimenu><guimenuitem>Ta bort</"
-"guimenuitem> för att ta bort paket."
+"Du kan även välja <menuchoice><guimenu>Paket</"
+"guimenu><guimenuitem>Ta bort</guimenuitem></menuchoice> för att ta bort ett paket."
 
-#: ../C/package-manager.xml:131(para)
+#: package-manager.xml:157 (para)
 msgid ""
-"The <literal>Remove Confirmation</literal> dialog box is displayed. Review "
-"the packages to be removed and the package dependencies."
+"Review the packages to be removed and the package dependencies details in "
+"the <guilabel>Remove Confirmation</guilabel> dialog."
 msgstr ""
-"Dialogrutan <literal>Bekräfta borttagning</literal> visas. Kontrollera " 
-" paketen som ska tas bort och deras beroenden."
+"Kontrollera de paket som ska tas bort och deras beroenden "
+"i dialogrutan <guilabel>Bekräfta borttagning</guilabel>."
 
-#: ../C/package-manager.xml:133(para)
+#: package-manager.xml:159 (para)
 msgid ""
-"Click <guibutton>OK</guibutton> to proceed. After you click the "
+"Click <guibutton>Proceed</guibutton> to confirm. After you click the "
 "<guibutton>OK</guibutton> button, you cannot undo the package removal."
 msgstr ""
-"Klicka på <guibutton>OK</guibutton> för att gå vidare. När du har klickat "
+"Klicka på <guibutton>Fortsätt</guibutton> för att gå vidare. När du har klickat "
 "på <guibutton>OK</guibutton> kan du inte ångra paketborttagningen."
 
-#: ../C/package-manager.xml:134(para)
+#: package-manager.xml:160 (para)
 msgid ""
 "Click <guibutton>Cancel</guibutton> to cancel the process. No changes are "
 "made and you are returned to the main window."
@@ -601,55 +752,61 @@ msgstr ""
 "Klicka på <guibutton>Avbryt</guibutton> om du vill avbryta processen. "
 "Huvudfönstret visas och allt förblir oförändrat."
 
-#: ../C/package-manager.xml:140(title)
+#: package-manager.xml:164 (title)
 msgid "Search for a Package"
 msgstr "Söka efter paket"
 
-#: ../C/package-manager.xml:141(para)
+#: package-manager.xml:165 (para)
 msgid ""
-"Type the name of the package you want to search for in the <guilabel>Search</"
-"guilabel> box."
+"Type the name of the package that you want to search for in the "
+"<guilabel>Search</guilabel> box. Enter the complete name, description, or a "
+"partial name to search for the package. For example, you might enter one of "
+"the following search terms to search for <filename>SUNWgnome-games</"
+"filename> :"
 msgstr ""
-"Ange namnet på paketet du vill söka efter i <guilabel>Sök</"
-"guilabel>-rutan."
+"I rutan <guilabel>Sök</guilabel> anger du namnet på det paket som du vill "
+"söka efter. Ange hela namnet, beskrivningen eller delar av namnet för att "
+"söka efter paketet. Om du vill söka efter filen <filename>SUNWgnome-games</"
+"filename> kan du skriva följande:"
 
-#: ../C/package-manager.xml:142(para)
-msgid "The following search parameters are available:"
-msgstr "Du kan söka efter följande parametrar:"
+#: package-manager.xml:166 (para)
+msgid "SUNWgames"
+msgstr "SUNWgames"
 
-#: ../C/package-manager.xml:143(para)
-msgid "<emphasis role=\"strong\">Name, Description or Keyword</emphasis> –"
-msgstr "<emphasis role=\"strong\">Namn, beskrivningar eller nyckelord</emphasis> –"
+#: package-manager.xml:168 (para)
+msgid "games"
+msgstr "games"
 
-#: ../C/package-manager.xml:145(para)
-msgid "<emphasis role=\"strong\">Maintainer</emphasis> –"
-msgstr "<emphasis role=\"strong\">Paketunderhållare</emphasis> – ///"
+#: package-manager.xml:170 (para)
+msgid "GNOME-games"
+msgstr "GNOME-games"
 
-#: ../C/package-manager.xml:147(para)
-msgid "<emphasis role=\"strong\">Dependencies</emphasis> –"
-msgstr "<emphasis role=\"strong\">Beroenden</emphasis> –"
-
-#: ../C/package-manager.xml:149(para)
-msgid "<emphasis role=\"strong\">Commands</emphasis> –"
-msgstr "<emphasis role=\"strong\">Kommandon</emphasis> –"
-
-#: ../C/package-manager.xml:152(para)
+#: package-manager.xml:173 (para)
 msgid ""
-"Use the submenus under the <guimenu>Edit</guimenu> menu to cut, copy, paste, "
-"or clear text in the Search tab."
+"Use the submenus under the <menuchoice><guimenu>Edit</guimenu></menuchoice> "
+"menu to cut, copy, paste, or clear text in the <guilabel>Search</guilabel> "
+"tab."
 msgstr ""
 "Klipp ut, kopiera, klistra in eller ta bort texten i sökfliken med hjälp av "
-"undermenyerna i <guimenu>Redigera</guimenu>-menyn."
+"undermenyerna i <menuchoice><guimenu>Redigera</guimenu></menuchoice>-menyn."
 
-#: ../C/package-manager.xml:154(title)
+#: package-manager.xml:175 (para)
+msgid ""
+"Use the icon on the right hand side of the <guilabel>Search</guilabel> tab "
+"to clear the search results."
+msgstr ""
+"Använd ikonen till höger om <guilabel>Sök</guilabel>-fliken för att rensa "
+"sökresultaten."
+
+#: package-manager.xml:180 (title)
 msgid "Update a Package"
 msgstr "Uppdatera paket"
 
-#: ../C/package-manager.xml:155(para)
+#: package-manager.xml:181 (para)
 msgid ""
 "Look for the green icon next to the installed package name. This icon "
 "indicates that updates are available for the package in the currently "
-"selected repository. Select the package and click on the <guibutton>Install/"
+"selected repository. Select the package and click the <guibutton>Install/"
 "Update</guibutton> button to install the latest version of the package."
 msgstr ""
 "Leta efter den gröna ikonen bredvid paketets namn. Den visar att det finns "
@@ -657,39 +814,112 @@ msgstr ""
 "Välj paketet och klicka på <guibutton>Installera/"
 "uppdatera</guibutton> för att installera den senaste versionen av paketet."
 
-#: ../C/package-manager.xml:157(title)
+#: package-manager.xml:183 (title)
 msgid "Switch Between Configured Repositories"
 msgstr "Växla mellan konfigurerade databaser"
 
-#: ../C/package-manager.xml:158(para)
+#: package-manager.xml:184 (para)
 msgid ""
 "Use the <guilabel>Repositories</guilabel> drop-down menu on the toolbar to "
-"view a list of configured repositories. Click on a repository name to switch "
-"to a different repository."
+"view a list of configured repositories. Click a repository name to switch to "
+"a different repository."
 msgstr ""
-"Använd listrutan <guilabel>Databaser</guilabel> på verktygsfältet "
-"för att se en lista över konfigurerade databaser. Klicka på den databas "
-"som du vill växla till."
+"Använd den nedrullningsbara menyn  <guilabel>Databaser</guilabel> "
+"på verktygsfältet för att se en lista över konfigurerade databaser. "
+"Klicka på den databas som du vill växla till."
 
-#: ../C/package-manager.xml:160(title)
+#: package-manager.xml:186 (title)
+msgid "Introduction to Boot Environments"
+msgstr "Introduktion till startmiljöer"
+
+#: package-manager.xml:187 (para)
+msgid "The OpenSolaris 2008.11 release is a boot environment."
+msgstr "OpenSolaris 2008.11 är en startmiljö."
+
+#: package-manager.xml:188 (para)
+msgid ""
+"A boot environment is an image that is bootable. The boot environment "
+"consists of a root file system and, optionally, other file systems, such as "
+"<filename>/usr</filename>, <filename>/var</filename>, or <filename>/export</"
+"filename>. These other file systems are mounted below the root file system. "
+"The root file system and all other file systems of the boot environment that "
+"contain system software are required to be zfs datasets."
+msgstr ""
+"En startmiljö är en startbar bild, och består av ett obligatoriskt rotfilsystem "
+"och eventuellt av andra filsystem, såsom <filename>/usr</filename>, "
+"<filename>/var</filename> och <filename>/export</filename>. "
+"Dessa filsystem monteras under rotfilsystemet. Rotfilsystemet och alla andra "
+"filsystem i startmiljön som innehåller systemprogram måste vara i zfs-format. "
+
+#: package-manager.xml:189 (para)
+msgid ""
+"You can maintain multiple boot environments on your system. The primary "
+"reason to have more than one boot environment on your system is to create "
+"backups of your existing boot environments before you modify them. Then, you "
+"have the option of booting a backup boot environment when needed. Use the "
+"<command>beadm(1)</command> utility to create, and manage your boot "
+"environments."
+msgstr ""
+"Du kan ha flera olika startmiljöer på datorn. Den huvudsakliga anledningen "
+"till att ha mer än en startmiljö är för att ta säkerhetskopior av den befintliga "
+"startmiljön innan du ändrar den. Du har då möjlighet att starta från en "
+"säkerhetskopierad startmiljö, om det skulle bli nödvändigt. Använd "
+"verktyget <command>beadm(1)</command> för att skapa och hantera "
+"dina startmiljöer."
+
+#: package-manager.xml:190 (para)
+msgid ""
+"For detailed instructions about the <command>beadm</command> utility, see "
+"the <literal>beadm</literal>(1M) man page."
+msgstr ""
+"För mer information om verktyget <command>beadm</command>, "
+"se man-sidan för <literal>beadm</literal>(1M)."
+
+#: package-manager.xml:191 (para)
+msgid ""
+"See the <ulink url=\"http://dlc.sun.com/osol/docs/content/2008.11/"
+"snapupgrade/snap3.html\"><citetitle>Upgrading and Managing Boot "
+"Environments</citetitle></ulink> document for more information on boot "
+"environments."
+msgstr ""
+"Se dokumentet <ulink url=\"http://dlc.sun.com/osol/docs/content/2008.11/"
+"snapupgrade/snap3.html\"><citetitle>Uppgradera och hantera "
+"startmiljöer</citetitle></ulink> för mer information om startmiljöer."
+
+#: package-manager.xml:192 (para)
+msgid ""
+"The <application>Package Manager</application> creates a clone of the active "
+"boot environment when an image is updated."
+msgstr ""
+"När en bild uppdateras skapar <application>Pakethanteraren</application> "
+"en klon av den aktiva startmiljön."
+
+#: package-manager.xml:194 (title)
 msgid "Update the Current Image (Update All Packages)"
 msgstr "Uppdatera den aktuella bilden (uppdatera alla paket)"
 
-#: ../C/package-manager.xml:161(para)
-msgid "Perform the following steps to update your entire image :"
-msgstr "Så här uppdaterar du hela bilden:"
+#: package-manager.xml:195 (para)
+msgid "Perform the following steps to update all the packages in your image."
+msgstr "Så här uppdaterar du alla paket i bilden:"
 
-#: ../C/package-manager.xml:162(para)
+#: package-manager.xml:196 (para)
 msgid ""
-"Click <guimenu>File</guimenu><guimenuitem>Update All</guimenuitem> or the "
-"<guilabel>Update All</guilabel> button to start the process of updating "
-"<emphasis role=\"strong\">all</emphasis> the packages in your image."
+"Click the <guilabel>Update All</guilabel> button to start the process of "
+"updating <emphasis role=\"strong\">all</emphasis> the packages in your image."
 msgstr ""
-"Klicka på <guimenu>Fil</guimenu><guimenuitem>Uppdatera alla</guimenuitem> "
-"eller på knappen <guilabel>Uppdatera alla</guilabel> för att påbörja uppdateringen "
-" av <emphasis role=\"strong\">alla</emphasis> paket i bilden."
+"Klicka på knappen <guilabel>Uppdatera alla</guilabel> för att påbörja "
+"uppdateringen av <emphasis role=\"strong\">alla</emphasis> paket "
+"i bilden."
 
-#: ../C/package-manager.xml:163(para)
+#: package-manager.xml:197 (para)
+msgid ""
+"You can also choose <menuchoice><guimenu>File</guimenu><guimenuitem>Update "
+"All</guimenuitem></menuchoice> to start the process."
+msgstr ""
+"Du kan även välja  <menuchoice><guimenu>Fil</guimenu><guimenuitem>Uppdatera "
+"alla</guimenuitem></menuchoice> för att påbörja processen."
+
+#: package-manager.xml:198 (para)
 msgid ""
 "The <guilabel>Update All</guilabel> button is enabled when updates are "
 "available to the installed packages."
@@ -697,120 +927,601 @@ msgstr ""
 "Knappen <guilabel>Uppdatera alla</guilabel> är tillgänglig när det finns uppdateringar "
 "av de installerade paketen."
 
-#: ../C/package-manager.xml:166(para)
+#: package-manager.xml:201 (para)
 msgid ""
-"The <guilabel>Update All Confirmation</guilabel> dialog box is displayed."
+"The <guilabel>Update All</guilabel> window is displayed. Click "
+"<guibutton>Proceed</guibutton> to create a new boot environment and proceed "
+"with the Update All process."
 msgstr ""
-"Dialogrutan <guilabel>Bekräfta uppdatera alla</guilabel> visas."
+"Fönstret <guilabel>Uppdatera alla</guilabel> visas. Klicka på "
+"<guibutton>Fortsätt</guibutton> för att skapa en ny startmiljö "
+"och gå vidare med processen Uppdatera alla."
 
-#: ../C/package-manager.xml:167(para)
+#: package-manager.xml:202 (para)
 msgid ""
-"During the <emphasis>Update All</emphasis> process, a clone of the active "
-"boot environment is created. This clone enables the user to "
-"<emphasis>rollback</emphasis> the system to the current boot environment if "
-"the Update All process fails to complete or if it or corrupts the system."
+"During the Update All process, a clone of the active boot environment is "
+"created. This clone enables the user to boot into the boot environment state "
+"that existed before the Update All process was started. If the Package "
+"Manager is unable to create a new boot environment, an error message will be "
+"displayed. See the <xref linkend=\"ghmyd\"/> section on how to rectify the "
+"error and continue with updating your image."
 msgstr ""
-"Vid <emphasis>Uppdatera alla</emphasis> skapas en klon av den aktiva "
-"startmiljön. Med hjälp av klonen kan användaren utföra en "
-"<emphasis>återställning</emphasis> av systemet till den befintliga startmiljön, "
-"om Uppdatera alla misslyckas eller skadar systemet."
+"Under processen Uppdatera alla skapas en klon av den aktiva startmiljön. "
+"Med hjälp av klonen kan användaren starta datorn i den startmiljö som "
+"fanns innan processen Uppdatera alla påbörjades. Om Pakethanteraren "
+"inte kan skapa en ny startmiljö visas ett felmeddelande. Se "
+"<xref linkend=\"ghmyd\"/>-avsnittet för anvisningar om hur du åtgärdar "
+"felet och går vidare med uppdateringen av bilden."
 
-#: ../C/package-manager.xml:169(para)
-msgid "Enter a name for the new boot environment clone that will be created."
-msgstr "Ange ett namn på den nya startmiljö som ska skapas."
+#: package-manager.xml:203 (para) package-manager.xml:318
+msgid "A name for the new boot environment is automatically generated."
+msgstr "Namnet på den nya startmiljön skapas automatiskt."
 
-#: ../C/package-manager.xml:170(para)
+#: package-manager.xml:205 (para) package-manager.xml:209
+#: package-manager.xml:316
+msgid "Click <guibutton>Cancel</guibutton> to cancel the process."
+msgstr "Om du vill avbryta processen klickar du på <guibutton>Avbryt</guibutton>."
+
+#: package-manager.xml:207 (para)
 msgid ""
-"It is recommended that users enter meaningful names for the boot environment "
-"clone. For example, <emphasis>OpenSolaris_11/15/08</emphasis> , clearly "
-"shows that the boot environment clone is a clone of the OpenSolaris OS and "
-"was created on <literal>11/15/08</literal>."
+"If you chose to proceed, the Package Manager checks for dependencies and the "
+"<guilabel>Install/Update Confirmation</guilabel> dialog is displayed."
 msgstr ""
-"Du bör ge klonen av startmiljön ett meningsfullt namn, "
-"exempelvis <emphasis>OpenSolaris_11/15/08</emphasis> , som tydligt visar "
-"att startmiljön är en klon av OpenSolaris och att den skapades "
-"den <literal>11/15/08</literal>."
+"Om du väljer att gå vidare kontrollerar Pakethanteraren beroenden och "
+"dialogrutan <guilabel>Bekräfta installation/uppdatering</guilabel> visas."
 
-#: ../C/package-manager.xml:173(para)
+#: package-manager.xml:208 (para)
 msgid ""
-"Click <guibutton>Proceed</guibutton> to continue the <emphasis>Update All</"
-"emphasis> process."
+"Review the packages to be installed and click <guibutton>Next</guibutton> to "
+"proceed."
 msgstr ""
-"Klicka på <guibutton>Fortsätt</guibutton> om du vill att <emphasis>Uppdatera alla</"
-"emphasis>-processen ska fortsätta."
+"Kontrollera de paket som ska installeras, och klicka på <guibutton>Nästa</guibutton> "
+"för att gå vidare."
 
-#: ../C/package-manager.xml:174(para)
+#: package-manager.xml:211 (para)
+msgid "The packages are downloaded and installed."
+msgstr "Paketen laddas ned och installeras."
+
+#: package-manager.xml:213 (para) package-manager.xml:337
 msgid ""
-"Click <guibutton>Cancel</guibutton> to cancel the process. No changes are "
-"made to the boot environment and the you are returned to the main window of "
-"the <application>Package Manager</application>."
+"Read the <ulink url=\"http://opensolaris.org/os/project/indiana/resources/"
+"relnotes/200811/x86/\">Release Notes</ulink> before rebooting your system."
 msgstr ""
-"Klicka på <guibutton>Avbryt</guibutton> för att avbryta processen. "
-"<application>Pakethanterarens</application> huvudfönster visas "
-" och allt förblir oförändrat."
+"Läs igenom <ulink url=\"http://opensolaris.org/os/project/indiana/resources/"
+"relnotes/200811/x86/\">Viktigt-filen</ulink> innan du startar om datorn."
 
-#: ../C/package-manager.xml:177(title)
+#: package-manager.xml:214 (para) package-manager.xml:338
+msgid "You must reboot your system for the changes to take effect."
+msgstr "Du måste starta om datorn för att ändringarna ska träda i kraft."
+
+#: package-manager.xml:218 (title)
 msgid "Update All Errors"
 msgstr "Fel i uppdatera alla"
 
-#: ../C/package-manager.xml:178(para)
+#: package-manager.xml:219 (para) package-manager.xml:343
 msgid ""
 "A new boot environment clone <emphasis role=\"strong\">must</emphasis> be "
 "created for the Update All process to be completed. An error message is "
-"displayed if a boot environment clone cannot be created. You may see the "
-"following error message dialog box:"
+"displayed if a boot environment clone cannot be created. You might see an "
+"error message such as :"
 msgstr ""
 "En ny klon av startmiljön <emphasis role=\"strong\">måste</emphasis> "
 "skapas för att Uppdatera alla ska slutföras. Om klonen inte kan skapas "
-"visas ett felmeddelande. Eventuellt visas följande felmeddelande i en dialogruta:"
+"visas ett felmeddelande av typen:"
 
-#: ../C/package-manager.xml:179(para)
+#: package-manager.xml:220 (para)
 msgid ""
-"<literal>Not enough disk space: the Update All action cannot be performed. "
-"You may choose to return BE Management to manage your boot environments and "
+"<literal>Not enough disk space: the selected action cannot be performed. You "
+"may choose to return to BE Management to manage your boot environments and "
 "free up disk space</literal>."
 msgstr ""
-"<literal>Inte tillräckligt med diskutrymme. Uppdatera alla kunde inte utföras. "
+"<literal>Inte tillräckligt med diskutrymme. Vald åtgärd kunde inte utföras. "
 "Du kan återgå till Hantering av startmiljö för att hantera dina startmiljöer "
 "och frigöra diskutrymme</literal>."
 
-#: ../C/package-manager.xml:180(para)
+#: package-manager.xml:221 (para)
 msgid ""
-"Perform the following steps if you wish to rectify the error and continue "
+"Click <guibutton>Cancel</guibutton> to cancel the Update All process and "
+"return to the main window."
+msgstr ""
+"Klicka på  <guibutton>Avbryt</guibutton> för att avbryta processen "
+"Uppdatera alla och återgå till huvudfönstret."
+
+#: package-manager.xml:222 (para) package-manager.xml:346
+msgid ""
+"Perform the following steps if you want to rectify the error and continue "
 "with the Update All process:"
 msgstr ""
-"Följ anvisningarna om du vill rätta till problemet och gå vidare med "
-"Uppdatera alla-processen:"
+"Följ anvisningarna om du vill åtgärda problemet och gå vidare med "
+"processen Uppdatera alla:"
 
-#: ../C/package-manager.xml:181(para)
+#: package-manager.xml:223 (para)
 msgid ""
-"Click <guibutton>BE Management</guibutton> to go to the BE Management dialog "
-"box."
+"Click <guibutton>BE Management</guibutton> to go to the <guilabel>Boot "
+"Environment Management</guilabel> dialog."
 msgstr ""
-"Klicka på knappen <guibutton>Hantering av startmiljö</guibutton> för att återgå "
-"till dialogrutan Hantering av startmiljö."
+"Klicka på knappen <guibutton>Hantering av startmiljö</guibutton> "
+"för att gå till dialogrutan <guilabel>Hantering av startmiljö</guilabel>. "
 
-#: ../C/package-manager.xml:183(para)
+#: package-manager.xml:224 (para) package-manager.xml:348
 msgid ""
-"Follow the steps listed in <xref linkend=\"ghlik\"/> to delete old or unused "
-"boot environments and free up disk space."
+"Click <guibutton>Close</guibutton> to cancel the process and return to the "
+"main window."
 msgstr ""
-"Följ anvisningarna i <xref linkend=\"ghlik\"/> om du vill ta bort gamla "
-"eller oanvända startmiljöer och frigöra diskutrymme."
+"Klicka på <guibutton>Stäng</guibutton> för att avbryta processen "
+"och återgå till huvudfönstret."
 
-#: ../C/package-manager.xml:185(para)
+#: package-manager.xml:226 (para) package-manager.xml:350
 msgid ""
-"After you have rebooted your system, click the <guilabel>Update All</"
-"guilabel> icon to restart the process of updating all packages."
+"If you chose to rectify the error, go to step 2 in the <xref linkend=\"ghmya"
+"\"/> section. Follow instructions to delete old or unused boot environments "
+"and free up disk space."
 msgstr ""
-"Klicka på <guilabel>Uppdatera alla</guilabel>-ikonen när du har startat om datorn "
-"för att starta om processen med att uppdatera alla paket."
+"Gå till steg 2 i avsnittet <xref linkend=\"ghmya\"/> om du vill åtgärda "
+"problemet. Följ anvisningarna för att ta bort gamla och oanvända "
+"startmiljöer och därigenom frigöra diskutrymme."
 
-#: ../C/package-manager.xml:190(title)
+#: package-manager.xml:228 (para)
+msgid ""
+"Click the <guibutton>Update All</guibutton> icon to restart the process of "
+"updating all packages."
+msgstr ""
+"Klicka på ikonen <guibutton>Uppdatera alla</guibutton> för att starta "
+"om processen Uppdatera alla."
+
+#: package-manager.xml:233 (title)
 msgid "Manage Boot Environments"
 msgstr "Hantera startmiljöer"
 
-#: ../C/package-manager.xml:191(para)
+#: package-manager.xml:234 (para)
+msgid "Perform the following steps to manage your boot environments :"
+msgstr "Så här hanterar du dina startmiljöer:"
+
+#: package-manager.xml:235 (para)
+msgid ""
+"Click <menuchoice><guimenu>File</guimenu><guimenuitem>Boot Environment "
+"Management</guimenuitem></menuchoice> to open the <guilabel>Boot Environment "
+"Management</guilabel> dialog."
+msgstr ""
+"Klicka på <menuchoice><guimenu>Fil</guimenu><guimenuitem>Hantering av "
+"startmiljö</guimenuitem></menuchoice> för att öppna dialogrutan "
+ "<guilabel>Hantering av startmiljö</guilabel>."
+
+#: package-manager.xml:237 (para)
+msgid "In this dialog, you can perform the following actions:"
+msgstr "Du kan utföra följande åtgärder i dialogrutan:"
+
+#: package-manager.xml:238 (emphasis)
+msgid "Change the default boot environment."
+msgstr "Ändra standardstartmiljö."
+
+#: package-manager.xml:239 (para)
+msgid ""
+"Select the boot environment that you want to be active on system reboot. "
+"This is the default boot environment."
+msgstr ""
+"Välj vilken startmiljö som ska vara aktiv när datorn startas om. "
+"Det är standardstartmiljön."
+
+#: package-manager.xml:242 (emphasis)
+msgid "Remove old or unused boot environments to free up disk space."
+msgstr "Ta bort gamla eller oanvända startmiljöer för att frigöra diskutrymme."
+
+#: package-manager.xml:243 (para)
+msgid "Select the boot environments that you want to delete."
+msgstr "Välj vilka startmiljöer som ska tas bort."
+
+#: package-manager.xml:244 (para)
+msgid ""
+"You do not need to reboot your system if you are only deleting some of your "
+"boot environments."
+msgstr ""
+"Du behöver inte starta om datorn om du endast tar bort startmiljöer."
+
+#: package-manager.xml:250 (para)
+msgid "Click <guibutton>OK</guibutton> to proceed."
+msgstr "Klicka på <guibutton>OK</guibutton> för att gå vidare."
+
+#: package-manager.xml:251 (para)
+msgid ""
+"Click <guibutton>Reset</guibutton> to reset the changes and show the initial "
+"state of the boot environments."
+msgstr ""
+"Klicka på <guibutton>Återställ</guibutton> för att återställa ändringarna "
+"och visa startmiljöernas ursprungliga tillstånd."
+
+#: package-manager.xml:252 (para)
+msgid ""
+"Click <guibutton>Cancel</guibutton> to cancel all changes and return to the "
+"main window."
+msgstr ""
+"Klicka på <guibutton>Avbryt</guibutton> för att avbryta alla ändringar och återgå "
+"till huvudfönstret."
+
+#: package-manager.xml:254 (para)
+msgid ""
+"If you chose to proceed, the <guilabel>BE Management Confirmation</guilabel> "
+"dialog is displayed. Review the boot environment changes and click "
+"<guibutton>OK</guibutton> to proceed."
+msgstr ""
+"Om du väljer att gå vidare visas dialogrutan <guilabel>Hantering av "
+"startmiljö</guilabel>. Kontrollera ändringarna av startmiljön "
+"och klicka på <guibutton>OK</guibutton> för att gå vidare."
+
+#: package-manager.xml:255 (para)
+msgid ""
+"After you click <guibutton>OK</guibutton>, you cannot undo any changes you "
+"made to the boot environments."
+msgstr ""
+"Du kan inte ångra ändringarna av startmiljön när du väl har tryckt på "
+"<guibutton>OK</guibutton>."
+
+#: package-manager.xml:257 (para)
+msgid ""
+"The changes that you made to the <emphasis role=\"strong\">default boot "
+"environment</emphasis> setting is effective only after system reboot."
+msgstr ""
+"Ändringarna av <emphasis role=\"strong\">standardstartmiljön"
+"</emphasis> träder inte i kraft förrän du har startat om datorn."
+
+#: package-manager.xml:259 (para)
+msgid ""
+"Click <guibutton>Cancel</guibutton> to cancel the changes and return to the "
+"<literal>BE Management</literal> dialog box."
+msgstr ""
+"Klicka på <guibutton>Avbryt</guibutton> för att avbryta alla ändringar och återgå "
+"till dialogrutan <literal>Hantering av startmiljö</literal>."
+
+#: package-manager.xml:261 (para)
+msgid "Reboot your system to boot into the new default boot environment."
+msgstr "Starta om datorn för att aktivera den nya standardstartmiljön."
+
+#: package-manager.xml:265 (title)
+msgid "Edit Repositories"
+msgstr "Redigera databaser"
+
+#: package-manager.xml:266 (para)
+msgid "Perform the following steps to add, remove, or configure repositories:"
+msgstr "Så här gör du för att lägga till, ta bort eller konfigurera databaser:"
+
+#: package-manager.xml:267 (para)
+msgid ""
+"Choose <menuchoice><guimenu>Settings</guimenu><guimenuitem>Edit "
+"Repositories</guimenuitem></menuchoice> to open the <guilabel>Manage "
+"Repositories</guilabel> dialog."
+msgstr ""
+"Välj <menuchoice><guimenu>Inställningar</guimenu><guimenuitem>Redigera "
+"databaser</guimenuitem></menuchoice> för att öppna dialogrutan "
+"Hantering av databaser</guilabel>."
+
+#: package-manager.xml:269 (para)
+msgid "In this dialog box, you can perform the following actions :"
+msgstr "Du kan utföra följande åtgärder i dialogrutan:"
+
+#: package-manager.xml:270 (para)
+msgid ""
+"<emphasis role=\"strong\">Add a Repository</emphasis> – To add a new "
+"repository, type the name and the address (URL) of the repository. Click "
+"<guibutton>Add</guibutton>."
+msgstr ""
+"<emphasis role=\"strong\">Lägga till en databas</emphasis> – Om du vill "
+"lägga till en ny databas anger du dess namn och webbadress. Klicka på "
+"<guibutton>Lägg till</guibutton>."
+
+#: package-manager.xml:272 (para)
+msgid ""
+"<emphasis role=\"strong\">Remove a Repository</emphasis> – To remove a "
+"repository, click a repository name from the list to select it. Click "
+"<guibutton>Remove</guibutton>."
+msgstr ""
+"<emphasis role=\"strong\">Ta bort en databas</emphasis> – Om du vill ta bort "
+"en databas klickar du på databasens namn för att markera den. Klicka därefter på "
+"<guibutton>Ta bort</guibutton>."
+
+#: package-manager.xml:273 (para)
+msgid ""
+"A repository that has been set as the preferred repository cannot be "
+"removed. To remove a preferred repository, set a nonpreferred repository as "
+"preferred, and then remove the repository."
+msgstr ""
+"Det går inte att ta bort en standarddatabas. Om du vill ta bort databasen "
+"måste du först ställa in en annan databas som standard och därefter "
+"ta bort den ursprungliga databasen."
+
+#: package-manager.xml:276 (para)
+msgid ""
+"<emphasis role=\"strong\">Set a Preferred Repository</emphasis> – To set a "
+"repository as a preferred repository, click the radio button next to the "
+"repository that you would like to set as the preferred repository. Click "
+"<guibutton>Close</guibutton> if you are not making any other changes to the "
+"repository information."
+msgstr ""
+"<emphasis role=\"strong\">Ställa in en standarddatabas> – För att ange "
+"att en databas ska vara standard klickar du på alternativknappen bredvid "
+"den databas som du vill ange som standarddatabas. Klicka på "
+"<guibutton>Stäng</guibutton> om du inte vill ändra databasinformationen."
+
+#: package-manager.xml:278 (para)
+msgid ""
+"<emphasis role=\"strong\">Modify a Repository</emphasis> – Perform the "
+"following steps to modify a repository :"
+msgstr ""
+"<emphasis role=\"strong\">Ändra databas</emphasis> – Så här ändrar du "
+"databaser:"
+
+#: package-manager.xml:279 (para)
+msgid "Select the repository that you want to modify."
+msgstr "Välj den databas som du vill ändra:"
+
+#: package-manager.xml:281 (para)
+msgid "Click the <guibutton>Modify</guibutton> button."
+msgstr "Klicka på knappen <guibutton>Ändra</guibutton>."
+
+#: package-manager.xml:282 (para)
+msgid "The <guilabel>Modify Repository</guilabel> dialog box is displayed."
+msgstr "Då visas dialogrutan <guilabel>Ändra databas</guilabel>."
+
+#: package-manager.xml:284 (para)
+msgid "Type a valid name and URL for the repository."
+msgstr "Ange ett giltigt namn på databasen och dess webbadress."
+
+#: package-manager.xml:285 (para)
+msgid ""
+"A repository name is considered valid if it does not exist in the current "
+"list of repositories."
+msgstr ""
+"Ett databasnamn är giltigt om det inte redan finns i listan över databaser."
+
+#: package-manager.xml:287 (para)
+msgid ""
+"Click <guibutton>OK</guibutton> to save the changes and return to the "
+"<guilabel>Manage Repositories</guilabel> dialog box."
+msgstr ""
+"Klicka på <guibutton>OK</guibutton> för att spara alla ändringar och återgå "
+"till dialogrutan <literal>Hantera databaser</literal>."
+
+#: package-manager.xml:288 (para)
+msgid ""
+"Click <guibutton>Cancel</guibutton> to cancel your changes. You are returned "
+"to the <guilabel>Manage Repositories</guilabel> dialog box."
+msgstr ""
+"Klicka på <guibutton>Avbryt</guibutton> för att ångra ändringarna, "
+"och återgå till dialogrutan <guilabel>Hantera databaser</guilabel>."
+
+#: package-manager.xml:297 (title)
+msgid "Update Manager"
+msgstr "Uppdateringshanteraren"
+
+#: package-manager.xml:298 (para)
+msgid ""
+"The <application>Update Manager</application> is a separate application that "
+"launches from the desktop when updates to the installed packages are "
+"available in the repository."
+msgstr ""
+"<application>Uppdateringshanteraren</application> är ett separat verktyg "
+"som startar på skrivbordet när det finns tillgängliga uppdateringar av de installerade "
+"paketen i databasen."
+
+#: package-manager.xml:300 (title)
+msgid "Working With Update Manager"
+msgstr "Arbeta med Uppdateringshanteraren"
+
+#: package-manager.xml:301 (title)
+msgid "Update Manager Main Window"
+msgstr "Huvudfönstret i Uppdateringshanteraren"
+
+#: package-manager.xml:305 (para)
+msgid ""
+"You can use the <application>Update Manager</application> application to "
+"update the installed packages in your image."
+msgstr ""
+"Du kan använda programmet <application>Uppdateringshanteraren</application> "
+"för att uppdatera de paket som finns installerade i din bild."
+
+#: package-manager.xml:306 (para)
+msgid ""
+"For the OpenSolaris 2008.11 release, the <application>Update Manager</"
+"application> updates <emphasis role=\"strong\">all</emphasis> installed "
+"packages in the image. This is equivalent to updating the image."
+msgstr ""
+"I OpenSolaris 2008.11 uppdaterar <application>Uppdateringshanteraren</"
+"application> <emphasis role=\"strong\">alla</emphasis> paket "
+"som finns installerade i bilden. Det motsvarar en uppdatering av bilden."
+
+#: package-manager.xml:308 (para)
+msgid ""
+"When updates are available to the installed packages, a notification icon is "
+"displayed in the notification panel on the OpenSolaris desktop and the "
+"<guilabel>Update Manager</guilabel> window is displayed."
+msgstr ""
+"När uppdateringar av installerade paket finns tillgängliga visas en ikon "
+"i meddelandefältet på skrivbordet i OpenSolaris, och fönstret "
+"<guilabel>Uppdateringshanteraren</guilabel> öppnas."
+
+#: package-manager.xml:309 (para)
+msgid ""
+"You can also click <menuchoice><guimenu>System</"
+"guimenu><guisubmenu>Administration</guisubmenu><guimenuitem>Update Manager</"
+"guimenuitem></menuchoice> to manually launch the Update Manager."
+msgstr ""
+"Du kan även klicka på <menuchoice><guimenu>System</"
+"guimenu><guisubmenu>Administration</guisubmenu><guimenuitem>"
+"Uppdateringshanteraren</guimenuitem></menuchoice> för att starta "
+"programmet manuellt."
+
+#: package-manager.xml:311 (para)
+msgid ""
+"Click the <guibutton>Update All</guibutton> button in the <guilabel>Update "
+"All</guilabel> window to begin the process of updating your image."
+msgstr ""
+"Klicka på knappen <guibutton>Uppdatera alla</guibutton> i fönstret "
+"<guilabel>Uppdatera Alla</guilabel> för att påbörja uppdateringen av bilden."
+
+#: package-manager.xml:312 (para)
+msgid ""
+"Select a package and click the <guilabel>Details</guilabel> panel if you "
+"want to view more information about the package."
+msgstr ""
+"Välj ett paket och klicka på panelen <guilabel>Information</guilabel> om du vill "
+"veta mer om paketet."
+
+#: package-manager.xml:314 (para)
+msgid ""
+"The <guilabel>Update All</guilabel> window is displayed. Click "
+"<guibutton>Proceed</guibutton> to create a new boot environment and update "
+"all packages in the current image."
+msgstr ""
+"Fönstret <guilabel>Uppdatera alla</guilabel> visas. Klicka på "
+"<guibutton>Fortsätt</guibutton> för att skapa en ny startmiljö och uppdatera "
+"alla paket i den aktuella bilden."
+
+#: package-manager.xml:315 (para)
+msgid ""
+"During the Update All process, a clone of the active boot environment is "
+"created. This clone enables the user to boot into the boot environment state "
+"that existed before the Update All process was started."
+msgstr ""
+"Under processen Uppdatera alla skapas en klon av den aktiva "
+"startmiljön. Med hjälp av klonen kan användaren starta datorn "
+"i den startmiljö som fanns innan processen Uppdatera alla påbörjades."
+
+#: package-manager.xml:317 (para)
+msgid ""
+"If the Package Manager is unable to create a new boot environment, an error "
+"message will be displayed. See the <xref linkend=\"ghquj\"/> section on how "
+"to rectify the error and continue with updating your image."
+msgstr ""
+"Om Pakethanteraren inte kan skapa en ny startmiljö visas ett "
+"felmeddelande. Se avsnittet <xref linkend=\"ghquj\"/> för information "
+"om hur man åtgärdar felet och fortsätter med uppdateringen av bilden."
+
+#: package-manager.xml:321 (para)
+msgid ""
+"If you chose to proceed, the <guilabel>Installing Updates</guilabel> windows "
+"are displayed. There are four stages to the package installation process:"
+msgstr ""
+"Om du väljer att gå vidare visas fönstren <guilabel>Installerar uppdateringar</guilabel> "
+"Installation av paket sker i fyra steg:"
+
+#: package-manager.xml:322 (para)
+msgid "Evaluate."
+msgstr "Utvärdering"
+
+#: package-manager.xml:324 (para)
+msgid "Download."
+msgstr "Nedladdning"
+
+#: package-manager.xml:326 (para)
+msgid "Install."
+msgstr "Installation"
+
+#: package-manager.xml:328 (para)
+msgid "Index."
+msgstr "Indexering"
+
+#: package-manager.xml:331 (para)
+msgid ""
+"You can choose to cancel the process only during the Evaluate and Download "
+"stages. Click the <guibutton>Cancel</guibutton> button to cancel the "
+"installation process. No changes are made and you are returned to the main "
+"window of the Update Manager."
+msgstr ""
+"Du kan endast avbryta processen under utvärderings- och nedladdningsskedet. "
+"Klicka i sådana fall på knappen <guibutton>Avbryt</guibutton>. Huvudfönstret "
+"visas och allt förblir oförändrat."
+
+#: package-manager.xml:332 (para)
+msgid ""
+"If an error occurs during any of the stages, the <guilabel>Details</"
+"guilabel> panel is expanded and the details of the error are displayed. An "
+"error status indicator is shown next to the failed stage."
+msgstr ""
+"Om det inträffar fel under dessa steg expanderas panelen <guilabel>Information"
+"</guilabel> och information om felet visas. Vid steget där felet inträffade "
+"visas en felindikator."
+
+#: package-manager.xml:335 (para)
+msgid ""
+"Click the <guilabel>Details</guilabel> panel to view more information on "
+"each of the installation processes."
+msgstr ""
+"Klicka på panelen <guilabel>Information</guilabel> om du vill veta mer om "
+"de olika installationsprocesserna."
+
+#: package-manager.xml:342 (title)
+msgid "Update All Errors (Update Manager)"
+msgstr "Fel vid Uppdatera alla (Uppdateringshanteraren)"
+
+#: package-manager.xml:344 (para)
+msgid ""
+"<literal>Not enough disk space: the Update All action cannot be performed. "
+"Click OK to launch BE Management to manage your existing BEs and free up "
+"disk space.</literal>."
+msgstr ""
+"<literal>Inte tillräckligt med diskutrymme: Uppdatera alla kunde inte utföras. "
+"Klicka på OK för att starta Hantering av startmiljö för att hantera dina "
+"befintliga startmiljöer och frigöra diskutrymme.</literal>."
+
+#: package-manager.xml:345 (para)
+msgid ""
+"Click <guibutton>No</guibutton> to cancel the Update All process and return "
+"to the Update Manager main window."
+msgstr ""
+"Klicka på  <guibutton>Nej</guibutton> för att avbryta processen Uppdatera alla "
+"och återgå till huvudfönstret i Uppdateringshanteraren."
+
+#: package-manager.xml:347 (para)
+msgid ""
+"Click <guibutton>Yes</guibutton> in the error dialog to go to the "
+"<literal>Boot Environment Management</literal> dialog."
+msgstr ""
+"Klicka på <guibutton>Ja</guibutton> i dialogrutan som visar felet för att återgå "
+"till dialogrutan <literal>Hantering av startmiljö</literal>."
+
+#: package-manager.xml:352 (para)
+msgid ""
+"Click the <guibutton>Update All</guibutton> button in the <literal>Update "
+"Manager</literal> window to restart the process of updating all packages."
+msgstr ""
+"Klicka på knappen <guibutton>Uppdatera alla</guibutton> i fönstret "
+"<literal>Uppdateringshanteraren</literal> om du vill starta om uppdateringen av alla paket."
+
+#: package-manager.xml:358 (title)
+msgid "Image Packaging System Glossary"
+msgstr "IPS-ordlista"
+
+#: package-manager.xml:359 (glossterm)
+msgid "authority"
+msgstr "behörighet"
+
+#: package-manager.xml:360 (para)
+msgid ""
+"A person, group, or corporation that designs, creates, and publishes a "
+"package to a repository."
+msgstr ""
+"En person, grupp eller ett företag som utformar, skapar och publicerar "
+"paket i databasen."
+
+#: package-manager.xml:362 (para)
+msgid ""
+"A location that is configured to point to a repository and might contain "
+"additional information about the package, such as the publisher of the "
+"package. The repository, in turn, serves the packages from the (default) "
+"authority, for downloading purposes. The developer-quality packages managed "
+"by Sun and made available through http://pkg.opensolaris.com is an example "
+"of an authority."
+msgstr ""
+"En plats som är konfigurerad så att den hänvisar till en databas, "
+"och kan innehålla ytterligare information om paketet, såsom dess "
+"utgivare. Databasen levererar paketen från (standard)behörigheten "
+"för nedladdning. Ett exempel på behörighet är de utvecklingspaket "
+"som Sun administrerar. Dessa finns tillgängliga på http://pkg.opensolaris.com."
+
+#: package-manager.xml:367 (glossterm)
+msgid "boot environment"
+msgstr "startmiljö"
+
+#: package-manager.xml:368 (para)
 msgid ""
 "For an OpenSolaris release, a boot environment is an instance of a bootable "
 "OpenSolaris environment. The boot environment consists of a root file system "
@@ -827,9 +1538,9 @@ msgstr ""
 "monteras under rotfilsystemet. Rotfilsystemet och alla andra filsystem "
 " i startmiljön som innehåller systemprogram måste vara i zfs-format."
 
-#: ../C/package-manager.xml:192(para)
+#: package-manager.xml:369 (para)
 msgid ""
-"An active boot environment is the one that is currently booted. Exactly one "
+"The active boot environment is the one that is currently booted. Exactly one "
 "active boot environment can be booted. An inactive boot environment is not "
 "currently booted, but can be in a state of waiting for activation on the "
 "next reboot."
@@ -838,211 +1549,100 @@ msgstr ""
 "att starta från en startmiljö. En inaktiv startmiljö befinner sig däremot i vänteläge, "
 "och kan aktiveras vid nästa omstart."
 
-#: ../C/package-manager.xml:193(para)
-msgid "Link to GSG BE section."
-msgstr "Länk till kapitlet om startmiljöer i introduktionsguiden."
+#: package-manager.xml:372 (glossterm)
+msgid "clone"
+msgstr "klon"
 
-#: ../C/package-manager.xml:194(para)
-msgid "Perform the following steps to manage your Boot Environments (BE):"
-msgstr "Så här hanterar du din startmiljö:"
+#: package-manager.xml:373 (para)
+msgid "An exact copy."
+msgstr "En exakt kopia."
 
-#: ../C/package-manager.xml:195(para)
+#: package-manager.xml:374 (para)
 msgid ""
-"Click on <guimenu>File</guimenu><guimenuitem>Boot Environment Management</"
-"guimenuitem>."
+"For installation, a clone could be an exact copy of an operating system, a "
+"file system, or a volume. This copy has 100% compatibility with the original."
 msgstr ""
-"Klicka på <guimenu>Fil</guimenu><guimenuitem>Hantering av startmiljö</"
-"guimenuitem>."
+"I installationssammanhang kan en klon vara en exakt kopia av ett operativsystem, "
+"ett filsystem eller en volymuppsättning. Kopian är 100 % kompatibel med originalet."
 
-#: ../C/package-manager.xml:197(para)
+#: package-manager.xml:377 (glossterm)
+msgid "dataset"
+msgstr "datauppsättning"
+
+#: package-manager.xml:378 (para)
 msgid ""
-"The <guilabel>Boot Environment Management</guilabel> dialog box is "
-"displayed. In this dialog box, you can perform the following actions:"
+"A generic name for the following ZFS entities: clones, file systems, "
+"snapshots, or volumes. Each dataset is identified by a unique name in the "
+"ZFS namespace."
 msgstr ""
-"Dialogrutan <guilabel>Hantering av startmiljö</guilabel> visas. "
-"Du kan göra följande från dialogrutan:"
+"Ett generiskt namn som täcker in följande ZFS-objekt: kloner, filsystem, "
+"ögonblicksbilder och volymuppsättningar. Varje datauppsättning identifieras av ett unikt namn i ZFS-namnområdet."
 
-#: ../C/package-manager.xml:198(emphasis)
-msgid "Change the default boot environment."
-msgstr "Ändra standardstartmiljö."
+#: package-manager.xml:381 (glossterm)
+msgid "image"
+msgstr "bild"
 
-#: ../C/package-manager.xml:199(para)
+#: package-manager.xml:382 (para)
 msgid ""
-"Select the radio button next to the boot environment that you want to boot "
-"into upon system reboot. This is the default boot environment."
+"A collection of software in a package that comprises an entire operating "
+"system. The package is suitable for installation."
 msgstr ""
-"Markera alternativknappen bredvid den startmiljö som du vill starta med. "
-"Den nya startmiljön blir då standardstartmeny."
+"En samling program som har paketerats och som utgör ett helt "
+"operativsystem. Bilden lämpar sig för installation."
 
-#: ../C/package-manager.xml:202(emphasis)
-msgid "Remove old or unused boot environments to free up disk space."
-msgstr "Ta bort gamla eller oanvända startmiljöer för att frigöra diskutrymme."
+#: package-manager.xml:385 (glossterm)
+msgid "package"
+msgstr "paket"
 
-#: ../C/package-manager.xml:203(para)
-msgid "Select the checkbox next to the boot environment you want to delete."
-msgstr "Välj kryssrutan för den startmiljö som du vill ta bort."
-
-#: ../C/package-manager.xml:208(para)
-msgid "Click <guibutton>OK</guibutton> to proceed."
-msgstr "Klicka på <guibutton>OK</guibutton> för att gå vidare."
-
-#: ../C/package-manager.xml:209(para)
+#: package-manager.xml:386 (para)
 msgid ""
-"Click <guibutton>Reset</guibutton> to revert the changes to the opening "
-"state."
+"A collection of files, directories, links, drivers, and dependencies in a "
+"defined format."
 msgstr ""
-"Klicka på <guibutton>Återställ</guibutton> om du vill att ursprungsinställningarna "
-"ska återställas."
+"En samling filer, kataloger, länkar, drivrutiner och beroenden i ett "
+"specifikt format."
 
-#: ../C/package-manager.xml:210(para)
+#: package-manager.xml:389 (glossterm)
+msgid "preferred repository"
+msgstr "standarddatabas"
+
+#: package-manager.xml:390 (para)
 msgid ""
-"Click <guibutton>Cancel</guibutton> to cancel all changes and return to the "
-"main window."
+"A default repository that is the source for packages. If a user does not "
+"explicitly specify a repository when installing and updating packages, the "
+"preferred authority is chosen as the source for packages."
 msgstr ""
-"Klicka på <guibutton>Avbryt</guibutton> för att avbryta alla ändringar och återgå "
-"till huvudfönstret."
+"En standarddatabas som används som paketkälla. Om en användare inte "
+"uttryckligen anger en databas vid installation och uppdatering av paket "
+"kommer standardbehörigheten att användas som paketkälla."
 
-#: ../C/package-manager.xml:212(para)
+#: package-manager.xml:391 (para)
 msgid ""
-"If you clicked OK , the BE Management Confirmation dialog box is displayed. "
-"Review the changes to the boot environment and click <guibutton>OK</"
-"guibutton> to proceed."
+"During the creation of an image, the initially specified authority is marked "
+"as the preferred authority. Any one of the authorities associated with an "
+"image can be set as the preferred authority by using the <command>set-"
+"authority</command> command with the <option>P</option> option."
 msgstr ""
-"Om du klickade på OK visas bekräftelsedialogrutan för Hantering av startmiljö. "
-"Kontrollera ändringarna av startmiljön och klicka på <guibutton>OK</"
-"guibutton> för att gå vidare."
+"När en bild skapas är det den första angivna behörigheten som blir "
+"standardbehörighet. Med kommandot <command>set-authority</command> "
+"och alternativet <option>P</option> är det möjligt att ställa in "
+"valfri behörighet med koppling till bilden som standardbehörighet."
 
-#: ../C/package-manager.xml:213(para)
-msgid "The changes made will take effect only after system reboot."
-msgstr "Ändringarna träder endast i kraft efter omstart."
+#: package-manager.xml:394 (glossterm)
+msgid "repository"
+msgstr "databas"
 
-#: ../C/package-manager.xml:215(para)
+#: package-manager.xml:395 (para)
 msgid ""
-"Click <guibutton>Cancel</guibutton> to cancel the changes and return to the "
-"BE Management dialog box."
+"A location where packages are available for download. A repository can "
+"contain packages from many authorities. Conversely, many repositories can "
+"contain packages from a single authority. Also called the depot server."
 msgstr ""
-"Klicka på <guibutton>Avbryt</guibutton> för att avbryta alla ändringar och återgå "
-"till huvudfönstret."
+"En plats med paket som kan laddas ned. Databasen kan antingen innehålla "
+"paket från många olika behörigheter, eller från en enda. Databasar kallas även "
+"för terminalservrar."
 
-#: ../C/package-manager.xml:217(para)
-msgid "Reboot your system."
-msgstr "Starta om datorn."
-
-#: ../C/package-manager.xml:221(title)
-msgid "Edit Repositories"
-msgstr "Redigera databaser"
-
-#: ../C/package-manager.xml:222(para)
-msgid "Perform the following steps to add, remove, or configure repositories:"
-msgstr "Så här gör du för att lägga till, ta bort eller konfigurera databaser:"
-
-#: ../C/package-manager.xml:223(para)
-msgid ""
-"Click <guimenu>Settings</guimenu><guimenuitem>Edit Repositories</"
-"guimenuitem>."
-msgstr ""
-"Klicka på <guimenu>Inställningar</guimenu><guimenuitem>Redigera databaser</"
-"guimenuitem>."
-
-#: ../C/package-manager.xml:225(para)
-msgid ""
-"The <literal>Manage Repositories</literal> dialog box is displayed. The "
-"following actions can be performed in this dialog box:"
-msgstr ""
-"Dialogrutan <literal>Hantera databaser</literal> visas. "
-"Du kan göra följande från dialogrutan:"
-
-#: ../C/package-manager.xml:226(para)
-msgid ""
-"<emphasis role=\"strong\">Add a Repository</emphasis> – To add a new "
-"repository, enter the name and the address (URL) of the repository. Click "
-"<guibutton>Add</guibutton>."
-msgstr ""
-"<emphasis role=\"strong\">Lägga till en databas</emphasis> – Om du vill "
-"lägga till en ny databas anger du dess namn och webbadress. Klicka på "
-"<guibutton>Lägg till</guibutton>."
-
-#: ../C/package-manager.xml:228(para)
-msgid ""
-"<emphasis role=\"strong\">Remove a Repository</emphasis> – To remove a "
-"repository, click on a repository name from the list to select it. Click "
-"<guibutton>Remove</guibutton>."
-msgstr ""
-"<emphasis role=\"strong\">Ta bort en databas</emphasis> – Om du vill ta bort "
-"en databas klickar du på databasens namn för att markera den. Klicka därefter på "
-"<guibutton>Ta bort</guibutton>.."
-
-#: ../C/package-manager.xml:229(para)
-msgid ""
-"A repository that has been set as preferred repository cannot be removed. To "
-"remove a preferred repository, set a non-preferred repository as preferred, "
-"and then remove the repository."
-msgstr ""
-"Det går inte att ta bort en standarddatabas. Om du vill ta bort databasen måste du "
-"först ställa in en annan databas som standard och därefter ta bort den."
-
-#: ../C/package-manager.xml:232(emphasis)
-msgid "Set a Preferred Repository"
-msgstr "Ställa in en standarddatabas"
-
-#: ../C/package-manager.xml:233(para)
-msgid ""
-"A preferred repository is the default repository where the source for the "
-"packages are downloaded from."
-msgstr ""
-"Standarddatabasen är den databas varifrån paketens källkod laddas ned."
-
-#: ../C/package-manager.xml:234(para)
-msgid ""
-"To set a repository as a preferred repository, click the radio button next "
-"to the repository you would like to set as preferred repository. Click "
-"<guibutton>Close</guibutton> if you are not making any other changes to the "
-"repository information."
-msgstr ""
-"För att ställa in en standarddatabas klickar du på alternativknappen för den "
-"databas som du vill ställa in som standard. Klicka på "
-"<guibutton>Stäng</guibutton> om du inte tänker ändra databasinformationen."
-
-#: ../C/package-manager.xml:236(para)
-msgid ""
-"<emphasis role=\"strong\">Modify a Repository</emphasis> – Perform the "
-"following steps to modify a repository :"
-msgstr ""
-"<emphasis role=\"strong\">Ändra databas</emphasis> – Så här ändrar du "
-"databaser:"
-
-#: ../C/package-manager.xml:237(para)
-msgid "Select the repository you want to modify."
-msgstr "Välj den databas som du vill ändra."
-
-#: ../C/package-manager.xml:239(para)
-msgid ""
-"Click the <guibutton>Modify</guibutton> button. The <literal>Modify "
-"Repository</literal> dialog box is displayed."
-msgstr ""
-"Klickar du på knappen <guibutton>Ändra</guibutton> "
-"visas dialogrutan <literal>Ändra databas</literal>."
-
-#: ../C/package-manager.xml:241(para)
-msgid ""
-"Type a valid name for the repository and the URL of the repository. A "
-"repository name is considered valid if it does not exist in the current list "
-"of repositories."
-msgstr ""
-"Ange ett giltigt namn på databasen och dess webbadress. Ett "
-"databasnamn är giltigt om det inte redan finns i listan över databaser."
-
-#: ../C/package-manager.xml:243(para)
-msgid ""
-"Click <guibutton>OK</guibutton> to save the changes and return to the "
-"<literal>Manage Repositories</literal> dialog box."
-msgstr ""
-"Klicka på <guibutton>OK</guibutton> för att spara alla ändringar och återgå "
-"till dialogrutan <literal>Hantera databaser</literal>."
-
-#: ../C/package-manager.xml:244(para)
-msgid ""
-"Click <guibutton>Cancel</guibutton> to cancel your changes. You are returned "
-"to the <literal>Manage Repositories</literal> dialog box."
-msgstr ""
-"Klicka på <guibutton>OK</guibutton> för att ångra ändringarna. Du returneras då till dialogrutan <literal>Hantera databaser</literal>."
+#. Put one translator per line, in the form of NAME <EMAIL>, YEAR1, YEAR2.
+#: package-manager.xml:0 (None)
+msgid "translator-credits"
+msgstr "översättning"

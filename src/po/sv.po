@@ -374,6 +374,10 @@ msgstr ""
 msgid "pkg: set-authority: one and only one authority may be set"
 msgstr "pkg: set-authority: det går endast att ställa in en behörighet"
 
+#: ../client.py:1402
+msgid "set-authority: one and only one authority may be set"
+msgstr "set-authority: det går endast att ställa in en behörighet"
+
 #: ../client.py:1410
 #, python-format
 msgid "set-authority: SSL key file '%s' does not exist"
@@ -449,6 +453,10 @@ msgstr "Kontrollera filen i %s"
 msgid "pkg: set-property: requires a property name and value"
 msgstr "pkg: set-property: kräver ett egenskapsnamn och ett värde"
 
+#: ../client.py:1598
+msgid "set-property: requires a property name and value"
+msgstr "set-property: kräver ett egenskapsnamn och ett värde"
+
 #: ../client.py:1603
 #, python-format
 msgid "set-property failed: %s"
@@ -457,6 +465,10 @@ msgstr "set-property misslyckades: %s"
 #: ../client.py:1618
 msgid "pkg: unset-property requires at least one property name"
 msgstr "pkg: unset-property kräver åtminstone ett egenskapsnamn"
+
+#: ../client.py:1618
+msgid "unset-property: requires at least one property name"
+msgstr "unset-property: kräver åtminstone ett egenskapsnamn"
 
 #: ../client.py:1624
 #, python-format
@@ -1234,11 +1246,6 @@ msgstr ""
 msgid "Canceling..."
 msgstr "Avbryter ..."
 
-#: ../gui/modules/installupdate.py:270 ../gui/modules/installupdate.py:406
-#: ../gui/modules/installupdate.py:446
-msgid "An unknown error occured while "
-msgstr "Ett okänt fel inträffade när "
-
 #: ../gui/modules/installupdate.py:282
 msgid "Evaluation started.\n"
 msgstr "Utvärderingen påbörjades.\n"
@@ -1246,10 +1253,6 @@ msgstr "Utvärderingen påbörjades.\n"
 #: ../gui/modules/installupdate.py:292
 msgid "Invalid repository certificate."
 msgstr "Felaktigt databascertifikat"
-
-#: ../gui/modules/installupdate.py:301
-msgid "Installation failed during\n"
-msgstr "Installationen misslyckades under\n"
 
 #: ../gui/modules/installupdate.py:309
 msgid "Install failed.\n"
@@ -1259,38 +1262,14 @@ msgstr "Installationen misslyckades.\n"
 msgid "Please check the network "
 msgstr "Kontrollera nätverket "
 
-#: ../gui/modules/installupdate.py:334 ../gui/modules/installupdate.py:382
-msgid "Update All failed during\n"
-msgstr "Uppdateringen av alla paket misslyckades under\n"
-
-#: ../gui/modules/installupdate.py:359
-msgid "Unexpected failure with"
-msgstr "Oväntat fel med"
-
-#: ../gui/modules/installupdate.py:367
-msgid "Update All failed during "
-msgstr "Uppdatering av alla misslyckades under "
-
-#: ../gui/modules/installupdate.py:374
-msgid "pkg(5) appears to be out of "
-msgstr "pkg(5) verkar sakna "
-
 #: ../gui/modules/installupdate.py:416
 msgid "Preparing to download packages, please wait..."
 msgstr "Förbereder för nedladdning av paket, ett ögonblick ..."
-
-#: ../gui/modules/installupdate.py:423 ../gui/modules/installupdate.py:472
-msgid "An error occured while "
-msgstr "Ett fel inträffade under "
 
 #: ../gui/modules/installupdate.py:464 ../gui/modules/installupdate.py:478
 #: ../gui/modules/installupdate.py:491
 msgid "There was an error during installation."
 msgstr "Det interäffafade ett fel under installationen."
-
-#: ../gui/modules/installupdate.py:485
-msgid "This is an Live Image. The install"
-msgstr "Det här är en live-bild. Installationen"
 
 #: ../gui/modules/installupdate.py:545
 #, python-format
@@ -1933,8 +1912,7 @@ msgstr "Uppdatering av alla har utförts och paket "
 #. for root, dirs, files in os.walk (directory):
 #. for name in files:
 #. entry.parse (os.path.join (root, name))
-#. self.__add_category_to_section (entry.getName (), \
-#. self._('Applications Desktop'))
+#. self.__add_category_to_section (entry.getName (), #. self._('Applications Desktop'))
 #: ../packagemanager.py:2034 ../packagemanager.py:2036
 #: ../packagemanager.py:2061
 msgid "Accessories"
@@ -2142,7 +2120,7 @@ msgstr "-n kan inte användas med alternativ"
 
 #: ../pull.py:287
 msgid "must specify at least one pkgfmri"
-msgstr "måste ange åtminstone en pkgfmri"
+msgstr "måste ange åtminstone en identifierare (pkgfmri)"
 
 #: ../pull.py:299
 #, python-format
@@ -2671,3 +2649,939 @@ msgstr ""
 #: ../updatemanagernotifier.py:331
 msgid "Another instance of UpdateManagerNotify is running"
 msgstr " Uppdateringshanterarens meddelandeprogram körs redan"
+
+#: ../client.py:402
+#, python-format
+msgid "Created ZFS snapshot: %s"
+msgstr "Skapade ZFS-ögonblicksbild: %s"
+
+#: ../client.py:1039
+msgid "          Name:"
+msgstr "                   Namn:"
+
+#: ../client.py:1040
+msgid "       Summary:"
+msgstr "   Sammanfattning:"
+
+#: ../client.py:1047
+msgid "      Category:"
+msgstr "               Kategori:"
+
+#: ../client.py:1041
+msgid "         State:"
+msgstr "                  Status:"
+
+#. XXX even more info on the authority would be nice?
+#: ../client.py:1044
+msgid "     Authority:"
+msgstr "           Behörighet:"
+
+#: ../client.py:1045
+msgid "       Version:"
+msgstr "                 Version:"
+
+#: ../client.py:1046
+msgid " Build Release:"
+msgstr " Kompilering släppt:"
+
+#: ../client.py:1047
+msgid "        Branch:"
+msgstr "                     Gren:"
+
+#: ../client.py:1048
+msgid "Packaging Date:"
+msgstr "Paketeringsdatum:"
+
+#: ../client.py:1049
+msgid "          Size:"
+msgstr "                  Storlek:"
+
+#: ../client.py:1050
+msgid "          FMRI:"
+msgstr "                     FMRI:"
+
+#: ../client.py:1811
+msgid "image-create requires an authority argument"
+msgstr "image-create kräver ett behörighetsargument"
+
+#: ../client.py:1835
+#, python-format
+msgid "there is already an image at: %s"
+msgstr "det finns redan ewn bild på: %s"
+
+#: ../client.py:1836 ../client.py:1843
+msgid "To override, use the -f (force) option."
+msgstr "Använd alternativet -f (tvinga) för att åsidosätta."
+
+#: ../client.py:1842
+#, python-format
+msgid "Non-empty directory: %s"
+msgstr "Katalogen är inte tom: %s"
+
+#: ../client.py:1996
+#, python-format
+msgid "%s takes argument of form name=value, not %s"
+msgstr "%s tar argument av formen namn=värde, inte %s"
+
+#: ../client.py:2018 ../client.py:2028
+#, python-format
+msgid "-R not allowed for %s subcommand"
+msgstr "-R är inte tillåtet för underkommandot %s"
+
+#: ../client.py:2196
+#, python-format
+msgid ""
+"The pkg command appears out of sync with the libraries provided \n"
+"by SUNWipkg. The client version is %(client)s while the library API version "
+"is %(api)s"
+msgstr ""
+"Kommandot pkg verkar inte vara synkroniserat med de bibliotek \n"
+"SUNWipkg tillhandahåller. Klientversionen är %(client)s och API-versionen "
+"är %(api)s"
+
+#: ../client.py:2208
+#, python-format
+msgid ""
+"\n"
+"\n"
+"This is an internal error.  Please let the developers know about this\n"
+"problem by filing a bug at http://defect.opensolaris.org and including the\n"
+"above traceback and this message.  The version of pkg(5) is '%s'."
+msgstr ""
+"\n"
+"\n"
+"Det här är ett internt fel. Det vore bra om utvecklarna fick information om det\n"
+"här problemet. Fyll i en buggrapport på http://defect.opensolaris.org och inkludera\n"
+"traceback ovan samt det här meddelandet. Pkg(5)-versionen är '%s'."
+
+#: ../gui/data/l10n.py:32
+msgid "Administration and Configuration"
+msgstr "Administration och konfiguration"
+
+#: ../gui/data/l10n.py:33
+msgid "Applets"
+msgstr "Appletar"
+
+#: ../gui/data/l10n.py:34
+msgid "Application and Web Servers"
+msgstr "Program och webbservrar"
+
+#: ../gui/data/l10n.py:35
+msgid "C"
+msgstr "C"
+
+#: ../gui/data/l10n.py:36
+msgid "C++"
+msgstr "C++"
+
+#: ../gui/data/l10n.py:37
+msgid "Configuration and Preferences"
+msgstr "Konfiguration och inställningar"
+
+#: ../gui/data/l10n.py:39
+msgid "Databases"
+msgstr "Databaser"
+
+#: ../gui/data/l10n.py:40
+msgid "Databases (System)"
+msgstr "Databaser (system)"
+
+#: ../gui/data/l10n.py:40
+msgid "Desktop"
+msgstr "Skirvbord"
+
+#: ../gui/data/l10n.py:41
+msgid "Display"
+msgstr "Skärminställning"
+
+#: ../gui/data/l10n.py:42
+msgid "Distribution Tools"
+msgstr "Distributionsverktyg"
+
+#: ../gui/data/l10n.py:43
+msgid "Documentation"
+msgstr "Dokumentation"
+
+#: ../gui/data/l10n.py:44
+msgid "Enterprise Management"
+msgstr "Enterprise Management"
+
+#: ../gui/data/l10n.py:45
+msgid "File Managers"
+msgstr "Filhanterare"
+
+#: ../gui/data/l10n.py:46
+msgid "File System"
+msgstr "Filsystem"
+
+#: ../gui/data/l10n.py:47
+msgid "Fonts"
+msgstr "Teckensnitt"
+
+#: ../gui/data/l10n.py:48
+msgid "GNOME and GTK+"
+msgstr "GNOME och GTK+"
+
+#: ../gui/data/l10n.py:49
+msgid "GNU"
+msgstr "GNU"
+
+#: ../gui/data/l10n.py:51
+msgid "Graphics and Imaging"
+msgstr "Grafik och bildbehandling"
+
+#: ../gui/data/l10n.py:52
+msgid "Hardware"
+msgstr "Maskinvara"
+
+#: ../gui/data/l10n.py:53
+msgid "High Performance Computing"
+msgstr "Datorbehandling med hög prestanda"
+
+#: ../gui/data/l10n.py:54
+msgid "Integrated Development Environments"
+msgstr "Integrerade utvecklingsmiljöer"
+
+#: ../gui/data/l10n.py:55
+msgid "Internationalization"
+msgstr "Internationalisering"
+
+#: ../gui/data/l10n.py:57
+msgid "Java"
+msgstr "Java"
+
+#: ../gui/data/l10n.py:58
+msgid "Libraries"
+msgstr "Bibliotek"
+
+#: ../gui/data/l10n.py:59
+msgid "Libraries (System)"
+msgstr "Bibliotek (system)"
+
+#: ../gui/data/l10n.py:60
+msgid "Localizations (Desktop)"
+msgstr "Språkfiler (skrivbord)"
+
+#: ../gui/data/l10n.py:61
+msgid "Localizations (System)"
+msgstr "Språkfiler (system)"
+
+#: ../gui/data/l10n.py:63
+msgid "Networking"
+msgstr "Nätverk"
+
+#: ../gui/data/l10n.py:65
+msgid "Other Languages"
+msgstr "Andra språk"
+
+#: ../gui/data/l10n.py:66
+msgid "Other Peripherals"
+msgstr "Annan kringutrustning"
+
+#: ../gui/data/l10n.py:67
+msgid "PHP"
+msgstr "PHP"
+
+#: ../gui/data/l10n.py:68
+msgid "Packaging"
+msgstr "Paketering"
+
+#: ../gui/data/l10n.py:69
+msgid "Perl"
+msgstr "Perl"
+
+#: ../gui/data/l10n.py:70
+msgid "Plug-ins and Run-times"
+msgstr "Plugin-program och körtider"
+
+#: ../gui/data/l10n.py:71
+msgid "Ports"
+msgstr "Portar"
+
+#: ../gui/data/l10n.py:72
+msgid "Printing"
+msgstr "Utskrift"
+
+#: ../gui/data/l10n.py:73
+msgid "Python"
+msgstr "Python"
+
+#: ../gui/data/l10n.py:74
+msgid "Ruby"
+msgstr "Ruby"
+
+#: ../gui/data/l10n.py:75
+msgid "Scripts"
+msgstr "Skript"
+
+#: ../gui/data/l10n.py:76
+msgid "Security"
+msgstr "Säkerhet"
+
+#: ../gui/data/l10n.py:77
+msgid "Services"
+msgstr "Tjänster"
+
+#: ../gui/data/l10n.py:78
+msgid "Sessions"
+msgstr "Sessioner"
+
+#: ../gui/data/l10n.py:79
+msgid "Shells"
+msgstr "Skal"
+
+#: ../gui/data/l10n.py:80
+msgid "Software Management"
+msgstr "Programhantering"
+
+#: ../gui/data/l10n.py:81
+msgid "Sound and Video"
+msgstr "Ljud och video"
+
+#: ../gui/data/l10n.py:82
+msgid "Source Code Management"
+msgstr "Hantering av källkod"
+
+#: ../gui/data/l10n.py:83
+msgid "Storage"
+msgstr "Lagring"
+
+#: ../gui/data/l10n.py:84 ../packagemanager.py:507
+msgid "System"
+msgstr "System"
+
+#: ../gui/data/l10n.py:85
+msgid "System U"
+msgstr "System U"
+
+#: ../gui/data/l10n.py:86
+msgid "System Utilities"
+msgstr "Systemverktyg"
+
+#: ../gui/data/l10n.py:87
+msgid "Text Tools"
+msgstr "Textredigerare"
+
+#: ../gui/data/l10n.py:88
+msgid "Trusted"
+msgstr "Betrott"
+
+#: ../gui/data/l10n.py:89
+msgid "Trusted Extensions"
+msgstr "Trusted Extensions"
+
+#: ../gui/data/l10n.py:90
+msgid "Virtualization"
+msgstr "Virtualisering"
+
+#: ../gui/data/l10n.py:91
+msgid "Window Managers"
+msgstr "Fönsterhanterare"
+
+#: ../gui/data/l10n.py:92
+msgid "X11"
+msgstr "X11"
+
+#: ../gui/data/l10n.py:94
+msgid "X11 (System)"
+msgstr "X11 (system)"
+
+#: ../gui/data/addmoresoftware.desktop.in.h:1
+msgid "Add More Software"
+msgstr "Lägg till fler program"
+
+#: ../gui/data/packagemanager.glade.h:3
+msgid "1. Delete old and unused BEs to free up disk space."
+msgstr "1. Frigör diskutrymme genom att ta bort gamla och oanvända startmiljöer."
+
+#: ../gui/data/packagemanager.glade.h:4
+msgid "2. Change the default BE on your system."
+msgstr "2. Ändra systemets standardstartmiljö."
+
+#: ../gui/data/packagemanager.glade.h:20
+msgid "<b>Manage your BEs to:</b>"
+msgstr "<b>Hantera dina startmiljöer:</b>"
+
+#: ../gui/data/packagemanager.glade.h:33
+msgid "Click to get list of newest packages."
+msgstr "Klicka för en lista över de senaste paketen."
+
+#: ../gui/data/packagemanager.glade.h:34
+msgid "Click to update all installed packages."
+msgstr "Klicka för att uppdatera alla paket som finns installerade."
+
+#: ../gui/data/packagemanager.glade.h:57
+msgid "Legal"
+msgstr "Juridik"
+
+#: ../gui/data/packagemanager.glade.h:58
+msgid "Manage Repositories"
+msgstr "Hantera databaser"
+
+#: ../gui/data/packagemanager.glade.h:59
+msgid "Manage Repositories..."
+msgstr "Hanera databaser ..."
+
+#: ../gui/data/packagemanager.glade.h:63
+msgid ""
+"Note: The current active BE cannot be deleted. \n"
+"To delete this BE, boot into another BE, then return here."
+msgstr ""
+"OBS! Den befintliga aktikva startmiljön kan inte raderas. \n"
+"Starta med en annan startmiljö och gå hit om du vill ta bort den."
+
+#: ../gui/data/packagemanager.glade.h:70
+msgid "Plan creation error."
+msgstr "Plan kunde inte skapas."
+
+#: ../gui/data/packagemanager.glade.h:79
+msgid ""
+"Review the information below.\n"
+"Click OK to proceed.\n"
+"Click Cancel to return to the Boot Environment\n"
+"Management panel.\n"
+"\n"
+"Note: Changes will occur upon reboot."
+msgstr ""
+"Se informationen nedan:\n"
+"Klicka på OK för att gå vidare..\n"
+"Klicka på Avbryt för att återgå till hanteringspanelen\n"
+"för startmiljöer.\n"
+"\n"
+"OBS! Ändringarna träder i kraft efter omstart."
+
+#: ../gui/data/packagemanager.glade.h:89
+msgid "Select from the list to modify or remove existing repositories."
+msgstr "Välj från listan för förändra eller ta bort befintliga databaser."
+
+#: ../gui/data/packagemanager.glade.h:90
+msgid "Select packages by marking the checkbox and click to Install/Update."
+msgstr "Välj paket genom att markera kryssrutan, och klicka för att installera/uppdatera?"
+
+#: ../gui/data/packagemanager.glade.h:91
+msgid "Select packages by marking the checkbox and click to Remove selected."
+msgstr "Välj paket genom att markera kryssrutan, och klicka för att ta bort dem."
+
+#: ../gui/data/packagemanager.glade.h:95
+msgid "The following BEs are available on your system:"
+msgstr "Följande startmiljöer frinns tillgängliga på systemet:"
+
+#: ../gui/data/packagemanager.glade.h:99
+msgid "Type text to search name and description of the package."
+msgstr "Skriv text för att söka utifrån paketets namn och beskrivning."
+
+#: ../gui/data/packagemanager.glade.h:100
+msgid ""
+"Type the repository name and URL you want to add as a new package source."
+msgstr ""
+"Ange namn på och webbadress till databasen du vill lägga till som ny paketkälla."
+
+#: ../gui/data/packagemanager.glade.h:102 ../gui/modules/installupdate.py:424
+msgid "Update All failure in plan creation."
+msgstr "Uppdatera alla: plan kunde inte skapas"
+
+#: ../gui/data/packagemanager.glade.h:118
+msgid "gtk-close"
+msgstr "gtk-close"
+
+#: ../gui/modules/beadmin.py:69
+msgid ""
+"The <b>libbe</b> library was not found on your system.\n"
+"All functions for managing Boot Environments are disabled"
+msgstr ""
+"Biblioteket <b>libbe</b> hittades inte på systemet.\n"
+"Alla funktioner för hantering av startmiljöer har avaktiverats."
+
+#: ../gui/modules/beadmin.py:339
+msgid "<b>Couldn't change Active Boot Environment to:</b>\n"
+msgstr "<b>Det gick inte att växla aktiv startmiljö till:</b>\n"
+
+#: ../gui/modules/beadmin.py:344
+msgid "<b>Couldn't delete Boot Environments:</b>\n"
+msgstr "<b>Det gick inte ta bort startmiljöerna:</b>\n"
+
+#: ../gui/modules/beadmin.py:410
+msgid ""
+"The <b>libbe</b> library couldn't  prepare list of Boot Environments.\n"
+"All functions for managing Boot Environments are disabled"
+msgstr ""
+"Biblioteket <b>libbe</b> kunde inte sammanställa en lista över startmiljöer.\n"
+"Alla funktioner för hantering av startmiljöer har avaktiverats"
+
+#: ../gui/modules/beadmin.py:445 ../gui/modules/beadmin.py:464
+#, python-format
+msgid "Error conversion from UTF-8 to %s."
+msgstr "Fel vid konvertering från UTF-8 till %s."
+
+#: ../gui/modules/beadmin.py:481
+#, python-format
+msgid "Error conversion from %s to UTF-8."
+msgstr "Fel vid konvertering från %s till UTF-8."
+
+#: ../gui/modules/installupdate.py:150
+msgid "Proceed"
+msgstr "Gå vidare"
+
+#: ../gui/modules/installupdate.py:302
+msgid ""
+"An unknown error occured while preparing the\n"
+"list of packages\n"
+"\n"
+"Please let the developers know about this problem by filing\n"
+"a bug at http://defect.opensolaris.org"
+msgstr ""
+"Ett okänt fel inträffade vid sammanställning av listan över paket\n"
+"\n"
+"Det vore bra om utvecklarna fick reda på det här problemet. Fyll gärna i\n"
+"en buggrapport på http://defect.opensolaris.org"
+
+#: ../gui/modules/installupdate.py:306 ../gui/modules/installupdate.py:473
+#: ../gui/modules/installupdate.py:521
+msgid ""
+"\n"
+"\n"
+"Exception value: "
+msgstr ""
+"\n"
+"\n"
+"Undantagsvärde: "
+
+#: ../gui/modules/installupdate.py:314
+msgid ""
+"Evaluation started.\n"
+"Gathering packages information, please wait...\n"
+msgstr ""
+"Utvärdering påbörjades.\n"
+"Paketinformation samlas in. Vänta ...\n"
+
+#: ../gui/modules/installupdate.py:324
+msgid ""
+"Unexpected failure with\n"
+"catalog refresh during install while \n"
+"determining what to update."
+msgstr ""
+"Oväntat fel på kataloguppdateringen\n"
+"under installationen, vid fastställande av\n"
+"vad som ska uppdateras."
+
+#: ../gui/modules/installupdate.py:332
+msgid ""
+"Invalid repository certificate.\n"
+"You can not install packages from the\n"
+"repopsitory, which doesn't have\n"
+"appropriate certificate."
+msgstr ""
+"Ogiltigt databascertifikat.\n"
+"Du kan inte installera paket från en\n"
+"databas som saknar lämpligt certifikat"
+
+#: ../gui/modules/installupdate.py:341
+msgid "Install/Update failure in plan creation."
+msgstr "Installera/uppdatera:plan kunde inte skapas"
+
+#: ../gui/modules/installupdate.py:350
+msgid ""
+"Install failed.\n"
+"The inventory is not correct."
+msgstr ""
+"Installationen misslyckades.\n"
+"Lagret är inte korrekt."
+
+#: ../gui/modules/installupdate.py:362 ../gui/modules/installupdate.py:437
+msgid ""
+"Please check the network connection.\n"
+"Is the repository accessible?"
+msgstr ""
+"Kontrollera nätverksanslutningen.\n"
+"Går det att komma åt databasen?"
+
+#: ../gui/modules/installupdate.py:375
+msgid "Remove failure in plan creation."
+msgstr "Ta bort: plan kunde inte skapas."
+
+#: ../gui/modules/installupdate.py:401
+msgid ""
+"Unexpected failure with\n"
+"catalog refresh during image-update while \n"
+"determining what to update."
+msgstr ""
+"Oväntat fel på kataloguppdateringen\n"
+"under bilduppdatering, vid fastställande av\n"
+"vad som ska uppdateras."
+
+#: ../gui/modules/installupdate.py:416
+msgid ""
+"pkg(5) appears to be out of date and should be\n"
+" updated before running Update All.\n"
+"Please update SUNWipkg package"
+msgstr ""
+"Det verkar som om pkg(5) är föråldrat, och måste\n"
+"uppdateras innan Updattera all kan göras.\n"
+"Uppdatera SUNWipkg-paketet"
+
+#: ../gui/modules/installupdate.py:446
+msgid ""
+"Selected packages for update can\n"
+"only be updated using Update All."
+msgstr ""
+"De valda paketenn"
+"kan endast uppdateras med hjälp av Uppdatera alla."
+
+#: ../gui/modules/installupdate.py:448
+msgid "Unable to update"
+msgstr "Det gick inte att uppdatera"
+
+#: ../gui/modules/installupdate.py:453
+msgid "The action for selected packages could not be completed."
+msgstr "Åtgärden för de valda paketen kunde inte slutföras"
+
+#: ../gui/modules/installupdate.py:455
+msgid "Unable to perform action"
+msgstr "Åtgärden kunde inte utföras"
+
+#: ../gui/modules/installupdate.py:468
+msgid ""
+"An unknown error occured while downloading the files\n"
+"\n"
+"Please let the developers know about this problem by filing\n"
+"a bug at http://defect.opensolaris.org"
+msgstr ""
+"Ett okänt fel inträffade vid nedladdning av paket\n"
+"\n"
+"Det vore bra om utvecklarna fick reda på det här problemet. Fyll gärna i\n"
+"en buggrapport på http://defect.opensolaris.org"
+
+#: ../gui/modules/installupdate.py:488
+msgid ""
+"An error occured while downloading the files\n"
+"Please check your permissions and\n"
+"network connection."
+msgstr ""
+"Det inträffade ett fel vid nedladdning av filer\n"
+"Kontrollera behörigheterna och nätverksaslutningen"
+
+#: ../gui/modules/installupdate.py:515
+msgid ""
+"An unknown error occured while installing\n"
+"updating or removing packages\n"
+"\n"
+"Please let the developers know about this problem by filing\n"
+"a bug at http://defect.opensolaris.org"
+msgstr ""
+"Ett okänt fel inträffade när paketen skulle\n"
+"installeras, uppdateras eller tas bort\n"
+"\n"
+"Det vore bra om utvecklarna fick reda på det här problemet. Fyll gärna i\n"
+"en buggrapport på http://defect.opensolaris.org"
+
+#: ../gui/modules/installupdate.py:536
+msgid ""
+"There was an error during installation.\n"
+"The index is corrupted. You might wan't try to fix\n"
+"this problem by running command:\n"
+"pfexec pkg rebuild-index"
+msgstr ""
+"Det inträffade ett fel under installationen.\n"
+"Indexet är skadat. Du kan försöka åtgärda problemet\n"
+"genom att ange kommandot:\n"
+"pfexec pkg rebuild-index"
+
+#: ../gui/modules/installupdate.py:544
+msgid ""
+"An error occured while installing the files\n"
+"Please check your permissions"
+msgstr ""
+"Det inträffade ett fel under installationen av filerna\n"
+"Kontrollera dina rättigheter."
+
+#: ../gui/modules/installupdate.py:550
+msgid ""
+"There was an error during installation.\n"
+"The State of the image is incorrect and the operation\n"
+"can't be finished."
+msgstr ""
+"'Det inträffade ett fel under installationen.\n"
+"Bildens status är felaktig och åtgärden kan inte slutföras."
+
+#: ../gui/modules/installupdate.py:557
+msgid ""
+"This is an Live Image. The install\n"
+"operation can't be performed."
+msgstr ""
+"Det här är en live-bild. Installtionen\n"
+"kan inte utföras."
+
+#: ../gui/modules/installupdate.py:563
+msgid ""
+"There was an error during installation.\n"
+"The Plan of the operation is missing and the operation\n"
+"can't be finished."
+msgstr ""
+"Ett fel inträffade vid installationeen.\n"
+"The Plan of the operation is missing and the operation\n"
+"can't be finished."
+
+#: ../gui/modules/installupdate.py:607
+msgid "Not enough disc space: selected action cannot "
+msgstr "Inte tillräckligt med diskutrymme: vald åtgärd kunde inte "
+
+#: ../gui/modules/installupdate.py:611 ../updatemanager.py:1269
+msgid "Not Enough Disc Space"
+msgstr "Inte tillräckligt med diskutrymme"
+
+#: ../gui/modules/installupdate.py:644
+msgid "Evaluating package "
+msgstr "Utvärderar paket "
+
+#: ../gui/modules/installupdate.py:687
+msgid ""
+"This action couldn't be finished.\n"
+"Some of the selected packages depends on other.\n"
+"Please review the dependencies."
+msgstr ""
+"Åtgärden kunde inte avslutas.\n"
+"Vissa av de valda paketen är beroende av andra.\n"
+"Kontrollera deras beroenden."
+
+#: ../gui/modules/repository.py:223
+msgid ""
+"Couldn't change the preffered authority.\n"
+"Please check your permissions."
+msgstr ""
+"Standardbehörigheten kunde inte ändras.\n"
+"Kontrollera dina rättigheter."
+
+#: ../gui/modules/repository.py:223
+msgid ""
+"Couldn't change the preferred authority.\n"
+"Please check your permissions."
+msgstr ""
+"Standardbehörigheten kunde inte ändras.\n"
+"Kontrollera dina rättigheter."
+
+#: ../gui/modules/repository.py:381 ../gui/modules/repository.py:439
+#: ../gui/modules/repository.py:473
+msgid ""
+"\n"
+"Please check your permissions."
+msgstr ""
+"\n"
+"Kontrollera dina rättigheter."
+
+#: ../gui/modules/repository.py:395 ../gui/modules/repository.py:452
+msgid ""
+"\n"
+"Please check the network connection or URL.\n"
+"Is the repository accessible?"
+msgstr ""
+"\n"
+"Kontrollera nätverksanslutningen och adressen.\n"
+"Går det att komma åt databasen?"
+
+#: ../modules/client/api_errors.py:108
+msgid ""
+"pkg: The following pattern(s) did not match any packages in the current\n"
+"catalog. Try relaxing the pattern, refreshing and/or examining the catalogs"
+msgstr ""
+"pkg: Följande mönster passade inte in på något paket i den aktuella\n"
+"katalogen. Välj ett annat mönster, uppdatera och/eller utforska katalogerna."
+
+#: ../modules/client/api_errors.py:121
+#, python-format
+msgid "pkg: '%s' matches no installed packages"
+msgstr "pkg: '%s' passar inte in på något installerat paket"
+
+#: ../modules/client/api_errors.py:124
+#, python-format
+msgid "pkg: '%s' is an illegal fmri"
+msgstr "pkg: '%s' är en felaktig tjänsteidentifierare (fmri)"
+
+#: ../modules/client/api_errors.py:128
+msgid "pkg: the following package(s) violated constraints:"
+msgstr "pkg: följande paket bröt mot begränsningarna:"
+
+#: ../modules/client/api_errors.py:162
+msgid ""
+"No matching package could be found for the following FMRIs in any of the "
+"catalogs for the current authorities:\n"
+msgstr ""
+"Inga matchande paket hittades för följande tjänsteidentifierare (FMRI:s) "
+"i katalogerna med aktuella behörigheter:\n"
+
+#: ../modules/client/bootenv.py:215
+#, python-format
+msgid ""
+"\n"
+"A clone of %s exists and has been updated and activated.\n"
+"On the next boot the Boot Environment %s will be mounted on '/'.\n"
+"Reboot when ready to switch to this updated BE.\n"
+msgstr ""
+"\n"
+"Det finns en klon av %s som har uppdaterats och aktiverats.\n"
+"Vid nästa omstart monteras startmiljön %s som '/'.\n"
+"Starta om när det är dags att växla till den uppdaterade startmiljön.\n"
+
+#: ../packagemanager.py:502
+msgid "Applications"
+msgstr "Program"
+
+#: ../packagemanager.py:503
+msgid "Desktop (GNOME)"
+msgstr "Skrivbord (GNOME)"
+
+#: ../packagemanager.py:504
+msgid "Development"
+msgstr "Utveckling"
+
+#: ../packagemanager.py:505
+msgid "Distributions"
+msgstr "Distributioner"
+
+#: ../packagemanager.py:506
+msgid "Drivers"
+msgstr "Drivrutiner"
+
+#: ../packagemanager.py:508
+msgid "Web Services"
+msgstr "Webbtjänster"
+
+#: ../packagemanager.py:584
+msgid "Fetching legal information..."
+msgstr "Hämtar juridisk information ..."
+
+#. Prompt user
+#: ../packagemanager.py:791
+msgid "Newer versions of SUNWipkg and SUNWipkg-gui\n"
+msgstr "Nyare versioner av SUNWipkg och SUNWipkg-gui\n"
+
+#: ../packagemanager.py:809
+msgid ""
+"Update All was not run.\n"
+"\n"
+"It can not be run until SUNWipkg and SUNWipkg-gui have been updated."
+msgstr ""
+"Uppdatera alla kördes inte.\n"
+"\n"
+"Det kan inte köras förrän SUNWipkg och SUNWipkg-gui har uppdaterats."
+
+#: ../packagemanager.py:1096
+msgid "Not available"
+msgstr "Inte tillgängligt"
+
+#: ../packagemanager.py:1430
+msgid ""
+"Network problem.\n"
+"\n"
+msgstr ""
+"Nätverksproblem.\n"
+"\n"
+
+#: ../packagemanager.py:1431
+msgid "Details:\n"
+msgstr "Detaljer:\n"
+
+#. 2790: As IPS and IPS-GUI have been updated the IPS GUI must be shutdown
+#. and restarted
+#: ../packagemanager.py:2080
+msgid ""
+"SUNWipkg and SUNWipkg-gui have been updated and Package Manager will now be "
+"restarted.\n"
+"\n"
+"After restart select Update All to continue."
+msgstr ""
+"SUNWipkg och SUNWipkg-gui har uppdaterats. Pakethanteraren startas nu om "
+"\n"
+"Välj Uppdatera all efter omstart för att fortsätta."
+
+#: ../packagemanager.py:2093
+msgid ""
+"Update All has completed and Package Manager will now exit.\n"
+"\n"
+"Please reboot after reviewing the release notes posted at:\n"
+"\n"
+"http://opensolaris.org/os/project/indiana/resources/relnotes/200811/x86/"
+msgstr ""
+"Uppdatera alla har slutförts och Pakethanteraren kommer att avslutas.\n"
+"\n"
+"Starta om när du har läst igenom Viktigt-filen som finns på:\n"
+"\n"
+"http://opensolaris.org/os/project/indiana/resources/relnotes/200811/x86/"
+
+#: ../updatemanager.py:815
+#, python-format
+msgid ""
+"\n"
+"Description:\t\t%s\n"
+"FMRI:       \t\t%s"
+msgstr ""
+"\n"
+"Pakethanterare:\t\t%s\n"
+"FMRI:       \t\t%s"
+
+#: ../updatemanager.py:1029 ../updatemanager.py:1048
+msgid ""
+"Update All failed during catalog refresh\n"
+"while determining what to update:"
+msgstr ""
+"Uppdatera alla misslyckades vid kataloguppdatering\n"
+"vid fastställande av vad som ska uppdateras:"
+
+#: ../updatemanager.py:1097
+msgid ""
+"Please reboot after reviewing the release notes posted at:\n"
+"\n"
+"http://opensolaris.org/os/project/indiana/resources/relnotes/200811/x86/"
+msgstr ""
+"Starta om när du har läst igenom Viktigt-filen som finns på:\n"
+"\n"
+"http://opensolaris.org/os/project/indiana/resources/relnotes/200811/x86/"
+
+#: ../updatemanager.py:1106
+msgid "Update All Completed"
+msgstr "Uppdatera alla har slutförts"
+
+#: ../updatemanager.py:1142
+msgid "Update error in plan install:"
+msgstr "Uppdatera: Fel vid planinstallation:"
+
+#: ../updatemanager.py:1213 ../updatemanager.py:1243
+#, python-format
+msgid "%s exceded available disc space"
+msgstr "%s överskred det tillgängliga diskutrymmet"
+
+#: ../updatemanager.py:1265
+msgid ""
+"Not enough disc space: the Update All action cannot be performed.\n"
+"\n"
+"Click OK to launch BE Management to manage your existing BE's and free up "
+"disc space."
+msgstr ""
+"Inte tillräckligt med diskutrymme: Åtgärden Uppdatera alla kunde inte utföras.\n"
+"\n"
+"Klicka på OK för att starta Hantering av startmiljö, varifrån du kan hantera "
+"dina startmiljöer och frigöra diskutrymme."
+
+#, python-format
+msgid ""
+"Accessing this restricted repository failed."
+"\nYou either need to register to access this repository,"
+"\nthe certificate expired, or you need to accept the repository"
+"\ncertificate."
+msgstr ""
+"Det gick inte att komma åt den här databasen med restriktioner."
+"\nDu kan behöva registrera för att få åtkomst. Det kan även vara så att"
+"\ncertifikatet har löpt ut eller att du måste godkänna databasens"
+"\ncertifikat."
+
+#, python-format
+msgid ""
+"An error occured while "
+"downloading the files\nPlease check your permissions."
+msgstr ""
+"An error occured while "
+"downloading the files\nPlease check your permissions."
+
+#, python-format
+msgid "Download failure."
+msgstr "Fel vid nedladdning."
+
