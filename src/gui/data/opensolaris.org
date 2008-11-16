@@ -3026,7 +3026,7 @@ category = Hardware
 category = Core
 
 [SUNWstunnel]
-category = Internet
+category = Security
 
 [SUNWsudo]
 category = System Utilities
