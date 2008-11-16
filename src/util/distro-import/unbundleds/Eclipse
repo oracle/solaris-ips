@@ -1,0 +1,7 @@
+package eclipse
+classification "Development/Integrated Development Environments"
+description "Eclipse IDE"
+version 3.4
+import eclipse
+depend SUNWj6dev
+end package
