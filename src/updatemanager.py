@@ -1209,17 +1209,22 @@ class Updatemanager:
                                 self._("%s Download failed:\n%s" % (what_msg, aex)))
                         self.__cleanup()                
                         return 1
-                except (Exception), uex:
-                        if uex.args[0] == errno.EDQUOT or uex.args[0] == errno.ENOSPC:
-                                self.__handle_update_progress_error(\
-                                        self._(\
-                                        "%s exceded available disc space" % (what_msg)), \
+                except EnvironmentError, uex:
+                        if uex.errno in (errno.EDQUOT, errno.ENOSPC):
+                                self.__handle_update_progress_error(
+                                        self._(
+                                        "%s exceded available disc space" % (what_msg)),
                                         stage = self.update_stage)
                                 gobject.idle_add(self.__prompt_to_load_beadm)
                         else:
-                                self.__handle_update_progress_error(\
-                                        self._("%s unexpected error:" % (what_msg)), \
+                                self.__handle_update_progress_error(
+                                        self._("%s unexpected error:" % (what_msg)),
                                         uex, stage = self.update_stage)
+                        return 1
+                except Exception, uex:
+                        self.__handle_update_progress_error(
+                                self._("%s unexpected error:" % (what_msg)),
+                                uex, stage = self.update_stage)
                         return 1
 
                 # Install
@@ -1239,17 +1244,22 @@ class Updatemanager:
                                 self._("%s Execute plan failed:\n%s" % (what_msg, aex)))
                         self.__cleanup()                
                         return 1
-                except (Exception), uex:
-                        if uex.args[0] == errno.EDQUOT or uex.args[0] == errno.ENOSPC:
-                                self.__handle_update_progress_error(\
-                                        self._(\
-                                        "%s exceded available disc space" % what_msg), \
+                except EnvironmentError, uex:
+                        if uex.errno in (errno.EDQUOT, errno.ENOSPC):
+                                self.__handle_update_progress_error(
+                                        self._(
+                                        "%s exceded available disc space" % what_msg),
                                         stage = self.update_stage)
                                 gobject.idle_add(self.__prompt_to_load_beadm)
                         else:
-                                self.__handle_update_progress_error(\
-                                        self._("%s unexpected error:" % (what_msg)), \
+                                self.__handle_update_progress_error(
+                                        self._("%s unexpected error:" % (what_msg)),
                                         uex, stage = self.update_stage)
+                        return 1
+                except Exception, uex:
+                        self.__handle_update_progress_error(
+                                self._("%s unexpected error:" % (what_msg)),
+                                uex, stage = self.update_stage)
                         return 1
                         
                 self.__cleanup()                
