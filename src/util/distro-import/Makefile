@@ -106,6 +106,7 @@ CACHED_FILES=								\
 	lib/svc/method/sshd						\
 	lib/svc/method/svc-coreadm					\
 	lib/svc/method/svc-dlmgmtd					\
+	lib/svc/method/svc-ipagent					\
 	lib/svc/method/xvm-vnc-config					\
 	root/.bashrc							\
 	root/.profile							\
@@ -113,8 +114,10 @@ CACHED_FILES=								\
 	usr/jdk/instances/jdk1.6.0/jre/lib/fontconfig.properties	\
 	usr/lib/vp-services						\
 	usr/lib/vp-shares						\
+	usr/lib/xen/bin/ipagent						\
 	var/svc/manifest/application/graphical-login/gdm.xml		\
 	var/svc/manifest/system/coreadm.xml				\
+	var/svc/manifest/system/ipagent.xml				\
 	var/svc/manifest/system/xvm/vnc-config.xml			\
 	var/svc/profile/generic_limited_net.xml				\
 	var/svc/profile/generic_open.xml
@@ -341,7 +344,7 @@ proto:	Makefile
 	mkdir -p proto/usr/bin
 	mkdir -p proto/usr/has/bin
 	mkdir -p proto/usr/jdk/instances/jdk1.6.0/jre/lib
-	mkdir -p proto/usr/lib
+	mkdir -p proto/usr/lib/xen/bin
 	mkdir -p proto/usr/sbin
 	mkdir -p proto/usr/share/applications
 	mkdir -p proto/usr/share/man

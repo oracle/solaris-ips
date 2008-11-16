@@ -1,0 +1,17 @@
+package SUNWxvmipa
+classification "System/Virtualization"
+import SUNWxvmipar
+# Incorrectly depends on a SUNWxvm file
+drop lib/svc/method/svc-ipagent
+# missing dependencies
+drop var/svc/manifest/system/ipagent.xml
+import SUNWxvmipau
+# broken for IPv6
+drop usr/lib/xen/bin/ipagent
+from SUNWfixes import
+lib/svc/method/svc-ipagent
+usr/lib/xen/bin/ipagent
+var/svc/manifest/system/ipagent.xml
+end import
+depend SUNWxvmdom
+end package
