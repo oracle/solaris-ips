@@ -1434,21 +1434,29 @@ class Image(object):
                                 else:
                                         raise
 
+                self._catalog = cache
+
                 pickle_file = os.path.join(self.imgdir, "catalog/catalog.pkl")
 
                 try:
-                        pf = file(pickle_file, "wb")
+                        pfd, ptmp = \
+                            tempfile.mkstemp(dir=os.path.dirname(pickle_file))
+                except EnvironmentError:
+                        return
+
+                try:
+                        pf = os.fdopen(pfd, "wb")
                         # Version the dump file
                         cPickle.dump((self.CATALOG_CACHE_VERSION, cache), pf,
                             protocol = cPickle.HIGHEST_PROTOCOL)
                         pf.close()
+                        os.chmod(ptmp, 0644)
+                        portable.rename(ptmp, pickle_file)
                 except (cPickle.PickleError, EnvironmentError):
                         try:
-                                os.remove(pickle_file)
+                                os.remove(ptmp)
                         except EnvironmentError:
                                 pass
-
-                self._catalog = cache
 
         def load_catalog_cache(self):
                 """Read in the cached catalog data."""
@@ -1470,7 +1478,7 @@ class Image(object):
                         try:
                                 version, self._catalog = \
                                     cPickle.load(file(cache_file, "rb"))
-                        except (cPickle.PickleError, EnvironmentError):
+                        except (cPickle.PickleError, EnvironmentError, EOFError):
                                 self._catalog = {}
                                 self._catalog_cache_mod_time = None
                                 raise RuntimeError
