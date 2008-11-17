@@ -47,24 +47,6 @@ depend SUNWsvn
 depend sunstudioexpress
 end package
 
-package gcc-dev
-classification "Development/Integrated Development Environments"
-description "GNU Tools Development cluster"
-depend SUNWaconf
-depend SUNWbison
-depend SUNWcvs
-depend SUNWflexlex
-depend SUNWgcc
-depend SUNWgdb
-depend SUNWgmake
-depend SUNWgnu-automake-110
-depend SUNWgnu-automake-19
-depend SUNWlibtool
-depend SUNWmercurial
-depend SUNWsprot
-depend SUNWsvn
-end package
-
 package hpc-dev
 classification "System/High Performance Computing"
 description "HPC Application Development cluster"
@@ -111,20 +93,6 @@ depend SUNWsvn
 depend SUNWtcat
 depend netbeans
 depend webstackui
-end package
-
-package amp
-classification "Web Services/Application and Web Servers"
-description "Cluster containing an AMP (Apache, MySQL, PHP) deployment kit"
-depend SUNWapch22
-depend SUNWapch22m-dtrace
-depend SUNWapch22m-fcgid
-depend SUNWapch22m-php5
-depend SUNWapch22m-security
-depend SUNWmysql5
-depend SUNWphp524
-depend SUNWphp524-mysql
-depend SUNWphp524man
 end package
 
 package ruby-dev

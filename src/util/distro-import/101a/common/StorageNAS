@@ -4,9 +4,9 @@ description "Network Attached Storage cluster"
 version 0.1
 depend SUNWiscsi
 depend SUNWiscsitgt
+depend SUNWndmp
 depend SUNWnfss
 depend SUNWsmbs
 depend SUNWsmbskr
 depend SUNWvscan
-depend SUNWndmp
 end package

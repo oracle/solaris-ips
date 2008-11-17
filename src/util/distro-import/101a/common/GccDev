@@ -1,0 +1,17 @@
+package gcc-dev
+classification "Development/Integrated Development Environments"
+description "GNU Tools Development cluster"
+depend SUNWaconf
+depend SUNWbison
+depend SUNWcvs
+depend SUNWflexlex
+depend SUNWgcc
+depend SUNWgdb
+depend SUNWgmake
+depend SUNWgnu-automake-110
+depend SUNWgnu-automake-19
+depend SUNWlibtool
+depend SUNWmercurial
+depend SUNWsprot
+depend SUNWsvn
+end package

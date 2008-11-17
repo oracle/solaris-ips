@@ -101,6 +101,7 @@ classification "System/Localizations"
 description "Language Support cluster - German"
 version 0.1
 depend SUNWddhcm
+depend SUNWddu-l10n
 depend SUNWdeos
 depend SUNWdesktop-other-l10n-de
 depend SUNWdexwsvr
@@ -111,7 +112,9 @@ depend SUNWgnome-l10ndocument-de
 depend SUNWgnome-l10nmessages-de
 depend SUNWlang-de
 depend SUNWlang-de-extra
+depend SUNWlang-deDE
 depend SUNWmyspell-dictionary-de
+depend SUNWtgnome-l10n-ui-de
 depend SUNWthunderbirdl10n-de-DE
 depend lang-support-common
 end package
@@ -140,6 +143,7 @@ version 0.1
 depend SUNWiconv-extra
 depend SUNWlang-en
 depend SUNWlang-en-extra
+depend SUNWlang-enUS
 depend lang-support-common
 end package
 
@@ -148,6 +152,7 @@ cluster lang-support-spanish
 classification "System/Localizations"
 description "Language Support cluster - Spanish"
 version 0.1
+depend SUNWddu-l10n
 depend SUNWdesktop-other-l10n-es
 depend SUNWedhcm
 depend SUNWesos
@@ -160,7 +165,9 @@ depend SUNWgnome-l10ndocument-es
 depend SUNWgnome-l10nmessages-es
 depend SUNWlang-es
 depend SUNWlang-es-extra
+depend SUNWlang-esES
 depend SUNWmyspell-dictionary-es
+depend SUNWtgnome-l10n-ui-es
 depend SUNWthunderbirdl10n-es-ES
 depend lang-support-common
 end package
@@ -198,6 +205,7 @@ cluster lang-support-french
 classification "System/Localizations"
 description "Language Support cluster - French"
 version 0.1
+depend SUNWddu-l10n
 depend SUNWdesktop-other-l10n-fr
 depend SUNWfdhcm
 depend SUNWfirefoxl10n-fr-FR
@@ -209,7 +217,9 @@ depend SUNWgnome-l10ndocument-fr
 depend SUNWgnome-l10nmessages-fr
 depend SUNWlang-fr
 depend SUNWlang-fr-extra
+depend SUNWlang-frFR
 depend SUNWmyspell-dictionary-fr
+depend SUNWtgnome-l10n-ui-fr
 depend SUNWthunderbirdl10n-fr-FR
 depend lang-support-common
 end package
@@ -235,6 +245,7 @@ description "Language Support cluster - Indic"
 version 0.1
 depend SUNWiconv-extra
 depend SUNWlang-hi
+depend SUNWttf-indic-fonts-core
 depend lang-support-common
 end package
 
@@ -267,6 +278,16 @@ depend SUNWthunderbirdl10n-extra
 depend lang-support-common
 end package
 
+package lang-support-indonesian
+cluster lang-support-indonesian
+classification "System/Localizations"
+description "Language Support cluster - Indonesian"
+version 0.1
+depend SUNWgnome-l10nmessages-extra
+depend SUNWlang-id
+depend lang-support-common
+end package
+
 package lang-support-icelandic
 cluster lang-support-icelandic
 classification "System/Localizations"
@@ -284,6 +305,7 @@ cluster lang-support-italian
 classification "System/Localizations"
 description "Language Support cluster - Italian"
 version 0.1
+depend SUNWddu-l10n
 depend SUNWdesktop-other-l10n-it
 depend SUNWfirefoxl10n-it-IT
 depend SUNWgetting-started-l10n-it
@@ -296,6 +318,7 @@ depend SUNWitxwsvr
 depend SUNWlang-it
 depend SUNWlang-it-extra
 depend SUNWmyspell-dictionary-it
+depend SUNWtgnome-l10n-ui-it
 depend SUNWthunderbirdl10n-it-IT
 depend lang-support-common
 end package
@@ -305,6 +328,7 @@ cluster lang-support-japanese
 classification "System/Localizations"
 description "Language Support cluster - Japanese"
 version 0.1
+depend SUNWddu-l10n
 depend SUNWdesktop-other-l10n-ja
 depend SUNWfirefoxl10n-ja-JP
 depend SUNWgetting-started-l10n-ja
@@ -319,10 +343,22 @@ depend SUNWjxwsvr
 depend SUNWlang-ja
 depend SUNWlang-ja-extra
 depend SUNWlibanthy
+depend SUNWman-l10n-ja
 depend SUNWpostgr-82-l10n-ja
 depend SUNWpostgr-l10n-ja
+depend SUNWtgnome-l10n-ui-ja
 depend SUNWthunderbirdl10n-ja-JP
 depend SUNWttf-ipafont
+depend lang-support-common
+end package
+
+package lang-support-kazakh
+cluster lang-support-kazakh
+classification "System/Localizations"
+description "Language Support cluster - Kazakh"
+version 0.1
+depend SUNWgnome-l10nmessages-extra
+depend SUNWlang-kk
 depend lang-support-common
 end package
 
@@ -331,6 +367,7 @@ cluster lang-support-korean
 classification "System/Localizations"
 description "Language Support cluster - Korean"
 version 0.1
+depend SUNWddu-l10n
 depend SUNWdesktop-other-l10n-ko
 depend SUNWfirefoxl10n-ko-KR
 depend SUNWgetting-started-l10n-ko
@@ -345,7 +382,10 @@ depend SUNWkxwsvr
 depend SUNWlang-ko
 depend SUNWlang-ko-extra
 depend SUNWlibhangul
+depend SUNWtgnome-l10n-ui-ko
 depend SUNWthunderbirdl10n-ko-KR
+depend SUNWttf-hanyang-ko
+depend SUNWttf-hanyang-ko-core
 depend lang-support-common
 end package
 
@@ -390,13 +430,22 @@ depend SUNWthunderbirdl10n-extra
 depend lang-support-common
 end package
 
+package lang-support-malay
+cluster lang-support-malay
+classification "System/Localizations"
+description "Language Support cluster - Malay"
+version 0.1
+depend SUNWgnome-l10nmessages-extra
+depend SUNWlang-ms
+depend lang-support-common
+end package
+
 package lang-support-maltese
 cluster lang-support-maltese
 classification "System/Localizations"
 description "Language Support cluster - Maltese"
 version 0.1
 depend SUNWlang-mt
-depend SUNWlang-mt-extra
 depend lang-support-common
 end package
 
@@ -407,7 +456,6 @@ description "Language Support cluster - Norwegian Bokmal"
 version 0.1
 depend SUNWfirefoxl10n-extra
 depend SUNWlang-nb
-depend SUNWlang-nb-extra
 depend SUNWmyspell-dictionary-extra
 depend SUNWthunderbirdl10n-extra
 depend lang-support-common
@@ -437,7 +485,6 @@ description "Language Support cluster - Norwegian Nynorsk"
 version 0.1
 depend SUNWfirefoxl10n-extra
 depend SUNWlang-nn
-depend SUNWlang-nn-extra
 depend lang-support-common
 end package
 
@@ -489,6 +536,7 @@ cluster lang-support-portuguese-BR
 classification "System/Localizations"
 description "Language Support cluster - Portugese (Brazil)"
 version 0.1
+depend SUNWddu-l10n
 depend SUNWdesktop-other-l10n-ptBR
 depend SUNWfirefoxl10n-pt-BR
 depend SUNWgetting-started-l10n-ptBR
@@ -498,6 +546,7 @@ depend SUNWlang-ptBR
 depend SUNWlang-ptBR-extra
 depend SUNWmyspell-dictionary-ptBR
 depend SUNWptxwsvr
+depend SUNWtgnome-l10n-ui-ptBR
 depend SUNWthunderbirdl10n-pt-BR
 depend lang-support-common
 end package
@@ -521,6 +570,7 @@ cluster lang-support-russian
 classification "System/Localizations"
 description "Language Support cluster - Russian"
 version 0.1
+depend SUNWddu-l10n
 depend SUNWdesktop-other-l10n-ru
 depend SUNWfirefoxl10n-ru-RU
 depend SUNWgetting-started-l10n-ru
@@ -530,6 +580,7 @@ depend SUNWlang-ru
 depend SUNWlang-ru-extra
 depend SUNWmyspell-dictionary-ru
 depend SUNWruxwsvr
+depend SUNWtgnome-l10n-ui-ru
 depend SUNWthunderbirdl10n-ru-RU
 depend lang-support-common
 end package
@@ -620,6 +671,7 @@ depend SUNWmyspell-dictionary-sv
 depend SUNWsdhcm
 depend SUNWsvos
 depend SUNWsvxwsvr
+depend SUNWtgnome-l10n-ui-sv
 depend SUNWthunderbirdl10n-sv-SE
 depend lang-support-common
 end package
@@ -632,6 +684,7 @@ version 0.1
 depend SUNWiiimf-th-thaile
 depend SUNWlang-th
 depend SUNWlang-th-extra
+depend SUNWttf-thai-scalable
 depend lang-support-common
 end package
 
@@ -650,6 +703,29 @@ depend SUNWthunderbirdl10n-extra
 depend lang-support-common
 end package
 
+package lang-support-ukrainian
+cluster lang-support-ukrainian
+classification "System/Localizations"
+description "Language Support cluster - Ukrainian"
+version 0.1
+depend SUNWgnome-l10ndocument-extra
+depend SUNWgnome-l10nmessages-extra
+depend SUNWlang-uk
+depend lang-support-common
+end package
+
+package lang-support-vietnamese
+cluster lang-support-vietnamese
+classification "System/Localizations"
+description "Language Support cluster - Vietnamese"
+version 0.1
+depend SUNWgnome-l10ndocument-extra
+depend SUNWgnome-l10nmessages-extra
+depend SUNWlang-vi
+depend SUNWiconv-extra
+depend lang-support-common
+end package
+
 package lang-support-chinese-CN
 cluster lang-support-chinese-CN
 classification "System/Localizations"
@@ -658,6 +734,7 @@ version 0.1
 depend SUNWcdhcm
 depend SUNWcos
 depend SUNWcxwsvr
+depend SUNWddu-l10n
 depend SUNWdesktop-other-l10n-zhCN
 depend SUNWfirefoxl10n-zh-CN
 depend SUNWgetting-started-l10n-zhCN
@@ -671,6 +748,7 @@ depend SUNWiiimf-zhCN-cle-sunpinyin
 depend SUNWlang-zhCN
 depend SUNWlang-zhCN-extra
 depend SUNWstardict
+depend SUNWtgnome-l10n-ui-zhCN
 depend SUNWthunderbirdl10n-zh-CN
 depend SUNWttf-arphic-ukai
 depend SUNWttf-arphic-uming
@@ -682,6 +760,7 @@ cluster lang-support-chinese-HK
 classification "System/Localizations"
 description "Language Support cluster - Chinese (Traditional; Hong Kong)"
 version 0.1
+depend SUNWddu-l10n
 depend SUNWdesktop-other-l10n-zhHK
 depend SUNWfirefoxl10n-zh-TW
 depend SUNWgetting-started-l10n-zhHK
@@ -695,6 +774,7 @@ depend SUNWiiimf-zhHK-hkle-core
 depend SUNWiiimf-zhHK-hkle-open
 depend SUNWlang-zhHK
 depend SUNWlang-zhHK-extra
+depend SUNWtgnome-l10n-ui-zhHK
 depend SUNWthunderbirdl10n-zh-TW
 depend SUNWttf-arphic-ukai
 depend SUNWttf-arphic-uming
@@ -706,6 +786,7 @@ cluster lang-support-chinese-TW
 classification "System/Localizations"
 description "Language Support cluster - Chinese (Traditional; Taiwan)"
 version 0.1
+depend SUNWddu-l10n
 depend SUNWdesktop-other-l10n-zhTW
 depend SUNWfirefoxl10n-zh-TW
 depend SUNWgetting-started-l10n-zhTW
@@ -721,6 +802,7 @@ depend SUNWiiimf-zhTW-twle-open
 depend SUNWlang-zhTW
 depend SUNWlang-zhTW-extra
 depend SUNWlibchewing
+depend SUNWtgnome-l10n-ui-zhTW
 depend SUNWthunderbirdl10n-zh-TW
 depend SUNWttf-arphic-ukai
 depend SUNWttf-arphic-uming
@@ -753,12 +835,15 @@ depend lang-support-hebrew
 depend lang-support-hungarian
 depend lang-support-icelandic
 depend lang-support-indic
+depend lang-support-indonesian
 depend lang-support-italian
 depend lang-support-japanese
+depend lang-support-kazakh
 depend lang-support-korean
 depend lang-support-latvian
 depend lang-support-lithuanian
 depend lang-support-macedonian
+depend lang-support-malay
 depend lang-support-maltese
 depend lang-support-norwegian
 depend lang-support-norwegian-bokmal
@@ -776,4 +861,6 @@ depend lang-support-spanish
 depend lang-support-swedish
 depend lang-support-thai
 depend lang-support-turkish
+depend lang-support-ukrainian
+depend lang-support-vietnamese
 end package

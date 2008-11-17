@@ -3183,3 +3183,9 @@ depend SUNWthunderbirdl10n-pl-PL
 depend SUNWthunderbirdl10n-sv-SE
 depend slim_install
 end package
+include common/Amp
+include common/GccDev
+include common/LangSupport
+include common/StorageNAS
+include common/StorageServer
+include common/TrustedExtensions

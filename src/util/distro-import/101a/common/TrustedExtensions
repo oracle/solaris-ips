@@ -1,0 +1,13 @@
+package trusted-extensions
+classification "Desktop (GNOME)/Trusted Extensions"
+description "Trusted Extensions"
+depend SUNWtgnome-tsoljdsdevmgr
+depend SUNWtgnome-tsoljdslabel
+depend SUNWtgnome-tsoljdsselmgr
+depend SUNWtgnome-tsol-libs
+depend SUNWtgnome-tstripe
+depend SUNWtgnome-xagent
+depend SUNWts
+depend SUNWtsg
+depend SUNWxorg-tsol-module
+end package

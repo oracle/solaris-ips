@@ -173,12 +173,10 @@ UNBUNDLED_TARGETS=		\
 	MessageQueue41.import	\
 	NetBeans.import		\
 	OpenOffice.import	\
-	StorageNAS.import	\
 	Studio.import		\
 	Webstackui.import
 
 UNBUNDLED_CLUSTERS=		\
-	LangSupport.import	\
 	Clusters.import
 
 BUILDS=	75a			\
