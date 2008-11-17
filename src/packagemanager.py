@@ -1916,11 +1916,9 @@ class PackageManager:
                 return manifest
 
         @staticmethod
-        def update_desc(description, pkg, package):
-                p = pkg[enumerations.PACKAGE_OBJECT_COLUMN][0]
-                if p == package:
-                        pkg[enumerations.DESCRIPTION_COLUMN] = description
-                        return
+        def update_desc(description, pkg):
+                pkg[enumerations.DESCRIPTION_COLUMN] = description
+                return
 
 #-----------------------------------------------------------------------------#
 # Public Methods
@@ -2003,6 +2001,7 @@ class PackageManager:
                 for the particular version (local operation only), if the package is 
                 not installed than the newest one'''
                 time.sleep(3)
+                count = 0
                 self.description_thread_running = True
                 img = self.api_o.img
                 img.history.operation_name = "info"
@@ -2012,27 +2011,22 @@ class PackageManager:
                                 return
                         info = None
                         img = self.api_o.img
-                        package = pkg[enumerations.PACKAGE_OBJECT_COLUMN][0]
+                        package = pkg[enumerations.INSTALLED_OBJECT_COLUMN]
                         if (img and package):
-                                version = img.has_version_installed(package)
-                                if version:
-                                        version = \
-                                            self.get_installed_version(self.api_o, \
-                                            package)
-                                        man = self.get_manifest(img, version, \
-                                            filtered = True)
-                                        if man:
-                                                info = man.get("description", "")
-                                else:
-                                        newest = max( \
-                                            pkg[enumerations.PACKAGE_OBJECT_COLUMN])
-                                        man = self.get_manifest(img, newest, \
-                                            filtered = True)
-                                        if man:
-                                                info = man.get("description", "")
-                        # XXX workaround, this should be done nicer
-                        gobject.idle_add(self.update_desc, info, pkg, package)
-                        time.sleep(0.01)
+                                man = self.get_manifest(img, package, filtered = True)
+                                if man:
+                                        info = man.get("description", "")
+                        elif img:
+                                newest = max( \
+                                    pkg[enumerations.PACKAGE_OBJECT_COLUMN])
+                                man = self.get_manifest(img, newest, \
+                                    filtered = True)
+                                if man:
+                                        info = man.get("description", "")
+                        gobject.idle_add(self.update_desc, info, pkg)
+                        count += 1
+                        if count % 2 ==  0:
+                                time.sleep(0.001)
                 img.history.operation_name = "info"
                 img = self.api_o.img
                 img.history.operation_result = history.RESULT_SUCCEEDED
