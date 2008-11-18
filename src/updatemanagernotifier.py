@@ -217,7 +217,6 @@ class UpdateManagerNotifier:
                 self.status_icon.set_visible(True)
 
         def check_for_updates(self):
-                self.set_last_check_time()
                 image_directory = os.popen(IMAGE_DIR_COMMAND).readline().rstrip()
                 if debug == True:
                         print "image_directory: %s" % image_directory
@@ -239,6 +238,8 @@ class UpdateManagerNotifier:
                         print "pkgs_to_be_updated: %d" % count
                 if count:
                         self.show_status_icon()
+                self.set_last_check_time()
+                self.schedule_next_check_for_checks()
                 return False                                
 
         # This is copied from a similar function in packagemanager.py 
@@ -324,6 +325,19 @@ class UpdateManagerNotifier:
                 self.notify.set_hint_int32("x", x)
                 self.notify.set_hint_int32("y", y)
 
+        def schedule_next_check_for_checks(self):
+                """This schedules the next time to wake up to check if it's
+                necessary to check for updates yet."""
+                if self.time_until_next_check > DAILY_SECS or \
+                    self.time_until_next_check <= 0:
+                        next_check_time = DAILY_SECS
+                else:
+                        next_check_time = self.time_until_next_check
+                if debug == True:
+                        print "scheduling next check: %s" % next_check_time
+                gobject.timeout_add(int(next_check_time * 1000),
+                    self.do_next_check)
+
         def do_next_check(self):
                 if debug == True:
                         print "Called do_next_check"
@@ -332,13 +346,8 @@ class UpdateManagerNotifier:
                 if self.last_check_time == 0 or self.is_check_required():
                         gobject.idle_add(self.check_for_updates)
                 else:
-                        if self.time_until_next_check > DAILY_SECS:
-                                next_check_time = DAILY_SECS
-                        else:
-                                next_check_time = self.time_until_next_check
-                        gobject.timeout_add(int(next_check_time*1000), self.do_next_check)
-                        return False
-                return True
+                        self.schedule_next_check_for_checks()
+                return False
 
         def check_already_running(self):
                 atom = gtk.gdk.atom_intern("UPDATEMANAGERNOTIFIER",
