@@ -2,11 +2,12 @@ package webstackui
 classification "Web Services/Application and Web Servers"
 description "Web Stack Options and Desktop Menus"
 import SUNWwebstackui
+depend SUNWapch22
 depend SUNWapch22d
-depend SUNWapch22m-php5
+depend SUNWapch22m-php52
 depend SUNWj6rt
 depend SUNWmysql5
-depend SUNWphp524
-depend SUNWphp524doc
-depend SUNWphp524man
+depend SUNWphp52
+depend SUNWphp52-mysql
+depend SUNWphp52d
 end package

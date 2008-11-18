@@ -25,6 +25,7 @@ e none etc/skel/.profile 0644 root other
 e none etc/user_attr 0644 root sys
 f none etc/zones/SUNWblank.xml 0444 root bin
 f none etc/zones/SUNWdefault.xml 0444 root bin
+f none kernel/drv/nvidia.conf 0644 root sys
 e none kernel/drv/sd.conf 0644 root sys
 f none lib/svc/method/sshd 0555 root bin
 f none lib/svc/method/svc-coreadm 0555 root bin

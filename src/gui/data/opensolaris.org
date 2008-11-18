@@ -46,6 +46,9 @@ category = Fonts
 [FSWxorg-fonts-vera]
 category = Fonts
 
+[NVDAcg]
+category = Graphics and Imaging
+
 [NVDAgraphics]
 category = Display
 
@@ -1510,9 +1513,6 @@ category = Packaging
 [SUNWipkg-gui]
 category = Packaging
 
-[SUNWipkg-gui-data]
-category = Packaging
-
 [SUNWipkg-um]
 category = Packaging
 
@@ -2023,39 +2023,6 @@ category = Libraries (System)
 [SUNWlibms]
 category = Libraries (System)
 
-[SUNWlibnb-apisupport1]
-category = Integrated Development Environments
-
-[SUNWlibnb-cnd1]
-category = Integrated Development Environments
-
-[SUNWlibnb-enterprise4]
-category = Integrated Development Environments
-
-[SUNWlibnb-gsf1]
-category = Integrated Development Environments
-
-[SUNWlibnb-ide8]
-category = Integrated Development Environments
-
-[SUNWlibnb-java1]
-category = Integrated Development Environments
-
-[SUNWlibnb-platform7]
-category = Integrated Development Environments
-
-[SUNWlibnb-profiler2]
-category = Integrated Development Environments
-
-[SUNWlibnb-ruby1]
-category = Integrated Development Environments
-
-[SUNWlibnb-visualweb1]
-category = Integrated Development Environments
-
-[SUNWlibnb-xml1]
-category = Integrated Development Environments
-
 [SUNWlibnet]
 category = Libraries (System)
 
@@ -2307,24 +2274,6 @@ category = Libraries (System)
 
 [SUNWnet6]
 category = System
-
-[SUNWnetbeans-cpp]
-category = Integrated Development Environments
-
-[SUNWnetbeans-desktop]
-category = Integrated Development Environments
-
-[SUNWnetbeans-ide]
-category = Integrated Development Environments
-
-[SUNWnetbeans-javaee]
-category = Integrated Development Environments
-
-[SUNWnetbeans-javase]
-category = Integrated Development Environments
-
-[SUNWnetbeans-ruby]
-category = Integrated Development Environments
 
 [SUNWnetcat]
 category = Internet
@@ -3574,6 +3523,12 @@ category = High Performance Computing
 [clustertools_7.1]
 category = High Performance Computing
 
+[dtrace-gui-plugin]
+category = System
+
+[eclipse]
+category = Integrated Development Environments
+
 [gcc-dev]
 category = Integrated Development Environments
 
@@ -3655,10 +3610,16 @@ category = Localizations (System)
 [lang-support-indic]
 category = Localizations (System)
 
+[lang-support-indonesian]
+category = Localizations (System)
+
 [lang-support-italian]
 category = Localizations (System)
 
 [lang-support-japanese]
+category = Localizations (System)
+
+[lang-support-kazakh]
 category = Localizations (System)
 
 [lang-support-korean]
@@ -3671,6 +3632,9 @@ category = Localizations (System)
 category = Localizations (System)
 
 [lang-support-macedonian]
+category = Localizations (System)
+
+[lang-support-malay]
 category = Localizations (System)
 
 [lang-support-maltese]
@@ -3724,13 +3688,94 @@ category = Localizations (System)
 [lang-support-turkish]
 category = Localizations (System)
 
+[lang-support-ukrainian]
+category = Localizations (System)
+
+[lang-support-vietnamese]
+category = Localizations (System)
+
+[libnb-apisupport]
+category = Integrated Development Environments
+
+[libnb-cnd]
+category = Integrated Development Environments
+
+[libnb-enterprise]
+category = Integrated Development Environments
+
+[libnb-groovy]
+category = Integrated Development Environments
+
+[libnb-gsf]
+category = Integrated Development Environments
+
+[libnb-ide]
+category = Integrated Development Environments
+
+[libnb-identity]
+category = Integrated Development Environments
+
+[libnb-java]
+category = Integrated Development Environments
+
+[libnb-php]
+category = Integrated Development Environments
+
+[libnb-platform]
+category = Integrated Development Environments
+
+[libnb-profiler]
+category = Integrated Development Environments
+
+[libnb-ruby]
+category = Integrated Development Environments
+
+[libnb-soa]
+category = Integrated Development Environments
+
+[libnb-visualweb]
+category = Integrated Development Environments
+
+[libnb-webcommon]
+category = Integrated Development Environments
+
+[libnb-websvccommon]
+category = Integrated Development Environments
+
+[libnb-xml]
+category = Integrated Development Environments
+
 [mq41]
 category = Services
 
 [netbeans]
 category = Integrated Development Environments
 
+[netbeans-cpp]
+category = Integrated Development Environments
+
+[netbeans-desktop]
+category = Integrated Development Environments
+
+[netbeans-full]
+category = Integrated Development Environments
+
+[netbeans-ide]
+category = Integrated Development Environments
+
 [netbeans-incorporation]
+category = Integrated Development Environments
+
+[netbeans-java]
+category = Integrated Development Environments
+
+[netbeans-javase]
+category = Integrated Development Environments
+
+[netbeans-php]
+category = Integrated Development Environments
+
+[netbeans-ruby]
 category = Integrated Development Environments
 
 [openoffice]
@@ -3793,8 +3838,14 @@ category = Integrated Development Environments
 [storage-nas]
 category = Storage
 
+[storage-server]
+category = Storage
+
 [sunstudioexpress]
 category = Integrated Development Environments
+
+[trusted-extensions]
+category = Trusted Extensions
 
 [webstackui]
 category = Application and Web Servers

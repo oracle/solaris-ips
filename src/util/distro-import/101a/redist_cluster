@@ -1279,6 +1279,7 @@ include common/loc/SUNWweuos
 include common/loc/SUNWweuow
 include common/slim_cd
 include i386/BRCMbnx
+include i386/NVDAcg
 include i386/NVDAgraphics
 include i386/SUNWad810
 include i386/SUNWadixp
@@ -1384,6 +1385,7 @@ depend FSWxorg-fonts-iso8859-9
 depend FSWxorg-fonts-jiskan
 depend FSWxorg-fonts-syriac
 depend FSWxorg-fonts-vera
+depend NVDAcg
 depend NVDAgraphics
 depend OSOLvpanels
 depend OSOLvpanels-mysql

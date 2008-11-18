@@ -102,6 +102,7 @@ CACHED_FILES=								\
 	etc/skel/.profile						\
 	etc/zones/SUNWblank.xml						\
 	etc/zones/SUNWdefault.xml					\
+	kernel/drv/nvidia.conf						\
 	lib/svc/method/fs-usr						\
 	lib/svc/method/sshd						\
 	lib/svc/method/svc-coreadm					\
