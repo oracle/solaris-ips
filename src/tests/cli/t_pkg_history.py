@@ -27,6 +27,7 @@ import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 
+import os
 import re
 import shutil
 import time
@@ -145,7 +146,7 @@ class TestPkgHistory(testutils.ManyDepotTestCase):
                 self.assert_(
                     re.search("purge-history", o.splitlines()[0]) != None)
 
-        def test_bug_4369(self):
+        def test_4_bug_4369(self):
                 """Test that install and uninstall of non-existent packages
                 both make the same history entry.
                 """
@@ -163,7 +164,7 @@ class TestPkgHistory(testutils.ManyDepotTestCase):
                         else:
                                 self.assert_(tmp[1] == "purge-history")
 
-        def test_bug_5024(self):
+        def test_5_bug_5024(self):
                 """Test that install and uninstall of non-existent packages
                 both make the same history entry.
                 """
@@ -183,6 +184,38 @@ class TestPkgHistory(testutils.ManyDepotTestCase):
                                 self.assert_(res == "Failed (Constrained)")
                         else:
                                 self.assert_(tmp[1] == "purge-history")
+
+        def test_6_bug_3540(self):
+                """Verify that corrupt history entries won't cause the client to
+                exit abnormally.
+                """
+                # Overwrite first entry with bad data.
+                pkg_path = os.path.join(self.get_img_path(), "var", "pkg")
+                if not os.path.exists(pkg_path):
+                        pkg_path = os.path.join(self.get_img_path(),
+                            ".org.opensolaris,pkg")
+                        self.assertTrue(os.path.exists(pkg_path))
+
+                hist_path = os.path.join(pkg_path, "history")
+                entry = sorted(os.listdir(hist_path))[0]
+                f = open(os.path.join(pkg_path, entry), "w")
+                f.write("<Invalid>")
+                f.close()
+                self.pkg("history")
+
+        def test_7_bug_5153(self):
+                """Verify that an absent History directory will not cause the
+                the client to exit with an error or traceback.
+                """
+                pkg_path = os.path.join(self.get_img_path(), "var", "pkg")
+                if not os.path.exists(pkg_path):
+                        pkg_path = os.path.join(self.get_img_path(),
+                            ".org.opensolaris,pkg")
+                        self.assertTrue(os.path.exists(pkg_path))
+
+                hist_path = os.path.join(pkg_path, "history")
+                shutil.rmtree(hist_path)
+                self.pkg("history")
 
 if __name__ == "__main__":
         unittest.main()

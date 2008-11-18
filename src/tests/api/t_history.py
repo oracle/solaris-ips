@@ -291,6 +291,34 @@ class TestHistory(pkg5unittest.Pkg5TestCase):
                         self.assertEqual(op_result,
                             history.RESULT_FAILED_BAD_REQUEST)
 
+        def test_8_bug_3540(self):
+                """Ensure that corrupt History files raise a
+                HistoryLoadException with parse_failure set to True.
+                """
+
+                # Overwrite first entry with bad data.
+                h = self.__h
+                entry = sorted(os.listdir(h.path))[0]
+                f = open(os.path.join(h.path, entry), "w")
+                f.write("<Invalid>")
+                f.close()
+
+                try:
+                        he = history.History(root_dir=h.root_dir,
+                            filename=entry)
+                except history.HistoryLoadException, e:
+                        if not e.parse_failure:
+                                raise
+                        pass
+
+        def test_9_bug_5153(self):
+                """Verify that purge will not raise an exception if the History
+                directory doesn't already exist as it will re-create it anyway.
+                """
+                h = self.__h
+                shutil.rmtree(h.path)
+                h.purge()
+
 if __name__ == "__main__":
         unittest.main()
 

@@ -1988,10 +1988,20 @@ def history_list(img, args):
                         msg("%-19s %-25s %-15s %s" % (_("TIME"),
                             _("OPERATION"), _("CLIENT"), _("OUTCOME")))
 
+        if not os.path.exists(img.history.path):
+                # Nothing to display.
+                return 0
+
         for entry in sorted(os.listdir(img.history.path)):
                 # Load the history entry.
-                he = history.History(root_dir=img.history.root_dir,
-                    filename=entry)
+                try:
+                        he = history.History(root_dir=img.history.root_dir,
+                            filename=entry)
+                except history.HistoryLoadException, e:
+                        if e.parse_failure:
+                                # Ignore corrupt entries.
+                                continue
+                        raise
 
                 # Retrieve and format some of the data shared between each
                 # output format.

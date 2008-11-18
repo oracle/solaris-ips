@@ -28,6 +28,7 @@ import os
 import shutil
 import sys
 import xml.dom.minidom as xmini
+import xml.parsers.expat as expat
 
 import pkg
 import pkg.misc as misc
@@ -59,25 +60,27 @@ RESULT_FAILED_TRANSPORT = ["Failed", "Transport"]
 # Operations that are discarded, not saved, when recorded by history.
 DISCARDED_OPERATIONS = ["contents", "info", "list"]
 
-class __HistoryException(Exception):
+class _HistoryException(Exception):
         """Private base exception class for all History exceptions."""
         def __init__(self, *args):
                 Exception.__init__(self, *args)
-                self.data = args[0]
+                self.error = args[0]
 
         def __str__(self):
-                return str(self.data)
+                return str(self.error)
 
-class HistoryLoadException(__HistoryException):
+class HistoryLoadException(_HistoryException):
         """Used to indicate that an unexpected error occurred while loading
         History operation information.
 
         The first argument should be an exception object related to the
         error encountered.
         """
-        pass
+        def __init__(self, *args):
+                _HistoryException.__init__(self, *args)
+                self.parse_failure = isinstance(self.error, expat.ExpatError)
 
-class HistoryStoreException(__HistoryException):
+class HistoryStoreException(_HistoryException):
         """Used to indicate that an unexpected error occurred while storing
         History operation information.
 
@@ -86,7 +89,7 @@ class HistoryStoreException(__HistoryException):
         """
         pass
 
-class HistoryPurgeException(__HistoryException):
+class HistoryPurgeException(_HistoryException):
         """Used to indicate that an unexpected error occurred while purging
         History operation information.
 
@@ -548,6 +551,12 @@ class History(object):
                         shutil.rmtree(self.path)
                 except KeyboardInterrupt:
                         raise
+                except EnvironmentError, e:
+                        if e.errno == errno.ENOENT:
+                                # History already purged; record as successful.
+                                self.operation_result = RESULT_SUCCEEDED
+                                return
+                        raise HistoryPurgeException(e)
                 except Exception, e:
                         raise HistoryPurgeException(e)
                 else:
