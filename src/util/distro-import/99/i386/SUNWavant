@@ -3,4 +3,5 @@ classification "Applications/Configuration and Preferences"
 import SUNWavant
 import SUNWavant-devel
 import SUNWavant-root
+depend SUNWpython-xdg
 end package
