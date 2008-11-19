@@ -347,6 +347,7 @@ classification "Development/Integrated Development Environments"
 import netbeans-cpp
 depend SUNWj6rt
 depend SUNWj6dev
+depend dtrace-gui-plugin
 depend libnb-cnd
 depend libnb-ide
 depend libnb-platform
@@ -362,6 +363,7 @@ end package
 package netbeans-full
 version 6.5
 classification "Development/Integrated Development Environments"
+depend dtrace-gui-plugin
 depend netbeans
 end package
 
@@ -381,6 +383,7 @@ classification "Development/Integrated Development Environments"
 import netbeans-java
 depend SUNWj6rt
 depend SUNWj6dev
+depend dtrace-gui-plugin
 depend libnb-apisupport
 depend libnb-enterprise
 depend libnb-groovy
@@ -403,6 +406,7 @@ classification "Development/Integrated Development Environments"
 import netbeans-javase
 depend SUNWj6rt
 depend SUNWj6dev
+depend dtrace-gui-plugin
 depend libnb-apisupport
 depend libnb-gsf
 depend libnb-ide
@@ -419,6 +423,7 @@ classification "Development/Integrated Development Environments"
 import netbeans-php
 depend SUNWj6rt
 depend SUNWj6dev
+depend dtrace-gui-plugin
 depend libnb-gsf
 depend libnb-ide
 depend libnb-platform
@@ -433,6 +438,7 @@ classification "Development/Integrated Development Environments"
 import netbeans-ruby
 depend SUNWj6rt
 depend SUNWj6dev
+depend dtrace-gui-plugin
 depend libnb-gsf
 depend libnb-ide
 depend libnb-platform
