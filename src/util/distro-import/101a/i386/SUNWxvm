@@ -6,6 +6,6 @@ import SUNWxvmr
 import SUNWxvmu
 version 3.1
 add group groupname=xvm gid=60
-add user username=xvm uid=60 group=xvm gcos-field="xVM User"
+add user username=xvm uid=60 group=xvm gcos-field="xVM User" ftpuser=false
 add dir group=xvm mode=0755 opensolaris.zone=global owner=xvm path=var/log/xen
 end package
