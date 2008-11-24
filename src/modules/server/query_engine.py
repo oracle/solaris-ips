@@ -23,10 +23,12 @@
 # Use is subject to license terms.
 
 import threading
+import fnmatch
 
 import pkg.search_storage as ss
 import pkg.search_errors as search_errors
 import pkg.query_engine as qe
+from pkg.choose import choose
 
 class Query(qe.Query):
         """ The class which handles all query parsing and representation. """
@@ -78,10 +80,87 @@ class ServerQueryEngine(qe.QueryEngine):
                         self._open_dicts()
                         try:
                                 self._read_dicts()
-                                _, res_ids = self.search_internal(query)
-                        finally:
+                                return self.search_internal_server(query)
+                        except:
                                 self._close_dicts()
-                        return self.get_results(res_ids)
+                                raise
+                except:
+                        self.dict_lock.release()
+                        raise
+
+        def search_done(self):
+                try:
+                        self._close_dicts()
                 finally:
                         self.dict_lock.release()
+                        
+        def search_internal_server(self, query):
+                """Searches the indexes in dir_path for any matches of query
+                and the results in self.res. The method assumes the dictionaries
+                have already been loaded and read appropriately.
+                """
 
+                assert self._data_main_dict.get_file_handle() is not None
+
+                res = {}
+
+                glob = query.uses_glob()
+                term = query.get_term()
+                case_sensitive = query.is_case_sensitive()
+
+                if not case_sensitive:
+                        glob = True
+                offsets = []
+
+                if glob:
+                        keys = self._data_token_offset.get_keys()
+                        if not keys:
+                                # No matches were found.
+                                self.search_done()
+                                return
+                        matches = choose(keys, term, case_sensitive)
+                        offsets = [
+                            self._data_token_offset.get_id(match)
+                            for match in matches
+                        ]
+                        offsets.sort()
+                elif not self._data_token_offset.has_entity(term):
+                        # No matches were found
+                        self.search_done()
+                        return
+                else:
+                        offsets.append(
+                            self._data_token_offset.get_id(term))
+
+                md_fh = self._data_main_dict.get_file_handle()
+                for o in offsets:
+                        md_fh.seek(o)
+                        line = md_fh.readline()
+                        assert not line == '\n'
+                        tok, entries = self._data_main_dict.parse_main_dict_line(line)
+                        assert ((term == tok) or 
+                            (not case_sensitive and term.lower() == tok.lower()) or
+                            (glob and fnmatch.fnmatch(tok, term)) or
+                            (not case_sensitive and
+                            fnmatch.fnmatch(tok.lower(), term.lower())))
+                        for tok_type_id, action_id, keyval_id, \
+                            fmri_ids in entries:
+                                fmri_set = set()
+                                for fmri_id, version_id in fmri_ids:
+                                        fmri_set.add((fmri_id,
+                                            version_id))
+                                tok_type = \
+                                    self._data_tok_type.get_entity(tok_type_id)
+                                action = \
+                                    self._data_action.get_entity(action_id)
+                                keyval = \
+                                    self._data_keyval.get_entity(keyval_id)
+                                for pkg_id, version_id in sorted(fmri_set):
+                                        fmri_res = \
+                                            self._data_fmri.get_entity(pkg_id) + \
+                                            "@" + \
+                                            self._data_version.get_entity(version_id)
+                                        yield((tok_type, fmri_res,
+                                                         action, keyval))
+                self.search_done()
+                return
