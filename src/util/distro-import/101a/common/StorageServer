@@ -1,5 +1,5 @@
 package storage-server
-classification Drivers/Storage
+classification "Drivers/Storage"
 description "Multi Protocol Storage Server cluster"
 version 0.1
 depend SUNWaac
@@ -11,7 +11,6 @@ depend SUNWcfcl
 depend SUNWcfpl
 depend SUNWdmgt
 depend SUNWemlxs
-depend SUNWemlxu
 depend SUNWfchba
 depend SUNWfcip
 depend SUNWfcmdb
