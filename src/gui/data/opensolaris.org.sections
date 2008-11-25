@@ -8,13 +8,13 @@ category = Accessories,Applets,Configuration and Preferences,Games,Graphics and 
 category = Documentation,File Managers,Libraries,Localizations (Desktop),Scripts,Sessions,Trusted Extensions,Window Managers
 
 [Development]
-category = C,C++,Databases,Distribution Tools,GNOME and GTK+,GNU,Integrated Development Environments,Java,Other Languages,PHP,Perl,Python,Ruby,Source Code Management,System,X11
+category = C,C++,Databases,Distribution Tools,GNOME and GTK+,GNU,High Performance Computing,Integrated Development Environments,Java,Other Languages,PHP,Perl,Python,Ruby,Source Code Management,System,X11
 
 [Drivers]
 category = Display,Media,Networking,Other Peripherals,Ports,Storage
 
 [System]
-category = Administration and Configuration,Core,Databases (System),Enterprise Management,File System,Fonts,Hardware,High Performance Computing,Internationalization,Libraries (System),Localizations (System),Media,Packaging,Printing,Security,Services,Shells,Software Management,Text Tools,Trusted,Virtualization,X11 (System)
+category = Administration and Configuration,Core,Databases (System),Enterprise Management,File System,Fonts,Hardware,Internationalization,Libraries (System),Localizations (System),Media,Packaging,Printing,Security,Services,Shells,Software Management,Text Tools,Trusted,Virtualization,X11 (System)
 
 [Web Services]
 category = Application and Web Servers

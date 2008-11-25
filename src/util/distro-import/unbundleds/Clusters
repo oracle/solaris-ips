@@ -48,7 +48,7 @@ depend sunstudioexpress
 end package
 
 package hpc-dev
-classification "System/High Performance Computing"
+classification "Development/High Performance Computing"
 description "HPC Application Development cluster"
 depend SUNWcvs
 depend SUNWgmake
