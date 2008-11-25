@@ -35,12 +35,11 @@ import datetime
 import httplib
 import os
 import rfc822
-import sys
 import time
 import urllib
 import xml.dom.minidom as xmini
 
-from pkg.misc import get_rel_path, get_res_path
+from pkg.misc import get_rel_path
 import pkg.server.catalog as catalog
 import pkg.fmri as fmri
 import pkg.Uuid25 as uuid
@@ -147,16 +146,14 @@ def set_title(request, rcfg, doc, feed, update_ts):
         # Add our icon.
         i = doc.createElement("icon")
         it = xmini.Text()
-        it.replaceWholeText(get_res_path(request, rcfg.get_attribute(
-            "feed", "icon")))
+        it.replaceWholeText(rcfg.get_attribute("feed", "icon"))
         i.appendChild(it)
         feed.appendChild(i)
 
         # Add our logo.
         l = doc.createElement("logo")
         lt = xmini.Text()
-        lt.replaceWholeText(get_res_path(request, rcfg.get_attribute(
-            "feed", "logo")))
+        lt.replaceWholeText(rcfg.get_attribute("feed", "logo"))
         l.appendChild(lt)
         feed.appendChild(l)
 

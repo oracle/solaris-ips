@@ -500,7 +500,7 @@ class Catalog(object):
         def npkgs(self):
                 """Returns the number of packages in the catalog."""
 
-                return self.attrs["npkgs"] 
+                return self.attrs["npkgs"]
 
         def origin(self):
                 """Returns the URL of the catalog's origin."""
@@ -867,22 +867,31 @@ def ts_to_datetime(ts):
         return dt
 
 
-def extract_matching_fmris(pkgs, patterns, matcher = None,
-    constraint = None, counthash = None):
+def extract_matching_fmris(pkgs, patterns=None, matcher=None,
+    constraint=None, counthash=None, versions=None):
         """Iterate through the given list of PkgFmri objects,
-        looking for packages matching 'pattern', based on the function
-        in 'matcher' and the versioning constraint described by
+        looking for packages matching 'pattern' in 'patterns', based on the
+        function in 'matcher' and the versioning constraint described by
         'constraint'.  If 'matcher' is None, uses fmri subset matching
-        as the default.  Returns a sorted list of PkgFmri objects,
-        newest versions first.  If 'counthash' is a dictionary, instead
-        store the number of matched fmris for each package name which
-        was matched."""
+        as the default.  If 'patterns' is None, 'versions' may be specified,
+        and looks for packages matching 'version' in 'versions', based on the
+        constraint described by 'constraint'.  Returns a sorted list of
+        PkgFmri objects, newest versions first.  If 'counthash' is a
+        dictionary, instead store the number of matched fmris for each package
+        that matches."""
 
         if not matcher:
                 matcher = fmri.fmri_match
 
-        if not isinstance(patterns, list):
+        if patterns is None:
+                patterns = []
+        elif not isinstance(patterns, list):
                 patterns = [ patterns ]
+
+        if versions is None:
+                versions = []
+        elif not isinstance(versions, list):
+                versions = [ versions ]
 
         # 'pattern' may be a partially or fully decorated fmri; we want
         # to extract its name and version to match separately against
@@ -898,11 +907,17 @@ def extract_matching_fmris(pkgs, patterns, matcher = None,
                         tuples[pattern] = \
                             fmri.PkgFmri(pattern, "5.11").tuple()
 
-        ret = []
+        vers = []
+        for ver in versions:
+                if not isinstance(ver, version.Version):
+                        vers.append(version.Version(ver, ""))
+                else:
+                        vers.append(ver)
+        versions = vers
 
-        for p in pkgs:
+        def by_pattern(p):
                 cat_auth, cat_name, cat_version = p.tuple()
-
+                ret = []
                 for pattern in patterns:
                         pat_auth, pat_name, pat_version = tuples[pattern]
                         if (fmri.is_same_authority(pat_auth, cat_auth) or not \
@@ -920,6 +935,29 @@ def extract_matching_fmris(pkgs, patterns, matcher = None,
                                         if pat_auth:
                                                 p.set_authority(pat_auth)
                                         ret.append(p)
+                return ret
+
+        def by_version(p):
+                ret = []
+                for ver in versions:
+                        sver = str(ver)
+                        if p.version.is_successor(ver, constraint):
+                                if counthash is not None:
+                                        if sver in counthash:
+                                                counthash[sver] += 1
+                                        else:
+                                                counthash[sver] = 1
+                                ret.append(p)
+                return ret
+
+        ret = []
+        if patterns:
+                for p in pkgs:
+                        ret.extend(by_pattern(p))
+        elif versions:
+                v = versions[0]
+                for p in pkgs:
+                        ret.extend(by_version(p))
 
         return sorted(ret, reverse = True)
 

@@ -1,0 +1,106 @@
+## -*- coding: utf-8 -*-
+##
+## CDDL HEADER START
+##
+## The contents of this file are subject to the terms of the
+## Common Development and Distribution License (the "License").
+## You may not use this file except in compliance with the License.
+##
+## You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+## or http://www.opensolaris.org/os/licensing.
+## See the License for the specific language governing permissions
+## and limitations under the License.
+##
+## When distributing Covered Code, include this CDDL HEADER in each
+## file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+## If applicable, add the following below this CDDL HEADER, with the
+## fields enclosed by brackets "[]" replaced with your own identifying
+## information: Portions Copyright [yyyy] [name of copyright owner]
+##
+## CDDL HEADER END
+##
+## Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+## Use is subject to license terms.
+##
+<%inherit file="layout.shtml"/>\
+<%page args="g_vars"/>\
+<%
+        catalog = g_vars["catalog"]
+        config = g_vars["config"]
+%>\
+<%def name="page_title(g_vars)"><%
+        return "Depot Statistics"
+%></%def>\
+<div id="yui-main" class="yui-b">
+        <div class="yui-gb">
+% if not config.mirror:
+                <div class="yui-u first">
+                <table class="stats">
+                        <tr class="first">
+                                <th class="last" colspan="2">Catalog</th>
+                        </tr>
+                        <tr>
+                                <td class="label">Packages</td>
+                                <td class="value">${catalog.package_count}</td>
+                        </tr>
+                        <tr>
+                                <td class="label">Last Modified</td>
+<%
+        # XXX Is this UTC or local?
+        lm = catalog.last_modified.replace(microsecond=0)
+%>
+                                <td class="value">${lm}</td>
+                        </tr>
+                </table>
+                </div>
+% endif
+                <div class="yui-u">
+                <table class="stats">
+                        <tr class="first">
+                                <th class="last" colspan="2">Depot</th>
+                        </tr>
+                        <tr>
+                                <td class="label">Files served by filelist</td>
+                                <td class="value">${config.filelist_file_requests}</td>
+                        </tr>
+% if not config.mirror:
+                        <tr>
+                                <td class="label">In-flight Transactions</td>
+                                <td class="value">${config.in_flight_transactions}</td>
+                        </tr>
+% endif
+                </table>
+                </div>
+                <div class="yui-u">
+                <table class="stats">
+                        <tr class="first">
+                                <th class="last" colspan="2">Operations</th>
+                        </tr>
+% if not config.mirror:
+                        <tr>
+                                <td class="label">catalog</td>
+                                <td class="value">${config.catalog_requests}</td>
+                        </tr>
+% endif
+                        <tr>
+                                <td class="label">file</td>
+                                <td class="value">${config.file_requests}</td>
+                        </tr>
+                        <tr>
+                                <td class="label">filelist</td>
+                                <td class="value">${config.filelist_requests}</td>
+                        </tr>
+% if not config.mirror:
+                        <tr>
+                                <td class="label">manifest</td>
+                                <td class="value">${config.manifest_requests}</td>
+                        </tr>
+                        <tr>
+                                <td class="label">rename</td>
+                                <td class="value">${config.rename_requests}</td>
+                        </tr>
+% endif
+                </table>
+                </div>
+        </div>
+</div>

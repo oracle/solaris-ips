@@ -22,250 +22,84 @@
 # Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
-"""face - dynamic index page for image packaging server"""
+"""face - provides the BUI (Browser User Interface) for the image packaging server"""
 
 import cherrypy
+import cherrypy.lib.static
+import errno
 import httplib
+import mako.exceptions
+import mako.lookup
 import os
+import pkg.server.api as api
+import pkg.server.api_errors as api_errors
+import pkg.server.feed
 import urllib
 
-import pkg.server.feed
-from pkg.misc import get_rel_path, get_res_path
-
-# XXX Use small templating module?
-
+tlookup = None
 def init(scfg, rcfg):
         """Ensure that the BUI is properly initialized.
         """
+        global tlookup
         pkg.server.feed.init(scfg, rcfg)
+        tlookup = mako.lookup.TemplateLookup(directories=[
+            scfg.web_root
+            ])
 
-def head(rcfg, request):
-        """Returns the XHTML used as a common page header for depot pages."""
-        return """\
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-<head>
- <link rel="shortcut icon" href="%s"/>
- <link rel="stylesheet" type="text/css" href="%s"/>
- <title>%s</title>
-</head>
-""" % (get_res_path(request, rcfg.get_attribute("repository", "icon")),
-    get_res_path(request, rcfg.get_attribute("repository", "style")),
-    rcfg.get_attribute("repository", "name"))
-
-def unknown(scfg, rcfg, request, response):
-        """Returns a response appropriate for unknown request paths."""
-
-        response.status = httplib.NOT_FOUND
-        output = head(rcfg, request)
-        output += """\
-<body>
- <div id="doc4" class="yui-t5">
-  <div id="hd">
-   <h1><img src="%s" alt="logo"/> <code>pkg</code> server unknown page: %s</h1>
-  </div>
-  <div id="bd">
-   <div id="yui-main" class="yui-b">
-    <pre>
-""" % (get_res_path(request, rcfg.get_attribute("repository", "logo")),
-    request.path_info)
-
-        output += ('''%d GET URI %s ; headers:\n%s''' %
-            (httplib.NOT_FOUND, request.path_info, request.headers))
-
-        output += ("""\
-    </pre>
-   </div>
-  </div>
- </div>
-</body>
-</html>
-""")
-        return output
-
-def error(rcfg, request, response):
-        """Returns an appropriate response for error conditions."""
-        response.status = httplib.INTERNAL_SERVER_ERROR
-        output = head(rcfg, request)
-        output += """\
-<body>
- <div id="doc4" class="yui-t5">
-  <div id="hd">
-   <h1><img src="%s" alt="logo"/> <code>pkg</code> server internal error</h1>
-  </div>
-  <div id="bd">
-   <div id="yui-main" class="yui-b">
-    <pre>    
-face.response() for %s
-    </pre>
-   </div>
-  </div>
- </div>
-</body>
-</html>
-""" % (get_res_path(request, rcfg.get_attribute("repository", "logo")),
-    request.path_info)
-
-        return output
-
-fmri_ops = {
-    'info': "Info",
-    'manifest': "Manifest"
-}
-
-def index(scfg, rcfg, request, response):
-        """Returns a dynamically-generated status page for the repository
-        represented by scfg."""
-
-        #
-        # Page Start
-        #
-        output = """\
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-<head>
- <link rel="shortcut icon" href="%s"/>
- <link rel="stylesheet" type="text/css" href="%s"/>
-""" % (get_res_path(request, rcfg.get_attribute("repository", "icon")),
-    get_res_path(request, rcfg.get_attribute("repository", "style")))
-
-        if not scfg.is_mirror():
-                # The feed isn't available in mirror mode.
-                output += """\
- <link rel="alternate" type="application/atom+xml" title="%s" href="%s"/>
-""" % (rcfg.get_attribute("feed", "name"), get_rel_path(request, "feed"))
-
-        output += """\
- <title>%s</title>
-</head>
-""" % rcfg.get_attribute("repository", "name")
-
-        #
-        # Status Information
-        #
-        output += ("""\
-<body>
- <div id="doc4" class="yui-t5">
-  <div id="hd">
-   <h1><img src="%s" alt="logo"/> <code>pkg</code> server ok</h1>
-  </div>
-  <div id="bd">
-   <div id="yui-main" class="yui-b">
-    <h2>Statistics</h2>
-    <pre>
-""") % (get_res_path(request, rcfg.get_attribute("repository", "logo")))
-        output += scfg.get_status()
-        output += """\
-    </pre>
-"""
-
-        #
-        # Feed Information (if available)
-        #
-        if not scfg.is_mirror():
-                # Metadata (e.g. updatelog) is not available in mirror mode.
-                output += ("""\
-    <div class="yui-b">
-     <a href="%s"><img src="%s" alt="Atom feed" /></a>
-     <p>Last Updated: %s</p>
-    </div>
-""") % (get_rel_path(request, "feed"),
-    get_res_path(request, "feed-icon-32x32.png"),
-    scfg.updatelog.last_update)
-
-        #
-        # Catalog Information (if available)
-        #
-        if not scfg.is_mirror():
-                # Metadata (e.g. catalog) is not available in mirror mode.
-                output += """\
-    <h2>Catalog</h2>
-    <div>
-     <table>
-      <tr>
-       <th>FMRI</th>
-"""
-                for op in fmri_ops:
-                        # Output a header for each possible operation for an
-                        # FMRI.
-                        output += """\
-       <th>%s</th>
-""" % fmri_ops[op]
-
-                output += """\
-      </tr>
-"""
-
-                # Output each FMRI that we have in the catalog.
-                flist = [f.get_fmri() for f in scfg.catalog.fmris()]
-                flist.sort()
-                for idx, pfmri in enumerate(flist):
-                        tr_class = idx % 2 and "even" or "odd"
-                        # Start FMRI entry
-                        output += """\
-       <tr class="%s">
-        <td>%s</td>
-""" % (tr_class, pfmri)
-
-                        # Output all available operations for an FMRI.
-                        for op in fmri_ops:
-                                output += """\
-                <td><a href="%s">%s</a></td>
-        """ % (get_rel_path(request, "%s/0/%s" % (op,
-            urllib.quote(pfmri[len("pkg:/"):], ""))), fmri_ops[op])
-
-                        # End FMRI entry
-                        output += """\
-       </tr>
-"""
-
-                # End of catalog table.
-                output += """\
-     </table>
-    </div>
-"""
-
-        #
-        # Page End
-        #
-        output += """\
-   </div>
-  </div>
- </div>
-</body>
-</html>"""
-        return output
-
-def feed(scfg, rcfg, request, response, *tokens, **params):
+def feed(scfg, rcfg, request, response):
         if scfg.is_mirror():
                 raise cherrypy.HTTPError(httplib.NOT_FOUND,
                     "Operation not supported in current server mode.")
         if not scfg.updatelog.last_update:
                 raise cherrypy.HTTPError(httplib.SERVICE_UNAVAILABLE,
                     "No update history; unable to generate feed.")
-        return pkg.server.feed.handle(scfg, rcfg, cherrypy.request,
-            cherrypy.response)
+        return pkg.server.feed.handle(scfg, rcfg, request, response)
 
-pages = {
-        "" : index,
-        "/feed" : feed,
-        "/index.htm" :  index,
-        "/index.html" :  index
-}
+def __render_template(request, scfg, rcfg, path):
+        template = tlookup.get_template(path)
+        base = api.BaseInterface(request, scfg, rcfg)
+        return template.render_unicode(g_vars={ "base": base })
 
-def match(scfg, rcfg, request, response):
-        path = request.path_info.rstrip("/")
-        if path in pages:
-                return True
-        return False
+def __handle_error(request, path, error):
+        # All errors are treated as a 404 since reverse proxies such as Apache
+        # don't handle 500 errors in a desirable way.  For any error but a 404,
+        # an error is logged.
+        if error != httplib.NOT_FOUND:
+                cherrypy.log("Error encountered while processing "
+                    "template: %s\n" % path, traceback=True)
+
+        raise cherrypy.NotFound()
 
 def respond(scfg, rcfg, request, response, *tokens, **params):
-        path = request.path_info.rstrip("/")
-        if path in pages:
-                page = pages[path]
-                return page(scfg, rcfg, request, response, *tokens, **params)
-        else:
-                return error(rcfg, request, response)
+        path = request.path_info.strip("/")
+        if path == "":
+                path = "index.shtml"
+        elif path.split("/")[0] == "feed":
+                return feed(scfg, rcfg, request, response)
 
+        if not path.endswith(".shtml"):
+                spath = urllib.unquote(path)
+                fname = os.path.join(scfg.web_root, spath)
+                if not os.path.normpath(fname).startswith(os.path.normpath(
+                    scfg.web_root)):
+                        # Ignore requests for files outside of the web root.
+                        return __handle_error(request, path, httplib.NOT_FOUND)
+                else:
+                        return cherrypy.lib.static.serve_file(os.path.join(
+                            scfg.web_root, spath))
+
+        try:
+                return __render_template(request, scfg, rcfg, path)
+        except IOError, e:
+                return __handle_error(request, path,
+                    httplib.INTERNAL_SERVER_ERROR)
+        except mako.exceptions.TemplateLookupException, e:
+                # The above exception indicates that mako could not locate the
+                # template (in most cases, Mako doesn't seem to always clearly
+                # differentiate).
+                return __handle_error(request, path, httplib.NOT_FOUND)
+        except api_errors.RedirectException, e:
+                raise cherrypy.HTTPRedirect(e.data)
+        except:
+                return __handle_error(request, path,
+                    httplib.INTERNAL_SERVER_ERROR)

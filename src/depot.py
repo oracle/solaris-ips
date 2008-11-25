@@ -89,7 +89,6 @@ except ImportError:
             """required to use this program."""
         sys.exit(2)
 
-import pkg.server.face as face
 import pkg.server.config as config
 import pkg.server.depot as depot
 import pkg.server.repository as repo
@@ -315,7 +314,8 @@ if __name__ == "__main__":
             "server.socket_port": port,
             "server.thread_pool": threads,
             "server.socket_timeout": socket_timeout,
-            "tools.log_headers.on": True
+            "tools.log_headers.on": True,
+            "tools.encode.on": True
         }
 
         log_type_map = {
@@ -372,14 +372,9 @@ if __name__ == "__main__":
             },
             "/robots.txt": {
                 "tools.staticfile.on": True,
-                "tools.staticfile.filename": os.path.join(scfg.web_static_root,
+                "tools.staticfile.filename": os.path.join(scfg.web_root,
                     "robots.txt")
             },
-            "/static": {
-                "tools.staticdir.on": True,
-                "tools.staticdir.root": scfg.web_static_root,
-                "tools.staticdir.dir": ""
-            }
         }
 
         if proxy_base:
@@ -394,9 +389,6 @@ if __name__ == "__main__":
                         "tools.proxy.local": "",
                         "tools.proxy.base": proxy_base
                 }
-
-                if "/" not in conf:
-                        conf["/"] = {}
 
                 # Now merge or add our proxy configuration information into the
                 # existing configuration.
@@ -414,7 +406,7 @@ if __name__ == "__main__":
 
         try:
                 cherrypy.quickstart(root, config=conf)
-        except:
+        except Exception:
                 usage("pkg.depotd: unknown error starting depot, illegal " \
                     "option value specified?")
 

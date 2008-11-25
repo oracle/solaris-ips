@@ -1,0 +1,134 @@
+## -*- coding: utf-8 -*-
+##
+## CDDL HEADER START
+##
+## The contents of this file are subject to the terms of the
+## Common Development and Distribution License (the "License").
+## You may not use this file except in compliance with the License.
+##
+## You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+## or http://www.opensolaris.org/os/licensing.
+## See the License for the specific language governing permissions
+## and limitations under the License.
+##
+## When distributing Covered Code, include this CDDL HEADER in each
+## file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+## If applicable, add the following below this CDDL HEADER, with the
+## fields enclosed by brackets "[]" replaced with your own identifying
+## information: Portions Copyright [yyyy] [name of copyright owner]
+##
+## CDDL HEADER END
+##
+## Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+## Use is subject to license terms.
+##
+<%!
+        import pkg.fmri
+        import urllib
+
+        fmri_ops = {
+            'manifest': "Manifest"
+        }
+%>\
+<%inherit file="layout.shtml"/>\
+<%page args="g_vars"/>\
+<%
+        catalog = g_vars["catalog"]
+        config = g_vars["config"]
+        request = g_vars["request"]
+%>\
+<%def name="page_title(g_vars)"><%
+        return "Package Catalog"
+%></%def>\
+<div id="yui-main">
+        <div class="yui-b">
+% if config.mirror:
+                <p>Information about packages is not available when the server is operating in mirror mode.</p>
+% else:
+<%
+        versions = self.shared.get_releases(g_vars)
+        selected_version = request.params.get("version", None)
+        selected_match = False
+        for v in versions:
+                ver, val, label = v
+                if selected_version == val:
+                        selected_match = True
+
+        if versions and (not selected_version or not selected_match):
+                # Either a version wasn't already selected, or the version
+                # provided didn't match a valid one, so default to the first in
+                # the list.
+                selected_version = versions[0][1]
+%>
+%       if versions:
+                <form action="catalog.shtml">
+                        <p>
+                                <label for="version">Release and Branch</label>
+                                <select id="version" name="version">
+<%
+                for v in versions:
+                        ver, val, label = v
+                        attrs = ""
+                        if val == selected_version:
+                                attrs = 'selected="selected" '
+
+                        context.write("""<option %svalue="%s">%s</option>""" % (
+                            attrs, val, label))
+%>
+                                </select>
+                                <input id="submit-browse" type="submit"
+                                    name="action" value="Browse"/>
+                        </p>
+                </form>
+%       endif
+        </div>
+        <div class="yui-b results">
+                <table>
+                        <tr>
+                                <th>Name</th>
+                                <th>Version</th>
+%       for op in fmri_ops:
+                                <th>${fmri_ops[op]}</th>
+%       endfor
+                        </tr>
+<%
+        # Output each FMRI that we have in the catalog.
+        flist = []
+        if selected_version:
+                flist = catalog.get_matching_version_fmris(selected_version)
+        else:
+                flist = [f for f in catalog.gen_fmris()]
+        flist.sort()
+
+        rclass = None
+        for pfmri in flist:
+                if rclass is None or rclass == ' class="odd"':
+                        rclass = ""
+                else:
+                        rclass = ' class="odd"'
+
+                # Start FMRI entry
+                phref = self.shared.rpath(g_vars, "info/0/%s" % (
+                    urllib.quote(str(pfmri)[len("pkg:/"):], ""))) 
+                context.write(unicode("""\
+                        <tr%s>
+                                <td><a href="%s">%s</a></td>
+                                <td>%s</td>
+""" % (rclass, phref, pfmri.get_name(), pfmri.version)))
+
+                # Output all available operations for an FMRI.
+                for op in fmri_ops:
+                        context.write(unicode("""\
+                                <td><a href="%s">%s</a></td>
+""" % (self.shared.rpath(g_vars, "%s/0/%s" % (op,
+    urllib.quote(str(pfmri)[len("pkg:/"):], ""))), fmri_ops[op])))
+
+                # End FMRI entry
+                context.write("""\
+                        </tr>
+""")
+%>\
+                </table>
+% endif
+        </div>
+</div>

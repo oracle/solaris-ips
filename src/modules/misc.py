@@ -406,9 +406,6 @@ def get_rel_path(request, uri):
         depth = request.path_info.count("/") - 1
         return ("../" * depth) + uri
 
-def get_res_path(request, name):
-        return get_rel_path(request, "%s/%s" % ("static", name))
-
 def get_pkg_otw_size(action):
         """Takes a file action and returns the over-the-wire size of
         a package as an integer.  The OTW size is the compressed size,

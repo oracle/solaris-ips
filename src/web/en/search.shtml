@@ -1,0 +1,125 @@
+## -*- coding: utf-8 -*-
+##
+## CDDL HEADER START
+##
+## The contents of this file are subject to the terms of the
+## Common Development and Distribution License (the "License").
+## You may not use this file except in compliance with the License.
+##
+## You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+## or http://www.opensolaris.org/os/licensing.
+## See the License for the specific language governing permissions
+## and limitations under the License.
+##
+## When distributing Covered Code, include this CDDL HEADER in each
+## file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+## If applicable, add the following below this CDDL HEADER, with the
+## fields enclosed by brackets "[]" replaced with your own identifying
+## information: Portions Copyright [yyyy] [name of copyright owner]
+##
+## CDDL HEADER END
+##
+## Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+## Use is subject to license terms.
+##
+<%!
+        import cgi
+        import urllib
+
+        fmri_ops = {
+            'info': "Info",
+            'manifest': "Manifest"
+        }
+%>\
+<%inherit file="layout.shtml"/>\
+<%page args="g_vars"/>\
+<%
+        catalog = g_vars["catalog"]
+        request = g_vars["request"]
+%>\
+<%def name="page_title(g_vars)"><%
+        return "Package Search"
+%></%def>\
+<div id="yui-main">
+% if not catalog.search_available:
+        <div class="yui-b">
+                <p>Search functionality is not available at this time.</p>
+        </div>
+% else:
+<%
+        token_val = request.params.get("token", "")
+        searched = False
+        if len(token_val):
+                searched = True
+%>\
+        <div class="yui-b">
+                <form action="search.shtml">
+                        <p>
+                                <input id="search-field" type="text" size="30"
+                                    maxlength="512" name="token"
+                                    value="${cgi.escape(token_val, True)}"/>
+                                <input id="submit-search" type="submit"
+                                    name="action" value="Search"/>
+                        </p>
+%       if not searched:
+                        <p>Search Tips:</p>
+                        <ul class="tips">
+                                <li>All searches are case-insensitive.</li>
+                                <li>To find packages that contain a specific
+file, start your search criteria with a '/':<br/>
+<kbd>/usr/bin/vim</kbd></li>
+                                <li>To find packages based on a partial match,
+use the wildcard characters '*' or '?':<br/>
+<kbd>*.xhtm?</kbd></li>
+                                <li>To find packages based on specific
+matching characters use '[' and ']':<br/>
+<kbd>/usr/bin/[ca]t</kbd></li>
+                        </ul>
+%       endif
+                </form>
+        </div>
+        <div class="yui-b results">
+<%
+        rclass = None
+        results = None
+        if searched:
+                results = catalog.search(token_val)
+%>\
+%       if searched and results:
+                <table>
+                        <tr>
+                                <th>Index</th>
+                                <th>Action</th>
+                                <th>Value</th>
+                                <th>Package</th>
+                        </tr>
+%               for index, pfmri, action, value in results:
+<%
+                        if rclass is None or rclass == ' class="odd"':
+                                rclass = ""
+                        else:
+                                rclass = ' class="odd"'
+
+                        phref = self.shared.rpath(g_vars, "info/0/%s" % (
+                            urllib.quote(pfmri[len("pkg:/"):], ""))) 
+%>\
+                        <tr${rclass} >
+                                <td>${index}</td>
+                                <td>${action}</td>
+                                <td>${value}</td>
+                                <td><a href="${phref}">${pfmri}</a></td>
+                        </tr>
+%               endfor
+                </table>
+%       elif searched:
+                <p>Your search - <b>${token_val}</b> - did not match any packages.</p>
+                <p>Suggestions:</p>
+                <ul>
+                        <li>Ensure that all words are spelled correctly.</li>
+                        <li>Try a different keyword.</li>
+                        <li>Try a more general keyword.</li>
+                </ul>
+%       endif
+        </div>
+% endif
+</div>

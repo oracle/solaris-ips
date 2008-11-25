@@ -25,19 +25,15 @@
 # Use is subject to license terms.
 #
 
-import errno
 import os
 import os.path
-import statvfs
 import shutil
 
 import pkg.server.catalog as catalog
+import pkg.server.transaction as trans
 import pkg.updatelog as updatelog
 
-import pkg.server.transaction as trans
-
 # depot Server Configuration
-
 class SvrConfig(object):
         """Server configuration and state object.  The authority is the default
         authority under which packages will be stored.  Repository locations are
@@ -110,11 +106,10 @@ class SvrConfig(object):
         def set_content_root(self, root):
                 if root:
                         self.content_root = os.path.abspath(root)
-                        # XXX Same as content_root for now, but won't be soon...
-                        self.web_static_root = self.content_root
+                        self.web_root = os.path.join(self.content_root, "web")
                 else:
                         self.content_root = None
-                        self.web_static_root = None
+                        self.web_root = None
 
         def set_read_only(self):
                 self.read_only = True

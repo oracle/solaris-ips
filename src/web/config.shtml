@@ -1,0 +1,55 @@
+## -*- coding: utf-8 -*-
+##
+## CDDL HEADER START
+##
+## The contents of this file are subject to the terms of the
+## Common Development and Distribution License (the "License").
+## You may not use this file except in compliance with the License.
+##
+## You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+## or http://www.opensolaris.org/os/licensing.
+## See the License for the specific language governing permissions
+## and limitations under the License.
+##
+## When distributing Covered Code, include this CDDL HEADER in each
+## file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+## If applicable, add the following below this CDDL HEADER, with the
+## fields enclosed by brackets "[]" replaced with your own identifying
+## information: Portions Copyright [yyyy] [name of copyright owner]
+##
+## CDDL HEADER END
+##
+## Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+## Use is subject to license terms.
+##
+<%!
+        import urlparse
+        import re
+%>\
+<%page args="g_vars"/>\
+## Please note that the opensolaris.org and sun.com themes can not be used
+## unless authorized by Sun Microsystems, Inc.
+<%
+        web_config = g_vars["web_config"]
+
+        # Specify the name of a theme to use below.  The value specified should
+        # be the name of a directory found in the _themes directory.  If no
+        # value is provided, an attempt to determine an appropriate theme will
+        # be made.
+        web_config["theme"] = ""
+%>\
+## Nothing below this line should normally be changed.
+<%
+        request = g_vars["request"]
+        if not web_config["theme"]:
+                # If a theme was not specified, attempt to determine which theme
+                # to use based on an absolute URL to the current server.
+                scheme, netloc, path, params, query, fragment = \
+                    urlparse.urlparse(request.url(), allow_fragments=0)
+
+                match = re.match("(?:.*[.])?(opensolaris.org|sun.com)", netloc)
+                if match:
+                        web_config["theme"] = match.group(1)
+                else:
+                        web_config["theme"] = "default"
+%>\

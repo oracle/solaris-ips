@@ -27,11 +27,13 @@ import testutils
 if __name__ == "__main__":
 	testutils.setup_environment("../../../proto")
 
+import httplib
 import unittest
 import os
 import pkg.misc as misc
 import shutil
 import urllib
+import urllib2
 
 import pkg.depotcontroller as dc
 
@@ -179,6 +181,23 @@ class TestPkgDepot(testutils.SingleDepotTestCase):
                     urllib.quote(plist[0]))
                 misc.versioned_urlopen(depot_url, "manifest", [0],
                     urllib.quote(plist[0]))
+
+        def test_face_root(self):
+                """Verify that files outside of the package content web root
+                cannot be accessed, and that files inside can be."""
+                depot_url = self.dc.get_depot_url()
+                # Since /usr/share/lib/pkg/web/ is the content web root,
+                # any attempts to go outside that directory should fail
+                # with a 404 error.
+                try:
+                        urllib2.urlopen("%s/../../../../bin/pkg" % depot_url)
+                except urllib2.HTTPError, e:
+                        if e.code != httplib.NOT_FOUND:
+                                raise
+
+                f = urllib2.urlopen("%s/robots.txt" % depot_url)
+                self.assert_(len(f.read()))
+                f.close()
 
 class TestDepotController(testutils.CliTestCase):
 

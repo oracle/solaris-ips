@@ -243,6 +243,7 @@ cli.t_pkg_depotd.py TestPkgDepot.test_bug_3365|pass
 cli.t_pkg_depotd.py TestPkgDepot.test_bug_4489|pass
 cli.t_pkg_depotd.py TestPkgDepot.test_bug_5366|pass
 cli.t_pkg_depotd.py TestPkgDepot.test_depot_ping|pass
+cli.t_pkg_depotd.py TestPkgDepot.test_face_root|pass
 cli.t_pkg_history.py TestPkgHistory.test_1_history_options|pass
 cli.t_pkg_history.py TestPkgHistory.test_2_history_record|pass
 cli.t_pkg_history.py TestPkgHistory.test_3_purge_history|pass

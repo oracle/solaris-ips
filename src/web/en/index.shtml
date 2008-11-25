@@ -1,0 +1,142 @@
+## -*- coding: utf-8 -*-
+##
+## CDDL HEADER START
+##
+## The contents of this file are subject to the terms of the
+## Common Development and Distribution License (the "License").
+## You may not use this file except in compliance with the License.
+##
+## You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+## or http://www.opensolaris.org/os/licensing.
+## See the License for the specific language governing permissions
+## and limitations under the License.
+##
+## When distributing Covered Code, include this CDDL HEADER in each
+## file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+## If applicable, add the following below this CDDL HEADER, with the
+## fields enclosed by brackets "[]" replaced with your own identifying
+## information: Portions Copyright [yyyy] [name of copyright owner]
+##
+## CDDL HEADER END
+##
+## Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+## Use is subject to license terms.
+##
+<%inherit file="layout.shtml"/>\
+<%page args="g_vars"/>\
+<%
+        catalog = g_vars["catalog"]
+        config = g_vars["config"]
+        request = g_vars["request"]
+%>\
+<%def name="page_title(g_vars)"><%
+        return self.shared.rcval(g_vars, "repository", "name")
+%></%def>\
+<%def name="page_crumbs(g_vars)"><%
+        # None at top level.
+        return []
+%></%def>\
+<%def name="document_class()"><%
+        return "yui-t4"
+%></%def>\
+<div id="yui-main">
+        <div class="yui-b">
+% if catalog.search_available:
+                <form action="search.shtml">
+                        <h2 class="section-title">Search Packages</h2>
+                        <p>
+                                <input id="search-field" type="text" size="30"
+                                    maxlength="512" name="token"/>
+                                <input id="submit-search" type="submit"
+                                    name="action" value="Search"/>
+                        </p>
+                        <p>Search Tips:</p>
+                        <ul class="tips">
+                                <li>All searches are case-insensitive.</li>
+                                <li>To find packages that contain a specific
+file by path, include the leading '/':<br/>
+<kbd>/usr/bin/vim</kbd></li>
+                                <li>To find packages based on a partial match,
+use the wildcard characters '*' or '?':<br/>
+<kbd>*.xhtm?</kbd></li>
+                                <li>To find packages based on specific
+matching characters use '[' and ']':<br/>
+<kbd>/usr/bin/[ca]t</kbd></li>
+                        </ul>
+                </form>
+% endif
+% if not config.mirror:
+<%
+        versions = self.shared.get_releases(g_vars)
+        selected_version = request.params.get("version", None)
+        selected_match = False
+        for v in versions:
+                ver, val, label = v
+                if selected_version == val:
+                        selected_match = True
+
+        if versions and (not selected_version or not selected_match):
+                # Either a version wasn't already selected, or the version
+                # provided didn't match a valid one, so default to the first in
+                # the list.
+                selected_version = versions[0][1]
+%>
+%       if versions:
+                <form action="catalog.shtml">
+                        <h2 class="section-title">Browse Packages</h2>
+                        <p>
+                                <label for="version">Release and Branch</label>
+                                <select id="version" name="version">
+<%
+                for v in versions:
+                        ver, val, label = v
+                        attrs = ""
+                        if val == selected_version:
+                                attrs = 'selected="selected" '
+
+                        context.write("""<option %svalue="%s">%s</option>\n""" % (
+                            attrs, val, label))
+%>
+                                </select>
+                                <input id="submit-browse" type="submit"
+                                    name="action" value="Browse"/>
+                        </p>
+                        <p>Select a release from the list above to see all of
+the packages available for it.</p>
+                </form>
+%       else:
+                <h2 class="section-title">Browse Packages</h2>
+                <p>Don't know what you are looking for?  The list of all
+available packages can be found <a href="catalog.shtml">here</a>.</p>
+%       endif
+% else:
+                <p>Information about packages is not available when the server is operating in mirror mode.</p>
+% endif
+        </div>
+</div>
+<div class="yui-b">
+% if not config.mirror:
+        <table class="stats">
+                <tr class="first">
+                        <th colspan="2" class="last">
+                                <a id="catalog-feed"
+                                    href="../feed"
+                                    title="${self.shared.rcval(g_vars, 'feed', 'name')}"></a>
+                                    Catalog
+                        </th>
+                </tr>
+                <tr>
+                        <td class="label">Packages</td>
+                        <td class="value">${catalog.package_count}</td>
+                </tr>
+                <tr>
+                        <td class="label">Last Updated</td>
+<%
+        # XXX Is this UTC or local?
+        lm = catalog.last_modified.replace(microsecond=0)
+%>
+                        <td class="value">${lm}</td>
+                </tr>
+        </table>
+% endif
+</div>

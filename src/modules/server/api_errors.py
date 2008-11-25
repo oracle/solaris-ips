@@ -1,3 +1,4 @@
+#!/usr/bin/python2.4
 #
 # CDDL HEADER START
 #
@@ -20,25 +21,28 @@
 #
 # Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
-#
-ROOTSHARE = /usr/lib/share/pkg
-RSWEB = $(ROOTSHARE)/web
 
-all := TARGET = all
-link := TARGET = link
-link-clean := TARGET = link-clean
+class ApiException(Exception):
+        """Base exception class for all server.api exceptions."""
+        def __init__(self, *args):
+                Exception.__init__(self, *args)
+                self.data = args[0]
 
-all:
+        def __str__(self):
+                return str(self.data)
 
-PWD:sh = pwd
-link:
-	mkdir -p $(RSWEB)
-	ln -sf $(PWD)/en $(RSWEB)/en
-	ln -sf $(PWD)/_themes $(RSWEB)/_themes
-	ln -sf $(PWD)/config.shtml $(RSWEB)/config.shtml
-	ln -sf $(PWD)/index.shtml $(RSWEB)/index.shtml
-	ln -sf $(PWD)/robots.txt $(RSWEB)/robots.txt
-	ln -sf $(PWD)/shared.shtml $(RSWEB)/shared.shtml
+class VersionException(ApiException):
+        """Exception used to indicate that the client's requested api version
+        is not supported.
+        """
+        def __init__(self, expected_version, received_version):
+                ApiException.__init__(self)
+                self.expected_version = expected_version
+                self.received_version = received_version
 
-link-clean:
-	rm -rf /usr/share/lib/pkg
+class RedirectException(ApiException):
+        """Used to indicate that the client should be redirected to a new
+        URI.
+        """
+        pass
+

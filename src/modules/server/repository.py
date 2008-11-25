@@ -133,13 +133,6 @@ class Repository(object):
                 else:
                         self.ops_list = self.REPO_OPS_DEFAULT
 
-                # cherrypy has a special handler for favicon, and so we must
-                # setup an instance-level handler instead of just updating
-                # its configuration information.
-                self.favicon_ico = cherrypy.tools.staticfile.handler(
-                    os.path.join(scfg.web_static_root,
-                    self.rcfg.get_attribute("repository", "icon")))
-
                 for name, func in inspect.getmembers(self, inspect.ismethod):
                         m = re.match("(.*)_(\d+)", name)
 
@@ -186,12 +179,8 @@ class Repository(object):
                 elif op not in self.vops:
                         request = cherrypy.request
                         response = cherrypy.response
-                        if face.match(self.scfg, self.rcfg, request, response):
-                                return face.respond(self.scfg, self.rcfg,
-                                    request, response, *tokens, **params)
-                        else:
-                                return face.unknown(self.scfg, self.rcfg,
-                                    request, response)
+                        return face.respond(self.scfg, self.rcfg,
+                            request, response, *tokens, **params)
 
                 # If we get here, we know that 'operation' is supported.
                 # Ensure that we have a integer protocol version.

@@ -70,6 +70,13 @@ FLARC = '%s-%s.tar.gz' % (FL, FLVER)
 FLDIR = '%s-%s' % (FL, FLVER)
 FLURL = 'http://darcs.idyll.org/~t/projects/%s' % FLARC
 
+MAKO = 'Mako'
+MAKOIDIR = 'mako'
+MAKOVER = '0.2.2'
+MAKOARC = '%s-%s.tar.gz' % (MAKO, MAKOVER)
+MAKODIR = '%s-%s' % (MAKO, MAKOVER)
+MAKOURL = 'http://www.makotemplates.org/downloads/%s' % (MAKOARC)
+
 osname = platform.uname()[0].lower()
 ostype = arch = 'unknown'
 if osname == 'sunos':
@@ -189,13 +196,17 @@ packages = [
         'pkg.publish',
         'pkg.server'
         ]
-web_files = [
-        'web/pkg-block-icon.png',
-        'web/pkg-block-logo.png',
-        'web/pkg.css',
-        'web/feed-icon-32x32.png',
-        'web/robots.txt',
-        ]
+
+web_files = []
+for entry in os.walk("web"):
+        web_dir, dirs, files = entry
+        if not files:
+                continue
+        web_files.append((os.path.join(resource_dir, web_dir), [
+            os.path.join(web_dir, f) for f in files
+            if f != "Makefile"
+            ]))
+
 zones_files = [
         'brand/SUNWipkg.xml',
         ]
@@ -366,6 +377,7 @@ class install_func(_install):
 
                 install_sw(CP, CPVER, CPARC, CPDIR, CPURL, CPIDIR)
                 install_sw(PO, POVER, POARC, PODIR, POURL, POIDIR)
+                install_sw(MAKO, MAKOVER, MAKOARC, MAKODIR, MAKOURL, MAKOIDIR)
 
 def install_sw(swname, swver, swarc, swdir, swurl, swidir):
         if not os.path.exists(swarc):
@@ -479,6 +491,7 @@ class clobber_func(Command):
                 shutil.rmtree(pkgs_dir, True)
                 remove_sw(CP)
                 remove_sw(PO)
+                remove_sw(MAKO)
 
 class test_func(Command):
         # NOTE: these options need to be in sync with tests/run.py
@@ -528,7 +541,7 @@ ext_modules = [
                 ),
         ]
 elf_libraries = None
-data_files = [ (resource_dir, web_files) ]
+data_files = web_files
 cmdclasses = {
         'install': install_func,
         'build': build_func,

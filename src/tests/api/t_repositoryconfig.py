@@ -47,15 +47,6 @@ class TestRepositoryConfig(pkg5unittest.Pkg5TestCase):
                 "description": {
                     "default": "The base opensolaris.org repository."
                 },
-                "icon": {
-                    "default": "pkg-block-icon.png"
-                },
-                "logo": {
-                    "default": "pkg-block-logo.png"
-                },
-                "style": {
-                    "default": "pkg.css"
-                },
                 "maintainer": {
                     "default":
                         "Project Indiana <indiana-discuss@opensolaris.org>"

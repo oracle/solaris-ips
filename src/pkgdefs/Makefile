@@ -30,4 +30,5 @@ install:
 	@cd SUNWipkg-gui-l10n; pwd; $(MAKE) install
 	@cd SUNWipkg-um; pwd; $(MAKE) install
 	@cd SUNWpython-cherrypy; pwd; $(MAKE) install
+	@cd SUNWpython-mako; pwd; $(MAKE) install
 	@cd SUNWpython-pyopenssl; pwd; $(MAKE) install

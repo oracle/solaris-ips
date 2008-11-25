@@ -21,24 +21,14 @@
 # Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
-ROOTSHARE = /usr/lib/share/pkg
-RSWEB = $(ROOTSHARE)/web
 
-all := TARGET = all
-link := TARGET = link
-link-clean := TARGET = link-clean
-
-all:
-
-PWD:sh = pwd
-link:
-	mkdir -p $(RSWEB)
-	ln -sf $(PWD)/en $(RSWEB)/en
-	ln -sf $(PWD)/_themes $(RSWEB)/_themes
-	ln -sf $(PWD)/config.shtml $(RSWEB)/config.shtml
-	ln -sf $(PWD)/index.shtml $(RSWEB)/index.shtml
-	ln -sf $(PWD)/robots.txt $(RSWEB)/robots.txt
-	ln -sf $(PWD)/shared.shtml $(RSWEB)/shared.shtml
-
-link-clean:
-	rm -rf /usr/share/lib/pkg
+PKG="SUNWpython-mako"
+NAME="Mako"
+DESC="Mako is an embedded Python (i.e. Python Server Page) templating language"
+ARCH="ISA"
+VERSION="0.2.2"
+SUNW_PKGVERS="1.0"
+BASEDIR=/
+CATEGORY="system"
+CLASSES="none"
+VENDOR="Sun Microsystems, Inc."

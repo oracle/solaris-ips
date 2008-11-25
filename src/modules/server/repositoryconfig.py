@@ -67,15 +67,6 @@ class RepositoryConfig(object):
                     "default": "pkg - image packaging system"
                 },
                 "description": {},
-                "icon": {
-                    "default": "pkg-block-icon.png"
-                },
-                "logo": {
-                    "default": "pkg-block-logo.png"
-                },
-                "style": {
-                    "default": "pkg.css"
-                },
                 "maintainer": {
                     "default":
                         "Project Indiana <indiana-discuss@opensolaris.org>"
@@ -93,14 +84,14 @@ class RepositoryConfig(object):
                     "readonly": True,
                 },
                 "name": {
-                    "default": "opensolaris.org image packaging feed"
+                    "default": "opensolaris.org repository feed"
                 },
                 "description": {},
                 "icon": {
-                    "default": "pkg-block-icon.png"
+                    "default": "web/_themes/pkg-block-icon.png"
                 },
                 "logo": {
-                    "default": "pkg-block-logo.png"
+                    "default": "web/_themes/pkg-block-logo.png"
                 },
                 "authority": {
                     "default": "opensolaris.org"
@@ -282,9 +273,9 @@ class RepositoryConfig(object):
                         self.cfg_cache[section][attr] = float(value)
                 elif atype == ATTR_TYPE_BOOL:
                         if str(value) == "True":
-                               self.cfg_cache[section][attr] = True
+                                self.cfg_cache[section][attr] = True
                         else:
-                               self.cfg_cache[section][attr] = False
+                                self.cfg_cache[section][attr] = False
 
         def set_attribute(self, section, attr, value):
                 """Sets a given configuration attribute to the specified
