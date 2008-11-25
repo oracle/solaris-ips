@@ -286,7 +286,11 @@ class Repository(object):
 
                 # Parse request into FMRI component and decode.
                 try:
-                        pfmri = tokens[0]
+                        # If more than one token (request path component) was
+                        # specified, assume that the extra components are part
+                        # of the fmri and have been split out because of bad
+                        # proxy behaviour.
+                        pfmri = "/".join(tokens)
                         f = fmri.PkgFmri(pfmri, None)
                         fpath = f.get_dir_path()
                 except (IndexError, AssertionError, version.IllegalDotSequence,
@@ -545,7 +549,11 @@ class Repository(object):
 
                 # Parse request into FMRI component and decode.
                 try:
-                        pfmri = tokens[0]
+                        # If more than one token (request path component) was
+                        # specified, assume that the extra components are part
+                        # of the fmri and have been split out because of bad
+                        # proxy behaviour.
+                        pfmri = "/".join(tokens)
                 except IndexError:
                         raise cherrypy.HTTPError(httplib.BAD_REQUEST)
 

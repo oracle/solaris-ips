@@ -31,6 +31,7 @@ import unittest
 import os
 import pkg.misc as misc
 import shutil
+import urllib
 
 import pkg.depotcontroller as dc
 
@@ -47,6 +48,13 @@ class TestPkgDepot(testutils.SingleDepotTestCase):
 
         info10 = """
             open info@1.0,5.11-0
+            close """
+
+        system10 = """
+            open system/libc@1.0,5.11-0
+            add set name="description" value="Package to test package names with slashes"
+            add dir path=tmp/foo mode=0755 owner=root group=bin
+            add depend type=require fmri=pkg:/SUNWcsl
             close """
 
         misc_files = [ "/tmp/libc.so.1", "/tmp/cat" ]
@@ -156,6 +164,21 @@ class TestPkgDepot(testutils.SingleDepotTestCase):
                 depot_url = self.dc.get_depot_url()
                 plist = self.pkgsend_bulk(depot_url, self.info10)
                 misc.versioned_urlopen(depot_url, "info", [0], plist[0])
+
+        def test_bug_5366(self):
+                """Publish a package with slashes in the name, and then verify
+                that the depot manifest and info operations work regardless of
+                the encoding."""
+                depot_url = self.dc.get_depot_url()
+                plist = self.pkgsend_bulk(depot_url, self.system10)
+                # First, try it un-encoded.
+                misc.versioned_urlopen(depot_url, "info", [0], plist[0])
+                misc.versioned_urlopen(depot_url, "manifest", [0], plist[0])
+                # Second, try it encoded.
+                misc.versioned_urlopen(depot_url, "info", [0],
+                    urllib.quote(plist[0]))
+                misc.versioned_urlopen(depot_url, "manifest", [0],
+                    urllib.quote(plist[0]))
 
 class TestDepotController(testutils.CliTestCase):
 
