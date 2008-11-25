@@ -174,7 +174,6 @@ include common/SUNWdttshelp
 include common/SUNWdtwm
 include common/SUNWdvdrw
 include common/SUNWemlxs
-include common/SUNWemlxu
 include common/SUNWesu
 include common/SUNWeuodf
 include common/SUNWeurf
