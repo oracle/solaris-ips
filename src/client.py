@@ -1118,7 +1118,7 @@ examining the catalogs:"""))
                 for pfmri, matches in  multi_match:
                         error(_("'%s' matches multiple packages") % pfmri)
                         for k in matches:
-                                msg("\t%s" % k[0])
+                                msg("\t%s" % k)
         return err
 
 def display_contents_results(actionlist, attrs, sort_attrs, action_types,
