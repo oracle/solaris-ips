@@ -85,8 +85,8 @@ try:
         elif map(int, version) >= [3, 2, 0]:
                 raise ImportError
 except ImportError:
-        print """cherrypy 3.1.0 or greater (but less than 3.2.0) is """ \
-            """required to use this program."""
+        print >> sys.stderr, """cherrypy 3.1.0 or greater (but less than """ \
+            """3.2.0) is required to use this program."""
         sys.exit(2)
 
 import pkg.server.config as config

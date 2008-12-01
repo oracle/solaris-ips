@@ -28,13 +28,21 @@ import cherrypy
 import cherrypy.lib.static
 import errno
 import httplib
-import mako.exceptions
-import mako.lookup
 import os
 import pkg.server.api as api
 import pkg.server.api_errors as api_errors
 import pkg.server.feed
+import sys
 import urllib
+try:
+        import mako.exceptions
+        import mako.lookup
+except ImportError:
+        # Can't actually perform a version check since Mako doesn't provide
+        # version information, but this is what should be used currently.
+        print >> sys.stderr, "Mako 0.2.2 or greater is required to use this " \
+            "program."
+        sys.exit(2)
 
 tlookup = None
 def init(scfg, rcfg):
