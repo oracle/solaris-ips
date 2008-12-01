@@ -168,6 +168,7 @@ LINTFLAGS=	-axsm
 
 UNBUNDLED_TARGETS=		\
 	ClusterTools.import	\
+	ClusterTools8.import	\
 	DTraceGUI.import	\
 	Eclipse.import		\
 	GlassFishV2.import	\
