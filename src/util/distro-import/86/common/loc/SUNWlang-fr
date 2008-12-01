@@ -1,4 +1,5 @@
 package SUNWlang-fr
 classification "System/Localizations"
 import SUNWlang-fr
+depend SUNWlang-frFR
 end package
