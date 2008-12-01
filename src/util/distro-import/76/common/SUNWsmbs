@@ -2,4 +2,5 @@ package SUNWsmbs
 classification "System/File System"
 import SUNWsmbsu
 import SUNWsmbsr
+depend SUNWsmbskr
 end package
