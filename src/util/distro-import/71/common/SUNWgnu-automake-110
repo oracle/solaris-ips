@@ -1,5 +1,7 @@
 package SUNWgnu-automake-110
 classification "Development/GNU"
 import SUNWgnu-automake-110
+depend SUNWgm4
+depend SUNWperl584core
 version 1.10
 end package
