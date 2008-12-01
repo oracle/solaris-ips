@@ -112,6 +112,9 @@ def get_catalog(img, auth, hdr, ts):
         except (ValueError, httplib.IncompleteRead):
                 raise TransferContentException(prefix,
                     "Incomplete Read from remote host")
+        except httplib.BadStatusLine:
+                raise TransferContentException(prefix,
+                    "Unable to read status of HTTP response")
         except KeyboardInterrupt:
                 raise
         except Exception, e:
@@ -335,6 +338,9 @@ def get_manifest(img, fmri):
         except (ValueError, httplib.IncompleteRead):
                 raise TransferContentException(url_prefix,
                     "Incomplete Read from remote host")
+        except httplib.BadStatusLine:
+                raise TransferContentException(url_prefix,
+                    "Unable to read status of HTTP response")
         except KeyboardInterrupt:
                 raise
         except Exception, e:

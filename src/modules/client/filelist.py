@@ -395,6 +395,10 @@ class FileList(object):
                         self.image.cleanup_downloads()
                         raise TransferContentException(url_prefix,
                             "Incomplete Read from remote host")
+                except httplib.BadStatusLine:
+                        self.image.cleanup_downloads()
+                        raise TransferContentException(url_prefix,
+                            "Unable to read status of HTTP response")
                 except KeyboardInterrupt:
                         self.image.cleanup_downloads()
                         raise
