@@ -97,7 +97,7 @@
         if selected_version:
                 flist = catalog.get_matching_version_fmris(selected_version)
         else:
-                flist = [f for f in catalog.gen_fmris()]
+                flist = [f for f in catalog.fmris()]
         flist.sort()
 
         rclass = None
