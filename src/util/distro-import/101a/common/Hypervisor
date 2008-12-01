@@ -1,0 +1,13 @@
+package xvm
+classification "System/Virtualization"
+description "Solaris x86 Hypervisor"
+depend SUNWvirtinst
+depend SUNWxvm
+end package
+
+package xvm-gui
+classification "System/Virtualization"
+description "Solaris x86 Hypervisor management GUI"
+depend SUNWvirt-manager
+depend xvm
+end package

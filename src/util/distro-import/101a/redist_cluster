@@ -3187,6 +3187,7 @@ depend slim_install
 end package
 include common/Amp
 include common/GccDev
+include common/Hypervisor
 include common/LangSupport
 include common/StorageNAS
 include common/StorageServer
