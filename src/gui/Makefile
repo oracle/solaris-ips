@@ -73,7 +73,10 @@ GLADEICONS = \
    data/update_all24x.png \
    data/remove24x.png \
    data/reload24x.png \
-   data/install_update24x.png
+   data/install_update24x.png \
+   data/legend_installed.png \
+   data/legend_newupdate.png \
+   data/new_star_24x.png
 
 CATALOG = \
    data/opensolaris.org \

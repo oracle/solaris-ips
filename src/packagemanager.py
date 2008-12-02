@@ -197,6 +197,10 @@ class PackageManager:
                 clear_search_image.set_from_stock(gtk.STOCK_CLEAR, gtk.ICON_SIZE_MENU)
                 toolbar =  w_tree_main.get_widget("toolbutton2")
                 toolbar.set_expand(True)
+                w_whats_new_button = w_tree_main.get_widget("whats_new_button")
+                #The whats new button hidden as this is not yet available
+                w_whats_new_button.set_visible_horizontal(False)
+                w_whats_new_button.set_visible_vertical(False)
 
                 self.__update_reload_button()
                 self.w_main_clipboard.request_text(self.__clipboard_text_received)

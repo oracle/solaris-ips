@@ -57,13 +57,13 @@ prototype: FRC
 		$$3 ~ /(share(\/gnome|\/applications(\/packagemanager.desktop|\/addmoresoftware.desktop)|\/applications|\/icons|\/icons\/package\-manager|\/icons\/package\-manager(\/status_installed.png|\/status_checkmark.png|\/status_newupdate.png)))$$/ { \
 			$$6 = "other"; \
 		} \
-		$$3 ~ /(share(\/gnome\/help\/package\-manager\/C|\/package\-manager|\/package\-manager\/data|\/package\-manager(\/packagemanager.glade|\/PM_app_48x.png|\/PM_package_36x.png|\/update_all24x.png|\/remove24x.png|\/reload24x.png|\/install_update24x.png)))$$/ { \
+		$$3 ~ /(share(\/gnome\/help\/package\-manager\/C|\/package\-manager|\/package\-manager\/data|\/package\-manager(\/packagemanager.glade|\/PM_app_48x.png|\/PM_package_36x.png|\/update_all24x.png|\/remove24x.png|\/reload24x.png|\/install_update24x.png|\/legend_installed.png|\/legend_newupdate.png|\/new_star_24x.png)))$$/ { \
 			$$6 = "bin"; \
 		} \
 		$$3 ~ /^(usr(\/share)?)$$/ { \
 			$$6 = "sys"; \
 		} \
-		$$3 ~ /^(usr(\/bin(\/packagemanager)?)?|usr(\/(lib(\/python2.4(\/vendor-packages(\/pkg(\/gui(\/installupdate.pyc|\/repository.py|\/repository.pyc|\/imageinfo.pyc|\/imageinfo.py|\/enumerations.pyc|\/enumerations.py|\/__init__.pyc|\/__init__.py|\/installupdate.py|\/beadmin.py|\/beadmin.pyc)?)?)?)?)?)?)?|usr(\/share(\/gnome(\/help(\/package-manager(\/C(\/figures\/package_manager.png|\/figures\/update_all.png|\/legal.xml|\/package-manager.xml)?)?)?)?)?)?|usr(\/share(\/package-manager(\/PM_app_48x.png|\/packagemanager.glade|\/update_all24x.png|\/install_update24x.png|\/PM_package_36x.png|\/reload24x.png|\/remove24x.png)?)?)?|usr(\/share(\/applications(\/packagemanager.desktop|\/addmoresoftware.desktop)?)?)?|usr(\/share(\/icons(\/package-manager(\/status_checkmark.png|\/status_installed.png|\/status_newupdate.png)?)?)?)?)$$/ { \
+		$$3 ~ /^(usr(\/bin(\/packagemanager)?)?|usr(\/(lib(\/python2.4(\/vendor-packages(\/pkg(\/gui(\/installupdate.pyc|\/repository.py|\/repository.pyc|\/imageinfo.pyc|\/imageinfo.py|\/enumerations.pyc|\/enumerations.py|\/__init__.pyc|\/__init__.py|\/installupdate.py|\/beadmin.py|\/beadmin.pyc)?)?)?)?)?)?)?|usr(\/share(\/gnome(\/help(\/package-manager(\/C(\/figures\/package_manager.png|\/figures\/update_all.png|\/legal.xml|\/package-manager.xml)?)?)?)?)?)?|usr(\/share(\/package-manager(\/PM_app_48x.png|\/packagemanager.glade|\/update_all24x.png|\/install_update24x.png|\/PM_package_36x.png|\/reload24x.png|\/legend_installed.png|\/legend_newupdate.png|\/new_star_24x.png|\/remove24x.png)?)?)?|usr(\/share(\/applications(\/packagemanager.desktop|\/addmoresoftware.desktop)?)?)?|usr(\/share(\/icons(\/package-manager(\/status_checkmark.png|\/status_installed.png|\/status_newupdate.png)?)?)?)?)$$/ { \
 			print \
 		}' > prototype
 
