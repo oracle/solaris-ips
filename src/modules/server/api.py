@@ -111,8 +111,10 @@ class CatalogInterface(_Interface):
                 """
                 if not self.__catalog:
                         return None
-                return pkg.catalog.ts_to_datetime(
-                    self.__catalog.last_modified())
+                lm = self.__catalog.last_modified()
+                if not lm:
+                        return None
+                return pkg.catalog.ts_to_datetime(lm)
 
         @property
         def package_count(self):

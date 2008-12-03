@@ -46,8 +46,13 @@
                         <tr>
                                 <td class="label">Last Modified</td>
 <%
-        # XXX Is this UTC or local?
-        lm = catalog.last_modified.replace(microsecond=0)
+        # Note: last_modified() is in local time relative to the timezone where
+        # catalog was last modified.
+        lm = catalog.last_modified
+        if lm:
+                lm = lm.replace(microsecond=0)
+        else:
+                lm = "Never"
 %>
                                 <td class="value">${lm}</td>
                         </tr>
