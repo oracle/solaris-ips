@@ -233,14 +233,23 @@ class Repository(object):
 
                 response.headers['Content-type'] = 'text/plain'
 
-                output = ""
+                # This is a special hook just for this request so that
+                # if an exception is encountered, the stream will be
+                # closed properly regardless of which thread is
+                # executing.
+                cherrypy.request.hooks.attach('on_end_request',
+                    self.scfg.catalog.query_engine.search_done, failsafe = True)
+
                 # The query_engine returns four pieces of information in the
                 # proper order. Put those four pieces of information into a
                 # string that the client can understand.
-                for l in res:
-                        output += ("%s %s %s %s\n" % (l[0], l[1], l[2], l[3]))
 
-                return output
+                def output():
+                        for l in res:
+                                yield ("%s %s %s %s\n" % (l[0], l[1], l[2], l[3]))
+                return output()
+
+        search_0._cp_config = { 'response.stream': True }
 
         def catalog_0(self, *tokens):
                 """ Provide an incremental update or full version of the

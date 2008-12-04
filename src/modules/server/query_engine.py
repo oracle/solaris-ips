@@ -116,7 +116,6 @@ class ServerQueryEngine(qe.QueryEngine):
                         keys = self._data_token_offset.get_keys()
                         if not keys:
                                 # No matches were found.
-                                self.search_done()
                                 return
                         matches = choose(keys, term, case_sensitive)
                         offsets = [
@@ -126,7 +125,6 @@ class ServerQueryEngine(qe.QueryEngine):
                         offsets.sort()
                 elif not self._data_token_offset.has_entity(term):
                         # No matches were found
-                        self.search_done()
                         return
                 else:
                         offsets.append(
@@ -162,5 +160,4 @@ class ServerQueryEngine(qe.QueryEngine):
                                             self._data_version.get_entity(version_id)
                                         yield((tok_type, fmri_res,
                                                          action, keyval))
-                self.search_done()
                 return

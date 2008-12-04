@@ -789,8 +789,8 @@ close
                 self.pkg("search -I fooo", exit=1)
                 self.pkg("search -I fo*", exit=1)
                 self.pkg("search -I bar", exit=1)
-                self._search_op(True, "FOOO", self.res_remote_foo)
-                self._search_op(True, "bAr", self.res_remote_bar)
+                self._search_op(False, "FOOO", self.res_local_foo, True)
+                self._search_op(False, "bAr", self.res_local_bar, True)
 
         def test_weird_patterns(self):
                 """Test strange patterns to ensure they're handled correctly"""

@@ -2006,9 +2006,8 @@ class Image(object):
                                 if new_dict[tok_type].has_key(tok):
                                         ak_list = new_dict[tok_type][tok]
                                         for action, keyval in ak_list:
-                                                res.append((tok_type, fmri, \
-                                                    action, keyval))
-                return res
+                                                yield tok_type, fmri, action, \
+                                                    keyval
 
         def local_search(self, args, case_sensitive):
                 """Search the image for the token in args[0]."""
@@ -2053,7 +2052,8 @@ class Image(object):
                                 continue
 
                         try:
-                                for line in res.read().splitlines():
+                                for line in res:
+                                        line = line.strip()
                                         fields = line.split(None, 3)
                                         if len(fields) < 4:
                                                 yield fields[:2] + [ "", "" ]
