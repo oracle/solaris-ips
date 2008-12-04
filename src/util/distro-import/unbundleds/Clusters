@@ -67,33 +67,6 @@ depend clustertools
 depend sunstudioexpress
 end package
 
-package amp-dev
-classification "Development/Integrated Development Environments"
-description "AMP Development cluster"
-depend SUNWPython
-depend SUNWapch22
-depend SUNWapch22d
-depend SUNWapch22m-dtrace
-depend SUNWapch22m-fcgid
-depend SUNWapch22m-jk
-depend SUNWapch22m-php52
-depend SUNWapch22m-security
-depend SUNWcvs
-depend SUNWmemcached
-depend SUNWmercurial
-depend SUNWmysql5
-depend SUNWphp52
-depend SUNWphp52-mysql
-depend SUNWphp52-pgsql
-depend SUNWphp52d
-depend SUNWpython-twisted
-depend SUNWsquid
-depend SUNWsvn
-depend SUNWtcat
-depend netbeans
-depend webstackui
-end package
-
 package ruby-dev
 classification "Development/Ruby"
 description "Ruby Development cluster"
