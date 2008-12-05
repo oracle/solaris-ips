@@ -23,25 +23,27 @@
 ## Use is subject to license terms.
 ##
 <%page args="g_vars, title, crumbs, gmenu_items"/>\
-<div class="globalnav">
-        <div class="langsel">United States | English</div>
-</div>
-<div class="masthead">
-        <div class="content">
-                <div class="menu">
-                        <ul>
+<div class="page-container">
+        <div class="global-nav">
+                <div class="lang-sel">United States | English</div>
+        </div>
+        <div class="masthead">
+                <div class="content">
+                        <div class="menu">
+                                <ul>
 % for link, text in gmenu_items:
-                                <li><a href="${link}">${text}</a></li>
+                                        <li><a href="${link}">${text}</a></li>
 % endfor
-                        </ul>
+                                </ul>
+                        </div>
                 </div>
         </div>
-</div>
-<div class="breadcrumbs">
+        <div class="breadcrumbs">
 % for link, text in crumbs:
-<a href="${link}">${text}</a> &gt; 
+        <a href="${link}">${text}</a> &gt; 
 % endfor
-</div>
-<div class="pagetitle">
-        <h1>${title}</h1>
+        </div>
+        <div class="page-title">
+                <h1>${title}</h1>
+        </div>
 </div>

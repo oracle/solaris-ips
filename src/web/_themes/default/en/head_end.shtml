@@ -26,6 +26,6 @@
 <%namespace name="shared" file="../../../shared.shtml" import="*"/>\
 ## Any content below this will be output just before the head element is closed.
         <link rel="icon" type="image/png"
-            href="../../pkg-block-icon.png"/>
+            href="${rpath(g_vars, "_themes/pkg-block-icon.png")}"/>
         <link rel="stylesheet" type="text/css"
             href="${ltupath(g_vars, "base.css")}"/>

@@ -41,6 +41,13 @@
 %></%def>\
 <div id="yui-main">
         <div class="yui-b">
+<%
+        repo_desc = self.shared.rcval(g_vars, "repository", "description")
+%>
+% if repo_desc:
+                <h2 class="section-title">About</h2>
+                <p>${repo_desc}</p>
+% endif
 % if catalog.search_available:
                 <form action="search.shtml">
                         <h2 class="section-title">Search Packages</h2>
@@ -106,8 +113,8 @@ the packages available for it.</p>
                 </form>
 %       else:
                 <h2 class="section-title">Browse Packages</h2>
-                <p>Don't know what you are looking for?  The list of all
-available packages can be found <a href="catalog.shtml">here</a>.</p>
+                <p>The list of all available packages can be found
+<a href="catalog.shtml">here</a>.</p>
 %       endif
 % else:
                 <p>Information about packages is not available when the server is operating in mirror mode.</p>

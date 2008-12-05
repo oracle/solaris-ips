@@ -28,4 +28,4 @@
 ## outside of the normal page layout.  This is solely intended for items such as
 ## <script> elements that need to be evaluated at the end of page load (e.g.
 ## traffic analysis tools).
-<script type="text/javascript" src="/js/s_code_remote.js"/> 
+<script type="text/javascript" src="http://www.sun.com/js/s_code_remote.js"/> 

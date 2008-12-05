@@ -86,14 +86,18 @@ matching characters use '[' and ']':<br/>
                 results = catalog.search(token_val)
 %>\
 %       if searched and results:
+%               for index, pfmri, action, value in results:
+                        ## Only print row for first result.  Can't do this
+                        ## before now since results is a generator.
+%                       if rclass is None:
                 <table>
-                        <tr>
+                        <tr class="first">
                                 <th>Index</th>
                                 <th>Action</th>
                                 <th>Value</th>
                                 <th>Package</th>
                         </tr>
-%               for index, pfmri, action, value in results:
+%                       endif
 <%
                         if rclass is None or rclass == ' class="odd"':
                                 rclass = ""
@@ -111,7 +115,8 @@ matching characters use '[' and ']':<br/>
                         </tr>
 %               endfor
                 </table>
-%       elif searched:
+%       endif
+%       if searched and rclass is None:
                 <p>Your search - <b>${token_val}</b> - did not match any packages.</p>
                 <p>Suggestions:</p>
                 <ul>

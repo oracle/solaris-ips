@@ -22,20 +22,32 @@
 ## Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 ## Use is subject to license terms.
 ##
-<%inherit file="base.shtml"/>\
-<%page args="g_vars"/>\
-<div id="custom-doc" class="${self.document_class()}">
-        <div id="hd">
-<%include file="${self.shared.ltipath(g_vars, 'header.shtml')}"
-    args="g_vars=g_vars, title=self.page_title(g_vars),
-        crumbs=self.page_crumbs(g_vars),
-        gmenu_items=self.global_menu_items(g_vars)"/>\
+<%page args="g_vars, title, crumbs, gmenu_items"/>\
+<div class="page-container">
+        <div class="masthead">
+                <div class="content">
+                        <a id="logo" href="http://www.opensolaris.com/"></a>
+                        <div class="menu">
+                                <ul>
+% for link, text in gmenu_items:
+                                        <li><a href="${link}">${text}</a></li>
+% endfor
+                                </ul>
+                        </div>
+                </div>
         </div>
-        <div id="bd">
-${next.body(g_vars)}
+</div>
+<div class="header-bar"></div>
+<div class="page-container">
+        <div class="global-nav">
+                <div class="langsel">United States | English</div>
         </div>
-        <div id="ft">
-<%include file="${self.shared.ltipath(g_vars, 'footer.shtml')}"
-    args="g_vars=g_vars"/>\
+        <div class="breadcrumbs">
+% for link, text in crumbs:
+        <a href="${link}">${text}</a> &gt; 
+% endfor
         </div>
-</div>\
+        <div class="page-title">
+                <h1>${title}</h1>
+        </div>
+</div>

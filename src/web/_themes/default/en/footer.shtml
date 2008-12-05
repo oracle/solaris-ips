@@ -23,4 +23,6 @@
 ## Use is subject to license terms.
 ##
 <%page args="g_vars"/>\
-<div class="copyright"></div>
+<div class="page-container">
+        <div class="footer-line"></div>
+</div>

@@ -22,20 +22,10 @@
 ## Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 ## Use is subject to license terms.
 ##
-<%inherit file="base.shtml"/>\
 <%page args="g_vars"/>\
-<div id="custom-doc" class="${self.document_class()}">
-        <div id="hd">
-<%include file="${self.shared.ltipath(g_vars, 'header.shtml')}"
-    args="g_vars=g_vars, title=self.page_title(g_vars),
-        crumbs=self.page_crumbs(g_vars),
-        gmenu_items=self.global_menu_items(g_vars)"/>\
-        </div>
-        <div id="bd">
-${next.body(g_vars)}
-        </div>
-        <div id="ft">
-<%include file="${self.shared.ltipath(g_vars, 'footer.shtml')}"
-    args="g_vars=g_vars"/>\
-        </div>
-</div>\
+<%namespace name="shared" file="../../../shared.shtml" import="*"/>\
+## Any content below this will be output just before the head element is closed.
+        <link rel="icon" type="image/png"
+            href="http://www.opensolaris.com/favicon.ico"/>
+        <link rel="stylesheet" type="text/css"
+            href="${ltupath(g_vars, "base.css")}"/>

@@ -84,7 +84,7 @@
         </div>
         <div class="yui-b results">
                 <table>
-                        <tr>
+                        <tr class="first">
                                 <th>Name</th>
                                 <th>Version</th>
 %       for op in fmri_ops:

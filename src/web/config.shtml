@@ -47,7 +47,7 @@
                 scheme, netloc, path, params, query, fragment = \
                     urlparse.urlparse(request.url(), allow_fragments=0)
 
-                match = re.match("(?:.*[.])?(opensolaris.org|sun.com)", netloc)
+                match = re.match("(?:.*[.])?(opensolaris.(?:com|org)|sun.com)", netloc)
                 if match:
                         web_config["theme"] = match.group(1)
                 else:
