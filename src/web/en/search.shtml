@@ -23,7 +23,6 @@
 ## Use is subject to license terms.
 ##
 <%!
-        import cgi
         import urllib
 
         fmri_ops = {
@@ -57,7 +56,7 @@
                         <p>
                                 <input id="search-field" type="text" size="30"
                                     maxlength="512" name="token"
-                                    value="${cgi.escape(token_val, True)}"/>
+                                    value="${token_val | h}"/>
                                 <input id="submit-search" type="submit"
                                     name="action" value="Search"/>
                         </p>
@@ -82,6 +81,8 @@ matching characters use '[' and ']':<br/>
 <%
         rclass = None
         results = None
+        result_count = 0
+        max_results = 100
         if searched:
                 results = catalog.search(token_val)
 %>\
@@ -99,6 +100,7 @@ matching characters use '[' and ']':<br/>
                         </tr>
 %                       endif
 <%
+                        result_count += 1
                         if rclass is None or rclass == ' class="odd"':
                                 rclass = ""
                         else:
@@ -110,14 +112,33 @@ matching characters use '[' and ']':<br/>
                         <tr${rclass} >
                                 <td>${index}</td>
                                 <td>${action}</td>
-                                <td>${value}</td>
+                                <td>${value | h}</td>
                                 <td><a href="${phref}">${pfmri}</a></td>
                         </tr>
+%                       if result_count > max_results:
+                        <tr class="last">
+                                <td colspan="4">More than ${max_results}
+record(s) matched your query; the rest will not be shown.  Please refine your
+query and try again.</td>
+<%
+                                break
+%>
+                        </tr>
+%                       endif
+%               else:
+%                       if result_count > 0:
+                                <tr class="last">
+                                        <td colspan="4">${result_count} record(s) found</td>
+                                </tr>
+%                       endif
 %               endfor
+<%
+                catalog.search_done()
+%>
                 </table>
 %       endif
 %       if searched and rclass is None:
-                <p>Your search - <b>${token_val}</b> - did not match any packages.</p>
+                <p>Your search - <b>${token_val | h}</b> - did not match any packages.</p>
                 <p>Suggestions:</p>
                 <ul>
                         <li>Ensure that all words are spelled correctly.</li>

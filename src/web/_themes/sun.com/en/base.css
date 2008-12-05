@@ -178,6 +178,13 @@ div.results table {
         -moz-border-radius: 1%;
         background-color: #D2D5D7;
 }
+div.results table td {
+        border: 0;
+}
+div.results table th {
+        border: 0;
+        text-align: left;
+}
 div.results table tr.first {
         -moz-border-radius: 1% 1% 0 0;
         background-color: #D2D5D7;
@@ -188,10 +195,6 @@ div.results table tr {
 div.results table tr.odd {
         background-color: #EEEEEE;
 }
-div.results table td {
-        border: 0;
-}
-div.results table th {
-        border: 0;
-        text-align: left;
+div.results table tr.last {
+        background-color: #D2D5D7;
 }

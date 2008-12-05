@@ -196,9 +196,6 @@ div.results table {
         border-style: none solid solid;
         border-width: 0 1px 1px;
 }
-div.results table tr.odd {
-        background-color: #EEEEEE;
-}
 div.results table td {
         border: 0;
 }
@@ -209,6 +206,12 @@ div.results table th {
         border-left: 0;
         border-right: 0;
         text-align: left;
+}
+div.results table tr.odd {
+        background-color: #EEEEEE;
+}
+div.results table tr.last {
+        background-color: #D2D5D7;
 }
 div.footer-bar {
         background: transparent url(http://www.opensolaris.com/images/footer_gradientpart_new.png) repeat-x scroll;

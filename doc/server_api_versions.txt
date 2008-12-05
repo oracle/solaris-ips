@@ -1,0 +1,90 @@
+Version 1:
+Incompatible with clients using Version 0
+Changes:
+CatalogInterface.search_done() was added to perform cleanup after all results
+have been retrieved from search().
+
+CatalogInterface.search() now returns a generator object, instead of a list
+object, that requires that CatalogInterface.search_done() is called after all
+of the desired results have been retrieved for proper cleanup.
+
+Version 0:
+Initial api version, containing the following:
+class BaseInterface
+        -- used to instantiate other interface objects
+
+class CatalogInterface
+        def __init__(self, version_id, base):
+        def fmris(self):
+        def get_matching_pattern_fmris(self, patterns):
+        def get_matching_version_fmris(self, versions,
+            constraint=pkg.version.CONSTRAINT_AUTO):
+
+        @property
+        last_modified
+
+        @property
+        package_count
+
+        def search(self, token):
+
+        @property
+        search_available
+
+class ConfigInterface
+        def __init__(self, version_id, base):
+
+        @property
+        catalog_requests
+
+        @property
+        content_root
+
+        @property
+        file_requests
+
+        @property
+        filelist_requests
+
+        @property
+        filelist_file_requests
+
+        @property
+        in_flight_transactions
+
+        @property
+        manifest_requests
+
+        @property
+        mirror
+
+        @property
+        readonly
+
+        @property
+        rename_requests
+
+        @property
+        web_root
+
+        def get_repo_attrs(self):
+
+        def get_repo_attr_value(self, section, attr):
+
+class RequestInterface
+        def __init__(self, version_id, base):
+
+        def get_accepted_languages(self):
+
+        def get_rel_path(self, uri):
+
+        def log(self, msg):
+
+        @property
+        params
+
+        @property
+        path_info
+
+        def url(self, path='', qs='', script_name=None, relative=None):
+

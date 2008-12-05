@@ -26,7 +26,8 @@ class ApiException(Exception):
         """Base exception class for all server.api exceptions."""
         def __init__(self, *args):
                 Exception.__init__(self, *args)
-                self.data = args[0]
+                if args:
+                        self.data = args[0]
 
         def __str__(self):
                 return str(self.data)
@@ -39,6 +40,11 @@ class VersionException(ApiException):
                 ApiException.__init__(self)
                 self.expected_version = expected_version
                 self.received_version = received_version
+
+        def __str__(self):
+                return "Incompatible API version '%s' specified; " \
+                    "expected: '%s'." % (self.received_version,
+                    self.expected_version)
 
 class RedirectException(ApiException):
         """Used to indicate that the client should be redirected to a new

@@ -29,7 +29,7 @@ import pkg.catalog
 import pkg.version
 import pkg.server.api_errors as api_errors
 
-CURRENT_API_VERSION = 0
+CURRENT_API_VERSION = 1
 
 class BaseInterface(object):
         """This class represents a base API object that is provided by the
@@ -55,7 +55,7 @@ class _Interface(object):
         """Private base class used for api interface objects.
         """
         def __init__(self, version_id, base):
-                compatible_versions = set([0])
+                compatible_versions = set([1])
                 if version_id not in compatible_versions:
                         raise api_errors.VersionException(CURRENT_API_VERSION,
                             version_id)
@@ -126,9 +126,11 @@ class CatalogInterface(_Interface):
                 return self.__catalog.npkgs()
 
         def search(self, token):
-                """Searches the catalog for 'token'.  Returns a list of token
-                type / fmri pairs.  Returns an empty list if search is not
-                available.
+                """Searches the catalog for 'token'.  Returns a generator object
+                for a list of token type / fmri pairs or an empty list if search
+                is not available.  search_done() must be called after the caller
+                has finished retrieving the results of this function for proper
+                cleanup.
                 """
                 if not self.search_available:
                         return []
@@ -142,6 +144,13 @@ class CatalogInterface(_Interface):
                 if not self.__catalog:
                         return False
                 return self.__catalog.search_available()
+
+        def search_done(self):
+                """Indicates that a client is finished retrieving results from
+                search(); this function must be called after search() for proper
+                cleanup.  Does not return a value.
+                """
+                self.__catalog.query_engine.search_done()
 
 class ConfigInterface(_Interface):
         """This class presents a read-only interface to configuration
