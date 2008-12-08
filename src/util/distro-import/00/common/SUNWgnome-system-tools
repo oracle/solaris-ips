@@ -3,7 +3,7 @@ classification "Applications/System Utilities"
 import SUNWgnome-system-tools
 drop usr/share/applications/services.desktop
 drop usr/share/applications/shares.desktop
-from ./SUNWfixes import
+from SUNWfixes import
 # Insert hooks for Visual Panels
 usr/lib/vp-services
 usr/lib/vp-shares

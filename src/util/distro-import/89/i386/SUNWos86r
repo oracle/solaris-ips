@@ -13,7 +13,7 @@ drop kernel/drv/spwr
 drop kernel/drv/spwr.conf
 # END NON-REDISTRIBUTABLE
 add driver name=sd perms="* 0640 root sys" alias=scsiclass,00 alias=scsiclass,05
-from ./SUNWfixes import
+from SUNWfixes import
 kernel/drv/sd.conf
 end import
 # Not needed without Xsun

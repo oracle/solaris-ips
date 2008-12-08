@@ -6,7 +6,7 @@ drop usr/jdk/instances/jdk1.6.0/jre/README
 drop usr/jdk/instances/jdk1.6.0/jre/lib/fontconfig.bfc
 drop usr/jdk/instances/jdk1.6.0/jre/lib/fontconfig.properties.src
 drop usr/jdk/instances/jdk1.6.0/jre/lib/sparc/motif21/libmawt.so
-from ./SUNWfixes import
+from SUNWfixes import
 usr/jdk/instances/jdk1.6.0/jre/LICENSE
 usr/jdk/instances/jdk1.6.0/jre/README
 usr/jdk/instances/jdk1.6.0/jre/lib/fontconfig.properties

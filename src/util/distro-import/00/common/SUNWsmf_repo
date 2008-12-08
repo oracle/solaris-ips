@@ -1,5 +1,5 @@
 package SUNWsmf_repo
-from ./SUNWfixes import
+from SUNWfixes import
 etc/svc/global_repo.db
 etc/svc/nonglobal_repo.db
 end import

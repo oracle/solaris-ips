@@ -2,7 +2,7 @@ package SUNWimac
 classification "System/Libraries"
 import SUNWimac
 import SUNWimacr
-from ./SUNWfixes import
+from SUNWfixes import
 etc/ima.conf
 end import
 end package

@@ -50,7 +50,7 @@ drop sbin/pfsh
 drop sbin/sh
 add link path=sbin/pfsh target=../usr/has/bin/sh
 add link path=sbin/sh target=../usr/bin/i86/ksh93
-from ./SUNWfixes import
+from SUNWfixes import
 # until the necessary actions are available
 etc/inet/services
 etc/security/auth_attr

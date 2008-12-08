@@ -3,7 +3,7 @@ classification "Development/Java"
 import SUNWj6dev
 drop usr/jdk/instances/jdk1.6.0/LICENSE
 drop usr/jdk/instances/jdk1.6.0/README.html
-from ./SUNWfixes import
+from SUNWfixes import
 usr/jdk/instances/jdk1.6.0/LICENSE
 usr/jdk/instances/jdk1.6.0/README.html
 end import
