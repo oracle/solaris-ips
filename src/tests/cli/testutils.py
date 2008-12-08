@@ -241,6 +241,12 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
                 if "TEST_DEBUG" in os.environ:
                         self.__debug = True
 
+                try:
+                        os.makedirs(self.__test_prefix, 0755)
+                except OSError, e:
+                        if e.errno != errno.EEXIST:
+                                raise e
+
         def tearDown(self):
                 self.image_destroy()
 
