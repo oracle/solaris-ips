@@ -44,11 +44,26 @@ ALL_PKGS=	../../../packages/i386	\
 TMPPKGS=SUNWfixes
 EXTRA_OPTIONS=
 
-GLOBAL_CHATTRS=		\
-	fonts		\
-	gnome		\
+GLOBAL_CHATTRS_BASE=	\
 	reboot		\
 	smf_manifests
+
+GLOBAL_CHATTRS_86 = $(GLOBAL_CHATTRS_BASE) 
+GLOBAL_CHATTRS_89 = $(GLOBAL_CHATTRS_BASE)
+GLOBAL_CHATTRS_90 = $(GLOBAL_CHATTRS_BASE)
+GLOBAL_CHATTRS_91 = $(GLOBAL_CHATTRS_BASE)
+GLOBAL_CHATTRS_92 = $(GLOBAL_CHATTRS_BASE)
+GLOBAL_CHATTRS_93 = $(GLOBAL_CHATTRS_BASE)
+GLOBAL_CHATTRS_94 = $(GLOBAL_CHATTRS_BASE)
+GLOBAL_CHATTRS_95 = $(GLOBAL_CHATTRS_BASE)
+GLOBAL_CHATTRS_96 = $(GLOBAL_CHATTRS_BASE)
+GLOBAL_CHATTRS_97 = $(GLOBAL_CHATTRS_BASE)
+GLOBAL_CHATTRS_98 = $(GLOBAL_CHATTRS_BASE)
+GLOBAL_CHATTRS_99 = $(GLOBAL_CHATTRS_BASE)
+GLOBAL_CHATTRS_100a = $(GLOBAL_CHATTRS_BASE)
+GLOBAL_CHATTRS_101 = $(GLOBAL_CHATTRS_BASE) fonts gnome
+GLOBAL_CHATTRS_101a = $(GLOBAL_CHATTRS_101)
+GLOBAL_CHATTRS = $(GLOBAL_CHATTRS_$(BUILDID))
 
 SOLARIS.PY=./solaris.py -b 0.$(BUILDID) $(EXTRA_OPTIONS) -T \*.py \
 	$(GLOBAL_CHATTRS:%= -G %)
@@ -89,39 +104,56 @@ ELIDED_FILES = $(ELIDED_FILES_$(BUILDID))
 #
 # these files get placed into proto area from per-build cached versions
 #
-CACHED_FILES=								\
+CACHED_FILES_BASE=							\
 	$(ELIDED_FILES)							\
 	boot/grub/menu.lst						\
 	boot/grub/splash.xpm.gz						\
-	boot/solaris.xpm						\
 	etc/inet/hosts							\
-	etc/mailcap							\
-	etc/mime.types							\
-	etc/security/policy.conf					\
-	etc/skel/.bashrc						\
-	etc/skel/.profile						\
 	etc/zones/SUNWblank.xml						\
 	etc/zones/SUNWdefault.xml					\
-	kernel/drv/nvidia.conf						\
 	lib/svc/method/fs-usr						\
 	lib/svc/method/sshd						\
 	lib/svc/method/svc-coreadm					\
 	lib/svc/method/svc-dlmgmtd					\
-	lib/svc/method/svc-ipagent					\
-	lib/svc/method/xvm-vnc-config					\
-	root/.bashrc							\
-	root/.profile							\
-	usr/X11/lib/xscreensaver/config/opensolaris-logo.png		\
 	usr/jdk/instances/jdk1.6.0/jre/lib/fontconfig.properties	\
 	usr/lib/vp-services						\
 	usr/lib/vp-shares						\
-	usr/lib/xen/bin/ipagent						\
-	var/svc/manifest/application/graphical-login/gdm.xml		\
 	var/svc/manifest/system/coreadm.xml				\
-	var/svc/manifest/system/ipagent.xml				\
-	var/svc/manifest/system/xvm/vnc-config.xml			\
 	var/svc/profile/generic_limited_net.xml				\
 	var/svc/profile/generic_open.xml
+
+CACHED_FILES_86 = $(CACHED_FILES_BASE)
+CACHED_FILES_89 = $(CACHED_FILES_BASE)
+CACHED_FILES_90 = $(CACHED_FILES_BASE)
+CACHED_FILES_91 = $(CACHED_FILES_BASE)
+CACHED_FILES_92 = $(CACHED_FILES_BASE)
+CACHED_FILES_93 = $(CACHED_FILES_BASE)
+CACHED_FILES_94 = $(CACHED_FILES_BASE)
+CACHED_FILES_95 = $(CACHED_FILES_BASE)
+CACHED_FILES_96 = $(CACHED_FILES_BASE)
+CACHED_FILES_97 = $(CACHED_FILES_BASE)
+CACHED_FILES_98 = $(CACHED_FILES_BASE)
+CACHED_FILES_99 = $(CACHED_FILES_BASE)					\
+	etc/security/policy.conf					\
+	root/.bashrc							\
+	root/.profile
+CACHED_FILES_100a = $(CACHED_FILES_99)
+CACHED_FILES_101 = $(CACHED_FILES_99)					\
+	etc/mailcap							\
+	etc/mime.types
+CACHED_FILES_101a = $(CACHED_FILES_101)					\
+	boot/solaris.xpm						\
+	etc/skel/.bashrc						\
+	etc/skel/.profile						\
+	lib/svc/method/svc-ipagent					\
+	lib/svc/method/xvm-vnc-config					\
+	kernel/drv/nvidia.conf						\
+	usr/lib/xen/bin/ipagent						\
+	usr/X11/lib/xscreensaver/config/opensolaris-logo.png		\
+	var/svc/manifest/application/graphical-login/gdm.xml		\
+	var/svc/manifest/system/ipagent.xml				\
+	var/svc/manifest/system/xvm/vnc-config.xml
+CACHED_FILES = $(CACHED_FILES_$(BUILDID))
 
 FIXFILES=					\
 	boot/solaris/filelist.ramdisk		\
