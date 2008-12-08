@@ -55,5 +55,19 @@
          </long>
       </locale>
     </schema>
+    <schema>
+      <key>/schemas/apps/updatemanager/preferences/terminate_after_icon_activate</key>
+      <applyto>/apps/updatemanager/preferences/terminate_after_icon_activate</applyto>
+      <owner>updatemanager</owner>
+      <type>bool</type>
+      <default>False</default>
+      <locale name="C">
+         <short>Whether to terminate updatemanagernotiifer after icon activation.</short>
+         <long>
+          The updatemanagernotifier program terminates after the user 
+          activates the icon in the notification area if set to true.
+         </long>
+      </locale>
+    </schema>
   </schemalist>  
 </gconfschemafile>

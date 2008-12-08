@@ -64,10 +64,13 @@ NOTIFY_ICON_PATH = "/usr/share/icons/update-manager/notify_update.png"
 GKSU_PATH = "/usr/bin/gksu"
 UPDATEMANAGER = "updatemanager"
 
+UPDATEMANAGER_PREFERENCES = "/apps/updatemanager/preferences"
 START_DELAY_PREFERENCES = "/apps/updatemanager/preferences/start_delay"
 REFRESH_PERIOD_PREFERENCES = "/apps/updatemanager/preferences/refresh_period"
 SHOW_NOTIFY_MESSAGE_PREFERENCES = "/apps/updatemanager/preferences/show_notify_message"
 SHOW_ICON_ON_STARTUP_PREFERENCES = "/apps/updatemanager/preferences/show_icon_on_startup"
+TERMINATE_AFTER_ICON_ACTIVATE_PREFERENCES = \
+    "/apps/updatemanager/preferences/terminate_after_icon_activate"
 
 DAILY = "Daily"
 WEEKLY = "Weekly"
@@ -78,9 +81,11 @@ DAILY_SECS = 24*60*60
 WEEKLY_SECS = 7*24*60*60
 # We asssume that a month has 30 days
 MONTHLY_SECS = 30*24*60*60
+NEVER_SECS = 365*24*60*60
 
 class UpdateManagerNotifier:
         def __init__(self):
+                os.nice(20)
                 try:
                         self.application_dir = os.environ["UPDATE_MANAGER_NOTIFIER_ROOT"]
                 except KeyError:
@@ -101,6 +106,8 @@ class UpdateManagerNotifier:
                 self.host = None
                 self.last_check_time = 0
                 self.refresh_period = 0
+                self.timeout_id = 0
+                self.terminate_after_activate = False
 
                 self.client = gconf.client_get_default()
                 self.start_delay  =  self.get_start_delay()
@@ -109,16 +116,44 @@ class UpdateManagerNotifier:
 
         def check_and_start(self):
                 self.check_already_running()
+                self.client.add_dir(UPDATEMANAGER_PREFERENCES, 
+                    gconf.CLIENT_PRELOAD_NONE)
+                self.client.notify_add(REFRESH_PERIOD_PREFERENCES, 
+                    self.refresh_period_changed)
+                self.client.notify_add(SHOW_ICON_ON_STARTUP_PREFERENCES, 
+                    self.show_icon_changed)
                 self.refresh_period  =  self.get_refresh_period()
                 self.host = socket.gethostname()
 
-                if self.get_show_icon_on_startup():
-                        self.show_status_icon()
                 self.last_check_time = self.get_last_check_time()
                 self.pr = progress.NullProgressTracker()
-                gobject.idle_add(self.do_next_check)
+                if self.get_show_icon_on_startup():
+                        self.client.set_bool(SHOW_ICON_ON_STARTUP_PREFERENCES, False)
+                        gobject.idle_add(self.check_for_updates)
+                else:
+                        gobject.idle_add(self.do_next_check)
                 return False
                 
+        def refresh_period_changed(self, client, connection_id, entry, arguments):
+                old_delta = self.get_delta_for_refresh_period()
+                if entry.get_value().type == gconf.VALUE_STRING:
+                        self.refresh_period = entry.get_value().get_string()
+                new_delta = self.get_delta_for_refresh_period()
+                if debug == True:
+                        print "old_delta %d" % old_delta
+                        print "new_delta %d" % new_delta
+                if old_delta > new_delta:
+                        if self.timeout_id > 0:
+                                gobject.source_remove(self.timeout_id)
+                                self.timeout_id = 0
+                        self.do_next_check()
+
+        def show_icon_changed(self, client, connection_id, entry, arguments):
+                if entry.get_value().type == gconf.VALUE_BOOL:
+                        show_icon = entry.get_value().get_bool()
+                if self.status_icon != None:
+                        self.status_icon.set_visible(show_icon)
+
         def get_start_delay(self):
                 start_delay  =  self.client.get_int(START_DELAY_PREFERENCES)
                 if start_delay == 0:
@@ -148,6 +183,13 @@ class UpdateManagerNotifier:
                 if debug == True:
                         print "show_icon_on_startup: %d" % show_icon_on_startup
                 return show_icon_on_startup
+
+        def get_terminate_after_activate(self):
+                terminate_after_activate  =  \
+                        self.client.get_bool(TERMINATE_AFTER_ICON_ACTIVATE_PREFERENCES)
+                if debug == True:
+                        print "terminate_after_activate: %d" % terminate_after_activate
+                return terminate_after_activate
 
         def get_last_check_time(self):
                 if (self.last_check_filename == None):
@@ -188,7 +230,7 @@ class UpdateManagerNotifier:
                         print "I/O error: %s opening %s" \
                                 % (strerror, self.last_check_filename)
 
-        def is_check_required(self):
+        def get_delta_for_refresh_period(self):
                 if self.refresh_period == DAILY:
                         delta = DAILY_SECS
                 elif self.refresh_period == WEEKLY:
@@ -196,12 +238,20 @@ class UpdateManagerNotifier:
                 elif self.refresh_period == MONTHLY:
                         delta = MONTHLY_SECS
                 else:
-                        self.time_until_next_check = DAILY_SECS
+                        delta = NEVER_SECS
+                return delta
+
+        def is_check_required(self):
+                delta = self.get_delta_for_refresh_period()
+                if delta == NEVER_SECS:
+                        self.time_until_next_check = NEVER_SECS
                         return False
+                if self.last_check_time == 0:
+                        return True
                 current_time = time.time()
                 if debug == True:
-                        print "current time %s " \
-                        % time.strftime("%a %d %b %Y %H:%M:%S", time.gmtime(current_time))
+                        print "current time %f " % current_time
+                        print "last check time %f " % self.last_check_time
                 self.time_until_next_check = self.last_check_time + delta - current_time
                 if debug == True:
                         print "time until next check %f " % self.time_until_next_check
@@ -224,22 +274,22 @@ class UpdateManagerNotifier:
                         image_directory = IMAGE_DIRECTORY_DEFAULT
                 image_obj = self.__get_image_obj_from_directory(image_directory)
                 
-                count = 0
                 pkg_upgradeable = None
-                for pkg, state in sorted(image_obj.inventory(all_known = True)):
+                for pkg, state in image_obj.inventory(all_known = True):
                         if state["upgradable"] and state["state"] == "installed":
                                 pkg_upgradeable = pkg
+                                break
                         
-                        if pkg_upgradeable != None and not state["upgradable"] \
-                            and image_obj.fmri_is_same_pkg(pkg_upgradeable, pkg):
-                                count += 1
-
                 if debug == True:
-                        print "pkgs_to_be_updated: %d" % count
-                if count:
-                        self.show_status_icon()
+                        if pkg_upgradeable != None:
+                                print "Packages to be updated"
+                        else:
+                                print "No packages to be updated"
                 self.set_last_check_time()
-                self.schedule_next_check_for_checks()
+                if pkg_upgradeable != None:
+                        self.show_status_icon()
+                else:
+                        self.schedule_next_check_for_checks()
                 return False                                
 
         # This is copied from a similar function in packagemanager.py 
@@ -289,8 +339,11 @@ class UpdateManagerNotifier:
                 self.status_icon.set_visible(False)
                 self.client.set_bool(SHOW_ICON_ON_STARTUP_PREFERENCES, False)
                 gobject.spawn_async([GKSU_PATH, UPDATEMANAGER])
-                gtk.main_quit()
-                sys.exit(0)
+                if self.get_terminate_after_activate():
+                        gtk.main_quit()
+                        sys.exit(0)
+                else:
+                        self.schedule_next_check_for_checks()
 
         def show_notify_message(self):
                 if self.notify == None:
@@ -328,22 +381,22 @@ class UpdateManagerNotifier:
         def schedule_next_check_for_checks(self):
                 """This schedules the next time to wake up to check if it's
                 necessary to check for updates yet."""
-                if self.time_until_next_check > DAILY_SECS or \
-                    self.time_until_next_check <= 0:
-                        next_check_time = DAILY_SECS
+                if self.time_until_next_check <= 0:
+                        next_check_time = self.get_delta_for_refresh_period()
                 else:
                         next_check_time = self.time_until_next_check
                 if debug == True:
                         print "scheduling next check: %s" % next_check_time
-                gobject.timeout_add(int(next_check_time * 1000),
+                self.timeout_id = gobject.timeout_add(int(next_check_time * 1000),
                     self.do_next_check)
 
         def do_next_check(self):
+                self.timeout_id = 0
                 if debug == True:
                         print "Called do_next_check"
-                        print "time for check: %s - %s \n" % (time.gmtime(), \
+                        print "time for check: %f - %f \n" % (time.time(), \
                                 self.last_check_time)
-                if self.last_check_time == 0 or self.is_check_required():
+                if self.is_check_required():
                         gobject.idle_add(self.check_for_updates)
                 else:
                         self.schedule_next_check_for_checks()
