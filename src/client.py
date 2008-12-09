@@ -227,47 +227,8 @@ def list_inventory(img, args):
         seen_one_pkg = False
         found = False
         try:
-                most_recent = {}
-                installed = []
-                res = img.inventory(pargs, all_known)
-                # All_Versions reduces the output so that only the most recent
-                # version and installed version of packages appear.
-                if all_versions:
-                        for pfmri, state in res:
-                                if state["state"] == "installed":
-                                        installed.append((pfmri, state))
-                                hv = pfmri.get_pkg_stem(include_pkg=False)
-                                if hv in most_recent:
-                                        stored_pfmri, stored_state = \
-                                            most_recent[hv]
-                                        if pfmri.is_successor(stored_pfmri):
-                                                most_recent[hv] = (pfmri, state)
-                                else:
-                                        most_recent[hv] = (pfmri, state)
-                        res = installed + most_recent.values()
-
-                        # This method is necessary because fmri.__cmp__ does
-                        # not provide the desired ordering. It uses the same
-                        # ordering on package names as fmri.__cmp__ but it
-                        # reverse sorts on version, so that 98 comes before 97.
-                        # Also, authorities are taken into account so that
-                        # preferred authorities come before others. Finally,
-                        # authorties are presented in alphabetical order.
-                        def __fmri_cmp((f1, s1), (f2, s2)):
-                                t = cmp(f1.pkg_name, f2.pkg_name)
-                                if t != 0:
-                                        return t
-                                t = cmp(f2, f1)
-                                if t != 0:
-                                        return t
-                                if f1.preferred_authority():
-                                        return -1
-                                if f2.preferred_authority():
-                                        return 1
-                                return cmp(f1.get_authority(),
-                                    f2.get_authority())
-                        
-                        res.sort(cmp=__fmri_cmp)
+                res = misc.get_inventory_list(img, pargs, 
+                    all_known, all_versions)
                 prev_pfmri_str = ""
                 prev_state = None
                 for pfmri, state in res:
