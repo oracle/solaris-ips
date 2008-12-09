@@ -42,10 +42,10 @@ PIPE = subprocess.PIPE
 STDOUT = subprocess.STDOUT
 
 class Popen(subprocess.Popen):
-        def __init__(self, args, bufsize=0, executable=None, stdin=None,
-            stdout=None, stderr=None, preexec_fn=None, close_fds=False,
-            shell=False, cwd=None, env=None, universal_newlines=False,
-            startupinfo=None, creationflags=0):
+        def __init__(self, args, bufsize=128 * 1024, executable=None,
+            stdin=None, stdout=None, stderr=None, preexec_fn=None,
+            close_fds=False, shell=False, cwd=None, env=None,
+            universal_newlines=False, startupinfo=None, creationflags=0):
 
                 subprocess.Popen.__init__(self, args, bufsize, executable,
                     stdin, stdout, stderr, preexec_fn, close_fds, shell, cwd,
