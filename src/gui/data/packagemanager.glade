@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.4.5 on Mon Dec  1 17:25:26 2008 -->
+<!--Generated with glade3 3.4.5 on Tue Dec  9 03:30:28 2008 -->
 <glade-interface>
   <widget class="GtkWindow" id="mainwindow">
     <property name="width_request">800</property>
@@ -1022,7 +1022,7 @@
         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
         <property name="spacing">5</property>
         <child>
-          <widget class="GtkVBox" id="vbox15">
+          <widget class="GtkVBox" id="vbox5">
             <property name="visible">True</property>
             <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
             <property name="spacing">16</property>
@@ -1171,10 +1171,10 @@ Click Next to continue.</property>
                 <property name="response_id">0</property>
                 <signal name="clicked" handler="on_next_button_clicked"/>
                 <child>
-                  <widget class="GtkHBox" id="hbox19">
+                  <widget class="GtkHBox" id="hbox1">
                     <property name="visible">True</property>
                     <child>
-                      <widget class="GtkAlignment" id="alignment5">
+                      <widget class="GtkAlignment" id="alignment4">
                         <property name="visible">True</property>
                         <child>
                           <placeholder/>
@@ -1192,7 +1192,7 @@ Click Next to continue.</property>
                       </packing>
                     </child>
                     <child>
-                      <widget class="GtkLabel" id="label17">
+                      <widget class="GtkLabel" id="label4">
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">_Next</property>
                         <property name="use_underline">True</property>
@@ -1203,7 +1203,7 @@ Click Next to continue.</property>
                       </packing>
                     </child>
                     <child>
-                      <widget class="GtkAlignment" id="alignment6">
+                      <widget class="GtkAlignment" id="alignment13">
                         <property name="visible">True</property>
                         <child>
                           <placeholder/>
@@ -1535,7 +1535,7 @@ Click Next to continue.</property>
                   </widget>
                 </child>
                 <child>
-                  <widget class="GtkLabel" id="label4">
+                  <widget class="GtkLabel" id="label6">
                     <property name="visible">True</property>
                     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                     <property name="label" translatable="yes">Show Details</property>
@@ -2204,7 +2204,7 @@ To delete this BE, boot into another BE, then return here.</property>
               </packing>
             </child>
             <child>
-              <widget class="GtkAlignment" id="alignment4">
+              <widget class="GtkAlignment" id="alignment14">
                 <property name="visible">True</property>
                 <child>
                   <placeholder/>
@@ -2301,7 +2301,7 @@ To delete this BE, boot into another BE, then return here.</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="label" translatable="yes">gtk-cancel</property>
-                <property name="use-stock">True</property>
+                <property name="use_stock">True</property>
                 <property name="response_id">0</property>
                 <signal name="clicked" handler="on_cancel_be_clicked"/>
               </widget>
@@ -2315,10 +2315,10 @@ To delete this BE, boot into another BE, then return here.</property>
                 <property name="response_id">0</property>
                 <signal name="clicked" handler="on_reset_be_clicked"/>
                 <child>
-                  <widget class="GtkHBox" id="hbox18">
+                  <widget class="GtkHBox" id="hbox7">
                     <property name="visible">True</property>
                     <child>
-                      <widget class="GtkAlignment" id="alignment7">
+                      <widget class="GtkAlignment" id="alignment15">
                         <property name="visible">True</property>
                         <child>
                           <placeholder/>
@@ -2326,7 +2326,7 @@ To delete this BE, boot into another BE, then return here.</property>
                       </widget>
                     </child>
                     <child>
-                      <widget class="GtkImage" id="image5">
+                      <widget class="GtkImage" id="image1">
                         <property name="visible">True</property>
                         <property name="stock">gtk-undo</property>
                         <property name="icon_size">2</property>
@@ -2337,7 +2337,7 @@ To delete this BE, boot into another BE, then return here.</property>
                       </packing>
                     </child>
                     <child>
-                      <widget class="GtkLabel" id="label16">
+                      <widget class="GtkLabel" id="label7">
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">_Reset</property>
                         <property name="use_underline">True</property>
@@ -2348,7 +2348,7 @@ To delete this BE, boot into another BE, then return here.</property>
                       </packing>
                     </child>
                     <child>
-                      <widget class="GtkAlignment" id="alignment8">
+                      <widget class="GtkAlignment" id="alignment16">
                         <property name="visible">True</property>
                         <child>
                           <placeholder/>
@@ -2420,7 +2420,7 @@ To delete this BE, boot into another BE, then return here.</property>
                     <property name="yalign">0</property>
                     <property name="xpad">10</property>
                     <property name="ypad">4</property>
-                    <property name="label" translatable="yes">Type the repository name and URL you want to add as a new package source.</property>
+                    <property name="label" translatable="yes">Type the repository Name and URL you want to add as a new package source.</property>
                     <property name="wrap">True</property>
                   </widget>
                 </child>
@@ -2525,6 +2525,38 @@ To delete this BE, boot into another BE, then return here.</property>
               </packing>
             </child>
             <child>
+              <widget class="GtkHBox" id="hbox8">
+                <property name="height_request">20</property>
+                <property name="visible">True</property>
+                <child>
+                  <widget class="GtkAlignment" id="alignment17">
+                    <property name="width_request">89</property>
+                    <property name="visible">True</property>
+                    <child>
+                      <placeholder/>
+                    </child>
+                  </widget>
+                  <packing>
+                    <property name="expand">False</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="GtkLabel" id="error_label">
+                    <property name="visible">True</property>
+                    <property name="xalign">0</property>
+                    <property name="use_markup">True</property>
+                  </widget>
+                  <packing>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+              </widget>
+              <packing>
+                <property name="expand">False</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
               <widget class="GtkLabel" id="label26">
                 <property name="width_request">500</property>
                 <property name="visible">True</property>
@@ -2538,7 +2570,7 @@ To delete this BE, boot into another BE, then return here.</property>
               <packing>
                 <property name="expand">False</property>
                 <property name="padding">10</property>
-                <property name="position">1</property>
+                <property name="position">2</property>
               </packing>
             </child>
             <child>
@@ -2602,7 +2634,7 @@ To delete this BE, boot into another BE, then return here.</property>
                 </child>
               </widget>
               <packing>
-                <property name="position">2</property>
+                <property name="position">3</property>
               </packing>
             </child>
           </widget>
@@ -2620,7 +2652,7 @@ To delete this BE, boot into another BE, then return here.</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="label" translatable="yes">gtk-close</property>
-                <property name="use-stock">True</property>
+                <property name="use_stock">True</property>
                 <property name="response_id">0</property>
                 <signal name="clicked" handler="on_repositoryclose_clicked"/>
               </widget>
@@ -2658,12 +2690,12 @@ To delete this BE, boot into another BE, then return here.</property>
             <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
             <property name="spacing">5</property>
             <child>
-              <widget class="GtkHBox" id="hbox8">
+              <widget class="GtkHBox" id="hbox10">
                 <property name="visible">True</property>
                 <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                 <property name="spacing">10</property>
                 <child>
-                  <widget class="GtkImage" id="image1">
+                  <widget class="GtkImage" id="image3">
                     <property name="visible">True</property>
                     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                     <property name="stock">gtk-dialog-warning</property>
@@ -2892,7 +2924,7 @@ Note: Changes will occur upon reboot.</property>
               </widget>
             </child>
             <child>
-              <widget class="GtkHBox" id="hbox10">
+              <widget class="GtkHBox" id="hbox14">
                 <property name="visible">True</property>
                 <child>
                   <widget class="GtkLabel" id="label24">
@@ -2929,7 +2961,7 @@ Note: Changes will occur upon reboot.</property>
               </packing>
             </child>
             <child>
-              <widget class="GtkHBox" id="hbox14">
+              <widget class="GtkHBox" id="hbox20">
                 <property name="visible">True</property>
                 <child>
                   <widget class="GtkLabel" id="label25">
@@ -3029,18 +3061,18 @@ Note: Changes will occur upon reboot.</property>
         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
         <property name="spacing">16</property>
         <child>
-          <widget class="GtkVBox" id="vbox5">
+          <widget class="GtkVBox" id="vbox11">
             <property name="visible">True</property>
             <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
             <property name="spacing">10</property>
             <child>
-              <widget class="GtkHBox" id="hbox1">
+              <widget class="GtkHBox" id="hbox21">
                 <property name="visible">True</property>
                 <child>
                   <widget class="GtkVBox" id="vbox11">
                     <property name="visible">True</property>
                     <child>
-                      <widget class="GtkImage" id="image3">
+                      <widget class="GtkImage" id="image7">
                         <property name="visible">True</property>
                         <property name="stock">gtk-dialog-error</property>
                         <property name="icon_size">5</property>
@@ -3097,7 +3129,7 @@ Note: Changes will occur upon reboot.</property>
                   </widget>
                 </child>
                 <child>
-                  <widget class="GtkLabel" id="label7">
+                  <widget class="GtkLabel" id="label8">
                     <property name="visible">True</property>
                     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                     <property name="label" translatable="yes">Show Details</property>
@@ -3161,7 +3193,7 @@ Note: Changes will occur upon reboot.</property>
             <property name="border_width">5</property>
             <property name="spacing">4</property>
             <child>
-              <widget class="GtkLabel" id="label6">
+              <widget class="GtkLabel" id="label11">
                 <property name="visible">True</property>
                 <property name="label" translatable="yes">&lt;b&gt;Create New Boot Environment&lt;/b&gt;
 
@@ -3178,10 +3210,10 @@ An updated clone of the active BE is about to be created.</property>
               </packing>
             </child>
             <child>
-              <widget class="GtkHBox" id="hbox7">
+              <widget class="GtkHBox" id="hbox22">
                 <property name="visible">True</property>
                 <child>
-                  <widget class="GtkLabel" id="label11">
+                  <widget class="GtkLabel" id="label20">
                     <property name="label" translatable="yes">&lt;b&gt;Boot Environment Name: &lt;/b&gt;</property>
                     <property name="use_markup">True</property>
                     <property name="justify">GTK_JUSTIFY_RIGHT</property>
@@ -3233,10 +3265,10 @@ An updated clone of the active BE is about to be created.</property>
                 <property name="response_id">0</property>
                 <signal name="clicked" handler="on_ua_proceed_button_clicked"/>
                 <child>
-                  <widget class="GtkHBox" id="hbox17">
+                  <widget class="GtkHBox" id="hbox23">
                     <property name="visible">True</property>
                     <child>
-                      <widget class="GtkAlignment" id="alignment10">
+                      <widget class="GtkAlignment" id="alignment18">
                         <property name="visible">True</property>
                         <child>
                           <placeholder/>
@@ -3244,7 +3276,7 @@ An updated clone of the active BE is about to be created.</property>
                       </widget>
                     </child>
                     <child>
-                      <widget class="GtkImage" id="image4">
+                      <widget class="GtkImage" id="image8">
                         <property name="visible">True</property>
                         <property name="stock">gtk-ok</property>
                       </widget>
@@ -3254,7 +3286,7 @@ An updated clone of the active BE is about to be created.</property>
                       </packing>
                     </child>
                     <child>
-                      <widget class="GtkLabel" id="label15">
+                      <widget class="GtkLabel" id="label29">
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">_Proceed</property>
                         <property name="use_underline">True</property>
@@ -3265,7 +3297,7 @@ An updated clone of the active BE is about to be created.</property>
                       </packing>
                     </child>
                     <child>
-                      <widget class="GtkAlignment" id="alignment11">
+                      <widget class="GtkAlignment" id="alignment19">
                         <property name="visible">True</property>
                         <child>
                           <placeholder/>

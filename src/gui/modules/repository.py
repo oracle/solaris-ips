@@ -39,6 +39,8 @@ except ImportError:
 import pkg.client.api_errors as api_errors
 import pkg.misc as misc
 
+ERROR_FORMAT = "<span color = \"red\">%s</span>"
+
 class Repository:
         def __init__(self, parent):
                 self.parent = parent
@@ -75,6 +77,8 @@ class Repository:
                 self.w_repository_remove_button = \
                         w_tree_repository.get_widget("repositoryremove")
                 self.list_filter = self.repository_list.filter_new()
+                self.w_repository_error_label = \
+                        w_tree_repository.get_widget("error_label")
                 self.w_repository_add_button.set_sensitive(False)
                 self.w_repository_modify_button.set_sensitive(True)
                 self.w_repository_remove_button.set_sensitive(False)
@@ -93,8 +97,8 @@ class Repository:
                 #Modify name of the repository is disabled, see #4990
                 self.w_repositorymodify_name.set_sensitive(False)
 
-                self.w_repository_url.connect('focus-in-event', self.on_focus_in)
-                self.w_repository_name.connect('focus-in-event', self.on_focus_in)
+                self.w_repository_url.connect('focus-in-event', self.on_focus_in_url)
+                self.w_repository_name.connect('focus-in-event', self.on_focus_in_name)
                 self.w_repository_add_button.connect('focus-in-event', self.on_focus_in)
 
                 progress_button.hide()
@@ -106,6 +110,9 @@ class Repository:
                 self.old_modify_url = None
                 self.old_modify_preferred = False
                 self.is_name_valid = False
+                self.is_url_valid = False
+                self.name_error = None
+                self.url_error = None
 
                 try:
                         dic = \
@@ -143,11 +150,19 @@ class Repository:
 
                 Thread(target = self.__prepare_repository_list).start()
                 self.w_repository_dialog.show_all()
+                self.w_repository_error_label.hide()
 
         def on_focus_in(self, widget, event):
                 self.w_repository_modify_button.set_sensitive(False)
                 self.w_repository_remove_button.set_sensitive(False)                
-
+        def on_focus_in_name(self, widget, event):
+                self.__validate_name(widget)
+                self.w_repository_modify_button.set_sensitive(False)
+                self.w_repository_remove_button.set_sensitive(False)                
+        def on_focus_in_url(self, widget, event):
+                self.__validate_url(widget)
+                self.w_repository_modify_button.set_sensitive(False)
+                self.w_repository_remove_button.set_sensitive(False)                
         def __init_tree_views(self):
                 name_renderer = gtk.CellRendererText()
                 column = gtk.TreeViewColumn(self.parent._("Repository Name"), \
@@ -206,7 +221,6 @@ class Repository:
                 self.w_repository_treeview.set_cursor(select_auth, \
                         None, start_editing=False)
                 self.w_repository_treeview.scroll_to_cell(select_auth)
-                self.__on_repositoryname_changed(self.w_repository_name)
 
         def __preferred_default(self, cell, filtered_path):
                 filtered_model = self.w_repository_treeview.get_model()
@@ -241,33 +255,94 @@ class Repository:
 
 
         def __on_repositoryurl_changed(self, widget):
+                self.__validate_url(widget)
+
+        def __validate_url(self, widget):
                 url = widget.get_text()
-                if len(url) != 0 and self.is_name_valid and misc.valid_auth_url(url):
-                        self.w_repository_add_button.set_sensitive(True)
+                self.is_url_valid = self.__is_url_valid(url)
+                self.w_repository_error_label.hide()
+                if self.is_url_valid:
+                        if self.is_name_valid:
+                                self.w_repository_add_button.set_sensitive(True)
+                        else:
+                                self.w_repository_add_button.set_sensitive(False)
+                                if self.name_error != None:
+                                        error_str = ERROR_FORMAT % self.name_error
+                                        self.w_repository_error_label.set_markup(
+                                            error_str)
+                                        self.w_repository_error_label.show()
                 else:
                         self.w_repository_add_button.set_sensitive(False)
+                        if self.url_error != None:
+                                error_str = ERROR_FORMAT % self.url_error
+                                self.w_repository_error_label.set_markup(error_str)
+                                self.w_repository_error_label.show()
                         
         def __is_name_valid(self, name):
+                self.name_error = None
                 if len(name) == 0:
                         return False
                 if not misc.valid_auth_prefix(name):
+                        self.name_error = self.parent._(\
+                            "Name contains invalid characters")
                         return False
 
                 model = self.w_repository_treeview.get_model()
-                for row in model:
-                        if row[0] == name:
-                                return False
+                if model:
+                        for row in model:
+                                if row[0] == name:
+                                        self.name_error = self.parent._(\
+                                            "Name already in use")
+                                        return False
                 return True
 
+        def __is_url_valid(self, name):
+                self.url_error = None
+                if len(name) == 0:
+                        return False
+
+                if not misc.valid_auth_url(name):
+                        # Check whether the user has started typing a valid URL.
+                        # If he has we do not display an error message.
+                        valid_start = False
+                        for val in misc._valid_proto:
+                                check_str = "%s://" % val
+                                if check_str.startswith(name):
+                                        valid_start = True
+                                        break 
+                        if valid_start:
+                                self.url_error = None
+                        else:
+                                self.url_error = self.parent._("URL is not valid")
+                        return False
+                return True
+        
         def __on_repositoryname_changed(self, widget):
+                self.__validate_name(widget)
+
+        def __validate_name(self, widget):
                 name = widget.get_text() 
                 self.is_name_valid = self.__is_name_valid(name)
-                if self.is_name_valid and self.w_repository_url.get_text() != "":
-                        self.w_repository_add_button.set_sensitive(True)
+                self.w_repository_error_label.hide()
+                if self.is_name_valid:
+                        if (self.is_url_valid):
+                                self.w_repository_add_button.set_sensitive(True)
+                        else:
+                                self.w_repository_add_button.set_sensitive(False)
+                                if self.url_error == None:
+                                        self.__validate_url(self.w_repository_url)
+                                if self.url_error != None:
+                                        error_str = ERROR_FORMAT % self.url_error
+                                        self.w_repository_error_label.set_markup(
+                                            error_str)
+                                        self.w_repository_error_label.show()
                 else:
                         self.w_repository_add_button.set_sensitive(False)
+                        if self.name_error != None:
+                                error_str = ERROR_FORMAT % self.name_error
+                                self.w_repository_error_label.set_markup(error_str)
+                                self.w_repository_error_label.show()
 
-                        
         def __on_repositorytreeview_selection_changed(self, widget):
                 self.w_repository_modify_button.set_sensitive(True)
                 tsel = widget.get_selection()
@@ -277,7 +352,8 @@ class Repository:
                         model = selection[0]
                         preferred = model.get_value(itr, 1)
                         if len(self.repository_list) > 1:
-                                self.w_repository_remove_button.set_sensitive(not preferred)
+                                self.w_repository_remove_button.set_sensitive(
+                                    not preferred)
 
         def __on_repositorytreeview_button_release_event(self, widget, event):
                 if event.type == gtk.gdk.BUTTON_RELEASE:
@@ -294,7 +370,7 @@ class Repository:
                 url = self.w_repository_url.get_text()
                 p_title = self.parent._("Applying changes")
                 p_text = self.parent._("Applying changes, please wait ...")
-                self.__run_with_prog_in_thread(self.__add_repository, p_title, p_text, \
+                self.__run_with_prog_in_thread(self.__add_repository, p_title, p_text,
                     name, url)
                 return
 
@@ -310,7 +386,7 @@ class Repository:
         def __on_repositoryremove_clicked(self, widget):
                 p_title = self.parent._("Applying changes")
                 p_text = self.parent._("Applying changes, please wait ...")
-                self.__run_with_prog_in_thread(self.__delete_selected_row, p_title, \
+                self.__run_with_prog_in_thread(self.__delete_selected_row, p_title,
                     p_text)
 
         def __on_repositorymodify_clicked(self, widget):
@@ -340,7 +416,7 @@ class Repository:
                 url =  self.w_repositorymodify_url.get_text()
                 p_title = self.parent._("Applying changes")
                 p_text = self.parent._("Applying changes, please wait ...")
-                self.__run_with_prog_in_thread(self.__update_repository, p_title, \
+                self.__run_with_prog_in_thread(self.__update_repository, p_title,
                     p_text, name, url)
 
         def __update_repository(self, name, url):
@@ -370,12 +446,12 @@ class Repository:
                         try:
                                 self.__delete_repository(self.old_modify_name, False)
                         except api_errors.PermissionsException:
-                                        # Do nothing
-                                        err = strt("Failed to modify %s." % omn + \
-                                            "\nPlease check your permissions.")
-                                        self.__error_with_reset_repo_selection(err, \
-                                            gtk.MESSAGE_INFO)
-                                        return
+                                # Do nothing
+                                err = strt("Failed to modify %s." % omn +
+                                    "\nPlease check your permissions.")
+                                self.__error_with_reset_repo_selection(err,
+                                    gtk.MESSAGE_INFO)
+                                return
                         except RuntimeError, ex:
                                 if "no defined authorities" in str(ex):
                                         pass
@@ -409,23 +485,28 @@ class Repository:
                 except api_errors.CatalogRefreshException:
                         try:
                                 somn = self.old_modify_name
-                                self.__add_repository(somn, \
+                                self.__add_repository(somn,
                                     self.old_modify_url, False, stop_thread=False)
                                 if somn != name:
                                         self.__delete_repository(name, False)
                                 err = self.parent._("Failed to modify %s.") % somn + \
-                                self.parent._("\nPlease check the network connection or URL.\n" \
-                                "Is the repository accessible?")
-                                gobject.idle_add(self.__error_occured, err, gtk.MESSAGE_INFO)
+                                self.parent._(
+                                    "\nPlease check the network connection or URL.\n"
+                                    "Is the repository accessible?")
+                                gobject.idle_add(self.__error_occured, err,
+                                    gtk.MESSAGE_INFO)
                         except api_errors.CatalogRefreshException:
                                 #We need to show at least one warning dialog
-                                #This is for repository which didn't existed and was modified
+                                #This is for repository which didn't existed 
+                                #and was modified
                                 #To not existed repository
                                 somn = self.old_modify_name
                                 err = self.parent._("Failed to modify %s.") % somn + \
-                                self.parent._("\nPlease check the network connection or URL.\n" \
-                                "Is the repository accessible?")
-                                gobject.idle_add(self.__error_occured, err, gtk.MESSAGE_INFO)
+                                self.parent._(
+                                    "\nPlease check the network connection or URL.\n"
+                                    "Is the repository accessible?")
+                                gobject.idle_add(self.__error_occured, err,
+                                    gtk.MESSAGE_INFO)
                 self.progress_stop_thread = True
                 return
 
@@ -479,7 +560,8 @@ class Repository:
                                 raise
                         self.__delete_repository(auth)
                         err = self.parent._("Failed to add %s.") % auth + \
-                        self.parent._("\nPlease check the network connection or URL.\nIs the " \
+                        self.parent._(
+                            "\nPlease check the network connection or URL.\nIs the "
                             "repository accessible?")
                         self.__error_with_reset_repo_selection(err, gtk.MESSAGE_INFO)
 
