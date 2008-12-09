@@ -235,13 +235,24 @@ if __name__ == "__main__":
                                 # don't need it.
                                 scheme, netloc, path, params, query, \
                                     fragment = urlparse.urlparse(arg,
-                                    allow_fragments=0)
+                                    "http", allow_fragments=0)
 
-                                # Rebuild the url without the scheme and
-                                # remove the leading // urlunparse adds.
-                                proxy_base = urlparse.urlunparse(("", netloc,
+                                if not netloc:
+                                        raise OptionError, "Unable to " \
+                                            "determine the hostname from " \
+                                            "the provided URL; please use a " \
+                                            "fully qualified URL."
+
+                                scheme = scheme.lower()
+                                if scheme not in ("http", "https"):
+                                        raise OptionError, "Invalid URL; http " \
+                                            "and https are the only supported " \
+                                            "schemes."
+
+                                # Rebuild the url with the sanitized components.
+                                proxy_base = urlparse.urlunparse((scheme, netloc,
                                     path, params, query, fragment)
-                                    ).lstrip("//")
+                                    )
                         elif opt == "--readonly":
                                 readonly = True
                         elif opt == "--rebuild":
