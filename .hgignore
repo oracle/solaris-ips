@@ -15,6 +15,7 @@
 ^src/*.tar.gz$
 ^src/CherryPy-.*$
 ^src/gui/data/packagemanager.desktop$
+^src/gui/data/addmoresoftware.desktop$
 ^src/gui/help/.*/package-manager.xml$
 ^src/Mako-.*$
 ^src/man/pkg.1$
