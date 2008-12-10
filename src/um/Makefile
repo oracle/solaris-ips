@@ -40,6 +40,7 @@ ROOTPYTHON = $(ROOTUSRLIB)/python2.4
 ROOTPYTHONVENDOR = $(ROOTPYTHON)/vendor-packages
 ROOTPYTHONPKG = $(ROOTPYTHONVENDOR)/pkg/um
 ROOTICONSHARE = $(ROOT)/share/icons/update-manager
+ROOTAPPICONSHARE = $(ROOT)/share/icons/hicolor/48x48/apps
 ROOTGCONFSHARE = $(ROOTETC)/gconf/schemas
 ROOTSVCSHARE = $(ROOTLIB)/svc/method
 
@@ -48,6 +49,7 @@ ROOTDIRS = \
    $(ROOTSHARE) \
    $(ROOTSCRIPTSSHARE) \
    $(ROOTICONSHARE) \
+   $(ROOTAPPICONSHARE) \
    $(ROOTDATASHARE) \
    $(ROOTAUTOSTARTSHARE) \
    $(ROOTDESKTOPSHARE) \
@@ -59,6 +61,9 @@ ICONS = \
    data/icons/status_checkmark.png \
    data/icons/status_blank.png
 
+APPICONS = \
+   data/updatemanager.png
+   
 GLADEICONS = \
    data/PM_app_48x.png \
    data/PM_package_36x.png
@@ -82,6 +87,8 @@ ROOTICONS = $(ICONS:data/%=$(ROOTICONSHARE)/%)
 
 ROOTGLADEICONS = $(GLADEICONS:data/%=$(ROOTSHARE)/%)
 
+ROOTAPPICONS = $(APPICONS:data/%=$(ROOTAPPICONSHARE)/%)
+
 ROOTAUTOSTART = $(AUTOSTART:%=$(ROOTAUTOSTARTSHARE)/%)
 
 ROOTDESKTOP = $(DESKTOP:data/%=$(ROOTDESKTOPSHARE)/%)
@@ -98,6 +105,7 @@ ROOTCOMPONENTS = \
    $(ROOTDIRS) \
    $(ROOTPROGS) \
    $(ROOTICONS) \
+   $(ROOTAPPICONS) \
    $(ROOTAUTOSTART) \
    $(ROOTDESKTOP) \
    $(ROOTGCONF) \
@@ -133,7 +141,10 @@ clean:
 	rm -f $(AUTOSTART);\
 	rm -f $(DESKTOP);\
 	rm -f $(GCONF)
-   
+
+data/updatemanager.png: data/PM_app_48x.png
+	cp data/PM_app_48x.png data/updatemanager.png
+
 PWD:sh = pwd
 
 #This will not link l10n files
@@ -145,6 +156,7 @@ link:
 	ln -sf $(PWD)/data/updatemanagernotifier.desktop /etc/xdg/autostart/updatemanagernotifier.desktop
 	ln -sf $(PWD)/data/updatemanager-preferences.schemas /etc/gconf/schemas/updatemanage-preferences.schemas
 	ln -sf $(PWD)/data/icons /usr/share/icons/update-manager
+	ln -sf $(PWD)/data/icons/updatemanager.png /usr/share/icons/hicolor/48x48/apps/updatemanager.png
 	ln -sf $(PWD)/data/updatemanager.desktop /usr/share/applications/updatemanager.desktop
 
 link-clean:
@@ -155,6 +167,7 @@ link-clean:
 	rm -f /usr/lib/-manager/update-refresh.sh
 	rm -f /lib/svc/method/pkg-update
 	rm -f /usr/share/applications/updatemanager.desktop
+	rm -f /usr/share/icons/hicolor/48x48/apps/updatemanager.png
 
 proto: $(ROOT)
 
@@ -169,6 +182,9 @@ $(ROOTPYTHONPKG)/%: modules/%
 
 $(ROOTICONSHARE)/%: data/%
 	rm -f $@; install -f $(ROOTICONSHARE) -m 0644 $<
+
+$(ROOTAPPICONSHARE)/%: data/%
+	rm -f $@; install -f $(ROOTAPPICONSHARE) -m 0644 $<
 
 $(ROOTGCONFSHARE)/%: %
 	rm -f $@; install -f $(ROOTGCONFSHARE) -m 0644 $<

@@ -38,11 +38,13 @@ ROOTPYTHON = $(ROOTUSRLIB)/python2.4
 ROOTPYTHONVENDOR = $(ROOTPYTHON)/vendor-packages
 ROOTPYTHONPKG = $(ROOTPYTHONVENDOR)/pkg/gui
 ROOTICONSHARE = $(ROOT)/share/icons/package-manager
+ROOTAPPICONSHARE = $(ROOT)/share/icons/hicolor/48x48/apps
 
 ROOTDIRS = \
    $(ROOTPYTHONPKG) \
    $(ROOTSHARE) \
    $(ROOTICONSHARE) \
+   $(ROOTAPPICONSHARE) \
    $(ROOTDATASHARE) \
    $(ROOTDESKTOPSHARE) \
    $(ROOTHELPSHARE)
@@ -66,6 +68,9 @@ HELP_DIR:sh = echo help/*
 HELP = \
    package-manager.xml \
    legal.xml 
+
+APPICONS = \
+   data/packagemanager.png
 
 GLADEICONS = \
    data/PM_app_48x.png \
@@ -96,6 +101,8 @@ ROOTCATALOG = $(CATALOG:data/%=$(ROOTDATASHARE)/%)
 
 ROOTGLADEICONS = $(GLADEICONS:data/%=$(ROOTSHARE)/%)
 
+ROOTAPPICONS = $(APPICONS:data/%=$(ROOTAPPICONSHARE)/%)
+
 ROOTHELP = $(HELP_DIR:help/%=$(ROOTHELPSHARE)/%)
 
 ROOTPYGLADE = $(ROOTSHARE)/packagemanager.glade
@@ -113,6 +120,7 @@ ROOTCOMPONENTS = \
    $(ROOTGLADEICONS) \
    $(ROOTHELP) \
    $(ROOTICONS) \
+   $(ROOTAPPICONS) \
    $(ROOTDESKTOP) \
 
 all := TARGET = all
@@ -142,6 +150,9 @@ data/addmoresoftware.desktop: data/addmoresoftware.desktop.in
 	cd data; pwd; \
 	  LC_ALL=C intltool-merge -d -u -c ../../po/.intltool-merge-cache ../../po addmoresoftware.desktop.in addmoresoftware.desktop
 
+data/packagemanager.png: data/PM_app_48x.png
+	cp data/PM_app_48x.png data/packagemanager.png
+
 PWD:sh = pwd
 
 #This will not link l10n files
@@ -154,6 +165,7 @@ link:
 	ln -sf $(PWD)/data/packagemanager.desktop /usr/share/applications/packagemanager.desktop
 	ln -sf $(PWD)/data/addmoresoftware.desktop /usr/share/applications/addmoresoftware.desktop
 	ln -sf $(PWD)/data/icons /usr/share/icons/package-manager
+	ln -sf $(PWD)/data/icons/packagemanager.png /usr/share/icons/hicolor/48x48/apps/packagemanager.png
 	ln -sf $(PWD)/modules /usr/lib/python2.4/vendor-packages/pkg/gui
 
 link-clean:
@@ -162,6 +174,7 @@ link-clean:
 	rm -f /usr/share/applications/packagemanager.desktop
 	rm -f /usr/share/applications/addmoresoftware.desktop
 	rm -f /usr/bin/packagemanager
+	rm -f /usr/share/icons/hicolor/48x48/apps/packagemanager.png
 
 proto: $(ROOT)
 
@@ -191,6 +204,9 @@ $(ROOTPYTHONPKG)/%: modules/%
 
 $(ROOTICONSHARE)/%: data/icons/%
 	rm -f $@; $(INSTALL) -f $(ROOTICONSHARE) -m 0644 $<
+
+$(ROOTAPPICONSHARE)/%: data/%
+	rm -f $@; $(INSTALL) -f $(ROOTAPPICONSHARE) -m 0644 $<
 
 $(ROOTDESKTOPSHARE)/%: data/%
 	rm -f $@; $(INSTALL) -f $(ROOTDESKTOPSHARE) -m 0644 $<

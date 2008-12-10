@@ -57,13 +57,13 @@ prototype: FRC
 		$$3 ~ /^(usr(\/share)?|etc(\/xdg(\/autostart(\/updatemanagernotifier.desktop)?)?)?|etc(\/gconf(\/schemas(\/updatemanager-preferences.schemas)?)?)?|var(\/svc(\/manifest(\/application(\/pkg-update.xml)?)?)?)?)$$/ { \
 			$$6 = "sys"; \
 		} \
-		$$3 ~ /share\/applications|share\/icons(\/update-manager(\/notify_update.png|\/status_checkmark.png|\/status_blank.png)?)?$$/ { \
+		$$3 ~ /share(\/applications|\/icons|\/icons\/package\-manager|\/icons\/hicolor|\/icons\/hicolor\/48x48|\/icons\/hicolor\/48x48\/apps|\/icons\/hicolor\/48x48\/apps\/packagemanager.png)|share\/icons(\/update-manager(\/notify_update.png|\/status_checkmark.png|\/status_blank.png)?)?$$/ { \
 			$$6 = "other"; \
 		} \
                 $$3 ~ /(share(\/update-manager|\/update-manager\/data|\/update-manager(\/updatemanager.glade|\/PM_app_48x.png|\/PM_package_36x.png)))$$/ { \
                         $$6 = "bin"; \
                 } \
-		$$3 ~ /^(usr(\/lib(\/updatemanagernotifier)?)?|usr\/lib\/update-manager(\/update-refresh.sh)?|usr(\/bin(\/updatemanager)?)?|var(\/svc(\/manifest(\/application\/(pkg-update.xml)?)?)?)?|etc(\/xdg(\/autostart(\/updatemanagernotifier.desktop)?)?)?|etc\/gconf(\/schemas(\/updatemanager-preferences.schemas)?)?|lib(\/svc(\/method(\/pkg-update)?)?)?|usr(\/share(\/update-manager(\/updatemanager.glade|\/PM_app_48x.png|\/PM_package_36x.png)?|\/applications(\/updatemanager.desktop)?|\/icons(\/update-manager(\/notify_update.png|\/status_checkmark.png|\/status_blank.png)?)?)?)?)$$/ { \
+		$$3 ~ /^(usr(\/lib(\/updatemanagernotifier)?)?|usr\/lib\/update-manager(\/update-refresh.sh)?|usr(\/bin(\/updatemanager)?)?|var(\/svc(\/manifest(\/application\/(pkg-update.xml)?)?)?)?|etc(\/xdg(\/autostart(\/updatemanagernotifier.desktop)?)?)?|etc\/gconf(\/schemas(\/updatemanager-preferences.schemas)?)?|lib(\/svc(\/method(\/pkg-update)?)?)?|usr(\/share(\/update-manager(\/updatemanager.glade|\/PM_app_48x.png|\/PM_package_36x.png)?|\/applications(\/updatemanager.desktop)?|\/icons(\/hicolor(\/48x48(\/apps(\/updatemanager.png)?)?)?)?|\/icons(\/update-manager(\/notify_update.png|\/status_checkmark.png|\/status_blank.png)?)?)?)?)$$/ { \
 			print \
 		}' > prototype
 
