@@ -1376,19 +1376,17 @@ class PackageManager:
                 return
 
         def __enable_disable_update_all(self):
+                update_available = False
                 for row in self.application_list:
-                        if self.__is_pkg_repository_visible(self.application_list, \
+                        if self.__is_pkg_repository_visible(self.application_list,
                             row.iter):
-                                if self.application_list.get_value(row.iter, \
+                                if self.application_list.get_value(row.iter,
                                     enumerations.STATUS_COLUMN) == \
                                     enumerations.UPDATABLE and self.user_rights:
-                                        self.w_updateall_menuitem. \
-                                            set_sensitive(True)
-                                        self.w_updateall_button. \
-                                            set_sensitive(True)
-                                        return
-                self.w_updateall_button.set_sensitive(False)
-                self.w_updateall_menuitem.set_sensitive(False)
+			                update_available = True
+                                        break
+                self.w_updateall_button.set_sensitive(update_available)
+                self.w_updateall_menuitem.set_sensitive(update_available)
                 self.unset_busy_cursor()
 
         def __enable_disable_deselect(self):
