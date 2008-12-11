@@ -110,7 +110,8 @@ def versioned_urlopen(base_uri, operation, versions = None, tail = None,
         elif ssl_creds and ssl_creds != (None, None):
                 cert_handler = urlhelpers.HTTPSCertHandler(
                     key_file = ssl_creds[0], cert_file = ssl_creds[1])
-                opener_dir = urllib2.build_opener(cert_handler)
+                opener_dir = urllib2.build_opener(
+                    urlhelpers.HTTPSProxyHandler, cert_handler)
                 url_opener = opener_dir.open
         else:
                 url_opener = urllib2.urlopen
