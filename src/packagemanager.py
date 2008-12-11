@@ -743,9 +743,9 @@ class PackageManager:
                 install_update = []
                 for row in self.application_list:
                         if row[enumerations.MARK_COLUMN] and \
-                            row[enumerations.STATUS_COLUMN] == \
-                            enumerations.NOT_INSTALLED or \
-                            row[enumerations.STATUS_COLUMN] == enumerations.UPDATABLE:
+                            (row[enumerations.STATUS_COLUMN] ==
+                            enumerations.NOT_INSTALLED or
+                            row[enumerations.STATUS_COLUMN] == enumerations.UPDATABLE):
                                 install_update.append(row[\
                                     enumerations.STEM_COLUMN])
                 installupdate.InstallUpdate(install_update, self, \
@@ -831,8 +831,8 @@ class PackageManager:
                 remove_list = []
                 for pkg in self.application_list:
                         if pkg[enumerations.MARK_COLUMN] and \
-                            pkg[enumerations.STATUS_COLUMN] == enumerations.INSTALLED or \
-                            pkg[enumerations.STATUS_COLUMN] == enumerations.UPDATABLE:
+                            (pkg[enumerations.STATUS_COLUMN] == enumerations.INSTALLED or
+                            pkg[enumerations.STATUS_COLUMN] == enumerations.UPDATABLE):
                                 remove_list.append(\
                                     pkg[enumerations.STEM_COLUMN])
                 installupdate.InstallUpdate(remove_list, self, \
