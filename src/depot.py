@@ -325,6 +325,7 @@ if __name__ == "__main__":
             "server.socket_port": port,
             "server.thread_pool": threads,
             "server.socket_timeout": socket_timeout,
+            "server.shutdown_timeout": 0,
             "tools.log_headers.on": True,
             "tools.encode.on": True
         }

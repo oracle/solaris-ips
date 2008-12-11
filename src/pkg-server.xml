@@ -83,13 +83,13 @@
 	<exec_method
 		type='method'
 		name='start'
-                exec='/lib/svc/method/svc-pkg-depot start'
+                exec='/lib/svc/method/svc-pkg-depot %m'
 		timeout_seconds='0' />
 
 	<exec_method
 		type='method'
 		name='stop'
-		exec=':kill'
+		exec='/lib/svc/method/svc-pkg-depot %m %{restarter/contract}'
 		timeout_seconds='30' />
 
 	<property_group name='startd' type='framework'>

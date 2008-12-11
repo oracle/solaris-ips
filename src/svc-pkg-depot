@@ -48,7 +48,7 @@ case "$1" in
 	# via a long option flag which takes an argument.
 	long_option_props="content_root log_access log_errors proxy_base"
 	set -A long_option_cmd_line "content-root" "log-access" \
-            "log-errors" "proxy-base"
+	    "log-errors" "proxy-base"
 
 	bool_ops=""
 	option_props=""
@@ -71,7 +71,7 @@ case "$1" in
 
 	# Go through each property in short_option_props and, if its value is
 	# set to something other than none, add the appropriate command line
-        # flag and argument to the string.
+	# flag and argument to the string.
 	cnt=0
 	for o in $short_option_props; do
 	    val=$(svcprop -p pkg/$o $SMF_FMRI)
@@ -80,7 +80,7 @@ case "$1" in
 		exit $SMF_EXIT_ERR_CONFIG
 	    fi
 	    # If the SMF property is set to something other than 'none', add 
-            # the flag and its argument to the command.
+	    # the flag and its argument to the command.
 	    if [[ $val != '""' ]]; then
 		option_ops="$option_ops -${short_option_cmd_line[$cnt]} $val"
 	    fi
@@ -89,7 +89,7 @@ case "$1" in
 
 	# Go through each property in long_option_props and, if its value is
 	# set to something other than none, add the appropriate command line
-        # flag and argument to the string.
+	# flag and argument to the string.
 	cnt=0
 	for o in $long_option_props; do
 	    val=$(svcprop -p pkg/$o $SMF_FMRI)
@@ -98,7 +98,7 @@ case "$1" in
 		exit $SMF_EXIT_ERR_CONFIG
 	    fi
 	    # If the SMF property is set to something other than 'none', add
-            # the flag and its argument to the command.
+	    # the flag and its argument to the command.
 	    if [[ $val != '""' ]]; then
 		option_ops="$option_ops --${long_option_cmd_line[$cnt]}=$val"
 	    fi
@@ -139,8 +139,52 @@ case "$1" in
 	exec $cmd
 
 	;;
+
+'stop')
+	#
+	# Strategy: First, try shutting down depot using polite kill.  Use up
+	# as much as possible of the allotted timeout period waiting for polite
+	# kill to take effect.  As time runs out, try a more aggressive kill.
+	#
+	SVC_TIMEOUT=`svcprop -p stop/timeout_seconds $SMF_FMRI`
+	if [[ $? -ne 0 ]]; then
+		echo "service property stop/timeout_seconds not defined for service: $SMF_FMRI"
+		exit $SMF_EXIT_ERR_CONFIG
+	fi
+
+	#
+	# Note that we're working around an oddity in smf_kill_contract: it
+	# waits in 5 second chunks and can overshoot the specified timeout
+	# by as many as 4 seconds.  Example: a specified wait of 6 will result
+	# in a wait of 10 seconds in reality.  Since we may potentially do a
+	# first kill and then a second, we must ensure that at least 8 seconds
+	# of slop is left in reserve.  To be paranoid, we go for 10.
+	#
+	((POLITE=$SVC_TIMEOUT - 10))
+	if [[ $POLITE -gt 0 ]]; then
+		smf_kill_contract $2 TERM 1 $POLITE
+		ret=$?
+		# '2' indicates timeout with non-empty contract.
+		if [[ $ret -eq 2 ]]; then
+			echo "Gentle contract kill timed out after $POLITE" \
+			    "seconds, trying SIGKILL." >&2
+			#
+			# Again, despite the specified timeout, this will
+			# take a minimum of 5 seconds to complete.
+			#
+			smf_kill_contract $2 KILL 1 1
+			if [[ $ret -ne 0 ]]; then
+				exit $SMF_EXIT_ERR_FATAL
+			fi
+		fi
+	else
+		# If the timeout is too short, we just try once, politely.
+		smf_kill_contract $2 TERM
+	fi
+	;;
+
 *)
-	echo "Usage: $0 start"
+	echo "Usage: $0 { start | stop }"
 	exit $SMF_EXIT_ERR_CONFIG
 	;;
 
