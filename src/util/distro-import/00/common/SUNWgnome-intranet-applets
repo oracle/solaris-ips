@@ -1,5 +1,5 @@
 package SUNWgnome-intranet-applets
-classification "Applications/Applets"
+classification "Applications/Panels and Applets"
 import SUNWgnome-intranet-applets
 import SUNWgnome-intranet-applets-root
 end package

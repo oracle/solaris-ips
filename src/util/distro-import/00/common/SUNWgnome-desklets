@@ -1,4 +1,4 @@
 package SUNWgnome-desklets
-classification "Applications/Applets"
+classification "Applications/Panels and Applets"
 import SUNWgnome-desklets
 end package

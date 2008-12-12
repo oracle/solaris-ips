@@ -1,5 +1,5 @@
 package SUNWgnome-mm-applets
-classification "Applications/Applets"
+classification "Applications/Panels and Applets"
 import SUNWgnome-mm-applets
 import SUNWgnome-mm-applets-root
 end package

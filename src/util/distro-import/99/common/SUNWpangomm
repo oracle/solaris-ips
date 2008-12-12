@@ -1,5 +1,5 @@
 package SUNWpangomm
-classification "Development/C++"
+classification "Desktop (GNOME)/Libraries"
 import SUNWpangomm
 import SUNWpangomm-devel
 end package

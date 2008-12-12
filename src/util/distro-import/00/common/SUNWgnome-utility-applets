@@ -1,5 +1,5 @@
 package SUNWgnome-utility-applets
-classification "Applications/Applets"
+classification "Applications/Panels and Applets"
 import SUNWgnome-utility-applets
 import SUNWgnome-utility-applets-devel
 import SUNWgnome-utility-applets-root

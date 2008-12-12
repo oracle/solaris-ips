@@ -1,5 +1,5 @@
 package SUNWcairomm
-classification "Development/C++"
+classification "Desktop (GNOME)/Libraries"
 import SUNWcairomm
 import SUNWcairomm-devel
 end package

@@ -1,5 +1,5 @@
 package SUNWTiff
-classification "System/Libraries"
+classification "System/Multimedia Libraries"
 import SUNWTiff
 import SUNWTiff-devel
 drop usr/share/man/man3tiff/booktitles.ent

@@ -1,5 +1,5 @@
 package SUNWlibrsvg
-classification "System/Libraries"
+classification "System/Multimedia Libraries"
 import SUNWlibrsvg
 import SUNWlibrsvg-devel
 end package

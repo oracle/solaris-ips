@@ -1,5 +1,5 @@
 package SUNWmusicbrainz
-classification "Desktop (GNOME)/Libraries"
+classification "System/Multimedia Libraries"
 import SUNWmusicbrainz
 import SUNWmusicbrainz-devel
 end package

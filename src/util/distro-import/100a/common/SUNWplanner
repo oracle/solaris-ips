@@ -1,5 +1,5 @@
 package SUNWplanner
-classification "Applications/System Utilities"
+classification "Applications/Office"
 import SUNWplanner
 import SUNWplanner-devel
 import SUNWplanner-root

@@ -1,5 +1,5 @@
 package SUNWgnome-hex-editor
-classification "Development/Integrated Development Environments"
+classification "Applications/Accessories"
 import SUNWgnome-hex-editor
 import SUNWgnome-hex-editor-devel
 import SUNWgnome-hex-editor-root

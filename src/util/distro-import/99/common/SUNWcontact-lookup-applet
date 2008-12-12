@@ -1,4 +1,4 @@
 package SUNWcontact-lookup-applet
-classification "Applications/Applets"
+classification "Applications/Panels and Applets"
 import SUNWcontact-lookup-applet
 end package

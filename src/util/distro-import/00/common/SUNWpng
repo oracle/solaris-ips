@@ -1,5 +1,5 @@
 package SUNWpng
-classification "System/Libraries"
+classification "System/Multimedia Libraries"
 import SUNWpng
 import SUNWpng-devel
 end package

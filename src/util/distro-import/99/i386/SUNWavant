@@ -1,5 +1,5 @@
 package SUNWavant
-classification "Applications/Configuration and Preferences"
+classification "Applications/Panels and Applets"
 import SUNWavant
 import SUNWavant-devel
 import SUNWavant-root

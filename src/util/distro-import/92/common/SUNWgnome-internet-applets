@@ -1,4 +1,4 @@
 package SUNWgnome-internet-applets
-classification "Applications/Applets"
+classification "Applications/Panels and Applets"
 import SUNWgnome-internet-applets
 end package

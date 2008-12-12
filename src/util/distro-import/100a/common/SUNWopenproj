@@ -1,4 +1,4 @@
 package SUNWopenproj
-classification "Applications/System Utilities"
+classification "Applications/Office"
 import SUNWopenproj
 end package

@@ -1,5 +1,5 @@
 package SUNWgnome-panel
-classification "Desktop (GNOME)/Libraries"
+classification "Applications/Panels and Applets"
 import SUNWgnome-panel
 import SUNWgnome-panel-devel
 import SUNWgnome-panel-root

@@ -1,5 +1,5 @@
 package SUNWlibexif
-classification "System/Libraries"
+classification "System/Multimedia Libraries"
 import SUNWlibexif
 import SUNWlibexif-devel
 end package

@@ -1,5 +1,5 @@
 package SUNWjpg
-classification "System/Media"
+classification "System/Multimedia Libraries"
 import SUNWjpg
 import SUNWjpg-devel
 end package

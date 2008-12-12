@@ -1,5 +1,5 @@
 package SUNWgnome-meeting
-classification "Applications/Internet"
+classification "Applications/Sound and Video"
 import SUNWgnome-meeting
 import SUNWgnome-meeting-root
 end package

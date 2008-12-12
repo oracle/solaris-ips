@@ -1,4 +1,4 @@
 package SUNWxdg-sound-theme
-classification "Desktop (GNOME)/Libraries"
+classification "Desktop (GNOME)/Theming"
 import SUNWxdg-sound-theme
 end package

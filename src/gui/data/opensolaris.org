@@ -92,7 +92,7 @@ category = Python
 category = Other Languages
 
 [SUNWTiff]
-category = Libraries (System)
+category = Multimedia Libraries
 
 [SUNWTk]
 category = Other Languages
@@ -257,7 +257,7 @@ category = Ports
 category = Internet
 
 [SUNWavant]
-category = Configuration and Preferences
+category = Panels and Applets
 
 [SUNWbart]
 category = Administration and Configuration
@@ -287,7 +287,7 @@ category = System Utilities
 category = Other Languages
 
 [SUNWbluefish]
-category = Text Tools
+category = Internet
 
 [SUNWbnu]
 category = Services
@@ -317,7 +317,7 @@ category = Application and Web Servers
 category = Application and Web Servers
 
 [SUNWcairomm]
-category = C++
+category = Libraries
 
 [SUNWcakr]
 category = Core
@@ -386,7 +386,7 @@ category = Window Managers
 category = Libraries
 
 [SUNWcontact-lookup-applet]
-category = Applets
+category = Panels and Applets
 
 [SUNWcos]
 category = Localizations (System)
@@ -713,7 +713,7 @@ category = Localizations (Desktop)
 category = Localizations (Desktop)
 
 [SUNWflac]
-category = Media
+category = Multimedia Libraries
 
 [SUNWflexlex]
 category = Other Languages
@@ -836,7 +836,7 @@ category = Other Peripherals
 category = System Utilities
 
 [SUNWglibmm]
-category = C++
+category = Libraries
 
 [SUNWgm4]
 category = GNU
@@ -869,13 +869,13 @@ category = Universal Access
 category = Universal Access
 
 [SUNWgnome-applets]
-category = Applets
+category = Panels and Applets
 
 [SUNWgnome-archive-mgr]
 category = Accessories
 
 [SUNWgnome-audio]
-category = Libraries
+category = Multimedia Libraries
 
 [SUNWgnome-base-libs]
 category = Libraries
@@ -923,10 +923,10 @@ category = Java
 category = GNOME and GTK+
 
 [SUNWgnome-desklets]
-category = Applets
+category = Panels and Applets
 
 [SUNWgnome-desklets-extra]
-category = Applets
+category = Panels and Applets
 
 [SUNWgnome-desktop-prefs]
 category = Configuration and Preferences
@@ -962,7 +962,7 @@ category = File Managers
 category = Fonts
 
 [SUNWgnome-fun-applets]
-category = Applets
+category = Panels and Applets
 
 [SUNWgnome-games]
 category = Games
@@ -980,7 +980,7 @@ category = Libraries
 category = Documentation
 
 [SUNWgnome-hex-editor]
-category = Integrated Development Environments
+category = Accessories
 
 [SUNWgnome-im-client]
 category = Internet
@@ -1031,10 +1031,10 @@ category = Graphics and Imaging
 category = Graphics and Imaging
 
 [SUNWgnome-internet-applets]
-category = Applets
+category = Panels and Applets
 
 [SUNWgnome-intranet-applets]
-category = Applets
+category = Panels and Applets
 
 [SUNWgnome-keyring-manager]
 category = System Utilities
@@ -1142,7 +1142,7 @@ category = GNOME and GTK+
 category = System Utilities
 
 [SUNWgnome-media]
-category = Sound and Video
+category = Multimedia Libraries
 
 [SUNWgnome-media-apps]
 category = Sound and Video
@@ -1151,19 +1151,19 @@ category = Sound and Video
 category = Sound and Video
 
 [SUNWgnome-meeting]
-category = Internet
+category = Sound and Video
 
 [SUNWgnome-menu-editor]
 category = Configuration and Preferences
 
 [SUNWgnome-mm-applets]
-category = Applets
+category = Panels and Applets
 
 [SUNWgnome-nettool]
 category = Internet
 
 [SUNWgnome-panel]
-category = Libraries
+category = Panels and Applets
 
 [SUNWgnome-pdf-viewer]
 category = Office
@@ -1217,7 +1217,7 @@ category = System Utilities
 category = System Utilities
 
 [SUNWgnome-terminal]
-category = Accessories
+category = System Utilities
 
 [SUNWgnome-terminal-java]
 category = Java
@@ -1226,10 +1226,10 @@ category = Java
 category = Accessories
 
 [SUNWgnome-themes]
-category = Libraries
+category = Theming
 
 [SUNWgnome-themes-hires]
-category = Libraries
+category = Theming
 
 [SUNWgnome-time-slider]
 category = Configuration and Preferences
@@ -1241,7 +1241,7 @@ category = GNOME and GTK+
 category = Documentation
 
 [SUNWgnome-utility-applets]
-category = Applets
+category = Panels and Applets
 
 [SUNWgnome-vfs]
 category = Libraries
@@ -1298,7 +1298,7 @@ category = File Managers
 category = System Utilities
 
 [SUNWgnutls]
-category = GNU
+category = Libraries (System)
 
 [SUNWgobby]
 category = Text Tools
@@ -1481,7 +1481,7 @@ category = Plug-ins and Run-times
 category = Libraries (System)
 
 [SUNWimagick]
-category = Graphics and Imaging
+category = Multimedia Libraries
 
 [SUNWinstall-l10n]
 category = Localizations (System)
@@ -1550,7 +1550,7 @@ category = Internationalization
 category = Hardware
 
 [SUNWiso-codes]
-category = Text Tools
+category = Theming
 
 [SUNWisolc]
 category = Text Tools
@@ -1622,7 +1622,7 @@ category = Documentation
 category = Localizations (System)
 
 [SUNWjpg]
-category = Media
+category = Multimedia Libraries
 
 [SUNWjre-config-plugin]
 category = Plug-ins and Run-times
@@ -1958,7 +1958,7 @@ category = C++
 category = Localizations (System)
 
 [SUNWlibcanberra]
-category = Media
+category = Multimedia Libraries
 
 [SUNWlibchewing]
 category = Localizations (System)
@@ -1979,7 +1979,7 @@ category = Localizations (System)
 category = Libraries (System)
 
 [SUNWlibexif]
-category = Libraries (System)
+category = Multimedia Libraries
 
 [SUNWlibffi]
 category = Libraries (System)
@@ -2039,7 +2039,7 @@ category = Libraries (System)
 category = Libraries (System)
 
 [SUNWlibrsvg]
-category = Libraries (System)
+category = Multimedia Libraries
 
 [SUNWlibrsync]
 category = Libraries (System)
@@ -2066,7 +2066,7 @@ category = Libraries (System)
 category = Localizations (System)
 
 [SUNWlibtheora]
-category = Libraries (System)
+category = Multimedia Libraries
 
 [SUNWlibtool]
 category = GNU
@@ -2189,7 +2189,7 @@ category = Hardware
 category = Media
 
 [SUNWmusicbrainz]
-category = Libraries
+category = Multimedia Libraries
 
 [SUNWmutt]
 category = Internet
@@ -2321,7 +2321,7 @@ category = Office
 category = System
 
 [SUNWogg-vorbis]
-category = Libraries (System)
+category = Multimedia Libraries
 
 [SUNWopenexr]
 category = Libraries (System)
@@ -2330,7 +2330,7 @@ category = Libraries (System)
 category = Text Tools
 
 [SUNWopenproj]
-category = System Utilities
+category = Office
 
 [SUNWopensolaris-welcome]
 category = Text Tools
@@ -2354,7 +2354,7 @@ category = Core
 category = Security
 
 [SUNWpangomm]
-category = C++
+category = Libraries
 
 [SUNWpapi]
 category = Printing
@@ -2450,7 +2450,7 @@ category = Perl
 category = Perl
 
 [SUNWplanner]
-category = System Utilities
+category = Office
 
 [SUNWplxwsvr]
 category = X11 (System)
@@ -2465,7 +2465,7 @@ category = Perl
 category = Perl
 
 [SUNWpng]
-category = Libraries (System)
+category = Multimedia Libraries
 
 [SUNWpolkit]
 category = Administration and Configuration
@@ -2930,7 +2930,7 @@ category = Core
 category = Sound and Video
 
 [SUNWspeex]
-category = Sound and Video
+category = Multimedia Libraries
 
 [SUNWspnego]
 category = Security
@@ -3311,7 +3311,7 @@ category = Hardware
 category = Hardware
 
 [SUNWw3m]
-category = Libraries
+category = Internet
 
 [SUNWwbsup]
 category = Core
@@ -3350,7 +3350,7 @@ category = System Utilities
 category = X11 (System)
 
 [SUNWxdg-sound-theme]
-category = Libraries
+category = Theming
 
 [SUNWxdg-user-dirs]
 category = System Utilities

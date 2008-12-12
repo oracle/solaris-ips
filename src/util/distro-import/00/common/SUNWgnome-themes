@@ -1,5 +1,5 @@
 package SUNWgnome-themes
-classification "Desktop (GNOME)/Libraries"
+classification "Desktop (GNOME)/Theming"
 import SUNWgnome-themes
 import SUNWgnome-themes-devel
 end package

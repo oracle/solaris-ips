@@ -1,5 +1,5 @@
 package SUNWiso-codes
-classification "System/Text Tools"
+classification "Desktop (GNOME)/Theming"
 import SUNWiso-codes
 import SUNWiso-codes-devel
 end package
