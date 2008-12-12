@@ -478,7 +478,7 @@ class PackageManager:
         def __init_sections(self):
                 '''This function is for initializing sections combo box, also adds "All"
                 Category. It sets active section combobox entry "All"'''
-                self.section_list.append([0, self._('All'), ])
+                self.section_list.append([0, self._('All Categories'), ])
                 self.section_list.append([-1, "", ])
                 self.section_list.append([2, self._('Meta Packages'), ])
                 self.section_list.append([3, self._('Applications'), ])

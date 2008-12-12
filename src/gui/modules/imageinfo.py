@@ -89,8 +89,6 @@ class ImageInfo(object):
                 """Creates and returns ConfigParser.SafeConfigParser()"""
                 cpars = ConfigParser.SafeConfigParser()
                 if cpars:
-                        if not os.path.isfile(path):
-                                print "File: " + str(path) + " not found."
                         read_cp = cpars.read(path)
                         if read_cp:
                                 if read_cp[0] != path:

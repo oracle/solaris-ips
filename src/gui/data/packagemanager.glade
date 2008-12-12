@@ -31,10 +31,19 @@
                     <property name="visible">True</property>
                     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                     <child>
+                      <widget class="GtkMenuItem" id="settings_edit_repositories">
+                        <property name="visible">True</property>
+                        <property name="tooltip" translatable="yes">Manage Repositories</property>
+                        <property name="label" translatable="yes">_Manage Repositories...</property>
+                        <property name="use_underline">True</property>
+                        <signal name="activate" handler="on_settings_edit_repositories_activate"/>
+                      </widget>
+                    </child>
+                    <child>
                       <widget class="GtkMenuItem" id="file_be">
                         <property name="visible">True</property>
-                        <property name="tooltip" translatable="yes">Boot Environment Management</property>
-                        <property name="label" translatable="yes">_Boot Environment Management</property>
+                        <property name="tooltip" translatable="yes">Manage Boot Environments</property>
+                        <property name="label" translatable="yes">Manage _Boot Environments...</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="on_file_be_activate"/>
                       </widget>
@@ -198,27 +207,6 @@
                         <property name="label" translatable="yes">_Remove</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="on_package_remove_activate"/>
-                      </widget>
-                    </child>
-                  </widget>
-                </child>
-              </widget>
-            </child>
-            <child>
-              <widget class="GtkMenuItem" id="settings">
-                <property name="visible">True</property>
-                <property name="label" translatable="yes">_Settings</property>
-                <property name="use_underline">True</property>
-                <child>
-                  <widget class="GtkMenu" id="menu4">
-                    <property name="visible">True</property>
-                    <child>
-                      <widget class="GtkMenuItem" id="settings_edit_repositories">
-                        <property name="visible">True</property>
-                        <property name="tooltip" translatable="yes">Manage Repositories</property>
-                        <property name="label" translatable="yes">_Manage Repositories...</property>
-                        <property name="use_underline">True</property>
-                        <signal name="activate" handler="on_settings_edit_repositories_activate"/>
                       </widget>
                     </child>
                   </widget>

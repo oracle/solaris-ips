@@ -280,9 +280,9 @@ class InstallUpdate(progress.ProgressTracker):
                 self.w_download_progressbar.set_fraction(prog)
                 size_a_str = ""
                 size_b_str = ""
-                if cur_bytes > 0:
+                if cur_bytes >= 0:
                         size_a_str = pkg.misc.bytes_to_str(cur_bytes)
-                if total_bytes > 0:
+                if total_bytes >= 0:
                         size_b_str = pkg.misc.bytes_to_str(total_bytes)
                 c = "Downloaded: " + size_a_str + " / " + size_b_str
                 self.w_download_progressbar.set_text(c)
