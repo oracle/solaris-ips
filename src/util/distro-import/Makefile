@@ -41,6 +41,27 @@ ALL_PKGS=	../../../packages/i386	\
 		$(NONWOS_PKGS)		\
 		$(WOS_PKGS)
 
+POUND_SIGN:sh=				echo \\043
+
+#set default
+ARCH=i386
+
+i386_DEFINES=		\
+	ARCH=i386 	\
+	ARCH32=i86	\
+	ARCH64=amd64	\
+	i386_ONLY=''	\
+	sparc_ONLY=$(POUND_SIGN)	
+
+sparc_DEFINES=		\
+	ARCH=sparc 	\
+	ARCH32=sparcv7	\
+	ARCH64=sparcv9	\
+	i386_ONLY=$(POUND_SIGN)	\
+	sparc_ONLY=''
+
+ARCH_DEFINES=$($(ARCH)_DEFINES)
+
 TMPPKGS=SUNWfixes
 EXTRA_OPTIONS=
 
@@ -66,7 +87,7 @@ GLOBAL_CHATTRS_101a = $(GLOBAL_CHATTRS_101)
 GLOBAL_CHATTRS = $(GLOBAL_CHATTRS_$(BUILDID))
 
 SOLARIS.PY=./solaris.py -b 0.$(BUILDID) $(EXTRA_OPTIONS) -T \*.py \
-	$(GLOBAL_CHATTRS:%= -G %)
+	$(GLOBAL_CHATTRS:%= -G %) $(ARCH_DEFINES:%= -m %)
 
 #
 # always remove the following (editable) files from packages we bulk import;

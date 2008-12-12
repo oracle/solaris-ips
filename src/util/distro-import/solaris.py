@@ -278,13 +278,13 @@ class pkg(object):
                         # each chattr produces a dictionary of actions
                         # including a path=xxxx and whatever modifications
                         # are made.  Note that the path value may be a list in
-                        # the case of modifications to the path... since 
+                        # the case of modifications to the path... since
                         # each chattr produces another path= entry and results
                         # from applying the changes to the original file spec,
                         # we need to ignore path if it hasn't changed... for
                         # generality, we ignore all unchanged attributes in
                         # the code below, adding into changed_attrs only those
-                        # that are different from the original... this also 
+                        # that are different from the original... this also
                         # insulates us from the possibility of actions.fromstr
                         # adding additional attributes in the constructor...
 
@@ -293,8 +293,8 @@ class pkg(object):
                                     orig_action.attrs[key] != a.attrs[key]:
                                         if key in f.changed_attrs:
                                                 print "Warning: overwriting changed attr %s on %s from %s to %s" % \
-                                                    (key, f.pathname, 
-                                                     f.changed_attrs[key], 
+                                                    (key, f.pathname,
+                                                     f.changed_attrs[key],
                                                      a.attrs[key])
                                         f.changed_attrs[key] = a.attrs[key]
 
@@ -334,7 +334,7 @@ class pkg(object):
                         if fnmatch.fnmatchcase(f.pathname, glob) and
                             fnmatch.fnmatchcase(
                                 usedlist[f.pathname][0], pkgglob) and
-                            f.type in types    
+                            f.type in types
                      ]
 
                 chattr_line = line
@@ -365,13 +365,13 @@ class pkg(object):
                         # each chattr produces a dictionary of actions
                         # including a path=xxxx and whatever modifications
                         # are made.  Note that the path value may be a list in
-                        # the case of modifications to the path... since 
+                        # the case of modifications to the path... since
                         # each chattr produces another path= entry and results
                         # from applying the changes to the original file spec,
                         # we need to ignore path if it hasn't changed... for
                         # generality, we ignore all unchanged attributes in
                         # the code below, adding into changed_attrs only those
-                        # that are different from the original... this also 
+                        # that are different from the original... this also
                         # insulates us from the possibility of actions.fromstr
                         # adding additional attributes in the constructor...
 
@@ -382,8 +382,8 @@ class pkg(object):
                                     orig_action.attrs[key] != a.attrs[key]:
                                         if key in f.changed_attrs:
                                                 print "Warning: overwriting changed attr %s on %s from %s to %s" % \
-                                                    (key, f.pathname, 
-                                                     f.changed_attrs[key], 
+                                                    (key, f.pathname,
+                                                     f.changed_attrs[key],
                                                      a.attrs[key])
                                         f.changed_attrs[key] = a.attrs[key]
 
@@ -874,9 +874,11 @@ description_detritus = [", (usr)", ", (root)", " (usr)", " (root)",
 # list of global includes to add to every package
 #
 global_includes = []
+# list of macro substitutions
+macro_definitions = {}
 
 try:
-        opts, args = getopt.getopt(sys.argv[1:], "B:D:I:G:T:b:dns:v:w:j:")
+        opts, args = getopt.getopt(sys.argv[1:], "B:D:I:G:T:b:dj:m:ns:v:w:")
 except getopt.GetoptError, e:
         print "unknown option", e.opt
         sys.exit(1)
@@ -886,6 +888,11 @@ for opt, arg in opts:
                 def_branch = arg.rstrip("abcdefghijklmnopqrstuvwxyz")
         elif opt == "-d":
                 show_debug = True
+        elif opt == "-j": # means we're using the new argument form...
+                just_these_pkgs.append(arg)
+        elif opt == "-m":
+                a = arg.split("=", 1)
+                macro_definitions.update([("$(%s)" % a[0], a[1])])
         elif opt == "-n":
                 nopublish = True
         elif  opt == "-s":
@@ -898,8 +905,6 @@ for opt, arg in opts:
                 elided_files[arg] = True
         elif opt == "-I":
                 include_path.extend(arg.split(":"))
-        elif opt == "-j": # means we're using the new argument form...
-                just_these_pkgs.append(arg)
         elif opt == "-B":
                 branch_file = file(arg)
                 for line in branch_file:
@@ -986,22 +991,41 @@ lexer = None
 
 def read_full_line(lexer, continuation='\\'):
         """Read a complete line, allowing for the possibility of it being
-        continued over multiple lines.  Returns a single joined line, with 
+        continued over multiple lines.  Returns a single joined line, with
         continuation characters and leading and trailing spaces removed.
         """
 
         lines = []
         while True:
                 line = lexer.instream.readline().strip()
+                lexer.lineno = lexer.lineno + 1
                 if line[-1] in continuation:
                         lines.append(line[:-1])
                 else:
                         lines.append(line)
                         break;
-        return ' '.join(lines) 
 
+        return apply_macros(' '.join(lines))
+
+def apply_macros(s):
+        """Apply macro subs defined on command line... keep applying
+        macros until no translations are found.  If macro translates
+        to a comment, replace entire token text."""
+        while s and "$(" in s:
+                for key in macro_definitions.keys():
+                        if key in s:
+                                value = macro_definitions[key]
+                                if value == "#": # comment character
+                                        s = "#"  # affects whole token
+                                        break
+                                s = s.replace(key, value)
+                                break # look for more substitutions
+                else:
+                        break # no more substitutable tokens
+        return s
 
 def sourcehook(filename):
+        """ implement include hierarchy """
         for i in include_path:
                 f = os.path.join(i, filename)
                 if os.path.exists(f):
@@ -1009,11 +1033,30 @@ def sourcehook(filename):
 
         return filename, open(filename)
 
+class tokenlexer(shlex.shlex):
+        def read_token(self):
+                """ simple replacement of $(ARCH) with a non-special
+                value defined on the command line is trivial.  Since
+                shlex's read_token routine also strips comments and
+                white space, this read_token cannot return either 
+                one so any macros that translate to either spaces or
+                # (comment) need to be removed from the token stream."""
+
+                while True:
+                        s = apply_macros(shlex.shlex.read_token(self))
+                        if s == "#": # discard line if comment; try again
+                                self.instream.readline()
+                                self.lineno = self.lineno + 1
+                        # bail on EOF or not space; loop on space
+                        elif s == None or (s != "" and not s.isspace()):
+                                break
+                return s
+
 def SolarisParse(mf):
         global curpkg
 
-        lexer = shlex.shlex(file(mf), mf, True)
-        lexer.whitespace_split = True                 
+        lexer = tokenlexer(file(mf), mf, True)
+        lexer.whitespace_split = True
         lexer.source = "include"
         lexer.sourcehook = sourcehook
 

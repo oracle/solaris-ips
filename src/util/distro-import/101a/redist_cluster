@@ -77,6 +77,7 @@ include common/SUNWaspell-en
 include common/SUNWastdev
 include common/SUNWatfs
 include common/SUNWauda
+include common/SUNWaudd
 include common/SUNWaudf
 include common/SUNWaudh
 include common/SUNWaudit
@@ -1292,7 +1293,6 @@ include i386/SUNWamr
 include i386/SUNWarcmsr
 include i386/SUNWatheros
 include i386/SUNWatigfx
-include i386/SUNWaudd
 include i386/SUNWaudiohd
 include i386/SUNWavant
 include i386/SUNWbge

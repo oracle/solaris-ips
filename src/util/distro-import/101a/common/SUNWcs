@@ -49,7 +49,7 @@ drop var/svc/profile/generic_open.xml
 drop sbin/pfsh
 drop sbin/sh
 add link path=sbin/pfsh target=../usr/has/bin/sh
-add link path=sbin/sh target=../usr/bin/i86/ksh93
+add link path=sbin/sh target=../usr/bin/$(ARCH32)/ksh93
 from SUNWfixes import
 # until the necessary actions are available
 etc/inet/services

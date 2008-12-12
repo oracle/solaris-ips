@@ -16,6 +16,7 @@ include common/SUNWafe
 include common/SUNWatfs
 include common/SUNWauda
 include common/SUNWaudf
+include common/SUNWaudd
 include common/SUNWav1394
 include common/SUNWavahi-bridge-dsd
 include common/SUNWbart
@@ -551,7 +552,6 @@ include i386/SUNWamr
 include i386/SUNWarcmsr
 include i386/SUNWatheros
 include i386/SUNWatigfx
-include i386/SUNWaudd
 include i386/SUNWaudiohd
 include i386/SUNWbge
 include i386/SUNWcakr
