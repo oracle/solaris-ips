@@ -2503,7 +2503,6 @@ To delete this BE, boot into another BE, then return here.</property>
                     </child>
                     <child>
                       <widget class="GtkButton" id="repositoryadd">
-                        <property name="width_request">50</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
