@@ -81,24 +81,13 @@ class GenOSFiles:
         #
         self.package_count = 0
 
-    def do_classification(self, pathname, line):
-        """Extract category and subcategory values. Add package
-        classification info to the dictionary of packages. If any
-        entry already exists, replace it, if this info is for a newer
-        build number.
+    def save_entry(self, pathname, category, sub_category):
+        """For the given package name, create a new entry in a list of
+        the classifications for this package. The entry will consist of
+        a build number, a category and a sub_category. If the category
+        and sub-category are None, then this means that for that build
+        number, this packages was not classified.
         """
-
-        tokens = line.split(None, 1)[1].strip('"').split("/")
-        if len(tokens) != 2:
-            message = "**** Malformed classification line: %s:\n" % line
-            sys.stderr.write(message)
-            return
-
-        category = tokens[0]
-        sub_category = tokens[1]
-        if self.debug:
-            sys.stderr.write("category: %s\n" % category)
-            sys.stderr.write("sub_category: %s\n" % sub_category)
 
         # The following adjustments are made because the GUI Package
         # Manager code is currently unable to handle sub-categories
@@ -135,7 +124,7 @@ class GenOSFiles:
                     sys.stderr.write("CHANGED: sub_category: %s\n" %
                                      sub_category)
 
-            if len(sub_category) == 0:
+            if sub_category and len(sub_category) == 0:
                 message = "**** Package %s: empty sub-category\n" % \
                           self.package_name
                 sys.stderr.write(message)
@@ -143,47 +132,27 @@ class GenOSFiles:
 
             tokens = pathname[len(self.prefix):-1].split("/")
             if self.debug:
-                sys.stderr.write("tokens[0]: %s\n" % tokens[0])
+                sys.stderr.write("tokens[1]: %s\n" % tokens[1])
 
             try:
-                new_build_no = int(tokens[0])
+                build_no = int(tokens[1])
             except ValueError:
                 try:
-                    new_build_no = int(tokens[0][:-1])
+                    build_no = int(tokens[1][:-1])
                 except ValueError:
-                    new_build_no = 0   # For unbundleds files.
+                    build_no = 0   # For unbundleds files.
 
-            # If we already have a dictionary entry for this
-            # package, check to see if this one is for a newer
-            # build.
-            #
             if self.package_name in self.packages:
-                build_no, old_category, old_sub_category = \
-                    self.packages[self.package_name]
-
-                if self.debug:
-                    sys.stderr.write("*** EXISTS: %s\n" %
-                                     self.package_name)
-                    sys.stderr.write("OLD: %d NEW: %d\n" %
-                                     (build_no, new_build_no))
-
-                if new_build_no > build_no:
-                    if self.debug:
-                        sys.stderr.write("NEW: %s (%d) %s\n" %
-                            (self.package_name, new_build_no, sub_category))
-
-                    self.packages[self.package_name] = \
-                        [new_build_no, category, sub_category]
-
+                packages = self.packages[self.package_name]
+                packages.append([build_no, category, sub_category])
+                self.packages[self.package_name] = packages
             else:
                 self.packages[self.package_name] = \
-                    [new_build_no, category, sub_category]
-                self.package_count += 1
+                    [ [build_no, category, sub_category] ]
 
         else:
             message = \
-                "**** Classification (%s) with no package name in %s" % \
-                    (line[:-1], pathname)
+                "**** Classification with no package name in %s" % pathname
             sys.stderr.write(message)
 
         self.package_name = None
@@ -202,7 +171,9 @@ class GenOSFiles:
             sys.stderr.write("Pathname: %s\n" % pathname)
 
         self.package_name = None
+        classification_found = False
         for line in lines:
+            line = line.rstrip()
             if line.startswith("package"):
                 tokens = line.split()
                 try:
@@ -214,7 +185,33 @@ class GenOSFiles:
                     pass
 
             elif line.startswith("classification"):
-                self.do_classification(pathname, line.rstrip())
+                classification_found = True
+                tokens = line.split(None, 1)[1].strip('"').split("/")
+                try:
+                    category, sub_category = tokens
+                    if self.debug:
+                        sys.stderr.write("category: %s\n" % category)
+                        sys.stderr.write("sub_category: %s\n" % sub_category)
+                except IndexError:
+                    message = "**** Malformed classification line: %s:\n" % line
+                    sys.stderr.write(message)
+                    return
+
+                self.save_entry(pathname, category, sub_category)
+
+        if self.package_name and not classification_found:
+            self.save_entry(pathname, None, None)
+
+    def cleanup_packages(self):
+        """For each of the keys in the packages dictionary, sort the
+        entries in the value by build number, and reset the dictionary
+        entry to just the last value.
+        """
+
+        for key in sorted(self.packages.keys()):
+            packages = self.packages[key]
+            packages.sort(lambda x, y:cmp(x[0], y[0]))
+            self.packages[key] = packages[-1]
 
     def usage(self, usage_error = None):
         """Emit a usage message and optionally prefix it with a more
@@ -257,17 +254,18 @@ Usage:
         for key in sorted(self.packages.keys()):
             build_no, category, sub_category = self.packages[key]
 
-            if category in categories:
-                # If we already have a list started for this category,
-                # then just append this sub-category to it, if it isn't
-                # already there.
-                #
-                sub_categories = categories[category]
-                if not sub_category in sub_categories:
-                    sub_categories.append(sub_category)
-                    categories[category] = sub_categories
-            else:
-                categories[category] = [ sub_category ]
+            if category and sub_category:
+                if category in categories:
+                    # If we already have a list started for this category,
+                    # then just append this sub-category to it, if it isn't
+                    # already there.
+                    #
+                    sub_categories = categories[category]
+                    if not sub_category in sub_categories:
+                        sub_categories.append(sub_category)
+                        categories[category] = sub_categories
+                else:
+                    categories[category] = [ sub_category ]
 
 
         fout = open(self.os_cat_name, 'w')
@@ -300,7 +298,8 @@ Usage:
         fout = open(self.os_subcat_name, 'w')
         for key in sorted(self.packages.keys()):
             build_no, category, sub_category = self.packages[key]
-            fout.write("[%s]\ncategory = %s\n\n" % (key, sub_category))
+            if category and sub_category:
+                fout.write("[%s]\ncategory = %s\n\n" % (key, sub_category))
         fout.close()
 
     def main(self):
@@ -331,6 +330,8 @@ Usage:
         lines = os.popen(cmd).readlines()
         for package_file in lines:
             self.extract_info(package_file[:-1])
+
+        self.cleanup_packages()
 
         if self.debug:
             sys.stderr.write("Number of classified packages: %d\n" %
