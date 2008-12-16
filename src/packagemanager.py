@@ -2102,9 +2102,11 @@ if __name__ == '__main__':
                 print "%s, for help use --help" % msg
                 sys.exit(2)
 
-        cmd = os.path.join(os.getcwd(), sys.argv[0])
-        cmd = os.path.realpath(cmd)
-        packagemanager.application_path = cmd
+        if os.path.isabs(sys.argv[0]):
+                packagemanager.application_path = sys.argv[0]
+        else: 
+                cmd = os.path.join(os.getcwd(), sys.argv[0])
+                packagemanager.application_path = os.path.realpath(cmd)
 
         for option, argument in opts:
                 if option in ("-h", "--help"):
