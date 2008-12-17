@@ -1198,7 +1198,7 @@ Click Next to continue.</property>
                       </packing>
                     </child>
                     <child>
-                      <widget class="GtkLabel" id="label4">
+                      <widget class="GtkLabel" id="next_label">
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">_Next</property>
                         <property name="use_underline">True</property>

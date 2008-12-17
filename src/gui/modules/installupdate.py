@@ -88,6 +88,8 @@ class InstallUpdate(progress.ProgressTracker):
                     w_tree_errordialog.get_widget("errortextdetails")
                 self.w_next_button = \
                     w_tree_installupdate.get_widget("next")
+                self.w_next_label = \
+                    w_tree_installupdate.get_widget("next_label")
                 remove_warning_triange = \
                     w_tree_installupdate.get_widget("warningtriangle")
                 self.w_cancel_button = \
@@ -142,15 +144,15 @@ class InstallUpdate(progress.ProgressTracker):
                         self.w_information_label.set_text(\
                             self.parent._("This action affects other packages.\n" \
                             "Review the packages to be removed.\n" \
-                            "Click Next to continue."))
+                            "Click Proceed to continue."))
                         self.w_installing_dialog.set_title(\
                             self.parent._("Removing Packages"))
                         self.w_createplan_dialog.set_title(\
                             self.parent._("Remove Check"))
                         self.w_installingdialog_label.set_text(\
                             self.parent._("Removing Packages..."))
-                        self.w_next_button.set_label(\
-                            self.parent._("Proceed"))
+                        self.w_next_label.set_label(\
+                            self.parent._("_Proceed"))
                         remove_warning_triange.show()
 
                 try:
