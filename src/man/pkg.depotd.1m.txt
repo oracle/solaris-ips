@@ -152,20 +152,9 @@ FILES
                                 pkg/inst_root to select an
                                 alternate location.
 
-     /usr/share/lib/pkg         Default directory containing static content
-                                served by the depot.
-
-     /usr/share/lib/pkg/pkg.css Cascading stylesheet.
-
-     /usr/share/lib/pkg/pkg-block-logo.png
-                                Package depot logo.
-
-     /usr/share/lib/pkg/pkg-block-icon.png
-                                Icon for the package depot server.
-
-     /usr/share/lib/pkg/robots.txt
-                                Default robots.txt file which disallows all
-                                crawling of the repository.
+     /usr/share/lib/pkg         Default presentation content location;
+                                modify pkg/content_root to select an
+                                alternate location.
 
 ATTRIBUTES
      See attributes(5) for descriptions of the  following  attri-
