@@ -26,10 +26,12 @@
 import ConfigParser
 import re
 import errno
+import os.path
 import pkg.fmri as fmri
 import pkg.misc as misc
 import pkg.client.api_errors as api_errors
 from pkg.misc import msg
+import pkg.portable as portable
 
 class DepotStatus(object):
         """An object that encapsulates status about a depot server.
@@ -82,6 +84,10 @@ default_policies = {
     SEND_UUID: False,
 }
 
+# names of image configuration files managed by this module
+CFG_FILE = "cfg_cache"
+DA_FILE = "disabled_auth"
+
 class ImageConfig(object):
         """An ImageConfig object is a collection of configuration information:
         URLs, authorities, properties, etc. that allow an Image to operate."""
@@ -119,60 +125,22 @@ class ImageConfig(object):
                         return policystr.lower() in ("true", "yes")
                 return default_policies[policy]
                 
-        def read(self, path):
-                """Read the given file as if it were a configuration cache for
-                pkg(1)."""
+        def read(self, dir):
+                """Read the config files for the image from the given directory."""
 
                 cp = ConfigParser.SafeConfigParser()
 
-                r = cp.read(path)
+                ccfile = os.path.join(dir, CFG_FILE)
+                r = cp.read(ccfile)
                 if len(r) == 0:
-                        raise RuntimeError("Couldn't read configuration %s" % path)
+                        raise RuntimeError("Couldn't read configuration from %s" % ccfile)
 
-                assert r[0] == path
+                assert r[0] == ccfile
 
                 for s in cp.sections():
                         if re.match("authority_.*", s):
-                                # authority block has prefix, origin, and
-                                # mirrors
-                                a = {}
+                                k, a = self.read_authority(cp, s)
                                 ms = []
-
-                                k = cp.get(s, "prefix")
-
-                                if k.startswith(fmri.PREF_AUTH_PFX):
-                                        raise RuntimeError(
-                                            "Invalid Authority name: %s" % k)
-
-                                a["prefix"] = k
-                                a["origin"] = cp.get(s, "origin")
-                                mir_str = cp.get(s, "mirrors")
-                                if mir_str == "None":
-                                        a["mirrors"] = []
-                                else:
-                                        a["mirrors"] = self.read_list(mir_str)
-
-                                try:
-                                        a["ssl_key"] = cp.get(s, "ssl_key")
-                                        if a["ssl_key"] == "None":
-                                                a["ssl_key"] = None
-                                except ConfigParser.NoOptionError:
-                                        a["ssl_key"] = None
-
-                                try:
-                                        a["ssl_cert"] = cp.get(s, "ssl_cert")
-                                        if a["ssl_cert"] == "None":
-                                                a["ssl_cert"] = None
-                                except ConfigParser.NoOptionError:
-                                        a["ssl_cert"] = None
-
-                                try:
-                                        a["uuid"] = cp.get(s, "uuid")
-                                except ConfigParser.NoOptionError:
-                                        a["uuid"] = "None"
-
-                                a["origin"] = \
-                                    misc.url_affix_trailing_slash(a["origin"])
 
                                 self.authorities[k] = a
                                 self.authority_status[k] = DepotStatus(k,
@@ -204,9 +172,28 @@ class ImageConfig(object):
                 if "preferred-authority" in self.properties:
                         self.preferred_authority = self.properties["preferred-authority"]
 
-        def write(self, path):
+                # read disabled authority file
+                # XXX when compatility with the old code is no longer needed,
+                # this can be removed
                 cp = ConfigParser.SafeConfigParser()
+                dafile = os.path.join(dir, DA_FILE)
+                if os.path.exists(dafile):
+                        r = cp.read(dafile)
+                        if len(r) == 0:
+                                raise RuntimeError("Couldn't read configuration from %s" % dafile)
+                        for s in cp.sections():
+                                if re.match("authority_.*", s):
+                                        k, a = self.read_authority(cp, s)
+                                        self.authorities[k] = a
+                                        # status objects are not created for
+                                        # disabled authorities
 
+        def write(self, dir):
+                """Write the configuration to the given directory"""
+                cp = ConfigParser.SafeConfigParser()
+                # XXX the use of the disabled_auth file can be removed when
+                # compatibility with the older code is no longer needed
+                da = ConfigParser.SafeConfigParser()
                 self.properties["preferred-authority"] = self.preferred_authority
 
                 cp.add_section("property")
@@ -218,33 +205,38 @@ class ImageConfig(object):
                         cp.set("filter", f, str(self.filters[f]))
 
                 for a in self.authorities:
-                        section = "authority_%s" % self.authorities[a]["prefix"]
+                        auth = self.authorities[a]
+                        section = "authority_%s" % auth["prefix"]
 
-                        cp.add_section(section)
+                        c = cp
+                        if auth["disabled"]:
+                                c = da
 
-                        cp.set(section, "prefix",
-                            self.authorities[a]["prefix"])
-                        cp.set(section, "origin",
-                            self.authorities[a]["origin"])
-                        cp.set(section, "mirrors",
-                            str(self.authorities[a]["mirrors"]))
-                        cp.set(section, "ssl_key",
-                            str(self.authorities[a]["ssl_key"]))
-                        cp.set(section, "ssl_cert",
-                            str(self.authorities[a]["ssl_cert"]))
-                        cp.set(section, "uuid",
-                            str(self.authorities[a]["uuid"]))
+                        c.add_section(section)
+                        c.set(section, "prefix", auth["prefix"])
+                        c.set(section, "origin", auth["origin"])
+                        c.set(section, "disabled", str(auth["disabled"]))
+                        c.set(section, "mirrors", str(auth["mirrors"]))
+                        c.set(section, "ssl_key", str(auth["ssl_key"]))
+                        c.set(section, "ssl_cert", str(auth["ssl_cert"]))
+                        c.set(section, "uuid", str(auth["uuid"]))
 
                 # XXX Child images
 
-                try:
-                        f = open(path, "w")
-                except EnvironmentError, e:
-                        if e.errno == errno.EACCES:
-                                raise api_errors.PermissionsException(
-                                    e.filename)
-                        raise
-                cp.write(f)
+                for afile, acp in [(CFG_FILE, cp), (DA_FILE, da)]:
+                        thefile = os.path.join(dir, afile)
+                        if len(acp.sections()) == 0:
+                                if os.path.exists(thefile):
+                                        portable.remove(thefile)
+                                continue
+                        try:
+                                f = open(thefile, "w")
+                        except EnvironmentError, e:
+                                if e.errno == errno.EACCES:
+                                        raise api_errors.PermissionsException(
+                                            e.filename)
+                                raise
+                        acp.write(f)
 
         def delete_authority(self, auth):
                 del self.authorities[auth]
@@ -264,3 +256,50 @@ class ImageConfig(object):
                 lst = [ s for s in lst if s != '' ]
 
                 return lst
+
+        def read_authority(self, cp, s):
+                # authority block has prefix, origin, and mirrors
+                a = {}
+                k = cp.get(s, "prefix")
+
+                if k.startswith(fmri.PREF_AUTH_PFX):
+                        raise RuntimeError(
+                            "Invalid Authority name: %s" % k)
+
+                a["prefix"] = k
+                a["origin"] = cp.get(s, "origin")
+                try:
+                        d = cp.get(s, "disabled")
+                except ConfigParser.NoOptionError:
+                        d = 'False'
+                a["disabled"] = d.lower() in ("true", "yes")
+
+                mir_str = cp.get(s, "mirrors")
+                if mir_str == "None":
+                        a["mirrors"] = []
+                else:
+                        a["mirrors"] = self.read_list(mir_str)
+
+                try:
+                        a["ssl_key"] = cp.get(s, "ssl_key")
+                        if a["ssl_key"] == "None":
+                                a["ssl_key"] = None
+                except ConfigParser.NoOptionError:
+                        a["ssl_key"] = None
+
+                try:
+                        a["ssl_cert"] = cp.get(s, "ssl_cert")
+                        if a["ssl_cert"] == "None":
+                                a["ssl_cert"] = None
+                except ConfigParser.NoOptionError:
+                        a["ssl_cert"] = None
+
+                try:
+                        a["uuid"] = cp.get(s, "uuid")
+                except ConfigParser.NoOptionError:
+                        a["uuid"] = "None"
+
+                a["origin"] = \
+                    misc.url_affix_trailing_slash(a["origin"])
+
+                return k, a

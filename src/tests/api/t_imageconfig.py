@@ -25,6 +25,7 @@
 
 import unittest
 import os
+import shutil
 import sys
 import tempfile
 import pkg.client.imageconfig as imageconfig
@@ -36,11 +37,11 @@ import pkg5unittest
 
 class TestImageConfig(pkg5unittest.Pkg5TestCase):
         def setUp(self):
+                self.sample_dir = tempfile.mkdtemp()
+                cfgfile = os.path.join(self.sample_dir, imageconfig.CFG_FILE)
+                f = open(cfgfile, "w")
 
-		fd, self.sample_conf = tempfile.mkstemp()
-                f = os.fdopen(fd, "w")
-
-		f.write("""\
+                f.write("""\
 [policy]
 Display-Copyrights: False
 
@@ -55,35 +56,35 @@ ssl_key:
 ssl_cert:
 """)
                 f.close()
-		self.ic = imageconfig.ImageConfig()
+                self.ic = imageconfig.ImageConfig()
 
         def tearDown(self):
-		try:
-			os.remove(self.sample_conf)
-		except:
-			pass
+                try:
+                        shutil.rmtree(self.sample_dir)
+                except:
+                        pass
 
-	def test_read(self):
-		self.ic.read(self.sample_conf)
+        def test_read(self):
+                self.ic.read(self.sample_dir)
 
         def test_unicode(self):
-                self.ic.read(self.sample_conf)
+                self.ic.read(self.sample_dir)
                 ustr = u'abc\u3041def'
                 self.ic.properties['name'] = ustr
-                fd, fname = tempfile.mkstemp()
-                os.close(fd)
-                self.ic.write(fname)
+                newdir = tempfile.mkdtemp()
+                self.ic.write(newdir)
                 ic2 = imageconfig.ImageConfig()
-                ic2.read(fname)
+                ic2.read(newdir)
                 ustr2 = ic2.properties['name']
+                shutil.rmtree(newdir)
                 self.assert_(ustr == ustr2)
 
-	def test_missing_conffile(self):
-		#
-		#  See what happens if the conf file is missing.
-		#
-		os.remove(self.sample_conf)
-		self.assertRaises(RuntimeError, self.ic.read, self.sample_conf)
+        def test_missing_conffile(self):
+                #
+                #  See what happens if the conf file is missing.
+                #
+                shutil.rmtree(self.sample_dir)
+                self.assertRaises(RuntimeError, self.ic.read, self.sample_dir)
 
 # XXX more test cases needed.
 

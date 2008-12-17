@@ -88,6 +88,7 @@ IMAGES
       /prefix                  pkg: authority
       /origin                  http:, https:, or ftp: URL
       /mirrors                 list of URLs
+      /disabled                boolean indicating whether authority should be used
 
     Image properties.  The image has a collection of simple properties,
     like machine type and policies that control the behavior of the pkg(5)

@@ -29,12 +29,12 @@ SYNOPSIS
      /usr/bin/pkg unset-property propname ...
      /usr/bin/pkg property [-H] [propname ...]
 
-     /usr/bin/pkg set-authority [-P] [-k ssl_key] [-c ssl_cert]
+     /usr/bin/pkg set-authority [-Ped] [-k ssl_key] [-c ssl_cert]
          [-O origin_url] [-m mirror_to_add | --add-mirror=mirror_to_add]
          [-M mirror_to_remove | --remove-mirror=mirror_to_remove]
-         [--no-refresh] [--reset-uuid] authority
+         [--enable] [--disable] [--no-refresh] [--reset-uuid] authority
      /usr/bin/pkg unset-authority authority ...
-     /usr/bin/pkg authority [-HP] [authority ...]
+     /usr/bin/pkg authority [-HPa] [authority ...]
 
      /usr/bin/pkg history [-Hl]
      /usr/bin/pkg purge-history
@@ -256,10 +256,10 @@ SUBCOMMANDS
           property names is requested, display the names and values for those
           properties.  With -H, omit the headers from the listing.
 
-     set-authority [-P] [-k ssl_key] [-c ssl_cert] [-O origin_url]
+     set-authority [-Ped] [-k ssl_key] [-c ssl_cert] [-O origin_url]
        [-m mirror_to_add | --add-mirror=mirror_to_add]
        [-M mirror_to_remove | --remove-mirror=mirror_to_remove]
-       [--no-refresh] [--reset-uuid] authority
+       [--enable] [--disable] [--no-refresh] [--reset-uuid] authority
           Update an existing authority or add an additional package
           authority.  With -P, set the specified authority as the
           preferred authority.  With -c and -k, specify client SSL
@@ -278,17 +278,25 @@ SUBCOMMANDS
           With -M (--remove-mirror), remove the URL from the list of mirrors
           for the given authority.
 
+          With -e (--enable), enable the authority; with -d (--disable), disable
+          the authority.  A disabled authority is not used when populating the
+          package list or in certain package operations (install, uninstall, and
+          image-update).  However, the properties for a disabled authority can
+          still be set and viewed.  If only one authority exists, it cannot be
+          disabled.
+
      unset-authority authority ...
           Remove the configuration associated with the given authority
           or authorities.
 
-     authority [-HP] [authority ...]
+     authority [-HPa] [authority ...]
           Display authority information.  With no arguments, display the
-          list of configured authorities, and their origin URLs.  If
+          list of enabled authorities, and their origin URLs.  If
           specific authorities are requested, display the configuration
           values, including mirrors, associated with those authorities.  With
           -H, omit the headers from the listing.  With -P, display only the
-          preferred authority.
+          preferred authority. With -a, display all authorities (including those
+          that are disabled).
 
      history [-Hl]
           Displays the command history of the applicable image.  With -H, omit

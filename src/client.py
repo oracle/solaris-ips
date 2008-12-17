@@ -139,12 +139,12 @@ Advanced subcommands:
         pkg unset-property propname ...
         pkg property [-H] [propname ...]
 
-        pkg set-authority [-P] [-k ssl_key] [-c ssl_cert] [--reset-uuid]
+        pkg set-authority [-Ped] [-k ssl_key] [-c ssl_cert] [--reset-uuid]
             [-O origin_url] [-m mirror_to_add | --add-mirror=mirror_to_add]
             [-M mirror_to_remove | --remove-mirror=mirror_to_remove]
-            [--no-refresh] authority
+            [--enable] [--disable] [--no-refresh] authority
         pkg unset-authority authority ...
-        pkg authority [-HP] [authority ...]
+        pkg authority [-HPa] [authority ...]
         pkg history [-Hl]
         pkg purge-history
         pkg rebuild-index
@@ -1454,7 +1454,7 @@ def catalog_refresh(img_dir, args):
         try:
                 api_inst.refresh(full_refresh, pargs)
         except api_errors.UnrecognizedAuthorityException, e:
-                tmp = _("%s is not a recognized authority to " \
+                tmp = _("%s is not a recognized or enabled authority to " \
                     "refresh. \n'pkg authority' will show a" \
                     " list of authorities.")
                 error(tmp % e.auth)
@@ -1468,9 +1468,9 @@ def catalog_refresh(img_dir, args):
                 return 0
 
 def authority_set(img, args):
-        """pkg set-authority [-P] [-k ssl_key] [-c ssl_cert] [--reset-uuid]
+        """pkg set-authority [-Ped] [-k ssl_key] [-c ssl_cert] [--reset-uuid]
             [-O origin_url] [-m mirror to add] [-M mirror to remove] 
-            [--no-refresh] authority"""
+            [--enable] [--disable] [--no-refresh] authority"""
 
         preferred = False
         ssl_key = None
@@ -1480,9 +1480,11 @@ def authority_set(img, args):
         add_mirror = None
         remove_mirror = None
         refresh_catalogs = True
+        disable = None
 
-        opts, pargs = getopt.getopt(args, "Pk:c:O:M:m:",
-            ["add-mirror=", "remove-mirror=", "no-refresh", "reset-uuid"])
+        opts, pargs = getopt.getopt(args, "Pedk:c:O:M:m:",
+            ["add-mirror=", "remove-mirror=", "no-refresh", "reset-uuid",
+            "enable", "disable"])
 
         for opt, arg in opts:
                 if opt == "-P":
@@ -1501,6 +1503,10 @@ def authority_set(img, args):
                         refresh_catalogs = False
                 if opt == "--reset-uuid":
                         reset_uuid = True
+                if opt == "-e" or opt == "--enable":
+                        disable = False
+                if opt == "-d" or opt == "--disable":
+                        disable = True
 
         if len(pargs) == 0:
                 usage(
@@ -1539,6 +1545,10 @@ def authority_set(img, args):
                 error(_("set-authority: authority URL is invalid"))
                 return 1
 
+        if disable and auth == img.get_default_authority():
+                error(_("set-authority: cannot disable the preferred authority"))
+                return 1
+
         uuid = None
         if reset_uuid:
                 uuid = pkg.Uuid25.uuid1()
@@ -1546,7 +1556,8 @@ def authority_set(img, args):
         try:
                 img.set_authority(auth, origin_url=origin_url,
                     ssl_key=ssl_key, ssl_cert=ssl_cert,
-                    refresh_allowed=refresh_catalogs, uuid=uuid)
+                    refresh_allowed=refresh_catalogs, uuid=uuid,
+                    disabled=disable)
         except api_errors.CatalogRefreshException, e:
                 text = "Could not refresh the catalog for %s"
                 error(_(text) % auth)
@@ -1558,8 +1569,10 @@ def authority_set(img, args):
                 return 1
 
         if preferred:
+                if img.get_authority(auth)["disabled"]:
+                        error(_("set-authority: the preferred authority must be enabled"))
+                        return 1
                 img.set_preferred_authority(auth)
-
 
         if add_mirror:
 
@@ -1625,13 +1638,16 @@ def authority_list(img, args):
         omit_headers = False
         preferred_only = False
         preferred_authority = img.get_default_authority()
+        inc_disabled = False
 
-        opts, pargs = getopt.getopt(args, "HP")
+        opts, pargs = getopt.getopt(args, "HPa")
         for opt, arg in opts:
                 if opt == "-H":
                         omit_headers = True
                 if opt == "-P":
                         preferred_only = True
+                if opt == "-a":
+                        inc_disabled = True
 
         if len(pargs) == 0:
                 if not omit_headers:
@@ -1640,7 +1656,7 @@ def authority_list(img, args):
                 if preferred_only:
                         auths = [img.get_authority(preferred_authority)]
                 else:
-                        auths = img.gen_authorities()
+                        auths = img.gen_authorities(inc_disabled=inc_disabled)
 
                 for a in auths:
                         # summary list
@@ -1649,6 +1665,8 @@ def authority_list(img, args):
 
                         if not preferred_only and pfx == preferred_authority:
                                 pfx += " (preferred)"
+                        if a["disabled"]:
+                                pfx += " (disabled)"
                         msg("%-35s %s" % (pfx, url))
         else:
                 img.load_catalogs(get_tracker())
@@ -1701,6 +1719,10 @@ def authority_list(img, args):
                         msg("                UUID:", auth["uuid"])
                         msg("     Catalog Updated:", dt)
                         msg("             Mirrors:", mir)
+                        e = "Yes"
+                        if auth["disabled"]:
+                                e = "No"
+                        msg("             Enabled:", e)
 
         return 0
 

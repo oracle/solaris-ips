@@ -557,10 +557,12 @@ class ImageInterface(object):
                                 auths = []
                         for auth in auths:
                                 try:
-                                        auth = self.img.get_authority(auth)
+                                        a = self.img.get_authority(auth)
                                 except KeyError:
                                         raise api_errors.UnrecognizedAuthorityException(auth)
-                                auths_to_refresh.append(auth)
+                                if a["disabled"]:
+                                        raise api_errors.UnrecognizedAuthorityException(auth)
+                                auths_to_refresh.append(a)
 
 
                         # Ensure Image directory structure is valid.

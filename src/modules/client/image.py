@@ -207,12 +207,12 @@ class Image(object):
                 rv = None
                 if os.path.isdir(os.path.join(d, img_user_prefix)) and \
                         os.path.isfile(os.path.join(d, img_user_prefix,
-                            "cfg_cache")) and \
+                            imageconfig.CFG_FILE)) and \
                             self._check_subdirs(d, img_user_prefix):
                         rv = IMG_USER
                 elif os.path.isdir(os.path.join(d, img_root_prefix)) \
                          and os.path.isfile(os.path.join(d,
-                             img_root_prefix, "cfg_cache")) and \
+                             img_root_prefix, imageconfig.CFG_FILE)) and \
                              self._check_subdirs(d, img_root_prefix):
                         rv = IMG_ENTIRE
                 return rv
@@ -275,14 +275,12 @@ class Image(object):
                         raise RuntimeError, "self.root must be set"
 
                 ic = imageconfig.ImageConfig()
-
-                if os.path.isfile("%s/cfg_cache" % self.imgdir):
-                        ic.read("%s/cfg_cache" % self.imgdir)
+                ic.read(self.imgdir)
 
                 self.cfg_cache = ic
 
         def save_config(self):
-                self.cfg_cache.write("%s/cfg_cache" % self.imgdir)
+                self.cfg_cache.write(self.imgdir)
 
         # XXX mkdirs and set_attrs() need to be combined into a create
         # operation.
@@ -315,7 +313,7 @@ class Image(object):
             ssl_key = None, ssl_cert = None):
                 self.__set_dirs(imgtype=type, root=root)
 
-                if not os.path.exists(os.path.join(self.imgdir, "cfg_cache")):
+                if not os.path.exists(os.path.join(self.imgdir, imageconfig.CFG_FILE)):
                         self.history.operation_name = "image-create"
                 else:
                         self.history.operation_name = "image-set-attributes"
@@ -331,6 +329,7 @@ class Image(object):
                 self.cfg_cache.authorities[auth_name]["prefix"] = auth_name
                 self.cfg_cache.authorities[auth_name]["origin"] = \
                     misc.url_affix_trailing_slash(auth_url)
+                self.cfg_cache.authorities[auth_name]["disabled"] = False
                 self.cfg_cache.authorities[auth_name]["mirrors"] = []
                 self.cfg_cache.authorities[auth_name]["ssl_key"] = ssl_key
                 self.cfg_cache.authorities[auth_name]["ssl_cert"] = ssl_cert
@@ -351,13 +350,15 @@ class Image(object):
         def get_root(self):
                 return self.root
 
-        def gen_authorities(self):
+        def gen_authorities(self, inc_disabled = False):
                 if not self.cfg_cache:
                         raise RuntimeError, "empty ImageConfig"
                 if not self.cfg_cache.authorities:
                         raise RuntimeError, "no defined authorities"
                 for a in self.cfg_cache.authorities:
-                        yield self.cfg_cache.authorities[a]
+                        auth = self.cfg_cache.authorities[a]
+                        if inc_disabled or not auth["disabled"]:
+                                yield self.cfg_cache.authorities[a]
 
         def get_url_by_authority(self, authority = None):
                 """Return the URL prefix associated with the given authority.
@@ -623,12 +624,19 @@ class Image(object):
                         self.history.operation_result = \
                             history.RESULT_FAILED_UNKNOWN
                         raise KeyError, error
+                if self.get_authority(auth_name)["disabled"]:
+                        error = "authority '%s' is disabled" % auth_name
+                        self.history.operation_errors.append(error)
+                        self.history.operation_result = \
+                            history.RESULT_FAILED_BAD_REQUEST
+                        raise KeyError, error
                 self.cfg_cache.preferred_authority = auth_name
                 self.save_config()
                 self.history.operation_result = history.RESULT_SUCCEEDED
 
         def set_authority(self, auth_name, origin_url = None, ssl_key = None,
-            ssl_cert = None, refresh_allowed = True, uuid = None):
+            ssl_cert = None, refresh_allowed = True, uuid = None,
+            disabled = None):
                 self.history.operation_name = "set-authority"
                 auths = self.cfg_cache.authorities
 
@@ -647,6 +655,13 @@ class Image(object):
                                 auths[auth_name]["ssl_cert"] = ssl_cert
                         if uuid:
                                 auths[auth_name]["uuid"] = uuid
+                        if disabled != None:
+                                # don't make the perferred authority disabled
+                                # the caller is responsible for checking this
+                                assert(not disabled or \
+                                    auth_name != self.get_default_authority())
+                                auths[auth_name]["disabled"] = disabled
+                                refresh_needed = True
 
                 else:
                         auths[auth_name] = {}
@@ -659,6 +674,9 @@ class Image(object):
                         if not uuid:
                                 uuid = pkg.Uuid25.uuid1()
                         auths[auth_name]["uuid"] = uuid
+                        if disabled is None:
+                                disabled = False
+                        auths[auth_name]["disabled"] = disabled
                         refresh_needed = True
 
                 self.save_config()
@@ -1371,6 +1389,9 @@ class Image(object):
                         progtrack.refresh_start(len(auths))
 
                 for auth in auths:
+                        if auth["disabled"]:
+                                continue
+                                
                         total += 1
                         if progtrack:
                                 progtrack.refresh_progress(auth["prefix"])

@@ -38,7 +38,7 @@ class TestPkgAuthorityBasics(testutils.SingleDepotTestCase):
         def test_pkg_authority_bogus_opts(self):
                 """ pkg bogus option checks """
 
-		durl = self.dc.get_depot_url()
+                durl = self.dc.get_depot_url()
                 self.image_create(durl)
 
                 self.pkg("set-authority -@ test3", exit=2)
@@ -221,6 +221,61 @@ class TestPkgAuthorityBasics(testutils.SingleDepotTestCase):
                     self.bogus_url, exit=1)
                 self.pkg("set-authority --remove-mirror=%s7 mtest" %
                     self.bogus_url, exit=1)
+
+class TestPkgAuthorityMany(testutils.ManyDepotTestCase):
+        # Only start/stop the depot once (instead of for every test)
+        persistent_depot = True
+
+        foo1 = """
+            open foo@1,5.11-0
+            close """
+
+        bar1 = """
+            open bar@1,5.11-0
+            close """
+
+        def setUp(self):
+                testutils.ManyDepotTestCase.setUp(self, 2)
+
+                durl1 = self.dcs[1].get_depot_url()
+                self.pkgsend_bulk(durl1, self.foo1)
+
+                durl2 = self.dcs[2].get_depot_url()
+                self.pkgsend_bulk(durl2, self.bar1)
+
+                self.image_create(durl1, prefix = "test1")
+                self.pkg("set-authority -O " + durl2 + " test2")
+
+        def tearDown(self):
+                testutils.ManyDepotTestCase.tearDown(self)
+
+        def test_enable_disable(self):
+                """Test enable and disable."""
+
+                self.pkg("authority | grep test1")
+                self.pkg("authority | grep test2")
+
+                self.pkg("set-authority -d test2")
+                self.pkg("authority | grep test2", exit=1)
+                self.pkg("list -a bar", exit=1)
+                self.pkg("authority -a | grep test2")
+                self.pkg("set-authority -P test2", exit=1)
+                self.pkg("authority test2")
+                self.pkg("set-authority -e test2")
+                self.pkg("authority | grep test2")
+                self.pkg("list -a bar")
+
+                self.pkg("set-authority --disable test2")
+                self.pkg("authority | grep test2", exit=1)
+                self.pkg("list -a bar", exit=1)
+                self.pkg("authority -a | grep test2")
+                self.pkg("set-authority --enable test2")
+                self.pkg("authority | grep test2")
+                self.pkg("list -a bar")
+
+                # should fail because test is the preferred authority
+                self.pkg("set-authority -d test1", exit=1)
+                self.pkg("set-authority --disable test1", exit=1)
 
 if __name__ == "__main__":
         unittest.main()
