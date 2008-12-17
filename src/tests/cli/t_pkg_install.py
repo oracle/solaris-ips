@@ -997,7 +997,12 @@ adm:NP:6445::::::
 
         only_group10 = """
             open only_group@1.0,5.11-0
-            add group groupname=lp gid=8
+            add group groupname=Kermit gid=28
+            close """
+
+        only_group_file10 = """
+            open only_group_file@1.0,5.11-0
+            add dir mode=0755 owner=root group=Kermit path=/export/home/Kermit
             close """
 
         only_hardlink10 = """
@@ -1018,6 +1023,11 @@ adm:NP:6445::::::
         only_user10 = """
             open only_user@1.0,5.11-0
             add user username=Kermit group=adm home-dir=/export/home/Kermit
+            close """
+
+        only_user_file10 = """
+            open only_user_file@1.0,5.11-0
+            add dir mode=0755 owner=Kermit group=adm path=/export/home/Kermit
             close """
 
         empty_data = ""
@@ -1497,6 +1507,41 @@ adm:NP:6445::::::
                 self.pkg("image-update --no-refresh", su_wrap="noaccess",
                     exit=1)
                 self.pkg("image-update")
+
+        def test_bug_3222(self):
+                """ Verify that a timestamp of '0' for a passwd file will not
+                    cause further package operations to fail.  This can happen
+                    when there are time synchronization issues within a virtual
+                    environment or in other cases. """
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.basics0)
+                self.pkgsend_bulk(durl, self.only_user10)
+                self.pkgsend_bulk(durl, self.only_user_file10)
+                self.pkgsend_bulk(durl, self.only_group10)
+                self.pkgsend_bulk(durl, self.only_group_file10)
+                self.pkgsend_bulk(durl, self.grouptest)
+                self.pkgsend_bulk(durl, self.usertest10)
+                self.image_create(durl)
+                fname = os.path.join(self.get_img_path(), "etc", "passwd")
+                self.pkg("install basics")
+
+                # This should work regardless of whether a user is installed
+                # at the same time as the file in a package, or if the user is
+                # installed first and then files owned by that user are
+                # installed.
+                plists = [["grouptest", "usertest"],
+                    ["only_user", "only_user_file"],
+                    ["only_group", "only_group_file"]]
+                for plist in plists:
+                        for pname in plist:
+                                os.utime(fname, (0, 0))
+                                self.pkg("install %s" % pname)
+                                self.pkg("verify")
+
+                        for pname in reversed(plist):
+                                os.utime(fname, (0, 0))
+                                self.pkg("uninstall %s" % pname)
+                                self.pkg("verify")
 
 class TestDependencies(testutils.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)

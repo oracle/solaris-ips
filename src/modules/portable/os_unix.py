@@ -139,7 +139,7 @@ def load_passwd(dirpath):
         # check if we need to reload cache
         passwd_file = os.path.join(dirpath, "etc/passwd")
         passwd_stamp = os.stat(passwd_file).st_mtime
-        if passwd_stamp <= users_lastupdate.get(dirpath, 0):
+        if passwd_stamp <= users_lastupdate.get(dirpath, -1):
                 return
         users[dirpath] = user = {}
         uids[dirpath] = uid = {}
@@ -167,7 +167,7 @@ def load_groups(dirpath):
         # check if we need to reload cache
         group_file = os.path.join(dirpath, "etc/group")
         group_stamp = os.stat(group_file).st_mtime
-        if group_stamp <= groups_lastupdate.get(dirpath, 0):
+        if group_stamp <= groups_lastupdate.get(dirpath, -1):
                 return
         groups[dirpath] = group = {}
         gids[dirpath] = gid = {}
