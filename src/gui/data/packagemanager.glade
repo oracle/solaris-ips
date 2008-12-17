@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.4.5 on Tue Dec  9 03:30:28 2008 -->
+<!--Generated with glade3 3.4.5 on Mon Dec 15 14:49:40 2008 -->
 <glade-interface>
   <widget class="GtkWindow" id="mainwindow">
     <property name="width_request">800</property>
@@ -34,7 +34,7 @@
                       <widget class="GtkMenuItem" id="file_be">
                         <property name="visible">True</property>
                         <property name="tooltip" translatable="yes">Boot Environment Management</property>
-                        <property name="label" translatable="yes">Boot Environment Management</property>
+                        <property name="label" translatable="yes">_Boot Environment Management</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="on_file_be_activate"/>
                       </widget>
@@ -49,7 +49,7 @@
                         <property name="visible">True</property>
                         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                         <property name="tooltip" translatable="yes">Quit application</property>
-                        <property name="label" translatable="yes">Quit</property>
+                        <property name="label" translatable="yes">_Quit</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="on_file_quit_activate"/>
                       </widget>
@@ -74,7 +74,7 @@
                         <property name="sensitive">False</property>
                         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                         <property name="tooltip" translatable="yes">Cut action</property>
-                        <property name="label" translatable="yes">Cut</property>
+                        <property name="label" translatable="yes">Cu_t</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="on_edit_cut_activate"/>
                       </widget>
@@ -85,7 +85,7 @@
                         <property name="sensitive">False</property>
                         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                         <property name="tooltip" translatable="yes">Copy</property>
-                        <property name="label" translatable="yes">Copy</property>
+                        <property name="label" translatable="yes">_Copy</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="on_edit_copy_activate"/>
                       </widget>
@@ -96,7 +96,7 @@
                         <property name="sensitive">False</property>
                         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                         <property name="tooltip" translatable="yes">Paste</property>
-                        <property name="label" translatable="yes">Paste</property>
+                        <property name="label" translatable="yes">_Paste</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="on_edit_paste_activate"/>
                       </widget>
@@ -107,7 +107,7 @@
                         <property name="sensitive">False</property>
                         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                         <property name="tooltip" translatable="yes">Clear</property>
-                        <property name="label" translatable="yes">Clear</property>
+                        <property name="label" translatable="yes">_Clear</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="on_edit_clear_activate"/>
                       </widget>
@@ -123,7 +123,7 @@
                         <property name="visible">True</property>
                         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                         <property name="tooltip" translatable="yes">Select All Items</property>
-                        <property name="label" translatable="yes">Select All</property>
+                        <property name="label" translatable="yes">Select _All</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="on_edit_select_all_activate"/>
                       </widget>
@@ -133,7 +133,7 @@
                         <property name="visible">True</property>
                         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                         <property name="tooltip" translatable="yes">Select Updates</property>
-                        <property name="label" translatable="yes">Select Updates</property>
+                        <property name="label" translatable="yes">Select _Updates</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="on_edit_select_updates_activate"/>
                       </widget>
@@ -143,7 +143,7 @@
                         <property name="visible">True</property>
                         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                         <property name="tooltip" translatable="yes">Deselect selected packages</property>
-                        <property name="label" translatable="yes">Deselect</property>
+                        <property name="label" translatable="yes">_Deselect</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="on_edit_deselect_activate"/>
                       </widget>
@@ -167,7 +167,7 @@
                         <property name="visible">True</property>
                         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                         <property name="tooltip" translatable="yes">Update all packages</property>
-                        <property name="label" translatable="yes">Update All</property>
+                        <property name="label" translatable="yes">_Update All</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="on_package_update_all_activate"/>
                       </widget>
@@ -184,7 +184,7 @@
                         <property name="sensitive">False</property>
                         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                         <property name="tooltip" translatable="yes">Install or Update selected packages</property>
-                        <property name="label" translatable="yes">Install / Update</property>
+                        <property name="label" translatable="yes">_Install / Update</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="on_package_install_update_activate"/>
                       </widget>
@@ -195,7 +195,7 @@
                         <property name="sensitive">False</property>
                         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                         <property name="tooltip" translatable="yes">Remove selected packages</property>
-                        <property name="label" translatable="yes">Remove</property>
+                        <property name="label" translatable="yes">_Remove</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="on_package_remove_activate"/>
                       </widget>
@@ -216,7 +216,7 @@
                       <widget class="GtkMenuItem" id="settings_edit_repositories">
                         <property name="visible">True</property>
                         <property name="tooltip" translatable="yes">Manage Repositories</property>
-                        <property name="label" translatable="yes">Manage Repositories...</property>
+                        <property name="label" translatable="yes">_Manage Repositories...</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="on_settings_edit_repositories_activate"/>
                       </widget>
@@ -239,7 +239,7 @@
                       <widget class="GtkMenuItem" id="help_about">
                         <property name="visible">True</property>
                         <property name="tooltip" translatable="yes">About</property>
-                        <property name="label" translatable="yes">About</property>
+                        <property name="label" translatable="yes">_About</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="on_help_about_activate"/>
                       </widget>
@@ -248,7 +248,7 @@
                       <widget class="GtkMenuItem" id="online_help">
                         <property name="visible">True</property>
                         <property name="tooltip" translatable="yes">Online Help</property>
-                        <property name="label" translatable="yes">Online Help</property>
+                        <property name="label" translatable="yes">Online _Help</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="on_help_help_activate"/>
                       </widget>
@@ -366,9 +366,11 @@
                             <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                             <property name="xalign">1</property>
                             <property name="yalign">0.60000002384185791</property>
-                            <property name="label" translatable="yes">&lt;i&gt;Repository:&lt;/i&gt;</property>
+                            <property name="label" translatable="yes">&lt;i&gt;_Repository:&lt;/i&gt;</property>
                             <property name="use_markup">True</property>
+                            <property name="use_underline">True</property>
                             <property name="justify">GTK_JUSTIFY_RIGHT</property>
+                            <property name="mnemonic_widget">repositorycombobox</property>
                           </widget>
                         </child>
                         <child>
@@ -615,7 +617,9 @@
                           <widget class="GtkLabel" id="label2">
                             <property name="visible">True</property>
                             <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                            <property name="label" translatable="yes">Show:</property>
+                            <property name="label" translatable="yes">Sho_w:</property>
+                            <property name="use_underline">True</property>
+                            <property name="mnemonic_widget">filtercombobox</property>
                           </widget>
                         </child>
                         <child>
@@ -642,7 +646,9 @@
                           <widget class="GtkLabel" id="label3">
                             <property name="visible">True</property>
                             <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                            <property name="label" translatable="yes">Search:</property>
+                            <property name="label" translatable="yes">Se_arch:</property>
+                            <property name="use_underline">True</property>
+                            <property name="mnemonic_widget">searchentry</property>
                           </widget>
                           <packing>
                             <property name="padding">6</property>
