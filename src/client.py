@@ -535,7 +535,7 @@ def image_update(img_dir, args):
             api_errors.PermissionsException), e:
                 # Prepend a newline because otherwise the exception will
                 # be printed on the same line as the spinner.
-                msg("\n" + str(e))
+                error("\n" + str(e))
                 return 1
         except api_errors.IpkgOutOfDateException:
                 msg(_("WARNING: pkg(5) appears to be out of date, and should " \
@@ -694,7 +694,7 @@ def install(img_dir, args):
             api_errors.PermissionsException), e:
                 # Prepend a newline because otherwise the exception will
                 # be printed on the same line as the spinner.
-                msg("\n" + str(e))
+                error("\n" + str(e))
                 return 1
         except api_errors.InventoryException, e:
                 error(_("install failed (inventory exception):\n%s") % e)
@@ -816,13 +816,11 @@ the following packages that depend on it:""" % e[0])
             api_errors.PermissionsException), e:
                 # Prepend a newline because otherwise the exception will
                 # be printed on the same line as the spinner.
-                msg("\n" + str(e))
+                error("\n" + str(e))
                 return 1
-
 
         if noexecute:
                 return 0
-
 
         # Exceptions which happen here are printed in the above level, with
         # or without some extra decoration done here.
@@ -1471,6 +1469,12 @@ def catalog_refresh(img_dir, args):
                     " list of authorities.")
                 error(tmp % e.auth)
                 return 1
+        except (api_errors.PermissionsException,
+            api_errors.NetworkUnavailableException), e:
+                # Prepend a newline because otherwise the exception will
+                # be printed on the same line as the spinner.
+                error("\n" + str(e))
+                return 1
         except api_errors.CatalogRefreshException, e:
                 if display_catalog_failures(e) == 0:
                         return 1
@@ -1481,7 +1485,7 @@ def catalog_refresh(img_dir, args):
 
 def authority_set(img, args):
         """pkg set-authority [-Ped] [-k ssl_key] [-c ssl_cert] [--reset-uuid]
-            [-O origin_url] [-m mirror to add] [-M mirror to remove] 
+            [-O origin_url] [-m mirror to add] [-M mirror to remove]
             [--enable] [--disable] [--no-refresh] authority"""
 
         preferred = False
@@ -1577,7 +1581,7 @@ def authority_set(img, args):
         except api_errors.PermissionsException, e:
                 # Prepend a newline because otherwise the exception will
                 # be printed on the same line as the spinner.
-                msg("\n" + str(e))
+                error("\n" + str(e))
                 return 1
 
         if preferred:
@@ -1640,7 +1644,7 @@ def authority_unset(img, args):
                 except api_errors.PermissionsException, e:
                         # Prepend a newline because otherwise the exception
                         # will be printed on the same line as the spinner.
-                        msg("\n" + str(e))
+                        error("\n" + str(e))
                         return 1
 
         return 0
@@ -1754,7 +1758,7 @@ def property_set(img, args):
         except api_errors.PermissionsException, e:
                 # Prepend a newline because otherwise the exception will
                 # be printed on the same line as the spinner.
-                msg("\nset-property failed:\n" + str(e))
+                error("\nset-property failed:\n" + str(e))
                 return 1
 
         return 0
@@ -1781,7 +1785,7 @@ def property_unset(img, args):
                 except api_errors.PermissionsException, e:
                         # Prepend a newline because otherwise the exception
                         # will be printed on the same line as the spinner.
-                        msg("\n" + str(e))
+                        error("\n" + str(e))
                         return 1
 
         return 0
