@@ -211,7 +211,7 @@ class Updatemanager:
                         self.application_dir = os.environ["UPDATE_MANAGER_ROOT"]
                 except KeyError:
                         self.application_dir = "/"
-                locale.setlocale(locale.LC_ALL, '')
+                misc.setlocale(locale.LC_ALL, "")
                 for module in (gettext, gtk.glade):
                         module.bindtextdomain("pkg", self.application_dir +
                             "/usr/share/locale")

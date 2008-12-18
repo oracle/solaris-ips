@@ -2068,7 +2068,7 @@ def main_func():
         global __img
         __img = img = image.Image()
 
-        locale.setlocale(locale.LC_ALL, '')
+        misc.setlocale(locale.LC_ALL, "", error)
         gettext.install("pkg", "/usr/share/locale")
 
         try:

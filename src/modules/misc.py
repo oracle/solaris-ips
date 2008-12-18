@@ -38,6 +38,7 @@ import zlib
 import time
 import calendar
 import shutil
+import locale
 from stat import *
 
 import pkg.urlhelpers as urlhelpers
@@ -299,6 +300,26 @@ def emsg(*text):
                 if e.errno == errno.EPIPE:
                         raise PipeError, e
                 raise
+
+def setlocale(category, loc=None, printer=None):
+        """Wraps locale.setlocale(), falling back to the C locale if the desired
+        locale is broken or unavailable.  The 'printer' parameter should be a
+        function which takes a string and displays it.  If 'None' (the default),
+        setlocale() will print the message to stderr."""
+
+        if printer is None:
+                printer = emsg
+
+        try:
+                locale.setlocale(category, loc)
+        except locale.Error:
+                try:
+                        dl = " '%s.%s'" % locale.getdefaultlocale()
+                except ValueError:
+                        dl = ""
+                printer("Unable to set locale%s; locale package may be broken "
+                    "or\nnot installed.  Reverting to C locale." % dl)
+                locale.setlocale(category, "C")
 
 def port_available(host, port):
         """Returns True if the indicated port is available to bind to;

@@ -48,6 +48,7 @@ except ImportError:
         sys.exit(1)
 import pkg.client.image as image
 import pkg.client.progress as progress
+import pkg.misc as misc
 
 # Put _() in the global namespace
 import __builtin__
@@ -90,7 +91,7 @@ class UpdateManagerNotifier:
                         self.application_dir = os.environ["UPDATE_MANAGER_NOTIFIER_ROOT"]
                 except KeyError:
                         self.application_dir = "/"
-                locale.setlocale(locale.LC_ALL, '')
+                misc.setlocale(locale.LC_ALL, "")
                 for module in (gettext, gtk.glade):
                         module.bindtextdomain("pkg", self.application_dir + \
                             "/usr/share/locale")

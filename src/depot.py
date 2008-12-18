@@ -94,7 +94,7 @@ import pkg.server.depot as depot
 import pkg.server.repository as repo
 import pkg.server.repositoryconfig as rc
 import pkg.search_errors as search_errors
-from pkg.misc import port_available, msg, emsg
+from pkg.misc import port_available, msg, emsg, setlocale
 
 class LogSink(object):
         """This is a dummy object that we can use to discard log entries
@@ -151,7 +151,7 @@ class OptionError(Exception):
 
 if __name__ == "__main__":
 
-        locale.setlocale(locale.LC_ALL, "")
+        setlocale(locale.LC_ALL, "")
         gettext.install("pkg", "/usr/share/locale")
 
         port = PORT_DEFAULT
