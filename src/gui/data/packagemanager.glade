@@ -3,12 +3,12 @@
 <!--Generated with glade3 3.4.5 on Mon Dec 15 14:49:40 2008 -->
 <glade-interface>
   <widget class="GtkWindow" id="mainwindow">
-    <property name="width_request">800</property>
-    <property name="height_request">650</property>
+    <property name="width_request">750</property>
+    <property name="height_request">500</property>
     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
     <property name="title" translatable="yes">Package Manager</property>
     <property name="window_position">GTK_WIN_POS_CENTER</property>
-    <property name="default_width">750</property>
+    <property name="default_width">800</property>
     <property name="default_height">615</property>
     <property name="icon">PM_app_48x.png</property>
     <signal name="delete_event" handler="on_mainwindow_delete_event"/>
