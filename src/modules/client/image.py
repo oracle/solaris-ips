@@ -690,6 +690,7 @@ class Image(object):
                 self.history.operation_result = history.RESULT_SUCCEEDED
 
         def set_property(self, prop_name, prop_value):
+                assert prop_name != "preferred-authority"
                 self.cfg_cache.properties[prop_name] = prop_value
                 self.save_config()
 
@@ -700,6 +701,7 @@ class Image(object):
                 return prop_name in self.cfg_cache.properties
 
         def delete_property(self, prop_name):
+                assert prop_name != "preferred-authority"
                 del self.cfg_cache.properties[prop_name]
                 self.save_config()
 

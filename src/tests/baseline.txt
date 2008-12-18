@@ -351,6 +351,7 @@ cli.t_pkg_list.py TestPkgList.test_list_matching|pass
 cli.t_pkg_list.py TestPkgList.test_list_multi_name|pass
 cli.t_pkg_list.py TestPkgList.test_list_z_empty_image|pass
 cli.t_pkg_list.py TestPkgList.test_pkg_list_cli_opts|pass
+cli.t_pkg_property.py TestPkgInfoBasics.test_bug_4372|pass
 cli.t_pkg_property.py TestPkgInfoBasics.test_missing_permssions|pass
 cli.t_pkg_property.py TestPkgInfoBasics.test_pkg_properties|pass
 cli.t_pkg_rebuild_index.py TestPkgRebuildIndex.test_rebuild_index_bad_opts|pass

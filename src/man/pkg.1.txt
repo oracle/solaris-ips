@@ -245,10 +245,14 @@ SUBCOMMANDS
           Fix any errors reported by pkg verify.
 
      set-property propname propvalue
-          Update an existing image property or add a new image property.
+          Update an existing image property or add a new image property;
+          except for preferred-authority, which can only be changed using
+          set-authority.
 
      unset-property propname ...
-          Remove an existing image property or properties.
+          Remove an existing image property or properties; except for
+          preferred-authority, which can only be changed using
+          set-authority.
 
      property [-H] [propname ...]
           Display image property information.  With no argument, display the

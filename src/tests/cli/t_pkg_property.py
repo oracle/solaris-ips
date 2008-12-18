@@ -38,7 +38,7 @@ class TestPkgInfoBasics(testutils.SingleDepotTestCase):
         persistent_depot = True
 
         def test_pkg_properties(self):
-                """pkg: set, unset, and display properties """
+                """pkg: set, unset, and display properties"""
 
                 durl = self.dc.get_depot_url()
                 self.image_create(durl)
@@ -72,6 +72,16 @@ class TestPkgInfoBasics(testutils.SingleDepotTestCase):
                 self.pkg("set-property require-optional True")
                 self.pkg("unset-property require-optional", su_wrap="noaccess", exit=1)
                 self.pkg("unset-property require-optional")
+
+        def test_bug_4372(self):
+                """Verify that preferred-authority cannot be changed using the
+                property commands, but can be read."""
+                durl = self.dc.get_depot_url()
+                self.image_create(durl)
+
+                self.pkg("set-property preferred-authority foo", exit=1)
+                self.pkg("unset-property preferred-authority", exit=1)
+                self.pkg("property preferred-authority")
 
 if __name__ == "__main__":
         unittest.main()

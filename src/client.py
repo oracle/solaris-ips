@@ -1750,8 +1750,12 @@ def property_set(img, args):
         try:
                 propname, propvalue = pargs
         except ValueError:
-                usage(
-                    _("set-property: requires a property name and value"))
+                usage(_("set-property: requires a property name and value"))
+
+        if propname == "preferred-authority":
+                error(_("set-property: set-authority must be used to change "
+                        "the preferred authority"))
+                return 1
 
         try:
                 img.set_property(propname, propvalue)
@@ -1773,10 +1777,14 @@ def property_unset(img, args):
         # ensure no options are passed in
         opts, pargs = getopt.getopt(args, "")
         if not pargs:
-                usage(
-                    _("unset-property: requires at least one property name"))
+                usage(_("unset-property: requires at least one property name"))
 
         for p in pargs:
+                if p == "preferred-authority":
+                        error(_("unset-property: set-authority must be used to "
+                            "change the preferred authority"))
+                        return 1
+
                 try:
                         img.delete_property(p)
                 except KeyError:
