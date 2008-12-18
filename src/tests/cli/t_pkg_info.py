@@ -173,6 +173,32 @@ class TestPkgInfoBasics(testutils.SingleDepotTestCase):
                 self.pkg("info -r emerald", exit=1)
                 self.pkg("info -r emerald 2>&1 | grep 'no packages matching'")
 
+        def test_bug_2274(self):
+                """Verify that a failure to retrieve license information, for
+                one or more packages specified, will result in an exit code of
+                1 and a printed message."""
+
+                pkg1 = """
+                    open silver@1.0,5.11-0
+                    close
+                """
+
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, pkg1)
+                self.image_create(durl)
+
+                self.pkg("info --license -r bronze")
+                self.pkg("info --license -r silver", exit=1)
+                self.pkg("info --license -r bronze silver", exit=1)
+                self.pkg("info --license -r silver 2>&1 | grep 'no license information'")
+
+                self.pkg("install bronze")
+                self.pkg("install silver")
+
+                self.pkg("info --license bronze")
+                self.pkg("info --license silver", exit=1)
+                self.pkg("info --license bronze silver", exit=1)
+                self.pkg("info --license silver 2>&1 | grep 'no license information'")
 
 if __name__ == "__main__":
         unittest.main()

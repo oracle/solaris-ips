@@ -269,6 +269,7 @@ cli.t_pkg_image_create.py TestPkgImageCreateNoDepot.test_765|pass
 cli.t_pkg_image_create.py TestPkgImageCreateNoDepot.test_bad_authority_options|pass
 cli.t_pkg_image_create.py TestPkgImageCreateNoDepot.test_bad_image_create|pass
 cli.t_pkg_image_update.py TestImageUpdate.test_image_update_bad_opts|pass
+cli.t_pkg_info.py TestPkgInfoBasics.test_bug_2274|pass
 cli.t_pkg_info.py TestPkgInfoBasics.test_info_empty_image|pass
 cli.t_pkg_info.py TestPkgInfoBasics.test_info_local_remote|pass
 cli.t_pkg_info.py TestPkgInfoBasics.test_pkg_info_bad_fmri|pass

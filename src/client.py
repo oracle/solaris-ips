@@ -227,7 +227,7 @@ def list_inventory(img, args):
         seen_one_pkg = False
         found = False
         try:
-                res = misc.get_inventory_list(img, pargs, 
+                res = misc.get_inventory_list(img, pargs,
                     all_known, all_versions)
                 prev_pfmri_str = ""
                 prev_state = None
@@ -347,7 +347,7 @@ def fix_image(img, args):
                 for err in img.verify(f, progresstracker,
                     verbose=True, forever=True):
                         if not failed_actions:
-                                msg("Verifying: %-50s %7s" % 
+                                msg("Verifying: %-50s %7s" %
                                     (f.get_pkg_stem(), "ERROR"))
                         act = err[0]
                         failed_actions.append(act)
@@ -369,7 +369,7 @@ def fix_image(img, args):
                 if not success:
                         return 1
         return 0
-        
+
 def verify_image(img, args):
         opts, pargs = getopt.getopt(args, "vfqH")
 
@@ -550,7 +550,7 @@ def image_update(img_dir, args):
                 return 0
 
         ret_code = 0
-        
+
         # Exceptions which happen here are printed in the above level, with
         # or without some extra decoration done here.
         # XXX would be nice to kick the progress tracker.
@@ -617,7 +617,7 @@ def print_mirror_stats(api_inst):
         print status_fmt % ("Authority", "URL", "Success", "Failure")
 
         for ds in api_inst.img.gen_depot_status():
-               print status_fmt % (ds.auth, ds.url, ds.good_tx, ds.errors) 
+               print status_fmt % (ds.auth, ds.url, ds.good_tx, ds.errors)
 
 def install(img_dir, args):
         """Attempt to take package specified to INSTALLED state.  The operands
@@ -656,7 +656,7 @@ def install(img_dir, args):
 
         if not check_fmri_args(pargs):
                 return 1
-        
+
         # XXX not sure where this should live
         pkg_list = [ pat.replace("*", ".*").replace("?", ".")
             for pat in pargs ]
@@ -728,7 +728,7 @@ def install(img_dir, args):
                 raise
 
         ret_code = 0
-        
+
         try:
                 api_inst.execute_plan()
         except RuntimeError, e:
@@ -791,7 +791,7 @@ def uninstall(img_dir, args):
         # XXX not sure where this should live
         pkg_list = [ pat.replace("*", ".*").replace("?", ".")
             for pat in pargs ]
-        
+
         try:
                 api_inst = api.ImageInterface(img_dir, CLIENT_API_VERSION,
                     progresstracker, None, PKG_CLIENT_NAME)
@@ -841,7 +841,7 @@ the following packages that depend on it:""" % e[0])
                 raise
 
         ret_code = 0
-        
+
         try:
                 api_inst.execute_plan()
         except RuntimeError, e:
@@ -1007,20 +1007,24 @@ def info(img_dir, args):
                 notfound = ret[api.ImageInterface.INFO_MISSING]
                 illegals = ret[api.ImageInterface.INFO_ILLEGALS]
                 multi_match = ret[api.ImageInterface.INFO_MULTI_MATCH]
-                
+
         except api_errors.NoPackagesInstalledException:
                 error(_("no packages installed"))
                 return 1
 
+        no_licenses = []
         for i, pi in enumerate(pis):
                 if i > 0:
                         msg("")
 
                 if display_license:
-                        for lic in pi.licenses:
-                                msg(lic)
+                        if not pi.licenses:
+                                no_licenses.append(pi.fmri)
+                        else:
+                                for lic in pi.licenses:
+                                        msg(lic)
                         continue
-                
+
                 if pi.state == api.PackageInfo.INSTALLED:
                         state = _("Installed")
                 elif pi.state == api.PackageInfo.NOT_INSTALLED:
@@ -1070,16 +1074,24 @@ examining the catalogs:"""))
                         emsg("        %s" % p)
 
         if illegals:
+                err = 1
                 for i in illegals:
                         emsg(str(i))
-                err = 1
 
         if multi_match:
                 err = 1
-                for pfmri, matches in  multi_match:
+                for pfmri, matches in multi_match:
                         error(_("'%s' matches multiple packages") % pfmri)
                         for k in matches:
-                                msg("\t%s" % k)
+                                emsg("\t%s" % k)
+
+        if no_licenses:
+                err = 1
+                error(_("no license information could be found for the "
+                    "following packages:"))
+                for pfmri in no_licenses:
+                        emsg("\t%s" % pfmri)
+
         return err
 
 def display_contents_results(actionlist, attrs, sort_attrs, action_types,
@@ -1429,7 +1441,7 @@ def display_catalog_failures(cre):
 
         if cre.message:
                 emsg(cre.message)
-                        
+
         return succeeded
 
 def catalog_refresh(img_dir, args):
@@ -1443,7 +1455,7 @@ def catalog_refresh(img_dir, args):
                         full_refresh = True
 
         progresstracker = get_tracker(True)
-                        
+
         try:
                 api_inst = api.ImageInterface(img_dir, CLIENT_API_VERSION,
                     progresstracker, None, PKG_CLIENT_NAME)
@@ -2087,7 +2099,7 @@ def main_func():
 
         if subcommand == "image-create":
                 if "mydir" in locals():
-                        usage(_("-R not allowed for %s subcommand") % 
+                        usage(_("-R not allowed for %s subcommand") %
                               subcommand)
                 try:
                         ret = image_create(img, pargs)
@@ -2097,7 +2109,7 @@ def main_func():
                 return ret
         elif subcommand == "version":
                 if "mydir" in locals():
-                        usage(_("-R not allowed for %s subcommand") % 
+                        usage(_("-R not allowed for %s subcommand") %
                               subcommand)
                 if pargs:
                         usage(_("version: command does not take operands " \
@@ -2112,7 +2124,7 @@ def main_func():
 
         provided_image_dir = True
         pkg_image_used = False
-                
+
         if "mydir" not in locals():
                 try:
                         mydir = os.environ["PKG_IMAGE"]
@@ -2185,7 +2197,7 @@ def main_func():
                 elif subcommand == "unset-property":
                         return property_unset(img, pargs)
                 elif subcommand == "property":
-                        return property_list(img, pargs)                
+                        return property_list(img, pargs)
                 elif subcommand == "history":
                         return history_list(img, pargs)
                 elif subcommand == "purge-history":
