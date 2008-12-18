@@ -549,7 +549,15 @@ class FancyUNIXProgressTracker(ProgressTracker):
                                 print self.cr,
                                 sys.stdout.flush()
                         else:
-                                print "%80s" % "",
+                                # Add a carriage return to prevent python from
+                                # auto-terminating with a newline if this is the
+                                # last output line on exit.  This works because
+                                # python doesn't think there's any output to
+                                # terminate even though sys.stdout.softspace is
+                                # in effect.  sys.stdout.softspace isn't set
+                                # here because more output may happen after
+                                # this.
+                                print "%80s" % "", self.cr,
                                 sys.stdout.flush()
                                 self.last_print_time = 0
                 except IOError, e:
