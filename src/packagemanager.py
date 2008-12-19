@@ -541,7 +541,12 @@ class PackageManager:
                             self.__application_refilter)
 
         def __application_refilter(self):
+                ''' Disconnecting the model from the treeview improves
+                performance when assistive technologies are enabled'''
+                model = self.w_application_treeview.get_model()
+                self.w_application_treeview.set_model(None)
                 self.application_list_filter.refilter()
+                self.w_application_treeview.set_model(model)
                 gobject.idle_add(self.__enable_disable_selection_menus)
                 self.application_refilter_id = 0
                 return False
