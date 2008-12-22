@@ -1,0 +1,34 @@
+package SUNWagp
+classification "Drivers/Display"
+import SUNWagp
+add driver name=agptarget perms="* 0644 root sys" \
+	alias=pci8086,7124 \
+	alias=pci8086,7122 \
+	alias=pci8086,7120 \
+	alias=pci1022,7454 \
+	alias=pci8086,3580 \
+	alias=pci8086,3575 \
+	alias=pci8086,2560 \
+	alias=pci8086,2570 \
+	alias=pci8086,2580 \
+	alias=pci8086,2590 \
+	alias=pci8086,2770 \
+	alias=pci8086,27a0 \
+	alias=pci8086,27ac \
+	alias=pci8086,2970 \
+	alias=pci8086,2980 \
+	alias=pci8086,2990 \
+	alias=pci8086,29a0 \
+	alias=pci8086,29b0 \
+	alias=pci8086,29c0 \
+	alias=pci8086,29d0 \
+	alias=pci8086,2a00 \
+	alias=pci8086,2a10 \
+	alias=pci8086,2a40 \
+	alias=pci8086,2e00 \
+	alias=pci8086,2e10 \
+	alias=pci8086,2e20 \
+	alias=pci8086,1130
+add driver name=amd64_gart perms="* 0644 root sys" alias=pci1022,1103
+add driver name=agpgart perms="* 0644 root sys"
+end package

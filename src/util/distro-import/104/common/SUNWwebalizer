@@ -1,0 +1,6 @@
+package SUNWwebalizer
+classification "Web Services/Application and Web Servers"
+import SUNWwebalizer
+import SUNWwebalizerr
+version 2.20.1
+end package

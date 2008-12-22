@@ -1,0 +1,5 @@
+package SUNWgit
+classification "Development/Source Code Management"
+import SUNWgit
+version 1.5.6.5
+end package

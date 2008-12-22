@@ -1,0 +1,19 @@
+package SUNWqlc
+classification "Drivers/Storage"
+import SUNWqlc
+$(i386_ONLY)add driver name=qlc class=fibre-channel perms="* 0600 root sys" \
+$(i386_ONLY)	alias=pci1077,2200 \
+$(i386_ONLY)	alias=pci1077,2300 \
+$(i386_ONLY)	alias=pci1077,2312 \
+$(i386_ONLY)	alias=pci1077,132 \
+$(i386_ONLY)	alias=pci1077,2422 \
+$(i386_ONLY)	alias=pciex1077,2432 \
+$(i386_ONLY)	alias=pciex1077,5432
+$(sparc_ONLY)add driver name=qlc class=fibre-channel perms="* 0600 root sys" \
+$(sparc_ONLY)	alias=pci1077,2200 \
+$(sparc_ONLY)	alias=pci1077,2300 \
+$(sparc_ONLY)	alias=pci1077,2312 \
+$(sparc_ONLY)	alias=pci1077,2422 \
+$(sparc_ONLY)	alias=pciex1077,2432 \
+$(sparc_ONLY)	alias=pciex1077,5432
+end package

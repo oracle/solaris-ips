@@ -1,0 +1,5 @@
+package SUNWsmcmd
+classification "System/Enterprise Management"
+import SUNWsmcmd
+version 5.0.9
+end package

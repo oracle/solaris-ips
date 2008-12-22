@@ -1,0 +1,6 @@
+package SUNWcimserver
+classification "System/Enterprise Management"
+import SUNWcimserverr
+import SUNWcimserveru
+version 2.8.0
+end package

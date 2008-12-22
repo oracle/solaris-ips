@@ -1,0 +1,5 @@
+package SUNWgvim
+classification "System/Text Tools"
+import SUNWgvim
+version 7.1.284
+end package

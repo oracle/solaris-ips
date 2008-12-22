@@ -1,0 +1,5 @@
+package SUNWpostgr-83-contrib
+classification "System/Databases"
+import SUNWpostgr-83-contrib
+version 8.3.5
+end package

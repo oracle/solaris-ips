@@ -1,0 +1,5 @@
+package SUNWcmake
+classification "Development/Distribution Tools"
+import SUNWcmake
+version 2.6.2
+end package

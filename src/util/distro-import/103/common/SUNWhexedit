@@ -1,0 +1,5 @@
+package SUNWhexedit
+classification "Applications/System Utilities"
+import SUNWhexedit
+version 1.2.12
+end package

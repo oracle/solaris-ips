@@ -1,0 +1,5 @@
+package SUNWsmagt
+classification "System/Enterprise Management"
+import SUNWsmagt
+version 5.0.9
+end package

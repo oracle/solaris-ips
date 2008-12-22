@@ -29,8 +29,8 @@
 # replace as needed with a local solaris install image
 #
 WOS_PKGS=/net/netinstall.sfbay/export/nv/x/$(BUILDID)/Solaris_11/Product
-NONWOS_PKGS=/net/paradise.sfbay/export/integrate_dock/nv/nv_osol0811/all \
-            /net/paradise.sfbay/export/integrate_dock/nv/nv_osol0811/i386
+NONWOS_PKGS=/net/paradise.sfbay/export/integrate_dock/nv/nv_osol0904/all \
+            /net/paradise.sfbay/export/integrate_dock/nv/nv_osol0904/i386
 
 TEST_PKGS=
 REPO=http://localhost:10000
@@ -84,6 +84,7 @@ GLOBAL_CHATTRS_99 = $(GLOBAL_CHATTRS_BASE)
 GLOBAL_CHATTRS_100a = $(GLOBAL_CHATTRS_BASE)
 GLOBAL_CHATTRS_101 = $(GLOBAL_CHATTRS_BASE) fonts gnome
 GLOBAL_CHATTRS_101a = $(GLOBAL_CHATTRS_101)
+GLOBAL_CHATTRS_105 = $(GLOBAL_CHATTRS_101)
 GLOBAL_CHATTRS = $(GLOBAL_CHATTRS_$(BUILDID))
 
 SOLARIS.PY=./solaris.py -b 0.$(BUILDID) $(EXTRA_OPTIONS) -T \*.py \
@@ -120,6 +121,7 @@ ELIDED_FILES_99 = $(ELIDED_FILES_89)
 ELIDED_FILES_100a = $(ELIDED_FILES_BASE) kernel/drv/sd.conf
 ELIDED_FILES_101 = $(ELIDED_FILES_100a)
 ELIDED_FILES_101a = $(ELIDED_FILES_100a)
+ELIDED_FILES_105 = $(ELIDED_FILES_100a)
 ELIDED_FILES = $(ELIDED_FILES_$(BUILDID))
 
 #
@@ -174,6 +176,7 @@ CACHED_FILES_101a = $(CACHED_FILES_101)					\
 	var/svc/manifest/application/graphical-login/gdm.xml		\
 	var/svc/manifest/system/ipagent.xml				\
 	var/svc/manifest/system/xvm/vnc-config.xml
+CACHED_FILES_105 = $(CACHED_FILES_101a)
 CACHED_FILES = $(CACHED_FILES_$(BUILDID))
 
 FIXFILES=					\
@@ -250,7 +253,8 @@ BUILDS=	75a			\
 	99			\
 	100a			\
 	101			\
-	101a
+	101a			\
+	105
 
 #
 # Starting in build 80, filelist.ramdisk began moving between various
@@ -263,7 +267,7 @@ FILELIST_RAMDISK_PKG_74		= SUNWcakr.i
 FILELIST_RAMDISK_PKG_72		= SUNWcakr.i
 FILELIST_RAMDISK_PKG_71		= SUNWcakr.i
 
-default:	101a/slim_import
+default:	105/slim_import
 
 cluster.import:	$(WOS_PKGS)/.clustertoc Makefile
 	./clustertoc2import.py $(WOS_PKGS)/.clustertoc | \
@@ -273,13 +277,15 @@ proto/etc/user_attr.cdonly: proto $(BUILDID)/user_attr
 	( cat $(BUILDID)/user_attr; \
 	  echo "jack::::profiles=Primary Administrator;roles=root") > $@
 
-proto/etc/driver_aliases:	proto $(BUILDID)/all.i386 cluster.import
+proto/etc/driver_aliases:	proto $(BUILDID)/redist_cluster cluster.import
 	./get_file_from_pkg.py $(WOS_PKGS)/SUNWcsd etc/driver_aliases | \
-	./driver_names.py $(INCLUDE_PATH_$(BUILDID)) $(BUILDID)/all.i386 > $@
+	./driver_names.py $(INCLUDE_PATH_$(BUILDID)) \
+	$(BUILDID)/redist_cluster > $@
 
-proto/etc/name_to_major:	proto $(BUILDID)/all.i386 cluster.import
+proto/etc/name_to_major:	proto $(BUILDID)/redist_cluster cluster.import
 	./get_file_from_pkg.py $(WOS_PKGS)/SUNWcsd etc/name_to_major | \
-	./driver_names.py $(INCLUDE_PATH_$(BUILDID)) $(BUILDID)/all.i386 > $@
+	./driver_names.py $(INCLUDE_PATH_$(BUILDID)) \
+	$(BUILDID)/redist_cluster > $@
 
 proto/etc/nsswitch.conf:	proto Makefile
 	./get_file_from_pkg.py	$(WOS_PKGS)/SUNWcsr etc/nsswitch.files > $@
@@ -430,6 +436,7 @@ INCLUDE_PATH_99 = 99:$(INCLUDE_PATH_98)
 INCLUDE_PATH_100a = 100a:$(INCLUDE_PATH_99)
 INCLUDE_PATH_101 = 101:$(INCLUDE_PATH_100a)
 INCLUDE_PATH_101a = 101a:$(INCLUDE_PATH_101)
+INCLUDE_PATH_105 = 105:104:103:102:$(INCLUDE_PATH_101a)
 
 import:	cluster.import $(TMPPKGS)
 	$(SOLARIS.PY) -s $(REPO) -w $(WOS_PKGS) $(ELIDED_FILES:%=-D %) \

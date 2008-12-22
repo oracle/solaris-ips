@@ -1,0 +1,5 @@
+package SUNWiscsidm
+classification "System/Hardware"
+import SUNWiscsidmr
+import SUNWiscsidmu
+end package

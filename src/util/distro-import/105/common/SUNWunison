@@ -1,0 +1,5 @@
+package SUNWunison
+classification "Applications/System Utilities"
+import SUNWunison
+version 2.27.57
+end package

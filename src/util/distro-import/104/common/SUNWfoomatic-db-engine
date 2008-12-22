@@ -1,0 +1,6 @@
+package SUNWfoomatic-db-engine
+classification "System/Printing"
+import SUNWfoomatic-db-enginer
+import SUNWfoomatic-db-engineu
+version 0.20080903
+end package

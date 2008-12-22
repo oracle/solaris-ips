@@ -1,0 +1,6 @@
+package SUNWpciaccess
+classification "System/Hardware"
+import SUNWpciaccess
+version 0.10.5
+depend SUNWhwdata
+end package

@@ -1,0 +1,4 @@
+package SUNWslim-utils
+import SUNWslim-utils
+add user username=jack uid=65432 group=staff gcos-field="Default User" home-dir=/jack login-shell=/usr/bin/bash password=9Nd/cwBcNWFZg
+end package

@@ -1,0 +1,5 @@
+package SUNWfoomatic-db
+classification "System/Printing"
+import SUNWfoomatic-db
+version 0.20080903
+end package

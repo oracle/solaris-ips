@@ -1,0 +1,5 @@
+package SUNWmrxvt
+classification "Applications/System Utilities"
+import SUNWmrxvt
+version 0.5.4
+end package

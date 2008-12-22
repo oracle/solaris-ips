@@ -1,0 +1,5 @@
+package SUNWant
+classification "Development/Distribution Tools"
+import SUNWant
+version 1.7.1
+end package

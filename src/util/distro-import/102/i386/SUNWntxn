@@ -1,0 +1,13 @@
+package SUNWntxn
+classification "Drivers/Networking"
+import SUNWntxn
+add driver name=ntxn \
+	alias=pci4040,1 \
+	alias=pci4040,2 \
+	alias=pci4040,3 \
+	alias=pci4040,4 \
+	alias=pci4040,5 \
+	alias=pci4040,24 \
+	alias=pci4040,25 \
+	alias=pci4040,100
+end package

@@ -1,0 +1,5 @@
+package SUNWvncviewer
+classification "Applications/Internet"
+import SUNWvncviewer
+version 4.1.3
+end package

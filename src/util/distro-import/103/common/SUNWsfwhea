@@ -1,0 +1,7 @@
+package SUNWsfwhea
+classification "Development/System"
+import SUNWsfwhea
+add link path=usr/include/glib-1.2 target=../sfw/include/glib-1.2
+add link path=usr/include/gtk-1.2 target=../sfw/include/gtk-1.2
+add link path=usr/include/usb.h target=../sfw/include/usb.h
+end package

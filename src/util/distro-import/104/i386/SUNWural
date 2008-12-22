@@ -1,0 +1,9 @@
+package SUNWural
+classification "Drivers/Networking"
+import SUNWural
+add driver name=ural perms="* 0666 root sys" clone_perms="0666 root sys" \
+	alias=usb1044,8007 \
+	alias=usb13b1,d \
+	alias=usb411,67 \
+	alias=usb2001,3c00
+end package

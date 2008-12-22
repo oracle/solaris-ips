@@ -1,0 +1,4 @@
+package SUNWm17n-contrib
+classification "System/Internationalization"
+import SUNWm17n-contrib
+end package

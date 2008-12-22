@@ -292,6 +292,9 @@ category = Internet
 [SUNWbnu]
 category = Services
 
+[SUNWbonnieplus]
+category = System
+
 [SUNWbrasero]
 category = Media
 
@@ -361,8 +364,14 @@ category = Graphics and Imaging
 [SUNWchxge]
 category = Networking
 
+[SUNWcimserver]
+category = Enterprise Management
+
 [SUNWckr]
 category = Core
+
+[SUNWcmake]
+category = Distribution Tools
 
 [SUNWcnetr]
 category = Core
@@ -574,6 +583,9 @@ category = Administration and Configuration
 [SUNWdoc]
 category = Text Tools
 
+[SUNWdoxygen]
+category = Distribution Tools
+
 [SUNWdpl]
 category = System
 
@@ -730,6 +742,15 @@ category = Libraries (System)
 [SUNWfontconfig-docs]
 category = X11
 
+[SUNWfoomatic-db]
+category = Printing
+
+[SUNWfoomatic-db-engine]
+category = Printing
+
+[SUNWfping]
+category = System Utilities
+
 [SUNWfppd]
 category = Printing
 
@@ -831,6 +852,9 @@ category = System Utilities
 
 [SUNWgimpprint]
 category = Other Peripherals
+
+[SUNWgit]
+category = Source Code Management
 
 [SUNWgksu]
 category = System Utilities
@@ -1207,9 +1231,6 @@ category = Sound and Video
 [SUNWgnome-spell]
 category = Accessories
 
-[SUNWgnome-sys-suspend]
-category = System Utilities
-
 [SUNWgnome-system-monitor]
 category = System Utilities
 
@@ -1288,9 +1309,6 @@ category = GNU
 [SUNWgnu-idn]
 category = Libraries (System)
 
-[SUNWgnu-libiconv]
-category = GNU
-
 [SUNWgnu-mc]
 category = File Managers
 
@@ -1308,6 +1326,9 @@ category = GNU
 
 [SUNWgqview]
 category = Graphics and Imaging
+
+[SUNWgrails]
+category = Application and Web Servers
 
 [SUNWgroff]
 category = Text Tools
@@ -1357,6 +1378,9 @@ category = Accessories
 [SUNWgui-install]
 category = Administration and Configuration
 
+[SUNWgvim]
+category = Text Tools
+
 [SUNWgzip]
 category = System Utilities
 
@@ -1371,6 +1395,9 @@ category = Core
 
 [SUNWhermon]
 category = Other Peripherals
+
+[SUNWhexedit]
+category = System Utilities
 
 [SUNWhkxwsvr]
 category = X11 (System)
@@ -1540,6 +1567,12 @@ category = Internet
 [SUNWiscsi]
 category = Hardware
 
+[SUNWiscsidm]
+category = Hardware
+
+[SUNWiscsit]
+category = Hardware
+
 [SUNWiscsitgt]
 category = Hardware
 
@@ -1656,6 +1689,9 @@ category = Core
 
 [SUNWkxwsvr]
 category = X11 (System)
+
+[SUNWlablgtk]
+category = GNOME and GTK+
 
 [SUNWlang-ar]
 category = Localizations (System)
@@ -2125,6 +2161,12 @@ category = Libraries (System)
 [SUNWlxsl]
 category = Libraries (System)
 
+[SUNWm17n]
+category = Internationalization
+
+[SUNWm17n-contrib]
+category = Internationalization
+
 [SUNWman]
 category = Text Tools
 
@@ -2184,6 +2226,15 @@ category = System Utilities
 
 [SUNWmpsvplr]
 category = Hardware
+
+[SUNWmptsas]
+category = Storage
+
+[SUNWmrsas]
+category = Storage
+
+[SUNWmrxvt]
+category = System Utilities
 
 [SUNWmtx]
 category = Media
@@ -2305,6 +2356,9 @@ category = Administration and Configuration
 [SUNWntp]
 category = Services
 
+[SUNWntxn]
+category = Networking
+
 [SUNWnvsata]
 category = Ports
 
@@ -2320,6 +2374,9 @@ category = Office
 [SUNWobby]
 category = System
 
+[SUNWocaml]
+category = Other Languages
+
 [SUNWogg-vorbis]
 category = Multimedia Libraries
 
@@ -2328,6 +2385,9 @@ category = Libraries (System)
 
 [SUNWopenjade]
 category = Text Tools
+
+[SUNWopenldap]
+category = Libraries (System)
 
 [SUNWopenproj]
 category = Office
@@ -2368,6 +2428,9 @@ category = Networking
 [SUNWpcelx]
 category = Networking
 
+[SUNWpciaccess]
+category = Hardware
+
 [SUNWpcmci]
 category = Hardware
 
@@ -2376,6 +2439,9 @@ category = Hardware
 
 [SUNWpcmem]
 category = Storage
+
+[SUNWpconsole]
+category = System Utilities
 
 [SUNWpcre]
 category = Perl
@@ -2434,20 +2500,11 @@ category = Core
 [SUNWpilot-link]
 category = System Utilities
 
+[SUNWpixman]
+category = Libraries (System)
+
 [SUNWpkgcmds]
 category = Packaging
-
-[SUNWpl5m]
-category = Perl
-
-[SUNWpl5p]
-category = Perl
-
-[SUNWpl5u]
-category = Perl
-
-[SUNWpl5v]
-category = Perl
 
 [SUNWplanner]
 category = Office
@@ -2641,6 +2698,9 @@ category = Python
 [SUNWpython-lxml]
 category = Python
 
+[SUNWpython-mako]
+category = Python
+
 [SUNWpython-notify]
 category = Python
 
@@ -2660,7 +2720,7 @@ category = Python
 category = Python
 
 [SUNWqlc]
-category = Ports
+category = Storage
 
 [SUNWqlcu]
 category = Hardware
@@ -2673,6 +2733,9 @@ category = Core
 
 [SUNWquagga]
 category = Administration and Configuration
+
+[SUNWquilt]
+category = Source Code Management
 
 [SUNWralink]
 category = Networking
@@ -2691,6 +2754,9 @@ category = Hardware
 
 [SUNWrdesktop]
 category = Internet
+
+[SUNWrdiff-backup]
+category = System Utilities
 
 [SUNWrds]
 category = Hardware
@@ -2746,6 +2812,9 @@ category = Networking
 [SUNWruby18]
 category = Ruby
 
+[SUNWrum]
+category = Networking
+
 [SUNWruxwsvr]
 category = X11 (System)
 
@@ -2775,6 +2844,9 @@ category = Localizations (System)
 
 [SUNWscim-hangul]
 category = Localizations (System)
+
+[SUNWscim-m17n]
+category = Internationalization
 
 [SUNWscim-pinyin]
 category = Text Tools
@@ -2872,9 +2944,6 @@ category = Other Languages
 [SUNWslib]
 category = Other Languages
 
-[SUNWslim-utils]
-category = System Utilities
-
 [SUNWslocate]
 category = System Utilities
 
@@ -2903,10 +2972,10 @@ category = File System
 category = File System
 
 [SUNWsmcmd]
-category = Administration and Configuration
+category = Enterprise Management
 
 [SUNWsmdoc]
-category = Text Tools
+category = Enterprise Management
 
 [SUNWsmedia]
 category = Libraries (System)
@@ -3244,6 +3313,9 @@ category = Ports
 [SUNWukspfw]
 category = Hardware
 
+[SUNWunison]
+category = System Utilities
+
 [SUNWunzip]
 category = System Utilities
 
@@ -3315,6 +3387,9 @@ category = Internet
 
 [SUNWwbsup]
 category = Core
+
+[SUNWwebalizer]
+category = Application and Web Servers
 
 [SUNWwebmin]
 category = Administration and Configuration
@@ -3521,6 +3596,9 @@ category = Integrated Development Environments
 category = High Performance Computing
 
 [clustertools_7.1]
+category = High Performance Computing
+
+[clustertools_8.1]
 category = High Performance Computing
 
 [dtrace-gui-plugin]
@@ -3849,4 +3927,10 @@ category = Trusted Extensions
 
 [webstackui]
 category = Application and Web Servers
+
+[xvm]
+category = Virtualization
+
+[xvm-gui]
+category = Virtualization
 

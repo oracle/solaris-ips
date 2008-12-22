@@ -1,0 +1,4 @@
+package SUNWmrsas
+classification "Drivers/Storage"
+import SUNWmrsas
+end package

@@ -1,0 +1,4 @@
+package SUNWscim-m17n
+classification "System/Internationalization"
+import SUNWscim-m17n
+end package

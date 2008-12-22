@@ -1,0 +1,4 @@
+package SUNWmpathadm
+classification "Applications/System Utilities"
+import SUNWmpathadm
+end package
