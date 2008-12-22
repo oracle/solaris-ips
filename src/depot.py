@@ -116,7 +116,7 @@ def usage(text):
 Usage: /usr/lib/pkg.depotd [-d repo_dir] [-p port] [-s threads]
            [-t socket_timeout] [--content-root] [--log-access dest]
            [--log-errors dest] [--mirror] [--proxy-base url] [--readonly]
-           [--rebuild]
+           [--rebuild] [--cfg-file file]
 
         --content-root  The file system path to the directory containing the
                         the static and other web content used by the depot's
@@ -140,6 +140,8 @@ Usage: /usr/lib/pkg.depotd [-d repo_dir] [-p port] [-s threads]
                         Cannot be used with --mirror or --rebuild.
         --rebuild       Re-build the catalog from pkgs in depot.  Cannot be
                         used with --mirror or --readonly.
+        --cfg-file      The file from which to read the configuration for
+                        this depot.
 """
         sys.exit(2)
 
@@ -162,6 +164,7 @@ if __name__ == "__main__":
         reindex = REINDEX_DEFAULT
         proxy_base = None
         mirror = MIRROR_DEFAULT
+        repo_config_file = None
 
         if "PKG_REPO" in os.environ:
                 repo_path = os.environ["PKG_REPO"]
@@ -193,7 +196,7 @@ if __name__ == "__main__":
         opt = None
         try:
                 long_opts = ["content-root=", "mirror", "proxy-base=",
-                    "readonly", "rebuild", "refresh-index"]
+                    "readonly", "rebuild", "refresh-index", "cfg-file="]
                 for opt in log_opts:
                         long_opts.append("%s=" % opt.lstrip('--'))
                 opts, pargs = getopt.getopt(sys.argv[1:], "d:np:s:t:",
@@ -268,6 +271,8 @@ if __name__ == "__main__":
                                 # pkg.depot process. The index will be rebuilt
                                 # automatically on startup.
                                 reindex = True
+                        elif opt == "--cfg-file":
+                                repo_config_file = os.path.abspath(arg)
         except getopt.GetoptError, e:
                 usage("pkg.depotd: %s" % e.msg)
         except OptionError, e:
@@ -411,7 +416,8 @@ if __name__ == "__main__":
         scfg.acquire_catalog()
 
         try:
-                root = cherrypy.Application(repo.Repository(scfg))
+                root = cherrypy.Application(repo.Repository(scfg,
+                    repo_config_file))
         except rc.InvalidAttributeValueError, e:
                 emsg("pkg.depotd: repository.conf error: %s" % e)
                 sys.exit(1)

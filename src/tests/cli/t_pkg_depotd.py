@@ -238,6 +238,16 @@ class TestDepotController(testutils.CliTestCase):
                         self.__dc.stop()
                         self.assert_(not self.__dc.is_alive())
 
+
+        def test_cfg_file(self):
+                cfg_file = os.path.join(self.get_test_prefix(), "cfg2")
+                fh = open(cfg_file, "w")
+                fh.close()
+                self.__dc.set_port(12000)
+                self.__dc.set_cfg_file(cfg_file)
+
+                self.__dc.start()
+
         def testBadArgs(self):
                 self.__dc.set_readonly()
                 self.__dc.set_rebuild()

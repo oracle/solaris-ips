@@ -71,6 +71,9 @@ DESCRIPTION
                                 when pkg/mirror is true. The default value
                                 is false.
 
+     pkg/cfg-file               (astring) The file from which to read the
+                                configuration for the depot.
+
      pkg/socket_timeout         (count) The maximum number of seconds the
                                 server should wait for a response from a
                                 client before closing a connection.  The
@@ -118,6 +121,9 @@ OPTIONS
                                 destroyed and then recreated on startup.
                                 This option may not be combined with the
                                 --mirror or --readonly options.
+
+     --cfg-file cfgfile         Overrides pkg/cfg-file with the value
+                                given by cfgfile.
 
 EXAMPLES
      Example 1:  Enabling the depot server.

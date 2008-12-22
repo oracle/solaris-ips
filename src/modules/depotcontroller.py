@@ -58,6 +58,7 @@ class DepotController(object):
                 self.__logpath = "/tmp/depot.log"
                 self.__output = None
                 self.__depot_handle = None
+                self.__cfg_file = None
                 self.__state = self.HALTED
                 return
 
@@ -118,6 +119,12 @@ class DepotController(object):
         
         def get_state(self):
                 return self.__state
+
+        def set_cfg_file(self, f):
+                self.__cfg_file = f
+
+        def get_cfg_file(self):
+                return self.__cfg_file
         
         def get_depot_url(self):
                 return "http://localhost:%d" % self.__port
@@ -177,6 +184,8 @@ class DepotController(object):
                         args.append("--mirror")
                 if self.__refresh_index:
                         args.append("--refresh-index")
+                if self.__cfg_file:
+                        args.append("--cfg-file=%s" % self.__cfg_file)
                 return args
 
         def __initial_start(self):

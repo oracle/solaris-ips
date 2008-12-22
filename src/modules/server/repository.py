@@ -94,20 +94,26 @@ class Repository(object):
                 "filelist",
                 "file" ]
 
-        def __init__(self, scfg):
+        def __init__(self, scfg, cfgpathname=None):
                 """ Initialise and map the valid operations for the repository.
                     While doing so, ensure that the operations have been
                     explicitly "exposed" for external usage. """
 
                 self.scfg = scfg
+                default_cfg_path = False
 
                 # Now load our repository configuration / metadata and
                 # populate our repository.id if needed.
-                cfgpathname = os.path.join(scfg.repo_root, "cfg_cache")
+                if cfgpathname == None:
+                        cfgpathname = os.path.join(scfg.repo_root, "cfg_cache")
+                        default_cfg_path = True
 
                 # Check to see if our configuration file exists first.
                 if os.path.exists(cfgpathname):
                         self.rcfg = rc.RepositoryConfig(pathname=cfgpathname)
+                elif not default_cfg_path:
+                        raise RuntimeError("User specified repo-config-file, "
+                            "%s\nnot found." % cfgpathname)
                 else:
                         # If it doesn't exist, just create a new object, it
                         # will automatically be populated with sane defaults.
@@ -116,13 +122,17 @@ class Repository(object):
                 # Allow our interface module to do any startup work.
                 face.init(scfg, self.rcfg)
 
-                if not scfg.is_read_only():
-                        # While our configuration can be parsed during
-                        # initialization, no changes can be written to disk in
-                        # readonly mode.
+                # While our configuration can be parsed during
+                # initialization, no changes can be written to disk in
+                # readonly mode.
 
-                        # Save the new configuration (or refresh existing).
+                # Save the new configuration (or refresh existing).
+                try:
                         self.rcfg.write(cfgpathname)
+                except EnvironmentError, e:
+                        if e.errno not in (errno.EPERM, errno.EACCES,
+                            errno.EROFS):
+                                raise
 
                 self.vops = {}
 

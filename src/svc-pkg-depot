@@ -46,9 +46,9 @@ case "$1" in
 
 	# short_option_props are properties which are communicated to the depot
 	# via a long option flag which takes an argument.
-	long_option_props="content_root log_access log_errors proxy_base"
+	long_option_props="content_root log_access log_errors proxy_base cfg-file"
 	set -A long_option_cmd_line "content-root" "log-access" \
-	    "log-errors" "proxy-base"
+            "log-errors" "proxy-base" "cfg-file"
 
 	bool_ops=""
 	option_props=""
@@ -71,7 +71,7 @@ case "$1" in
 
 	# Go through each property in short_option_props and, if its value is
 	# set to something other than none, add the appropriate command line
-	# flag and argument to the string.
+        # flag and argument to the string.
 	cnt=0
 	for o in $short_option_props; do
 	    val=$(svcprop -p pkg/$o $SMF_FMRI)
@@ -80,7 +80,7 @@ case "$1" in
 		exit $SMF_EXIT_ERR_CONFIG
 	    fi
 	    # If the SMF property is set to something other than 'none', add 
-	    # the flag and its argument to the command.
+            # the flag and its argument to the command.
 	    if [[ $val != '""' ]]; then
 		option_ops="$option_ops -${short_option_cmd_line[$cnt]} $val"
 	    fi
@@ -89,7 +89,7 @@ case "$1" in
 
 	# Go through each property in long_option_props and, if its value is
 	# set to something other than none, add the appropriate command line
-	# flag and argument to the string.
+        # flag and argument to the string.
 	cnt=0
 	for o in $long_option_props; do
 	    val=$(svcprop -p pkg/$o $SMF_FMRI)
@@ -98,7 +98,7 @@ case "$1" in
 		exit $SMF_EXIT_ERR_CONFIG
 	    fi
 	    # If the SMF property is set to something other than 'none', add
-	    # the flag and its argument to the command.
+            # the flag and its argument to the command.
 	    if [[ $val != '""' ]]; then
 		option_ops="$option_ops --${long_option_cmd_line[$cnt]}=$val"
 	    fi

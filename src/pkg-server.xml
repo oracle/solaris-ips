@@ -111,6 +111,7 @@
 			value='stderr' />
 		<propval name='mirror' type='boolean' value='false'/>
 		<propval name='readonly' type='boolean' value='false'/>
+                <propval name='cfg-file' type='astring' value='' />
 	</property_group>
 
 	<stability value='Unstable' />
