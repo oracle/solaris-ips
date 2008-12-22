@@ -1,5 +1,4 @@
 package clustertools
-classification "Development/High Performance Computing"
 version 8.1
 depend clustertools_8.1
 end package

@@ -1,5 +1,4 @@
 package clustertools
-classification "Development/High Performance Computing"
 description "Sun HPC ClusterTools"
 version 7.1
 depend clustertools_7.1

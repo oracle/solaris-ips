@@ -118,7 +118,6 @@ end package
 
 package netbeans-incorporation
 version 6.5
-classification "Development/Integrated Development Environments"
 description "netbeans incorporation to insure all components are upgraded at once"
 add depend type=incorporate fmri=SUNWlibnb-apisupport1@6.5
 add depend type=incorporate fmri=SUNWlibnb-cnd1@6.5
@@ -362,7 +361,6 @@ end package
 
 package netbeans-full
 version 6.5
-classification "Development/Integrated Development Environments"
 depend dtrace-gui-plugin
 depend netbeans
 end package

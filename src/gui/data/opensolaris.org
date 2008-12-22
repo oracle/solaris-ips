@@ -3592,9 +3592,6 @@ category = Application and Web Servers
 [amp-dev]
 category = Integrated Development Environments
 
-[clustertools]
-category = High Performance Computing
-
 [clustertools_7.1]
 category = High Performance Computing
 
@@ -3835,13 +3832,7 @@ category = Integrated Development Environments
 [netbeans-desktop]
 category = Integrated Development Environments
 
-[netbeans-full]
-category = Integrated Development Environments
-
 [netbeans-ide]
-category = Integrated Development Environments
-
-[netbeans-incorporation]
 category = Integrated Development Environments
 
 [netbeans-java]
