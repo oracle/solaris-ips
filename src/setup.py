@@ -51,7 +51,7 @@ import distutils.util as util
 # 3rd party software required for the build
 CP = 'CherryPy'
 CPIDIR = 'cherrypy'
-CPVER = '3.1.0'
+CPVER = '3.1.1'
 CPARC = '%s-%s.tar.gz' % (CP, CPVER)
 CPDIR = '%s-%s' % (CP, CPVER)
 CPURL = 'http://download.cherrypy.org/cherrypy/%s/%s' % (CPVER, CPARC)
