@@ -920,6 +920,7 @@ class Updatemanager:
 
         def __exit_app(self):
                 self.cancelled = True
+                self.w_um_dialog.hide()
                 gtk.main_quit()
                 sys.exit(0)
                 return True

@@ -883,6 +883,7 @@ class PackageManager:
                                     self.image_dir_arg])
                         else:
                                 gobject.spawn_async([self.application_path])
+                self.w_main_window.hide()
                 gtk.main_quit()
                 sys.exit(0)
                 return True
