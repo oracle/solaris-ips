@@ -61,6 +61,7 @@ classification "Applications/Office"
 description "Software Development Kit for OpenOffice.org 3.0.0"
 version 3.0.0
 import ooobasis30-sdk
+depend openoffice
 end package
 
 package openoffice-de
