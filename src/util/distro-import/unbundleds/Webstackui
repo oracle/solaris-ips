@@ -29,6 +29,7 @@ depend SUNWmercurial
 depend SUNWmysql5
 depend SUNWphp52
 depend SUNWphp52-mysql
+depend SUNWphp52-pear
 depend SUNWphp52-pgsql
 depend SUNWphp52d
 depend SUNWpython-twisted
