@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -450,7 +450,7 @@ class Beadmin:
                                         except (NameError, ValueError, TypeError):
                                                 date_time = None
                                 else:
-                                        date_tmp = time.gmtime(be_date)
+                                        date_tmp = time.localtime(be_date)
                                         try:
                                                 date_format = \
                                                     unicode(
