@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -149,6 +149,7 @@ class PackageManager:
                 self.w_info_notebook = w_tree_main.get_widget("notebook1")
                 self.w_generalinfo_textview = \
                     w_tree_main.get_widget("generalinfotextview")
+                self.w_generalinfo_textview.set_wrap_mode(gtk.WRAP_WORD)
                 self.w_installedfiles_textview = \
                     w_tree_main.get_widget("installedfilestextview")
                 self.w_license_textview = \
@@ -158,6 +159,10 @@ class PackageManager:
                 self.w_packagename_label = w_tree_main.get_widget("packagenamelabel")
                 self.w_shortdescription_label = \
                     w_tree_main.get_widget("shortdescriptionlabel")
+                w_package_hbox = \
+                    w_tree_main.get_widget("package_hbox")
+                self.w_general_info_label = \
+                    w_tree_main.get_widget("general_info_label")
                 self.w_searchentry_dialog = w_tree_main.get_widget("searchentry")
                 self.w_installupdate_button = \
                     w_tree_main.get_widget("install_update_button")
@@ -277,6 +282,8 @@ class PackageManager:
                     gtk.gdk.screen_height(), gtk.gdk.WINDOW_CHILD, 0, gtk.gdk.INPUT_ONLY)
                 gdk_cursor = gtk.gdk.Cursor(gtk.gdk.WATCH)
                 self.gdk_window.set_cursor(gdk_cursor)
+                # Until package icons become available hide Package Icon Panel
+                w_package_hbox.hide()
 
         @staticmethod
         def __get_new_application_liststore():
@@ -982,15 +989,10 @@ class PackageManager:
                         self.w_remove_button.set_sensitive(False)
                         self.w_remove_menuitem.set_sensitive(False)
 
-        def __show_fetching_package_info(self, pkg, icon):
+        def __show_fetching_package_info(self, pkg):
                 pkg_name = pkg.get_name()
-                if icon and icon != pkg:
-                        self.w_packageicon_image.set_from_pixbuf(icon)
-                else:
-                        self.w_packageicon_image.set_from_pixbuf(
-                            self.__get_pixbuf_from_path("/usr/share/package-manager/", \
-                            "PM_package_36x"))
                 self.w_packagename_label.set_markup("<b>" + pkg_name + "</b>")
+                self.w_general_info_label.set_markup("<b>" + pkg_name + "</b>")
 
                 pkg_stem = pkg.get_pkg_stem()                
                 if self.__setting_from_cache(pkg_stem):
@@ -1024,25 +1026,21 @@ class PackageManager:
                 else:
                         return False
                 
-        def __update_package_info(self, pkg, icon, installed, pkg_info):
+        def __update_package_info(self, pkg, local_info, remote_info):
                 pkg_name = pkg.get_name()
                 pkg_stem = pkg.get_pkg_stem()
-                if icon and icon != pkg:
-                        self.w_packageicon_image.set_from_pixbuf(icon)
-                else:
-                        self.w_packageicon_image.set_from_pixbuf(
-                            self.__get_pixbuf_from_path("/usr/share/package-manager/", \
-                            "PM_package_36x"))
                 self.w_packagename_label.set_markup("<b>" + pkg_name + "</b>")
-                
+                self.w_general_info_label.set_markup("<b>" + pkg_name + "</b>")
+                installed = True
+
                 if self.__setting_from_cache(pkg_stem):
                         return
-                        
+
                 instbuffer = self.w_installedfiles_textview.get_buffer()
                 depbuffer = self.w_dependencies_textview.get_buffer()
                 infobuffer = self.w_generalinfo_textview.get_buffer()
 
-                if not pkg_info:
+                if not local_info and not remote_info:
                         self.w_shortdescription_label.set_text(
                             _("Description not available for this package..."))
                         instbuffer.set_text( \
@@ -1052,7 +1050,13 @@ class PackageManager:
                         infobuffer.set_text(
                             _("Information not available for this package..."))
                         return
-                description = pkg_info.summary
+
+                if not local_info:
+                        # Package is not installed
+                        local_info = remote_info
+                        installed = False
+
+                description = local_info.summary
                 #XXX long term need to have something more robust here for multi byte
                 if len(description) > MAX_DESC_LEN:
                         description = description[:MAX_DESC_LEN] + " ..."
@@ -1060,42 +1064,54 @@ class PackageManager:
                 inst_str = _("Root: %s\n") % self.api_o.img.get_root()
                 dep_str = _("Dependencies:\n")
 
+                if local_info.dependencies:
+                        dep_str += ''.join(["\t%s\n" % x for x in local_info.dependencies])
+                if local_info.dirs:
+                        inst_str += ''.join(["\t%s\n" % x for x in local_info.dirs])
+                if local_info.files:
+                        inst_str += ''.join(["\t%s\n" % x for x in local_info.files])
+                if local_info.hardlinks:
+                        inst_str += ''.join(["\t%s\n" % x for x in local_info.hardlinks])
+                if local_info.links:
+                        inst_str += ''.join(["\t%s\n" % x for x in local_info.links])
+                info_str = ""
+                labs = {}
+                labs["sum"] = _("Summary:\t\t")
+                labs["size"] = _("Size:\t\t\t")
+                labs["cat"] = _("Category:\t\t")
+                labs["ins"] = _("Installed Version:\t")
+                labs["lat"] = ("Latest Version:\t")
+                labs["pkg_date"] = _("Packaging Date:\t")
+                labs["fmri"] = _("FMRI:\t\t\t")
+                max_len = 0
+                for lab in labs:
+                        if len(labs[lab]) > max_len:
+                                max_len = len(labs[lab])
+                categories = _("None")
+                if local_info.category_info_list:
+                        verbose = len(local_info.category_info_list) > 1
+                        categories = ""
+                        categories += local_info.category_info_list[0].__str__(verbose)
+                        if len(local_info.category_info_list) > 1:
+                                for ci in local_info.category_info_list[1:]:
+                                        categories += ", " + ci.__str__(verbose)
+                summary = _("None")
+                if local_info.summary:
+                        summary = local_info.summary
+                info_str += "  %s %s" % (labs["sum"], summary)
+                info_str += "\n  %s %s" % (labs["size"], 
+                    misc.bytes_to_str(local_info.size))
+                info_str += "\n  %s %s" % (labs["cat"], categories)
                 if installed:
-                        info_str = _("Information for installed package:\n\n")
-                else:
-                        info_str = _("Information for latest available package:\n\n")
-                #Name: SUNWckr 
-                #FMRI: pkg://opensolaris.org/SUNWckr@0.5.11,5.11-0.75:20071114T203148Z
-                #Version: 0.5.11
-                #Branch: 0.75
-                #Packaging Date: 2007-11-14 20:31:48
-                #Size: 293696981024
-                #Summary: Core Solaris Kernel (Root)
-                
-                if pkg_info.dependencies:
-                        dep_str += ''.join(["\t%s\n" % x for x in pkg_info.dependencies])
-                if pkg_info.dirs:
-                        inst_str += ''.join(["\t%s\n" % x for x in pkg_info.dirs])
-                if pkg_info.files:
-                        inst_str += ''.join(["\t%s\n" % x for x in pkg_info.files])
-                if pkg_info.hardlinks:
-                        inst_str += ''.join(["\t%s\n" % x for x in pkg_info.hardlinks])
-                if pkg_info.links:
-                        inst_str += ''.join(["\t%s\n" % x for x in pkg_info.links])
-                        
-                if description:
-                        info_str += _("  Description:\t%s\n") % description
-                info_str += _("  Name:\t\t%s\n") % pkg_name
-                info_str += _("  FMRI:\t\t%s\n") % pkg.get_fmri()
-                info_str +=  _("  Version:\t\t%s\n") % \
-                    pkg.version.get_short_version()
-                info_str +=  _("  Packaged:\t%s\n") % \
-                    self.get_datetime(pkg.version)
-                
+                        info_str += "\n  %s %s,%s-%s" % (labs["ins"], local_info.version,
+                            local_info.build_release, local_info.branch)
+                info_str += "\n  %s %s,%s-%s" % (labs["lat"], remote_info.version,
+                    remote_info.build_release, remote_info.branch)
+                info_str += "\n  %s %s" % (labs["pkg_date"], local_info.packaging_date)
+                info_str += "\n  %s %s" % (labs["fmri"], local_info.fmri)
                 infobuffer.set_text(info_str)
                 instbuffer.set_text(inst_str)
                 depbuffer.set_text(dep_str)
-
                 self.info_cache[pkg_stem] = \
                     (description, info_str, inst_str, dep_str)
                 
@@ -1144,8 +1160,8 @@ class PackageManager:
                 else:
                         return
 
-        def __get_pkg_info(self, pkg_name, installed):
-                info = self.api_o.info([pkg_name], installed, get_licenses=False,
+        def __get_pkg_info(self, pkg_name, local):
+                info = self.api_o.info([pkg_name], local, get_licenses=False,
                     get_action_info=True)
                 pkgs_info = None
                 package_info = None
@@ -1159,14 +1175,11 @@ class PackageManager:
                         return
 
         def __show_package_info(self, model, itr, th_no):
-                installed = False
                 pkg = model.get_value(itr, enumerations.FMRI_COLUMN)
-                status = model.get_value(itr, enumerations.STATUS_COLUMN)
-                if status == enumerations.UPDATABLE or status == enumerations.INSTALLED:
-                        installed = True
-                gobject.idle_add(self.__show_fetching_package_info, pkg, pkg)
-                        
-                if self.info_cache.has_key(pkg.get_pkg_stem()):
+                pkg_stem = model.get_value(itr, enumerations.STEM_COLUMN)
+                pkg_status = model.get_value(itr, enumerations.STATUS_COLUMN)
+                gobject.idle_add(self.__show_fetching_package_info, pkg)
+                if self.info_cache.has_key(pkg_stem):
                         return
 
                 # sleep for a little time, this is done for the users which are
@@ -1174,21 +1187,22 @@ class PackageManager:
                 time.sleep(1)
                 if th_no != self.pkginfo_thread:
                         return
+
                 img = self.api_o.img
                 img.history.operation_name = "info"
-
-                pkg_info = self.__get_pkg_info(pkg.get_name(), installed)
+                local_info = None
+                remote_info = None
+                if pkg_status == enumerations.INSTALLED or pkg_status == \
+                    enumerations.UPDATABLE:
+                        local_info = self.__get_pkg_info(pkg.get_name(), True)
+                if pkg_status == enumerations.NOT_INSTALLED or pkg_status == \
+                    enumerations.UPDATABLE:
+                        remote_info = self.__get_pkg_info(pkg.get_name(), False)
                 if th_no == self.pkginfo_thread:
-                        if not pkg:
-                                gobject.idle_add(self.__update_package_info, pkg, pkg,
-                                    installed, pkg_info)
-                        else:
-                                gobject.idle_add(self.__update_package_info, pkg, pkg,
-                                    installed, pkg_info)
-                        img.history.operation_result = history.RESULT_SUCCEEDED
-                else:
-                        img.history.operation_result = history.RESULT_SUCCEEDED
-                        return
+                        gobject.idle_add(self.__update_package_info, pkg, 
+                            local_info, remote_info)
+                img.history.operation_result = history.RESULT_SUCCEEDED
+                return
 
         # This function is ported from pkg.actions.generic.distinguished_name()
         @staticmethod
@@ -1895,7 +1909,12 @@ class PackageManager:
                         info = None
                         package = pkg[enumerations.FMRI_COLUMN]
                         if (img and package):
-                                man = self.get_manifest(img, package, filtered = True)
+                                man = None
+                                try:
+                                        man = self.get_manifest(img, package, 
+                                            filtered = True)
+                                except TransportFailures:
+                                        pass
                                 if man:
                                         info = man.get("description", "")
                         gobject.idle_add(self.update_desc, info, pkg)
