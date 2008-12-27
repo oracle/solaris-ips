@@ -126,6 +126,7 @@ class PackageManager:
                 self.provided_image_dir = True
                 self.selected_pkgname = None
                 self.info_cache = {}
+                self.selected = 0
                 
                 self.section_list = self.__get_new_section_liststore()
                 self.filter_list = self.__get_new_filter_liststore()
@@ -689,11 +690,16 @@ class PackageManager:
                 '''This function is for handling category selection changes'''
                 self.set_busy_cursor()
                 gobject.idle_add(self.__application_refilter)
+                if self.selected == 0:
+                        gobject.idle_add(self.__enable_disable_install_update)
+                        gobject.idle_add(self.__enable_disable_remove)
 
         def __on_package_selection_changed(self, selection, widget):
                 '''This function is for handling package selection changes'''
                 model, itr = selection.get_selected()
                 if itr:
+                        self.__enable_disable_install_update()
+                        self.__enable_disable_remove()
                         self.pkginfo_thread += 1
                         self.selected_pkgname = \
                                model.get_value(itr, enumerations.NAME_COLUMN)
@@ -709,6 +715,9 @@ class PackageManager:
                         return
                 self.set_busy_cursor()
                 gobject.idle_add(self.__application_refilter)
+                if self.selected == 0:
+                        gobject.idle_add(self.__enable_disable_install_update)
+                        gobject.idle_add(self.__enable_disable_remove)
 
         def __on_sectionscombobox_changed(self, widget):
                 '''On section combobox changed'''
@@ -741,6 +750,9 @@ class PackageManager:
                 self.set_busy_cursor()
                 self.category_list_filter.refilter()
                 gobject.idle_add(self.__application_refilter)
+                if self.selected == 0:
+                        gobject.idle_add(self.__enable_disable_install_update)
+                        gobject.idle_add(self.__enable_disable_remove)
 
         def __on_repositorycombobox_changed(self, widget):
                 '''On repository combobox changed'''
@@ -748,17 +760,27 @@ class PackageManager:
                         return  
                 self.set_busy_cursor()
                 gobject.idle_add(self.__application_refilter)
+                if self.selected == 0:
+                        gobject.idle_add(self.__enable_disable_install_update)
+                        gobject.idle_add(self.__enable_disable_remove)
 
         def __on_install_update(self, widget):
                 self.api_o.reset()
                 install_update = []
-                for row in self.application_list:
-                        if row[enumerations.MARK_COLUMN] and \
-                            (row[enumerations.STATUS_COLUMN] ==
-                            enumerations.NOT_INSTALLED or
-                            row[enumerations.STATUS_COLUMN] == enumerations.UPDATABLE):
-                                install_update.append(row[\
-                                    enumerations.STEM_COLUMN])
+                if self.selected == 0:
+                        model, itr = self.package_selection.get_selected()
+                        if itr:
+                                install_update.append(
+                                    model.get_value(itr, enumerations.STEM_COLUMN))
+                else:
+                        for row in self.application_list:
+                                if row[enumerations.MARK_COLUMN] and \
+                                    (row[enumerations.STATUS_COLUMN] ==
+                                    enumerations.NOT_INSTALLED or
+                                    row[enumerations.STATUS_COLUMN] == 
+                                    enumerations.UPDATABLE):
+                                        install_update.append(row[\
+                                            enumerations.STEM_COLUMN])
                 installupdate.InstallUpdate(install_update, self, \
                     self.api_o, ips_update = False, \
                     action = enumerations.INSTALL_UPDATE)
@@ -840,12 +862,20 @@ class PackageManager:
         def __on_remove(self, widget):
                 self.api_o.reset()
                 remove_list = []
-                for pkg in self.application_list:
-                        if pkg[enumerations.MARK_COLUMN] and \
-                            (pkg[enumerations.STATUS_COLUMN] == enumerations.INSTALLED or
-                            pkg[enumerations.STATUS_COLUMN] == enumerations.UPDATABLE):
-                                remove_list.append(\
-                                    pkg[enumerations.STEM_COLUMN])
+                if self.selected == 0:
+                        model, itr = self.package_selection.get_selected()
+                        if itr:
+                                remove_list.append(
+                                    model.get_value(itr, enumerations.STEM_COLUMN))
+                else:
+                        for pkg in self.application_list:
+                                if pkg[enumerations.MARK_COLUMN] and \
+                                    (pkg[enumerations.STATUS_COLUMN] == 
+                                    enumerations.INSTALLED or
+                                    pkg[enumerations.STATUS_COLUMN] == 
+                                    enumerations.UPDATABLE):
+                                        remove_list.append(\
+                                            pkg[enumerations.STEM_COLUMN])
                 installupdate.InstallUpdate(remove_list, self,
                     self.api_o, ips_update = False,
                     action = enumerations.REMOVE)
@@ -948,7 +978,7 @@ class PackageManager:
                                 self.w_installupdate_button.set_sensitive(True)
                                 self.w_installupdate_menuitem.set_sensitive(True)
                                 return
-                elif self.user_rights:
+                if self.user_rights:
                         instup_button = self.w_installupdate_button
                         instup_menu = self.w_installupdate_menuitem
                         for row in self.application_list:
@@ -959,9 +989,8 @@ class PackageManager:
                                                 instup_button.set_sensitive(True)
                                                 instup_menu.set_sensitive(True)
                                                 return
-                else:
-                        self.w_installupdate_button.set_sensitive(False)
-                        self.w_installupdate_menuitem.set_sensitive(False)
+                self.w_installupdate_button.set_sensitive(False)
+                self.w_installupdate_menuitem.set_sensitive(False)
 
         def __update_reload_button(self):
                 if self.user_rights:
@@ -976,7 +1005,7 @@ class PackageManager:
                                 self.w_remove_button.set_sensitive(True)
                                 self.w_remove_menuitem.set_sensitive(True)
                                 return
-                elif self.user_rights:
+                if self.user_rights:
                         for row in self.application_list:
                                 if row[enumerations.MARK_COLUMN]:
                                         status = row[enumerations.STATUS_COLUMN]
@@ -985,9 +1014,8 @@ class PackageManager:
                                                 self.w_remove_button.set_sensitive(True)
                                                 self.w_remove_menuitem.set_sensitive(True)
                                                 return
-                else:
-                        self.w_remove_button.set_sensitive(False)
-                        self.w_remove_menuitem.set_sensitive(False)
+                self.w_remove_button.set_sensitive(False)
+                self.w_remove_menuitem.set_sensitive(False)
 
         def __show_fetching_package_info(self, pkg):
                 pkg_name = pkg.get_name()
@@ -1355,6 +1383,20 @@ class PackageManager:
                         self.w_selectall_menuitem.set_sensitive(False)
 
         def __enable_disable_install_update(self):
+                if self.selected == 0:
+                        model, itr = self.package_selection.get_selected()
+                        if itr:
+                                status = \
+                                       model.get_value(itr, enumerations.STATUS_COLUMN)
+                                if self.user_rights and \
+                                    (status == enumerations.UPDATABLE or 
+                                    status == enumerations.NOT_INSTALLED):
+                                        self.w_installupdate_button.set_sensitive(True)
+                                        self.w_installupdate_menuitem.set_sensitive(True)
+                                return
+                        self.w_installupdate_button.set_sensitive(False)
+                        self.w_installupdate_menuitem.set_sensitive(False)
+                        return
                 for row in self.application_list:
                         if row[enumerations.MARK_COLUMN]:
                                 status = row[enumerations.STATUS_COLUMN]
@@ -1368,6 +1410,20 @@ class PackageManager:
                 self.w_installupdate_menuitem.set_sensitive(False)
 
         def __enable_disable_remove(self):
+                if self.selected == 0:
+                        model, itr = self.package_selection.get_selected()
+                        if itr:
+                                status = \
+                                       model.get_value(itr, enumerations.STATUS_COLUMN)
+                                if self.user_rights and \
+                                    (status == enumerations.UPDATABLE or 
+                                    status == enumerations.INSTALLED):
+                                        self.w_remove_button.set_sensitive(True)
+                                        self.w_remove_menuitem.set_sensitive(True)
+                                        return
+                        self.w_remove_button.set_sensitive(False)
+                        self.w_remove_menuitem.set_sensitive(False)
+                        return
                 for row in self.application_list:
                         if row[enumerations.MARK_COLUMN]:
                                 status = row[enumerations.STATUS_COLUMN]
@@ -1928,7 +1984,7 @@ class PackageManager:
         def update_statusbar(self):
                 '''Function which updates statusbar'''
                 installed = 0
-                selected = 0
+                self.selected = 0
                 broken = 0
                 for pkg_row in self.application_list:
                         if pkg_row[enumerations.STATUS_COLUMN] == enumerations.INSTALLED \
@@ -1936,10 +1992,10 @@ class PackageManager:
                             enumerations.UPDATABLE:
                                 installed = installed + 1
                         if pkg_row[enumerations.MARK_COLUMN]:
-                                selected = selected + 1
+                                self.selected = self.selected + 1
                 listed_str = _('%d packages listed') % len(self.application_list)
                 inst_str = _('%d installed') % installed
-                sel_str = _('%d selected') % selected
+                sel_str = _('%d selected') % self.selected
                 broken_str = _('%d broken') % broken
                 self.w_main_statusbar.push(0, listed_str + ', ' + inst_str + ', ' + \
                     sel_str + ', ' + broken_str + '.')
