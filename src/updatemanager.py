@@ -1025,7 +1025,7 @@ class Updatemanager:
                                 refresh_catalogs = self.do_refresh)
                             #XXX waiting for change to API to allow be name to be passed
                             # self.api_obj.plan_update_all(sys.argv[0], be_name)
-                        if cre:
+                        if cre and not cre.succeeded:
                                 self.__handle_update_progress_error(
                                     _("Update All failed during catalog refresh\n"
                                     "while determining what to update:"), cre,
