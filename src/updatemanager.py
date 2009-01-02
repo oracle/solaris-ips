@@ -100,7 +100,6 @@ class GUIProgressTracker(progress.ProgressTracker):
         def __init__(self, parent):
                 progress.ProgressTracker.__init__(self)
                 self.parent = parent
-                self._ = gettext.gettext
                 
                 self.act_started = False
                 self.ind_started = False
@@ -116,14 +115,14 @@ class GUIProgressTracker(progress.ProgressTracker):
                 self.dl_started = False
                 
         def cat_output_start(self):
-                catstr = self._("Fetching catalog: '%s' ..." % (self.cat_cur_catalog))
+                catstr = _("Fetching catalog: '%s' ..." % (self.cat_cur_catalog))
                 gobject.idle_add(self.parent.output, "%s" % catstr)
 
         def cat_output_done(self):
-                gobject.idle_add(self.parent.output_done, self._("Fetching catalog"))
+                gobject.idle_add(self.parent.output_done, _("Fetching catalog"))
 
         def eval_output_start(self):
-                s = self._("Creating Plan ... ")
+                s = _("Creating Plan ... ")
                 gobject.idle_add(self.parent.output, "%s" % s)
 
         def eval_output_progress(self):
@@ -134,7 +133,7 @@ class GUIProgressTracker(progress.ProgressTracker):
                 gobject.idle_add(self.parent.progress_pulse)
 
         def eval_output_done(self):
-                gobject.idle_add(self.parent.output_done, self._("Creating Plan"))
+                gobject.idle_add(self.parent.output_done, _("Creating Plan"))
                 self.last_print_time = 0
 
         def ver_output(self):
@@ -145,14 +144,14 @@ class GUIProgressTracker(progress.ProgressTracker):
                                 return
                         gobject.idle_add(self.parent.progress_pulse)
                         gobject.idle_add(self.parent.output, 
-                            self._("Verifying: %s ...") %
+                            _("Verifying: %s ...") %
                             self.ver_cur_fmri.get_pkg_stem())
                 else:
                         gobject.idle_add(self.parent.output, "")
                         self.last_print_time = 0
 
         def ver_output_error(self, actname, errors):
-                gobject.idle_add(self.parent.output_done, self._("Verifying"))
+                gobject.idle_add(self.parent.output_done, _("Verifying"))
 
         def dl_output(self):
                 gobject.idle_add(self.parent.dl_progress, 
@@ -166,9 +165,9 @@ class GUIProgressTracker(progress.ProgressTracker):
                         self.dl_started = True
 
         def dl_output_done(self):
-                self.dl_cur_pkg = self._("Completed")
+                self.dl_cur_pkg = _("Completed")
                 self.dl_output()
-                gobject.idle_add(self.parent.output_done, self._("Download"))
+                gobject.idle_add(self.parent.output_done, _("Download"))
 
         def act_output(self):
                 if (time.time() - self.last_print_time) >= 0.05:
@@ -184,7 +183,7 @@ class GUIProgressTracker(progress.ProgressTracker):
 
         def act_output_done(self):
                 self.act_output()
-                gobject.idle_add(self.parent.output_done, self._("Install"))
+                gobject.idle_add(self.parent.output_done, _("Install"))
 
         def ind_output(self):
                 if (time.time() - self.last_print_time) >= IND_DELAY:
@@ -200,7 +199,7 @@ class GUIProgressTracker(progress.ProgressTracker):
                         
         def ind_output_done(self):
                 self.act_output()
-                gobject.idle_add(self.parent.output_done, self._("Index"))
+                gobject.idle_add(self.parent.output_done, _("Index"))
 
 
 class Updatemanager:
@@ -217,8 +216,6 @@ class Updatemanager:
                             "/usr/share/locale")
                         module.textdomain("pkg")
                 # XXX Remove and use _() where self._ and self.parent._ are being used
-                self._ = gettext.gettext                
-                
                 # Duplicate ListStore setup in get_updates_to_list()
                 self.um_list = \
                     gtk.ListStore(
@@ -369,9 +366,8 @@ class Updatemanager:
                         w_xmltree_ua.signal_autoconnect(dic_ua)
 
                 except AttributeError, error:
-                        print self._('GUI will not respond to any event! %s. \
-                            Check updatemanager.py signals') \
-                            % error
+                        print _("GUI will not respond to any event! %s. "
+                            "Check updatemanager.py signals") % error
 
                 self.pr = GUIProgressTracker(self)
                 self.api_obj = None
@@ -408,64 +404,64 @@ class Updatemanager:
                         
         def __progress_steps_start(self):
                 self.__progress_steps(
-                    UPDATE_ACTIVE, self._("Evaluate"),
-                    UPDATE_INACTIVE, self._("Download"),
-                    UPDATE_INACTIVE, self._("Install"),
-                    UPDATE_INACTIVE, self._("Index"))
+                    UPDATE_ACTIVE, _("Evaluate"),
+                    UPDATE_INACTIVE, _("Download"),
+                    UPDATE_INACTIVE, _("Install"),
+                    UPDATE_INACTIVE, _("Index"))
                         
         def __progress_steps_download(self):
                 self.__progress_steps(
-                    UPDATE_DONE, self._("Evaluate"),
-                    UPDATE_ACTIVE, self._("Download"),
-                    UPDATE_INACTIVE, self._("Install"),
-                    UPDATE_INACTIVE, self._("Index"))
+                    UPDATE_DONE, _("Evaluate"),
+                    UPDATE_ACTIVE, _("Download"),
+                    UPDATE_INACTIVE, _("Install"),
+                    UPDATE_INACTIVE, _("Index"))
  
         def __progress_steps_install(self):
                 self.__progress_steps(
-                    UPDATE_DONE, self._("Evaluate"),
-                    UPDATE_DONE, self._("Download"),
-                    UPDATE_ACTIVE, self._("Install"),
-                    UPDATE_INACTIVE, self._("Index"))
+                    UPDATE_DONE, _("Evaluate"),
+                    UPDATE_DONE, _("Download"),
+                    UPDATE_ACTIVE, _("Install"),
+                    UPDATE_INACTIVE, _("Index"))
  
         def __progress_steps_index(self):
                 self.__progress_steps(
-                    UPDATE_DONE, self._("Evaluate"),
-                    UPDATE_DONE, self._("Download"),
-                    UPDATE_DONE, self._("Install"),
-                    UPDATE_ACTIVE, self._("Index"))
+                    UPDATE_DONE, _("Evaluate"),
+                    UPDATE_DONE, _("Download"),
+                    UPDATE_DONE, _("Install"),
+                    UPDATE_ACTIVE, _("Index"))
         
         def __progress_steps_done(self):
                 self.__progress_steps(
-                    UPDATE_DONE, self._("Evaluate"),
-                    UPDATE_DONE, self._("Download"),
-                    UPDATE_DONE, self._("Install"),
-                    UPDATE_DONE, self._("Index"))
+                    UPDATE_DONE, _("Evaluate"),
+                    UPDATE_DONE, _("Download"),
+                    UPDATE_DONE, _("Install"),
+                    UPDATE_DONE, _("Index"))
 
 
         def __progress_cancel_eval(self):
                 self.__progress_cancel_step(self.w_progress_eval_img,
-                    self.w_progress_eval_label, self._("Evaluate - canceling..."))
+                    self.w_progress_eval_label, _("Evaluate - canceling..."))
 
         def __progress_cancel_download(self):
                 self.__progress_cancel_step(self.w_progress_download_img,
-                    self.w_progress_download_label, self._("Download - canceling..."))
+                    self.w_progress_download_label, _("Download - canceling..."))
                         
 
         def __progress_error_eval(self):
                 self.__progress_error_step(self.w_progress_eval_img,
-                    self.w_progress_eval_label, self._("Evaluate - failed"))
+                    self.w_progress_eval_label, _("Evaluate - failed"))
 
         def __progress_error_download(self):
                 self.__progress_error_step(self.w_progress_download_img,
-                    self.w_progress_download_label, self._("Download - failed"))
+                    self.w_progress_download_label, _("Download - failed"))
 
         def __progress_error_install(self):
                 self.__progress_error_step(self.w_progress_install_img,
-                    self.w_progress_install_label, self._("Install - failed"))
+                    self.w_progress_install_label, _("Install - failed"))
 
         def __progress_error_index(self):
                 self.__progress_error_step(self.w_progress_index_img,
-                    self.w_progress_index_label, self._("Index - failed"))
+                    self.w_progress_index_label, _("Index - failed"))
 
         @staticmethod
         def __progress_active_step(widget_image, widget_label, str_step):
@@ -602,14 +598,14 @@ class Updatemanager:
                         self.w_select_checkbox.show()
                         self.w_um_install_button.show()
                         self.w_um_treeview.append_column(column)
-                        self.w_um_intro_label.set_text(self._(
-                        "Updates are available for the following packages.\n"
-                        "Select the packages you want to update and click Install."))
+                        self.w_um_intro_label.set_text(_(
+                            "Updates are available for the following packages.\n"
+                            "Select the packages you want to update and click Install."))
                 # Show Cancel, Update All only
                 else:
                         self.w_select_checkbox.hide()
                         self.w_um_install_button.hide()
-                        self.w_um_intro_label.set_text(self._(
+                        self.w_um_intro_label.set_text(_(
                             "Updates are available for the following packages.\n"
                             "Click Update All to create a new boot environment and "
                             "install all packages into it."))
@@ -623,7 +619,7 @@ class Updatemanager:
                 #self.w_um_treeview.append_column(column)
                 
                 name_renderer = gtk.CellRendererText()
-                column = gtk.TreeViewColumn(self._("Name"), name_renderer,
+                column = gtk.TreeViewColumn(_("Name"), name_renderer,
                     text = UM_NAME)
                 column.set_cell_data_func(name_renderer, self.__cell_data_function, None)
                 column.set_expand(True)
@@ -638,7 +634,7 @@ class Updatemanager:
 
                 version_renderer = gtk.CellRendererText()
                 version_renderer.set_property('xalign', 0.0)
-                column = gtk.TreeViewColumn(self._("Latest Version"), version_renderer,
+                column = gtk.TreeViewColumn(_("Latest Version"), version_renderer,
                     text = UM_LATEST_VER) 
                 column.set_cell_data_func(version_renderer,
                     self.__cell_data_function, None)
@@ -647,7 +643,7 @@ class Updatemanager:
 
                 size_renderer = gtk.CellRendererText()
                 size_renderer.set_property('xalign', 0.0)
-                column = gtk.TreeViewColumn(self._("Size (Meg)"), size_renderer,
+                column = gtk.TreeViewColumn(_("Size (Meg)"), size_renderer,
                     text = UM_SIZE)
                 column.set_cell_data_func(size_renderer, self.__cell_data_function, None)
                 column.set_expand(True)
@@ -719,7 +715,7 @@ class Updatemanager:
                                 # incorporated, could then indicate this to user
                                 # and take action when doing install to run image-update.
                                 #if state["incorporated"]:
-                                #        incState = self._("Inc")
+                                #        incState = _("Inc")
                                 #else:
                                 #        incState = "--"
                                 
@@ -728,7 +724,7 @@ class Updatemanager:
                                     pkg.get_fmri()])
                                 
                 if debug:
-                        print self._("count: %d") % count
+                        print _("count: %d") % count
 
                 self.progress_stop_thread = True
                 gobject.idle_add(self.w_um_treeview.set_model, um_list)
@@ -757,20 +753,20 @@ class Updatemanager:
                         infobuffer = self.w_um_textview.get_buffer()
                         infobuffer.set_text("")
                         textiter = infobuffer.get_end_iter()
-                        infobuffer.insert_with_tags_by_name(textiter, self._("Error\n"),
+                        infobuffer.insert_with_tags_by_name(textiter, _("Error\n"),
                             "bold")
                         infobuffer.insert(textiter,
-                            self._("'%s' is not an install image\n") % 
+                            _("'%s' is not an install image\n") % 
                             ine.user_specified)
                 except api_errors.VersionException, ve:
                         self.w_um_expander.set_expanded(True)
                         infobuffer = self.w_um_textview.get_buffer()
                         infobuffer.set_text("")
                         textiter = infobuffer.get_end_iter()
-                        infobuffer.insert_with_tags_by_name(textiter, self._("Error\n"),
+                        infobuffer.insert_with_tags_by_name(textiter, _("Error\n"),
                             "bold")
                         infobuffer.insert(textiter, 
-                            self._("Version mismatch: expected %s received %s\n") %
+                            _("Version mismatch: expected %s received %s\n") %
                             (ve.expected_version, ve.received_version))
                 return None
                 
@@ -781,7 +777,7 @@ class Updatemanager:
                 infobuffer = self.w_um_textview.get_buffer()
                 textiter = infobuffer.get_end_iter()
                 infobuffer.insert_with_tags_by_name(textiter,
-                    "\nNo Updates available", "bold")
+                    _("\nNo Updates available"), "bold")
 
                 self.w_um_install_button.set_sensitive(False)
                 self.w_um_updateall_button.set_sensitive(False)
@@ -815,7 +811,7 @@ class Updatemanager:
                         
         def __update_details_from_info(self, name, info):
                 ver = "%s-%s" % (info.version, info.branch)
-                str_details = self._(
+                str_details = _(
                     '\nDescription:\t\t%s\nFMRI:       \t\t\t%s' +
                     '\nVersion:    \t\t%s\nPackaged on:\t\t%s' +
                     '\nSize:       \t\t\t%s\n') \
@@ -839,7 +835,7 @@ class Updatemanager:
                         while gtk.events_pending():
                                 gtk.main_iteration(False)
                 except ValueError:
-                        print self._('%s is not valid image, trying root image') \
+                        print _('%s is not valid image, trying root image') \
                             % image_directory
                         try:
                                 dr = os.environ["PKG_IMAGE"]
@@ -849,7 +845,7 @@ class Updatemanager:
                                 image_obj.find_root(dr)
                                 image_obj.load_config()
                         except ValueError:
-                                print self._('%s is not valid root image, return None') \
+                                print _('%s is not valid root image, return None') \
                                     % dr
                                 image_obj = None
                 return image_obj
@@ -887,7 +883,7 @@ class Updatemanager:
                         else:
                                 infobuffer = self.w_um_textview.get_buffer()
                                 infobuffer.set_text(
-                                    self._("\nFetching details for %s ...") % fmri)
+                                    _("\nFetching details for %s ...") % fmri)
                                 self.selection_timer = Timer(SELECTION_CHANGE_LIMIT,
                                     self.__show_package_info_thread,
                                     args=(fmri, )).start()
@@ -910,7 +906,7 @@ class Updatemanager:
                         infobuffer.set_text("")
                         textiter = infobuffer.get_end_iter()
                         infobuffer.insert_with_tags_by_name(textiter,
-                            "\nNo details available", "bold")
+                            _("\nNo details available"), "bold")
 
         def __on_um_dialog_close(self, widget):
                 self.__exit_app()
@@ -940,15 +936,15 @@ class Updatemanager:
                                 self.__progress_cancel_download()
                                 
                         self.__update_progress_info(
-                                self._("\nCanceling update, please wait ..."))
+                                _("\nCanceling update, please wait ..."))
                         self.w_progress_cancel.set_sensitive(False)
                         Thread(target = self.api_obj.cancel).start()
                 else:
                         self.__update_progress_info(
-                                self._("\nUnable to cancel at this time."))
+                                _("\nUnable to cancel at this time."))
 
         def __on_install_button_clicked(self, widget):
-                self.setup_progressdialog_show(self._("Installing Updates"),
+                self.setup_progressdialog_show(_("Installing Updates"),
                         showCancel = True, showOK = True,
                         isInstall = True, showCloseOnFinish = debug)
                 Thread(target = self.__install).start()   
@@ -960,7 +956,7 @@ class Updatemanager:
         def __on_ua_proceed_button_clicked(self, widget):
                 self.w_ua_confirm_dialog.hide()
                 self.ua_start = time.time()
-                self.setup_progressdialog_show(self._("Update All"),
+                self.setup_progressdialog_show(_("Update All"),
                     showCancel = True, showOK = True,
                     isInstall = True, showCloseOnFinish = debug)
 
@@ -980,13 +976,13 @@ class Updatemanager:
                 self.__selectall_toggle(widget.get_active())
 
         def __handle_incorporated_error(self, list_incorp):
-                self.__update_progress_info(self._("ERROR"), True)
+                self.__update_progress_info(_("ERROR"), True)
                 self.__update_progress_info(
-                        self._("Following Incorporated package(s) cannot be updated:"))
+                        _("Following Incorporated package(s) cannot be updated:"))
                 for i in list_incorp:
                         self.__update_progress_info("\t%s" % i)
                 self.__update_progress_info(
-                        self._("Update using: Update All\n"), True)
+                        _("Update using: Update All\n"), True)
 
         def __handle_update_progress_error(self, str_error, ex = None,
                 stage = UPDATE_EVAL):
@@ -1003,13 +999,13 @@ class Updatemanager:
                         gobject.idle_add(self.__progress_error_eval)
                         
                 gobject.idle_add(self.__update_progress_info,
-                        self._("\nERROR"), True)
+                    _("\nERROR"), True)
                 if ex != None:
                         gobject.idle_add(self.__update_progress_info,
-                            self._("%s\n%s" % (str_error, ex)))
+                            _("%s\n%s" % (str_error, ex)))
                 else:
                         gobject.idle_add(self.__update_progress_info,
-                            self._("%s\n" % str_error))
+                            _("%s\n" % str_error))
                 self.__cleanup()
 
         def __update_image(self, be_name = None):
@@ -1020,7 +1016,7 @@ class Updatemanager:
                 # Evaluate
                 try:
                         gobject.idle_add(self.__update_progress_info,
-                            self._("\nEvaluate\n"), True)
+                            _("\nEvaluate\n"), True)
                         if self.__get_api_obj() == None:
                                 return
                                 
@@ -1031,19 +1027,18 @@ class Updatemanager:
                             # self.api_obj.plan_update_all(sys.argv[0], be_name)
                         if cre:
                                 self.__handle_update_progress_error(
-                                        self._(
-                                            "Update All failed during catalog refresh\n"
-                                            "while determining what to update:"), cre,
-                                            stage = self.update_stage)
+                                    _("Update All failed during catalog refresh\n"
+                                    "while determining what to update:"), cre,
+                                    stage = self.update_stage)
                                 return
                         if not opensolaris_image:
                                 self.__handle_update_progress_error(
-                                    self._("This is not an OpenSolaris image\n"),
+                                    _("This is not an OpenSolaris image\n"),
                                     stage = self.update_stage)
                                 return
                         if not stuff_to_do:
                                 self.__handle_update_progress_error(
-                                    self._("No updates available for this image."),
+                                    _("No updates available for this image."),
                                     stage = self.update_stage)
                                 return
                 except (api_errors.CanceledException):
@@ -1051,17 +1046,17 @@ class Updatemanager:
                         return
                 except api_errors.CatalogRefreshException, cre:
                         self.__handle_update_progress_error(
-                            self._("Update All failed during catalog refresh\n"
+                            _("Update All failed during catalog refresh\n"
                             "while determining what to update:"), cre,
                             stage = self.update_stage)
                 except api_errors.PlanCreationException, pce:
                         self.__handle_update_progress_error(
-                            self._("Update All failure in plan creation:"), pce,
+                            _("Update All failure in plan creation:"), pce,
                             stage = self.update_stage)
                         return
                 except api_errors.IpkgOutOfDateException:
                         self.__handle_update_progress_error(
-                            self._(
+                            _(
                             "pkg(5) appears to be out of date and should be\n" +
                             "updated before running Update All.\n" +
                             "Please update pkg(5) using:\n" +
@@ -1071,17 +1066,17 @@ class Updatemanager:
                         return
                 except api_errors.ApiException, aex:
                         self.__handle_update_progress_error(
-                            self._("Update All API failure in evaluation:"), aex,
+                            _("Update All API failure in evaluation:"), aex,
                             stage = self.update_stage)
                         return
                 except Exception, uex:
                         self.__handle_update_progress_error(
-                            self._("Update All unexpected error in evaluation:"),
+                            _("Update All unexpected error in evaluation:"),
                             uex, stage = self.update_stage)
                         return
                         
-                if self.__shared_update_steps(self._("Update All"),
-                    self._("Update All finished successfully.\n")) != 0:
+                if self.__shared_update_steps(_("Update All"),
+                    _("Update All finished successfully.\n")) != 0:
                         return
                 
                 gobject.idle_add(self.__display_update_image_success)       
@@ -1091,15 +1086,15 @@ class Updatemanager:
                 info_str = ""
                 if elapsed >= 1.0:
                         info_str = \
-                            self._(
+                            _(
                             "\nUpdate All finished successfully in %1.f mins\n\n" %
                             elapsed)
                 else:
                         info_str = \
-                            self._(
+                            _(
                             "\nUpdate All finished successfully in < 1 min\n\n")
 
-                info_str += self._(
+                info_str += _(
                     "Please reboot after reviewing the release notes posted at:\n\n"
                     "http://opensolaris.org/os/project/indiana/resources/"
                     "relnotes/200811/x86/")
@@ -1109,7 +1104,7 @@ class Updatemanager:
                     buttons = gtk.BUTTONS_CLOSE, flags = gtk.DIALOG_MODAL,
                     type = gtk.MESSAGE_INFO,
                     message_format = info_str)
-                msgbox.set_title(self._("Update All Completed"))
+                msgbox.set_title(_("Update All Completed"))
                 msgbox.run()
                 msgbox.destroy()                        
                 self.__exit_app()
@@ -1126,26 +1121,26 @@ class Updatemanager:
                 list_fmris_to_install = self.__get_selected_fmris()
                 if len(list_fmris_to_install) == 0:
                         self.__handle_update_progress_error(
-                            self._("Nothing selected to update."))
+                            _("Nothing selected to update."))
                         return
                         
                 if self.__get_api_obj() == None:
                         return
       
                 if debug:
-                        print self._("Updating ...")
+                        print _("Updating ...")
                         print list_fmris_to_install
                         
                 # Evaluate
                 try:
                         gobject.idle_add(self.__update_progress_info,
-                            self._("\nEvaluate\n"), True)
+                            _("\nEvaluate\n"), True)
                         ret, exception_caught = \
                             self.__get_api_obj().plan_install(list_fmris_to_install,
                             [], refresh_catalogs = self.do_refresh)
                         if exception_caught != None:
                                 self.__handle_update_progress_error(
-                                    self._("Update error in plan install:"),
+                                    _("Update error in plan install:"),
                                     exception_caught,
                                     stage = self.update_stage)
                         return
@@ -1155,12 +1150,12 @@ class Updatemanager:
                         return
                 except (api_errors.ApiException), aex:
                         self.__handle_update_progress_error(
-                            self._("Update unexpected API error:"), aex,
+                            _("Update unexpected API error:"), aex,
                             stage = self.update_stage)
                         return
                 except (Exception), uex:
                         self.__handle_update_progress_error(
-                            self._("Update unexpected error:"), uex,
+                            _("Update unexpected error:"), uex,
                             stage = self.update_stage)
                         return
                 
@@ -1183,12 +1178,12 @@ class Updatemanager:
                         gobject.idle_add(self.__handle_incorporated_error, list_incorp)
 
                 gobject.idle_add(self.__update_progress_info,
-                    self._("Packages to be installed:"))
+                    _("Packages to be installed:"))
                 for i in list_planned:
                         gobject.idle_add(self.__update_progress_info, "\t%s" % i)
 
-                if self.__shared_update_steps(self._("Update"),
-                    self._("Update finished successfully.")) != 0:
+                if self.__shared_update_steps(_("Update"),
+                    _("Update finished successfully.")) != 0:
                         return
                         
                 gobject.idle_add(self.__remove_installed, list_planned)
@@ -1207,26 +1202,26 @@ class Updatemanager:
                         self.install_error = True
                         gobject.idle_add(self.__progress_error_download)
                         gobject.idle_add(self.__update_progress_info,
-                            self._("\nERROR"), True)
+                            _("\nERROR"), True)
                         gobject.idle_add(self.__update_progress_info,
-                            self._("%s Download failed:\n%s" % (what_msg, aex)))
+                            _("%s Download failed:\n%s" % (what_msg, aex)))
                         self.__cleanup()                
                         return 1
                 except EnvironmentError, uex:
                         if uex.errno in (errno.EDQUOT, errno.ENOSPC):
                                 self.__handle_update_progress_error(
-                                    self._(
+                                    _(
                                     "%s exceded available disc space" % (what_msg)),
                                     stage = self.update_stage)
                                 gobject.idle_add(self.__prompt_to_load_beadm)
                         else:
                                 self.__handle_update_progress_error(
-                                    self._("%s unexpected error:" % (what_msg)),
+                                    _("%s unexpected error:" % (what_msg)),
                                     uex, stage = self.update_stage)
                         return 1
                 except Exception, uex:
                         self.__handle_update_progress_error(
-                                self._("%s unexpected error:" % (what_msg)),
+                                _("%s unexpected error:" % (what_msg)),
                                 uex, stage = self.update_stage)
                         return 1
 
@@ -1242,33 +1237,33 @@ class Updatemanager:
                         self.install_error = True
                         gobject.idle_add(self.__progress_error_install)
                         gobject.idle_add(self.__update_progress_info,
-                            self._("\nERROR"), True)
+                            _("\nERROR"), True)
                         gobject.idle_add(self.__update_progress_info,
-                            self._("%s Execute plan failed:\n%s" % (what_msg, aex)))
+                            _("%s Execute plan failed:\n%s" % (what_msg, aex)))
                         self.__cleanup()                
                         return 1
                 except EnvironmentError, uex:
                         if uex.errno in (errno.EDQUOT, errno.ENOSPC):
                                 self.__handle_update_progress_error(
-                                    self._(
+                                    _(
                                     "%s exceded available disc space" % what_msg),
                                     stage = self.update_stage)
                                 gobject.idle_add(self.__prompt_to_load_beadm)
                         else:
                                 self.__handle_update_progress_error(
-                                    self._("%s unexpected error:" % (what_msg)),
+                                    _("%s unexpected error:" % (what_msg)),
                                     uex, stage = self.update_stage)
                         return 1
                 except Exception, uex:
                         self.__handle_update_progress_error(
-                                self._("%s unexpected error:" % (what_msg)),
+                                _("%s unexpected error:" % (what_msg)),
                                 uex, stage = self.update_stage)
                         return 1
                         
                 self.__cleanup()                
                 gobject.idle_add(self.__progress_steps_done)
                 gobject.idle_add(self.__update_progress_info,
-                        self._(success_msg), True)
+                    _(success_msg), True)
                 gobject.idle_add(self.w_progress_ok.set_sensitive, True)
                         
                 return 0
@@ -1277,12 +1272,12 @@ class Updatemanager:
                 msgbox = gtk.MessageDialog(parent = self.w_progress_dialog,
                     buttons = gtk.BUTTONS_OK_CANCEL, flags = gtk.DIALOG_MODAL,
                     type = gtk.MESSAGE_ERROR,
-                    message_format = self._(
+                    message_format = _(
                     "Not enough disc space: the Update All action cannot "
                     "be performed.\n\n"
                     "Click OK to launch BE Management to manage your "
                     "existing BE's and free up disc space."))
-                msgbox.set_title(self._("Not Enough Disc Space"))
+                msgbox.set_title(_("Not Enough Disc Space"))
                 result = msgbox.run()
                 msgbox.destroy()
                 if result == gtk.RESPONSE_OK:
@@ -1450,14 +1445,14 @@ class Updatemanager:
                 if not dl_started:
                         self.cur_pkg = ""
                         self.__progress_steps_download()
-                        self.__update_progress_info(self._("\nDownload\n"), True)
+                        self.__update_progress_info(_("\nDownload\n"), True)
                         
                 if self.cur_pkg != dl_cur_pkg:
                         self.__update_progress_info("%s" % dl_cur_pkg)
                 self.cur_pkg = dl_cur_pkg
                         
                 self.__update_progress_info(
-                    self._("\tpkg %d/%d: \tfiles %d/%d \txfer %.2f/%.2f(meg)") %
+                    _("\tpkg %d/%d: \tfiles %d/%d \txfer %.2f/%.2f(meg)") %
                     (dl_cur_npkgs, dl_goal_npkgs,
                     dl_cur_nfiles, dl_goal_nfiles,
                     dl_cur_nmegbytes, dl_goal_nmegbytes))
@@ -1474,13 +1469,13 @@ class Updatemanager:
                                 
                 if not act_started:
                         self.__progress_steps_install()
-                        self.__update_progress_info(self._("\nInstall\n"), True)
+                        self.__update_progress_info(_("\nInstall\n"), True)
                         self.__update_progress_info(
-                            self._("\t%s\t%d/%d actions") %
+                            _("\t%s\t%d/%d actions") %
                             (act_phase, act_cur_nactions, act_goal_nactions))
                 else:
                         self.__update_progress_info(
-                            self._("\t%s\t%d/%d actions") %
+                            _("\t%s\t%d/%d actions") %
                             (act_phase, act_cur_nactions, act_goal_nactions))
                 
                 if debug:
@@ -1498,12 +1493,12 @@ class Updatemanager:
                                 return
                         self.update_stage = UPDATE_INDEX
                         self.__progress_steps_index()                        
-                        self.__update_progress_info(self._("Index\n"), True)
-                        self.__update_progress_info(self._("\t%-25s\t%d/%d actions" %
+                        self.__update_progress_info(_("Index\n"), True)
+                        self.__update_progress_info(_("\t%-25s\t%d/%d actions" %
                             (ind_phase, ind_cur_nitems, ind_goal_nitems)))
                 else:
                         self.__update_progress_info(
-                            self._("\t%-25s\t%d/%d actions") %
+                            _("\t%-25s\t%d/%d actions") %
                             (ind_phase, ind_cur_nitems, ind_goal_nitems))
                         
                 if debug:
@@ -1567,7 +1562,7 @@ if __name__ == "__main__":
         um.do_refresh = do_refresh
         um.init_tree_views()
 
-        um.setup_progressdialog_show(um._("Checking for new software"),
+        um.setup_progressdialog_show(_("Checking for new software"),
             showDetails = False)
         gobject.timeout_add(UPDATES_FETCH_DELAY, um.setup_updates)
         main()

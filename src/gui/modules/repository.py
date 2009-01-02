@@ -144,8 +144,8 @@ class Repository:
                         w_tree_repository.signal_autoconnect(dic)
                         w_tree_repositorymodify.signal_autoconnect(dic_conf)
                 except AttributeError, error:
-                        print self.parent._('GUI will not respond to any event! %s. \
-                            Check repository.py signals') \
+                        print _("GUI will not respond to any event! %s. "
+                            "Check repository.py signals") \
                             % error
 
                 Thread(target = self.__prepare_repository_list).start()
@@ -165,12 +165,12 @@ class Repository:
                 self.w_repository_remove_button.set_sensitive(False)                
         def __init_tree_views(self):
                 name_renderer = gtk.CellRendererText()
-                column = gtk.TreeViewColumn(self.parent._("Repository Name"), \
-                        name_renderer,  text = 0) # 0 = Name
+                column = gtk.TreeViewColumn(_("Repository Name"),
+                    name_renderer,  text = 0) # 0 = Name
                 column.set_expand(True)
                 self.w_repository_treeview.append_column(column)
                 radio_renderer = gtk.CellRendererToggle()
-                column = gtk.TreeViewColumn(self.parent._("Preferred"), \
+                column = gtk.TreeViewColumn(_("Preferred"),
                     radio_renderer, active = 1) # 1 = Preferred
                 radio_renderer.set_property("activatable", True)
                 radio_renderer.set_property("radio", True)
@@ -178,12 +178,12 @@ class Repository:
                 radio_renderer.connect('toggled', self.__preferred_default)
                 self.w_repository_treeview.append_column(column)
 
-        def __prepare_repository_list(self, clear_add_entries=True, selected_auth=None, \
+        def __prepare_repository_list(self, clear_add_entries=True, selected_auth=None,
             stop_thread=True):
                 self.number_of_changes += 1
                 self.img.load_config()
                 auths = self.img.gen_authorities()
-                gobject.idle_add(self.__create_view_with_auths, auths, \
+                gobject.idle_add(self.__create_view_with_auths, auths,
                     clear_add_entries, selected_auth)
                 if stop_thread:
                         self.progress_stop_thread = True
@@ -202,15 +202,14 @@ class Repository:
                 for a in auths:
                         l = self.img.split_authority(a)
                         name = l[0]
-                        is_preferred = \
-                            name == preferred
+                        is_preferred = name == preferred
                         if is_preferred:
                                 self.initial_default = j
                         if selected_auth:
                                 if name == selected_auth:
                                         select_auth = j
-                        self.repository_list.insert(j, \
-                                [name, is_preferred, l[1]])
+                        self.repository_list.insert(j, 
+                            [name, is_preferred, l[1]])
                         j += 1
                 if j > 0:
                         self.w_repository_modify_button.set_sensitive(False)
@@ -218,8 +217,8 @@ class Repository:
                 self.w_repository_treeview.set_model(self.list_filter)
                 if select_auth == -1:
                         select_auth = self.initial_default
-                self.w_repository_treeview.set_cursor(select_auth, \
-                        None, start_editing=False)
+                self.w_repository_treeview.set_cursor(select_auth,
+                    None, start_editing=False)
                 self.w_repository_treeview.scroll_to_cell(select_auth)
 
         def __preferred_default(self, cell, filtered_path):
@@ -238,10 +237,10 @@ class Repository:
                                                 row[1] = False
                                         model.set_value(itr, 1, not preferred)
                                 except api_errors.PermissionsException:
-                                        err = self.parent._("Couldn't change" \
-                                            " the preferred authority.\n" \
+                                        err = _("Couldn't change"
+                                            " the preferred authority.\n"
                                             "Please check your permissions.")
-                                        self.__error_occured(err,  \
+                                        self.__error_occured(err,
                                             msg_type=gtk.MESSAGE_INFO) 
                                         self.__prepare_repository_list()
 
@@ -283,16 +282,14 @@ class Repository:
                 if len(name) == 0:
                         return False
                 if not misc.valid_auth_prefix(name):
-                        self.name_error = self.parent._(\
-                            "Name contains invalid characters")
+                        self.name_error = _("Name contains invalid characters")
                         return False
 
                 model = self.w_repository_treeview.get_model()
                 if model:
                         for row in model:
                                 if row[0] == name:
-                                        self.name_error = self.parent._(\
-                                            "Name already in use")
+                                        self.name_error = _("Name already in use")
                                         return False
                 return True
 
@@ -313,7 +310,7 @@ class Repository:
                         if valid_start:
                                 self.url_error = None
                         else:
-                                self.url_error = self.parent._("URL is not valid")
+                                self.url_error = _("URL is not valid")
                         return False
                 return True
         
@@ -368,8 +365,8 @@ class Repository:
         def __on_repositoryadd_clicked(self, widget):
                 name = self.w_repository_name.get_text()
                 url = self.w_repository_url.get_text()
-                p_title = self.parent._("Applying changes")
-                p_text = self.parent._("Applying changes, please wait ...")
+                p_title = _("Applying changes")
+                p_text = _("Applying changes, please wait ...")
                 self.__run_with_prog_in_thread(self.__add_repository, p_title, p_text,
                     name, url)
                 return
@@ -384,8 +381,8 @@ class Repository:
                 
 
         def __on_repositoryremove_clicked(self, widget):
-                p_title = self.parent._("Applying changes")
-                p_text = self.parent._("Applying changes, please wait ...")
+                p_title = _("Applying changes")
+                p_text = _("Applying changes, please wait ...")
                 self.__run_with_prog_in_thread(self.__delete_selected_row, p_title,
                     p_text)
 
@@ -414,15 +411,14 @@ class Repository:
                 self.w_repositorymodify_dialog.hide()
                 name =  self.w_repositorymodify_name.get_text()
                 url =  self.w_repositorymodify_url.get_text()
-                p_title = self.parent._("Applying changes")
-                p_text = self.parent._("Applying changes, please wait ...")
+                p_title = _("Applying changes")
+                p_text = _("Applying changes, please wait ...")
                 self.__run_with_prog_in_thread(self.__update_repository, p_title,
                     p_text, name, url)
 
         def __update_repository(self, name, url):
                 url_same = True
                 name_same = True
-                strt = self.parent._
                 if name != self.old_modify_name:
                         name_same = False
                 if url != self.old_modify_url:
@@ -437,9 +433,9 @@ class Repository:
                         omn = self.old_modify_name
                         if not self.__is_name_valid(name):
                                 self.progress_stop_thread = True
-                                err = strt("Failed to modify %s." % omn + \
-                                    "\nThe choosen" + \
-                                    " repository name %s is already in use" % name)
+                                err = _("Failed to modify %s."
+                                    "\nThe choosen repository name %s is "
+                                    "already in use") % (omn, name)
                                 gobject.idle_add(self.__error_occured, err)
                                 self.progress_stop_thread = True
                                 return
@@ -447,8 +443,8 @@ class Repository:
                                 self.__delete_repository(self.old_modify_name, False)
                         except api_errors.PermissionsException:
                                 # Do nothing
-                                err = strt("Failed to modify %s." % omn +
-                                    "\nPlease check your permissions.")
+                                err = _("Failed to modify %s." 
+                                    "\nPlease check your permissions.") % omn
                                 self.__error_with_reset_repo_selection(err,
                                     gtk.MESSAGE_INFO)
                                 return
@@ -467,9 +463,9 @@ class Repository:
                 except api_errors.PermissionsException:
                         # Do nothing
                         somn = self.old_modify_name
-                        err = strt("Failed to modify %s." % somn + \
-                            "\nPlease check your permissions.")
-                        self.__error_with_reset_repo_selection(err, \
+                        err = _("Failed to modify %s."
+                            "\nPlease check your permissions.") % omn
+                        self.__error_with_reset_repo_selection(err,
                             gtk.MESSAGE_INFO)
                         return
                 except RuntimeError, ex:
@@ -489,8 +485,8 @@ class Repository:
                                     self.old_modify_url, False, stop_thread=False)
                                 if somn != name:
                                         self.__delete_repository(name, False)
-                                err = self.parent._("Failed to modify %s.") % somn + \
-                                self.parent._(
+                                err = _("Failed to modify %s.") % somn + \
+                                    _(
                                     "\nPlease check the network connection or URL.\n"
                                     "Is the repository accessible?")
                                 gobject.idle_add(self.__error_occured, err,
@@ -501,8 +497,8 @@ class Repository:
                                 #and was modified
                                 #To not existed repository
                                 somn = self.old_modify_name
-                                err = self.parent._("Failed to modify %s.") % somn + \
-                                self.parent._(
+                                err = _("Failed to modify %s.") % somn + \
+                                    _(
                                     "\nPlease check the network connection or URL.\n"
                                     "Is the repository accessible?")
                                 gobject.idle_add(self.__error_occured, err,
@@ -527,7 +523,7 @@ class Repository:
         def __add_repository(self, auth, origin_url, silent=True, stop_thread=True):
 
                 if not misc.valid_auth_url(origin_url):
-                        err = self.parent._("Invalid URL:\n%s" % origin_url)
+                        err = _("Invalid URL:\n%s" % origin_url)
                         gobject.idle_add(self.__error_occured, err)
                         gobject.idle_add(self.w_repository_name.grab_focus)
                         self.progress_stop_thread = True
@@ -539,28 +535,28 @@ class Repository:
                         self.img.set_authority(auth, origin_url=origin_url,
                             ssl_key=ssl_key, ssl_cert=ssl_cert,
                             refresh_allowed=refresh_catalogs)
-                        self.__prepare_repository_list(silent, \
+                        self.__prepare_repository_list(silent,
                             auth, stop_thread=stop_thread)
                 except RuntimeError, ex:
                         if not silent:
                                 raise
-                        err = (self.parent._("Failed to add %s.") % auth)
+                        err = (_("Failed to add %s.") % auth)
                         err += str(ex)
                         self.__error_with_reset_repo_selection(err)
                         return
                 except api_errors.PermissionsException:
                         if not silent:
                                 raise
-                        err = (self.parent._("Failed to add %s.") % auth) + \
-                        self.parent._("\nPlease check your permissions.")
-                        self.__error_with_reset_repo_selection(err, \
+                        err = (_("Failed to add %s.") % auth) + \
+                            _("\nPlease check your permissions.")
+                        self.__error_with_reset_repo_selection(err,
                             gtk.MESSAGE_INFO)
                 except api_errors.CatalogRefreshException:
                         if not silent:
                                 raise
                         self.__delete_repository(auth)
-                        err = self.parent._("Failed to add %s.") % auth + \
-                        self.parent._(
+                        err = _("Failed to add %s.") % auth + \
+                            _(
                             "\nPlease check the network connection or URL.\nIs the "
                             "repository accessible?")
                         self.__error_with_reset_repo_selection(err, gtk.MESSAGE_INFO)
@@ -573,19 +569,19 @@ class Repository:
                 except RuntimeError, ex:
                         if not silent:
                                 raise
-                        err = (self.parent._("Failed to delete %s.") % name)
+                        err = (_("Failed to delete %s.") % name)
                         err += str(ex)
                         self.__error_with_reset_repo_selection(err)
                         return
                 except api_errors.PermissionsException:
                         if not silent:
                                 raise
-                        err = (self.parent._("Failed to delete %s.") % name) + \
-                        self.parent._("\nPlease check your permissions.")
-                        self.__error_with_reset_repo_selection(err, \
+                        err = (_("Failed to delete %s.") % name) + \
+                            _("\nPlease check your permissions.")
+                        self.__error_with_reset_repo_selection(err,
                             gtk.MESSAGE_INFO)
 
-        def __error_with_reset_repo_selection(self, error_msg, \
+        def __error_with_reset_repo_selection(self, error_msg,
             msg_type=gtk.MESSAGE_ERROR):
                 gobject.idle_add(self.__error_occured, error_msg, msg_type)
                 self.__reset_repo_selection()
@@ -599,11 +595,11 @@ class Repository:
                 self.__prepare_repository_list(False, sel)
 
         def __error_occured(self, error_msg, msg_type=gtk.MESSAGE_ERROR):
-                msgbox = gtk.MessageDialog(parent = \
-                    self.w_repository_dialog, \
-                    buttons = gtk.BUTTONS_CLOSE, \
-                    flags = gtk.DIALOG_MODAL, \
-                    type = msg_type, \
+                msgbox = gtk.MessageDialog(parent =
+                    self.w_repository_dialog,
+                    buttons = gtk.BUTTONS_CLOSE,
+                    flags = gtk.DIALOG_MODAL,
+                    type = msg_type,
                     message_format = None)
                 msgbox.set_markup(error_msg)
                 msgbox.set_title("Edit Repositories error")

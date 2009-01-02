@@ -108,7 +108,11 @@ good-names=N_
 
 [VARIABLES]
 
-[CLASSES]
+# In this case we define '_' (the function name for gettext) so that pylint
+# doesn't complain about things like _("this is i18n string")
+additional-builtins=_
+
+[CLASSES] 
 
 [DESIGN]
 

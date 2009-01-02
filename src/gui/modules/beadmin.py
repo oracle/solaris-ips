@@ -66,15 +66,15 @@ class Beadmin:
                 self.parent = parent
 
                 if nobe:
-                        msg = self.parent._("The <b>libbe</b> library was not " \
-                            "found on your system." \
+                        msg = _("The <b>libbe</b> library was not "
+                            "found on your system."
                             "\nAll functions for managing Boot Environments are disabled")
                         msgbox = gtk.MessageDialog(
-                            buttons = gtk.BUTTONS_CLOSE, \
-                            flags = gtk.DIALOG_MODAL, type = gtk.MESSAGE_INFO, \
+                            buttons = gtk.BUTTONS_CLOSE,
+                            flags = gtk.DIALOG_MODAL, type = gtk.MESSAGE_INFO,
                             message_format = None)
                         msgbox.set_markup(msg)
-                        msgbox.set_title(self.parent._("BE management"))
+                        msgbox.set_title(_("BE management"))
                         msgbox.run()
                         msgbox.destroy()
                         return
@@ -94,7 +94,7 @@ class Beadmin:
                 self.initial_default = 0
                 w_tree_beadmin = gtk.glade.XML(parent.gladefile, "beadmin")
                 w_tree_progress = gtk.glade.XML(parent.gladefile, "progressdialog")
-                w_tree_beconfirmation = gtk.glade.XML(parent.gladefile, \
+                w_tree_beconfirmation = gtk.glade.XML(parent.gladefile,
                     "beconfirmationdialog")
                 self.w_beadmin_dialog = w_tree_beadmin.get_widget("beadmin")
                 self.w_be_treeview = w_tree_beadmin.get_widget("betreeview")
@@ -147,8 +147,8 @@ class Beadmin:
                         w_tree_beadmin.signal_autoconnect(dic)
                         w_tree_beconfirmation.signal_autoconnect(dic_conf)
                 except AttributeError, error:
-                        print self.parent._('GUI will not respond to any event! %s. \
-                            Check beadmin.py signals') \
+                        print _("GUI will not respond to any event! %s. "
+                            "Check beadmin.py signals") \
                             % error
                 Thread(target = self.__progress_pulse).start()
                 Thread(target = self.__prepare_beadmin_list).start()
@@ -158,12 +158,12 @@ class Beadmin:
                 sel = self.w_beconfirmation_treeview.get_selection()
                 sel.set_mode(gtk.SELECTION_NONE)
                 self.w_beadmin_dialog.show_all()
-                self.w_progress_dialog.set_title(\
-                    self.parent._("Loading Boot Environment Information"))
-                self.w_progressinfo_label.set_text(\
-                    self.parent._("Fetching BE entries..."))
+                self.w_progress_dialog.set_title(
+                    _("Loading Boot Environment Information"))
+                self.w_progressinfo_label.set_text(
+                    _("Fetching BE entries..."))
                 self.be_destroy_supports_capital_f = \
-                        self.__check_if_be_supports_capital_f()
+                    self.__check_if_be_supports_capital_f()
                 self.w_progress_dialog.show()
 
         def __progress_pulse(self):
@@ -189,7 +189,7 @@ class Beadmin:
                 self.w_be_treeview.append_column(column)
 
                 name_renderer = gtk.CellRendererText()
-                column = gtk.TreeViewColumn(self.parent._("Boot Environment"), \
+                column = gtk.TreeViewColumn(_("Boot Environment"),
                     name_renderer, text = BE_NAME)
                 column.set_cell_data_func(name_renderer, self.__cell_data_function, None)
                 column.set_expand(True)
@@ -197,16 +197,16 @@ class Beadmin:
                 
                 datetime_renderer = gtk.CellRendererText()
                 datetime_renderer.set_property('xalign', 0.0)
-                column = gtk.TreeViewColumn(self.parent._("Created"), datetime_renderer, \
+                column = gtk.TreeViewColumn(_("Created"), datetime_renderer,
                     text = BE_DATE_TIME)
-                column.set_cell_data_func(datetime_renderer, \
+                column.set_cell_data_func(datetime_renderer,
                     self.__cell_data_function, None)
                 column.set_expand(True)
                 self.w_be_treeview.append_column(column)
 
                 size_renderer = gtk.CellRendererText()
                 size_renderer.set_property('xalign', 1.0)
-                column = gtk.TreeViewColumn(self.parent._("Size"), size_renderer, \
+                column = gtk.TreeViewColumn(_("Size"), size_renderer,
                     text = BE_SIZE)
                 column.set_cell_data_func(size_renderer, self.__cell_data_function, None)
                 column.set_expand(False)
@@ -214,21 +214,21 @@ class Beadmin:
               
                 radio_renderer = gtk.CellRendererToggle()
                 radio_renderer.connect('toggled', self.__active_pane_default, model)
-                column = gtk.TreeViewColumn(self.parent._("Active on Reboot"), \
+                column = gtk.TreeViewColumn(_("Active on Reboot"),
                     radio_renderer, active = BE_ACTIVE_DEFAULT)
                 radio_renderer.set_property("activatable", True)
                 radio_renderer.set_property("radio", True)
-                column.set_cell_data_func(radio_renderer, \
+                column.set_cell_data_func(radio_renderer,
                     self.__cell_data_default_function, None)
                 column.set_expand(False)
                 self.w_be_treeview.append_column(column)
 
                 toggle_renderer = gtk.CellRendererToggle()
                 toggle_renderer.connect('toggled', self.__active_pane_toggle, model)
-                column = gtk.TreeViewColumn(self.parent._("Delete"), toggle_renderer, \
+                column = gtk.TreeViewColumn(_("Delete"), toggle_renderer,
                     active = BE_MARKED)
                 toggle_renderer.set_property("activatable", True)
-                column.set_cell_data_func(toggle_renderer, \
+                column.set_cell_data_func(toggle_renderer,
                     self.__cell_data_delete_function, None)
                 column.set_expand(False)
                 self.w_be_treeview.append_column(column)
@@ -242,9 +242,9 @@ class Beadmin:
                 self.__enable_disable_reset()
 
         def __on_ok_be_clicked(self, widget):
-                self.w_progress_dialog.set_title(self.parent._("Applying changes"))
-                self.w_progressinfo_label.set_text(\
-                    self.parent._("Applying changes, please wait ..."))
+                self.w_progress_dialog.set_title(_("Applying changes"))
+                self.w_progressinfo_label.set_text(
+                    _("Applying changes, please wait ..."))
                 if self.w_reset_button.get_property('sensitive') == 0:
                         self.progress_stop_thread = True
                         self.__on_beadmin_delete_event(None, None)
@@ -284,11 +284,11 @@ class Beadmin:
                 summary_text = ""
                 be_change_no = len(treestore)
                 if  be_change_no == 0:
-                        treestore.append([self.parent._("No change")])
+                        treestore.append([_("No change")])
                         self.w_beconfirmation_treeview.set_sensitive(False)
                 else:
                         summary_text += \
-                            self.parent._("%d BE's will be deleted") % be_change_no
+                            _("%d BE's will be deleted") % be_change_no
 
                 if default:
                         self.w_beconfirmationdefault_label.set_text(default+"\n")
@@ -296,11 +296,11 @@ class Beadmin:
                         if be_change_no > 0:
                                 summary_text += "\n"
                         summary_text += \
-                            self.parent._("The Active BE will be changed upon reboot")
+                            _("The Active BE will be changed upon reboot")
                 else:
                         self.w_beconfirmationdefault_label.set_sensitive(False)
-                        self.w_beconfirmationdefault_label.set_text(\
-                            self.parent._("No change\n"))
+                        self.w_beconfirmationdefault_label.set_text(
+                            _("No change\n"))
                 self.w_beconfirmationsummary_label.set_text(summary_text)
                 self.w_beconfirmation_treeview.expand_all()
                 self.w_cancelbe_button.grab_focus()
@@ -336,12 +336,12 @@ class Beadmin:
                         self.progress_stop_thread = True
                         msg = ""
                         if not_default:
-                                msg += self.parent._("<b>Couldn't change Active " \
+                                msg += _("<b>Couldn't change Active "
                                     "Boot Environment to:</b>\n") + not_default
                         if len(not_deleted) > 0:
                                 if not_default:
                                         msg += "\n\n"
-                                msg += self.parent._("<b>Couldn't delete Boot " \
+                                msg += _("<b>Couldn't delete Boot "
                                     "Environments:</b>\n")
                                 for row in not_deleted:
                                         msg += row + "\n"
@@ -351,12 +351,12 @@ class Beadmin:
                                 
         def __error_occured(self, error_msg, reset=True):
                 msg = error_msg
-                msgbox = gtk.MessageDialog(parent = self.w_beadmin_dialog, \
-                    buttons = gtk.BUTTONS_CLOSE, \
-                    flags = gtk.DIALOG_MODAL, type = gtk.MESSAGE_ERROR, \
+                msgbox = gtk.MessageDialog(parent = self.w_beadmin_dialog,
+                    buttons = gtk.BUTTONS_CLOSE,
+                    flags = gtk.DIALOG_MODAL, type = gtk.MESSAGE_ERROR,
                     message_format = None)
                 msgbox.set_markup(msg)
-                msgbox.set_title("BE error")
+                msgbox.set_title(_("BE error"))
                 msgbox.run()
                 msgbox.destroy()
                 if reset:
@@ -368,8 +368,7 @@ class Beadmin:
                 itr = model.get_iter(path)
                 if itr:
                         modified = model.get_value(itr, BE_MARKED)
-                        model.set_value(itr, BE_MARKED, \
-                            not modified)
+                        model.set_value(itr, BE_MARKED, not modified)
                 self.__enable_disable_reset()
                 
         def __enable_disable_reset(self):
@@ -392,8 +391,7 @@ class Beadmin:
                 itr = model.get_iter(path)
                 if itr:
                         modified = model.get_value(itr, BE_ACTIVE_DEFAULT)
-                        model.set_value(itr, BE_ACTIVE_DEFAULT, \
-                            not modified)
+                        model.set_value(itr, BE_ACTIVE_DEFAULT, not modified)
                         self.__enable_disable_reset()
 
         def __create_view_with_be(self, be_list):
@@ -407,8 +405,8 @@ class Beadmin:
                 if error_code != None and error_code == 0:
                         be_list_loop = be_list[1]
                 elif error_code != None and error_code != 0:
-                        msg = self.parent._("The <b>libbe</b> library couldn't  " \
-                            "prepare list of Boot Environments." \
+                        msg = _("The <b>libbe</b> library couldn't  "
+                            "prepare list of Boot Environments."
                             "\nAll functions for managing Boot Environments are disabled")
                         self.__error_occured(msg, False)
                         return
@@ -437,11 +435,11 @@ class Beadmin:
                                                 try:
                                                         date_format = \
                                                         unicode(
-                                                        self.parent._("%m/%d/%y %H:%M"),
+                                                            _("%m/%d/%y %H:%M"),
                                                             "utf-8").encode(
                                                             locale.getpreferredencoding())
                                                 except (UnicodeError, LookupError):
-                                                        print self.parent._(
+                                                        print _(
                                                         "Error conversion from UTF-8 " \
                                                         "to %s.") \
                                                         % locale.getpreferredencoding()
@@ -456,11 +454,11 @@ class Beadmin:
                                         try:
                                                 date_format = \
                                                     unicode(
-                                                    self.parent._("%m/%d/%y %H:%M"),
+                                                        _("%m/%d/%y %H:%M"),
                                                         "utf-8").encode(
                                                         locale.getpreferredencoding())
                                         except (UnicodeError, LookupError):
-                                                print self.parent._(
+                                                print _(
                                                 "Error conversion from UTF-8 to %s.") \
                                                 % locale.getpreferredencoding()
                                         date_format = "%F %H:%M"
@@ -477,15 +475,15 @@ class Beadmin:
                                                 locale.getpreferredencoding()).encode(
                                                         "utf-8")
                                         except (UnicodeError, LookupError):
-                                                print self.parent._(
+                                                print _(
                                                 "Error conversion from %s to UTF-8.") \
                                                 % locale.getpreferredencoding()
-                                self.be_list.insert(j, [j, False, \
-                                    name, \
-                                    date_time, active_img, \
+                                self.be_list.insert(j, [j, False,
+                                    name,
+                                    date_time, active_img,
                                     active_boot, converted_size])
                                 j += 1
-                self.w_be_treeview.set_cursor(self.initial_active, None, \
+                self.w_be_treeview.set_cursor(self.initial_active, None,
                     start_editing=True)
                 self.w_be_treeview.scroll_to_cell(self.initial_active)
 
@@ -568,7 +566,7 @@ class Beadmin:
                         return None
                 list_of_dates = []
                 try:
-                        proc = subprocess.Popen(cmd, stdout = subprocess.PIPE, \
+                        proc = subprocess.Popen(cmd, stdout = subprocess.PIPE,
                             stderr = subprocess.PIPE,)
                         line_out = proc.stdout.readline()
                         while line_out:

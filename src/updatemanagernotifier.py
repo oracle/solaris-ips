@@ -96,9 +96,6 @@ class UpdateManagerNotifier:
                         module.bindtextdomain("pkg", self.application_dir + \
                             "/usr/share/locale")
                         module.textdomain("pkg")
-                # XXX Remove and use _() where self._ and self.parent._ are being used
-                self._ = gettext.gettext
-
                 self.pr = None
                 self.last_check_filename = None
                 self.time_until_next_check = 0
@@ -308,7 +305,7 @@ class UpdateManagerNotifier:
                         while gtk.events_pending():
                                 gtk.main_iteration(False)
                 except ValueError:
-                        print self._('%s is not valid image, trying root image') \
+                        print _('%s is not valid image, trying root image') \
                             % image_directory
                         try:
                                 dr = os.environ["PKG_IMAGE"]
@@ -318,7 +315,7 @@ class UpdateManagerNotifier:
                                 image_obj.find_root(dr)
                                 image_obj.load_config()
                         except ValueError:
-                                print self._('%s is not valid root image, return None') \
+                                print _('%s is not valid root image, return None') \
                                     % dr
                                 image_obj = None
                 return image_obj
@@ -328,7 +325,7 @@ class UpdateManagerNotifier:
                 status_icon.set_visible(False)
                 status_icon.connect('activate', self.activate_status_icon)
                 status_icon.connect('notify', self.notify_status_icon)
-                status_icon.set_tooltip(self._("Updates are available"))
+                status_icon.set_tooltip(_("Updates are available"))
                 return status_icon
 
         def notify_status_icon(self, status_icon, paramspec):
@@ -350,8 +347,8 @@ class UpdateManagerNotifier:
                 if self.notify == None:
                         if pynotify.init("UpdateManager"):
                                 self.notify = pynotify.Notification(\
-                self._("Update Manager"), \
-                self._("Updates available\nPlease click on icon to update."))
+                _("Update Manager"), \
+                _("Updates available\nPlease click on icon to update."))
 
                 if self.notify != None:
                         self.set_notify_position()
@@ -403,7 +400,8 @@ class UpdateManagerNotifier:
                         self.schedule_next_check_for_checks()
                 return False
 
-        def check_already_running(self):
+        @staticmethod
+        def check_already_running():
                 atom = gtk.gdk.atom_intern("UPDATEMANAGERNOTIFIER",
                                            only_if_exists = False)
                 pid = os.getpid()
@@ -425,7 +423,7 @@ class UpdateManagerNotifier:
                         fail = False
 
                 if fail == True:
-                        print self._("Another instance of UpdateManagerNotify is running")
+                        print _("Another instance of UpdateManagerNotify is running")
                         sys.exit(1)
 
                 gtk.gdk.get_default_root_window().property_change(atom,
