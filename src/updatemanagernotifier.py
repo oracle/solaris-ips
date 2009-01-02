@@ -258,11 +258,11 @@ class UpdateManagerNotifier:
                 else:
                         return False
 
-        def show_status_icon(self):
+        def show_status_icon(self, value):
                 if self.status_icon == None:
                         self.status_icon = self.create_status_icon()
-                self.client.set_bool(SHOW_ICON_ON_STARTUP_PREFERENCES, True)
-                self.status_icon.set_visible(True)
+                self.client.set_bool(SHOW_ICON_ON_STARTUP_PREFERENCES, value)
+                self.status_icon.set_visible(value)
 
         def check_for_updates(self):
                 image_directory = os.popen(IMAGE_DIR_COMMAND).readline().rstrip()
@@ -285,9 +285,10 @@ class UpdateManagerNotifier:
                                 print "No packages to be updated"
                 self.set_last_check_time()
                 if pkg_upgradeable != None:
-                        self.show_status_icon()
+                        self.show_status_icon(True)
                 else:
-                        self.schedule_next_check_for_checks()
+                        self.show_status_icon(False)
+                self.schedule_next_check_for_checks()
                 return False                                
 
         # This is copied from a similar function in packagemanager.py 
@@ -334,8 +335,7 @@ class UpdateManagerNotifier:
                                 gobject.idle_add(self.show_notify_message)
 
         def activate_status_icon(self, status_icon):
-                self.status_icon.set_visible(False)
-                self.client.set_bool(SHOW_ICON_ON_STARTUP_PREFERENCES, False)
+                self.show_status_icon(False)
                 gobject.spawn_async([GKSU_PATH, UPDATEMANAGER])
                 if self.get_terminate_after_activate():
                         gtk.main_quit()
