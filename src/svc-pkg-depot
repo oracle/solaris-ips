@@ -26,7 +26,7 @@
 . /lib/svc/share/smf_include.sh
 
 if [[ -z "$SMF_FMRI" ]]; then
-	echo "this script can only be invoked by smf(5)"	
+	echo "this script can only be invoked by smf(5)"
 	exit $SMF_EXIT_ERR_NOSMF
 fi
 
@@ -46,9 +46,11 @@ case "$1" in
 
 	# short_option_props are properties which are communicated to the depot
 	# via a long option flag which takes an argument.
-	long_option_props="content_root log_access log_errors proxy_base cfg-file"
-	set -A long_option_cmd_line "content-root" "log-access" \
-            "log-errors" "proxy-base" "cfg-file"
+	long_option_props="cfg_file content_root log_access log_errors \
+	    proxy_base ssl_cert_file ssl_dialog ssl_key_file"
+	set -A long_option_cmd_line "cfg-file" "content-root" "log-access" \
+	    "log-errors" "proxy-base" "ssl-cert-file" "ssl-dialog" \
+	    "ssl-key-file"
 
 	bool_ops=""
 	option_props=""
@@ -71,7 +73,7 @@ case "$1" in
 
 	# Go through each property in short_option_props and, if its value is
 	# set to something other than none, add the appropriate command line
-        # flag and argument to the string.
+	# flag and argument to the string.
 	cnt=0
 	for o in $short_option_props; do
 	    val=$(svcprop -p pkg/$o $SMF_FMRI)
@@ -79,8 +81,8 @@ case "$1" in
 		echo "service property pkg/$o not defined for service: $SMF_FMRI"
 		exit $SMF_EXIT_ERR_CONFIG
 	    fi
-	    # If the SMF property is set to something other than 'none', add 
-            # the flag and its argument to the command.
+	    # If the SMF property is set to something other than 'none', add
+	    # the flag and its argument to the command.
 	    if [[ $val != '""' ]]; then
 		option_ops="$option_ops -${short_option_cmd_line[$cnt]} $val"
 	    fi
@@ -89,7 +91,7 @@ case "$1" in
 
 	# Go through each property in long_option_props and, if its value is
 	# set to something other than none, add the appropriate command line
-        # flag and argument to the string.
+	# flag and argument to the string.
 	cnt=0
 	for o in $long_option_props; do
 	    val=$(svcprop -p pkg/$o $SMF_FMRI)
@@ -98,20 +100,36 @@ case "$1" in
 		exit $SMF_EXIT_ERR_CONFIG
 	    fi
 	    # If the SMF property is set to something other than 'none', add
-            # the flag and its argument to the command.
-	    if [[ $val != '""' ]]; then
+	    # the flag and its argument to the command.
+	    if [[ $o == 'ssl_dialog' && $val == 'smf' ]]; then
+		option_ops="$option_ops --${long_option_cmd_line[$cnt]}=smf:$SMF_FMRI"
+	    elif [[ $val != '""' ]]; then
 		option_ops="$option_ops --${long_option_cmd_line[$cnt]}=$val"
 	    fi
 	    cnt=$(($cnt + 1))
 	done
 
 	#
-	# If we're in --readonly mode, drop fork and exec.
+	# Determine if fork and exec are needed.
+	#
+	need_forkexec="true"
+	if [[ $bool_ops =~ '--readonly' ]]; then
+	    need_forkexec="false"
+	    echo "option_ops: [$option_ops]"
+	    if [[ "$option_ops" =~ (--ssl-dialog=(smf|exec):)+ && \
+	          "$option_ops" =~ (--ssl-key-file=)+ && \
+	         !"$option_ops" =~ (--ssl-key-file=none) ]]; then
+		need_forkexec="true"
+	    fi
+	fi
+
+	#
+	# If we don't need them, drop fork and exec.
 	#
 	forkexec=""
-	val=$(svcprop -p pkg/readonly $SMF_FMRI)
-	if [[ $? -eq 0 && $val == 'true' ]]; then
-		forkexec=",-proc_fork,-proc_exec"
+	if [[ $need_forkexec == 'false' ]]; then
+	    echo "dropping privs"
+	    forkexec=",-proc_fork,-proc_exec"
 	fi
 
 	#
@@ -122,7 +140,7 @@ case "$1" in
 	privaddr=""
 	ppriv -v $$ | grep 'E: ' | grep net_privaddr > /dev/null 2>&1
 	if [[ $? == 0 ]]; then
-		privaddr=",net_privaddr"
+	    privaddr=",net_privaddr"
 	fi
 	#
 	# We build up the privileges available starting with "basic".
@@ -148,8 +166,8 @@ case "$1" in
 	#
 	SVC_TIMEOUT=`svcprop -p stop/timeout_seconds $SMF_FMRI`
 	if [[ $? -ne 0 ]]; then
-		echo "service property stop/timeout_seconds not defined for service: $SMF_FMRI"
-		exit $SMF_EXIT_ERR_CONFIG
+	    echo "service property stop/timeout_seconds not defined for service: $SMF_FMRI"
+	    exit $SMF_EXIT_ERR_CONFIG
 	fi
 
 	#
@@ -162,24 +180,24 @@ case "$1" in
 	#
 	((POLITE=$SVC_TIMEOUT - 10))
 	if [[ $POLITE -gt 0 ]]; then
-		smf_kill_contract $2 TERM 1 $POLITE
-		ret=$?
-		# '2' indicates timeout with non-empty contract.
-		if [[ $ret -eq 2 ]]; then
-			echo "Gentle contract kill timed out after $POLITE" \
-			    "seconds, trying SIGKILL." >&2
-			#
-			# Again, despite the specified timeout, this will
-			# take a minimum of 5 seconds to complete.
-			#
-			smf_kill_contract $2 KILL 1 1
-			if [[ $ret -ne 0 ]]; then
-				exit $SMF_EXIT_ERR_FATAL
-			fi
+	    smf_kill_contract $2 TERM 1 $POLITE
+	    ret=$?
+	    # '2' indicates timeout with non-empty contract.
+	    if [[ $ret -eq 2 ]]; then
+		echo "Gentle contract kill timed out after $POLITE seconds, " \
+		    "trying SIGKILL." >&2
+		#
+		# Again, despite the specified timeout, this will
+		# take a minimum of 5 seconds to complete.
+		#
+		smf_kill_contract $2 KILL 1 1
+		if [[ $ret -ne 0 ]]; then
+		    exit $SMF_EXIT_ERR_FATAL
 		fi
+	    fi
 	else
-		# If the timeout is too short, we just try once, politely.
-		smf_kill_contract $2 TERM
+	    # If the timeout is too short, we just try once, politely.
+	    smf_kill_contract $2 TERM
 	fi
 	;;
 

@@ -83,7 +83,7 @@
 	<exec_method
 		type='method'
 		name='start'
-                exec='/lib/svc/method/svc-pkg-depot %m'
+		exec='/lib/svc/method/svc-pkg-depot %m'
 		timeout_seconds='0' />
 
 	<exec_method
@@ -103,15 +103,24 @@
 		<propval name='proxy_base' type='astring' value='' />
 		<propval name='socket_timeout' type='count' value='60' />
 		<propval name='threads' type='count' value='10' />
+		<propval name='cfg_file' type='astring' value='' />
 		<propval name='content_root' type='astring'
-                        value='/usr/share/lib/pkg' />
+			value='/usr/share/lib/pkg' />
 		<propval name='log_access' type='astring'
 			value='none' />
 		<propval name='log_errors' type='astring'
 			value='stderr' />
 		<propval name='mirror' type='boolean' value='false'/>
 		<propval name='readonly' type='boolean' value='false'/>
-                <propval name='cfg-file' type='astring' value='' />
+		<propval name='ssl_cert_file' type='astring' value='none' />
+		<propval name='ssl_dialog' type='astring' value='smf' />
+		<propval name='ssl_key_file' type='astring' value='none' />
+	</property_group>
+
+	<property_group name='pkg_secure' type='application'>
+		<propval name='read_authorization' type='astring'
+			value='solaris.smf.read.pkg-server' />
+		<propval name='ssl_key_passphrase' type='astring' value='' />
 	</property_group>
 
 	<stability value='Unstable' />

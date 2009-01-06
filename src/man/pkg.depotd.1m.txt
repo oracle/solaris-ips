@@ -6,8 +6,9 @@ NAME
 
 SYNOPSIS
      /usr/lib/pkg.depotd [-d repo_dir] [-p port] [-s threads]
-         [-t socket_timeout] [--content-root] [--log-access] [--log-errors]
-         [--mirror] [--proxy-base url] [--readonly] [--rebuild]
+         [-t socket_timeout] [--cfg-file] [--content-root] [--log-access]
+         [--log-errors] [--mirror] [--proxy-base url] [--readonly] [--rebuild]
+         [--ssl-cert-file] [--ssl-dialog] [--ssl-key-file]
 
 DESCRIPTION
      pkg.depotd is the depot server for the image packaging system.
@@ -18,9 +19,11 @@ DESCRIPTION
      developers may wish to run private copies for various testing
      purposes.
 
-     The pkg.depot server is generally configured via the smf(5)
-     properties associated with its service.  Eight properties
-     are currently recognized:
+     The pkg.depot server is generally configured via the smf(5) properties
+     associated with its service.  The following properties are recognized:
+
+     pkg/cfg_file               (astring) The pathname of the file from which
+                                to read and to write configuration information.
 
      pkg/content_root           (astring) The file system path at which
                                 the instance should find its static
@@ -56,7 +59,9 @@ DESCRIPTION
      pkg/port                   (count) The port number on which the
                                 instance should listen for incoming
                                 package requests.  The default value is
-                                80.
+                                80 if ssl certificate and key information has
+                                not been provided; otherwise, the default
+                                value is 443.
 
      pkg/proxy_base             (uri) This changes the base URL for the
                                 depot server and is most useful when
@@ -71,17 +76,47 @@ DESCRIPTION
                                 when pkg/mirror is true. The default value
                                 is false.
 
-     pkg/cfg-file               (astring) The file from which to read the
-                                configuration for the depot.
-
      pkg/socket_timeout         (count) The maximum number of seconds the
                                 server should wait for a response from a
                                 client before closing a connection.  The
                                 default value is 60.
 
+     pkg/ssl_cert_file          (astring) The absolute pathname to a PEM-
+                                encoded Certificate file.  The default
+                                value is none.  This property must be used
+                                with ssl_key_file.  The depot will only
+                                respond to SSL requests if provided.
+
+     pkg/ssl_dialog             (astring) Specifies what method should be
+                                used to obtain the passphrase needed to de-
+                                crypt the ssl_key_file.  Possible values
+                                are: builtin, exec:/path/to/program or
+                                smf:fmri.  builtin will prompt for the
+                                passphrase; exec will execute the specified
+                                external program to obtain the passphrase,
+                                which should be printed to stdout.  The first
+                                argument to the program will be '', and is
+                                reserved.  The second argument to the
+                                program will be the port number of the
+                                server.  smf:fmri will attempt to retrieve
+                                the value of pkg_secure/ssl_key_passphrase
+                                from the service instance related to the
+                                fmri.  The default value is builtin.
+
+     pkg/ssl_key_file           (astring) The absolute pathname to a PEM-
+                                encoded Private Key file.  This property
+                                must be used with ssl_cert_file.  The
+                                depot will only respond to SSL requests
+                                if provided.
+
      pkg/threads                (count) The number of threads that will
                                 be started to serve requests.  The default
                                 value is 10.
+
+     pkg_secure/ssl_key_passphrase      (astring) The password to use to
+                                        decrypt the pkg/ssl_key_file.  This
+                                        value is read-authorization
+                                        protected.
 
 OPTIONS
      The following options alter the default behavior, if present, and
@@ -100,14 +135,17 @@ OPTIONS
      -t socket_timeout          Overrides pkg/socket_timeout with the
                                 value given by socket_timeout.
 
+     --cfg-file cfg_file        Overrides pkg/cfg_file with the value
+                                given by cfg_file.
+
+     --content-root root_dir    Overrides pkg/content_root with the value
+                                given by root_dir.
+
      --log-access dest          Overrides pkg/log_access with the value
                                 given by dest.
 
      --log-errors dest          Overrides pkg/log_errors with the value
                                 given by dest.
-
-     --content-root root_dir    Overrides pkg/content_root with the value
-                                given by root_dir.
 
      --mirror                   Overrides pkg/mirror and sets it to be true.
 
@@ -122,8 +160,14 @@ OPTIONS
                                 This option may not be combined with the
                                 --mirror or --readonly options.
 
-     --cfg-file cfgfile         Overrides pkg/cfg-file with the value
-                                given by cfgfile.
+     --ssl-cert-file source     Overrides pkg/ssl_cert_file with the value
+                                given by source.
+
+     --ssl-dialog type          Overrides pkg/ssl_dialog with the value given
+                                by type.
+
+     --ssl-key-file source      Overrides pkg/ssl_key_file with the value
+                                given by source.
 
 EXAMPLES
      Example 1:  Enabling the depot server.

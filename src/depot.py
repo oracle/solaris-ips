@@ -47,8 +47,9 @@ AUTH_DEFAULT = "opensolaris.org"
 REPO_PATH_DEFAULT = "/var/pkg/repo"
 # The default path for static and other web content.
 CONTENT_PATH_DEFAULT = "/usr/share/lib/pkg"
-# The default port to serve data from.
+# The default port(s) to serve data from.
 PORT_DEFAULT = 80
+SSL_PORT_DEFAULT = 443
 # The minimum number of threads allowed.
 THREADS_MIN = 1
 # The default number of threads to start.
@@ -74,7 +75,12 @@ import locale
 import logging
 import os
 import os.path
+import OpenSSL.crypto as crypto
+import OpenSSL.SSL as ssl
+import pkg.portable.util as os_util
+import subprocess
 import sys
+import tempfile
 import urlparse
 
 try:
@@ -89,12 +95,12 @@ except ImportError:
             """3.2.0) is required to use this program."""
         sys.exit(2)
 
+from pkg.misc import port_available, msg, emsg, setlocale
+import pkg.search_errors as search_errors
 import pkg.server.config as config
 import pkg.server.depot as depot
 import pkg.server.repository as repo
 import pkg.server.repositoryconfig as rc
-import pkg.search_errors as search_errors
-from pkg.misc import port_available, msg, emsg, setlocale
 
 class LogSink(object):
         """This is a dummy object that we can use to discard log entries
@@ -114,10 +120,12 @@ def usage(text):
 
         print """\
 Usage: /usr/lib/pkg.depotd [-d repo_dir] [-p port] [-s threads]
-           [-t socket_timeout] [--content-root] [--log-access dest]
+           [-t socket_timeout] [--cfg-file] [--content-root] [--log-access dest]
            [--log-errors dest] [--mirror] [--proxy-base url] [--readonly]
-           [--rebuild] [--cfg-file file]
+           [--rebuild] [--ssl-cert-file] [--ssl-dialog] [--ssl-key-file]
 
+        --cfg-file      The pathname of the file from which to read and to
+                        write configuration information.
         --content-root  The file system path to the directory containing the
                         the static and other web content used by the depot's
                         browser user interface.  The default value is
@@ -140,8 +148,19 @@ Usage: /usr/lib/pkg.depotd [-d repo_dir] [-p port] [-s threads]
                         Cannot be used with --mirror or --rebuild.
         --rebuild       Re-build the catalog from pkgs in depot.  Cannot be
                         used with --mirror or --readonly.
-        --cfg-file      The file from which to read the configuration for
-                        this depot.
+        --ssl-cert-file The absolute pathname to a PEM-encoded Certificate file.
+                        This option must be used with --ssl-key-file.  Usage of
+                        this option will cause the depot to only respond to SSL
+                        requests on the provided port.
+        --ssl-dialog    Specifies what method should be used to obtain the
+                        passphrase needed to decrypt the file specified by
+                        --ssl-key-file.  Supported values are: builtin,
+                        exec:/path/to/program, or smf:fmri.  The default value
+                        is builtin.
+        --ssl-key-file  The absolute pathname to a PEM-encoded Private Key file.
+                        This option must be used with --ssl-cert-file.  Usage of
+                        this option will cause the depot to only respond to SSL
+                        requests on the provided port.
 """
         sys.exit(2)
 
@@ -157,6 +176,7 @@ if __name__ == "__main__":
         gettext.install("pkg", "/usr/share/locale")
 
         port = PORT_DEFAULT
+        port_provided = False
         threads = THREADS_DEFAULT
         socket_timeout = SOCKET_TIMEOUT_DEFAULT
         readonly = READONLY_DEFAULT
@@ -165,6 +185,9 @@ if __name__ == "__main__":
         proxy_base = None
         mirror = MIRROR_DEFAULT
         repo_config_file = None
+        ssl_cert_file = None
+        ssl_key_file = None
+        ssl_dialog = "builtin"
 
         if "PKG_REPO" in os.environ:
                 repo_path = os.environ["PKG_REPO"]
@@ -195,8 +218,9 @@ if __name__ == "__main__":
 
         opt = None
         try:
-                long_opts = ["content-root=", "mirror", "proxy-base=",
-                    "readonly", "rebuild", "refresh-index", "cfg-file="]
+                long_opts = ["cfg-file", "content-root=", "mirror",
+                    "proxy-base=", "readonly", "rebuild", "refresh-index",
+                    "ssl-cert-file=", "ssl-dialog=", "ssl-key-file="]
                 for opt in log_opts:
                         long_opts.append("%s=" % opt.lstrip('--'))
                 opts, pargs = getopt.getopt(sys.argv[1:], "d:np:s:t:",
@@ -208,6 +232,7 @@ if __name__ == "__main__":
                                 repo_path = arg
                         elif opt == "-p":
                                 port = int(arg)
+                                port_provided = True
                         elif opt == "-s":
                                 threads = int(arg)
                                 if threads < THREADS_MIN:
@@ -218,6 +243,8 @@ if __name__ == "__main__":
                                             "maximum value is %d" % THREADS_MAX
                         elif opt == "-t":
                                 socket_timeout = int(arg)
+                        elif opt == "--cfg-file":
+                                repo_config_file = os.path.abspath(arg)
                         elif opt == "--content-root":
                                 if arg == "":
                                         raise OptionError, "You must specify " \
@@ -271,8 +298,67 @@ if __name__ == "__main__":
                                 # pkg.depot process. The index will be rebuilt
                                 # automatically on startup.
                                 reindex = True
-                        elif opt == "--cfg-file":
-                                repo_config_file = os.path.abspath(arg)
+                        elif opt == "--ssl-cert-file":
+                                if arg == "none":
+                                        continue
+
+                                ssl_cert_file = arg
+                                if not os.path.isabs(ssl_cert_file):
+                                        raise OptionError, "The path to " \
+                                           "the Certificate file must be " \
+                                           "absolute."
+                                elif not os.path.exists(ssl_cert_file):
+                                        raise OptionError, "The specified " \
+                                            "file does not exist."
+                                elif not os.path.isfile(ssl_cert_file):
+                                        raise OptionError, "The specified " \
+                                            "pathname is not a file."
+                        elif opt == "--ssl-key-file":
+                                if arg == "none":
+                                        continue
+
+                                ssl_key_file = arg
+                                if not os.path.isabs(ssl_key_file):
+                                        raise OptionError, "The path to " \
+                                           "the Private Key file must be " \
+                                           "absolute."
+                                elif not os.path.exists(ssl_key_file):
+                                        raise OptionError, "The specified " \
+                                            "file does not exist."
+                                elif not os.path.isfile(ssl_key_file):
+                                        raise OptionError, "The specified " \
+                                            "pathname is not a file."
+                        elif opt == "--ssl-dialog":
+                                if arg != "builtin" and not \
+                                    arg.startswith("exec:/") and not \
+                                    arg.startswith("smf:"):
+                                        raise OptionError, "Invalid value " \
+                                            "specified.  Expected: builtin, " \
+                                            "exec:/path/to/program, or " \
+                                            "smf:fmri."
+
+                                f = arg
+                                if f.startswith("exec:"):
+                                        if os_util.get_canonical_os_type() != \
+                                          "unix":
+                                            # Don't allow a somewhat insecure
+                                            # authentication method on some
+                                            # platforms.
+                                            raise OptionError, "exec is not " \
+                                              "a supported dialog type for " \
+                                              "this operating system."
+
+                                        f = os.path.abspath(f.split(
+                                            "exec:")[1])
+
+                                        if not os.path.isfile(f):
+                                                raise OptionError, "Invalid " \
+                                                    "file path specified for " \
+                                                    "exec."
+
+                                        f = "exec:%s" % f
+
+                                ssl_dialog = f
         except getopt.GetoptError, e:
                 usage("pkg.depotd: %s" % e.msg)
         except OptionError, e:
@@ -288,6 +374,15 @@ if __name__ == "__main__":
         if reindex and (readonly or mirror):
                 usage("--readonly and --mirror cannot be used with " \
                     "--refresh-index")
+
+        if (ssl_cert_file and not ssl_key_file) or (ssl_key_file and not
+            ssl_cert_file):
+                usage("The --ssl-cert-file and --ssl-key-file options must "
+                    "must both be provided when using either option.")
+        elif ssl_cert_file and ssl_key_file and not port_provided:
+                # If they didn't already specify a particular port, use the
+                # default SSL port instead.
+                port = SSL_PORT_DEFAULT
 
         # If the program is going to reindex, the port is irrelevant since
         # the program will not bind to a port.
@@ -320,8 +415,59 @@ if __name__ == "__main__":
                     "structures:\n%s" % e
                 sys.exit(1)
 
+        key_data = None
+        if not reindex and ssl_cert_file and ssl_key_file and \
+            ssl_dialog != "builtin":
+                cmdline = None
+                def get_ssl_passphrase(*ignored):
+                        p = None
+                        try:
+                                p = subprocess.Popen(cmdline, shell=True,
+                                        stdout=subprocess.PIPE,
+                                        stderr=None)
+                                p.wait()
+                        except Exception, e:
+                                print "pkg.depotd: an error occurred while " \
+                                    "executing [%s]; unable to obtain the " \
+                                    "passphrase needed to decrypt the SSL" \
+                                    "private key file: %s" (cmd, e)
+                                sys.exit(1)
+                        return p.stdout.read().strip("\n")
+
+                if ssl_dialog.startswith("exec:"):
+                        cmdline = "%s %s %d" % (ssl_dialog.split("exec:")[1],
+                            "''", port)
+                elif ssl_dialog.startswith("smf:"):
+                        cmdline = "/usr/bin/svcprop -p " \
+                            "pkg_secure/ssl_key_passphrase %s" % (
+                            ssl_dialog.split("smf:")[1])
+
+                # The key file requires decryption, but the user has requested
+                # exec-based authentication, so it will have to be decoded first
+                # to an un-named temporary file.
+                try:
+                        key_file = file(ssl_key_file, "rb")
+                        pkey = crypto.load_privatekey(crypto.FILETYPE_PEM,
+                            key_file.read(), get_ssl_passphrase)
+
+                        key_data = tempfile.TemporaryFile()
+                        key_data.write(crypto.dump_privatekey(
+                            crypto.FILETYPE_PEM, pkey))
+                        key_data.seek(0)
+                except EnvironmentError, e:
+                        print "pkg.depotd: unable to read the SSL private " \
+                            "key file: %s" % e
+                        sys.exit(1)
+                except crypto.Error, e:
+                        print "pkg.depotd: authentication or cryptography " \
+                            "failure while attempting to decode\nthe SSL " \
+                            "private key file: %s" % e
+                        sys.exit(1)
+                else:
+                        # Redirect the server to the decrypted key file.
+                        ssl_key_file = "/dev/fd/%d" % key_data.fileno()
+
         # Setup our global configuration.
-        # Global cherrypy configuration
         gconf = {
             "environment": "production",
             "checker.on": True,
@@ -332,7 +478,9 @@ if __name__ == "__main__":
             "server.socket_timeout": socket_timeout,
             "server.shutdown_timeout": 0,
             "tools.log_headers.on": True,
-            "tools.encode.on": True
+            "tools.encode.on": True,
+            "server.ssl_certificate": ssl_cert_file,
+            "server.ssl_private_key": ssl_key_file
         }
 
         log_type_map = {
@@ -424,7 +572,8 @@ if __name__ == "__main__":
 
         try:
                 cherrypy.quickstart(root, config=conf)
-        except Exception:
-                usage("pkg.depotd: unknown error starting depot, illegal " \
-                    "option value specified?")
+        except Exception, e:
+                emsg("pkg.depotd: unknown error starting depot server, " \
+                    "illegal option value specified?")
+                sys.exit(1)
 
