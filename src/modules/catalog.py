@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 """Interfaces and implementation for the Catalog object, as well as functions
@@ -37,9 +37,9 @@ import bisect
 
 import pkg.fmri as fmri
 import pkg.misc as misc
-import pkg.version as version
-import pkg.portable as portable
 from pkg.misc import TruncatedTransferException
+import pkg.portable as portable
+import pkg.version as version
 
 class CatalogException(Exception):
         def __init__(self, args=None):
@@ -48,6 +48,27 @@ class CatalogException(Exception):
 class RenameException(Exception):
         def __init__(self, args=None):
                 self.args = args
+
+class CatalogPermissionsException(CatalogException):
+        """Used to indicate the server catalog files do not have the expected
+        permissions."""
+
+        def __init__(self, files):
+                """files should contain a list object with each entry consisting
+                of a tuple of filename, expected_mode, received_mode."""
+                if not files:
+                        files = []
+                CatalogException.__init__(self, files)
+
+        def __str__(self):
+                msg = _("The following catalog files have incorrect "
+                    "permissions:\n")
+                for f in self.args:
+                        fname, emode, fmode = f
+                        msg += _("\t%(fname)s: expected mode: %(emode)s, found "
+                            "mode: %(fmode)s\n") % ({ "fname": fname,
+                            "emode": emode, "fmode": fmode })
+                return msg
 
 class Catalog(object):
         """A Catalog is the representation of the package FMRIs available to
@@ -80,6 +101,9 @@ class Catalog(object):
         it is constructed, the array that contains the names is pickled and
         saved and pkg_names.pkl.
         """
+
+        # The file mode to be used for all catalog files.
+        file_mode = stat.S_IRUSR|stat.S_IWUSR|stat.S_IRGRP|stat.S_IROTH
 
         # XXX Mirroring records also need to be allowed from client
         # configuration, and not just catalogs.
@@ -126,12 +150,54 @@ class Catalog(object):
                 if not os.path.exists(cat_root):
                         os.makedirs(cat_root)
 
-                # Rebuild catalog, if we're the depot and it's necessary
+                # Rebuild catalog, if we're the depot and it's necessary.
                 if pkg_root is not None and rebuild:
                         self.build_catalog()
 
                 self.load_attrs()
                 self.check_prefix()
+                self.__set_perms()
+
+        def __set_perms(self):
+                """Sets permissions on catalog files if not read_only and if the
+                current user can do so; raises CatalogPermissionsException if
+                the permissions are wrong and cannot be corrected."""
+
+                apath = os.path.normpath(os.path.join(self.catalog_root,
+                    "attrs"))
+                cpath = os.path.normpath(os.path.join(self.catalog_root,
+                    "catalog"))
+
+                # Force file_mode, so that unprivileged users can read these.
+                bad_modes = []
+                for fpath in (apath, cpath):
+                        try:
+                                if self.read_only:
+                                        fmode = stat.S_IMODE(os.lstat(
+                                            fpath).st_mode)
+                                        if fmode != self.file_mode:
+                                                bad_modes.append((fpath,
+                                                    "%o" % self.file_mode,
+                                                    "%o" % fmode))
+                                else:
+                                        os.chmod(fpath, self.file_mode)
+                        except EnvironmentError, e:
+                                # If the files don't exist yet, move on.
+                                if e.errno == errno.ENOENT:
+                                        continue
+
+                                # If the mode change failed for another reason,
+                                # check to see if we actually needed to change
+                                # it, and if so, add it to bad_modes.
+                                fmode = stat.S_IMODE(os.lstat(
+                                    fpath).st_mode)
+                                if fmode != self.file_mode:
+                                        bad_modes.append((fpath,
+                                            "%o" % self.file_mode,
+                                            "%o" % fmode))
+
+                if bad_modes:
+                        raise CatalogPermissionsException(bad_modes)
 
         def add_fmri(self, fmri, critical = False):
                 """Add a package, named by the fmri, to the catalog.
@@ -140,6 +206,8 @@ class Catalog(object):
                 if fmri.version == None:
                         raise CatalogException, \
                             "Unversioned FMRI not supported: %s" % fmri
+
+                assert not self.read_only
 
                 # Callers should verify that the FMRI they're going to add is
                 # valid; however, this check is here in case they're
@@ -154,18 +222,17 @@ class Catalog(object):
                 else:
                         pkgstr = "V %s\n" % fmri.get_fmri(anarchy = True)
 
-                pathstr = self.catalog_file
                 tmp_num, tmpfile = tempfile.mkstemp(dir=self.catalog_root)
 
                 self.catalog_lock.acquire()
                 tfile = os.fdopen(tmp_num, 'w')
                 try:
-                        pfile = file(pathstr, "rb")
+                        pfile = file(self.catalog_file, "rb")
                 except IOError, e:
                         if e.errno == errno.ENOENT:
                                 # Creating an empty file
-                                file(pathstr, "wb").close()
-                                pfile = file(pathstr, "rb")
+                                file(self.catalog_file, "wb").close()
+                                pfile = file(self.catalog_file, "rb")
                         else:
                                 raise
                 pfile.seek(0)
@@ -184,7 +251,8 @@ class Catalog(object):
                         pfile.close()
                         tfile.close()
 
-                portable.rename(tmpfile, pathstr)
+                os.chmod(tmpfile, self.file_mode)
+                portable.rename(tmpfile, self.catalog_file)
 
                 # Catalog size has changed, force recalculation on
                 # next send()
@@ -308,7 +376,8 @@ class Catalog(object):
                 # with it.
                 if not "prefix" in self.attrs:
                         self.attrs["prefix"] = "".join(known_prefixes)
-                        self.save_attrs()
+                        if not self.read_only:
+                                self.save_attrs()
                         return
 
                 # Prefixes attribute does exist.  Check if it has changed.
@@ -329,7 +398,8 @@ class Catalog(object):
 
                         # Write out updated prefixes list
                         self.attrs["prefix"] = "".join(pfx_set)
-                        self.save_attrs()
+                        if not self.read_only:
+                                self.save_attrs()
 
         def build_catalog(self):
                 """Walk the on-disk package data and build (or rebuild) the
@@ -507,8 +577,8 @@ class Catalog(object):
 
                 return self.attrs.get("origin", None)
 
-        @staticmethod
-        def recv(filep, path, auth=None, content_size=-1):
+        @classmethod
+        def recv(cls, filep, path, auth=None, content_size=-1):
                 """A static method that takes a file-like object and
                 a path.  This is the other half of catalog.send().  It
                 reads a stream as an incoming catalog and lays it down
@@ -517,7 +587,6 @@ class Catalog(object):
                 value of -1 means that the size is not known."""
 
                 size = 0
-                mode = stat.S_IRUSR|stat.S_IWUSR|stat.S_IRGRP|stat.S_IROTH
 
                 if not os.path.exists(path):
                         os.makedirs(path)
@@ -571,10 +640,10 @@ class Catalog(object):
                 catf.close()
 
                 # Mkstemp sets mode 600 on these files by default.
-                # Restore them to 644, so that unpriviliged users
+                # Restore them to 644, so that unprivileged users
                 # may read these files.
-                os.chmod(attrpath, mode)
-                os.chmod(catpath, mode)
+                os.chmod(attrpath, cls.file_mode)
+                os.chmod(catpath, cls.file_mode)
 
                 portable.rename(attrpath, attrpath_final)
                 portable.rename(catpath, catpath_final)
@@ -584,6 +653,8 @@ class Catalog(object):
                 to newname as of version vers.  Returns a timestamp
                 of when the catalog was modified and a RenamedPackage
                 object that describes the rename."""
+
+                assert not self.read_only
 
                 rr = RenamedPackage(srcname, srcvers, destname, destvers)
 
@@ -712,9 +783,12 @@ class Catalog(object):
                 """Save attributes from the in-memory catalog to a file
                 specified by filenm."""
 
+                assert not self.read_only
+
+                apath = os.path.normpath(os.path.join(self.catalog_root,
+                    filenm))
                 try:
-                        afile = file(os.path.normpath(
-                            os.path.join(self.catalog_root, filenm)), "wb+")
+                        afile = file(apath, "wb+")
                 except IOError, e:
                         # This may get called in a situation where
                         # the user does not have write access to the attrs
@@ -730,7 +804,6 @@ class Catalog(object):
 
                 # Recalculate size on next send()
                 self.__size = -1
-
                 afile.close()
 
         def send(self, filep, rspobj=None):
@@ -772,6 +845,8 @@ class Catalog(object):
                 """Set time to timestamp if supplied by caller.  Otherwise
                 use the system time."""
 
+                assert not self.read_only
+
                 if ts and isinstance(ts, str):
                         self.attrs["Last-Modified"] = ts
                 elif ts and isinstance(ts, datetime.datetime):
@@ -780,7 +855,6 @@ class Catalog(object):
                         self.attrs["Last-Modified"] = timestamp()
 
                 self.save_attrs()
-
 
         def size(self):
                 """Return the size in bytes of the catalog and attributes."""

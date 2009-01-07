@@ -20,16 +20,17 @@
 # CDDL HEADER END
 #
 
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
-import unittest
-import shutil
-import tempfile
-import os
 import datetime
-import time
+import os
+import shutil
+import stat
 import sys
+import tempfile
+import time
+import unittest
 
 # Set the path so that modules above can be found
 path_to_parent = os.path.join(os.path.dirname(__file__), "..")
@@ -44,6 +45,7 @@ import pkg.updatelog as updatelog
 class TestCatalog(pkg5unittest.Pkg5TestCase):
         def setUp(self):
                 self.cpath = tempfile.mkdtemp()
+                self.paths = [self.cpath]
                 self.c = catalog.Catalog(self.cpath)
                 self.npkgs = 0
 
@@ -61,7 +63,8 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                         self.npkgs += 1
 
         def tearDown(self):
-                shutil.rmtree(self.cpath)
+                for path in self.paths:
+                        shutil.rmtree(path)
 
         def testnpkgs(self):
                 self.assert_(self.npkgs == self.c.npkgs())
@@ -89,6 +92,50 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                 cl = self.c.get_matching_fmris(cf)
 
                 self.assert_(len(cl) == 1)
+
+        def test_bug_5603(self):
+                """Verify that new catalogs are created with a mode of 644 and
+                that old catalogs will have their mode forcibly changed, unless
+                read_only is specified, in which case an exception is raised."""
+
+                # Catalog files should have this mode.
+                mode = stat.S_IRUSR|stat.S_IWUSR|stat.S_IRGRP|stat.S_IROTH
+
+                # Catalog files should not have this mode.
+                bad_mode = stat.S_IRUSR|stat.S_IWUSR
+
+                # Test new catalog case.
+                cpath = tempfile.mkdtemp()
+                self.paths.append(cpath)
+                c = catalog.Catalog(cpath)
+                c.add_fmri(fmri.PkgFmri("pkg:/test@1.0,5.11-1:20000101T120000Z",
+                    None))
+                for fname in ("attrs", "catalog"):
+                        fs = os.lstat(os.path.join(cpath, fname))
+                        self.assert_(stat.S_IMODE(fs.st_mode) == mode)
+
+                # Now test old catalog case.
+                for fname in ("attrs", "catalog"):
+                        os.chmod(os.path.join(cpath, fname), bad_mode)
+                c = catalog.Catalog(cpath)
+                for fname in ("attrs", "catalog"):
+                        fs = os.lstat(os.path.join(cpath, fname))
+                        self.assert_(stat.S_IMODE(fs.st_mode) == mode)
+
+                # Need to add an fmri to it and then re-test the permissions
+                # since this causes the catalog file to be re-created.
+                c.add_fmri(fmri.PkgFmri("pkg:/test@2.0,5.11-1:20000101T120000Z",
+                    None))
+                for fname in ("attrs", "catalog"):
+                        fs = os.lstat(os.path.join(cpath, fname))
+                        self.assert_(stat.S_IMODE(fs.st_mode) == mode)
+
+                # Finally, test read_only old catalog case.
+                for fname in ("attrs", "catalog"):
+                        os.chmod(os.path.join(cpath, fname), bad_mode)
+
+                self.assertRaises(catalog.CatalogPermissionsException,
+                        catalog.Catalog, cpath, read_only=True, rebuild=False)
 
 class TestEmptyCatalog(pkg5unittest.Pkg5TestCase):
         def setUp(self):

@@ -1,6 +1,7 @@
 api.t_action.py TestActions.test_action_errors|pass
 api.t_action.py TestActions.test_action_parser|pass
 api.t_action.py TestActions.test_action_tostr|pass
+api.t_catalog.py TestCatalog.test_bug_5603|pass
 api.t_catalog.py TestCatalog.testcatalogfmris1|pass
 api.t_catalog.py TestCatalog.testcatalogfmris2|pass
 api.t_catalog.py TestCatalog.testcatalogfmris3|pass
