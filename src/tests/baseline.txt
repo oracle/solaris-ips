@@ -239,6 +239,7 @@ cli.t_pkg_contents.py TestPkgContentsBasics.test_contents_failures|pass
 cli.t_pkg_depotd.py TestDepotController.testBadArgs|pass
 cli.t_pkg_depotd.py TestDepotController.testStartStop|pass
 cli.t_pkg_depotd.py TestDepotController.test_cfg_file|pass
+cli.t_pkg_depotd.py TestDepotOutput.test_0_depot_bui_output|pass
 cli.t_pkg_depotd.py TestPkgDepot.testStartStop|pass
 cli.t_pkg_depotd.py TestPkgDepot.test_bad_fmris|pass
 cli.t_pkg_depotd.py TestPkgDepot.test_bug_1876|pass

@@ -20,18 +20,19 @@
 # CDDL HEADER END
 #
 
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 import testutils
 if __name__ == "__main__":
-	testutils.setup_environment("../../../proto")
+        testutils.setup_environment("../../../proto")
 
 import httplib
 import unittest
 import os
 import pkg.misc as misc
 import shutil
+import tempfile
 import urllib
 import urllib2
 
@@ -143,7 +144,7 @@ class TestPkgDepot(testutils.SingleDepotTestCase):
 
                 dir_file = os.path.join(depotpath, "search.dir")
                 pag_file = os.path.join(depotpath, "search.pag")
-                
+
                 self.assert_(not os.path.exists(dir_file))
                 self.assert_(not os.path.exists(pag_file))
 
@@ -206,9 +207,9 @@ class TestDepotController(testutils.CliTestCase):
 
                 self.__dc = dc.DepotController()
                 self.__pid = os.getpid()
-		self.__dc.set_depotd_path(testutils.g_proto_area + \
+                self.__dc.set_depotd_path(testutils.g_proto_area + \
                     "/usr/lib/pkg.depotd")
-		self.__dc.set_depotd_content_root(testutils.g_proto_area + \
+                self.__dc.set_depotd_content_root(testutils.g_proto_area + \
                     "/usr/share/lib/pkg")
 
                 depotpath = os.path.join(self.get_test_prefix(), "depot")
@@ -284,6 +285,115 @@ class TestDepotController(testutils.CliTestCase):
                 self.__dc.set_refresh_index()
 
                 self.assert_(self.__dc.start_expected_fail())
+
+
+class TestDepotOutput(testutils.CliTestCase):
+
+        quux10 = """
+            open quux@1.0,5.11-0
+            add dir mode=0755 owner=root group=bin path=/bin
+            close """
+
+        info10 = """
+            open info@1.0,5.11-0
+            close """
+
+        system10 = """
+            open system/libc@1.0,5.11-0
+            add set name="description" value="Package to test package names with slashes"
+            add dir path=tmp/foo mode=0755 owner=root group=bin
+            add depend type=require fmri=pkg:/SUNWcsl
+            close """
+
+        def setUp(self):
+                testutils.CliTestCase.setUp(self)
+
+                self.__dc = dc.DepotController()
+                self.__pid = os.getpid()
+                self.__dc.set_depotd_path(testutils.g_proto_area + \
+                    "/usr/lib/pkg.depotd")
+                self.__dc.set_depotd_content_root(testutils.g_proto_area + \
+                    "/usr/share/lib/pkg")
+
+                depotpath = os.path.join(self.get_test_prefix(), "depot")
+                logpath = os.path.join(self.get_test_prefix(), self.id())
+
+                try:
+                        os.makedirs(depotpath, 0755)
+                except OSError, e:
+                        if e.errno != errno.EEXIST:
+                                raise e
+
+                self.__dc.set_repodir(depotpath)
+                self.__dc.set_logpath(logpath)
+                self.tpath = tempfile.mkdtemp()
+
+        def tearDown(self):
+                testutils.CliTestCase.tearDown(self)
+
+                self.__dc.kill()
+                shutil.rmtree(self.__dc.get_repodir())
+                os.remove(self.__dc.get_logpath())
+                shutil.rmtree(self.tpath)
+
+        def test_0_depot_bui_output(self):
+                """Verify that a non-error response and valid HTML is returned
+                for each known BUI page in every available depot mode."""
+
+                # A list of tuples containing the name of the method used to set
+                # the mode, and then the method needed to unset that mode.
+                mode_methods = [
+                    ("set_readwrite", None),
+                    ("set_mirror", "unset_mirror"),
+                    ("set_readonly", "set_readwrite"),
+                ]
+
+                pages = [
+                    "index.shtml",
+                    "en/catalog.shtml",
+                    "en/index.shtml",
+                    "en/search.shtml",
+                    "en/stats.shtml",
+                ]
+
+                for with_packages in (False, True):
+                        shutil.rmtree(self.__dc.get_repodir(),
+                            ignore_errors=True)
+
+                        if with_packages:
+                                self.__dc.set_readwrite()
+                                self.__dc.set_port(12000)
+                                self.__dc.start()
+                                durl = self.__dc.get_depot_url()
+                                self.pkgsend_bulk(durl, self.info10 +
+                                    self.quux10 + self.system10)
+                                self.__dc.stop()
+
+                        for set_method, unset_method in mode_methods:
+                                if set_method:
+                                        getattr(self.__dc, set_method)()
+
+                                self.__dc.set_port(12000)
+                                self.__dc.start()
+                                durl = self.__dc.get_depot_url()
+
+                                for path in pages:
+                                        # Any error responses will cause an
+                                        # exception.
+                                        response = urllib2.urlopen(
+                                            "%s/%s" % (durl, path))
+
+                                        fd, fpath = tempfile.mkstemp(
+                                            suffix="html", dir=self.tpath)
+                                        fp = os.fdopen(fd, "w")
+                                        fp.write(response.read())
+                                        fp.close()
+
+                                        self.validate_html_file(fpath)
+
+                                self.__dc.stop()
+                                if unset_method:
+                                        getattr(self.__dc, unset_method)()
 
 if __name__ == "__main__":
         unittest.main()

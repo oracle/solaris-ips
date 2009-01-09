@@ -19,7 +19,7 @@
 ##
 ## CDDL HEADER END
 ##
-## Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+## Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 ## Use is subject to license terms.
 ##
 <%!
@@ -83,7 +83,8 @@
 %       endif
         </div>
         <div class="yui-b results">
-                <table>
+                <table summary="A list of packages available in the repository
+ restricted by the specified listing criteria.">
                         <tr class="first">
                                 <th>Name</th>
                                 <th>Version</th>
@@ -109,7 +110,7 @@
 
                 # Start FMRI entry
                 phref = self.shared.rpath(g_vars, "info/0/%s" % (
-                    urllib.quote(str(pfmri)[len("pkg:/"):], ""))) 
+                    urllib.quote(str(pfmri)[len("pkg:/"):], "")))
                 context.write(unicode("""\
                         <tr%s>
                                 <td><a href="%s">%s</a></td>

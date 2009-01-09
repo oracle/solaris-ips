@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 import unittest
@@ -474,6 +474,35 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
                         raise
                 return plist
 
+        def validate_html_file(self, fname, exit=0, comment="",
+            options="-quiet -utf8"):
+                wrapper = ""
+                if os.environ.has_key("PKGCOVERAGE"):
+                        wrapper = "figleaf"
+
+                cmdline = "%s tidy %s %s" % (wrapper, options, fname)
+                self.debugcmd(cmdline)
+
+                output = ""
+                p = subprocess.Popen(cmdline,
+                    shell=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT)
+
+                output = p.stdout.read()
+                retcode = p.wait()
+                self.debugresult(retcode, output)
+
+                if retcode == 99:
+                        raise TracebackException(cmdline, output, comment,
+                            debug=self.get_debugbuf())
+
+                if retcode != exit:
+                        raise UnexpectedExitCodeException(cmdline, exit,
+                            retcode, output, comment, debug=self.get_debugbuf())
+
+                return retcode
+
         def start_depot(self, port, depotdir, logpath, refresh_index=False):
                 """ Convenience routine to help subclasses start
                     depots.  Returns a depotcontroller. """
@@ -496,7 +525,7 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
                         dc.set_refresh_index()
                 dc.start()
                 return dc
-                
+
 
 class ManyDepotTestCase(CliTestCase):
 
@@ -572,11 +601,11 @@ class ManyDepotTestCase(CliTestCase):
                 if result is None:
                         result = self.defaultTestResult()
                 CliTestCase.run(self, result)
-                        
+
 class SingleDepotTestCase(ManyDepotTestCase):
 
         def setUp(self):
-                
+
                 # Note that this must be deferred until after PYTHONPATH
                 # is set up.
                 import pkg.depotcontroller as depotcontroller

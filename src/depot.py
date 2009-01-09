@@ -219,7 +219,7 @@ if __name__ == "__main__":
 
         opt = None
         try:
-                long_opts = ["cfg-file", "content-root=", "mirror",
+                long_opts = ["cfg-file=", "content-root=", "mirror",
                     "proxy-base=", "readonly", "rebuild", "refresh-index",
                     "ssl-cert-file=", "ssl-dialog=", "ssl-key-file="]
                 for opt in log_opts:

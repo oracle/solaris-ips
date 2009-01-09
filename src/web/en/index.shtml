@@ -19,7 +19,7 @@
 ##
 ## CDDL HEADER END
 ##
-## Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+## Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 ## Use is subject to license terms.
 ##
 <%inherit file="layout.shtml"/>\
@@ -123,7 +123,8 @@ the packages available for it.</p>
 </div>
 <div class="yui-b">
 % if not config.mirror:
-        <table class="stats">
+        <table class="stats" summary="A summary of information about the
+ package repository.">
                 <tr class="first">
                         <th colspan="2" class="last">
                                 <a id="catalog-feed"
