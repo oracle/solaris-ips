@@ -1,4 +1,5 @@
 package SUNWdesktop-cache
 classification "System/Services"
 import SUNWdesktop-cache
+depend SUNWgnome-desktop-prefs
 end package
