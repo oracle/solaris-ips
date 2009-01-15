@@ -3847,6 +3847,9 @@ category = Integrated Development Environments
 [netbeans-ruby]
 category = Integrated Development Environments
 
+[opends]
+category = Administration and Configuration
+
 [openoffice]
 category = Office
 

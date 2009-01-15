@@ -230,6 +230,7 @@ UNBUNDLED_TARGETS=		\
 	GlassFishV2.import	\
 	MessageQueue41.import	\
 	NetBeans.import		\
+	OpenDS.import		\
 	OpenOffice.import	\
 	Studio.import		\
 	Webstackui.import

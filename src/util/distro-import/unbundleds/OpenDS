@@ -1,0 +1,6 @@
+package opends
+classification "System/Administration and Configuration"
+description "OpenDS, an open source LDAP directory server"
+import opends
+version 1.2.0
+end package
