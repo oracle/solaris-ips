@@ -1,5 +1,7 @@
 package SUNWmysql5test
 classification "Development/Databases"
 import SUNWmysql5test
+depend SUNWmysql5
+depend SUNWperl584core
 version 5.0.67
 end package
