@@ -19,14 +19,20 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
+
+MIN_IND_ELEMENTS_BOUNCE = 5      # During indexing the progress will be progressive if 
+                                 # the number of indexing elements is greater then this, 
+                                 # otherwise it will bounce
 
 import errno
 import sys
 import time
+import pango
 import datetime
+import traceback
 from threading import Thread
 from urllib2 import URLError
 try:
@@ -42,714 +48,591 @@ import pkg.misc
 from pkg.client.retrieve import ManifestRetrievalError
 from pkg.client.retrieve import DatastreamRetrievalError
 from pkg.client.filelist import FileListRetrievalError
-import pkg.client.api as api
 import pkg.client.api_errors as api_errors
 from pkg.misc import TransferTimedOutException, TransportException
 import pkg.gui.beadmin as beadm
 import pkg.gui.enumerations as enumerations
 
 class InstallUpdate(progress.ProgressTracker):
-        def __init__(self, install_list, parent, api_o, \
-            ips_update = False, action = -1):
+        def __init__(self, list_of_packages, parent, api_o, \
+            ips_update = False, action = -1, be_name = None):
                 if action == -1:
                         return
                 progress.ProgressTracker.__init__(self)
                 api_o.progresstracker = self
-                self.update_list = []
-                self.install_list = install_list
-                self.parent = parent
-                self.ips_update = ips_update
-                self.ip = None
-                self.progress_stop_timer_thread = False
-                self.progress_stop_timer_running = False
-                self.prev_pkg = None
-                self.action = action
                 self.api_o = api_o
-                w_tree_createplan = gtk.glade.XML(parent.gladefile, "createplandialog")
-                w_tree_installupdate = gtk.glade.XML(parent.gladefile, "installupdate")
-                w_tree_errordialog = gtk.glade.XML(parent.gladefile, "errordialog")
-                w_tree_downloadingfiles = \
-                    gtk.glade.XML(parent.gladefile, "downloadingfiles")
-                w_tree_installingdialog = \
-                    gtk.glade.XML(parent.gladefile, "installingdialog") 
+                self.parent = parent
+                self.be_name = be_name
+                self.ips_update = ips_update
+                self.list_of_packages = list_of_packages
+                self.act_phase_last = None
+                self.action = action
+                self.canceling = False
+                self.current_stage_name = None
+                self.ind_started = None
+                self.ip = None
+                self.ipkg_ipkgui_list = ["SUNWipkg", "SUNWipkg-gui"]
+                self.operations_done = False
+                self.prev_ind_phase = None
+                self.prev_pkg = None
+                self.progress_stop_timer_running = False
+                self.stages = {
+                          1:[_("Preparing..."), _("Preparation")],
+                          2:[_("Downloading..."), _("Download")],
+                          3:[_("Installing..."), _("Install")],
+                         }
+                self.stop_bouncing_progress = False
+                self.stopped_bouncing_progress = True
+                self.update_list = []
+                w_tree_dialog = gtk.glade.XML(parent.gladefile, "createplandialog")
                 w_tree_uaconfirm = gtk.glade.XML(parent.gladefile, "ua_confirm_dialog")
-                w_tree_networkdown = gtk.glade.XML(parent.gladefile, "networkdown")
-                self.w_ua_confirm_dialog = \
-                        w_tree_uaconfirm.get_widget("ua_confirm_dialog")
-                self.w_ua_proceed_button = \
-                        w_tree_uaconfirm.get_widget("ua_proceed_button")
-                self.w_createplan_dialog = \
-                    w_tree_createplan.get_widget("createplandialog")
-                self.w_error_dialog = \
-                    w_tree_errordialog.get_widget("errordialog")    
-                self.w_errortext_label = \
-                    w_tree_errordialog.get_widget("errortext")
-                self.w_errortext_textview = \
-                    w_tree_errordialog.get_widget("errortextdetails")
-                self.w_next_button = \
-                    w_tree_installupdate.get_widget("next")
-                self.w_next_label = \
-                    w_tree_installupdate.get_widget("next_label")
-                remove_warning_triange = \
-                    w_tree_installupdate.get_widget("warningtriangle")
-                self.w_cancel_button = \
-                    w_tree_installupdate.get_widget("cancel")
-                self.w_createplan_progressbar = \
-                    w_tree_createplan.get_widget("createplanprogress") 
-                self.w_createplan_textview = \
-                    w_tree_createplan.get_widget("createplantextview")
-                self.w_createplan_label = \
-                    w_tree_createplan.get_widget("packagedependencies")
-                self.w_createplancancel_button = \
-                    w_tree_createplan.get_widget("cancelcreateplan")
-                self.w_canceldownload_button = \
-                    w_tree_downloadingfiles.get_widget("canceldownload")
-                self.w_download_label = \
-                    w_tree_downloadingfiles.get_widget("packagedependencies2")
-                self.w_installupdate_dialog = \
-                    w_tree_installupdate.get_widget("installupdate")
-                self.w_summary_label = \
-                    w_tree_installupdate.get_widget("packagenamelabel3")
-                self.w_review_treeview = w_tree_installupdate.get_widget("treeview1")
-                self.w_information_label = w_tree_installupdate.get_widget("label5")
-                self.w_downloadingfiles_dialog = \
-                    w_tree_downloadingfiles.get_widget("downloadingfiles")
-                self.w_download_textview = \
-                    w_tree_downloadingfiles.get_widget("downloadtextview")
-                self.w_download_progressbar = \
-                    w_tree_downloadingfiles.get_widget("downloadprogress")
-                self.w_installing_dialog = \
-                    w_tree_installingdialog.get_widget("installingdialog")
-                self.w_installingdialog_label = \
-                    w_tree_installingdialog.get_widget("packagedependencies3")
-                self.w_installingdialog_expander = \
-                    w_tree_installingdialog.get_widget("expander4")                     
-                self.w_installing_textview = \
-                    w_tree_installingdialog.get_widget("installingtextview")
-                self.w_installing_progressbar = \
-                    w_tree_installingdialog.get_widget("installingprogress")
-                self.w_networkdown_dialog = w_tree_networkdown.get_widget("networkdown")
-                self.w_createplan_progressbar.set_pulse_step(0.1)
-                installed_updated_column = gtk.TreeViewColumn('Installed/Updated')
-                self.w_review_treeview.append_column(installed_updated_column)
-                cell = gtk.CellRendererText()
-                installed_updated_column.pack_start(cell, True)
-                installed_updated_column.add_attribute(cell, 'text', 0)
-                self.w_review_treeview.expand_all()
-                remove_warning_triange.hide()
+                w_tree_removeconfirm = \
+                    gtk.glade.XML(parent.gladefile, "removeconfirmation")
+                self.w_dialog = w_tree_dialog.get_widget("createplandialog")
+                self.w_expander = w_tree_dialog.get_widget("expander3")
+                self.w_cancel_button = w_tree_dialog.get_widget("cancelcreateplan")
+                self.w_progressbar = w_tree_dialog.get_widget("createplanprogress")
+                self.w_details_textview = w_tree_dialog.get_widget("createplantextview")
+                self.w_removeconfirm_dialog = \
+                    w_tree_removeconfirm.get_widget("removeconfirmation")
+                w_removeproceed_button = w_tree_removeconfirm.get_widget("remove_proceed")
+                w_remove_treeview = w_tree_removeconfirm.get_widget("removetreeview")
+                w_remove_summary = w_tree_removeconfirm.get_widget("summarylabel")
+                w_stage2 = w_tree_dialog.get_widget("stage2")
+                self.w_stages_box = w_tree_dialog.get_widget("stages_box")
+                self.w_stage1_label = w_tree_dialog.get_widget("label_stage1")
+                self.w_stage1_icon = w_tree_dialog.get_widget("icon_stage1")
+                self.w_stage2_label = w_tree_dialog.get_widget("label_stage2")
+                self.w_stage2_icon = w_tree_dialog.get_widget("icon_stage2")
+                self.w_stage3_label = w_tree_dialog.get_widget("label_stage3")
+                self.w_stage3_icon = w_tree_dialog.get_widget("icon_stage3")
+                self.w_stages_label = w_tree_dialog.get_widget("label_stages")
+                self.w_stages_icon = w_tree_dialog.get_widget("icon_stages")
+                self.current_stage_label = self.w_stage1_label
+                self.current_stage_icon = self.w_stage1_icon
+                self.current_stage_label_done = None
 
-                if self.action == enumerations.REMOVE:
-                        self.w_installupdate_dialog.set_title(_(
-                            "Remove Confirmation"))
-                        self.w_information_label.set_text(
-                            _("This action affects other packages.\n"
-                            "Review the packages to be removed.\n"
-                            "Click Proceed to continue."))
-                        self.w_installing_dialog.set_title(
-                            _("Removing Packages"))
-                        self.w_createplan_dialog.set_title(
-                            _("Remove Check"))
-                        self.w_installingdialog_label.set_text(
-                            _("Removing Packages..."))
-                        self.w_next_label.set_label(
-                            _("_Proceed"))
-                        remove_warning_triange.show()
+                self.done_icon = self.parent.get_icon_pixbuf("progress_checkmark")
+                blank_icon = self.parent.get_icon_pixbuf("progress_blank")
 
+                self.w_stage1_icon.set_from_pixbuf(blank_icon)
+                self.w_stage2_icon.set_from_pixbuf(blank_icon)
+                self.w_stage3_icon.set_from_pixbuf(blank_icon)
+
+                infobuffer = self.w_details_textview.get_buffer()
+                infobuffer.create_tag("bold", weight=pango.WEIGHT_BOLD)
+                infobuffer.create_tag("level1", left_margin=30, right_margin=10)
+                infobuffer.create_tag("level2", left_margin=50, right_margin=10)
+                self.w_ua_dialog = w_tree_uaconfirm.get_widget("ua_confirm_dialog")
+                w_ua_proceed_button = w_tree_uaconfirm.get_widget("ua_proceed_button")
+                self.w_progressbar.set_pulse_step(0.02)
                 try:
                         dic_createplan = \
                             {
                                 "on_cancelcreateplan_clicked": \
                                     self.__on_cancelcreateplan_clicked,
-                            }
-                        dic_installupdate = \
-                            {
-                                "on_cancel_button_clicked": \
-                                    self.__on_cancel_button_clicked,
-                                "on_next_button_clicked":self.__on_next_button_clicked,
-                            }
-                        dic_downloadingfiles = \
-                            {
-                                "on_canceldownload_clicked": \
-                                    self.__on_cancel_download_clicked,
-                            }
-                        dic_networkdown = \
-                            {
-                                "on_networkdown_close_clicked": \
-                                    self.__on_networkdown_close_clicked,
-                            }
-                        dic_error = \
-                            {
-                                "on_error_close_clicked": \
-                                    self.__on_error_close_clicked,
+                                "on_createplandialog_delete_event": \
+                                    self.__on_createplandialog_delete,
                             }
                         dic_uaconfirm = \
                             {
                                 "on_ua_cancel_button_clicked": \
                                     self.__on_ua_cancel_button_clicked,
                                 "on_ua_proceed_button_clicked": \
-                                    self.__on_ua_proceed_button_clicked,
+                                self.__on_ua_proceed_button_clicked,
                             }
-                        w_tree_createplan.signal_autoconnect(dic_createplan)
-                        w_tree_installupdate.signal_autoconnect(dic_installupdate)
-                        w_tree_downloadingfiles.signal_autoconnect(dic_downloadingfiles)
-                        w_tree_networkdown.signal_autoconnect(dic_networkdown)
-                        w_tree_errordialog.signal_autoconnect(dic_error)
+                        dic_removeconfirm = \
+                            {
+                                "on_proceed_button_clicked": \
+                                    self.__on_remove_proceed_button_clicked,
+                                "on_cancel_button_clicked": \
+                                self.__on_remove_cancel_button_clicked,
+                            }
+                        w_tree_dialog.signal_autoconnect(dic_createplan)
                         w_tree_uaconfirm.signal_autoconnect(dic_uaconfirm)
+                        w_tree_removeconfirm.signal_autoconnect(dic_removeconfirm)
                 except AttributeError, error:
                         print _("GUI will not respond to any event! %s. "
                             "Check installupdate.py signals") \
                             % error
-                # XXX Hidden until progress will give information about fmri 
-                self.w_installingdialog_expander.hide()
-                self.w_createplan_label.set_text(
-                    _("Checking package dependencies..."))
-                self.w_createplancancel_button.set_sensitive(True)           
-                if self.action == enumerations.IMAGE_UPDATE:
-                        self.w_ua_proceed_button.grab_focus()
-                        self.w_ua_confirm_dialog.show()
+
+
+                self.w_dialog.set_transient_for(self.parent.w_main_window)
+                self.w_ua_dialog.set_transient_for(self.parent.w_main_window)
+
+                if self.action == enumerations.REMOVE:
+                        #We are not showing the download stage in the main stage list
+                        self.stages[3] = [_("Removing..."), _("Remove")]
+                        self.w_stage3_label.set_text(self.stages[3][1])
+                        w_stage2.hide()
+                        self.w_dialog.set_title(_("Remove"))
+                        w_removeproceed_button.grab_focus()
+                        cell = gtk.CellRendererText()
+                        remove_column = gtk.TreeViewColumn('Removed')
+                        remove_column.pack_start(cell, True)
+                        remove_column.add_attribute(cell, 'text', 0)
+                        w_remove_treeview.append_column(remove_column)
+
+                        treestore = gtk.TreeStore(str)
+                        for sel_pkg in list_of_packages:
+                                treestore.append(None, [sel_pkg])
+                        w_remove_summary.set_label("Packages Selected For Removal: %d" % 
+                            len(list_of_packages))
+                        w_remove_treeview.set_model(treestore)
+                        w_remove_treeview.expand_all()
+                        self.w_removeconfirm_dialog.show()
+
+                elif self.action == enumerations.IMAGE_UPDATE:
+                        self.w_dialog.set_title(_("Update All"))
+                        w_ua_proceed_button.grab_focus()
+                        if not self.be_name:
+                                self.w_ua_dialog.show()
+                        else:
+                                self.__proceed_with_stages()
                 else:
-                        self.__on_ua_proceed_button_clicked(None)
+                        self.w_dialog.set_title(_("Install/Update"))
+                        self.__proceed_with_stages()
+
+
+        def __on_createplandialog_delete(self, widget, event):
+                self.__on_cancelcreateplan_clicked(None)
+                return True
 
         def __on_cancelcreateplan_clicked(self, widget):
                 '''Handler for signal send by cancel button, which user might press during
                 evaluation stage - while the dialog is creating plan'''
                 if self.api_o.can_be_canceled():
+                        self.canceling = True
                         Thread(target = self.api_o.cancel, args = ()).start()
-                        self.w_createplan_label.set_text(_("Canceling..."))
-                        self.w_createplancancel_button.set_sensitive(False)
-
-        def __on_cancel_button_clicked(self, widget):
-                '''Handler for signal send by cancel button, which is available for the 
-                user after evaluation stage on the dialog showing what will be installed
-                or updated'''
-                self.api_o.reset()
-                self.w_installupdate_dialog.destroy()
-
-        def __on_next_button_clicked(self, widget):
-                '''Handler for signal send by next button, which is available for the 
-                user after evaluation stage on the dialog showing what will be installed
-                or updated'''
-                self.w_installupdate_dialog.hide()
-                download_thread = Thread(target = self.__prepare_stage_ex,
-                    args = (self.api_o, ))
-                download_thread.start()
-
-        def __on_cancel_download_clicked(self, widget):
-                '''Handler for signal send by cancel button, which user might press during
-                download stage.'''
-                if self.api_o.can_be_canceled():
-                        Thread(target = self.api_o.cancel, args = ()).start()
-                        self.w_download_label.set_text(_("Canceling..."))
-                        self.w_canceldownload_button.set_sensitive(False)
-
-        def __on_networkdown_close_clicked(self, widget):
-                '''Handler for signal send by close button on the dialog showing that
-                there was some problem with the network connection.'''
-                self.w_networkdown_dialog.destroy()
-
-        def __on_error_close_clicked(self, widget):
-                self.w_error_dialog.destroy()
+                        cancel_txt = _("Canceling...")
+                        txt = "<b>" + self.current_stage_label_done + " - " \
+                            + cancel_txt + "</b>"
+                        gobject.idle_add(self.current_stage_label.set_markup, txt)
+                        gobject.idle_add(self.current_stage_icon.set_from_stock, 
+                            gtk.STOCK_CANCEL, gtk.ICON_SIZE_MENU)
+                        gobject.idle_add(self.w_stages_label.set_markup, cancel_txt)
+                        self.w_cancel_button.set_sensitive(False)
+                if self.operations_done:
+                        self.w_dialog.hide()
 
         def __on_ua_cancel_button_clicked(self, widget):
-                self.w_ua_confirm_dialog.hide()
+                self.w_ua_dialog.hide()
 
         def __on_ua_proceed_button_clicked(self, widget):
-                pulse_t = Thread(target = self.__progressdialog_progress_pulse)
-                thread = Thread(target = self.__plan_the_install_updateimage_ex,
-                    args = (self.install_list, ))
-                pulse_t.start()
-                thread.start()
-                self.w_ua_confirm_dialog.hide()
-                self.w_createplan_dialog.show()
+                self.w_ua_dialog.hide()
+                self.__proceed_with_stages()
 
-        def __update_createplan_progress(self, action):
-                buf = self.w_createplan_textview.get_buffer()
-                textiter = buf.get_end_iter()
-                buf.insert(textiter, action)
-                self.w_createplan_textview.scroll_to_iter(textiter, 0.0)
+        def __on_remove_cancel_button_clicked(self, widget):
+                self.w_removeconfirm_dialog.hide()
+
+        def __on_remove_proceed_button_clicked(self, widget):
+                self.w_removeconfirm_dialog.hide()
+                self.__proceed_with_stages()
+
+        def __ipkg_ipkgui_uptodate(self):
+                upgrade_needed, cre = self.api_o.plan_install(
+                    self.ipkg_ipkgui_list, filters = [])
+                return not upgrade_needed
+
+        def __proceed_with_stages(self):
+                self.__start_stage_one()
+                self.w_dialog.show()
+                Thread(target = self.__proceed_with_stages_thread_ex, 
+                    args = ()).start()
+
+        def __proceed_with_stages_thread_ex(self):
+                try:
+                        if self.action == enumerations.IMAGE_UPDATE:
+                                self.__start_substage(
+                                    _("Ensuring Package Manager is up to date..."), 
+                                    bounce_progress=True)
+                                opensolaris_image = True
+                                ips_uptodate = True
+                                notfound = self.__installed_fmris_from_args(
+                                    ["SUNWipkg", "SUNWcs"])
+                                if notfound:
+                                        opensolaris_image = False
+                                if opensolaris_image:
+                                        ips_uptodate = self.__ipkg_ipkgui_uptodate()
+                                if not ips_uptodate:
+                                        #Do the stuff with installing ipkg ipkggui and
+                                        #restart in the special mode
+                                        self.ips_update = True
+                                        self.__proceed_with_ipkg_thread()
+                                        return
+                                else:
+                                        self.api_o.reset()
+                        self.__proceed_with_stages_thread()
+                except api_errors.InvalidCertException:
+                        self.stop_bouncing_progress = True
+                        msg = _("Accessing this restricted repository failed."
+                            "\nYou either need to register to access this repository,"
+                            "\nthe certificate expired, or you need to accept the"
+                            " repository\ncertificate.")
+                        self.__g_error_stage(msg)
+                        return
+                except api_errors.PlanCreationException, e:
+                        self.__g_error_stage(str(e))
+                        return
+                except api_errors.InventoryException, e:
+                        msg = _("Inventory exception:\n")
+                        if e.illegal:
+                                for i in e.illegal:
+                                        msg += "\tpkg:\t" + i +"\n"
+                        self.__g_error_stage(msg)
+                        return
+                except api_errors.CatalogRefreshException, e:
+                        msg = _("Please check the network "
+                            "connection.\nIs the repository accessible?")
+                        if e.message and len(e.message) > 0:
+                                msg = e.message
+                        self.__g_error_stage(msg)
+                        return
+                except (api_errors.NetworkUnavailableException, 
+                    TransferTimedOutException, TransportException, URLError, 
+                    ManifestRetrievalError, DatastreamRetrievalError, 
+                    FileListRetrievalError):
+                        msg = _("Please check the network "
+                            "connection.\nIs the repository accessible?")
+                        self.__g_error_stage(msg)
+                        return
+                except api_errors.IpkgOutOfDateException:
+                        msg = _("pkg(5) appears to be out of "
+                            "date and should be\nupdated before running "
+                            "Update All.\nPlease update SUNWipkg package")
+                        self.__g_error_stage(msg)
+                        return
+                except api_errors.NonLeafPackageException, nlpe:
+                        msg = _("Cannot remove:\n\t%s\n"
+                                "Due to the following packages that "
+                                "depend on it:\n") % nlpe[0].get_name()
+                        for pkg_a in nlpe[1]:
+                                msg += "\t" + pkg_a.get_name() + "\n"
+                        self.__g_error_stage(msg)
+                        return
+                except api_errors.ProblematicPermissionsIndexException, err:
+                        msg = str(err)
+                        msg += _("\nFailure of consistent use of pfexec or gksu when "
+                            "running\nPackage Manager is often a source of this problem.")
+                        msg += _("\nTo rebuild index, please use the terminal command:")
+                        msg += _("\n\tpfexec pkg rebuild-index")
+                        self.__g_error_stage(msg)
+                        return
+                except api_errors.CorruptedIndexException:
+                        msg = _("There was an error during installation. The search\n"
+                            "index is corrupted. You might wan't try to fix this\n"
+                            "problem by running command:\n"
+                            "\tpfexec pkg rebuild-index")
+                        self.__g_error_stage(msg)
+                        return
+                except api_errors.ImageUpdateOnLiveImageException:
+                        msg = _("This is an Live Image. The install"
+                            "\noperation can't be performed.")
+                        self.__g_error_stage(msg)
+                        return
+                except api_errors.PlanMissingException:
+                        msg = _("There was an error during installation.\n"
+                            "The Plan of the operation is missing and the operation\n"
+                            "can't be finished. You might wan't try to fix this\n"
+                            "problem by restarting Package Manager\n")
+                        self.__g_error_stage(msg)
+                        return
+                except api_errors.ImageplanStateException:
+                        msg = _("There was an error during installation.\n"
+                            "The State of the image is incorrect and the operation\n"
+                            "can't be finished. You might wan't try to fix this\n"
+                            "problem by restarting Package Manager\n")
+                        self.__g_error_stage(msg)
+                        return
+                except api_errors.CanceledException:
+                        self.w_dialog.hide()
+                        return
+                except Exception, uex:
+                        if uex.args and \
+                            (uex.args[0] == errno.EDQUOT or uex.args[0] == errno.ENOSPC):
+                                gobject.idle_add(self.__prompt_to_load_beadm)
+                                gobject.idle_add(self.w_dialog.hide)
+                                self.stop_bouncing_progress = True
+                        else:
+                                traceback_lines = traceback.format_exc().splitlines()
+                                traceback_str = ""
+                                for line in traceback_lines: 
+                                        traceback_str += line + "\n"
+                                self.__g_exception_stage(traceback_str)
+                                sys.exc_clear()
+
+        def __proceed_with_ipkg_thread(self):
+                self.__start_substage(_("Updating Package Manager"), 
+                    bounce_progress=True)
+                self.__afterplan_information()
+                self.prev_pkg = None
+                self.__start_substage(_("Downloading..."), bounce_progress=False)
+                self.api_o.prepare()
+                self.__start_substage(_("Executing..."), bounce_progress=False)
+                self.api_o.execute_plan()
+                gobject.idle_add(self.__operations_done)
+
+
+        def __proceed_with_stages_thread(self):
+                self.__start_substage(
+                    _("Gathering packages information, please wait..."))
+                stuff_todo = self.__plan_stage()
+                if stuff_todo:
+                        self.__afterplan_information()
+                        self.prev_pkg = None
+                        # The api.prepare() mostly is downloading the files so we are
+                        # Not showing this stage in the main stage dialog. If download 
+                        # is necessary, then we are showing it in the details view
+                        if not self.action == enumerations.REMOVE:
+                                self.__start_stage_two()
+                                self.__start_substage(None, 
+                                    bounce_progress=False)
+                        self.api_o.prepare()
+                        self.__start_stage_three()
+                        self.__start_substage(None, 
+                            bounce_progress=False)
+                        self.api_o.execute_plan()
+                        gobject.idle_add(self.__operations_done)
+                else:
+                        msg = None
+                        if self.action == enumerations.INSTALL_UPDATE:
+                                msg = _("All packages need to be updated before "
+                                "selected\naction can be performed.\nClick Update "
+                                "All to update all packages")
+                        elif self.action == enumerations.IMAGE_UPDATE:
+                                msg = _("Your system have been already updated.")
+                        self.__g_error_stage(msg)
+
+        def __start_stage_one(self):
+                self.current_stage_label = self.w_stage1_label
+                self.current_stage_icon = self.w_stage1_icon
+                self.__start_stage(self.stages.get(1))
+                self.__g_update_details_text(self.stages.get(1)[0]+"\n", "bold")
                 
-        def __progressdialog_progress_pulse(self):
-                while not self.progress_stop_timer_thread:
-                        gobject.idle_add(self.w_createplan_progressbar.pulse)
-                        time.sleep(0.1)
+        def __start_stage_two(self):
+                # End previous stage
+                self.__end_stage()
+                self.current_stage_label = self.w_stage2_label
+                self.current_stage_icon = self.w_stage2_icon
+                self.__start_stage(self.stages.get(2))
+                self.__g_update_details_text(self.stages.get(2)[0]+"\n", "bold")
 
+        def __start_stage_three(self):
+                self.__end_stage()
+                self.current_stage_label = self.w_stage3_label
+                self.current_stage_icon = self.w_stage3_icon
+                self.__start_stage(self.stages.get(3))
+                self.__g_update_details_text(self.stages.get(3)[0]+"\n", "bold")
+
+        def __start_stage(self, stage_text):
+                self.current_stage_label_done = stage_text[1]
+                gobject.idle_add(self.current_stage_label.set_markup, 
+                    "<b>"+stage_text[0]+"</b>")
+                gobject.idle_add(self.current_stage_icon.set_from_stock, 
+                    gtk.STOCK_GO_FORWARD, gtk.ICON_SIZE_MENU)
+
+        def __end_stage(self):
+                gobject.idle_add(self.current_stage_label.set_text, 
+                    self.current_stage_label_done)
+                gobject.idle_add(self.current_stage_icon.set_from_pixbuf, self.done_icon)
+
+        def __g_error_stage(self, msg):
+                if msg == None or len(msg) == 0:
+                        msg = _("No futher information available") 
+                self.operations_done = True
+                self.stop_bouncing_progress = True
+                self.__g_update_details_text(_("\nError:\n"), "bold")
+                self.__g_update_details_text("%s" % msg, "level1")
+                self.__g_update_details_text("\n")
+                txt = "<b>" + self.current_stage_label_done + _(" - Failed </b>")
+                gobject.idle_add(self.current_stage_label.set_markup, txt)
+                gobject.idle_add(self.current_stage_icon.set_from_stock, 
+                    gtk.STOCK_DIALOG_ERROR, gtk.ICON_SIZE_MENU)
+                gobject.idle_add(self.w_expander.set_expanded, True)
+
+        def __g_exception_stage(self, tracebk):
+                self.operations_done = True
+                self.stop_bouncing_progress = True
+                txt = "<b>" + self.current_stage_label_done + _(" - Failed </b>")
+                gobject.idle_add(self.current_stage_label.set_markup, txt)
+                gobject.idle_add(self.current_stage_icon.set_from_stock, 
+                    gtk.STOCK_DIALOG_ERROR, gtk.ICON_SIZE_MENU)
+                msg_1 = _("An unknown error occured in the %s stage.\n"
+                    "Please let the developers know about this problem\n"
+                    "by filing a bug together with exception value at:\n"
+                    ) % self.current_stage_name
+                msg_2 = _("http://defect.opensolaris.org\n\n")
+                msg_3 = _("Exception value:\n")
+                self.__g_update_details_text(_("\nError:\n"), "bold")
+                self.__g_update_details_text("%s" % msg_1, "level1")
+                self.__g_update_details_text("%s" % msg_2, "bold", "level2")
+                if tracebk:
+                        msg = _("Exception traceback:\n")
+                        self.__g_update_details_text("%s" % msg, 
+                            "bold","level1")
+                        self.__g_update_details_text("%s\n" % tracebk, "level2")
+                else:
+                        msg = _("No futher information available")
+                        self.__g_update_details_text("%s\n" % msg, "level2")
+                gobject.idle_add(self.w_expander.set_expanded, True)
+
+        def __start_substage(self, text, bounce_progress=True):
+                if text:
+                        gobject.idle_add(self.__stages_label_set_markup, text)
+                        self.__g_update_details_text(text + "\n")
+                if bounce_progress:
+                        if self.stopped_bouncing_progress:
+                                self.__start_bouncing_progress()
+                else:
+                        self.stop_bouncing_progress = True
+
+        def __stages_label_set_markup(self, markup_text):
+                if not self.canceling == True:
+                        self.w_stages_label.set_markup(markup_text)
+
+        def __start_bouncing_progress(self):
+                self.stop_bouncing_progress = False
+                self.stopped_bouncing_progress = False
+                Thread(target = 
+                    self.__g_progressdialog_progress_pulse).start()
+
+        def __g_progressdialog_progress_pulse(self):
+                while not self.stop_bouncing_progress:
+                        gobject.idle_add(self.w_progressbar.pulse)
+                        time.sleep(0.1)
+                self.stopped_bouncing_progress = True
+
+        def __g_update_details_text(self, text, *tags):
+                gobject.idle_add(self.__update_details_text, text, *tags)
+
+        def __update_details_text(self, text, *tags):
+                buf = self.w_details_textview.get_buffer()
+                textiter = buf.get_end_iter()
+                if tags:
+                        buf.insert_with_tags_by_name(textiter, text, *tags)
+                else:
+                        buf.insert(textiter, text)
+                self.w_details_textview.scroll_to_iter(textiter, 0.0)
+                
         def __update_download_progress(self, cur_bytes, total_bytes):
                 prog = float(cur_bytes)/total_bytes
-                self.w_download_progressbar.set_fraction(prog)
+                self.w_progressbar.set_fraction(prog)
                 size_a_str = ""
                 size_b_str = ""
                 if cur_bytes >= 0:
                         size_a_str = pkg.misc.bytes_to_str(cur_bytes)
                 if total_bytes >= 0:
                         size_b_str = pkg.misc.bytes_to_str(total_bytes)
-                c = _("Downloaded: ") + size_a_str + " / " + size_b_str
-                self.w_download_progressbar.set_text(c)
+                c = _("Downloaded %(current)s of %(total)s") % \
+                    {"current" : size_a_str,
+                    "total" : size_b_str}
+                self.__stages_label_set_markup(c)
 
         def __update_install_progress(self, current, total):
                 prog = float(current)/total
-                self.w_installing_progressbar.set_fraction(prog)
+                self.w_progressbar.set_fraction(prog)
 
-        def __update_install_pulse(self):
-                while not self.progress_stop_timer_thread:
-                        self.progress_stop_timer_running = True
-                        gobject.idle_add(self.w_installing_progressbar.pulse)
-                        time.sleep(0.1)
-                self.progress_stop_timer_running = False
-
-        def __plan_the_install_updateimage_ex(self, list_of_packages):
-                try:
-                        self.__plan_the_install_updateimage(list_of_packages)
-                except Exception:
-                        self.progress_stop_timer_thread = True
-                        gobject.idle_add(self.w_createplan_dialog.hide)
-                        msg = _("An unknown error occured while "
-                            "preparing the\nlist of packages\n\nPlease let the "
-                            "developers know about this problem by filing\n"
-                            "a bug at http://defect.opensolaris.org")
-                        msg += _("\n\nException value: ") + "\n" + str(sys.exc_value)
-                        gobject.idle_add(self.parent.error_occured, msg)
-                        sys.exc_clear()
-                        return
-
-        def __plan_the_install_updateimage(self, list_of_packages):
+        def __plan_stage(self):
                 '''Function which plans the image'''
-                gobject.idle_add(self.__update_createplan_progress,
-                    _("Evaluation started.\n"
-                    "Gathering packages information, please wait...\n"))
                 stuff_to_do = False
                 if self.action == enumerations.INSTALL_UPDATE:
-                        try:
-                                stuff_to_do, cre = self.api_o.plan_install(
-                                    list_of_packages, filters = [])
-                                if cre and not cre.succeeded:
-                                        self.progress_stop_timer_thread = True
-                                        gobject.idle_add(self.w_createplan_dialog.hide)
-                                        msg = _("Unexpected failure with"
-                                            "\ncatalog refresh during install"
-                                            " while \ndetermining what to update.")
-                                        gobject.idle_add(self.parent.error_occured, msg)
-                                        return
-                        except api_errors.InvalidCertException:
-                                self.progress_stop_timer_thread = True
-                                gobject.idle_add(self.w_createplan_dialog.hide)
-                                msg = _("Accessing this restricted repository failed."
-                                    "\nYou either need to register to access this repository,"
-                                    "\nthe certificate expired, or you need to accept the repository"
-                                    "\ncertificate.")
-                                gobject.idle_add(self.parent.error_occured, msg,
-                                    None, gtk.MESSAGE_INFO)
-                                return
-                        except api_errors.PlanCreationException, e:
-                                self.progress_stop_timer_thread = True
-                                gobject.idle_add(self.w_createplan_dialog.hide)
-                                err_msg = _("Install/Update failure in plan creation.")
-                                err_text = str(e)
-                                gobject.idle_add(self.__error_with_details,
-                                    err_msg, err_text)
-                                return
-                        except api_errors.InventoryException:
-                                self.progress_stop_timer_thread = True
-                                gobject.idle_add(self.w_createplan_dialog.hide)
-                                msg = _("Install failed.\nThe inventory is not correct.")
-                                gobject.idle_add(self.parent.error_occured, msg)
-                                return
-                        except api_errors.CanceledException:
-                                self.progress_stop_timer_thread = True
-                                gobject.idle_add(self.w_createplan_dialog.hide)
-                                return
-                        except api_errors.CatalogRefreshException:
-                                # network problem
-                                self.progress_stop_timer_thread = True
-                                gobject.idle_add(self.w_createplan_dialog.hide)
-                                msg = _("Please check the network "
-                                    "connection.\nIs the repository accessible?")
-                                gobject.idle_add(self.parent.error_occured, msg, \
-                                    None, gtk.MESSAGE_INFO)
-                                return
-
+                        stuff_to_do, cre = self.api_o.plan_install(
+                            self.list_of_packages, refresh_catalogs = False, 
+                            filters = [])
+                        if cre and not cre.succeeded:
+                                # cre is either None or a catalog refresh exception 
+                                # which was caught while planning.
+                                raise api_errors.CatalogRefreshException(None, None, None
+                                    ,_("Catalog refresh failed during install."))
                 elif self.action == enumerations.REMOVE:
-                        try:
-                                plan_uninstall = self.api_o.plan_uninstall
-                                stuff_to_do = \
-                                    plan_uninstall(list_of_packages, False, False)
-                        except api_errors.PlanCreationException, e:
-                                self.progress_stop_timer_thread = True
-                                gobject.idle_add(self.w_createplan_dialog.hide)
-                                err_msg = _("Remove failure in plan creation.")
-                                err_text = str(e)
-                                gobject.idle_add(self.__error_with_details,
-                                    err_msg, err_text)
-                                return
-                        except api_errors.CanceledException:
-                                self.progress_stop_timer_thread = True
-                                gobject.idle_add(self.w_createplan_dialog.hide)
-                                return
-                        except api_errors.NonLeafPackageException, nlpe:
-                                self.progress_stop_timer_thread = True
-                                gobject.idle_add(self.__afterplan_nonleaf_dialog, nlpe)
-                                return
-
+                        plan_uninstall = self.api_o.plan_uninstall
+                        stuff_to_do = \
+                            plan_uninstall(self.list_of_packages, False, False)
                 elif self.action == enumerations.IMAGE_UPDATE:  
-                        try:
-                                # we are passing force, since we already checked if the
-                                # SUNWipkg and SUNWipkg-gui are up to date.
-                                stuff_to_do, opensolaris_image, cre = \
-                                    self.api_o.plan_update_all(sys.argv[0],
-                                    refresh_catalogs = False,
-                                    noexecute = False, force = True)
-                                if cre and not cre.succeeded:
-                                        self.progress_stop_timer_thread = True
-                                        gobject.idle_add(self.w_createplan_dialog.hide)
-                                        msg = _("Unexpected failure with"
-                                            "\ncatalog refresh during image-update" \
-                                            " while \ndetermining what to update.")
-                                        gobject.idle_add(self.parent.error_occured, msg)
-                                        return
-                        except api_errors.CatalogRefreshException:
-                                self.progress_stop_timer_thread = True
-                                gobject.idle_add(self.w_createplan_dialog.hide)
-                                msg = _("Please check the network "
-                                    "connection.\nIs the repository accessible?")
-                                gobject.idle_add(self.parent.error_occured, msg,
-                                    None, gtk.MESSAGE_INFO)
-                                return
-                        except api_errors.IpkgOutOfDateException:
-                                self.progress_stop_timer_thread = True
-                                gobject.idle_add(self.w_createplan_dialog.hide)
-                                msg = _("pkg(5) appears to be out of "
-                                    "date and should be\n updated before running "
-                                    "Update All.\nPlease update SUNWipkg package")
-                                gobject.idle_add(self.parent.error_occured, msg,
-                                    None, gtk.MESSAGE_INFO)
-                                return
-                        except api_errors.PlanCreationException, e:
-                                self.progress_stop_timer_thread = True
-                                gobject.idle_add(self.w_createplan_dialog.hide)
-                                err_msg = _("Update All failure in plan creation.")
-                                err_text = str(e)
-                                gobject.idle_add(self.__error_with_details,
-                                    err_msg, err_text)
-                                return
-                        except api_errors.CanceledException:
-                                self.progress_stop_timer_thread = True
-                                gobject.idle_add(self.w_createplan_dialog.hide)
-                                return
-                        except api_errors.NetworkUnavailableException:
-                                self.progress_stop_timer_thread = True
-                                gobject.idle_add(self.w_createplan_dialog.hide)
-                                msg = _("Please check the network "
-                                    "connection.\nIs the repository accessible?")
-                                gobject.idle_add(self.parent.error_occured, msg,
-                                    None, gtk.MESSAGE_INFO)
-                                return
-                if stuff_to_do:
-                        gobject.idle_add(self.__afterplan_confirmation_dialog, self.api_o)
-                elif self.action == enumerations.INSTALL_UPDATE:
-                        self.progress_stop_timer_thread = True
-                        gobject.idle_add(self.w_createplan_dialog.hide)
-                        msg = _("Selected packages for update can\n"
-                            "only be updated using Update All.")
-                        title = _("Unable to update")
-                        gobject.idle_add(self.parent.error_occured, msg, title,
-                            gtk.MESSAGE_INFO)
-                else:
-                        self.progress_stop_timer_thread = True
-                        gobject.idle_add(self.w_createplan_dialog.hide)
-                        msg = _("The action for selected packages "
-                            "could not be completed.")
-                        title = _("Unable to perform action")
-                        gobject.idle_add(self.parent.error_occured, msg, title)
-                        
-
-        def __prepare_stage_ex(self, api_o):
-                try:
-                        self.__prepare_stage(api_o)
-                except (Exception), uex:
-                        gobject.idle_add(self.w_downloadingfiles_dialog.hide)
-                        if uex.args and \
-                            (uex.args[0] == errno.EDQUOT or uex.args[0] == errno.ENOSPC):
-                                gobject.idle_add(self.__prompt_to_load_beadm)
-                                return
-                        else:
-                                msg = _("An unknown error occured while "
-                                    "downloading the files\n\nPlease let the "
-                                    "developers know about this problem by filing\n"
-                                    "a bug at http://defect.opensolaris.org")
-                                msg += \
-                                    _("\n\nException value: ") + "\n" + \
-                                    str(sys.exc_value)
-                                gobject.idle_add(self.parent.error_occured, msg)
-                                sys.exc_clear()
-                                return
-
-        def __prepare_stage(self, api_o):
-                gobject.idle_add(self.w_downloadingfiles_dialog.show)
-                text = _("Preparing to download packages, please wait...")
-                gobject.idle_add(self.__add_info_to_downloadtext, text)
-                try:
-                        api_o.prepare()
-                except api_errors.ProblematicPermissionsIndexException:
-                        gobject.idle_add(self.w_downloadingfiles_dialog.hide)
-                        msg = _("An error occured while "
-                            "downloading the files\nPlease check your permissions.")
-                        gobject.idle_add(self.parent.error_occured, msg)
-                        return
-                except api_errors.PlanMissingException, e:
-                        gobject.idle_add(self.w_downloadingfiles_dialog.hide)
-                        err_msg = _("Download failure.")
-                        err_text = str(e)
-                        gobject.idle_add(self.__error_with_details,
-                            err_msg, err_text)
-                        return
-                except api_errors.CanceledException:
-                        gobject.idle_add(self.w_downloadingfiles_dialog.hide)
-                        return
-                except (TransferTimedOutException, TransportException):
-                        gobject.idle_add(self.w_downloadingfiles_dialog.hide)
-                        gobject.idle_add(self.w_networkdown_dialog.show)
-                        return
-                except (URLError, ManifestRetrievalError, \
-                    DatastreamRetrievalError, FileListRetrievalError):
-                        gobject.idle_add(self.w_downloadingfiles_dialog.hide)
-                        gobject.idle_add(self.w_networkdown_dialog.show)
-                        return
-                self.__execute_stage_ex(api_o)
-                
-        def __execute_stage_ex(self, api_o):
-                try:
-                        self.__execute_stage(api_o)
-                except (Exception), uex:
-                        gobject.idle_add(self.w_installing_dialog.hide)
-                        if uex.args[0] == errno.EDQUOT or uex.args[0] == errno.ENOSPC:
-                                gobject.idle_add(self.__prompt_to_load_beadm)
-                                return
-                        else:
-                                msg = _("An unknown error occured while "
-                                    "installing\nupdating or removing packages"
-                                    "\n\nPlease let the developers know about this "
-                                    "problem by filing\na bug at "
-                                    "http://defect.opensolaris.org")
-                                msg += \
-                                    _("\n\nException value: ") + "\n" + \
-                                    str(sys.exc_value)
-                                gobject.idle_add(self.parent.error_occured, msg)
-                                sys.exc_clear()
-                                return
-
-        def __execute_stage(self, api_o):
-                text = _("Installing Packages...")
-                gobject.idle_add(self.w_downloadingfiles_dialog.hide)
-                gobject.idle_add(self.w_installingdialog_label.set_text, text)
-                gobject.idle_add(self.w_installing_dialog.show)
-                try:
-                        api_o.execute_plan()
-                except api_errors.CorruptedIndexException:
-                        gobject.idle_add(self.w_installing_dialog.hide)
-                        msg = _("There was an error during installation."
-                            "\nThe index is corrupted. You might wan't try to fix"
-                            "\nthis problem by running command:"
-                            "\npfexec pkg rebuild-index")
-                        gobject.idle_add(self.parent.error_occured, msg)
-                        return
-                except api_errors.ProblematicPermissionsIndexException:
-                        gobject.idle_add(self.w_installing_dialog.hide)
-                        msg = _("An error occured while "
-                            "installing the files\nPlease check your permissions")
-                        gobject.idle_add(self.parent.error_occured, msg)
-                        return
-                except api_errors.ImageplanStateException:
-                        gobject.idle_add(self.w_installing_dialog.hide)
-                        msg = _("There was an error during installation."
-                            "\nThe State of the image is incorrect and the operation"
-                            "\ncan't be finished.")
-                        gobject.idle_add(self.parent.error_occured, msg)
-                        return
-                except api_errors.ImageUpdateOnLiveImageException:
-                        gobject.idle_add(self.w_installing_dialog.hide)
-                        msg = _("This is an Live Image. The install"
-                            "\noperation can't be performed.")
-                        gobject.idle_add(self.parent.error_occured, msg)
-                        return
-                except api_errors.PlanMissingException:
-                        gobject.idle_add(self.w_installing_dialog.hide)
-                        msg = _("There was an error during installation."
-                            "\nThe Plan of the operation is missing and the operation"
-                            "\ncan't be finished.")
-                        gobject.idle_add(self.parent.error_occured, msg)
-                        return
-                gobject.idle_add(self.__operations_done)
+                        # we are passing force, since we already checked if the
+                        # SUNWipkg and SUNWipkg-gui are up to date.
+                        stuff_to_do, opensolaris_image, cre = \
+                            self.api_o.plan_update_all(sys.argv[0],
+                            refresh_catalogs = False,
+                            noexecute = False, force = True)
+                        if cre and not cre.succeeded:
+                                raise api_errors.CatalogRefreshException(None, None, None
+                                    ,_("Catalog refresh failed during Update All."))
+                return stuff_to_do
 
         def __operations_done(self):
+                done_txt = _("Installation completed successfully.")
+                if self.action == enumerations.REMOVE:
+                        done_txt = _("Packages removed successfully.")
+                elif self.action == enumerations.IMAGE_UPDATE:
+                        done_txt = _("Packages updated successfully.")
+                self.w_stages_box.hide()
+                self.w_stages_icon.set_from_stock(
+                    gtk.STOCK_OK, gtk.ICON_SIZE_DND)
+                self.w_stages_icon.show()
+                self.__stages_label_set_markup(done_txt)
+                self.__update_details_text("\n"+ done_txt, "bold")
+                self.w_cancel_button.set_label("gtk-close")
+                self.w_progressbar.hide()
+                self.stop_bouncing_progress = True
+                self.operations_done = True
                 if self.parent != None:
                         if not self.ips_update and not self.action == \
                             enumerations.IMAGE_UPDATE:
-                                self.__update_package_list()
-                self.w_installing_dialog.hide()
-
+                                self.parent.update_package_list(self.update_list)
                 if self.ips_update:
-                        self.parent.shutdown_after_ips_update()
+                        self.w_dialog.hide()
+                        self.parent.restart_after_ips_update("be_name")
                 elif self.action == enumerations.IMAGE_UPDATE:
+                        self.w_dialog.hide()
                         self.parent.shutdown_after_image_update()
-
-        def __update_package_list(self):
-                self.parent.update_package_list(self.update_list)
-
-        def __add_info_to_downloadtext(self, text):
-                '''Function which adds another line text in the "more details" download 
-                dialog'''
-                buf = self.w_download_textview.get_buffer()
-                textiter = buf.get_end_iter()
-                if text:
-                        buf.insert(textiter, text + "\n")
-                        self.w_download_textview.scroll_to_iter(textiter, 0.0)
-
-        def __error_with_details(self, err_msg, err_text):
-                self.w_errortext_label.set_text(err_msg)
-                buf = self.w_errortext_textview.get_buffer()
-                textiter = buf.get_end_iter()
-                buf.insert(textiter, err_text)
-                self.w_error_dialog.run()
-                self.w_error_dialog.destroy()
 
         def __prompt_to_load_beadm(self):
                 msgbox = gtk.MessageDialog(parent = self.parent.w_main_window,
                     buttons = gtk.BUTTONS_OK_CANCEL, flags = gtk.DIALOG_MODAL,
                     type = gtk.MESSAGE_ERROR, 
                     message_format = _(
-                    "Not enough disc space: selected action cannot " +
+                    "Not enough disk space: selected action cannot " +
                     "be performed.\n\n" +
                     "You may click OK to launch BE Management to manage your " +
-                    "existing BE's and free up disc space."))
-                msgbox.set_title(_("Not Enough Disc Space"))
+                    "existing BE's and free up disk space."))
+                msgbox.set_title(_("Not Enough Disk Space"))
                 result = msgbox.run()
                 msgbox.destroy()
                 if result == gtk.RESPONSE_OK:
                         beadm.Beadmin(self.parent)
 
-        def __add_info_to_installtext(self, text):
-                '''Function which adds another line text in the "more details" install 
-                dialog'''
-                buf = self.w_installing_textview.get_buffer()
-                textiter = buf.get_end_iter()
-                buf.insert(textiter, text)
-                self.w_installing_textview.scroll_to_iter(textiter, 0.0)
-
-        def cat_output_start(self): 
-                return
-
-        def cat_output_done(self): 
-                return
-
-        def eval_output_start(self):
-                '''Called by progress tracker when the evaluation of the packages just 
-                started.'''
-                return
-
-        def eval_output_progress(self):
-                '''Called by progress tracker each time some package was evaluated. The
-                call is being done by calling progress tracker evaluate_progress() 
-                function'''
-                cur_eval_fmri = self.eval_cur_fmri
-                if cur_eval_fmri:
-                        gobject.idle_add(self.__update_createplan_progress,
-                            _("Evaluating: %s\n") % cur_eval_fmri)
-                        text = _("Evaluating package " +
-                            "%s") % cur_eval_fmri.get_name()
-                        gobject.idle_add(self.w_createplan_label.set_text, text)
-
-        def eval_output_done(self):
-                ninst = self.eval_goal_install_npkgs
-                nupdt = self.eval_goal_update_npkgs
-                nremv = self.eval_goal_remove_npkgs
-                nbytes = self.dl_goal_nbytes
-                gobject.idle_add(self.__eval_output_done,
-                    ninst, nupdt, nremv, nbytes)
-
-        def __eval_output_done(self, ninst, nupdt, nremv, nbytes):
-                label_text = ""
-                if nupdt > 0 and nupdt != 1:
-                        label_text += _("%d packages will be updated\n") % nupdt
-                elif nupdt == 1:
-                        label_text += _("%d package will be updated\n") % nupdt
-                if ninst > 0 and ninst != 1:
-                        label_text += _("%d packages will be installed\n\n") % ninst
-                elif ninst == 1:
-                        label_text += _("%d package will be installed\n\n") % ninst
-                if nremv > 0 and nremv != 1:
-                        label_text += \
-                            _("%d packages will be removed\n\n") % nremv
-                elif nremv == 1:
-                        label_text += \
-                            _("%d package will be removed\n\n") % nremv
-                if not nbytes:
-                        nbytes = 0
-                if nbytes > 0:
-                        size_str = pkg.misc.bytes_to_str(nbytes)
-                        label_text += _("%s will be downloaded") % size_str
-                self.w_summary_label.set_text(label_text)
-
-        def __afterplan_nonleaf_dialog(self, non_leaf_exception):
-                self.w_installupdate_dialog.set_title(_(
-                    "Remove Confirmation"))
-                self.w_information_label.set_text(
-                    _("This action couldn't be finished.\n"
-                    "Some of the selected packages depends on other.\n"
-                    "Please review the dependencies."))
-                self.w_next_button.hide()
-                self.w_cancel_button.set_label(_("Close"))
-                pkg_blocker = non_leaf_exception[0]
-                treestore = gtk.TreeStore(str)
-                pkg_iter = treestore.append(None, [pkg_blocker])
-                for pkg_a in non_leaf_exception[1]:
-                        treestore.append(pkg_iter, [pkg_a])
-                self.w_review_treeview.set_model(treestore)
-                self.w_review_treeview.expand_all()
-                label_text = _("None of the packages will be removed")
-                self.w_summary_label.set_text(label_text)
-                self.progress_stop_timer_thread = True
-                self.w_createplan_dialog.hide()
-                self.w_installupdate_dialog.show()
-
-
-        def __afterplan_confirmation_dialog(self, api_o):
-                updated_installed = \
-                    [
-                        ["Packages To Be Installed:"],
-                        ["Packages To Be Updated:"],
-                        ["Packages To Be Removed:"]
-                    ]
-                treestore = gtk.TreeStore(str)
+        def __afterplan_information(self):
                 install_iter = None 
-                updated_iter = None
+                update_iter = None
                 remove_iter = None
-                plan = api_o.describe().get_changes()
+                plan = self.api_o.describe().get_changes()
+                self.__g_update_details_text("\n")
                 for pkg_plan in plan:
                         origin_fmri = pkg_plan[0]
                         destination_fmri = pkg_plan[1]
                         if origin_fmri and destination_fmri:
-                                if not updated_iter:
-                                        updated_iter = treestore.append(None, \
-                                            updated_installed[1])
+                                if not update_iter:
+                                        update_iter = True
+                                        txt = _("Packages To Be Updated:\n")
+                                        self.__g_update_details_text(txt, "bold")
                                 pkg_a = self.__get_pkgstr_from_pkginfo(destination_fmri)
-                                treestore.append(updated_iter, [pkg_a])
+                                self.__g_update_details_text(pkg_a+"\n", "level1")
                         elif not origin_fmri and destination_fmri:
                                 if not install_iter:
-                                        install_iter = treestore.append(None, \
-                                            updated_installed[0])
+                                        install_iter = True
+                                        txt = _("Packages To Be Installed:\n")
+                                        self.__g_update_details_text(txt, "bold")
                                 pkg_a = self.__get_pkgstr_from_pkginfo(destination_fmri)
-                                treestore.append(install_iter, [pkg_a])
+                                self.__g_update_details_text(pkg_a+"\n", "level1")
                         elif origin_fmri and not destination_fmri:
                                 if not remove_iter:
-                                        remove_iter = treestore.append(None, \
-                                            updated_installed[2])
+                                        remove_iter = True
+                                        txt = _("Packages To Be Removed:\n")
+                                        self.__g_update_details_text(txt, "bold")
                                 pkg_a = self.__get_pkgstr_from_pkginfo(origin_fmri)
-                                treestore.append(remove_iter, [pkg_a])
-
-                self.w_review_treeview.set_model(treestore)
-                self.w_review_treeview.expand_all()
-                self.progress_stop_timer_thread = True
-                self.w_createplan_dialog.hide()
-                self.w_installupdate_dialog.show()
+                                self.__g_update_details_text(pkg_a+"\n", "level1")
+                self.__g_update_details_text("\n")
 
         def __get_pkgstr_from_pkginfo(self, pkginfo):
                 dt_str = self.get_datetime(pkginfo.packaging_date)
@@ -775,30 +658,11 @@ class InstallUpdate(progress.ProgressTracker):
                 pkg_version = version_pref + version_suf + dt_str
                 return pkg_name + "@" + pkg_version  
 
-        def ver_output(self): 
-                return
-
-        def ver_output_error(self, actname, errors): 
-                return
-
-        def dl_output(self):
-                gobject.idle_add(self.__update_download_progress, \
-                    self.dl_cur_nbytes, self.dl_goal_nbytes)
-                if self.prev_pkg != self.dl_cur_pkg:
-                        self.prev_pkg = self.dl_cur_pkg
-                        text = _("Downloading: ") + self.dl_cur_pkg
-                        gobject.idle_add(self.__add_info_to_downloadtext, text)
-                return
-
-        def dl_output_done(self):
-                return
-
         def act_output(self):
                 if self.act_phase != self.act_phase_last:
                         self.act_phase_last = self.act_phase
-                        gobject.idle_add(
-                            self.w_installingdialog_label.set_text,
-                            self.act_phase)
+                        gobject.idle_add(self.__stages_label_set_markup, self.act_phase)
+                        self.__g_update_details_text(_("%s\n") % self.act_phase, "level1")
                 gobject.idle_add(self.__update_install_progress,
                     self.act_cur_nactions, self.act_goal_nactions)
                 return
@@ -806,19 +670,68 @@ class InstallUpdate(progress.ProgressTracker):
         def act_output_done(self):
                 return
 
-        def ind_output(self):
-                self.progress_stop_timer_thread = False
-                gobject.idle_add(self.__indexing_progress)
+        def cat_output_start(self): 
                 return
 
+        def cat_output_done(self): 
+                return
+
+        def dl_output(self):
+                gobject.idle_add(self.__update_download_progress, \
+                    self.dl_cur_nbytes, self.dl_goal_nbytes)
+                if self.prev_pkg != self.dl_cur_pkg:
+                        self.prev_pkg = self.dl_cur_pkg
+                        self.__g_update_details_text(
+                            _("Package %d of %d: %s\n") % (self.dl_cur_npkgs+1, 
+                            self.dl_goal_npkgs, self.dl_cur_pkg), "level1")
+
+        def dl_output_done(self):
+                self.__g_update_details_text("\n")
+
+        def eval_output_start(self):
+                '''Called by progress tracker when the evaluation of the packages just 
+                started.'''
+                return
+
+        def eval_output_progress(self):
+                '''Called by progress tracker each time some package was evaluated. The
+                call is being done by calling progress tracker evaluate_progress() 
+                function'''
+                if self.prev_pkg != self.eval_cur_fmri:
+                        self.prev_pkg = self.eval_cur_fmri
+                        self.__g_update_details_text("%s\n" % self.eval_cur_fmri,
+                            "level1")
+                        text = _("Evaluating: %s") % self.eval_cur_fmri.get_name()
+                        gobject.idle_add(self.__stages_label_set_markup, text)
+
+        def eval_output_done(self):
+                return
+
+        def ind_output(self):
+                if self.ind_started != self.ind_phase:
+                        self.ind_started = self.ind_phase
+                        gobject.idle_add(self.__stages_label_set_markup, self.ind_phase)
+                        self.__g_update_details_text(
+                            _("%s\n") % (self.ind_phase), "level1")
+                gobject.idle_add(self.__indexing_progress)
+
         def __indexing_progress(self):
-                if not self.progress_stop_timer_running:
-                        self.w_installingdialog_label.set_text(
-                            _("Creating packages index..."))
-                        Thread(target = self.__update_install_pulse).start()
+                #It doesn't look nice if the progressive is just for few elements
+                if self.ind_goal_nitems > MIN_IND_ELEMENTS_BOUNCE:
+                        gobject.idle_add(self.__update_install_progress, 
+                            self.ind_cur_nitems-1, self.ind_goal_nitems)
+                else:
+                        if self.stopped_bouncing_progress:
+                                self.__start_bouncing_progress()
                         
         def ind_output_done(self):
-                self.progress_stop_timer_thread = True
+                gobject.idle_add(self.__update_install_progress, self.ind_cur_nitems, 
+                    self.ind_goal_nitems)
+
+        def ver_output(self): 
+                return
+
+        def ver_output_error(self, actname, errors): 
                 return
 
         @staticmethod
@@ -833,3 +746,14 @@ class InstallUpdate(progress.ProgressTracker):
                         date_tmp2 = datetime.datetime(*date_tmp[0:5])        
                         return date_tmp2.strftime(":%m%d")
                 return None
+
+        def __installed_fmris_from_args(self, args_f):
+                found = []
+                notfound = []
+                try:
+                        for m in self.api_o.img.inventory(args_f):
+                                found.append(m[0])
+                except api_errors.InventoryException, e:
+                        notfound = e.notfound
+                return notfound
+

@@ -120,13 +120,12 @@ class PackageManager:
                 self.pkginfo_thread = -1                  # For background processes
                 gtk.rc_parse('~/.gtkrc-1.2-gnome2')       # Load gtk theme
                 self.main_clipboard_text = None
-                self.ipkg_fmri = "SUNWipkg"
-                self.ipkggui_fmri = "SUNWipkg-gui"
                 self.progress_stop_timer_thread = False
                 self.progress_fraction_time_count = 0
                 self.progress_canceled = False
-                self.ips_uptodate = False
                 self.image_dir_arg = None
+                self.update_all_proceed = False
+                self.ua_be_name = None
                 self.application_path = None
                 self.first_run = True
                 self.provided_image_dir = True
@@ -810,65 +809,11 @@ class PackageManager:
                     action = enumerations.INSTALL_UPDATE)
 
         def __on_update_all(self, widget):
-                opensolaris_image = True
-                self.progress_stop_timer_thread = False
-                notfound = self.__installed_fmris_from_args(self.api_o, \
-                    ["SUNWipkg", "SUNWcs"])
-
-                if notfound:
-                        opensolaris_image = False
-
-                if opensolaris_image:
-                        # Load the catalogs from the repository, its a long 
-                        # running tasks so need a progress dialog
-                        self.w_progress_dialog.set_title(_("Update All"))
-                        self.w_progressinfo_label.set_text(_( \
-                            "Checking SUNWipkg and SUNWipkg-gui versions\n" \
-                            "\nPlease wait ..."))
-                        Thread(target = self.__progressdialog_progress_pulse).start()
-                        Thread(target = self.__do_ips_uptodate_check).start()
-                        self.w_progress_dialog.run()
-                        if self.progress_canceled:
-                                return
-                else:
-                        self.ips_uptodate = True
-
-                #2790: Make sure ipkg and ipkg-gui are up to date, if not update them and
-                # prompt user to restart
-                if not self.ips_uptodate:
-                        # Prompt user
-                        msgbox = gtk.MessageDialog(parent = self.w_main_window,
-                            buttons = gtk.BUTTONS_YES_NO,
-                            flags = gtk.DIALOG_MODAL, type = gtk.MESSAGE_QUESTION,
-                            message_format = _("Newer versions of SUNWipkg and "
-                            "SUNWipkg-gui\n" + "are available and must be updated "
-                            "before\nrunning Update All.\n\nDo you want to update "
-                            "them now?"))
-                        msgbox.set_title(_("Update All"))
-                        result = msgbox.run()
-                        msgbox.destroy()
-                        if result == gtk.RESPONSE_YES:
-                                pkg_list = [self.ipkg_fmri, self.ipkggui_fmri]
-                                self.api_o.reset()
-                                installupdate.InstallUpdate(pkg_list,
-                                    self, self.api_o,
-                                    ips_update = True,
-                                    action = enumerations.INSTALL_UPDATE)
-                        else:
-                                msgbox = gtk.MessageDialog(parent = self.w_main_window,
-                                    buttons = gtk.BUTTONS_OK,
-                                    flags = gtk.DIALOG_MODAL, type = gtk.MESSAGE_INFO,
-                                    message_format = _("Update All was not "
-                                    "run.\n\nIt can not be run until SUNWipkg and "
-                                    "SUNWipkg-gui have been updated."))
-                                msgbox.set_title(_("Update All"))
-                                result = msgbox.run()
-                                msgbox.destroy()
-                else:
-                        self.api_o.reset()
-                        installupdate.InstallUpdate([], self,
-                            self.api_o, ips_update = False,
-                            action = enumerations.IMAGE_UPDATE)
+                self.api_o.reset()
+                installupdate.InstallUpdate([], self,
+                    self.api_o, ips_update = False,
+                    action = enumerations.IMAGE_UPDATE, be_name = self.ua_be_name)
+                return
 
         def __on_help_about(self, widget):
                 wTreePlan = gtk.glade.XML(self.gladefile, "aboutdialog") 
@@ -931,18 +876,18 @@ class PackageManager:
                 self.main_clipboard_text = text
                 return
 
-        def __main_application_quit(self, restart_app = False):
+        def __main_application_quit(self, be_name = None):
                 '''quits the main gtk loop'''
                 self.cancelled = True
                 if self.in_setup:
                         return
                         
-                if restart_app:
+                if be_name:
                         if self.image_dir_arg:
                                 gobject.spawn_async([self.application_path, "-R",
-                                    self.image_dir_arg])
+                                    self.image_dir_arg, "-U", be_name])
                         else:
-                                gobject.spawn_async([self.application_path])
+                                gobject.spawn_async([self.application_path, "-U", be_name])
                 self.w_main_window.hide()
                 gtk.main_quit()
                 sys.exit(0)
@@ -1107,6 +1052,10 @@ class PackageManager:
                         # Package is not installed
                         local_info = remote_info
                         installed = False
+
+                if not remote_info:
+                        remote_info = local_info
+                        installed = True
 
                 description = local_info.summary
                 #XXX long term need to have something more robust here for multi byte
@@ -1358,31 +1307,6 @@ class PackageManager:
                         else:
                                 return False
 
-        def __do_ips_uptodate_check(self):
-                ret = self.__catalog_refresh(False)
-                if ret != -1:
-                        self.ips_uptodate = self.__ipkg_ipkgui_uptodate()
-                else:
-                        self.progress_canceled = True
-                self.progress_stop_timer_thread = True
-
-        def __ipkg_ipkgui_uptodate(self):
-                self.api_o.reset()
-                list_of_packages = [self.ipkg_fmri, self.ipkggui_fmri]
-                ret = True
-                try:
-                        upgrade_needed, cre = self.api_o.plan_install(
-                            list_of_packages, filters = [])
-                        if upgrade_needed:
-                                ret = False
-                except (api_errors.InvalidCertException, \
-                    api_errors.PlanCreationException, \
-                    api_errors.InventoryException):
-                        raise
-                except api_errors.CanceledException:
-                        raise
-                return ret
-
         def __enable_disable_selection_menus(self):
                 
                 if self.in_setup:
@@ -1417,7 +1341,7 @@ class PackageManager:
                                     status == enumerations.NOT_INSTALLED):
                                         self.w_installupdate_button.set_sensitive(True)
                                         self.w_installupdate_menuitem.set_sensitive(True)
-                                return
+                                        return
                         self.w_installupdate_button.set_sensitive(False)
                         self.w_installupdate_menuitem.set_sensitive(False)
                         return
@@ -1482,7 +1406,10 @@ class PackageManager:
                                         break
                 self.w_updateall_button.set_sensitive(update_available)
                 self.w_updateall_menuitem.set_sensitive(update_available)
+                self.__enable_disable_install_update()
+                self.__enable_disable_remove()
                 self.unset_busy_cursor()
+
 
         def __enable_disable_deselect(self):
                 for row in self.w_application_treeview.get_model():
@@ -1816,18 +1743,6 @@ class PackageManager:
         @staticmethod
         def __sort(a, b):
                 return cmp(a[1], b[1])
-
-        @staticmethod
-        def __installed_fmris_from_args(api_o, args_f):
-                found = []
-                notfound = []
-                try:
-                        for m in api_o.img.inventory(args_f):
-                                found.append(m[0])
-                except api_errors.InventoryException, e:
-                        notfound = e.notfound
-
-                return notfound
                 
         @staticmethod
         def cell_data_function(column, renderer, model, itr, data):
@@ -1963,6 +1878,11 @@ class PackageManager:
                         gtk.main_iteration(False)
                 self.__get_manifests_thread()
                 self.w_progress_dialog.hide()
+                if self.update_all_proceed:
+                        # Do something if there was only one update SUNWipkg/SUNWipg-gui
+                        # and no more things are to be updated
+                        self.__on_update_all(None)
+                        self.update_all_proceed = False
 
         def __get_manifests_thread(self):
                 Thread(target = self.get_manifests_for_packages,
@@ -2049,27 +1969,13 @@ class PackageManager:
                                         row[enumerations.STATUS_ICON_COLUMN] = \
                                             None
                                 row[enumerations.MARK_COLUMN] = False
-                self.w_installupdate_button.set_sensitive(False)
-                self.w_installupdate_menuitem.set_sensitive(False)
-                self.w_remove_button.set_sensitive(False)
-                self.w_remove_menuitem.set_sensitive(False)
+                self.__enable_disable_install_update()
+                self.__enable_disable_remove()
                 self.__enable_disable_selection_menus()
                 self.update_statusbar()
 
-        def shutdown_after_ips_update(self):    
-
-                # 2790: As IPS and IPS-GUI have been updated the IPS GUI must be shutdown 
-                # and restarted
-                msgbox = gtk.MessageDialog(parent = self.w_main_window, 
-                    buttons = gtk.BUTTONS_OK,
-                    flags = gtk.DIALOG_MODAL, type = gtk.MESSAGE_INFO,
-                    message_format = _("SUNWipkg and SUNWipkg-gui have been "
-                    "updated and Package Manager will now be restarted.\n\nAfter "
-                    "restart select Update All to continue."))
-                msgbox.set_title(_("Update All"))
-                msgbox.run()
-                msgbox.destroy()
-                self.__main_application_quit(restart_app = True)
+        def restart_after_ips_update(self, be_name):
+                self.__main_application_quit(be_name)
 
         def shutdown_after_image_update(self):    
 
@@ -2197,8 +2103,8 @@ if __name__ == '__main__':
         packagemanager.provided_image_dir = True
 
         try:
-                opts, args = getopt.getopt(sys.argv[1:], "htR:", \
-                    ["help", "test-gui", "image-dir="])
+                opts, args = getopt.getopt(sys.argv[1:], "htR:U:", \
+                    ["help", "test-gui", "image-dir=", "update-all"])
         except getopt.error, msg:
                 print "%s, for help use --help" % msg
                 sys.exit(2)
@@ -2213,7 +2119,8 @@ if __name__ == '__main__':
                 if option in ("-h", "--help"):
                         print """\
 Use -R (--image-dir) to specify image directory.
-Use -t (--test-gui) to work on fake data."""
+Use -t (--test-gui) to work on fake data.
+Use -U (--update-all) to proceed with Update All"""
                         sys.exit(0)
                 if option in ("-t", "--test-gui"):
                         passed_test_arg = True
@@ -2221,6 +2128,9 @@ Use -t (--test-gui) to work on fake data."""
                         packagemanager.image_dir_arg = argument
                         image_dir = argument
                         passed_imagedir_arg = True
+                if option in ("-U", "--update-all"):
+                        packagemanager.update_all_proceed = True
+                        packagemanager.ua_be_name = argument
 
         if passed_test_arg and passed_imagedir_arg:
                 print "Options -R and -t can not be used together."

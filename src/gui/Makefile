@@ -64,7 +64,9 @@ PYCMODS = $(PYMODS:%.py=%.pyc)
 ICONS = \
    data/icons/status_checkmark.png \
    data/icons/status_installed.png \
-   data/icons/status_newupdate.png 
+   data/icons/status_newupdate.png \
+   data/icons/progress_checkmark.png \
+   data/icons/progress_blank.png
 
 HELP_DIR:sh = echo help/*
 
