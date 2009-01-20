@@ -279,7 +279,17 @@ exit $(PKG_SVCADM_EXIT_CODE)
                 self.pkg(cmdstr + " install basics@1.2")
                 self.pkg("verify")
                 self.file_does_not_exist(svcadm_output)
- 
+
+                # test to see if services that aren't installed are ignored
+                os.environ["PKG_SVCPROP_EXIT_CODE"] = "1"
+                self.pkg("uninstall basics")
+                self.pkg("verify")
+                cmdstr = "--debug actuator_cmds_dir=%s" % self.testdata_dir
+                self.pkg(cmdstr + " install basics@1.2")
+                self.pkg("verify")
+                self.file_does_not_exist(svcadm_output)
+                os.environ["PKG_SVCPROP_EXIT_CODE"] = "0"
+
                 # make it look like our test service(s) is/are enabled
                 os.environ["PKG_SVCPROP_OUTPUT"] = "svcprop_enabled"
 

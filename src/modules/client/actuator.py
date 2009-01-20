@@ -23,7 +23,7 @@
 # Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
-
+                
 class GenericActuator(object):
         """Actuators are action attributes that cause side effects
         on live images when those actions are updated, installed
@@ -89,6 +89,17 @@ from pkg.client.debugvalues import DebugValues
 
 svcprop_path = "/usr/bin/svcprop"
 svcadm_path  = "/usr/sbin/svcadm"
+
+
+
+class NonzeroExitException(Exception):
+        def __init__(self, cmd, return_code, output):
+                self.cmd = cmd
+                self.return_code = return_code
+                self.output = output
+        def __str__(self):
+                return "Cmd %s exited with status %d, and output '%s'" %\
+                    (self.cmd, self.return_code, self.output)
 
 class Actuator(GenericActuator):
         """Solaris specific Actuator implementation..."""
@@ -257,8 +268,13 @@ class Actuator(GenericActuator):
                 return self.__smf_svc_get_state(fmri) < SMF_SVC_TMP_ENABLED
 
         def __get_smf_props(self, svcfmri):
-                args = (svcprop_path, "-c", svcfmri)
-                buf = self.__call(args)
+                args = (svcprop_path, "-cq", svcfmri)
+
+                try:
+                        buf = self.__call(args)
+                except NonzeroExitException, e:
+                        return {} # empty output == not installed
+
                 return dict([
                     l.strip().split(None, 1)
                     for l in buf
@@ -279,9 +295,7 @@ class Actuator(GenericActuator):
                         raise RuntimeError, "cannot execute %s" % (args,)
 
                 if ret != 0:
-                        raise RuntimeError, "Subprocess (%s) non-zero exit code: %s" \
-                            % (args, buf)
-
+                        raise NonzeroExitException(args, ret, buf)
                 return buf
 
 
