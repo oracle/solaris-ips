@@ -1,0 +1,32 @@
+<gconfschemafile>
+  <schemalist>
+    <schema>
+      <key>/schemas/apps/packagemanager/preferences/initial_filter</key>
+      <applyto>/apps/packagemanager/preferences/initial_filter</applyto>
+      <owner>packagemanager</owner>
+      <type>int</type>
+      <default>0</default>
+      <locale name="C">
+         <short>Initial Filter value</short>
+         <long>
+          An integer which identifies the initial toplevel value to be
+          displayed when packagemanager starts. 0 corresponds to All Categories.
+         </long>
+      </locale>
+    </schema>
+    <schema>
+      <key>/schemas/apps/packagemanager/preferences/initial_section</key>
+      <applyto>/apps/packagemanager/preferences/initial_section</applyto>
+      <owner>packagemanager</owner>
+      <type>int</type>
+      <default>0</default>
+      <locale name="C">
+         <short>Initial section value</short>
+         <long>
+          An integer which identifies the initial category value to be
+          displayed when packagemanager starts. 0 corresponds to All Packages.
+         </long>
+      </locale>
+    </schema>
+  </schemalist>  
+</gconfschemafile>
