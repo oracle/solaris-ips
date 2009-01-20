@@ -29,6 +29,7 @@ PYTHON = /usr/bin/python
 INSTALL = /usr/sbin/install
 
 ROOT = ../../proto/root_${MACH}/usr
+ROOTETC = ../../proto/root_${MACH}/etc
 ROOTUSRLIB = $(ROOT)/lib
 ROOTSHARE = $(ROOT)/share/package-manager
 ROOTHELPSHARE = $(ROOT)/share/gnome/help/package-manager
@@ -39,6 +40,7 @@ ROOTPYTHONVENDOR = $(ROOTPYTHON)/vendor-packages
 ROOTPYTHONPKG = $(ROOTPYTHONVENDOR)/pkg/gui
 ROOTICONSHARE = $(ROOT)/share/icons/package-manager
 ROOTAPPICONSHARE = $(ROOT)/share/icons/hicolor/48x48/apps
+ROOTGCONFSHARE = $(ROOTETC)/gconf/schemas
 
 ROOTDIRS = \
    $(ROOTPYTHONPKG) \
@@ -47,6 +49,7 @@ ROOTDIRS = \
    $(ROOTAPPICONSHARE) \
    $(ROOTDATASHARE) \
    $(ROOTDESKTOPSHARE) \
+   $(ROOTGCONFSHARE) \
    $(ROOTHELPSHARE)
 
 PYMODS = \
@@ -91,11 +94,16 @@ DESKTOP = \
    data/packagemanager.desktop \
    data/addmoresoftware.desktop
 
+GCONF = \
+   data/packagemanager-preferences.schemas
+
 ROOTPYMODS = $(PYMODS:modules/%=$(ROOTPYTHONPKG)/%)
 
 ROOTICONS = $(ICONS:data/icons/%=$(ROOTICONSHARE)/%)
 
 ROOTDESKTOP = $(DESKTOP:data/%=$(ROOTDESKTOPSHARE)/%)
+
+ROOTGCONF = $(GCONF:%=$(ROOTGCONFSHARE)/%)
 
 ROOTCATALOG = $(CATALOG:data/%=$(ROOTDATASHARE)/%)
 
@@ -122,6 +130,7 @@ ROOTCOMPONENTS = \
    $(ROOTICONS) \
    $(ROOTAPPICONS) \
    $(ROOTDESKTOP) \
+   $(ROOTGCONF) \
 
 all := TARGET = all
 install := TARGET = install
@@ -137,6 +146,7 @@ install: all $(ROOTCOMPONENTS)
 clean clobber:
 	rm -f $(PYCMODS)
 	rm -f $(DESKTOP)
+	rm -f $(GCONF)
 	rm -f ../po/.intltool-merge-cache
    
 modules/%.pyc: modules/%.py
@@ -149,6 +159,10 @@ data/packagemanager.desktop: data/packagemanager.desktop.in
 data/addmoresoftware.desktop: data/addmoresoftware.desktop.in
 	cd data; pwd; \
 	  LC_ALL=C intltool-merge -d -u -c ../../po/.intltool-merge-cache ../../po addmoresoftware.desktop.in addmoresoftware.desktop
+
+data/packagemanager-preferences.schemas: data/packagemanager-preferences.schemas.in
+	cd data; pwd; \
+	  LC_ALL=C intltool-merge -d -u -c ../../po/.intltool-merge-cache ../../po packagemanager-preferences.schemas.in packagemanager-preferences.schemas
 
 data/packagemanager.png: data/PM_app_48x.png
 	cp data/PM_app_48x.png data/packagemanager.png
@@ -164,6 +178,7 @@ link:
 	ln -sf $(PWD)/data/opensolaris.org.sections /usr/share/package-manager/data/opensolaris.org.sections
 	ln -sf $(PWD)/data/packagemanager.desktop /usr/share/applications/packagemanager.desktop
 	ln -sf $(PWD)/data/addmoresoftware.desktop /usr/share/applications/addmoresoftware.desktop
+	ln -sf $(PWD)/data/packagemanager.schemas /etc/gconf/schemas/packagemanager-preferences.schemas
 	ln -sf $(PWD)/data/icons /usr/share/icons/package-manager
 	ln -sf $(PWD)/data/icons/packagemanager.png /usr/share/icons/hicolor/48x48/apps/packagemanager.png
 	ln -sf $(PWD)/modules /usr/lib/python2.4/vendor-packages/pkg/gui
@@ -207,6 +222,9 @@ $(ROOTICONSHARE)/%: data/icons/%
 
 $(ROOTAPPICONSHARE)/%: data/%
 	rm -f $@; $(INSTALL) -f $(ROOTAPPICONSHARE) -m 0644 $<
+
+$(ROOTGCONFSHARE)/%: %
+	rm -f $@; install -f $(ROOTGCONFSHARE) -m 0644 $<
 
 $(ROOTDESKTOPSHARE)/%: data/%
 	rm -f $@; $(INSTALL) -f $(ROOTDESKTOPSHARE) -m 0644 $<

@@ -14,7 +14,9 @@
 # Specific build products
 ^src/*.tar.gz$
 ^src/CherryPy-.*$
+^src/gui/data/packagemanager-preferences.schemas$
 ^src/gui/data/packagemanager.desktop$
+^src/gui/data/packagemanager.png$
 ^src/gui/data/addmoresoftware.desktop$
 ^src/gui/help/.*/package-manager.xml$
 ^src/Mako-.*$
@@ -31,6 +33,7 @@
 ^src/pyOpenSSL-.*$
 ^src/um/data/updatemanager-preferences.schemas$
 ^src/um/data/updatemanager.desktop$
+^src/um/data/updatemanager.png$
 ^src/um/data/updatemanagernotifier.desktop$
 ^src/util/distro-import/.*/entire.incorporation$
 ^src/util/distro-import/SUNWfixes/

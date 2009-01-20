@@ -40,6 +40,8 @@ PACKAGE_PROGRESS_PERCENT_TOTAL = 1.0      # Total progress for loading phase
 MAX_DESC_LEN = 60                         # Max length of the description
 MAX_INFO_CACHE_LIMIT = 100                # Max number of package descriptions to cache
 TYPE_AHEAD_DELAY = 600    # The last type in search box after which search is performed
+INITIAL_TOPLEVEL_PREFERENCES = "/apps/packagemanager/preferences/initial_toplevel"
+INITIAL_CATEGORY_PREFERENCES = "/apps/packagemanager/preferences/initial_category"
 
 CLIENT_API_VERSION = 4
 PKG_CLIENT_NAME = "packagemanager"
@@ -59,6 +61,7 @@ try:
         import gobject
         import gnome
         gobject.threads_init()
+        import gconf
         import gtk
         import gtk.glade
         import pygtk
@@ -86,6 +89,9 @@ __builtin__._ = gettext.gettext
 class PackageManager:
         def __init__(self):
                 self.api_o = None
+                self.client = gconf.client_get_default()
+                self.initial_toplevel = self.client.get_int(INITIAL_TOPLEVEL_PREFERENCES)
+                self.initial_category = self.client.get_int(INITIAL_CATEGORY_PREFERENCES)
                 socket.setdefaulttimeout(
                     int(os.environ.get("PKG_CLIENT_TIMEOUT", "30"))) # in seconds
 
@@ -444,9 +450,9 @@ class PackageManager:
                 self.application_list_filter = application_list_filter
 
                 self.w_sections_combobox.set_model(self.section_list)
-                self.w_sections_combobox.set_active(0)
+                self.w_sections_combobox.set_active(self.initial_category)
                 self.w_filter_combobox.set_model(self.filter_list)
-                self.w_filter_combobox.set_active(0)
+                self.w_filter_combobox.set_active(self.initial_toplevel)
                 self.w_repository_combobox.set_model(repositories_list)
                 self.w_categories_treeview.set_model(category_list_filter)
                 self.w_application_treeview.set_model(application_list_sort)
@@ -459,6 +465,7 @@ class PackageManager:
                 self.package_selection.set_mode(gtk.SELECTION_SINGLE)
                 self.package_selection.connect("changed", \
                     self.__on_package_selection_changed, None)
+                self.__set_categories_visibility(self.initial_category)
                 self.first_run = False
                 
         def __disconnect_models(self):
@@ -495,6 +502,14 @@ class PackageManager:
                 self.section_list.append([7, _('Drivers'), ])
                 self.section_list.append([8, _('System'), ])
                 self.section_list.append([9, _('Web Services'), ])
+                if self.initial_category >= 0 and \
+                    self.initial_category < len(self.section_list):
+                        row = self.section_list[self.initial_category]
+                        if row[enumerations.SECTION_ID] != self.initial_category:
+                                self.initial_category = 0
+                else:
+                        self.initial_category = 0
+
 
         def __init_show_filter(self):
                 self.filter_list.append([0, _('All Packages'), ])
@@ -506,6 +521,14 @@ class PackageManager:
                 # self.filter_list.append([_('Locked Packages'), ])
                 # self.filter_list.append(["", ])
                 self.filter_list.append([6, _('Selected Packages'), ])
+                if self.initial_toplevel >= 0 and \
+                    self.initial_toplevel < len(self.filter_list):
+                        row = self.filter_list[self.initial_toplevel]
+                        if row[enumerations.SECTION_ID] != self.initial_toplevel:
+                                self.initial_toplevel = 0
+                else:
+                        self.initial_toplevel = 0
+
 
         def __on_cancel_progressdialog_clicked(self, widget):
                 self.progress_canceled = True
@@ -719,11 +742,7 @@ class PackageManager:
                         gobject.idle_add(self.__enable_disable_install_update)
                         gobject.idle_add(self.__enable_disable_remove)
 
-        def __on_sectionscombobox_changed(self, widget):
-                '''On section combobox changed'''
-                if self.in_setup:
-                        return
-                selected_section = widget.get_active()
+        def __set_categories_visibility(self, selected_section):
                 if selected_section == 0:
                         for category in self.category_list:
                                 category[enumerations.CATEGORY_VISIBLE] = True
@@ -747,6 +766,11 @@ class PackageManager:
                                                                 category[enumerations. \
                                                                     CATEGORY_VISIBLE] = \
                                                                     False
+        def __on_sectionscombobox_changed(self, widget):
+                '''On section combobox changed'''
+                if self.in_setup:
+                        return
+                self.__set_categories_visibility(widget.get_active())
                 self.set_busy_cursor()
                 self.category_list_filter.refilter()
                 gobject.idle_add(self.__application_refilter)
