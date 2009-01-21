@@ -19,11 +19,12 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
 import sys
+import os
 from threading import Thread
 
 try:
@@ -38,6 +39,7 @@ except ImportError:
 
 import pkg.client.api_errors as api_errors
 import pkg.misc as misc
+import pkg.gui.enumerations as enumerations
 
 ERROR_FORMAT = "<span color = \"red\">%s</span>"
 
@@ -48,8 +50,15 @@ class Repository:
 
                 self.repository_list = \
                     gtk.ListStore(
-                        gobject.TYPE_STRING,      # Name
-                        gobject.TYPE_BOOLEAN,     # Preferred
+                        gobject.TYPE_STRING,      # enumerations.AUTHORITY_NAME
+                        gobject.TYPE_BOOLEAN,     # enumerations.AUTHORITY_PREFERRED
+                        gobject.TYPE_STRING,      # enumerations.AUTHORITY_URL
+                        gobject.TYPE_STRING,      # enumerations.AUTHORITY_SSL_KEY
+                        gobject.TYPE_STRING,      # enumerations.AUTHORITY_SSL_CERT
+                        gobject.TYPE_PYOBJECT,    # enumerations.AUTHORITY_MIRRORS
+                        )
+                self.mirror_list = \
+                    gtk.ListStore(
                         gobject.TYPE_STRING,      # URL
                         )
                 self.progress_stop_thread = False
@@ -58,6 +67,8 @@ class Repository:
                 w_tree_repository = gtk.glade.XML(parent.gladefile, "repository")
                 w_tree_repositorymodify = \
                         gtk.glade.XML(parent.gladefile, "repositorymodif")
+                w_tree_sslkeyandcert_dialog = \
+                        gtk.glade.XML(parent.gladefile, "sslkeyandcertdialog")
                 w_tree_progress = gtk.glade.XML(parent.gladefile, "progressdialog")
                 self.w_progress_dialog = w_tree_progress.get_widget("progressdialog")
                 self.w_progressinfo_label = w_tree_progress.get_widget("progressinfo")
@@ -76,39 +87,87 @@ class Repository:
                         w_tree_repository.get_widget("repositorymodify")
                 self.w_repository_remove_button = \
                         w_tree_repository.get_widget("repositoryremove")
-                self.list_filter = self.repository_list.filter_new()
+                self.repository_list_filter = self.repository_list.filter_new()
+                self.repository_list_filter = self.repository_list.filter_new()
                 self.w_repository_error_label = \
                         w_tree_repository.get_widget("error_label")
                 self.w_repository_add_button.set_sensitive(False)
                 self.w_repository_modify_button.set_sensitive(True)
                 self.w_repository_remove_button.set_sensitive(False)
 
-                self.w_repositorymodify_dialog = \
-                        w_tree_repositorymodify.get_widget("repositorymodif")
                 self.w_repositorymodify_name = \
-                        w_tree_repositorymodify.get_widget("repositorymodifyname")
+                self.w_repositorymodify_dialog = \
+                    w_tree_repositorymodify.get_widget("repositorymodif")
+                self.w_repositorymodify_name = \
+                    w_tree_repositorymodify.get_widget("repositorymodifyname")
                 self.w_repositorymodify_url = \
-                        w_tree_repositorymodify.get_widget("repositorymodifyurl")
+                    w_tree_repositorymodify.get_widget("repositorymodifyurl")
+                self.w_repositorymodify_keybrowse_button = \
+                    w_tree_repositorymodify.get_widget("modkeybrowse")
+                self.w_repositorymodify_certbrowse_button = \
+                    w_tree_repositorymodify.get_widget("modcertbrowse")
+                self.w_repositorymodify_key_entry = \
+                    w_tree_repositorymodify.get_widget("modkeyentry")
+                self.w_repositorymodify_cert_entry = \
+                    w_tree_repositorymodify.get_widget("modcertentry")
                 self.w_repositorymodify_ok_button = \
-                        w_tree_repositorymodify.get_widget("repositorymodifyok")
+                    w_tree_repositorymodify.get_widget("repositorymodifyok")
                 self.w_repositorymodify_cancel_button = \
-                        w_tree_repositorymodify.get_widget("repositorymodifycancel")
+                    w_tree_repositorymodify.get_widget("repositorymodifycancel")
+                self.w_mirror_treeview = \
+                    w_tree_repositorymodify.get_widget("mirrortreeview")
+                self.mirror_list_filter = self.mirror_list.filter_new()
+                self.w_mirror_add_entry = \
+                    w_tree_repositorymodify.get_widget("addmirror_entry")
+                self.w_mirror_add_button = \
+                    w_tree_repositorymodify.get_widget("addmirror_button")
+                self.w_mirror_remove_button = \
+                    w_tree_repositorymodify.get_widget("mirrorremove")
 
                 #Modify name of the repository is disabled, see #4990
                 self.w_repositorymodify_name.set_sensitive(False)
 
                 self.w_repository_url.connect('focus-in-event', self.on_focus_in_url)
                 self.w_repository_name.connect('focus-in-event', self.on_focus_in_name)
+                self.w_repository_treeview.connect('focus-in-event', 
+                    self.on_focus_in_repository_treeview)
+                self.w_repository_treeview.connect_after('move-cursor', 
+                    self.__on_repositorytreeview_move_cursor)
                 self.w_repository_add_button.connect('focus-in-event', self.on_focus_in)
+                self.w_repository_close_button.connect('focus-in-event', self.on_focus_in)
+                self.w_repository_add_button.connect('focus-in-event', self.on_focus_in)
+                self.w_repositorymodify_dialog.connect('delete-event', 
+                    self.__on_repositorymodify_delete_event)
+
+                self.w_sslkeyandcert_dialog = \
+                    w_tree_sslkeyandcert_dialog.get_widget("sslkeyandcertdialog")
+                self.w_sslkeyandcert_keybrowse_button = \
+                    w_tree_sslkeyandcert_dialog.get_widget("keybrowse")
+                self.w_sslkeyandcert_certbrowse_button = \
+                    w_tree_sslkeyandcert_dialog.get_widget("certbrowse")
+                self.w_sslkeyandcert_key_entry = \
+                    w_tree_sslkeyandcert_dialog.get_widget("keyentry")
+                self.w_sslkeyandcert_cert_entry = \
+                    w_tree_sslkeyandcert_dialog.get_widget("certentry")
+                self.w_sslkeyandcert_ok_button = \
+                    w_tree_sslkeyandcert_dialog.get_widget("keyandcertok")
+                self.w_sslkeyandcert_cancel_button = \
+                    w_tree_sslkeyandcert_dialog.get_widget("keyandcertcancel")
+                self.w_sslkeyandcert_dialog.connect('delete-event', 
+                    self.w_sslkeyandcert_dialog.hide_on_delete)
 
                 progress_button.hide()
                 self.w_progressbar.set_pulse_step(0.1)
 
                 self.__init_tree_views()
                 self.w_progress_dialog.set_transient_for(self.w_repository_dialog)
+                self.w_sslkeyandcert_dialog.set_transient_for(self.w_repository_dialog)
+                self.w_repositorymodify_dialog.set_transient_for(self.w_repository_dialog)
                 self.old_modify_name = None
                 self.old_modify_url = None
                 self.old_modify_preferred = False
+                self.old_modify_ssl_key = None
+                self.old_modify_ssl_cert = None
                 self.is_name_valid = False
                 self.is_url_valid = False
                 self.name_error = None
@@ -129,8 +188,6 @@ class Repository:
                                     self.__on_repositoryurl_changed,
                                 "on_repositoryname_changed": \
                                     self.__on_repositoryname_changed,
-                                "on_repositorytreeview_move_cursor": \
-                                    self.__on_repositorytreeview_move_cursor,
                                 "on_repositorytreeview_button_release_event": \
                                     self.__on_repositorytreeview_button_release_event,
                             }
@@ -140,9 +197,39 @@ class Repository:
                                     self.__on_repositorymodifycancel_clicked,
                                 "on_repositorymodifyok_clicked": \
                                     self.__on_repositorymodifyok_clicked,
+                                "on_sslkeybrowse_clicked": \
+                                    self.__on_modify_keybrowse_clicked,
+                                "on_sslcertbrowse_clicked": \
+                                    self.__on_modify_certbrowse_clicked,
+                                "on_mirrorremove_clicked": \
+                                    self.__on_mirror_remove_clicked,
+                                "on_addmirror_button_clicked": \
+                                    self.__on_mirroradd_button_clicked,
+                                "on_addmirror_entry_changed": \
+                                    self.__on_mirrorentry_changed,
+                                "on_modkeyentry_changed": \
+                                    self.__on_mod_key_or_cert_entry_changed,
+                                "on_modcertentry_changed": \
+                                    self.__on_mod_key_or_cert_entry_changed,
+                            }            
+                        dic_ssl = \
+                            {
+                                "on_keyentry_changed": \
+                                    self.__on_key_or_cert_entry_changed,
+                                "on_certentry_changed": \
+                                    self.__on_key_or_cert_entry_changed,
+                                "on_sslkeyandcertcancel_clicked": \
+                                    self.__on_sslkeyandcertcancel_clicked,
+                                "on_sslkeyandcertok_clicked": \
+                                    self.__on_sslkeyandcertok_clicked,
+                                "on_keybrowse_clicked": \
+                                    self.__on_keybrowse_clicked,
+                                "on_certbrowse_clicked": \
+                                    self.__on_certbrowse_clicked,
                             }            
                         w_tree_repository.signal_autoconnect(dic)
                         w_tree_repositorymodify.signal_autoconnect(dic_conf)
+                        w_tree_sslkeyandcert_dialog.signal_autoconnect(dic_ssl)
                 except AttributeError, error:
                         print _("GUI will not respond to any event! %s. "
                             "Check repository.py signals") \
@@ -154,15 +241,21 @@ class Repository:
 
         def on_focus_in(self, widget, event):
                 self.w_repository_modify_button.set_sensitive(False)
-                self.w_repository_remove_button.set_sensitive(False)                
+                self.w_repository_remove_button.set_sensitive(False)
+
         def on_focus_in_name(self, widget, event):
                 self.__validate_name(widget)
                 self.w_repository_modify_button.set_sensitive(False)
-                self.w_repository_remove_button.set_sensitive(False)                
+                self.w_repository_remove_button.set_sensitive(False)
+
         def on_focus_in_url(self, widget, event):
                 self.__validate_url(widget)
                 self.w_repository_modify_button.set_sensitive(False)
-                self.w_repository_remove_button.set_sensitive(False)                
+                self.w_repository_remove_button.set_sensitive(False)
+
+        def on_focus_in_repository_treeview(self, widget, event):
+                self.__on_repositorytreeview_selection_changed(widget)
+
         def __init_tree_views(self):
                 name_renderer = gtk.CellRendererText()
                 column = gtk.TreeViewColumn(_("Repository Name"),
@@ -177,6 +270,11 @@ class Repository:
                 column.set_expand(False)
                 radio_renderer.connect('toggled', self.__preferred_default)
                 self.w_repository_treeview.append_column(column)
+                name_renderer = gtk.CellRendererText()
+                column = gtk.TreeViewColumn("",
+                    name_renderer,  text = 0) # 0 = Mirror
+                column.set_expand(True)
+                self.w_mirror_treeview.append_column(column)
 
         def __prepare_repository_list(self, clear_add_entries=True, selected_auth=None,
             stop_thread=True):
@@ -209,12 +307,12 @@ class Repository:
                                 if name == selected_auth:
                                         select_auth = j
                         self.repository_list.insert(j, 
-                            [name, is_preferred, l[1]])
+                            [name, is_preferred, l[1], l[2], l[3], l[5]])
                         j += 1
                 if j > 0:
                         self.w_repository_modify_button.set_sensitive(False)
                         self.w_repository_remove_button.set_sensitive(False)
-                self.w_repository_treeview.set_model(self.list_filter)
+                self.w_repository_treeview.set_model(self.repository_list_filter)
                 if select_auth == -1:
                         select_auth = self.initial_default
                 self.w_repository_treeview.set_cursor(select_auth,
@@ -357,19 +455,21 @@ class Repository:
                         self.__on_repositorytreeview_selection_changed(widget)
 
         def __on_repositorytreeview_move_cursor(self, widget, step, count):
-                # I am not sure why this needs to be done in an idle
-                # function but if it is not the selection has not been
-                # updated
-                gobject.idle_add(self.__on_repositorytreeview_selection_changed, widget)
+                self.__on_repositorytreeview_selection_changed(widget)
 
         def __on_repositoryadd_clicked(self, widget):
                 name = self.w_repository_name.get_text()
                 url = self.w_repository_url.get_text()
+                if url.startswith("https"):
+                        self.w_sslkeyandcert_dialog.show_all()
+                else:
+                        self.__do_add_repository(name, url)
+
+        def __do_add_repository(self, name, url, ssl_key=None, ssl_cert=None):
                 p_title = _("Applying changes")
                 p_text = _("Applying changes, please wait ...")
-                self.__run_with_prog_in_thread(self.__add_repository, p_title, p_text,
-                    name, url)
-                return
+                self.__run_with_prog_in_thread(self.__add_repository, p_title,
+                    p_text, name, url, ssl_key, ssl_cert)
 
         def __run_with_prog_in_thread(self, func, p_title, p_text, *f_args):
                 self.w_progress_dialog.set_title(p_title)
@@ -392,16 +492,34 @@ class Repository:
                 itr = selection[1]
                 if itr != None:
                         model = selection[0]
-                        self.old_modify_name = model.get_value(itr, 0)
-                        self.old_modify_url = model.get_value(itr, 2)
-                        self.old_modify_preferred = model.get_value(itr, 1)
+                        self.old_modify_name = model.get_value(itr, 
+                            enumerations.AUTHORITY_NAME)
+                        self.old_modify_url = model.get_value(itr,
+                            enumerations.AUTHORITY_URL)
+                        self.old_modify_ssl_key = model.get_value(itr,
+                            enumerations.AUTHORITY_SSL_KEY)
+                        self.old_modify_ssl_cert = model.get_value(itr,
+                            enumerations.AUTHORITY_SSL_CERT)
+                        self.old_modify_preferred = model.get_value(itr,
+                            enumerations.AUTHORITY_PREFERRED)
+                        self.mirror_list.clear()
+                        mirrors = model.get_value(itr,
+                            enumerations.AUTHORITY_MIRRORS)
+                        self.__setup_mirrors(mirrors)
                         self.w_repositorymodify_name.set_text(self.old_modify_name)
                         self.w_repositorymodify_url.set_text(self.old_modify_url)
+                        if self.old_modify_ssl_key != None:
+                                self.w_repositorymodify_key_entry.set_text(
+                                    self.old_modify_ssl_key)
+                        if self.old_modify_ssl_cert != None:
+                                self.w_repositorymodify_cert_entry.set_text(
+                                    self.old_modify_ssl_cert)
+                        self.w_mirror_add_button.set_sensitive(False)
                         self.w_repositorymodify_dialog.show_all()
 
         def __on_repositoryclose_clicked(self, widget):
-                # if the number is grater then 1 it means that we did something to the
-                # repository list and it is safer to reload package info
+                # if the number is greater then 1 it means that we did something
+                # to the repository list and it is safer to reload package info
                 if self.number_of_changes > 1:
                         self.parent.reload_packages()
                 self.w_repository_dialog.hide()
@@ -411,19 +529,31 @@ class Repository:
                 self.w_repositorymodify_dialog.hide()
                 name =  self.w_repositorymodify_name.get_text()
                 url =  self.w_repositorymodify_url.get_text()
+                ssl_key =  self.w_repositorymodify_key_entry.get_text()
+                if ssl_key == "":
+                        ssl_key = None
+                ssl_cert =  self.w_repositorymodify_cert_entry.get_text()
+                if ssl_cert == "":
+                        ssl_cert = None
                 p_title = _("Applying changes")
                 p_text = _("Applying changes, please wait ...")
                 self.__run_with_prog_in_thread(self.__update_repository, p_title,
-                    p_text, name, url)
+                    p_text, name, url, ssl_key, ssl_cert)
 
-        def __update_repository(self, name, url):
+        def __update_repository(self, name, url, ssl_key, ssl_cert):
                 url_same = True
                 name_same = True
+                ssl_key_same = True
+                ssl_cert_same = True
                 if name != self.old_modify_name:
                         name_same = False
                 if url != self.old_modify_url:
                         url_same = False
-                if url_same and name_same:
+                if ssl_key != self.old_modify_ssl_key:
+                        ssl_key_same = False
+                if ssl_cert != self.old_modify_ssl_cert:
+                        ssl_cert_same = False
+                if url_same and name_same and ssl_key_same and ssl_cert_same:
                         self.progress_stop_thread = True
                         return
                 #we don't enable changing the name of the repository
@@ -433,9 +563,11 @@ class Repository:
                         omn = self.old_modify_name
                         if not self.__is_name_valid(name):
                                 self.progress_stop_thread = True
-                                err = _("Failed to modify %s."
-                                    "\nThe choosen repository name %s is "
-                                    "already in use") % (omn, name)
+                                err = _("Failed to modify %(old_name)s."
+                                    "\nThe chosen repository name %(new_name)s is "
+                                    "already in use") % \
+                                    {'old_name': omn,
+                                     'new_name': name}
                                 gobject.idle_add(self.__error_occured, err)
                                 self.progress_stop_thread = True
                                 return
@@ -456,7 +588,7 @@ class Repository:
                                         self.__error_with_reset_repo_selection(err)
                                         return
                 try:
-                        self.__add_repository(name, url, False)
+                        self.__add_repository(name, url, ssl_key, ssl_cert, silent=False)
                         if self.old_modify_preferred:
                                 self.img.set_preferred_authority(name)
                                 self.__prepare_repository_list(False)
@@ -482,7 +614,7 @@ class Repository:
                         try:
                                 somn = self.old_modify_name
                                 self.__add_repository(somn,
-                                    self.old_modify_url, False, stop_thread=False)
+                                    self.old_modify_url, silent=False, stop_thread=False)
                                 if somn != name:
                                         self.__delete_repository(name, False)
                                 err = _("Failed to modify %s.") % somn + \
@@ -507,6 +639,9 @@ class Repository:
                 return
 
 
+        def __on_repositorymodify_delete_event(self, widget, event):
+                self.__on_repositorymodifycancel_clicked(widget)
+
         def __on_repositorymodifycancel_clicked(self, widget):
                 self.w_repository_treeview.grab_focus()
                 self.w_repositorymodify_dialog.hide()
@@ -520,7 +655,8 @@ class Repository:
                         name = model.get_value(itr, 0)
                         self.__delete_repository(name)
 
-        def __add_repository(self, auth, origin_url, silent=True, stop_thread=True):
+        def __add_repository(self, auth, origin_url, ssl_key=None, 
+            ssl_cert=None, silent=True, stop_thread=True):
 
                 if not misc.valid_auth_url(origin_url):
                         err = _("Invalid URL:\n%s" % origin_url)
@@ -529,8 +665,6 @@ class Repository:
                         self.progress_stop_thread = True
                         return
                 try:
-                        ssl_key = None
-                        ssl_cert = None
                         refresh_catalogs = True
                         self.img.set_authority(auth, origin_url=origin_url,
                             ssl_key=ssl_key, ssl_cert=ssl_cert,
@@ -580,6 +714,230 @@ class Repository:
                             _("\nPlease check your permissions.")
                         self.__error_with_reset_repo_selection(err,
                             gtk.MESSAGE_INFO)
+
+        def __setup_mirrors(self, mirrors):
+                self.mirror_list.clear()
+                j = 0
+                for m in mirrors:
+                        self.mirror_list.insert(j, [m])
+                        j += 1
+                if self.w_mirror_treeview.get_model() == None:
+                        self.w_mirror_treeview.set_model(self.mirror_list_filter)
+                if j > 0:
+                        self.w_mirror_treeview.set_cursor(0, None, 
+                            start_editing = False)
+                        self.w_mirror_remove_button.set_sensitive(True)
+                else:
+                        self.w_mirror_remove_button.set_sensitive(False)
+
+        def __add_mirror(self):
+                name = self.w_repositorymodify_name.get_text()
+                mirror = self.w_mirror_add_entry.get_text()
+                try:
+                        self.img.add_mirror(name, mirror)
+                        self.w_mirror_add_entry.set_text("")
+                        tsel = self.w_repository_treeview.get_selection()
+                        selection = tsel.get_selected()
+                        itr = selection[1]
+                        if itr != None:
+                                model = selection[0]
+                                mirrors = model.get_value(itr,
+                                    enumerations.AUTHORITY_MIRRORS)
+                                gobject.idle_add(self.__setup_mirrors, mirrors)
+                        self.progress_stop_thread = True
+                except RuntimeError, ex:
+                        err = (_("Failed to add mirror %(mirror)s for "
+                            "repository %(repository)s.") % \
+                            {'mirror': mirror,
+                             'repository': name})
+                        err += str(ex)
+                        gobject.idle_add(self.__error_occured, err,
+                            gtk.MESSAGE_ERROR)
+                        self.progress_stop_thread = True
+                        return
+                except api_errors.PermissionsException:
+                        err = (_("Failed to add mirror %(mirror)s for "
+                            "repository %(repository)s.") % \
+                            {'mirror': mirror,
+                             'repository': name}) + \
+                            _("\nPlease check your permissions.")
+                        gobject.idle_add(self.__error_occured, err,
+                            gtk.MESSAGE_INFO)
+                        self.progress_stop_thread = True
+
+        def __delete_mirror(self, name, mirror):
+                try:
+                        self.img.del_mirror(name, mirror)
+                        tsel = self.w_repository_treeview.get_selection()
+                        selection = tsel.get_selected()
+                        itr = selection[1]
+                        if itr != None:
+                                model = selection[0]
+                                mirrors = model.get_value(itr,
+                                    enumerations.AUTHORITY_MIRRORS)
+                                gobject.idle_add(self.__setup_mirrors, mirrors)
+                        self.progress_stop_thread = True
+                except RuntimeError, ex:
+                        err = (_("Failed to delete mirror %(mirror)s for "
+                            "repository %(repository)s.") % \
+                            {'mirror': mirror,
+                             'repository': name})
+                        err += str(ex)
+                        gobject.idle_add(self.__error_occured, err,
+                            gtk.MESSAGE_ERROR)
+                        self.progress_stop_thread = True
+                        return
+                except api_errors.PermissionsException:
+                        err = (_("Failed to delete mirror %(mirror)s for "
+                            "repository %(repository)s.") % \
+                            {'mirror': mirror,
+                             'repository': name}) + \
+                            _("\nPlease check your permissions.")
+                        gobject.idle_add(self.__error_occured, err,
+                            gtk.MESSAGE_INFO)
+                        self.progress_stop_thread = True
+
+        def __delete_selected_mirror(self):
+                tsel = self.w_mirror_treeview.get_selection()
+                selection = tsel.get_selected()
+                itr = selection[1]
+                if itr != None:
+                        model = selection[0]
+                        mirror = model.get_value(itr, 0)
+                        name = self.w_repositorymodify_name.get_text()
+                        self.__delete_mirror(name, mirror)
+                else:
+                        self.progress_stop_thread = True
+
+        def __on_mirror_remove_clicked(self, widget):
+                p_title = _("Applying changes")
+                p_text = _("Applying changes, please wait ...")
+                self.__run_with_prog_in_thread(self.__delete_selected_mirror, p_title,
+                    p_text)
+
+        def __on_mirrorentry_changed(self, widget):
+                url = widget.get_text()
+                if self.__is_url_valid(url):
+                        self.w_mirror_add_button.set_sensitive(True)
+                else:
+                        self.w_mirror_add_button.set_sensitive(False)
+
+        def __on_mirroradd_button_clicked(self, widget):
+                p_title = _("Applying changes")
+                p_text = _("Applying changes, please wait ...")
+                self.__run_with_prog_in_thread(self.__add_mirror, p_title,
+                    p_text)
+
+        def __on_mod_key_or_cert_entry_changed(self, widget):
+                key = self.w_repositorymodify_key_entry.get_text()
+                cert = self.w_repositorymodify_cert_entry.get_text()
+                self.__key_or_cert_validation(key, cert, 
+                    self.w_repositorymodify_ok_button)
+
+        @staticmethod
+        def __key_or_cert_validation(key, cert, button):
+                if key == "":
+                        if cert == "":
+                                button.set_sensitive(True)
+                        else:
+                                button.set_sensitive(False)
+                else:
+                        if os.path.isfile(key):
+                                if cert == "":
+                                        button.set_sensitive(False)
+                                elif os.path.isfile(cert):
+                                        button.set_sensitive(True)
+                                else:
+                                        button.set_sensitive(False)
+                        else:
+                                button.set_sensitive(False)
+
+        def __on_key_or_cert_entry_changed(self, widget):
+                key = self.w_sslkeyandcert_key_entry.get_text()
+                cert = self.w_sslkeyandcert_cert_entry.get_text()
+                self.__key_or_cert_validation(key, cert, 
+                    self.w_sslkeyandcert_ok_button)
+
+        def __on_sslkeyandcertcancel_clicked(self, widget):
+                self.w_sslkeyandcert_dialog.hide()
+
+        def __on_sslkeyandcertok_clicked(self, widget):
+                self.w_sslkeyandcert_dialog.hide()
+                name = self.w_repository_name.get_text()
+                url = self.w_repository_url.get_text()
+                key = self.w_sslkeyandcert_key_entry.get_text()
+                cert = self.w_sslkeyandcert_cert_entry.get_text()
+                self.__do_add_repository(name, url, key, cert)
+
+        def __on_keybrowse_clicked(self, widget):
+                chooser =  gtk.FileChooserDialog(
+                    title=_("Specify SSL Key File"),
+                    parent = self.w_repository_dialog,
+                    action=gtk.FILE_CHOOSER_ACTION_OPEN,
+                    buttons=(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
+                    gtk.STOCK_OPEN, gtk.RESPONSE_OK))
+                chooser.set_default_response(gtk.RESPONSE_OK)
+                chooser.set_transient_for(self.w_sslkeyandcert_dialog)
+                response = chooser.run()
+                if response == gtk.RESPONSE_OK:
+                        key = chooser.get_filename()
+                        self.w_sslkeyandcert_key_entry.set_text(key)
+                        cert = key.replace("key", "certificate")
+                        if key != cert and \
+                            self.w_sslkeyandcert_cert_entry.get_text() == "":
+                                if os.path.isfile(cert):
+                                        self.w_sslkeyandcert_cert_entry.set_text(cert)
+                chooser.destroy()
+
+        def __on_certbrowse_clicked(self, widget):
+                chooser =  gtk.FileChooserDialog(
+                    title=_("Specify SSL Certificate File"),
+                    parent = self.w_repository_dialog,
+                    action=gtk.FILE_CHOOSER_ACTION_OPEN,
+                    buttons=(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
+                    gtk.STOCK_OPEN, gtk.RESPONSE_OK))
+                chooser.set_default_response(gtk.RESPONSE_OK)
+                chooser.set_transient_for(self.w_sslkeyandcert_dialog)
+                response = chooser.run()
+                if response == gtk.RESPONSE_OK:
+                        self.w_sslkeyandcert_cert_entry.set_text(
+                            chooser.get_filename())
+                chooser.destroy()
+
+        def __on_modify_keybrowse_clicked(self, widget):
+                chooser =  gtk.FileChooserDialog(
+                    title=_("Specify SSL Key File"),
+                    parent = self.w_repository_dialog,
+                    action=gtk.FILE_CHOOSER_ACTION_OPEN,
+                    buttons=(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
+                    gtk.STOCK_OPEN, gtk.RESPONSE_OK))
+                chooser.set_default_response(gtk.RESPONSE_OK)
+                chooser.set_transient_for(self.w_repositorymodify_dialog)
+                response = chooser.run()
+                if response == gtk.RESPONSE_OK:
+                        key = chooser.get_filename()
+                        self.w_repositorymodify_key_entry.set_text(key)
+                        cert = key.replace("key", "certificate")
+                        if key != cert and \
+                            self.w_repositorymodify_cert_entry.get_text() == "":
+                                if os.path.isfile(cert):
+                                        self.w_repositorymodify_cert_entry.set_text(cert)
+                chooser.destroy()
+
+        def __on_modify_certbrowse_clicked(self, widget):
+                chooser =  gtk.FileChooserDialog(
+                    title=_("Specify SSL Certificate File"),
+                    parent = self.w_repository_dialog,
+                    action=gtk.FILE_CHOOSER_ACTION_OPEN,
+                    buttons=(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
+                    gtk.STOCK_OPEN, gtk.RESPONSE_OK))
+                chooser.set_default_response(gtk.RESPONSE_OK)
+                chooser.set_transient_for(self.w_repositorymodify_dialog)
+                reponse = chooser.run()
+                if reponse == gtk.RESPONSE_OK:
+                        self.w_repositorymodify_cert_entry.set_text(
+                            chooser.get_filename())
+                chooser.destroy()
 
         def __error_with_reset_repo_selection(self, error_msg,
             msg_type=gtk.MESSAGE_ERROR):
