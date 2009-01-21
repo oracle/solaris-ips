@@ -1527,6 +1527,7 @@ class PackageManager:
                 icon_path = self.application_dir + \
                     "/usr/share/package-manager/data/pixmaps/"
                 pkg_count = 0
+                pkg_add = 0
                 progress_percent = INITIAL_PROGRESS_TOTAL_PERCENTAGE
                 total_pkg_count = len(pkgs_known)
                 progress_increment = \
@@ -1534,13 +1535,29 @@ class PackageManager:
                 self.progress_stop_timer_thread = True
                 while gtk.events_pending():
                         gtk.main_iteration(False)
+                prev_stem = ""
                 prev_pfmri_str = ""
+                next_app = None
+                pkg_name = None
                 prev_state = None
                 for pkg, state in pkgs_known:
                         if prev_pfmri_str and \
                             prev_pfmri_str == pkg.get_short_fmri() and \
                             prev_state == state:
+                                pkg_count += 1
                                 continue
+                        if prev_stem and \
+                            prev_stem == pkg.get_pkg_stem() and \
+                            prev_state["state"] == "known" and \
+                            state["state"] == "installed":
+                                pass
+                        elif next_app != None:
+                                self.__add_package_to_list(next_app, 
+                                    application_list,
+                                    pkg_add, pkg_name,
+                                    categories, category_list)
+                                pkg_add += 1
+                        prev_stem = pkg.get_pkg_stem()
                         prev_pfmri_str = pkg.get_short_fmri()
                         prev_state = state
 
@@ -1564,24 +1581,16 @@ class PackageManager:
                                         pkg_state = enumerations.UPDATABLE
                                 else:
                                         status_icon = installed_icon
-                        app = \
+                        next_app = \
                             [
                                 False, status_icon, package_icon, pkg_name,
                                 '...', pkg_state, pkg, pkg_stem, None, True, None
                             ]
-                        row_iter = application_list.insert(pkg_count, app)
                         pkg_count += 1
-                        apc = self.__add_package_to_category
-                        app_ls = application_list
-                        for cat in categories:
-                                if cat in categories:
-                                        if pkg_name in categories[cat]:
-                                                pkg_categories = categories[cat][pkg_name]
-                                                for pcat in pkg_categories.split(","):
-                                                        if pcat:
-                                                                apc(_(pcat), None,
-                                                                    None, row_iter,
-                                                                    app_ls, category_list)
+
+                self.__add_package_to_list(next_app, application_list, pkg_add, 
+                    pkg_name, categories, category_list)
+                pkg_add += 1
                 for authority in sections:
                         for section in sections[authority]:
                                 for category in sections[authority][section].split(","):
@@ -1601,6 +1610,21 @@ class PackageManager:
                 gobject.idle_add(self.process_package_list_end, api_o,
                     application_list, category_list, repositories_list)
                 return
+
+        def __add_package_to_list(self, app, application_list, pkg_add, 
+            pkg_name, categories, category_list):
+                row_iter = application_list.insert(pkg_add, app)
+                apc = self.__add_package_to_category
+                app_ls = application_list
+                for cat in categories:
+                        if cat in categories:
+                                if pkg_name in categories[cat]:
+                                        pkg_categories = categories[cat][pkg_name]
+                                        for pcat in pkg_categories.split(","):
+                                                if pcat:
+                                                        apc(_(pcat), None,
+                                                            None, row_iter,
+                                                            app_ls, category_list)
 
         @staticmethod
         def __add_package_to_category(category_name, category_description,
