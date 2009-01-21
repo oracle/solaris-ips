@@ -323,6 +323,7 @@ class PackageManager:
                 return gtk.ListStore(
                         gobject.TYPE_INT,         # enumerations.SECTION_ID
                         gobject.TYPE_STRING,      # enumerations.SECTION_NAME
+                        gobject.TYPE_STRING,      # enumerations.SECTION_SUBCATEGORY
                         )
 
         @staticmethod                    
@@ -361,15 +362,8 @@ class PackageManager:
                 column.set_sort_indicator(True)
                 column.set_cell_data_func(toggle_renderer, self.cell_data_function, None)
                 self.w_application_treeview.append_column(column)
-                column = gtk.TreeViewColumn()
-                column.set_title("")
-                #Commented, since there was funny jumping of the icons
-                #column.set_sizing(gtk.TREE_VIEW_COLUMN_AUTOSIZE)
-                render_pixbuf = gtk.CellRendererPixbuf()
-                column.pack_start(render_pixbuf, expand = False)
-                column.add_attribute(render_pixbuf, "pixbuf", enumerations.ICON_COLUMN)
-                column.set_fixed_width(32)
-                column.set_cell_data_func(render_pixbuf, self.cell_data_function, None)
+                column = self.__create_icon_column("", False,
+                    enumerations.ICON_COLUMN, True)
                 self.w_application_treeview.append_column(column)
                 name_renderer = gtk.CellRendererText()
                 column = gtk.TreeViewColumn(_("Name"), name_renderer,
@@ -379,18 +373,9 @@ class PackageManager:
                 column.set_sort_indicator(True)
                 column.set_cell_data_func(name_renderer, self.cell_data_function, None)
                 self.w_application_treeview.append_column(column)
-                column = gtk.TreeViewColumn()
-                column.set_title(_("Status"))
-                #Commented, since there was funny jumping of the icons
-                #column.set_sizing(gtk.TREE_VIEW_COLUMN_AUTOSIZE)
-                render_pixbuf = gtk.CellRendererPixbuf()
-                column.pack_start(render_pixbuf, expand = True)
-                column.add_attribute(render_pixbuf, "pixbuf",
-                    enumerations.STATUS_ICON_COLUMN)
-                column.set_fixed_width(32)
-                column.set_sort_column_id(enumerations.STATUS_ICON_COLUMN)
+                column = self.__create_icon_column(_("Status"), True, 
+                    enumerations.STATUS_ICON_COLUMN, True)
                 column.set_sort_indicator(True)
-                column.set_cell_data_func(render_pixbuf, self.cell_data_function, None)
                 self.w_application_treeview.append_column(column)
                 description_renderer = gtk.CellRendererText()
                 column = gtk.TreeViewColumn(_('Description'), 
@@ -408,6 +393,9 @@ class PackageManager:
                 #enumerations.CATEGORY_NAME
                 category_list_filter = category_list.filter_new()
                 enumerations.CATEGORY_NAME_renderer = gtk.CellRendererText()
+                column =  self.__create_icon_column("", False,
+                    enumerations.CATEGORY_ICON, False)
+                self.w_categories_treeview.append_column(column)
                 column = gtk.TreeViewColumn(_('Name'),
                     enumerations.CATEGORY_NAME_renderer,
                     text = enumerations.CATEGORY_NAME)
@@ -466,6 +454,20 @@ class PackageManager:
                     self.__on_package_selection_changed, None)
                 self.__set_categories_visibility(self.initial_category)
                 self.first_run = False
+
+        def __create_icon_column(self, name, expand_pixbuf, enum_value, set_data_func):
+                column = gtk.TreeViewColumn()
+                column.set_title(name)
+                #Commented, since there was funny jumping of the icons
+                #column.set_sizing(gtk.TREE_VIEW_COLUMN_AUTOSIZE)
+                render_pixbuf = gtk.CellRendererPixbuf()
+                column.pack_start(render_pixbuf, expand = expand_pixbuf)
+                column.add_attribute(render_pixbuf, "pixbuf", enum_value)
+                column.set_fixed_width(32)
+                if set_data_func:
+                        column.set_cell_data_func(render_pixbuf,
+                            self.cell_data_function, None)
+                return column
                 
         def __disconnect_models(self):
                 self.w_application_treeview.set_model(None)
@@ -491,16 +493,17 @@ class PackageManager:
         def __init_sections(self):
                 '''This function is for initializing sections combo box, also adds "All"
                 Category. It sets active section combobox entry "All"'''
-                self.section_list.append([0, _('All Categories'), ])
-                self.section_list.append([-1, "", ])
-                self.section_list.append([2, _('Meta Packages'), ])
-                self.section_list.append([3, _('Applications'), ])
-                self.section_list.append([4, _('Desktop (GNOME)'), ])
-                self.section_list.append([5, _('Development'), ])
-                self.section_list.append([6, _('Distributions'), ])
-                self.section_list.append([7, _('Drivers'), ])
-                self.section_list.append([8, _('System'), ])
-                self.section_list.append([9, _('Web Services'), ])
+                cat_path = None
+                self.section_list.append([0, _('All Categories'), cat_path ])
+                self.section_list.append([-1, "", cat_path ])
+                self.section_list.append([2, _('Meta Packages'), cat_path ])
+                self.section_list.append([3, _('Applications'), cat_path ])
+                self.section_list.append([4, _('Desktop (GNOME)'), cat_path ])
+                self.section_list.append([5, _('Development'), cat_path ])
+                self.section_list.append([6, _('Distributions'), cat_path ])
+                self.section_list.append([7, _('Drivers'), cat_path ])
+                self.section_list.append([8, _('System'), cat_path ])
+                self.section_list.append([9, _('Web Services'), cat_path ])
                 if self.initial_category >= 0 and \
                     self.initial_category < len(self.section_list):
                         row = self.section_list[self.initial_category]
@@ -710,6 +713,13 @@ class PackageManager:
 
         def __on_category_selection_changed(self, selection, widget):
                 '''This function is for handling category selection changes'''
+                model, itr = selection.get_selected()
+                if itr:
+                        cat_path = model.get_string_from_iter(itr)
+                        selected_section = self.w_sections_combobox.get_active()
+                        section_row = self.section_list[selected_section]
+                        section_row[enumerations.SECTION_SUBCATEGORY] = cat_path
+
                 self.set_busy_cursor()
                 gobject.idle_add(self.__application_refilter)
                 if self.selected == 0:
@@ -765,6 +775,15 @@ class PackageManager:
                                                                 category[enumerations. \
                                                                     CATEGORY_VISIBLE] = \
                                                                     False
+
+                section_row = self.section_list[selected_section]
+                cat_path = section_row[enumerations.SECTION_SUBCATEGORY]
+                if cat_path != None:
+                        itr = self.category_list_filter.get_iter_from_string(cat_path)
+                        path = self.category_list_filter.get_path(itr)
+                        self.w_categories_treeview.set_cursor(path,
+                            None, start_editing=False)
+
         def __on_sectionscombobox_changed(self, widget):
                 '''On section combobox changed'''
                 if self.in_setup:
@@ -1504,6 +1523,8 @@ class PackageManager:
                 #Only one instance of those icons should be in memory
                 update_available_icon = self.get_icon_pixbuf("status_newupdate")
                 installed_icon = self.get_icon_pixbuf("status_installed")
+                update_for_category_icon = \
+                    self.get_icon_pixbuf_from_glade_dir("legend_newupdate")
                 #Imageinfo for categories
                 imginfo = imageinfo.ImageInfo()
                 sectioninfo = imageinfo.ImageInfo()
@@ -1540,6 +1561,7 @@ class PackageManager:
                 next_app = None
                 pkg_name = None
                 prev_state = None
+                category_icon = None
                 for pkg, state in pkgs_known:
                         if prev_pfmri_str and \
                             prev_pfmri_str == pkg.get_short_fmri() and \
@@ -1555,6 +1577,7 @@ class PackageManager:
                                 self.__add_package_to_list(next_app, 
                                     application_list,
                                     pkg_add, pkg_name,
+                                    category_icon,
                                     categories, category_list)
                                 pkg_add += 1
                         prev_stem = pkg.get_pkg_stem()
@@ -1570,6 +1593,7 @@ class PackageManager:
                                         gtk.main_iteration(False)
 
                         status_icon = None
+                        category_icon = None
                         pkg_name = pkg.get_name()
                         pkg_stem = pkg.get_pkg_stem()
                         package_icon = self.__get_pixbuf_from_path(icon_path, pkg_name) 
@@ -1578,6 +1602,7 @@ class PackageManager:
                                 pkg_state = enumerations.INSTALLED
                                 if state["upgradable"] == True:
                                         status_icon = update_available_icon
+                                        category_icon = update_for_category_icon
                                         pkg_state = enumerations.UPDATABLE
                                 else:
                                         status_icon = installed_icon
@@ -1589,7 +1614,7 @@ class PackageManager:
                         pkg_count += 1
 
                 self.__add_package_to_list(next_app, application_list, pkg_add, 
-                    pkg_name, categories, category_list)
+                    pkg_name, category_icon, categories, category_list)
                 pkg_add += 1
                 for authority in sections:
                         for section in sections[authority]:
@@ -1612,7 +1637,7 @@ class PackageManager:
                 return
 
         def __add_package_to_list(self, app, application_list, pkg_add, 
-            pkg_name, categories, category_list):
+            pkg_name, category_icon, categories, category_list):
                 row_iter = application_list.insert(pkg_add, app)
                 apc = self.__add_package_to_category
                 app_ls = application_list
@@ -1623,7 +1648,8 @@ class PackageManager:
                                         for pcat in pkg_categories.split(","):
                                                 if pcat:
                                                         apc(_(pcat), None,
-                                                            None, row_iter,
+                                                            category_icon,
+                                                            row_iter,
                                                             app_ls, category_list)
 
         @staticmethod
@@ -1641,10 +1667,15 @@ class PackageManager:
                 for category in category_list:
                         if category[enumerations.CATEGORY_NAME] == category_name:
                                 category_ref = category.iter
+                                break
                 if not category_ref:                       # Category not exists
                         category_ref = category_list.append([len( \
                             category_list)+1, category_name, category_description, \
                             category_icon, True, None])
+                elif category_icon != None and category_list != None:
+                        cat_row = category_list[category_ref]
+                        if cat_row[enumerations.CATEGORY_ICON] == None:
+                                cat_row[enumerations.CATEGORY_ICON] = category_icon
                 if category_ref:
                         if application_list.get_value(package,
                             enumerations.CATEGORY_LIST_COLUMN):
@@ -1913,10 +1944,13 @@ class PackageManager:
                     args = ()).start()
 
         def get_icon_pixbuf(self, icon_name):
-                #2821: The get_icon_pixbuf should use PACKAGE_MANAGER_ROOT
-                return self.__get_pixbuf_from_path(self.application_dir + \
+                return self.__get_pixbuf_from_path(self.application_dir +
                     "/usr/share/icons/package-manager/", icon_name)
                 
+        def get_icon_pixbuf_from_glade_dir(self, icon_name):
+                return self.__get_pixbuf_from_path(self.application_dir +
+                    "/usr/share/package-manager/", icon_name)
+
         def get_manifests_for_packages(self):
                 ''' Function, which get's manifest for packages. If the manifest is not
                 locally tries to retrieve it. For installed packages gets manifest

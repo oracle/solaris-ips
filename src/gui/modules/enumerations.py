@@ -63,7 +63,8 @@ SECTION_LIST_OBJECT,     #List with the sections to which category belongs
 (
 SECTION_ID,
 SECTION_NAME,
-) = range(2)
+SECTION_SUBCATEGORY,
+) = range(3)
 
 #Filter
 (
