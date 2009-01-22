@@ -54,6 +54,7 @@ import locale
 import urlparse
 import socket
 import gettext
+import signal
 from threading import Thread
 from urllib2 import HTTPError, URLError
 
@@ -88,6 +89,7 @@ __builtin__._ = gettext.gettext
 
 class PackageManager:
         def __init__(self):
+                signal.signal(signal.SIGINT, self.__main_application_quit)
                 self.api_o = None
                 self.client = gconf.client_get_default()
                 self.initial_toplevel = self.client.get_int(INITIAL_TOPLEVEL_PREFERENCES)
