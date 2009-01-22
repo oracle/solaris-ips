@@ -3,6 +3,6 @@ classification "Desktop (GNOME)/Libraries"
 import SUNWgnome-base-libs
 import SUNWgnome-base-libs-devel
 import SUNWgnome-base-libs-root
-drop etc/amd64/gtk-2.0/gtk.immodules
+drop etc/$(ARCH64)/gtk-2.0/gtk.immodules
 drop etc/gtk-2.0/gtk.immodules
 end package

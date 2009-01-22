@@ -1,0 +1,12 @@
+package SUNWifb
+classification "Drivers/Display"
+import SUNWifb.u
+import SUNWifbr
+add driver name=ifb perms="* 0666 root sys" \
+	alias=pci1091,108 \
+	alias=SUNW,Expert3D \
+	alias=pci1091,140 \
+	alias=SUNW,Expert3D-Lite \
+	alias=SUNW,XV-500 \
+	alias=SUNW,XVR-500
+end package

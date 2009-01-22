@@ -1,0 +1,6 @@
+package SUNWcpr
+classification "System/Hardware"
+$(i386_ONLY)import SUNWcpr.i
+$(sparc_ONLY)import SUNWcpr.u
+$(i386_ONLY)add driver name=srn
+end package

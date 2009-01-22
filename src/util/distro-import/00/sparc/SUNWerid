@@ -1,3 +1,4 @@
 package SUNWerid
+classification "Drivers/Networking"
 import SUNWerid
 end package

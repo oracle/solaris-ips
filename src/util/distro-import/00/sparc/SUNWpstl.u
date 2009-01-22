@@ -1,7 +1,0 @@
-package SUNWpstl.u
-import SUNWpstl.u
-# BEGIN NON-REDISTRIBUTABLE
-drop usr/platform/SUNW,Netra-T12
-drop usr/platform/SUNW,Netra-T12/lib
-# END NON-REDISTRIBUTABLE
-end package

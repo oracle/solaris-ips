@@ -1,4 +1,6 @@
 package SUNWqfed
+classification "Drivers/Networking"
 import SUNWqfed
-add driver name=qfe alias=SUNW,qfe
+add driver name=qfe alias=SUNW,qfe \
+	policy="read_priv_set=net_rawaccess write_priv_set=net_rawaccess"
 end package

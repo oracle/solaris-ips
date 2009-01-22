@@ -1,3 +1,4 @@
 package SUNWcg6h
+classification "Drivers/Display"
 import SUNWcg6h
 end package

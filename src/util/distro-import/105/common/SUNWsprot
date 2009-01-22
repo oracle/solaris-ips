@@ -1,0 +1,8 @@
+package SUNWsprot
+classification "System/Core"
+import SUNWsprot
+# BEGIN NON-REDISTRIBUTABLE
+$(sparc_ONLY)drop usr/bin/as
+$(sparc_ONLY)drop usr/ccs/bin/as
+# END NON-REDISTRIBUTABLE
+end package

@@ -1,0 +1,12 @@
+package SUNWhea
+classification "System/Core"
+import SUNWhea
+# BEGIN NON-REDISTRIBUTABLE
+$(sparc_ONLY)drop usr/include/sys/scsi/adapters/ispcmd.h
+$(sparc_ONLY)drop usr/include/sys/scsi/adapters/ispmail.h
+$(sparc_ONLY)drop usr/include/sys/scsi/adapters/ispreg.h
+$(sparc_ONLY)drop usr/include/sys/scsi/adapters/ispvar.h
+$(sparc_ONLY)drop usr/platform/SUNW,Netra-T12
+$(sparc_ONLY)drop usr/platform/SUNW,Netra-T12/include
+# END NON-REDISTRIBUTABLE
+end package

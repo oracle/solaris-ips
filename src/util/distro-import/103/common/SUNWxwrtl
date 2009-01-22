@@ -9,9 +9,11 @@ drop usr/lib/libXIE.so.6
 drop usr/lib/libXaw.so.4
 drop usr/lib/libxkbfile.so
 drop usr/lib/libxkbfile.so.4
-# OpenLook
-$(sparc_ONLY)drop usr/lib/libXol.so
 # Motif
+$(sparc_ONLY)drop usr/lib/$(ARCH64)/libMrm.so
+$(sparc_ONLY)drop usr/lib/$(ARCH64)/libMrm.so.4
+$(sparc_ONLY)drop usr/lib/$(ARCH64)/libUil.so
+$(sparc_ONLY)drop usr/lib/$(ARCH64)/libUil.so.3
 drop usr/lib/$(ARCH64)/libXm.so
 drop usr/lib/$(ARCH64)/libXm.so.4
 drop usr/lib/libMrm.so

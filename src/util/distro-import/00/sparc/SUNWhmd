@@ -1,3 +1,4 @@
 package SUNWhmd
+classification "Drivers/Networking"
 import SUNWhmd
 end package

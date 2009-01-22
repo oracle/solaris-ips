@@ -50,7 +50,6 @@ f none usr/lib/vp-shares 0555 root bin
 f none usr/lib/xen/bin/ipagent 0755 root bin
 f none usr/share/applications/services.desktop 0644 root bin
 f none usr/share/applications/shares.desktop 0644 root bin
-f none usr/share/man/man.cf 0644 root bin
 f none var/svc/manifest/application/graphical-login/gdm.xml 444 root sys
 f none var/svc/manifest/system/coreadm.xml 444 root sys
 f none var/svc/manifest/system/ipagent.xml 444 root sys

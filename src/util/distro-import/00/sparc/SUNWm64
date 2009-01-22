@@ -1,0 +1,8 @@
+package SUNWm64
+classification "Drivers/Display"
+import SUNWm64.u
+add driver name=m64 perms="* 0666 root sys" \
+	alias=SUNW,m64B \
+	alias=ATI,Graphics-Xpression \
+	alias=ATI,Video-Xpression
+end package

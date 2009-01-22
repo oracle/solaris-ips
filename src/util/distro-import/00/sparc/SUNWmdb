@@ -1,9 +1,0 @@
-package SUNWmdb
-classification "Development/System"
-import SUNWmdb
-import SUNWmdbr
-# BEGIN NON-REDISTRIBUTABLE
-drop kernel/kmdb/sparcv9/isp
-drop usr/lib/mdb/kvm/sparcv9/isp.so
-# END NON-REDISTRIBUTABLE
-end package

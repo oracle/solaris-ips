@@ -101,12 +101,12 @@ classification "System/Localizations"
 description "Language Support cluster - German"
 version 0.1
 depend SUNWddhcm
-depend SUNWddu-l10n
+$(i386_ONLY)depend SUNWddu-l10n
 depend SUNWdeos
 depend SUNWdesktop-other-l10n-de
 depend SUNWdexwsvr
 depend SUNWfirefoxl10n-de-DE
-depend SUNWgetting-started-l10n-de
+$(i386_ONLY)depend SUNWgetting-started-l10n-de
 depend SUNWgnome-img-editor-help-de
 depend SUNWgnome-l10ndocument-de
 depend SUNWgnome-l10nmessages-de
@@ -152,14 +152,14 @@ cluster lang-support-spanish
 classification "System/Localizations"
 description "Language Support cluster - Spanish"
 version 0.1
-depend SUNWddu-l10n
+$(i386_ONLY)depend SUNWddu-l10n
 depend SUNWdesktop-other-l10n-es
 depend SUNWedhcm
 depend SUNWesos
 depend SUNWesxwsvr
 depend SUNWfirefoxl10n-es-ES
 depend SUNWfirefoxl10n-extra
-depend SUNWgetting-started-l10n-es
+$(i386_ONLY)depend SUNWgetting-started-l10n-es
 depend SUNWgnome-img-editor-help-es
 depend SUNWgnome-l10ndocument-es
 depend SUNWgnome-l10nmessages-es
@@ -205,13 +205,13 @@ cluster lang-support-french
 classification "System/Localizations"
 description "Language Support cluster - French"
 version 0.1
-depend SUNWddu-l10n
+$(i386_ONLY)depend SUNWddu-l10n
 depend SUNWdesktop-other-l10n-fr
 depend SUNWfdhcm
 depend SUNWfirefoxl10n-fr-FR
 depend SUNWfros
 depend SUNWfrxwsvr
-depend SUNWgetting-started-l10n-fr
+$(i386_ONLY)depend SUNWgetting-started-l10n-fr
 depend SUNWgnome-img-editor-help-fr
 depend SUNWgnome-l10ndocument-fr
 depend SUNWgnome-l10nmessages-fr
@@ -305,10 +305,10 @@ cluster lang-support-italian
 classification "System/Localizations"
 description "Language Support cluster - Italian"
 version 0.1
-depend SUNWddu-l10n
+$(i386_ONLY)depend SUNWddu-l10n
 depend SUNWdesktop-other-l10n-it
 depend SUNWfirefoxl10n-it-IT
-depend SUNWgetting-started-l10n-it
+$(i386_ONLY)depend SUNWgetting-started-l10n-it
 depend SUNWgnome-img-editor-help-it
 depend SUNWgnome-l10ndocument-it
 depend SUNWgnome-l10nmessages-it
@@ -328,10 +328,10 @@ cluster lang-support-japanese
 classification "System/Localizations"
 description "Language Support cluster - Japanese"
 version 0.1
-depend SUNWddu-l10n
+$(i386_ONLY)depend SUNWddu-l10n
 depend SUNWdesktop-other-l10n-ja
 depend SUNWfirefoxl10n-ja-JP
-depend SUNWgetting-started-l10n-ja
+$(i386_ONLY)depend SUNWgetting-started-l10n-ja
 depend SUNWgnome-l10ndocument-ja
 depend SUNWgnome-l10nmessages-ja
 depend SUNWiconv-extra
@@ -367,10 +367,10 @@ cluster lang-support-korean
 classification "System/Localizations"
 description "Language Support cluster - Korean"
 version 0.1
-depend SUNWddu-l10n
+$(i386_ONLY)depend SUNWddu-l10n
 depend SUNWdesktop-other-l10n-ko
 depend SUNWfirefoxl10n-ko-KR
-depend SUNWgetting-started-l10n-ko
+$(i386_ONLY)depend SUNWgetting-started-l10n-ko
 depend SUNWgnome-img-editor-help-ko
 depend SUNWgnome-l10ndocument-ko
 depend SUNWgnome-l10nmessages-ko
@@ -536,10 +536,10 @@ cluster lang-support-portuguese-BR
 classification "System/Localizations"
 description "Language Support cluster - Portugese (Brazil)"
 version 0.1
-depend SUNWddu-l10n
+$(i386_ONLY)depend SUNWddu-l10n
 depend SUNWdesktop-other-l10n-ptBR
 depend SUNWfirefoxl10n-pt-BR
-depend SUNWgetting-started-l10n-ptBR
+$(i386_ONLY)depend SUNWgetting-started-l10n-ptBR
 depend SUNWgnome-l10ndocument-ptBR
 depend SUNWgnome-l10nmessages-ptBR
 depend SUNWlang-ptBR
@@ -570,10 +570,10 @@ cluster lang-support-russian
 classification "System/Localizations"
 description "Language Support cluster - Russian"
 version 0.1
-depend SUNWddu-l10n
+$(i386_ONLY)depend SUNWddu-l10n
 depend SUNWdesktop-other-l10n-ru
 depend SUNWfirefoxl10n-ru-RU
-depend SUNWgetting-started-l10n-ru
+$(i386_ONLY)depend SUNWgetting-started-l10n-ru
 depend SUNWgnome-img-editor-help-ru
 depend SUNWgnome-l10nmessages-ru
 depend SUNWlang-ru
@@ -661,7 +661,7 @@ description "Language Support cluster - Swedish"
 version 0.1
 depend SUNWdesktop-other-l10n-sv
 depend SUNWfirefoxl10n-sv-SE
-depend SUNWgetting-started-l10n-sv
+$(i386_ONLY)depend SUNWgetting-started-l10n-sv
 depend SUNWgnome-img-editor-help-sv
 depend SUNWgnome-l10ndocument-sv
 depend SUNWgnome-l10nmessages-sv
@@ -734,10 +734,10 @@ version 0.1
 depend SUNWcdhcm
 depend SUNWcos
 depend SUNWcxwsvr
-depend SUNWddu-l10n
+$(i386_ONLY)depend SUNWddu-l10n
 depend SUNWdesktop-other-l10n-zhCN
 depend SUNWfirefoxl10n-zh-CN
-depend SUNWgetting-started-l10n-zhCN
+$(i386_ONLY)depend SUNWgetting-started-l10n-zhCN
 depend SUNWgnome-img-editor-help-zhCN
 depend SUNWgnome-l10ndocument-zhCN
 depend SUNWgnome-l10nmessages-zhCN
@@ -760,10 +760,10 @@ cluster lang-support-chinese-HK
 classification "System/Localizations"
 description "Language Support cluster - Chinese (Traditional; Hong Kong)"
 version 0.1
-depend SUNWddu-l10n
+$(i386_ONLY)depend SUNWddu-l10n
 depend SUNWdesktop-other-l10n-zhHK
 depend SUNWfirefoxl10n-zh-TW
-depend SUNWgetting-started-l10n-zhHK
+$(i386_ONLY)depend SUNWgetting-started-l10n-zhHK
 depend SUNWgnome-l10ndocument-zhHK
 depend SUNWgnome-l10nmessages-zhHK
 depend SUNWhdhcm
@@ -786,10 +786,10 @@ cluster lang-support-chinese-TW
 classification "System/Localizations"
 description "Language Support cluster - Chinese (Traditional; Taiwan)"
 version 0.1
-depend SUNWddu-l10n
+$(i386_ONLY)depend SUNWddu-l10n
 depend SUNWdesktop-other-l10n-zhTW
 depend SUNWfirefoxl10n-zh-TW
-depend SUNWgetting-started-l10n-zhTW
+$(i386_ONLY)depend SUNWgetting-started-l10n-zhTW
 depend SUNWgnome-l10ndocument-zhTW
 depend SUNWgnome-l10nmessages-zhTW
 depend SUNWhdhcm

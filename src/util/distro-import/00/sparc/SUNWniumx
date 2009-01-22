@@ -1,0 +1,5 @@
+package SUNWniumx
+classification "System/Core"
+import SUNWniumx.v
+add driver name=niumx perms="* 0666 root sys" alias=SUNW,niumx
+end package

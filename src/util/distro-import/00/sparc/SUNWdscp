@@ -1,0 +1,5 @@
+package SUNWdscp
+classification "System/Core"
+import SUNWdscpr.u
+import SUNWdscpu.u
+end package

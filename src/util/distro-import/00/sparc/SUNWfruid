@@ -1,3 +1,4 @@
 package SUNWfruid
+classification "System/Administration and Configuration"
 import SUNWfruid
 end package

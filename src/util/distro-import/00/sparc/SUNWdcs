@@ -1,0 +1,5 @@
+package SUNWdcs
+classification "System/Core"
+import SUNWdcsr
+import SUNWdcsu
+end package

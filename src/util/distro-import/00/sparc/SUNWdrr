@@ -1,0 +1,5 @@
+package SUNWdrr
+classification "System/Enterprise Management"
+import SUNWdrr.u
+add driver name=ngdr perms="* 0600 root sys"
+end package

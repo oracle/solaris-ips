@@ -1,3 +1,4 @@
 package SUNWssad
+classification "Drivers/Storage"
 import SUNWssad
 end package

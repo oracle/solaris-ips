@@ -1,0 +1,5 @@
+package SUNWffb
+classification "Drivers/Display"
+import SUNWffb.u
+add driver name=ffb perms="* 0666 root sys" alias=SUNW,ffb
+end package

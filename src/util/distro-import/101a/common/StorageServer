@@ -3,9 +3,9 @@ classification "Drivers/Storage"
 description "Multi Protocol Storage Server cluster"
 version 0.1
 depend SUNWaac
-depend SUNWadpu320
-depend SUNWahci
-depend SUNWamr
+$(i386_ONLY)depend SUNWadpu320
+$(i386_ONLY)depend SUNWahci
+$(i386_ONLY)depend SUNWamr
 depend SUNWatfs
 depend SUNWcfcl
 depend SUNWcfpl
@@ -26,16 +26,18 @@ depend SUNWiscsi
 depend SUNWiscsitgt
 depend SUNWisns
 depend SUNWlibsmbclient
-depend SUNWlsimega
+$(i386_ONLY)depend SUNWlsimega
+$(sparc_ONLY)depend SUNWluxd
+$(sparc_ONLY)depend SUNWluxl
 depend SUNWluxop
 depend SUNWmd
 depend SUNWmda
-depend SUNWmegasas
+$(i386_ONLY)depend SUNWmegasas
 depend SUNWmms
 depend SUNWmpapi
 depend SUNWmpathadm
 depend SUNWmpsvplr
-depend SUNWmv88sx
+$(i386_ONLY)depend SUNWmv88sx
 depend SUNWndmp
 depend SUNWnfsc
 depend SUNWnfss
@@ -52,6 +54,7 @@ depend SUNWsmbskr
 depend SUNWsmedia
 depend SUNWsmpd
 depend SUNWspsv
+$(sparc_ONLY)depend SUNWssad
 depend SUNWstmf
 depend SUNWvscan
 depend SUNWvscankr

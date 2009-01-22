@@ -1,0 +1,10 @@
+package SUNWjfb
+classification "Drivers/Display"
+import SUNWjfb.u
+import SUNWjfbr
+add driver name=jfb perms="* 0666 root sys" \
+	alias=pci3d3d,1044 \
+	alias=SUNW,XVR-1200 \
+	alias=pci3d3d,1047 \
+	alias=SUNW,XVR-600
+end package

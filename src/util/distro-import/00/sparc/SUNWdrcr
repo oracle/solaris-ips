@@ -1,0 +1,4 @@
+package SUNWdrcr
+classification "System/Enterprise Management"
+import SUNWdrcr.u
+end package

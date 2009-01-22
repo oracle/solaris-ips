@@ -1,3 +1,4 @@
 package SUNWpdu
+classification "System/Hardware"
 import SUNWpdu
 end package

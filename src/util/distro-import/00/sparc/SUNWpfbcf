@@ -1,3 +1,4 @@
 package SUNWpfbcf
+classification "Drivers/Display"
 import SUNWpfbcf
 end package

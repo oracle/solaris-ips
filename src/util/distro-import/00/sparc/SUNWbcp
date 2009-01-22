@@ -1,3 +1,4 @@
 package SUNWbcp
+classification "System/Core"
 import SUNWbcp
 end package

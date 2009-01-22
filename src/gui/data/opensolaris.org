@@ -130,6 +130,15 @@ category = Administration and Configuration
 [SUNWadpu320]
 category = Ports
 
+[SUNWafb]
+category = Display
+
+[SUNWafbcf]
+category = Display
+
+[SUNWafbw]
+category = Display
+
 [SUNWafe]
 category = Networking
 
@@ -268,6 +277,9 @@ category = Shells
 [SUNWbcc]
 category = Other Languages
 
+[SUNWbcp]
+category = Core
+
 [SUNWbeadm]
 category = Core
 
@@ -325,13 +337,7 @@ category = Libraries
 [SUNWcakr]
 category = Core
 
-[SUNWcakrx]
-category = Core
-
 [SUNWcar]
-category = Core
-
-[SUNWcarx]
 category = Core
 
 [SUNWccsm]
@@ -357,6 +363,12 @@ category = Libraries (System)
 
 [SUNWcfpl]
 category = Libraries (System)
+
+[SUNWcg6]
+category = Display
+
+[SUNWcg6h]
+category = Display
 
 [SUNWcheese]
 category = Graphics and Imaging
@@ -430,6 +442,9 @@ category = Localizations (System)
 [SUNWcstl]
 category = System
 
+[SUNWcti2]
+category = Core
+
 [SUNWctpls]
 category = Internationalization
 
@@ -441,6 +456,9 @@ category = Printing
 
 [SUNWcurl]
 category = Libraries (System)
+
+[SUNWcvc]
+category = Core
 
 [SUNWcvs]
 category = Source Code Management
@@ -465,6 +483,9 @@ category = Other Peripherals
 
 [SUNWdcraw]
 category = Media
+
+[SUNWdcs]
+category = Core
 
 [SUNWddhcm]
 category = Services
@@ -589,8 +610,17 @@ category = Distribution Tools
 [SUNWdpl]
 category = System
 
+[SUNWdrcr]
+category = Enterprise Management
+
 [SUNWdrmr]
 category = Display
+
+[SUNWdrr]
+category = Enterprise Management
+
+[SUNWdscp]
+category = Core
 
 [SUNWdsd]
 category = Services
@@ -607,8 +637,14 @@ category = Media
 [SUNWedhcm]
 category = Services
 
+[SUNWefc]
+category = Administration and Configuration
+
 [SUNWemlxs]
 category = Storage
+
+[SUNWerid]
+category = Networking
 
 [SUNWerlang]
 category = Other Languages
@@ -649,6 +685,9 @@ category = Internet
 [SUNWexpect]
 category = System Utilities
 
+[SUNWfbc]
+category = Display
+
 [SUNWfchba]
 category = Libraries (System)
 
@@ -675,6 +714,15 @@ category = Services
 
 [SUNWfetchmail]
 category = Internet
+
+[SUNWffb]
+category = Display
+
+[SUNWffbcf]
+category = Display
+
+[SUNWffbw]
+category = Display
 
 [SUNWffilters]
 category = Printing
@@ -760,8 +808,17 @@ category = Libraries (System)
 [SUNWfros]
 category = Localizations (System)
 
+[SUNWfruid]
+category = Administration and Configuration
+
+[SUNWfruip]
+category = Administration and Configuration
+
 [SUNWfrxwsvr]
 category = X11 (System)
+
+[SUNWfs]
+category = Administration and Configuration
 
 [SUNWfsexam]
 category = System Utilities
@@ -805,6 +862,9 @@ category = Libraries (System)
 [SUNWgdb]
 category = System
 
+[SUNWged]
+category = Networking
+
 [SUNWgetting-started-guide]
 category = Text Tools
 
@@ -843,6 +903,15 @@ category = Localizations (System)
 
 [SUNWgetting-started-l10n-zhTW]
 category = Localizations (System)
+
+[SUNWgfb]
+category = Display
+
+[SUNWgfbcf]
+category = Display
+
+[SUNWgfbw]
+category = Display
 
 [SUNWggrp]
 category = System Utilities
@@ -1402,6 +1471,12 @@ category = System Utilities
 [SUNWhkxwsvr]
 category = X11 (System)
 
+[SUNWhmd]
+category = Networking
+
+[SUNWhmdu]
+category = Networking
+
 [SUNWhos]
 category = Localizations (System)
 
@@ -1447,6 +1522,9 @@ category = Libraries (System)
 [SUNWidhcm]
 category = Services
 
+[SUNWidn]
+category = Administration and Configuration
+
 [SUNWidnd]
 category = Internationalization
 
@@ -1455,6 +1533,15 @@ category = Internationalization
 
 [SUNWidnu]
 category = Internationalization
+
+[SUNWifb]
+category = Display
+
+[SUNWifbcf]
+category = Display
+
+[SUNWifbw]
+category = Display
 
 [SUNWigb]
 category = Networking
@@ -1521,6 +1608,9 @@ category = Administration and Configuration
 
 [SUNWintgige]
 category = Networking
+
+[SUNWiopc]
+category = Core
 
 [SUNWipc]
 category = Core
@@ -1648,6 +1738,15 @@ category = Java
 [SUNWjdoc]
 category = Text Tools
 
+[SUNWjfb]
+category = Display
+
+[SUNWjfbcf]
+category = Display
+
+[SUNWjfbw]
+category = Display
+
 [SUNWjhrt]
 category = Documentation
 
@@ -1677,6 +1776,15 @@ category = Services
 
 [SUNWkey]
 category = Hardware
+
+[SUNWkfb]
+category = Display
+
+[SUNWkfbcf]
+category = Display
+
+[SUNWkfbw]
+category = Display
 
 [SUNWkos]
 category = Localizations (System)
@@ -1978,6 +2086,9 @@ category = Localizations (System)
 [SUNWlcms]
 category = Administration and Configuration
 
+[SUNWldom]
+category = Administration and Configuration
+
 [SUNWless]
 category = GNU
 
@@ -2149,6 +2260,12 @@ category = Storage
 [SUNWltdl]
 category = GNU
 
+[SUNWluxd]
+category = Storage
+
+[SUNWluxl]
+category = Storage
+
 [SUNWluxop]
 category = Enterprise Management
 
@@ -2166,6 +2283,15 @@ category = Internationalization
 
 [SUNWm17n-contrib]
 category = Internationalization
+
+[SUNWm64]
+category = Display
+
+[SUNWm64cf]
+category = Display
+
+[SUNWm64w]
+category = Display
 
 [SUNWman]
 category = Text Tools
@@ -2332,6 +2458,15 @@ category = Internet
 [SUNWnethack]
 category = Games
 
+[SUNWnfb]
+category = Display
+
+[SUNWnfbcf]
+category = Display
+
+[SUNWnfbw]
+category = Display
+
 [SUNWnfsc]
 category = File System
 
@@ -2349,6 +2484,9 @@ category = Networking
 
 [SUNWnis]
 category = Administration and Configuration
+
+[SUNWniumx]
+category = Core
 
 [SUNWnmap]
 category = Administration and Configuration
@@ -2455,6 +2593,9 @@ category = Networking
 [SUNWpd]
 category = Other Peripherals
 
+[SUNWpdu]
+category = Hardware
+
 [SUNWperl-authen-pam]
 category = Perl
 
@@ -2469,6 +2610,15 @@ category = Perl
 
 [SUNWperl584usr]
 category = Perl
+
+[SUNWpfb]
+category = Display
+
+[SUNWpfbcf]
+category = Display
+
+[SUNWpfbw]
+category = Display
 
 [SUNWpgadmin3]
 category = Databases (System)
@@ -2677,6 +2827,9 @@ category = Printing
 [SUNWpsm-lpd]
 category = Printing
 
+[SUNWpstl]
+category = System
+
 [SUNWpsutils]
 category = Printing
 
@@ -2719,6 +2872,9 @@ category = Python
 [SUNWpython-zope-interface]
 category = Python
 
+[SUNWqfed]
+category = Networking
+
 [SUNWqlc]
 category = Storage
 
@@ -2736,6 +2892,9 @@ category = Administration and Configuration
 
 [SUNWquilt]
 category = Source Code Management
+
+[SUNWqus]
+category = Storage
 
 [SUNWralink]
 category = Networking
@@ -2875,6 +3034,9 @@ category = Localizations (System)
 [SUNWscim-thai]
 category = Localizations (System)
 
+[SUNWsckm]
+category = Enterprise Management
+
 [SUNWscm]
 category = Enterprise Management
 
@@ -2916,6 +3078,9 @@ category = Python
 
 [SUNWsfdoc]
 category = GNU
+
+[SUNWsfdr]
+category = Enterprise Management
 
 [SUNWsfe]
 category = Networking
@@ -3025,6 +3190,9 @@ category = Application and Web Servers
 [SUNWsra]
 category = Libraries (System)
 
+[SUNWssad]
+category = Storage
+
 [SUNWssh]
 category = Security
 
@@ -3036,6 +3204,9 @@ category = Security
 
 [SUNWstardict]
 category = Accessories
+
+[SUNWstc]
+category = Core
 
 [SUNWstmf]
 category = Hardware
@@ -3328,6 +3499,9 @@ category = Networking
 [SUNWurlgrabber]
 category = Internet
 
+[SUNWus]
+category = Core
+
 [SUNWusb]
 category = Ports
 
@@ -3342,6 +3516,9 @@ category = Hardware
 
 [SUNWusbvc]
 category = Media
+
+[SUNWust]
+category = Core
 
 [SUNWvdisk]
 category = System Utilities
@@ -3384,6 +3561,9 @@ category = Hardware
 
 [SUNWw3m]
 category = Internet
+
+[SUNWwbsd]
+category = Storage
 
 [SUNWwbsup]
 category = Core
@@ -3585,6 +3765,21 @@ category = Core
 
 [SUNWzsh]
 category = Shells
+
+[SUNWzulu]
+category = Display
+
+[SUNWzuluc]
+category = Display
+
+[SUNWzuluw]
+category = Display
+
+[TSIpgx]
+category = Display
+
+[TSIpgxw]
+category = Display
 
 [amp]
 category = Application and Web Servers

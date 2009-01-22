@@ -1,0 +1,7 @@
+package TSIpgx
+classification "Drivers/Display"
+import TSIpgx.u
+add driver name=gfxp perms="* 0666 root sys" \
+	alias=TECH-SOURCE,gfxp \
+	alias=TSI,gfxp
+end package

@@ -1,3 +1,8 @@
 package SUNWnfb
+classification "Drivers/Display"
 import SUNWnfb
+add driver name=nfb perms="* 0666 root sys" \
+	alias=SUNW,RV370_A259_Single \
+	alias=pciex1002,5b64 \
+	alias=SUNW,XVR-300
 end package

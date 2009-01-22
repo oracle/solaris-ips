@@ -1,3 +1,10 @@
 package SUNWm64w
-import SUNWm64w
+classification "Drivers/Display"
+import SUNWm64w exclude \
+	usr/openwin \
+	usr/openwin/server \
+	usr/openwin/server/etc \
+	usr/openwin/server/etc/OWconfig \
+	usr/openwin/server/modules \
+	usr/openwin/server/modules/ddxSUNWm64.so.1
 end package

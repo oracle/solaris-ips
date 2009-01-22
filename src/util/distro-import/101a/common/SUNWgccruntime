@@ -1,15 +1,15 @@
 package SUNWgccruntime
 classification "Development/C"
 import SUNWgccruntime exclude \
-	usr/sfw/lib/amd64/libfrtbegin.a \
-	usr/sfw/lib/amd64/libg2c.a \
-	usr/sfw/lib/amd64/libg2c.la \
-	usr/sfw/lib/amd64/libiberty.a \
-	usr/sfw/lib/amd64/libobjc.la \
-	usr/sfw/lib/amd64/libstdc++.a \
-	usr/sfw/lib/amd64/libstdc++.la \
-	usr/sfw/lib/amd64/libsupc++.a \
-	usr/sfw/lib/amd64/libsupc++.la \
+	usr/sfw/lib/$(ARCH64)/libfrtbegin.a \
+	usr/sfw/lib/$(ARCH64)/libg2c.a \
+	usr/sfw/lib/$(ARCH64)/libg2c.la \
+	usr/sfw/lib/$(ARCH64)/libiberty.a \
+	usr/sfw/lib/$(ARCH64)/libobjc.la \
+	usr/sfw/lib/$(ARCH64)/libstdc++.a \
+	usr/sfw/lib/$(ARCH64)/libstdc++.la \
+	usr/sfw/lib/$(ARCH64)/libsupc++.a \
+	usr/sfw/lib/$(ARCH64)/libsupc++.la \
 	usr/sfw/lib/libfrtbegin.a \
 	usr/sfw/lib/libg2c.a \
 	usr/sfw/lib/libg2c.la \

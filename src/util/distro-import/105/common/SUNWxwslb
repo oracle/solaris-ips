@@ -1,0 +1,12 @@
+package SUNWxwslb
+classification "Development/X11"
+import SUNWxwslb exclude usr/openwin
+# Obsolete - replaced by /usr/openwin -> X11 symlink
+drop usr/openwin/lib
+drop usr/openwin/lib/llib-lX11.ln
+drop usr/openwin/lib/llib-lXau.ln
+drop usr/openwin/lib/llib-lXaw.ln
+drop usr/openwin/lib/llib-lXext.ln
+$(sparc_ONLY)drop usr/openwin/lib/$(ARCH64)
+$(sparc_ONLY)drop usr/openwin/lib/$(ARCH64)/llib-lXaw.ln
+end package

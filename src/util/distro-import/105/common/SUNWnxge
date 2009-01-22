@@ -1,0 +1,10 @@
+package SUNWnxge
+classification "Drivers/Networking"
+$(i386_ONLY)import SUNWnxge
+$(sparc_ONLY)import SUNWnxge.u
+$(sparc_ONLY)import SUNWnxge.v
+add driver name=nxge perms="* 0600 root sys" \
+	alias=pciex108e,abcd \
+	alias=SUNW,niusl \
+$(sparc_ONLY)	alias=SUNW,rock-pciex108e,abcd
+end package

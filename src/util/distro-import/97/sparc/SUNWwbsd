@@ -1,0 +1,5 @@
+package SUNWwbsd
+classification "Drivers/Storage"
+import SUNWwbsd
+add driver name=wbsd perms="* 0644 root root" alias=TAD,wb-sdcard
+end package

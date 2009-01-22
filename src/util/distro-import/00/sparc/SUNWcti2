@@ -1,0 +1,6 @@
+package SUNWcti2
+classification "System/Core"
+import SUNWcti2.u
+add driver name=acebus
+add driver name=scsb alias=nct-ATML,at27c64
+end package

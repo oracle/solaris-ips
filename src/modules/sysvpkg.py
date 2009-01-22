@@ -247,6 +247,15 @@ class SolarisPackage(object):
 			(key, val) = line.split('=', 1)
 			pkginfo[key] = val.strip('"')
 
+                # Expose the platform-specific package name, too.
+                platext = {
+                    "i386.i86pc": ".i",
+                    "sparc.sun4u": ".u",
+                    "sparc.sun4v": ".v",
+                }
+                pkginfo["PKG.PLAT"] = \
+                    pkginfo["PKG"] + platext.get(pkginfo["ARCH"], "")
+
 		return pkginfo
 
 	def readPkgmapFile(self):

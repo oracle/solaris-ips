@@ -1,0 +1,10 @@
+package SUNWfruip
+classification "System/Administration and Configuration"
+import SUNWfruip.u
+# BEGIN NON-REDISTRIBUTABLE
+drop usr/platform/SUNW,Netra-T12
+drop usr/platform/SUNW,Netra-T12/lib
+drop usr/platform/SUNW,Netra-T12/lib/libfruaccess.so
+drop usr/platform/SUNW,Netra-T12/lib/libfruaccess.so.1
+# END NON-REDISTRIBUTABLE
+end package

@@ -1,3 +1,4 @@
 package SUNWfbc
+classification "Drivers/Display"
 import SUNWfbc
 end package

@@ -1,0 +1,5 @@
+package SUNWj6rtx
+classification "Development/Java"
+import SUNWj6rtx
+drop usr/jdk/instances/jdk1.6.0/jre/lib/$(ARCH64)/motif21/libmawt.so
+end package

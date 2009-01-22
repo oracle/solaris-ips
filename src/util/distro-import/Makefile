@@ -24,37 +24,37 @@
 # Use is subject to license terms.
 #
 
+#set default
+ARCH=i386
+
 #
 # Needs to point to filesystem on Solaris install dvd
 # replace as needed with a local solaris install image
 #
 WOS_PKGS=/net/netinstall.sfbay/export/nv/x/$(BUILDID)/Solaris_11/Product
 NONWOS_PKGS=/net/paradise.sfbay/export/integrate_dock/nv/nv_osol0904/all \
-            /net/paradise.sfbay/export/integrate_dock/nv/nv_osol0904/i386
+            /net/paradise.sfbay/export/integrate_dock/nv/nv_osol0904/$(ARCH)
 
 TEST_PKGS=
 REPO=http://localhost:10000
 JUST_THESE_PKGS=
 
-ALL_PKGS=	../../../packages/i386	\
-		$(TEST_PKGS)		\
-		$(NONWOS_PKGS)		\
+ALL_PKGS=	../../../packages/$(ARCH)	\
+		$(TEST_PKGS)			\
+		$(NONWOS_PKGS)			\
 		$(WOS_PKGS)
 
 POUND_SIGN:sh=				echo \\043
 
-#set default
-ARCH=i386
-
 i386_DEFINES=		\
-	ARCH=i386 	\
+	ARCH=i386	\
 	ARCH32=i86	\
 	ARCH64=amd64	\
 	i386_ONLY=''	\
-	sparc_ONLY=$(POUND_SIGN)	
+	sparc_ONLY=$(POUND_SIGN)
 
 sparc_DEFINES=		\
-	ARCH=sparc 	\
+	ARCH=sparc	\
 	ARCH32=sparcv7	\
 	ARCH64=sparcv9	\
 	i386_ONLY=$(POUND_SIGN)	\
@@ -69,7 +69,7 @@ GLOBAL_CHATTRS_BASE=	\
 	reboot		\
 	smf_manifests
 
-GLOBAL_CHATTRS_86 = $(GLOBAL_CHATTRS_BASE) 
+GLOBAL_CHATTRS_86 = $(GLOBAL_CHATTRS_BASE)
 GLOBAL_CHATTRS_89 = $(GLOBAL_CHATTRS_BASE)
 GLOBAL_CHATTRS_90 = $(GLOBAL_CHATTRS_BASE)
 GLOBAL_CHATTRS_91 = $(GLOBAL_CHATTRS_BASE)
@@ -179,22 +179,15 @@ CACHED_FILES_101a = $(CACHED_FILES_101)					\
 CACHED_FILES_105 = $(CACHED_FILES_101a)
 CACHED_FILES = $(CACHED_FILES_$(BUILDID))
 
-FIXFILES=					\
-	boot/solaris/filelist.ramdisk		\
-	etc/X11/gdm/custom.conf			\
+FIX_FILES_BASE =				\
+	$(CACHED_FILES)				\
 	etc/driver_aliases			\
 	etc/name_to_major			\
 	etc/nsswitch.conf			\
 	etc/pam.conf				\
 	etc/passwd				\
 	etc/power.conf				\
-	etc/release				\
 	etc/shadow				\
-	etc/svc/global_repo.db			\
-	etc/svc/nonglobal_repo.db		\
-	etc/user_attr.cdonly			\
-	lib/libc.so.1				\
-	lib/svc/method/svc-hostid		\
 	usr/bin/ksh				\
 	usr/has/bin/sh				\
 	usr/has/bin/vi				\
@@ -202,12 +195,44 @@ FIXFILES=					\
 	usr/jdk/instances/jdk1.6.0/README.html	\
 	usr/jdk/instances/jdk1.6.0/jre/LICENSE	\
 	usr/jdk/instances/jdk1.6.0/jre/README	\
-	usr/sbin/extract_hostid			\
-	usr/share/man/man.cf			\
-	usr/share/man/missing.man		\
 	usr/share/applications/services.desktop	\
-	usr/share/applications/shares.desktop	\
-	$(CACHED_FILES)
+	usr/share/applications/shares.desktop
+
+FIX_FILES_86 =				\
+	$(FIX_FILES_BASE)		\
+	boot/solaris/filelist.ramdisk	\
+	etc/X11/gdm/custom.conf		\
+	etc/release			\
+	etc/svc/global_repo.db		\
+	etc/svc/nonglobal_repo.db	\
+	etc/user_attr.cdonly		\
+	usr/share/man/man.cf		\
+	usr/share/man/missing.man
+FIX_FILES_89 = $(FIX_FILES_86)
+FIX_FILES_90 = $(FIX_FILES_86)
+FIX_FILES_91 = $(FIX_FILES_86)
+FIX_FILES_92 = $(FIX_FILES_86)
+FIX_FILES_93 = $(FIX_FILES_86)
+FIX_FILES_94 = $(FIX_FILES_86)
+FIX_FILES_95 = $(FIX_FILES_86)
+FIX_FILES_96 = $(FIX_FILES_86)
+FIX_FILES_97 = $(FIX_FILES_BASE)	\
+	boot/solaris/filelist.ramdisk	\
+	etc/release			\
+	etc/svc/global_repo.db		\
+	etc/svc/nonglobal_repo.db	\
+	usr/share/man/man.cf		\
+	usr/share/man/missing.man
+FIX_FILES_98 = $(FIX_FILES_BASE)	\
+	usr/share/man/man.cf
+FIX_FILES_99 = $(FIX_FILES_98)
+FIX_FILES_100a = $(FIX_FILES_98)	\
+	lib/svc/method/svc-hostid	\
+	usr/sbin/extract_hostid
+FIX_FILES_101 = $(FIX_FILES_99)
+FIX_FILES_101a = $(FIX_FILES_99)
+FIX_FILES_105 = $(FIX_FILES_BASE)
+FIX_FILES = $(FIX_FILES_$(BUILDID))
 
 JDKFILES = LICENSE README.html
 JREFILES = LICENSE README
@@ -415,7 +440,7 @@ proto:	Makefile
 %/$(TMPPKGS):
 	$(MAKE) BUILDID=$(@D) $(@F)
 
-%:	$(BUILDID)/%.prototype $(BUILDID)/%.pkginfo $(FIXFILES:%=proto/%)
+%:	$(BUILDID)/%.prototype $(BUILDID)/%.pkginfo $(FIX_FILES:%=proto/%)
 	pkgmk -b ./proto -r . -f $(BUILDID)/$@.prototype -d `pwd` -o
 
 INCLUDE_PATH_75a = 75a:73:72:71:00
@@ -449,7 +474,7 @@ import:	cluster.import $(TMPPKGS)
 slim_import:	$(BUILDID)/slim_cluster $(TMPPKGS)
 	$(SOLARIS.PY) -s $(REPO) $(ALL_PKGS:%=-w %) $(ELIDED_FILES:%=-D %) \
 		$(JUST_THESE_PKGS:%=-j %) $(INCLUDE_PATH_$(BUILDID):%=-I %) \
-		$(BUILDID)/slim_cluster 
+		$(BUILDID)/slim_cluster
 
 %/slim_import:
 	if test -z "$(JUST_THESE_PKGS)"; then \
@@ -460,7 +485,7 @@ slim_import:	$(BUILDID)/slim_cluster $(TMPPKGS)
 redist_import:	$(BUILDID)/redist_cluster $(TMPPKGS)
 	$(SOLARIS.PY) -s $(REPO) $(ALL_PKGS:%=-w %) $(ELIDED_FILES:%=-D %) \
 		$(JUST_THESE_PKGS:%=-j %) $(INCLUDE_PATH_$(BUILDID):%=-I %) \
-		$(BUILDID)/redist_cluster 
+		$(BUILDID)/redist_cluster
 	$(MAKE) $(BUILDID)/entire
 
 %/redist_import:

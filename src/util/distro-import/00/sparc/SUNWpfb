@@ -1,3 +1,5 @@
 package SUNWpfb
+classification "Drivers/Display"
 import SUNWpfb
+add driver name=pfb perms="* 0666 root sys" alias=SUNW,XVR-100 alias=SUNW,XVR-50
 end package

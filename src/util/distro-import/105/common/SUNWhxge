@@ -1,0 +1,6 @@
+package SUNWhxge
+classification "Drivers/Networking"
+import SUNWhxge
+$(i386_ONLY)add driver name=hxge perms="* 0600 root sys" alias=pci108e,aaaa
+$(sparc_ONLY)add driver name=hxge perms="* 0600 root sys" alias=pciex108e,aaaa
+end package

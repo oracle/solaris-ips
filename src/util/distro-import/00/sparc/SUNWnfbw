@@ -1,3 +1,10 @@
 package SUNWnfbw
-import SUNWnfbw
+classification "Drivers/Display"
+import SUNWnfbw exclude \
+	usr/openwin \
+	usr/openwin/server \
+	usr/openwin/server/etc \
+	usr/openwin/server/etc/OWconfig \
+	usr/openwin/server/modules \
+	usr/openwin/server/modules/ddxSUNWnfb.so.1
 end package

@@ -66,9 +66,9 @@ class pkg(object):
 
                 self.imppkg = p
 
-                svr4pkgpaths[p.pkginfo["PKG"]] = pkg_path(imppkg)
+                svr4pkgpaths[p.pkginfo["PKG.PLAT"]] = pkg_path(imppkg)
 
-                imppkg = p.pkginfo["PKG"] # filename NOT always same as pkgname
+                imppkg = p.pkginfo["PKG.PLAT"] # filename NOT always same as pkgname
                 svr4pkgsseen[imppkg] = p;
 
                 if "SUNW_PKG_HOLLOW" in p.pkginfo and \
@@ -143,7 +143,7 @@ class pkg(object):
                 self.srcpkgs.append(imppkg)
 
         def import_file(self, file, line):
-                imppkgname = self.imppkg.pkginfo["PKG"]
+                imppkgname = self.imppkg.pkginfo["PKG.PLAT"]
 
                 if "SUNW_PKG_HOLLOW" in self.imppkg.pkginfo and \
                     self.imppkg.pkginfo["SUNW_PKG_HOLLOW"].lower() == "true":
@@ -681,6 +681,7 @@ def publish_pkg(pkg):
                                 for k, v in sp.pkginfo.iteritems()
                                 if k in wanted_attrs
                                 )
+                        attrs["pkg"] = sp.pkginfo["PKG.PLAT"]
 
                         action = actions.legacy.LegacyAction(None, **attrs)
 
@@ -1110,7 +1111,7 @@ def SolarisParse(mf):
                         pkgspec = lexer.get_token()
                         p = SolarisPackage(pkg_path(pkgspec))
                         curpkg.imppkg = p
-                        spkgname = p.pkginfo["PKG"]
+                        spkgname = p.pkginfo["PKG.PLAT"]
                         svr4pkgpaths[spkgname] = pkg_path(pkgspec)
                         svr4pkgsseen[spkgname] = p;
                         curpkg.add_svr4_src(spkgname)
