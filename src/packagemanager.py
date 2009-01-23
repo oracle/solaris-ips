@@ -42,6 +42,7 @@ MAX_INFO_CACHE_LIMIT = 100                # Max number of package descriptions t
 TYPE_AHEAD_DELAY = 600    # The last type in search box after which search is performed
 INITIAL_TOPLEVEL_PREFERENCES = "/apps/packagemanager/preferences/initial_toplevel"
 INITIAL_CATEGORY_PREFERENCES = "/apps/packagemanager/preferences/initial_category"
+STATUS_COLUMN_INDEX = 3   # Index of Status Column in Application TreeView
 
 CLIENT_API_VERSION = 4
 PKG_CLIENT_NAME = "packagemanager"
@@ -134,10 +135,14 @@ class PackageManager:
                 self.selected_pkgname = None
                 self.info_cache = {}
                 self.selected = 0
+                self.visible_status_id = 0
                 
                 self.section_list = self.__get_new_section_liststore()
                 self.filter_list = self.__get_new_filter_liststore()
                 self.application_list = None
+                self.a11y_application_treeview = None
+                self.application_treeview_range = None
+                self.application_treeview_initialized = False
                 self.category_list = None
                 self.repositories_list = None
 
@@ -390,6 +395,17 @@ class PackageManager:
                 self.w_application_treeview.append_column(column)
                 #Added selection listener
                 self.package_selection = self.w_application_treeview.get_selection()
+                # When vadj changes we need to set image descriptions 
+                # on visible status icons. This catches moving the scroll bars
+                # and scrolling up and down using keyboard.
+                vadj = self.w_application_treeview.get_vadjustment()
+                vadj.connect('value-changed', 
+                    self.__application_treeview_vadjustment_changed, None)
+
+                # When the size of the application_treeview changes
+                # we need to set image descriptions on visible status icons.
+                self.w_application_treeview.connect('size-allocate', 
+                    self.__application_treeview_size_allocate, None)
 
                 ##CATEGORIES TREEVIEW
                 #enumerations.CATEGORY_NAME
@@ -455,7 +471,70 @@ class PackageManager:
                 self.package_selection.connect("changed", \
                     self.__on_package_selection_changed, None)
                 self.__set_categories_visibility(self.initial_category)
+
+                self.a11y_application_treeview = \
+                    self.w_application_treeview.get_accessible()
                 self.first_run = False
+                  
+
+        def __application_treeview_size_allocate(self, widget, allocation, user_data):
+                # We ignore any changes in the size during initialization.
+                if self.application_treeview_initialized:
+                        if self.visible_status_id == 0:
+                                self.visible_status_id = gobject.idle_add(
+                                    self.__set_accessible_visible_status)
+
+        def __application_treeview_vadjustment_changed(self, widget, user_data):
+                self.__set_accessible_visible_status()
+ 
+        def __set_accessible_status(self, model, itr):
+                status = model.get_value(itr, enumerations.STATUS_COLUMN)
+                desc = None
+                if status == enumerations.INSTALLED:
+                        desc = _("Installed")
+                elif status == enumerations.NOT_INSTALLED:
+                        desc = _("Not Installed")
+                elif status == enumerations.UPDATABLE:
+                        desc = _("Updates Available")
+                if desc != None:
+                        obj = self.a11y_application_treeview.ref_at(
+                            int(model.get_string_from_iter(itr)), 
+                            STATUS_COLUMN_INDEX) 
+                        obj.set_image_description(desc)
+
+        def __set_accessible_visible_status(self):
+                self.visible_status_id = 0
+                if self.a11y_application_treeview.get_n_accessible_children() == 0:
+                    # accessibility is not enabled
+                    return
+
+                visible_range = self.w_application_treeview.get_visible_range()
+                if visible_range == None:
+                        return
+                start = visible_range[0][0]
+                end = visible_range[1][0]
+                # We try to minimize the range of accessible objects
+                # on which we set image descriptions
+                if self.application_treeview_range != None:
+                        old_start = self.application_treeview_range[0][0]
+                        old_end = self.application_treeview_range[1][0]
+                         # Old range is the same or smaller than new range
+                         # so do nothing
+                        if start >= old_start and end <= old_end:
+                                return
+                        if start < old_end:
+                                if end < old_end:
+                                        if end >= old_start:
+                                                end = old_start 
+                                else:
+                                        start = old_end
+                self.application_treeview_range = visible_range
+                model = self.application_list_filter
+                itr = model.get_iter_from_string(str(start))
+                while start <= end:
+                        start += 1
+                        self.__set_accessible_status(model, itr)
+                        itr = model.iter_next(itr)
 
         def __create_icon_column(self, name, expand_pixbuf, enum_value, set_data_func):
                 column = gtk.TreeViewColumn()
@@ -582,6 +661,11 @@ class PackageManager:
                 self.application_list_filter.refilter()
                 self.w_application_treeview.set_model(model)
                 gobject.idle_add(self.__enable_disable_selection_menus)
+                self.application_treeview_initialized = True
+                self.application_treeview_range = None
+                if self.visible_status_id == 0:
+                        self.visible_status_id = gobject.idle_add(
+                            self.__set_accessible_visible_status)
                 self.application_refilter_id = 0
                 return False
 
