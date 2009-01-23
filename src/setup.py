@@ -339,10 +339,9 @@ class install_func(_install):
                 # installation directory.
                 private_build = os.getenv("PRIVATE_BUILD", None)
 
-                # It's OK to have /'s here, python figures it out when writing files
                 if private_build is None:
                         self.install_lib = py_install_dir
-                        self.install_data = "/"
+                        self.install_data = os.path.sep
                         self.root = root_dir
                 else:
                         self.install_lib = os.path.join(root_dir, py_install_dir)
@@ -373,7 +372,8 @@ class install_func(_install):
                                 file_util.copy_file(srcname, dst_path, update = True)
                                 # make scripts executable
                                 os.chmod(dst_path,
-                                        os.stat(dst_path).st_mode | stat.S_IEXEC)
+                                    os.stat(dst_path).st_mode 
+                                    | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
 
                 install_sw(CP, CPVER, CPARC, CPDIR, CPURL, CPIDIR)
                 install_sw(PO, POVER, POARC, PODIR, POURL, POIDIR)

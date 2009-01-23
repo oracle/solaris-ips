@@ -32,6 +32,7 @@ import re
 import time
 import unittest
 import shutil
+import pkg.portable as portable
 from stat import *
 
 class TestPkgInstallBasics(testutils.SingleDepotTestCase):
@@ -1069,14 +1070,18 @@ adm:NP:6445::::::
                     add file """ + self.testdata_dir + """/ftpusers mode=0644 owner=root group=sys path=etc/ftpd/ftpusers preserve=true
                     add file """ + self.testdata_dir + """/empty mode=0644 owner=root group=sys path=etc/name_to_major preserve=true
                     add file """ + self.testdata_dir + """/empty mode=0644 owner=root group=sys path=etc/driver_aliases preserve=true
-                    add dir mode=0755 owner=root group=bin path=/lib
-                    add dir mode=0755 owner=root group=sys path=/etc
-                    add dir mode=0755 owner=root group=sys path=/etc/ftpd
-                    add dir mode=0755 owner=root group=sys path=/var
-                    add dir mode=0755 owner=root group=sys path=/var/svc
-                    add dir mode=0755 owner=root group=sys path=/var/svc/manifest
-                    add dir mode=0755 owner=root group=bin path=/usr
-                    add dir mode=0755 owner=root group=bin path=/usr/local
+                    add dir mode=0755 owner=root group=sys path=etc
+                    add dir mode=0755 owner=root group=sys path=etc/ftpd
+                    close """
+
+                self.basics1 = """
+                    open basics1@1.0,5.11-0
+                    add dir mode=0755 owner=root group=bin path=lib
+                    add dir mode=0755 owner=root group=sys path=var
+                    add dir mode=0755 owner=root group=sys path=var/svc
+                    add dir mode=0755 owner=root group=sys path=var/svc/manifest
+                    add dir mode=0755 owner=root group=bin path=usr
+                    add dir mode=0755 owner=root group=bin path=usr/local
                     close """
 
                 self.grouptest = """
@@ -1119,12 +1124,14 @@ adm:NP:6445::::::
                     open silver@1.0,5.11-0
                     add file """ + self.testdata_dir + """/empty mode=0755 owner=root group=root path=/usr/local/bin/silver
                     add depend fmri=pkg:/basics@1.0 type=require
+                    add depend fmri=pkg:/basics1@1.0 type=require
                     close """
                 self.silver20 = """
                     open silver@2.0,5.11-0
                     add file """ + self.testdata_dir + """/empty mode=0755 owner=Kermit group=Kermit path=/usr/local/bin/silver
                     add user username=Kermit group=Kermit home-dir=/export/home/Kermit group-list=lp group-list=staff
                     add depend fmri=pkg:/basics@1.0 type=require
+                    add depend fmri=pkg:/basics1@1.0 type=require
                     add depend fmri=pkg:/grouptest@1.0 type=require
                     close """
 
@@ -1177,25 +1184,29 @@ adm:NP:6445::::::
 
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.basics0)
+                self.pkgsend_bulk(durl, self.basics1)
                 self.image_create(durl)
 
                 self.pkg("list -a")
                 self.pkg("list", exit=1)
 
                 self.pkg("install basics")
+                self.pkg("install basics1")
 
                 self.pkg("list")
                 self.pkg("verify")
 
-                self.pkg("uninstall basics")
+                self.pkg("uninstall basics basics1")
                 self.pkg("verify")
 
         def test_grouptest(self):
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.basics0)
+                self.pkgsend_bulk(durl, self.basics1)
                 self.pkgsend_bulk(durl, self.grouptest)
                 self.image_create(durl)
                 self.pkg("install basics")
+                self.pkg("install basics1")
 
                 self.pkg("install grouptest")
                 self.pkg("verify")
@@ -1205,10 +1216,12 @@ adm:NP:6445::::::
         def test_usertest(self):
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.basics0)
+                self.pkgsend_bulk(durl, self.basics1)
                 self.pkgsend_bulk(durl, self.grouptest)
                 self.pkgsend_bulk(durl, self.usertest10)
                 self.image_create(durl)
                 self.pkg("install basics")
+                self.pkg("install basics1")
 
                 self.pkg("install usertest")
                 self.pkg("verify")
@@ -1262,10 +1275,13 @@ adm:NP:6445::::::
                 in IPS development)."""
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.basics0)
+                self.pkgsend_bulk(durl, self.basics1)
                 self.pkgsend_bulk(durl, self.silver10)
                 self.pkgsend_bulk(durl, self.silver20)
                 self.pkgsend_bulk(durl, self.grouptest)
                 self.image_create(durl)
+                self.pkg("install basics@1.0")
+                self.pkg("install basics1@1.0")
                 self.pkg("install silver@1.0")
                 self.pkg("list silver@1.0")
                 self.pkg("verify -v")
@@ -1316,6 +1332,10 @@ adm:NP:6445::::::
                         self.pkgsend(durl, "close -A")
 
         def test_devlink(self):
+                # driver actions are not valid except on OpenSolaris
+                if portable.util.get_canonical_os_name() != "sunos":
+                        return
+
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.devicebase)
                 self.pkgsend_bulk(durl, self.devlink10)
@@ -1443,14 +1463,19 @@ adm:NP:6445::::::
                 durl = self.dc.get_depot_url()
 
                 pkg_list = [self.foo10, self.only_attr10, self.only_depend10,
-                    self.only_directory10, self.only_driver10, self.only_file10,
+                    self.only_directory10, self.only_file10,
                     self.only_group10, self.only_hardlink10, self.only_legacy10,
                     self.only_license10, self.only_link10, self.only_user10]
+
+                # driver actions are not valid except on OpenSolaris
+                if portable.util.get_canonical_os_name() == 'sunos':
+                        pkg_list += [self.only_driver10]
                 
                 for p in pkg_list:
                         self.pkgsend_bulk(durl, p)
                 self.pkgsend_bulk(durl, self.devicebase)
                 self.pkgsend_bulk(durl, self.basics0)
+                self.pkgsend_bulk(durl, self.basics1)
 
                 self.image_create(durl)
 
@@ -1480,11 +1505,11 @@ adm:NP:6445::::::
                         pname = name_mat.group(1)
                         __manually_check_deps(pname)
                         self.pkg("install --no-refresh %s" % pname,
-                            su_wrap="noaccess", exit=1)
-                        self.pkg("install %s" % pname, su_wrap="noaccess",
+                            su_wrap=True, exit=1)
+                        self.pkg("install %s" % pname, su_wrap=True,
                             exit=1)
                         self.pkg("install --no-refresh %s" % pname)
-                        self.pkg("uninstall %s" % pname, su_wrap="noaccess",
+                        self.pkg("uninstall %s" % pname, su_wrap=True,
                             exit=1)
                         self.pkg("uninstall %s" % pname)
                         __manually_check_deps(pname, install=False)
@@ -1499,12 +1524,13 @@ adm:NP:6445::::::
                         self.pkgsend_bulk(durl, p)
                 self.pkgsend_bulk(durl, self.devicebase)
                 self.pkgsend_bulk(durl, self.basics0)
+                self.pkgsend_bulk(durl, self.basics1)
 
-                self.pkg("image-update --no-refresh", su_wrap="noaccess")
-                self.pkg("image-update", su_wrap="noaccess", exit=1)
-                self.pkg("refresh", su_wrap="noaccess", exit=1)
+                self.pkg("image-update --no-refresh", su_wrap=True)
+                self.pkg("image-update", su_wrap=True, exit=1)
+                self.pkg("refresh", su_wrap=True, exit=1)
                 self.pkg("refresh")
-                self.pkg("image-update --no-refresh", su_wrap="noaccess",
+                self.pkg("image-update --no-refresh", su_wrap=True,
                     exit=1)
                 self.pkg("image-update")
 

@@ -31,6 +31,10 @@ import shutil
 import errno
 import platform
 import tempfile
+try:
+        import pwd
+except ImportError:
+        pass
 
 # Set the path so that modules above can be found
 path_to_parent = os.path.join(os.path.dirname(__file__), "..")
@@ -158,6 +162,15 @@ def format_debug(output):
                         str += "| " + line.rstrip() + "\n"
         str += botdivider
         return str
+
+def get_su_wrap_user():
+        for u in ["noaccess", "nobody"]:
+                try:
+                        pwd.getpwnam(u)
+                        return u
+                except (KeyError, NameError):
+                        pass
+        raise RuntimeError("Unable to determine user for su.")
 
 class DepotTracebackException(pkg5unittest.Pkg5TestCase.failureException):
         def __init__(self, logfile, output):
@@ -327,18 +340,19 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
 
                 if su_wrap:
                         if su_wrap == True:
-                                su_wrap = "noaccess"
-                        su_wrap = "su %s -c '" % su_wrap
+                                su_wrap = get_su_wrap_user()
+                        su_wrap = "su %s -c 'LD_LIBRARY_PATH=%s " % \
+                            (su_wrap, os.getenv("LD_LIBRARY_PATH", ""))
                         su_end = "'"
                 else:
                         su_wrap = ""
                         su_end = ""
                 if prefix:
-                        cmdline = "%s;%s%s %s/usr/bin/pkg %s" % (prefix,
-                            su_wrap, wrapper, g_proto_area, command)
+                        cmdline = "%s;%s%s %s/usr/bin/pkg %s%s" % (prefix,
+                            su_wrap, wrapper, g_proto_area, command, su_end)
                 else:
-                        cmdline = "%s%s %s/usr/bin/pkg %s" % (su_wrap, wrapper,
-                            g_proto_area, command)
+                        cmdline = "%s%s %s/usr/bin/pkg %s%s" % (su_wrap, wrapper,
+                            g_proto_area, command, su_end)
                 self.debugcmd(cmdline)
 
                 p = subprocess.Popen(cmdline, shell = True,

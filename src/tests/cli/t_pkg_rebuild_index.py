@@ -50,7 +50,7 @@ class TestPkgRebuildIndex(testutils.SingleDepotTestCase):
 		durl = self.dc.get_depot_url()
                 self.image_create(durl)
                 self.pkg("rebuild-index")
-                self.pkg("rebuild-index", exit=1, su_wrap="noaccess")
+                self.pkg("rebuild-index", exit=1, su_wrap=True)
 
 
 if __name__ == "__main__":

@@ -1146,17 +1146,29 @@ class Image(object):
                 # populate it.  The easy test is to try to remove the directory,
                 # which will fail if it's already got entries in it, or doesn't
                 # exist.  Other errors are beyond our capability to handle.
+                statedir = os.path.join(self.imgdir, "state", "installed")
                 try:
-                        os.rmdir("%s/state/installed" % self.imgdir)
+                        os.rmdir(statedir)
                 except EnvironmentError, e:
-                        if e.errno == errno.EEXIST:
+                        if e.errno in (errno.EEXIST, errno.ENOTEMPTY):
                                 return
                         elif e.errno == errno.EACCES:
+                                # The directory may exist and be non-empty 
+                                # even though we got EACCES.  Try
+                                # to determine its emptiness another way.
+                                try:
+                                        if os.path.isdir(statedir) and \
+                                            len(os.listdir(statedir)) > 0:
+                                                return
+                                except EnvironmentError:
+                                        # ignore this error, pass on the original
+                                        # access error
+                                        pass
                                 raise api_errors.PermissionsException(e.filename)
                         elif e.errno != errno.ENOENT:
                                 raise
 
-                tmpdir = "%s/state/installed.build" % self.imgdir
+                tmpdir = os.path.join(self.imgdir, "state", "installed.build")
 
                 # Create the link forest in a temporary directory.  We should
                 # only execute this method once (if ever) in the lifetime of an
@@ -1166,32 +1178,34 @@ class Image(object):
                 try:
                         os.makedirs(tmpdir)
                 except OSError, e:
+                        if e.errno == errno.EACCES:
+                                raise api_errors.PermissionsException(e.filename)
                         if e.errno != errno.EEXIST or \
                             not os.path.isdir(tmpdir):
                                 raise
                         return
 
-                proot = "%s/pkg" % self.imgdir
+                proot = os.path.join(self.imgdir, "pkg")
 
                 for pd, vd in (
                     (p, v)
                     for p in sorted(os.listdir(proot))
-                    for v in sorted(os.listdir("%s/%s" % (proot, p)))
+                    for v in sorted(os.listdir(os.path.join(proot, p)))
                     ):
-                        path = "%s/%s/%s/installed" % (proot, pd, vd)
+                        path = os.path.join(proot, pd, vd, "installed")
                         if not os.path.exists(path):
                                 continue
 
                         fmristr = urllib.unquote("%s@%s" % (pd, vd))
                         auth = self.installed_file_authority(path)
                         f = pkg.fmri.PkgFmri(fmristr, authority = auth)
-                        fi = file("%s/%s" % (tmpdir, f.get_link_path()), "w")
+                        fi = file(os.path.join(tmpdir, f.get_link_path()), "w")
                         fi.close()
 
                 # Someone may have already created this directory.  Junk the
                 # directory we just populated if that's the case.
                 try:
-                        portable.rename(tmpdir, "%s/state/installed" % self.imgdir)
+                        portable.rename(tmpdir, statedir)
                 except EnvironmentError, e:
                         if e.errno != errno.EEXIST:
                                 raise
@@ -1562,7 +1576,7 @@ class Image(object):
                         shutil.rmtree("%s/catalog/%s" %
                             (self.imgdir, auth_name))
                 except OSError, e:
-                        if e.errno != errno.ENOENT:
+                        if e.errno not in (errno.ENOENT, errno.ESRCH):
                                 raise
 
         def fmri_is_same_pkg(self, cfmri, pfmri):

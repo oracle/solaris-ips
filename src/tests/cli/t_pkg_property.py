@@ -68,9 +68,9 @@ class TestPkgInfoBasics(testutils.SingleDepotTestCase):
                 self.image_create(durl)
 
                 self.pkg("property")
-                self.pkg("set-property require-optional True", su_wrap="noaccess", exit=1)
+                self.pkg("set-property require-optional True", su_wrap=True, exit=1)
                 self.pkg("set-property require-optional True")
-                self.pkg("unset-property require-optional", su_wrap="noaccess", exit=1)
+                self.pkg("unset-property require-optional", su_wrap=True, exit=1)
                 self.pkg("unset-property require-optional")
 
         def test_bug_4372(self):

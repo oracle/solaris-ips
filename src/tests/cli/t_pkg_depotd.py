@@ -250,6 +250,7 @@ class TestDepotController(testutils.CliTestCase):
                 self.__dc.start()
 
         def testBadArgs(self):
+                self.__dc.set_port(12000)
                 self.__dc.set_readonly()
                 self.__dc.set_rebuild()
                 self.__dc.set_norefresh_index()

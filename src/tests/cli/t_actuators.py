@@ -164,14 +164,14 @@ stop/type astring method
         empty_data = ""
 
         svcprop_data = \
-"""#!/usr/bin/sh
+"""#!/bin/sh
 cat $PKG_TEST_DIR/$PKG_SVCPROP_OUTPUT
 exit $PKG_SVCPROP_EXIT_CODE
 """
         svcadm_data = \
-"""#!/usr/bin/sh
+"""#!/bin/sh
 echo $0 "$@" >> $PKG_TEST_DIR/svcadm_arguments
-exit $(PKG_SVCADM_EXIT_CODE)
+exit $PKG_SVCADM_EXIT_CODE
 """
 
 

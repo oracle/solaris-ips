@@ -552,7 +552,7 @@ class History(object):
                 except KeyboardInterrupt:
                         raise
                 except EnvironmentError, e:
-                        if e.errno == errno.ENOENT:
+                        if e.errno in (errno.ENOENT, errno.ESRCH):
                                 # History already purged; record as successful.
                                 self.operation_result = RESULT_SUCCEEDED
                                 return

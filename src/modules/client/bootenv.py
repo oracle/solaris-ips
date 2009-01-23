@@ -61,6 +61,7 @@ class BootEnv(object):
                 self.be_name_clone = None
                 self.clone_dir = None
                 self.is_live_BE = False
+                self.is_valid = False
                 self.snapshot_name = None
                 self.root = root
                 rc = 0
@@ -130,6 +131,7 @@ class BootEnv(object):
                                 emsg(_("pkg: unable to create an auto "
                                     "snapshot. pkg recovery is disabled."))
                                 raise RuntimeError, "recoveryDisabled"
+                        self.is_valid = True
                         break
                         
                 else:
@@ -137,6 +139,12 @@ class BootEnv(object):
                         # if were are on UFS.
                         raise RuntimeError, "recoveryDisabled"
                                
+        def exists(self):
+
+                """Return true if this object represents a valid BE."""
+
+                return self.is_valid
+
         def init_image_recovery(self, img, be_name=None):
 
                 """Initialize for an image-update.
@@ -346,6 +354,9 @@ class BootEnvNull(object):
 
         def __init__(self, root):
                 pass
+
+        def exists(self):
+                return False
 
         def init_image_recovery(self, img, be_name=None):
                 pass

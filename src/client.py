@@ -362,7 +362,9 @@ def fix_image(img, args):
                 # Create a snapshot in case they want to roll back
                 try:
                         be = bootenv.BootEnv(img.get_root())
-                        msg(_("Created ZFS snapshot: %s" % be.snapshot_name))
+                        if be.exists():
+                                msg(_("Created ZFS snapshot: %s" % 
+                                    be.snapshot_name))
                 except RuntimeError:
                         pass # Error is printed by the BootEnv call.
                 success = img.repair(repairs, progresstracker)

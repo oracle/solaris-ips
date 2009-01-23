@@ -167,22 +167,22 @@ class TestPkgAuthorityBasics(testutils.SingleDepotTestCase):
                 self.image_create(durl, prefix=pfx)
 
                 self.pkg("set-authority --no-refresh -O http://%s1 test1" %
-                    self.bogus_url, su_wrap="noaccess", exit=1)
+                    self.bogus_url, su_wrap=True, exit=1)
                 self.pkg("set-authority --no-refresh -O http://%s1 foo" %
                     self.bogus_url)
                 self.pkg("authority | grep foo")
                 self.pkg("set-authority -P --no-refresh -O http://%s2 test2" %
-                    self.bogus_url, su_wrap="noaccess", exit=1)
-                self.pkg("unset-authority foo", su_wrap="noaccess", exit=1)
+                    self.bogus_url, su_wrap=True, exit=1)
+                self.pkg("unset-authority foo", su_wrap=True, exit=1)
                 self.pkg("unset-authority foo")
 
                 self.pkg("set-authority -m http://%s1 mtest" % self.bogus_url, \
-                    su_wrap="noaccess", exit=1)
+                    su_wrap=True, exit=1)
                 self.pkg("set-authority -m http://%s2 mtest" %
                     self.bogus_url)
 
                 self.pkg("set-authority -M http://%s2 mtest" %
-                    self.bogus_url, su_wrap="noaccess", exit=1)
+                    self.bogus_url, su_wrap=True, exit=1)
                 self.pkg("set-authority -M http://%s2 mtest" %
                     self.bogus_url)
 

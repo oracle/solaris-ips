@@ -28,10 +28,13 @@
 import os
 import types
 import subprocess
-import pkg.pspawn
 import pkg.portable
-from pkg.pspawn import posix_spawnp
-from pkg.pspawn import SpawnFileAction
+try:
+        import pkg.pspawn
+        from pkg.pspawn import posix_spawnp
+        from pkg.pspawn import SpawnFileAction
+except ImportError:
+        pass
 
 __all__ = ["Popen", "PIPE", "STDOUT", "call"]
 
@@ -52,7 +55,7 @@ class Popen(subprocess.Popen):
                     env, universal_newlines, startupinfo, creationflags)
 
 
-        if pkg.portable.osname == "sunos":
+        if "pkg.pspawn" in globals():
 
                 def _execute_child(self, args, executable, preexec_fn,
                     close_fds, cwd, env, universal_newlines, startupinfo,

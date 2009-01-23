@@ -57,7 +57,7 @@ class TestApiInfo(testutils.SingleDepotTestCase):
                 pkg1 = """
                     open jade@1.0,5.11-0
                     add dir mode=0755 owner=root group=bin path=/bin
-                    add set name=info.classification value="org.opensolaris.category.2008:Applications/Sound and Video
+                    add set name=info.classification value="org.opensolaris.category.2008:Applications/Sound and Video"
                     close
                 """
 

@@ -79,11 +79,10 @@ tty::7:root,adm""")
 
                 # This should work on unix systems, since we'll "bootstrap"
                 # out to the OS's version.  And AFAIK all unix systems have
-                # a "root" group.
+                # a group with gid 0.
+                grpname = portable.get_name_by_gid(0, self.tempdir, True)
                 self.assert_(0 == \
-                    portable.get_group_by_name("root", self.tempdir, True))
-                self.assert_("root" == \
-                    portable.get_name_by_gid(0, self.tempdir, True))
+                    portable.get_group_by_name(grpname, self.tempdir, True))
 
         def testGroup3(self):
                 """ Test with corrupt/oddball group file """
