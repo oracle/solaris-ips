@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 class ApiException(Exception):
@@ -218,3 +218,19 @@ class NonLeafPackageException(ApiException):
 
                 self.fmri = args[0]
                 self.dependents = args[1]
+
+class InvalidDepotResponseException(ApiException):
+        """Raised when the depot doesn't have versions of operations
+        that the client needs to operate successfully."""
+        def __init__(self, url, data):
+                self.url = url
+                self.data = data
+
+        def __str__(self):
+                s = "Unable to contact valid package server"
+                if self.url:
+                        s += ": %s" % self.url
+                if self.data:
+                        s += "\nEncountered the following error(s):\n%s" % \
+                            self.data
+                return s

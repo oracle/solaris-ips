@@ -484,6 +484,11 @@ def get_inventory_list(image, pargs, all_known, all_versions):
                 res.sort(cmp=__fmri_cmp)
         return res
 
+class CfgCacheError(Exception):
+        """Thrown when there are errors with the cfg cache."""
+        def __init__(self, args=None):
+                self.args = args
+
 class TransportException(Exception):
         """ Abstract base class for various transport exceptions """
         def __init__(self):
@@ -523,6 +528,9 @@ class TransportFailures(TransportException):
                                 s += " (happened %d times)" % x.count
                         s += "\n"
                 return s
+
+        def __len__(self):
+                return len(self.exceptions)
 
 class TransferIOException(TransportException):
         """Raised for retryable IO errors on underlying transport.
@@ -655,7 +663,6 @@ class InvalidContentException(TransportException):
                 if r != 0:
                         return r
                 return cmp(self.data, other.data)
-
 
 # Default maximum memory useage during indexing
 # This is a soft cap since memory usage is estimated.

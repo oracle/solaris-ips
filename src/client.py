@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 # pkg - package system client utility
@@ -87,7 +87,7 @@ from pkg.client.retrieve import DatastreamRetrievalError
 from pkg.client.retrieve import CatalogRetrievalError
 from pkg.client.filelist import FileListRetrievalError
 
-CLIENT_API_VERSION = 6
+CLIENT_API_VERSION = 8
 PKG_CLIENT_NAME = "pkg"
 
 def error(text):
@@ -1580,6 +1580,12 @@ def authority_set(img, args):
                 text = "Could not refresh the catalog for %s"
                 error(_(text) % auth)
                 return 1
+        except api_errors.InvalidDepotResponseException, e:
+                error(_("The URL '%s' does not appear to point to a "
+                    "valid pkg server.\nPlease check the server's "
+                    "address and client's network configuration."
+                    "\nAdditional details:\n\n%s" % (origin_url, e)))
+                return 1
         except api_errors.PermissionsException, e:
                 # Prepend a newline because otherwise the exception will
                 # be printed on the same line as the spinner.
@@ -1929,20 +1935,23 @@ def image_create(img, args):
 
         try:
                 img.set_attrs(imgtype, image_dir, is_zone, auth_name, auth_url,
-                    ssl_key=ssl_key, ssl_cert=ssl_cert)
+                    ssl_key=ssl_key, ssl_cert=ssl_cert,
+                    refresh_allowed=refresh_catalogs)
         except OSError, e:
                 error(_("cannot create image at %s: %s") % \
                     (image_dir, e.args[1]))
                 return 1
-
-        if refresh_catalogs:
-                try:
-                        img.retrieve_catalogs()
-                except api_errors.CatalogRefreshException, cre:
-                        if display_catalog_failures(cre) == 0:
-                                return 1
-                        else:
-                                return 3
+        except api_errors.InvalidDepotResponseException, e:
+                error(_("The URL '%s' does not appear to point to a "
+                    "valid pkg server.\nPlease check the server's "
+                    "address and client's network configuration."
+                    "\nAdditional details:\n\n%s" % (auth_url, e)))
+                return 1
+        except api_errors.CatalogRefreshException, cre:
+                if display_catalog_failures(cre) == 0:
+                        return 1
+                else:
+                        return 3
         return 0
 
 
@@ -2248,9 +2257,8 @@ if __name__ == "__main__":
         except misc.TransportException, __e:
                 if __img:
                         __img.history.abort(RESULT_FAILED_TRANSPORT)
-                error(_("\nMaximum (%d) network retries exceeded during "
-                    "download. Details follow:\n%s") %
-                      (global_settings.PKG_TIMEOUT_MAX, __e))
+                error(_("\nMaximum number of network retries exceeded during "
+                    "download. Details follow:\n%s") % __e)
                 __ret = 1
         except (ManifestRetrievalError,
             DatastreamRetrievalError, FileListRetrievalError), __e:
@@ -2260,6 +2268,16 @@ if __name__ == "__main__":
                     " package or file data for the requested operation."))
                 error(__e)
                 __ret = 1
+        except api_errors.InvalidDepotResponseException, __e:
+                if __img:
+                        __img.history.abort(RESULT_FAILED_TRANSPORT)
+                error(_("\nUnable to contact a valid package depot. "
+                    "This may be due to a problem with the server, "
+                    "network misconfiguration, or an incorrect pkg client "
+                    "configuration.  Please check your network settings and "
+                    "attempt to contact the server using a web browser."))
+                error(_("\nAdditional details:\n\n%s") % __e)
+                __ret = 1 
         except history.HistoryLoadException, __e:
                 # Since a history related error occurred, discard all
                 # information about the current operation(s) in progress.

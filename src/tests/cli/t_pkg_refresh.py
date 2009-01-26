@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 import testutils
@@ -186,10 +186,8 @@ class TestPkgRefreshMulti(testutils.ManyDepotTestCase):
                     "foo 1.0-0 known ----\n"
                 self.checkAnswer(expected, self.output)
                 self.dcs[2].stop()
-                self.pkg("set-authority -O " + self.durl2 + " test1", exit=1)
-                self.pkg("set-authority -O " + self.durl2 + " test1", exit=1)
-                self.pkg("set-authority -O " + self.durl2 + " test1", exit=1)
-                self.pkg("list -aH pkg:/foo", exit=1)
+                self.pkg("set-authority --no-refresh -O " + self.durl2 + " test1")
+                self.pkg("list -aH pkg:/foo")
                 self.dcs[2].start()
                 self.pkg("refresh test1")
                 self.pkg("list -aH pkg:/foo")

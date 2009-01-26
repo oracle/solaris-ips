@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 import cPickle
@@ -68,7 +68,10 @@ from pkg.misc import TransportException
 from pkg.misc import TransferTimedOutException
 from pkg.misc import TransportFailures
 from pkg.misc import CLIENT_DEFAULT_MEM_USE_KB
+from pkg.misc import CfgCacheError
+from pkg.actions import MalformedActionError
 from pkg.client import global_settings
+from pkg.client.api_errors import InvalidDepotResponseException
 from pkg.client.imagetypes import *
 
 img_user_prefix = ".org.opensolaris,pkg"
@@ -310,7 +313,7 @@ class Image(object):
                     self.dl_cache_dir, "incoming-%d" % os.getpid()))
 
         def set_attrs(self, type, root, is_zone, auth_name, auth_url,
-            ssl_key = None, ssl_cert = None):
+            ssl_key=None, ssl_cert=None, refresh_allowed=True):
                 self.__set_dirs(imgtype=type, root=root)
 
                 if not os.path.exists(os.path.join(self.imgdir, imageconfig.CFG_FILE)):
@@ -325,16 +328,24 @@ class Image(object):
                 if is_zone:
                         self.cfg_cache.filters["opensolaris.zone"] = "nonglobal"
 
-                self.cfg_cache.authorities[auth_name] = {}
-                self.cfg_cache.authorities[auth_name]["prefix"] = auth_name
-                self.cfg_cache.authorities[auth_name]["origin"] = \
-                    misc.url_affix_trailing_slash(auth_url)
-                self.cfg_cache.authorities[auth_name]["disabled"] = False
-                self.cfg_cache.authorities[auth_name]["mirrors"] = []
-                self.cfg_cache.authorities[auth_name]["ssl_key"] = ssl_key
-                self.cfg_cache.authorities[auth_name]["ssl_cert"] = ssl_cert
-                self.cfg_cache.authorities[auth_name]["uuid"] = pkg.Uuid25.uuid1()
+                newauth = {}
 
+                newauth["prefix"] = auth_name
+                newauth["origin"] = misc.url_affix_trailing_slash(auth_url)
+                newauth["disabled"] = False
+                newauth["mirrors"] = []
+                newauth["ssl_key"] = ssl_key
+                newauth["ssl_cert"] = ssl_cert
+                newauth["uuid"] = pkg.Uuid25.uuid1()
+
+                # Refresh catalog for new server, if allowed.
+                if refresh_allowed:
+                        self.retrieve_catalogs(full_refresh=True,
+                            auths=[newauth])
+
+                # If we reached this point, the refresh succeeded.  Add the
+                # authority to the cfg_cache and save the config.
+                self.cfg_cache.authorities[auth_name] = newauth
                 self.cfg_cache.preferred_authority = auth_name
 
                 self.save_config()
@@ -352,9 +363,9 @@ class Image(object):
 
         def gen_authorities(self, inc_disabled = False):
                 if not self.cfg_cache:
-                        raise RuntimeError, "empty ImageConfig"
+                        raise CfgCacheError, "empty ImageConfig"
                 if not self.cfg_cache.authorities:
-                        raise RuntimeError, "no defined authorities"
+                        raise CfgCacheError, "no defined authorities"
                 for a in self.cfg_cache.authorities:
                         auth = self.cfg_cache.authorities[a]
                         if inc_disabled or not auth["disabled"]:
@@ -401,7 +412,13 @@ class Image(object):
                 if auth == None:
                         auth = self.cfg_cache.preferred_authority
 
-                return len(self.cfg_cache.mirror_status[auth])
+                try:
+                        num = len(self.cfg_cache.mirror_status[auth])
+                except KeyError:
+                        # Auth isn't in the list of mirrors, return 0
+                        num = 0
+
+                return num
 
         def select_mirror(self, auth = None, chosen_set = None):
                 """For the given authority, look through the status of
@@ -456,12 +473,20 @@ class Image(object):
 
                 return slst[0]
 
-        def get_ssl_credentials(self, authority = None, origin = None):
+        def get_ssl_credentials(self, authority=None, origin=None,
+            authent=None):
                 """Return a tuple containing (ssl_key, ssl_cert) for the
                 specified authority prefix.  If the authority isn't specified,
                 attempt to determine the authority by the given origin.  If
-                neither is specified, use the preferred authority.
+                neither is specified, use the preferred authority.  Authent
+                is a dictionary argument that contains the authority
+                information.
                 """
+
+                # If authent supplied, don't bother with any other
+                # fancy processing.
+                if authent:
+                        return authent["ssl_key"], authent["ssl_cert"]
 
                 if authority is None:
                         if origin is None:
@@ -474,7 +499,6 @@ class Image(object):
                                                 break
                                 else:
                                         return None
-
                 try:
                         authent = self.cfg_cache.authorities[authority]
                 except KeyError:
@@ -640,52 +664,59 @@ class Image(object):
                 self.history.operation_name = "set-authority"
                 auths = self.cfg_cache.authorities
 
-                refresh_needed = False
+                origin_changed = False
 
                 if auth_name in auths:
-                        # If authority already exists, only update non-NULL
-                        # values passed to set_authority
+                        # Copy old authority information to new entry.
+                        oldauth = auths[auth_name]
+                        newauth = oldauth.copy()
+
+                        # Update any fields that have changed.
                         if origin_url:
-                                auths[auth_name]["origin"] = \
+                                newauth["origin"] = \
                                     misc.url_affix_trailing_slash(origin_url)
-                                refresh_needed = True
+                                origin_changed = True
                         if ssl_key:
-                                auths[auth_name]["ssl_key"] = ssl_key
+                                newauth["ssl_key"] = ssl_key
                         if ssl_cert:
-                                auths[auth_name]["ssl_cert"] = ssl_cert
+                                newauth["ssl_cert"] = ssl_cert
                         if uuid:
-                                auths[auth_name]["uuid"] = uuid
+                                newauth["uuid"] = uuid
                         if disabled != None:
-                                # don't make the perferred authority disabled
+                                # don't make the preferred authority disabled
                                 # the caller is responsible for checking this
                                 assert(not disabled or \
                                     auth_name != self.get_default_authority())
-                                auths[auth_name]["disabled"] = disabled
-                                refresh_needed = True
+                                newauth["disabled"] = disabled
+                                origin_changed = True
 
                 else:
-                        auths[auth_name] = {}
-                        auths[auth_name]["prefix"] = auth_name
-                        auths[auth_name]["origin"] = \
+                        newauth = {}
+                        newauth["prefix"] = auth_name
+                        newauth["origin"] = \
                             misc.url_affix_trailing_slash(origin_url)
-                        auths[auth_name]["mirrors"] = []
-                        auths[auth_name]["ssl_key"] = ssl_key
-                        auths[auth_name]["ssl_cert"] = ssl_cert
+                        newauth["mirrors"] = []
+                        newauth["ssl_key"] = ssl_key
+                        newauth["ssl_cert"] = ssl_cert
                         if not uuid:
                                 uuid = pkg.Uuid25.uuid1()
-                        auths[auth_name]["uuid"] = uuid
+                        newauth["uuid"] = uuid
                         if disabled is None:
                                 disabled = False
-                        auths[auth_name]["disabled"] = disabled
-                        refresh_needed = True
+                        newauth["disabled"] = disabled
+                        origin_changed = True
 
-                self.save_config()
-
-                if refresh_needed and refresh_allowed:
+                if origin_changed and refresh_allowed:
                         self.destroy_catalog(auth_name)
                         self.destroy_catalog_cache()
                         self.retrieve_catalogs(full_refresh=True,
-                            auths=[auths[auth_name]])
+                            auths=[newauth])
+
+                # If the code got here, it successfully refreshed
+                # the authority, and passed any sanity checks.  Save
+                # the configuration.
+                auths[auth_name] = newauth
+                self.save_config()
 
                 self.history.operation_result = history.RESULT_SUCCEEDED
 
@@ -806,6 +837,16 @@ class Image(object):
                         except TransportException, e:
                                 retry_count -= 1
                                 failures.append(e)
+
+                                if retry_count <= 0:
+                                        raise failures
+                        except MalformedActionError, e:
+                                retry_count -= 1
+                                auth = fmri.get_authority()
+                                url = self.cfg_cache.authorities[auth]["origin"]
+                                te = misc.TransferContentException(url=url,
+                                    reason=str(e))
+                                failures.append(te)
 
                                 if retry_count <= 0:
                                         raise failures
@@ -1371,6 +1412,115 @@ class Image(object):
                                 dependents.extend(self.__req_dependents[f])
                 return dependents
 
+        def __do_get_versions(self, auth):
+                """An internal method that is a wrapper around get_catalog.
+                This handles retryable exceptions and timeouts."""
+
+                retry_count = global_settings.PKG_TIMEOUT_MAX
+                failures = TransportFailures()
+                versdict = None
+        
+                while not versdict:
+                        try:
+                                versdict = retrieve.get_versions(self, auth)
+                        except TransportException, e:
+                                retry_count -= 1
+                                failures.append(e)
+
+                                if retry_count <= 0:
+                                        raise failures
+
+                return versdict
+
+        def valid_authority_test(self, auth):
+                """Test that the authority supplied in auth actually
+                points to a valid packaging server."""
+
+                try:
+                        vd = self.__do_get_versions(auth)
+                except (retrieve.VersionRetrievalError,
+                    TransportFailures), e:
+                        # Failure when contacting server.  Report
+                        # this as an error.
+                        raise InvalidDepotResponseException(auth["origin"],
+                            "Transport errors encountered when trying to "
+                            "contact depot server.  Reported the following "
+                            "errors:\n%s" % e)
+
+                if not self._valid_versions_test(vd):
+                        raise InvalidDepotResponseException(auth["origin"],
+                            "Invalid or unparseable version information.")
+
+                return True
+
+        def captive_portal_test(self):
+                """A captive portal forces a HTTP client on a network
+                to see a special web page, usually for authentication
+                purposes.  (http://en.wikipedia.org/wiki/Captive_portal)."""
+
+                vd = None
+
+                for auth in self.gen_authorities():
+                        try:
+                                vd = self.__do_get_versions(auth)
+                        except (retrieve.VersionRetrievalError,
+                            TransportFailures):
+                                # Encountered a transport error while
+                                # trying to contact this authority.
+                                # Pick another authority instead.
+                                continue
+
+                        if self._valid_versions_test(vd):
+                                return
+                        else:
+                                raise InvalidDepotResponseException(auth["origin"],
+                                    "This server is not a valid package depot.") 
+                if not vd:
+                        # We got all the way through the list of authorites but
+                        # encountered transport errors in every case.  This is
+                        # likely a network configuration problem.  Report our
+                        # inability to contact a server.
+                        raise InvalidDepotResponseException(None,
+                            "Unable to contact any configured authorities. "
+                            "This is likely a network configuration problem.")
+
+        def _valid_versions_test(self, versdict):
+                """Check that the versions information contained in
+                versdict contains valid version specifications.
+
+                In order to test for this condition, pick an authority
+                from the list of active authorities.  Check to see if
+                we can connect to it.  If so, test to see if it supports
+                the versions/0 operations.  If versions/0 is not found,
+                we get an unparseable response, or the response does
+                not contain pkg-server, or versions 0 then we're not
+                talking to a depot.  Return an error in these cases."""
+
+                if "pkg-server" in versdict:
+                        # success!
+                        return True
+                elif "versions" in versdict:
+                        try:
+                                versids = [
+                                    int(v)
+                                    for v in versdict["versions"].split()
+                                ]
+                        except ValueError:
+                                # Unable to determine version number.  Fail.
+                                return False
+
+                        if 0 not in versids:
+                                # Paranoia.  versions 0 should be in the
+                                # output for versions/0.  If we're here,
+                                # something has gone very wrong.  EPIC FAIL!
+                                return False
+
+                        # found versions/0, success!
+                        return True
+
+                # Some other error encountered. Fail
+                return False
+
         def _do_get_catalog(self, auth, hdr, ts):
                 """An internal method that is a wrapper around get_catalog.
                 This handles retryable exceptions and timeouts."""
@@ -1398,13 +1548,33 @@ class Image(object):
                 cat = None
                 ts = 0
 
+                # XXX The authority validation checks depend upon the
+                # assumption that callers who pass a list of authorties
+                # have newly created the authorities in question and want
+                # to specifically refresh their catalogs and verify that they
+                # are indeed reachable.
                 if not auths:
-                        auths = list(self.gen_authorities())
+                        # If no auths were passed into this routine, we're
+                        # performing a refresh of all catalogs.  In that case,
+                        # it's best to simply check that we're
+                        # not connected to a captive portal.
+                        self.captive_portal_test()
+                        authlist = list(self.gen_authorities())
+                else:
+                        # The code that's calling us has instantiated
+                        # new authorities.  Verify that each auth is
+                        # valid and reachable.  This is a more strict
+                        # check than the captive_portal_test()
+                        authlist = [
+                            auth
+                            for auth in auths
+                            if self.valid_authority_test(auth)
+                        ]
 
                 if progtrack:
-                        progtrack.refresh_start(len(auths))
+                        progtrack.refresh_start(len(authlist))
 
-                for auth in auths:
+                for auth in authlist:
                         if auth["disabled"]:
                                 continue
                                 
@@ -1440,7 +1610,7 @@ class Image(object):
                         else:
                                 succeeded += 1
 
-                self.cache_catalogs()
+                self.cache_catalogs(auths)
                 self.update_installed_pkgs()
 
                 if progtrack:
@@ -1452,10 +1622,25 @@ class Image(object):
 
         CATALOG_CACHE_VERSION = 1
 
-        def cache_catalogs(self):
+        def cache_catalogs(self, auths=None):
                 """Read in all the catalogs and cache the data."""
                 cache = {}
-                for auth in self.gen_authorities():
+                authlist = []
+
+                try:
+                        authlist = list(self.gen_authorities())
+                except CfgCacheError:
+                        # No authorities defined.  If the caller hasn't
+                        # supplied authorities to cache, raise the error
+                        if not auths:
+                                raise
+
+                if auths:
+                        # If caller passed authorities, include this in
+                        # the list of authorities to cache.
+                        authlist.extend(auths)
+
+                for auth in authlist:
                         croot = "%s/catalog/%s" % (self.imgdir, auth["prefix"])
                         # XXX Should I be removing pkg_names.pkl now that we're
                         # not using it anymore?

@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 import pkg.search_errors as search_errors
@@ -34,7 +34,7 @@ from pkg.client import global_settings
 
 import threading
 
-CURRENT_API_VERSION = 7
+CURRENT_API_VERSION = 8
 
 class ImageInterface(object):
         """This class presents an interface to images that clients may use.
@@ -69,7 +69,7 @@ class ImageInterface(object):
                 canceled changes. It can raise VersionException and
                 ImageNotFoundException."""
 
-                compatible_versions = set([1, 2, 3, 4, 5, 6, 7])
+                compatible_versions = set([1, 2, 3, 4, 5, 6, 7, 8])
 
                 if version_id not in compatible_versions:
                         raise api_errors.VersionException(CURRENT_API_VERSION,

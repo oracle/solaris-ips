@@ -601,9 +601,14 @@ class Catalog(object):
                 catpath_final = os.path.normpath(os.path.join(path, "catalog"))
 
                 for s in filep:
-                        size += len(s)
+                        slen = len(s)
+                        size += slen
 
-                        if not s[1].isspace():
+                        # If line is too short, process the next one
+                        if slen < 2:
+                                continue
+                        # check that line is in the proper format
+                        elif not s[1].isspace():
                                 continue
                         elif not s[0] in known_prefixes:
                                 catf.write(s)

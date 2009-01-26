@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -37,8 +37,20 @@ from pkg.misc import TruncatedTransferException
 from pkg.misc import TransferContentException
 from pkg.misc import retryable_http_errors
 from pkg.misc import retryable_socket_errors
+from pkg.client.api_errors import InvalidDepotResponseException
 
 class CatalogRetrievalError(Exception):
+        """Used when catalog retrieval fails"""
+        def __init__(self, data, exc=None, auth=None):
+                Exception.__init__(self)
+                self.data = data
+                self.exc = exc
+                self.auth = auth
+
+        def __str__(self):
+                return str(self.data)
+
+class VersionRetrievalError(Exception):
         """Used when catalog retrieval fails"""
         def __init__(self, data, exc=None, auth=None):
                 Exception.__init__(self)
@@ -78,7 +90,7 @@ def get_catalog(img, auth, hdr, ts):
         catalog operation."""
 
         prefix = auth["prefix"]
-        ssl_tuple = img.get_ssl_credentials(prefix)
+        ssl_tuple = img.get_ssl_credentials(authent=auth)
 
         try:
                 c, v = versioned_urlopen(auth["origin"],
@@ -393,3 +405,78 @@ def touch_manifest(img, fmri):
                 # All other errors are ignored as this is a non-critical
                 # operation that returns no information.
                 pass
+
+def get_versions(img, auth):
+        """Get version information from a remote host.
+
+        Img is the image object that the retrieve is using.
+        Auth is the authority that will be queried for version information."""
+
+        prefix = auth["prefix"]
+        ssl_tuple = img.get_ssl_credentials(authent=auth)
+
+        try:
+                s, v = versioned_urlopen(auth["origin"],
+                    "versions", [0], ssl_creds=ssl_tuple,
+                    imgtype=img.type, uuid=img.get_uuid(prefix))
+        except urllib2.HTTPError, e:
+                if e.code in retryable_http_errors:
+                        raise TransferTimedOutException(prefix, "%d - %s" %
+                            (e.code, e.msg))
+
+                raise VersionRetrievalError("Could not retrieve versions from"
+                    " '%s'\nHTTPError code: %d - %s" % (prefix, e.code, e.msg))
+        except urllib2.URLError, e:
+                if isinstance(e.args[0], socket.timeout):
+                        raise TransferTimedOutException(prefix, e.reason)
+                elif isinstance(e.args[0], socket.error):
+                        sockerr = e.args[0]
+                        if isinstance(sockerr.args, tuple) and \
+                            sockerr.args[0] in retryable_socket_errors:
+                                raise TransferIOException(prefix,
+                                    "Retryable socket error: %s" % e.reason)
+
+                raise VersionRetrievalError("Could not retrieve versions from"
+                    " '%s'\nURLError, reason: %s" % (prefix, e.reason))
+        except (ValueError, httplib.IncompleteRead):
+                raise TransferContentException(prefix,
+                    "Incomplete Read from remote host")
+        except httplib.BadStatusLine:
+                raise TransferContentException(prefix,
+                    "Unable to read status of HTTP response")
+        except KeyboardInterrupt:
+                raise
+        except Exception, e:
+                raise VersionRetrievalError("Could not retrieve versions "
+                    "from '%s'\nException: str:%s repr:%r" % (prefix,
+                    e, e), e, prefix)
+
+        try:
+                verlines = s.readlines()
+        except (ValueError, httplib.IncompleteRead):
+                raise TransferContentException(prefix,
+                    "Incomplete Read from remote host")
+        except socket.timeout, e:
+                raise TransferTimedOutException(prefix)
+        except socket.error, e:
+                if isinstance(e.args, tuple) and \
+                     e.args[0] in retryable_socket_errors:
+                        raise TransferIOException(prefix,
+                            "Retryable socket error: %s" % e)
+
+                raise VersionRetrievalError("Could not retrieve versions"
+                    " from '%s'\nsocket error, reason: %s" % (prefix, e))
+        except EnvironmentError, e:
+                raise VersionRetrievalError("Could not retrieve versions "
+                    "from '%s'\nException: str:%s repr:%r" % (prefix,
+                    e, e), e, prefix)
+
+        # Convert the version lines to a method:version dictionary
+        try:
+                return dict(
+                    s.split(None, 1)
+                    for s in (l.strip() for l in verlines)
+                )
+        except ValueError:
+                raise InvalidDepotResponseException(auth["origin"],
+                    "Unable to parse server response")
