@@ -1,0 +1,121 @@
+        Getting rid of install/upgrade scripting
+
+The design of SVR4 packaging relies heavily on the use of scripting to
+achieve common packaging operations.  These scripts are delivered by
+the package developers, and run in multiple installation contexts, 
+which may include install, alternate roots, zones, cross architecture 
+and cross OS versions.  This has caused a host of complex and thorny
+issues, and led directly to the IPS team's decision to eliminate the
+use of scripting in IPS.
+
+Instead, the IPS architecture requires software to be largely
+self-assembling; changes in configuration are either detected at boot
+time or the appropriate SMF services are restarted in the case of live
+installation of packages.  [In the few cases when this is not possible
+due to assembly being needed for boot, the required support is being
+built into IPS directly; such cases are actually rare].
+
+Some concrete examples of how such "self-assembly" can be realized may
+be worthwhile:
+
+The recent hostid project moved the storage of the hostid information
+on i386 architecture machines from the sysinit kernel module (which
+was bpatch'd during install) into the /etc/hostid file.  The initial
+design for handling upgrade added code to both BFU and the installer,
+which decoded the hostid from the sysinit module and created the
+hostid file during upgrade.  Freshly installed systems had no hostid
+file, so the kernel generated one dyanmically and a SMF service
+created the /etc/hostid file after boot.  Since neither bfu nor
+install code runs during IPS image-update operations, this strategy
+did not work on OpenSolaris and the hostid was not preserved on
+upgrade.
+
+To fix this, the kernel was modified to search for a sysinit module
+and read the hostid from that if /etc/hostid didn't already exist.
+Only if that was not present did the kernel generate a new hostid.  As
+a result of this change, the upgrade code could be eliminated from
+both BFU and upgrade, and the system upgrade process just works the
+same in all cases.
+
+The key design pattern here is to have the consumer of the
+configuration file (here, genunix) handle the old file format/location
+if the new file doeesn't exist; writing out the new file resolves the
+upgrade process and completes the self-assembly.
+
+Another common problem is the configuration file management problem.
+A canonical example might be /etc/security/exec_attr.  Here many
+different packages contribute lines into this file.  With SVR4
+packages, a package's file fragments are merged in by the class action
+script i.rbac during installation or upgrade.  Removal is problematic
+on uninstall and is not attempted.
+
+For IPS, the proposed solution is to have each package deliver its
+portion of this file into a separate directory, using the name of the
+package (suitably escaped, of course) as the file name.  A service
+that runs at boot determines whether or not the file needs to be
+re-composited from the file fragments.  This cleanly handles both
+install and uninstall.
+
+The key design pattern here is to have packages deliver their
+components as files, which is something the packaging system is
+designed to do.  Assembly of the composited file is left to boot time
+and an SMF service, which deals with older package fragments, etc.
+
+Another approach to the configuration file problem is to change the
+format of the file.  A classic problem is the management of
+/etc/driver_aliases, which is "maintained" by add_drv and update_drv.
+This file maintains a mapping between a PCI id and the driver that
+supports that device.  Note that rather than maintaining a text file
+which would be read in by the kernel at boot, an alternate approach
+would be to encode the same information as a directory of symbolic
+links from the PCI id to the name of the driver.  This would eliminate
+the potential confusion of two different drivers trying to own the
+same PCI id, the need for locking the file during updates, and the
+need to run programs on install and uninstall to manage this file
+since the links would be simply installed and uninstalled as part of
+the normal packaging operations.
+
+The design pattern here is also simple - the filesystem already
+maintains a single namespace, locking, conflict detection, etc;
+reusing these attributes saves time and effort.
+
+Another common problem is moving files, links and directories around
+the filesystem and between packages; this is often handled via
+scripting in the case of SVR4 packages.  In IPS, normal (not editable)
+files can simply move between packages; this results in their removal
+from the original location and then their re-installation in their new
+location.  To insure that editable files retain their customizations,
+the receiving package must annotate the actions that deliver the new
+file name/location with an attribute that defines the original owning
+packages and location. This looks like this:
+
+original_name=SUNWfoo:etc/foo.txt
+
+indicating that the name of original owning package was SUNWfoo and
+that the original path was etc/foo.txt.  Note that no matter where
+this file moves to subsequently, it should always maintain this
+identifier.
+
+Directories in IPS are automatically reference counted, and are
+deleted when there are no longer any explicit declarations of
+those directories or no files under packaging system control in
+the directory.  Left-over files & directories not under packaging 
+control are moved to a lost-and-found directory under var/pkg;
+this is needed to support changing directories to symbolic links,
+etc., w/o scripting.
+
+There is not yet a simple method to move unpackaged files, etc
+from an old location to a new one; developers facing this problem
+should move those files as part of their self-assembly at first
+boot and avoid removing the references to the original directories
+to prevent their movement to lost-and-found during upgrade.  
+We are considering various solutions to this problem.
+
+In the short term, those developers working on OpenSolaris have a 
+foot in both worlds - since OpenSolaris is built from Nevada SVR4
+packages, their code needs to work in both environments.  With
+the exception of driver post-install scripts (which are converted
+by the folks working on OpenSolaris to IPS driver actions) the goal
+is to remove all post-install/class action processing other than
+SMF service restarting on live systems using the patterns shown
+here.

@@ -682,7 +682,7 @@ class ImageInterface(object):
                 pis = []
 
                 for f in fmris:
-                        mfst = self.img.get_manifest(f, filtered=True)
+                        mfst = self.img.get_manifest(f)
                         licenses = None
                         if get_licenses:
                                 licenses = self.__licenses(mfst, local)
@@ -697,19 +697,20 @@ class ImageInterface(object):
                         else:
                                 state = PackageInfo.NOT_INSTALLED
                         links = hardlinks = files = dirs = dependencies = None
+                        excludes = self.img.list_excludes()
                         if get_action_info:
                                 links = list(
-                                    mfst.gen_key_attribute_value_by_type("link"))
+                                    mfst.gen_key_attribute_value_by_type("link", excludes))
                                 hardlinks = list(
                                     mfst.gen_key_attribute_value_by_type(
-                                    "hardlink"))
+                                    "hardlink", excludes))
                                 files = list(
-                                    mfst.gen_key_attribute_value_by_type("file"))
+                                    mfst.gen_key_attribute_value_by_type("file", excludes))
                                 dirs = list(
-                                    mfst.gen_key_attribute_value_by_type("dir"))
+                                    mfst.gen_key_attribute_value_by_type("dir", excludes))
                                 dependencies = list(
                                     mfst.gen_key_attribute_value_by_type(
-                                    "depend"))
+                                    "depend", excludes))
                         cat_info = [
                             PackageCategory(scheme, cat)
                             for ca in mfst.gen_actions_by_type("set")

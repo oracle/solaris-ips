@@ -71,7 +71,7 @@ class ImagePlan(object):
         plan to identify when this operation is safe or unsafe."""
 
         def __init__(self, image, progtrack, check_cancelation,
-            recursive_removal = False, filters = None, noexecute = False):
+            recursive_removal=False, filters=None, variants=None, noexecute=False):
                 if filters is None:
                         filters = []
                 self.image = image
@@ -99,6 +99,9 @@ class ImagePlan(object):
                     for k, v in image.cfg_cache.filters.iteritems()
                 ]
                 self.filters = [ compile_filter(f) for f in filters + ifilters ]
+
+                self.old_excludes = image.list_excludes()
+                self.new_excludes = image.list_excludes(variants)
 
                 self.check_cancelation = check_cancelation
 
@@ -210,7 +213,7 @@ class ImagePlan(object):
                         self.target_rem_fmris.append(fmri)
 
         def gen_new_installed_pkgs(self):
-                """ generates all the actions in the new set of installed pkgs"""
+                """ generates all the fmris in the new set of installed pkgs"""
                 assert self.state >= EVALUATED_PKGS
                 fmri_set = set(self.image.gen_installed_pkgs())
 
@@ -222,18 +225,16 @@ class ImagePlan(object):
 
         def gen_new_installed_actions(self):
                 """generates actions in new installed image"""
-
                 for fmri in self.gen_new_installed_pkgs():
-                        for act in self.image.get_manifest(fmri, 
-                            filtered=True).actions:
+                        m = self.image.get_manifest(fmri)
+                        for act in m.gen_actions(self.new_excludes):
                                 yield act
 
         def gen_new_installed_actions_bytype(self, type):
                 """generates actions in new installed image"""
-
                 for fmri in self.gen_new_installed_pkgs():
-                        m = self.image.get_manifest(fmri, filtered=True)
-                        for act in m.gen_actions_by_type(type):
+                        m = self.image.get_manifest(fmri)
+                        for act in m.gen_actions_by_type(type, self.new_excludes):
                                 yield act
 
         def get_directories(self):
@@ -278,10 +279,17 @@ class ImagePlan(object):
 
                 m = self.image.get_manifest(pfmri)
 
+                # check to make sure package is not tagged as being only
+                # for other architecture(s)
+                supported = m.get_variants("variant.arch")
+                if supported and self.image.get_arch() not in supported:
+                        raise api_errors.PlanCreationException(badarch=(pfmri,
+                            supported, self.image.get_arch()))
+
                 # build list of (action, fmri, constraint) of dependencies
                 a_list = [
-                    (a,) + a.parse(self.image, pfmri.get_name())                           
-                    for a in m.gen_actions_by_type("depend")
+                    (a,) + a.parse(self.image, pfmri.get_name())                        
+                    for a in m.gen_actions_by_type("depend", self.new_excludes)
                 ]
 
                 # Update constraints first to avoid problems w/ depth first
@@ -339,7 +347,7 @@ class ImagePlan(object):
                         msg("pkg: %s already installed" % pfmri)
                         return
 
-                pp.evaluate(self.filters)
+                pp.evaluate(self.old_excludes, self.new_excludes)
 
                 if pp.origin_fmri:
                         self.target_update_count += 1
@@ -379,7 +387,7 @@ class ImagePlan(object):
                         msg("pkg %s not installed" % pfmri)
                         return
 
-                pp.evaluate()
+                pp.evaluate([], self.old_excludes)
 
                 for d in dependents:
                         if self.is_proposed_rem_fmri(d):

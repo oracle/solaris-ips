@@ -499,11 +499,13 @@ def publish_pkg(pkg):
                 if f.type not in "dx" and f.pathname in usedlist and \
                     usedlist[f.pathname][0] in hollow_pkgs:
                         action.attrs["opensolaris.zone"] = "global"
+                        action.attrs["variant.opensolaris.zone"] = "global"
 
                 if f.type in "dx" and f.pathname in usedlist and \
                     usedlist[f.pathname][0] in hollow_pkgs and \
                     f.pathname not in pkg.nonhollow_dirs:
                         action.attrs["opensolaris.zone"] = "global"
+                        action.attrs["variant.opensolaris.zone"] = "global"
 
                 t.add(cfg, id, action)
 
@@ -560,6 +562,7 @@ def publish_pkg(pkg):
                         elif f.attrs["path"] in pathdict:
                                 if pkgname in hollow_pkgs:
                                         f.attrs["opensolaris.zone"] = "global"
+                                        f.attrs["variant.opensolaris.zone"] = "global"
                                 path = f.attrs["path"]
                                 if pathdict[path].type in "ev":
                                         f.attrs["preserve"] = "true"

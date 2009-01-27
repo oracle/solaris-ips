@@ -30,6 +30,7 @@ import os.path
 import pkg.fmri as fmri
 import pkg.misc as misc
 import pkg.client.api_errors as api_errors
+import pkg.client.variant as variant
 from pkg.misc import msg
 import pkg.portable as portable
 
@@ -109,6 +110,7 @@ class ImageConfig(object):
                 ))
                 self.preferred_authority = None
                 self.filters = {}
+                self.variants = variant.Variants()
                 self.children = []
 
         def __str__(self):
@@ -169,6 +171,10 @@ class ImageConfig(object):
                         for o in cp.options("filter"):
                                 self.filters[o] = cp.get("filter", o)
 
+                if cp.has_section("variant"):
+                        for o in cp.options("variant"):
+                                self.variants[o] = cp.get("variant", o)
+
                 if "preferred-authority" in self.properties:
                         self.preferred_authority = self.properties["preferred-authority"]
 
@@ -203,6 +209,10 @@ class ImageConfig(object):
                 cp.add_section("filter")
                 for f in self.filters:
                         cp.set("filter", f, str(self.filters[f]))
+
+                cp.add_section("variant")
+                for f in self.variants:
+                        cp.set("variant", f, str(self.variants[f]))
 
                 for a in self.authorities:
                         auth = self.authorities[a]

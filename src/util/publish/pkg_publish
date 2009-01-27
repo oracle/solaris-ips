@@ -1,0 +1,14 @@
+#!/bin/sh
+#
+#
+# usage: pkg_publish pkgdir servername
+
+dir=$1
+repo=$2
+
+fmri=`cat $dir/fmri`
+eval `pkgsend -s $repo open $fmri`
+pkgsend -s $repo include -d $dir $dir/manifest
+pkgsend -s $repo close
+ 
+

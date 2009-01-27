@@ -22,6 +22,8 @@
 # Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
+from pkg.misc import EmptyI
+
 class ApiException(Exception):
         pass
 
@@ -106,18 +108,17 @@ try the command again using pfexec or otherwise increase your permissions.
 """)
 
 class PlanCreationException(ApiException):
-        def __init__(self, unfound_fmris, multiple_matches,
-            missing_matches, illegal, constraint_violations=None):
+        def __init__(self, unfound_fmris=EmptyI, multiple_matches=EmptyI,
+            missing_matches=EmptyI, illegal=EmptyI, constraint_violations=EmptyI, 
+            badarch=EmptyI):
                 ApiException.__init__(self)
-                self.unfound_fmris = unfound_fmris
-                self.multiple_matches = multiple_matches
-                self.missing_matches = missing_matches
-                self.illegal = illegal
-                # avoid [] as default
-                if constraint_violations:
-                        self.constraint_violations = constraint_violations
-                else:
-                        self.constraint_violations = []
+                self.unfound_fmris         = unfound_fmris
+                self.multiple_matches      = multiple_matches
+                self.missing_matches       = missing_matches
+                self.illegal               = illegal
+                self.constraint_violations = constraint_violations
+                self.badarch               = badarch
+
         def __str__(self):
                 res = []
                 if self.unfound_fmris:
@@ -145,6 +146,13 @@ catalog. Try relaxing the pattern, refreshing and/or examining the catalogs""")
                         res += [ s ] 
                         res += [ "\t%s" % p for p in self.constraint_violations ]
 
+                if self.badarch:
+                        s = _("'%s' supports the following architectures: %s")
+                        a = _("Image architecture is defined as: %s")
+                        res += [ s % (self.badarch[0], 
+                            ", ".join(self.badarch[1]))]
+                        res += [ a % (self.badarch[2])]
+
                 return '\n'.join(res)
 
 class CatalogRefreshException(ApiException):
@@ -156,16 +164,10 @@ class CatalogRefreshException(ApiException):
                 self.message = message
 
 class InventoryException(ApiException):
-        def __init__(self, notfound=None, illegal=None):
+        def __init__(self, notfound=EmptyI, illegal=EmptyI):
                 ApiException.__init__(self)
-                if notfound is None:
-                        self.notfound = []
-                else:
-                        self.notfound = notfound
-                if illegal is None:
-                        self.illegal = []
-                else:
-                        self.illegal = illegal
+                self.notfound = notfound
+                self.illegal = illegal
                 assert(self.notfound or self.illegal)
 
         def __str__(self):

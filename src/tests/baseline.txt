@@ -400,3 +400,4 @@ cli.t_pkgsend.py TestPkgsendRename.test_rename3|pass
 cli.t_pkgsend.py TestPkgsendRename.test_rename4|fail
 cli.t_setUp.py TestSetUp.test_first_depot_start|pass
 cli.t_setUp.py TestSetUp.test_second_depot_start|pass
+cli.t_variants.py TestPkgVariants.test_variant_1|pass

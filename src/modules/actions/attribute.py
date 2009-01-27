@@ -51,9 +51,8 @@ class AttributeAction(generic.Action):
                 if len(attrs) == 1:
                         self.attrs["name"], self.attrs["value"] = \
                             self.attrs.popitem()
-                else:
-                        assert len(attrs) == 2
-                        assert set(attrs.keys()) == set([ "name", "value" ])
+                assert "name" in self.attrs
+                assert "value" in self.attrs
 
         def verify(self, img, **args):
                 """Since there's no install method, this class is always

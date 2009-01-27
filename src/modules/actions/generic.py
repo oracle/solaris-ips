@@ -333,6 +333,19 @@ class Action(object):
                         if e.errno != errno.EPERM:
                                 raise
 
+        def get_varcet_keys(self):
+                """Return the names of any facet or variant tags in this action"""
+
+                variants = []
+                facets = []
+
+                for k in self.attrs.iterkeys():
+                        if k.startswith("variant."):
+                                variants.append(k)
+                        if k.startswith("facet."):
+                                facets.append(k)
+                return variants, facets
+
         def get_remote_opener(self, img, fmri):
                 """Return an opener for the action's datastream which pulls from
                 the server.  The caller may have to decompress the datastream."""

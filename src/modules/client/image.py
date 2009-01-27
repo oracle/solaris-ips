@@ -24,17 +24,18 @@
 # Use is subject to license terms.
 
 import cPickle
+import calendar
+import datetime
 import errno
-import os
-import socket
-import urllib
-import urllib2
 import httplib
+import os
+import platform
 import shutil
+import socket
 import tempfile
 import time
-import datetime
-import calendar
+import urllib
+import urllib2
 
 import OpenSSL.crypto as osc
 
@@ -64,6 +65,7 @@ import pkg.updatelog           as updatelog
 import pkg.version
 
 from pkg.misc import versioned_urlopen
+from pkg.misc import EmptyI, EmptyDict
 from pkg.misc import TransportException
 from pkg.misc import TransferTimedOutException
 from pkg.misc import TransportFailures
@@ -282,6 +284,26 @@ class Image(object):
 
                 self.cfg_cache = ic
 
+                # make sure we define architecture variant; upgrade config
+                # file if possible.
+                if "variant.arch" not in self.cfg_cache.variants:
+                        self.cfg_cache.variants["variant.arch"] = platform.processor()
+                        try:
+                                self.save_config()
+                        except api_errors.PermissionsException:
+                                pass
+                # make sure we define zone variant; upgrade config if possible
+                if "variant.opensolaris.zone" not in self.cfg_cache.variants:
+                        zone = self.cfg_cache.filters.get("opensolaris.zone", "")
+                        if zone == "nonglobal":
+                                self.cfg_cache.variants["variant.opensolaris.zone"] = "nonglobal"
+                        else:
+                                self.cfg_cache.variants["variant.opensolaris.zone"] = "global"
+                        try:
+                                self.save_config()
+                        except api_errors.PermissionsException:
+                                pass
+
         def save_config(self):
                 self.cfg_cache.write(self.imgdir)
 
@@ -313,7 +335,8 @@ class Image(object):
                     self.dl_cache_dir, "incoming-%d" % os.getpid()))
 
         def set_attrs(self, type, root, is_zone, auth_name, auth_url,
-            ssl_key=None, ssl_cert=None, refresh_allowed=True):
+            ssl_key=None, ssl_cert=None, variants=EmptyDict, refresh_allowed=True):
+
                 self.__set_dirs(imgtype=type, root=root)
 
                 if not os.path.exists(os.path.join(self.imgdir, imageconfig.CFG_FILE)):
@@ -327,6 +350,9 @@ class Image(object):
 
                 if is_zone:
                         self.cfg_cache.filters["opensolaris.zone"] = "nonglobal"
+                        self.cfg_cache.variants["variant.opensolaris.zone"] = "nonglobal"
+                else:
+                        self.cfg_cache.variants["variant.opensolaris.zone"] = "global"
 
                 newauth = {}
 
@@ -348,6 +374,10 @@ class Image(object):
                 self.cfg_cache.authorities[auth_name] = newauth
                 self.cfg_cache.preferred_authority = auth_name
 
+                self.cfg_cache.variants["variant.arch"] = \
+                    variants.get("variant.arch", platform.processor())
+                self.cfg_cache.variants.update(variants)
+
                 self.save_config()
                 self.history.operation_result = history.RESULT_SUCCEEDED
 
@@ -355,8 +385,10 @@ class Image(object):
                 return self.root == "/"
 
         def is_zone(self):
-                zone = self.cfg_cache.filters.get("opensolaris.zone", "")
-                return zone == "nonglobal"
+                return self.cfg_cache.variants["variant.opensolaris.zone"] == "nonglobal"
+
+        def get_arch(self):
+                return self.cfg_cache.variants["variant.arch"]
 
         def get_root(self):
                 return self.root
@@ -770,7 +802,7 @@ class Image(object):
                 """generator that returns any errors in installed pkgs
                 as tuple of action, list of errors"""
 
-                for act in self.get_manifest(fmri, filtered = True).actions:
+                for act in self.get_manifest(fmri).gen_actions(self.list_excludes()):
                         errors = act.verify(self, pkg_fmri=fmri, **args)
                         progresstracker.verify_add_progress(fmri)
                         actname = act.distinguished_name()
@@ -787,11 +819,10 @@ class Image(object):
                 pps = []
                 for fmri, actions in repairs:
                         msg("Repairing: %-50s" % fmri.get_pkg_stem())
-                        m = self.get_manifest(fmri, filtered=True)
+                        m = self.get_manifest(fmri)
                         pp = pkgplan.PkgPlan(self, progtrack, lambda: False)
-
                         pp.propose_repair(fmri, m, actions)
-                        pp.evaluate()
+                        pp.evaluate(self.list_excludes(), self.list_excludes())
                         pps.append(pp)
 
                 ip = imageplan.ImagePlan(self, progtrack, lambda: False)
@@ -1022,9 +1053,8 @@ class Image(object):
 
                 return m
 
-        def get_manifest(self, fmri, filtered = False):
-                """Find on-disk manifest and create in-memory Manifest
-                object, applying appropriate filters as needed."""
+        def get_manifest(self, fmri):
+                """return manifest; uses cached version if available"""
 
                 # XXX This is a temporary workaround so that GUI api consumsers
                 # are not negatively impacted by manifest caching.  This should
@@ -1040,26 +1070,6 @@ class Image(object):
                         m = self.__get_manifest(fmri)
 
                 self.__touch_manifest(fmri)
-
-                # XXX perhaps all of the below should live in Manifest.filter()?
-                if filtered:
-                        fmri_dir_path = os.path.join(self.imgdir, "pkg",
-                            fmri.get_dir_path())
-
-                        filters = []
-                        try:
-                                f = file("%s/filters" % fmri_dir_path, "r")
-                        except IOError, e:
-                                if e.errno != errno.ENOENT:
-                                        raise
-                        else:
-                                filters = [
-                                    (l.strip(), compile(
-                                        l.strip(), "<filter string>", "eval"))
-                                    for l in f.readlines()
-                                ]
-                        m.filter(filters)
-
                 return m
 
         def installed_file_authority(self, filepath):
@@ -1377,6 +1387,20 @@ class Image(object):
 
                 return v == fmri
 
+        def list_excludes(self, new_variants=None):
+                """Generate a list of callables that each return True if an action
+                is to be included in the image using the currently defined 
+                variants for the image, or an updated set if new_variants are
+                specified.  The callables take a single action argument.
+                Variants, facets and filters will be handled in this fashion."""
+                # XXX simple for now; facets and filters need impl.
+                if new_variants:
+                        new_vars = self.cfg_cache.variants.copy()
+                        new_vars.update(new_variants)
+                        return [new_vars.allow_action]
+                else:
+                        return [self.cfg_cache.variants.allow_action]
+
         def __build_dependents(self, progtrack):
                 """Build a dictionary mapping packages to the list of packages
                 that have required dependencies on them."""
@@ -1384,9 +1408,10 @@ class Image(object):
 
                 for fmri in self.gen_installed_pkgs():
                         progtrack.evaluate_progress(fmri)
-                        mfst = self.get_manifest(fmri, filtered = True)
+                        mfst = self.get_manifest(fmri)
 
-                        for dep in mfst.gen_actions_by_type("depend"):
+                        for dep in mfst.gen_actions_by_type("depend", 
+                            self.list_excludes()):
                                 if dep.attrs["type"] != "require":
                                         continue
                                 dfmri = self.strtofmri(dep.attrs["fmri"])
@@ -1902,11 +1927,13 @@ class Image(object):
 
         def load_constraints(self, progtrack):
                 """Load constraints for all install pkgs"""
+
                 for fmri in self.gen_installed_pkgs():
                         # skip loading if already done
                         if self.constraints.start_loading(fmri):
-                                mfst = self.get_manifest(fmri, filtered = True)
-                                for dep in mfst.gen_actions_by_type("depend"):
+                                mfst = self.get_manifest(fmri)
+                                for dep in mfst.gen_actions_by_type("depend", 
+                                    self.list_excludes()):
                                         progtrack.evaluate_progress()
                                         f, constraint = dep.parse(self, fmri.get_name())
                                         self.constraints.update_constraints(constraint)
@@ -1921,8 +1948,8 @@ class Image(object):
 
                 for fmri in self.gen_installed_pkgs():
                         fmri_name = fmri.get_pkg_stem()
-                        mfst = self.get_manifest(fmri, filtered = True)
-                        for dep in mfst.gen_actions_by_type("depend"):
+                        mfst = self.get_manifest(fmri)
+                        for dep in mfst.gen_actions_by_type("depend", self.list_excludes()):
                                 con_fmri = dep.get_constrained_fmri(self)
                                 if con_fmri:
                                         con_name = con_fmri.get_pkg_stem()
@@ -2479,7 +2506,6 @@ class Image(object):
                         ip.evaluate()
                 except constraint.ConstraintException, e:
                         raise api_errors.PlanCreationException(
-                            [], [], [], [], 
                             constraint_violations=str(e).split("\n"))
 
                 self.imageplan = ip

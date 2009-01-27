@@ -75,7 +75,7 @@ depend type=require fmri=pkg:/library/libc
 file fff555ff9 mode=0555 owner=sch group=staff path=/usr/bin/i386/sort isa=i386
 dir owner=root path=usr/bin group=bin mode=0755
 link path=usr/lib/amd64/libjpeg.so target=libjpeg.so.62.0.0
-hardlink path=usr/bin/amd64/rksh93 target=ksh93 opensolaris.zone=global
+hardlink path=usr/bin/amd64/rksh93 target=ksh93 variant.opensolaris.zone=global
 group groupname=testgroup gid=10
 """
 
@@ -198,14 +198,14 @@ file fff555ff9 mode=0555 owner=sch group=staff path=/usr/bin/i386/sort isa=i386
             dir mode=0755 owner=root group=sys path=bin
             dir mode=0755 owner=root group=sys path=bin/foo
             file 00000000 mode=0644 owner=root group=sys path=a
-            link path=bin/change-link target=change opensolaris.zone=global
+            link path=bin/change-link target=change variant.opensolaris.zone=global
                     """)
 
                 self.m2.set_content("""
             dir mode=0755 owner=root group=sys path=bin
             dir mode=0555 owner=root group=sys path=bin/foo
             file 00000000 mode=0444 owner=root group=sys path=a
-            link path=bin/change-link target=change opensolaris.zone=nonglobal
+            link path=bin/change-link target=change variant.opensolaris.zone=nonglobal
                     """)
 
                 diffs = self.m2.combined_difference(self.m1)

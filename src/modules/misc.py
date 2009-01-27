@@ -676,3 +676,40 @@ except KeyboardInterrupt:
 except:
         CLIENT_DEFAULT_MEM_USE_KB = 100
         SERVER_DEFAULT_MEM_USE_KB = 500
+
+# ImmutableDict and EmptyI for argument defaults
+EmptyI = tuple()
+
+class ImmutableDict(dict):
+        def __init__(self, default=EmptyI):
+                dict.__init__(self, default)
+
+        def __setitem__(self, item, value):
+                self.__oops()
+
+        def __delitem__(self, item, value):
+                self.__oops()
+
+        def pop(self, item, default=None):
+                self.__oops()
+
+        def popitem(self):
+                self.__oops()
+
+        def setdefault(self, item, default=None):
+                self.__oops()
+
+        def update(self, d):
+                self.__oops()
+
+        def copy(self):
+                return ImmutableDict()
+
+        def clear(self):
+                self.__oops()
+
+        def __oops(self):
+                raise TypeError, "Item assignment to ImmutableDict"
+
+EmptyDict = ImmutableDict()
+

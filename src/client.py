@@ -120,7 +120,7 @@ Basic subcommands:
         pkg install [-nvq] [--no-refresh] [--no-index] package...
         pkg uninstall [-nrvq] [--no-index] package...
         pkg list [-aHsuvf] [package...]
-        pkg image-update [-fnvq] [--no-refresh] [--no-index]
+        pkg image-update [-fnvq] [--no-refresh] --variant  [--no-index]
         pkg refresh [--full] [authority ...]
         pkg version
         pkg help
@@ -133,7 +133,8 @@ Advanced subcommands:
         pkg contents [-Hmr] [-o attribute ...] [-s sort_key]
             [-t action_type ... ] [pkg_fmri_pattern ...]
         pkg image-create [-fFPUz] [--force] [--full|--partial|--user] [--zone]
-            [-k ssl_key] [-c ssl_cert] [--no-refresh] -a <prefix>=<url> dir
+            [-k ssl_key] [-c ssl_cert] [--no-refresh] 
+            [--variant <variant_spec>=<instance>] -a <prefix>=<url> dir
 
         pkg set-property propname propvalue
         pkg unset-property propname ...
@@ -274,7 +275,7 @@ def list_inventory(img, args):
                         elif summary:
                                 pf = pfmri.get_name() + auth
 
-                                m = img.get_manifest(pfmri, filtered=True)
+                                m = img.get_manifest(pfmri)
                                 msg(fmt_str % (pf, m.get("description", "")))
 
                         else:
@@ -1369,11 +1370,11 @@ def list_contents(img, args):
                         sort_attrs = attrs[:1]
 
         filt = not display_nofilters
-        manifests = ( img.get_manifest(f, filtered=filt) for f in fmris )
+        manifests = ( img.get_manifest(f) for f in fmris )
 
         actionlist = [ (m, a)
                     for m in manifests
-                    for a in m.actions ]
+                    for a in m.gen_actions(img.list_excludes()) ]
 
         if fmris:
                 display_contents_results(actionlist, attrs, sort_attrs,
@@ -1850,10 +1851,11 @@ def image_create(img, args):
         auth_url = None
         refresh_catalogs = True
         force = False
+        variants = {}
 
         opts, pargs = getopt.getopt(args, "fFPUza:k:c:",
             ["force", "full", "partial", "user", "zone", "authority=",
-                "no-refresh"])
+                "no-refresh", "variant="])
 
         for opt, arg in opts:
                 if opt == "-f" or opt == "--force":
@@ -1866,6 +1868,7 @@ def image_create(img, args):
                         imgtype = image.IMG_USER
                 if opt == "-z" or opt == "--zone":
                         is_zone = True
+                        imgtype = image.IMG_ENTIRE
                 if opt == "--no-refresh":
                         refresh_catalogs = False
                 if opt == "-k":
@@ -1879,6 +1882,16 @@ def image_create(img, args):
                                 usage(_("image-create requires authority "
                                     "argument to be of the form "
                                     "'<prefix>=<url>'."))
+                if opt == "--variant":
+                        try:
+                                v_name, v_value = arg.split("=", 1)
+                                if not v_name.startswith("variant."):
+                                        v_name = "variant.%s" % v_name 
+                        except ValueError:
+                                usage(_("image-create requires variant "
+                                    "arguments to be of the form "
+                                    "'<name>=<value>'."))
+                        variants[v_name] = v_value
 
         if len(pargs) != 1:
                 usage(_("image-create requires a single image directory path"))
@@ -1935,7 +1948,7 @@ def image_create(img, args):
 
         try:
                 img.set_attrs(imgtype, image_dir, is_zone, auth_name, auth_url,
-                    ssl_key=ssl_key, ssl_cert=ssl_cert,
+                    ssl_key=ssl_key, ssl_cert=ssl_cert, variants=variants,
                     refresh_allowed=refresh_catalogs)
         except OSError, e:
                 error(_("cannot create image at %s: %s") % \

@@ -297,14 +297,14 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
         def get_debugbuf(self):
                 return self.__debug_buf
 
-        def image_create(self, repourl, prefix = "test"):
+        def image_create(self, repourl, prefix="test", additional_args=""):
                 assert self.img_path
                 assert self.img_path != "/"
 
                 self.image_destroy()
                 os.mkdir(self.img_path)
-                cmdline = "pkg image-create -F -a %s=%s %s" % \
-                    (prefix, repourl, self.img_path)
+                cmdline = "pkg image-create -F -a %s=%s %s %s" % \
+                    (prefix, repourl, additional_args, self.img_path)
                 self.debugcmd(cmdline)
 
                 p = subprocess.Popen(cmdline, shell = True,

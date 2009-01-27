@@ -24,7 +24,8 @@
 
 import os
 import errno
-from itertools import groupby, chain
+from itertools import groupby, chain, repeat
+from pkg.misc import EmptyI
 
 import pkg.actions as actions
 import pkg.client.filter as filter
@@ -95,6 +96,9 @@ class Manifest(object):
                 self.size = 0
                 self.actions = []
                 self.actions_bytype = {}
+                self.variants = {}   # variants seen in package
+                self.facets = {}     # facets seen in package
+                self.attributes = {} # package-wide attributes
 
         def __str__(self):
                 r = ""
@@ -115,7 +119,7 @@ class Manifest(object):
                 return r
 
 
-        def difference(self, origin):
+        def difference(self, origin, origin_exclude=EmptyI, self_exclude=EmptyI):
                 """Return three lists of action pairs representing origin and
                 destination actions.  The first list contains the pairs
                 representing additions, the second list contains the pairs
@@ -127,11 +131,11 @@ class Manifest(object):
 
                 sdict = dict(
                     ((a.name, a.attrs.get(a.key_attr, id(a))), a)
-                    for a in self.actions
+                    for a in self.gen_actions(self_exclude)
                 )
                 odict = dict(
                     ((a.name, a.attrs.get(a.key_attr, id(a))), a)
-                    for a in origin.actions
+                    for a in origin.gen_actions(origin_exclude)
                 )
 
                 sset = set(sdict.keys())
@@ -162,18 +166,61 @@ class Manifest(object):
 
                 return (added, changed, removed)
 
-        def combined_difference(self, origin):
+        @staticmethod
+        def comm(*compare_m):
+                """Like the unix utility comm, except that this function
+                takes an arbitrary number of manifests and compares them,
+                returning a tuple consisting of each manifest's actions
+                that are not the same for all manifests, followed by a 
+                list of actions that are the same in each manifest."""
+
+                # construct list of dictionaries of actions in each
+                # manifest, indexed by unique keys
+                m_dicts = [ 
+                    dict(
+                    ((a.name, a.attrs.get(a.key_attr, id(a))), a) for a in m.actions 
+                    )
+                    for m in compare_m                   
+                ]
+                # construct list of key sets in each dict
+                #
+                m_sets = [
+                    set(m.keys())
+                    for m in m_dicts
+                ]
+
+                common_keys = reduce(lambda a, b: a & b, m_sets)
+                
+                # determine which common_keys have common actions
+                for k in common_keys.copy():
+                        for i in range(len(m_dicts) - 1):
+                                if m_dicts[i][k].different(
+                                    m_dicts[i + 1][k]):
+                                        common_keys.remove(k)
+                                        break
+                return tuple(chain(
+                    (
+                        [ m_dicts[i][k] for k in m_sets[i] - common_keys ]
+                        for i in range(len(m_dicts))
+                    )
+                    (
+                        [ m_dicts[0][k] for k in common_keys ]
+                    )
+                ))
+
+
+        def combined_difference(self, origin, ov=[], sv=[]):
                 """Where difference() returns three lists, combined_difference()
                 returns a single list of the concatenation of the three."""
-                return list(chain(*self.difference(origin)))
+                return list(chain(*self.difference(origin, ov, sv)))
 
-        def humanized_differences(self, other):
+        def humanized_differences(self, other, ov=EmptyI, sv=EmptyI):
                 """Output expects that self is newer than other.  Use of sets
                 requires that we convert the action objects into some marshalled
                 form, otherwise set member identities are derived from the
                 object pointers, rather than the contents."""
 
-                l = self.difference(other)
+                l = self.difference(other, ov, sv)
                 out = ""
 
                 for src, dest in chain(*l):
@@ -185,31 +232,35 @@ class Manifest(object):
                                 out += "%s -> %s\n" % (src, dest)
                 return out
 
-        def gen_actions_by_type(self, type):
-                """Generate actions in the manifest of type "type"."""
+        def gen_actions(self, excludes=EmptyI):
+                """Generate actions in manifest through ordered callable list"""
+                for a in self.actions:
+                        for c in excludes:
+                                if not c(a):
+                                        break
+                        else:
+                                yield a
 
-                return (a for a in self.actions_bytype.get(type,[]))
-
-        def gen_key_attribute_value_by_type(self, type):
+        def gen_actions_by_type(self, type, excludes=EmptyI):
+                """Generate actions in the manifest of type "type"
+                through ordered callable list"""
+                for a in self.actions_bytype.get(type, []):
+                        for c in excludes:
+                                if not c(a):
+                                        break
+                        else:
+                                yield a
+                       
+        def gen_key_attribute_value_by_type(self, type, excludes=EmptyI):
                 """Generate the value of the key atrribute for each action
                 of type "type" in the manifest."""
 
                 return (
                     a.attrs.get(a.key_attr)
-                    for a
-                    in self.gen_actions_by_type(type)
+                    for a in self.gen_actions_by_type(type, excludes)
                 )
 
-        def filter(self, filters):
-                """Filter out actions from the manifest based on filters."""
-
-                self.actions = [
-                    a
-                    for a in self.actions
-                    if filter.apply_filters(a, filters)
-                ]
-
-        def duplicates(self):
+        def duplicates(self, excludes=EmptyI):
                 """Find actions in the manifest which are duplicates (i.e.,
                 represent the same object) but which are not identical (i.e.,
                 have all the same attributes)."""
@@ -219,7 +270,9 @@ class Manifest(object):
                         return a.name, a.attrs.get(a.key_attr, id(a))
 
                 alldups = []
-                for k, g in groupby(sorted(self.actions, key = fun), fun):
+                actions = [ a for a in self.gen_actions(excludes)]
+
+                for k, g in groupby(sorted(actions, key=fun), fun):
                         glist = list(g)
                         dups = set()
                         for i in range(len(glist) - 1):
@@ -268,7 +321,26 @@ class Manifest(object):
                                 self.actions_bytype[action.name] = [ action ]
                         else:
                                 self.actions_bytype[action.name].append(action)
+                        # add any set actions to attributes
+                        if action.name == "set":
+                                try:
+                                        keyvalue = action.attrs["name"]
+                                        if keyvalue not in self.attributes:
+                                                self.attributes[keyvalue] = \
+                                                    action.attrs["value"]
+                                except KeyError: # ignore broken set actions
+                                        pass
 
+                        # append any variants and facets to manifest dict
+                        v_list, f_list = action.get_varcet_keys()
+
+                        if v_list or f_list:
+                                for v, d in zip(v_list, repeat(self.variants)) \
+                                    + zip(f_list, repeat(self.facets)):
+                                        if v not in d:
+                                                d[v] = set([action.attrs[v]])
+                                        else:
+                                                d[v].add(action.attrs[v])
                 return
 
         def search_dict(self):
@@ -340,6 +412,14 @@ class Manifest(object):
                 mfile.write(self.tostr_unsorted())
                 mfile.close()
 
+        def get_variants(self, name):
+                if name not in self.attributes:
+                        return None
+                vars = self.attributes[name]
+                if not isinstance(vars, str):
+                        return vars
+                return [vars]
+
         def get(self, key, default):
                 try:
                         return self[key]
@@ -347,28 +427,12 @@ class Manifest(object):
                         return default
 
         def __getitem__(self, key):
-                """Return the value for the package attribute 'key'.  If
-                multiple attributes exist, return the first.  Raises KeyError if
-                the attribute is not found."""
-                try:
-                        values = [
-                            a.attrs["value"]
-                            for a in self.actions
-                            if a.name == "set" and a.attrs["name"] == key
-                        ]
-                except KeyError:
-                        # This hides the fact that we had busted attribute
-                        # actions in the manifest, but that's probably not so
-                        # bad.
-                        raise KeyError, key
-
-                if values:
-                        return values[0]
-
-                raise KeyError, key
+                """Return the value for the package attribute 'key'."""
+                return self.attributes[key]
 
         def __setitem__(self, key, value):
                 """Set the value for the package attribute 'key' to 'value'."""
+                self.attributes[key] = value
                 for a in self.actions:
                         if a.name == "set" and a.attrs["name"] == key:
                                 a.attrs["value"] = value
@@ -378,9 +442,6 @@ class Manifest(object):
                 self.actions.append(new_attr)
 
         def __contains__(self, key):
-                for a in self.actions:
-                        if a.name == "set" and a.attrs["name"] == key:
-                                return True
-                return False
+                return key in self.attributes
 
 null = Manifest()

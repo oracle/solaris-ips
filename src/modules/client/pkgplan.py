@@ -32,6 +32,7 @@ import pkg.client.filelist as filelist
 import pkg.actions.directory as directory
 from pkg.misc import msg
 from pkg.misc import get_pkg_otw_size
+from pkg.misc import EmptyI
 
 class PkgPlan(object):
         """A package plan takes two package FMRIs and an Image, and produces the
@@ -115,7 +116,7 @@ class PkgPlan(object):
                 if self.destination_fmri:
                         fmri_set.add(self.destination_fmri)
                         
-        def evaluate(self, filters = []):
+        def evaluate(self, old_excludes=EmptyI, new_excludes=EmptyI):
                 """Determine the actions required to transition the package."""
                 # if origin unset, determine if we're dealing with an previously
                 # installed version or if we're dealing with the null package
@@ -123,6 +124,7 @@ class PkgPlan(object):
                 # XXX Perhaps make the pkgplan creator make this explicit, so we
                 # don't have to check?
                 f = None
+
                 if not self.origin_fmri:
                         f = self.image.older_version_installed(
                             self.destination_fmri)
@@ -131,36 +133,14 @@ class PkgPlan(object):
                                 self.__origin_mfst = \
 				    self.image.get_manifest(f)
 
-                self.__destination_filters = filters
-
-                # Try to load the filter used for the last install of the
-                # package.
-                origin_filters = []
-                if self.origin_fmri:
-                        try:
-                                f = file("%s/pkg/%s/filters" % \
-                                    (self.image.imgdir,
-                                    self.origin_fmri.get_dir_path()), "r")
-                        except EnvironmentError, e:
-                                if e.errno != errno.ENOENT:
-                                        raise
-                        else:
-                                origin_filters = [
-                                    (l.strip(), compile(
-                                        l.strip(), "<filter string>", "eval"))
-                                    for l in f.readlines()
-                                ]
-
-                self.__destination_mfst.filter(self.__destination_filters)
-                self.__origin_mfst.filter(origin_filters)
-
                 # Assume that origin actions are unique, but make sure that
                 # destination ones are.
-                ddups = self.__destination_mfst.duplicates()
+                ddups = self.__destination_mfst.duplicates(new_excludes)
                 if ddups:
                         raise RuntimeError, ["Duplicate actions", ddups]
 
-                self.actions = self.__destination_mfst.difference(self.__origin_mfst)
+                self.actions = self.__destination_mfst.difference(self.__origin_mfst,
+                    old_excludes, new_excludes)
 
                 # figure out how many implicit directories disappear in this
                 # transition and add directory remove actions.  These won't
@@ -169,14 +149,14 @@ class PkgPlan(object):
 
                 tmpset = set()
 
-                for a in self.__origin_mfst.actions:
+                for a in self.__origin_mfst.gen_actions(old_excludes):
                         tmpset.update(a.directory_references())
 
                 absent_dirs = self.image.expanddirs(tmpset)
 
                 tmpset = set()
 
-                for a in self.__destination_mfst.actions:
+                for a in self.__destination_mfst.gen_actions(new_excludes):
                         tmpset.update(a.directory_references())
 
                 absent_dirs.difference_update(self.image.expanddirs(tmpset))
