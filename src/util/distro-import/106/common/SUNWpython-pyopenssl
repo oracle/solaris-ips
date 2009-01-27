@@ -1,0 +1,5 @@
+package SUNWpython-pyopenssl
+classification "Development/Python"
+import SUNWpython-pyopenssl
+version 0.8
+end package

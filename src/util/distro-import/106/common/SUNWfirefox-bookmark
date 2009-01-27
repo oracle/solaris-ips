@@ -1,0 +1,4 @@
+package SUNWfirefox-bookmark
+classification "Applications/Internet"
+import SUNWfirefox-bookmark
+end package

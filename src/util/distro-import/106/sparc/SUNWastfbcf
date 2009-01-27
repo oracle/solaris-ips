@@ -1,0 +1,4 @@
+package SUNWastfbcf
+classification "Drivers/Display"
+import SUNWastfbcf
+end package

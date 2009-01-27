@@ -1,0 +1,5 @@
+package SUNWgtk-vnc
+classification "Development/GNOME and GTK+"
+import SUNWgtk-vnc
+import SUNWgtk-vnc-devel
+end package

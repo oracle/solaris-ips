@@ -1,0 +1,5 @@
+package SUNWpcre
+classification "Development/Perl"
+import SUNWpcre
+version 7.8
+end package

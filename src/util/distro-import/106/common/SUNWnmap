@@ -1,0 +1,5 @@
+package SUNWnmap
+classification "System/Administration and Configuration"
+import SUNWnmap
+version 4.75
+end package

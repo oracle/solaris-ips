@@ -1,0 +1,5 @@
+package SUNWvinagre
+classification "Applications/Internet"
+import SUNWvinagre
+import SUNWvinagre-root
+end package

@@ -1,0 +1,4 @@
+package SUNWlynx
+classification "Applications/Internet"
+import SUNWlynx
+end package

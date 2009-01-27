@@ -1,0 +1,6 @@
+package SUNWlang-zhTW-extra
+classification "System/Localizations"
+import SUNWlang-zhTW-extra
+depend SUNWiconv-extra
+depend SUNWiconv-unicode
+end package

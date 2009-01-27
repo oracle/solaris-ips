@@ -1,0 +1,6 @@
+# make sure installation/removal/changes of fonts causes rebuild of font cache
+# since these files are getting moved around from /usr/openwin to /usr/X11, 
+# use a pattern that will match both locations
+chattr_glob */fonts/*.pcf type file restart_fmri=svc:/application/font/fc-cache:default
+chattr_glob */fonts/*.pcf.gz type file restart_fmri=svc:/application/font/fc-cache:default
+chattr_glob */fonts/*.ttf type file restart_fmri=svc:/application/font/fc-cache:default

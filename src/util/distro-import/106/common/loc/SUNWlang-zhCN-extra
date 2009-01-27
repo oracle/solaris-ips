@@ -1,0 +1,6 @@
+package SUNWlang-zhCN-extra
+classification "System/Localizations"
+import SUNWlang-zhCN-extra
+depend SUNWiconv-extra
+depend SUNWiconv-unicode
+end package

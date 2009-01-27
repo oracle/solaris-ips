@@ -226,6 +226,12 @@ category = Storage
 [SUNWastdev]
 category = Software Management
 
+[SUNWastfb]
+category = Display
+
+[SUNWastfbcf]
+category = Display
+
 [SUNWatfs]
 category = File System
 
@@ -583,6 +589,9 @@ category = Services
 [SUNWdhcsb]
 category = Services
 
+[SUNWdia]
+category = Graphics and Imaging
+
 [SUNWdialog]
 category = System Utilities
 
@@ -594,6 +603,9 @@ category = Core
 
 [SUNWdistro-license-copyright]
 category = Core
+
+[SUNWdiveintopython]
+category = Python
 
 [SUNWdmfe]
 category = Networking
@@ -731,6 +743,9 @@ category = Printing
 category = System
 
 [SUNWfirefox]
+category = Internet
+
+[SUNWfirefox-bookmark]
 category = Internet
 
 [SUNWfirefoxl10n-de-DE]
@@ -1129,9 +1144,6 @@ category = Panels and Applets
 [SUNWgnome-intranet-applets]
 category = Panels and Applets
 
-[SUNWgnome-keyring-manager]
-category = System Utilities
-
 [SUNWgnome-l10ndocument-de]
 category = Localizations (Desktop)
 
@@ -1381,6 +1393,12 @@ category = Libraries (System)
 [SUNWgnu-mc]
 category = File Managers
 
+[SUNWgnu-mp]
+category = High Performance Computing
+
+[SUNWgnu-mpfr]
+category = High Performance Computing
+
 [SUNWgnu-which]
 category = System Utilities
 
@@ -1435,6 +1453,12 @@ category = Python
 [SUNWgtar]
 category = GNU
 
+[SUNWgtk-vnc]
+category = GNOME and GTK+
+
+[SUNWgtk-vnc-python24]
+category = GNOME and GTK+
+
 [SUNWgtkmm]
 category = Libraries
 
@@ -1455,6 +1479,9 @@ category = System Utilities
 
 [SUNWhal]
 category = Hardware
+
+[SUNWhamster]
+category = Panels and Applets
 
 [SUNWhdhcm]
 category = Services
@@ -1596,6 +1623,9 @@ category = Libraries (System)
 
 [SUNWimagick]
 category = Multimedia Libraries
+
+[SUNWinstall]
+category = Administration and Configuration
 
 [SUNWinstall-l10n]
 category = Localizations (System)
@@ -1764,6 +1794,9 @@ category = Ruby
 
 [SUNWjss]
 category = Services
+
+[SUNWjunit]
+category = Java
 
 [SUNWjxwsvr]
 category = X11 (System)
@@ -2182,6 +2215,15 @@ category = Libraries (System)
 [SUNWlibpcap]
 category = Libraries (System)
 
+[SUNWlibpigment]
+category = Multimedia Libraries
+
+[SUNWlibpigment-python24]
+category = Multimedia Libraries
+
+[SUNWlibpigment-python25]
+category = Multimedia Libraries
+
 [SUNWlibpopt]
 category = Libraries (System)
 
@@ -2226,6 +2268,9 @@ category = Libraries (System)
 
 [SUNWlibvirt]
 category = Libraries (System)
+
+[SUNWlibvisual]
+category = Multimedia Libraries
 
 [SUNWlibxmlpp]
 category = C++
@@ -2277,6 +2322,9 @@ category = Libraries (System)
 
 [SUNWlxsl]
 category = Libraries (System)
+
+[SUNWlynx]
+category = Internet
 
 [SUNWm17n]
 category = Internationalization
@@ -2866,10 +2914,25 @@ category = Python
 [SUNWpython-twisted]
 category = Python
 
+[SUNWpython-twisted-web2]
+category = Python
+
 [SUNWpython-xdg]
 category = Python
 
 [SUNWpython-zope-interface]
+category = Python
+
+[SUNWpython24-cssutils]
+category = Python
+
+[SUNWpython25-cssutils]
+category = Python
+
+[SUNWpython25-twisted]
+category = Python
+
+[SUNWpython25-twisted-web2]
 category = Python
 
 [SUNWqfed]
@@ -2892,9 +2955,6 @@ category = Administration and Configuration
 
 [SUNWquilt]
 category = Source Code Management
-
-[SUNWqus]
-category = Storage
 
 [SUNWralink]
 category = Networking
@@ -3060,6 +3120,9 @@ category = Storage
 
 [SUNWsdhcm]
 category = Services
+
+[SUNWseahorse]
+category = Security
 
 [SUNWser]
 category = Services
@@ -3421,6 +3484,9 @@ category = Internet
 [SUNWtsg]
 category = Trusted
 
+[SUNWtss]
+category = Security
+
 [SUNWttf-arabeyes]
 category = Fonts
 
@@ -3531,6 +3597,9 @@ category = Media
 
 [SUNWvim]
 category = Text Tools
+
+[SUNWvinagre]
+category = Internet
 
 [SUNWvirt-manager]
 category = Virtualization

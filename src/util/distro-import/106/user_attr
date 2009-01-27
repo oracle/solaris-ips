@@ -1,4 +1,7 @@
 #
+# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Use is subject to license terms.
+#
 # CDDL HEADER START
 #
 # The contents of this file are subject to the terms of the
@@ -18,19 +21,14 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# /etc/user_attr
 #
-
-install:
-	@cd SUNWipkg; pwd; $(MAKE) install
-	@cd SUNWipkg-brand; pwd; $(MAKE) install
-	@cd SUNWipkg-gui; pwd; $(MAKE) install
-	@cd SUNWipkg-gui-data; pwd; $(MAKE) install
-	@cd SUNWipkg-gui-l10n; pwd; $(MAKE) install
-	@cd SUNWipkg-um; pwd; $(MAKE) install
-	@cd SUNWpython-cherrypy; pwd; $(MAKE) install
-	@cd SUNWpython-mako; pwd; $(MAKE) install
-	@if [ -n "${BUILD_PYOPENSSL}" ]; then \
-		cd SUNWpython-pyopenssl; pwd; $(MAKE) install; \
-	fi
+# user attributes. see user_attr(4)
+#
+#
+adm::::profiles=Log Management
+dladm::::auths=solaris.smf.manage.wpa,solaris.smf.modify
+lp::::profiles=Printer Management
+postgres::::type=role;profiles=Postgres Administration,All
+root::::auths=solaris.*,solaris.grant;profiles=All;lock_after_retries=no;min_label=admin_low;clearance=admin_high
+zfssnap::::type=role;auths=solaris.smf.manage.zfs-auto-snapshot;profiles=ZFS File System Management

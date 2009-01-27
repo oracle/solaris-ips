@@ -1,0 +1,5 @@
+package SUNWhamster
+classification "Applications/Panels and Applets"
+import SUNWhamster
+import SUNWhamster-root
+end package

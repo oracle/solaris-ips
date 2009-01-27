@@ -1,0 +1,7 @@
+package SUNWlang-zhHK-extra
+classification "System/Localizations"
+import SUNWlang-zhHK-extra exclude usr/openwin
+chattr_glob * edit path usr/openwin/lib usr/X11/share/X11
+depend SUNWiconv-extra
+depend SUNWiconv-unicode
+end package

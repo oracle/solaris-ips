@@ -1,0 +1,5 @@
+package SUNWastfb
+classification "Drivers/Display"
+import SUNWastfb
+add driver name=ast perms="* 0666 root sys" alias=pci1a03,2000
+end package

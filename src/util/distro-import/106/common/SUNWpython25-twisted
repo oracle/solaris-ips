@@ -1,0 +1,4 @@
+package SUNWpython25-twisted
+classification "Development/Python"
+import SUNWpython25-twisted
+end package

@@ -1,0 +1,4 @@
+package SUNWgtk-vnc-python24
+classification "Development/GNOME and GTK+"
+import SUNWgtk-vnc-python24
+end package

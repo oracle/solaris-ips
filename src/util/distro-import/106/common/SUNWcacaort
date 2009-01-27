@@ -1,0 +1,15 @@
+package SUNWcacaort
+classification "Web Services/Application and Web Servers"
+import SUNWcacaort
+add dir group=sys mode=0755 owner=root path=etc
+add dir group=sys mode=0755 owner=root path=etc/cacao
+add dir group=sys mode=0755 owner=root path=etc/cacao/instances
+add dir group=sys mode=0755 owner=root path=etc/cacao/instances/default
+add dir group=sys mode=0755 owner=root path=etc/cacao/instances/default/modules
+depend SUNWj6rt
+depend SUNWjdmk-base
+depend SUNWloc
+depend SUNWpkgcmds
+depend SUNWunzip
+depend SUNWxcu4
+end package

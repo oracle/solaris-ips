@@ -1,0 +1,11 @@
+# gnome services; these show up in lots of packages, so do them globally
+# rather than per package
+chattr_glob etc/gconf/schemas/*.entries type file restart_fmri=svc:/application/desktop-cache/gconf-cache:default
+chattr_glob etc/gconf/schemas/*.schemas type file restart_fmri=svc:/application/desktop-cache/gconf-cache:default
+chattr_glob usr/lib/amd64/gtk-2.0/*/immodules/*.so type file restart_fmri=svc:/application/desktop-cache/input-method-cache:default
+chattr_glob usr/lib/amd64/gtk-2.0/*/loaders/*.so type file restart_fmri=svc:/application/desktop-cache/pixbuf-loaders-installer:default
+chattr_glob usr/lib/gtk-2.0/*/immodules/*.so type file restart_fmri=svc:/application/desktop-cache/input-method-cache:default
+chattr_glob usr/lib/gtk-2.0/*/loaders/*.so type file restart_fmri=svc:/application/desktop-cache/pixbuf-loaders-installer:default
+chattr_glob usr/share/applications/* type file restart_fmri=svc:/application/desktop-cache/gconf-cache:default
+chattr_glob usr/share/icons/* type file restart_fmri=svc:/application/desktop-cache/icon-cache:default
+chattr_glob usr/share/mime/packages/* type file restart_fmri=svc:/application/desktop-cache/mime-types-cache:default

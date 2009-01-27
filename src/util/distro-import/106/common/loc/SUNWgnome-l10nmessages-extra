@@ -1,0 +1,7 @@
+package SUNWgnome-l10nmessages-extra
+classification "Desktop (GNOME)/Localizations"
+import SUNWgnome-l10nmessages-extra exclude \
+	usr/share/omf/gnome-access-guide/gnome-access-guide-pt.omf \
+	usr/share/omf/system-admin-guide/system-admin-guide-pt.omf \
+	usr/share/omf/user-guide/user-guide-pt.omf
+end package

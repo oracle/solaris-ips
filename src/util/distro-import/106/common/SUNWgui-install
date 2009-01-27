@@ -1,0 +1,4 @@
+package SUNWgui-install
+classification "System/Administration and Configuration"
+import SUNWgui-install
+end package

@@ -376,7 +376,9 @@ class install_func(_install):
                                     | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
 
                 install_sw(CP, CPVER, CPARC, CPDIR, CPURL, CPIDIR)
-                install_sw(PO, POVER, POARC, PODIR, POURL, POIDIR)
+		if "BUILD_PYOPENSSL" in os.environ and \
+                    os.environ["BUILD_PYOPENSSL"] != "":
+                        install_sw(PO, POVER, POARC, PODIR, POURL, POIDIR)
                 install_sw(MAKO, MAKOVER, MAKOARC, MAKODIR, MAKOURL, MAKOIDIR)
 
 def install_sw(swname, swver, swarc, swdir, swurl, swidir):

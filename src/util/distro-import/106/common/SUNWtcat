@@ -1,0 +1,6 @@
+package SUNWtcat
+classification "Web Services/Application and Web Servers"
+import SUNWtcatu
+import SUNWtcatr
+version 6.0.18
+end package

@@ -1,3 +1,4 @@
+#!/bin/ksh
 #
 # CDDL HEADER START
 #
@@ -20,17 +21,41 @@
 #
 # Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
-#
 
-install:
-	@cd SUNWipkg; pwd; $(MAKE) install
-	@cd SUNWipkg-brand; pwd; $(MAKE) install
-	@cd SUNWipkg-gui; pwd; $(MAKE) install
-	@cd SUNWipkg-gui-data; pwd; $(MAKE) install
-	@cd SUNWipkg-gui-l10n; pwd; $(MAKE) install
-	@cd SUNWipkg-um; pwd; $(MAKE) install
-	@cd SUNWpython-cherrypy; pwd; $(MAKE) install
-	@cd SUNWpython-mako; pwd; $(MAKE) install
-	@if [ -n "${BUILD_PYOPENSSL}" ]; then \
-		cd SUNWpython-pyopenssl; pwd; $(MAKE) install; \
+interval=$2
+
+. /lib/svc/share/smf_include.sh
+
+check_is_domu()
+{
+	if [ `uname -p` != "i386" -o `uname -i` != "i86xpv" ]; then
+		echo "This service will only run in a PV xVM domU."
+		svcadm disable -t svc:/system/xvm/ipagent:default
+		exit $SMF_EXIT_OK
 	fi
+
+	/usr/sbin/devfsadm -i domcaps
+	domcaps=`cat /dev/xen/domcaps 2>/dev/null`
+	echo "$domcaps" | grep "control_d" > /dev/null
+	if [ $? = 0 ]; then
+		echo "This service will only run in a PV xVM domU."
+		svcadm disable -t svc:/system/xvm/ipagent:default
+		exit $SMF_EXIT_OK
+	fi
+}
+
+case $1 in 
+'start')
+	check_is_domu
+
+	/usr/lib/xen/bin/ipagent $interval &
+
+	;;
+
+*)
+	echo "Usage: $0 start [report_interval]"
+	exit 1
+	;;
+esac	
+
+exit $?

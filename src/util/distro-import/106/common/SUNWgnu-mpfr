@@ -1,0 +1,5 @@
+package SUNWgnu-mpfr
+classification "Development/High Performance Computing"
+import SUNWgnu-mpfr
+version 2.3.2
+end package

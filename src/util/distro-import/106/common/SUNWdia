@@ -1,0 +1,4 @@
+package SUNWdia
+classification "Applications/Graphics and Imaging"
+import SUNWdia
+end package

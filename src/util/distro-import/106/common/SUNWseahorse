@@ -1,0 +1,6 @@
+package SUNWseahorse
+classification "System/Security"
+import SUNWseahorse
+import SUNWseahorse-devel
+import SUNWseahorse-root
+end package

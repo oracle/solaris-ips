@@ -1,3 +1,4 @@
+#!/sbin/sh
 #
 # CDDL HEADER START
 #
@@ -18,19 +19,29 @@
 #
 # CDDL HEADER END
 #
+
+#
 # Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
+# ident	"@(#)svc-dlmgmtd	1.1	08/01/22 SMI"
 
-install:
-	@cd SUNWipkg; pwd; $(MAKE) install
-	@cd SUNWipkg-brand; pwd; $(MAKE) install
-	@cd SUNWipkg-gui; pwd; $(MAKE) install
-	@cd SUNWipkg-gui-data; pwd; $(MAKE) install
-	@cd SUNWipkg-gui-l10n; pwd; $(MAKE) install
-	@cd SUNWipkg-um; pwd; $(MAKE) install
-	@cd SUNWpython-cherrypy; pwd; $(MAKE) install
-	@cd SUNWpython-mako; pwd; $(MAKE) install
-	@if [ -n "${BUILD_PYOPENSSL}" ]; then \
-		cd SUNWpython-pyopenssl; pwd; $(MAKE) install; \
-	fi
+. /lib/svc/share/smf_include.sh
+
+# The real daemon is not started in a non-global zone. But we need to
+# create a dummy background process to preserve contract lifetime.
+
+if smf_is_nonglobalzone; then
+	(while true ; do sleep 3600 ; done) & 
+	exit $SMF_EXIT_OK
+fi
+
+# Start the dlmgmtd daemon.
+/sbin/dlmgmtd
+status=$?
+ppriv -s A+file_dac_execute $(pgrep dlmgmtd)
+if [ $status = 0 ]; then
+	exit $SMF_EXIT_OK
+else
+	exit $SMF_EXIT_ERR_FATAL
+fi

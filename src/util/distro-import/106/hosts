@@ -1,4 +1,3 @@
-#
 # CDDL HEADER START
 #
 # The contents of this file are subject to the terms of the
@@ -18,19 +17,12 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
-
-install:
-	@cd SUNWipkg; pwd; $(MAKE) install
-	@cd SUNWipkg-brand; pwd; $(MAKE) install
-	@cd SUNWipkg-gui; pwd; $(MAKE) install
-	@cd SUNWipkg-gui-data; pwd; $(MAKE) install
-	@cd SUNWipkg-gui-l10n; pwd; $(MAKE) install
-	@cd SUNWipkg-um; pwd; $(MAKE) install
-	@cd SUNWpython-cherrypy; pwd; $(MAKE) install
-	@cd SUNWpython-mako; pwd; $(MAKE) install
-	@if [ -n "${BUILD_PYOPENSSL}" ]; then \
-		cd SUNWpython-pyopenssl; pwd; $(MAKE) install; \
-	fi
+# ident	"@(#)hosts	1.7	06/08/01 SMI"
+#
+# Internet host table
+#
+::1		localhost
+127.0.0.1	localhost loghost opensolaris

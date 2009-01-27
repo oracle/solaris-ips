@@ -1,0 +1,4 @@
+package SUNWdiveintopython
+classification "Development/Python"
+import SUNWdiveintopython
+end package
