@@ -372,6 +372,7 @@ include common/SUNWimagick
 include common/SUNWinstall
 include common/SUNWinstall-l10n
 include common/SUNWinstall-libs
+include common/SUNWinstall-test
 include common/SUNWinstalladm-tools
 include common/SUNWintgige
 include common/SUNWipc
@@ -2038,6 +2039,7 @@ depend SUNWimagick
 depend SUNWinstall
 depend SUNWinstall-l10n
 depend SUNWinstall-libs
+depend SUNWinstall-test
 depend SUNWinstalladm-tools
 depend SUNWintgige
 $(sparc_ONLY)depend SUNWiopc

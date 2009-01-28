@@ -14,12 +14,12 @@
 # Specific build products
 ^src/*.tar.gz$
 ^src/CherryPy-.*$
+^src/Mako-.*$
+^src/gui/data/addmoresoftware.desktop$
 ^src/gui/data/packagemanager-preferences.schemas$
 ^src/gui/data/packagemanager.desktop$
 ^src/gui/data/packagemanager.png$
-^src/gui/data/packagemanager.png$
 ^src/gui/help/.*/package-manager.xml$
-^src/Mako-.*$
 ^src/man/pkg.1$
 ^src/man/pkg.5$
 ^src/man/pkg.depotd.1m$
@@ -35,7 +35,6 @@
 ^src/um/data/updatemanager.desktop$
 ^src/um/data/updatemanager.png$
 ^src/um/data/updatemanagernotifier.desktop$
-^src/um/data/updatemanager.png$
 ^src/util/distro-import/.*/entire.incorporation$
 ^src/util/distro-import/SUNWfixes/
 ^src/util/distro-import/cluster.import$
