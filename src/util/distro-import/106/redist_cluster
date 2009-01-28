@@ -3168,6 +3168,7 @@ depend SUNWlibtasn1
 depend SUNWlibtheora
 depend SUNWlibusb
 depend SUNWlibusbugen
+depend SUNWlibvisual
 depend SUNWlldap
 depend SUNWloc
 depend SUNWlp-cmds

@@ -257,6 +257,7 @@ include common/SUNWlibtasn1
 include common/SUNWlibtheora
 include common/SUNWlibusb
 include common/SUNWlibusbugen
+include common/SUNWlibvisual
 include common/SUNWlldap
 include common/SUNWloc
 include common/SUNWlp-cmds
@@ -997,6 +998,7 @@ depend SUNWlibtasn1
 depend SUNWlibtheora
 depend SUNWlibusb
 depend SUNWlibusbugen
+depend SUNWlibvisual
 depend SUNWlldap
 depend SUNWloc
 depend SUNWlp-cmds
