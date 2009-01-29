@@ -198,16 +198,16 @@ class Manifest(object):
                                     m_dicts[i + 1][k]):
                                         common_keys.remove(k)
                                         break
-                return tuple(chain(
-                    (
+                return tuple(
+                    [
                         [ m_dicts[i][k] for k in m_sets[i] - common_keys ]
                         for i in range(len(m_dicts))
-                    )
-                    ,
-                    (
+                    ]
+                    +
+                    [
                         [ m_dicts[0][k] for k in common_keys ]
-                    )
-                ))
+                    ]
+                )
 
 
         def combined_difference(self, origin, ov=[], sv=[]):
