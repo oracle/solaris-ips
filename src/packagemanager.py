@@ -1923,7 +1923,7 @@ class PackageManager:
                 return api_o.img.get_version_installed(pkg)
 
         @staticmethod
-        def get_manifest(img, package, filtered = True):
+        def get_manifest(img, package):
                 '''helper function'''
                 # XXX Should go to the  -> imageinfo.py
                 manifest = None
@@ -1932,7 +1932,7 @@ class PackageManager:
                 if packagemanager.cancelled:
                         return manifest
                 try:
-                        manifest = img.get_manifest(package, filtered)
+                        manifest = img.get_manifest(package)
                 except OSError:
                         # XXX It is possible here that the user doesn't have network con,
                         # XXX proper permissions to save manifest, should we do something 
@@ -1940,6 +1940,8 @@ class PackageManager:
                         pass
                 except (retrieve.ManifestRetrievalError,
                     retrieve.DatastreamRetrievalError, NameError):
+                        pass
+                except misc.TransportFailures:
                         pass
                 return manifest
 
@@ -2053,12 +2055,7 @@ class PackageManager:
                         info = None
                         package = pkg[enumerations.FMRI_COLUMN]
                         if (img and package):
-                                man = None
-                                try:
-                                        man = self.get_manifest(img, package, 
-                                            filtered = True)
-                                except TransportFailures:
-                                        pass
+                                man = self.get_manifest(img, package)
                                 if man:
                                         info = man.get("description", "")
                         gobject.idle_add(self.update_desc, info, pkg)
