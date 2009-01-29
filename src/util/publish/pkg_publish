@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/ksh
 #
 #
 # usage: pkg_publish pkgdir servername
