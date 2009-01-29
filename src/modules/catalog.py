@@ -587,6 +587,7 @@ class Catalog(object):
                 value of -1 means that the size is not known."""
 
                 size = 0
+                bad_fmri = None
 
                 if not os.path.exists(path):
                         os.makedirs(path)
@@ -619,7 +620,12 @@ class Catalog(object):
                         else:
                                 # XXX Need to be able to handle old and new
                                 # format catalogs.
-                                f = fmri.PkgFmri(s[2:])
+                                try:
+                                        f = fmri.PkgFmri(s[2:])
+                                except fmri.IllegalFmri, e:
+                                        bad_fmri = e
+                                        continue
+
                                 catf.write("%s %s %s %s\n" %
                                     (s[0], "pkg", f.pkg_name, f.version))
 
@@ -635,6 +641,15 @@ class Catalog(object):
                         os.remove(catpath)
                         raise TruncatedTransferException(url, size,
                             content_size)
+
+                # If we got a parse error on FMRIs and transfer
+                # wasn't truncated, raise a FmriFailures error.
+                elif bad_fmri:
+                        attrf.close()
+                        catf.close()
+                        os.remove(attrpath)
+                        os.remove(catpath)
+                        raise bad_fmri
 
                 # Write the authority's origin into our attributes
                 if auth:

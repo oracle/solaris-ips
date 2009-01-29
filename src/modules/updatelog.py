@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -260,10 +260,12 @@ class UpdateLog(object):
                 # append the fmris.
                 mts = catalog.ts_to_datetime(cts)
                 cts = mts
+                pts = mts
                 added = 0
                 npkgs = 0
                 add_lines = []
                 unknown_lines = []
+                bad_fmri = None
                 attrs = {}
                 size = 0
 
@@ -284,6 +286,7 @@ class UpdateLog(object):
                                 ts = catalog.ts_to_datetime(l[1])
                                 if ts > cts:
                                         if ts > mts:
+                                                pts = mts
                                                 mts = ts
                                         line = "%s %s\n" % (l[2], l[3])
                                         unknown_lines.append(line)
@@ -295,18 +298,26 @@ class UpdateLog(object):
                                 ts = catalog.ts_to_datetime(l[1])
                                 if ts > cts:
                                         if ts > mts:
+                                                pts = mts
                                                 mts = ts
 
                                         # The format for C and V records
                                         # is described in the Catalog's
                                         # docstring.
                                         if l[2] in tuple("CV"):
-                                                f = fmri.PkgFmri(l[3])
+                                                try:
+                                                        f = fmri.PkgFmri(l[3])
+                                                except fmri.IllegalFmri, e:
+                                                        bad_fmri = e
+                                                        mts = pts
+                                                        continue
+
                                                 line = "%s %s %s %s\n" % \
                                                     (l[2], "pkg", f.pkg_name,
                                                     f.version)
                                                 add_lines.append(line)
                                                 added += 1
+
                                         # The format for R records is
                                         # described in the docstring for
                                         # RenameRecords
@@ -324,6 +335,11 @@ class UpdateLog(object):
                                 url = filep.geturl()
                         raise TruncatedTransferException(url, size,
                             content_size)
+
+                # If we got a parse error on FMRIs and transfer
+                # wasn't truncated, raise a retryable transport
+                elif bad_fmri:
+                        raise bad_fmri
 
                 # Verify that they aren't already in the catalog
                 catf = file(os.path.normpath(

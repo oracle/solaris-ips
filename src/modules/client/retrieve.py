@@ -152,6 +152,10 @@ def get_catalog(img, auth, hdr, ts):
 
                 raise CatalogRetrievalError("Could not retrieve catalog"
                     " from '%s'\nsocket error, reason: %s" % (prefix, e))
+        except pkg.fmri.IllegalFmri, e:
+                raise CatalogRetrievalError("Could not retrieve catalog"
+                    " from '%s'\nUnable to parse FMRI. Details follow:\n%s"
+                    % (prefix, e))
         except EnvironmentError, e:
                 raise CatalogRetrievalError("Could not retrieve catalog "
                     "from '%s'\nException: str:%s repr:%r" % (prefix,
