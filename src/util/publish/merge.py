@@ -191,21 +191,23 @@ def fetch_catalog(server_url):
         return cat, dl_dir
 
 catalog_dict = {}
+def load_catalog(server_url):
+        c = get_catalog(server_url)
+        d = {}
+        for f in c.fmris():
+                if f.pkg_name in d:
+                        d[f.pkg_name].append(f)
+                else:
+                        d[f.pkg_name] = [f]
+                for k in d.keys():
+                        d[k].sort(reverse = True)
+                catalog_dict[server_url] = d        
 
 def expand_fmri(server_url, fmri_string, constraint=version.CONSTRAINT_AUTO):
         """ from specified server, find matching fmri using CONSTRAINT_AUTO
         cache for performance.  Returns None if no matching fmri is found """
         if server_url not in catalog_dict:
-                c = get_catalog(server_url)
-                d = {}
-                for f in c.fmris():
-                        if f.pkg_name in d:
-                                d[f.pkg_name].append(f)
-                        else:
-                                d[f.pkg_name] = [f]
-                for k in d.keys():
-                        d[k].sort(reverse = True)
-                catalog_dict[server_url] = d
+                load_catalog(server_url)
 
         fmri = pkg.fmri.PkgFmri(fmri_string, "5.11")        
 
@@ -213,6 +215,12 @@ def expand_fmri(server_url, fmri_string, constraint=version.CONSTRAINT_AUTO):
                 if not fmri.version or f.version.is_successor(fmri.version, constraint):
                         return f
         return None
+
+def get_all_pkg_names(server_url):
+        """ return all the pkg_names in this catalog """
+        if server_url not in catalog_dict:
+                load_catalog(server_url)
+        return catalog_dict[server_url].keys()
 
 def get_dependencies(server_url, fmri_list):
         s = set()
@@ -268,7 +276,21 @@ def main_func():
         if not basedir:
                 basedir = os.getcwd()
 
-        fmri_arguments = pargs[1:]
+        server_list = [
+                v.split(",", 1)[1]
+                for v in varlist
+                ]                
+        
+        if len(pargs) == 1:
+                recursive = False
+                overall_set = set()
+                for s in server_list:
+                        for name in get_all_pkg_names(s):
+                                overall_set.add(name)
+                fmri_arguments = list(overall_set)
+
+        else:
+                fmri_arguments = pargs[1:]
 
         variant = "variant.%s" % pargs[0]
 
@@ -276,11 +298,6 @@ def main_func():
                 v.split(",", 1)[0]
                 for v in varlist
                 ]
-
-        server_list = [
-                v.split(",", 1)[1]
-                for v in varlist
-                ]                
 
         fmri_expansions = []
 
@@ -392,18 +409,27 @@ def merge_fmris(server_list, fmri_list, variant_list, variant, basedir, basename
 
                 
         if get_files:
-                # generate list of hashes for each server; last is common
+                # generate list of hashes for each server; last is commom
+                already_seen = {}
+                def repeated(a, d):
+                        if a in d:
+                                return True
+                        d[a] = 1
+                        return False
+
                 hash_sets = [
                         set(
                                 [
                                  a.hash
                                  for a in action_list
-                                 if hasattr(a, "hash")
+                                 if hasattr(a, "hash") and not \
+                                 repeated(a.hash, already_seen)
                                 ]
                                 )
                         for action_list in action_lists
                         ]
-
+                # remove duplicate files (save time)
+                
                 for server, hash_set in zip(server_list + [server_list[0]], hash_sets):
                         if len(hash_set) > 0:
                                 fetch_files_byhash(server, hash_set, basedir)
