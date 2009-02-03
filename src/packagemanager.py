@@ -164,10 +164,14 @@ class PackageManager:
                 self.update_all_proceed = False
                 self.ua_be_name = None
                 self.application_path = None
+                self.default_authority = None
                 self.first_run = True
                 self.selected_pkgname = None
                 self.info_cache = {}
                 self.selected = 0
+                self.selected_pkgs = {}
+                self.to_install_update = {}
+                self.to_remove = {}
                 self.in_startpage_startup = show_startpage
                 self.lang = None
                 self.start_page_url = None
@@ -263,7 +267,9 @@ class PackageManager:
                 clear_search_image.set_from_stock(gtk.STOCK_CLEAR, gtk.ICON_SIZE_MENU)
                 toolbar =  w_tree_main.get_widget("toolbutton2")
                 toolbar.set_expand(True)
-
+                self.__init_repository_tree_view()
+                self.install_button_tooltip = gtk.Tooltips()
+                self.remove_button_tooltip = gtk.Tooltips()
                 self.__update_reload_button()
                 self.w_main_clipboard.request_text(self.__clipboard_text_received)
                 self.w_main_window.set_title(main_window_title)
@@ -408,7 +414,7 @@ class PackageManager:
                 if link == None or link == "":
                         self.update_statusbar()
                 else:
-                        display_link = self.__handle_link(None,link,DISPLAY_LINK)
+                        display_link = self.__handle_link(None, link, DISPLAY_LINK)
                         if display_link != None:
                                 self.w_main_statusbar.push(0, display_link)
                         else:
@@ -571,6 +577,7 @@ class PackageManager:
                         gobject.TYPE_STRING,      # enumerations.CATEGORY_NAME
                         gobject.TYPE_STRING,      # enumerations.CATEGORY_DESCRIPTION
                         gtk.gdk.Pixbuf,           # enumerations.CATEGORY_ICON
+                        gobject.TYPE_BOOLEAN,     # enumerations.CATEGORY_ICON_VISIBLE
                         gobject.TYPE_BOOLEAN,     # enumerations.CATEGORY_VISIBLE
                         gobject.TYPE_PYOBJECT,    # enumerations.SECTION_LIST_OBJECT
                         )
@@ -597,7 +604,7 @@ class PackageManager:
                         gobject.TYPE_STRING,      # enumerations.REPOSITORY_NAME
                         )
 
-        def __init_tree_views(self, application_list, category_list, repositories_list):
+        def __init_tree_views(self, application_list, category_list):
                 '''This function connects treeviews with their models and also applies
                 filters'''
                 self.__disconnect_models()
@@ -654,22 +661,23 @@ class PackageManager:
                 self.w_application_treeview.append_column(column)
                 #Added selection listener
                 self.package_selection = self.w_application_treeview.get_selection()
-                # When vadj changes we need to set image descriptions 
-                # on visible status icons. This catches moving the scroll bars
-                # and scrolling up and down using keyboard.
-                vadj = self.w_application_treeview.get_vadjustment()
-                vadj.connect('value-changed', 
-                    self.__application_treeview_vadjustment_changed, None)
-                vadj = self.w_categories_treeview.get_vadjustment()
-                vadj.connect('value-changed', 
-                    self.__categories_treeview_vadjustment_changed, None)
+                if self.first_run:
+                        # When vadj changes we need to set image descriptions 
+                        # on visible status icons. This catches moving the scroll bars
+                        # and scrolling up and down using keyboard.
+                        vadj = self.w_application_treeview.get_vadjustment()
+                        vadj.connect('value-changed', 
+                            self.__application_treeview_vadjustment_changed, None)
+                        vadj = self.w_categories_treeview.get_vadjustment()
+                        vadj.connect('value-changed', 
+                            self.__categories_treeview_vadjustment_changed, None)
 
-                # When the size of the application_treeview changes
-                # we need to set image descriptions on visible status icons.
-                self.w_application_treeview.connect('size-allocate', 
-                    self.__application_treeview_size_allocate, None)
-                self.w_categories_treeview.connect('size-allocate', 
-                    self.__categories_treeview_size_allocate, None)
+                        # When the size of the application_treeview changes
+                        # we need to set image descriptions on visible status icons.
+                        self.w_application_treeview.connect('size-allocate', 
+                            self.__application_treeview_size_allocate, None)
+                        self.w_categories_treeview.connect('size-allocate', 
+                            self.__categories_treeview_size_allocate, None)
 
                 ##CATEGORIES TREEVIEW
                 #enumerations.CATEGORY_NAME
@@ -703,18 +711,9 @@ class PackageManager:
                             enumerations.FILTER_NAME)
                         self.w_filter_combobox.set_row_separator_func(
                             self.combobox_id_separator)
-                        ##FILTER COMBOBOX
-                        #enumerations.FILTER_NAME
-                        cell = gtk.CellRendererText()
-                        self.w_repository_combobox.pack_start(cell, True)
-                        self.w_repository_combobox.add_attribute(cell, 'text', \
-                            enumerations.REPOSITORY_NAME)
-                        self.w_repository_combobox.set_row_separator_func( \
-                            self.combobox_id_separator)
 
                 self.application_list = application_list
                 self.category_list = category_list
-                self.repositories_list = repositories_list
                 self.category_list_filter = category_list_filter
                 self.application_list_filter = application_list_filter
 
@@ -722,20 +721,20 @@ class PackageManager:
                 self.w_sections_combobox.set_active(self.initial_category)
                 self.w_filter_combobox.set_model(self.filter_list)
                 self.w_filter_combobox.set_active(self.initial_toplevel)
-                self.w_repository_combobox.set_model(repositories_list)
                 self.w_categories_treeview.set_model(category_list_filter)
                 self.w_application_treeview.set_model(application_list_sort)
                 application_list_filter.set_visible_func(self.__application_filter)
                 category_list_filter.set_visible_func(self.category_filter)
                 toggle_renderer.connect('toggled', self.__active_pane_toggle, \
                     application_list_sort)
-                category_selection.connect("changed", \
-                    self.__on_category_selection_changed, None)
-                self.w_categories_treeview.connect("row-activated", \
-                    self.__on_category_row_activated, None)
-                self.package_selection.set_mode(gtk.SELECTION_SINGLE)
-                self.package_selection.connect("changed", \
-                    self.__on_package_selection_changed, None)
+                if self.first_run:
+                        category_selection.connect("changed",
+                            self.__on_category_selection_changed, None)
+                        self.w_categories_treeview.connect("row-activated",
+                            self.__on_category_row_activated, None)
+                        self.package_selection.set_mode(gtk.SELECTION_SINGLE)
+                        self.package_selection.connect("changed",
+                            self.__on_package_selection_changed, None)
                 self.__set_categories_visibility(self.initial_category)
 
                 self.a11y_application_treeview = \
@@ -803,6 +802,14 @@ class PackageManager:
 
         def __application_treeview_column_sorted(self, widget, user_data):
                 self.__set_accessible_visible_status(False)
+
+        def __init_repository_tree_view(self):
+                cell = gtk.CellRendererText()
+                self.w_repository_combobox.pack_start(cell, True)
+                self.w_repository_combobox.add_attribute(cell, 'text',
+                    enumerations.REPOSITORY_NAME)
+                self.w_repository_combobox.set_row_separator_func(
+                    self.combobox_id_separator)
 
         def __application_treeview_size_allocate(self, widget, allocation, user_data):
                 # We ignore any changes in the size during initialization.
@@ -882,9 +889,11 @@ class PackageManager:
         def __disconnect_models(self):
                 self.w_application_treeview.set_model(None)
                 self.w_categories_treeview.set_model(None)
-                self.w_repository_combobox.set_model(None)
                 self.w_sections_combobox.set_model(None)
                 self.w_filter_combobox.set_model(None)
+
+        def __disconnect_repository_model(self):
+                self.w_repository_combobox.set_model(None)
 
         @staticmethod
         def __status_sort_func(treemodel, iter1, iter2, user_data=None):
@@ -986,6 +995,8 @@ class PackageManager:
         def __application_refilter(self):
                 ''' Disconnecting the model from the treeview improves
                 performance when assistive technologies are enabled'''
+                if self.in_setup:
+                        return
                 model = self.w_application_treeview.get_model()
                 self.w_application_treeview.set_model(None)
                 self.application_list_filter.refilter()
@@ -1063,10 +1074,12 @@ class PackageManager:
                 for path in list_of_paths:
                         itr = model.get_iter(path)
                         model.set_value(itr, enumerations.MARK_COLUMN, True)
+                        pkg_stem = model.get_value(itr, enumerations.STEM_COLUMN)
+                        pkg_status = model.get_value(itr, enumerations.STATUS_COLUMN)
+                        self.__add_pkg_stem_to_list(pkg_stem, pkg_status)
                 self.__enable_disable_selection_menus()
                 self.update_statusbar()
-                self.__enable_disable_install_update()
-                self.__enable_disable_remove()
+                self.__enable_disable_install_remove()
 
         def __on_select_updates(self, widget):
                 sort_filt_model = \
@@ -1091,10 +1104,12 @@ class PackageManager:
                 for path in list_of_paths:
                         itr = model.get_iter(path)
                         model.set_value(itr, enumerations.MARK_COLUMN, True)
+                        pkg_stem = model.get_value(itr, enumerations.STEM_COLUMN)
+                        pkg_status = model.get_value(itr, enumerations.STATUS_COLUMN)
+                        self.__add_pkg_stem_to_list(pkg_stem, pkg_status)
                 self.__enable_disable_selection_menus()
                 self.update_statusbar()
-                self.__enable_disable_install_update()
-                self.__enable_disable_remove()
+                self.__enable_disable_install_remove()
 
         def __on_deselect(self, widget):
                 sort_filt_model = \
@@ -1117,10 +1132,11 @@ class PackageManager:
                 for path in list_of_paths:
                         itr = model.get_iter(path)
                         model.set_value(itr, enumerations.MARK_COLUMN, False)
+                        self.__remove_pkg_stem_from_list(model.get_value(itr, 
+                            enumerations.STEM_COLUMN))
                 self.__enable_disable_selection_menus()
                 self.update_statusbar()
-                self.__enable_disable_install_update()
-                self.__enable_disable_remove()
+                self.__enable_disable_install_remove()
 
         def __on_searchentry_focus_in(self, widget, event):
                 self.w_paste_menuitem.set_sensitive(True)
@@ -1148,8 +1164,7 @@ class PackageManager:
                 self.set_busy_cursor()
                 gobject.idle_add(self.__application_refilter)
                 if self.selected == 0:
-                        gobject.idle_add(self.__enable_disable_install_update)
-                        gobject.idle_add(self.__enable_disable_remove)
+                        gobject.idle_add(self.__enable_disable_install_remove)
 
         def __set_main_view_package_list(self):
                 # Only switch from Start Page View to List view if we are not in startup
@@ -1159,6 +1174,8 @@ class PackageManager:
 
         def __on_category_selection_changed(self, selection, widget):
                 '''This function is for handling category selection changes'''
+                if self.in_setup:
+                        return
                 self.__set_main_view_package_list()
                 model, itr = selection.get_selected()
                 if itr:
@@ -1170,14 +1187,12 @@ class PackageManager:
                 self.set_busy_cursor()
                 gobject.idle_add(self.__application_refilter)
                 if self.selected == 0:
-                        gobject.idle_add(self.__enable_disable_install_update)
-                        gobject.idle_add(self.__enable_disable_remove)
+                        gobject.idle_add(self.__enable_disable_install_remove)
 
         def __process_package_selection(self):
                 model, itr = self.package_selection.get_selected()
                 if itr:
-                        self.__enable_disable_install_update()
-                        self.__enable_disable_remove()
+                        self.__enable_disable_install_remove()
                         self.selected_pkgname = \
                                model.get_value(itr, enumerations.NAME_COLUMN)
                         if self.show_info_id != 0:
@@ -1193,6 +1208,8 @@ class PackageManager:
 
         def __on_package_selection_changed(self, selection, widget):
                 '''This function is for handling package selection changes'''
+                if self.in_setup:
+                        return
                 self.__process_package_selection()
 
         def __on_filtercombobox_changed(self, widget):
@@ -1203,8 +1220,7 @@ class PackageManager:
                 self.set_busy_cursor()
                 gobject.idle_add(self.__application_refilter)
                 if self.selected == 0:
-                        gobject.idle_add(self.__enable_disable_install_update)
-                        gobject.idle_add(self.__enable_disable_remove)
+                        gobject.idle_add(self.__enable_disable_install_remove)
 
         def __set_categories_visibility(self, selected_section):
                 self.category_list[0][enumerations.CATEGORY_ICON] = None
@@ -1257,19 +1273,39 @@ class PackageManager:
                 self.category_list_filter.refilter()
                 gobject.idle_add(self.__application_refilter)
                 if self.selected == 0:
-                        gobject.idle_add(self.__enable_disable_install_update)
-                        gobject.idle_add(self.__enable_disable_remove)
+                        gobject.idle_add(self.__enable_disable_install_remove)
 
         def __on_repositorycombobox_changed(self, widget):
                 '''On repository combobox changed'''
-                if self.in_setup:
-                        return  
-                self.__set_main_view_package_list()
+                self.cancelled = True
+                self.in_setup = True
                 self.set_busy_cursor()
-                gobject.idle_add(self.__application_refilter)
-                if self.selected == 0:
-                        gobject.idle_add(self.__enable_disable_install_update)
-                        gobject.idle_add(self.__enable_disable_remove)
+                authority = self.__get_active_authority()
+                auth = [authority, ]
+                Thread(target = self.__setup_authority, args = [auth]).start()
+                self.__set_main_view_package_list()
+
+        def __get_active_authority(self):
+                auth_iter = self.w_repository_combobox.get_active_iter()
+                return self.repositories_list.get_value(auth_iter, \
+                            enumerations.REPOSITORY_NAME)
+
+        def __setup_authority(self, authorities=[]):
+                application_list, category_list = \
+                    self.__get_application_categories_lists(authorities)
+                gobject.idle_add(self.__init_tree_views, application_list, category_list)
+                gobject.idle_add(self.process_package_list_end)
+
+        def __get_application_categories_lists(self, authorities=[]):
+                application_list = self.__get_new_application_liststore()
+                category_list = self.__get_new_category_liststore()
+                for authority in authorities:
+                        self.setup_progressdialog_show()
+                        self.__add_pkgs_to_lists_from_api(authority, application_list, 
+                            category_list)
+                        category_list.prepend([0, _('All'), None, None, False, 
+                            True, None])
+                return application_list, category_list
 
         def __on_install_update(self, widget):
                 self.api_o.reset()
@@ -1280,14 +1316,13 @@ class PackageManager:
                                 install_update.append(
                                     model.get_value(itr, enumerations.STEM_COLUMN))
                 else:
-                        for row in self.application_list:
-                                if row[enumerations.MARK_COLUMN] and \
-                                    (row[enumerations.STATUS_COLUMN] ==
-                                    enumerations.NOT_INSTALLED or
-                                    row[enumerations.STATUS_COLUMN] == 
-                                    enumerations.UPDATABLE):
-                                        install_update.append(row[\
-                                            enumerations.STEM_COLUMN])
+                        for authority in self.selected_pkgs:
+                                pkgs = self.selected_pkgs.get(authority)
+                                for pkg_stem in pkgs:
+                                        status = pkgs.get(pkg_stem)
+                                        if status == enumerations.NOT_INSTALLED or \
+                                            status == enumerations.UPDATABLE:
+                                                install_update.append(pkg_stem)
                 installupdate.InstallUpdate(install_update, self, \
                     self.api_o, ips_update = False, \
                     action = enumerations.INSTALL_UPDATE)
@@ -1324,14 +1359,13 @@ class PackageManager:
                                 remove_list.append(
                                     model.get_value(itr, enumerations.STEM_COLUMN))
                 else:
-                        for pkg in self.application_list:
-                                if pkg[enumerations.MARK_COLUMN] and \
-                                    (pkg[enumerations.STATUS_COLUMN] == 
-                                    enumerations.INSTALLED or
-                                    pkg[enumerations.STATUS_COLUMN] == 
-                                    enumerations.UPDATABLE):
-                                        remove_list.append(\
-                                            pkg[enumerations.STEM_COLUMN])
+                        for authority in self.selected_pkgs:
+                                pkgs = self.selected_pkgs.get(authority)
+                                for pkg_stem in pkgs:
+                                        status = pkgs.get(pkg_stem)
+                                        if status == enumerations.INSTALLED or \
+                                            status == enumerations.UPDATABLE:
+                                                remove_list.append(pkg_stem)
                 installupdate.InstallUpdate(remove_list, self,
                     self.api_o, ips_update = False,
                     action = enumerations.REMOVE)
@@ -1356,8 +1390,6 @@ class PackageManager:
                 self.process_package_list_start(self.image_directory)
                 self.__enable_disable_selection_menus()
                 self.update_statusbar()
-                self.__update_install_update_button(None, True)
-                self.__update_remove_button(None, True)
 
         def __clipboard_text_received(self, clipboard, text, data):
                 self.main_clipboard_text = text
@@ -1391,20 +1423,38 @@ class PackageManager:
 
         def __setup_repositories_combobox(self, api_o, repositories_list):
                 img = api_o.img
-                if self.in_setup or img == None:
+                if img == None:
                         return
-                repositories = img.catalogs
-                default_authority = img.get_default_authority()
+                self.__disconnect_repository_model()
+                img.load_config()
+                auths = img.gen_authorities()
+                default_auth = img.get_default_authority()
+                if self.default_authority != default_auth:
+                        self.__clear_pkg_selections()
+                        self.default_authority = default_auth
+                selected_repos = []
+                enabled_repos = []
+                for repo in self.selected_pkgs:
+                        selected_repos.append(repo)
                 i = 0
                 active = 0
-                for repo in repositories:
-                        if cmp(repo, default_authority) == 0:
+                for repo in auths:
+                        prefix = repo.get("prefix")
+                        if cmp(prefix, self.default_authority) == 0:
                                 active = i
-
-                        repositories_list.append([i, repo, ])
+                        repositories_list.append([i, prefix, ])
+                        enabled_repos.append(prefix)
                         i = i + 1
+                pkgs_to_remove = []
+                for repo_name in selected_repos:
+                        if repo_name not in enabled_repos:
+                                pkg_stems = self.selected_pkgs.get(repo_name)
+                                for pkg_stem in pkg_stems:
+                                        pkgs_to_remove.append(pkg_stem)
+                for pkg_stem in pkgs_to_remove:
+                        self.__remove_pkg_stem_from_list(pkg_stem)
                 self.w_repository_combobox.set_model(repositories_list)
-                if default_authority:
+                if self.default_authority:
                         self.w_repository_combobox.set_active(active)
                 else:
                         self.w_repository_combobox.set_active(0)
@@ -1422,32 +1472,13 @@ class PackageManager:
                             not modified)
                         pkg_status = filterModel.get_value(itr,
                             enumerations.STATUS_COLUMN)
+                        pkg_stem = filterModel.get_value(itr, enumerations.STEM_COLUMN)
+                        if modified:
+                                self.__remove_pkg_stem_from_list(pkg_stem)
+                        else:
+                                self.__add_pkg_stem_to_list(pkg_stem, pkg_status)
                         self.update_statusbar()
-                        self.__update_install_update_button(pkg_status, modified)
-                        self.__update_remove_button(pkg_status, modified)
                         self.__enable_disable_selection_menus()
-
-
-        def __update_install_update_button(self, pkg_status, toggle_true):
-                if not toggle_true and self.user_rights:
-                        if pkg_status == enumerations.NOT_INSTALLED or \
-                                            pkg_status == enumerations.UPDATABLE:
-                                self.w_installupdate_button.set_sensitive(True)
-                                self.w_installupdate_menuitem.set_sensitive(True)
-                                return
-                if self.user_rights:
-                        instup_button = self.w_installupdate_button
-                        instup_menu = self.w_installupdate_menuitem
-                        for row in self.application_list:
-                                if row[enumerations.MARK_COLUMN]:
-                                        status = row[enumerations.STATUS_COLUMN]
-                                        if status == enumerations.NOT_INSTALLED or \
-                                            status == enumerations.UPDATABLE:
-                                                instup_button.set_sensitive(True)
-                                                instup_menu.set_sensitive(True)
-                                                return
-                self.w_installupdate_button.set_sensitive(False)
-                self.w_installupdate_menuitem.set_sensitive(False)
 
         def __update_reload_button(self):
                 if self.user_rights:
@@ -1455,24 +1486,88 @@ class PackageManager:
                 else:
                         self.w_reload_button.set_sensitive(False)
 
-        def __update_remove_button(self, pkg_status, toggle_true):
-                if not toggle_true and self.user_rights:
-                        if pkg_status == enumerations.INSTALLED or \
-                            pkg_status == enumerations.UPDATABLE:
-                                self.w_remove_button.set_sensitive(True)
-                                self.w_remove_menuitem.set_sensitive(True)
-                                return
-                if self.user_rights:
-                        for row in self.application_list:
-                                if row[enumerations.MARK_COLUMN]:
-                                        status = row[enumerations.STATUS_COLUMN]
-                                        if status == enumerations.INSTALLED or \
-                                            status == enumerations.UPDATABLE:
-                                                self.w_remove_button.set_sensitive(True)
-                                                self.w_remove_menuitem.set_sensitive(True)
-                                                return
-                self.w_remove_button.set_sensitive(False)
-                self.w_remove_menuitem.set_sensitive(False)
+        def __add_pkg_stem_to_list(self, stem, status):
+                authority = self.__get_active_authority()
+                if self.selected_pkgs.get(authority) == None:
+                        self.selected_pkgs[authority] = {}
+                self.selected_pkgs.get(authority)[stem] = status
+                if status == enumerations.NOT_INSTALLED or \
+                    status == enumerations.UPDATABLE:
+                        if self.to_install_update.get(authority) == None:
+                                self.to_install_update[authority] = 1
+                        else:
+                                self.to_install_update[authority] += 1
+                if status == enumerations.UPDATABLE or status == enumerations.INSTALLED:
+                        if self.to_remove.get(authority) == None:
+                                self.to_remove[authority] = 1
+                        else:
+                                self.to_remove[authority] += 1
+                self.__update_tooltips()
+
+        def __update_tooltips(self):
+                to_remove = None
+                to_install = None
+                no_iter = 0
+                for authority in self.to_remove:
+                        packages = self.to_remove.get(authority)
+                        if packages > 0:
+                                if no_iter == 0:
+                                        to_remove = _("Selected for Removal:")
+                                to_remove += "\n   %s: %d" % (authority, packages)
+                                no_iter += 1
+                no_iter = 0
+                for authority in self.to_install_update:
+                        packages = self.to_install_update.get(authority)
+                        if packages > 0:
+                                if no_iter == 0:
+                                        to_install = _("Selected for Install/Update:")
+                                to_install += "\n   %s: %d" % (authority, packages)
+                                no_iter += 1
+                if not to_install:
+                        to_install = _("Select packages by marking checkbox\n"+
+                            "and click to Install/Update.")
+                self.w_installupdate_button.set_tooltip(self.install_button_tooltip, 
+                    to_install)
+                if not to_remove:
+                        to_remove = _("Select packages by marking checkbox\n"+
+                            "and click to Remove selected.")
+                self.w_remove_button.set_tooltip(self.remove_button_tooltip, to_remove)
+
+        def __remove_pkg_stem_from_list(self, stem):
+                remove_auth = []
+                for authority in self.selected_pkgs:
+                        pkgs = self.selected_pkgs.get(authority)
+                        status = None
+                        if stem in pkgs:
+                                status = pkgs.pop(stem)
+                        if status == enumerations.NOT_INSTALLED or \
+                            status == enumerations.UPDATABLE:
+                                if self.to_install_update.get(authority) == None:
+                                        self.to_install_update[authority] = 0
+                                else:
+                                        self.to_install_update[authority] -= 1
+                        if status == enumerations.UPDATABLE or \
+                            status == enumerations.INSTALLED:
+                                if self.to_remove.get(authority) == None:
+                                        self.to_remove[authority] = 0
+                                else:
+                                        self.to_remove[authority] -= 1
+                        if len(pkgs) == 0:
+                                remove_auth.append(authority)
+                for authority in remove_auth:
+                        self.selected_pkgs.pop(authority)
+                self.__update_tooltips()
+
+        def __clear_pkg_selections(self):
+                # We clear the selections as the preffered repository was changed
+                # and pkg stems are not valid.
+                remove_auth = []
+                for authority in self.selected_pkgs:
+                        stems = self.selected_pkgs.get(authority)
+                        for pkg_stem in stems:
+                                remove_auth.append(pkg_stem)
+                for pkg_stem in remove_auth:
+                        self.__remove_pkg_stem_from_list(pkg_stem)
 
         def __show_fetching_package_info(self, pkg):
                 pkg_name = pkg.get_name()
@@ -1703,52 +1798,46 @@ class PackageManager:
                         return False
                 # XXX Show filter, chenge text to integers 
                 selected_category = 0
-                selection = self.w_categories_treeview.get_selection()
-                category_model, category_iter = selection.get_selected()
+                category_selection = self.w_categories_treeview.get_selection()
+                category_model, category_iter = category_selection.get_selected()
                 if not category_iter:         #no category was selected, so select "All"
-                        selection.select_path(0)
-                        category_model, category_iter = selection.get_selected()
+                        category_selection.select_path(0)
+                        category_model, category_iter = category_selection.get_selected()
                 if category_iter:
-                        selected_category = category_model.get_value(category_iter, \
+                        selected_category = category_model.get_value(category_iter,
                             enumerations.CATEGORY_ID)
-                category_list_iter = model.get_value(itr,
-                    enumerations.CATEGORY_LIST_COLUMN)
+                category_list = model.get_value(itr, enumerations.CATEGORY_LIST_COLUMN)
+                selected_section = self.w_sections_combobox.get_active()
                 category = False
-                repo = self.__is_pkg_repository_visible(model, itr)
-                if category_list_iter:
-                        sel = False
-                        for category_iter in category_list_iter:
-                                if category != True:
-                                        category = \
-                                            self.category_filter(self.category_list, \
-                                            category_iter)
-                                if selected_category != 0:
-                                        if selected_category == \
-                                            self.category_list.get_value(category_iter, \
-                                            enumerations.CATEGORY_ID):
-                                                sel = True
-                                        category = sel
-                else:
-                        if selected_category == 0:
-                                selected_section = self.w_sections_combobox.get_active()
-                                if selected_section == 0:
+                if selected_section == 0 and selected_category == 0:
+                        #For section "All" and category "All" always true
+                        category = True
+                elif selected_category != 0:
+                        if category_list and selected_category in category_list:
+                                category = True
+                elif category_list:
+                        #The selected category is "All" so we need to check
+                        #If the package belongs to one of the visible categories
+                        for visible_category in self.w_categories_treeview.get_model():
+                                visible_id = visible_category[enumerations.CATEGORY_ID]
+                                if visible_id in category_list:
                                         category = True
+                                        break
                 if (model.get_value(itr, enumerations.IS_VISIBLE_COLUMN) == False):
                         return False
                 if self.w_searchentry_dialog.get_text() == "":
-                        return (repo & category & \
+                        return (category &
                             self.__is_package_filtered(model, itr))
                 if not model.get_value(itr, enumerations.NAME_COLUMN) == None:
                         if self.w_searchentry_dialog.get_text().lower() in \
-                            model.get_value \
-                            (itr, enumerations.NAME_COLUMN).lower():
-                                return (repo & category & \
+                            model.get_value(itr, enumerations.NAME_COLUMN).lower():
+                                return (category &
                                     self.__is_package_filtered(model, itr))
                 if not model.get_value(itr, enumerations.DESCRIPTION_COLUMN) == None:
                         if self.w_searchentry_dialog.get_text().lower() in \
                             model.get_value \
                             (itr, enumerations.DESCRIPTION_COLUMN).lower():
-                                return (repo & category & \
+                                return (category &
                                     self.__is_package_filtered(model, itr))
                 else:
                         return False
@@ -1791,17 +1880,14 @@ class PackageManager:
                                 return False
 
         def __enable_disable_selection_menus(self):
-                
                 if self.in_setup:
                         return
                 self.__enable_disable_select_all()
                 self.__enable_disable_select_updates()
                 self.__enable_disable_deselect()
-                # XXX disabled until new API
-                self.__enable_disable_update_all()
+                self.unset_busy_cursor()
 
         def __enable_disable_select_all(self):
-                
                 if self.in_setup:
                         return
                 if len(self.w_application_treeview.get_model()) > 0:
@@ -1813,59 +1899,59 @@ class PackageManager:
                 else:
                         self.w_selectall_menuitem.set_sensitive(False)
 
-        def __enable_disable_install_update(self):
-                if self.selected == 0:
-                        model, itr = self.package_selection.get_selected()
-                        if itr:
-                                status = \
-                                       model.get_value(itr, enumerations.STATUS_COLUMN)
-                                if self.user_rights and \
-                                    (status == enumerations.UPDATABLE or 
-                                    status == enumerations.NOT_INSTALLED):
-                                        self.w_installupdate_button.set_sensitive(True)
-                                        self.w_installupdate_menuitem.set_sensitive(True)
-                                        return
+        def __enable_disable_install_remove(self):
+                if not self.user_rights:
                         self.w_installupdate_button.set_sensitive(False)
                         self.w_installupdate_menuitem.set_sensitive(False)
-                        return
-                for row in self.application_list:
-                        if row[enumerations.MARK_COLUMN]:
-                                status = row[enumerations.STATUS_COLUMN]
-                                if self.user_rights and \
-                                    (status == enumerations.UPDATABLE or 
-                                    status == enumerations.NOT_INSTALLED):
-                                        self.w_installupdate_button.set_sensitive(True)
-                                        self.w_installupdate_menuitem.set_sensitive(True)
-                                        return
-                self.w_installupdate_button.set_sensitive(False)
-                self.w_installupdate_menuitem.set_sensitive(False)
-
-        def __enable_disable_remove(self):
-                if self.selected == 0:
-                        model, itr = self.package_selection.get_selected()
-                        if itr:
-                                status = \
-                                       model.get_value(itr, enumerations.STATUS_COLUMN)
-                                if self.user_rights and \
-                                    (status == enumerations.UPDATABLE or 
-                                    status == enumerations.INSTALLED):
-                                        self.w_remove_button.set_sensitive(True)
-                                        self.w_remove_menuitem.set_sensitive(True)
-                                        return
                         self.w_remove_button.set_sensitive(False)
                         self.w_remove_menuitem.set_sensitive(False)
                         return
-                for row in self.application_list:
-                        if row[enumerations.MARK_COLUMN]:
-                                status = row[enumerations.STATUS_COLUMN]
-                                if self.user_rights and \
-                                    (status == enumerations.UPDATABLE or 
-                                    status == enumerations.INSTALLED):
-                                        self.w_remove_button.set_sensitive(True)
-                                        self.w_remove_menuitem.set_sensitive(True)
-                                        return
-                self.w_remove_button.set_sensitive(False)
-                self.w_remove_menuitem.set_sensitive(False)
+                selected_removal = self.__enable_if_selected_for_removal()
+                selected_install_update = self.__enable_if_selected_for_install_update()
+                if selected_removal or selected_install_update:
+                        return
+                remove = False
+                install = False
+                if self.selected == 0:
+                        model, itr = self.package_selection.get_selected()
+                        if itr:
+                                status = \
+                                       model.get_value(itr, enumerations.STATUS_COLUMN)
+                                if status == enumerations.NOT_INSTALLED:
+                                        remove = False
+                                        install = True
+                                elif status == enumerations.UPDATABLE:
+                                        remove = True
+                                        install = True
+                                elif status == enumerations.INSTALLED:
+                                        remove = True
+                                        install = False
+                                self.w_installupdate_button.set_sensitive(install)
+                                self.w_installupdate_menuitem.set_sensitive(install)
+                                self.w_remove_button.set_sensitive(remove)
+                                self.w_remove_menuitem.set_sensitive(remove)
+
+        def __enable_if_selected_for_removal(self):
+                sensitive = False
+                for authority in self.to_remove:
+                        selected = self.to_remove.get(authority)
+                        if selected > 0:
+                                sensitive = True
+                                break
+                self.w_remove_button.set_sensitive(sensitive)
+                self.w_remove_menuitem.set_sensitive(sensitive)
+                return sensitive
+
+        def __enable_if_selected_for_install_update(self):
+                sensitive = False
+                for authority in self.to_install_update:
+                        selected = self.to_install_update.get(authority)
+                        if selected > 0:
+                                sensitive = True
+                                break
+                self.w_installupdate_button.set_sensitive(sensitive)
+                self.w_installupdate_menuitem.set_sensitive(sensitive)
+                return sensitive
 
         def __enable_disable_select_updates(self):
                 for row in self.w_application_treeview.get_model():
@@ -1878,21 +1964,33 @@ class PackageManager:
                 return
 
         def __enable_disable_update_all(self):
-                update_available = False
-                for row in self.application_list:
-                        if self.__is_pkg_repository_visible(self.application_list,
-                            row.iter):
-                                if self.application_list.get_value(row.iter,
-                                    enumerations.STATUS_COLUMN) == \
-                                    enumerations.UPDATABLE and self.user_rights:
-                                        update_available = True
-                                        break
+                #XXX Api to provide fast information if there are some updates
+                #available within image
+                gobject.idle_add(self.w_updateall_button.set_sensitive, False)
+                gobject.idle_add(self.w_updateall_menuitem.set_sensitive, False)
+                update_available = self.__check_if_updates_available()
+                gobject.idle_add(self.__g_enable_disable_update_all, update_available)
+                return False
+
+        def __check_if_updates_available(self):
+                try:
+                        img = self.api_o.img
+                        pargs = []
+                        all_known = False
+                        all_versions = False
+                        res = misc.get_inventory_list(img, pargs,
+                            all_known, all_versions)
+                        for pfmri, state in res:
+                                if state["upgradable"]:
+                                        return True
+                except api_errors.InventoryException:
+                        return False
+                return False
+
+        def __g_enable_disable_update_all(self, update_available):
                 self.w_updateall_button.set_sensitive(update_available)
                 self.w_updateall_menuitem.set_sensitive(update_available)
-                self.__enable_disable_install_update()
-                self.__enable_disable_remove()
-                self.unset_busy_cursor()
-
+                self.__enable_disable_install_remove()
 
         def __enable_disable_deselect(self):
                 for row in self.w_application_treeview.get_model():
@@ -1901,7 +1999,6 @@ class PackageManager:
                                 return
                 self.w_deselect_menuitem.set_sensitive(False)
                 return
-
 
         def __catalog_refresh(self, reload_gui=True):
                 """Update image's catalogs."""
@@ -1972,9 +2069,19 @@ class PackageManager:
                 application_list = self.__get_new_application_liststore()
                 category_list = self.__get_new_category_liststore()
                 repositories_list = self.__get_new_repositories_liststore()
-                authority = api_o.img.get_default_authority()
+                gobject.idle_add(self.process_package_list_end, api_o,
+                    application_list, category_list, repositories_list)
+                return             
+
+        def __add_pkgs_to_lists_from_api(self, authority, application_list, 
+            category_list):
+                """ This method set up image from the given directory and
+                returns the image object or None"""
+                self.api_o.img.load_catalogs(self.pr)
+                pargs = []
+                pargs.append("pkg://" + authority + "/*")
                 try:
-                        pkgs_known = misc.get_inventory_list(api_o.img, None, 
+                        pkgs_known = misc.get_inventory_list(self.api_o.img, pargs, 
                             True, True)
                 except api_errors.InventoryException:
                         # Can't happen when all_known is true and no args,
@@ -1994,7 +2101,7 @@ class PackageManager:
                 #Imageinfo for categories
                 imginfo = imageinfo.ImageInfo()
                 sectioninfo = imageinfo.ImageInfo()
-                catalogs = api_o.img.catalogs
+                catalogs = self.api_o.img.catalogs
                 categories = {}
                 sections = {}
                 share_path = "/usr/share/package-manager/data/"
@@ -2044,7 +2151,7 @@ class PackageManager:
                                     application_list,
                                     pkg_add, pkg_name,
                                     category_icon,
-                                    categories, category_list)
+                                    categories, category_list, authority)
                                 pkg_add += 1
                         prev_stem = pkg.get_pkg_stem()
                         prev_pfmri_str = pkg.get_short_fmri()
@@ -2053,8 +2160,8 @@ class PackageManager:
                         if progress_increment > 0 and pkg_count % progress_increment == 0:
                                 progress_percent += PACKAGE_PROGRESS_PERCENT_INCREMENT
                                 if progress_percent <= PACKAGE_PROGRESS_PERCENT_TOTAL:
-                                        progressdialog_progress(progress_percent,
-                                            pkg_count, total_pkg_count)
+                                        self.__progressdialog_progress_percent(
+                                            progress_percent, pkg_count, total_pkg_count)
                                 while gtk.events_pending():
                                         gtk.main_iteration(False)
 
@@ -2073,15 +2180,21 @@ class PackageManager:
                                         pkg_state = enumerations.UPDATABLE
                                 else:
                                         status_icon = installed_icon
+                        marked = False
+                        authority = self.__get_active_authority()
+                        pkgs = self.selected_pkgs.get(authority)
+                        if pkgs != None:
+                                if pkg_stem in pkgs:
+                                        marked = True
                         next_app = \
                             [
-                                False, status_icon, package_icon, pkg_name,
+                                marked, status_icon, package_icon, pkg_name,
                                 '...', pkg_state, pkg, pkg_stem, None, True, None
                             ]
                         pkg_count += 1
 
                 self.__add_package_to_list(next_app, application_list, pkg_add, 
-                    pkg_name, category_icon, categories, category_list)
+                    pkg_name, category_icon, categories, category_list, authority)
                 pkg_add += 1
                 for authority in sections:
                         for section in sections[authority]:
@@ -2095,29 +2208,20 @@ class PackageManager:
                         rows.sort(self.__sort)
                         r = []
                         category_list.reorder([r[-1] for r in rows])
-                category_list.prepend([0, _('All'), None, None, True, None])
-
-                progressdialog_progress(PACKAGE_PROGRESS_PERCENT_TOTAL, total_pkg_count,
-                    total_pkg_count)
-                gobject.idle_add(self.process_package_list_end, api_o,
-                    application_list, category_list, repositories_list)
+                self.__progressdialog_progress_percent(PACKAGE_PROGRESS_PERCENT_TOTAL, 
+                    total_pkg_count, total_pkg_count)
                 return
 
         def __add_package_to_list(self, app, application_list, pkg_add, 
-            pkg_name, category_icon, categories, category_list):
+            pkg_name, category_icon, categories, category_list, authority):
                 row_iter = application_list.insert(pkg_add, app)
-                apc = self.__add_package_to_category
-                app_ls = application_list
-                for cat in categories:
-                        if cat in categories:
-                                if pkg_name in categories[cat]:
-                                        pkg_categories = categories[cat][pkg_name]
-                                        for pcat in pkg_categories.split(","):
-                                                if pcat:
-                                                        apc(_(pcat), None,
-                                                            category_icon,
-                                                            row_iter,
-                                                            app_ls, category_list)
+                cat_auth = categories.get(authority)
+                if pkg_name in cat_auth:
+                        pkg_categories = cat_auth.get(pkg_name)
+                        for pcat in pkg_categories.split(","):
+                                self.__add_package_to_category(_(pcat), None, 
+                                    category_icon, row_iter, application_list, 
+                                    category_list)
 
         @staticmethod
         def __add_package_to_category(category_name, category_description,
@@ -2130,28 +2234,34 @@ class PackageManager:
                         # category_name = _('All')
                         # category_description = _('All packages')
                         # category_icon = None
-                category_ref = None
+                category_id = None
+                icon_visible = False
+                if category_icon:
+                        icon_visible = True
                 for category in category_list:
                         if category[enumerations.CATEGORY_NAME] == category_name:
-                                category_ref = category.iter
+                                category_id = category[enumerations.CATEGORY_ID]
+                                if category_icon:
+                                        category[enumerations.CATEGORY_ICON] = \
+                                            category_icon
+                                        category[enumerations.CATEGORY_ICON_VISIBLE] = \
+                                            icon_visible
                                 break
-                if not category_ref:                       # Category not exists
-                        category_ref = category_list.append([len( \
-                            category_list)+1, category_name, category_description, \
-                            category_icon, True, None])
-                elif category_icon != None and category_list != None:
-                        cat_row = category_list[category_ref]
-                        if cat_row[enumerations.CATEGORY_ICON] == None:
-                                cat_row[enumerations.CATEGORY_ICON] = category_icon
-                if category_ref:
+                if not category_id:                       # Category not exists
+                        category_id = len(category_list) + 1
+                        category_list.append([category_id, category_name, 
+                            category_description, category_icon, icon_visible, 
+                            True, None])
+                        return
+                else:
                         if application_list.get_value(package,
                             enumerations.CATEGORY_LIST_COLUMN):
                                 a = application_list.get_value(package,
                                     enumerations.CATEGORY_LIST_COLUMN)
-                                a.append(category_ref)
+                                a.append(category_id)
                         else:
                                 category_list = []
-                                category_list.append(category_ref)
+                                category_list.append(category_id)
                                 application_list.set(package,
                                     enumerations.CATEGORY_LIST_COLUMN, category_list)
 
@@ -2315,7 +2425,11 @@ class PackageManager:
                 self.w_progress_cancel.hide()
                 self.w_progress_dialog.show()
                 Thread(target = self.__progressdialog_progress_time).start()
-        
+
+        def setup_progressdialog_hide(self):
+                self.progress_stop_timer_thread = True
+                self.w_progress_dialog.hide()
+
         def init_sections(self):
                 self.__init_sections()                   #Initiates sections
 
@@ -2333,18 +2447,12 @@ class PackageManager:
                 self.gdk_window.hide()
 
         def process_package_list_start(self, image_directory):
-                self.cancelled = True
-                self.setup_progressdialog_show()
-                while gtk.events_pending():
-                        gtk.main_iteration(False)
                 self.image_directory = image_directory
-                # Create our image object based on image directory.
-                api_o = self.__get_api_object(image_directory, self.pr)
-                api_o.img.load_catalogs(self.pr)
-                self.api_o = api_o
-                # Acquire image contents and update progress bar as you do so.
-                Thread(target = self.__get_image_from_directory, args = (api_o,
-                    self.__progressdialog_progress_percent)).start()
+                if not self.api_o:
+                        api_o = self.__get_api_object(image_directory, self.pr)
+                        self.api_o = api_o
+                self.repositories_list = self.__get_new_repositories_liststore()
+                self.__setup_repositories_combobox(self.api_o, self.repositories_list)
 
         @staticmethod
         def __get_api_object(img_dir, progtrack):
@@ -2358,30 +2466,21 @@ class PackageManager:
                         raise
                 return api_o
 
-        def process_package_list_end(self, api_o, application_list,
-            category_list, repositories_list):
-                self.__init_tree_views(application_list, category_list, repositories_list)
-                self.update_statusbar()
-                self.in_setup = False
-                self.__setup_repositories_combobox(api_o, repositories_list)
-                self.cancelled = False
-                while gtk.events_pending():
-                        gtk.main_iteration(False)
-                self.w_categories_treeview.expand_all()
-                self.w_categories_treeview.grab_focus()
-                self.w_categories_treeview.set_cursor(0,
-                    None, start_editing=False)
-                self.w_application_treeview.expand_all()
-                while gtk.events_pending():
-                        gtk.main_iteration(False)
+        def process_package_list_end(self):
                 self.__get_manifests_thread()
-                self.w_progress_dialog.hide()
                 self.in_startpage_startup = False
                 if self.update_all_proceed:
                 # TODO: Handle situation where only SUNWipkg/SUNWipg-gui have been updated
                 # in update all: bug 6357
                         self.__on_update_all(None)
                         self.update_all_proceed = False
+                self.setup_progressdialog_hide()
+                self.__enable_disable_install_remove()
+                self.update_statusbar()
+                self.unset_busy_cursor()
+                self.in_setup = False
+                self.cancelled = False
+                Thread(target = self.__enable_disable_update_all).start()                
 
         def __get_manifests_thread(self):
                 Thread(target = self.get_manifests_for_packages,
@@ -2422,52 +2521,80 @@ class PackageManager:
                 '''Function which updates statusbar'''
                 installed = 0
                 self.selected = 0
-                broken = 0
+                sel = 0
+                auth_iter = self.w_repository_combobox.get_active_iter()
+                visible_authority = self.repositories_list.get_value(auth_iter, \
+                    enumerations.REPOSITORY_NAME)
+                for authority in self.selected_pkgs:
+                        pkgs = self.selected_pkgs.get(authority)
+                        self.selected += len(pkgs)
                 for pkg_row in self.application_list:
                         if pkg_row[enumerations.STATUS_COLUMN] == enumerations.INSTALLED \
                             or pkg_row[enumerations.STATUS_COLUMN] == \
                             enumerations.UPDATABLE:
                                 installed = installed + 1
                         if pkg_row[enumerations.MARK_COLUMN]:
-                                self.selected = self.selected + 1
-                listed_str = _('%d packages listed') % len(self.application_list)
+                                sel = sel + 1
+                listed_str = _('%d listed') % len(self.application_list)
+                sel_str = _('%d selected') % sel
                 inst_str = _('%d installed') % installed
-                sel_str = _('%d selected') % self.selected
-                broken_str = _('%d broken') % broken
-                self.w_main_statusbar.push(0, listed_str + ', ' + inst_str + ', ' + \
-                    sel_str + ', ' + broken_str + '.')
-
+                status_str = _("%s: %s , %s, %s.") % (visible_authority, listed_str, 
+                        inst_str, sel_str)
+                self.w_main_statusbar.push(0, status_str)
 
         def update_package_list(self, update_list):
                 img = self.api_o.img
+                auth_iter = self.w_repository_combobox.get_active_iter()
+                visible_authority = self.repositories_list.get_value(auth_iter, \
+                    enumerations.REPOSITORY_NAME)
+                default_authority = self.default_authority
                 img.clear_pkg_state()
                 img.load_catalogs(self.pr)
-                installed_icon = gui_misc.get_icon_pixbuf(self.application_dir,
+                installed_icon = gui_misc.get_icon_pixbuf(self.application_dir, 
                     "status_installed")
-                for row in self.application_list:
-                        if row[enumerations.NAME_COLUMN] in update_list:
-                                pkg = row[enumerations.FMRI_COLUMN]
-                                pkg_stem = row[enumerations.STEM_COLUMN]
-                                if self.info_cache.has_key(pkg_stem):
-                                        del self.info_cache[pkg_stem]
-                                package_installed = \
-                                    self.get_installed_version(self.api_o, pkg)
-                                if package_installed:
-                                        inst_stem = package_installed.get_pkg_stem()
-                                        if inst_stem == pkg_stem:
+                visible_list = update_list.get(visible_authority)
+                if visible_list:
+                        for row in self.application_list:
+                                if row[enumerations.NAME_COLUMN] in visible_list:
+                                        pkg = row[enumerations.FMRI_COLUMN]
+                                        pkg_stem = row[enumerations.STEM_COLUMN]
+                                        self.__remove_pkg_stem_from_list(pkg_stem)
+                                        if self.info_cache.has_key(pkg_stem):
+                                                del self.info_cache[pkg_stem]
+                                        package_installed = \
+                                            self.get_installed_version(self.api_o, pkg)
+                                        if package_installed:
+                                                inst_stem = \
+                                                    package_installed.get_pkg_stem()
+                                                if inst_stem == pkg_stem:
+                                                        row[enumerations.STATUS_COLUMN] = \
+                                                            enumerations.INSTALLED
+                                                        row[enumerations.STATUS_ICON_COLUMN] = \
+                                                            installed_icon
+                                        else:
                                                 row[enumerations.STATUS_COLUMN] = \
-                                                    enumerations.INSTALLED
+                                                    enumerations.NOT_INSTALLED
                                                 row[enumerations.STATUS_ICON_COLUMN] = \
-                                                    installed_icon
-                                else:
-                                        row[enumerations.STATUS_COLUMN] = \
-                                            enumerations.NOT_INSTALLED
-                                        row[enumerations.STATUS_ICON_COLUMN] = \
-                                            None
-                                row[enumerations.MARK_COLUMN] = False
+                                                    None
+                                        row[enumerations.MARK_COLUMN] = False
+                for authority in update_list:
+                        if authority != visible_authority:
+                                pkg_list = update_list.get(authority)
+                                for pkg in pkg_list:
+                                        pkg_stem = None
+                                        if authority != default_authority:
+                                                pkg_stem = "pkg://%s/%s" % (authority, pkg)
+                                        else:
+                                                pkg_stem = "pkg:/%s" % pkg
+                                        if pkg_stem:
+                                                if self.info_cache.has_key(pkg_stem):
+                                                        del self.info_cache[pkg_stem]
+                                                self.__remove_pkg_stem_from_list(pkg_stem)
                 self.__process_package_selection()
                 self.__enable_disable_selection_menus()
+                self.__enable_disable_install_remove()
                 self.update_statusbar()
+                Thread(target = self.__enable_disable_update_all).start()
 
         def restart_after_ips_update(self, be_name):
                 self.__main_application_quit(be_name)

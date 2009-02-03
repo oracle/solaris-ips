@@ -55,9 +55,10 @@ CATEGORY_ID,
 CATEGORY_NAME,
 CATEGORY_DESCRIPTION,
 CATEGORY_ICON,
+CATEGORY_ICON_VISIBLE,
 CATEGORY_VISIBLE,
 SECTION_LIST_OBJECT,     #List with the sections to which category belongs 
-) = range(6)
+) = range(7)
 
 #Sections
 (

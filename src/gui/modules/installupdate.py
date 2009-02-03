@@ -89,7 +89,7 @@ class InstallUpdate(progress.ProgressTracker):
                          }
                 self.stop_bouncing_progress = False
                 self.stopped_bouncing_progress = True
-                self.update_list = []
+                self.update_list = {}
                 gladefile = self.parent.application_dir + \
                     "/usr/share/package-manager/packagemanager.glade"
                 w_tree_dialog = gtk.glade.XML(gladefile, "createplandialog")
@@ -657,8 +657,12 @@ class InstallUpdate(progress.ProgressTracker):
                 s_ver = pkginfo.version
                 s_bran = pkginfo.branch
                 pkg_name = pkginfo.pkg_stem
-                if not pkg_name in self.update_list:
-                        self.update_list.append(pkg_name)
+                pkg_authority = pkginfo.authority
+                if not pkg_authority in self.update_list:
+                        self.update_list[pkg_authority] = []
+                auth_list = self.update_list.get(pkg_authority)
+                if not pkg_name in auth_list:
+                        auth_list.append(pkg_name)
                 l_ver = 0
                 version_pref = ""
                 while l_ver < len(s_ver) -1:
