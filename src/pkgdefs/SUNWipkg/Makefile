@@ -60,6 +60,14 @@ prototype: FRC
 		$$3 !~ /^etc|lib\/svc\/method\/pkg-update|var\/svc\/manifest\/application\/pkg-update.xml|usr\/lib\/brand|usr\/lib(\/update-manager|\/updatemanagernotifier)|usr(\/lib\/python2.4\/vendor-packages(\/[Mm]ako|\/cherrypy|\/OpenSSL|\/pkg\/gui)|\/bin(\/packagemanager|\/updatemanager|\/mako-render)|\/share(\/package-manager|\/update-manager|\/locale|\/applications|\/icons|\/gnome))/ { \
 			print \
 		}' > prototype
+	if [ `wc -l prototype | awk '{print $$1}'` -eq 0 ]; then \
+		echo "ERROR: prototype file came up empty!"; \
+		exit 1; \
+	fi
+
+clobber:
+	rm -f prototype
+	rm -rf $(PKGARCHIVE)/$(PKG)
 
 $(PKGARCHIVE):
 	[ -d $(PKGARCHIVE) ] || mkdir -p $(PKGARCHIVE)

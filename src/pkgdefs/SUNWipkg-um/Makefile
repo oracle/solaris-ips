@@ -66,10 +66,18 @@ prototype: FRC
 		$$3 ~ /^(usr(\/lib(\/updatemanagernotifier)?)?|usr\/lib\/update-manager(\/update-refresh.sh)?|usr(\/bin(\/updatemanager)?)?|var(\/svc(\/manifest(\/application\/(pkg-update.xml)?)?)?)?|etc(\/xdg(\/autostart(\/updatemanagernotifier.desktop)?)?)?|etc\/gconf(\/schemas(\/updatemanager-preferences.schemas)?)?|lib(\/svc(\/method(\/pkg-update)?)?)?|usr(\/share(\/update-manager(\/updatemanager.glade|\/PM_app_48x.png|\/PM_package_36x.png)?|\/applications(\/updatemanager.desktop)?|\/icons(\/hicolor(\/48x48(\/apps(\/updatemanager.png)?)?)?)?|\/icons(\/update-manager(\/notify_update.png|\/status_checkmark.png|\/status_blank.png)?)?)?)?)$$/ { \
 			print \
 		}' > prototype
+	if [ `wc -l prototype | awk '{print $$1}'` -eq 0 ]; then \
+		echo "ERROR: prototype file came up empty!"; \
+		exit 1; \
+	fi
 
 # This will only work if there's a server running, so allow failure.
 img-pkg: sysv-pkg
 	-../../util/distro-import/solaris.py -b 0.0 -w $(PKGARCHIVE) SUNWipkg.import
+
+clobber:
+	rm -f prototype
+	rm -rf $(PKGARCHIVE)/$(PKG)
 
 $(PKGARCHIVE):
 	[ -d $(PKGARCHIVE) ] || mkdir -p $(PKGARCHIVE)

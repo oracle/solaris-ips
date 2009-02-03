@@ -66,6 +66,14 @@ prototype: FRC
 		$$3 ~ /^etc(\/zones(\/.*)?)?$$/ { \
 			print \
 		}' > prototype
+	if [ `wc -l prototype | awk '{print $$1}'` -eq 0 ]; then \
+		echo "ERROR: prototype file came up empty!"; \
+		exit 1; \
+	fi
+
+clobber:
+	rm -f prototype
+	rm -rf $(PKGARCHIVE)/$(PKG)
 
 $(PKGARCHIVE):
 	[ -d $(PKGARCHIVE) ] || mkdir -p $(PKGARCHIVE)

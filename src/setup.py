@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -34,7 +34,9 @@ import subprocess
 import tarfile
 import tempfile
 import urllib
+import py_compile
 
+from distutils.errors import DistutilsError
 from distutils.core import setup, Extension
 from distutils.cmd import Command
 from distutils.command.install import install as _install
@@ -136,7 +138,7 @@ scripts_sunos = {
                 ['svc-pkg-depot', 'svc-pkg-depot'],
                 ],
         }
-            
+
 scripts_windows = {
         scripts_dir: [
                 ['client.py', 'client.py'],
@@ -249,7 +251,7 @@ class cov_func(Command):
         def run(self):
                 if not os.path.isdir(FLDIR):
                         install_sw(FL, FLVER, FLARC, FLDIR, FLURL, FLIDIR)
-                # Run the test suite with coverage enabled        
+                # Run the test suite with coverage enabled
                 os.putenv('PYEXE', sys.executable)
                 os.chdir(os.path.join(pwd, "tests"))
                 # Reconstruct the cmdline and send that to run.py
@@ -354,8 +356,8 @@ class install_func(_install):
         def run(self):
                 """
                 At the end of the install function, we need to rename some files
-                because distutils provides no way to rename files as they are 
-                placed in their install locations. 
+                because distutils provides no way to rename files as they are
+                placed in their install locations.
                 Also, make sure that cherrypy is installed.
                 """
                 for f in man1_files + man1m_files + man5_files:
@@ -372,13 +374,26 @@ class install_func(_install):
                                 file_util.copy_file(srcname, dst_path, update = True)
                                 # make scripts executable
                                 os.chmod(dst_path,
-                                    os.stat(dst_path).st_mode 
+                                    os.stat(dst_path).st_mode
                                     | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
 
                 install_sw(CP, CPVER, CPARC, CPDIR, CPURL, CPIDIR)
 		if "BUILD_PYOPENSSL" in os.environ and \
                     os.environ["BUILD_PYOPENSSL"] != "":
+                        #
+                        # Include /usr/sfw/lib in the build environment
+                        # to ensure that this builds and runs on older
+                        # nevada builds, before openssl moved out of /usr/sfw.
+                        #
+                        saveenv = os.environ.copy()
+                        if osname == "sunos":
+                                os.environ["CFLAGS"] = "-I/usr/sfw/include " + \
+                                    os.environ.get("CFLAGS", "")
+                                os.environ["LDFLAGS"] = \
+                                    "-L/usr/sfw/lib -R/usr/sfw/lib " + \
+                                    os.environ.get("LDFLAGS", "")
                         install_sw(PO, POVER, POARC, PODIR, POURL, POIDIR)
+                        os.environ = saveenv
                 install_sw(MAKO, MAKOVER, MAKOARC, MAKODIR, MAKOURL, MAKOIDIR)
 
 def install_sw(swname, swver, swarc, swdir, swurl, swidir):
@@ -406,13 +421,17 @@ def install_sw(swname, swver, swarc, swdir, swurl, swidir):
         swinst_dir = os.path.join(root_dir, py_install_dir, swidir)
         if not os.path.exists(swinst_dir):
                 print "installing %s" % swname
-                subprocess.Popen(['python', 'setup.py', 'install',
+                args = ['python', 'setup.py', 'install',
                     '--root=%s' % root_dir,
                     '--install-lib=%s' % py_install_dir,
-                    '--install-data=%s' % py_install_dir],
-                    cwd = swdir).wait()
+                    '--install-data=%s' % py_install_dir]
+                ret = subprocess.Popen(args, cwd = swdir).wait()
+                if ret != 0:
+                        print "install failed and returned %d." % ret
+                        print "Command was: %s" % " ".join(args)
+                        sys.exit(1)
 
-        
+
 def remove_sw(swname):
         print("deleting %s" % swname)
         for file in os.listdir("."):
@@ -421,7 +440,7 @@ def remove_sw(swname):
                                 os.unlink(file)
                         else:
                                 shutil.rmtree(file, True)
-        
+
 class build_func(_build):
         def initialize_options(self):
                 _build.initialize_options(self)
@@ -434,10 +453,23 @@ def get_hg_version():
         except OSError:
                 print >> sys.stderr, "ERROR: unable to obtain mercurial version"
                 return "unknown"
-    
+
+def syntax_check(filename):
+        """ Run python's compiler over the file, and discard the results.
+            Arrange to generate an exception if the file does not compile.
+            This is needed because distutil's own use of pycompile (in the
+            distutils.utils module) is broken, and doesn't stop on error. """
+        try:
+                py_compile.compile(filename, os.devnull, doraise=True)
+        except py_compile.PyCompileError, e:
+                raise DistutilsError("%s: failed syntax check: %s" %
+                    (filename, e))
+
+
 class build_py_func(_build_py):
         # override the build_module method to do VERSION substitution on pkg/__init__.py
         def build_module (self, module, module_file, package):
+
                 if module == "__init__" and package == "pkg":
                         versionre = '(?m)^VERSION[^"]*"([^"]*)"'
                         # Grab the previously-built version out of the build
@@ -465,6 +497,9 @@ class build_py_func(_build_py):
                         rv = _build_py.build_module(self, module, tmp_file, package)
                         os.unlink(tmp_file)
                         return rv
+
+                # Will raise a DistutilsError on failure.
+                syntax_check(module_file)
 
                 return _build_py.build_module(self, module, module_file, package)
 

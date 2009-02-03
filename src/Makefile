@@ -33,7 +33,8 @@ PYTHON = /usr/bin/python
 
 all := TARGET = all
 link := TARGET = link
-install packages := TARGET = install
+install := TARGET = install
+packages := TARGET = packages
 link-clean := TARGET = link-clean
 clean := TARGET = clean
 clobber := TARGET = clobber
@@ -58,6 +59,7 @@ clobber: clean
 	$(PYTHON) setup.py $(TARGET)
 	@cd gui; pwd; $(MAKE) $(TARGET)
 	@cd po; pwd; $(MAKE) $(TARGET)
+	@cd pkgdefs; pwd; $(MAKE) $(TARGET)
 
 install:
 	$(PYTHON) setup.py $(TARGET)

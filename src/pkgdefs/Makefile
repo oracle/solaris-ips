@@ -22,15 +22,32 @@
 # Use is subject to license terms.
 #
 
-install:
-	@cd SUNWipkg; pwd; $(MAKE) install
-	@cd SUNWipkg-brand; pwd; $(MAKE) install
-	@cd SUNWipkg-gui; pwd; $(MAKE) install
-	@cd SUNWipkg-gui-data; pwd; $(MAKE) install
-	@cd SUNWipkg-gui-l10n; pwd; $(MAKE) install
-	@cd SUNWipkg-um; pwd; $(MAKE) install
-	@cd SUNWpython-cherrypy; pwd; $(MAKE) install
-	@cd SUNWpython-mako; pwd; $(MAKE) install
-	@if [ -n "${BUILD_PYOPENSSL}" ]; then \
-		cd SUNWpython-pyopenssl; pwd; $(MAKE) install; \
-	fi
+MACH:sh = uname -p
+
+install := TARGET = install
+packages := TARGET = install
+clobber := TARGET = clobber
+
+BUILDPYOPENSSL:sh = if [ -n "$BUILD_PYOPENSSL" ]; then echo SUNWpython-pyopenssl; fi
+
+SUBDIRS= SUNWipkg SUNWipkg-brand SUNWipkg-gui SUNWipkg-gui-data \
+    SUNWipkg-gui-l10n SUNWipkg-um SUNWpython-cherrypy SUNWpython-mako \
+    $(BUILDPYOPENSSL)
+
+all:
+
+.PARALLEL:
+
+$(SUBDIRS): FRC
+	@cd $@; pwd; $(MAKE) $(TARGET)
+
+install packages: $(SUBDIRS)
+	pkgtrans ../../packages/$(MACH) pkg5-`hg id -i`.pkg $(SUBDIRS)
+	rm -f ../../packages/$(MACH)/pkg5.pkg
+	cd ../../packages/$(MACH) && ln -s pkg5-`hg id -i`.pkg pkg5.pkg
+
+clobber: $(SUBDIRS)
+	rm -f ../../packages/$(MACH)/pkg-*.pkg
+	rm -f ../../packages/$(MACH)/pkg5.pkg
+
+FRC:

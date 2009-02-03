@@ -18,7 +18,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -34,7 +34,7 @@ PROTOLOC = $(ROOT)/usr/lib/python2.4/vendor-packages/mako
 install: sysv-pkg
 
 sysv-pkg: $(PKGARCHIVE) prototype
-	[ -f $(PKGARCHIVE)/$(PKG)/pkgmap ] || pkgmk -a $(MACH) -o -r $(ROOT) -d $(PKGARCHIVE)
+	pkgmk -a $(MACH) -o -r $(ROOT) -d $(PKGARCHIVE)
 
 prototype: $(PROTOLOC)
 	(cd $(ROOT); pkgproto .) | \
@@ -65,6 +65,10 @@ prototype: $(PROTOLOC)
 				print \
 			} \
 		}' > prototype
+	if [ `wc -l prototype | awk '{print $$1}'` -eq 0 ]; then \
+		echo "ERROR: prototype file came up empty!"; \
+		exit 1; \
+	fi
 
 clobber:
 	rm -f prototype
