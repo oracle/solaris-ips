@@ -47,18 +47,20 @@
 % else:
 <%
         versions = self.shared.get_releases(g_vars)
-        selected_version = request.params.get("version", None)
-        selected_match = False
+        selected_val = request.params.get("version", None)
+        show_all_versions = request.params.get("show_all_versions", None)
+        selected_match = None
         for v in versions:
                 ver, val, label = v
-                if selected_version == val:
-                        selected_match = True
+                if selected_val == val:
+                        selected_match = ver
 
-        if versions and (not selected_version or not selected_match):
+        if versions and (not selected_val or not selected_match):
                 # Either a version wasn't already selected, or the version
                 # provided didn't match a valid one, so default to the first in
                 # the list.
-                selected_version = versions[0][1]
+                selected_match = versions[0][0]
+                selected_val = versions[0][1]
 %>
 %       if versions:
                 <form action="catalog.shtml">
@@ -69,7 +71,7 @@
                 for v in versions:
                         ver, val, label = v
                         attrs = ""
-                        if val == selected_version:
+                        if val == selected_val:
                                 attrs = 'selected="selected" '
 
                         context.write("""<option %svalue="%s">%s</option>""" % (
@@ -78,6 +80,16 @@
                                 </select>
                                 <input id="submit-browse" type="submit"
                                     name="action" value="Browse"/>
+                        </p>
+                        <p>
+                                <input id="show-all-versions" type="checkbox"
+%                       if show_all_versions:
+                                    checked="checked"
+%                       endif
+                                    name="show_all_versions" value="1"/>
+                                <label for="show-all-versions" title="By
+ default, only the latest versions of packages are shown.  To show all versions,
+ check this checkbox.">Show all versions</label>
                         </p>
                 </form>
 %       endif
@@ -95,8 +107,20 @@
 <%
         # Output each FMRI that we have in the catalog.
         flist = []
-        if selected_version:
-                flist = catalog.get_matching_version_fmris(selected_version)
+        if selected_val and selected_match:
+                ver = selected_match
+                pattern = "*,%s-%s" % (ver.build_release, ver.branch)
+                flist = catalog.get_matching_version_fmris(pattern)
+
+                found = {}
+                if not show_all_versions:
+                        nlist = []
+                        for f in flist:
+                                if f.pkg_name not in found:
+                                        found[f.pkg_name] = True
+                                        nlist.append(f)
+                        flist = nlist
+                        nlist = None
         else:
                 flist = [f for f in catalog.fmris()]
         flist.sort()
@@ -115,7 +139,7 @@
                         <tr%s>
                                 <td><a href="%s">%s</a></td>
                                 <td>%s</td>
-""" % (rclass, phref, pfmri.get_name(), pfmri.version)))
+""" % (rclass, phref, pfmri.pkg_name, pfmri.version)))
 
                 # Output all available operations for an FMRI.
                 for op in fmri_ops:
@@ -129,6 +153,9 @@
                         </tr>
 """)
 %>\
+                        <tr class="last">
+                                <td colspan="4">${len(flist)} package(s)</td>
+                        </tr>
                 </table>
 % endif
         </div>

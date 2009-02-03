@@ -21,14 +21,14 @@
 #
 
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
+import calendar
 import datetime
 import exceptions
 import time
-import calendar
 
 CONSTRAINT_NONE = 0
 CONSTRAINT_AUTO = 50
@@ -47,13 +47,14 @@ class IllegalDotSequence(exceptions.Exception):
         def __init__(self, *args):
                 exceptions.Exception.__init__(self, *args)
 
+
 class DotSequence(list):
         """A DotSequence is the typical "x.y.z" string used in software
         versioning.  We define the "major release" value and the "minor release"
         value as the first two numbers in the sequence."""
 
         @staticmethod
-        def dotsequence_int(elem):
+        def dotsequence_val(elem):
                 # Do this first; if the string is zero chars or non-numeric
                 # chars, this will throw.
                 x = int(elem)
@@ -66,7 +67,7 @@ class DotSequence(list):
         def __init__(self, dotstring):
                 try:
                         list.__init__(self,
-                            map(DotSequence.dotsequence_int,
+                            map(DotSequence.dotsequence_val,
                                 dotstring.split(".")))
                 except ValueError:
                         raise IllegalDotSequence(dotstring)
@@ -102,9 +103,75 @@ class DotSequence(list):
                 return self[0] == other[0] and self[1] == other[1]
 
 
+class MatchingDotSequence(DotSequence):
+        """A subclass of DotSequence with (much) weaker rules about its format.
+        This is intended to accept user input with wildcard characters."""
+
+        @staticmethod
+        def dotsequence_val(elem):
+                # Do this first; if the string is zero chars or non-numeric
+                # chars (other than "*"), an exception will be raised.
+                if elem == "*":
+                        return elem
+
+                return DotSequence.dotsequence_val(elem)
+
+        def __init__(self, dotstring):
+                try:
+                        list.__init__(self,
+                            map(self.dotsequence_val,
+                                dotstring.split(".")))
+                except ValueError:
+                        raise IllegalDotSequence(dotstring)
+
+                if len(self) == 0:
+                        raise IllegalDotSequence("Empty MatchingDotSequence")
+
+        def __ne__(self, other):
+                if not isinstance(other, DotSequence):
+                        return True
+
+                ls = len(self)
+                lo = len(other)
+                for i in range(max(ls, lo)):
+                        try:
+                                if self[i] != other[i] and ("*" not in (self[i],
+                                    other[i])):
+                                        return True
+                        except IndexError:
+                                if ls < (i + 1) and "*" not in (self[-1],
+                                    other[i]):
+                                        return True
+                                if lo < (i + 1) and "*" not in (self[i],
+                                    other[-1]):
+                                        return True
+                return False
+
+        def __eq__(self, other):
+                if not isinstance(other, DotSequence):
+                        return False
+
+                ls = len(self)
+                lo = len(other)
+                for i in range(max(ls, lo)):
+                        try:
+                                if self[i] != other[i] and ("*" not in (self[i],
+                                    other[i])):
+                                        return False
+                        except IndexError:
+                                if ls < (i + 1) and "*" not in (self[-1],
+                                    other[i]):
+                                        return False
+                                if lo < (i + 1) and "*" not in (self[i],
+                                    other[-1]):
+                                        return False
+                return True
+
+
 class IllegalVersion(exceptions.Exception):
         def __init__(self, *args):
                 exceptions.Exception.__init__(self, *args)
+
 
 class Version(object):
         """Version format is release[,build_release]-branch:datetime, which we
@@ -228,7 +295,7 @@ class Version(object):
 
         def get_short_version(self):
                 branch_str = ""
-                if self.branch:
+                if self.branch is not None:
                         branch_str = "-%s" % self.branch
                 return "%s%s" % (self.release, branch_str)
 
@@ -244,7 +311,7 @@ class Version(object):
                 return datetime.datetime.utcfromtimestamp(calendar.timegm(t))
 
         def __ne__(self, other):
-                if other == None:
+                if not isinstance(other, Version):
                         return True
 
                 if self.release == other.release and \
@@ -254,7 +321,7 @@ class Version(object):
                 return True
 
         def __eq__(self, other):
-                if other == None:
+                if not isinstance(other, Version):
                         return False
 
                 if self.release == other.release and \
@@ -270,7 +337,7 @@ class Version(object):
                 then that version is less than the other.  The same applies to
                 the branch and timestamp components.
                 """
-                if other == None:
+                if not isinstance(other, Version):
                         return False
 
                 if self.release < other.release:
@@ -292,7 +359,7 @@ class Version(object):
                 then that version is less than the other.  The same applies to
                 the branch and timestamp components.
                 """
-                if other == None:
+                if not isinstance(other, Version):
                         return True
 
                 if self.release > other.release:
@@ -401,3 +468,185 @@ class Version(object):
 
                 raise ValueError, "constraint has unknown value"
 
+
+class MatchingVersion(Version):
+        """An alternative for Version with (much) weaker rules about its format.
+        This is intended to accept user input with globbing characters."""
+
+        def __init__(self, version_string, build_string):
+                # XXX If illegally formatted, raise exception.
+
+                if version_string is None or not len(version_string):
+                        raise IllegalVersion, "Version cannot be empty"
+
+                release = None
+                build_release = None
+                branch = None
+                timestr = None
+                try:
+                        release, rem = version_string.split(",")
+
+                except ValueError:
+                        release = version_string
+                else:
+                        try:
+                                build_release, rem = rem.split("-")
+                        except ValueError:
+                                build_release = rem
+                        else:
+                                try:
+                                        branch, rem = rem.split(":")
+                                except:
+                                        branch = rem
+                                else:
+                                        timestr = rem
+
+                #
+                # Error checking and conversion from strings to objects
+                # begins here.
+                #
+                try:
+                        #
+                        # Every component of the version (after the first) is
+                        # optional, if not provided, assume "*" (wildcard).
+                        #
+                        for attr, vals in (
+                            ('release', (release,)),
+                            ('build_release', (build_release, build_string,
+                            "*")),
+                            ('branch', (branch, "*")),
+                            ('timestr', (timestr, "*"))):
+                                for val in vals:
+                                        if val is None:
+                                                continue
+                                        if attr != 'timestr':
+                                                val = MatchingDotSequence(val)
+                                        setattr(self, attr, val)
+                                        break
+                except IllegalDotSequence, id:
+                        raise IllegalVersion("Bad Version: %s" % id)
+
+                outstr = str(release)
+                if build_release is not None:
+                        outstr += "," + str(build_release)
+                if branch is not None:
+                        outstr += "-" + str(branch)
+                if timestr is not None:
+                        outstr += ":" + timestr
+
+                # Store the re-constructed input value for use as a string
+                # representation of this object.
+                self.__original = outstr
+
+        def __str__(self):
+                return self.__original
+
+        def get_timestamp(self):
+                if self.timestr == "*":
+                        return "*"
+                return Version.get_timestamp(self)
+
+        def __ne__(self, other):
+                if not isinstance(other, Version):
+                        return True
+
+                if self.release == other.release and \
+                    self.build_release == other.build_release and \
+                    self.branch == other.branch and \
+                    ((self.timestr == other.timestr) or ("*" in (self.timestr,
+                        other.timestr))):
+                        return False
+                return True
+
+        def __eq__(self, other):
+                if not isinstance(other, Version):
+                        return False
+
+                if self.release == other.release and \
+                    self.build_release == other.build_release and \
+                    self.branch == other.branch and \
+                    ((self.timestr == other.timestr) or ("*" in (self.timestr,
+                        other.timestr))):
+                        return True
+                return False
+
+        def __lt__(self, other):
+                """Returns True if 'self' comes before 'other', and vice versa.
+
+                If exactly one of the release values of the versions is None or
+                "*", then that version is less than the other.  The same applies
+                to the branch and timestamp components.
+                """
+                if not isinstance(other, Version):
+                        return False
+
+                if self.release == "*" and other.release != "*":
+                        return True
+                if self.release < other.release:
+                        return True
+                if self.release != other.release:
+                        return False
+
+                if self.build_release == "*" and other.build_release != "*":
+                        return True
+                if self.build_release < other.build_release:
+                        return True
+                if self.build_release != other.build_release:
+                        return False
+
+                if self.branch == "*" and other.branch != "*":
+                        return True
+                if self.branch < other.branch:
+                        return True
+                if self.branch != other.branch:
+                        return False
+
+                if self.timestr == "*" and other.timestr != "*":
+                        return True
+
+                return self.timestr < other.timestr
+
+        def __gt__(self, other):
+                """Returns True if 'self' comes after 'other', and vice versa.
+
+                If exactly one of the release values of the versions is None or
+                "*", then that version is less than the other.  The same applies
+                to the branch and timestamp components.
+                """
+                if not isinstance(other, Version):
+                        return True
+
+                if self.release == "*" and other.release != "*":
+                        return False
+                if self.release > other.release:
+                        return True
+                if self.release != other.release:
+                        return False
+
+                if self.build_release == "*" and other.build_release != "*":
+                        return False
+                if self.build_release > other.build_release:
+                        return True
+                if self.build_release != other.build_release:
+                        return False
+
+                if self.branch == "*" and other.branch != "*":
+                        return False
+                if self.branch > other.branch:
+                        return True
+                if self.branch != other.branch:
+                        return False
+
+                if self.timestr == "*" and other.timestr != "*":
+                        return False
+
+                return self.timestr > other.timestr
+
+        def __hash__(self):
+                # If a timestamp is present, it's enough to hash on, and is
+                # nicely unique.  If not, use release and branch, which are
+                # not very unique.
+                if self.timestr and self.timestr != "*":
+                        return hash(self.timestr)
+                else:
+                        return hash((self.release, self.branch))

@@ -56,8 +56,12 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                     fmri.PkgFmri("pkg:/test@1.0,5.11-1.2:20000101T120030Z", None),
                     fmri.PkgFmri("pkg:/test@1.0,5.11-2:20000101T120040Z", None),
                     fmri.PkgFmri("pkg:/test@1.1,5.11-1:20000101T120040Z", None),
+                    fmri.PkgFmri("pkg:/test@3.2.1,5.11-1:20000101T120050Z", None),
+                    fmri.PkgFmri("pkg:/test@3.2.1,5.11-1.2:20000101T120051Z", None),
+                    fmri.PkgFmri("pkg:/test@3.2.1,5.11-1.2.3:20000101T120052Z", None),
                     fmri.PkgFmri("pkg:/apkg@1.0,5.11-1:20000101T120040Z", None),
-                    fmri.PkgFmri("pkg:/zpkg@1.0,5.11-1:20000101T120040Z", None)
+                    fmri.PkgFmri("pkg:/zpkg@1.0,5.11-1:20000101T120040Z", None),
+                    fmri.PkgFmri("pkg:/zpkg@1.0,5.11-1:20000101T120014Z", None)
                 ]:
                         self.c.add_fmri(f)
                         self.npkgs += 1
@@ -73,25 +77,25 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                 cf = fmri.PkgFmri("pkg:/test@1.0,5.10-1:20070101T120000Z")
                 cl = self.c.get_matching_fmris(cf)
 
-                self.assert_(len(cl) == 4)
+                self.assertEqual(len(cl), 7)
 
         def testcatalogfmris2(self):
                 cf = fmri.PkgFmri("pkg:/test@1.0,5.11-1:20061231T120000Z")
                 cl = self.c.get_matching_fmris(cf)
 
-                self.assert_(len(cl) == 4)
+                self.assertEqual(len(cl), 7)
 
         def testcatalogfmris3(self):
                 cf = fmri.PkgFmri("pkg:/test@1.0,5.11-2")
                 cl = self.c.get_matching_fmris(cf)
 
-                self.assert_(len(cl) == 2)
+                self.assertEqual(len(cl), 5)
 
         def testcatalogfmris4(self):
                 cf = fmri.PkgFmri("pkg:/test@1.0,5.11-3")
                 cl = self.c.get_matching_fmris(cf)
 
-                self.assert_(len(cl) == 1)
+                self.assertEqual(len(cl), 4)
 
         def test_bug_5603(self):
                 """Verify that new catalogs are created with a mode of 644 and
@@ -137,11 +141,185 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                 self.assertRaises(catalog.CatalogPermissionsException,
                         catalog.Catalog, cpath, read_only=True, rebuild=False)
 
+        def test_extract_by_version(self):
+                """Verify that the version filtering logic provided by
+                extract_matching_fmris works as expected."""
+
+                # First, verify that passing a single version pattern
+                # works as expected.
+
+                # This is a dict containing the set of fmris that are expected
+                # to be returned by extract_matching_fmris keyed by version
+                # pattern.
+                versions = {
+                    "*": ["pkg:/apkg@1.0,5.11-1:20000101T120040Z",
+                        "pkg:/test@1.0,5.11-1:20000101T120000Z",
+                        "pkg:/test@1.0,5.11-1:20000101T120010Z",
+                        "pkg:/test@1.0,5.11-1.1:20000101T120020Z",
+                        "pkg:/test@1.0,5.11-1.2:20000101T120030Z",
+                        "pkg:/test@1.0,5.11-2:20000101T120040Z",
+                        "pkg:/test@1.1,5.11-1:20000101T120040Z",
+                        "pkg:/test@3.2.1,5.11-1:20000101T120050Z",
+                        "pkg:/test@3.2.1,5.11-1.2:20000101T120051Z",
+                        "pkg:/test@3.2.1,5.11-1.2.3:20000101T120052Z",
+                        "pkg:/zpkg@1.0,5.11-1:20000101T120014Z",
+                        "pkg:/zpkg@1.0,5.11-1:20000101T120040Z"],
+                    "1.0": ["pkg:/apkg@1.0,5.11-1:20000101T120040Z",
+                        "pkg:/test@1.0,5.11-1:20000101T120000Z",
+                        "pkg:/test@1.0,5.11-1:20000101T120010Z",
+                        "pkg:/test@1.0,5.11-1.1:20000101T120020Z",
+                        "pkg:/test@1.0,5.11-1.2:20000101T120030Z",
+                        "pkg:/test@1.0,5.11-2:20000101T120040Z",
+                        "pkg:/zpkg@1.0,5.11-1:20000101T120014Z",
+                        "pkg:/zpkg@1.0,5.11-1:20000101T120040Z"],
+                    "1.1": ["pkg:/test@1.1,5.11-1:20000101T120040Z"],
+                    "*.1": ["pkg:/test@1.1,5.11-1:20000101T120040Z"],
+                    "3.*": ["pkg:/test@3.2.1,5.11-1:20000101T120050Z",
+                        "pkg:/test@3.2.1,5.11-1.2:20000101T120051Z",
+                        "pkg:/test@3.2.1,5.11-1.2.3:20000101T120052Z"],
+                    "3.2.*": ["pkg:/test@3.2.1,5.11-1:20000101T120050Z",
+                        "pkg:/test@3.2.1,5.11-1.2:20000101T120051Z",
+                        "pkg:/test@3.2.1,5.11-1.2.3:20000101T120052Z"],
+                    "3.*.*": ["pkg:/test@3.2.1,5.11-1:20000101T120050Z",
+                        "pkg:/test@3.2.1,5.11-1.2:20000101T120051Z",
+                        "pkg:/test@3.2.1,5.11-1.2.3:20000101T120052Z"],
+                    "*,5.11": ["pkg:/apkg@1.0,5.11-1:20000101T120040Z",
+                        "pkg:/test@1.0,5.11-1:20000101T120000Z",
+                        "pkg:/test@1.0,5.11-1:20000101T120010Z",
+                        "pkg:/test@1.0,5.11-1.1:20000101T120020Z",
+                        "pkg:/test@1.0,5.11-1.2:20000101T120030Z",
+                        "pkg:/test@1.0,5.11-2:20000101T120040Z",
+                        "pkg:/test@1.1,5.11-1:20000101T120040Z",
+                        "pkg:/test@3.2.1,5.11-1:20000101T120050Z",
+                        "pkg:/test@3.2.1,5.11-1.2:20000101T120051Z",
+                        "pkg:/test@3.2.1,5.11-1.2.3:20000101T120052Z",
+                        "pkg:/zpkg@1.0,5.11-1:20000101T120014Z",
+                        "pkg:/zpkg@1.0,5.11-1:20000101T120040Z"],
+                    "*,*-*": ["pkg:/apkg@1.0,5.11-1:20000101T120040Z",
+                        "pkg:/test@1.0,5.11-1:20000101T120000Z",
+                        "pkg:/test@1.0,5.11-1:20000101T120010Z",
+                        "pkg:/test@1.0,5.11-1.1:20000101T120020Z",
+                        "pkg:/test@1.0,5.11-1.2:20000101T120030Z",
+                        "pkg:/test@1.0,5.11-2:20000101T120040Z",
+                        "pkg:/test@1.1,5.11-1:20000101T120040Z",
+                        "pkg:/test@3.2.1,5.11-1:20000101T120050Z",
+                        "pkg:/test@3.2.1,5.11-1.2:20000101T120051Z",
+                        "pkg:/test@3.2.1,5.11-1.2.3:20000101T120052Z",
+                        "pkg:/zpkg@1.0,5.11-1:20000101T120014Z",
+                        "pkg:/zpkg@1.0,5.11-1:20000101T120040Z"],
+                    "*,*-*.2": ["pkg:/test@1.0,5.11-1.2:20000101T120030Z",
+                        "pkg:/test@3.2.1,5.11-1.2:20000101T120051Z"],
+                    "*,*-*.*.3": ["pkg:/test@3.2.1,5.11-1.2.3:20000101T120052Z"],
+                    "*,*-1": ["pkg:/apkg@1.0,5.11-1:20000101T120040Z",
+                        "pkg:/test@1.0,5.11-1:20000101T120000Z",
+                        "pkg:/test@1.0,5.11-1:20000101T120010Z",
+                        "pkg:/test@1.1,5.11-1:20000101T120040Z",
+                        "pkg:/test@3.2.1,5.11-1:20000101T120050Z",
+                        "pkg:/zpkg@1.0,5.11-1:20000101T120014Z",
+                        "pkg:/zpkg@1.0,5.11-1:20000101T120040Z"],
+                    "*,*-1.2": ["pkg:/test@1.0,5.11-1.2:20000101T120030Z",
+                        "pkg:/test@3.2.1,5.11-1.2:20000101T120051Z"],
+                    "*,*-1.2.*": ["pkg:/test@1.0,5.11-1.2:20000101T120030Z",
+                        "pkg:/test@3.2.1,5.11-1.2:20000101T120051Z",
+                        "pkg:/test@3.2.1,5.11-1.2.3:20000101T120052Z"],
+                    "*": ["pkg:/apkg@1.0,5.11-1:20000101T120040Z",
+                        "pkg:/test@1.0,5.11-1:20000101T120000Z",
+                        "pkg:/test@1.0,5.11-1:20000101T120010Z",
+                        "pkg:/test@1.0,5.11-1.1:20000101T120020Z",
+                        "pkg:/test@1.0,5.11-1.2:20000101T120030Z",
+                        "pkg:/test@1.0,5.11-2:20000101T120040Z",
+                        "pkg:/test@1.1,5.11-1:20000101T120040Z",
+                        "pkg:/test@3.2.1,5.11-1:20000101T120050Z",
+                        "pkg:/test@3.2.1,5.11-1.2:20000101T120051Z",
+                        "pkg:/test@3.2.1,5.11-1.2.3:20000101T120052Z",
+                        "pkg:/zpkg@1.0,5.11-1:20000101T120014Z",
+                        "pkg:/zpkg@1.0,5.11-1:20000101T120040Z"],
+                    "*,*-*:*": ["pkg:/apkg@1.0,5.11-1:20000101T120040Z",
+                        "pkg:/test@1.0,5.11-1:20000101T120000Z",
+                        "pkg:/test@1.0,5.11-1:20000101T120010Z",
+                        "pkg:/test@1.0,5.11-1.1:20000101T120020Z",
+                        "pkg:/test@1.0,5.11-1.2:20000101T120030Z",
+                        "pkg:/test@1.0,5.11-2:20000101T120040Z",
+                        "pkg:/test@1.1,5.11-1:20000101T120040Z",
+                        "pkg:/test@3.2.1,5.11-1:20000101T120050Z",
+                        "pkg:/test@3.2.1,5.11-1.2:20000101T120051Z",
+                        "pkg:/test@3.2.1,5.11-1.2.3:20000101T120052Z",
+                        "pkg:/zpkg@1.0,5.11-1:20000101T120014Z",
+                        "pkg:/zpkg@1.0,5.11-1:20000101T120040Z"],
+                }
+
+                for pat in versions:
+                        chash = {}
+                        plist = sorted(catalog.extract_matching_fmris(self.c.fmris(),
+                            counthash=chash, versions=[pat]))
+                        plist = [str(p) for p in plist]
+                        # Verify that the list of matches are the same.
+                        self.assertEqual(plist, versions[pat])
+                        # Verify that the same number of matches was returned
+                        # in the counthash.
+                        self.assertEqual(chash[pat], len(versions[pat]))
+
+                # Last, verify that providing multiple versions for a single call
+                # returns the expected results.
+
+                # This is a dict containing the set of fmris that are expected
+                # to be returned by extract_matching_fmris keyed by version
+                # pattern.
+                versions = {
+                    "*,*-1": ["pkg:/apkg@1.0,5.11-1:20000101T120040Z",
+                        "pkg:/test@1.0,5.11-1:20000101T120000Z",
+                        "pkg:/test@1.0,5.11-1:20000101T120010Z",
+                        "pkg:/test@1.1,5.11-1:20000101T120040Z",
+                        "pkg:/test@3.2.1,5.11-1:20000101T120050Z",
+                        "pkg:/zpkg@1.0,5.11-1:20000101T120014Z",
+                        "pkg:/zpkg@1.0,5.11-1:20000101T120040Z"],
+                    "*,*-*:*": ["pkg:/apkg@1.0,5.11-1:20000101T120040Z",
+                        "pkg:/test@1.0,5.11-1:20000101T120000Z",
+                        "pkg:/test@1.0,5.11-1:20000101T120010Z",
+                        "pkg:/test@1.0,5.11-1.1:20000101T120020Z",
+                        "pkg:/test@1.0,5.11-1.2:20000101T120030Z",
+                        "pkg:/test@1.0,5.11-2:20000101T120040Z",
+                        "pkg:/test@1.1,5.11-1:20000101T120040Z",
+                        "pkg:/test@3.2.1,5.11-1:20000101T120050Z",
+                        "pkg:/test@3.2.1,5.11-1.2:20000101T120051Z",
+                        "pkg:/test@3.2.1,5.11-1.2.3:20000101T120052Z",
+                        "pkg:/zpkg@1.0,5.11-1:20000101T120014Z",
+                        "pkg:/zpkg@1.0,5.11-1:20000101T120040Z"],
+                }
+
+                elist = [
+                    "pkg:/apkg@1.0,5.11-1:20000101T120040Z",
+                    "pkg:/test@1.0,5.11-1:20000101T120000Z",
+                    "pkg:/test@1.0,5.11-1:20000101T120010Z",
+                    "pkg:/test@1.0,5.11-1.1:20000101T120020Z",
+                    "pkg:/test@1.0,5.11-1.2:20000101T120030Z",
+                    "pkg:/test@1.0,5.11-2:20000101T120040Z",
+                    "pkg:/test@1.1,5.11-1:20000101T120040Z",
+                    "pkg:/test@3.2.1,5.11-1:20000101T120050Z",
+                    "pkg:/test@3.2.1,5.11-1.2:20000101T120051Z",
+                    "pkg:/test@3.2.1,5.11-1.2.3:20000101T120052Z",
+                    "pkg:/zpkg@1.0,5.11-1:20000101T120014Z",
+                    "pkg:/zpkg@1.0,5.11-1:20000101T120040Z",
+                ]
+
+                plist = sorted(catalog.extract_matching_fmris(self.c.fmris(),
+                    counthash=chash, versions=versions.keys()))
+                plist = [str(p) for p in plist]
+
+                # Verify that the list of matches are the same.
+                self.assertEqual(plist, elist)
+
+                for pat in versions:
+                        # Verify that the same number of matches was returned
+                        # in the counthash.
+                        self.assertEqual(chash[pat], len(versions[pat]))
+
+
 class TestEmptyCatalog(pkg5unittest.Pkg5TestCase):
         def setUp(self):
                 self.cpath = tempfile.mkdtemp()
                 self.c = catalog.Catalog(self.cpath)
-		self.nullf = file(os.devnull, "w")
+                self.nullf = file(os.devnull, "w")
 
         def tearDown(self):
                 shutil.rmtree(self.cpath)
@@ -169,7 +347,7 @@ class TestEmptyCatalog(pkg5unittest.Pkg5TestCase):
 
 class TestCatalogRename(pkg5unittest.Pkg5TestCase):
         def setUp(self):
-		self.cpath = tempfile.mkdtemp()
+                self.cpath = tempfile.mkdtemp()
                 self.c = catalog.Catalog(self.cpath)
                 self.npkgs = 0
 
@@ -181,8 +359,8 @@ class TestCatalogRename(pkg5unittest.Pkg5TestCase):
                         self.c.add_fmri(f)
                         self.npkgs += 1
 
-	def tearDown(self):
-		shutil.rmtree(self.cpath)
+        def tearDown(self):
+                shutil.rmtree(self.cpath)
 
         def testFMRIValidator(self):
                 fa = fmri.PkgFmri("pkg:/Foo@1.2,5.11-1:20000101T120040Z", None)
@@ -237,7 +415,7 @@ class TestCatalogRename(pkg5unittest.Pkg5TestCase):
                     fmri.PkgFmri("pkg:/Moo@1.1,5.11-1:20000101T120040Z", None),
                     fmri.PkgFmri("pkg:/Woo@1.1,5.11-1:20000101T120040Z", None),
                 ]
- 
+
                 for f in added_fmris:
                         self.c.add_fmri(f)
                         self.npkgs += 1
@@ -308,7 +486,7 @@ class TestCatalogRename(pkg5unittest.Pkg5TestCase):
 
                 # Test that test@1.0 finds 3 renames that would be newer
                 tfmri = fmri.PkgFmri("pkg:/test@1.0,5.11-2:20000101T120040Z",
-                    None) 
+                    None)
                 pkgs = self.c.rename_newer_pkgs(tfmri)
                 self.assert_(len(pkgs) == 3)
 
@@ -406,7 +584,7 @@ class TestUpdateLog(pkg5unittest.Pkg5TestCase):
                 # a sleep here is needed on Windows to make sure that the time
                 # of the update is different from the time of the original catalog
                 time.sleep(0.5)
-                
+
                 # Add new FMRI
                 fnew = fmri.PkgFmri("pkg:/test@1.0,5.11-3:20000101T120040Z")
                 self.ul.add_package(fnew)
@@ -470,7 +648,7 @@ class TestUpdateLog(pkg5unittest.Pkg5TestCase):
                 # a sleep here is needed on Windows to make sure that the time
                 # of the update is different from the time of the original catalog
                 time.sleep(0.5)
-                
+
                 # Add new FMRI
                 fnew = fmri.PkgFmri("pkg:/bpkg@1.0,5.11-3:20000101T120040Z")
                 self.ul.add_package(fnew)
@@ -503,7 +681,7 @@ class TestUpdateLog(pkg5unittest.Pkg5TestCase):
                 # a sleep here is needed on Windows to make sure that the time
                 # of the update is different from the time of the original catalog
                 time.sleep(0.5)
-                
+
                 # Add a pair of FMRIs
                 f2 = fmri.PkgFmri("pkg:/cpkg@1.0,5.11-3:20000101T120040Z")
                 f3 = fmri.PkgFmri("pkg:/dpkg@1.0,5.11-3:20000101T120040Z")
@@ -533,7 +711,7 @@ class TestUpdateLog(pkg5unittest.Pkg5TestCase):
                 # Verify New packages present
                 cf = fmri.PkgFmri("pkg:/cpkg@1.0,5.11-3:20000101T120040Z")
                 cl = cnew.get_matching_fmris(cf)
-                
+
                 self.assert_(len(cl) == 1)
 
                 cf = fmri.PkgFmri("pkg:/dpkg@1.0,5.11-3:20000101T120040Z")

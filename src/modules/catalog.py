@@ -36,7 +36,6 @@ import stat
 import bisect
 
 import pkg.fmri as fmri
-import pkg.misc as misc
 from pkg.misc import TruncatedTransferException
 import pkg.portable as portable
 import pkg.version as version
@@ -69,6 +68,7 @@ class CatalogPermissionsException(CatalogException):
                             "mode: %(fmode)s\n") % ({ "fname": fname,
                             "emode": emode, "fmode": fmode })
                 return msg
+
 
 class Catalog(object):
         """A Catalog is the representation of the package FMRIs available to
@@ -199,28 +199,28 @@ class Catalog(object):
                 if bad_modes:
                         raise CatalogPermissionsException(bad_modes)
 
-        def add_fmri(self, fmri, critical = False):
+        def add_fmri(self, pfmri, critical = False):
                 """Add a package, named by the fmri, to the catalog.
                 Throws an exception if an identical package is already
                 present.  Throws an exception if package has no version."""
-                if fmri.version == None:
+                if pfmri.version == None:
                         raise CatalogException, \
-                            "Unversioned FMRI not supported: %s" % fmri
+                            "Unversioned FMRI not supported: %s" % pfmri
 
                 assert not self.read_only
 
                 # Callers should verify that the FMRI they're going to add is
                 # valid; however, this check is here in case they're
                 # lackadaisical
-                if not self.valid_new_fmri(fmri):
+                if not self.valid_new_fmri(pfmri):
                         raise CatalogException, \
                             "Existing renames make adding FMRI %s invalid." \
-                            % fmri
+                            % pfmri
 
                 if critical:
-                        pkgstr = "C %s\n" % fmri.get_fmri(anarchy = True)
+                        pkgstr = "C %s\n" % pfmri.get_fmri(anarchy = True)
                 else:
-                        pkgstr = "V %s\n" % fmri.get_fmri(anarchy = True)
+                        pkgstr = "V %s\n" % pfmri.get_fmri(anarchy = True)
 
                 tmp_num, tmpfile = tempfile.mkstemp(dir=self.catalog_root)
 
@@ -243,7 +243,7 @@ class Catalog(object):
                                         self.catalog_lock.release()
                                         raise CatalogException(
                                             "Package %s is already in the "
-                                            "catalog" % fmri)
+                                            "catalog" % pfmri)
                                 else:
                                         tfile.write(entry)
                         tfile.write(pkgstr)
@@ -268,7 +268,7 @@ class Catalog(object):
                 return ts
 
         @staticmethod
-        def cache_fmri(d, fmri, auth):
+        def cache_fmri(d, pfmri, auth):
                 """Store the fmri in a data structure 'd' for fast lookup.
 
                 'd' is a dict that maps each package name to another dictionary,
@@ -295,27 +295,27 @@ class Catalog(object):
                 The fmri is expected not to have an embedded authority.  If it
                 does, it will be ignored."""
 
-                version = str(fmri.version)
-                if fmri.pkg_name not in d:
+                pversion = str(pfmri.version)
+                if pfmri.pkg_name not in d:
                         # This is the simplest representation of the cache data
                         # structure.
-                        d[fmri.pkg_name] = {
-                            "versions": [ fmri.version ],
-                            version: (fmri, [ auth ])
+                        d[pfmri.pkg_name] = {
+                            "versions": [ pfmri.version ],
+                            pversion: (pfmri, [ auth ])
                         }
-                elif version not in d[fmri.pkg_name]:
-                        d[fmri.pkg_name][version] = (fmri, [ auth ])
+                elif pversion not in d[pfmri.pkg_name]:
+                        d[pfmri.pkg_name][pversion] = (pfmri, [ auth ])
                         bisect.insort(
-                            d[fmri.pkg_name]["versions"], fmri.version)
+                            d[pfmri.pkg_name]["versions"], pfmri.version)
                 else:
-                        d[fmri.pkg_name][version][1].append(auth)
+                        d[pfmri.pkg_name][pversion][1].append(auth)
 
         @staticmethod
-        def read_catalog(catalog, dir, auth=None):
-                """Read the catalog file in "dir" and combine it with the
+        def read_catalog(catalog, path, auth=None):
+                """Read the catalog file in "path" and combine it with the
                 existing data in "catalog"."""
 
-                catf = file(os.path.join(dir, "catalog"))
+                catf = file(os.path.join(path, "catalog"))
                 for line in catf:
                         if not line.startswith("V pkg") and \
                             not line.startswith("C pkg"):
@@ -484,12 +484,12 @@ class Catalog(object):
 
                 pfile.close()
 
-        def fmri_renamed_dest(self, fmri):
+        def fmri_renamed_dest(self, pfmri):
                 """Returns a list of RenameRecords where fmri is listed as the
                  destination package."""
 
                 # Don't bother doing this if no FMRI is present
-                if not fmri:
+                if not pfmri:
                         return
 
                 # Load renamed packages, if needed
@@ -497,16 +497,16 @@ class Catalog(object):
                         self._load_renamed()
 
                 for rr in self.renamed:
-                        if rr.destname == fmri.pkg_name and \
-                            fmri.version >= rr.destversion:
+                        if rr.destname == pfmri.pkg_name and \
+                            pfmri.version >= rr.destversion:
                                 yield rr
 
-        def fmri_renamed_src(self, fmri):
+        def fmri_renamed_src(self, pfmri):
                 """Returns a list of RenameRecords where fmri is listed as
                 the source package."""
 
                 # Don't bother doing this if no FMRI is present
-                if not fmri:
+                if not pfmri:
                         return
 
                 # Load renamed packages, if needed
@@ -514,8 +514,8 @@ class Catalog(object):
                         self._load_renamed()
 
                 for rr in self.renamed:
-                        if rr.srcname == fmri.pkg_name and \
-                            fmri.version < rr.srcversion:
+                        if rr.srcname == pfmri.pkg_name and \
+                            pfmri.version < rr.srcversion:
                                 yield rr
 
         def last_modified(self):
@@ -727,18 +727,18 @@ class Catalog(object):
 
                 return (ts, rr)
 
-        def rename_is_same_pkg(self, fmri, pfmri):
-                """Returns true if fmri and pfmri are the same package because
+        def rename_is_same_pkg(self, sfmri, pfmri):
+                """Returns true if sfmri and pfmri are the same package because
                 of a rename operation."""
 
-                for s in self.fmri_renamed_src(fmri):
+                for s in self.fmri_renamed_src(sfmri):
                         if s.destname == pfmri.pkg_name:
                                 return True
                         elif s.new_fmri() and \
                             self.rename_is_same_pkg(s.new_fmri(), pfmri):
                                 return True
 
-                for d in self.fmri_renamed_dest(fmri):
+                for d in self.fmri_renamed_dest(sfmri):
                         if d.srcname == pfmri.pkg_name:
                                 return True
                         elif self.rename_is_same_pkg(d.old_fmri(), pfmri):
@@ -746,11 +746,11 @@ class Catalog(object):
 
                 return False
 
-        def rename_is_successor(self, fmri, pfmri):
-                """Returns true if fmri is a successor to pfmri by way
+        def rename_is_successor(self, sfmri, pfmri):
+                """Returns true if sfmri is a successor to pfmri by way
                 of a rename operation."""
 
-                for d in self.fmri_renamed_dest(fmri):
+                for d in self.fmri_renamed_dest(sfmri):
                         if d.srcname == pfmri.pkg_name and \
                             pfmri.version <= d.srcversion:
                                 return True
@@ -760,11 +760,11 @@ class Catalog(object):
 
                 return False
 
-        def rename_is_predecessor(self, fmri, pfmri):
-                """Returns true if fmri is a predecessor to pfmri by
+        def rename_is_predecessor(self, sfmri, pfmri):
+                """Returns true if sfmri is a predecessor to pfmri by
                 a rename operation."""
 
-                for s in self.fmri_renamed_src(fmri):
+                for s in self.fmri_renamed_src(sfmri):
                         if s.destname == pfmri.pkg_name and \
                             s.destversion < pfmri.version:
                                 return True
@@ -774,12 +774,12 @@ class Catalog(object):
 
                 return False
 
-        def rename_newer_pkgs(self, fmri):
-                """Returns a list of packages that are newer than fmri."""
+        def rename_newer_pkgs(self, pfmri):
+                """Returns a list of packages that are newer than pfmri."""
 
                 pkgs = []
 
-                for s in self.fmri_renamed_src(fmri):
+                for s in self.fmri_renamed_src(pfmri):
                         if s.new_fmri():
                                 pkgs.append(s.new_fmri())
                                 nl = self.rename_newer_pkgs(s.new_fmri())
@@ -787,28 +787,27 @@ class Catalog(object):
 
                 return pkgs
 
-        def rename_older_pkgs(self, fmri):
+        def rename_older_pkgs(self, pfmri):
                 """Returns a list of packages that are older than fmri."""
 
                 pkgs = []
 
-                for d in self.fmri_renamed_dest(fmri):
+                for d in self.fmri_renamed_dest(pfmri):
                         pkgs.append(d.old_fmri())
                         ol = self.rename_older_pkgs(d.old_fmri())
                         pkgs.extend(ol)
 
                 return pkgs
 
-        def save_attrs(self, filenm = "attrs"):
+        def save_attrs(self, filenm="attrs"):
                 """Save attributes from the in-memory catalog to a file
                 specified by filenm."""
 
                 assert not self.read_only
 
-                apath = os.path.normpath(os.path.join(self.catalog_root,
-                    filenm))
                 try:
-                        afile = file(apath, "wb+")
+                        afile = file(os.path.normpath(
+                            os.path.join(self.catalog_root, filenm)), "wb+")
                 except IOError, e:
                         # This may get called in a situation where
                         # the user does not have write access to the attrs
@@ -968,11 +967,19 @@ def extract_matching_fmris(pkgs, patterns=None, matcher=None,
         function in 'matcher' and the versioning constraint described by
         'constraint'.  If 'matcher' is None, uses fmri subset matching
         as the default.  If 'patterns' is None, 'versions' may be specified,
-        and looks for packages matching 'version' in 'versions', based on the
-        constraint described by 'constraint'.  Returns a sorted list of
-        PkgFmri objects, newest versions first.  If 'counthash' is a
-        dictionary, instead store the number of matched fmris for each package
-        that matches."""
+        and looks for packages matching the patterns specified in 'versions'.
+        When using 'version', the 'constraint' parameter is ignored.
+
+        'versions' should be a list of strings of the format:
+            release,build_release-branch:datetime 
+
+        ...with a value of '*' provided for any component to be ignored. '*' or
+        '?' may be used within each component value and will act as wildcard
+        characters ('*' for one or more characters, '?' for a single character).
+
+        Returns a sorted list of PkgFmri objects, newest versions first.  If
+        'counthash' is a dictionary, instead store the number of matched fmris
+        for each package that matches."""
 
         if not matcher:
                 matcher = fmri.fmri_match
@@ -985,7 +992,10 @@ def extract_matching_fmris(pkgs, patterns=None, matcher=None,
         if versions is None:
                 versions = []
         elif not isinstance(versions, list):
-                versions = [ versions ]
+                versions = [ version.MatchingVersion(versions, None) ]
+        else:
+                for i, ver in enumerate(versions):
+                        versions[i] = version.MatchingVersion(ver, None)
 
         # 'pattern' may be a partially or fully decorated fmri; we want
         # to extract its name and version to match separately against
@@ -1001,17 +1011,8 @@ def extract_matching_fmris(pkgs, patterns=None, matcher=None,
                         tuples[pattern] = \
                             fmri.PkgFmri(pattern, "5.11").tuple()
 
-        vers = []
-        for ver in versions:
-                if not isinstance(ver, version.Version):
-                        vers.append(version.Version(ver, ""))
-                else:
-                        vers.append(ver)
-        versions = vers
-
         def by_pattern(p):
                 cat_auth, cat_name, cat_version = p.tuple()
-                ret = []
                 for pattern in patterns:
                         pat_auth, pat_name, pat_version = tuples[pattern]
                         if (fmri.is_same_authority(pat_auth, cat_auth) or not \
@@ -1028,32 +1029,32 @@ def extract_matching_fmris(pkgs, patterns=None, matcher=None,
 
                                         if pat_auth:
                                                 p.set_authority(pat_auth)
-                                        ret.append(p)
-                return ret
+                                        return p
 
         def by_version(p):
-                ret = []
                 for ver in versions:
-                        sver = str(ver)
-                        if p.version.is_successor(ver, constraint):
+                        if ver == p.version:
                                 if counthash is not None:
+                                        sver = str(ver)
                                         if sver in counthash:
                                                 counthash[sver] += 1
                                         else:
                                                 counthash[sver] = 1
-                                ret.append(p)
-                return ret
+                                return p
 
         ret = []
         if patterns:
                 for p in pkgs:
-                        ret.extend(by_pattern(p))
+                        res = by_pattern(p)
+                        if res is not None:
+                                ret.append(res)
         elif versions:
-                v = versions[0]
                 for p in pkgs:
-                        ret.extend(by_version(p))
+                        res = by_version(p)
+                        if res is not None:
+                                ret.append(res)
 
-        return sorted(ret, reverse = True)
+        return sorted(ret, reverse=True)
 
 class RenamedPackage(object):
         """An in-memory representation of a rename object.  This object records

@@ -1,3 +1,11 @@
+Version 2:
+Incompatible with clients using Versions 0, 1
+Changes:
+CatalogInterface.get_matching_version_fmris() no longer accepts the constraint
+parameter.  However, as before, it expects a list of version strings for the
+'versions' parameter.  These version strings may now contain the wildcard
+characters '*' and '?'.
+
 Version 1:
 Incompatible with clients using Version 0
 Changes:

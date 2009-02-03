@@ -20,7 +20,7 @@
 # CDDL HEADER END
 
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -29,7 +29,7 @@ import pkg.catalog
 import pkg.version
 import pkg.server.api_errors as api_errors
 
-CURRENT_API_VERSION = 1
+CURRENT_API_VERSION = 2
 
 class BaseInterface(object):
         """This class represents a base API object that is provided by the
@@ -55,7 +55,7 @@ class _Interface(object):
         """Private base class used for api interface objects.
         """
         def __init__(self, version_id, base):
-                compatible_versions = set([1])
+                compatible_versions = set([2])
                 if version_id not in compatible_versions:
                         raise api_errors.VersionException(CURRENT_API_VERSION,
                             version_id)
@@ -91,17 +91,24 @@ class CatalogInterface(_Interface):
                 return pkg.catalog.extract_matching_fmris(c.fmris(),
                     patterns=patterns)
 
-        def get_matching_version_fmris(self, versions,
-            constraint=pkg.version.CONSTRAINT_AUTO):
+        def get_matching_version_fmris(self, versions):
                 """Returns a sorted list of PkgFmri objects, newest versions
                 first, for packages matching those found in the 'versions' list.
+
+                'versions' should be a list of strings of the format:
+                    release,build_release-branch:datetime 
+
+                ...with a value of '*' provided for any component to be ignored.
+                '*' or '?' may be used within each component value and will act
+                as wildcard characters ('*' for one or more characters, '?' for
+                a single character).
                 """
                 c = self.__catalog
                 if not c:
                         return []
 
                 return pkg.catalog.extract_matching_fmris(c.fmris(),
-                    versions=versions, constraint=constraint)
+                    versions=versions)
 
         @property
         def last_modified(self):
