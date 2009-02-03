@@ -1633,6 +1633,9 @@ category = Localizations (System)
 [SUNWinstall-libs]
 category = Libraries (System)
 
+[SUNWinstall-test]
+category = Administration and Configuration
+
 [SUNWinstalladm-tools]
 category = Administration and Configuration
 
@@ -3611,9 +3614,6 @@ category = Virtualization
 category = Internet
 
 [SUNWvscan]
-category = Services
-
-[SUNWvscankr]
 category = Services
 
 [SUNWvts]
