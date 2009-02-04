@@ -55,7 +55,7 @@ class Popen(subprocess.Popen):
                     env, universal_newlines, startupinfo, creationflags)
 
 
-        if "pkg.pspawn" in globals():
+        if "posix_spawnp" in globals():
 
                 def _execute_child(self, args, executable, preexec_fn,
                     close_fds, cwd, env, universal_newlines, startupinfo,
