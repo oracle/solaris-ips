@@ -318,7 +318,7 @@ pspawn(PyObject *self, PyObject *args, PyObject *kwds)
 		return (NULL);
 	}
 	len = PySequence_Size(args_seq);
-	spawn_args = malloc(sizeof (char *) * len + 1);
+	spawn_args = malloc(sizeof (char *) * (len + 1));
 	if (spawn_args == NULL) {
 		PyErr_NoMemory();
 		goto out_args;
@@ -342,7 +342,7 @@ pspawn(PyObject *self, PyObject *args, PyObject *kwds)
 			goto out_args;
 		}
 		len = PySequence_Size(env_seq);
-		spawn_env = malloc(sizeof (char *) * len + 1);
+		spawn_env = malloc(sizeof (char *) * (len + 1));
 		if (spawn_env == NULL) {
 			PyErr_NoMemory();
 			goto out_env;
