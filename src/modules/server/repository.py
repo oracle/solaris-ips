@@ -301,8 +301,8 @@ class Repository(object):
                         pfmri = "/".join(tokens)
                         f = fmri.PkgFmri(pfmri, None)
                         fpath = f.get_dir_path()
-                except (IndexError, AssertionError, version.IllegalDotSequence,
-                    version.IllegalVersion):
+                except (IndexError, fmri.IllegalFmri,
+                    version.IllegalDotSequence, version.IllegalVersion):
                         raise cherrypy.HTTPError(httplib.NOT_FOUND)
 
                 # send manifest
@@ -414,9 +414,9 @@ class Repository(object):
                 except ValueError:
                         raise cherrypy.HTTPError(httplib.BAD_REQUEST,
                             "Invalid source FMRI.")
-                except AssertionError:
+                except fmri.IllegalFmri, e:
                         raise cherrypy.HTTPError(httplib.BAD_REQUEST,
-                            "Source FMRI must contain build string.")
+                            "Illegal source FMRI: %s" % e)
 
                 try:
                         dest_fmri = fmri.PkgFmri(params['Dest-FMRI'], None)
@@ -426,9 +426,9 @@ class Repository(object):
                 except ValueError:
                         raise cherrypy.HTTPError(httplib.BAD_REQUEST,
                             "Invalid destination FMRI.")
-                except AssertionError:
+                except fmri.IllegalFmri, e:
                         raise cherrypy.HTTPError(httplib.BAD_REQUEST,
-                            "Destination FMRI must contain build string.")
+                            "Illegal destination FMRI: %s" % e)
 
                 try:
                         self.scfg.updatelog.rename_package(src_fmri.pkg_name,

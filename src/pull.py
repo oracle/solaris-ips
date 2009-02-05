@@ -298,9 +298,10 @@ def main_func():
 
                         try:
                                 fmri = pkg.fmri.PkgFmri(pkgfmri)
-                        except AssertionError:
-                                error(_("pkgfmri %s needs a version string") %
-                                    pkgfmri)
+                        except pkg.fmri.IllegalFmri, e:
+                                error(_("%(fmri)s is an illegal fmri: "
+                                    "%(error)s") %
+                                    { "fmri": pkgfmri, "error": e })
                                 return 1
 
                         mfstpath = fetch_manifest(server, fmri, basedir)

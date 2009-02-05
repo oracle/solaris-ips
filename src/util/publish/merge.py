@@ -328,7 +328,7 @@ def main_func():
                                 error("fmris at different versions: %s" % fmri_list)
                                 continue
 
-                except AssertionError:
+                except pkg.fmri.IllegalFmri:
                         error(_("pkgfmri error"))
                         return 1
 

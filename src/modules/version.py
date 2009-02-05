@@ -242,7 +242,11 @@ class Version(object):
                         if build is not None:
                                 self.build_release = DotSequence(build)
                         else:
-                                assert build_string is not None
+                                if build_string is None:
+                                        raise IllegalVersion("No build version "
+                                            "provided in Version constructor: "
+                                            "(%s, %s)" % (version_string,
+                                            build_string))
                                 self.build_release = DotSequence(build_string)
 
                 except IllegalDotSequence, id:
