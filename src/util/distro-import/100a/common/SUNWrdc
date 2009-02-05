@@ -4,4 +4,5 @@ import SUNWrdcu
 import SUNWrdcr
 add driver name=rdc perms="* 0666 root sys" privs=sys_devices privs=sys_config \
 	devlink="type=ddi_pseudo;name=rdc\t\D"
+depend SUNWspsv
 end package
