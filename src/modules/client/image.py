@@ -696,7 +696,8 @@ class Image(object):
                 self.history.operation_name = "set-authority"
                 auths = self.cfg_cache.authorities
 
-                origin_changed = False
+                refresh_catalog = False
+                purge_catalog = False
 
                 if auth_name in auths:
                         # Copy old authority information to new entry.
@@ -707,7 +708,7 @@ class Image(object):
                         if origin_url:
                                 newauth["origin"] = \
                                     misc.url_affix_trailing_slash(origin_url)
-                                origin_changed = True
+                                refresh_catalog = True
                         if ssl_key:
                                 newauth["ssl_key"] = ssl_key
                         if ssl_cert:
@@ -720,8 +721,11 @@ class Image(object):
                                 assert(not disabled or \
                                     auth_name != self.get_default_authority())
                                 newauth["disabled"] = disabled
-                                origin_changed = True
-
+                                if disabled:
+                                        purge_catalog = True
+                                else:
+                                        refresh_catalog = True
+                             
                 else:
                         newauth = {}
                         newauth["prefix"] = auth_name
@@ -736,13 +740,24 @@ class Image(object):
                         if disabled is None:
                                 disabled = False
                         newauth["disabled"] = disabled
-                        origin_changed = True
+                        if not newauth["disabled"]:
+                                refresh_catalog = True
 
-                if origin_changed and refresh_allowed:
-                        self.destroy_catalog(auth_name)
-                        self.destroy_catalog_cache()
-                        self.retrieve_catalogs(full_refresh=True,
-                            auths=[newauth])
+                if refresh_catalog or purge_catalog:
+                        try:
+                                self.destroy_catalog(auth_name)
+                                self.destroy_catalog_cache()
+                        except EnvironmentError, e:
+                                if e.errno == errno.EACCES:
+                                        raise api_errors.PermissionsException(
+                                            e.filename)
+                                raise
+
+                        if purge_catalog:
+                                self.cache_catalogs()
+                        elif refresh_allowed:
+                                self.retrieve_catalogs(full_refresh=True,
+                                    auths=[newauth])
 
                 # If the code got here, it successfully refreshed
                 # the authority, and passed any sanity checks.  Save

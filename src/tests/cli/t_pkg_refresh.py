@@ -162,10 +162,7 @@ class TestPkgRefreshMulti(testutils.ManyDepotTestCase):
                 self.checkAnswer(expected, self.output)
                 self.pkg("set-authority --no-refresh -O " +
                     self.durl2 + " test1")
-                self.pkg("list -aH pkg:/foo")
-                expected = \
-                    "foo 1.0-0 known ----\n"
-                self.checkAnswer(expected, self.output)
+                self.pkg("list -aH pkg:/foo", exit=1)
                 self.pkg("set-authority -O " + self.durl2 + " test1") 
                 self.pkg("list -aH pkg:/foo")
                 expected = \
@@ -187,7 +184,7 @@ class TestPkgRefreshMulti(testutils.ManyDepotTestCase):
                 self.checkAnswer(expected, self.output)
                 self.dcs[2].stop()
                 self.pkg("set-authority --no-refresh -O " + self.durl2 + " test1")
-                self.pkg("list -aH pkg:/foo")
+                self.pkg("list -aH pkg:/foo", exit=1)
                 self.dcs[2].start()
                 self.pkg("refresh test1")
                 self.pkg("list -aH pkg:/foo")
