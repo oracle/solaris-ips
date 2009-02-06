@@ -56,6 +56,7 @@ class Repository:
                         gobject.TYPE_STRING,      # enumerations.AUTHORITY_SSL_KEY
                         gobject.TYPE_STRING,      # enumerations.AUTHORITY_SSL_CERT
                         gobject.TYPE_PYOBJECT,    # enumerations.AUTHORITY_MIRRORS
+                        gobject.TYPE_BOOLEAN,     # enumerations.AUTHORITY_ENABLED
                         )
                 self.mirror_list = \
                     gtk.ListStore(
@@ -87,7 +88,6 @@ class Repository:
                         w_tree_repository.get_widget("repositorymodify")
                 self.w_repository_remove_button = \
                         w_tree_repository.get_widget("repositoryremove")
-                self.repository_list_filter = self.repository_list.filter_new()
                 self.repository_list_filter = self.repository_list.filter_new()
                 self.w_repository_error_label = \
                         w_tree_repository.get_widget("error_label")
@@ -136,8 +136,6 @@ class Repository:
                 self.w_repository_add_button.connect('focus-in-event', self.on_focus_in)
                 self.w_repository_close_button.connect('focus-in-event', self.on_focus_in)
                 self.w_repository_add_button.connect('focus-in-event', self.on_focus_in)
-                self.w_repositorymodify_dialog.connect('delete-event', 
-                    self.__on_repositorymodify_delete_event)
 
                 self.w_sslkeyandcert_dialog = \
                     w_tree_sslkeyandcert_dialog.get_widget("sslkeyandcertdialog")
@@ -153,8 +151,6 @@ class Repository:
                     w_tree_sslkeyandcert_dialog.get_widget("keyandcertok")
                 self.w_sslkeyandcert_cancel_button = \
                     w_tree_sslkeyandcert_dialog.get_widget("keyandcertcancel")
-                self.w_sslkeyandcert_dialog.connect('delete-event', 
-                    self.w_sslkeyandcert_dialog.hide_on_delete)
 
                 progress_button.hide()
                 self.w_progressbar.set_pulse_step(0.1)
@@ -171,11 +167,15 @@ class Repository:
                 self.is_name_valid = False
                 self.is_url_valid = False
                 self.name_error = None
+                self.original_preferred = None
+                self.preferred = None
                 self.url_error = None
 
                 try:
                         dic = \
                             {
+                                "on_repository_delete_event": \
+                                    self.__on_repository_delete_event,
                                 "on_repositoryadd_clicked": \
                                     self.__on_repositoryadd_clicked,
                                 "on_repositorymodify_clicked": \
@@ -193,6 +193,8 @@ class Repository:
                             }
                         dic_conf = \
                             {
+                                "on_repositorymodif_delete_event": \
+                                    self.__on_repositorymodify_delete_event,
                                 "on_repositorymodifycancel_clicked": \
                                     self.__on_repositorymodifycancel_clicked,
                                 "on_repositorymodifyok_clicked": \
@@ -214,6 +216,8 @@ class Repository:
                             }            
                         dic_ssl = \
                             {
+                                "on_sslkeyandcertdialog_delete_event": \
+                                    self.__on_sslkeyandcert_dialog_delete_event,
                                 "on_keyentry_changed": \
                                     self.__on_key_or_cert_entry_changed,
                                 "on_certentry_changed": \
@@ -257,30 +261,51 @@ class Repository:
                 self.__on_repositorytreeview_selection_changed(widget)
 
         def __init_tree_views(self):
+                repository_list_sort = gtk.TreeModelSort(self.repository_list_filter)
                 name_renderer = gtk.CellRendererText()
                 column = gtk.TreeViewColumn(_("Repository Name"),
-                    name_renderer,  text = 0) # 0 = Name
+                    name_renderer,  text = enumerations.AUTHORITY_NAME)
                 column.set_expand(True)
+                column.set_sort_column_id(enumerations.AUTHORITY_NAME)
+                column.set_sort_indicator(True)
+                column.set_cell_data_func(name_renderer,
+                    self.name_data_function, None)
                 self.w_repository_treeview.append_column(column)
                 radio_renderer = gtk.CellRendererToggle()
                 column = gtk.TreeViewColumn(_("Preferred"),
-                    radio_renderer, active = 1) # 1 = Preferred
+                    radio_renderer, active = enumerations.AUTHORITY_PREFERRED)
                 radio_renderer.set_property("activatable", True)
                 radio_renderer.set_property("radio", True)
                 column.set_expand(False)
+                column.set_sort_column_id(enumerations.AUTHORITY_PREFERRED)
+                column.set_sort_indicator(True)
                 radio_renderer.connect('toggled', self.__preferred_default)
+                column.set_cell_data_func(radio_renderer,
+                    self.radio_data_function, None)
+                self.w_repository_treeview.append_column(column)
+                toggle_renderer = gtk.CellRendererToggle()
+                column = gtk.TreeViewColumn(_("Enabled"),
+                    toggle_renderer, active = enumerations.AUTHORITY_ENABLED)
+                toggle_renderer.set_property("activatable", True)
+                column.set_expand(False)
+                column.set_sort_column_id(enumerations.AUTHORITY_ENABLED)
+                column.set_sort_indicator(True)
+                toggle_renderer.connect('toggled', self.__enable_disable)
+                column.set_cell_data_func(toggle_renderer, 
+                    self.toggle_data_function, None)
                 self.w_repository_treeview.append_column(column)
                 name_renderer = gtk.CellRendererText()
                 column = gtk.TreeViewColumn("",
                     name_renderer,  text = 0) # 0 = Mirror
                 column.set_expand(True)
                 self.w_mirror_treeview.append_column(column)
+                self.w_repository_treeview.set_model(repository_list_sort)
 
         def __prepare_repository_list(self, clear_add_entries=True, selected_auth=None,
             stop_thread=True):
                 self.number_of_changes += 1
                 self.img.load_config()
-                auths = self.img.gen_authorities()
+                auths = self.img.gen_authorities(inc_disabled=True)
                 gobject.idle_add(self.__create_view_with_auths, auths,
                     clear_add_entries, selected_auth)
                 if stop_thread:
@@ -288,6 +313,7 @@ class Repository:
                 return
 
         def __create_view_with_auths(self, auths, clear_add_entries, selected_auth):
+                model = self.w_repository_treeview.get_model()
                 self.w_repository_treeview.set_model(None)
                 self.repository_list.clear()
                 if clear_add_entries:
@@ -296,49 +322,131 @@ class Repository:
                 self.w_repository_name.grab_focus()
                 j = 0
                 select_auth = -1
-                preferred = self.img.get_default_authority()
+                self.preferred = self.img.get_default_authority()
+                self.original_preferred = self.preferred
                 for a in auths:
                         l = self.img.split_authority(a)
                         name = l[0]
-                        is_preferred = name == preferred
+                        is_preferred = name == self.preferred
                         if is_preferred:
                                 self.initial_default = j
                         if selected_auth:
                                 if name == selected_auth:
                                         select_auth = j
                         self.repository_list.insert(j, 
-                            [name, is_preferred, l[1], l[2], l[3], l[5]])
+                            [name, is_preferred, l[1], l[2], l[3], l[5], \
+                            not a["disabled"]])
                         j += 1
                 if j > 0:
                         self.w_repository_modify_button.set_sensitive(False)
                         self.w_repository_remove_button.set_sensitive(False)
-                self.w_repository_treeview.set_model(self.repository_list_filter)
+                self.w_repository_treeview.set_model(model)
                 if select_auth == -1:
                         select_auth = self.initial_default
                 self.w_repository_treeview.set_cursor(select_auth,
                     None, start_editing=False)
                 self.w_repository_treeview.scroll_to_cell(select_auth)
 
-        def __preferred_default(self, cell, filtered_path):
-                filtered_model = self.w_repository_treeview.get_model()
+        @staticmethod
+        def name_data_function(column, renderer, model, itr, data):
+                if itr:
+                        renderer.set_property("sensitive", 
+
+                            model.get_value(itr, enumerations.AUTHORITY_ENABLED))
+
+        @staticmethod
+        def radio_data_function(column, renderer, model, itr, data):
+                if itr:
+                        renderer.set_property("sensitive", 
+                            model.get_value(itr, enumerations.AUTHORITY_ENABLED))
+
+        @staticmethod
+        def toggle_data_function(column, renderer, model, itr, data):
+                if itr:
+                        renderer.set_property("sensitive", 
+                            not model.get_value(itr, 
+                            enumerations.AUTHORITY_PREFERRED))
+
+        def __enable_disable(self, cell, filtered_path):
+                sorted_model = self.w_repository_treeview.get_model()
+                filtered_model = sorted_model.get_model()
                 model = filtered_model.get_model()
-                path = filtered_model.convert_path_to_child_path(filtered_path)
+                path = sorted_model.convert_path_to_child_path(filtered_path)
                 itr = model.get_iter(path)
                 if itr:
-                        preferred = model.get_value(itr, 1)
-                        if preferred == False:
-                                name = model.get_value(itr, 0)
+                        preferred = model.get_value(itr, 
+                            enumerations.AUTHORITY_PREFERRED)
+                        if preferred == True:
+                                return
+                        enabled = model.get_value(itr,
+                            enumerations.AUTHORITY_ENABLED)
+                        auth = model.get_value(itr, enumerations.AUTHORITY_NAME)
+                        try:
+                                self.img.set_authority(auth,
+                                    refresh_allowed=False,
+                                    disabled=enabled)
+                                self.number_of_changes += 1
+                                model.set_value(itr, 
+                                    enumerations.AUTHORITY_ENABLED,
+                                    not enabled)
+                        except RuntimeError, ex:
+                                if enabled:
+                                        err = _("Failed to disable %s.") % auth
+                                else:
+                                        err = _("Failed to enable %s.") % auth
+                                err += str(ex)
+                                self.__error_occurred(err,
+                                    msg_type=gtk.MESSAGE_INFO)
+                                self.__prepare_repository_list()
+                        except api_errors.PermissionsException:
+                                if enabled:
+                                        err1 = _("Failed to disable %s.") % auth
+                                else:
+                                        err1 = _("Failed to enable %s.") % auth
+                                err = err1 + _("\nPlease check your permissions.")
+                                self.__error_occurred(err,
+                                    msg_type=gtk.MESSAGE_INFO)
+                                self.__prepare_repository_list()
+                        except api_errors.CatalogRefreshException:
+                                if enabled:
+                                        err1 = _("Failed to disable %s.") % auth
+                                else:
+                                        err1 = _("Failed to enable %s.") % auth
+                                err = err1 + _(
+                                    "\nPlease check the network connection or URL.\n"
+                                    "Is the repository accessible?")
+                                self.__error_occurred(err,
+                                    msg_type=gtk.MESSAGE_INFO)
+                                self.__prepare_repository_list()
+
+        def __preferred_default(self, cell, filtered_path):
+                sorted_model = self.w_repository_treeview.get_model()
+                filtered_model = sorted_model.get_model()
+                model = filtered_model.get_model()
+                path = sorted_model.convert_path_to_child_path(filtered_path)
+                itr = model.get_iter(path)
+                if itr:
+                        preferred = model.get_value(itr, 
+                            enumerations.AUTHORITY_PREFERRED)
+                        enabled = model.get_value(itr,
+                            enumerations.AUTHORITY_ENABLED)
+                        if preferred == False and enabled == True:
+                                auth = model.get_value(itr, 
+                                    enumerations.AUTHORITY_NAME)
                                 try:
-                                        self.img.set_preferred_authority(name)
-                                        self.number_of_changes += 1
+                                        self.img.set_preferred_authority(auth)
+                                        self.preferred = auth
+                                        index = enumerations.AUTHORITY_PREFERRED
                                         for row in model:
-                                                row[1] = False
-                                        model.set_value(itr, 1, not preferred)
+                                                row[index] = False
+                                        model.set_value(itr, 
+                                            enumerations.AUTHORITY_PREFERRED,
+                                            not preferred)
                                 except api_errors.PermissionsException:
                                         err = _("Couldn't change"
                                             " the preferred authority.\n"
                                             "Please check your permissions.")
-                                        self.__error_occured(err,
+                                        self.__error_occurred(err,
                                             msg_type=gtk.MESSAGE_INFO) 
                                         self.__prepare_repository_list()
 
@@ -517,10 +625,14 @@ class Repository:
                         self.w_mirror_add_button.set_sensitive(False)
                         self.w_repositorymodify_dialog.show_all()
 
+        def __on_repository_delete_event(self, widget, event):
+                self.__on_repositoryclose_clicked(widget)
+
         def __on_repositoryclose_clicked(self, widget):
                 # if the number is greater then 1 it means that we did something
                 # to the repository list and it is safer to reload package info
-                if self.number_of_changes > 1:
+                if self.number_of_changes > 1 or \
+                    self.original_preferred != self.preferred:
                         self.parent.reload_packages()
                 self.w_repository_dialog.hide()
 
@@ -568,7 +680,7 @@ class Repository:
                                     "already in use") % \
                                     {'old_name': omn,
                                      'new_name': name}
-                                gobject.idle_add(self.__error_occured, err)
+                                gobject.idle_add(self.__error_occurred, err)
                                 self.progress_stop_thread = True
                                 return
                         try:
@@ -621,7 +733,7 @@ class Repository:
                                     _(
                                     "\nPlease check the network connection or URL.\n"
                                     "Is the repository accessible?")
-                                gobject.idle_add(self.__error_occured, err,
+                                gobject.idle_add(self.__error_occurred, err,
                                     gtk.MESSAGE_INFO)
                         except api_errors.CatalogRefreshException:
                                 #We need to show at least one warning dialog
@@ -633,7 +745,7 @@ class Repository:
                                     _(
                                     "\nPlease check the network connection or URL.\n"
                                     "Is the repository accessible?")
-                                gobject.idle_add(self.__error_occured, err,
+                                gobject.idle_add(self.__error_occurred, err,
                                     gtk.MESSAGE_INFO)
                 self.progress_stop_thread = True
                 return
@@ -660,7 +772,7 @@ class Repository:
 
                 if not misc.valid_auth_url(origin_url):
                         err = _("Invalid URL:\n%s" % origin_url)
-                        gobject.idle_add(self.__error_occured, err)
+                        gobject.idle_add(self.__error_occurred, err)
                         gobject.idle_add(self.w_repository_name.grab_focus)
                         self.progress_stop_thread = True
                         return
@@ -751,7 +863,7 @@ class Repository:
                             {'mirror': mirror,
                              'repository': name})
                         err += str(ex)
-                        gobject.idle_add(self.__error_occured, err,
+                        gobject.idle_add(self.__error_occurred, err,
                             gtk.MESSAGE_ERROR)
                         self.progress_stop_thread = True
                         return
@@ -761,7 +873,7 @@ class Repository:
                             {'mirror': mirror,
                              'repository': name}) + \
                             _("\nPlease check your permissions.")
-                        gobject.idle_add(self.__error_occured, err,
+                        gobject.idle_add(self.__error_occurred, err,
                             gtk.MESSAGE_INFO)
                         self.progress_stop_thread = True
 
@@ -783,7 +895,7 @@ class Repository:
                             {'mirror': mirror,
                              'repository': name})
                         err += str(ex)
-                        gobject.idle_add(self.__error_occured, err,
+                        gobject.idle_add(self.__error_occurred, err,
                             gtk.MESSAGE_ERROR)
                         self.progress_stop_thread = True
                         return
@@ -793,7 +905,7 @@ class Repository:
                             {'mirror': mirror,
                              'repository': name}) + \
                             _("\nPlease check your permissions.")
-                        gobject.idle_add(self.__error_occured, err,
+                        gobject.idle_add(self.__error_occurred, err,
                             gtk.MESSAGE_INFO)
                         self.progress_stop_thread = True
 
@@ -857,6 +969,10 @@ class Repository:
                 cert = self.w_sslkeyandcert_cert_entry.get_text()
                 self.__key_or_cert_validation(key, cert, 
                     self.w_sslkeyandcert_ok_button)
+
+        @staticmethod
+        def __on_sslkeyandcert_dialog_delete_event(widget, event):
+                return widget.hide_on_delete()
 
         def __on_sslkeyandcertcancel_clicked(self, widget):
                 self.w_sslkeyandcert_dialog.hide()
@@ -941,7 +1057,7 @@ class Repository:
 
         def __error_with_reset_repo_selection(self, error_msg,
             msg_type=gtk.MESSAGE_ERROR):
-                gobject.idle_add(self.__error_occured, error_msg, msg_type)
+                gobject.idle_add(self.__error_occurred, error_msg, msg_type)
                 self.__reset_repo_selection()
 
         def __reset_repo_selection(self):
@@ -952,7 +1068,7 @@ class Repository:
                         sel = model.get_value(ite, 0)
                 self.__prepare_repository_list(False, sel)
 
-        def __error_occured(self, error_msg, msg_type=gtk.MESSAGE_ERROR):
+        def __error_occurred(self, error_msg, msg_type=gtk.MESSAGE_ERROR):
                 msgbox = gtk.MessageDialog(parent =
                     self.w_repository_dialog,
                     buttons = gtk.BUTTONS_CLOSE,
