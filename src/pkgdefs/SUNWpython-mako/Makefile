@@ -36,7 +36,7 @@ install: sysv-pkg
 sysv-pkg: $(PKGARCHIVE) prototype
 	pkgmk -a $(MACH) -o -r $(ROOT) -d $(PKGARCHIVE)
 
-prototype: $(PROTOLOC)
+prototype: FRC
 	(cd $(ROOT); pkgproto .) | \
 		nawk 'BEGIN { \
 			print "i pkginfo"; \
@@ -70,8 +70,10 @@ prototype: $(PROTOLOC)
 		exit 1; \
 	fi
 
-clobber:
+clean: FRC
 	rm -f prototype
+
+clobber: clean
 	rm -rf $(PKGARCHIVE)/$(PKG)
 
 $(PKGARCHIVE):

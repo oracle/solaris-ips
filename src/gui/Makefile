@@ -18,7 +18,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -26,67 +26,35 @@ MACH:sh = uname -p
 
 KSH=/usr/bin/ksh
 PYTHON = /usr/bin/python
-INSTALL = /usr/sbin/install
+INSTALL = /usr/sbin/install -s
 
 ROOT = ../../proto/root_${MACH}/usr
 ROOTETC = ../../proto/root_${MACH}/etc
 ROOTUSRLIB = $(ROOT)/lib
-ROOTSHARE = $(ROOT)/share/package-manager
-ROOTHELPSHARE = $(ROOT)/share/gnome/help/package-manager
-ROOTDESKTOPSHARE = $(ROOT)/share/applications
-ROOTDATASHARE = $(ROOTSHARE)/data
-ROOTPYTHON = $(ROOTUSRLIB)/python2.4
-ROOTPYTHONVENDOR = $(ROOTPYTHON)/vendor-packages
-ROOTPYTHONPKG = $(ROOTPYTHONVENDOR)/pkg/gui
-ROOTICONSHARE = $(ROOT)/share/icons/package-manager
+
 ROOTAPPICONSHARE = $(ROOT)/share/icons/hicolor/48x48/apps
+ROOTDATASHARE = $(ROOTSHARE)/data
+ROOTDESKTOPSHARE = $(ROOT)/share/applications
 ROOTGCONFSHARE = $(ROOTETC)/gconf/schemas
+ROOTHELPSHARE = $(ROOT)/share/gnome/help/package-manager
+ROOTICONSHARE = $(ROOT)/share/icons/package-manager
+ROOTPYTHON = $(ROOTUSRLIB)/python2.4
+ROOTPYTHONPKG = $(ROOTPYTHONVENDOR)/pkg/gui
+ROOTPYTHONVENDOR = $(ROOTPYTHON)/vendor-packages
+ROOTSHARE = $(ROOT)/share/package-manager
 
 ROOTDIRS = \
-   $(ROOTPYTHONPKG) \
-   $(ROOTSHARE) \
-   $(ROOTICONSHARE) \
    $(ROOTAPPICONSHARE) \
    $(ROOTDATASHARE) \
    $(ROOTDESKTOPSHARE) \
    $(ROOTGCONFSHARE) \
-   $(ROOTHELPSHARE)
-
-PYMODS = \
-   modules/__init__.py \
-   modules/imageinfo.py \
-   modules/installupdate.py \
-   modules/repository.py \
-   modules/enumerations.py \
-   modules/beadmin.py
-PYCMODS = $(PYMODS:%.py=%.pyc)
-
-ICONS = \
-   data/icons/status_checkmark.png \
-   data/icons/status_installed.png \
-   data/icons/status_newupdate.png \
-   data/icons/progress_checkmark.png \
-   data/icons/progress_blank.png
-
-HELP_DIR:sh = echo help/*
-
-HELP = \
-   package-manager.xml \
-   legal.xml 
+   $(ROOTHELPSHARE) \
+   $(ROOTICONSHARE) \
+   $(ROOTPYTHONPKG) \
+   $(ROOTSHARE)
 
 APPICONS = \
    data/packagemanager.png
-
-GLADEICONS = \
-   data/PM_app_48x.png \
-   data/PM_package_36x.png \
-   data/update_all24x.png \
-   data/remove24x.png \
-   data/reload24x.png \
-   data/install_update24x.png \
-   data/legend_installed.png \
-   data/legend_newupdate.png \
-   data/new_star_24x.png
 
 CATALOG = \
    data/opensolaris.org \
@@ -99,73 +67,136 @@ DESKTOP = \
 GCONF = \
    data/packagemanager-preferences.schemas
 
-ROOTPYMODS = $(PYMODS:modules/%=$(ROOTPYTHONPKG)/%)
+GLADEICONS = \
+   data/PM_app_48x.png \
+   data/PM_package_36x.png \
+   data/update_all24x.png \
+   data/remove24x.png \
+   data/reload24x.png \
+   data/install_update24x.png \
+   data/legend_installed.png \
+   data/legend_newupdate.png \
+   data/new_star_24x.png
 
-ROOTICONS = $(ICONS:data/icons/%=$(ROOTICONSHARE)/%)
+#
+# List of locales for which to build help.  From this we build
+# the list of help file names.
+#
+HELP_LOCALES = C de es fr it ja ko pt_BR ru sv zh_CN zh_HK zh_TW
 
-ROOTDESKTOP = $(DESKTOP:data/%=$(ROOTDESKTOPSHARE)/%)
+#
+# package-manager.xml is constructed from package-manager.xml.in and
+# from help/<locale>/<locale.mo> (which is in turn built from
+# help/<locale>/<locale.po>).  This list names all help files created
+# in the build process.
+#
+BUILDHELPFILES = \
+	$(HELP_LOCALES:%=help/%/package-manager.xml) \
+	$(HELP_LOCALES:%=help/%/%.mo) \
 
-ROOTGCONF = $(GCONF:%=$(ROOTGCONFSHARE)/%)
+STATICHELPFILES = \
+	$(HELP_LOCALES:%=help/%/legal.xml) \
+	$(HELP_LOCALES:%=help/%/figures/update_all.png) \
+	$(HELP_LOCALES:%=help/%/figures/package_manager.png)
+
+ICONS = \
+   data/icons/status_checkmark.png \
+   data/icons/status_installed.png \
+   data/icons/status_newupdate.png \
+   data/icons/progress_checkmark.png \
+   data/icons/progress_blank.png
+
+PYMODS = \
+   modules/__init__.py \
+   modules/imageinfo.py \
+   modules/installupdate.py \
+   modules/repository.py \
+   modules/enumerations.py \
+   modules/beadmin.py
+
+PYCMODS = $(PYMODS:%.py=%.pyc)
+
+
+#
+# Define the paths to all of the stuff we'll install.
+#
+ROOTAPPICONS = $(APPICONS:data/%=$(ROOTAPPICONSHARE)/%)
 
 ROOTCATALOG = $(CATALOG:data/%=$(ROOTDATASHARE)/%)
 
+ROOTDESKTOP = $(DESKTOP:data/%=$(ROOTDESKTOPSHARE)/%)
+
+ROOTGCONF = $(GCONF:data/%=$(ROOTGCONFSHARE)/%)
+
 ROOTGLADEICONS = $(GLADEICONS:data/%=$(ROOTSHARE)/%)
 
-ROOTAPPICONS = $(APPICONS:data/%=$(ROOTAPPICONSHARE)/%)
+ROOTHELPDIRS = \
+	$(HELP_LOCALES:%=$(ROOTHELPSHARE)/%) \
+	$(HELP_LOCALES:%=$(ROOTHELPSHARE)/%/figures) \
 
-ROOTHELP = $(HELP_DIR:help/%=$(ROOTHELPSHARE)/%)
+ROOTHELPFILES = \
+	$(BUILDHELPFILES:help/%=$(ROOTHELPSHARE)/%) \
+	$(STATICHELPFILES:help/%=$(ROOTHELPSHARE)/%)
+
+ROOTICONS = $(ICONS:data/icons/%=$(ROOTICONSHARE)/%)
 
 ROOTPYGLADE = $(ROOTSHARE)/packagemanager.glade
 
-ROOTPYCALLMODS = \
-	$(ROOTPYMODS:%.py=%.pyc)
+#
+# .py and .pyc files
+#
+ROOTPYMODS = $(PYMODS:modules/%=$(ROOTPYTHONPKG)/%)
+ROOTPYCALLMODS = $(ROOTPYMODS:%.py=%.pyc)
 
 ROOTCOMPONENTS = \
-   $(ROOTDIRS) \
-   $(ROOTPROGS) \
-   $(ROOTPYMODS) \
-   $(ROOTPYCALLMODS) \
-   $(ROOTCATALOG) \
-   $(ROOTPYGLADE) \
-   $(ROOTGLADEICONS) \
-   $(ROOTHELP) \
-   $(ROOTICONS) \
    $(ROOTAPPICONS) \
+   $(ROOTCATALOG) \
    $(ROOTDESKTOP) \
    $(ROOTGCONF) \
+   $(ROOTGLADEICONS) \
+   $(ROOTHELPFILES) \
+   $(ROOTICONS) \
+   $(ROOTPYGLADE) \
+   $(ROOTPYMODS) \
+   $(ROOTPYCALLMODS)
 
-all := TARGET = all
-install := TARGET = install
-clean := TARGET = clean
-clobber := TARGET = clobber
-link := TARGET = link
-link-clean := TARGET = link-clean
+#
+# Triggered by all:'s dependency.  Drives production of e.g.
+# data/packagemanager.desktop from data/packagemanager.desktop.in
+#
+data/%: data/%.in
+	LC_ALL=C intltool-merge -d -u \
+	    -c ../po/.intltool-merge-cache ../po $@.in $@
 
-all: data/packagemanager.desktop data/addmoresoftware.desktop
+all: $(DESKTOP) $(GCONF) $(PYCMODS) $(BUILDHELPFILES)
 
-install: all $(ROOTCOMPONENTS)
+install: all $(ROOTCOMPONENTS) $(ROOTDIRS)
 
-clean clobber:
-	rm -f $(PYCMODS)
-	rm -f $(DESKTOP)
-	rm -f $(GCONF)
+clean:
+	rm -f $(PYCMODS) $(DESKTOP) $(GCONF) $(APPICONS)
+	rm -f $(BUILDHELPFILES)
 	rm -f ../po/.intltool-merge-cache
-   
+
+clobber: clean
+	rm -f $(ROOTCOMPONENTS)
+
+#
+# These rules drive the production of the .mo and package-manager.xml
+# files, which are built into help/<locale>/...
+#
+help/%/%.mo: help/%/%.po
+	msgfmt -o $@ $<
+
+help/%/package-manager.xml: help/%/%.mo
+	xml2po -t $< -o $@ $@.in
+
+#
+# Build .pyc compile python files.
+#
 modules/%.pyc: modules/%.py
 	python -m compileall -l $(@D)
 
-data/packagemanager.desktop: data/packagemanager.desktop.in
-	cd data; pwd; \
-	  LC_ALL=C intltool-merge -d -u -c ../../po/.intltool-merge-cache ../../po packagemanager.desktop.in packagemanager.desktop
-
-data/addmoresoftware.desktop: data/addmoresoftware.desktop.in
-	cd data; pwd; \
-	  LC_ALL=C intltool-merge -d -u -c ../../po/.intltool-merge-cache ../../po addmoresoftware.desktop.in addmoresoftware.desktop
-
-data/packagemanager-preferences.schemas: data/packagemanager-preferences.schemas.in
-	cd data; pwd; \
-	  LC_ALL=C intltool-merge -d -u -c ../../po/.intltool-merge-cache ../../po packagemanager-preferences.schemas.in packagemanager-preferences.schemas
-
+# See APPICONS above.
 data/packagemanager.png: data/PM_app_48x.png
 	cp data/PM_app_48x.png data/packagemanager.png
 
@@ -193,44 +224,36 @@ link-clean:
 	rm -f /usr/bin/packagemanager
 	rm -f /usr/share/icons/hicolor/48x48/apps/packagemanager.png
 
-proto: $(ROOT)
-
 $(ROOTDIRS):
-	mkdir -m 0755 -p $@
-
-help/%/%.mo: help/%/%.po
-	msgfmt -o $@ $<
-
-help/%/package-manager.xml: help/%/%.mo
-	xml2po -t $< -o $@ $@.in
-
-$(ROOTHELPSHARE)/%: help/%/package-manager.xml
-	rm -rf $@
 	$(INSTALL) -d -m 0755 $@
-	$(INSTALL) -f $@ -m 0644 $<
-	$(INSTALL) -f $@ -m 0644 $(<D)/legal.xml
-	$(INSTALL) -d -m 0755 $@/figures
-	$(INSTALL) -f $@/figures -m 0644 $(<D)/figures/package_manager.png
-	$(INSTALL) -f $@/figures -m 0644 $(<D)/figures/update_all.png
 
-$(ROOTDATASHARE)/%: data/%
-	rm -f $@; $(INSTALL) -f $(ROOTDATASHARE) -m 0644 $<
+$(ROOTAPPICONSHARE)/%: $(ROOTDIRS) data/%
+	$(INSTALL) -f $(ROOTAPPICONSHARE) -m 0644 $<
 
-$(ROOTPYTHONPKG)/%: modules/%
-	rm -f $@; $(INSTALL) -f $(ROOTPYTHONPKG) -m 0644 $<
+$(ROOTDATASHARE)/%: $(ROOTDIRS) data/%
+	$(INSTALL) -f $(ROOTDATASHARE) -m 0644 $<
 
-$(ROOTICONSHARE)/%: data/icons/%
-	rm -f $@; $(INSTALL) -f $(ROOTICONSHARE) -m 0644 $<
+$(ROOTDESKTOPSHARE)/%: $(ROOTDIRS) data/%
+	$(INSTALL) -f $(ROOTDESKTOPSHARE) -m 0644 $<
 
-$(ROOTAPPICONSHARE)/%: data/%
-	rm -f $@; $(INSTALL) -f $(ROOTAPPICONSHARE) -m 0644 $<
+$(ROOTGCONFSHARE)/%: $(ROOTDIRS) data/%
+	$(INSTALL) -f $(ROOTGCONFSHARE) -m 0644 $<
 
-$(ROOTGCONFSHARE)/%: %
-	rm -f $@; install -f $(ROOTGCONFSHARE) -m 0644 $<
+#
+# These two are broad rules, but at present everything in help is just
+# copied from the help directory in a straightforward way.
+#
+$(ROOTHELPDIRS): $(ROOTDIRS)
+	$(INSTALL) -d -m 0755 $@
 
-$(ROOTDESKTOPSHARE)/%: data/%
-	rm -f $@; $(INSTALL) -f $(ROOTDESKTOPSHARE) -m 0644 $<
+$(ROOTHELPSHARE)/%: $(ROOTHELPDIRS) help/%
+	$(INSTALL) -f $(@D) -m 0644 $<
 
-$(ROOTSHARE)/%: data/%
-	rm -f $@; $(INSTALL) -f $(ROOTSHARE) -m 0644 $<
+$(ROOTICONSHARE)/%: $(ROOTDIRS) data/icons/%
+	$(INSTALL) -f $(ROOTICONSHARE) -m 0644 $<
 
+$(ROOTPYTHONPKG)/%: $(ROOTDIRS) modules/%
+	$(INSTALL) -f $(ROOTPYTHONPKG) -m 0644 $<
+
+$(ROOTSHARE)/%: $(ROOTDIRS) data/%
+	$(INSTALL) -f $(ROOTSHARE) -m 0644 $<

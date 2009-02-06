@@ -27,6 +27,7 @@ MACH:sh = uname -p
 install := TARGET = install
 packages := TARGET = install
 clobber := TARGET = clobber
+clean := TARGET = clean
 
 BUILDPYOPENSSL:sh = if [ -n "$BUILD_PYOPENSSL" ]; then echo SUNWpython-pyopenssl; fi
 
@@ -45,6 +46,8 @@ install packages: $(SUBDIRS)
 	pkgtrans ../../packages/$(MACH) pkg5-`hg id -i`.pkg $(SUBDIRS)
 	rm -f ../../packages/$(MACH)/pkg5.pkg
 	cd ../../packages/$(MACH) && ln -s pkg5-`hg id -i`.pkg pkg5.pkg
+
+clean: $(SUBDIRS)
 
 clobber: $(SUBDIRS)
 	rm -f ../../packages/$(MACH)/pkg-*.pkg

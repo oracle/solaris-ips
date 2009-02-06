@@ -1,4 +1,4 @@
-# Copyright (C) 2008 Sun Microsystems, Inc
+# Copyright (C) 2009 Sun Microsystems, Inc
 # This file is distributed under the same license as the pkg help package.
 #
 # Desktop Discuss <desktop-discuss@opensolaris.org>

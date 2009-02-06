@@ -19,7 +19,7 @@
 <copyright><year>2008</year>
 <holder>Sun Microsystems, Inc.</holder>
 </copyright>
-<abstract><para></para>
+<abstract><para/>
 </abstract>
 <legalnotice><para>Sun Microsystems, Inc. has intellectual property rights relating to technology embodied in the product that is described in this document. In particular, and without limitation, these intellectual property rights may include one or more U.S. patents or pending patent applications in the U.S. and in other countries.</para>
 <para>U.S. Government Rights – Commercial software. Government users are subject to the Sun Microsystems, Inc. standard license agreement and applicable provisions of the FAR and its supplements.</para>
@@ -29,7 +29,7 @@
 <para>The OPEN LOOK and <trademark>Sun</trademark> Graphical User Interface was developed by Sun Microsystems, Inc. for its users and licensees. Sun acknowledges the pioneering efforts of Xerox in researching and developing the concept of visual or graphical user interfaces for the computer industry. Sun holds a non-exclusive license from Xerox to the Xerox Graphical User Interface, which license also covers Sun's licensees who implement OPEN LOOK GUIs and otherwise comply with Sun's written license agreements.</para>
 <para>Products covered by and information contained in this publication are controlled by U.S. Export Control laws and may be subject to the export or import laws in other countries. Nuclear, missile, chemical or biological weapons or nuclear maritime end uses or end users, whether direct or indirect, are strictly prohibited. Export or reexport to countries subject to U.S. embargo or to entities identified on U.S. export exclusion lists, including, but not limited to, the denied persons and specially designated nationals lists is strictly prohibited.</para>
 <para>DOCUMENTATION IS PROVIDED “AS IS” AND ALL EXPRESS OR IMPLIED CONDITIONS, REPRESENTATIONS AND WARRANTIES, INCLUDING ANY IMPLIED WARRANTY OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE OR NON-INFRINGEMENT, ARE DISCLAIMED, EXCEPT TO THE EXTENT THAT SUCH DISCLAIMERS ARE HELD TO BE LEGALLY INVALID.</para>
-<para lang="fr"></para>
+<para lang="fr"/>
 <para>Sun Microsystems, Inc. détient les droits de propriété intellectuelle relatifs à la technologie incorporée dans le produit qui est décrit dans ce document. En particulier, et ce sans limitation, ces droits de propriété intellectuelle peuvent inclure un ou plusieurs brevets américains ou des applications de brevet en attente aux Etats-Unis et dans d'autres pays.</para>
 <para>Cette distribution peut comprendre des composants développés par des tierces personnes.</para>
 <para>Certaines composants de ce produit peuvent être dérivées du logiciel Berkeley BSD, licenciés par l'Université de Californie. UNIX est une marque déposée aux Etats-Unis et dans d'autres pays; elle est licenciée exclusivement par X/Open Company, Ltd. </para>
@@ -104,7 +104,7 @@
 </varlistentry>
 <varlistentry><term><emphasis role="strong">Menubar</emphasis></term>
 <listitem><para>You can access the menus on the menubar to perform all of the commands related to the Package Manager.</para>
-<para></para>
+<para/>
 </listitem>
 </varlistentry>
 <varlistentry><term><emphasis role="strong">Package Name and Description</emphasis></term>

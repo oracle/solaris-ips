@@ -70,8 +70,10 @@ prototype: FRC
 		exit 1; \
 	fi
 
-clobber:
+clean: FRC
 	rm -f prototype
+
+clobber: clean
 	rm -rf $(PKGARCHIVE)/$(PKG)
 
 $(PKGARCHIVE):

@@ -75,8 +75,10 @@ prototype: FRC
 img-pkg: sysv-pkg
 	-../../util/distro-import/solaris.py -b 0.0 -w $(PKGARCHIVE) SUNWipkg.import
 
-clobber:
+clean: FRC
 	rm -f prototype
+
+clobber: clean
 	rm -rf $(PKGARCHIVE)/$(PKG)
 
 $(PKGARCHIVE):

@@ -18,7 +18,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -44,30 +44,28 @@ test-verbose := TARGET = test-verbose
 test-generate := TARGET = test-generate
 test-leaks := TARGET = test-leaks
 
-all:
+SUBDIRS=web gui um po util/misc brand
+
+all: $(SUBDIRS)
 	$(PYTHON) setup.py build
-	@cd gui; pwd; $(MAKE) $(TARGET)
-	@cd um; pwd; $(MAKE) $(TARGET)
-	@cd po; pwd; $(MAKE) $(TARGET)
 
-clean:
-	$(PYTHON) setup.py $(TARGET)
-	@cd gui; pwd; $(MAKE) $(TARGET)
-	@cd po; pwd; $(MAKE) $(TARGET)
+clean: $(SUBDIRS)
+	$(PYTHON) setup.py clean
+	@cd pkgdefs; pwd; make clean
 
-clobber: clean
-	$(PYTHON) setup.py $(TARGET)
-	@cd gui; pwd; $(MAKE) $(TARGET)
-	@cd po; pwd; $(MAKE) $(TARGET)
-	@cd pkgdefs; pwd; $(MAKE) $(TARGET)
+clobber: $(SUBDIRS)
+	$(PYTHON) setup.py clobber
+	@cd pkgdefs; pwd; make clobber
 
-install:
-	$(PYTHON) setup.py $(TARGET)
-	@cd gui; pwd; $(MAKE) $(TARGET)
-	@cd um; pwd; $(MAKE) $(TARGET)
-	@cd brand; pwd; $(MAKE) $(TARGET)
-	@cd po; pwd; $(MAKE) $(TARGET)
-	@cd util/misc; pwd; $(MAKE) $(TARGET)
+install: $(SUBDIRS)
+	$(PYTHON) setup.py install
+
+#
+# This rule propagates the current make target through all of the
+# subdirectories in $SUBDIRS.
+#
+$(SUBDIRS): FRC
+	@cd $@; pwd; $(MAKE) $(TARGET)
 
 packages: install
 	@cd pkgdefs; pwd; $(MAKE) $(TARGET)
@@ -118,3 +116,5 @@ test-leaks:
 
 coverage:
 	$(PYTHON) setup.py coverage
+
+FRC:

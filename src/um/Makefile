@@ -18,55 +18,48 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
 MACH:sh = uname -p
 
-KSH=/usr/bin/ksh
+KSH = /usr/bin/ksh
 PYTHON = /usr/bin/python
+INSTALL = /usr/sbin/install -s
 
 ROOT = ../../proto/root_${MACH}/usr
 ROOTETC = ../../proto/root_${MACH}/etc
 ROOTLIB = ../../proto/root_${MACH}/lib
 ROOTUSRLIB = $(ROOT)/lib
+
+ROOTAPPICONSHARE = $(ROOT)/share/icons/hicolor/48x48/apps
+ROOTAUTOSTARTSHARE = $(ROOTETC)/xdg/autostart
+ROOTDATASHARE = $(ROOTSHARE)/data
+ROOTDESKTOPSHARE = $(ROOT)/share/applications
+ROOTGCONFSHARE = $(ROOTETC)/gconf/schemas
+ROOTICONSHARE = $(ROOT)/share/icons/update-manager
+ROOTPYTHON = $(ROOTUSRLIB)/python2.4
+ROOTPYTHONPKG = $(ROOTPYTHONVENDOR)/pkg/um
+ROOTPYTHONVENDOR = $(ROOTPYTHON)/vendor-packages
 ROOTSCRIPTSSHARE = $(ROOT)/lib/update-manager
 ROOTSHARE = $(ROOT)/share/update-manager
-ROOTAUTOSTARTSHARE = $(ROOTETC)/xdg/autostart
-ROOTDESKTOPSHARE = $(ROOT)/share/applications
-ROOTDATASHARE = $(ROOTSHARE)/data
-ROOTPYTHON = $(ROOTUSRLIB)/python2.4
-ROOTPYTHONVENDOR = $(ROOTPYTHON)/vendor-packages
-ROOTPYTHONPKG = $(ROOTPYTHONVENDOR)/pkg/um
-ROOTICONSHARE = $(ROOT)/share/icons/update-manager
-ROOTAPPICONSHARE = $(ROOT)/share/icons/hicolor/48x48/apps
-ROOTGCONFSHARE = $(ROOTETC)/gconf/schemas
 ROOTSVCSHARE = $(ROOTLIB)/svc/method
 
 ROOTDIRS = \
-   $(ROOTPYTHONPKG) \
-   $(ROOTSHARE) \
-   $(ROOTSCRIPTSSHARE) \
-   $(ROOTICONSHARE) \
    $(ROOTAPPICONSHARE) \
-   $(ROOTDATASHARE) \
    $(ROOTAUTOSTARTSHARE) \
+   $(ROOTDATASHARE) \
    $(ROOTDESKTOPSHARE) \
-   $(ROOTSVCSHARE) \
-   $(ROOTGCONFSHARE)
-
-ICONS = \
-   data/icons/notify_update.png \
-   data/icons/status_checkmark.png \
-   data/icons/status_blank.png
+   $(ROOTGCONFSHARE) \
+   $(ROOTICONSHARE) \
+   $(ROOTPYTHONPKG) \
+   $(ROOTSCRIPTSSHARE) \
+   $(ROOTSHARE) \
+   $(ROOTSVCSHARE)
 
 APPICONS = \
    data/updatemanager.png
-   
-GLADEICONS = \
-   data/PM_app_48x.png \
-   data/PM_package_36x.png
 
 AUTOSTART = \
    data/updatemanagernotifier.desktop
@@ -74,59 +67,72 @@ AUTOSTART = \
 DESKTOP = \
    data/updatemanager.desktop
 
-SCRIPTS = \
-   update-refresh.sh
-
 GCONF = \
    data/updatemanager-preferences.schemas
+
+GLADEICONS = \
+   data/PM_app_48x.png \
+   data/PM_package_36x.png
+
+ICONS = \
+   data/icons/notify_update.png \
+   data/icons/status_checkmark.png \
+   data/icons/status_blank.png
+
+PYGLADE = \
+   data/updatemanager.glade
+
+SCRIPTS = \
+   update-refresh.sh
 
 SVC = \
    pkg-update
 
-ROOTICONS = $(ICONS:data/%=$(ROOTICONSHARE)/%)
-
-ROOTGLADEICONS = $(GLADEICONS:data/%=$(ROOTSHARE)/%)
-
+#
+# Define the paths to all of the stuff we'll install.
+#
 ROOTAPPICONS = $(APPICONS:data/%=$(ROOTAPPICONSHARE)/%)
 
-ROOTAUTOSTART = $(AUTOSTART:%=$(ROOTAUTOSTARTSHARE)/%)
+ROOTAUTOSTART = $(AUTOSTART:data/%=$(ROOTAUTOSTARTSHARE)/%)
 
 ROOTDESKTOP = $(DESKTOP:data/%=$(ROOTDESKTOPSHARE)/%)
 
-ROOTGCONF = $(GCONF:%=$(ROOTGCONFSHARE)/%)
+ROOTGCONF = $(GCONF:data/%=$(ROOTGCONFSHARE)/%)
+
+ROOTGLADEICONS = $(GLADEICONS:data/%=$(ROOTSHARE)/%)
+
+ROOTICONS = $(ICONS:data/icons/%=$(ROOTICONSHARE)/%)
+
+ROOTPYGLADE = $(PYGLADE:data/%=$(ROOTSHARE)/%)
 
 ROOTSCRIPTS = $(SCRIPTS:%=$(ROOTSCRIPTSSHARE)/%)
 
 ROOTSVC = $(SVC:%=$(ROOTSVCSHARE)/%)
 
-ROOTPYGLADE = $(ROOTSHARE)/updatemanager.glade
-
 ROOTCOMPONENTS = \
-   $(ROOTDIRS) \
-   $(ROOTPROGS) \
-   $(ROOTICONS) \
    $(ROOTAPPICONS) \
    $(ROOTAUTOSTART) \
    $(ROOTDESKTOP) \
    $(ROOTGCONF) \
-   $(ROOTSCRIPTS) \
-   $(ROOTSVC) \
    $(ROOTGLADEICONS) \
+   $(ROOTICONS) \
    $(ROOTPYGLADE) \
+   $(ROOTSCRIPTS) \
+   $(ROOTSVC)
 
-all := TARGET = all
-install := TARGET = install
-clean := TARGET = clean
-link := TARGET = link
-link-clean := TARGET = link-clean
+#
+# Triggered by all:'s dependency.  Drives production of e.g.
+# data/updatemanager.desktop from data/updatemanager.desktop.in
+#
+data/%: data/%.in
+	LC_ALL=C intltool-merge -d -u \
+	    -c ../po/.intltool-merge-cache ../po $@.in $@
 
-all:
-	cd data; pwd;\
-	  LC_ALL=C intltool-merge -d -u -c ../../po/.intltool-merge-cache ../../po updatemanager.desktop.in updatemanager.desktop;\
-	  LC_ALL=C intltool-merge -d -u -c ../../po/.intltool-merge-cache ../../po updatemanagernotifier.desktop.in updatemanagernotifier.desktop;\
-	  LC_ALL=C intltool-merge -d -u -c ../../po/.intltool-merge-cache ../../po updatemanager-preferences.schemas.in updatemanager-preferences.schemas
+all: $(AUTOSTART) $(DESKTOP) $(GCONF) $(APPICONS)
 
-install: all $(ROOTCOMPONENTS)
+install: all $(ROOTCOMPONENTS) $(ROOTDIRS)
+
+	# XXX out for now.
 	#@cd po; pwd;\
 	#  mkdir -p ../$(ROOT); \
 	#  for PO in *.po; do \
@@ -138,10 +144,12 @@ install: all $(ROOTCOMPONENTS)
 	#  done;
 
 clean:
-	rm -f $(AUTOSTART);\
-	rm -f $(DESKTOP);\
-	rm -f $(GCONF)
+	rm -f $(AUTOSTART) $(DESKTOP) $(GCONF) $(APPICONS)
 
+clobber: clean
+	rm -f $(ROOTCOMPONENTS)
+
+# See APPICONS above.
 data/updatemanager.png: data/PM_app_48x.png
 	cp data/PM_app_48x.png data/updatemanager.png
 
@@ -169,38 +177,35 @@ link-clean:
 	rm -f /usr/share/applications/updatemanager.desktop
 	rm -f /usr/share/icons/hicolor/48x48/apps/updatemanager.png
 
-proto: $(ROOT)
-
 $(ROOTDIRS):
-	mkdir -m 0755 -p $@
+	$(INSTALL) -d -m 0755 $@
 
-$(ROOTDATASHARE)/%: data/%
-	rm -f $@; install -f $(ROOTDATASHARE) -m 0644 $<
+$(ROOTAPPICONSHARE)/%: $(ROOTDIRS) data/%
+	$(INSTALL) -f $(ROOTAPPICONSHARE) -m 0644 $<
 
-$(ROOTPYTHONPKG)/%: modules/%
-	rm -f $@; install -f $(ROOTPYTHONPKG) -m 0644 $<
+$(ROOTAUTOSTARTSHARE)/%: $(ROOTDIRS) data/%
+	$(INSTALL) -f $(ROOTAUTOSTARTSHARE) -m 0644 $<
 
-$(ROOTICONSHARE)/%: data/%
-	rm -f $@; install -f $(ROOTICONSHARE) -m 0644 $<
+$(ROOTDATASHARE)/%: $(ROOTDIRS) data/%
+	$(INSTALL) -f $(ROOTDATASHARE) -m 0644 $<
 
-$(ROOTAPPICONSHARE)/%: data/%
-	rm -f $@; install -f $(ROOTAPPICONSHARE) -m 0644 $<
+$(ROOTDESKTOPSHARE)/%: $(ROOTDIRS) data/%
+	$(INSTALL) -f $(ROOTDESKTOPSHARE) -m 0644 $<
 
-$(ROOTGCONFSHARE)/%: %
-	rm -f $@; install -f $(ROOTGCONFSHARE) -m 0644 $<
+$(ROOTGCONFSHARE)/%: $(ROOTDIRS) data/%
+	$(INSTALL) -f $(ROOTGCONFSHARE) -m 0644 $<
 
-$(ROOTAUTOSTARTSHARE)/%: %
-	rm -f $@; install -f $(ROOTAUTOSTARTSHARE) -m 0644 $<
+$(ROOTICONSHARE)/%: $(ROOTDIRS) data/icons/%
+	$(INSTALL) -f $(ROOTICONSHARE) -m 0644 $<
 
-$(ROOTDESKTOPSHARE)/%: data/%
-	rm -f $@; install -f $(ROOTDESKTOPSHARE) -m 0644 $<
+$(ROOTPYTHONPKG)/%: $(ROOTDIRS) modules/%
+	$(INSTALL) -f $(ROOTPYTHONPKG) -m 0644 $<
 
-$(ROOTSCRIPTSSHARE)/%: %
-	rm -f $@; install -f $(ROOTSCRIPTSSHARE) -m 0644 $<
+$(ROOTSCRIPTSSHARE)/%: $(ROOTDIRS) %
+	$(INSTALL) -f $(ROOTSCRIPTSSHARE) -m 0644 $<
 
-$(ROOTSVCSHARE)/%: %
-	rm -f $@; install -f $(ROOTSVCSHARE) -m 0644 $<
+$(ROOTSHARE)/%: $(ROOTDIRS) data/%
+	$(INSTALL) -f $(ROOTSHARE) -m 0644 $<
 
-$(ROOTSHARE)/%: data/%
-	rm -f $@; install -f $(ROOTSHARE) -m 0644 $<
-
+$(ROOTSVCSHARE)/%: $(ROOTDIRS) %
+	$(INSTALL) -f $(ROOTSVCSHARE) -m 0644 $<
