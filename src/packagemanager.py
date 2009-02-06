@@ -812,9 +812,8 @@ class PackageManager:
                         gobject.idle_add(self.__enable_disable_install_update)
                         gobject.idle_add(self.__enable_disable_remove)
 
-        def __on_package_selection_changed(self, selection, widget):
-                '''This function is for handling package selection changes'''
-                model, itr = selection.get_selected()
+        def __process_package_selection(self):
+                model, itr = self.package_selection.get_selected()
                 if itr:
                         self.__enable_disable_install_update()
                         self.__enable_disable_remove()
@@ -826,6 +825,9 @@ class PackageManager:
                         if self.w_info_notebook.get_current_page() == 3:
                                 self.__on_notebook_change(None, None, 3)
 
+        def __on_package_selection_changed(self, selection, widget):
+                '''This function is for handling package selection changes'''
+                self.__process_package_selection()
 
         def __on_filtercombobox_changed(self, widget):
                 '''On filter combobox changed'''
@@ -2086,7 +2088,7 @@ class PackageManager:
                     sel_str + ', ' + broken_str + '.')
 
 
-        def update_package_list(self, update_list):
+        def update_package_list(self, update_list, action):
                 img = self.api_o.img
                 img.clear_pkg_state()
                 img.load_catalogs(self.pr)
@@ -2095,6 +2097,8 @@ class PackageManager:
                         if row[enumerations.NAME_COLUMN] in update_list:
                                 pkg = row[enumerations.FMRI_COLUMN]
                                 pkg_stem = row[enumerations.STEM_COLUMN]
+                                if self.info_cache.has_key(pkg_stem):
+                                        del self.info_cache[pkg_stem]
                                 package_installed = \
                                     self.get_installed_version(self.api_o, pkg)
                                 if package_installed:
@@ -2110,8 +2114,7 @@ class PackageManager:
                                         row[enumerations.STATUS_ICON_COLUMN] = \
                                             None
                                 row[enumerations.MARK_COLUMN] = False
-                self.__enable_disable_install_update()
-                self.__enable_disable_remove()
+                self.__process_package_selection()
                 self.__enable_disable_selection_menus()
                 self.update_statusbar()
 
