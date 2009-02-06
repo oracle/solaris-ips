@@ -121,9 +121,10 @@ def usage(text):
 
         print """\
 Usage: /usr/lib/pkg.depotd [-d repo_dir] [-p port] [-s threads]
-           [-t socket_timeout] [--cfg-file] [--content-root] [--log-access dest]
-           [--log-errors dest] [--mirror] [--proxy-base url] [--readonly]
-           [--rebuild] [--ssl-cert-file] [--ssl-dialog] [--ssl-key-file]
+           [-t socket_timeout] [--cfg-file] [--content-root] [--debug]
+           [--log-access dest] [--log-errors dest] [--mirror] [--proxy-base url]
+           [--readonly] [--rebuild] [--ssl-cert-file] [--ssl-dialog]
+           [--ssl-key-file]
 
         --cfg-file      The pathname of the file from which to read and to
                         write configuration information.
@@ -131,6 +132,9 @@ Usage: /usr/lib/pkg.depotd [-d repo_dir] [-p port] [-s threads]
                         the static and other web content used by the depot's
                         browser user interface.  The default value is
                         '/usr/share/lib/pkg'.
+        --debug         The name of a debug feature to enable; or a whitespace
+                        or comma separated list of features to enable.  Possible
+                        values are: headers.
         --log-access    The destination for any access related information
                         logged by the depot process.  Possible values are:
                         stderr, stdout, none, or an absolute pathname.  The
@@ -176,6 +180,9 @@ if __name__ == "__main__":
         setlocale(locale.LC_ALL, "")
         gettext.install("pkg", "/usr/share/locale")
 
+        debug_features = {
+            "headers": False,
+        }
         port = PORT_DEFAULT
         port_provided = False
         threads = THREADS_DEFAULT
@@ -219,7 +226,7 @@ if __name__ == "__main__":
 
         opt = None
         try:
-                long_opts = ["cfg-file=", "content-root=", "mirror",
+                long_opts = ["cfg-file=", "content-root=", "debug=", "mirror",
                     "proxy-base=", "readonly", "rebuild", "refresh-index",
                     "ssl-cert-file=", "ssl-dialog=", "ssl-key-file="]
                 for opt in log_opts:
@@ -251,6 +258,24 @@ if __name__ == "__main__":
                                         raise OptionError, "You must specify " \
                                             "a directory path."
                                 content_root = arg
+                        elif opt == "--debug":
+                                if arg is None or arg == "":
+                                        raise OptionError, \
+                                            "A debug feature must be specified."
+
+                                # A list of features can be specified using a
+                                # "," or any whitespace character as separators.
+                                if "," in arg:
+                                        features = arg.split(",")
+                                else:
+                                        features = arg.split()
+
+                                for f in features:
+                                        if f not in debug_features:
+                                                raise OptionError, \
+                                                    "Invalid debug feature: " \
+                                                    "%s." % f
+                                        debug_features[f] = True
                         elif opt in log_opts:
                                 if arg is None or arg == "":
                                         raise OptionError, \
@@ -470,19 +495,31 @@ if __name__ == "__main__":
 
         # Setup our global configuration.
         gconf = {
-            "environment": "production",
             "checker.on": True,
+            "environment": "production",
             "log.screen": False,
+            "server.shutdown_timeout": 0,
             "server.socket_host": "0.0.0.0",
             "server.socket_port": port,
-            "server.thread_pool": threads,
             "server.socket_timeout": socket_timeout,
-            "server.shutdown_timeout": 0,
-            "tools.log_headers.on": True,
-            "tools.encode.on": True,
             "server.ssl_certificate": ssl_cert_file,
-            "server.ssl_private_key": ssl_key_file
+            "server.ssl_private_key": ssl_key_file,
+            "server.thread_pool": threads,
+            "tools.log_headers.on": True,
+            "tools.encode.on": True
         }
+
+        if debug_features["headers"]:
+                # Despite its name, this only logs headers when there is an
+                # error; it's redundant with the debug feature enabled.
+                gconf["tools.log_headers.on"] = False
+
+                # Causes the headers of every request to be logged to the error
+                # log; even if an exception occurs.
+                gconf["tools.log_headers_always.on"] = True
+                cherrypy.tools.log_headers_always = cherrypy.Tool(
+                    "on_start_resource",
+                    cherrypy.lib.cptools.log_request_headers)
 
         log_type_map = {
             "errors": {
@@ -581,4 +618,3 @@ if __name__ == "__main__":
                 emsg("pkg.depotd: unknown error starting depot server, " \
                     "illegal option value specified?")
                 sys.exit(1)
-

@@ -517,7 +517,8 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
 
                 return retcode
 
-        def start_depot(self, port, depotdir, logpath, refresh_index=False):
+        def start_depot(self, port, depotdir, logpath, refresh_index=False,
+            debug_features=None):
                 """ Convenience routine to help subclasses start
                     depots.  Returns a depotcontroller. """
 
@@ -532,6 +533,9 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
                 dc = depotcontroller.DepotController()
                 dc.set_depotd_path(g_proto_area + "/usr/lib/pkg.depotd")
                 dc.set_depotd_content_root(g_proto_area + "/usr/share/lib/pkg")
+                if debug_features:
+                        for f in debug_features:
+                                dc.set_debug_feature(f)
                 dc.set_repodir(depotdir)
                 dc.set_logpath(logpath)
                 dc.set_port(port)
@@ -543,7 +547,7 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
 
 class ManyDepotTestCase(CliTestCase):
 
-        def setUp(self, ndepots):
+        def setUp(self, ndepots, debug_features=None):
                 # Note that this must be deferred until after PYTHONPATH
                 # is set up.
                 import pkg.depotcontroller as depotcontroller
@@ -574,7 +578,8 @@ class ManyDepotTestCase(CliTestCase):
                             "depot_logfile%d" % i)
 
                         self.dcs[i] = self.start_depot(12000 + i,
-                            depotdir, depot_logfile)
+                            depotdir, depot_logfile,
+                            debug_features=debug_features)
 
         def check_traceback(self, logpath):
                 """ Scan logpath looking for tracebacks.
@@ -618,13 +623,13 @@ class ManyDepotTestCase(CliTestCase):
 
 class SingleDepotTestCase(ManyDepotTestCase):
 
-        def setUp(self):
+        def setUp(self, debug_features=None):
 
                 # Note that this must be deferred until after PYTHONPATH
                 # is set up.
                 import pkg.depotcontroller as depotcontroller
 
-                ManyDepotTestCase.setUp(self, 1)
+                ManyDepotTestCase.setUp(self, 1, debug_features=debug_features)
                 self.dc = self.dcs[1]
 
         def tearDown(self):

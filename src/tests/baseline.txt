@@ -344,6 +344,13 @@ cli.t_pkg_install.py TestTwoDepots.test_upgrade_preferred_to_non_preferred_incor
 cli.t_pkg_install.py TestTwoDepots.test_yyy_install_after_authority_removal|pass
 cli.t_pkg_install.py TestTwoDepots.test_zzz_uninstall_after_preferred_authority_change|pass
 cli.t_pkg_install.py TestTwoDepots.test_zzz_uninstall_after_preferred_authority_removal|pass
+cli.t_pkg_intent.py TestPkgIntent.test_0_info|pass
+cli.t_pkg_intent.py TestPkgIntent.test_1_install_uninstall|pass
+cli.t_pkg_intent.py TestPkgIntent.test_2_upgrade|pass
+cli.t_pkg_intent.py TestPkgIntent.test_3_dependencies|pass
+cli.t_pkg_intent.py TestPkgIntent.test_4_image_upgrade|pass
+cli.t_pkg_intent.py TestPkgIntent.test_5_recursive_uninstall|pass
+cli.t_pkg_intent.py TestPkgIntent.test_6_deep_dependencies|pass
 cli.t_pkg_list.py TestPkgList.test_list_1|pass
 cli.t_pkg_list.py TestPkgList.test_list_2|pass
 cli.t_pkg_list.py TestPkgList.test_list_3|pass

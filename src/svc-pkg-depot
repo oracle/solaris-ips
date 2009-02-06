@@ -46,11 +46,11 @@ case "$1" in
 
 	# short_option_props are properties which are communicated to the depot
 	# via a long option flag which takes an argument.
-	long_option_props="cfg_file content_root log_access log_errors \
+	long_option_props="cfg_file content_root debug log_access log_errors \
 	    proxy_base ssl_cert_file ssl_dialog ssl_key_file"
-	set -A long_option_cmd_line "cfg-file" "content-root" "log-access" \
-	    "log-errors" "proxy-base" "ssl-cert-file" "ssl-dialog" \
-	    "ssl-key-file"
+	set -A long_option_cmd_line "cfg-file" "content-root" "debug" \
+	    "log-access" "log-errors" "proxy-base" "ssl-cert-file" \
+	    "ssl-dialog" "ssl-key-file"
 
 	bool_ops=""
 	option_props=""
@@ -73,7 +73,7 @@ case "$1" in
 	done
 
 	# Go through each property in short_option_props and, if its value is
-	# set to something other than none, add the appropriate command line
+	# set to something other than "", add the appropriate command line
 	# flag and argument to the string.
 	cnt=0
 	for o in $short_option_props; do
@@ -92,7 +92,7 @@ case "$1" in
 	done
 
 	# Go through each property in long_option_props and, if its value is
-	# set to something other than none, add the appropriate command line
+	# set to something other than "", add the appropriate command line
 	# flag and argument to the string.
 	cnt=0
 	for o in $long_option_props; do

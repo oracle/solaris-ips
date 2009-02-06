@@ -6,9 +6,10 @@ NAME
 
 SYNOPSIS
      /usr/lib/pkg.depotd [-d repo_dir] [-p port] [-s threads]
-         [-t socket_timeout] [--cfg-file] [--content-root] [--log-access]
-         [--log-errors] [--mirror] [--proxy-base url] [--readonly] [--rebuild]
-         [--ssl-cert-file] [--ssl-dialog] [--ssl-key-file]
+         [-t socket_timeout] [--cfg-file] [--content-root] [--debug]
+         [--log-access] [--log-errors] [--mirror] [--proxy-base url]
+         [--readonly] [--rebuild] [--ssl-cert-file] [--ssl-dialog]
+         [--ssl-key-file]
 
 DESCRIPTION
      pkg.depotd is the depot server for the image packaging system.
@@ -29,6 +30,13 @@ DESCRIPTION
                                 the instance should find its static
                                 and other web content.  The default
                                 value is /usr/share/lib/pkg.
+
+     pkg/debug                  (astring) A comma-separated list of debug
+                                features to enable.  Possible values are:
+
+                                  headers
+                                        Logs the headers of every request to
+                                        the error log.
 
      pkg/inst_root              (astring) The file system path at which
                                 the instance should find its repository
@@ -140,6 +148,9 @@ OPTIONS
 
      --content-root root_dir    Overrides pkg/content_root with the value
                                 given by root_dir.
+
+     --debug features           Overrides pkg/debug with the value given
+                                by features.
 
      --log-access dest          Overrides pkg/log_access with the value
                                 given by dest.

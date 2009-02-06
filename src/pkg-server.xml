@@ -106,6 +106,8 @@
 		<propval name='cfg_file' type='astring' value='' />
 		<propval name='content_root' type='astring'
 			value='/usr/share/lib/pkg' />
+		<propval name='debug' type='astring'
+			value='' />
 		<propval name='log_access' type='astring'
 			value='none' />
 		<propval name='log_errors' type='astring'

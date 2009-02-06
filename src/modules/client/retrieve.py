@@ -175,90 +175,109 @@ def __get_intent_str(img, fmri):
                 op = "unknown"
 
         reason = imagestate.INTENT_INFO
+        target_pkg = None
         initial_pkg = None
         needed_by_pkg = None
         current_auth = fmri.get_authority()
-        try:
-                targets = img.state.get_targets()
+
+        targets = img.state.get_targets()
+        if targets:
                 # Attempt to determine why the client is retrieving the
                 # manifest for this fmri and what its current target is.
                 target, reason = targets[-1]
 
+                # Compare the FMRIs with no authority information embedded.
                 na_current = fmri.get_fmri(anarchy=True)
                 na_target = target.get_fmri(anarchy=True)
+
                 if na_target == na_current:
-                        # If the fmri for the manifest being retrieved does not
-                        # match the fmri of the target, then this manifest is
-                        # being retrieved for information purposes only, so don't
-                        # provide this information.
-
-                        # The fmri responsible for the current one being processed
-                        # should immediately precede the current one in the target
-                        # list.
-                        needed_by = targets[-2][0]
-
-                        needed_by_auth = needed_by.get_authority()
-                        if needed_by_auth == current_auth:
-                                # To prevent dependency information being shared
-                                # across authority boundaries, authorities must
-                                # match.
-                                needed_by_pkg = needed_by.get_fmri(
-                                    anarchy=True)[len("pkg:/"):]
+                        # Only provide this information if the fmri for the
+                        # manifest being retrieved matches the fmri of the
+                        # target.  If they do not match, then the target fmri is
+                        # being retrieved for information purposes only (e.g.
+                        # dependency calculation, etc.).
+                        target_auth = target.get_authority()
+                        if target_auth == current_auth:
+                                # Prevent providing information across
+                                # authorities.
+                                target_pkg = na_target[len("pkg:/"):]
                         else:
-                                # If they didn't match, indicate that the
-                                # package is needed by another, but not which
-                                # one.
-                                needed_by_pkg = "unknown"
+                                target_pkg = "unknown"
 
-                        if len(targets) > 2:
-                                # If there are more than two targets in the
-                                # list, then the very first fmri is the one
-                                # that caused the current and needed_by fmris
-                                # to be retrieved.
-                                initial = targets[0][0]
-                                initial_auth = initial.get_authority()
-                                if initial_auth == current_auth:
-                                        # Prevent providing information across
-                                        # authorities.
-                                        initial_pkg = initial.get_fmri(
+                        # The very first fmri should be the initial target that
+                        # caused the current and needed_by fmris to be
+                        # retrieved.
+                        initial = targets[0][0]
+                        initial_auth = initial.get_authority()
+                        if initial_auth == current_auth:
+                                # Prevent providing information across
+                                # authorities.
+                                initial_pkg = initial.get_fmri(
+                                    anarchy=True)[len("pkg:/"):]
+
+                                if target_pkg == initial_pkg:
+                                        # Don't bother sending the target
+                                        # information if it is the same
+                                        # as the initial target (i.e. the
+                                        # manifest for foo@1.0 is being
+                                        # retrieved because the user is
+                                        # installing foo@1.0).
+                                        target_pkg = None
+
+                        else:
+                                # If they didn't match, indicate that
+                                # the needed_by_pkg was a dependency of
+                                # another, but not which one.
+                                initial_pkg = "unknown"
+
+                        if len(targets) > 1:
+                                # The fmri responsible for the current one being
+                                # processed should immediately precede the
+                                # current one in the target list.
+                                needed_by = targets[-2][0]
+
+                                needed_by_auth = needed_by.get_authority()
+                                if needed_by_auth == current_auth:
+                                        # To prevent dependency information being shared
+                                        # across authority boundaries, authorities must
+                                        # match.
+                                        needed_by_pkg = needed_by.get_fmri(
                                             anarchy=True)[len("pkg:/"):]
                                 else:
-                                        # If they didn't match, indicate that
-                                        # the needed_by_pkg was a dependency of
-                                        # another, but not which one.
-                                        initial_pkg = "unknown"
-                        else:
-                                # If there are only two targets in the stack,
-                                # then the first target is both the initial
-                                # target and is the cause of the current fmri
-                                # being retrieved.
-                                initial_pkg = needed_by_pkg
-        except IndexError:
-                # Any part of the target information may not be available.
-                # Ignore it, and move on.
-                pass
+                                        # If they didn't match, indicate that the
+                                        # package is needed by another, but not which
+                                        # one.
+                                        needed_by_pkg = "unknown"
+        else:
+                # An operation is being performed that has not provided any
+                # target information and is likely for informational purposes
+                # only.  Assume the "initial target" is what is being retrieved.
+                initial_pkg = str(fmri)[len("pkg:/"):]
 
         prior_version = None
         if reason != imagestate.INTENT_INFO:
                 # Only provide version information for non-informational
                 # operations.
+                prior = img.get_version_installed(fmri)
+
                 try:
-                        prior = "%s" % img.get_version_installed(fmri)
                         prior_version = prior.version
+                except AttributeError:
+                        # We didn't get a match back, drive on.
+                        pass
+                else:
                         prior_auth = prior.get_authority()
                         if prior_auth != current_auth:
                                 # Prevent providing information across
                                 # authorities by indicating that a prior
                                 # version was installed, but not which one.
                                 prior_version = "unknown"
-                except AttributeError:
-                        # We didn't get a match back, drive on.
-                        pass
 
         info = {
             "operation": op,
             "prior_version": prior_version,
             "reason": reason,
+            "target": target_pkg,
             "initial_target": initial_pkg,
             "needed_by": needed_by_pkg,
         }

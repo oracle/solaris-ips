@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -60,6 +60,7 @@ class DepotController(object):
                 self.__depot_handle = None
                 self.__cfg_file = None
                 self.__state = self.HALTED
+                self.__debug_features = {}
                 return
 
         def set_depotd_path(self, path):
@@ -129,6 +130,12 @@ class DepotController(object):
         def get_depot_url(self):
                 return "http://localhost:%d" % self.__port
 
+        def set_debug_feature(self, feature):
+                self.__debug_features[feature] = True
+
+        def unset_debug_feature(self, feature):
+                del self.__debug_features[feature]
+
         def __network_ping(self):
                 try:
                         c, v = versioned_urlopen(self.get_depot_url(),
@@ -156,7 +163,6 @@ class DepotController(object):
                 if status != None:
                         return False
                 return self.__network_ping()
-
 
         def get_args(self):
                 """ Return the equivalent command line invocation (as an
@@ -186,6 +192,9 @@ class DepotController(object):
                         args.append("--refresh-index")
                 if self.__cfg_file:
                         args.append("--cfg-file=%s" % self.__cfg_file)
+                if self.__debug_features:
+                        args.append("--debug=%s" % ",".join(
+                            self.__debug_features))
                 return args
 
         def __initial_start(self):
@@ -297,7 +306,6 @@ class DepotController(object):
                 self.__state = self.HALTED
                 self.__depot_handle = None
                 return status
-
 
         def stop(self, force = False):
                 if self.__state == self.HALTED:
