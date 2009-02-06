@@ -43,6 +43,7 @@ TYPE_AHEAD_DELAY = 600    # The last type in search box after which search is pe
 INITIAL_TOPLEVEL_PREFERENCES = "/apps/packagemanager/preferences/initial_toplevel"
 INITIAL_CATEGORY_PREFERENCES = "/apps/packagemanager/preferences/initial_category"
 STATUS_COLUMN_INDEX = 3   # Index of Status Column in Application TreeView
+CATEGORIES_STATUS_COLUMN_INDEX = 0   # Index of Status Column in Categories TreeView
 
 CLIENT_API_VERSION = 4
 PKG_CLIENT_NAME = "packagemanager"
@@ -136,13 +137,17 @@ class PackageManager:
                 self.info_cache = {}
                 self.selected = 0
                 self.visible_status_id = 0
+                self.categories_status_id = 0
                 
                 self.section_list = self.__get_new_section_liststore()
                 self.filter_list = self.__get_new_filter_liststore()
                 self.application_list = None
                 self.a11y_application_treeview = None
+                self.a11y_categories_treeview = None
                 self.application_treeview_range = None
                 self.application_treeview_initialized = False
+                self.categories_treeview_range = None
+                self.categories_treeview_initialized = False
                 self.category_list = None
                 self.repositories_list = None
 
@@ -402,11 +407,16 @@ class PackageManager:
                 vadj = self.w_application_treeview.get_vadjustment()
                 vadj.connect('value-changed', 
                     self.__application_treeview_vadjustment_changed, None)
+                vadj = self.w_categories_treeview.get_vadjustment()
+                vadj.connect('value-changed', 
+                    self.__categories_treeview_vadjustment_changed, None)
 
                 # When the size of the application_treeview changes
                 # we need to set image descriptions on visible status icons.
                 self.w_application_treeview.connect('size-allocate', 
                     self.__application_treeview_size_allocate, None)
+                self.w_categories_treeview.connect('size-allocate', 
+                    self.__categories_treeview_size_allocate, None)
 
                 ##CATEGORIES TREEVIEW
                 #enumerations.CATEGORY_NAME
@@ -475,8 +485,66 @@ class PackageManager:
 
                 self.a11y_application_treeview = \
                     self.w_application_treeview.get_accessible()
+                self.a11y_categories_treeview = \
+                    self.w_categories_treeview.get_accessible()
                 self.first_run = False
                   
+
+        def __categories_treeview_size_allocate(self, widget, allocation, user_data):
+                # We ignore any changes in the size during initialization.
+                if self.categories_treeview_initialized:
+                        if self.categories_status_id == 0:
+                                self.categories_status_id = gobject.idle_add(
+                                    self.__set_accessible_categories_visible_status)
+
+        def __categories_treeview_vadjustment_changed(self, widget, user_data):
+                self.__set_accessible_categories_visible_status()
+ 
+        def __set_accessible_categories_status(self, model, itr):
+                status = model.get_value(itr, enumerations.CATEGORY_ICON)
+                if status != None:
+                        desc = _("Updates Available")
+                else:
+                        desc = None
+                if desc != None:
+                        obj = self.a11y_categories_treeview.ref_at(
+                            int(model.get_string_from_iter(itr)), 
+                            CATEGORIES_STATUS_COLUMN_INDEX) 
+                        obj.set_image_description(desc)
+
+        def __set_accessible_categories_visible_status(self):
+                self.categories_status_id = 0
+                if self.a11y_categories_treeview.get_n_accessible_children() == 0:
+                        # accessibility is not enabled
+                        return
+
+                visible_range = self.w_categories_treeview.get_visible_range()
+                if visible_range == None:
+                        return
+                start = visible_range[0][0]
+                end = visible_range[1][0]
+                # We try to minimize the range of accessible objects
+                # on which we set image descriptions
+                if self.categories_treeview_range != None:
+                        old_start = self.categories_treeview_range[0][0]
+                        old_end = self.categories_treeview_range[1][0]
+                         # Old range is the same or smaller than new range
+                         # so do nothing
+                        if start >= old_start and end <= old_end:
+                                return
+                        if start < old_end:
+                                if end < old_end:
+                                        if end >= old_start:
+                                                end = old_start 
+                                else:
+                                        start = old_end
+                self.categories_treeview_range = visible_range
+                model = self.category_list_filter
+                itr = model.get_iter_from_string(str(start))
+                while start <= end:
+                        start += 1
+                        self.__set_accessible_categories_status(model, itr)
+                        itr = model.iter_next(itr)
 
         def __application_treeview_size_allocate(self, widget, allocation, user_data):
                 # We ignore any changes in the size during initialization.
@@ -490,13 +558,14 @@ class PackageManager:
  
         def __set_accessible_status(self, model, itr):
                 status = model.get_value(itr, enumerations.STATUS_COLUMN)
-                desc = None
                 if status == enumerations.INSTALLED:
                         desc = _("Installed")
                 elif status == enumerations.NOT_INSTALLED:
                         desc = _("Not Installed")
                 elif status == enumerations.UPDATABLE:
                         desc = _("Updates Available")
+                else:
+                        desc = None
                 if desc != None:
                         obj = self.a11y_application_treeview.ref_at(
                             int(model.get_string_from_iter(itr)), 
@@ -506,8 +575,8 @@ class PackageManager:
         def __set_accessible_visible_status(self):
                 self.visible_status_id = 0
                 if self.a11y_application_treeview.get_n_accessible_children() == 0:
-                    # accessibility is not enabled
-                    return
+                        # accessibility is not enabled
+                        return
 
                 visible_range = self.w_application_treeview.get_visible_range()
                 if visible_range == None:
@@ -667,6 +736,11 @@ class PackageManager:
                 if self.visible_status_id == 0:
                         self.visible_status_id = gobject.idle_add(
                             self.__set_accessible_visible_status)
+                self.categories_treeview_initialized = True
+                self.categories_treeview_range = None
+                if self.categories_status_id == 0:
+                        self.categories_status_id = gobject.idle_add(
+                            self.__set_accessible_categories_visible_status)
                 self.application_refilter_id = 0
                 return False
 
@@ -841,6 +915,7 @@ class PackageManager:
                         gobject.idle_add(self.__enable_disable_remove)
 
         def __set_categories_visibility(self, selected_section):
+                self.category_list[0][enumerations.CATEGORY_ICON] = None
                 if selected_section == 0:
                         for category in self.category_list:
                                 category[enumerations.CATEGORY_VISIBLE] = True
@@ -864,6 +939,13 @@ class PackageManager:
                                                                 category[enumerations. \
                                                                     CATEGORY_VISIBLE] = \
                                                                     False
+
+                # Set category icon for All if a visible category has it
+                for category in self.category_list:
+                        if category[enumerations.CATEGORY_ICON] != None:
+                                self.category_list[0][enumerations.CATEGORY_ICON] = \
+                                    category[enumerations.CATEGORY_ICON]
+                                break
 
                 section_row = self.section_list[selected_section]
                 cat_path = section_row[enumerations.SECTION_SUBCATEGORY]
@@ -995,7 +1077,8 @@ class PackageManager:
                                 gobject.spawn_async([self.application_path, "-R",
                                     self.image_dir_arg, "-U", be_name])
                         else:
-                                gobject.spawn_async([self.application_path, "-U", be_name])
+                                gobject.spawn_async([self.application_path, 
+                                    "-U", be_name])
                 self.w_main_window.hide()
                 gtk.main_quit()
                 sys.exit(0)
