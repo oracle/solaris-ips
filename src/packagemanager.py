@@ -121,7 +121,6 @@ class PackageManager:
                 self.cancelled = False                    # For background processes
                 self.image_directory = None
                 self.description_thread_running = False   # For background processes
-                self.pkginfo_thread = -1                  # For background processes
                 gtk.rc_parse('~/.gtkrc-1.2-gnome2')       # Load gtk theme
                 self.main_clipboard_text = None
                 self.progress_stop_timer_thread = False
@@ -293,6 +292,8 @@ class PackageManager:
                 self.category_list_filter = None
                 self.application_list_filter = None
                 self.application_refilter_id = 0 
+                self.show_info_id = 0 
+                self.show_licenses_id = 0 
                 self.in_setup = True
                 self.w_main_window.show_all()
                 gdk_win = self.w_main_window.get_window()
@@ -775,8 +776,12 @@ class PackageManager:
                         licbuffer = self.w_license_textview.get_buffer()
                         leg_txt = _("Fetching legal information...")
                         licbuffer.set_text(leg_txt)
-                        Thread(target = self.__show_package_licenses, \
-                            args = (self.pkginfo_thread,)).start()
+                        if self.show_licenses_id != 0:
+                                gobject.source_remove(self.show_licenses_id)
+                                self.show_licenses_id = 0
+                        self.show_licenses_id = \
+                            gobject.timeout_add(TYPE_AHEAD_DELAY, 
+                                self.__show_licenses)
 
         def __on_select_all(self, widget):
                 sort_filt_model = \
@@ -892,11 +897,16 @@ class PackageManager:
                 if itr:
                         self.__enable_disable_install_update()
                         self.__enable_disable_remove()
-                        self.pkginfo_thread += 1
                         self.selected_pkgname = \
                                model.get_value(itr, enumerations.NAME_COLUMN)
-                        Thread(target = self.__show_package_info, \
-                            args = (model, itr, self.pkginfo_thread)).start()
+                        if self.show_info_id != 0:
+                                gobject.source_remove(self.show_info_id)
+                                self.show_info_id = 0
+                        pkg = model.get_value(itr, enumerations.FMRI_COLUMN)
+                        gobject.idle_add(self.__show_fetching_package_info, pkg)
+                        self.show_info_id = \
+                            gobject.timeout_add(TYPE_AHEAD_DELAY, 
+                                self.__show_info, model, model.get_path(itr))
                         if self.w_info_notebook.get_current_page() == 3:
                                 self.__on_notebook_change(None, None, 3)
 
@@ -1323,13 +1333,11 @@ class PackageManager:
                 licbuffer = self.w_license_textview.get_buffer()
                 licbuffer.set_text(lic_u)
 
-        def __show_package_licenses(self, th_no):
-                #XXX revisit this and replace with gobject.timer_add() instead of sleep
-                # sleep for a little time, this is done for the users who are
-                # fast browsing the list of the packages.
-                time.sleep(1)
-                if th_no != self.pkginfo_thread:
-                        return
+        def __show_licenses(self):
+                self.show_licenses_id = 0
+                Thread(target = self.__show_package_licenses).start()
+
+        def __show_package_licenses(self):
                 if self.selected_pkgname == None:
                         gobject.idle_add(self.__update_package_license, None)
                         return
@@ -1346,11 +1354,9 @@ class PackageManager:
                 if no_licenses == 0:
                         gobject.idle_add(self.__update_package_license, None)
                         return
-                if th_no == self.pkginfo_thread:
+                else:
                         gobject.idle_add(self.__update_package_license,
                             package_info.licenses)
-                else:
-                        return
 
         def __get_pkg_info(self, pkg_name, local):
                 info = self.api_o.info([pkg_name], local, get_licenses=False,
@@ -1364,20 +1370,19 @@ class PackageManager:
                 if package_info:
                         return package_info
                 else:
-                        return
+                        return None
 
-        def __show_package_info(self, model, itr, th_no):
+        def __show_info(self, model, path):
+                self.show_info_id = 0
+                Thread(target = self.__show_package_info,
+                    args = (model, path)).start()
+
+        def __show_package_info(self, model, path):
+                itr = model.get_iter(path)
                 pkg = model.get_value(itr, enumerations.FMRI_COLUMN)
                 pkg_stem = model.get_value(itr, enumerations.STEM_COLUMN)
                 pkg_status = model.get_value(itr, enumerations.STATUS_COLUMN)
-                gobject.idle_add(self.__show_fetching_package_info, pkg)
                 if self.info_cache.has_key(pkg_stem):
-                        return
-
-                # sleep for a little time, this is done for the users which are
-                # fast browsing the list of the packages.
-                time.sleep(1)
-                if th_no != self.pkginfo_thread:
                         return
 
                 img = self.api_o.img
@@ -1390,9 +1395,8 @@ class PackageManager:
                 if pkg_status == enumerations.NOT_INSTALLED or pkg_status == \
                     enumerations.UPDATABLE:
                         remote_info = self.__get_pkg_info(pkg.get_name(), False)
-                if th_no == self.pkginfo_thread:
-                        gobject.idle_add(self.__update_package_info, pkg, 
-                            local_info, remote_info)
+                gobject.idle_add(self.__update_package_info, pkg, 
+                    local_info, remote_info)
                 img.history.operation_result = history.RESULT_SUCCEEDED
                 return
 
