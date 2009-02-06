@@ -785,8 +785,7 @@ class Updatemanager:
                 self.w_select_checkbox.set_sensitive(False)
                 self.w_um_dialog.present()
                 
-        def __get_info_from_name(self, name):
-                local = True
+        def __get_info_from_name(self, name, local):
                 get_license = False
                 
                 if self.fmri_description != name:
@@ -803,20 +802,40 @@ class Updatemanager:
                         return None
 
         def __get_details_from_name(self, name):                        
-                info = self.__get_info_from_name(name)
+                info = self.__get_info_from_name(name, False)
                 if info is not None:
                         return self.__update_details_from_info(name, info)
                 else:
                         return None
                         
         def __update_details_from_info(self, name, info):
+                local_info = self.__get_info_from_name(name, True)
+                categories = _("None")
+                if info.category_info_list:
+                        verbose = len(info.category_info_list) > 1
+                        categories = ""
+                        categories += info.category_info_list[0].__str__(verbose)
+                        if len(info.category_info_list) > 1:
+                                for ci in info.category_info_list[1:]:
+                                        categories += ", " + ci.__str__(verbose)
+                installed_ver = "%s-%s" % (local_info.version, local_info.branch)
                 ver = "%s-%s" % (info.version, info.branch)
+                summary = _("None")
+                if info.summary:
+                        summary = info.summary
+ 
                 str_details = _(
-                    '\nDescription:\t\t%s\nFMRI:       \t\t\t%s' +
-                    '\nVersion:    \t\t%s\nPackaged on:\t\t%s' +
-                    '\nSize:       \t\t\t%s\n') \
-                    % (info.summary, info.fmri, ver, info.packaging_date,
-                    misc.bytes_to_str(info.size))
+                    '\nSummary:\t\t\t%s'
+                    '\nSize:       \t\t\t%s'
+                    '\nCategory:\t\t\t%s'
+                    '\nLatest Version:\t\t%s'
+                    '\nInstalled Version:\t%s'
+                    '\nPackaging Date:\t%s'
+                    '\nFMRI:       \t\t\t%s'
+                    '\n') \
+                    % (summary, misc.bytes_to_str(info.size), 
+                    categories, ver, installed_ver,
+                    info.packaging_date, info.fmri)
                 self.details_cache[name] = str_details
                 return str_details
 
