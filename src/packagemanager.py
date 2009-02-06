@@ -382,6 +382,7 @@ class PackageManager:
                 self.w_application_treeview.append_column(column)
                 column = self.__create_icon_column(_("Status"), True, 
                     enumerations.STATUS_ICON_COLUMN, True)
+                column.set_sort_column_id(enumerations.STATUS_ICON_COLUMN)
                 column.set_sort_indicator(True)
                 self.w_application_treeview.append_column(column)
                 description_renderer = gtk.CellRendererText()
@@ -529,7 +530,7 @@ class PackageManager:
                                 else:
                                         start = old_end
                 self.application_treeview_range = visible_range
-                model = self.application_list_filter
+                model = self.w_application_treeview.get_model()
                 itr = model.get_iter_from_string(str(start))
                 while start <= end:
                         start += 1
