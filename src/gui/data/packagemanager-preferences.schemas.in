@@ -28,5 +28,19 @@
          </long>
       </locale>
     </schema>
+    <schema>
+      <key>/schemas/apps/packagemanager/preferences/show_startpage</key>
+      <applyto>/apps/packagemanager/preferences/show_startpage</applyto>
+      <owner>packagemanager</owner>
+      <type>bool</type>
+      <default>False</default>
+      <locale name="C">
+         <short>Show Start Page  on startup</short>
+         <long>
+          A boolean which determines if the Start Page should be shown on startup
+          or the initial list view.
+         </long>
+      </locale>
+    </schema>
   </schemalist>  
 </gconfschemafile>

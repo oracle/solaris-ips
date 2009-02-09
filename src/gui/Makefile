@@ -34,6 +34,7 @@ ROOTUSRLIB = $(ROOT)/lib
 
 ROOTAPPICONSHARE = $(ROOT)/share/icons/hicolor/48x48/apps
 ROOTDATASHARE = $(ROOTSHARE)/data
+ROOTDATASTARTPAGE = $(ROOTDATASHARE)/startpage/C
 ROOTDESKTOPSHARE = $(ROOT)/share/applications
 ROOTGCONFSHARE = $(ROOTETC)/gconf/schemas
 ROOTHELPSHARE = $(ROOT)/share/gnome/help/package-manager
@@ -46,6 +47,7 @@ ROOTSHARE = $(ROOT)/share/package-manager
 ROOTDIRS = \
    $(ROOTAPPICONSHARE) \
    $(ROOTDATASHARE) \
+   $(ROOTDATASTARTPAGE) \
    $(ROOTDESKTOPSHARE) \
    $(ROOTGCONFSHARE) \
    $(ROOTHELPSHARE) \
@@ -59,6 +61,16 @@ APPICONS = \
 CATALOG = \
    data/opensolaris.org \
    data/opensolaris.org.sections
+
+STARTPAGE = \
+   data/startpagebase/C/startpage_star.png \
+   data/startpagebase/C/opensolaris.png \
+   data/startpagebase/C/startpage.html \
+   data/startpagebase/C/startpage_learn.png \
+   data/startpagebase/C/startpage_use.png \
+   data/startpagebase/C/startpage_share.png \
+   data/startpagebase/C/startpage_ignite.png \
+   data/startpagebase/C/stub_test.html
 
 DESKTOP = \
    data/packagemanager.desktop \
@@ -112,6 +124,7 @@ PYMODS = \
    modules/installupdate.py \
    modules/repository.py \
    modules/enumerations.py \
+   modules/parseqs.py \
    modules/beadmin.py
 
 PYCMODS = $(PYMODS:%.py=%.pyc)
@@ -127,6 +140,8 @@ ROOTCATALOG = $(CATALOG:data/%=$(ROOTDATASHARE)/%)
 ROOTDESKTOP = $(DESKTOP:data/%=$(ROOTDESKTOPSHARE)/%)
 
 ROOTGCONF = $(GCONF:data/%=$(ROOTGCONFSHARE)/%)
+
+ROOTSTARTPAGE = $(STARTPAGE:data/startpagebase/%=$(ROOTDATASTARTPAGE)/%)
 
 ROOTGLADEICONS = $(GLADEICONS:data/%=$(ROOTSHARE)/%)
 
@@ -153,6 +168,7 @@ ROOTCOMPONENTS = \
    $(ROOTCATALOG) \
    $(ROOTDESKTOP) \
    $(ROOTGCONF) \
+   $(ROOTSTARTPAGE) \
    $(ROOTGLADEICONS) \
    $(ROOTHELPFILES) \
    $(ROOTICONS) \
@@ -232,6 +248,9 @@ $(ROOTAPPICONSHARE)/%: $(ROOTDIRS) data/%
 
 $(ROOTDATASHARE)/%: $(ROOTDIRS) data/%
 	$(INSTALL) -f $(ROOTDATASHARE) -m 0644 $<
+
+$(ROOTDATASTARTPAGE)/%: data/startpagebase/%
+	$(INSTALL) -f $(ROOTDATASTARTPAGE) -m 0644 $<
 
 $(ROOTDESKTOPSHARE)/%: $(ROOTDIRS) data/%
 	$(INSTALL) -f $(ROOTDESKTOPSHARE) -m 0644 $<

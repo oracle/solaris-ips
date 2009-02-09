@@ -346,6 +346,7 @@ class InstallUpdate(progress.ProgressTracker):
                         return
                 except api_errors.CanceledException:
                         self.w_dialog.hide()
+                        self.stop_bouncing_progress = True
                         return
                 except Exception, uex:
                         if uex.args and \

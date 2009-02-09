@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.4.5 on Mon Jan 19 20:23:34 2009 -->
+<!--Generated with glade3 3.4.5 on Fri Feb  6 19:13:53 2009 -->
 <glade-interface>
   <widget class="GtkWindow" id="mainwindow">
     <property name="width_request">750</property>
@@ -224,21 +224,36 @@
                     <property name="visible">True</property>
                     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                     <child>
-                      <widget class="GtkMenuItem" id="help_about">
-                        <property name="visible">True</property>
-                        <property name="tooltip" translatable="yes">About</property>
-                        <property name="label" translatable="yes">_About</property>
-                        <property name="use_underline">True</property>
-                        <signal name="activate" handler="on_help_about_activate"/>
-                      </widget>
-                    </child>
-                    <child>
                       <widget class="GtkMenuItem" id="online_help">
                         <property name="visible">True</property>
                         <property name="tooltip" translatable="yes">Online Help</property>
                         <property name="label" translatable="yes">Online _Help</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="on_help_help_activate"/>
+                      </widget>
+                    </child>
+                    <child>
+                      <widget class="GtkSeparatorMenuItem" id="help_separator">
+                        <property name="visible">True</property>
+                        <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+                      </widget>
+                    </child>
+                    <child>
+                      <widget class="GtkMenuItem" id="start_page">
+                        <property name="visible">True</property>
+                        <property name="tooltip" translatable="yes">Start Page</property>
+                        <property name="label" translatable="yes">Start _Page</property>
+                        <property name="use_underline">True</property>
+                        <signal name="activate" handler="on_help_start_page_activate"/>
+                      </widget>
+                    </child>
+                    <child>
+                      <widget class="GtkMenuItem" id="help_about">
+                        <property name="visible">True</property>
+                        <property name="tooltip" translatable="yes">About</property>
+                        <property name="label" translatable="yes">_About</property>
+                        <property name="use_underline">True</property>
+                        <signal name="activate" handler="on_help_about_activate"/>
                       </widget>
                     </child>
                   </widget>
@@ -315,16 +330,6 @@
                 <property name="visible">True</property>
                 <property name="draw">False</property>
               </widget>
-            </child>
-            <child>
-              <widget class="GtkToolButton" id="whats_new_button">
-                <property name="label" translatable="yes">What's New</property>
-                <property name="icon">new_star_24x.png</property>
-                <signal name="clicked" handler="on_whats_new_button_clicked"/>
-              </widget>
-              <packing>
-                <property name="homogeneous">True</property>
-              </packing>
             </child>
             <child>
               <widget class="GtkSeparatorToolItem" id="toolbutton3">
@@ -439,25 +444,7 @@
                       <widget class="GtkHBox" id="hbox15">
                         <property name="visible">True</property>
                         <child>
-                          <widget class="GtkAlignment" id="alignment5">
-                            <property name="visible">True</property>
-                            <property name="xalign">0.05000000074505806</property>
-                            <property name="xscale">0</property>
-                            <property name="top_padding">3</property>
-                            <property name="bottom_padding">4</property>
-                            <property name="left_padding">7</property>
-                            <child>
-                              <widget class="GtkLabel" id="label15">
-                                <property name="visible">True</property>
-                                <property name="label" translatable="yes">Legend:</property>
-                                <property name="justify">GTK_JUSTIFY_RIGHT</property>
-                              </widget>
-                            </child>
-                          </widget>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">False</property>
-                          </packing>
+                          <placeholder/>
                         </child>
                       </widget>
                       <packing>
@@ -466,112 +453,7 @@
                       </packing>
                     </child>
                     <child>
-                      <widget class="GtkHBox" id="hbox17">
-                        <property name="visible">True</property>
-                        <child>
-                          <widget class="GtkAlignment" id="alignment6">
-                            <property name="visible">True</property>
-                            <property name="xscale">0.67000001668930054</property>
-                            <child>
-                              <widget class="GtkHBox" id="hbox18">
-                                <property name="visible">True</property>
-                                <child>
-                                  <widget class="GtkAlignment" id="alignment10">
-                                    <property name="visible">True</property>
-                                    <property name="left_padding">8</property>
-                                    <child>
-                                      <widget class="GtkImage" id="image4">
-                                        <property name="visible">True</property>
-                                        <property name="pixbuf">legend_installed.png</property>
-                                      </widget>
-                                    </child>
-                                  </widget>
-                                  <packing>
-                                    <property name="expand">False</property>
-                                    <property name="fill">False</property>
-                                  </packing>
-                                </child>
-                                <child>
-                                  <widget class="GtkAlignment" id="alignment8">
-                                    <property name="visible">True</property>
-                                    <property name="xscale">0.80000001192092896</property>
-                                    <property name="right_padding">4</property>
-                                    <child>
-                                      <widget class="GtkLabel" id="label16">
-                                        <property name="visible">True</property>
-                                        <property name="label" translatable="yes">Installed</property>
-                                      </widget>
-                                    </child>
-                                  </widget>
-                                  <packing>
-                                    <property name="expand">False</property>
-                                    <property name="fill">False</property>
-                                    <property name="position">1</property>
-                                  </packing>
-                                </child>
-                              </widget>
-                            </child>
-                          </widget>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">False</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <widget class="GtkAlignment" id="alignment7">
-                            <property name="visible">True</property>
-                            <child>
-                              <widget class="GtkHBox" id="hbox19">
-                                <property name="visible">True</property>
-                                <child>
-                                  <widget class="GtkAlignment" id="alignment12">
-                                    <property name="visible">True</property>
-                                    <property name="left_padding">5</property>
-                                    <child>
-                                      <widget class="GtkImage" id="image5">
-                                        <property name="visible">True</property>
-                                        <property name="pixbuf">legend_newupdate.png</property>
-                                      </widget>
-                                    </child>
-                                  </widget>
-                                  <packing>
-                                    <property name="expand">False</property>
-                                    <property name="fill">False</property>
-                                  </packing>
-                                </child>
-                                <child>
-                                  <widget class="GtkAlignment" id="alignment11">
-                                    <property name="visible">True</property>
-                                    <property name="right_padding">20</property>
-                                    <child>
-                                      <widget class="GtkLabel" id="label17">
-                                        <property name="visible">True</property>
-                                        <property name="label" translatable="yes">Updates</property>
-                                        <property name="ellipsize">PANGO_ELLIPSIZE_END</property>
-                                        <property name="max_width_chars">10</property>
-                                      </widget>
-                                    </child>
-                                  </widget>
-                                  <packing>
-                                    <property name="expand">False</property>
-                                    <property name="position">1</property>
-                                  </packing>
-                                </child>
-                              </widget>
-                            </child>
-                          </widget>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">False</property>
-                            <property name="position">1</property>
-                          </packing>
-                        </child>
-                      </widget>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">False</property>
-                        <property name="position">1</property>
-                      </packing>
+                      <placeholder/>
                     </child>
                   </widget>
                   <packing>
@@ -796,11 +678,11 @@
                               </packing>
                             </child>
                             <child>
-                              <widget class="GtkNotebook" id="notebook1">
+                              <widget class="GtkNotebook" id="details_notebook">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                                <signal name="switch_page" handler="on_notebook1_switch_page"/>
+                                <signal name="switch_page" handler="on_details_notebook_switch_page"/>
                                 <child>
                                   <widget class="GtkScrolledWindow" id="scrolledwindow7">
                                     <property name="visible">True</property>
@@ -942,18 +824,29 @@
                       </packing>
                     </child>
                     <child>
-                      <widget class="GtkFrame" id="whats_new_frame">
+                      <widget class="GtkVBox" id="vbox8">
                         <property name="visible">True</property>
-                        <property name="label_xalign">0</property>
-                        <property name="shadow_type">GTK_SHADOW_NONE</property>
                         <child>
-                          <placeholder/>
-                        </child>
-                        <child>
-                          <placeholder/>
-                          <packing>
-                            <property name="type">label_item</property>
-                          </packing>
+                          <widget class="GtkEventBox" id="startpage_eventbox">
+                            <property name="visible">True</property>
+                            <child>
+                              <widget class="GtkFrame" id="startpage_frame">
+                                <property name="visible">True</property>
+                                <property name="border_width">1</property>
+                                <property name="label_xalign">0</property>
+                                <property name="shadow_type">GTK_SHADOW_NONE</property>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                                <child>
+                                  <placeholder/>
+                                  <packing>
+                                    <property name="type">label_item</property>
+                                  </packing>
+                                </child>
+                              </widget>
+                            </child>
+                          </widget>
                         </child>
                       </widget>
                       <packing>
@@ -984,10 +877,116 @@
           </packing>
         </child>
         <child>
-          <widget class="GtkStatusbar" id="statusbar">
+          <widget class="GtkHBox" id="hbox29">
             <property name="visible">True</property>
-            <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-            <property name="spacing">2</property>
+            <property name="spacing">1</property>
+            <child>
+              <widget class="GtkStatusbar" id="statusbar">
+                <property name="visible">True</property>
+                <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+                <property name="spacing">2</property>
+                <property name="has_resize_grip">False</property>
+              </widget>
+            </child>
+            <child>
+              <widget class="GtkFrame" id="frame1">
+                <property name="visible">True</property>
+                <property name="label_xalign">0</property>
+                <property name="label_yalign">0</property>
+                <property name="shadow_type">GTK_SHADOW_OUT</property>
+                <child>
+                  <widget class="GtkHBox" id="legend_hbox">
+                    <property name="visible">True</property>
+                    <child>
+                      <widget class="GtkAlignment" id="alignment5">
+                        <property name="visible">True</property>
+                        <property name="left_padding">2</property>
+                        <child>
+                          <widget class="GtkLabel" id="label8">
+                            <property name="visible">True</property>
+                            <property name="label" translatable="yes">Legend:</property>
+                            <property name="justify">GTK_JUSTIFY_RIGHT</property>
+                          </widget>
+                        </child>
+                      </widget>
+                    </child>
+                    <child>
+                      <widget class="GtkImage" id="image2">
+                        <property name="visible">True</property>
+                        <property name="pixbuf">legend_installed.png</property>
+                      </widget>
+                      <packing>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <widget class="GtkLabel" id="label12">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">Installed</property>
+                      </widget>
+                      <packing>
+                        <property name="position">2</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <widget class="GtkImage" id="image7">
+                        <property name="visible">True</property>
+                        <property name="pixbuf">legend_newupdate.png</property>
+                      </widget>
+                      <packing>
+                        <property name="position">3</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <widget class="GtkAlignment" id="alignment6">
+                        <property name="visible">True</property>
+                        <property name="right_padding">2</property>
+                        <child>
+                          <widget class="GtkLabel" id="label18">
+                            <property name="visible">True</property>
+                            <property name="label" translatable="yes">Updates</property>
+                            <property name="ellipsize">PANGO_ELLIPSIZE_END</property>
+                            <property name="max_width_chars">10</property>
+                          </widget>
+                        </child>
+                      </widget>
+                      <packing>
+                        <property name="position">4</property>
+                      </packing>
+                    </child>
+                  </widget>
+                </child>
+                <child>
+                  <placeholder/>
+                  <packing>
+                    <property name="type">label_item</property>
+                  </packing>
+                </child>
+              </widget>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">False</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
+              <widget class="GtkHBox" id="hbox18">
+                <property name="width_request">20</property>
+                <property name="height_request">0</property>
+                <property name="visible">True</property>
+                <child>
+                  <widget class="GtkStatusbar" id="statusbar1">
+                    <property name="visible">True</property>
+                    <property name="spacing">2</property>
+                  </widget>
+                </child>
+              </widget>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">False</property>
+                <property name="position">2</property>
+              </packing>
+            </child>
           </widget>
           <packing>
             <property name="expand">False</property>
@@ -2503,176 +2502,69 @@ Note: Changes will occur upon reboot.</property>
     <child internal-child="vbox">
       <widget class="GtkVBox" id="dialog-vbox24">
         <property name="visible">True</property>
-        <property name="spacing">16</property>
+        <property name="spacing">10</property>
         <child>
           <widget class="GtkVBox" id="vbox16">
             <property name="visible">True</property>
             <property name="spacing">5</property>
             <child>
-              <widget class="GtkLabel" id="label22">
+              <widget class="GtkLabel" id="repositorymodifytitlelabel">
                 <property name="visible">True</property>
                 <property name="xalign">0</property>
                 <property name="yalign">0</property>
                 <property name="ypad">2</property>
-                <property name="label" translatable="yes">Modify Repository URL
-If this repository requires a SSL Key and Certificate, please enter it
-into the SSL section.
-If you want to alter the list of mirrors for this repository, use the
-mirrors section.</property>
+                <property name="label" translatable="yes">&lt;b&gt;Modify Repository URL&lt;/b&gt;</property>
                 <property name="use_markup">True</property>
               </widget>
-            </child>
-            <child>
-              <widget class="GtkAlignment" id="alignment21">
-                <property name="visible">True</property>
-                <child>
-                  <placeholder/>
-                </child>
-              </widget>
-              <packing>
-                <property name="padding">10</property>
-                <property name="position">1</property>
-              </packing>
             </child>
             <child>
               <widget class="GtkHBox" id="hbox14">
                 <property name="visible">True</property>
                 <child>
-                  <widget class="GtkLabel" id="label24">
-                    <property name="width_request">80</property>
-                    <property name="visible">True</property>
-                    <property name="xalign">0</property>
-                    <property name="yalign">0</property>
-                    <property name="ypad">4</property>
-                    <property name="label" translatable="yes">_Name: </property>
-                    <property name="use_underline">True</property>
-                    <property name="mnemonic_widget">repositorymodifyname</property>
-                  </widget>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="padding">3</property>
-                  </packing>
-                </child>
-                <child>
-                  <widget class="GtkEntry" id="repositorymodifyname">
-                    <property name="width_request">320</property>
-                    <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                  </widget>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="padding">3</property>
-                    <property name="position">1</property>
-                  </packing>
-                </child>
-              </widget>
-              <packing>
-                <property name="position">2</property>
-              </packing>
-            </child>
-            <child>
-              <widget class="GtkHBox" id="hbox20">
-                <property name="visible">True</property>
-                <child>
-                  <widget class="GtkLabel" id="label25">
-                    <property name="width_request">80</property>
-                    <property name="visible">True</property>
-                    <property name="xalign">0</property>
-                    <property name="yalign">0</property>
-                    <property name="ypad">4</property>
-                    <property name="label" translatable="yes">_URL: </property>
-                    <property name="use_underline">True</property>
-                    <property name="mnemonic_widget">repositorymodifyurl</property>
-                  </widget>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="padding">3</property>
-                  </packing>
-                </child>
-                <child>
-                  <widget class="GtkEntry" id="repositorymodifyurl">
-                    <property name="width_request">320</property>
-                    <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                  </widget>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="padding">3</property>
-                    <property name="position">1</property>
-                  </packing>
-                </child>
-              </widget>
-              <packing>
-                <property name="position">3</property>
-              </packing>
-            </child>
-            <child>
-              <widget class="GtkAlignment" id="alignment22">
-                <property name="visible">True</property>
-                <child>
-                  <placeholder/>
-                </child>
-              </widget>
-              <packing>
-                <property name="padding">10</property>
-                <property name="position">4</property>
-              </packing>
-            </child>
-            <child>
-              <widget class="GtkExpander" id="expander1">
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="spacing">10</property>
-                <child>
-                  <widget class="GtkVBox" id="vbox21">
+                  <widget class="GtkAlignment" id="alignment1">
+                    <property name="width_request">17</property>
                     <property name="visible">True</property>
                     <child>
-                      <widget class="GtkHBox" id="hbox26">
+                      <placeholder/>
+                    </child>
+                  </widget>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">False</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="GtkVBox" id="vbox13">
+                    <property name="visible">True</property>
+                    <property name="spacing">3</property>
+                    <child>
+                      <widget class="GtkHBox" id="hbox20">
                         <property name="visible">True</property>
                         <child>
-                          <widget class="GtkLabel" id="label34">
-                            <property name="width_request">100</property>
+                          <widget class="GtkLabel" id="label24">
+                            <property name="width_request">80</property>
                             <property name="visible">True</property>
                             <property name="xalign">0</property>
                             <property name="yalign">0</property>
                             <property name="ypad">4</property>
-                            <property name="label" translatable="yes">SSL _Key:</property>
+                            <property name="label" translatable="yes">_Name: </property>
                             <property name="use_underline">True</property>
-                            <property name="mnemonic_widget">modkeyentry</property>
+                            <property name="mnemonic_widget">repositorymodifyname</property>
                           </widget>
                           <packing>
                             <property name="expand">False</property>
-                            <property name="fill">False</property>
-                            <property name="padding">3</property>
                           </packing>
                         </child>
                         <child>
-                          <widget class="GtkEntry" id="modkeyentry">
-                            <property name="width_request">240</property>
+                          <widget class="GtkEntry" id="repositorymodifyname">
+                            <property name="width_request">320</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
-                            <signal name="changed" handler="on_modkeyentry_changed"/>
                           </widget>
                           <packing>
                             <property name="expand">False</property>
                             <property name="padding">3</property>
                             <property name="position">1</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <widget class="GtkButton" id="modkeybrowse">
-                            <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="receives_default">True</property>
-                            <property name="label" translatable="yes">_Browse</property>
-                            <property name="use_underline">True</property>
-                            <property name="response_id">0</property>
-                            <signal name="clicked" handler="on_sslkeybrowse_clicked"/>
-                          </widget>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">False</property>
-                            <property name="position">2</property>
                           </packing>
                         </child>
                       </widget>
@@ -2681,48 +2573,192 @@ mirrors section.</property>
                       <widget class="GtkHBox" id="hbox27">
                         <property name="visible">True</property>
                         <child>
-                          <widget class="GtkLabel" id="label35">
-                            <property name="width_request">100</property>
+                          <widget class="GtkLabel" id="label25">
+                            <property name="width_request">80</property>
                             <property name="visible">True</property>
                             <property name="xalign">0</property>
                             <property name="yalign">0</property>
                             <property name="ypad">4</property>
-                            <property name="label" translatable="yes">SSL _Certificate:</property>
+                            <property name="label" translatable="yes">_URL: </property>
                             <property name="use_underline">True</property>
-                            <property name="mnemonic_widget">modcertentry</property>
+                            <property name="mnemonic_widget">repositorymodifyurl</property>
                           </widget>
                           <packing>
                             <property name="expand">False</property>
-                            <property name="padding">3</property>
                           </packing>
                         </child>
                         <child>
-                          <widget class="GtkEntry" id="modcertentry">
-                            <property name="width_request">240</property>
+                          <widget class="GtkEntry" id="repositorymodifyurl">
+                            <property name="width_request">320</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
-                            <signal name="changed" handler="on_modcertentry_changed"/>
                           </widget>
                           <packing>
                             <property name="expand">False</property>
-                            <property name="fill">False</property>
                             <property name="padding">3</property>
                             <property name="position">1</property>
                           </packing>
                         </child>
+                      </widget>
+                      <packing>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                  </widget>
+                  <packing>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+              </widget>
+              <packing>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
+              <widget class="GtkLabel" id="label6">
+                <property name="width_request">80</property>
+                <property name="visible">True</property>
+                <property name="xalign">0</property>
+                <property name="yalign">0</property>
+                <property name="ypad">4</property>
+                <property name="label" translatable="yes">If this repository requires a SSL Key and Certificate,
+please enter it into the SSL section.</property>
+                <property name="use_underline">True</property>
+                <property name="mnemonic_widget">repositorymodifyname</property>
+              </widget>
+              <packing>
+                <property name="padding">3</property>
+                <property name="position">2</property>
+              </packing>
+            </child>
+            <child>
+              <widget class="GtkExpander" id="repositorymodifysslexpander">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="spacing">10</property>
+                <child>
+                  <widget class="GtkHBox" id="hbox17">
+                    <property name="visible">True</property>
+                    <child>
+                      <widget class="GtkAlignment" id="alignment2">
+                        <property name="width_request">16</property>
+                        <property name="visible">True</property>
                         <child>
-                          <widget class="GtkButton" id="modcertbrowse">
+                          <placeholder/>
+                        </child>
+                      </widget>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">False</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <widget class="GtkHBox" id="hbox28">
+                        <property name="visible">True</property>
+                        <property name="spacing">6</property>
+                        <child>
+                          <widget class="GtkVBox" id="vbox24">
                             <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="receives_default">True</property>
-                            <property name="label" translatable="yes">Br_owse</property>
-                            <property name="use_underline">True</property>
-                            <property name="response_id">0</property>
-                            <signal name="clicked" handler="on_sslcertbrowse_clicked"/>
+                            <property name="spacing">5</property>
+                            <child>
+                              <widget class="GtkLabel" id="label34">
+                                <property name="visible">True</property>
+                                <property name="xalign">0</property>
+                                <property name="yalign">0</property>
+                                <property name="ypad">4</property>
+                                <property name="label" translatable="yes">SSL _Key:</property>
+                                <property name="use_underline">True</property>
+                                <property name="mnemonic_widget">modkeyentry</property>
+                              </widget>
+                              <packing>
+                                <property name="expand">False</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <widget class="GtkLabel" id="label35">
+                                <property name="visible">True</property>
+                                <property name="xalign">0</property>
+                                <property name="yalign">0</property>
+                                <property name="ypad">4</property>
+                                <property name="label" translatable="yes">SSL _Certificate:</property>
+                                <property name="use_underline">True</property>
+                                <property name="mnemonic_widget">modcertentry</property>
+                              </widget>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="position">1</property>
+                              </packing>
+                            </child>
                           </widget>
                           <packing>
                             <property name="expand">False</property>
-                            <property name="fill">False</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <widget class="GtkVBox" id="vbox25">
+                            <property name="visible">True</property>
+                            <property name="spacing">5</property>
+                            <child>
+                              <widget class="GtkEntry" id="modkeyentry">
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <signal name="changed" handler="on_modkeyentry_changed"/>
+                              </widget>
+                            </child>
+                            <child>
+                              <widget class="GtkEntry" id="modcertentry">
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <signal name="changed" handler="on_modcertentry_changed"/>
+                              </widget>
+                              <packing>
+                                <property name="position">1</property>
+                              </packing>
+                            </child>
+                          </widget>
+                          <packing>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <widget class="GtkVBox" id="vbox26">
+                            <property name="width_request">70</property>
+                            <property name="visible">True</property>
+                            <property name="spacing">5</property>
+                            <child>
+                              <widget class="GtkButton" id="modkeybrowse">
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">True</property>
+                                <property name="label" translatable="yes">_Browse</property>
+                                <property name="use_underline">True</property>
+                                <property name="response_id">0</property>
+                                <signal name="clicked" handler="on_sslkeybrowse_clicked"/>
+                              </widget>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">False</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <widget class="GtkButton" id="modcertbrowse">
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">True</property>
+                                <property name="label" translatable="yes">Br_owse</property>
+                                <property name="use_underline">True</property>
+                                <property name="response_id">0</property>
+                                <signal name="clicked" handler="on_sslcertbrowse_clicked"/>
+                              </widget>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">False</property>
+                                <property name="position">1</property>
+                              </packing>
+                            </child>
+                          </widget>
+                          <packing>
+                            <property name="expand">False</property>
                             <property name="position">2</property>
                           </packing>
                         </child>
@@ -2747,83 +2783,66 @@ mirrors section.</property>
               </widget>
               <packing>
                 <property name="expand">False</property>
-                <property name="position">5</property>
+                <property name="position">3</property>
               </packing>
             </child>
             <child>
-              <widget class="GtkAlignment" id="alignment23">
-                <property name="visible">True</property>
-                <child>
-                  <placeholder/>
-                </child>
-              </widget>
-              <packing>
-                <property name="padding">10</property>
-                <property name="position">6</property>
-              </packing>
-            </child>
-            <child>
-              <widget class="GtkExpander" id="expander6">
+              <widget class="GtkExpander" id="repositorymodifymirrorsexpander">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="use_underline">True</property>
                 <property name="spacing">10</property>
                 <child>
-                  <widget class="GtkVBox" id="vbox22">
+                  <widget class="GtkHBox" id="hbox21">
                     <property name="visible">True</property>
-                    <property name="spacing">10</property>
+                    <property name="spacing">6</property>
                     <child>
-                      <widget class="GtkHBox" id="hbox28">
+                      <widget class="GtkAlignment" id="alignment21">
+                        <property name="width_request">10</property>
                         <property name="visible">True</property>
                         <child>
-                          <widget class="GtkLabel" id="label36">
-                            <property name="width_request">80</property>
-                            <property name="visible">True</property>
-                            <property name="xalign">0</property>
-                            <property name="yalign">0</property>
-                            <property name="ypad">4</property>
-                            <property name="label" translatable="yes">M_irror:</property>
-                            <property name="use_underline">True</property>
-                            <property name="mnemonic_widget">addmirror_entry</property>
-                          </widget>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">False</property>
-                            <property name="padding">3</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <widget class="GtkEntry" id="addmirror_entry">
-                            <property name="width_request">240</property>
-                            <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <signal name="changed" handler="on_addmirror_entry_changed"/>
-                          </widget>
-                          <packing>
-                            <property name="position">1</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <widget class="GtkButton" id="addmirror_button">
-                            <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="receives_default">True</property>
-                            <property name="label" translatable="yes">_Add</property>
-                            <property name="use_underline">True</property>
-                            <property name="response_id">0</property>
-                            <signal name="clicked" handler="on_addmirror_button_clicked"/>
-                          </widget>
-                          <packing>
-                            <property name="fill">False</property>
-                            <property name="position">2</property>
-                          </packing>
+                          <placeholder/>
                         </child>
                       </widget>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">False</property>
+                      </packing>
                     </child>
                     <child>
-                      <widget class="GtkHBox" id="hbox29">
+                      <widget class="GtkVBox" id="vbox27">
                         <property name="visible">True</property>
-                        <property name="spacing">11</property>
+                        <child>
+                          <widget class="GtkHBox" id="hbox26">
+                            <property name="visible">True</property>
+                            <property name="spacing">62</property>
+                            <child>
+                              <widget class="GtkLabel" id="label36">
+                                <property name="visible">True</property>
+                                <property name="xalign">0</property>
+                                <property name="yalign">0</property>
+                                <property name="ypad">4</property>
+                                <property name="label" translatable="yes">M_irror:</property>
+                                <property name="use_underline">True</property>
+                                <property name="mnemonic_widget">addmirror_entry</property>
+                              </widget>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="position">1</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <widget class="GtkEntry" id="addmirror_entry">
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <signal name="changed" handler="on_addmirror_entry_changed"/>
+                              </widget>
+                              <packing>
+                                <property name="position">1</property>
+                              </packing>
+                            </child>
+                          </widget>
+                        </child>
                         <child>
                           <widget class="GtkScrolledWindow" id="scrolledwindow8">
                             <property name="visible">True</property>
@@ -2838,36 +2857,56 @@ mirrors section.</property>
                               </widget>
                             </child>
                           </widget>
-                        </child>
-                        <child>
-                          <widget class="GtkVButtonBox" id="vbuttonbox2">
-                            <property name="visible">True</property>
-                            <property name="layout_style">GTK_BUTTONBOX_START</property>
-                            <child>
-                              <widget class="GtkButton" id="mirrorremove">
-                                <property name="visible">True</property>
-                                <property name="can_focus">True</property>
-                                <property name="receives_default">True</property>
-                                <property name="label" translatable="yes">_Remove</property>
-                                <property name="use_underline">True</property>
-                                <property name="response_id">0</property>
-                                <signal name="clicked" handler="on_mirrorremove_clicked"/>
-                              </widget>
-                              <packing>
-                                <property name="expand">False</property>
-                                <property name="fill">False</property>
-                              </packing>
-                            </child>
-                          </widget>
                           <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">False</property>
+                            <property name="padding">8</property>
                             <property name="position">1</property>
                           </packing>
                         </child>
                       </widget>
                       <packing>
                         <property name="position">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <widget class="GtkVBox" id="vbox21">
+                        <property name="width_request">70</property>
+                        <property name="visible">True</property>
+                        <child>
+                          <widget class="GtkButton" id="addmirror_button">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">True</property>
+                            <property name="label" translatable="yes">_Add</property>
+                            <property name="use_underline">True</property>
+                            <property name="response_id">0</property>
+                            <signal name="clicked" handler="on_addmirror_button_clicked"/>
+                          </widget>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">False</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <widget class="GtkButton" id="mirrorremove">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">True</property>
+                            <property name="label" translatable="yes">_Remove</property>
+                            <property name="use_underline">True</property>
+                            <property name="response_id">0</property>
+                            <signal name="clicked" handler="on_mirrorremove_clicked"/>
+                          </widget>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">False</property>
+                            <property name="padding">5</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                      </widget>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="position">2</property>
                       </packing>
                     </child>
                   </widget>
@@ -2886,13 +2925,14 @@ mirrors section.</property>
               </widget>
               <packing>
                 <property name="expand">False</property>
-                <property name="position">7</property>
+                <property name="position">4</property>
               </packing>
             </child>
           </widget>
           <packing>
             <property name="expand">False</property>
             <property name="fill">False</property>
+            <property name="padding">3</property>
             <property name="position">1</property>
           </packing>
         </child>

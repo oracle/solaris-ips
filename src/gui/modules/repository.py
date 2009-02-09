@@ -95,7 +95,6 @@ class Repository:
                 self.w_repository_modify_button.set_sensitive(True)
                 self.w_repository_remove_button.set_sensitive(False)
 
-                self.w_repositorymodify_name = \
                 self.w_repositorymodify_dialog = \
                     w_tree_repositorymodify.get_widget("repositorymodif")
                 self.w_repositorymodify_name = \

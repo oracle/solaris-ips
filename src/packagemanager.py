@@ -39,20 +39,45 @@ PACKAGE_PROGRESS_PERCENT_INCREMENT = 0.01 # Amount to update progress during loa
 PACKAGE_PROGRESS_PERCENT_TOTAL = 1.0      # Total progress for loading phase
 MAX_DESC_LEN = 60                         # Max length of the description
 MAX_INFO_CACHE_LIMIT = 100                # Max number of package descriptions to cache
+NOTEBOOK_PACKAGE_LIST_PAGE = 0            # Main Package List page index
+NOTEBOOK_START_PAGE = 1                   # Main View Start page index
 TYPE_AHEAD_DELAY = 600    # The last type in search box after which search is performed
 INITIAL_TOPLEVEL_PREFERENCES = "/apps/packagemanager/preferences/initial_toplevel"
 INITIAL_CATEGORY_PREFERENCES = "/apps/packagemanager/preferences/initial_category"
-STATUS_COLUMN_INDEX = 3   # Index of Status Column in Application TreeView
+SHOW_STARTPAGE_PREFERENCES = "/apps/packagemanager/preferences/show_startpage"
 CATEGORIES_STATUS_COLUMN_INDEX = 0   # Index of Status Column in Categories TreeView
+
+STATUS_COLUMN_INDEX = 3   # Index of Status Column in Application TreeView
 
 CLIENT_API_VERSION = 4
 PKG_CLIENT_NAME = "packagemanager"
+
+# Load Start Page from lang dir if available
+START_PAGE_LANG_BASE = "usr/share/package-manager/data/startpage/%s/%s"
+START_PAGE_HOME = "startpage.html" # Default page
+
+# StartPage Action support for url's on StartPage pages
+PM_ACTION = 'pm-action'          # Action field for StartPage url's
+
+# Internal Example: <a href="pm?pm-action=internal&uri=top_picks.html">
+ACTION_INTERNAL = 'internal'   # Internal Action value: pm-action=internal
+INTERNAL_URI = 'uri'           # Internal field: uri to navigate to in StartPage
+                               # without protocol scheme specified
+
+# External Example: <a href="pm?pm-action=external&uri=www.opensolaris.com">
+ACTION_EXTERNAL = 'external'   # External Action value: pm-action=external
+EXTERNAL_URI = 'uri'           # External field: uri to navigate to in external
+                               # default browser without protocol scheme specified
+EXTERNAL_PROTOCOL = 'protocol' # External field: optional protocol scheme,
+                               # defaults to http
+DEFAULT_PROTOCOL = 'http'
 
 import getopt
 import os
 import sys
 import time
 import locale
+import urllib
 import urlparse
 import socket
 import gettext
@@ -69,6 +94,7 @@ try:
         import gtk.glade
         import pygtk
         pygtk.require("2.0")
+        import gtkhtml2
 except ImportError:
         sys.exit(1)
 import pkg.misc as misc
@@ -83,11 +109,17 @@ import pkg.gui.beadmin as beadm
 import pkg.gui.imageinfo as imageinfo
 import pkg.gui.installupdate as installupdate
 import pkg.gui.enumerations as enumerations
+import pkg.gui.parseqs as parseqs
 from pkg.client import global_settings
 
 # Put _() in the global namespace
 import __builtin__
 __builtin__._ = gettext.gettext
+
+(
+DISPLAY_LINK,
+CLICK_LINK,
+) = range(2)
 
 class PackageManager:
         def __init__(self):
@@ -96,6 +128,7 @@ class PackageManager:
                 self.client = gconf.client_get_default()
                 self.initial_toplevel = self.client.get_int(INITIAL_TOPLEVEL_PREFERENCES)
                 self.initial_category = self.client.get_int(INITIAL_CATEGORY_PREFERENCES)
+                show_startpage = self.client.get_bool(SHOW_STARTPAGE_PREFERENCES)
                 socket.setdefaulttimeout(
                     int(os.environ.get("PKG_CLIENT_TIMEOUT", "30"))) # in seconds
 
@@ -135,6 +168,9 @@ class PackageManager:
                 self.selected_pkgname = None
                 self.info_cache = {}
                 self.selected = 0
+                self.in_startpage_startup = show_startpage
+                self.lang = None
+                self.start_page_url = None
                 self.visible_status_id = 0
                 self.categories_status_id = 0
                 
@@ -149,11 +185,9 @@ class PackageManager:
                 self.categories_treeview_initialized = False
                 self.category_list = None
                 self.repositories_list = None
-
                 self.pr = progress.NullProgressTracker()
-
-                # Create Widgets and show gui
                 
+                # Create Widgets and show gui
                 self.gladefile = self.application_dir + \
                     "/usr/share/package-manager/packagemanager.glade"
                 w_tree_main = gtk.glade.XML(self.gladefile, "mainwindow")
@@ -163,7 +197,7 @@ class PackageManager:
                 self.w_application_treeview = \
                     w_tree_main.get_widget("applicationtreeview")
                 self.w_categories_treeview = w_tree_main.get_widget("categoriestreeview")
-                self.w_info_notebook = w_tree_main.get_widget("notebook1")
+                self.w_info_notebook = w_tree_main.get_widget("details_notebook")
                 self.w_generalinfo_textview = \
                     w_tree_main.get_widget("generalinfotextview")
                 self.w_generalinfo_textview.set_wrap_mode(gtk.WRAP_WORD)
@@ -180,6 +214,18 @@ class PackageManager:
                     w_tree_main.get_widget("package_hbox")
                 self.w_general_info_label = \
                     w_tree_main.get_widget("general_info_label")
+                self.w_startpage_frame = \
+                    w_tree_main.get_widget("startpage_frame")
+                self.w_startpage_eventbox = \
+                    w_tree_main.get_widget("startpage_eventbox")
+                self.w_startpage_eventbox.modify_bg(gtk.STATE_NORMAL,
+                    gtk.gdk.color_parse("white"))
+
+                self.w_main_statusbar = w_tree_main.get_widget("statusbar")
+
+                
+                self.w_main_view_notebook = \
+                    w_tree_main.get_widget("main_view_notebook")
                 self.w_searchentry_dialog = w_tree_main.get_widget("searchentry")
                 self.w_installupdate_button = \
                     w_tree_main.get_widget("install_update_button")
@@ -190,7 +236,6 @@ class PackageManager:
                 self.w_sections_combobox = w_tree_main.get_widget("sectionscombobox")
                 self.w_filter_combobox = w_tree_main.get_widget("filtercombobox")
                 self.w_packageicon_image = w_tree_main.get_widget("packageimage")
-                self.w_main_statusbar = w_tree_main.get_widget("statusbar")
                 self.w_installupdate_menuitem = \
                     w_tree_main.get_widget("package_install_update")
                 self.w_remove_menuitem = w_tree_main.get_widget("package_remove")
@@ -218,14 +263,17 @@ class PackageManager:
                 clear_search_image.set_from_stock(gtk.STOCK_CLEAR, gtk.ICON_SIZE_MENU)
                 toolbar =  w_tree_main.get_widget("toolbutton2")
                 toolbar.set_expand(True)
-                w_whats_new_button = w_tree_main.get_widget("whats_new_button")
-                #The whats new button hidden as this is not yet available
-                w_whats_new_button.set_visible_horizontal(False)
-                w_whats_new_button.set_visible_vertical(False)
 
                 self.__update_reload_button()
                 self.w_main_clipboard.request_text(self.__clipboard_text_received)
                 self.w_main_window.set_title(main_window_title)
+
+                # Setup Start Page
+                self.document = None
+                self.view = None
+                self.current_url = None
+                self.opener = None
+                self.__setup_startpage()
 
                 try:
                         dic_mainwindow = \
@@ -272,7 +320,8 @@ class PackageManager:
                                 "on_install_update_button_clicked": \
                                     self.__on_install_update,
                                 "on_remove_button_clicked":self.__on_remove,
-                                "on_notebook1_switch_page": \
+                                "on_help_start_page_activate":self.__on_startpage,
+                                "on_details_notebook_switch_page": \
                                     self.__on_notebook_change,
                             }
                         dic_progress = \
@@ -303,7 +352,202 @@ class PackageManager:
                 self.gdk_window.set_cursor(gdk_cursor)
                 # Until package icons become available hide Package Icon Panel
                 w_package_hbox.hide()
+                if show_startpage:
+                        self.w_main_view_notebook.set_current_page(NOTEBOOK_START_PAGE)
+                else:
+                        self.w_main_view_notebook.set_current_page(
+                            NOTEBOOK_PACKAGE_LIST_PAGE)
 
+        def __setup_startpage(self):
+                self.opener = urllib.FancyURLopener()
+                self.document = gtkhtml2.Document()
+                self.document.connect('request_url', self.__request_url)
+                self.document.connect('link_clicked', self.__handle_link)
+                self.document.clear()
+
+                self.view = gtkhtml2.View()
+                self.view.set_document(self.document)
+                self.view.connect('request_object', self.__request_object)
+                self.view.connect('on_url', self.__on_url)
+
+                try:
+                        self.lang, encode = locale.getlocale(locale.LC_CTYPE)
+                        if debug:
+                                print "Lang: %s: Encode: %s" % (self.lang, encode)
+                except locale.Error:
+                        self.lang = "C"
+                if self.lang == None or self.lang == "":
+                        self.lang = "C"
+                self.__load_startpage()
+                self.w_startpage_frame.add(self.view)
+
+        # Stub handler required by GtkHtml widget
+        def __request_object(self, *vargs):
+                pass
+
+        def __load_startpage(self):
+                self.start_page_url = self.application_dir + \
+                    START_PAGE_LANG_BASE % (self.lang, START_PAGE_HOME)
+                if not self.__load_uri(self.document, self.start_page_url):
+                        self.start_page_url = self.application_dir + \
+                            START_PAGE_LANG_BASE % ("C", START_PAGE_HOME)
+                        if not self.__load_uri(self.document, self.start_page_url):
+                                self.document.open_stream('text/html')
+                                self.document.write_stream(_(
+                                    "<html><head></head><body><H2>Welcome to \
+                                    PackageManager!</H2><br>\
+                                    <font color='#0000FF'>Warning: Unable to load \
+                                    Start Page:<br>%s</font></body></html>"
+                                    % (self.start_page_url)))
+                                self.document.close_stream()
+                                self.w_main_view_notebook.set_current_page(
+                                    NOTEBOOK_PACKAGE_LIST_PAGE)
+
+        def __on_url(self, view, link):
+                # Handle mouse over events on links and reset when not on link
+                if link == None or link == "":
+                        self.update_statusbar()
+                else:
+                        display_link = self.__handle_link(None,link,DISPLAY_LINK)
+                        if display_link != None:
+                                self.w_main_statusbar.push(0, display_link)
+                        else:
+                                self.update_statusbar()
+        
+        @staticmethod
+        def __is_relative_to_server(url):
+                parts = urlparse.urlparse(url)
+                if parts[0] or parts[1]:
+                        return 0
+                return 1
+                
+        def __open_url(self, url):
+                uri = self.__resolve_uri(url)
+                return self.opener.open(uri)
+
+        def __resolve_uri(self, uri):
+                if self.__is_relative_to_server(uri) and self.current_url != uri:
+                        return urlparse.urljoin(self.current_url, uri)
+                return uri
+
+        def __request_url(self, document, url, stream):
+                f = self.__open_url(url)
+                stream.set_cancel_func(self.__stream_cancel)
+                stream.write(f.read())
+
+        # Stub handler required by GtkHtml widget or widget will assert
+        def __stream_cancel(self, *vargs):
+                pass
+
+        def __load_uri(self, document, link):
+                self.w_main_statusbar.push(0, _("Loading... " + link))
+                try:
+                        f = self.__open_url(link)
+                except  (IOError, OSError), err:
+                        if debug:
+                                print "err: %s" % (err)
+                        self.w_main_statusbar.push(0, _("Stopped"))
+                        return False
+                self.current_url = self.__resolve_uri(link)
+
+                self.document.clear()
+                headers = f.info()
+                mime = headers.getheader('Content-type').split(';')[0]
+                if mime:
+                        self.document.open_stream(mime)
+                else:
+                        self.document.open_stream('text/plain')
+
+                self.document.write_stream(f.read())
+                self.document.close_stream()
+                self.w_main_statusbar.push(0, _("Done"))
+                return True
+
+        def __link_load_error(self, link):
+                self.document.clear()
+                self.document.open_stream('text/html')
+                self.document.write_stream(_(
+                    "<html><head></head><body><font color='#000000'>\
+                    <a href='stub'></a></font>\
+                    <a href='pm?%s=internal&uri=%s'>\
+                    <IMG SRC = 'startpage_star.png' \
+                    style='border-style: none'></a> <br><br>\
+                    <h2><font color='#0000FF'>Warning: Unable to \
+                    load URL</font></h2><br>%s</body></html>" 
+                    % (PM_ACTION, START_PAGE_HOME, link)))
+                self.document.close_stream()
+ 
+        def __handle_link(self, document, link, handle_what = CLICK_LINK):
+                query_dict = self.__urlparse_qs(link)
+
+                action = None
+                if query_dict.has_key(PM_ACTION):
+                        action = query_dict[PM_ACTION][0]
+                elif handle_what == DISPLAY_LINK:
+                        return link
+                ext_uri = ""
+                protocol = None
+                
+                # Internal Browse
+                if action == ACTION_INTERNAL:
+                        if query_dict.has_key(INTERNAL_URI):
+                                int_uri = query_dict[INTERNAL_URI][0]
+                                if handle_what == DISPLAY_LINK:
+                                        return int_uri
+                        else:
+                                if handle_what == CLICK_LINK:
+                                        self.__link_load_error(_("No URI specified"))
+                                return
+                        if handle_what == CLICK_LINK and \
+                            not self.__load_uri(document, int_uri):
+                                self.__link_load_error(int_uri)
+                        return
+                # External browse
+                elif action == ACTION_EXTERNAL:
+                        if query_dict.has_key(EXTERNAL_URI):
+                                ext_uri = query_dict[EXTERNAL_URI][0]
+                        else:
+                                if handle_what == CLICK_LINK:
+                                        self.__link_load_error(_("No URI specified"))
+                                return
+                        if query_dict.has_key(EXTERNAL_PROTOCOL):
+                                protocol = query_dict[EXTERNAL_PROTOCOL][0]
+                        else:
+                                protocol = DEFAULT_PROTOCOL
+
+                        if handle_what == DISPLAY_LINK:  
+                                return protocol + "://" + ext_uri
+                        try:
+                                gnome.url_show(protocol + "://" + ext_uri)
+                        except gobject.GError:
+                                self.__link_load_error(protocol + "://" + ext_uri)
+                elif handle_what == DISPLAY_LINK:
+                        return None
+                elif action == None:
+                        try:
+                                gnome.url_show(link)
+                        except gobject.GError:
+                                self.__link_load_error(link)
+                # Handle empty and unsupported actions
+                elif action == "":
+                        self.__link_load_error(_("Empty Action not supported"
+                            % action)) 
+                        return
+                elif action != None:
+                        self.__link_load_error(_("Action not supported: %s"
+                            % action)) 
+                        return
+
+        @staticmethod
+        def __urlparse_qs(url, keep_blank_values=0, strict_parsing=0):
+                scheme, netloc, url, params, querystring, fragment = urlparse.urlparse(
+                    url)
+                if debug:
+                        print ("Query: scheme %s, netloc %s, url %s, params %s,"
+                            "querystring %s, fragment %s"
+                            % (scheme, netloc, url, params, querystring, fragment))
+                return parseqs.parse_qs(querystring)
+                
         @staticmethod
         def __get_new_application_liststore():
                 return gtk.ListStore(
@@ -479,6 +723,8 @@ class PackageManager:
                     application_list_sort)
                 category_selection.connect("changed", \
                     self.__on_category_selection_changed, None)
+                self.w_categories_treeview.connect("row-activated", \
+                    self.__on_category_row_activated, None)
                 self.package_selection.set_mode(gtk.SELECTION_SINGLE)
                 self.package_selection.connect("changed", \
                     self.__on_package_selection_changed, None)
@@ -712,6 +958,7 @@ class PackageManager:
 
         def __on_searchentry_changed(self, widget):
                 '''On text search field changed we should refilter the main view'''
+                self.__set_main_view_package_list()
                 self.set_busy_cursor()
                 if self.application_refilter_id != 0:
                         gobject.source_remove(self.application_refilter_id)
@@ -770,6 +1017,10 @@ class PackageManager:
         def __on_clear_search(self, widget):
                 self.w_searchentry_dialog.delete_text(0, -1)
                 return
+
+        def __on_startpage(self, widget):
+                self.__load_startpage()
+                self.w_main_view_notebook.set_current_page(NOTEBOOK_START_PAGE)
 
         def __on_notebook_change(self, widget, event, pagenum):
                 if pagenum == 3:
@@ -877,8 +1128,26 @@ class PackageManager:
                         self.w_copy_menuitem.set_sensitive(False)
                         self.w_clear_menuitem.set_sensitive(False)
 
+        def __on_category_row_activated(self, view, path, col, user):
+                '''This function is for handling category double click activations'''
+                if self.w_main_view_notebook.get_current_page() != NOTEBOOK_START_PAGE:
+                        return
+                self.__set_main_view_package_list()
+                self.set_busy_cursor()
+                gobject.idle_add(self.__application_refilter)
+                if self.selected == 0:
+                        gobject.idle_add(self.__enable_disable_install_update)
+                        gobject.idle_add(self.__enable_disable_remove)
+
+        def __set_main_view_package_list(self):
+                # Only switch from Start Page View to List view if we are not in startup
+                if not self.in_startpage_startup:
+                        self.w_main_view_notebook.set_current_page(
+                                NOTEBOOK_PACKAGE_LIST_PAGE)
+
         def __on_category_selection_changed(self, selection, widget):
                 '''This function is for handling category selection changes'''
+                self.__set_main_view_package_list()
                 model, itr = selection.get_selected()
                 if itr:
                         cat_path = model.get_string_from_iter(itr)
@@ -918,6 +1187,7 @@ class PackageManager:
                 '''On filter combobox changed'''
                 if self.in_setup:
                         return
+                self.__set_main_view_package_list()
                 self.set_busy_cursor()
                 gobject.idle_add(self.__application_refilter)
                 if self.selected == 0:
@@ -969,6 +1239,7 @@ class PackageManager:
                 '''On section combobox changed'''
                 if self.in_setup:
                         return
+                self.__set_main_view_package_list()
                 self.__set_categories_visibility(widget.get_active())
                 self.set_busy_cursor()
                 self.category_list_filter.refilter()
@@ -981,6 +1252,7 @@ class PackageManager:
                 '''On repository combobox changed'''
                 if self.in_setup:
                         return  
+                self.__set_main_view_package_list()
                 self.set_busy_cursor()
                 gobject.idle_add(self.__application_refilter)
                 if self.selected == 0:
@@ -1267,7 +1539,8 @@ class PackageManager:
                 dep_str = _("Dependencies:\n")
 
                 if local_info.dependencies:
-                        dep_str += ''.join(["\t%s\n" % x for x in local_info.dependencies])
+                        dep_str += ''.join(
+                            ["\t%s\n" % x for x in local_info.dependencies])
                 if local_info.dirs:
                         inst_str += ''.join(["\t%s\n" % x for x in local_info.dirs])
                 if local_info.files:
@@ -2111,9 +2384,10 @@ class PackageManager:
                         gtk.main_iteration(False)
                 self.__get_manifests_thread()
                 self.w_progress_dialog.hide()
+                self.in_startpage_startup = False
                 if self.update_all_proceed:
-                        # Do something if there was only one update SUNWipkg/SUNWipg-gui
-                        # and no more things are to be updated
+                # TODO: Handle situation where only SUNWipkg/SUNWipg-gui have been updated
+                # in update all: bug 6357
                         self.__on_update_all(None)
                         self.update_all_proceed = False
 
@@ -2329,6 +2603,7 @@ def main():
         return 0
 
 if __name__ == '__main__':
+        debug = False
         packagemanager = PackageManager()
         passed_test_arg = False
         passed_imagedir_arg = False
