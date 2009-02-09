@@ -125,6 +125,7 @@ PYMODS = \
    modules/repository.py \
    modules/enumerations.py \
    modules/parseqs.py \
+   modules/misc.py \
    modules/beadmin.py
 
 PYCMODS = $(PYMODS:%.py=%.pyc)

@@ -50,6 +50,9 @@ import pkg.client.api as api
 import pkg.client.api_errors as api_errors
 import pkg.client.progress as progress
 import pkg.gui.beadmin as beadm
+import pkg.gui.installupdate as installupdate
+import pkg.gui.enumerations as enumerations
+import pkg.gui.misc as gui_misc
 import pkg.misc as misc
 from pkg.client import global_settings
 
@@ -235,6 +238,7 @@ class Updatemanager:
                 self.size_thread_running = False
                 self.cancelled = False
                 self.fmri_description = None
+                self.image_dir_arg = None
                 self.install = False
                 self.install_error = False
                 self.done_icon = None
@@ -243,6 +247,9 @@ class Updatemanager:
                 self.toggle_counter = 0
                 self.selection_timer = None
                 self.package_selection = None
+                self.update_all_proceed = False
+                self.ua_be_name = None
+                self.application_path = None
                 self.cur_pkg = None
                 self.show_all_opts = False
                 self.show_install_updates_only = False
@@ -316,17 +323,6 @@ class Updatemanager:
                 self.w_select_checkbox = w_xmltree_um.get_widget("selectall_checkbutton")
                 self.w_delete_button = w_xmltree_um.get_widget("cancel_button")
                 
-                # ua_confirm_dialog
-                w_xmltree_ua = gtk.glade.XML(self.gladefile, "ua_confirm_dialog")
-                self.w_ua_confirm_dialog = \
-                    w_xmltree_ua.get_widget("ua_confirm_dialog")
-                self.w_ua_be_name_entry = \
-                    w_xmltree_ua.get_widget("ua_be_name_entry")
-                self.w_ua_proceed_button = \
-                    w_xmltree_ua.get_widget("ua_proceed_button")
-                self.w_ua_cancel_button = \
-                    w_xmltree_ua.get_widget("ua_cancel_button")                
-                
                 self.details_cache = {}
                 
                 try:
@@ -356,14 +352,6 @@ class Updatemanager:
                             }
                         w_xmltree_progress.signal_autoconnect(dic_progress)
 
-                        dic_ua = \
-                            {
-                                "on_ua_cancel_button_clicked": \
-                                    self.__on_ua_cancel_button_clicked,
-                                "on_ua_proceed_button_clicked": \
-                                    self.__on_ua_proceed_button_clicked,
-                            }
-                        w_xmltree_ua.signal_autoconnect(dic_ua)
 
                 except AttributeError, error:
                         print _("GUI will not respond to any event! %s. "
@@ -493,9 +481,14 @@ class Updatemanager:
 
 
         def __set_initial_selection(self):
+                self.__selectall_toggle(True)
                 if len(self.um_list) == 0:
-                        return                
-                self.w_um_treeview.set_cursor(0, None)
+                        self.__display_noupdates()
+                else:
+                        self.w_um_treeview.set_cursor(0, None)
+                        if self.update_all_proceed:
+                                self.__on_updateall_button_clicked(None)
+                                self.update_all_proceed = False
 
         def __remove_installed(self, installed_fmris):
                 model = self.w_um_treeview.get_model()
@@ -527,45 +520,13 @@ class Updatemanager:
                         renderer.set_property("mode", gtk.CELL_RENDERER_MODE_INERT)
                 
         def __get_icon_pixbuf(self, icon_name):
-                return self.__get_pixbuf_from_path(self.application_dir +
+                return gui_misc.get_pixbuf_from_path(self.application_dir +
                     "/usr/share/icons/update-manager/", icon_name)
 
-        #
-        def get_icon_pixbuf(self, icon_name):
-                return self.__get_pixbuf_from_path(self.application_dir +
-                    "/usr/share/icons/package-manager/", icon_name)
-                    
         def __get_app_pixbuf(self, icon_name):
-                return self.__get_pixbuf_from_path(self.application_dir +
+                return gui_misc.get_pixbuf_from_path(self.application_dir +
                     "/usr/share/update-manager/", icon_name)
                         
-        def __get_pixbuf_from_path(self, path, icon_name):
-                icon = icon_name.replace(' ', '_')
-
-                # Performance: Faster to check if files exist rather than catching
-                # exceptions when they do not. Picked up open failures using dtrace
-                png_exists = os.path.exists(self.application_dir + path + icon + ".png")
-                svg_exists = os.path.exists(self.application_dir + path + icon + ".svg")
-                       
-                if not png_exists and not svg_exists:
-                        return None
-                try:
-                        return gtk.gdk.pixbuf_new_from_file(
-                            self.application_dir + path + icon + ".png")
-                except gobject.GError:
-                        try:
-                                return gtk.gdk.pixbuf_new_from_file(
-                                    self.application_dir + path + icon + ".svg")
-                        except gobject.GError:
-                                iconview = gtk.IconView()
-                                icon = iconview.render_icon(getattr(gtk,
-                                    "STOCK_MISSING_IMAGE"),
-                                    size = gtk.ICON_SIZE_MENU,
-                                    detail = None)
-                                # XXX Could return image-we don't want to show ugly icon.
-                                return None
-
-
         def __get_selected_fmris(self):
                 model = self.w_um_treeview.get_model()
                 iter_next = model.get_iter_first()
@@ -660,11 +621,12 @@ class Updatemanager:
                 self.done_icon = self.__get_icon_pixbuf("status_checkmark")
                 self.blank_icon = self.__get_icon_pixbuf("status_blank")
                 self.w_um_dialog.set_icon(self.__get_app_pixbuf("PM_package_36x"))
-                self.w_ua_confirm_dialog.set_icon(self.__get_app_pixbuf("PM_package_36x"))
 
-        @staticmethod
-        def __get_image_path():
+        def __get_image_path(self):
                 '''This function gets the image path or the default'''
+                if self.image_dir_arg != None:
+                        return self.image_dir_arg
+
                 if local_image_dir != None:
                         return local_image_dir
                         
@@ -728,12 +690,8 @@ class Updatemanager:
 
                 self.progress_stop_thread = True
                 gobject.idle_add(self.w_um_treeview.set_model, um_list)
-                gobject.idle_add(self.__set_initial_selection)
                 self.um_list = um_list                
-                self.__selectall_toggle(True)
-                if len(self.um_list) == 0:
-                        self.__display_noupdates()
-                        return          
+                gobject.idle_add(self.__set_initial_selection)
                         
                 # XXX: Currently this will fetch the sizes but it really slows down the
                 # app responsiveness - until we get caching I think we should just hide
@@ -933,13 +891,24 @@ class Updatemanager:
         def __on_cancel_button_clicked(self, widget):
                 self.__exit_app()
 
-        def __exit_app(self):
+        def __exit_app(self, be_name = None):
                 self.cancelled = True
+                if be_name:
+                        if self.image_dir_arg:
+                                gobject.spawn_async([self.application_path, "-R",
+                                    self.image_dir_arg, "-U", be_name])
+                        else:
+                                gobject.spawn_async([self.application_path, 
+                                    "-U", be_name])
+
                 self.w_um_dialog.hide()
                 gtk.main_quit()
                 sys.exit(0)
                 return True
         
+        def restart_after_ips_update(self, be_name):
+                self.__exit_app(be_name)
+
         def __on_progressok_clicked(self, widget):
                 self.w_progress_dialog.hide()
 
@@ -968,27 +937,18 @@ class Updatemanager:
                         isInstall = True, showCloseOnFinish = debug)
                 Thread(target = self.__install).start()   
 
-        def __on_ua_cancel_button_clicked(self, widget):
-                self.w_ua_confirm_dialog.hide()
-                return
-
-        def __on_ua_proceed_button_clicked(self, widget):
-                self.w_ua_confirm_dialog.hide()
-                self.ua_start = time.time()
-                self.setup_progressdialog_show(_("Update All"),
-                    showCancel = True, showOK = True,
-                    isInstall = True, showCloseOnFinish = debug)
-
-                Thread(target = self.__update_image,
-                        args = (self.w_ua_be_name_entry.get_text(),)).start()
-                return
-
         def __on_updateall_button_clicked(self, widget):
                 self.__selectall_toggle(True)
-                date_str = time.strftime("%m/%d/%Y", time.localtime())
-                self.w_ua_be_name_entry.set_text("opensolaris-ua-%s" % date_str)
-                self.w_ua_proceed_button.grab_focus()
-                self.w_ua_confirm_dialog.show()
+                self.__get_api_obj().reset()
+                self.ua_start = time.time()
+                installupdate.InstallUpdate([], self,
+                    self.api_obj, ips_update = False,
+                    action = enumerations.IMAGE_UPDATE,
+                    be_name = self.ua_be_name,
+                    parent_name = _("Update Manager"),
+                    pkg_list = ["SUNWipkg", "SUNWipkg-um"],
+                    main_window = self.w_um_dialog,
+                    icon_confirm_dialog = self.__get_app_pixbuf("PM_package_36x"))
                 return
                
         def __on_selectall_checkbutton_toggled(self, widget):
@@ -1026,79 +986,6 @@ class Updatemanager:
                         gobject.idle_add(self.__update_progress_info,
                             _("%s\n" % str_error))
                 self.__cleanup()
-
-        def __update_image(self, be_name = None):
-                self.install = True
-                self.install_error = False
-                self.update_stage = UPDATE_EVAL
-
-                # Evaluate
-                try:
-                        gobject.idle_add(self.__update_progress_info,
-                            _("\nEvaluate\n"), True)
-                        if self.__get_api_obj() == None:
-                                return
-                                
-                        stuff_to_do, opensolaris_image, cre = \
-                            self.__get_api_obj().plan_update_all(sys.argv[0],
-                                refresh_catalogs = self.do_refresh)
-                            #XXX waiting for change to API to allow be name to be passed
-                            # self.api_obj.plan_update_all(sys.argv[0], be_name)
-                        if cre and not cre.succeeded:
-                                self.__handle_update_progress_error(
-                                    _("Update All failed during catalog refresh\n"
-                                    "while determining what to update:"), cre,
-                                    stage = self.update_stage)
-                                return
-                        if not opensolaris_image:
-                                self.__handle_update_progress_error(
-                                    _("This is not an OpenSolaris image\n"),
-                                    stage = self.update_stage)
-                                return
-                        if not stuff_to_do:
-                                self.__handle_update_progress_error(
-                                    _("No updates available for this image."),
-                                    stage = self.update_stage)
-                                return
-                except (api_errors.CanceledException):
-                        self.__handle_cancel_exception()
-                        return
-                except api_errors.CatalogRefreshException, cre:
-                        self.__handle_update_progress_error(
-                            _("Update All failed during catalog refresh\n"
-                            "while determining what to update:"), cre,
-                            stage = self.update_stage)
-                except api_errors.PlanCreationException, pce:
-                        self.__handle_update_progress_error(
-                            _("Update All failure in plan creation:"), pce,
-                            stage = self.update_stage)
-                        return
-                except api_errors.IpkgOutOfDateException:
-                        self.__handle_update_progress_error(
-                            _(
-                            "pkg(5) appears to be out of date and should be\n" +
-                            "updated before running Update All.\n" +
-                            "Please update pkg(5) using:\n" +
-                            "\t'pfexec pkg install SUNWipkg' " +
-                            "and then retry Update All."),
-                            stage = self.update_stage)
-                        return
-                except api_errors.ApiException, aex:
-                        self.__handle_update_progress_error(
-                            _("Update All API failure in evaluation:"), aex,
-                            stage = self.update_stage)
-                        return
-                except Exception, uex:
-                        self.__handle_update_progress_error(
-                            _("Update All unexpected error in evaluation:"),
-                            uex, stage = self.update_stage)
-                        return
-                        
-                if self.__shared_update_steps(_("Update All"),
-                    _("Update All finished successfully.\n")) != 0:
-                        return
-                
-                gobject.idle_add(self.__display_update_image_success)       
 
         def __display_update_image_success(self):
                 elapsed = (time.time() - self.ua_start)/ 60.0 
@@ -1537,12 +1424,16 @@ class Updatemanager:
                         infobuffer.insert(textiter, "%s\n" % str_out)
                 self.w_progressinfo_textview.scroll_to_iter(textiter, 0.0)
                 
+        def shutdown_after_image_update(self):
+                self.__display_update_image_success()
+
 #-------------------- remove those
 def main():
         gtk.main()
         return 0
         
 if __name__ == "__main__":
+        um = Updatemanager()
         list_uninstalled = False
         debug = False
         show_all_opts = False
@@ -1551,15 +1442,24 @@ if __name__ == "__main__":
         do_refresh = False
 
         try:
-                opts, args = getopt.getopt(sys.argv[1:], "hdualir",
+                opts, args = getopt.getopt(sys.argv[1:], "hdualirR:U:",
                     ["help", "debug","uninstalled"])
         except getopt.error, msg:
                 print "%s, for help use --help" % msg
                 sys.exit(2)
 
+        if os.path.isabs(sys.argv[0]):
+                um.application_path = sys.argv[0]
+        else:
+                cmd = os.path.join(os.getcwd(), sys.argv[0])
+                um.application_path = os.path.realpath(cmd)
+
         for option, argument in opts:
                 if option in ("-h", "--help"):
-                        print "Use -d (--debug) to run in debug mode."
+                        print """\
+Use -d (--debug) to run in debug mode.
+Use -R (--image-dir) to specify image directory.
+Use -U (--update-all) to proceed with Update All"""
                         sys.exit(0)
                 if option in ("-d", "--debug"):
                         debug = True
@@ -1574,8 +1474,13 @@ if __name__ == "__main__":
                 # Refresh catalogs during plan_install and plan_update_all
                 if option in ("-r", "--refresh"):
                         do_refresh = True
+                if option in ("-R", "--image-dir"):
+                        um.image_dir_arg = argument
+                if option in ("-U", "--update-all"):
+                        um.update_all_proceed = True
+                        um.ua_be_name = argument
+
                         
-        um = Updatemanager()
         um.show_all_opts = show_all_opts
         um.show_install_updates_only = show_install_updates_only
         um.do_refresh = do_refresh

@@ -106,6 +106,7 @@ import pkg.client.retrieve as retrieve
 import pkg.portable as portable
 import pkg.gui.repository as repository
 import pkg.gui.beadmin as beadm
+import pkg.gui.misc as gui_misc
 import pkg.gui.imageinfo as imageinfo
 import pkg.gui.installupdate as installupdate
 import pkg.gui.enumerations as enumerations
@@ -164,7 +165,6 @@ class PackageManager:
                 self.ua_be_name = None
                 self.application_path = None
                 self.first_run = True
-                self.provided_image_dir = True
                 self.selected_pkgname = None
                 self.info_cache = {}
                 self.selected = 0
@@ -1296,7 +1296,10 @@ class PackageManager:
                 self.api_o.reset()
                 installupdate.InstallUpdate([], self,
                     self.api_o, ips_update = False,
-                    action = enumerations.IMAGE_UPDATE, be_name = self.ua_be_name)
+                    action = enumerations.IMAGE_UPDATE, be_name = self.ua_be_name,
+                    parent_name = _("Package Manager"),
+                    pkg_list = ["SUNWipkg", "SUNWipkg-gui"],
+                    main_window = self.w_main_window)
                 return
 
         def __on_help_about(self, widget):
@@ -1982,8 +1985,10 @@ class PackageManager:
                         return
 
                 #Only one instance of those icons should be in memory
-                update_available_icon = self.get_icon_pixbuf("status_newupdate")
-                installed_icon = self.get_icon_pixbuf("status_installed")
+                update_available_icon = gui_misc.get_icon_pixbuf(self.application_dir,
+                    "status_newupdate")
+                installed_icon = gui_misc.get_icon_pixbuf(self.application_dir,
+                    "status_installed")
                 update_for_category_icon = \
                     self.get_icon_pixbuf_from_glade_dir("legend_newupdate")
                 #Imageinfo for categories
@@ -2057,7 +2062,8 @@ class PackageManager:
                         category_icon = None
                         pkg_name = pkg.get_name()
                         pkg_stem = pkg.get_pkg_stem()
-                        package_icon = self.__get_pixbuf_from_path(icon_path, pkg_name) 
+                        package_icon = gui_misc.get_pixbuf_from_path(icon_path, 
+                            pkg_name) 
                         pkg_state = enumerations.NOT_INSTALLED
                         if state["state"] == "installed":
                                 pkg_state = enumerations.INSTALLED
@@ -2177,32 +2183,6 @@ class PackageManager:
                                                                     ].append(section[ \
                                                                     enumerations. \
                                                                     SECTION_ID])
-
-        def __get_pixbuf_from_path(self, path, icon_name):
-                icon = icon_name.replace(' ', '_')
-
-                # Performance: Faster to check if files exist rather than catching
-                # exceptions when they do not. Picked up open failures using dtrace
-                png_exists = os.path.exists(self.application_dir + path + icon + ".png")
-                svg_exists = os.path.exists(self.application_dir + path + icon + ".svg")
-                       
-                if not png_exists and not svg_exists:
-                        return None
-                try:
-                        return gtk.gdk.pixbuf_new_from_file(
-                            self.application_dir + path + icon + ".png")
-                except gobject.GError:
-                        try:
-                                return gtk.gdk.pixbuf_new_from_file(
-                                    self.application_dir + path + icon + ".svg")
-                        except gobject.GError:
-                                iconview = gtk.IconView()
-                                icon = iconview.render_icon(getattr(gtk,
-                                    "STOCK_MISSING_IMAGE"),
-                                    size = gtk.ICON_SIZE_MENU,
-                                    detail = None)
-                                # XXX Could return image-we don't want to show ugly icon.
-                                return None
 
         def __progressdialog_progress_pulse(self):
                 while not self.progress_stop_timer_thread:
@@ -2407,12 +2387,8 @@ class PackageManager:
                 Thread(target = self.get_manifests_for_packages,
                     args = ()).start()
 
-        def get_icon_pixbuf(self, icon_name):
-                return self.__get_pixbuf_from_path(self.application_dir +
-                    "/usr/share/icons/package-manager/", icon_name)
-                
         def get_icon_pixbuf_from_glade_dir(self, icon_name):
-                return self.__get_pixbuf_from_path(self.application_dir +
+                return gui_misc.get_pixbuf_from_path(self.application_dir +
                     "/usr/share/package-manager/", icon_name)
 
         def get_manifests_for_packages(self):
@@ -2466,7 +2442,8 @@ class PackageManager:
                 img = self.api_o.img
                 img.clear_pkg_state()
                 img.load_catalogs(self.pr)
-                installed_icon = self.get_icon_pixbuf("status_installed")
+                installed_icon = gui_misc.get_icon_pixbuf(self.application_dir,
+                    "status_installed")
                 for row in self.application_list:
                         if row[enumerations.NAME_COLUMN] in update_list:
                                 pkg = row[enumerations.FMRI_COLUMN]
@@ -2522,21 +2499,29 @@ class PackageManager:
                 self.filter_list = self.__get_new_filter_liststore()
                 self.repositories_list = self.__get_new_repositories_liststore()
 
-                app1 = [False, self.get_icon_pixbuf("locked"), \
-                    self.get_icon_pixbuf("None"), "acc", None, None, None, 4, "desc6", \
+                app1 = [False, gui_misc.get_icon_pixbuf(self.application_dir, "locked"), \
+                    gui_misc.get_icon_pixbuf(self.application_dir, "None"), \
+                    "acc", None, None, None, 4, "desc6", \
                     "Object Name1", None, True, None]
-                app2 = [False, self.get_icon_pixbuf("update_available"), \
-                    self.get_icon_pixbuf(_('All')), "acc_gam", \
+                app2 = [False, gui_misc.get_icon_pixbuf(self.application_dir, 
+                    "update_available"), \
+                    gui_misc.get_icon_pixbuf(self.application_dir, \
+                     _('All')), "acc_gam", \
                     "2.3", None, "2.8", \
                     4, "desc7", "Object Name2", None, True, None]
-                app3 = [False, self.get_icon_pixbuf("None"), \
-                    self.get_icon_pixbuf("Other"), "gam_grap", "2.3", None, None, 4, \
+                app3 = [False, gui_misc.get_icon_pixbuf(self.application_dir, "None"), \
+                    gui_misc.get_icon_pixbuf(self.application_dir, "Other"), \
+                    "gam_grap", "2.3", None, None, 4, \
                     "desc8", "Object Name3", None, True, None]
-                app4 = [False, self.get_icon_pixbuf("update_locked"), \
-                    self.get_icon_pixbuf("Office"), "grap_gam", "2.3", None, "2.8", 4, \
+                app4 = [False, gui_misc.get_icon_pixbuf(self.application_dir, 
+                    "update_locked"), \
+                    gui_misc.get_icon_pixbuf(self.application_dir, "Office"), \
+                    "grap_gam", "2.3", None, "2.8", 4, \
                     "desc9", "Object Name2", None, True, None]
-                app5 = [False, self.get_icon_pixbuf("update_available"), \
-                    self.get_icon_pixbuf("None"), "grap", "2.3", None, "2.8", 4, \
+                app5 = [False, gui_misc.get_icon_pixbuf(self.application_dir, 
+                    "update_available"), \
+                    gui_misc.get_icon_pixbuf(self.application_dir, "None"), \
+                    "grap", "2.3", None, "2.8", 4, \
                     "desc0", "Object Name3", None, True, None]
                 itr1 = self.application_list.append(app1)
                 itr2 = self.application_list.append(app2)
@@ -2619,7 +2604,6 @@ if __name__ == '__main__':
         packagemanager = PackageManager()
         passed_test_arg = False
         passed_imagedir_arg = False
-        packagemanager.provided_image_dir = True
 
         try:
                 opts, args = getopt.getopt(sys.argv[1:], "htR:U:", \
@@ -2659,7 +2643,6 @@ Use -U (--update-all) to proceed with Update All"""
                         image_dir = os.environ["PKG_IMAGE"]
                 except KeyError:
                         image_dir = os.getcwd()
-                        packagemanager.provided_image_dir = False
 
         while gtk.events_pending():
                 gtk.main_iteration(False)

@@ -40,6 +40,7 @@ try:
         pygtk.require("2.0")
 except ImportError:
         sys.exit(1)
+import pkg.gui.misc as gui_misc
 
 nobe = False
 
@@ -124,7 +125,8 @@ class Beadmin:
                 cell = gtk.CellRendererText()
                 be_column = gtk.TreeViewColumn('BE', cell, text = BE_ID)
                 self.w_beconfirmation_treeview.append_column(be_column)
-                self.active_image = self.parent.get_icon_pixbuf("status_checkmark")
+                self.active_image = gui_misc.get_icon_pixbuf(
+                    self.parent.application_dir, "status_checkmark")
                 w_active_gtkimage.set_from_pixbuf(self.active_image)
 
                 try:

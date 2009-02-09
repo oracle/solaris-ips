@@ -51,11 +51,14 @@ from pkg.client.filelist import FileListRetrievalError
 import pkg.client.api_errors as api_errors
 from pkg.misc import TransferTimedOutException, TransportException
 import pkg.gui.beadmin as beadm
+import pkg.gui.misc as gui_misc
 import pkg.gui.enumerations as enumerations
 
 class InstallUpdate(progress.ProgressTracker):
-        def __init__(self, list_of_packages, parent, api_o, \
-            ips_update = False, action = -1, be_name = None):
+        def __init__(self, list_of_packages, parent, api_o,
+            ips_update = False, action = -1, be_name = None, 
+            parent_name = "", pkg_list = None, main_window = None,
+            icon_confirm_dialog = None):
                 if action == -1:
                         return
                 progress.ProgressTracker.__init__(self)
@@ -63,6 +66,10 @@ class InstallUpdate(progress.ProgressTracker):
                 self.api_o = api_o
                 self.parent = parent
                 self.be_name = be_name
+                self.parent_name = parent_name
+                self.ipkg_ipkgui_list = pkg_list
+                self.icon_confirm_dialog = icon_confirm_dialog
+                self.w_main_window = main_window
                 self.ips_update = ips_update
                 self.list_of_packages = list_of_packages
                 self.act_phase_last = None
@@ -71,7 +78,6 @@ class InstallUpdate(progress.ProgressTracker):
                 self.current_stage_name = None
                 self.ind_started = None
                 self.ip = None
-                self.ipkg_ipkgui_list = ["SUNWipkg", "SUNWipkg-gui"]
                 self.operations_done = False
                 self.prev_ind_phase = None
                 self.prev_pkg = None
@@ -84,10 +90,12 @@ class InstallUpdate(progress.ProgressTracker):
                 self.stop_bouncing_progress = False
                 self.stopped_bouncing_progress = True
                 self.update_list = []
-                w_tree_dialog = gtk.glade.XML(parent.gladefile, "createplandialog")
-                w_tree_uaconfirm = gtk.glade.XML(parent.gladefile, "ua_confirm_dialog")
+                gladefile = self.parent.application_dir + \
+                    "/usr/share/package-manager/packagemanager.glade"
+                w_tree_dialog = gtk.glade.XML(gladefile, "createplandialog")
+                w_tree_uaconfirm = gtk.glade.XML(gladefile, "ua_confirm_dialog")
                 w_tree_removeconfirm = \
-                    gtk.glade.XML(parent.gladefile, "removeconfirmation")
+                    gtk.glade.XML(gladefile, "removeconfirmation")
                 self.w_dialog = w_tree_dialog.get_widget("createplandialog")
                 self.w_expander = w_tree_dialog.get_widget("expander3")
                 self.w_cancel_button = w_tree_dialog.get_widget("cancelcreateplan")
@@ -112,8 +120,10 @@ class InstallUpdate(progress.ProgressTracker):
                 self.current_stage_icon = self.w_stage1_icon
                 self.current_stage_label_done = None
 
-                self.done_icon = self.parent.get_icon_pixbuf("progress_checkmark")
-                blank_icon = self.parent.get_icon_pixbuf("progress_blank")
+                self.done_icon = gui_misc.get_icon_pixbuf(
+                    self.parent.application_dir, "progress_checkmark")
+                blank_icon = gui_misc.get_icon_pixbuf(
+                    self.parent.application_dir, "progress_blank")
 
                 self.w_stage1_icon.set_from_pixbuf(blank_icon)
                 self.w_stage2_icon.set_from_pixbuf(blank_icon)
@@ -157,8 +167,10 @@ class InstallUpdate(progress.ProgressTracker):
                             % error
 
 
-                self.w_dialog.set_transient_for(self.parent.w_main_window)
-                self.w_ua_dialog.set_transient_for(self.parent.w_main_window)
+                self.w_dialog.set_transient_for(self.w_main_window)
+                self.w_ua_dialog.set_transient_for(self.w_main_window)
+                if self.icon_confirm_dialog != None:  
+                        self.w_ua_dialog.set_icon(self.icon_confirm_dialog)
 
                 if self.action == enumerations.REMOVE:
                         #We are not showing the download stage in the main stage list
@@ -230,6 +242,8 @@ class InstallUpdate(progress.ProgressTracker):
                 self.__proceed_with_stages()
 
         def __ipkg_ipkgui_uptodate(self):
+                if self.ipkg_ipkgui_list == None:
+                        return True
                 upgrade_needed, cre = self.api_o.plan_install(
                     self.ipkg_ipkgui_list, filters = [])
                 return not upgrade_needed
@@ -244,7 +258,7 @@ class InstallUpdate(progress.ProgressTracker):
                 try:
                         if self.action == enumerations.IMAGE_UPDATE:
                                 self.__start_substage(
-                                    _("Ensuring Package Manager is up to date..."), 
+                                    _("Ensuring %s is up to date...") % self.parent_name, 
                                     bounce_progress=True)
                                 opensolaris_image = True
                                 ips_uptodate = True
@@ -313,14 +327,15 @@ class InstallUpdate(progress.ProgressTracker):
                 except api_errors.ProblematicPermissionsIndexException, err:
                         msg = str(err)
                         msg += _("\nFailure of consistent use of pfexec or gksu when "
-                            "running\nPackage Manager is often a source of this problem.")
+                            "running\n%s is often a source of this problem.") % \
+                            self.parent_name
                         msg += _("\nTo rebuild index, please use the terminal command:")
                         msg += _("\n\tpfexec pkg rebuild-index")
                         self.__g_error_stage(msg)
                         return
                 except api_errors.CorruptedIndexException:
                         msg = _("There was an error during installation. The search\n"
-                            "index is corrupted. You might wan't try to fix this\n"
+                            "index is corrupted. You might want try to fix this\n"
                             "problem by running command:\n"
                             "\tpfexec pkg rebuild-index")
                         self.__g_error_stage(msg)
@@ -333,15 +348,15 @@ class InstallUpdate(progress.ProgressTracker):
                 except api_errors.PlanMissingException:
                         msg = _("There was an error during installation.\n"
                             "The Plan of the operation is missing and the operation\n"
-                            "can't be finished. You might wan't try to fix this\n"
-                            "problem by restarting Package Manager\n")
+                            "can't be finished. You might want try to fix this\n"
+                            "problem by restarting %s\n") % self.parent_name
                         self.__g_error_stage(msg)
                         return
                 except api_errors.ImageplanStateException:
                         msg = _("There was an error during installation.\n"
                             "The State of the image is incorrect and the operation\n"
-                            "can't be finished. You might wan't try to fix this\n"
-                            "problem by restarting Package Manager\n")
+                            "can't be finished. You might want try to fix this\n"
+                            "problem by restarting %s\n") % self.parent_name
                         self.__g_error_stage(msg)
                         return
                 except api_errors.CanceledException:
@@ -363,7 +378,7 @@ class InstallUpdate(progress.ProgressTracker):
                                 sys.exc_clear()
 
         def __proceed_with_ipkg_thread(self):
-                self.__start_substage(_("Updating Package Manager"), 
+                self.__start_substage(_("Updating %s") % self.parent_name, 
                     bounce_progress=True)
                 self.__afterplan_information()
                 self.prev_pkg = None
@@ -589,7 +604,7 @@ class InstallUpdate(progress.ProgressTracker):
                         self.parent.shutdown_after_image_update()
 
         def __prompt_to_load_beadm(self):
-                msgbox = gtk.MessageDialog(parent = self.parent.w_main_window,
+                msgbox = gtk.MessageDialog(parent = self.w_main_window,
                     buttons = gtk.BUTTONS_OK_CANCEL, flags = gtk.DIALOG_MODAL,
                     type = gtk.MESSAGE_ERROR, 
                     message_format = _(
