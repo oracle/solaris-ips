@@ -1994,6 +1994,7 @@ To delete this BE, boot into another BE, then return here.</property>
     <property name="type_hint">GDK_WINDOW_TYPE_HINT_DIALOG</property>
     <property name="transient_for">mainwindow</property>
     <property name="has_separator">False</property>
+    <signal name="delete_event" handler="on_repository_delete_event"/>
     <child internal-child="vbox">
       <widget class="GtkVBox" id="dialog-vbox23">
         <property name="visible">True</property>
@@ -2499,6 +2500,7 @@ Note: Changes will occur upon reboot.</property>
     <property name="type_hint">GDK_WINDOW_TYPE_HINT_DIALOG</property>
     <property name="transient_for">repository</property>
     <property name="has_separator">False</property>
+    <signal name="delete_event" handler="on_repositorymodif_delete_event"/>
     <child internal-child="vbox">
       <widget class="GtkVBox" id="dialog-vbox24">
         <property name="visible">True</property>
@@ -3356,6 +3358,7 @@ Click Proceed to continue.</property>
     <property name="type_hint">GDK_WINDOW_TYPE_HINT_DIALOG</property>
     <property name="transient_for">repository</property>
     <property name="has_separator">False</property>
+    <signal name="delete_event" handler="on_sslkeyandcertdialog_delete_event"/>
     <child internal-child="vbox">
       <widget class="GtkVBox" id="dialog-vbox25">
         <property name="visible">True</property>
