@@ -618,6 +618,8 @@ class PackageManager:
                 column.set_sort_column_id(enumerations.MARK_COLUMN)
                 column.set_sort_indicator(True)
                 column.set_cell_data_func(toggle_renderer, self.cell_data_function, None)
+                column.connect_after('clicked', 
+                    self.__application_treeview_column_sorted, None)
                 self.w_application_treeview.append_column(column)
                 column = self.__create_icon_column("", False,
                     enumerations.ICON_COLUMN, True)
@@ -629,11 +631,15 @@ class PackageManager:
                 column.set_sort_column_id(enumerations.NAME_COLUMN)
                 column.set_sort_indicator(True)
                 column.set_cell_data_func(name_renderer, self.cell_data_function, None)
+                column.connect_after('clicked', 
+                    self.__application_treeview_column_sorted, None)
                 self.w_application_treeview.append_column(column)
                 column = self.__create_icon_column(_("Status"), True, 
                     enumerations.STATUS_ICON_COLUMN, True)
                 column.set_sort_column_id(enumerations.STATUS_ICON_COLUMN)
                 column.set_sort_indicator(True)
+                column.connect_after('clicked', 
+                    self.__application_treeview_column_sorted, None)
                 self.w_application_treeview.append_column(column)
                 description_renderer = gtk.CellRendererText()
                 column = gtk.TreeViewColumn(_('Description'), 
@@ -643,6 +649,8 @@ class PackageManager:
                 column.set_sort_indicator(True)
                 column.set_cell_data_func(description_renderer,
                     self.cell_data_function, None)
+                column.connect_after('clicked', 
+                    self.__application_treeview_column_sorted, None)
                 self.w_application_treeview.append_column(column)
                 #Added selection listener
                 self.package_selection = self.w_application_treeview.get_selection()
@@ -793,6 +801,9 @@ class PackageManager:
                         self.__set_accessible_categories_status(model, itr)
                         itr = model.iter_next(itr)
 
+        def __application_treeview_column_sorted(self, widget, user_data):
+                self.__set_accessible_visible_status(False)
+
         def __application_treeview_size_allocate(self, widget, allocation, user_data):
                 # We ignore any changes in the size during initialization.
                 if self.application_treeview_initialized:
@@ -819,7 +830,7 @@ class PackageManager:
                             STATUS_COLUMN_INDEX) 
                         obj.set_image_description(desc)
 
-        def __set_accessible_visible_status(self):
+        def __set_accessible_visible_status(self, check_range = True):
                 self.visible_status_id = 0
                 if self.a11y_application_treeview.get_n_accessible_children() == 0:
                         # accessibility is not enabled
@@ -833,18 +844,19 @@ class PackageManager:
                 # We try to minimize the range of accessible objects
                 # on which we set image descriptions
                 if self.application_treeview_range != None:
-                        old_start = self.application_treeview_range[0][0]
-                        old_end = self.application_treeview_range[1][0]
-                         # Old range is the same or smaller than new range
-                         # so do nothing
-                        if start >= old_start and end <= old_end:
-                                return
-                        if start < old_end:
-                                if end < old_end:
-                                        if end >= old_start:
-                                                end = old_start 
-                                else:
-                                        start = old_end
+                        if check_range:
+                                old_start = self.application_treeview_range[0][0]
+                                old_end = self.application_treeview_range[1][0]
+                                 # Old range is the same or smaller than new range
+                                 # so do nothing
+                                if start >= old_start and end <= old_end:
+                                        return
+                                if start < old_end:
+                                        if end < old_end:
+                                                if end >= old_start:
+                                                        end = old_start 
+                                        else:
+                                                start = old_end
                 self.application_treeview_range = visible_range
                 model = self.w_application_treeview.get_model()
                 itr = model.get_iter_from_string(str(start))
@@ -2450,7 +2462,7 @@ class PackageManager:
                     sel_str + ', ' + broken_str + '.')
 
 
-        def update_package_list(self, update_list, action):
+        def update_package_list(self, update_list):
                 img = self.api_o.img
                 img.clear_pkg_state()
                 img.load_catalogs(self.pr)
