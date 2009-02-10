@@ -1,0 +1,5 @@
+package SUNWttf-unfonts-ko-core
+classification "System/Fonts"
+import SUNWttf-unfonts-ko-core exclude usr/openwin
+chattr_glob * edit path usr/openwin usr/X11
+end package

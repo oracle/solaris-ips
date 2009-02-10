@@ -1,0 +1,7 @@
+package SUNWlibvisual
+classification "System/Multimedia Libraries"
+import SUNWlibvisual exclude \
+	usr/share/locale/es_AR/LC_MESSAGES/libvisual-plugins-0.4.mo \
+	usr/share/locale/es_ES/LC_MESSAGES/libvisual-plugins-0.4.mo
+import SUNWlibvisual-devel
+end package

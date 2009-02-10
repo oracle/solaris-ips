@@ -1,0 +1,5 @@
+package SUNWclutter-gst
+classification "System/Multimedia Libraries"
+import SUNWclutter-gst
+import SUNWclutter-gst-devel
+end package

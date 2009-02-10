@@ -1,0 +1,5 @@
+package SUNWcodeina
+classification "Applications/Sound and Video"
+import SUNWcodeina
+import SUNWcodeina-root
+end package

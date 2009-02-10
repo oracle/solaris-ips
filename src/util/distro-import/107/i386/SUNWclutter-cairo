@@ -1,0 +1,5 @@
+package SUNWclutter-cairo
+classification "System/Multimedia Libraries"
+import SUNWclutter-cairo
+import SUNWclutter-cairo-devel
+end package

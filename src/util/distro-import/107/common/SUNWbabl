@@ -1,0 +1,5 @@
+package SUNWbabl
+classification "System/Multimedia Libraries"
+import SUNWbabl
+import SUNWbabl-devel
+end package

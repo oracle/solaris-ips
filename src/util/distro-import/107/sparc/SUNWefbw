@@ -1,0 +1,6 @@
+package SUNWefbw
+classification "Drivers/Display"
+import SUNWefbw
+depend SUNWefb
+depend SUNWxorg-server
+end package

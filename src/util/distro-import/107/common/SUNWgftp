@@ -1,0 +1,4 @@
+package SUNWgftp
+classification "Applications/System Utilities"
+import SUNWgftp
+end package

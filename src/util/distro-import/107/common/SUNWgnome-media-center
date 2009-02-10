@@ -1,0 +1,4 @@
+package SUNWgnome-media-center
+classification "Applications/Sound and Video"
+import SUNWgnome-media-center
+end package

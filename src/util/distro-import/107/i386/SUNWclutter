@@ -1,0 +1,5 @@
+package SUNWclutter
+classification "System/Multimedia Libraries"
+import SUNWclutter
+import SUNWclutter-devel
+end package

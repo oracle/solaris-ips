@@ -1,0 +1,5 @@
+package SUNWclutter-gtk
+classification "System/Multimedia Libraries"
+import SUNWclutter-gtk
+import SUNWclutter-gtk-devel
+end package

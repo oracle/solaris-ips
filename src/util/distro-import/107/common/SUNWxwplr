@@ -1,0 +1,8 @@
+package SUNWxwplr
+classification "System/X11"
+import SUNWxwplr exclude var/svc/manifest/application/x11/xvnc-inetd.xml
+$(sparc_ONLY)drop var/svc/manifest/application/x11/x11-server.xml
+$(sparc_ONLY)from SUNWfixes import
+$(sparc_ONLY)var/svc/manifest/application/x11/x11-server.xml
+$(sparc_ONLY)end import
+end package

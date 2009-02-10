@@ -1,0 +1,5 @@
+package SUNWlibical
+classification "Desktop (GNOME)/Libraries"
+import SUNWlibical
+import SUNWlibical-devel
+end package

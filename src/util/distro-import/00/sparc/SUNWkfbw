@@ -7,4 +7,6 @@ import SUNWkfbw exclude \
 	usr/openwin/server/etc/OWconfig \
 	usr/openwin/server/modules \
 	usr/openwin/server/modules/ddxSUNWkfb.so.1
+depend SUNWkfb
+depend SUNWxorg-server
 end package

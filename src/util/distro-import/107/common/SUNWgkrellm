@@ -1,0 +1,5 @@
+package SUNWgkrellm
+classification "Applications/System Utilities"
+import SUNWgkrellm
+import SUNWgkrellm-devel
+end package

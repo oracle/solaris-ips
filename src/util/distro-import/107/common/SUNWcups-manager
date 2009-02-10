@@ -1,0 +1,5 @@
+package SUNWcups-manager
+classification "System/Administration and Configuration"
+import SUNWcups-manager
+import SUNWcups-manager-root
+end package

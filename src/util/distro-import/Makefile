@@ -32,8 +32,9 @@ ARCH=i386
 # replace as needed with a local solaris install image
 #
 WOS_PKGS=/net/netinstall.sfbay/export/nv/x/$(BUILDID)/Solaris_11/Product
-NONWOS_PKGS=/net/paradise.sfbay/export/integrate_dock/nv/nv_osol0904/all \
-            /net/paradise.sfbay/export/integrate_dock/nv/nv_osol0904/$(ARCH)
+NONWOS_DOCK=nv_osoldev
+NONWOS_PKGS=/net/paradise.sfbay/export/integrate_dock/nv/$(NONWOS_DOCK)/all \
+            /net/paradise.sfbay/export/integrate_dock/nv/$(NONWOS_DOCK)/$(ARCH)
 
 TEST_PKGS=
 REPO=http://localhost:10000
@@ -86,6 +87,7 @@ GLOBAL_CHATTRS_101 = $(GLOBAL_CHATTRS_BASE) fonts gnome
 GLOBAL_CHATTRS_101a = $(GLOBAL_CHATTRS_101)
 GLOBAL_CHATTRS_105 = $(GLOBAL_CHATTRS_101)
 GLOBAL_CHATTRS_106 = $(GLOBAL_CHATTRS_101) variants
+GLOBAL_CHATTRS_107 = $(GLOBAL_CHATTRS_106)
 GLOBAL_CHATTRS = $(GLOBAL_CHATTRS_$(BUILDID))
 
 SOLARIS.PY=./solaris.py -b 0.$(BUILDID) $(EXTRA_OPTIONS) -T \*.py \
@@ -124,6 +126,7 @@ ELIDED_FILES_101 = $(ELIDED_FILES_100a)
 ELIDED_FILES_101a = $(ELIDED_FILES_100a)
 ELIDED_FILES_105 = $(ELIDED_FILES_100a)
 ELIDED_FILES_106 = $(ELIDED_FILES_BASE)
+ELIDED_FILES_107 = $(ELIDED_FILES_BASE)
 ELIDED_FILES = $(ELIDED_FILES_$(BUILDID))
 
 #
@@ -180,6 +183,8 @@ CACHED_FILES_101a = $(CACHED_FILES_101)					\
 	var/svc/manifest/system/xvm/vnc-config.xml
 CACHED_FILES_105 = $(CACHED_FILES_101a)
 CACHED_FILES_106 = $(CACHED_FILES_101a)
+CACHED_FILES_107 = $(CACHED_FILES_101a)					\
+	var/svc/manifest/application/x11/x11-server.xml
 CACHED_FILES = $(CACHED_FILES_$(BUILDID))
 
 FIX_FILES_BASE =				\
@@ -236,6 +241,7 @@ FIX_FILES_101 = $(FIX_FILES_99)
 FIX_FILES_101a = $(FIX_FILES_99)
 FIX_FILES_105 = $(FIX_FILES_BASE)
 FIX_FILES_106 = $(FIX_FILES_BASE)
+FIX_FILES_107 = $(FIX_FILES_BASE)
 FIX_FILES = $(FIX_FILES_$(BUILDID))
 
 JDKFILES = LICENSE README.html
@@ -285,7 +291,8 @@ BUILDS=	75a			\
 	101			\
 	101a			\
 	105			\
-	106
+	106			\
+	107
 
 #
 # Starting in build 80, filelist.ramdisk began moving between various
@@ -298,7 +305,7 @@ FILELIST_RAMDISK_PKG_74		= SUNWcakr.i
 FILELIST_RAMDISK_PKG_72		= SUNWcakr.i
 FILELIST_RAMDISK_PKG_71		= SUNWcakr.i
 
-default:	106/slim_import
+default:	107/slim_import
 
 cluster.import:	$(WOS_PKGS)/.clustertoc Makefile
 	./clustertoc2import.py $(WOS_PKGS)/.clustertoc | \
@@ -439,6 +446,7 @@ proto:	Makefile
 	mkdir -p proto/usr/share/applications
 	mkdir -p proto/usr/share/man
 	mkdir -p proto/var/svc/manifest/application/graphical-login
+	mkdir -p proto/var/svc/manifest/application/x11
 	mkdir -p proto/var/svc/manifest/system/xvm
 	mkdir -p proto/var/svc/profile
 
@@ -469,6 +477,7 @@ INCLUDE_PATH_101 = 101:$(INCLUDE_PATH_100a)
 INCLUDE_PATH_101a = 101a:$(INCLUDE_PATH_101)
 INCLUDE_PATH_105 = 105:104:103:102:$(INCLUDE_PATH_101a)
 INCLUDE_PATH_106 = 106:$(INCLUDE_PATH_105)
+INCLUDE_PATH_107 = 107:$(INCLUDE_PATH_106)
 
 import:	cluster.import $(TMPPKGS)
 	$(SOLARIS.PY) -s $(REPO) -w $(WOS_PKGS) $(ELIDED_FILES:%=-D %) \

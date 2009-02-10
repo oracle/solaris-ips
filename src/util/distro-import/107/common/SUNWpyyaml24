@@ -1,0 +1,4 @@
+package SUNWpyyaml24
+classification "Development/Python"
+import SUNWpyyaml24
+end package
