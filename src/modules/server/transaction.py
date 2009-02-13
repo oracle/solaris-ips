@@ -19,26 +19,22 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
-import cherrypy
+import calendar
+import datetime
 import errno
-import httplib
-import logging
 import os
 import re
 import sha
 import shutil
-import datetime
-import calendar
 import urllib
 
-import pkg.actions
 import pkg.fmri as fmri
 import pkg.misc as misc
-import pkg.portable as portable
 from pkg.pkggzip import PkgGzipFile
+import pkg.portable as portable
 
 try:
         import pkg.elf as elf
@@ -46,9 +42,58 @@ try:
 except ImportError:
         haveelf = False
 
+class TransactionError(Exception):
+        """Base exception class for all Transaction exceptions."""
+
+        def __init__(self, *args):
+                Exception.__init__(self, *args)
+                if args:
+                        self.data = args[0]
+                else:
+                        self.data = None
+
+        def __str__(self):
+                return str(self.data)
+
+
+class TransactionContentError(TransactionError):
+        """Used to indicate that an unexpected error was encountered while
+        processing the payload content for an operation."""
+
+        def __str__(self):
+                return _("Unrecognized or malformed data in operation payload: "
+                    "'%s'.") % self.data
+
+
+class TransactionOperationError(TransactionError):
+        """Used to indicate that a Transaction operation failed.
+
+        Data should be provided as keyword arguments."""
+
+        def __init__(self, *args, **kwargs):
+                TransactionError.__init__(self, *args)
+                if kwargs is None:
+                        kwargs = {}
+                self.args = kwargs
+
+        def __str__(self):
+                if "client_release" in self.args:
+                        return _("The specified client_release is invalid: "
+                            "'%s'") % self.args.get("msg", "")
+                elif "fmri_version" in self.args:
+                        return _("'The specified FMRI, '%s', has an invalid "
+                            "version.") % self.args.get("pfmri", "")
+                elif "valid_new_fmri" in self.args:
+                        return _("The specified FMRI, '%s', already exists or "
+                            "has been restricted.") % self.args.get("pfmri", "")
+                elif "pfmri" in self.args:
+                        return _("The specified FMRI, '%s', is invalid.") % \
+                            self.args["pfmri"]
+                return str(self.data)
+
 class Transaction(object):
         """A Transaction is a server-side object used to represent the set of
-        incoming changes to a Package.  Manipulation of Transaction objects in
+        incoming changes to a package.  Manipulation of Transaction objects in
         the repository server is generally initiated by a package publisher,
         such as pkgsend(1M)."""
 
@@ -69,64 +114,59 @@ class Transaction(object):
                 # XXX should the timestamp be in ISO format?
                 return "%d_%s" % \
                     (calendar.timegm(self.open_time.utctimetuple()),
-                    urllib.quote("%s" % self.fmri, ""))
+                    urllib.quote(str(self.fmri), ""))
 
-        def open(self, cfg, *tokens):
+        def open(self, cfg, client_release, pfmri):
+                # XXX needs to be done in __init__
                 self.cfg = cfg
 
-                request = cherrypy.request
-                self.client_release = request.headers.get("Client-Release",
-                    None)
-                if self.client_release == None:
-                        # If client_release is not defined, then this request is
-                        # invalid.
-                        #
-                        # XXX should test whether client-release string is
-                        # a valid dotsequence
-                        return (httplib.BAD_REQUEST,
-                            "Client-Release header missing") 
+                if client_release is None:
+                        raise TransactionOperationError(client_release=None,
+                            pfmri=pfmri)
+                if pfmri is None:
+                        raise TransactionOperationError(pfmri=None)
 
-                try:
-                        self.pkg_name = tokens[0]
-                        # cherrypy decoded it, but we actually need it encoded.
-                        self.esc_pkg_name = urllib.quote("%s" % tokens[0], "")
-                except IndexError:
-                        return (httplib.BAD_REQUEST, "Missing Package Name")
+                self.client_release = client_release
+                self.pkg_name = pfmri
+                self.esc_pkg_name = urllib.quote(pfmri, "")
 
+                # record transaction metadata: opening_time, package, user
                 self.open_time = datetime.datetime.utcnow()
-
-                # record transaction metadata:  opening_time, package, user
 
                 # attempt to construct an FMRI object
                 try:
                         self.fmri = fmri.PkgFmri(self.pkg_name,
                             self.client_release)
                 except fmri.IllegalFmri, e:
-                        return (httplib.BAD_REQUEST, str(e))
+                        raise TransactionOperationError(e)
 
                 # We must have a version supplied for publication.
-                if self.fmri.version == None:
-                        return (httplib.BAD_REQUEST, "Missing Version")
+                if self.fmri.version is None:
+                        raise TransactionOperationError(fmri_version=None,
+                            pfmri=pfmri)
 
                 self.fmri.set_timestamp(self.open_time)
 
-                # Check that the new FMRI's version is valid.  I.e. the package
-                # has not been renamed or frozen for the new version.
-                if not self.cfg.catalog.valid_new_fmri(self.fmri):
-                        return (httplib.BAD_REQUEST, "Invalid version")
+                # Check that the new FMRI's version is valid.  In other words,
+                # the package has not been renamed or frozen for the new
+                # version.
+                if not cfg.catalog.valid_new_fmri(self.fmri):
+                        raise TransactionOperationError(valid_new_fmri=False,
+                            pfmri=pfmri)
 
                 trans_basename = self.get_basename()
-                self.dir = "%s/%s" % (self.cfg.trans_root, trans_basename)
+                self.dir = "%s/%s" % (cfg.trans_root, trans_basename)
                 os.makedirs(self.dir)
 
                 #
                 # always create a minimal manifest
                 #
-                tfile = file("%s/manifest" % self.dir, "a")
+                tfile = file("%s/manifest" % self.dir, "ab")
                 print >> tfile,  "# %s, client release %s" % (self.pkg_name,
                     self.client_release)
                 tfile.close()
 
+                # XXX:
                 # validate that this version can be opened
                 #   if we specified no release, fail
                 #   if we specified a release without branch, open next branch
@@ -138,8 +178,6 @@ class Transaction(object):
 
                 # if not found, create package
                 # set package state to TRANSACTING
-
-                return (httplib.OK, None)
 
         def reopen(self, cfg, trans_dir):
                 """The reopen() method is invoked on server restart, to
@@ -158,9 +196,10 @@ class Transaction(object):
 
                 self.dir = "%s/%s" % (self.cfg.trans_root, self.get_basename())
 
-        def close(self):
-                response = cherrypy.response
-
+        def close(self, refresh_index=True):
+                """Closes an open transaction, returning the published FMRI for
+                the corresponding package, and its current state in the catalog.
+                """
                 def split_trans_id(tid):
                         m = re.match("(\d+)_(.*)", tid)
                         return m.group(1), urllib.unquote(m.group(2))
@@ -171,102 +210,42 @@ class Transaction(object):
                 # set package state to SUBMITTED
                 pkg_state = "SUBMITTED"
 
-                # attempt to reconcile dependencies
-                # XXX These shouldn't be booleans, but instead return non-empty
-                # lists for the unsatisified cases.
-                declarations_good = self.has_satisfied_declarations()
-                implicit_good = self.has_satisfied_implicit()
+                # set state to PUBLISHED
+                pkg_fmri, pkg_state = self.accept_publish(refresh_index)
 
-                # if reconciled, set state to PUBLISHED
-                if declarations_good and implicit_good:
-                        pkg_fmri, pkg_state = self.accept_publish()
-                else:
-                        pkg_fmri = self.accept_incomplete()
-                        pkg_state = "INCOMPLETE"
-                        # XXX Build a response from our lists of unsatisfied
-                        # dependencies.
-
+                # Discard the in-flight transaction data.
                 try:
-                        shutil.rmtree("%s/%s" % (self.cfg.trans_root, trans_id))
-                except:
-                        cherrypy.log(
-                            "pkg.depotd: couldn't remove transaction %s"
-                            % trans_id, severity = logging.CRITICAL,
-                            traceback = True)
+                        shutil.rmtree(os.path.join(self.cfg.trans_root,
+                            trans_id))
+                except EnvironmentError, e:
+                        # Ensure that the error goes to stderr, and then drive
+                        # on as the actual package was published.
+                        misc.emsg(e)
 
-                response.headers['Package-FMRI'] = pkg_fmri
-                response.headers['State'] = pkg_state
-                return
+                return (pkg_fmri, pkg_state)
 
         def abandon(self):
                 trans_id = self.get_basename()
-                # XXX refine try/except
-                #
                 # state transition from TRANSACTING to ABANDONED
-                try:
-                        shutil.rmtree("%s/%s" % (self.cfg.trans_root, trans_id))
-                except:
-                        raise cherrypy.HTTPError(httplib.NOT_FOUND)
+                shutil.rmtree("%s/%s" % (self.cfg.trans_root, trans_id))
+                return "ABANDONED"
 
-        def add_content(self, entry_type):
-                """XXX We're currently taking the file from the HTTP request
-                directly onto the heap, to make the hash computation convenient.
-                We then do the compression as a sequence of buffers.  To handle
-                large files, we'll need to process the incoming data as a
-                sequence of buffers as well, with intermediate storage to
-                disk."""
+        def add_content(self, action):
+                """Adds the content of the provided action (if applicable) to
+                the Transaction."""
 
-                request = cherrypy.request
-                attrs = dict(
-                    val.split("=", 1)
-                    for hdr, val in request.headers.items()
-                    if hdr.lower().startswith("x-ipkg-setattr")
-                )
+                size = int(action.attrs.get("pkg.size", 0))
 
-                # If any attributes appear to be lists, make them lists.
-                for a in attrs:
-                        if attrs[a].startswith("[") and attrs[a].endswith("]"):
-                                attrs[a] = eval(attrs[a])
+                if action.name in ("file", "license") and size <= 0:
+                        # XXX hack for empty files
+                        action.data = lambda: open(os.devnull, "rb")
 
-                size = int(request.headers.get("Content-Length", 0))
-
-                # The request object always has a readable rfile, even if it'll
-                # return no data.  We check ahead of time to see if we'll get
-                # any data, and only create the object with data if there will
-                # be any.
-                rfile = None
-                if size > 0:
-                        rfile = request.rfile
-                # XXX Ugly special case to handle empty files.
-                elif entry_type == "file":
-                        rfile = os.devnull
-                action = pkg.actions.types[entry_type](rfile, **attrs)
-
-                # XXX Once actions are labelled with critical nature.
-                # if entry_type in critical_actions:
-                #         self.critical = True
-
-                # Record the size of the payload, if there is one.
-                if size > 0:
-                        action.attrs["pkg.size"] = str(size)
-
-                if action.data != None:
+                if action.data is not None:
                         bufsz = 64 * 1024
 
-                        # Read in the data in chunks and compute the SHA1
-                        # hash as it comes in.  A large read on 
-                        # Windows XP fails.
-                        fhash = sha.new()
-                        databufs = []
-                        sz = size
-                        while sz > 0:
-                                data = action.data().read(min(bufsz, sz))
-                                fhash.update(data)
-                                databufs.append(data)
-                                sz -= len(data)
-                        data = "".join(databufs)
+                        fname, data = misc.get_data_digest(action.data(),
+                            length=size, return_content=True)
 
-                        fname = fhash.hexdigest()
                         action.hash = fname
 
                         # Extract ELF information
@@ -276,22 +255,25 @@ class Transaction(object):
                                 elf_file = open(elf_name, "wb")
                                 elf_file.write(data)
                                 elf_file.close()
-                                elf_info = elf.get_info(elf_name)
+
                                 try:
-                                    elf_hash = elf.get_dynamic(elf_name)["hash"]
-                                    try:
+                                        elf_info = elf.get_info(elf_name)
+                                except elf.ElfError, e:
+                                        raise TransactionContentError(e)
+
+                                try:
+                                        elf_hash = elf.get_dynamic(
+                                            elf_name)["hash"]
                                         action.attrs["elfhash"] = elf_hash
-                                    except KeyError:
-                                        pass
                                 except elf.ElfError:
-                                    pass
+                                        pass
                                 action.attrs["elfbits"] = str(elf_info["bits"])
                                 action.attrs["elfarch"] = elf_info["arch"]
                                 os.unlink(elf_name)
 
                         #
                         # This check prevents entering into the depot store
-                        # a file which is already there in the store. 
+                        # a file which is already there in the store.
                         # This takes CPU load off the depot on large imports
                         # of mostly-the-same stuff.  And in general it saves
                         # disk bandwidth, and on ZFS in particular it saves
@@ -325,7 +307,7 @@ class Transaction(object):
                                 ofile.close()
 
                         data = None
-                
+
                         # Now that the file has been compressed, determine its
                         # size and store that as an attribute in the manifest
                         # for the file.
@@ -356,32 +338,20 @@ class Transaction(object):
 
                 return
 
-        def add_meta(self):
-                return
-
-        def has_satisfied_declarations(self):
-                """Evaluate package's stated dependencies against catalog."""
-                return True
-
-        def has_satisfied_implicit(self):
-                """Inventory all files for their implicit dependencies; evaluate
-                dependencies against ."""
-                return True
-
-        def accept_publish(self):
+        def accept_publish(self, refresh_index=True):
                 """Transaction meets consistency criteria, and can be published.
                 Publish, making appropriate catalog entries."""
 
                 # XXX If we are going to publish, then we should augment
                 # our response with any other packages that moved to
                 # PUBLISHED due to the package's arrival.
-
                 self.publish_package()
                 self.cfg.updatelog.add_package(self.fmri, self.critical)
 
-                self.cfg.catalog.refresh_index()
+                if refresh_index:
+                        self.cfg.catalog.refresh_index()
 
-                return ("%s" % self.fmri, "PUBLISHED")
+                return (str(self.fmri), "PUBLISHED")
 
         def publish_package(self):
                 """This method is called by the server to publish a package.
@@ -394,7 +364,7 @@ class Transaction(object):
                 cfg = self.cfg
 
                 authority, pkg_name, version = self.fmri.tuple()
-                pkgdir = "%s/%s" % (cfg.pkg_root, urllib.quote(pkg_name, ""))
+                pkgdir = os.path.join(cfg.pkg_root, urllib.quote(pkg_name, ""))
 
                 # If the directory isn't there, create it.
                 if not os.path.exists(pkgdir):
@@ -402,16 +372,17 @@ class Transaction(object):
 
                 # mv manifest to pkg_name / version
                 # A package may have no files, so there needn't be a manifest.
-                if os.path.exists("%s/manifest" % self.dir):
-                        portable.rename("%s/manifest" % self.dir, "%s/%s" %
-                            (pkgdir, urllib.quote(str(self.fmri.version), "")))
+                mpath = os.path.join(self.dir, "manifest")
+                if os.path.exists(mpath):
+                        portable.rename(mpath, os.path.join(pkgdir,
+                            urllib.quote(str(self.fmri.version), "")))
 
                 # Move each file to file_root, with appropriate directory
                 # structure.
                 for f in os.listdir(self.dir):
                         path = misc.hash_file_name(f)
-                        src_path = "%s/%s" % (self.dir, f)
-                        dst_path = "%s/%s" % (cfg.file_root, path)
+                        src_path = os.path.join(self.dir, f)
+                        dst_path = os.path.join(cfg.file_root, path)
                         try:
                                 portable.rename(src_path, dst_path)
                         except OSError, e:
@@ -432,9 +403,3 @@ class Transaction(object):
                                         if e.errno != errno.EEXIST:
                                                 raise
                                 portable.rename(src_path, dst_path)
-
-        def accept_incomplete(self):
-                """Transaction fails consistency criteria, and can be published.
-                Make appropriate catalog entries."""
-                return
-

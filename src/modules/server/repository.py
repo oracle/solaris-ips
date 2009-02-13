@@ -19,601 +19,331 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
-import cherrypy
-from cherrypy.lib.static import serve_file
-
-import cStringIO
 import errno
-import httplib
-import inspect
-import logging
 import os
-import re
-import socket
-import tarfile
-# Without the below statements, tarfile will trigger calls to getpwuid and
-# getgrgid for every file downloaded.  This in turn leads to nscd usage which
-# limits the throughput of the depot process.  Setting these attributes to
-# undefined causes tarfile to skip these calls in tarfile.gettarinfo().  This
-# information is unnecesary as it will not be used by the client.
-tarfile.pwd = None
-tarfile.grp = None
 
-import urllib
-
-import pkg
 import pkg.catalog as catalog
 import pkg.fmri as fmri
-import pkg.manifest as manifest
 import pkg.misc as misc
-import pkg.version as version
-
-import pkg.server.face as face
 import pkg.server.repositoryconfig as rc
 import pkg.server.transaction as trans
+import pkg.version as version
 
-class Dummy(object):
-        """ Dummy object used for dispatch method mapping. """
-        pass
+class RepositoryError(Exception):
+        """Base exception class for all Repository exceptions."""
+
+        def __init__(self, *args):
+                Exception.__init__(self, *args)
+                if args:
+                        self.data = args[0]
+
+        def __str__(self):
+                return str(self.data)
+
+
+class RepositoryCatalogNoUpdatesError(RepositoryError):
+        """Used to indicate that no updates are available for the catalog.  The
+        first argument should be the type of updates requested; the second
+        should be date the catalog was last modified."""
+
+        def __init__(self, *args):
+                RepositoryError.__init__(self, *args)
+                if args:
+                        self.last_modified = args[1]
+
+
+class RepositoryFileNotFoundError(RepositoryError):
+        """Used to indicate that the hash name provided for the requested file
+        does not exist."""
+
+        def __str__(self):
+                return _("No file could be found for the specified "
+                    "hash name: '%s'.") % self.data
+
+
+class RepositoryInvalidFMRIError(RepositoryError):
+        """Used to indicate that the FMRI provided is invalid."""
+
+        def __str__(self):
+                return _("The specified FMRI '%s' is invalid.") % self.data
+
+
+class RepositoryInvalidTransactionIDError(RepositoryError):
+        """Used to indicate that an invalid Transaction ID was supplied."""
+
+        def __str__(self):
+                return _("The specified Transaction ID '%s' is invalid.") % \
+                    self.data
+
+
+class RepositoryManifestNotFoundError(RepositoryError):
+        """Used to indicate that the requested manifest could not be found."""
+
+        def __str__(self):
+                return _("No manifest could be found for the FMRI: '%s'.") % \
+                    self.data
+
+
+class RepositoryRenameFailureError(RepositoryError):
+        """Used to indicate that the rename could not be performed.  The first
+        argument should be the object representing the duplicate FMRI."""
+
+        def __str__(self):
+                return _("Unable to rename the request FMRI: '%s'; ensure that "
+                    "the source FMRI exists in the catalog and that the "
+                    "destination FMRI does not already exist in the "
+                    "catalog.") % self.data
+
+
+class RepositorySearchTokenError(RepositoryError):
+        """Used to indicate that the token(s) provided to search were undefined
+        or invalid."""
+
+        def __str__(self):
+                if self.data is None:
+                        return _("No token was provided to search.") % self.data
+
+                return _("The specified search token '%s' is invalid.") % \
+                    self.data
+
+
+class RepositorySearchUnavailableError(RepositoryError):
+        """Used to indicate that search is not currently available."""
+
+        def __str__(self):
+                return _("Search functionality is temporarily unavailable.")
+
 
 class Repository(object):
-        """ Repository configuration and state object used as an abstraction
-            abstraction layer above our web framework and the underlying objects
-            that perform various operations.  This also should make it easy (in
-            theory) to instantiate and manage multiple repositories for a single
-            depot process. """
-
-        REPO_OPS_DEFAULT = [
-                "versions",
-                "search",
-                "catalog",
-                "info",
-                "manifest",
-                "filelist",
-                "rename",
-                "file",
-                "open",
-                "close",
-                "abandon",
-                "add" ]
-
-        REPO_OPS_READONLY = [
-                "versions",
-                "search",
-                "catalog",
-                "info",
-                "manifest",
-                "filelist",
-                "file" ]
-
-        REPO_OPS_MIRROR = [
-                "versions",
-                "filelist",
-                "file" ]
+        """A Repository object is a representation of data contained within a
+        pkg(5) repository and an interface to manipulate it."""
 
         def __init__(self, scfg, cfgpathname=None):
-                """ Initialise and map the valid operations for the repository.
-                    While doing so, ensure that the operations have been
-                    explicitly "exposed" for external usage. """
+                """Prepare the repository for use."""
 
+                self.cfgpathname = None
+                self.rcfg = None
                 self.scfg = scfg
+                self.__searching = False
+                self.load_config(cfgpathname)
+
+        def load_config(self, cfgpathname=None):
+                """Load stored configuration data and configure the repository
+                appropriately."""
+
                 default_cfg_path = False
 
-                # Now load our repository configuration / metadata and
-                # populate our repository.id if needed.
-                if cfgpathname == None:
-                        cfgpathname = os.path.join(scfg.repo_root, "cfg_cache")
+                # Now load our repository configuration / metadata.
+                if cfgpathname is None:
+                        cfgpathname = os.path.join(self.scfg.repo_root,
+                            "cfg_cache")
                         default_cfg_path = True
 
-                # Check to see if our configuration file exists first.
-                if os.path.exists(cfgpathname):
+                # Create or load the repository configuration.
+                try:
                         self.rcfg = rc.RepositoryConfig(pathname=cfgpathname)
-                elif not default_cfg_path:
-                        raise RuntimeError("User specified repo-config-file, "
-                            "%s\nnot found." % cfgpathname)
-                else:
-                        # If it doesn't exist, just create a new object, it
-                        # will automatically be populated with sane defaults.
+                except RuntimeError:
+                        if not default_cfg_path:
+                                raise
+
+                        # If it doesn't exist, just create a new object, it will
+                        # automatically be populated with sane defaults.
                         self.rcfg = rc.RepositoryConfig()
 
-                # Allow our interface module to do any startup work.
-                face.init(scfg, self.rcfg)
+                self.cfgpathname = cfgpathname
 
-                # While our configuration can be parsed during
-                # initialization, no changes can be written to disk in
-                # readonly mode.
+        def write_config(self):
+                """Save the repository's current configuration data."""
 
-                # Save the new configuration (or refresh existing).
+                # No changes should be written to disk in readonly mode.
+                if self.scfg.is_read_only():
+                        return
+
+                # Save a new configuration (or refresh existing).
                 try:
-                        self.rcfg.write(cfgpathname)
+                        self.rcfg.write(self.cfgpathname)
                 except EnvironmentError, e:
+                        # If we're unable to write due to the following errors,
+                        # it isn't critical to the operation of the repository.
                         if e.errno not in (errno.EPERM, errno.EACCES,
                             errno.EROFS):
                                 raise
 
-                self.vops = {}
-
-                if scfg.is_mirror():
-                        self.ops_list = self.REPO_OPS_MIRROR
-                elif scfg.is_read_only():
-                        self.ops_list = self.REPO_OPS_READONLY
-                else:
-                        self.ops_list = self.REPO_OPS_DEFAULT
-
-                for name, func in inspect.getmembers(self, inspect.ismethod):
-                        m = re.match("(.*)_(\d+)", name)
-
-                        if not m:
-                                continue
-
-                        op = m.group(1)
-                        ver = m.group(2)
-
-                        if op not in self.ops_list:
-                                continue
-
-                        func.__dict__['exposed'] = True
-
-                        if op in self.vops:
-                                self.vops[op].append(ver)
-                        else:
-                                # We need a Dummy object here since we need to
-                                # be able to set arbitrary attributes that
-                                # contain function pointers to our object
-                                # instance.  CherryPy relies on this for its
-                                # dispatch tree mapping mechanism.  We can't
-                                # use other object types here since Python
-                                # won't let us set arbitary attributes on them.
-                                setattr(self, op, Dummy())
-                                self.vops[op] = [ver]
-
-                        opattr = getattr(self, op)
-                        setattr(opattr, ver, func)
-
-        @cherrypy.expose
-        def default(self, *tokens, **params):
-                """ Any request that is not explicitly mapped to the repository
-                    object will be handled by the "externally facing" server
-                    code instead. """
-
-                op = None
-                if len(tokens) > 0:
-                        op = tokens[0]
-
-                if op in self.REPO_OPS_DEFAULT and op not in self.vops:
-                        raise cherrypy.HTTPError(httplib.NOT_FOUND,
-                            "Operation not supported in current server mode.")
-                elif op not in self.vops:
-                        request = cherrypy.request
-                        response = cherrypy.response
-                        return face.respond(self.scfg, self.rcfg,
-                            request, response, *tokens, **params)
-
-                # If we get here, we know that 'operation' is supported.
-                # Ensure that we have a integer protocol version.
-                try:
-                        ver = int(tokens[1])
-                except IndexError:
-                        raise cherrypy.HTTPError(httplib.BAD_REQUEST,
-                            "Missing version\n")
-                except ValueError:
-                        raise cherrypy.HTTPError(httplib.BAD_REQUEST,
-                            "Non-integer version\n")
-
-                # Assume 'version' is not supported for the operation.
-                msg = "Version '%s' not supported for operation '%s'\n" \
-                    % (ver, op)
-                raise cherrypy.HTTPError(httplib.NOT_FOUND, msg)
-
-        @cherrypy.tools.response_headers(headers = \
-            [('Content-Type','text/plain')])
-        def versions_0(self, *tokens):
-                """ Output a text/plain list of valid operations, and their
-                    versions, supported by the repository. """
-
-                versions = "pkg-server %s\n" % pkg.VERSION
-                versions += "\n".join(
-                    "%s %s" % (op, " ".join(vers))
-                    for op, vers in self.vops.iteritems()
-                ) + "\n"
-                return versions
-
-        def search_0(self, *tokens):
-                """ Based on the request path, return a list of packages that
-                    match the specified criteria. """
-
-                response = cherrypy.response
+        def abandon(self, trans_id):
+                """Aborts a transaction with the specified Transaction ID.
+                Returns the current package state."""
 
                 try:
-                        token = tokens[0]
-                except IndexError:
-                        raise cherrypy.HTTPError(httplib.BAD_REQUEST)
+                        t = self.scfg.in_flight_trans[trans_id]
+                except KeyError:
+                        raise RepositoryInvalidTransactionIDError(trans_id)
 
-                if not token:
-                        raise cherrypy.HTTPError(httplib.BAD_REQUEST)
+                try:
+                        pstate = t.abandon()
+                        del self.scfg.in_flight_trans[trans_id]
+                        return pstate
+                except trans.TransactionError, e:
+                        raise RepositoryError(e)
 
-                if not self.scfg.search_available():
-                        raise cherrypy.HTTPError(httplib.SERVICE_UNAVAILABLE,
-                            "Search temporarily unavailable")
+        def add(self, trans_id, action):
+                """Adds an action and its content to a transaction with the
+                specified Transaction ID."""
 
-                res = self.scfg.catalog.search(token)
+                try:
+                        t = self.scfg.in_flight_trans[trans_id]
+                except KeyError:
+                        raise RepositoryInvalidTransactionIDError(trans_id)
 
-                response.headers['Content-type'] = 'text/plain'
+                try:
+                        t.add_content(action)
+                except trans.TransactionError, e:
+                        raise RepositoryError(e)
 
-                # This is a special hook just for this request so that
-                # if an exception is encountered, the stream will be
-                # closed properly regardless of which thread is
-                # executing.
-                cherrypy.request.hooks.attach('on_end_request',
-                    self.scfg.catalog.query_engine.search_done, failsafe = True)
-
-                # The query_engine returns four pieces of information in the
-                # proper order. Put those four pieces of information into a
-                # string that the client can understand.
-
-                def output():
-                        for l in res:
-                                yield ("%s %s %s %s\n" % (l[0], l[1], l[2], l[3]))
-                return output()
-
-        search_0._cp_config = { 'response.stream': True }
-
-        def catalog_0(self, *tokens):
-                """ Provide an incremental update or full version of the
-                    catalog as appropriate to the requesting client. """
+        def catalog(self, last_modified=None):
+                """Returns a generator object containing an incremental update
+                if 'last_modified' is provided.  If 'last_modified' is not
+                provided, a generator object for the full version of the catalog
+                will be returned instead.  'last_modified' should be a datetime
+                object or an ISO8601 formatted string."""
 
                 self.scfg.inc_catalog()
 
-                # Try to guard against a non-existent catalog.  The catalog
-                # open will raise an exception, and only the attributes will
-                # have been sent.  But because we've sent data already (never
-                # mind the response header), we can't raise an exception here,
-                # or an INTERNAL_SERVER_ERROR header will get sent as well.
+                if isinstance(last_modified, basestring):
+                        last_modified = catalog.ts_to_datetime(last_modified)
+
+                # Incremental catalog updates
+                c = self.scfg.catalog
+                ul = self.scfg.updatelog
+                if last_modified:
+                        if not ul.up_to_date(last_modified) and \
+                            ul.enough_history(last_modified):
+                                for line in ul._gen_updates(last_modified):
+                                        yield line
+                        else:
+                                raise RepositoryCatalogNoUpdatesError(
+                                    "incremental", c.last_modified())
+                        return
+
+                # Full catalog request.
+                # Return attributes first.
+                for line in c.attrs_as_lines():
+                        yield line
+
+                # Return the contents last.
+                for line in c.as_lines():
+                        yield line
+
+        def close(self, trans_id, refresh_index=True):
+                """Closes the transaction specified by 'trans_id'.
+
+                Returns a tuple containing the package FMRI and the current
+                package state in the catalog."""
+
                 try:
-                        return self.scfg.updatelog.send(cherrypy.request,
-                            cherrypy.response)
-                except socket.error, e:
-                        if e.args[0] == errno.EPIPE:
-                                return
+                        t = self.scfg.in_flight_trans[trans_id]
+                except KeyError:
+                        raise RepositoryInvalidTransactionIDError(trans_id)
 
-                        cherrypy.log("Internal failure:\n",
-                            severity = logging.CRITICAL, traceback = True)
+                try:
+                        pfmri, pstate = t.close(refresh_index=refresh_index)
+                        del self.scfg.in_flight_trans[trans_id]
+                        return pfmri, pstate
+                except trans.TransactionError, e:
+                        raise RepositoryError(e)
 
-        catalog_0._cp_config = { 'response.stream': True }
+        def file(self, fhash):
+                """Returns the absolute pathname of the file specified by the
+                provided SHA1-hash name."""
 
-        def manifest_0(self, *tokens):
-                """ The request is an encoded pkg FMRI.  If the version is
-                    specified incompletely, we return an error, as the client
-                    is expected to form correct requests, based on its
-                    interpretation of the catalog and its image policies. """
+                self.scfg.inc_file()
+
+                if fhash is None:
+                        raise RepositoryFileNotFoundError(fhash)
+
+                try:
+                        return os.path.normpath(os.path.join(
+                            self.scfg.file_root, misc.hash_file_name(fhash)))
+                except EnvironmentError, e:
+                        if e.errno == errno.ENOENT:
+                                raise RepositoryFileNotFoundError(fhash)
+                        raise
+
+        def manifest(self, pfmri):
+                """Returns the absolute pathname of the manifest file for the
+                specified FMRI."""
 
                 self.scfg.inc_manifest()
 
-                # Parse request into FMRI component and decode.
                 try:
-                        # If more than one token (request path component) was
-                        # specified, assume that the extra components are part
-                        # of the fmri and have been split out because of bad
-                        # proxy behaviour.
-                        pfmri = "/".join(tokens)
-                        f = fmri.PkgFmri(pfmri, None)
-                        fpath = f.get_dir_path()
+                        if not isinstance(pfmri, fmri.PkgFmri):
+                                pfmri = fmri.PkgFmri(pfmri, None)
+                        fpath = pfmri.get_dir_path()
                 except (IndexError, fmri.IllegalFmri,
-                    version.IllegalDotSequence, version.IllegalVersion):
-                        raise cherrypy.HTTPError(httplib.NOT_FOUND)
+                    version.IllegalDotSequence, version.IllegalVersion), e:
+                        raise RepositoryInvalidFMRIError(e, pfmri)
 
-                # send manifest
-                return serve_file("%s/%s" % (self.scfg.pkg_root,
-                    fpath), 'text/plain')
+                return os.path.join(self.scfg.pkg_root, fpath)
 
-        @staticmethod
-        def _tar_stream_close(**kwargs):
-                """ This is a special function to finish a tar_stream-based
-                    request in the event of an exception. """
+        def open(self, client_release, pfmri):
+                """Starts a transaction for the specified client release and
+                FMRI.  Returns the Transaction ID for the new transaction."""
 
-                tar_stream = cherrypy.request.tar_stream
-                if tar_stream:
+                try:
+                        t = trans.Transaction()
+                        t.open(self.scfg, client_release, pfmri)
+                        self.scfg.in_flight_trans[t.get_basename()] = t
+                        return t.get_basename()
+                except trans.TransactionError, e:
+                        raise RepositoryError(e)
+
+        def rename(self, src_fmri, dest_fmri):
+                """Renames an existing package specified by 'src_fmri' to
+                'dest_fmri'.  Returns nothing."""
+
+                if not isinstance(src_fmri, fmri.PkgFmri):
                         try:
-                                # Attempt to close the tar_stream now that we
-                                # are done processing the request.
-                                tar_stream.close()
-                        except:
-                                # tarfile most likely failed trying to flush
-                                # its internal buffer.  To prevent tarfile from
-                                # causing further exceptions during __del__,
-                                # we have to lie and say the fileobj has been
-                                # closed.
-                                tar_stream.fileobj.closed = True
-                                cherrypy.log("Request aborted: ",
-                                    traceback=True)
+                                src_fmri = fmri.PkgFmri(src_fmri, None)
+                        except fmri.IllegalFmri, e:
+                                raise RepositoryInvalidFMRIError(e)
 
-                        cherrypy.request.tar_stream = None
-
-        def filelist_0(self, *tokens, **params):
-                """ Request data contains application/x-www-form-urlencoded
-                    entries with the requested filenames.  The resulting tar
-                    stream is output directly to the client. """
-
-                try:
-                        self.scfg.inc_flist()
-
-                        # Create a dummy file object that hooks to the write()
-                        # callable which is all tarfile needs to output the
-                        # stream.  This will write the bytes to the client
-                        # through our parent server process.
-                        f = Dummy()
-                        f.write = cherrypy.response.write
-
-                        tar_stream = tarfile.open(mode = "w|",
-                            fileobj = f)
-
-                        # We can use the request object for storage of data
-                        # specific to this request.  In this case, it allows us
-                        # to provide our on_end_request function with access to
-                        # the stream we are processing.
-                        cherrypy.request.tar_stream = tar_stream
-
-                        # This is a special hook just for this request so that
-                        # if an exception is encountered, the stream will be
-                        # closed properly regardless of which thread is
-                        # executing.
-                        cherrypy.request.hooks.attach('on_end_request',
-                            self._tar_stream_close, failsafe = True)
-
-                        for v in params.values():
-                                filepath = os.path.normpath(os.path.join(
-                                    self.scfg.file_root,
-                                    misc.hash_file_name(v)))
-
-                                # If file isn't here, skip it
-                                if not os.path.exists(filepath):
-                                        continue
-
-                                tar_stream.add(filepath, v, False)
-
-                                self.scfg.inc_flist_files()
-
-                        # Flush the remaining bytes to the client.
-                        tar_stream.close()
-                        cherrypy.request.tar_stream = None
-
-                except Exception, e:
-                        # If we find an exception of this type, the
-                        # client has most likely been interrupted.
-                        if isinstance(e, socket.error) \
-                            and e.args[0] == errno.EPIPE:
-                                return
-                        raise
-
-                yield ""
-
-        # We have to configure the headers either through the _cp_config
-        # namespace, or inside the function itself whenever we are using
-        # a streaming generator.  This is because headers have to be setup
-        # before the response even begins and the point at which @tools
-        # hooks in is too late.
-        filelist_0._cp_config = {
-                'response.stream': True,
-                'tools.response_headers.on': True,
-                'tools.response_headers.headers': [('Content-Type',
-                    'application/data')]
-        }
-
-        def rename_0(self, *tokens, **params):
-                """ Renames an existing package specified by Src-FMRI to
-                    Dest-FMRI.  Returns no output. """
-
-                try:
-                        src_fmri = fmri.PkgFmri(params['Src-FMRI'], None)
-                except KeyError:
-                        raise cherrypy.HTTPError(httplib.BAD_REQUEST,
-                            "No source FMRI present.")
-                except ValueError:
-                        raise cherrypy.HTTPError(httplib.BAD_REQUEST,
-                            "Invalid source FMRI.")
-                except fmri.IllegalFmri, e:
-                        raise cherrypy.HTTPError(httplib.BAD_REQUEST,
-                            "Illegal source FMRI: %s" % e)
-
-                try:
-                        dest_fmri = fmri.PkgFmri(params['Dest-FMRI'], None)
-                except KeyError:
-                        raise cherrypy.HTTPError(httplib.BAD_REQUEST,
-                            "No destination FMRI present.")
-                except ValueError:
-                        raise cherrypy.HTTPError(httplib.BAD_REQUEST,
-                            "Invalid destination FMRI.")
-                except fmri.IllegalFmri, e:
-                        raise cherrypy.HTTPError(httplib.BAD_REQUEST,
-                            "Illegal destination FMRI: %s" % e)
+                if not isinstance(dest_fmri, fmri.PkgFmri):
+                        try:
+                                dest_fmri = fmri.PkgFmri(dest_fmri, None)
+                        except fmri.IllegalFmri, e:
+                                raise RepositoryInvalidFMRIError(e)
 
                 try:
                         self.scfg.updatelog.rename_package(src_fmri.pkg_name,
                             str(src_fmri.version), dest_fmri.pkg_name,
                             str(dest_fmri.version))
-                except catalog.CatalogException, e:
-                        raise cherrypy.HTTPError(httplib.NOT_FOUND, e.args)
-                except catalog.RenameException, e:
-                        raise cherrypy.HTTPError(httplib.NOT_FOUND, e.args)
+                except (catalog.CatalogException, catalog.RenameException):
+                        raise RepositoryRenameFailureError(dest_fmri)
 
                 self.scfg.inc_renamed()
 
-        def file_0(self, *tokens):
-                """ The request is the SHA-1 hash name for the file.  The
-                    contents of the file is output directly to the client. """
-                self.scfg.inc_file()
+        def refresh_index(self):
+                """Updates the repository's search indices."""
+                self.scfg.catalog.refresh_index()
 
-                try:
-                        fhash = tokens[0]
-                except IndexError:
-                        raise cherrypy.HTTPError(httplib.BAD_REQUEST)
+        def search(self, token):
+                """Generates a list of token type and fmri pairs.  search_done
+                search_done must be called by the caller of this function to
+                to ensure the repository is ready for the next search."""
 
-                return serve_file(os.path.normpath(os.path.join(
-                    self.scfg.file_root, misc.hash_file_name(fhash))),
-                    'application/data')
+                if token is None:
+                        raise RepositorySearchTokenError(token)
 
-        def open_0(self, *tokens):
-                """ Starts a transaction for the package name specified in the
-                    request path.  Returns no output."""
+                if not self.scfg.search_available():
+                        raise RepositorySearchUnavailableError()
 
-                response = cherrypy.response
+                def output():
+                        for l in self.scfg.catalog.search(token):
+                                yield l
+                return output()
 
-                # XXX Authentication will be handled by virtue of possessing a
-                # signed certificate (or a more elaborate system).
-
-                t = trans.Transaction()
-                (ret, detail) = t.open(self.scfg, *tokens)
-                if ret == httplib.OK:
-                        self.scfg.in_flight_trans[t.get_basename()] = t
-                        response.headers['Content-type'] = 'text/plain'
-                        response.headers['Transaction-ID'] = t.get_basename()
-                else:
-                        # ret should be an http status code
-                        assert ret >= 400 and ret < 600
-                        assert detail
-                        raise cherrypy.HTTPError(ret, detail)
-
-        def close_0(self, *tokens):
-                """ Ends an in-flight transaction for the Transaction ID
-                    specified in the request path.  Returns no output. """
-
-                try:
-                        # cherrypy decoded it, but we actually need it encoded.
-                        trans_id = urllib.quote("%s" % tokens[0], "")
-                except IndexError:
-                        raise cherrypy.HTTPError(httplib.BAD_REQUEST)
-
-                try:
-                        t = self.scfg.in_flight_trans[trans_id]
-                except KeyError:
-                        raise cherrypy.HTTPError(httplib.NOT_FOUND,
-                            "close Transaction ID not found")
-                else:
-                        t.close()
-                        del self.scfg.in_flight_trans[trans_id]
-
-        def abandon_0(self, *tokens):
-                """ Aborts an in-flight transaction for the Transaction ID
-                    specified in the request path.  Returns no output. """
-
-                try:
-                        # cherrypy decoded it, but we actually need it encoded.
-                        trans_id = urllib.quote("%s" % tokens[0], "")
-                except IndexError:
-                        raise cherrypy.HTTPError(httplib.BAD_REQUEST)
-
-                try:
-                        t = self.scfg.in_flight_trans[trans_id]
-                except KeyError:
-                        raise cherrypy.HTTPError(httplib.NOT_FOUND,
-                            "Transaction ID not found")
-                else:
-                        t.abandon()
-                        del self.scfg.in_flight_trans[trans_id]
-
-        def add_0(self, *tokens, **params):
-                """ Adds content to an in-flight transaction for the
-                    Transaction ID specified in the request path.  The content
-                    is expected to be in the request body.  Returns no
-                    output. """
-
-                try:
-                        # cherrypy decoded it, but we actually need it encoded.
-                        trans_id = urllib.quote("%s" % tokens[0], "")
-                        entry_type = tokens[1]
-                except IndexError:
-                        raise cherrypy.HTTPError(httplib.BAD_REQUEST)
-
-                try:
-                        t = self.scfg.in_flight_trans[trans_id]
-                except KeyError:
-                        raise cherrypy.HTTPError(httplib.NOT_FOUND,
-                            "Transaction ID not found")
-                else:
-                        t.add_content(entry_type)
-
-        # We need to prevent cherrypy from processing the request body so that
-        # add can parse the request body itself.  In addition, we also need to
-        # set the timeout higher since the default is five minutes; not really
-        # enough for a slow connection to upload content.
-        add_0._cp_config = {
-                'request.process_request_body': False,
-                'response.timeout': 3600,
-        }
-
-        @cherrypy.expose
-        @cherrypy.tools.response_headers(headers = \
-            [('Content-Type','text/plain')])
-        def info_0(self, *tokens):
-                """ Output a text/plain summary of information about the
-                    specified package. The request is an encoded pkg FMRI.  If
-                    the version is specified incompletely, we return an error,
-                    as the client is expected to form correct requests, based
-                    on its interpretation of the catalog and its image
-                    policies. """
-
-                # Parse request into FMRI component and decode.
-                try:
-                        # If more than one token (request path component) was
-                        # specified, assume that the extra components are part
-                        # of the fmri and have been split out because of bad
-                        # proxy behaviour.
-                        pfmri = "/".join(tokens)
-                except IndexError:
-                        raise cherrypy.HTTPError(httplib.BAD_REQUEST)
-
-                try:
-                        f = fmri.PkgFmri(pfmri, None)
-                except:
-                        # If we couldn't parse the FMRI for whatever reason,
-                        # assume the client made a bad request.
-                        raise cherrypy.HTTPError(httplib.BAD_REQUEST)
-
-                m = manifest.Manifest()
-                m.set_fmri(None, pfmri)
-                mpath = os.path.join(self.scfg.pkg_root, f.get_dir_path())
-                if not os.path.exists(mpath):
-                        raise cherrypy.HTTPError(httplib.NOT_FOUND)
-
-                m.set_content(file(mpath).read())
-
-                authority, name, ver = f.tuple()
-                if authority:
-                        authority = fmri.strip_auth_pfx(authority)
-                else:
-                        authority = "Unknown"
-                summary = m.get("description", "")
-
-                lsummary = cStringIO.StringIO()
-                for i, entry in enumerate(m.gen_actions_by_type("license")):
-                        if i > 0:
-                                lsummary.write("\n")
-
-                        lpath = os.path.normpath(os.path.join(
-                            self.scfg.file_root,
-                            misc.hash_file_name(entry.hash)))
-
-                        lfile = file(lpath, "rb")
-                        misc.gunzip_from_stream(lfile, lsummary)
-                lsummary.seek(0)
-
-                return """\
-          Name: %s
-       Summary: %s
-     Authority: %s
-       Version: %s
- Build Release: %s
-        Branch: %s
-Packaging Date: %s
-          Size: %s
-          FMRI: %s
-
-License:
-%s
-""" % (name, summary, authority, ver.release, ver.build_release,
-    ver.branch, ver.get_timestamp().ctime(), misc.bytes_to_str(m.size),
-    f, lsummary.read())
-
+        def search_done(self):
+                """Prepares the repository for the next search."""
+                self.scfg.catalog.query_engine.search_done()

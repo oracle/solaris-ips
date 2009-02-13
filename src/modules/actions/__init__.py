@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -74,7 +74,10 @@ for modname in __all__:
 del f, modname, module, nvlist, classes, c, cls
 
 class ActionError(Exception):
-        pass
+        """Base exception class for Action errors."""
+
+        def __str__(self):
+                raise NotImplementedError()
 
 class UnknownActionError(ActionError):
         def __init__(self, *args):
@@ -82,13 +85,14 @@ class UnknownActionError(ActionError):
                 self.type = args[1]
 
         def __str__(self):
-                fmrierr = ""
-                errtuple = (self.type, self.actionstr)
                 if hasattr(self, "fmri") and self.fmri is not None:
-                        fmrierr = "in package '%s' "
-                        errtuple = (self.type, self.fmri, self.actionstr)
-                return ("Unknown action type '%s' " + fmrierr +
-                    "in action '%s'") % errtuple
+                        return _("unknown action type '%(type)s' in package "
+                            "'%(fmri)s' in action '%(action)s'") % {
+                            "type": self.type, "fmri": self.fmri,
+                            "action": self.actionstr }
+                return _("unknown action type '%(type)s' in action "
+                    "'%(action)s'") % { "type": self.type,
+                    "action": self.actionstr }
 
 class MalformedActionError(ActionError):
         def __init__(self, *args):
@@ -97,49 +101,89 @@ class MalformedActionError(ActionError):
                 self.errorstr = args[2]
 
         def __str__(self):
-                fmrierr = ""
                 marker = " " * (4 + self.position) + "^"
-                errtuple = (self.errorstr, self.position, self.actionstr, marker)
                 if hasattr(self, "fmri") and self.fmri is not None:
-                        fmrierr = " in package '%s'"
-                        errtuple = (self.fmri,) + errtuple
-                return ("Malformed action" + fmrierr +": %s at position %d:\n"
-                    "    %s\n%s") % errtuple
-                    
+                        return _("Malformed action in package '%(fmri)s' at "
+                            "position: %(pos)d:\n    %(action)s\n"
+                            "%(marker)s") % { "fmri": self.fmri,
+                            "pos": self.position, "action": self.actionstr,
+                            "marker": marker }
+                return _("Malformed action at position: %(pos)d:\n    "
+                    "%(action)s\n%(marker)s") % { "pos": self.position,
+                    "action": self.actionstr, "marker": marker }
+
+
+class ActionDataError(ActionError):
+        """Used to indicate that a file-related error occuring during action
+        initialization."""
+
+        def __init__(self, *args):
+                self.error = args[0]
+
+        def __str__(self):
+                return str(self.error)
+
+
+class InvalidActionError(ActionError):
+        """Used to indicate that attributes provided were invalid, or required
+        attributes were missing for an action."""
+
+        def __init__(self, *args):
+                self.actionstr = args[0]
+                self.errorstr = args[1]
+
+        def __str__(self):
+                if hasattr(self, "fmri") and self.fmri is not None:
+                        return _("invalid action in package %(fmri)s: "
+                            "%(action)s: %(error)s") % { "fmri": self.fmri,
+                            "action": self.actionstr, "error": self.errorstr }
+                return _("invalid action, '%(action)s': %(error)s") % {
+                        "action": self.actionstr, "error": self.errorstr }
+
 
 from _actions import _fromstr
 
-def fromstr(string):
-        """Create an action instance based on a str() representation of an action.
+def fromstr(string, data=None):
+        """Create an action instance based on a str() representation of an
+        action.
 
         Raises UnknownActionError if the action type is unknown.
         Raises MalformedActionError if the action has other syntactic problems.
         """
 
-        type, hash, attr_dict = _fromstr(string)
+        atype, ahash, attr_dict = _fromstr(string)
 
-        if type not in types:
-                raise UnknownActionError(string, type)
+        if atype not in types:
+                raise UnknownActionError(string, atype)
 
-        action = types[type](**attr_dict)
-        if hash:
-                action.hash = hash
+        action = types[atype](data=data, **attr_dict)
+
+        ka = action.key_attr
+        if ka is not None and (ka not in action.attrs or
+            action.attrs[ka] is None):
+                raise InvalidActionError(string, _("required attribute '%s' "
+                    "was not provided.") % ka)
+
+        if ahash:
+                action.hash = ahash
 
         return action
 
-def fromlist(type, args, hash=None):
+def fromlist(type, args, hash=None, data=None):
         """Create an action instance based on a sequence of "key=value" strings.
 
         Raises MalformedActionError if the attribute strings are malformed.
         """
 
+        if type not in types:
+                raise UnknownActionError(("%s %s" % (type,
+                    " ".join(args))).strip(), type)
+
         attrs = {}
 
-        saw_error = False
         try:
                 for a, v in [kv.split("=", 1) for kv in args]:
                         if v == '' or a == '':
-                                saw_error = True
                                 kvi = args.index(kv) + 1
                                 p1 = " ".join(args[:kvi])
                                 p2 = " ".join(args[kvi:])
@@ -168,7 +212,15 @@ def fromlist(type, args, hash=None):
                 raise MalformedActionError("%s %s %s" % (type, p1, p2),
                     len(p1) + 2, "attribute '%s'" % kv)
 
-        action = types[type](**attrs)
+        action = types[type](data=data, **attrs)
+
+        ka = action.key_attr
+        if ka is not None and (ka not in action.attrs or
+            action.attrs[ka] is None):
+                raise InvalidActionError(("%s %s" % (type,
+                    " ".join(args))).strip(), _("required attribute, "
+                    "'%s', was not provided.") % ka)
+
         if hash:
                 action.hash = hash
 

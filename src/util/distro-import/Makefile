@@ -26,6 +26,7 @@
 
 #set default
 ARCH=i386
+PROTO_AREA=../../../proto/root_`uname -p`
 
 #
 # Needs to point to filesystem on Solaris install dvd
@@ -91,7 +92,8 @@ GLOBAL_CHATTRS_107 = $(GLOBAL_CHATTRS_106)
 GLOBAL_CHATTRS = $(GLOBAL_CHATTRS_$(BUILDID))
 
 SOLARIS.PY=./solaris.py -b 0.$(BUILDID) $(EXTRA_OPTIONS) -T \*.py \
-	$(GLOBAL_CHATTRS:%= -G %) $(ARCH_DEFINES:%= -m %)
+	$(GLOBAL_CHATTRS:%= -G %) $(ARCH_DEFINES:%= -m %) \
+	-p $(PROTO_AREA)
 
 #
 # always remove the following (editable) files from packages we bulk import;
@@ -513,7 +515,7 @@ redist_import:	$(BUILDID)/redist_cluster $(TMPPKGS)
 	$(MAKE) BUILDID=$(@:%/entire=%) entire
 
 $(BUILDID)/entire.incorporation: FRC
-	./build_entire_incorporation $(BUILDID) > $@
+	REPO=$(REPO) ./build_entire_incorporation $(BUILDID) > $@
 
 entire: $(BUILDID)/entire.incorporation
 	PKG_REPO=$(REPO) ./import_manifest_file \

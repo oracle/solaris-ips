@@ -348,6 +348,24 @@ class Catalog(object):
 
                 return ret
 
+        def as_lines(self):
+                """Returns a generator function that produces the contents of
+                the catalog as a list of strings."""
+
+                try:
+                        cfile = file(self.catalog_file, "r")
+                except EnvironmentError, e:
+                        # Missing catalog is fine; other errors need to
+                        # be reported.
+                        if e.errno == errno.ENOENT:
+                                return
+                        raise
+
+                for e in cfile:
+                        yield e
+
+                cfile.close()
+
         @staticmethod
         def _fmri_from_path(pkg, vers):
                 """Helper method that takes the full path to the package

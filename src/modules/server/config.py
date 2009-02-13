@@ -21,10 +21,11 @@
 #
 
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
+import errno
 import os
 import os.path
 import shutil
@@ -33,18 +34,35 @@ import pkg.server.catalog as catalog
 import pkg.server.transaction as trans
 import pkg.updatelog as updatelog
 
+class SvrConfigError(Exception):
+        """Base exception class for all Transaction exceptions."""
+
+        def __init__(self, *args):
+                Exception.__init__(self, *args)
+                self.data = args[0]
+
+        def __str__(self):
+                return str(self.data)
+
+
 # depot Server Configuration
 class SvrConfig(object):
         """Server configuration and state object.  The authority is the default
         authority under which packages will be stored.  Repository locations are
         the primary derived configuration.  State is the current set of
-        transactions and packages stored by the repository."""
+        transactions and packages stored by the repository.
 
-        def __init__(self, repo_root, content_root, authority):
+        If 'auto_create' is True, a new repository will be created at the
+        location specified by 'repo_root' if one does not already exist."""
+
+        def __init__(self, repo_root, content_root, authority,
+            auto_create=False, fork_allowed=False):
                 self.set_repo_root(repo_root)
                 self.set_content_root(content_root)
 
+                self.auto_create = auto_create
                 self.authority = authority
+                self.fork_allowed = fork_allowed
                 self.read_only = False
                 self.mirror = False
 
@@ -62,30 +80,31 @@ class SvrConfig(object):
                 self.pkgs_renamed = 0
 
         def init_dirs(self):
-                if not os.path.exists(self.repo_root):
-                        try:
-                                os.makedirs(self.repo_root)
-                        except OSError, e:
-                                raise
-
-                emsg = "repository directories incomplete"
-                                 
-                if not os.access(self.repo_root, os.W_OK):
-                        self.set_read_only()
-                        emsg = "repository directories read-only and incomplete"
-                else:
+                emsg = _("repository directories incomplete")
+                if self.auto_create:
                         for d in self.required_dirs + self.optional_dirs:
-                                if not os.path.exists(d):
+                                try:
                                         os.makedirs(d)
+                                except EnvironmentError, e:
+                                        if e.errno == errno.EACCES:
+                                                emsg = _("repository "
+                                                    "directories not writeable "
+                                                    "by current user id or "
+                                                    "group and are incomplete")
+                                        elif e.errno != errno.EEXIST:
+                                                raise
 
                 for d in self.required_dirs:
                         if not os.path.exists(d):
-                                raise RuntimeError, emsg
+                                if self.auto_create:
+                                        raise SvrConfigError(emsg)
+                                raise SvrConfigError(_("The specified "
+                                    "repository root '%s' is not a valid "
+                                    "repository.") % self.repo_root)
 
-                if self.content_root is not None and not \
-                    os.path.exists(self.content_root):
-                        raise RuntimeError("The specified content root (%s) "
-                            "does not exist." % self.content_root)
+                if self.content_root and not os.path.exists(self.content_root):
+                        raise SvrConfigError(_("The specified content root "
+                            "'%s' does not exist.") % self.content_root)
 
                 return
 
@@ -98,8 +117,8 @@ class SvrConfig(object):
                 self.update_root = os.path.join(self.repo_root, "updatelog")
                 self.index_root = os.path.join(self.repo_root, "index")
 
-                self.required_dirs = [self.trans_root, self.file_root, self.pkg_root,
-                    self.cat_root, self.update_root]
+                self.required_dirs = [self.trans_root, self.file_root,
+                    self.pkg_root, self.cat_root, self.update_root]
 
                 self.optional_dirs = [self.index_root]
 
@@ -136,20 +155,21 @@ class SvrConfig(object):
 
                         self.in_flight_trans[t.get_basename()] = t
 
-        def acquire_catalog(self, rebuild=None):
+        def acquire_catalog(self, rebuild=False, verbose=False):
                 """Tell the catalog to set itself up.  Associate an
                 instance of the catalog with this depot."""
 
                 if self.is_mirror():
                         return
 
-                if rebuild == None:
-                        rebuild = not self.read_only
-                
+                if rebuild:
+                        self.destroy_catalog()
+
                 self.catalog = catalog.ServerCatalog(self.cat_root,
                     pkg_root=self.pkg_root, read_only=self.read_only,
                     index_root=self.index_root, repo_root=self.repo_root,
-                    rebuild=rebuild)
+                    rebuild=rebuild, verbose=verbose,
+                    fork_allowed=self.fork_allowed)
 
                 # UpdateLog allows server to issue incremental catalog updates
                 self.updatelog = updatelog.UpdateLog(self.update_root,

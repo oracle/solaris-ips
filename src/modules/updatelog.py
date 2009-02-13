@@ -26,6 +26,11 @@
 import datetime
 import httplib
 import os
+try:
+        # Some versions of python don't have these constants.
+        os.SEEK_SET
+except AttributeError:
+        os.SEEK_SET, os.SEEK_CUR, os.SEEK_END = range(3)
 import re
 import time
 
@@ -355,7 +360,7 @@ class UpdateLog(object):
                                         c
 
                 # Write the new entries to the catalog
-                catf.seek(0, 2)
+                catf.seek(0, os.SEEK_END)
                 catf.writelines(add_lines)
                 if len(unknown_lines) > 0:
                         catf.writelines(unknown_lines)

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -34,8 +34,7 @@ installed on the system in the package's directory."""
 
 import os
 import errno
-import sha
-from stat import *
+from stat import S_IWRITE, S_IREAD
 
 import generic
 import pkg.misc as misc
@@ -105,21 +104,20 @@ class LicenseAction(generic.Action):
                     "pkg", pkg_fmri.get_dir_path(),
                     "license." + self.attrs["license"]))
 
-                try:
-                        f = file(path)
-                        data = f.read()
-                        f.close()
-                except IOError, e:
-                        if e.errno == errno.ENOENT:
-                                return ["License file %s does not exist" % path]
-                        return ["Unexpected exception %s" % e]
                 if args["forever"] == True:
-                        hashvalue = sha.new(data).hexdigest()
-                        if hashvalue != self.hash:
-                                return ["Hash: %s should be %s" % \
-                                    (hashvalue, self.hash)]
-                return []
+                        try:
+                                chash, cdata = misc.get_data_digest(path)
+                        except EnvironmentError, e:
+                                if e.errno == errno.ENOENT:
+                                        return [_("License file %s does not "
+                                            "exist.") % path]
+                                raise
 
+                        if chash != self.hash:
+                                return [_("Hash: '%(found)s' should be "
+                                    "'%(expected)s'") % { "found": chash,
+                                    "expected": self.hash}]
+                return []
 
         def remove(self, pkgplan):
                 path = os.path.normpath(os.path.join(pkgplan.image.imgdir,

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -30,11 +30,14 @@
 This module contains the Action class, which represents a generic packaging
 object."""
 
-import os
-import sha
-import zlib
+from cStringIO import StringIO
 import errno
-
+import os
+try:
+        # Some versions of python don't have these constants.
+        os.SEEK_SET
+except AttributeError:
+        os.SEEK_SET, os.SEEK_CUR, os.SEEK_END = range(3)
 import pkg.actions
 import pkg.client.retrieve as retrieve
 import pkg.portable as portable
@@ -114,16 +117,63 @@ class Action(object):
                         return
 
                 if isinstance(data, basestring):
+                        if not os.path.exists(data):
+                                raise pkg.actions.ActionDataError(
+                                    _("No such file: '%s'.") % data)
+                        elif os.path.isdir(data):
+                                raise pkg.actions.ActionDataError(
+                                    _("'%s' is not a file.") % data)
+
                         def file_opener():
                                 return open(data, "rb")
                         self.data = file_opener
-                elif not callable(data):
-                        def data_opener():
-                                return data
-                        self.data = data_opener
-                else:
-                        # Data is not None, and is callable
+                        if "pkg.size" not in self.attrs:
+                                try:
+                                        fs = os.lstat(data)
+                                        self.attrs["pkg.size"] = str(fs.st_size)
+                                except EnvironmentError, e:
+                                        raise \
+                                            pkg.actions.ActionDataError(
+                                            e)
+                        return
+
+                if callable(data):
+                        # Data is not None, and is callable.
                         self.data = data
+                        return
+
+                if "pkg.size" in self.attrs:
+                        self.data = lambda: data
+                        return
+
+                try:
+                        sz = data.size
+                except AttributeError:
+                        try:
+                                try:
+                                        sz = os.fstat(data.fileno()).st_size
+                                except (AttributeError, TypeError):
+                                        try:
+                                                try:
+                                                        data.seek(0,
+                                                            os.SEEK_END)
+                                                        sz = data.tell()
+                                                        data.seek(0)
+                                                except (AttributeError,
+                                                    TypeError):
+                                                        d = data.read()
+                                                        sz = len(d)
+                                                        data = StringIO(d)
+                                        except (AttributeError, TypeError):
+                                                # Raw data was provided; fake a
+                                                # file object.
+                                                sz = len(data)
+                                                data = StringIO(data)
+                        except EnvironmentError, e:
+                                raise pkg.actions.ActionDataError(e)
+
+                self.attrs["pkg.size"] = str(sz)
+                self.data = lambda: data
 
         def __str__(self):
                 """Serialize the action into manifest form.
@@ -139,9 +189,9 @@ class Action(object):
                 computed.  This may need to be done externally.
                 """
 
-                str = self.name
+                out = self.name
                 if hasattr(self, "hash"):
-                        str += " " + self.hash
+                        out += " " + self.hash
 
                 def q(s):
                         if " " in s:
@@ -154,15 +204,15 @@ class Action(object):
                 for k in sorted(self.attrs.keys()):
                         v = self.attrs[k]
                         if isinstance(v, list):
-                            str += " " + " ".join([
-                                "%s=%s" % (k, q(lmt)) for lmt in v
-                            ])
+                                out += " " + " ".join([
+                                    "%s=%s" % (k, q(lmt)) for lmt in v
+                                ])
                         elif " " in v:
-                                str += " " + k + "=\"" + v + "\""
+                                out += " " + k + "=\"" + v + "\""
                         else:
-                                str += " " + k + "=" + v
+                                out += " " + k + "=" + v
 
-                return str
+                return out
 
         def __cmp__(self, other):
                 """Compare actions for ordering.  The ordinality of a
@@ -179,7 +229,8 @@ class Action(object):
                 return cmp(id(self), id(other))
 
         def different(self, other):
-                """Returns True if other represents a non-ignorable change from self.
+                """Returns True if other represents a non-ignorable change from
+                self.
 
                 By default, this means two actions are different if any of their
                 attributes are different.  Subclasses should override this
@@ -287,13 +338,13 @@ class Action(object):
                         if not os.path.isdir(os.path.join(*pathlist[:i + 1])):
                                 break
                 else:
-                        # XXX Because the filelist codepath may create directories with
-                        # incorrect permissions (see pkgtarfile.py), we need to correct
-                        # those permissions here.  Note that this solution relies on all
-                        # intermediate directories being explicitly created by the
-                        # packaging system; otherwise intermediate directories will  not
-                        # get their permissions corrected.
-
+                        # XXX Because the filelist codepath may create
+                        # directories with incorrect permissions (see
+                        # pkgtarfile.py), we need to correct those permissions
+                        # here.  Note that this solution relies on all
+                        # intermediate directories being explicitly created by
+                        # the packaging system; otherwise intermediate
+                        # directories will not get their permissions corrected.
                         stat = os.stat(path)
                         mode = kw.get("mode", stat.st_mode)
                         uid = kw.get("uid", stat.st_uid)
@@ -334,7 +385,8 @@ class Action(object):
                                 raise
 
         def get_varcet_keys(self):
-                """Return the names of any facet or variant tags in this action"""
+                """Return the names of any facet or variant tags in this
+                action."""
 
                 variants = []
                 facets = []
@@ -348,7 +400,8 @@ class Action(object):
 
         def get_remote_opener(self, img, fmri):
                 """Return an opener for the action's datastream which pulls from
-                the server.  The caller may have to decompress the datastream."""
+                the server.  The caller may have to decompress the
+                datastream."""
 
                 if not hasattr(self, "hash"):
                         return None
@@ -359,7 +412,8 @@ class Action(object):
                 return opener
 
         def verify(self, img, **args):
-                """returns empty list if correctly installed in the given image"""
+                """Returns an empty list if correctly installed in the given
+                image."""
                 return []
 
         def needsdata(self, orig):
@@ -376,9 +430,10 @@ class Action(object):
                         return [ value ]
 
         def directory_references(self):
-                """ returns references to paths in action"""
+                """Returns references to paths in action."""
                 if "path" in self.attrs:
-                        return [os.path.dirname(os.path.normpath(self.attrs["path"]))]
+                        return [os.path.dirname(os.path.normpath(
+                            self.attrs["path"]))]
                 return []
 
         def preinstall(self, pkgplan, orig):

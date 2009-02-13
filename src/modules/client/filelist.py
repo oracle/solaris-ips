@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -31,7 +31,6 @@ import urllib2
 import httplib
 import socket
 import time
-import sha
 import zlib
 from tarfile import ReadError
 
@@ -50,7 +49,6 @@ from pkg.misc import TransferTimedOutException
 from pkg.misc import TransferIOException
 from pkg.misc import TransferContentException
 from pkg.misc import InvalidContentException
-from pkg.misc import TruncatedTransferException
 from pkg.misc import retryable_http_errors
 from pkg.misc import retryable_socket_errors
 
@@ -196,13 +194,13 @@ class FileList(object):
                 self.ds = None
                 self.url = None
 
-        def _del_hash(self, hash):
+        def _del_hash(self, fhash):
                 """Given the supplied content hash, remove the entry
                 from the flist's dictionary and adjust the counters
                 accordingly."""
 
                 try:
-                        act_list = self.fhash[hash]
+                        act_list = self.fhash[fhash]
                 except KeyError:
                         return
 
@@ -219,8 +217,7 @@ class FileList(object):
                 self.effective_bytes -= nactions * pkgsz
 
                 # Now delete the entry out of the dictionary
-                del self.fhash[hash] 
-
+                del self.fhash[fhash] 
 
         # XXX detect missing size and warn
 
@@ -515,7 +512,7 @@ class FileList(object):
                         ofile = open(os.devnull, "wb")
 
                         try:
-                                hash = misc.gunzip_from_stream(ifile, ofile)
+                                fhash = misc.gunzip_from_stream(ifile, ofile)
                         except zlib.error, e:
                                 os.remove(filepath)
                                 raise InvalidContentException(path,
@@ -525,25 +522,19 @@ class FileList(object):
                         ifile.close()
                         ofile.close()
 
-                        if action.hash != hash:
+                        if action.hash != fhash:
                                 os.remove(filepath)
                                 raise InvalidContentException(action.path,
                                     "hash failure:  expected: %s"
-                                    "computed: %s" % (action.hash, hash))
+                                    "computed: %s" % (action.hash, fhash))
                         return
 
-                cfile = open(filepath, "rb")
-                cdata = cfile.read()
-                cfile.close()
-                hashobj = sha.new(cdata)
-                newhash = hashobj.hexdigest()
-                cdata = None
-
+                newhash, cdata = misc.get_data_digest(filepath)
                 if chash != newhash:
-                       os.remove(filepath)
-                       raise InvalidContentException(path,
-                           "chash failure: expected: %s computed: %s" %
-                           (chash, newhash))
+                        os.remove(filepath)
+                        raise InvalidContentException(path,
+                            "chash failure: expected: %s computed: %s" % \
+                            (chash, newhash))
 
 
 class FileListException(Exception):

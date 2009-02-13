@@ -19,30 +19,32 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 
 import fnmatch
 import getopt
+import gettext
 import os
+import pkg.depotcontroller as depotcontroller
+import pkg.publish.transaction as trans
 import re
 import shlex
 import sys
 import urllib
+import urlparse
 
 from datetime import datetime
 from itertools import groupby
+from pkg import actions, elf
+from pkg.bundle.SolarisPackageDirBundle import SolarisPackageDirBundle
+from pkg.sysvpkg import SolarisPackage
 from tempfile import mkstemp
 
-from pkg.sysvpkg import SolarisPackage
-from pkg.bundle.SolarisPackageDirBundle import SolarisPackageDirBundle
+gettext.install("import", "/usr/lib/locale")
 
-import pkg.config as config
-import pkg.publish.transaction as trans
-from pkg import actions, elf
-
-class pkg(object):
+class package(object):
         def __init__(self, name):
                 self.name = name
                 self.files = []
@@ -62,14 +64,15 @@ class pkg(object):
                 try:
                         p = SolarisPackage(pkg_path(imppkg))
                 except:
-                        raise RuntimeError, "No such package: '%s'" % imppkg
+                        raise RuntimeError("No such package: '%s'" % imppkg)
 
                 self.imppkg = p
 
                 svr4pkgpaths[p.pkginfo["PKG.PLAT"]] = pkg_path(imppkg)
 
-                imppkg = p.pkginfo["PKG.PLAT"] # filename NOT always same as pkgname
-                svr4pkgsseen[imppkg] = p;
+                # filename NOT always same as pkgname
+                imppkg = p.pkginfo["PKG.PLAT"]
+                svr4pkgsseen[imppkg] = p
 
                 if "SUNW_PKG_HOLLOW" in p.pkginfo and \
                     p.pkginfo["SUNW_PKG_HOLLOW"].lower() == "true":
@@ -91,11 +94,11 @@ class pkg(object):
                                 continue
 
                         if o.type == "e":
-                                   if o.pathname not in editable_files:
+                                if o.pathname not in editable_files:
                                         editable_files[o.pathname] = \
                                             [(imppkg, self)]
-                                   else :
-                                        editable_files[o.pathname].append(\
+                                else:
+                                        editable_files[o.pathname].append(
                                             (imppkg, self))
 
                         # XXX This decidedly ignores "e"-type files.
@@ -110,7 +113,7 @@ class pkg(object):
                                         usedlist[o.pathname][0],
                                         svr4pkgpaths[usedlist[o.pathname][0]])
                                 print s
-                                raise RuntimeError, s
+                                raise RuntimeError(s)
                         elif o.type != "i":
 
                                 if o.type in "dx" and imppkg not in hollow_pkgs:
@@ -121,9 +124,11 @@ class pkg(object):
                                 self.files.append(o)
 
                 if not self.version:
-                        self.version = "%s-%s" % (def_vers, get_branch(self.name))
+                        self.version = "%s-%s" % (def_vers,
+                            get_branch(self.name))
                 if not self.desc:
-                        self.desc = zap_strings(p.pkginfo["NAME"], description_detritus)
+                        self.desc = zap_strings(p.pkginfo["NAME"],
+                            description_detritus)
 
                 # This is how we'd import dependencies, but we'll use
                 # file-specific dependencies only, since these tend to be
@@ -142,40 +147,39 @@ class pkg(object):
                         destpkgs[imppkg] = [self.name]
                 self.srcpkgs.append(imppkg)
 
-        def import_file(self, file, line):
+        def import_file(self, fname, line):
                 imppkgname = self.imppkg.pkginfo["PKG.PLAT"]
 
                 if "SUNW_PKG_HOLLOW" in self.imppkg.pkginfo and \
                     self.imppkg.pkginfo["SUNW_PKG_HOLLOW"].lower() == "true":
                         hollow_pkgs[imppkgname] = True
 
-                if file in usedlist:
+                if fname in usedlist:
                         t = [
-                            f
-                            for f in usedlist[file][1].files
-                            if f.pathname == file
+                            f for f in usedlist[fname][1].files
+                            if f.pathname == fname
                         ][0].type
                         if t in "fv":
-                                assert imppkgname == usedlist[file][0]
-                                raise RuntimeError, reuse_err % (
-                                        file,
+                                assert imppkgname == usedlist[fname][0]
+                                raise RuntimeError(reuse_err % (
+                                        fname,
                                         self.name,
                                         self.imppkg,
                                         svr4pkgpaths[self.imppkg],
-                                        usedlist[file][1].name,
-                                        usedlist[file][0],
-                                        svr4pkgpaths[usedlist[file][0]])
+                                        usedlist[fname][1].name,
+                                        usedlist[fname][0],
+                                        svr4pkgpaths[usedlist[fname][0]]))
 
-                usedlist[file] = (imppkgname, self)
+                usedlist[fname] = (imppkgname, self)
                 o = [
                     o
                     for o in self.imppkg.manifest
-                    if o.pathname == file
+                    if o.pathname == fname 
                 ]
                 # There should be only one file with a given pathname in a
                 # single package.
                 if len(o) != 1:
-                        print "ERROR: %s %s" % (imppkgname, file)
+                        print "ERROR: %s %s" % (imppkgname, fname)
                         assert len(o) == 1
 
                 if line:
@@ -197,21 +201,21 @@ class pkg(object):
                 self.check_perms(o[0])
                 self.files.extend(o)
 
-        def convert_type(self, type):
+        def convert_type(self, svrtype):
                 """ given sv4r type, return IPS type"""
                 return {
                         "f": "file", "e": "file", "v": "file",
                         "d": "dir", "x": "dir",
                         "s": "link",
                         "l": "hardlink"
-                        }[type]
+                        }[svrtype]
 
-        def type_convert(self, type):
+        def type_convert(self, ipstype):
                 """ given IPS type, return svr4 type(s)"""
                 return {
                         "file": "fev", "dir": "dx", "link": "s",
                         "hardlink": "l"
-                        }[type]
+                        }[ipstype]
 
         def file_to_action(self, f):
 
@@ -254,18 +258,18 @@ class pkg(object):
                             (manifest.pathname, self.name, manifest.mode)
 
 
-        def chattr(self, file, line):
-                o = [f for f in self.files if f.pathname == file]
+        def chattr(self, fname, line):
+                o = [f for f in self.files if f.pathname == fname]
                 if not o:
-                        raise RuntimeError, "No file '%s' in package '%s'" % \
-                            (file, curpkg.name)
+                        raise RuntimeError("No file '%s' in package '%s'" % \
+                            (fname, curpkg.name))
 
                 # It's probably a file, but all we care about are the
                 # attributes.
 
                 for f in o:
                         a = actions.fromstr(("%s path=%s %s" %
-                            (self.convert_type(f.type), file, line)).rstrip())
+                            (self.convert_type(f.type), fname, line)).rstrip())
                         if show_debug:
                                 print "Updating attributes on " + \
                                     "'%s' in '%s' with '%s'" % \
@@ -292,7 +296,9 @@ class pkg(object):
                                 if key not in orig_action.attrs or \
                                     orig_action.attrs[key] != a.attrs[key]:
                                         if key in f.changed_attrs:
-                                                print "Warning: overwriting changed attr %s on %s from %s to %s" % \
+                                                print "Warning: overwriting " \
+                                                    "changed attr %s on %s " \
+                                                    "from %s to %s" % \
                                                     (key, f.pathname,
                                                      f.changed_attrs[key],
                                                      a.attrs[key])
@@ -340,7 +346,7 @@ class pkg(object):
                 chattr_line = line
 
                 for f in o:
-                        file = f.pathname
+                        fname = f.pathname
                         orig_action = self.file_to_action(f)
                         if edit:
                                 if target in orig_action.attrs:
@@ -357,9 +363,9 @@ class pkg(object):
                         if show_debug:
                                 print "Updating attributes on " + \
                                     "'%s' in '%s' with '%s'" % \
-                                    (file, curpkg.name, chattr_line)
+                                    (fname, curpkg.name, chattr_line)
                         s = "%s path=%s %s" % (self.convert_type(f.type), \
-                           file, chattr_line)
+                           fname, chattr_line)
                         a = actions.fromstr(s)
 
                         # each chattr produces a dictionary of actions
@@ -381,7 +387,9 @@ class pkg(object):
                                 if key not in orig_action.attrs or \
                                     orig_action.attrs[key] != a.attrs[key]:
                                         if key in f.changed_attrs:
-                                                print "Warning: overwriting changed attr %s on %s from %s to %s" % \
+                                                print "Warning: overwriting " \
+                                                    "changed attr %s on %s " \
+                                                    "from %s to %s" % \
                                                     (key, f.pathname,
                                                      f.changed_attrs[key],
                                                      a.attrs[key])
@@ -402,11 +410,11 @@ def pkg_path(pkgname):
                                 pkgpaths[name] = each_path + "/" + pkgname
                                 return pkgpaths[name]
 
-                raise RuntimeError, "package %s not found" % pkgname
+                raise RuntimeError("package %s not found" % pkgname)
 
 
 def start_package(pkgname):
-        return pkg(pkgname)
+        return package(pkgname)
 
 def end_package(pkg):
         pkg_branch = get_branch(pkg.name)
@@ -422,25 +430,12 @@ def end_package(pkg):
 
 def publish_pkg(pkg):
 
-        t = trans.Transaction()
+        new_pkg_name = "%s@%s" % (pkg.name, pkg.version)
+        t = trans.Transaction(def_repo, pkg_name=new_pkg_name,
+            noexecute=nopublish)
 
-        if nopublish:
-                # Give t some bogus methods so that it won't actually touch
-                # the server, and just return reasonable information.
-                t.open = lambda a, b: (200, 1000)
-                t.add = lambda a, b, c: None
-                t.close = lambda a, b, c: (200, {
-                    "Package-FMRI":
-                        "%s@%s" % (pkg.name, pkg.version),
-                    "State": "PUBLISHED"
-                })
-
-        cfg = config.ParentRepo(def_repo, [def_repo])
-        print "    open %s@%s" % (pkg.name, pkg.version)
-        status, id = t.open(cfg, "%s@%s" % (pkg.name, pkg.version))
-        if status / 100 in (4, 5) or not id:
-                raise RuntimeError, "failed to open transaction for %s" % \
-                    pkg.name
+        print "    open %s" % new_pkg_name
+        t.open()
 
         # Publish non-file objects first: they're easy.
         for f in pkg.files:
@@ -489,7 +484,7 @@ def publish_pkg(pkg):
                                 action.attrs["target"]
                                 )
                 else:
-                       continue
+                        continue
 
                 #
                 # If the originating package was hollow, tag this file
@@ -507,7 +502,7 @@ def publish_pkg(pkg):
                         action.attrs["opensolaris.zone"] = "global"
                         action.attrs["variant.opensolaris.zone"] = "global"
 
-                t.add(cfg, id, action)
+                t.add(action)
 
         # Group the files in a (new) package based on what (old) package they
         # came from, so that we can iterate through all files in a single (old)
@@ -558,11 +553,12 @@ def publish_pkg(pkg):
                                 # The "path" attribute is confusing and
                                 # unnecessary for licenses.
                                 del f.attrs["path"]
-                                t.add(cfg, id, f)
+                                t.add(f)
                         elif f.attrs["path"] in pathdict:
                                 if pkgname in hollow_pkgs:
                                         f.attrs["opensolaris.zone"] = "global"
-                                        f.attrs["variant.opensolaris.zone"] = "global"
+                                        f.attrs["variant.opensolaris.zone"] = \
+                                            "global"
                                 path = f.attrs["path"]
                                 if pathdict[path].type in "ev":
                                         f.attrs["preserve"] = "true"
@@ -573,7 +569,8 @@ def publish_pkg(pkg):
                                 # is this a file for which we need a timestamp?
                                 basename = os.path.basename(path)
                                 for file_pattern in timestamp_files:
-                                        if fnmatch.fnmatch(basename, file_pattern):
+                                        if fnmatch.fnmatch(basename,
+                                            file_pattern):
                                                 break
                                 else:
                                         del f.attrs["timestamp"]
@@ -590,16 +587,27 @@ def publish_pkg(pkg):
                                     (pkg.name, f.attrs["mode"],
                                         f.attrs["owner"], f.attrs["group"],
                                         f.attrs["path"], otherattrs(f))
-                                # Write the file to a temporary location.
-                                d = f.data().read()
+
+
+                                # Read the file in chunks to avoid a memory
+                                # footprint blowout.
+                                fo = f.data()
+                                bufsz = 256 * 1024
+                                sz = int(f.attrs["pkg.size"])
                                 fd, tmp = mkstemp(prefix="pkg.")
-                                os.write(fd, d)
+                                while sz > 0:
+                                        d = fo.read(min(bufsz, sz))
+                                        os.write(fd, d)
+                                        sz -= len(d)
+                                d = None
                                 os.close(fd)
 
-                                # Fool the action into pulling from the
-                                # temporary file.
-                                f.data = lambda: open(tmp)
-                                t.add(cfg, id, f)
+                                # Fool the action into pulling from a
+                                # temporary file so that both add() and
+                                # process_dependencies() can read() the
+                                # data.
+                                f.data = lambda: open(tmp, "rb")
+                                t.add(f)
 
                                 # Look for dependencies
                                 deps, u = process_dependencies(tmp, path)
@@ -623,7 +631,7 @@ def publish_pkg(pkg):
                             (pkg.name, p)
                         missing_cnt += 1
         if missing_cnt > 0:
-                raise RuntimeError, "missing packages!"
+                raise RuntimeError("missing packages!")
 
         for p in set(pkg.depend) - set(pkg.undepend):
                 # Don't make a package depend on itself.
@@ -637,7 +645,7 @@ def publish_pkg(pkg):
                 print "    %s add depend require %s" % (pkg.name, p)
                 action = actions.depend.DependencyAction(None,
                     type = "require", fmri = p)
-                t.add(cfg, id, action)
+                t.add(action)
 
         for a in pkg.extra:
                 print "    %s add %s" % (pkg.name, a)
@@ -652,13 +660,13 @@ def publish_pkg(pkg):
                             action.attrs[attr][5:] in pkgdict:
                                 action.attrs[attr] += "@%s" % \
                                     pkgdict[action.attrs[attr][5:]].version
-                t.add(cfg, id, action)
+                t.add(action)
 
         if pkg.desc:
                 print "    %s add set description=%s" % (pkg.name, pkg.desc)
                 action = actions.attribute.AttributeAction(None,
                     description = pkg.desc)
-                t.add(cfg, id, action)
+                t.add(action)
 
         if pkg.classification:
                 print "    %s add set info.classification=%s" % \
@@ -666,7 +674,7 @@ def publish_pkg(pkg):
                 attrs = dict(name="info.classification",
                              value=pkg.classification)
                 action = actions.attribute.AttributeAction(None, **attrs)
-                t.add(cfg, id, action)
+                t.add(action)
 
         if pkg.name != "SUNWipkg":
                 for p in pkg.srcpkgs:
@@ -689,19 +697,14 @@ def publish_pkg(pkg):
                         action = actions.legacy.LegacyAction(None, **attrs)
 
                         print "    %s add %s" % (pkg.name, action)
-                        t.add(cfg, id, action)
+                        t.add(action)
 
         if undeps:
                 print "Missing dependencies:", list(undeps)
 
         print "    close"
-        ret, hdrs = t.close(cfg, id, False)
-        if hdrs:
-                print "%s: %s" % (hdrs["Package-FMRI"], hdrs["State"])
-        else:
-                print "%s: FAILED" % pkg.name
-
-        print
+        pkg_fmri, pkg_state = t.close(refresh_index=not defer_refresh)
+        print "%s: %s\n" % (pkg_fmri, pkg_state)
 
 def process_link_dependencies(path, target):
         orig_target = target
@@ -722,24 +725,24 @@ def process_link_dependencies(path, target):
         else:
                 return []
 
-def process_dependencies(file, path):
-        if not elf.is_elf_object(file):
+def process_dependencies(fname, path):
+        if not elf.is_elf_object(fname):
                 return [], []
 
-        ei = elf.get_info(file)
+        ei = elf.get_info(fname)
         try:
-            ed = elf.get_dynamic(file)
+                ed = elf.get_dynamic(fname)
         except elf.ElfError:
-            deps = []
-            rp = []
+                deps = []
+                rp = []
         else:
-            deps = [
-                d[0]
-                for d in ed.get("deps", [])
-            ]
-            rp = ed.get("runpath", "").split(":")
-            if len(rp) == 1 and rp[0] == "":
-                    rp = []
+                deps = [
+                    d[0]
+                    for d in ed.get("deps", [])
+                ]
+                rp = ed.get("runpath", "").split(":")
+                if len(rp) == 1 and rp[0] == "":
+                        rp = []
 
         rp = [
             os.path.normpath(p.replace("$ORIGIN", "/" + os.path.dirname(path)))
@@ -757,7 +760,7 @@ def process_dependencies(file, path):
                         print "RUNPATH set for kernel module (%s): %s" % \
                             (path, rp)
                 # Default kernel search path
-                rp.extend(("/kernel", "/usr/kernel"));
+                rp.extend(("/kernel", "/usr/kernel"))
                 # What subdirectory should we look in for 64-bit kernel modules?
                 if ei["bits"] == 64:
                         if ei["arch"] == "i386":
@@ -833,17 +836,18 @@ def process_dependencies(file, path):
 
         return dep_pkgs, undeps
 
-def zap_strings(input, strings):
-        """ takes an input string and a list of strings to be removed, ignoring case"""
+def zap_strings(instr, strings):
+        """takes an input string and a list of strings to be removed, ignoring
+        case"""
         for s in strings:
                 ls = s.lower()
                 while True:
-                        li = input.lower()
+                        li = instr.lower()
                         i = li.find(ls)
                         if i < 0:
                                 break
-                        input = input[0:i] + input[i + len(ls):]
-        return input
+                        instr = instr[0:i] + instr[i + len(ls):]
+        return instr 
 
 def get_branch(name):
         return branch_dict.get(name, def_branch)
@@ -882,12 +886,14 @@ global_includes = []
 macro_definitions = {}
 
 try:
-        opts, args = getopt.getopt(sys.argv[1:], "B:D:I:G:T:b:dj:m:ns:v:w:")
-except getopt.GetoptError, e:
-        print "unknown option", e.opt
+        _opts, _args = getopt.getopt(sys.argv[1:], "B:D:I:G:T:b:dj:m:ns:v:w:p:")
+except getopt.GetoptError, _e:
+        print "unknown option", _e.opt
         sys.exit(1)
 
-for opt, arg in opts:
+g_proto_area = os.environ.get("ROOT", "")
+
+for opt, arg in _opts:
         if opt == "-b":
                 def_branch = arg.rstrip("abcdefghijklmnopqrstuvwxyz")
         elif opt == "-d":
@@ -895,10 +901,15 @@ for opt, arg in opts:
         elif opt == "-j": # means we're using the new argument form...
                 just_these_pkgs.append(arg)
         elif opt == "-m":
-                a = arg.split("=", 1)
-                macro_definitions.update([("$(%s)" % a[0], a[1])])
+                _a = arg.split("=", 1)
+                macro_definitions.update([("$(%s)" % _a[0], _a[1])])
         elif opt == "-n":
                 nopublish = True
+        elif opt == "-p":
+                if not os.path.exists(arg):
+                        raise RuntimeError("Invalid prototype area specified.")
+                # Clean up relative ../../, etc. out of path to proto
+                g_proto_area = os.path.realpath(arg)
         elif  opt == "-s":
                 def_repo = arg
         elif opt == "-v":
@@ -911,9 +922,9 @@ for opt, arg in opts:
                 include_path.extend(arg.split(":"))
         elif opt == "-B":
                 branch_file = file(arg)
-                for line in branch_file:
-                        if not line.startswith("#"):
-                                bfargs = line.split()
+                for _line in branch_file:
+                        if not _line.startswith("#"):
+                                bfargs = _line.split()
                                 if len(bfargs) == 2:
                                         branch_dict[bfargs[0]] = bfargs[1]
                 branch_file.close()
@@ -929,7 +940,7 @@ elif "." not in def_branch:
         print "branch id needs to be of the form 'x.y'"
         sys.exit(1)
 
-if not args:
+if not _args:
         print "need argument!"
         sys.exit(1)
 
@@ -937,10 +948,10 @@ if not wos_path:
         wos_path = def_wos_path
 
 if just_these_pkgs:
-        filelist = args
+        filelist = _args
 else:
-        filelist = args[0:1]
-        just_these_pkgs = args[1:]
+        filelist = _args[0:1]
+        just_these_pkgs = _args[1:]
 
 
 in_multiline_import = False
@@ -990,9 +1001,6 @@ print "First pass:", datetime.now()
 
 # First pass: don't actually publish anything, because we're not collecting
 # dependencies here.
-
-lexer = None
-
 def read_full_line(lexer, continuation='\\'):
         """Read a complete line, allowing for the possibility of it being
         continued over multiple lines.  Returns a single joined line, with
@@ -1007,7 +1015,7 @@ def read_full_line(lexer, continuation='\\'):
                         lines.append(line[:-1])
                 else:
                         lines.append(line)
-                        break;
+                        break
 
         return apply_macros(' '.join(lines))
 
@@ -1056,8 +1064,10 @@ class tokenlexer(shlex.shlex):
                                 break
                 return s
 
+curpkg = None
 def SolarisParse(mf):
         global curpkg
+        global in_multiline_import
 
         lexer = tokenlexer(file(mf), mf, True)
         lexer.whitespace_split = True
@@ -1085,7 +1095,8 @@ def SolarisParse(mf):
                                                         SolarisParse(f)
                                                         break
                                         else:
-                                                raise RuntimeError, "File not found: %s" % filename
+                                                raise RuntimeError("File not "
+                                                    "found: %s" % filename)
                                 try:
                                         end_package(curpkg)
                                 except Exception, e:
@@ -1116,7 +1127,7 @@ def SolarisParse(mf):
                         curpkg.imppkg = p
                         spkgname = p.pkginfo["PKG.PLAT"]
                         svr4pkgpaths[spkgname] = pkg_path(pkgspec)
-                        svr4pkgsseen[spkgname] = p;
+                        svr4pkgsseen[spkgname] = p
                         curpkg.add_svr4_src(spkgname)
 
                         junk = lexer.get_token()
@@ -1150,15 +1161,16 @@ def SolarisParse(mf):
                         f = lexer.get_token()
                         l = [o for o in curpkg.files if o.pathname == f]
                         if not l:
-                                print "Cannot drop '%s' from '%s': not found" % \
-                                    (f, curpkg.name)
+                                print "Cannot drop '%s' from '%s': not " \
+                                    "found" % (f, curpkg.name)
                         else:
                                 del curpkg.files[curpkg.files.index(l[0])]
-                                # XXX The problem here is that if we do this on a shared
-                                # file (directory, etc), then it's missing from usedlist
-                                # entirely, since we don't keep around *all* packages
-                                # delivering a shared file, just the last seen.  This
-                                # probably doesn't matter much.
+                                # XXX The problem here is that if we do this on
+                                # a shared file (directory, etc), then it's
+                                # missing from usedlist entirely, since we don't
+                                # keep around *all* packages delivering a shared
+                                # file, just the last seen.  This probably
+                                # doesn't matter much.
                                 del usedlist[f]
 
                 elif token == "chattr":
@@ -1185,9 +1197,9 @@ def SolarisParse(mf):
                 elif in_multiline_import:
                         next = lexer.get_token()
                         if next == "with":
-                                # I can't imagine this is supported, but there's no
-                                # other way to read the rest of the line without a whole
-                                # lot more pain.
+                                # I can't imagine this is supported, but there's
+                                # no other way to read the rest of the line
+                                # without a whole lot more pain.
                                 line = read_full_line(lexer)
                         else:
                                 lexer.push_token(next)
@@ -1199,11 +1211,11 @@ def SolarisParse(mf):
                                 print "ERROR(import_file):", e
                                 raise
                 else:
-                        raise "Error: unknown token '%s' (%s:%s)" % \
-                            (token, lexer.infile, lexer.lineno)
+                        raise RuntimeError("Error: unknown token '%s' "
+                            "(%s:%s)" % (token, lexer.infile, lexer.lineno))
 
-for mf in filelist:
-        SolarisParse(mf)
+for _mf in filelist:
+        SolarisParse(_mf)
 
 seenpkgs = set(i[0] for i in usedlist.values())
 
@@ -1239,17 +1251,70 @@ if just_these_pkgs:
                       )
 else:
         newpkgs = set(pkgdict.values())
-for p in sorted(newpkgs):
-        print "Package '%s'" % p.name
-        print "  Version:", p.version
-        print "  Description:", p.desc
-        print "  Classification:", p.classification
-        publish_pkg(p)
+
+# Indicates whether search indices refresh will be deferred until the end.
+defer_refresh = False
+# Indicates whether local publishing is active.
+local_publish = False
+if def_repo.startswith("file:"):
+        # If publishing to disk, the search indices should be refreshed at
+        # the end of the publishing process and the feed cache will have to be
+        # generated by starting the depot server using the provided path and
+        # then accessing it.
+        defer_refresh = True
+        local_publish = True
+
+processed = 0
+total = len(newpkgs)
+for _p in sorted(newpkgs):
+        print "Package '%s'" % _p.name
+        print "  Version:", _p.version
+        print "  Description:", _p.desc
+        print "  Classification:", _p.classification
+        try:
+                publish_pkg(_p)
+        except trans.TransactionError, _e:
+                print "%s: FAILED: %s\n" % (_p.name, _e)
+        processed += 1
+        print "%d/%d packages processed; %.2f%% complete" % (processed, total,
+            processed * 100.0 / total)
+
+if not nopublish and defer_refresh:
+        # This has to be done at the end for some publishing modes.
+        print "Updating search indices..."
+        _t = trans.Transaction(def_repo)
+        _t.refresh_index()
 
 # Ensure that the feed is updated and cached to reflect changes.
 if not nopublish:
         print "Caching RSS/Atom feed..."
-        f = urllib.urlopen("%s/feed" % def_repo)
-        f.close()
+        dc = None
+        durl = def_repo
+        if local_publish:
+                # The depot server isn't already running, so will have to be
+                # temporarily started to allow proper feed cache generation.
+                dc = depotcontroller.DepotController()
+                dc.set_depotd_path(g_proto_area + "/usr/lib/pkg.depotd")
+                dc.set_depotd_content_root(g_proto_area + "/usr/share/lib/pkg")
+
+                _scheme, _netloc, _path, _params, _query, _fragment = \
+                    urlparse.urlparse(def_repo, "file", allow_fragments=0)
+
+                dc.set_repodir(_path)
+
+                # XXX There must be a better way...
+                dc.set_port(29083)
+
+                # Start the depot
+                dc.start()
+
+                durl = "http://localhost:29083"
+
+        _f = urllib.urlopen("%s/feed" % durl)
+        _f.close()
+
+        if dc:
+                dc.stop()
+                dc = None
 
 print "Done:", datetime.now()

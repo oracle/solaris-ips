@@ -69,7 +69,7 @@ class TestPkgDepot(testutils.SingleDepotTestCase):
                         # write the name of the file into the file, so that
                         # all files have differing contents
                         f.write(p)
-                        f.close
+                        f.close()
                         self.debug("wrote %s" % p)
 
         def tearDown(self):
@@ -199,6 +199,60 @@ class TestPkgDepot(testutils.SingleDepotTestCase):
                 f = urllib2.urlopen("%s/robots.txt" % depot_url)
                 self.assert_(len(f.read()))
                 f.close()
+
+        def test_repo_create(self):
+                """Verify that starting a depot server in readonly mode with
+                a non-existent or empty repo_dir fails.  Then verify that
+                starting a depot with the same directory in publishing mode
+                works and then a readonly depot again after that works."""
+
+                dpath = os.path.join(self.get_test_prefix(), "repo_create")
+
+                opath = self.dc.get_repodir()
+                self.dc.set_repodir(dpath)
+
+                # First, test readonly mode with a repo_dir that doesn't exist.
+                self.dc.set_readonly()
+                self.dc.stop()
+                self.dc.start_expected_fail()
+                self.assert_(not self.dc.is_alive())
+
+                # Next, test readonly mode with a repo_dir that is empty.
+                os.makedirs(dpath, 0755)
+                self.dc.set_readonly()
+                self.dc.start_expected_fail()
+                self.assert_(not self.dc.is_alive())
+
+                # Next, test readwrite (publishing) mode with a non-existent
+                # repo_dir.
+                shutil.rmtree(dpath)
+                self.dc.set_readwrite()
+                self.dc.start()
+                self.assert_(self.dc.is_alive())
+                self.dc.stop()
+                self.assert_(not self.dc.is_alive())
+
+                # Next, test readwrite (publishing) mode with an empty repo_dir.
+                shutil.rmtree(dpath)
+                os.makedirs(dpath, 0755)
+                self.dc.set_readwrite()
+                self.dc.start()
+                self.assert_(self.dc.is_alive())
+                self.dc.stop()
+                self.assert_(not self.dc.is_alive())
+
+                # Finally, re-test readonly mode now that the repository has
+                # been created.
+                self.dc.set_readonly()
+                self.dc.start()
+                self.assert_(self.dc.is_alive())
+                self.dc.stop()
+                self.assert_(not self.dc.is_alive())
+
+                # Cleanup.
+                shutil.rmtree(dpath)
+                self.dc.set_repodir(opath)
+
 
 class TestDepotController(testutils.CliTestCase):
 

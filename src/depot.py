@@ -76,8 +76,6 @@ import logging
 import os
 import os.path
 import OpenSSL.crypto as crypto
-import OpenSSL.SSL as ssl
-import pkg.portable.util as os_util
 import subprocess
 import sys
 import tempfile
@@ -97,10 +95,11 @@ except ImportError:
 
 import pkg.catalog as catalog
 from pkg.misc import port_available, msg, emsg, setlocale
+import pkg.portable.util as os_util
 import pkg.search_errors as search_errors
 import pkg.server.config as config
 import pkg.server.depot as depot
-import pkg.server.repository as repo
+import pkg.server.depotresponse as dr
 import pkg.server.repositoryconfig as rc
 
 class LogSink(object):
@@ -306,9 +305,8 @@ if __name__ == "__main__":
                                             "schemes."
 
                                 # Rebuild the url with the sanitized components.
-                                proxy_base = urlparse.urlunparse((scheme, netloc,
-                                    path, params, query, fragment)
-                                    )
+                                proxy_base = urlparse.urlunparse((scheme,
+                                    netloc, path, params, query, fragment))
                         elif opt == "--readonly":
                                 readonly = True
                         elif opt == "--rebuild":
@@ -367,12 +365,13 @@ if __name__ == "__main__":
                                 if f.startswith("exec:"):
                                         if os_util.get_canonical_os_type() != \
                                           "unix":
-                                            # Don't allow a somewhat insecure
-                                            # authentication method on some
-                                            # platforms.
-                                            raise OptionError, "exec is not " \
-                                              "a supported dialog type for " \
-                                              "this operating system."
+                                                # Don't allow a somewhat
+                                                # insecure authentication method
+                                                # on some platforms.
+                                                raise OptionError, "exec is " \
+                                                    "not a supported dialog " \
+                                                    "type for this operating " \
+                                                    "system."
 
                                         f = os.path.abspath(f.split(
                                             "exec:")[1])
@@ -385,10 +384,10 @@ if __name__ == "__main__":
                                         f = "exec:%s" % f
 
                                 ssl_dialog = f
-        except getopt.GetoptError, e:
-                usage("pkg.depotd: %s" % e.msg)
-        except OptionError, e:
-                usage("pkg.depotd: option: %s -- %s" % (opt, e))
+        except getopt.GetoptError, _e:
+                usage("pkg.depotd: %s" % _e.msg)
+        except OptionError, _e:
+                usage("pkg.depotd: option: %s -- %s" % (opt, _e))
         except (ArithmeticError, ValueError):
                 usage("pkg.depotd: illegal option value: %s specified " \
                     "for option: %s" % (arg, opt))
@@ -422,10 +421,8 @@ if __name__ == "__main__":
                 # Not applicable for reindexing operations.
                 content_root = None
 
-        scfg = config.SvrConfig(repo_path, content_root, AUTH_DEFAULT)
-
-        if rebuild:
-                scfg.destroy_catalog()
+        scfg = config.SvrConfig(repo_path, content_root, AUTH_DEFAULT,
+            auto_create=not readonly, fork_allowed=True)
 
         if readonly:
                 scfg.set_read_only()
@@ -435,10 +432,10 @@ if __name__ == "__main__":
 
         try:
                 scfg.init_dirs()
-        except (RuntimeError, EnvironmentError), e:
+        except (config.SvrConfigError, EnvironmentError), _e:
                 print "pkg.depotd: an error occurred while trying to " \
                     "initialize the depot repository directory " \
-                    "structures:\n%s" % e
+                    "structures:\n%s" % _e
                 sys.exit(1)
 
         key_data = None
@@ -452,11 +449,11 @@ if __name__ == "__main__":
                                         stdout=subprocess.PIPE,
                                         stderr=None)
                                 p.wait()
-                        except Exception, e:
+                        except Exception, __e:
                                 print "pkg.depotd: an error occurred while " \
                                     "executing [%s]; unable to obtain the " \
                                     "passphrase needed to decrypt the SSL" \
-                                    "private key file: %s" (cmd, e)
+                                    "private key file: %s" % (cmdline, __e)
                                 sys.exit(1)
                         return p.stdout.read().strip("\n")
 
@@ -480,14 +477,14 @@ if __name__ == "__main__":
                         key_data.write(crypto.dump_privatekey(
                             crypto.FILETYPE_PEM, pkey))
                         key_data.seek(0)
-                except EnvironmentError, e:
+                except EnvironmentError, _e:
                         print "pkg.depotd: unable to read the SSL private " \
-                            "key file: %s" % e
+                            "key file: %s" % _e
                         sys.exit(1)
-                except crypto.Error, e:
+                except crypto.Error, _e:
                         print "pkg.depotd: authentication or cryptography " \
                             "failure while attempting to decode\nthe SSL " \
-                            "private key file: %s" % e
+                            "private key file: %s" % _e
                         sys.exit(1)
                 else:
                         # Redirect the server to the decrypted key file.
@@ -557,7 +554,7 @@ if __name__ == "__main__":
         # Now that our logging, etc. has been setup, it's safe to perform any
         # remaining preparation.
         if reindex:
-                scfg.acquire_catalog(rebuild=False)
+                scfg.acquire_catalog(rebuild=False, verbose=True)
                 try:
                         scfg.catalog.run_update_index()
                 except search_errors.IndexingException, e:
@@ -571,7 +568,7 @@ if __name__ == "__main__":
                 # We have to override cherrypy's default response_class so that
                 # we have access to the write() callable to stream data
                 # directly to the client.
-                "wsgi.response_class": depot.DepotResponse,
+                "wsgi.response_class": dr.DepotResponse,
             },
             "/robots.txt": {
                 "tools.staticfile.on": True,
@@ -600,21 +597,22 @@ if __name__ == "__main__":
 
         scfg.acquire_in_flight()
         try:
-                scfg.acquire_catalog()
-        except catalog.CatalogPermissionsException, e:
-                emsg("pkg.depotd: %s" % e)
+                scfg.acquire_catalog(rebuild=rebuild, verbose=True)
+        except catalog.CatalogPermissionsException, _e:
+                emsg("pkg.depotd: %s" % _e)
                 sys.exit(1)
 
         try:
-                root = cherrypy.Application(repo.Repository(scfg,
+                root = cherrypy.Application(depot.DepotHTTP(scfg,
                     repo_config_file))
-        except rc.InvalidAttributeValueError, e:
-                emsg("pkg.depotd: repository.conf error: %s" % e)
+        except rc.InvalidAttributeValueError, _e:
+                emsg("pkg.depotd: repository.conf error: %s" % _e)
                 sys.exit(1)
 
         try:
                 cherrypy.quickstart(root, config=conf)
-        except Exception, e:
+        except Exception, _e:
                 emsg("pkg.depotd: unknown error starting depot server, " \
                     "illegal option value specified?")
+                emsg(_e)
                 sys.exit(1)

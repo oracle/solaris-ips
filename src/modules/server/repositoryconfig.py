@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 import ConfigParser
@@ -305,8 +305,9 @@ class RepositoryConfig(object):
 
                 r = cp.read(pathname)
                 if len(r) == 0:
-                        raise RuntimeError("Couldn't read configuration file: "
-                        "%s" % pathname)
+                        raise RuntimeError(_("Unable to locate or read the "
+                            "specified repository configuration file: "
+                            "'%s'.") % pathname)
 
                 assert r[0] == pathname
                 for section in self._attrs:

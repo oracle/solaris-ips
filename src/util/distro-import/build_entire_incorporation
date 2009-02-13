@@ -21,22 +21,37 @@
 #
 
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 export PATH=../../../proto/root_$(uname -p)/usr/bin:$PATH
 export PYTHONPATH=../../../proto/root_$(uname -p)/usr/lib/python2.4/vendor-packages
 export PACKAGEPATH=../../../packages/i386
 
+#
 # This needs to be kept in sync with the redistributable version number.
 #
 REDIST_CLUSTER_VERSION=0.1
 
 buildid=$(echo $1 | tr -d '[a-z]')
-# create a temp image so we can get things from the repo
-pkg image-create -a opensolaris.org=$REPO ./temp_image
-pkg -R ./temp_image contents -o action.raw -H -t depend -r \
-	redistributable@$REDIST_CLUSTER_VERSION-0.${buildid} | \
-	sed 's/type=require/type=incorporate/'
-rm -r ./temp_image
+
+# These are both hacky, horrible ways to get this information, but until there
+# is a client API in place that can handle all repository types, it's necessary.
+if [[ "$REPO" == http* ]]; then
+        # create a temp image so we can get things from the repo
+        pkg image-create -a opensolaris.org=$REPO ./temp_image
+        pkg -R ./temp_image contents -o action.raw -H -t depend -r \
+                redistributable@$REDIST_CLUSTER_VERSION-0.${buildid} | \
+                sed 's/type=require/type=incorporate/'
+        rm -r ./temp_image
+elif [[ "$REPO" == file* ]]; then
+        REPO_PATH=$(echo $REPO | sed 's|file://||')
+        MPATH=$REPO_PATH/pkg/redistributable
+        MANIFEST=$(ls $MPATH/${REDIST_CLUSTER_VERSION}%2C*-0.${buildid}* | \
+            sort -r | head -1)
+        cat $MANIFEST | grep '^depend' | sed 's/type=require/type=incorporate/'
+else
+        exit 1
+fi
+
 echo 'set name=description value="entire incorporation"'

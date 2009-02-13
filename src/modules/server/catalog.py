@@ -19,33 +19,41 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
-import threading
-import signal
-import os
-import sys
-import cherrypy
+try:
+        import cherrypy
+except ImportError:
+        # Optional dependency.
+        pass
 
-import pkg.pkgsubprocess as subprocess
+import os
+import signal
+import sys
+import threading
+
 import pkg.catalog as catalog
 import pkg.fmri as fmri
 import pkg.indexer as indexer
+import pkg.pkgsubprocess as subprocess
 import pkg.server.query_engine as query_e
 
 from pkg.misc import SERVER_DEFAULT_MEM_USE_KB
-from pkg.misc import emsg
 
 class ServerCatalog(catalog.Catalog):
         """The catalog information which is only needed by the server."""
 
-        def __init__(self, cat_root, authority = None, pkg_root = None,
-            read_only = False, index_root = None, repo_root = None,
-            rebuild = True):
+        def __init__(self, cat_root, authority=None, pkg_root=None,
+            read_only=False, index_root=None, repo_root=None,
+            rebuild=False, verbose=False, fork_allowed=False):
 
+                self.fork_allowed = fork_allowed
                 self.index_root = index_root
                 self.repo_root = repo_root
+                # XXX this is a cheap hack to determine whether information
+                # about catalog operations should be logged using cherrypy.
+                self.verbose = verbose
 
                 # The update_handle lock protects the update_handle variable.
                 # This allows update_handle to be checked and acted on in a
@@ -65,8 +73,8 @@ class ServerCatalog(catalog.Catalog):
                                 signal.signal(signal.SIGCHLD,
                                     self.child_handler)
                         except ValueError:
-                                emsg("Tried to create signal handler in "
-                                    "a thread other than the main thread")
+                                self.__log("Tried to create signal handler in "
+                                    "a thread other than the main thread.")
 
                 self.searchdb_update_handle = None
                 self._search_available = False
@@ -77,7 +85,7 @@ class ServerCatalog(catalog.Catalog):
 
                 catalog.Catalog.__init__(self, cat_root, authority, pkg_root,
                     read_only, rebuild)
-                        
+
                 searchdb_file = os.path.join(self.repo_root, "search")
                 try:
                         os.unlink(searchdb_file + ".pag")
@@ -90,8 +98,14 @@ class ServerCatalog(catalog.Catalog):
 
                 if not self._search_available:
                         self._check_search()
+                        if not rebuild and not read_only and \
+                            not self._search_available:
+                                # If search still isn't available, then the
+                                # search indices need to be rebuilt.
+                                self.refresh_index()
 
-        def whence(self, cmd):
+        @staticmethod
+        def whence(cmd):
                 if cmd[0] != '/':
                         tmp_cmd = cmd
                         cmd = None
@@ -103,6 +117,13 @@ class ServerCatalog(catalog.Catalog):
                                         break
                         assert cmd
                 return cmd
+
+        def __log(self, msg, context=None):
+                """Used to notify callers about operations performed by the
+                catalog."""
+                if self.verbose and "cherrypy" in globals():
+                        # XXX generic logging mechanism needed
+                        cherrypy.log(msg, context)
 
         def refresh_index(self):
                 """ This function refreshes the search indexes if there any new
@@ -124,7 +145,7 @@ class ServerCatalog(catalog.Catalog):
                             fmris_to_index)
 
                         if fmris_to_index:
-                                if os.name == 'posix':
+                                if os.name == "posix" and self.fork_allowed:
                                         cmd = self.whence(sys.argv[0])
                                         args = (sys.executable, cmd,
                                             "--refresh-index", "-d",
@@ -132,11 +153,11 @@ class ServerCatalog(catalog.Catalog):
                                         try:
                                                 self.searchdb_update_handle = \
                                                     subprocess.Popen(args,
-                                                        stderr = \
-                                                        subprocess.STDOUT)
+                                                    stderr=subprocess.STDOUT)
                                         except Exception, e:
-                                                emsg("Starting the indexing "
-                                                    "process failed")
+                                                self.__log("Starting the "
+                                                    "indexing process failed: "
+                                                    "%s" % e)
                                                 raise
                                 else:
                                         self.run_update_index()
@@ -149,8 +170,7 @@ class ServerCatalog(catalog.Catalog):
                                     SERVER_DEFAULT_MEM_USE_KB)
                                 ind.setup()
                                 if not self._search_available:
-                                        cherrypy.log("Search Available",
-                                            "INDEX")
+                                        self.__log("Search Available", "INDEX")
                                 self._search_available = True
                 finally:
                         self.searchdb_update_handle_lock.release()
@@ -169,7 +189,7 @@ class ServerCatalog(catalog.Catalog):
                     fmris_to_index)
 
                 if fmris_to_index:
-                        cherrypy.log("Updating search indices", "INDEX")
+                        self.__log("Updating search indices", "INDEX")
                         self.__update_searchdb_unlocked(fmris_to_index)
                 else:
                         ind = indexer.Indexer(self.index_root,
@@ -181,8 +201,8 @@ class ServerCatalog(catalog.Catalog):
                     SERVER_DEFAULT_MEM_USE_KB)
                 if ind.check_index_existence():
                         self._search_available = True
-                        cherrypy.log("Search Available", "INDEX")
-                        
+                        self.__log("Search Available", "INDEX")
+
         def build_catalog(self):
                 """ Creates an Indexer instance and after building the
                 catalog, refreshes the index.
@@ -195,15 +215,15 @@ class ServerCatalog(catalog.Catalog):
                 self.refresh_index()
 
         def child_handler(self, sig, frame):
-                """ Handler method for the SIGCLD signal.  Checks to see if the
+                """ Handler method for the SIGCHLD signal.  Checks to see if the
                 search database update child has finished, and enables searching
                 if it finished successfully, or logs an error if it didn't.
                 """
                 try:
                         signal.signal(signal.SIGCHLD, self.child_handler)
                 except ValueError:
-                        emsg("Tried to create signal handler in "
-                            "a thread other than the main thread")
+                        self.__log("Tried to create signal handler in a thread "
+                            "other than the main thread.")
                 # If there's no update_handle, then another subprocess was
                 # spun off and that was what finished. If the poll() returns
                 # None, then while the indexer was running, another process
@@ -217,7 +237,7 @@ class ServerCatalog(catalog.Catalog):
 
                 if rc == 0:
                         self._search_available = True
-                        cherrypy.log("Search indexes updated and available.",
+                        self.__log("Search indexes updated and available.",
                             "INDEX")
                         # Need to acquire this lock to prevent the possibility
                         # of a race condition with refresh_index where a needed
@@ -234,11 +254,12 @@ class ServerCatalog(catalog.Catalog):
                 elif rc > 0:
                         # If the refresh of the index failed, defensively
                         # declare that search is unavailable.
-                        cherrypy.log("ERROR building search database, exit "
-                            "code: %s" % rc, "INDEX")
+                        self.__log("ERROR building search database, exit code: "
+                            "%s" % rc, "INDEX")
                         try:
-                                cherrypy.log(
+                                self.__log(
                                     self.searchdb_update_handle.stderr.read())
+                                self.searchdb_update_handle.stderr.read()
                         except KeyboardInterrupt:
                                 raise
                         except:
@@ -257,7 +278,7 @@ class ServerCatalog(catalog.Catalog):
 
                 # Rather than storing those, simply pass along the
                 # file and have the indexer take care of opening and
-                # reading the manifest file. Since the indexer 
+                # reading the manifest file. Since the indexer
                 # processes and discards the manifest structure (and its
                 # search dictionary for that matter) this
                 # is much more memory efficient.
@@ -286,18 +307,18 @@ class ServerCatalog(catalog.Catalog):
                 return self._search_available or self._check_search()
 
         @staticmethod
-        def read_catalog(catalog, dir, auth=None):
-                """Read the catalog file in "dir" and combine it with the
+        def read_catalog(cat, path, auth=None):
+                """Read the catalog file in "path" and combine it with the
                 existing data in "catalog"."""
 
-                catf = file(os.path.join(dir, "catalog"))
+                catf = file(os.path.join(path, "catalog"))
                 for line in catf:
                         if not line.startswith("V pkg") and \
                             not line.startswith("C pkg"):
                                 continue
 
                         f = fmri.PkgFmri(line[7:])
-                        ServerCatalog.cache_fmri(catalog, f, auth)
+                        ServerCatalog.cache_fmri(cat, f, auth)
 
                 catf.close()
 

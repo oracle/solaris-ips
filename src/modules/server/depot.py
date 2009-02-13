@@ -1,110 +1,699 @@
 #!/usr/bin/python2.4
 #
-# copyright (c) 2004-2007, cherrypy team (team@cherrypy.org)
-# all rights reserved.
+# CDDL HEADER START
 #
-# redistribution and use in source and binary forms, with or without modification,
-# are permitted provided that the following conditions are met:
+# The contents of this file are subject to the terms of the
+# Common Development and Distribution License (the "License").
+# You may not use this file except in compliance with the License.
 #
-#     * redistributions of source code must retain the above copyright notice,
-#       this list of conditions and the following disclaimer.
-#     * redistributions in binary form must reproduce the above copyright notice,
-#       this list of conditions and the following disclaimer in the documentation
-#       and/or other materials provided with the distribution.
-#     * neither the name of the cherrypy team nor the names of its contributors
-#       may be used to endorse or promote products derived from this software
-#       without specific prior written permission.
+# You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+# or http://www.opensolaris.org/os/licensing.
+# See the License for the specific language governing permissions
+# and limitations under the License.
 #
-# this software is provided by the copyright holders and contributors "as is" and
-# any express or implied warranties, including, but not limited to, the implied
-# warranties of merchantability and fitness for a particular purpose are
-# disclaimed. in no event shall the copyright owner or contributors be liable
-# for any direct, indirect, incidental, special, exemplary, or consequential
-# damages (including, but not limited to, procurement of substitute goods or
-# services; loss of use, data, or profits; or business interruption) however
-# caused and on any theory of liability, whether in contract, strict liability,
-# or tort (including negligence or otherwise) arising in any way out of the use
-# of this software, even if advised of the possibility of such damage.
+# When distributing Covered Code, include this CDDL HEADER in each
+# file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+# If applicable, add the following below this CDDL HEADER, with the
+# fields enclosed by brackets "[]" replaced with your own identifying
+# information: Portions Copyright [yyyy] [name of copyright owner]
 #
+# CDDL HEADER END
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+
+#
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
-import sys as _sys
+import cherrypy
+from cherrypy.lib.static import serve_file
 
-import cherrypy as _cherrypy
-from cherrypy import _cperror
-from cherrypy import _cpwsgi
+import cStringIO
+import errno
+import httplib
+import inspect
+import os
+import re
+import socket
+import tarfile
+# Without the below statements, tarfile will trigger calls to getpwuid and
+# getgrgid for every file downloaded.  This in turn leads to nscd usage which
+# limits the throughput of the depot process.  Setting these attributes to
+# undefined causes tarfile to skip these calls in tarfile.gettarinfo().  This
+# information is unnecesary as it will not be used by the client.
+tarfile.pwd = None
+tarfile.grp = None
 
-class DepotResponse(_cpwsgi.AppResponse):
-        """ This class is a partial combination of a cherrypy's original
-            AppResponse class with a change to "Stage 2" of setapp to provide
-            access to the write() callable specified by PEP 333.  Access to this
-            callable is necessary to maintain a minimal memory and disk
-            footprint for streaming operations performed by the depot server,
-            such as filelist. """
+import urllib
 
-        def __add_write_hook(self, s, h, exc):
-                # The WSGI specification includes a special write()
-                # callable returned by the start_response callable.
-                # cherrypy traditionally hides this from applications
-                # as new WSGI applications and frameworks are not
-                # supposed to use it if at all possible.  The write()
-                # callable is considered a hack to support imperative
-                # streaming APIs.
-                #
-                # As a result, we have to provide access to the write()
-                # callable ourselves by replacing the default
-                # response_class with our own.  This callable is
-                # provided so that streaming APIs can be treated as if
-                # their output had been yielded by an iterable.
-                #
-                # The cherrypy singleton below is thread-local, and
-                # guaranteed to only be set for a specific request.
-                # This means any callables that use the singleton
-                # to access this method are guaranteed to write output
-                # back to the same request.
-                #
-                # See: http://www.python.org/dev/peps/pep-0333/
-                #
-                _cherrypy.response.write = self.start_response(s, h, exc)
+import pkg
+import pkg.actions as actions
+import pkg.catalog as catalog
+import pkg.fmri as fmri
+import pkg.manifest as manifest
+import pkg.misc as misc
 
-        def setapp(self):
+import pkg.server.face as face
+import pkg.server.repository as repo
+
+class Dummy(object):
+        """Dummy object used for dispatch method mapping."""
+        pass
+
+class DepotHTTP(object):
+        """The DepotHTTP object is intended to be used as a cherrypy
+        application object and represents the set of operations that a
+        pkg.depotd server provides to HTTP-based clients."""
+
+        REPO_OPS_DEFAULT = [
+            "versions",
+            "search",
+            "catalog",
+            "info",
+            "manifest",
+            "filelist",
+            "rename",
+            "file",
+            "open",
+            "close",
+            "abandon",
+            "add"
+        ]
+
+        REPO_OPS_READONLY = [
+            "versions",
+            "search",
+            "catalog",
+            "info",
+            "manifest",
+            "filelist",
+            "file"
+        ]
+
+        REPO_OPS_MIRROR = [
+            "versions",
+            "filelist",
+            "file"
+        ]
+
+        def __init__(self, scfg, cfgpathname=None):
+                """Initialize and map the valid operations for the depot.  While
+                doing so, ensure that the operations have been explicitly
+                "exposed" for external usage."""
+
+                self.__repo = repo.Repository(scfg, cfgpathname)
+                self.rcfg = self.__repo.rcfg
+                self.scfg = self.__repo.scfg
+
+                # Handles the BUI (Browser User Interface).
+                face.init(scfg, self.rcfg)
+
+                # Store any possible configuration changes.
+                self.__repo.write_config()
+
+                if scfg.is_mirror():
+                        self.ops_list = self.REPO_OPS_MIRROR
+                elif scfg.is_read_only():
+                        self.ops_list = self.REPO_OPS_READONLY
+                else:
+                        self.ops_list = self.REPO_OPS_DEFAULT
+
+                self.vops = {}
+                for name, func in inspect.getmembers(self, inspect.ismethod):
+                        m = re.match("(.*)_(\d+)", name)
+
+                        if not m:
+                                continue
+
+                        op = m.group(1)
+                        ver = m.group(2)
+
+                        if op not in self.ops_list:
+                                continue
+
+                        func.__dict__["exposed"] = True
+
+                        if op in self.vops:
+                                self.vops[op].append(ver)
+                        else:
+                                # We need a Dummy object here since we need to
+                                # be able to set arbitrary attributes that
+                                # contain function pointers to our object
+                                # instance.  CherryPy relies on this for its
+                                # dispatch tree mapping mechanism.  We can't
+                                # use other object types here since Python
+                                # won't let us set arbitary attributes on them.
+                                setattr(self, op, Dummy())
+                                self.vops[op] = [ver]
+
+                        opattr = getattr(self, op)
+                        setattr(opattr, ver, func)
+
+        @cherrypy.expose
+        def default(self, *tokens, **params):
+                """Any request that is not explicitly mapped to the repository
+                object will be handled by the "externally facing" server
+                code instead."""
+
+                op = None
+                if len(tokens) > 0:
+                        op = tokens[0]
+
+                if op in self.REPO_OPS_DEFAULT and op not in self.vops:
+                        raise cherrypy.HTTPError(httplib.NOT_FOUND,
+                            "Operation not supported in current server mode.")
+                elif op not in self.vops:
+                        request = cherrypy.request
+                        response = cherrypy.response
+                        return face.respond(self.scfg, self.rcfg,
+                            request, response, *tokens, **params)
+
+                # If we get here, we know that 'operation' is supported.
+                # Ensure that we have a integer protocol version.
                 try:
-                        self.request = self.get_request()
-                        s, h, b = self.get_response()
-                        self.iter_response = iter(b)
-                        self.__add_write_hook(s, h, None)
-                except self.throws:
-                        self.close()
-                        raise
-                except _cherrypy.InternalRedirect, ir:
-                        self.environ['cherrypy.previous_request'] = _cherrypy.serving.request
-                        self.close()
-                        self.iredirect(ir.path, ir.query_string)
-                        return
-                except:
-                        if getattr(self.request, "throw_errors", False):
-                                self.close()
-                                raise
+                        ver = int(tokens[1])
+                except IndexError:
+                        raise cherrypy.HTTPError(httplib.BAD_REQUEST,
+                            "Missing version\n")
+                except ValueError:
+                        raise cherrypy.HTTPError(httplib.BAD_REQUEST,
+                            "Non-integer version\n")
 
-                        tb = _cperror.format_exc()
-                        _cherrypy.log(tb, severity=40)
-                        if not getattr(self.request, "show_tracebacks", True):
-                                tb = ""
-                        s, h, b = _cperror.bare_error(tb)
-                        self.iter_response = iter(b)
+                # Assume 'version' is not supported for the operation.
+                raise cherrypy.HTTPError(httplib.NOT_FOUND, "Version '%s' not "
+                    "supported for operation '%s'\n" % (ver, op))
 
+        @cherrypy.tools.response_headers(headers = \
+            [("Content-Type", "text/plain")])
+        def versions_0(self, *tokens):
+                """Output a text/plain list of valid operations, and their
+                versions, supported by the repository."""
+
+                versions = "pkg-server %s\n" % pkg.VERSION
+                versions += "\n".join(
+                    "%s %s" % (op, " ".join(vers))
+                    for op, vers in self.vops.iteritems()
+                ) + "\n"
+                return versions
+
+        def search_0(self, *tokens):
+                """Based on the request path, return a list of token type / FMRI
+                pairs."""
+
+                response = cherrypy.response
+                response.headers["Content-type"] = "text/plain"
+
+                try:
+                        token = tokens[0]
+                except IndexError:
+                        token = None
+
+                try:
+                        res = self.__repo.search(token)
+                except repo.RepositorySearchTokenError, e:
+                        raise cherrypy.HTTPError(httplib.BAD_REQUEST, str(e))
+                except repo.RepositorySearchUnavailableError, e:
+                        raise cherrypy.HTTPError(httplib.SERVICE_UNAVAILABLE,
+                            str(e))
+                except repo.RepositoryError, e:
+                        # Treat any remaining repository error as a 404, but
+                        # log the error and include the real failure
+                        # information.
+                        cherrypy.log("Request failed: %s" % str(e))
+                        raise cherrypy.HTTPError(httplib.NOT_FOUND, str(e))
+
+                # This is a special hook just for this request so that if an
+                # exception is encountered, the search will be finished properly
+                # regardless of which thread is executing.  It only needs to be
+                # called if the call to search() succeeded.
+                cherrypy.request.hooks.attach('on_end_request',
+                    self.__repo.search_done, failsafe=True)
+
+                # The query_engine returns four pieces of information in the
+                # proper order. Put those four pieces of information into a
+                # string that the client can understand.
+                def output():
+                        for l in res:
+                                yield ("%s %s %s %s\n" % (l[0], l[1], l[2],
+                                    l[3]))
+                return output()
+
+        search_0._cp_config = { "response.stream": True }
+
+        def catalog_0(self, *tokens):
+                """Provide an incremental update or full version of the
+                catalog, as appropriate, to the requesting client."""
+
+                request = cherrypy.request
+                lm = request.headers.get("If-Modified-Since", None)
+                if lm is not None:
                         try:
-                                self.__add_write_hook(s, h, _sys.exc_info())
-                        except:
-                                # "The application must not trap any exceptions raised by
-                                # start_response, if it called start_response with exc_info.
-                                # Instead, it should allow such exceptions to propagate
-                                # back to the server or gateway."
-                                # But we still log and call close() to clean up ourselves.
-                                _cherrypy.log(traceback=True, severity=40)
-                                self.close()
-                                raise
+                                lm = catalog.ts_to_datetime(lm)
+                        except ValueError:
+                                lm = None
+                        else:
+                                if not self.scfg.updatelog.enough_history(lm):
+                                        # Ignore incremental requests if there
+                                        # isn't enough history to provide one.
+                                        lm = None
 
+                response = cherrypy.response
+                response.headers["Content-type"] = "text/plain"
+                response.headers["Last-Modified"] = \
+                    self.scfg.catalog.last_modified()
+
+                if lm:
+                        # If a last modified date and time was provided, then an
+                        # incremental update is being requested.
+                        response.headers["X-Catalog-Type"] = "incremental"
+                else:
+                        response.headers["X-Catalog-Type"] = "full"
+                        response.headers["Content-Length"] = str(
+                            self.scfg.catalog.size())
+
+                def output():
+                        try:
+                                for l in self.__repo.catalog(lm):
+                                        yield l
+                        except repo.RepositoryCatalogNoUpdatesError:
+                                response.status = httplib.NOT_MODIFIED
+                                return
+                        except repo.RepositoryError, e:
+                                # Can't do anything in a streaming generator
+                                # except log the error and return.
+                                cherrypy.log("Request failed: %s" % str(e))
+                                return
+
+                return output()
+
+        catalog_0._cp_config = { "response.stream": True }
+
+        def manifest_0(self, *tokens):
+                """The request is an encoded pkg FMRI.  If the version is
+                specified incompletely, we return an error, as the client is
+                expected to form correct requests based on its interpretation
+                of the catalog and its image policies."""
+
+                # Parse request into FMRI component and decode.
+                try:
+                        # If more than one token (request path component) was
+                        # specified, assume that the extra components are part
+                        # of the fmri and have been split out because of bad
+                        # proxy behaviour.
+                        pfmri = "/".join(tokens)
+                        fpath = self.__repo.manifest(pfmri)
+                except (IndexError, repo.RepositoryInvalidFMRIError), e:
+                        raise cherrypy.HTTPError(httplib.NOT_FOUND, str(e))
+                except repo.RepositoryError, e:
+                        # Treat any remaining repository error as a 404, but
+                        # log the error and include the real failure
+                        # information.
+                        cherrypy.log("Request failed: %s" % str(e))
+                        raise cherrypy.HTTPError(httplib.NOT_FOUND, str(e))
+
+                # Send manifest
+                return serve_file(fpath, "text/plain")
+
+        manifest_0._cp_config = { "response.stream": True }
+
+        @staticmethod
+        def _tar_stream_close(**kwargs):
+                """This is a special function to finish a tar_stream-based
+                request in the event of an exception."""
+
+                tar_stream = cherrypy.request.tar_stream
+                if tar_stream:
+                        try:
+                                # Attempt to close the tar_stream now that we
+                                # are done processing the request.
+                                tar_stream.close()
+                        except Exception:
+                                # All exceptions are intentionally caught as
+                                # this is a failsafe function and must happen.
+
+                                # tarfile most likely failed trying to flush
+                                # its internal buffer.  To prevent tarfile from
+                                # causing further exceptions during __del__,
+                                # we have to lie and say the fileobj has been
+                                # closed.
+                                tar_stream.fileobj.closed = True
+                                cherrypy.log("Request aborted: ",
+                                    traceback=True)
+
+                        cherrypy.request.tar_stream = None
+
+        def filelist_0(self, *tokens, **params):
+                """Request data contains application/x-www-form-urlencoded
+                entries with the requested filenames.  The resulting tar stream
+                is output directly to the client. """
+
+                try:
+                        self.scfg.inc_flist()
+
+                        # Create a dummy file object that hooks to the write()
+                        # callable which is all tarfile needs to output the
+                        # stream.  This will write the bytes to the client
+                        # through our parent server process.
+                        f = Dummy()
+                        f.write = cherrypy.response.write
+
+                        tar_stream = tarfile.open(mode = "w|",
+                            fileobj = f)
+
+                        # We can use the request object for storage of data
+                        # specific to this request.  In this case, it allows us
+                        # to provide our on_end_request function with access to
+                        # the stream we are processing.
+                        cherrypy.request.tar_stream = tar_stream
+
+                        # This is a special hook just for this request so that
+                        # if an exception is encountered, the stream will be
+                        # closed properly regardless of which thread is
+                        # executing.
+                        cherrypy.request.hooks.attach("on_end_request",
+                            self._tar_stream_close, failsafe = True)
+
+                        for v in params.values():
+                                filepath = os.path.normpath(os.path.join(
+                                    self.scfg.file_root,
+                                    misc.hash_file_name(v)))
+
+                                # If file isn't here, skip it
+                                if not os.path.exists(filepath):
+                                        continue
+
+                                tar_stream.add(filepath, v, False)
+
+                                self.scfg.inc_flist_files()
+
+                        # Flush the remaining bytes to the client.
+                        tar_stream.close()
+                        cherrypy.request.tar_stream = None
+
+                except Exception, e:
+                        # If we find an exception of this type, the
+                        # client has most likely been interrupted.
+                        if isinstance(e, socket.error) \
+                            and e.args[0] == errno.EPIPE:
+                                return
+                        raise
+
+                yield ""
+
+        # We have to configure the headers either through the _cp_config
+        # namespace, or inside the function itself whenever we are using
+        # a streaming generator.  This is because headers have to be setup
+        # before the response even begins and the point at which @tools
+        # hooks in is too late.
+        filelist_0._cp_config = {
+                "response.stream": True,
+                "tools.response_headers.on": True,
+                "tools.response_headers.headers": [("Content-Type",
+                "application/data")]
+        }
+
+        def rename_0(self, *tokens, **params):
+                """Renames an existing package specified by Src-FMRI to
+                Dest-FMRI.  Returns no output."""
+
+                try:
+                        src_fmri = params["Src-FMRI"]
+                except KeyError:
+                        raise cherrypy.HTTPError(httplib.BAD_REQUEST,
+                            "No source FMRI present.")
+
+                try:
+                        dest_fmri = params['Dest-FMRI']
+                except KeyError:
+                        raise cherrypy.HTTPError(httplib.BAD_REQUEST,
+                            "No destination FMRI present.")
+
+                try:
+                        self.__repo.rename(src_fmri, dest_fmri)
+                except (repo.RepositoryInvalidFMRIError,
+                    repo.RepositoryRenameFailureError), e:
+                        raise cherrypy.HTTPError(httplib.BAD_REQUEST, str(e))
+                except repo.RepositoryError, e:
+                        # Treat any remaining repository error as a 404, but
+                        # log the error and include the real failure
+                        # information.
+                        cherrypy.log("Request failed: %s" % str(e))
+                        raise cherrypy.HTTPError(httplib.NOT_FOUND, str(e))
+
+        def file_0(self, *tokens):
+                """Outputs the contents of the file, named by the SHA-1 hash
+                name in the request path, directly to the client."""
+
+                try:
+                        fhash = tokens[0]
+                except IndexError:
+                        fhash = None
+
+                try:
+                        fpath = self.__repo.file(fhash)
+                except repo.RepositoryFileNotFoundError, e:
+                        raise cherrypy.HTTPError(httplib.NOT_FOUND, str(e))
+                except repo.RepositoryError, e:
+                        # Treat any remaining repository error as a 404, but
+                        # log the error and include the real failure
+                        # information.
+                        cherrypy.log("Request failed: %s" % str(e))
+                        raise cherrypy.HTTPError(httplib.NOT_FOUND, str(e))
+
+                return serve_file(fpath, "application/data")
+
+        file_0._cp_config = { "response.stream": True }
+
+        def open_0(self, *tokens):
+                """Starts a transaction for the package name specified in the
+                request path.  Returns no output."""
+
+                request = cherrypy.request
+                response = cherrypy.response
+
+                client_release = request.headers.get("Client-Release", None)
+                try:
+                        pfmri = tokens[0]
+                except IndexError:
+                        pfmri = None
+
+                # XXX Authentication will be handled by virtue of possessing a
+                # signed certificate (or a more elaborate system).
+
+                try:
+                        trans_id = self.__repo.open(client_release, pfmri)
+                        response.headers["Content-type"] = "text/plain"
+                        response.headers["Transaction-ID"] = trans_id
+                except repo.RepositoryError, e:
+                        # Treat any remaining repository error as a 404, but
+                        # log the error and include the real failure
+                        # information.
+                        cherrypy.log("Request failed: %s" % str(e))
+                        raise cherrypy.HTTPError(httplib.NOT_FOUND, str(e))
+
+        def close_0(self, *tokens):
+                """Ends an in-flight transaction for the Transaction ID
+                specified in the request path.
+
+                Returns a Package-FMRI and State header in the response
+                indicating the published FMRI and the state of the package
+                in the catalog.  Returns no output."""
+
+                try:
+                        # cherrypy decoded it, but we actually need it encoded.
+                        trans_id = urllib.quote(tokens[0], "")
+                except IndexError:
+                        trans_id = None
+
+                request = cherrypy.request
+
+                try:
+                        # Assume "True" for backwards compatibility.
+                        refresh_index = int(request.headers.get(
+                            "X-IPkg-Refresh-Index", 1))
+
+                        # Force a boolean value.
+                        if refresh_index:
+                                refresh_index = True
+                        else:
+                                refresh_index = False
+                except ValueError, e:
+                        raise cherrypy.HTTPError(httplib.BAD_REQUEST,
+                            "X-IPkg-Refresh-Index: %s" % e)
+
+                try:
+                        pfmri, pstate = self.__repo.close(trans_id,
+                            refresh_index=refresh_index)
+                except repo.RepositoryInvalidTransactionIDError, e:
+                        raise cherrypy.HTTPError(httplib.BAD_REQUEST, str(e))
+                except repo.RepositoryError, e:
+                        # Treat any remaining repository error as a 404, but
+                        # log the error and include the real failure
+                        # information.
+                        cherrypy.log("Request failed: %s" % str(e))
+                        raise cherrypy.HTTPError(httplib.NOT_FOUND, str(e))
+
+                response = cherrypy.response
+                response.headers["Package-FMRI"] = pfmri
+                response.headers["State"] = pstate
+
+        def abandon_0(self, *tokens):
+                """Aborts an in-flight transaction for the Transaction ID
+                specified in the request path.  Returns no output."""
+
+                try:
+                        # cherrypy decoded it, but we actually need it encoded.
+                        trans_id = urllib.quote(tokens[0], "")
+                except IndexError:
+                        trans_id = None
+
+                try:
+                        self.__repo.abandon(trans_id)
+                except repo.RepositoryInvalidTransactionIDError, e:
+                        raise cherrypy.HTTPError(httplib.BAD_REQUEST, str(e))
+                except repo.RepositoryError, e:
+                        # Treat any remaining repository error as a 404, but
+                        # log the error and include the real failure
+                        # information.
+                        cherrypy.log("Request failed: %s" % str(e))
+                        raise cherrypy.HTTPError(httplib.NOT_FOUND, str(e))
+
+        def add_0(self, *tokens):
+                """Adds an action and its content to an in-flight transaction
+                for the Transaction ID specified in the request path.  The
+                content is expected to be in the request body.  Returns no
+                output."""
+
+                try:
+                        # cherrypy decoded it, but we actually need it encoded.
+                        trans_id = urllib.quote(tokens[0], "")
+                except IndexError:
+                        trans_id = None
+
+                try:
+                        entry_type = tokens[1]
+                except IndexError:
+                        entry_type = None
+
+                if entry_type not in actions.types:
+                        raise cherrypy.HTTPError(httplib.BAD_REQUEST, _("The "
+                            "specified Action Type, '%s', is not valid.") % \
+                            entry_type)
+
+                request = cherrypy.request
+                attrs = dict(
+                    val.split("=", 1)
+                    for hdr, val in request.headers.items()
+                    if hdr.lower().startswith("x-ipkg-setattr")
+                )
+
+                # If any attributes appear to be lists, make them lists.
+                for a in attrs:
+                        if attrs[a].startswith("[") and attrs[a].endswith("]"):
+                                # XXX there must be a better way than eval
+                                attrs[a] = eval(attrs[a])
+
+                data = None
+                size = int(request.headers.get("Content-Length", 0))
+                if size > 0:
+                        data = request.rfile
+                        # Record the size of the payload, if there is one.
+                        attrs["pkg.size"] = str(size)
+
+                action = actions.types[entry_type](data, **attrs)
+
+                # XXX Once actions are labelled with critical nature.
+                # if entry_type in critical_actions:
+                #         self.critical = True
+
+                try:
+                        self.__repo.add(trans_id, action)
+                except repo.RepositoryInvalidTransactionIDError, e:
+                        raise cherrypy.HTTPError(httplib.BAD_REQUEST, str(e))
+                except repo.RepositoryError, e:
+                        # Treat any remaining repository error as a 404, but
+                        # log the error and include the real failure
+                        # information.
+                        cherrypy.log("Request failed: %s" % str(e))
+                        raise cherrypy.HTTPError(httplib.NOT_FOUND, str(e))
+
+        # We need to prevent cherrypy from processing the request body so that
+        # add can parse the request body itself.  In addition, we also need to
+        # set the timeout higher since the default is five minutes; not really
+        # enough for a slow connection to upload content.
+        add_0._cp_config = {
+                "request.process_request_body": False,
+                "response.timeout": 3600,
+        }
+
+        @cherrypy.tools.response_headers(headers = \
+            [("Content-Type", "text/plain")])
+        def info_0(self, *tokens):
+                """ Output a text/plain summary of information about the
+                    specified package. The request is an encoded pkg FMRI.  If
+                    the version is specified incompletely, we return an error,
+                    as the client is expected to form correct requests, based
+                    on its interpretation of the catalog and its image
+                    policies. """
+
+                # Parse request into FMRI component and decode.
+                try:
+                        # If more than one token (request path component) was
+                        # specified, assume that the extra components are part
+                        # of the fmri and have been split out because of bad
+                        # proxy behaviour.
+                        pfmri = "/".join(tokens)
+                except IndexError:
+                        raise cherrypy.HTTPError(httplib.BAD_REQUEST)
+
+                try:
+                        f = fmri.PkgFmri(pfmri, None)
+                except fmri.IllegalFmri, e:
+                        # If we couldn't parse the FMRI for whatever reason,
+                        # assume the client made a bad request.
+                        raise cherrypy.HTTPError(httplib.BAD_REQUEST, str(e))
+
+                m = manifest.Manifest()
+                m.set_fmri(None, pfmri)
+                mpath = os.path.join(self.scfg.pkg_root, f.get_dir_path())
+                if not os.path.exists(mpath):
+                        raise cherrypy.HTTPError(httplib.NOT_FOUND)
+
+                m.set_content(file(mpath).read())
+
+                authority, name, ver = f.tuple()
+                if authority:
+                        authority = fmri.strip_auth_pfx(authority)
+                else:
+                        authority = "Unknown"
+                summary = m.get("description", "")
+
+                lsummary = cStringIO.StringIO()
+                for i, entry in enumerate(m.gen_actions_by_type("license")):
+                        if i > 0:
+                                lsummary.write("\n")
+
+                        lpath = os.path.normpath(os.path.join(
+                            self.scfg.file_root,
+                            misc.hash_file_name(entry.hash)))
+
+                        lfile = file(lpath, "rb")
+                        misc.gunzip_from_stream(lfile, lsummary)
+                lsummary.seek(0)
+
+                return """\
+          Name: %s
+       Summary: %s
+     Authority: %s
+       Version: %s
+ Build Release: %s
+        Branch: %s
+Packaging Date: %s
+          Size: %s
+          FMRI: %s
+
+License:
+%s
+""" % (name, summary, authority, ver.release, ver.build_release,
+    ver.branch, ver.get_timestamp().ctime(), misc.bytes_to_str(m.size),
+    f, lsummary.read())

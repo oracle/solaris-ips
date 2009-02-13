@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 import unittest
@@ -58,71 +58,78 @@ Incorrect attribute list.
     Actual:   %s""" % (sorted(attrlist), sorted(action.attrs.keys())))
 
         def test_action_parser(self):
-                action.fromstr("file 12345 name=foo")
-                action.fromstr("file 12345 name=foo attr=bar")
-                action.fromstr("file 12345 name=foo attr=bar attr=bar")
+                action.fromstr("file 12345 name=foo path=/tmp/foo")
+                action.fromstr("file 12345 name=foo attr=bar path=/tmp/foo")
+                action.fromstr("file 12345 name=foo attr=bar attr=bar path=/tmp/foo")
 
-                action.fromstr("file 12345 name=foo     attr=bar")
-                action.fromstr("file 12345 name=foo     attr=bar   ")
-                action.fromstr("file 12345 name=foo     attr=bar   ")
+                action.fromstr("file 12345 name=foo     path=/tmp/foo attr=bar")
+                action.fromstr("file 12345 name=foo     path=/tmp/foo attr=bar   ")
+                action.fromstr("file 12345 name=foo     path=/tmp/foo attr=bar   ")
 
-                action.fromstr("file 12345 name=\"foo bar\"  attr=\"bar baz\"")
-                action.fromstr("file 12345 name=\"foo bar\"  attr=\"bar baz\"")
+                action.fromstr("file 12345 name=\"foo bar\"  path=\"/tmp/foo\" attr=\"bar baz\"")
+                action.fromstr("file 12345 name=\"foo bar\"  path=\"/tmp/foo\" attr=\"bar baz\"")
 
-                action.fromstr("file 12345 name=foo  value=barbaz")
-                action.fromstr("file 12345 name=foo  value=\"bar baz\"")
-                action.fromstr("file 12345 name=\"foo bar\"  value=baz")
+                action.fromstr("file 12345 name=foo  value=barbaz path=/tmp/foo")
+                action.fromstr("file 12345 name=foo  value=\"bar baz\" path=/tmp/foo")
+                action.fromstr("file 12345 name=\"foo bar\"  value=baz path=/tmp/foo")
 
-                action.fromstr("file 12345 name=foo  value=barbazquux")
-                action.fromstr("file 12345 name=foo  value=\"bar baz quux\"")
-                action.fromstr("file 12345 name=\"foo bar baz\"  value=quux")
+                action.fromstr("file 12345 name=foo  value=barbazquux path=/tmp/foo")
+                action.fromstr("file 12345 name=foo  value=\"bar baz quux\" path=/tmp/foo")
+                action.fromstr("file 12345 name=\"foo bar baz\"  value=quux path=/tmp/foo")
 
-                action.fromstr("file 12345 name=\"foo\"  value=\"bar\"")
-                action.fromstr("file 12345 name=foo  value=\"bar\"")
-                action.fromstr("file 12345 name=\"foo\"  value=bar")
+                action.fromstr("file 12345 name=\"foo\"  value=\"bar\" path=/tmp/foo")
+                action.fromstr("file 12345 name=foo  value=\"bar\" path=/tmp/foo")
+                action.fromstr("file 12345 name=\"foo\"  value=bar path=/tmp/foo")
 
                 # Single quoted value
-                a = action.fromstr("file 12345 name='foo' value=bar")
-                self.assertAttributes(a, ["name", "value"])
+                a = action.fromstr("file 12345 name='foo' value=bar path=/tmp/foo")
+                self.assertAttributes(a, ["name", "value", "path"])
                 self.assertAttributeValue(a, "name", "foo")
                 self.assertAttributeValue(a, "value", "bar")
+                self.assertAttributeValue(a, "path", "/tmp/foo")
 
                 # Make sure that unescaped double quotes are parsed properly
                 # inside a single-quoted value.
-                a = action.fromstr("file 12345 name='f\"o\"o' value=bar ")
-                self.assertAttributes(a, ["name", "value"])
+                a = action.fromstr("file 12345 name='f\"o\"o' value=bar path=/tmp/foo")
+                self.assertAttributes(a, ["name", "path", "value"])
                 self.assertAttributeValue(a, "name", "f\"o\"o")
                 self.assertAttributeValue(a, "value", "bar")
+                self.assertAttributeValue(a, "path", "/tmp/foo")
 
                 # Make sure that escaped single quotes are parsed properly
                 # inside a single-quoted value.
-                a = action.fromstr("file 12345 name='f\\'o\\'o' value=bar")
-                self.assertAttributes(a, ["name", "value"])
+                a = action.fromstr("file 12345 name='f\\'o\\'o' value=bar path=/tmp/foo")
+                self.assertAttributes(a, ["name", "path", "value"])
                 self.assertAttributeValue(a, "name", "f'o'o")
                 self.assertAttributeValue(a, "value", "bar")
+                self.assertAttributeValue(a, "path", "/tmp/foo")
 
                 # You should be able to separate key/value pairs with tabs as
                 # well as spaces.
-                a = action.fromstr("file 12345 name=foo\tvalue=bar")
-                self.assertAttributes(a, ["name", "value"])
+                a = action.fromstr("file 12345 name=foo\tvalue=bar path=/tmp/foo")
+                self.assertAttributes(a, ["name", "path", "value"])
                 self.assertAttributeValue(a, "name", "foo")
                 self.assertAttributeValue(a, "value", "bar")
+                self.assertAttributeValue(a, "path", "/tmp/foo")
 
                 # Unescaped, unpaired quotes are allowed in the middle of values
                 # without further quoting
-                a = action.fromstr("file 12345 name=foo\"bar")
-                self.assertAttributes(a, ["name"])
+                a = action.fromstr("file 12345 name=foo\"bar path=/tmp/foo")
+                self.assertAttributes(a, ["name", "path"])
                 self.assertAttributeValue(a, "name", "foo\"bar")
+                self.assertAttributeValue(a, "path", "/tmp/foo")
 
                 # They can even be paired.  Note this is not like shell quoting.
-                a = action.fromstr("file 12345 name=foo\"bar\"baz")
-                self.assertAttributes(a, ["name"])
+                a = action.fromstr("file 12345 name=foo\"bar\"baz path=/tmp/foo")
+                self.assertAttributes(a, ["name", "path"])
                 self.assertAttributeValue(a, "name", "foo\"bar\"baz")
+                self.assertAttributeValue(a, "path", "/tmp/foo")
 
                 # An unquoted value can end in an escaped backslash
-                a = action.fromstr("file 12345 name=foo\\")
-                self.assertAttributes(a, ["name"])
+                a = action.fromstr("file 12345 name=foo\\ path=/tmp/foo")
+                self.assertAttributes(a, ["name", "path"])
                 self.assertAttributeValue(a, "name", "foo\\")
+                self.assertAttributeValue(a, "path", "/tmp/foo")
 
                 # An action with multiple identical attribute names should
                 # result in an attribute with a list value.
@@ -131,34 +138,34 @@ Incorrect attribute list.
                 self.assertAttributeValue(a, "alias", ["pci1234,56", "pci4567,89"])
 
         def test_action_tostr(self):
-                str(action.fromstr("file 12345 name=foo"))
-                str(action.fromstr("file 12345 name=foo attr=bar"))
-                str(action.fromstr("file 12345 name=foo attr=bar attr=bar"))
+                str(action.fromstr("file 12345 name=foo path=/tmp/foo"))
+                str(action.fromstr("file 12345 name=foo attr=bar path=/tmp/foo"))
+                str(action.fromstr("file 12345 name=foo attr=bar attr=bar path=/tmp/foo"))
 
-                str(action.fromstr("file 12345 name=foo     attr=bar"))
-                str(action.fromstr("file 12345 name=foo     attr=bar   "))
-                str(action.fromstr("file 12345 name=foo     attr=bar   "))
+                str(action.fromstr("file 12345 name=foo     attr=bar path=/tmp/foo"))
+                str(action.fromstr("file 12345 name=foo     path=/tmp/foo attr=bar   "))
+                str(action.fromstr("file 12345 name=foo     path=/tmp/foo attr=bar   "))
 
-                str(action.fromstr("file 12345 name=\"foo bar\"  attr=\"bar baz\""))
-                str(action.fromstr("file 12345 name=\"foo bar\"  attr=\"bar baz\""))
+                str(action.fromstr("file 12345 name=\"foo bar\"  attr=\"bar baz\" path=/tmp/foo"))
+                str(action.fromstr("file 12345 name=\"foo bar\"  attr=\"bar baz\" path=/tmp/foo"))
 
-                str(action.fromstr("file 12345 name=foo  value=barbaz"))
-                str(action.fromstr("file 12345 name=foo  value=\"bar baz\""))
-                str(action.fromstr("file 12345 name=\"foo bar\"  value=baz"))
+                str(action.fromstr("file 12345 name=foo  value=barbaz path=/tmp/foo"))
+                str(action.fromstr("file 12345 name=foo  value=\"bar baz\" path=/tmp/foo"))
+                str(action.fromstr("file 12345 name=\"foo bar\"  value=baz path=/tmp/foo"))
 
-                str(action.fromstr("file 12345 name=foo  value=barbazquux"))
-                str(action.fromstr("file 12345 name=foo  value=\"bar baz quux\""))
-                str(action.fromstr("file 12345 name=\"foo bar baz\"  value=quux"))
+                str(action.fromstr("file 12345 name=foo  value=barbazquux path=/tmp/foo"))
+                str(action.fromstr("file 12345 name=foo  value=\"bar baz quux\" path=/tmp/foo"))
+                str(action.fromstr("file 12345 name=\"foo bar baz\"  value=quux path=/tmp/foo"))
 
-                str(action.fromstr("file 12345 name=\"foo\"  value=\"bar\""))
-                str(action.fromstr("file 12345 name=foo  value=\"bar\""))
-                str(action.fromstr("file 12345 name=\"foo\"  value=bar"))
+                str(action.fromstr("file 12345 name=\"foo\"  value=\"bar\" path=/tmp/foo"))
+                str(action.fromstr("file 12345 name=foo  value=\"bar\" path=/tmp/foo"))
+                str(action.fromstr("file 12345 name=\"foo\"  value=bar path=/tmp/foo"))
 
-                str(action.fromstr("file 12345 name='foo' value=bar"))
-                str(action.fromstr("file 12345 name='f\"o\"o' value=bar"))
-                str(action.fromstr("file 12345 name='f\\'o\\'o' value=bar"))
+                str(action.fromstr("file 12345 name='foo' value=bar path=/tmp/foo"))
+                str(action.fromstr("file 12345 name='f\"o\"o' value=bar path=/tmp/foo"))
+                str(action.fromstr("file 12345 name='f\\'o\\'o' value=bar path=/tmp/foo"))
 
-                str(action.fromstr("file 12345 name=foo\tvalue=bar"))
+                str(action.fromstr("file 12345 name=foo\tvalue=bar path=/tmp/foo"))
 
                 str(action.fromstr("driver alias=pci1234,56 alias=pci4567,89 class=scsi name=lsimega"))
 
@@ -172,6 +179,16 @@ Incorrect attribute list.
 
                 self.assert_(malformed, "Action not malformed: " + text)
 
+        def assertInvalid(self, text):
+                invalid = False
+
+                try:
+                        action.fromstr(text)
+                except action.InvalidActionError:
+                        invalid = True
+
+                self.assert_(malformed, "Action not invalid: " + text)
+
         def test_action_errors(self):
                 # Unknown action type
                 self.assertRaises(action.UnknownActionError, action.fromstr,
@@ -181,29 +198,36 @@ Incorrect attribute list.
                 self.assertMalformed("moop")
 
                 # Bad quoting: missing close quote
-                self.assertMalformed("file 12345 name=\"foo bar")
-                self.assertMalformed("file 12345 name=\"foo bar\\")
+                self.assertMalformed("file 12345 path=/tmp/foo name=\"foo bar")
+                self.assertMalformed("file 12345 path=/tmp/foo name=\"foo bar\\")
+
                 # Bad quoting: quote in key
-                self.assertMalformed("file 12345 \"name=foo bar")
-                self.assertMalformed("file 12345 na\"me=foo bar")
-                self.assertMalformed("file 1234 \"foo\"=bar")
+                self.assertMalformed("file 12345 path=/tmp/foo \"name=foo bar")
+                self.assertMalformed("file 12345 path=/tmp/foo na\"me=foo bar")
+                self.assertMalformed("file 1234 path=/tmp/foo \"foo\"=bar")
 
                 # Missing key
-                self.assertMalformed("file 1234 =\"\"")
-                self.assertMalformed("file =")
-                self.assertMalformed("file 1234 =")
-                self.assertMalformed("file 1234 ==")
-                self.assertMalformed("file 1234 ===")
+                self.assertMalformed("file 1234 path=/tmp/foo =\"\"")
+                self.assertMalformed("file path=/tmp/foo =")
+                self.assertMalformed("file 1234 path=/tmp/foo =")
+                self.assertMalformed("file 1234 path=/tmp/foo ==")
+                self.assertMalformed("file 1234 path=/tmp/foo ===")
 
                 # Missing value
-                self.assertMalformed("file 1234 broken=")
-                self.assertMalformed("file 1234 broken= ")
+                self.assertMalformed("file 1234 path=/tmp/foo broken=")
+                self.assertMalformed("file 1234 path=/tmp/foo broken= ")
+                self.assertMalformed("file 1234 path=/tmp/foo broken")
 
                 # Whitespace in key
-                self.assertMalformed("file 1234 bro ken")
+                self.assertMalformed("file 1234 path=/tmp/foo bro ken")
 
-                self.assertMalformed("file 1234 broken")
+                # Missing required attribute path
+                self.assertRaises(action.InvalidActionError, action.fromstr,
+                    "file 1234 owner=foo")
 
+                # Missing required attribute name
+                self.assertRaises(action.InvalidActionError, action.fromstr,
+                    "driver alias=pci1234,56 alias=pci4567,89 class=scsi")
 
 if __name__ == "__main__":
         unittest.main()

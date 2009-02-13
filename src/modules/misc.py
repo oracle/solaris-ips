@@ -23,26 +23,26 @@
 # Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
+import calendar
+import cStringIO
 import errno
 import httplib
+import locale
 import os
+import pkg.portable as portable
+import pkg.urlhelpers as urlhelpers
 import platform
 import re
 import sha
+import shutil
 import socket
+import sys
+import time
 import urllib
 import urllib2
 import urlparse
-import sys
 import zlib
-import time
-import calendar
-import shutil
-import locale
-from stat import *
 
-import pkg.urlhelpers as urlhelpers
-import pkg.portable as portable
 from pkg.client.imagetypes import img_type_names, IMG_NONE
 from pkg.client import global_settings
 from pkg import VERSION
@@ -59,10 +59,10 @@ def timestamp_to_time(ts):
 
 def copyfile(src_path, dst_path):
         """copy a file, preserving attributes, ownership, etc. where possible"""
-        stat = os.lstat(src_path)
+        fs = os.lstat(src_path)
         shutil.copy2(src_path, dst_path)
         try:
-                portable.chown(dst_path, stat.st_uid, stat.st_gid)
+                portable.chown(dst_path, fs.st_uid, fs.st_gid)
         except OSError, e:
                 if e.errno != errno.EPERM:
                         raise
@@ -483,6 +483,46 @@ def get_inventory_list(image, pargs, all_known, all_versions):
                 
                 res.sort(cmp=__fmri_cmp)
         return res
+
+def get_data_digest(data, length=None, return_content=False):
+        """Returns a tuple of (SHA-1 hexdigest, content).
+
+        'data' should be a file-like object or a pathname to a file.
+
+        'length' should be an integer value representing the size of
+        the contents of data in bytes.
+
+        'return_content' is a boolean value indicating whether the
+        second tuple value should contain the content of 'data' or
+        if the content should be discarded during processing."""
+
+        bufsz = 128 * 1024
+        if isinstance(data, basestring):
+                f = file(data, "rb", bufsz)
+        else:
+                f = data
+
+        if length is None:
+                length = os.lstat(data).st_size
+
+        # Read the data in chunks and compute the SHA1 hash as it comes in.  A
+        # large read on some platforms (e.g. Windows XP) may fail.
+        content = cStringIO.StringIO()
+        fhash = sha.new()
+        while length > 0:
+                data = f.read(min(bufsz, length))
+                if return_content:
+                        content.write(data)
+                fhash.update(data)
+
+                l = len(data)
+                if l == 0:
+                        break
+                length -= l
+        content.reset()
+        f.close()
+
+        return fhash.hexdigest(), content.read()
 
 class CfgCacheError(Exception):
         """Thrown when there are errors with the cfg cache."""

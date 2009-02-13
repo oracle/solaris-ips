@@ -1,4 +1,4 @@
-#!/usr/bin/python2.dir=pat4
+#!/usr/bin/python2.4
 #
 # CDDL HEADER START
 #
@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -32,7 +32,6 @@ packaging object."""
 
 import os
 import errno
-import sha
 import tempfile
 import stat
 import generic
@@ -110,8 +109,7 @@ class FileAction(generic.Action):
                 # non-preserve or vice versa? Do we want to treat a preserve
                 # attribute as turning the action into a critical action?
                 if "preserve" in self.attrs and os.path.isfile(final_path):
-                        cfile = file(final_path)
-                        chash = sha.sha(cfile.read()).hexdigest()
+                        chash, cdata = misc.get_data_digest(final_path)
 
                         # XXX We should save the originally installed file.  It
                         # can be used as an ancestor for a three-way merge, for
@@ -128,7 +126,8 @@ class FileAction(generic.Action):
                 # If it is a directory (and not empty) then we should
                 # salvage the contents.
                 if os.path.exists(final_path) and \
-                    not os.path.islink(final_path) and os.path.isdir(final_path):
+                    not os.path.islink(final_path) and \
+                    os.path.isdir(final_path):
                         try:    
                                 os.rmdir(final_path)
                         except OSError, e:
@@ -144,9 +143,10 @@ class FileAction(generic.Action):
                 # XXX This needs to be modularized.
                 # XXX This needs to be controlled by policy.
                 if self.needsdata(orig):
-                        tfilefd, temp = tempfile.mkstemp(dir = os.path.dirname(final_path))
+                        tfilefd, temp = tempfile.mkstemp(dir=os.path.dirname(
+                            final_path))
                         stream = self.data()
-                        tfile = os.fdopen(tfilefd, "wb");
+                        tfile = os.fdopen(tfilefd, "wb")
                         shasum = misc.gunzip_from_stream(stream, tfile)
 
                         tfile.close()
@@ -220,7 +220,8 @@ class FileAction(generic.Action):
                             "(http://xkcd.com/325/)")
 
                 if not stat.S_ISREG(fs.st_mode):
-                        errors.append("%s is not a regular file" % self.attrs["path"])
+                        errors.append("%s is not a regular file" % \
+                            self.attrs["path"])
                         self.replace_required = True
 
                 if fs.st_uid != owner:
@@ -279,14 +280,11 @@ class FileAction(generic.Action):
                                         self.replace_required = True
 
                         #
-                        # not an elf file, or we couldn't check elf -> try
-                        # normal hash
+                        # Not an elf file, or we couldn't check elf -> try
+                        # normal hash.
                         #
                         if elfhash is None:
-                                f = file(path)
-                                data = f.read()
-                                f.close()
-                                hashvalue = sha.new(data).hexdigest()
+                                hashvalue, data = misc.get_data_digest(path)
                                 if hashvalue != self.hash:
                                         errors.append("Hash: %s should be %s" % \
                                             (hashvalue, self.hash))
@@ -310,7 +308,8 @@ class FileAction(generic.Action):
         def needsdata(self, orig):
                 if self.replace_required:
                         return True
-                bothelf = orig and "elfhash" in orig.attrs and "elfhash" in self.attrs
+                bothelf = orig and "elfhash" in orig.attrs and \
+                    "elfhash" in self.attrs
                 if not orig or \
                     (orig.hash != self.hash and (not bothelf or
                         orig.attrs["elfhash"] != self.attrs["elfhash"])):

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -30,36 +30,54 @@
 # Typical usage is
 #
 #       pkgsend open
-#       pkgsend batch
 #       [pkgsend summary]
 #       pkgsend close
 #
-# where the batch file contains a series of subcommand invocations.
 # A failed transaction can be cleared using
 #
 #       pkgsend close -A
 
+import fnmatch
 import getopt
 import gettext
 import os
 import sys
-import threading
 import traceback
-import fnmatch
 
+import pkg.actions
 import pkg.bundle
-import pkg.config as config
-
 import pkg.publish.transaction as trans
+from pkg.misc import msg, emsg, PipeError
 
-def usage():
+def error(text):
+        """Emit an error message prefixed by the command name """
+
+        # If we get passed something like an Exception, we can convert it
+        # down to a string.
+        text = str(text)
+        # If the message starts with whitespace, assume that it should come
+        # *before* the command-name prefix.
+        text_nows = text.lstrip()
+        ws = text[:len(text) - len(text_nows)]
+
+        # This has to be a constant value as we can't reliably get our actual
+        # program name on all platforms.
+        emsg(ws + "pkgsend: " + text_nows)
+
+def usage(usage_error=None):
+        """Emit a usage message and optionally prefix it with a more specific
+        error message.  Causes program to exit."""
+
+        if usage_error:
+                error(usage_error)
+
         print _("""\
 Usage:
         pkgsend [options] command [cmd_options] [operands]
 
 Packager subcommands:
         pkgsend open [-en] pkg_fmri
-        pkgsend add action arguments 
+        pkgsend add action arguments
         pkgsend import [-T file_pattern] bundlefile ...
         pkgsend include [-d basedir] manifest ...
         pkgsend close [-A]
@@ -73,50 +91,34 @@ Environment:
         PKG_REPO""")
         sys.exit(2)
 
-def _check_status(operation, status, msg = None):
-        if status / 100 == 4 or status / 100 == 5:
-                if msg:
-                        msg = ": " + msg
-                else:
-                        msg = ""
-                print >> sys.stderr, \
-                    _("pkgsend: %s failed (status %s)%s") % (operation, status, msg)
-                sys.exit(1)
-
-def trans_open(config, args):
+def trans_open(repo_url, args):
 
         opts, pargs = getopt.getopt(args, "en")
 
+        parsed = []
         eval_form = True
         for opt, arg in opts:
+                parsed.append(opt)
                 if opt == "-e":
                         eval_form = True
                 if opt == "-n":
                         eval_form = False
 
+        if "-e" in parsed and "-n" in parsed:
+                usage(_("only -e or -n may be specified"))
+
         if len(pargs) != 1:
-                print >> sys.stderr, \
-                    _("pkgsend: open requires one package name")
-                usage()
+                usage(_("open requires one package name"))
 
-        t = trans.Transaction()
-
-        status, id = t.open(config, pargs[0])
-        _check_status('open', status)
-
-        if id == None:
-                print >> sys.stderr, \
-                    _("pkgsend: no transaction ID provided in response")
-                sys.exit(1)
-
+        t = trans.Transaction(repo_url, pkg_name=pargs[0])
         if eval_form:
-                print "export PKG_TRANS_ID=%s" % id
+                msg("export PKG_TRANS_ID=%s" % t.open())
         else:
-                print id
+                msg(t.open())
 
-        return
+        return 0
 
-def trans_close(config, args):
+def trans_close(repo_url, args):
         abandon = False
         trans_id = None
 
@@ -128,64 +130,67 @@ def trans_close(config, args):
                 if opt == "-t":
                         trans_id = arg
 
-        if trans_id == None:
+        if trans_id is None:
                 try:
                         trans_id = os.environ["PKG_TRANS_ID"]
                 except KeyError:
-                        print >> sys.stderr, _("No transaction ID specified")
-                        sys.exit(1)
+                        usage(_("No transaction ID specified using -t or in "
+                            "$PKG_TRANS_ID."))
 
-        t = trans.Transaction()
-        ret, hdrs = t.close(config, trans_id, abandon)
+        t = trans.Transaction(repo_url, trans_id=trans_id)
+        pkg_state, pkg_fmri = t.close(abandon)
+        for val in (pkg_state, pkg_fmri):
+                if val is not None:
+                        msg(val)
+        return 0
 
-        if abandon:
-                return
-
-        if hdrs:
-                print hdrs["State"]
-                print hdrs["Package-FMRI"]
-        else:
-                print "Failed with", ret
-
-def trans_add(config, args):
+def trans_add(repo_url, args):
         try:
                 trans_id = os.environ["PKG_TRANS_ID"]
         except KeyError:
-                print >> sys.stderr, \
-                    _("No transaction ID specified in $PKG_TRANS_ID")
-                sys.exit(1)
+                usage(_("No transaction ID specified in $PKG_TRANS_ID"))
 
-        if args[0] in ("file", "license"):
+        if not args:
+                usage(_("No arguments specified for subcommand."))
+        elif args[0] in ("file", "license"):
+                if len(args) < 2:
+                        raise RuntimeError, _("A filename must be provided "
+                            "for this action.")
+
                 try:
-                        action = pkg.actions.fromlist(args[0], args[2:])
+                        action = pkg.actions.fromlist(args[0], args[2:],
+                            data=args[1])
                 except ValueError, e:
-                        print >> sys.stderr, e[0]
-                        sys.exit(1)
-                def opener():
-                        return open(args[1], "rb")
-                action.data = opener
+                        error(e[0])
+                        return 1
+
+                if "pkg.size" not in action.attrs:
+                        fs = os.lstat(args[1])
+                        action.attrs["pkg.size"] = str(fs.st_size)
         else:
                 try:
                         action = pkg.actions.fromlist(args[0], args[1:])
                 except ValueError, e:
-                        print >> sys.stderr, e[0]
-                        sys.exit(1)
+                        error(e[0])
+                        return 1
 
-        t = trans.Transaction()
-        status, msg, body = t.add(config, trans_id, action)
-        _check_status('add', status, msg)
+        t = trans.Transaction(repo_url, trans_id=trans_id)
+        t.add(action)
+        return 0
 
-def trans_rename(config, args):
-        t = trans.Transaction()
-        status, msg, body = t.rename(config, args[0], args[1])
-        _check_status('rename', status, msg)
+def trans_rename(repo_url, args):
+        if not args:
+                usage(_("No arguments specified for subcommand."))
 
-def trans_include(config, fargs):
+        t = trans.Transaction(repo_url)
+        t.rename(args[0], args[1])
+        return 0
+
+def trans_include(repo_url, fargs):
 
         basedir = None
 
         opts, pargs = getopt.getopt(fargs, "d:")
-
         for opt, arg in opts:
                 if opt == "-d":
                         basedir = arg
@@ -193,27 +198,20 @@ def trans_include(config, fargs):
         try:
                 trans_id = os.environ["PKG_TRANS_ID"]
         except KeyError:
-                print >> sys.stderr, \
-                    _("No transaction ID specified in $PKG_TRANS_ID")
-                sys.exit(1)
+                usage(_("No transaction ID specified in $PKG_TRANS_ID"))
 
-        t = trans.Transaction()
+        if not fargs:
+                usage(_("No arguments specified for subcommand."))
+
+        t = trans.Transaction(repo_url, trans_id=trans_id)
         for filename in pargs:
                 f = file(filename)
                 for line in f:
-                        line = line.strip() # 
+                        line = line.strip() #
                         if not line or line[0] == '#':
                                 continue
-                        args = line.split() 
+                        args = line.split()
                         if args[0] in ("file", "license"):
-                                try:
-                                        # ignore local pathname
-                                        line = line.replace(args[1], "NOHASH", 1)
-                                        action = pkg.actions.fromstr(line)
-                                except ValueError, e:
-                                        print >> sys.stderr, e[0]
-                                        sys.exit(1)
-
                                 if basedir:
                                         fullpath = args[1].lstrip(os.path.sep)
                                         fullpath = os.path.join(basedir,
@@ -221,33 +219,38 @@ def trans_include(config, fargs):
                                 else:
                                         fullpath = args[1]
 
-                                def opener():
-                                        return open(fullpath, "rb")
-                                action.data = opener
-
+                                try:
+                                        # ignore local pathname
+                                        line = line.replace(args[1], "NOHASH",
+                                            1)
+                                        action = pkg.actions.fromstr(line,
+                                            data=fullpath)
+                                except ValueError, e:
+                                        usage(e[0])
+                                        return 1
                         else:
                                 try:
                                         action = pkg.actions.fromstr(line)
                                 except ValueError, e:
-                                        print >> sys.stderr, e[0]
-                                        sys.exit(1)
+                                        error(e[0])
+                                        return 1
 
                         # cleanup any leading / in path to prevent problems
                         if "path" in action.attrs:
                                 np = action.attrs["path"].lstrip(os.path.sep)
                                 action.attrs["path"] = np
 
-                        status, msg, body = t.add(config, trans_id, action)
-                        _check_status('add', status, msg)
+                        t.add(action)
+        return 0
 
-def trans_import(config, args):
+def trans_import(repo_url, args):
         try:
                 trans_id = os.environ["PKG_TRANS_ID"]
         except KeyError:
                 print >> sys.stderr, \
                     _("No transaction ID specified in $PKG_TRANS_ID")
                 sys.exit(1)
-                
+
         opts, pargs = getopt.getopt(args, "T:")
 
         timestamp_files = []
@@ -255,14 +258,18 @@ def trans_import(config, args):
         for opt, arg in opts:
                 if opt == "-T":
                         timestamp_files.append(arg)
-        
+
+        if not args:
+                usage(_("No arguments specified for subcommand."))
+
         for filename in pargs:
                 bundle = pkg.bundle.make_bundle(filename)
-                t = trans.Transaction()
+                t = trans.Transaction(repo_url, trans_id=trans_id)
 
                 for action in bundle:
                         if action.name == "file":
-                                basename = os.path.basename(action.attrs["path"])
+                                basename = os.path.basename(
+                                    action.attrs["path"])
                                 for pattern in timestamp_files:
                                         if fnmatch.fnmatch(basename, pattern):
                                                 break
@@ -271,20 +278,8 @@ def trans_import(config, args):
                                                 del action.attrs["timestamp"]
                                         except KeyError:
                                                 pass
-                        try:
-                                status, msg, body = t.add(config, trans_id, 
-                                    action)
-                                _check_status('import', status, msg)
-                        except TypeError, e:
-                                print "warning:", e
-
-
-        
-def trans_delete(config, args):
-        return
-
-def batch(config, args):
-        return
+                        t.add(action)
+        return 0
 
 def main_func():
         # XXX /usr/lib/locale is OpenSolaris-specific.
@@ -302,55 +297,59 @@ def main_func():
                                 repo_url = arg
 
         except getopt.GetoptError, e:
-                print >> sys.stderr, \
-                    _("pkgsend: illegal global option -- %s") % e.opt
-                usage()
+                usage(_("pkgsend: illegal global option -- %s") % e.opt)
 
-        if pargs == None or len(pargs) == 0:
+        if pargs is None or len(pargs) == 0:
                 usage()
-
-        pcfg = config.ParentRepo(repo_url, [repo_url])
 
         subcommand = pargs[0]
         del pargs[0]
 
+        ret = 0
         try:
                 if subcommand == "open":
-                        trans_open(pcfg, pargs)
+                        ret = trans_open(repo_url, pargs)
                 elif subcommand == "close":
-                        trans_close(pcfg, pargs)
+                        ret = trans_close(repo_url, pargs)
                 elif subcommand == "add":
-                        trans_add(pcfg, pargs)
+                        ret = trans_add(repo_url, pargs)
                 elif subcommand == "import":
-                        trans_import(pcfg, pargs)
+                        ret = trans_import(repo_url, pargs)
                 elif subcommand == "include":
-                        trans_include(pcfg, pargs)
+                        ret = trans_include(repo_url, pargs)
                 elif subcommand == "rename":
-                        trans_rename(pcfg, pargs)
+                        ret = trans_rename(repo_url, pargs)
                 else:
-                        print >> sys.stderr, \
-                            _("pkgsend: unknown subcommand '%s'") % subcommand
-                        usage()
+                        usage(_("unknown subcommand '%s'") % subcommand)
         except getopt.GetoptError, e:
-                print >> sys.stderr, \
-                    _("pkgsend: illegal %s option -- %s") % (subcommand, e.opt)
-                usage()
+                usage(_("illegal %s option -- %s") % (subcommand, e.opt))
 
-        return 0
-
-
+        return ret
 
 #
 # Establish a specific exit status which means: "python barfed an exception"
 # so that we can more easily detect these in testing of the CLI commands.
 #
 if __name__ == "__main__":
-
         try:
-                ret = main_func()
-        except SystemExit, e:
-                raise e
+                __ret = main_func()
+        except (pkg.actions.ActionError, trans.TransactionError,
+            RuntimeError), _e:
+                print >> sys.stderr, "pkgsend: %s" % _e
+                __ret = 1
+        except (PipeError, KeyboardInterrupt):
+                # We don't want to display any messages here to prevent
+                # possible further broken pipe (EPIPE) errors.
+                __ret = 1
+        except SystemExit, _e:
+                raise _e
         except:
                 traceback.print_exc()
-                sys.exit(99)
-        sys.exit(ret)
+                error(
+                    _("\n\nThis is an internal error.  Please let the "
+                    "developers know about this\nproblem by filing a bug at "
+                    "http://defect.opensolaris.org and including the\nabove "
+                    "traceback and this message.  The version of pkg(5) is "
+                    "'%s'.") % pkg.VERSION)
+                __ret = 99
+        sys.exit(__ret)
