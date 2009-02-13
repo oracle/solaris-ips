@@ -45,6 +45,7 @@ TYPE_AHEAD_DELAY = 600    # The last type in search box after which search is pe
 INITIAL_TOPLEVEL_PREFERENCES = "/apps/packagemanager/preferences/initial_toplevel"
 INITIAL_CATEGORY_PREFERENCES = "/apps/packagemanager/preferences/initial_category"
 SHOW_STARTPAGE_PREFERENCES = "/apps/packagemanager/preferences/show_startpage"
+TYPEAHEAD_SEARCH_PREFERENCES = "/apps/packagemanager/preferences/typeahead_search"
 CATEGORIES_STATUS_COLUMN_INDEX = 0   # Index of Status Column in Categories TreeView
 
 STATUS_COLUMN_INDEX = 3   # Index of Status Column in Application TreeView
@@ -53,7 +54,7 @@ CLIENT_API_VERSION = 4
 PKG_CLIENT_NAME = "packagemanager"
 
 # Load Start Page from lang dir if available
-START_PAGE_LANG_BASE = "usr/share/package-manager/data/startpage/%s/%s"
+START_PAGE_LANG_BASE = "usr/share/package-manager/data/startpagebase/%s/%s"
 START_PAGE_HOME = "startpage.html" # Default page
 
 # StartPage Action support for url's on StartPage pages
@@ -129,7 +130,9 @@ class PackageManager:
                 self.client = gconf.client_get_default()
                 self.initial_toplevel = self.client.get_int(INITIAL_TOPLEVEL_PREFERENCES)
                 self.initial_category = self.client.get_int(INITIAL_CATEGORY_PREFERENCES)
-                show_startpage = self.client.get_bool(SHOW_STARTPAGE_PREFERENCES)
+                self.show_startpage = self.client.get_bool(SHOW_STARTPAGE_PREFERENCES)
+                self.typeahead_search = self.client.get_bool(TYPEAHEAD_SEARCH_PREFERENCES)
+                
                 socket.setdefaulttimeout(
                     int(os.environ.get("PKG_CLIENT_TIMEOUT", "30"))) # in seconds
 
@@ -172,7 +175,7 @@ class PackageManager:
                 self.selected_pkgs = {}
                 self.to_install_update = {}
                 self.to_remove = {}
-                self.in_startpage_startup = show_startpage
+                self.in_startpage_startup = self.show_startpage
                 self.lang = None
                 self.start_page_url = None
                 self.visible_status_id = 0
@@ -196,7 +199,14 @@ class PackageManager:
                     "/usr/share/package-manager/packagemanager.glade"
                 w_tree_main = gtk.glade.XML(self.gladefile, "mainwindow")
                 w_tree_progress = gtk.glade.XML(self.gladefile, "progressdialog")
-                
+                w_tree_preferences = gtk.glade.XML(self.gladefile, "preferencesdialog")
+                self.w_preferencesdialog = \
+                    w_tree_preferences.get_widget("preferencesdialog")
+                self.w_startpage_checkbutton = \
+                    w_tree_preferences .get_widget("startpage_checkbutton")
+                self.w_typeaheadsearch_checkbutton = \
+                    w_tree_preferences .get_widget("typeaheadsearch_checkbutton")
+
                 self.w_main_window = w_tree_main.get_widget("mainwindow")
                 self.w_application_treeview = \
                     w_tree_main.get_widget("applicationtreeview")
@@ -292,6 +302,8 @@ class PackageManager:
                                 "on_searchentry_focus_out_event": \
                                     self.__on_searchentry_focus_out,
                                 "on_searchentry_event":self.__on_searchentry_event,
+                                "on_searchentry_key_press_event": \
+                                    self.__on_searchentry_key_press_event,
                                 "on_sectionscombobox_changed": \
                                     self.__on_sectionscombobox_changed,
                                 "on_filtercombobox_changed": \
@@ -317,6 +329,7 @@ class PackageManager:
                                 "on_edit_select_updates_activate": \
                                     self.__on_select_updates,
                                 "on_edit_deselect_activate":self.__on_deselect,
+                                "on_edit_preferences_activate":self.__on_preferences,
                                 # XXX disabled until new API
                                 "on_package_update_all_activate":self.__on_update_all,
                                 #toolbar signals
@@ -335,8 +348,20 @@ class PackageManager:
                                 "on_cancel_progressdialog_clicked": \
                                     self.__on_cancel_progressdialog_clicked,
                             }
+                        dic_preferences = \
+                            {
+                                "on_startpage_checkbutton_toggled": \
+                                    self.__on_startpage_checkbutton_toggled,
+                                "on_typeaheadsearch_checkbutton_toggled": \
+                                    self.__on_typeaheadsearch_checkbutton_toggled,
+                                "on_preferenceshelp_clicked": \
+                                    self.__on_preferenceshelp_clicked,
+                                "on_preferencesclose_clicked": \
+                                    self.__on_preferencesclose_clicked,
+                            }
                         w_tree_main.signal_autoconnect(dic_mainwindow)
                         w_tree_progress.signal_autoconnect(dic_progress)
+                        w_tree_preferences.signal_autoconnect(dic_preferences)
                 except AttributeError, error:
                         print _(
                             "GUI will not respond to any event! %s." 
@@ -358,7 +383,7 @@ class PackageManager:
                 self.gdk_window.set_cursor(gdk_cursor)
                 # Until package icons become available hide Package Icon Panel
                 w_package_hbox.hide()
-                if show_startpage:
+                if self.show_startpage:
                         self.w_main_view_notebook.set_current_page(NOTEBOOK_START_PAGE)
                 else:
                         self.w_main_view_notebook.set_current_page(
@@ -979,6 +1004,10 @@ class PackageManager:
 
         def __on_searchentry_changed(self, widget):
                 '''On text search field changed we should refilter the main view'''
+                if self.typeahead_search:
+                        self.__do_search()
+                
+        def __do_search(self):
                 self.__set_main_view_package_list()
                 self.set_busy_cursor()
                 if self.application_refilter_id != 0:
@@ -1138,11 +1167,41 @@ class PackageManager:
                 self.update_statusbar()
                 self.__enable_disable_install_remove()
 
+        def __on_preferences(self, widget):
+                self.w_startpage_checkbutton.set_active(self.show_startpage)
+                self.w_typeaheadsearch_checkbutton.set_active(self.typeahead_search)
+                self.w_preferencesdialog.show()
+
+        def __on_preferencesclose_clicked(self, widget):
+                self.w_preferencesdialog.hide()
+                
+        def __on_preferenceshelp_clicked(self, widget):
+                self.__on_help_help(widget)
+                
+        def __on_startpage_checkbutton_toggled(self, widget):
+                self.show_startpage = self.w_startpage_checkbutton.get_active()
+                self.client.set_bool(SHOW_STARTPAGE_PREFERENCES, self.show_startpage)
+
+        def __on_typeaheadsearch_checkbutton_toggled(self, widget):
+                self.typeahead_search = self.w_typeaheadsearch_checkbutton.get_active()
+                self.client.set_bool(TYPEAHEAD_SEARCH_PREFERENCES, self.typeahead_search)
+
         def __on_searchentry_focus_in(self, widget, event):
                 self.w_paste_menuitem.set_sensitive(True)
 
         def __on_searchentry_focus_out(self, widget, event):
                 self.w_paste_menuitem.set_sensitive(False)
+
+        def __on_searchentry_key_press_event(self, widget, event):
+                if self.typeahead_search:
+                        return False
+                from gtk.gdk import keyval_name
+                if debug:
+                        print "Pressed %s" % keyval_name(event.keyval)
+                if event.keyval == gtk.keysyms.Return:
+                        self.__do_search()
+                        return True
+                return False
 
         def __on_searchentry_event(self, widget, event):
                 self.w_main_clipboard.request_text(self.__clipboard_text_received)

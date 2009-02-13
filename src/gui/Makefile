@@ -34,10 +34,10 @@ ROOTUSRLIB = $(ROOT)/lib
 
 ROOTAPPICONSHARE = $(ROOT)/share/icons/hicolor/48x48/apps
 ROOTDATASHARE = $(ROOTSHARE)/data
-ROOTDATASTARTPAGE = $(ROOTDATASHARE)/startpage/C
 ROOTDESKTOPSHARE = $(ROOT)/share/applications
 ROOTGCONFSHARE = $(ROOTETC)/gconf/schemas
 ROOTHELPSHARE = $(ROOT)/share/gnome/help/package-manager
+ROOTSPSHARE = $(ROOT)/share/package-manager/data/startpagebase
 ROOTICONSHARE = $(ROOT)/share/icons/package-manager
 ROOTPYTHON = $(ROOTUSRLIB)/python2.4
 ROOTPYTHONPKG = $(ROOTPYTHONVENDOR)/pkg/gui
@@ -47,10 +47,10 @@ ROOTSHARE = $(ROOT)/share/package-manager
 ROOTDIRS = \
    $(ROOTAPPICONSHARE) \
    $(ROOTDATASHARE) \
-   $(ROOTDATASTARTPAGE) \
    $(ROOTDESKTOPSHARE) \
    $(ROOTGCONFSHARE) \
    $(ROOTHELPSHARE) \
+   $(ROOTSPSHARE) \
    $(ROOTICONSHARE) \
    $(ROOTPYTHONPKG) \
    $(ROOTSHARE)
@@ -61,16 +61,6 @@ APPICONS = \
 CATALOG = \
    data/opensolaris.org \
    data/opensolaris.org.sections
-
-STARTPAGE = \
-   data/startpagebase/C/startpage_star.png \
-   data/startpagebase/C/opensolaris.png \
-   data/startpagebase/C/startpage.html \
-   data/startpagebase/C/startpage_learn.png \
-   data/startpagebase/C/startpage_use.png \
-   data/startpagebase/C/startpage_share.png \
-   data/startpagebase/C/startpage_ignite.png \
-   data/startpagebase/C/stub_test.html
 
 DESKTOP = \
    data/packagemanager.desktop \
@@ -96,6 +86,8 @@ GLADEICONS = \
 #
 HELP_LOCALES = C de es fr it ja ko pt_BR ru sv zh_CN zh_HK zh_TW
 
+SP_LOCALES = C
+
 #
 # package-manager.xml is constructed from package-manager.xml.in and
 # from help/<locale>/<locale.mo> (which is in turn built from
@@ -110,6 +102,16 @@ STATICHELPFILES = \
 	$(HELP_LOCALES:%=help/%/legal.xml) \
 	$(HELP_LOCALES:%=help/%/figures/update_all.png) \
 	$(HELP_LOCALES:%=help/%/figures/package_manager.png)
+
+STATICSPFILES = \
+	$(SP_LOCALES:%=data/startpagebase/%/startpage_star.png) \
+	$(SP_LOCALES:%=data/startpagebase/%/opensolaris.png) \
+	$(SP_LOCALES:%=data/startpagebase/%/startpage.html) \
+	$(SP_LOCALES:%=data/startpagebase/%/startpage_learn.png) \
+	$(SP_LOCALES:%=data/startpagebase/%/startpage_use.png) \
+	$(SP_LOCALES:%=data/startpagebase/%/startpage_share.png) \
+	$(SP_LOCALES:%=data/startpagebase/%/startpage_ignite.png) \
+	$(SP_LOCALES:%=data/startpagebase/%/stub_test.html)
 
 ICONS = \
    data/icons/status_checkmark.png \
@@ -142,8 +144,6 @@ ROOTDESKTOP = $(DESKTOP:data/%=$(ROOTDESKTOPSHARE)/%)
 
 ROOTGCONF = $(GCONF:data/%=$(ROOTGCONFSHARE)/%)
 
-ROOTSTARTPAGE = $(STARTPAGE:data/startpagebase/%=$(ROOTDATASTARTPAGE)/%)
-
 ROOTGLADEICONS = $(GLADEICONS:data/%=$(ROOTSHARE)/%)
 
 ROOTHELPDIRS = \
@@ -153,6 +153,12 @@ ROOTHELPDIRS = \
 ROOTHELPFILES = \
 	$(BUILDHELPFILES:help/%=$(ROOTHELPSHARE)/%) \
 	$(STATICHELPFILES:help/%=$(ROOTHELPSHARE)/%)
+
+ROOTSPDIRS = \
+	$(SP_LOCALES:%=$(ROOTSPSHARE)/%)
+
+ROOTSPFILES = \
+	$(STATICSPFILES:data/startpagebase/%=$(ROOTSPSHARE)/%)
 
 ROOTICONS = $(ICONS:data/icons/%=$(ROOTICONSHARE)/%)
 
@@ -169,9 +175,9 @@ ROOTCOMPONENTS = \
    $(ROOTCATALOG) \
    $(ROOTDESKTOP) \
    $(ROOTGCONF) \
-   $(ROOTSTARTPAGE) \
    $(ROOTGLADEICONS) \
    $(ROOTHELPFILES) \
+   $(ROOTSPFILES) \
    $(ROOTICONS) \
    $(ROOTPYGLADE) \
    $(ROOTPYMODS) \
@@ -247,11 +253,14 @@ $(ROOTDIRS):
 $(ROOTAPPICONSHARE)/%: $(ROOTDIRS) data/%
 	$(INSTALL) -f $(ROOTAPPICONSHARE) -m 0644 $<
 
+$(ROOTSPDIRS): $(ROOTDIRS)
+	$(INSTALL) -d -m 0755 $@
+
+$(ROOTSPSHARE)/%: $(ROOTSPDIRS) data/startpagebase/%
+	$(INSTALL) -f $(@D) -m 0644 $<
+
 $(ROOTDATASHARE)/%: $(ROOTDIRS) data/%
 	$(INSTALL) -f $(ROOTDATASHARE) -m 0644 $<
-
-$(ROOTDATASTARTPAGE)/%: data/startpagebase/%
-	$(INSTALL) -f $(ROOTDATASTARTPAGE) -m 0644 $<
 
 $(ROOTDESKTOPSHARE)/%: $(ROOTDIRS) data/%
 	$(INSTALL) -f $(ROOTDESKTOPSHARE) -m 0644 $<

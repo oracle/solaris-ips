@@ -42,5 +42,19 @@
          </long>
       </locale>
     </schema>
+    <schema>
+      <key>/schemas/apps/packagemanager/preferences/typeahead_search</key>
+      <applyto>/apps/packagemanager/preferences/typeahead_search</applyto>
+      <owner>packagemanager</owner>
+      <type>bool</type>
+      <default>False</default>
+      <locale name="C">
+         <short>Enable type ahead search</short>
+         <long>
+          A boolean which determines if the search is executed dynamically as user types
+          or only when user hits the return key.
+         </long>
+      </locale>
+    </schema>
   </schemalist>  
 </gconfschemafile>
