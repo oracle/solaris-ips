@@ -59,8 +59,9 @@ BE_NAME,
 BE_DATE_TIME,
 BE_CURRENT_PIXBUF,
 BE_ACTIVE_DEFAULT,
-BE_SIZE
-) = range(7)
+BE_SIZE,
+BE_EDITABLE
+) = range(8)
 
 class Beadmin:
         def __init__(self, parent):
@@ -89,6 +90,7 @@ class Beadmin:
                         gtk.gdk.Pixbuf,           # BE_CURRENT_PIXBUF
                         gobject.TYPE_BOOLEAN,     # BE_ACTIVE_DEFAULT
                         gobject.TYPE_STRING,      # BE_SIZE
+                        gobject.TYPE_BOOLEAN,     # BE_EDITABLE
                         )
                 self.progress_stop_thread = False
                 self.initial_active = 0
@@ -156,7 +158,7 @@ class Beadmin:
                 Thread(target = self.__prepare_beadmin_list).start()
                 sel = self.w_be_treeview.get_selection()
                 self.w_cancel_button.grab_focus()
-                sel.set_mode(gtk.SELECTION_NONE)
+                sel.set_mode(gtk.SELECTION_SINGLE)
                 sel = self.w_beconfirmation_treeview.get_selection()
                 sel.set_mode(gtk.SELECTION_NONE)
                 self.w_beadmin_dialog.show_all()
@@ -191,10 +193,14 @@ class Beadmin:
                 self.w_be_treeview.append_column(column)
 
                 name_renderer = gtk.CellRendererText()
+                name_renderer.connect('edited', self.__be_name_edited, model)
                 column = gtk.TreeViewColumn(_("Boot Environment"),
                     name_renderer, text = BE_NAME)
                 column.set_cell_data_func(name_renderer, self.__cell_data_function, None)
                 column.set_expand(True)
+                if "beVerifyBEName" in be.__dict__:
+                        column.add_attribute(name_renderer, "editable", 
+                            BE_EDITABLE)
                 self.w_be_treeview.append_column(column)
                 
                 datetime_renderer = gtk.CellRendererText()
@@ -351,6 +357,25 @@ class Beadmin:
                         return
                 self.__on_beadmin_delete_event(None, None)
                                 
+        def __rename_be(self, model, itr, new_name):
+                if be.beVerifyBEName(new_name) != 0:
+                        error_msg = _("Failed to rename %s to %s\n\n") % \
+                            (model.get_value(itr, BE_NAME), new_name)
+                        error_msg +=  _("Invalid BE Name")
+                        self.progress_stop_thread = True
+                        gobject.idle_add(self.__error_occured, error_msg, False)
+                        return
+                rc = be.beRename(model.get_value(itr, BE_NAME), new_name)
+                if rc == 0:
+                        model.set_value(itr, BE_NAME, new_name)
+                        self.progress_stop_thread = True
+                else:
+                        error_msg = _("Failed to rename %s to %s\n\n") % \
+                            (model.get_value(itr, BE_NAME), new_name)
+                        error_msg += be.beGetErrDesc(rc)
+                        self.progress_stop_thread = True
+                        gobject.idle_add(self.__error_occured, error_msg, False)
+
         def __error_occured(self, error_msg, reset=True):
                 msg = error_msg
                 msgbox = gtk.MessageDialog(parent = self.w_beadmin_dialog,
@@ -384,6 +409,18 @@ class Beadmin:
                                         return
                 self.w_reset_button.set_sensitive(False)
                 return                
+
+        def __be_name_edited(self, cell, filtered_path, new_name, filtered_model):
+                model = filtered_model.get_model()
+                path = filtered_model.convert_path_to_child_path(filtered_path)
+                itr = model.get_iter(path)
+                if itr:
+                        if model.get_value(itr, BE_NAME) == new_name:
+                                return
+                        self.progress_stop_thread = False
+                        Thread(target = self.__progress_pulse).start()
+                        Thread(target = self.__rename_be, 
+                            args = (model, itr, new_name)).start()
 
         def __active_pane_default(self, cell, filtered_path, filtered_model):
                 model = filtered_model.get_model()
@@ -483,7 +520,7 @@ class Beadmin:
                                 self.be_list.insert(j, [j, False,
                                     name,
                                     date_time, active_img,
-                                    active_boot, converted_size])
+                                    active_boot, converted_size, active_img == None])
                                 j += 1
                 self.w_be_treeview.set_cursor(self.initial_active, None,
                     start_editing=True)
