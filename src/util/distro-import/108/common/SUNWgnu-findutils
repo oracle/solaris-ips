@@ -1,0 +1,4 @@
+package SUNWgnu-findutils
+classification "Applications/System Utilities"
+import SUNWgnu-findutils
+end package

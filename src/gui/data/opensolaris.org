@@ -1429,6 +1429,9 @@ category = Text Tools
 [SUNWgnu-emacs-x]
 category = Text Tools
 
+[SUNWgnu-findutils]
+category = System Utilities
+
 [SUNWgnu-gettext]
 category = GNU
 
@@ -2539,6 +2542,9 @@ category = Databases
 [SUNWmysqlt]
 category = Databases
 
+[SUNWn2cp]
+category = Hardware
+
 [SUNWnca]
 category = Core
 
@@ -3256,6 +3262,9 @@ category = Enterprise Management
 [SUNWsmedia]
 category = Libraries (System)
 
+[SUNWsmhba]
+category = Libraries (System)
+
 [SUNWsmmgr]
 category = Administration and Configuration
 
@@ -3894,6 +3903,9 @@ category = Display
 
 [SUNWzuluw]
 category = Display
+
+[SUNWzyd]
+category = Networking
 
 [TSIpgx]
 category = Display

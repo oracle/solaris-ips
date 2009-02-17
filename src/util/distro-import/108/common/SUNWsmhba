@@ -1,0 +1,5 @@
+package SUNWsmhba
+classification "System/Libraries"
+import SUNWsmhba
+import SUNWsmhbar
+end package

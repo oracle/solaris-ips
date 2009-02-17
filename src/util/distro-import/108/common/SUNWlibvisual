@@ -1,0 +1,5 @@
+package SUNWlibvisual
+classification "System/Multimedia Libraries"
+import SUNWlibvisual
+import SUNWlibvisual-devel
+end package
