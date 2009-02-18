@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -30,6 +30,7 @@ import sys
 import os
 import time
 from pkg.misc import msg, PipeError
+import pkg.portable as portable
 
 IND_DELAY = 0.05
 
@@ -423,7 +424,11 @@ class FancyUNIXProgressTracker(ProgressTracker):
                 except KeyboardInterrupt:
                         raise
                 except:
-                        raise ProgressTrackerException()
+                        if portable.ostype == "windows" and \
+                            os.isatty(sys.stdout.fileno()):
+                                self.cr = '\r'
+                        else:
+                                raise ProgressTrackerException()
                 self.dl_started = False
                 self.spinner = 0
                 self.spinner_chars = "/-\|"

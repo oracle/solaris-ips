@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 import unittest
@@ -93,7 +93,7 @@ class TestPlat(pkg5unittest.Pkg5TestCase):
                 img1 = image.Image()
                 img1.history.client_name = "pkg-test"
                 img1.set_attrs(image.IMG_USER, tdir1, False, "test", 
-                    "http://localhost:10000")
+                    "http://localhost:10000", refresh_allowed=False)
                 exefile = os.path.join(tdir1, 'less.com')
                 shutil.copyfile(exefilesrc, exefile)
                 proc = subprocess.Popen([exefile], stdin = subprocess.PIPE)
@@ -113,7 +113,7 @@ class TestPlat(pkg5unittest.Pkg5TestCase):
                 img2 = image.Image()
                 img2.history.client_name = "pkg-test"
                 img2.set_attrs(image.IMG_USER, tdir2, False, "test", 
-                    "http://localhost:10000")
+                    "http://localhost:10000", refresh_allowed=False)
                 fd2, path2 = tempfile.mkstemp(dir = tdir2)
                 os.write(fd2, "bar")
                 os.close(fd2)
@@ -141,7 +141,7 @@ class TestPlat(pkg5unittest.Pkg5TestCase):
                 img1 = image.Image()
                 img1.history.client_name = "pkg-test"
                 img1.set_attrs(image.IMG_USER, tdir1, False, "test", 
-                    "http://localhost:10000")
+                    "http://localhost:10000", refresh_allowed=False)
                 exefile = os.path.join(tdir1, 'less.com')
                 shutil.copyfile(exefilesrc, exefile)
                 proc = subprocess.Popen([exefile], stdin = subprocess.PIPE)
@@ -156,7 +156,7 @@ class TestPlat(pkg5unittest.Pkg5TestCase):
                 img2 = image.Image()
                 img2.history.client_name = "pkg-test"
                 img2.set_attrs(image.IMG_USER, tdir2, False, "test", 
-                    "http://localhost:10000")
+                    "http://localhost:10000", refresh_allowed=False)
                 fd2, path2 = tempfile.mkstemp(dir = tdir2)
                 os.write(fd2, "bar")
                 os.close(fd2)

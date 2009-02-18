@@ -107,6 +107,16 @@ Could not complete the operation because of insufficient permissions. Please
 try the command again using pfexec or otherwise increase your permissions.
 """)
 
+class FileInUseException(PermissionsException):
+        def __init__(self, path):
+                PermissionsException.__init__(self, path)
+                assert path
+
+        def __str__(self):
+                return _("Could not operate on %s\nbecause the file is "
+                    "in use. Please stop using the file and try the\n"
+                    "operation again.") % self.path
+
 class PlanCreationException(ApiException):
         def __init__(self, unfound_fmris=EmptyI, multiple_matches=EmptyI,
             missing_matches=EmptyI, illegal=EmptyI, constraint_violations=EmptyI, 

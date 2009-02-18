@@ -37,6 +37,7 @@ import stat
 import generic
 import pkg.misc as misc
 import pkg.portable as portable
+import pkg.client.api_errors as api_errors
 try:
         import pkg.elf as elf
         haveelf = True
@@ -61,11 +62,18 @@ class FileAction(generic.Action):
                         """If the file exists, check if it is in use."""
                         if not orig:
                                 return
-                        path = os.path.join(pkgplan.image.get_root(), 
-                            orig.attrs["path"])
+                        path = os.path.normpath(
+                            os.path.join(pkgplan.image.get_root(),
+                            orig.attrs["path"]))
                         if os.path.isfile(path) and self.in_use(path):
-                                raise RuntimeError, \
-                                    "Cannot install %s, file is in use" % path
+                                raise api_errors.FileInUseException, path
+
+                def preremove(self, pkgplan):
+                        path = os.path.normpath(
+                            os.path.join(pkgplan.image.get_root(),
+                            self.attrs["path"]))
+                        if os.path.isfile(path) and self.in_use(path):
+                                raise api_errors.FileInUseException, path
 
                 def in_use(self, path):
                         """Determine if a file is in use (locked) by trying

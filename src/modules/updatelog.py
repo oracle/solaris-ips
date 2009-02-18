@@ -129,7 +129,7 @@ class UpdateLog(object):
                 self.logfd.flush()
 
                 if self.log_filename in self.logfile_size:
-                        del self.logfile_size[self.log_filename]
+                        self.logfile_size[self.log_filename] = self.logfd.tell()
 
                 self.last_update = ts
 
@@ -158,7 +158,7 @@ class UpdateLog(object):
                 self.logfd.flush()
 
                 if self.log_filename in self.logfile_size:
-                        del self.logfile_size[self.log_filename]
+                        self.logfile_size[self.log_filename] = self.logfd.tell()
 
                 self.last_update = ts
 
@@ -177,7 +177,7 @@ class UpdateLog(object):
                 self.close_time = ftime + delta
 
                 self.log_filename = filenm
-                self.logfd = file(os.path.join(self.rootdir, filenm), "a")
+                self.logfd = file(os.path.join(self.rootdir, filenm), "ab")
 
                 if filenm not in self.logfiles:
                         self.logfiles.append(filenm)
@@ -549,6 +549,12 @@ class UpdateLog(object):
 
                                 if lf in self.logfile_size:
                                         size += self.logfile_size[lf]
+                                elif lf == self.log_filename:
+                                        # os.stat doesn't work on an open file
+                                        # on Windows Vista, so use tell
+                                        entsz = self.logfd.tell()
+                                        self.logfile_size[lf] = entsz
+                                        size += entsz
                                 else:
                                         stat_logf = os.stat(os.path.join(
                                             self.rootdir, lf))

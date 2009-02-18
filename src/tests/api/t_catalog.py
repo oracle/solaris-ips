@@ -41,6 +41,7 @@ import pkg5unittest
 import pkg.fmri as fmri
 import pkg.catalog as catalog
 import pkg.updatelog as updatelog
+import pkg.portable as portable
 
 class TestCatalog(pkg5unittest.Pkg5TestCase):
         def setUp(self):
@@ -104,6 +105,10 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
 
                 # Catalog files should have this mode.
                 mode = stat.S_IRUSR|stat.S_IWUSR|stat.S_IRGRP|stat.S_IROTH
+                # Windows doesn't have group or other permissions, so they 
+                # are set to be the same as for the owner
+                if portable.ostype == "windows":
+                        mode |= stat.S_IWGRP|stat.S_IWOTH
 
                 # Catalog files should not have this mode.
                 bad_mode = stat.S_IRUSR|stat.S_IWUSR

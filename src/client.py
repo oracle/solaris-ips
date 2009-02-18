@@ -834,6 +834,9 @@ the following packages that depend on it:""" % e[0])
                 # move past the progress tracker line.
                 msg("\n")
                 raise
+        except api_errors.FileInUseException, e:
+                error("\n" + str(e))
+                return 1
         except KeyboardInterrupt:
                 raise
         except:
