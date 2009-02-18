@@ -56,6 +56,7 @@ import pkg.client.pkgplan      as pkgplan
 import pkg.client.progress     as progress
 import pkg.client.query_engine as query_e
 import pkg.client.retrieve     as retrieve
+import pkg.client.variant      as variant
 import pkg.fmri
 import pkg.manifest            as manifest
 import pkg.misc                as misc
@@ -869,7 +870,7 @@ class Image(object):
 
                 return False
 
-        def __fetch_manifest_with_retries(self, fmri):
+        def __fetch_manifest_with_retries(self, fmri, excludes=EmptyI):
                 """Wrapper function around __fetch_manifest to handle some
                 exceptions and keep track of additional state."""
 
@@ -879,7 +880,7 @@ class Image(object):
 
                 while not m:
                         try:
-                                m = self.__fetch_manifest(fmri)
+                                m = self.__fetch_manifest(fmri, excludes)
                         except TransportException, e:
                                 retry_count -= 1
                                 failures.append(e)
@@ -972,11 +973,11 @@ class Image(object):
                                         retrieve.touch_manifest(self, fmri)
                                         self.__set_touched_manifest(fmri)
 
-        def __fetch_manifest(self, fmri):
+        def __fetch_manifest(self, fmri, excludes=EmptyI):
                 """Perform steps necessary to get manifest from remote host
                 and write resulting contents to disk.  Helper routine for
-                get_manifest.  Does not filter the results, caller must do
-                that.  """
+                get_manifest. On-disk manifest is as delivered, returned
+                manifest contains result of applying excludes"""
 
                 m = manifest.Manifest()
                 m.set_fmri(self, fmri)
@@ -1009,7 +1010,11 @@ class Image(object):
                                 raise
 
                 self.__set_touched_manifest(fmri)
-
+                
+                # if we were passed actual excludes, reset 
+                # in-memory content to reflect that.
+                if excludes:
+                        m.set_content(mcontent, excludes)
                 return m
 
         def _valid_manifest(self, fmri, manifest):
@@ -1035,7 +1040,7 @@ class Image(object):
                     fmri.get_dir_path(), "manifest")
                 return mpath
 
-        def __get_manifest(self, fmri):
+        def __get_manifest(self, fmri, excludes=EmptyI):
                 """Find on-disk manifest and create in-memory Manifest
                 object."""
 
@@ -1047,14 +1052,15 @@ class Image(object):
                         m = manifest.Manifest()
                         mcontent = file(mpath).read()
                         m.set_fmri(self, fmri)
-                        m.set_content(mcontent)
+                        m.set_content(mcontent, excludes)
 
                 try:
                         # If the manifest didn't already exist, or isn't from
                         # the correct authority, or no authority is attached
                         # to the manifest, attempt to download a new one.
                         if not m or not self._valid_manifest(fmri, m):
-                                m = self.__fetch_manifest_with_retries(fmri)
+                                m = self.__fetch_manifest_with_retries(fmri, 
+                                    excludes)
                 except (retrieve.ManifestRetrievalError,
                     retrieve.DatastreamRetrievalError):
                         # In this case, the client has failed to download a new
@@ -1071,6 +1077,10 @@ class Image(object):
         def get_manifest(self, fmri):
                 """return manifest; uses cached version if available"""
 
+                # always elide variants for other architectures;
+                # this prevents doubling manifest size
+                v = variant.Variants({"variant.arch": self.get_arch()})
+
                 # XXX This is a temporary workaround so that GUI api consumsers
                 # are not negatively impacted by manifest caching.  This should
                 # be removed by bug 4231 whenever a better way to handle caching
@@ -1079,10 +1089,10 @@ class Image(object):
                         if fmri in self.__manifest_cache:
                                 m = self.__manifest_cache[fmri]
                         else:
-                                m = self.__get_manifest(fmri)
+                                m = self.__get_manifest(fmri, [v.allow_action])
                                 self.__manifest_cache[fmri] = m
                 else:
-                        m = self.__get_manifest(fmri)
+                        m = self.__get_manifest(fmri, [v.allow_action])
 
                 self.__touch_manifest(fmri)
                 return m

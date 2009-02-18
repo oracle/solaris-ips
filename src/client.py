@@ -120,7 +120,7 @@ Basic subcommands:
         pkg install [-nvq] [--no-refresh] [--no-index] package...
         pkg uninstall [-nrvq] [--no-index] package...
         pkg list [-aHsuvf] [package...]
-        pkg image-update [-fnvq] [--no-refresh] --variant  [--no-index]
+        pkg image-update [-fnvq] [--no-refresh] [--no-index]
         pkg refresh [--full] [authority ...]
         pkg version
         pkg help

@@ -288,10 +288,15 @@ class Manifest(object):
                 self.img = img
                 self.fmri = fmri
 
-        def set_content(self, str):
+        def set_content(self, str, excludes=EmptyI):
                 """str is the text representation of the manifest"""
-                assert self.actions == []
-
+                self.size = 0
+                self.actions = []
+                self.actions_bytype = {}
+                self.variants = {}   
+                self.facets = {}     
+                self.attributes = {} 
+ 
                 # So we could build up here the type/key_attr dictionaries like
                 # sdict and odict in difference() above, and have that be our
                 # main datastore, rather than the simple list we have now.  If
@@ -314,6 +319,18 @@ class Manifest(object):
                         if action.attrs.has_key("path"):
                                 np = action.attrs["path"].lstrip(os.path.sep)
                                 action.attrs["path"] = np
+
+                        def include_this(a, excludes):
+                                """Callables in excludes list returns True
+                                if action is to be included, False if
+                                not"""
+                                for c in excludes:
+                                        if not c(a):
+                                                return False
+                                return True
+
+                        if not include_this(action, excludes):
+                                continue
 
                         self.size += int(action.attrs.get("pkg.size", "0"))
                         self.actions.append(action)
