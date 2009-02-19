@@ -1356,10 +1356,10 @@ class PackageManager:
                 gobject.idle_add(self.process_package_list_end)
 
         def __get_application_categories_lists(self, authorities=[]):
+                gobject.idle_add(self.setup_progressdialog_show)
                 application_list = self.__get_new_application_liststore()
                 category_list = self.__get_new_category_liststore()
                 for authority in authorities:
-                        self.setup_progressdialog_show()
                         self.__add_pkgs_to_lists_from_api(authority, application_list, 
                             category_list)
                         category_list.prepend([0, _('All'), None, None, False, 
