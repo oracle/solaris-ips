@@ -264,9 +264,20 @@ class package(object):
                         raise RuntimeError("No file '%s' in package '%s'" % \
                             (fname, curpkg.name))
 
-                # It's probably a file, but all we care about are the
-                # attributes.
+                line = line.rstrip()
 
+                # is this a deletion?
+                if line.startswith("drop"):
+                        for f in o:
+                                # deletion of existing attribute
+                                if not hasattr(f, "deleted_attrs"):
+                                        f.deleted_attrs = []
+                                print "Adding drop on %s of %s" % \
+                                    (fname, line.split()[1:])
+                                f.deleted_attrs.extend(line.split()[1:])
+                        return
+
+                # handle insertion/modification case
                 for f in o:
                         a = actions.fromstr(("%s path=%s %s" %
                             (self.convert_type(f.type), fname, line)).rstrip())
@@ -502,6 +513,12 @@ def publish_pkg(pkg):
                         action.attrs["opensolaris.zone"] = "global"
                         action.attrs["variant.opensolaris.zone"] = "global"
 
+                # handle attribute deletion
+                if hasattr(f, "deleted_attrs"):
+                        for d in f.deleted_attrs:
+                                if d in action.attrs:
+                                        del action.attrs[d]
+
                 t.add(action)
 
         # Group the files in a (new) package based on what (old) package they
@@ -588,6 +605,12 @@ def publish_pkg(pkg):
                                         f.attrs["owner"], f.attrs["group"],
                                         f.attrs["path"], otherattrs(f))
 
+                                # handle attribute deletion
+                                if hasattr(pathdict[path], "deleted_attrs"):
+                                        for d in pathdict[path].deleted_attrs:
+                                                if d in f.attrs:
+                                                        print "removed %s from %s in pkg %s" % (d, path, new_pkg_name)
+                                                        del f.attrs[d]
 
                                 # Read the file in chunks to avoid a memory
                                 # footprint blowout.
