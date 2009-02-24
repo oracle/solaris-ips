@@ -18,7 +18,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -27,55 +27,14 @@ MACH:sh = uname -p
 ROOT = ../../../proto/root_$(MACH)
 PKGARCHIVE = ../../../packages/$(MACH)
 
-# by default create only the sysv package; failure of the IPS package to build
+# By default create only the sysv package; failure of the IPS package to build
 # may confuse without enlightening.
 install: sysv-pkg
 
 sysv-pkg: $(PKGARCHIVE) prototype
 	pkgmk -a $(MACH) -o -r $(ROOT) -d $(PKGARCHIVE)
 
-prototype: FRC
-	rm -f prototype
-	(cd $(ROOT); pkgproto .) | \
-		nawk 'BEGIN { \
-			print "i pkginfo"; \
-			print "i copyright" \
-		} \
-		$$1 == "d" { \
-			$$4 = "755" \
-		} \
-		$$1 == "f" { \
-			$$4 = "444" \
-		} \
-		$$1 == "f" && $$3 ~ /usr\/bin\/packagemanager/ { \
-			$$4 = "755" \
-		} \
-		{ \
-			$$5 = "root"; \
-			$$6 = "other"; \
-		} \
-		$$3 ~ /share\/gnome\/help/ { \
-			$$6 = "bin"; \
-		} \
-		$$3 ~ /^(etc(\/zones)?|usr(\/share(\/lib)?)?|var(\/svc(\/manifest)?)?)$$/ { \
-			$$6 = "sys"; \
-		} \
-		$$3 ~ /^usr\/share\/locale/ { \
-			print \
-		} \
-		$$3 ~ /^usr\/share(\/gnome(\/help(\/package\-manager)?)?)?$$/ { \
-			print \
-		} \
-		$$3 ~ /^usr\/share\/gnome\/help\/package\-manager\/[a-z]+_?[A-Z]*($$|\/.*\.xml)/ { \
-			print \
-		}' > prototype
-	if [ `wc -l prototype | awk '{print $$1}'` -eq 0 ]; then \
-		echo "ERROR: prototype file came up empty!"; \
-		exit 1; \
-	fi
-
 clean: FRC
-	rm -f prototype
 
 clobber: clean
 	rm -rf $(PKGARCHIVE)/$(PKG)

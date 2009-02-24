@@ -18,7 +18,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -26,47 +26,16 @@ MACH:sh = uname -p
 
 ROOT = ../../../proto/root_$(MACH)
 PKGARCHIVE = ../../../packages/$(MACH)
+PKG:sh = . ./pkginfo; echo $PKG
 
-# by default create only the sysv package; failure of the IPS package to build
+# By default create only the sysv package; failure of the IPS package to build
 # may confuse without enlightening.
 install: sysv-pkg
 
 sysv-pkg: $(PKGARCHIVE) prototype
 	pkgmk -a $(MACH) -o -r $(ROOT) -d $(PKGARCHIVE)
 
-prototype: FRC
-	rm -f prototype
-	(cd $(ROOT); pkgproto .) | \
-		nawk 'BEGIN { \
-			print "i pkginfo"; \
-			print "i copyright" \
-		} \
-		$$1 == "d" { \
-			$$4 = "755" \
-		} \
-		$$1 == "f" { \
-			$$4 = "444" \
-		} \
-		$$1 == "f" && $$3 ~ /usr\/lib\/pkg.depotd|usr\/bin\/pkg(send)?|lib\/svc\/method\/svc-pkg-depot/ { \
-			$$4 = "755" \
-		} \
-		{ \
-			$$5 = "root"; \
-			$$6 = "bin"; \
-		} \
-		$$3 ~ /^(usr(\/share(\/lib)?)?|var(\/svc(\/manifest(\/application(\/pkg-server.xml)?)?)?)?)$$/ { \
-			$$6 = "sys"; \
-		} \
-		$$3 !~ /^etc|lib\/svc\/method\/pkg-update|var\/svc\/manifest\/application\/pkg-update.xml|usr\/lib\/brand|usr\/lib(\/update-manager|\/updatemanagernotifier)|usr(\/lib\/python2.4\/vendor-packages(\/[Mm]ako|\/cherrypy|\/OpenSSL|\/pkg\/gui)|\/bin(\/packagemanager|\/updatemanager|\/mako-render)|\/share(\/package-manager|\/update-manager|\/locale|\/applications|\/icons|\/gnome))/ { \
-			print \
-		}' > prototype
-	if [ `wc -l prototype | awk '{print $$1}'` -eq 0 ]; then \
-		echo "ERROR: prototype file came up empty!"; \
-		exit 1; \
-	fi
-
 clean: FRC
-	rm -f prototype
 
 clobber: clean
 	rm -rf $(PKGARCHIVE)/$(PKG)

@@ -68,7 +68,7 @@ $(SUBDIRS): FRC
 	@cd $@; pwd; $(MAKE) $(TARGET)
 
 packages: install
-	@cd pkgdefs; pwd; $(MAKE) $(TARGET)
+	@cd pkgdefs; pwd; $(MAKE) $(TARGET) check
 
 # XXX link is a developer target to connect the local machine to the current
 # repository's working copy's versions of the commands, modules, and supporting

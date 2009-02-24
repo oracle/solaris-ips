@@ -18,7 +18,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -27,52 +27,14 @@ MACH:sh = uname -p
 ROOT = ../../../proto/root_$(MACH)
 PKGARCHIVE = ../../../packages/$(MACH)
 
-# by default create only the sysv package; failure of the IPS package to build
+# By default create only the sysv package; failure of the IPS package to build
 # may confuse without enlightening.
 install: sysv-pkg
 
 sysv-pkg: $(PKGARCHIVE) prototype
 	pkgmk -a $(MACH) -o -r $(ROOT) -d $(PKGARCHIVE)
 
-prototype: FRC
-	rm -f prototype
-	(cd $(ROOT); pkgproto .) | \
-		nawk 'BEGIN { \
-			print "i pkginfo"; \
-			print "i copyright" \
-		} \
-		$$1 == "d" { \
-			$$4 = "755" \
-		} \
-		$$1 == "f" { \
-			$$4 = "755" \
-		} \
-		$$1 == "f" && $$3 ~ /.*\.xml$$/ { \
-			$$4 = "444" \
-		} \
-		$$1 == "f" && $$3 ~ /usr\/lib\/brand\/ipkg\/common.ksh/ { \
-			$$4 = "444" \
-		} \
-		{ \
-			$$5 = "root"; \
-			$$6 = "bin"; \
-		} \
-		$$3 ~ /^((etc(\/zones)?)|usr)$$/ { \
-			$$6 = "sys"; \
-		} \
-		$$3 ~ /^usr(\/lib(\/brand(\/.*)?)?)?$$/ { \
-			print \
-		} \
-		$$3 ~ /^etc(\/zones(\/.*)?)?$$/ { \
-			print \
-		}' > prototype
-	if [ `wc -l prototype | awk '{print $$1}'` -eq 0 ]; then \
-		echo "ERROR: prototype file came up empty!"; \
-		exit 1; \
-	fi
-
 clean: FRC
-	rm -f prototype
 
 clobber: clean
 	rm -rf $(PKGARCHIVE)/$(PKG)

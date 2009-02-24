@@ -23,6 +23,7 @@
 # Use is subject to license terms.
 #
 
+import errno
 import fnmatch
 import os
 import platform
@@ -358,7 +359,8 @@ class install_func(_install):
                 At the end of the install function, we need to rename some files
                 because distutils provides no way to rename files as they are
                 placed in their install locations.
-                Also, make sure that cherrypy is installed.
+                Also, make sure that cherrypy and other external dependencies
+                are installed.
                 """
                 for f in man1_files + man1m_files + man5_files:
                         file_util.copy_file(f + ".txt", f, update=1)
@@ -395,6 +397,22 @@ class install_func(_install):
                         install_sw(PO, POVER, POARC, PODIR, POURL, POIDIR)
                         os.environ = saveenv
                 install_sw(MAKO, MAKOVER, MAKOARC, MAKODIR, MAKOURL, MAKOIDIR)
+
+                # Remove some bits that we're not going to package, but be sure
+                # not to complain if we try to remove them twice.
+                def onerror(func, path, exc_info):
+                        if exc_info[1].errno != errno.ENOENT:
+                                raise
+
+                for dir in ("cherrypy/scaffold", "cherrypy/test",
+                    "cherrypy/tutorial"):
+                        shutil.rmtree(os.path.join(root_dir, py_install_dir, dir),
+                            onerror=onerror)
+                try:
+                        os.remove(os.path.join(root_dir, "usr/bin/mako-render"))
+                except EnvironmentError, e:
+                        if e.errno != errno.ENOENT:
+                                raise
 
 def install_sw(swname, swver, swarc, swdir, swurl, swidir):
         if not os.path.exists(swarc):

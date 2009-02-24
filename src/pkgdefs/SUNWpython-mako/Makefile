@@ -36,42 +36,7 @@ install: sysv-pkg
 sysv-pkg: $(PKGARCHIVE) prototype
 	pkgmk -a $(MACH) -o -r $(ROOT) -d $(PKGARCHIVE)
 
-prototype: FRC
-	(cd $(ROOT); pkgproto .) | \
-		nawk 'BEGIN { \
-			print "i pkginfo"; \
-			print "i copyright" \
-		} \
-		$$1 == "d" { \
-			$$4 = "755" \
-		} \
-		$$1 == "f" { \
-			$$4 = "444" \
-		} \
-		{ \
-			$$5 = "root"; \
-			$$6 = "bin"; \
-		} \
-		$$3 ~ /^usr$$/ { \
-			$$6 = "sys"; \
-		} \
-		{ \
-			if ($$1 == "d" && $$3 ~ /^(usr(\/lib(\/python2.4(\/vendor-packages(\/mako(\/.*)?)?)?)?)?)$$/) \
-			{ \
-				print \
-			} \
-			if ($$1 == "f" && $$3 ~ /^usr\/lib\/python2.4\/vendor-packages\/mako/) \
-			{ \
-				print \
-			} \
-		}' > prototype
-	if [ `wc -l prototype | awk '{print $$1}'` -eq 0 ]; then \
-		echo "ERROR: prototype file came up empty!"; \
-		exit 1; \
-	fi
-
 clean: FRC
-	rm -f prototype
 
 clobber: clean
 	rm -rf $(PKGARCHIVE)/$(PKG)

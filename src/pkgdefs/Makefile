@@ -23,6 +23,7 @@
 #
 
 MACH:sh = uname -p
+ROOT = ../../proto/root_$(MACH)
 
 install := TARGET = install
 packages := TARGET = install
@@ -42,15 +43,27 @@ all:
 $(SUBDIRS): FRC
 	@cd $@; pwd; $(MAKE) $(TARGET)
 
-install packages: $(SUBDIRS)
+install packages: $(SUBDIRS) check
 	pkgtrans ../../packages/$(MACH) pkg5-`hg id -i`.pkg $(SUBDIRS)
 	rm -f ../../packages/$(MACH)/pkg5.pkg
 	cd ../../packages/$(MACH) && ln -s pkg5-`hg id -i`.pkg pkg5.pkg
 
 clean: $(SUBDIRS)
+	rm -f pkgproto protoproto
 
-clobber: $(SUBDIRS)
+clobber: clean $(SUBDIRS)
 	rm -f ../../packages/$(MACH)/pkg-*.pkg
 	rm -f ../../packages/$(MACH)/pkg5.pkg
+
+check: protoproto pkgproto
+	diff protoproto pkgproto | grep "^<" | nawk '{print $$3} END {exit NR != 0}'
+	
+protoproto: FRC
+	(cd $(ROOT) && pkgproto . | nawk '{print $$1, $$3}' | sort +1) > $@
+
+PROTOS = $(SUBDIRS:%=%/prototype)
+
+pkgproto: $(PROTOS)
+	nawk '$$1 ~ /[sdf]/ {print $$1, $$3}' $(PROTOS) | sort +1 -u > $@
 
 FRC:

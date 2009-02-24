@@ -82,9 +82,10 @@ GLADEICONS = \
 
 #
 # List of locales for which to build help.  From this we build
-# the list of help file names.
+# the list of help file names.  This is disabled for now, as none
+# of these files are packaged yet.
 #
-HELP_LOCALES = C de es fr it ja ko pt_BR ru sv zh_CN zh_HK zh_TW
+HELP_LOCALES = # C de es fr it ja ko pt_BR ru sv zh_CN zh_HK zh_TW
 
 SP_LOCALES = C
 
