@@ -123,6 +123,7 @@ ICONS = \
 PYMODS = \
    modules/__init__.py \
    modules/imageinfo.py \
+   modules/cache.py \
    modules/installupdate.py \
    modules/repository.py \
    modules/enumerations.py \

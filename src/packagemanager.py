@@ -85,6 +85,7 @@ import gettext
 import signal
 from threading import Thread
 from urllib2 import HTTPError, URLError
+from cPickle import UnpicklingError
 
 try:
         import gobject
@@ -107,6 +108,7 @@ import pkg.client.retrieve as retrieve
 import pkg.portable as portable
 import pkg.gui.repository as repository
 import pkg.gui.beadmin as beadm
+import pkg.gui.cache as cache
 import pkg.gui.misc as gui_misc
 import pkg.gui.imageinfo as imageinfo
 import pkg.gui.installupdate as installupdate
@@ -127,6 +129,7 @@ class PackageManager:
         def __init__(self):
                 signal.signal(signal.SIGINT, self.__main_application_quit)
                 self.api_o = None
+                self.cache_o = None
                 self.client = gconf.client_get_default()
                 self.initial_toplevel = self.client.get_int(INITIAL_TOPLEVEL_PREFERENCES)
                 self.initial_category = self.client.get_int(INITIAL_CATEGORY_PREFERENCES)
@@ -180,7 +183,8 @@ class PackageManager:
                 self.start_page_url = None
                 self.visible_status_id = 0
                 self.categories_status_id = 0
-                
+                self.visible_repository = None
+                self.visible_repository_uptodate = False
                 self.section_list = self.__get_new_section_liststore()
                 self.filter_list = self.__get_new_filter_liststore()
                 self.application_list = None
@@ -752,6 +756,11 @@ class PackageManager:
                 category_list_filter.set_visible_func(self.category_filter)
                 toggle_renderer.connect('toggled', self.__active_pane_toggle, \
                     application_list_sort)
+                category_selection = self.w_categories_treeview.get_selection()
+                category_model, category_iter = category_selection.get_selected()
+                if not category_iter:         #no category was selected, so select "All"
+                        category_selection.select_path(0)
+                        category_model, category_iter = category_selection.get_selected()
                 if self.first_run:
                         category_selection.connect("changed",
                             self.__on_category_selection_changed, None)
@@ -1356,15 +1365,50 @@ class PackageManager:
                 gobject.idle_add(self.process_package_list_end)
 
         def __get_application_categories_lists(self, authorities=[]):
-                gobject.idle_add(self.setup_progressdialog_show)
+                if not self.visible_repository:
+                        self.visible_repository = self.__get_active_authority()
                 application_list = self.__get_new_application_liststore()
                 category_list = self.__get_new_category_liststore()
+                first_loop = True
                 for authority in authorities:
-                        self.__add_pkgs_to_lists_from_api(authority, application_list, 
-                            category_list)
-                        category_list.prepend([0, _('All'), None, None, False, 
-                            True, None])
+                        uptodate = False
+                        try:
+                                uptodate = self.__check_if_cache_uptodate(authority)
+                                if uptodate:
+                                        self.__add_pkgs_to_lists_from_cache(authority, 
+                                            application_list, category_list)
+                        except UnpicklingError:
+                                #Most likely cache is corrupted, silently load list from api.
+                                #raise
+                                application_list = self.__get_new_application_liststore()
+                                category_list = self.__get_new_category_liststore()
+                                uptodate = False
+                        if not uptodate:
+                                if first_loop == True:
+                                        first_loop = False
+                                        gobject.idle_add(self.setup_progressdialog_show)
+                                self.api_o.img.load_catalogs(self.pr)
+                                self.__add_pkgs_to_lists_from_api(authority, application_list, 
+                                    category_list)
+                                category_list.prepend([0, _('All'), None, None, False, 
+                                    True, None])
+                        if self.application_list and self.category_list and \
+                            not self.visible_repository_uptodate:
+                                self.__dump_datamodels(self.visible_repository, self.application_list,
+                                    self.category_list)
+                        self.visible_repository = self.__get_active_authority()
+                        self.visible_repository_uptodate = uptodate
                 return application_list, category_list
+
+        def __check_if_cache_uptodate(self, authority):
+                if self.cache_o:
+                        return self.cache_o.check_if_cache_uptodate(authority)
+                return False
+
+        def __dump_datamodels(self, authority, application_list, category_list):
+                if self.cache_o:
+                        Thread(target = self.cache_o.dump_datamodels,
+                            args = (authority, application_list, category_list)).start()
 
         def __on_install_update(self, widget):
                 self.api_o.reset()
@@ -1467,6 +1511,10 @@ class PackageManager:
                         else:
                                 gobject.spawn_async([self.application_path, 
                                     "-U", be_name])
+                else:
+                        visible_repository = self.__get_visible_repository_name()
+                        self.__dump_datamodels(visible_repository, 
+                                self.application_list, self.category_list)
                 self.w_main_window.hide()
                 gtk.main_quit()
                 sys.exit(0)
@@ -1859,9 +1907,9 @@ class PackageManager:
                 selected_category = 0
                 category_selection = self.w_categories_treeview.get_selection()
                 category_model, category_iter = category_selection.get_selected()
-                if not category_iter:         #no category was selected, so select "All"
-                        category_selection.select_path(0)
-                        category_model, category_iter = category_selection.get_selected()
+                #if not category_iter:         #no category was selected, so select "All"
+                #        category_selection.select_path(0)
+                #        category_model, category_iter = category_selection.get_selected()
                 if category_iter:
                         selected_category = category_model.get_value(category_iter,
                             enumerations.CATEGORY_ID)
@@ -1927,16 +1975,20 @@ class PackageManager:
                 if len(self.repositories_list) <= 1:
                         return True
                 else:
-                        auth_iter = self.w_repository_combobox.get_active_iter()
-                        authority = self.repositories_list.get_value(auth_iter, \
-                            enumerations.REPOSITORY_NAME)
+                        visible_repository = self.__get_visible_repository_name()
                         pkg = model.get_value(itr, enumerations.FMRI_COLUMN)
                         if not pkg:
                                 return False
-                        if cmp(pkg.get_authority(), authority) == 0:
+                        if cmp(pkg.get_authority(), visible_repository) == 0:
                                 return True
                         else:
                                 return False
+
+        def __get_visible_repository_name(self):
+                auth_iter = self.w_repository_combobox.get_active_iter()
+                visible = self.repositories_list.get_value(auth_iter, \
+                    enumerations.REPOSITORY_NAME)
+                return visible
 
         def __enable_disable_selection_menus(self):
                 if self.in_setup:
@@ -2122,21 +2174,17 @@ class PackageManager:
                         self.__catalog_refresh_done()
                 return 0
 
-        def __get_image_from_directory(self, api_o, progressdialog_progress):
-                """ This method set up image from the given directory and
-                returns the image object or None"""
-                application_list = self.__get_new_application_liststore()
-                category_list = self.__get_new_category_liststore()
-                repositories_list = self.__get_new_repositories_liststore()
-                gobject.idle_add(self.process_package_list_end, api_o,
-                    application_list, category_list, repositories_list)
-                return             
+        def __add_pkgs_to_lists_from_cache(self, authority, application_list, 
+            category_list):
+                if self.cache_o:
+                        self.cache_o.load_application_list(authority, application_list, 
+                            self.selected_pkgs)
+                        self.cache_o.load_category_list(authority, category_list)
 
-        def __add_pkgs_to_lists_from_api(self, authority, application_list, 
+        def __add_pkgs_to_lists_from_api(self, authority, application_list,
             category_list):
                 """ This method set up image from the given directory and
-                returns the image object or None"""
-                self.api_o.img.load_catalogs(self.pr)
+                returns the image object or None"""                
                 pargs = []
                 pargs.append("pkg://" + authority + "/*")
                 try:
@@ -2497,6 +2545,7 @@ class PackageManager:
 
         def reload_packages(self):
                 self.api_o = self.__get_api_object(self.image_directory, self.pr)
+                self.cache_o = self.__get_cache_obj(self.application_dir, self.api_o)
                 self.__on_reload(None)
 
         def set_busy_cursor(self):
@@ -2508,10 +2557,16 @@ class PackageManager:
         def process_package_list_start(self, image_directory):
                 self.image_directory = image_directory
                 if not self.api_o:
-                        api_o = self.__get_api_object(image_directory, self.pr)
-                        self.api_o = api_o
+                        self.api_o = self.__get_api_object(image_directory, self.pr)
+                        self.cache_o = self.__get_cache_obj(self.application_dir, self.api_o)
                 self.repositories_list = self.__get_new_repositories_liststore()
                 self.__setup_repositories_combobox(self.api_o, self.repositories_list)
+
+        @staticmethod
+        def __get_cache_obj(application_dir, api_o):
+                cache_o = cache.CacheListStores(application_dir,
+                    api_o)
+                return cache_o
 
         @staticmethod
         def __get_api_object(img_dir, progtrack):
@@ -2581,9 +2636,7 @@ class PackageManager:
                 installed = 0
                 self.selected = 0
                 sel = 0
-                auth_iter = self.w_repository_combobox.get_active_iter()
-                visible_authority = self.repositories_list.get_value(auth_iter, \
-                    enumerations.REPOSITORY_NAME)
+                visible_repository = self.__get_visible_repository_name()
                 for authority in self.selected_pkgs:
                         pkgs = self.selected_pkgs.get(authority)
                         self.selected += len(pkgs)
@@ -2597,21 +2650,19 @@ class PackageManager:
                 listed_str = _('%d listed') % len(self.application_list)
                 sel_str = _('%d selected') % sel
                 inst_str = _('%d installed') % installed
-                status_str = _("%s: %s , %s, %s.") % (visible_authority, listed_str, 
+                status_str = _("%s: %s , %s, %s.") % (visible_repository, listed_str, 
                         inst_str, sel_str)
                 self.w_main_statusbar.push(0, status_str)
 
         def update_package_list(self, update_list):
                 img = self.api_o.img
-                auth_iter = self.w_repository_combobox.get_active_iter()
-                visible_authority = self.repositories_list.get_value(auth_iter, \
-                    enumerations.REPOSITORY_NAME)
+                visible_repository = self.__get_visible_repository_name()
                 default_authority = self.default_authority
                 img.clear_pkg_state()
                 img.load_catalogs(self.pr)
                 installed_icon = gui_misc.get_icon_pixbuf(self.application_dir, 
                     "status_installed")
-                visible_list = update_list.get(visible_authority)
+                visible_list = update_list.get(visible_repository)
                 if visible_list:
                         for row in self.application_list:
                                 if row[enumerations.NAME_COLUMN] in visible_list:
@@ -2636,8 +2687,10 @@ class PackageManager:
                                                 row[enumerations.STATUS_ICON_COLUMN] = \
                                                     None
                                         row[enumerations.MARK_COLUMN] = False
+                        self.__dump_datamodels(visible_repository, 
+                                self.application_list, self.category_list)
                 for authority in update_list:
-                        if authority != visible_authority:
+                        if authority != visible_repository:
                                 pkg_list = update_list.get(authority)
                                 for pkg in pkg_list:
                                         pkg_stem = None
