@@ -20,13 +20,14 @@
 # CDDL HEADER END
 #
 
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 import sys
 import os
 import tempfile
 
+import pkg.client.api_errors as api_errors
 import pkg.pkgsubprocess as subprocess
 from pkg.misc import msg, emsg
 
@@ -145,42 +146,49 @@ class BootEnv(object):
 
                 return self.is_valid
 
+        @staticmethod
+        def check_be_name(be_name):
+                try:
+                        return be_name is None or be.beVerifyBEName(be_name) == 0
+                except AttributeError:
+                        raise api_errors.BENamingNotSupported(be_name)
+        
         def init_image_recovery(self, img, be_name=None):
 
                 """Initialize for an image-update.
+                        If a be_name is given, validate it.
                         If we're operating on a live BE then clone the
                         live BE and operate on the clone.
                         If we're operating on a non-live BE we use
                         the already created snapshot"""
-                
-                if self.is_live_BE:
 
+                if self.is_live_BE:
                         # Create a clone of the live BE and mount it.
                         self.destroy_snapshot()
+
+                        if not self.check_be_name(be_name):
+                                raise api_errors.InvalidBENameException(be_name)
                         
                         # Do nothing with the returned snapshot name
                         # that is taken of the clone during beCopy.
-                        ret, self.be_name_clone, not_used = be.beCopy(be_name)
-                        if be_name:
-                                self.be_name_clone = be_name
+                        ret, self.be_name_clone, not_used = be.beCopy()
                         if ret != 0:
-                                if be_name:
-                                        # Try default name, if the be_name was 
-                                        # already in the names of be's
-                                        ret, self.be_name_clone, not_used = \
-                                            be.beCopy()
-                                if ret != 0:
-                                        emsg(_("pkg: unable to create BE %s") % \
-                                            self.be_name_clone)
-                                        return
-
+                                raise api_errors.UnableToCopyBE()
+                        if be_name:
+                                ret = be.beRename(self.be_name_clone, be_name)
+                                if ret == 0:
+                                        self.be_name_clone = be_name
+                                else:
+                                        raise api_errors.UnableToRenameBE(
+                                            self.be_name_clone, be_name)
                         if be.beMount(self.be_name_clone, self.clone_dir) != 0:
-                                 emsg(_("pkg: attempt to mount %s failed.") % \
-                                    self.be_name_clone)
-                                 return
+                                raise api_errors.UnableToMountBE(
+                                    self.be_name_clone, self.clone_dir)
 
                         # Set the image to our new mounted BE. 
                         img.find_root(self.clone_dir)
+                elif be_name is not None:
+                        raise api_errors.BENameGivenOnDeadBE(be_name)
 
         def activate_image(self):
 
@@ -359,7 +367,8 @@ class BootEnvNull(object):
                 return False
 
         def init_image_recovery(self, img, be_name=None):
-                pass
+                if be_name is not None:
+                        raise api_errors.BENameGivenOnDeadBE(be_name)
 
         def activate_image(self):
                 pass

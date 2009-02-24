@@ -246,3 +246,66 @@ class InvalidDepotResponseException(ApiException):
                         s += "\nEncountered the following error(s):\n%s" % \
                             self.data
                 return s
+
+class BEException(ApiException):
+        def __init__(self):
+                ApiException.__init__(self)
+
+class InvalidBENameException(BEException):
+        def __init__(self, be_name):
+                BEException.__init__(self)
+                self.be_name = be_name
+
+        def __str__(self):
+                return _("'%s' is not a valid boot envirnment name." %
+                    self.be_name)
+
+class BENamingNotSupported(BEException):
+        def __init__(self, be_name):
+                BEException.__init__(self)
+                self.be_name = be_name
+
+        def __str__(self):
+                return _("""\
+Boot environment naming during package install is not supported on this
+version of OpenSolaris. Please image-update without the --be-name option.""")
+
+class UnableToCopyBE(BEException):
+        def __str__(self):
+                return _("Unable to clone the current boot environment.")
+
+class UnableToRenameBE(BEException):
+        def __init__(self, orig, dest):
+                BEException.__init__(self)
+                self.original_name = orig
+                self.destination_name = dest
+
+        def __str__(self):
+                d = {
+                    "orig": self.original_name,
+                    "dest": self.destination_name
+                }
+                return _("""\
+A problem occurred while attempting to rename the boot environment
+currently named %(orig)s to %(dest)s.""") % d
+
+class UnableToMountBE(BEException):
+        def __init__(self, be_name, be_dir):
+                BEException.__init__(self)
+                self.name = be_name
+                self.mountpoint = be_dir
+
+        def __str__(self):
+                return _("Unable to mount %(name)s at %(mt)s") % \
+                    {"name": self.name, "mt": self.mountpoint}
+
+class BENameGivenOnDeadBE(BEException):
+        def __init__(self, be_name):
+                BEException.__init__(self)
+                self.name = be_name
+
+        def __str__(self):
+                return _("""\
+Naming a boot environment when operating on a non-live image is
+not allowed.""")
+                         

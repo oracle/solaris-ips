@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 import testutils
@@ -66,6 +66,7 @@ class TestROption(testutils.SingleDepotTestCase):
                 self.pkgsend_bulk(durl, self.foo10)
                 
                 self.pkg("-R %s image-update" % badpath, exit=1)
+                self.pkg("-R %s image-update --be-name NEWBENAME" % imgpath, exit=1)
                 self.pkg("-R %s image-update" % imgpath)
 
                 self.pkg("-R %s uninstall foo" % badpath, exit=1)

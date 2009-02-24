@@ -87,7 +87,7 @@ from pkg.client.retrieve import DatastreamRetrievalError
 from pkg.client.retrieve import CatalogRetrievalError
 from pkg.client.filelist import FileListRetrievalError
 
-CLIENT_API_VERSION = 8
+CLIENT_API_VERSION = 9
 PKG_CLIENT_NAME = "pkg"
 
 def error(text):
@@ -120,7 +120,7 @@ Basic subcommands:
         pkg install [-nvq] [--no-refresh] [--no-index] package...
         pkg uninstall [-nrvq] [--no-index] package...
         pkg list [-aHsuvf] [package...]
-        pkg image-update [-fnvq] [--no-refresh] [--no-index]
+        pkg image-update [-fnvq] [--be-name name] [--no-refresh] [--no-index]
         pkg refresh [--full] [authority ...]
         pkg version
         pkg help
@@ -473,10 +473,12 @@ def image_update(img_dir, args):
         # XXX Are filters appropriate for an image update?
         # XXX Leaf package refinements.
 
-        opts, pargs = getopt.getopt(args, "b:fnvq", ["no-refresh", "no-index"])
+        opts, pargs = getopt.getopt(args, "b:fnvq", ["be-name=", "no-refresh",
+            "no-index"])
 
         force = quiet = noexecute = verbose = False
         refresh_catalogs = update_index = True
+        be_name = None
         for opt, arg in opts:
                 if opt == "-n":
                         noexecute = True
@@ -492,6 +494,8 @@ def image_update(img_dir, args):
                         refresh_catalogs = False
                 elif opt == "--no-index":
                         update_index = False
+                elif opt == "--be-name":
+                        be_name = arg
 
         if verbose and quiet:
                 usage(_("image-update: -v and -q may not be combined"))
@@ -516,7 +520,7 @@ def image_update(img_dir, args):
                 stuff_to_do, opensolaris_image, cre = \
                     api_inst.plan_update_all(sys.argv[0], refresh_catalogs,
                         noexecute, force=force, verbose=verbose,
-                        update_index=update_index)
+                        update_index=update_index, be_name=be_name)
                 if cre and not display_catalog_failures(cre):
                         raise RuntimeError("Catalog refresh failed during"
                             " image-update.")
@@ -533,6 +537,9 @@ def image_update(img_dir, args):
                 else:
                         raise RuntimeError("Catalog refresh failed during"
                             " image-update.")
+        except api_errors.BEException, e:
+                error(_(e))
+                return 1
         except (api_errors.PlanCreationException,
             api_errors.NetworkUnavailableException,
             api_errors.PermissionsException), e:
@@ -594,6 +601,9 @@ def image_update(img_dir, args):
                 # be printed on the same line as the spinner.
                 error("\n" + str(e))
                 ret_code = 1
+        except api_errors.BEException, e:
+                error(_(e))
+                return 1
         except KeyboardInterrupt:
                 raise
         except Exception, e:

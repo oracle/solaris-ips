@@ -1,3 +1,10 @@
+Version 9:
+Compatible with clients using versions 1-8
+Changes:
+    This version adds an optional argument to plan_update all to allow the
+    specification of a name for the clone of the BE which is made. It also
+    exposes check_be_name as part of the api.
+
 Version 8:
 Compatible with clients using versions 1-7
 Changes:
@@ -7,7 +14,7 @@ Changes:
     should catch this exception and respond appropriately.
 
 Version 7:
-Compatible with clients using versions 1-6.
+Compatible with clients using versions 1-6
 Changes:
     Ignore the pkg_client_name parameter passed to api.ImageInterface() if
     pkg.client.global_settings.client_name isn't None.  This latter object

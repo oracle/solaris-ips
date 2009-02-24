@@ -23,7 +23,8 @@ SYNOPSIS
      /usr/bin/pkg image-create [-fFPUz] [--force] [--full|--partial|--user]
          [--zone] [-k ssl_key] [-c ssl_cert] [--no-refresh]
          -a authority=origin_url dir
-     /usr/bin/pkg image-update [-fnvq] [--no-refresh] [--no-index]
+     /usr/bin/pkg image-update [-fnvq] [--be-name name] [--no-refresh]
+         [--no-index]
 
      /usr/bin/pkg set-property propname propvalue
      /usr/bin/pkg unset-property propname ...
@@ -102,16 +103,25 @@ SUBCOMMANDS
           With -f (--force), force the creation of an image over an existing
           image.  This option should be used with care.
 
-     image-update [-fnvq] [--no-refresh] [--no-index]
+     image-update [-fnvq] [--be-name name] [--no-refresh] [--no-index]
           Update all installed packages in the current image to the
-          latest available version.  With the -f option, skip safety
-          checks.  With the -n option, execute the requested operation
-          but make no persistent changes to the image.  With the -v
-          option, issue verbose progress messages during the requested
-          operation.  With the -q option, be completely silent. With 
-          --no-refresh, do not attempt to contact the image's authorities
-          to retrieve their catalogs. With --no-index do not update the
+          latest available version.  
+
+          With the -f option, skip safety checks.  
+
+          With the -n option, execute the requested operation but make no 
+          persistent changes to the image.
+
+          With the -v option, issue verbose progress messages during the
+          requested operation.  With the -q option, be completely silent.
+
+          With  --no-refresh, do not attempt to contact the image's authorities
+          to retrieve their catalogs.  With --no-index do not update the
           search indices after the operation has completed successfully.
+
+          With --be-name, rename the newly created boot environment to be the
+          argument given.  This option is only valid if a new boot environment
+          is created during image update. See also beadm(1m).
 
      refresh [--full] [authority ...]
           Retrieve updates to the catalogs for each authority specified.

@@ -34,7 +34,7 @@ from pkg.client import global_settings
 
 import threading
 
-CURRENT_API_VERSION = 8
+CURRENT_API_VERSION = 9
 
 class ImageInterface(object):
         """This class presents an interface to images that clients may use.
@@ -69,7 +69,7 @@ class ImageInterface(object):
                 canceled changes. It can raise VersionException and
                 ImageNotFoundException."""
 
-                compatible_versions = set([1, 2, 3, 4, 5, 6, 7, 8])
+                compatible_versions = set([1, 2, 3, 4, 5, 6, 7, 8, 9])
 
                 if version_id not in compatible_versions:
                         raise api_errors.VersionException(CURRENT_API_VERSION,
@@ -91,11 +91,16 @@ class ImageInterface(object):
                 self.plan_desc = None
                 self.prepared = False
                 self.executed = False
+                self.be_name = None
 
                 self.__can_be_canceled = False
                 self.__canceling = False
 
                 self.__activity_lock = threading.Lock()
+
+        @staticmethod
+        def check_be_name(be_name):
+                return bootenv.BootEnv.check_be_name(be_name)
                 
         def plan_install(self, pkg_list, filters, refresh_catalogs=True,
             noexecute=False, verbose=False, update_index=True):
@@ -266,7 +271,8 @@ class ImageInterface(object):
                 return res
                 
         def plan_update_all(self, actual_cmd, refresh_catalogs=True,
-            noexecute=False, force=False, verbose=False, update_index=True):
+            noexecute=False, force=False, verbose=False, update_index=True,
+            be_name=None):
                 """Creates a plan to update all packages on the system to the
                 latest known versions. actual_cmd is the command used to start
                 the client. It is used to determine the image to check whether
@@ -294,6 +300,10 @@ class ImageInterface(object):
                         try:
                                 self.img.history.operation_name = "image-update"
                                 exception_caught = None
+                                if not self.check_be_name(be_name):
+                                        raise api_errors.InvalidBENameException(
+                                            be_name)
+                                self.be_name = be_name
 
                                 # Verify validity of certificates before
                                 # attempting network operations
@@ -373,6 +383,12 @@ class ImageInterface(object):
                                             history.RESULT_NOTHING_TO_DO
                                 self.img.imageplan.update_index = update_index
                                 res = not self.img.imageplan.nothingtodo()
+                        except (api_errors.BENamingNotSupported,
+                            api_errors.InvalidBENameException):
+                                self.__reset_unlock()
+                                self.img.history.operation_result = \
+                                    history.RESULT_FAILED_BAD_REQUEST
+                                raise
                         except api_errors.CanceledException:
                                 self.__reset_unlock()
                                 self.img.history.operation_result = \
@@ -472,7 +488,7 @@ class ImageInterface(object):
                                 be = bootenv.BootEnvNull(self.img.get_root())
 
                         if self.plan_type is self.__IMAGE_UPDATE:
-                                be.init_image_recovery(self.img)
+                                be.init_image_recovery(self.img, self.be_name)
                                 if self.img.is_liveroot():
                                         self.img.history.operation_result = \
                                             history.RESULT_FAILED_BAD_REQUEST
