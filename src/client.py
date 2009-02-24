@@ -370,7 +370,9 @@ def fix_image(img, args):
                         pass # Error is printed by the BootEnv call.
                 success = img.repair(repairs, progresstracker)
                 if not success:
+                        progresstracker.verify_done()
                         return 1
+        progresstracker.verify_done()
         return 0
 
 def verify_image(img, args):
