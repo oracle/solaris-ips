@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 
@@ -32,9 +32,10 @@ import pkg.indexer as indexer
 import pkg.search_storage as ss
 
 class Indexer(indexer.Indexer):
-        def __init__(self, index_dir, default_max_ram_use, progtrack=None):
-                indexer.Indexer.__init__(self, index_dir, default_max_ram_use,
-                    progtrack)
+        def __init__(self, index_dir, get_manf_func, default_max_ram_use,
+            progtrack=None):
+                indexer.Indexer.__init__(self, index_dir, get_manf_func,
+                    default_max_ram_use, progtrack)
                 self._data_dict['full_fmri_hash'] = \
                     ss.IndexStoreSetHash('full_fmri_list.hash')
                 self._data_full_fmri_hash = self._data_dict['full_fmri_hash']

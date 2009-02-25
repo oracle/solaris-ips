@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 import os
@@ -586,6 +586,7 @@ class ImagePlan(object):
                         try:
                                 self.image.update_index_dir()
                                 ind = indexer.Indexer(self.image.index_dir,
+                                    self.image.get_manifest,
                                     CLIENT_DEFAULT_MEM_USE_KB,
                                     progtrack=self.progtrack)
                                 if not ind.check_index_existence() or \
@@ -598,7 +599,7 @@ class ImagePlan(object):
                                         # we continue to get feedback to
                                         # allow us to debug the code.
                                         ind.rebuild_index_from_scratch(
-                                            self.image.get_fmri_manifest_pairs())
+                                            self.image.gen_installed_pkgs())
                         except se.IndexingException:
                                 # If there's a problem indexing, we want to
                                 # attempt to finish the installation anyway. If
@@ -746,27 +747,18 @@ class ImagePlan(object):
                 # Perform the incremental update to the search indexes
                 # for all changed packages
                 if self.update_index:
-                        plan_info = []
-                        for p in self.pkg_plans:
-                                d_fmri = p.destination_fmri
-                                d_manifest_path = None
-                                if d_fmri:
-                                        d_manifest_path = \
-                                            self.image.get_manifest_path(d_fmri)
-                                o_fmri = p.origin_fmri
-                                o_manifest_path = None
-                                o_filter_file = None
-                                if o_fmri:
-                                        o_manifest_path = \
-                                            self.image.get_manifest_path(o_fmri)
-                                plan_info.append((d_fmri, d_manifest_path,
-                                                  o_fmri, o_manifest_path))
+                        plan_info = [
+                            (p.destination_fmri, p.origin_fmri)
+                            for p
+                            in self.pkg_plans
+                        ]
                         del self.pkg_plans
                         self.progtrack.actions_set_goal("Index Phase",
                             len(plan_info))
                         try:
                                 self.image.update_index_dir()
                                 ind = indexer.Indexer(self.image.index_dir,
+                                    self.image.get_manifest,
                                     CLIENT_DEFAULT_MEM_USE_KB,
                                     progtrack=self.progtrack)
                                 ind.client_update_index((self.filters,

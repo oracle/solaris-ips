@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 
@@ -69,13 +69,12 @@
 # in there temporarily.
 #
 # The server code should use
-# server_update_index(self, fmri_manifest_list, tmp_index_dir = ?)
+# server_update_index(self, fmris, tmp_index_dir = ?)
 #
 # The assumption is that the client will always be passing pkg plans
 # (with one exception) while the server will always be passing
-# fmri's paired with the paths to their manifests. The one exception
-# to the client side assumption is when the index is being rebuilt.
-# In that case, the client calls check_index. check_index only
+# fmri's. The one exception to the client side assumption is when the index is
+# being rebuilt. In that case, the client calls check_index. check_index only
 # rebuilds the index if the index is empty or if it is forced
 # to by an argument.
 #
@@ -112,12 +111,14 @@ class Indexer(object):
         """ See block comment at top for documentation """
         file_version_string = "VERSION: "
 
-        def __init__(self, index_dir, default_max_ram_use, progtrack=None):
+        def __init__(self, index_dir, get_manifest_func, default_max_ram_use,
+            progtrack=None):
                 self._num_keys = 0
                 self._num_manifests = 0
                 self._num_entries = 0
                 self._max_ram_use = float(os.environ.get("PKG_INDEX_MAX_RAM",
                     default_max_ram_use)) * 1024
+                self._get_manf_func = get_manifest_func
 
                 # This structure was used to gather all index files into one
                 # location. If a new index structure is needed, the files can
@@ -305,9 +306,7 @@ class Indexer(object):
                             len(pkgplan_list))
 
                 while start_point < len(pkgplan_list) and not stopping_early:
-                        (d_fmri, d_manifest_path, o_fmri,
-                            o_manifest_path) = \
-                            pkgplan_list[start_point]
+                        d_fmri, o_fmri = pkgplan_list[start_point]
                         dest_fmri = d_fmri
                         origin_fmri = o_fmri
 
@@ -319,9 +318,8 @@ class Indexer(object):
                         if origin_fmri is not None:
                                 self._data_full_fmri.remove_entity(
                                     origin_fmri.get_fmri(anarchy=True))
-                                mfst = manifest.Manifest()
-                                mfst_file = file(o_manifest_path)
-                                mfst.set_content(mfst_file.read())
+                                mfst = self._get_manf_func(origin_fmri,
+                                    add_to_cache=False)
                                 origin_dict = mfst.search_dict()
                                 version = origin_fmri.version
                                 pkg_stem = \
@@ -354,10 +352,8 @@ class Indexer(object):
                         if dest_fmri is not None:
                                 self._data_full_fmri.add_entity(
                                     dest_fmri.get_fmri(anarchy=True))
-                                mfst = manifest.Manifest()
-                                mfst_file = file(d_manifest_path)
-                                mfst.set_content(mfst_file.read())
-                                mfst.filter(d_filters)
+                                mfst = self._get_manf_func(dest_fmri,
+                                    add_to_cache=False)
                                 dest_dict = mfst.search_dict()
                                 total_terms += self._add_terms(dest_fmri,
                                     dest_dict, added_dict)
@@ -380,9 +376,9 @@ class Indexer(object):
                     removed_packages, remove_action_ids, remove_fmri_ids,
                     remove_keyval_ids, remove_tok_type_ids, remove_version_ids))
 
-        def _process_fmri_manifest_list(self, fmri_manifest_list, start_point):
-                """ Takes a list of fmri, manifest pairs and updates the
-                internal storage to reflect the new packages.
+        def _process_fmris(self, fmris, start_point):
+                """ Takes fmris and updates the internal storage to reflect the
+                new packages.
                 """
                 added_dict = {}
                 removed_packages = set()
@@ -396,20 +392,20 @@ class Indexer(object):
                 stopping_early = False
                 total_terms = 0
 
+                fmris = list(fmris)
+
                 if self._progtrack is not None and start_point == 0:
                         self._progtrack.index_set_goal("Indexing Packages",
-                            len(fmri_manifest_list))
+                            len(fmris))
 
-                while start_point < len(fmri_manifest_list) and \
+                while start_point < len(fmris) and \
                     not stopping_early:
-                        added_fmri, manifest_path = \
-                            fmri_manifest_list[start_point]
+                        added_fmri = fmris[start_point]
                         start_point += 1
                         self._data_full_fmri.add_entity(
                             added_fmri.get_fmri(anarchy=True))
-                        mfst = manifest.Manifest()
-                        mfst_file = file(manifest_path)
-                        mfst.set_content(mfst_file.read())
+                        mfst = self._get_manf_func(added_fmri,
+                            add_to_cache=False)
                         new_dict = mfst.search_dict()
                         total_terms += self._add_terms(added_fmri, new_dict,
                             added_dict)
@@ -504,15 +500,14 @@ class Indexer(object):
                                 for (tok_type_id, action_id, keyval_id,
                                     fmri_ids) in entries:
                                         k = (tok_type_id, action_id, keyval_id)
-                                        fmri_list = []
+                                        fmris = []
                                         for fmri_version in fmri_ids:
                                                 if not fmri_version in \
                                                     removed_packages:
-                                                        fmri_list.append(
+                                                        fmris.append(
                                                             fmri_version)
-                                        if fmri_list:
-                                                new_entries.append(
-                                                    (k, fmri_list))
+                                        if fmris:
+                                                new_entries.append((k, fmris))
                                 # Add tokens newly discovered in the added
                                 # packages which are alphabetically earlier
                                 # than the token most recently read from the
@@ -639,7 +634,7 @@ class Indexer(object):
                                         start_point)
                         elif input_type == IDX_INPUT_TYPE_FMRI:
                                 (more_to_do, start_point, dicts) = \
-                                    self._process_fmri_manifest_list(
+                                    self._process_fmris(
                                         input_list, start_point)
                         else:
                                 raise RuntimeError("Got unknown input_type: %s", 
@@ -664,7 +659,7 @@ class Indexer(object):
 
                 if self._progtrack is not None:
                         self._progtrack.index_done()
-                
+
         def client_update_index(self, pkgplan_list, tmp_index_dir = None):
                 """ This version of update index is designed to work with the
                 client side of things. Specifically, it expects a pkg plan
@@ -677,7 +672,7 @@ class Indexer(object):
                 self._generic_update_index(pkgplan_list, IDX_INPUT_TYPE_PKG,
                     tmp_index_dir)
 
-        def server_update_index(self, fmri_manifest_list, tmp_index_dir = None):
+        def server_update_index(self, fmris, tmp_index_dir = None):
                 """ This version of update index is designed to work with the
                 server side of things. Specifically, since we don't currently
                 support removal of a package from a repo, this function simply
@@ -687,8 +682,8 @@ class Indexer(object):
                 specified, it must NOT exist in the current directory structure.
                 This prevents the indexer from accidentally removing files.
                 """
-                self._generic_update_index(fmri_manifest_list,
-                    IDX_INPUT_TYPE_FMRI, tmp_index_dir)
+                self._generic_update_index(fmris, IDX_INPUT_TYPE_FMRI,
+                    tmp_index_dir)
 
         def check_index_existence(self):
                 """ Returns a boolean value indicating whether a consistent
@@ -711,7 +706,7 @@ class Indexer(object):
                 assert res is not 0
                 return res
 
-        def rebuild_index_from_scratch(self, fmri_manifest_pairs,
+        def rebuild_index_from_scratch(self, fmris,
             tmp_index_dir = None):
                 """ Removes any existing index directory and rebuilds the
                 index based on the fmris and manifests provided as an
@@ -727,8 +722,8 @@ class Indexer(object):
                         if e.errno == errno.EACCES:
                                 raise search_errors.ProblematicPermissionsIndexException(
                                     self._index_dir)
-                self._generic_update_index(fmri_manifest_pairs,
-                    IDX_INPUT_TYPE_FMRI, tmp_index_dir)
+                self._generic_update_index(fmris, IDX_INPUT_TYPE_FMRI,
+                    tmp_index_dir)
                 self.empty_index = False
 
         def setup(self):

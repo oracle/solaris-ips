@@ -36,10 +36,12 @@ import threading
 import pkg.catalog as catalog
 import pkg.fmri as fmri
 import pkg.indexer as indexer
+import pkg.manifest as manifest
 import pkg.pkgsubprocess as subprocess
 import pkg.server.query_engine as query_e
 
 from pkg.misc import SERVER_DEFAULT_MEM_USE_KB
+from pkg.misc import EmptyI
 
 class ServerCatalog(catalog.Catalog):
         """The catalog information which is only needed by the server."""
@@ -167,6 +169,7 @@ class ServerCatalog(catalog.Catalog):
                                 # We only log this if this represents
                                 # a change in status of the server.
                                 ind = indexer.Indexer(self.index_root,
+                                    self.get_server_manifest,
                                     SERVER_DEFAULT_MEM_USE_KB)
                                 ind.setup()
                                 if not self._search_available:
@@ -193,12 +196,12 @@ class ServerCatalog(catalog.Catalog):
                         self.__update_searchdb_unlocked(fmris_to_index)
                 else:
                         ind = indexer.Indexer(self.index_root,
-                            SERVER_DEFAULT_MEM_USE_KB)
+                            self.get_server_manifest, SERVER_DEFAULT_MEM_USE_KB)
                         ind.setup()
 
         def _check_search(self):
                 ind = indexer.Indexer(self.index_root,
-                    SERVER_DEFAULT_MEM_USE_KB)
+                    self.get_server_manifest, SERVER_DEFAULT_MEM_USE_KB)
                 if ind.check_index_existence():
                         self._search_available = True
                         self.__log("Search Available", "INDEX")
@@ -268,30 +271,27 @@ class ServerCatalog(catalog.Catalog):
                         self.searchdb_update_handle = None
                         self.searchdb_update_handle_lock.release()
 
-        def __update_searchdb_unlocked(self, fmri_list):
-                """ Takes a fmri_list and calls the indexer with a list of fmri
-                and manifest file path pairs. It assumes that all needed
-                locking has already occurred.
+        def __update_searchdb_unlocked(self, fmris):
+                """ Creates an indexer then hands it fmris It assumes that all
+                needed locking has already occurred.
                 """
                 assert self.index_root
-                fmri_manifest_list = []
 
-                # Rather than storing those, simply pass along the
-                # file and have the indexer take care of opening and
-                # reading the manifest file. Since the indexer
-                # processes and discards the manifest structure (and its
-                # search dictionary for that matter) this
-                # is much more memory efficient.
-
-                for f in fmri_list:
-                        mfst_path = os.path.join(self.pkg_root,
-                                                 f.get_dir_path())
-                        fmri_manifest_list.append((f, mfst_path))
-
-                if fmri_manifest_list:
+                if fmris:
                         index_inst = indexer.Indexer(self.index_root,
-                            SERVER_DEFAULT_MEM_USE_KB)
-                        index_inst.server_update_index(fmri_manifest_list)
+                            self.get_server_manifest, SERVER_DEFAULT_MEM_USE_KB)
+                        index_inst.server_update_index(fmris)
+
+        def get_manifest_path(self, f):
+                return os.path.join(self.pkg_root, f.get_dir_path())
+
+        def get_server_manifest(self, f, add_to_cache=False):
+                assert not add_to_cache
+                m = manifest.Manifest()
+                mcontent = file(self.get_manifest_path(f)).read()
+                m.set_fmri(None, fmri)
+                m.set_content(mcontent, EmptyI)
+                return m
 
         def search(self, token):
                 """Search through the search database for 'token'.  Return a

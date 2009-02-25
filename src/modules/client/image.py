@@ -851,15 +851,6 @@ class Image(object):
 
                 return True
 
-        def get_fmri_manifest_pairs(self):
-                """For each installed fmri, finds the path to its manifest file
-                and adds the pair of the fmri and the path to a list. Once all
-                installed fmris have been processed, the list is returned."""
-                return [
-                    (fmri, self.get_manifest_path(fmri))
-                    for fmri in self.gen_installed_pkgs()
-                ]
-
         def has_manifest(self, fmri):
                 mpath = fmri.get_dir_path()
 
@@ -1074,7 +1065,7 @@ class Image(object):
 
                 return m
 
-        def get_manifest(self, fmri):
+        def get_manifest(self, fmri, add_to_cache=True):
                 """return manifest; uses cached version if available"""
 
                 # always elide variants for other architectures;
@@ -1090,7 +1081,8 @@ class Image(object):
                                 m = self.__manifest_cache[fmri]
                         else:
                                 m = self.__get_manifest(fmri, [v.allow_action])
-                                self.__manifest_cache[fmri] = m
+                                if add_to_cache:
+                                        self.__manifest_cache[fmri] = m
                 else:
                         m = self.__get_manifest(fmri, [v.allow_action])
 
@@ -2692,6 +2684,6 @@ class Image(object):
                 self.update_index_dir()
                 if not os.path.isdir(self.index_dir):
                         self.mkdirs()
-                ind = indexer.Indexer(self.index_dir,
+                ind = indexer.Indexer(self.index_dir, self.get_manifest,
                     CLIENT_DEFAULT_MEM_USE_KB, progtracker)
-                ind.rebuild_index_from_scratch(self.get_fmri_manifest_pairs())
+                ind.rebuild_index_from_scratch(self.gen_installed_pkgs())

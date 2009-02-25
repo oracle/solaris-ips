@@ -112,6 +112,14 @@ class TestPkgSearchBasics(testutils.SingleDepotTestCase):
             add set name=info.classification value="org.opensolaris.category.2008:TestBad1:TestBad2"
             close """
 
+        fat_pkg10 = """
+open fat@1.0,5.11-0
+add set name=variant.arch value=sparc value=i386
+add set name=description value="i386 variant" variant.arch=i386
+add set name=description value="sparc variant" variant.arch=sparc
+close """
+
+
         headers = "INDEX      ACTION    VALUE                     PACKAGE\n"
 
         res_remote_path = set([
@@ -265,6 +273,37 @@ class TestPkgSearchBasics(testutils.SingleDepotTestCase):
         ])
 
 
+        res_fat10_i386 = set([
+            headers,
+            "description set       i386                      pkg:/fat@1.0-0\n",
+            "variant.arch set       i386                      pkg:/fat@1.0-0\n",
+            "description set       variant                   pkg:/fat@1.0-0\n"
+
+        ])
+
+        res_fat10_sparc = set([
+            headers,
+            "description set       sparc                     pkg:/fat@1.0-0\n",
+            "variant.arch set       sparc                     pkg:/fat@1.0-0\n",
+            "description set       variant                   pkg:/fat@1.0-0\n"
+
+        ])
+
+        res_remote_fat10_star = res_fat10_sparc | res_fat10_i386
+
+        res_local_fat10_i386_star = res_fat10_i386.union(set([
+            "variant.arch set       sparc                     pkg:/fat@1.0-0\n",
+            "authority  set       test                      pkg:/fat@1.0-0\n",
+            "fmri       set       fmri                      pkg:/fat@1.0-0\n"
+        ]))
+
+        res_local_fat10_sparc_star = res_fat10_sparc.union(set([
+            "variant.arch set       i386                      pkg:/fat@1.0-0\n",
+            "authority  set       test                      pkg:/fat@1.0-0\n",
+            "fmri       set       fmri                      pkg:/fat@1.0-0\n"
+        ]))
+
+        
         misc_files = ['/tmp/example_file']
 
         # This is a copy of the 3.81%2C5.11-0.89%3A20080527T163123Z version of
@@ -972,6 +1011,36 @@ close
                 _run_cat_tests(self, remote)
                 _run_cat2_tests(self, remote)
                 _run_cat3_tests(self, remote)
+
+        def test_bug_6712_i386(self):
+                """Install one package, and run the search suite."""
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.fat_pkg10)
+                
+                self.image_create(durl, additional_args="--variant variant.arch=i386")
+
+                remote = True
+                
+                self._search_op(remote, "'*'", self.res_remote_fat10_star)
+
+                self.pkg("install fat")
+                remote = False
+                self._search_op(remote, "'*'", self.res_local_fat10_i386_star)
+
+        def test_bug_6712_sparc(self):
+                """Install one package, and run the search suite."""
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.fat_pkg10)
+                
+                self.image_create(durl, additional_args="--variant variant.arch=sparc")
+
+                remote = True
+                
+                self._search_op(remote, "'*'", self.res_remote_fat10_star)
+
+                self.pkg("install fat")
+                remote = False
+                self._search_op(remote, "'*'", self.res_local_fat10_sparc_star)
 
 
 class TestPkgSearchMulti(testutils.ManyDepotTestCase):
