@@ -513,8 +513,7 @@ class Transaction(object):
                 if scheme not in cls.__schemes:
                         raise TransactionRepositoryURLError(origin_url,
                             scheme=scheme)
-                if (scheme.startswith("http") or
-                    scheme.startswith("null")) and not netloc:
+                if scheme.startswith("http") and not netloc:
                         raise TransactionRepositoryURLError(origin_url,
                             netloc=None)
 

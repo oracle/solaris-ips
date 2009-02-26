@@ -446,7 +446,7 @@ def publish_pkg(pkg):
             noexecute=nopublish)
 
         print "    open %s" % new_pkg_name
-        t.open()
+        transaction_id = t.open()
 
         # Publish non-file objects first: they're easy.
         for f in pkg.files:
@@ -566,7 +566,7 @@ def publish_pkg(pkg):
                                 # add transaction id so that every version
                                 # of a pkg will have a unique license to prevent
                                 # license from disappearing on upgrade
-                                f.attrs["transaction_id"] = "%s" % id
+                                f.attrs["transaction_id"] = transaction_id
                                 # The "path" attribute is confusing and
                                 # unnecessary for licenses.
                                 del f.attrs["path"]
