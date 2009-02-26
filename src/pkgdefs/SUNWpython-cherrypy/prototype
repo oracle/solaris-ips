@@ -59,8 +59,6 @@ f none usr/lib/python2.4/vendor-packages/cherrypy/lib/profiler.py 444 root bin
 f none usr/lib/python2.4/vendor-packages/cherrypy/lib/profiler.pyc 444 root bin
 f none usr/lib/python2.4/vendor-packages/cherrypy/lib/safemime.py 444 root bin
 f none usr/lib/python2.4/vendor-packages/cherrypy/lib/safemime.pyc 444 root bin
-f none usr/lib/python2.4/vendor-packages/cherrypy/lib/sessions-r2062.py 444 root bin
-f none usr/lib/python2.4/vendor-packages/cherrypy/lib/sessions-r2062.pyc 444 root bin
 f none usr/lib/python2.4/vendor-packages/cherrypy/lib/sessions.py 444 root bin
 f none usr/lib/python2.4/vendor-packages/cherrypy/lib/sessions.pyc 444 root bin
 f none usr/lib/python2.4/vendor-packages/cherrypy/lib/static.py 444 root bin
