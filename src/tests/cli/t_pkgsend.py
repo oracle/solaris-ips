@@ -76,9 +76,11 @@ class TestPkgsendBasics(testutils.SingleDepotTestCase):
                 # Verify that specifying a malformed or incomplete URL fails
                 # gracefully for every known scheme and a few bogus schemes.
                 for scheme in ("bogus", "file", "http", "https", "null"):
+                        # The first two cases should succeed for 'null'
                         self.pkgsend(scheme + "://", "open notarepo@1.0",
-                            exit=1)
-                        self.pkgsend(scheme + ":", "open notarepo@1.0", exit=1)
+                            exit=scheme != "null")
+                        self.pkgsend(scheme + ":", "open notarepo@1.0",
+                            exit=scheme != "null")
                         self.pkgsend(scheme, "open notarepo@1.0", exit=1)
 
                 # Create an empty directory to abuse as a repository.
