@@ -235,7 +235,28 @@ close """
         res_local_bar = copy.copy(res_remote_bar)
 
         res_local_openssl = copy.copy(res_remote_openssl)
-        
+
+        # Results expected for degraded local search
+        degraded_warning = set(["To improve, run 'pkg rebuild-index'.\n",
+            'Search capabilities and performance are degraded.\n'])
+
+        res_local_degraded_pkg = res_local_pkg.union(degraded_warning)
+
+        res_local_degraded_path = res_local_path.union(degraded_warning)
+
+        res_local_degraded_bin = res_local_bin.union(degraded_warning)
+
+        res_local_degraded_bug_id = res_local_bug_id.union(degraded_warning)
+
+        res_local_degraded_inc_changes = res_local_inc_changes.union(degraded_warning)
+
+        res_local_degraded_random_test = res_local_random_test.union(degraded_warning)
+
+        res_local_degraded_keywords = res_local_keywords.union(degraded_warning)
+
+        res_local_degraded_openssl = res_local_openssl.union(degraded_warning)
+
+
         res_local_path_example11 = set([
             headers,
             "basename   file      bin/example_path11        pkg:/example_pkg@1.1-0\n"
@@ -364,12 +385,23 @@ close
                 os.mkdir(self.testdata_dir)
                 self._dir_restore_functions = [self._restore_dir,
                     self._restore_dir_preserve_hash]
+                self.init_mem_setting = None
 
         def tearDown(self):
                 testutils.SingleDepotTestCase.tearDown(self)
                 for p in self.misc_files:
                         os.remove(p)
                 shutil.rmtree(self.testdata_dir)
+
+        def _set_low_mem(self):
+                self.init_mem_setting = os.environ.get("PKG_INDEX_MAX_RAM", None)
+                os.environ["PKG_INDEX_MAX_RAM"] = "0"
+
+        def _unset_low_mem(self):
+                if self.init_mem_setting is not None:
+                        os.environ["PKG_INDEX_MAX_RAM"] = self.init_mem_setting
+                else:
+                        del os.environ["PKG_INDEX_MAX_RAM"]
 
         def _check(self, proposed_answer, correct_answer):
                 if correct_answer == proposed_answer:
@@ -450,6 +482,29 @@ close
                 self._search_op(False, "OPENSSL", self.res_local_openssl)
                 self._search_op(False, "OpEnSsL", self.res_local_openssl)
                 self._search_op(False, "OpEnS*", self.res_local_openssl)
+
+                # These tests are included because a specific bug
+                # was found during development. These tests prevent regression
+                # back to that bug. Exit status of 1 is expected because the
+                # token isn't in the packages.
+                self.pkg("search a_non_existent_token", exit=1)
+                self.pkg("search a_non_existent_token", exit=1)
+
+        def _run_local_degraded_tests(self):
+                outfile = os.path.join(self.testdata_dir, "res")
+
+                # This finds something because the client side
+                # manifest has had the name of the package inserted
+                # into it.
+
+                self._search_op(False, "example_pkg", self.res_local_degraded_pkg)
+                self._search_op(False, "example_path", self.res_local_degraded_path)
+                self._search_op(False, "/bin", self.res_local_degraded_bin)
+                self._search_op(False, "4851433", self.res_local_degraded_bug_id)
+                self._search_op(False, "6556919", self.res_local_degraded_inc_changes)
+                self._search_op(False, "42", self.res_local_degraded_random_test)
+                self._search_op(False, "separator", self.res_local_degraded_keywords)
+                self._search_op(False, "OpenSSL", self.res_local_degraded_openssl)
 
                 # These tests are included because a specific bug
                 # was found during development. These tests prevent regression
@@ -654,7 +709,7 @@ close
 
         def test_low_mem(self):
                 """Test to check codepath used in low memory situations."""
-                os.environ["PKG_INDEX_MAX_RAM"] = "0"
+                self._set_low_mem()
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.example_pkg10)
                 self.pkgsend_bulk(durl, self.bug_983_manifest)
@@ -664,6 +719,7 @@ close
 
                 self._run_remote_tests()
                 self._search_op(True, "gmake", self.res_bug_983)
+                self._unset_low_mem()
 
         def test_missing_files(self):
                 """Test to check for stack trace when files missing.
@@ -729,7 +785,20 @@ close
                 self._overwrite_hash(ffh_path)
                 self.pkg("uninstall example_pkg")
                 self.pkg("search example_pkg", exit=1)
+
+        def test_degraded_search(self):
+                """Test to check for stack trace when files missing.
+                Bug 2753"""
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.example_pkg10)
+
+                self.image_create(durl)
+                self.pkg("install example_pkg")
                 
+                index_dir = os.path.join(self.img_path, "var","pkg","index")
+                shutil.rmtree(index_dir)
+                self._run_local_degraded_tests()
+
         def test_bug_2989_1(self):
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.example_pkg10)
@@ -752,6 +821,8 @@ close
                         self.image_destroy()
 
         def test_bug_2989_2(self):
+                # The low mem setting is to test for bug 6949
+                self._set_low_mem()
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.example_pkg10)
                 self.pkgsend_bulk(durl, self.another_pkg10)
@@ -772,6 +843,7 @@ close
                         self.pkg("uninstall another_pkg")
 
                         self.image_destroy()
+                self._unset_low_mem()
                 
         def test_bug_2989_3(self):
                 durl = self.dc.get_depot_url()
@@ -796,6 +868,8 @@ close
                         self.image_destroy()
 
         def test_bug_2989_4(self):
+                # The low mem setting is to test for bug 6949
+                self._set_low_mem()
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.another_pkg10)
                 self.pkgsend_bulk(durl, self.example_pkg10)
@@ -817,6 +891,7 @@ close
                         self.pkg("image-update")
 
                         self.image_destroy()
+                self._unset_low_mem()
 
         def test_local_case_sensitive(self):
                 """Test local case sensitive search"""

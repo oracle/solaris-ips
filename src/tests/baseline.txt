@@ -386,6 +386,7 @@ cli.t_pkg_search.py TestPkgSearchBasics.test_bug_4239|pass
 cli.t_pkg_search.py TestPkgSearchBasics.test_bug_6712_i386|pass
 cli.t_pkg_search.py TestPkgSearchBasics.test_bug_6712_sparc|pass
 cli.t_pkg_search.py TestPkgSearchBasics.test_bug_983|pass
+cli.t_pkg_search.py TestPkgSearchBasics.test_degraded_search|pass
 cli.t_pkg_search.py TestPkgSearchBasics.test_local|pass
 cli.t_pkg_search.py TestPkgSearchBasics.test_local_case_sensitive|pass
 cli.t_pkg_search.py TestPkgSearchBasics.test_local_image_update|pass

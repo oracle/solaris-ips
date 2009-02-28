@@ -392,8 +392,6 @@ class Indexer(object):
                 stopping_early = False
                 total_terms = 0
 
-                fmris = list(fmris)
-
                 if self._progtrack is not None and start_point == 0:
                         self._progtrack.index_set_goal("Indexing Packages",
                             len(fmris))
@@ -595,9 +593,12 @@ class Indexer(object):
                                 continue
                         d.write_dict_file(out_dir, self.file_version_number)
 
-        def _generic_update_index(self, input_list, input_type,
+        def _generic_update_index(self, inputs, input_type,
                                    tmp_index_dir = None):
-                """ Performs all the steps needed to update the indexes."""
+                """ Performs all the steps needed to update the indexes.
+                Inputs is an iterable object which either iterates over
+                tuples of fmris, or over fmris. Which is given is
+                signified by input_type"""
                 
                 # Allow the use of a directory other than the default
                 # directory to store the intermediate results in.
@@ -623,6 +624,7 @@ class Indexer(object):
 
                 more_to_do = True
                 start_point = 0
+                inputs = list(inputs)
 
                 while more_to_do:
 
@@ -630,12 +632,12 @@ class Indexer(object):
 
                         if input_type == IDX_INPUT_TYPE_PKG:
                                 (more_to_do, start_point, dicts) = \
-                                    self._process_pkgplan_list(input_list,
+                                    self._process_pkgplan_list(inputs,
                                         start_point)
                         elif input_type == IDX_INPUT_TYPE_FMRI:
                                 (more_to_do, start_point, dicts) = \
                                     self._process_fmris(
-                                        input_list, start_point)
+                                        inputs, start_point)
                         else:
                                 raise RuntimeError("Got unknown input_type: %s", 
                                     input_type)

@@ -2256,14 +2256,8 @@ class Image(object):
                     "To improve, run 'pkg rebuild-index'.")
                 res = []
 
-                for fmri, mfst in self.get_fmri_manifest_pairs():
-                        m = manifest.Manifest()
-                        try:
-                                mcontent = file(mfst).read()
-                        except EnvironmentError:
-                                # XXX log something?
-                                continue
-                        m.set_content(mcontent)
+                for fmri in self.gen_installed_pkgs():
+                        m = self.get_manifest(fmri, add_to_cache=False)
                         new_dict = m.search_dict()
 
                         tok = args[0]
