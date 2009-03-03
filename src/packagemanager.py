@@ -2129,6 +2129,7 @@ class PackageManager:
         def __check_if_updates_available(self):
                 try:
                         img = self.api_o.img
+                        img.load_catalogs(self.pr)
                         pargs = []
                         all_known = False
                         all_versions = False
