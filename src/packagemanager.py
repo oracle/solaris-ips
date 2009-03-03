@@ -977,14 +977,11 @@ class PackageManager:
 
         def __init_show_filter(self):
                 self.filter_list.append([0, _('All Packages'), ])
+                self.filter_list.append([1, _('Installed Packages'), ])
+                self.filter_list.append([2, _('Updates'), ])
+                self.filter_list.append([3, _('Non-installed Packages'), ])
                 self.filter_list.append([-1, "", ])
-                self.filter_list.append([2, _('Installed Packages'), ])
-                self.filter_list.append([3, _('Updates'), ])
-                self.filter_list.append([4, _('Non-installed Packages'), ])
-                self.filter_list.append([-1, "", ])
-                # self.filter_list.append([_('Locked Packages'), ])
-                # self.filter_list.append(["", ])
-                self.filter_list.append([6, _('Selected Packages'), ])
+                self.filter_list.append([5, _('Selected Packages'), ])
                 if self.initial_show_filter >= 0 and \
                     self.initial_show_filter < len(self.filter_list):
                         row = self.filter_list[self.initial_show_filter]
@@ -1936,6 +1933,9 @@ class PackageManager:
                 application view'''
                 if self.in_setup or self.cancelled:
                         return False
+                filter_id = self.w_filter_combobox.get_active()
+                if filter_id == 5:
+                        return model.get_value(itr, enumerations.MARK_COLUMN)
                 # XXX Show filter, chenge text to integers 
                 selected_category = 0
                 category_selection = self.w_categories_treeview.get_selection()
@@ -1964,42 +1964,34 @@ class PackageManager:
                         return False
                 if self.w_searchentry_dialog.get_text() == "":
                         return (category &
-                            self.__is_package_filtered(model, itr))
+                            self.__is_package_filtered(model, itr, filter_id))
                 if not model.get_value(itr, enumerations.NAME_COLUMN) == None:
                         if self.w_searchentry_dialog.get_text().lower() in \
                             model.get_value(itr, enumerations.NAME_COLUMN).lower():
                                 return (category &
-                                    self.__is_package_filtered(model, itr))
+                                    self.__is_package_filtered(model, itr, filter_id))
                 if not model.get_value(itr, enumerations.DESCRIPTION_COLUMN) == None:
                         if self.w_searchentry_dialog.get_text().lower() in \
                             model.get_value \
                             (itr, enumerations.DESCRIPTION_COLUMN).lower():
                                 return (category &
-                                    self.__is_package_filtered(model, itr))
+                                    self.__is_package_filtered(model, itr, 
+                                    filter_id))
                 else:
                         return False
 
-        def __is_package_filtered(self, model, itr):
+        def __is_package_filtered(self, model, itr, filter_id):
                 '''Function for filtercombobox'''
-                # XXX Instead of string comparison, we should do it through integers.
-                # XXX It should be faster and better for localisations.
-                filter_text = self.w_filter_combobox.get_active()
-                if filter_text == 0:
+                if filter_id == 0:
                         return True
                 status = model.get_value(itr, enumerations.STATUS_COLUMN)
-                if filter_text == 2:
+                if filter_id == 1:
                         return (status == enumerations.INSTALLED or status == \
                             enumerations.UPDATABLE)
-                elif filter_text == 3:
+                elif filter_id == 2:
                         return status == enumerations.UPDATABLE
-                elif filter_text == 4:
+                elif filter_id == 3:
                         return status == enumerations.NOT_INSTALLED
-                elif filter_text == 6:
-                        return model.get_value(itr, enumerations.MARK_COLUMN)
-                elif filter_text == 8:
-                        # XXX Locked support
-                        return False
-
 
         def __is_pkg_repository_visible(self, model, itr):
                 if len(self.repositories_list) <= 1:
