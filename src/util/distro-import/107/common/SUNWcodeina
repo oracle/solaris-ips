@@ -2,4 +2,11 @@ package SUNWcodeina
 classification "Applications/Sound and Video"
 import SUNWcodeina
 import SUNWcodeina-root
+depend SUNWgnome-python-extras
+depend SUNWgnome-python-libs
+depend SUNWgst-python
+depend SUNWpython-notify
+depend SUNWpython-twisted
+depend SUNWpython-xdg
+depend SUNWpyyaml24
 end package

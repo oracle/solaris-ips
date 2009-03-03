@@ -1,4 +1,6 @@
 package SUNWbtool
 classification "System/Core"
 import SUNWbtool
+depend SUNWcpp
+depend SUNWperl584core
 end package
