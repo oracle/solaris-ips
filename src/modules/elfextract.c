@@ -255,6 +255,7 @@ hashsection(char *name)
 	if (strcmp(name, ".SUNW_signature") == 0 ||
 	    strcmp(name, ".comment") == 0 ||
 	    strcmp(name, ".SUNW_ctf") == 0 ||
+	    strcmp(name, ".SUNW_dof") == 0 ||
 	    strcmp(name, ".debug") == 0 ||
 	    strcmp(name, ".plt") == 0 ||
 	    strcmp(name, ".rela.bss") == 0 ||

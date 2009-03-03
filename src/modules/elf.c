@@ -303,8 +303,8 @@ out:
  * From Eric Saxe's investigations, we see that the following sections can
  * generally be ignored:
  *
- *    .SUNW_signature, .comment, .SUNW_ctf, .debug, .plt, .rela.bss, .rela.plt,
- *    .line, .note
+ *    .SUNW_signature, .comment, .SUNW_ctf, .SUNW_dof, .debug, .plt, .rela.bss,
+ *    .rela.plt, .line, .note
  *
  * Conversely, the following sections are generally significant:
  *
