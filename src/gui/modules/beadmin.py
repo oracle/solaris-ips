@@ -357,6 +357,10 @@ class Beadmin:
                         return
                 self.__on_beadmin_delete_event(None, None)
                                 
+        def __rename_cell(self, model, itr, new_name):
+                self.progress_stop_thread = True
+                model.set_value(itr, BE_NAME, new_name)
+
         def __rename_be(self, model, itr, new_name):
                 if be.beVerifyBEName(new_name) != 0:
                         error_msg = _("Failed to rename %s to %s\n\n") % \
@@ -367,8 +371,7 @@ class Beadmin:
                         return
                 rc = be.beRename(model.get_value(itr, BE_NAME), new_name)
                 if rc == 0:
-                        model.set_value(itr, BE_NAME, new_name)
-                        self.progress_stop_thread = True
+                        gobject.idle_add(self.__rename_cell, model, itr, new_name)
                 else:
                         error_msg = _("Failed to rename %s to %s\n\n") % \
                             (model.get_value(itr, BE_NAME), new_name)
