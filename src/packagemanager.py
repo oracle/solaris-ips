@@ -278,6 +278,8 @@ class PackageManager:
                 self.w_progressbar.set_pulse_step(0.1)
                 self.w_progress_cancel = w_tree_progress.get_widget("progresscancel")
                 self.progress_canceled = False
+                self.w_clear_search_button = w_tree_main.get_widget("clear_search")
+                self.w_clear_search_button.set_sensitive(False)
                 clear_search_image = w_tree_main.get_widget("clear_image")
                 clear_search_image.set_from_stock(gtk.STOCK_CLEAR, gtk.ICON_SIZE_MENU)
                 toolbar =  w_tree_main.get_widget("toolbutton2")
@@ -1020,6 +1022,10 @@ class PackageManager:
 
         def __on_searchentry_changed(self, widget):
                 '''On text search field changed we should refilter the main view'''
+                if len(widget.get_text()) > 0:
+                        self.w_clear_search_button.set_sensitive(True)
+                else:
+                        self.w_clear_search_button.set_sensitive(False)
                 if self.typeahead_search:
                         self.__do_search()
                 
@@ -1084,6 +1090,7 @@ class PackageManager:
 
         def __on_clear_search(self, widget):
                 self.w_searchentry_dialog.delete_text(0, -1)
+                self.__do_search()
                 return
 
         def __on_startpage(self, widget):
