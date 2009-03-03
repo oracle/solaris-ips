@@ -412,9 +412,8 @@ class InstallUpdate(progress.ProgressTracker):
                 else:
                         msg = None
                         if self.action == enumerations.INSTALL_UPDATE:
-                                msg = _("All packages need to be updated before "
-                                "selected\naction can be performed.\nClick Update "
-                                "All to update all packages")
+                                msg = _("Selected package(s) cannot be updated on "
+                                "their own.\nClick Update All to update all packages.")
                         elif self.action == enumerations.IMAGE_UPDATE:
                                 msg = _("Your system have been already updated.")
                         self.__g_error_stage(msg)
