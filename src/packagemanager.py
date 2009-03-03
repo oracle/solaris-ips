@@ -1536,9 +1536,8 @@ class PackageManager:
                 #Let the progress_pulse finish. This should be done other way, but at
                 #The moment this works fine
                 time.sleep(0.2)
-                self.process_package_list_start(self.image_directory)
-                self.__enable_disable_selection_menus()
-                self.update_statusbar()
+                gobject.idle_add(self.process_package_list_start,
+                    self.image_directory)
 
         def __clipboard_text_received(self, clipboard, text, data):
                 self.main_clipboard_text = text
@@ -2628,7 +2627,6 @@ class PackageManager:
                         self.__application_refilter()
                 self.unset_busy_cursor()
                 Thread(target = self.__enable_disable_update_all).start()                
-
         def __get_manifests_thread(self):
                 Thread(target = self.get_manifests_for_packages,
                     args = ()).start()
