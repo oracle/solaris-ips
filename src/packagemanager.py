@@ -1367,11 +1367,30 @@ class PackageManager:
 
         def __on_repositorycombobox_changed(self, widget):
                 '''On repository combobox changed'''
+                active_authority = self.__get_active_authority()
+                if self.visible_repository == active_authority:
+                        # If we are coming back to the same repository, we do
+                        # not want to setup authorities. This is the case when
+                        # we are calling Add... then we are firing the event for
+                        # Add... case and imidiatelly coming back to the
+                        # previously selected repository.
+                        return
+                # Checking for Add... is fine enought, as the repository name can't
+                # contain "..." in the name.
+                if active_authority == _("Add..."):
+                        model = self.w_repository_combobox.get_model()
+                        index = -1
+                        for entry in model:
+                                if entry[1] == self.visible_repository:
+                                        index = entry[0]
+                        # We do not want to switch permanently to the Add...
+                        self.w_repository_combobox.set_active(index)                        
+                        self.__on_edit_repositories_activate(None)
+                        return
                 self.cancelled = True
                 self.in_setup = True
                 self.set_busy_cursor()
-                authority = self.__get_active_authority()
-                auth = [authority, ]
+                auth = [active_authority, ]
                 Thread(target = self.__setup_authority, args = [auth]).start()
                 self.__set_main_view_package_list()
 
@@ -1582,6 +1601,8 @@ class PackageManager:
                         repositories_list.append([i, prefix, ])
                         enabled_repos.append(prefix)
                         i = i + 1
+                repositories_list.append([-1, "", ])                
+                repositories_list.append([-1, _("Add..."), ])
                 pkgs_to_remove = []
                 for repo_name in selected_repos:
                         if repo_name not in enabled_repos:
@@ -2484,7 +2505,8 @@ class PackageManager:
 
         @staticmethod
         def combobox_id_separator(model, itr):
-                return model.get_value(itr, 0) == -1
+                return model.get_value(itr, 0) == -1 and \
+                    model.get_value(itr, 1) == ""
 
         @staticmethod
         def category_filter(model, itr):
