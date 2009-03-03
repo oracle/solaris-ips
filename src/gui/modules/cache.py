@@ -30,7 +30,7 @@ import pkg.catalog as catalog
 import pkg.gui.enumerations as enumerations
 import pkg.gui.misc as gui_misc
 
-CACHE_VERSION=1
+CACHE_VERSION=2
 INDEX_HASH_LENGTH=41
 
 class CacheListStores:
@@ -103,7 +103,8 @@ class CacheListStores:
                         last_modified = catalog_o.last_modified()
                 return last_modified
 
-        def dump_datamodels(self, authority, application_list, category_list):
+        def dump_datamodels(self, authority, application_list, category_list, 
+            section_list):
                 cache_dir = self.__get_cache_dir()
                 if not cache_dir:
                         return
@@ -116,6 +117,7 @@ class CacheListStores:
                         self.__dump_cache_file(cache_dir + authority+".cpl", dump_info)
                         self.__dump_category_list(authority, category_list)
                         self.__dump_application_list(authority, application_list)
+                        self.__dump_section_list(authority, section_list)
                 except IOError:
                         #Silently return, as probably user doesn't have permissions or
                         #other error which simply doesn't affect the GUI work
@@ -157,6 +159,20 @@ class CacheListStores:
                         app["category_list"] = application[enumerations.CATEGORY_LIST_COLUMN]
                         apps.append(app)
                 self.__dump_cache_file(cache_dir + authority+"_packages.cpl", apps)
+
+        def __dump_section_list(self, authority, section_list):
+                cache_dir = self.__get_cache_dir()
+                if not cache_dir:
+                        return
+                sections = []
+                for section in section_list:
+                        sec = {}
+                        sec["id"] = section[enumerations.SECTION_ID]
+                        sec["name"] = section[enumerations.SECTION_NAME]
+                        sec["subcategory"] = section[enumerations.SECTION_SUBCATEGORY]
+                        sec["enabled"] = section[enumerations.SECTION_ENABLED]
+                        sections.append(sec)
+                self.__dump_cache_file(cache_dir + authority+"_sections.cpl", sections)
 
         def __load_cache_info(self, authority):
                 cache_dir = self.__get_cache_dir()
@@ -228,6 +244,24 @@ class CacheListStores:
                             ]
                         application_list.insert(app_count, app)
                         app_count += 1
+
+        def load_section_list(self, authority, section_list):
+                cache_dir = self.__get_cache_dir()
+                if not cache_dir:
+                        return
+                sections = self.__read_cache_file(cache_dir + authority+"_sections.cpl")
+                sec_count = 0
+                for sec in sections:
+                        sec_id = sec.get("id")
+                        name = sec.get("name")
+                        subcategory = None
+                        enabled = sec.get("enabled")
+                        section = \
+                            [
+                                sec_id, name, subcategory, enabled
+                            ]
+                        section_list.insert(sec_count, section)
+                        sec_count += 1
 
         def __read_cache_file(self, file_path):
                 fh = open(file_path, 'r')

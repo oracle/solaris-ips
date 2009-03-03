@@ -42,8 +42,8 @@ MAX_INFO_CACHE_LIMIT = 100                # Max number of package descriptions t
 NOTEBOOK_PACKAGE_LIST_PAGE = 0            # Main Package List page index
 NOTEBOOK_START_PAGE = 1                   # Main View Start page index
 TYPE_AHEAD_DELAY = 600    # The last type in search box after which search is performed
-INITIAL_TOPLEVEL_PREFERENCES = "/apps/packagemanager/preferences/initial_toplevel"
-INITIAL_CATEGORY_PREFERENCES = "/apps/packagemanager/preferences/initial_category"
+INITIAL_SHOW_FILTER_PREFERENCES = "/apps/packagemanager/preferences/initial_show_filter"
+INITIAL_SECTION_PREFERENCES = "/apps/packagemanager/preferences/initial_section"
 SHOW_STARTPAGE_PREFERENCES = "/apps/packagemanager/preferences/show_startpage"
 TYPEAHEAD_SEARCH_PREFERENCES = "/apps/packagemanager/preferences/typeahead_search"
 CATEGORIES_STATUS_COLUMN_INDEX = 0   # Index of Status Column in Categories TreeView
@@ -131,8 +131,9 @@ class PackageManager:
                 self.api_o = None
                 self.cache_o = None
                 self.client = gconf.client_get_default()
-                self.initial_toplevel = self.client.get_int(INITIAL_TOPLEVEL_PREFERENCES)
-                self.initial_category = self.client.get_int(INITIAL_CATEGORY_PREFERENCES)
+                self.initial_show_filter = \
+                    self.client.get_int(INITIAL_SHOW_FILTER_PREFERENCES)
+                self.initial_section = self.client.get_int(INITIAL_SECTION_PREFERENCES)
                 self.show_startpage = self.client.get_bool(SHOW_STARTPAGE_PREFERENCES)
                 self.typeahead_search = self.client.get_bool(TYPEAHEAD_SEARCH_PREFERENCES)
                 
@@ -185,7 +186,7 @@ class PackageManager:
                 self.categories_status_id = 0
                 self.visible_repository = None
                 self.visible_repository_uptodate = False
-                self.section_list = self.__get_new_section_liststore()
+                self.section_list = None
                 self.filter_list = self.__get_new_filter_liststore()
                 self.application_list = None
                 self.a11y_application_treeview = None
@@ -617,6 +618,7 @@ class PackageManager:
                         gobject.TYPE_INT,         # enumerations.SECTION_ID
                         gobject.TYPE_STRING,      # enumerations.SECTION_NAME
                         gobject.TYPE_STRING,      # enumerations.SECTION_SUBCATEGORY
+                        gobject.TYPE_BOOLEAN,     # enumerations.SECTION_ENABLED
                         )
 
         @staticmethod                    
@@ -633,10 +635,20 @@ class PackageManager:
                         gobject.TYPE_STRING,      # enumerations.REPOSITORY_NAME
                         )
 
-        def __init_tree_views(self, application_list, category_list):
+        def __init_tree_views(self, application_list, category_list, section_list):
                 '''This function connects treeviews with their models and also applies
                 filters'''
                 self.__disconnect_models()
+                # The logic for initial section needs to be here as some sections
+                # might be not enabled. In such situation we are setting the initial
+                # section to "All Categories" one.
+                row = section_list[self.initial_section]
+                if row[enumerations.SECTION_ENABLED] and self.initial_section >= 0 and \
+                    self.initial_section < len(section_list):
+                        if row[enumerations.SECTION_ID] != self.initial_section:
+                                self.initial_section = 0
+                else:
+                        self.initial_section = 0
                 self.__remove_treeview_columns(self.w_application_treeview)
                 self.__remove_treeview_columns(self.w_categories_treeview)
                 ##APPLICATION MAIN TREEVIEW
@@ -732,6 +744,8 @@ class PackageManager:
                             enumerations.SECTION_NAME)
                         self.w_sections_combobox.set_row_separator_func(
                             self.combobox_id_separator)
+                        self.w_sections_combobox.add_attribute( cell,
+                            'sensitive', enumerations.SECTION_ENABLED )
                         ##FILTER COMBOBOX
                         #enumerations.FILTER_NAME
                         cell = gtk.CellRendererText()
@@ -741,15 +755,16 @@ class PackageManager:
                         self.w_filter_combobox.set_row_separator_func(
                             self.combobox_id_separator)
 
+                self.section_list = section_list
                 self.application_list = application_list
                 self.category_list = category_list
                 self.category_list_filter = category_list_filter
                 self.application_list_filter = application_list_filter
 
-                self.w_sections_combobox.set_model(self.section_list)
-                self.w_sections_combobox.set_active(self.initial_category)
+                self.w_sections_combobox.set_model(section_list)
+                self.w_sections_combobox.set_active(self.initial_section)
                 self.w_filter_combobox.set_model(self.filter_list)
-                self.w_filter_combobox.set_active(self.initial_toplevel)
+                self.w_filter_combobox.set_active(self.initial_show_filter)
                 self.w_categories_treeview.set_model(category_list_filter)
                 self.w_application_treeview.set_model(application_list_sort)
                 application_list_filter.set_visible_func(self.__application_filter)
@@ -769,14 +784,14 @@ class PackageManager:
                         self.package_selection.set_mode(gtk.SELECTION_SINGLE)
                         self.package_selection.connect("changed",
                             self.__on_package_selection_changed, None)
-                self.__set_categories_visibility(self.initial_category)
+                self.__set_categories_visibility(self.initial_section)
 
                 self.a11y_application_treeview = \
                     self.w_application_treeview.get_accessible()
                 self.a11y_categories_treeview = \
                     self.w_categories_treeview.get_accessible()
                 self.first_run = False
-                  
+                self.process_package_list_end()
 
         def __categories_treeview_size_allocate(self, widget, allocation, user_data):
                 # We ignore any changes in the size during initialization.
@@ -943,28 +958,24 @@ class PackageManager:
                         for column in columns:
                                 treeview.remove_column(column)
 
-        def __init_sections(self):
+        def __init_sections(self, section_list):
                 '''This function is for initializing sections combo box, also adds "All"
                 Category. It sets active section combobox entry "All"'''
                 cat_path = None
-                self.section_list.append([0, _('All Categories'), cat_path ])
-                self.section_list.append([-1, "", cat_path ])
-                self.section_list.append([2, _('Meta Packages'), cat_path ])
-                self.section_list.append([3, _('Applications'), cat_path ])
-                self.section_list.append([4, _('Desktop (GNOME)'), cat_path ])
-                self.section_list.append([5, _('Development'), cat_path ])
-                self.section_list.append([6, _('Distributions'), cat_path ])
-                self.section_list.append([7, _('Drivers'), cat_path ])
-                self.section_list.append([8, _('System'), cat_path ])
-                self.section_list.append([9, _('Web Services'), cat_path ])
-                if self.initial_category >= 0 and \
-                    self.initial_category < len(self.section_list):
-                        row = self.section_list[self.initial_category]
-                        if row[enumerations.SECTION_ID] != self.initial_category:
-                                self.initial_category = 0
-                else:
-                        self.initial_category = 0
-
+                enabled = True
+                # We enable only first section and later we might enable the rest, 
+                # depending if there are some packages connected with them
+                section_list.append([0, _('All Categories'), cat_path, enabled ])
+                section_list.append([-1, "", cat_path, enabled ])
+                enabled = False
+                section_list.append([2, _('Meta Packages'), cat_path, enabled ])
+                section_list.append([3, _('Applications'), cat_path, enabled ])
+                section_list.append([4, _('Desktop (GNOME)'), cat_path, enabled ])
+                section_list.append([5, _('Development'), cat_path, enabled ])
+                section_list.append([6, _('Distributions'), cat_path, enabled ])
+                section_list.append([7, _('Drivers'), cat_path, enabled ])
+                section_list.append([8, _('System'), cat_path, enabled ])
+                section_list.append([9, _('Web Services'), cat_path, enabled ])
 
         def __init_show_filter(self):
                 self.filter_list.append([0, _('All Packages'), ])
@@ -976,13 +987,13 @@ class PackageManager:
                 # self.filter_list.append([_('Locked Packages'), ])
                 # self.filter_list.append(["", ])
                 self.filter_list.append([6, _('Selected Packages'), ])
-                if self.initial_toplevel >= 0 and \
-                    self.initial_toplevel < len(self.filter_list):
-                        row = self.filter_list[self.initial_toplevel]
-                        if row[enumerations.SECTION_ID] != self.initial_toplevel:
-                                self.initial_toplevel = 0
+                if self.initial_show_filter >= 0 and \
+                    self.initial_show_filter < len(self.filter_list):
+                        row = self.filter_list[self.initial_show_filter]
+                        if row[enumerations.SECTION_ID] != self.initial_show_filter:
+                                self.initial_show_filter = 0
                 else:
-                        self.initial_toplevel = 0
+                        self.initial_show_filter = 0
 
 
         def __on_cancel_progressdialog_clicked(self, widget):
@@ -1335,6 +1346,7 @@ class PackageManager:
                 '''On section combobox changed'''
                 if self.in_setup:
                         return
+                self.__set_first_category_text()
                 self.__set_main_view_package_list()
                 self.__set_categories_visibility(widget.get_active())
                 self.set_busy_cursor()
@@ -1342,6 +1354,16 @@ class PackageManager:
                 gobject.idle_add(self.__application_refilter)
                 if self.selected == 0:
                         gobject.idle_add(self.__enable_disable_install_remove)
+
+        def __set_first_category_text(self):
+                active_section = self.w_sections_combobox.get_active()
+                all_cat_text = _("All")
+                if active_section != 0:
+                        all_cat_text += " " + self.section_list[active_section][1]
+                category_model = self.w_categories_treeview.get_model()
+                if category_model:
+                        list_store = category_model.get_model()
+                        list_store[0][1] = all_cat_text
 
         def __on_repositorycombobox_changed(self, widget):
                 '''On repository combobox changed'''
@@ -1359,16 +1381,17 @@ class PackageManager:
                             enumerations.REPOSITORY_NAME)
 
         def __setup_authority(self, authorities=[]):
-                application_list, category_list = \
+                application_list, category_list , section_list = \
                     self.__get_application_categories_lists(authorities)
-                gobject.idle_add(self.__init_tree_views, application_list, category_list)
-                gobject.idle_add(self.process_package_list_end)
+                gobject.idle_add(self.__init_tree_views, application_list,
+                    category_list, section_list)
 
         def __get_application_categories_lists(self, authorities=[]):
                 if not self.visible_repository:
                         self.visible_repository = self.__get_active_authority()
                 application_list = self.__get_new_application_liststore()
                 category_list = self.__get_new_category_liststore()
+                section_list = self.__get_new_section_liststore()
                 first_loop = True
                 for authority in authorities:
                         uptodate = False
@@ -1376,7 +1399,8 @@ class PackageManager:
                                 uptodate = self.__check_if_cache_uptodate(authority)
                                 if uptodate:
                                         self.__add_pkgs_to_lists_from_cache(authority, 
-                                            application_list, category_list)
+                                            application_list, category_list, 
+                                            section_list)
                         except UnpicklingError:
                                 #Most likely cache is corrupted, silently load list from api.
                                 #raise
@@ -1389,26 +1413,29 @@ class PackageManager:
                                         gobject.idle_add(self.setup_progressdialog_show)
                                 self.api_o.img.load_catalogs(self.pr)
                                 self.__add_pkgs_to_lists_from_api(authority, application_list, 
-                                    category_list)
+                                    category_list, section_list)
                                 category_list.prepend([0, _('All'), None, None, False, 
                                     True, None])
                         if self.application_list and self.category_list and \
                             not self.visible_repository_uptodate:
-                                self.__dump_datamodels(self.visible_repository, self.application_list,
-                                    self.category_list)
+                                self.__dump_datamodels(self.visible_repository, 
+                                    self.application_list, self.category_list,
+                                    self.section_list)
                         self.visible_repository = self.__get_active_authority()
                         self.visible_repository_uptodate = uptodate
-                return application_list, category_list
+                return application_list, category_list, section_list
 
         def __check_if_cache_uptodate(self, authority):
                 if self.cache_o:
                         return self.cache_o.check_if_cache_uptodate(authority)
                 return False
 
-        def __dump_datamodels(self, authority, application_list, category_list):
+        def __dump_datamodels(self, authority, application_list, category_list,
+            section_list):
                 if self.cache_o:
                         Thread(target = self.cache_o.dump_datamodels,
-                            args = (authority, application_list, category_list)).start()
+                            args = (authority, application_list, category_list,
+                            section_list)).start()
 
         def __on_install_update(self, widget):
                 self.api_o.reset()
@@ -1514,8 +1541,11 @@ class PackageManager:
                 else:
                         visible_repository = self.__get_visible_repository_name()
                         self.__dump_datamodels(visible_repository, 
-                                self.application_list, self.category_list)
+                                self.application_list, self.category_list, 
+                                self.section_list)
                 self.w_main_window.hide()
+                while gtk.events_pending():
+                        gtk.main_iteration(False)
                 gtk.main_quit()
                 sys.exit(0)
                 return True
@@ -1907,9 +1937,6 @@ class PackageManager:
                 selected_category = 0
                 category_selection = self.w_categories_treeview.get_selection()
                 category_model, category_iter = category_selection.get_selected()
-                #if not category_iter:         #no category was selected, so select "All"
-                #        category_selection.select_path(0)
-                #        category_model, category_iter = category_selection.get_selected()
                 if category_iter:
                         selected_category = category_model.get_value(category_iter,
                             enumerations.CATEGORY_ID)
@@ -2175,14 +2202,15 @@ class PackageManager:
                 return 0
 
         def __add_pkgs_to_lists_from_cache(self, authority, application_list, 
-            category_list):
+            category_list, section_list):
                 if self.cache_o:
                         self.cache_o.load_application_list(authority, application_list, 
                             self.selected_pkgs)
                         self.cache_o.load_category_list(authority, category_list)
+                        self.cache_o.load_section_list(authority, section_list)
 
         def __add_pkgs_to_lists_from_api(self, authority, application_list,
-            category_list):
+            category_list, section_list):
                 """ This method set up image from the given directory and
                 returns the image object or None"""                
                 pargs = []
@@ -2197,7 +2225,7 @@ class PackageManager:
                         gobject.idle_add(self.w_progress_dialog.hide)
                         gobject.idle_add(self.error_occured, err)
                         return
-
+                self.__init_sections(section_list)
                 #Only one instance of those icons should be in memory
                 update_available_icon = gui_misc.get_icon_pixbuf(self.application_dir,
                     "status_newupdate")
@@ -2307,7 +2335,7 @@ class PackageManager:
                         for section in sections[authority]:
                                 for category in sections[authority][section].split(","):
                                         self.__add_category_to_section(_(category),
-                                            _(section), category_list)
+                                            _(section), category_list, section_list)
  
                 #1915 Sort the Categories into alphabetical order and prepend All Category
                 if len(category_list) > 0:
@@ -2337,10 +2365,6 @@ class PackageManager:
                         return
                 if not category_name:
                         return
-                        # XXX check if needed
-                        # category_name = _('All')
-                        # category_description = _('All packages')
-                        # category_icon = None
                 category_id = None
                 icon_visible = False
                 if category_icon:
@@ -2359,47 +2383,42 @@ class PackageManager:
                         category_list.append([category_id, category_name, 
                             category_description, category_icon, icon_visible, 
                             True, None])
-                        return
+                if application_list.get_value(package,
+                    enumerations.CATEGORY_LIST_COLUMN):
+                        a = application_list.get_value(package,
+                            enumerations.CATEGORY_LIST_COLUMN)
+                        a.append(category_id)
                 else:
-                        if application_list.get_value(package,
-                            enumerations.CATEGORY_LIST_COLUMN):
-                                a = application_list.get_value(package,
-                                    enumerations.CATEGORY_LIST_COLUMN)
-                                a.append(category_id)
-                        else:
-                                category_list = []
-                                category_list.append(category_id)
-                                application_list.set(package,
-                                    enumerations.CATEGORY_LIST_COLUMN, category_list)
+                        category_list = []
+                        category_list.append(category_id)
+                        application_list.set(package,
+                            enumerations.CATEGORY_LIST_COLUMN, category_list)
 
-        def __add_category_to_section(self, category_name, section_name, category_list):
+        def __add_category_to_section(self, category_name, section_name, category_list, 
+            section_list):
                 '''Adds the section to section list in category. If there is no such 
                 section, than it is not added. If there was already section than it
                 is skipped. Sections must be case sensitive'''
                 if not category_name:
                         return
-                for section in self.section_list:
+                for section in section_list:
                         if section[enumerations.SECTION_NAME] == section_name:
+                                section_id = section[enumerations.SECTION_ID]
                                 for category in category_list:
                                         if category[enumerations.CATEGORY_NAME] == \
                                             category_name:
-                                                if not category[ \
-                                                    enumerations.SECTION_LIST_OBJECT]:
+                                                section_lst = category[ \
+                                                    enumerations.SECTION_LIST_OBJECT]
+                                                section[enumerations.SECTION_ENABLED] = True
+                                                if not section_lst:
                                                         category[ \
-                                                            enumerations. \
-                                                            SECTION_LIST_OBJECT] = \
-                                                            [section[ \
-                                                            enumerations.SECTION_ID], ]
+                                                    enumerations.SECTION_LIST_OBJECT] = \
+                                                            [section_id, ]
                                                 else:
                                                         if not section_name in \
-                                                            category[ \
-                                                            enumerations. \
-                                                            SECTION_LIST_OBJECT]:
-                                                                category[enumerations. \
-                                                                    SECTION_LIST_OBJECT \
-                                                                    ].append(section[ \
-                                                                    enumerations. \
-                                                                    SECTION_ID])
+                                                            section_lst:
+                                                                section_lst.append(
+                                                                    section_id)
 
         def __progressdialog_progress_pulse(self):
                 while not self.progress_stop_timer_thread:
@@ -2537,9 +2556,6 @@ class PackageManager:
                 self.progress_stop_timer_thread = True
                 self.w_progress_dialog.hide()
 
-        def init_sections(self):
-                self.__init_sections()                   #Initiates sections
-
         def init_show_filter(self):
                 self.__init_show_filter()                #Initiates filter
 
@@ -2581,6 +2597,7 @@ class PackageManager:
                 return api_o
 
         def process_package_list_end(self):
+                self.__set_first_category_text()
                 self.__get_manifests_thread()
                 self.in_startpage_startup = False
                 if self.update_all_proceed:
@@ -2591,9 +2608,11 @@ class PackageManager:
                 self.setup_progressdialog_hide()
                 self.__enable_disable_install_remove()
                 self.update_statusbar()
-                self.unset_busy_cursor()
                 self.in_setup = False
                 self.cancelled = False
+                if self.initial_section != 0:
+                        self.__application_refilter()
+                self.unset_busy_cursor()
                 Thread(target = self.__enable_disable_update_all).start()                
 
         def __get_manifests_thread(self):
@@ -2688,7 +2707,8 @@ class PackageManager:
                                                     None
                                         row[enumerations.MARK_COLUMN] = False
                         self.__dump_datamodels(visible_repository, 
-                                self.application_list, self.category_list)
+                                self.application_list, self.category_list,
+                                self.section_list)
                 for authority in update_list:
                         if authority != visible_repository:
                                 pkg_list = update_list.get(authority)
@@ -2886,7 +2906,6 @@ Use -U (--update-all) to proceed with Update All"""
         while gtk.events_pending():
                 gtk.main_iteration(False)
 
-        packagemanager.init_sections()
         packagemanager.init_show_filter()
 
         if not passed_test_arg:
