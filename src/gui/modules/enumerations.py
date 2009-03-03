@@ -31,7 +31,6 @@ used in the IPS GUI
 (
 MARK_COLUMN,
 STATUS_ICON_COLUMN,
-ICON_COLUMN,
 NAME_COLUMN,
 DESCRIPTION_COLUMN,
 STATUS_COLUMN,
@@ -40,7 +39,7 @@ STEM_COLUMN,
 DISPLAY_NAME_COLUMN,
 IS_VISIBLE_COLUMN,       # True indicates that the package is visible in ui
 CATEGORY_LIST_COLUMN,    # list of categories to which package belongs
-) = range(11)
+) = range(10)
 
 #For the STATUS_COLUMN
 (

@@ -589,7 +589,6 @@ class PackageManager:
                 return gtk.ListStore(
                         gobject.TYPE_BOOLEAN,     # enumerations.MARK_COLUMN
                         gtk.gdk.Pixbuf,           # enumerations.STATUS_ICON_COLUMN
-                        gtk.gdk.Pixbuf,           # enumerations.ICON_COLUMN
                         gobject.TYPE_STRING,      # enumerations.NAME_COLUMN
                         gobject.TYPE_STRING,      # enumerations.DESCRIPTION_COLUMN
                         gobject.TYPE_INT,         # enumerations.STATUS_COLUMN
@@ -668,9 +667,6 @@ class PackageManager:
                 column.set_cell_data_func(toggle_renderer, self.cell_data_function, None)
                 column.connect_after('clicked', 
                     self.__application_treeview_column_sorted, None)
-                self.w_application_treeview.append_column(column)
-                column = self.__create_icon_column("", False,
-                    enumerations.ICON_COLUMN, True)
                 self.w_application_treeview.append_column(column)
                 name_renderer = gtk.CellRendererText()
                 column = gtk.TreeViewColumn(_("Name"), name_renderer,
@@ -2253,8 +2249,6 @@ class PackageManager:
                                 section = sectioninfo.read(self.application_dir +
                                     share_path + "opensolaris.org.sections")
                         sections[cat] = section
-                icon_path = self.application_dir + \
-                    "/usr/share/package-manager/data/pixmaps/"
                 pkg_count = 0
                 pkg_add = 0
                 progress_percent = INITIAL_PROGRESS_TOTAL_PERCENTAGE
@@ -2304,8 +2298,6 @@ class PackageManager:
                         category_icon = None
                         pkg_name = pkg.get_name()
                         pkg_stem = pkg.get_pkg_stem()
-                        package_icon = gui_misc.get_pixbuf_from_path(icon_path, 
-                            pkg_name) 
                         pkg_state = enumerations.NOT_INSTALLED
                         if state["state"] == "installed":
                                 pkg_state = enumerations.INSTALLED
@@ -2323,8 +2315,8 @@ class PackageManager:
                                         marked = True
                         next_app = \
                             [
-                                marked, status_icon, package_icon, pkg_name,
-                                '...', pkg_state, pkg, pkg_stem, None, True, None
+                                marked, status_icon, pkg_name, '...', pkg_state,
+                                pkg, pkg_stem, None, True, None
                             ]
                         pkg_count += 1
 

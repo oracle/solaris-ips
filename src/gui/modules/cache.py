@@ -30,7 +30,7 @@ import pkg.catalog as catalog
 import pkg.gui.enumerations as enumerations
 import pkg.gui.misc as gui_misc
 
-CACHE_VERSION=2
+CACHE_VERSION=3
 INDEX_HASH_LENGTH=41
 
 class CacheListStores:
@@ -220,7 +220,6 @@ class CacheListStores:
                 for app in applications:
                         marked = False
                         status_icon = None
-                        package_icon = None
                         name = app.get("name")
                         description = app.get("description")
                         status = app.get("status")
@@ -238,9 +237,9 @@ class CacheListStores:
                         category_list = app.get("category_list")
                         app = \
                             [
-                                marked, status_icon, package_icon, name,
-                                description, status, fmri, stem, display_name,
-                                is_visible, category_list
+                                marked, status_icon, name, description, status,
+                                fmri, stem, display_name, is_visible, 
+                                category_list
                             ]
                         application_list.insert(app_count, app)
                         app_count += 1
