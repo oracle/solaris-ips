@@ -270,6 +270,7 @@ class FileAction(generic.Action):
                 #
                 try:
                         elfhash = None
+                        elferror = None
                         if "elfhash" in self.attrs and haveelf:
                                 #
                                 # It's possible for the elf module to
@@ -283,19 +284,24 @@ class FileAction(generic.Action):
                                         errors.append("Elfhash: %s" % e)
 
                                 if elfhash is not None and elfhash != self.attrs["elfhash"]:
-                                        errors.append("Elfhash: %s should be %s" % \
-                                            (elfhash, self.attrs["elfhash"]))
-                                        self.replace_required = True
+                                        elferror = "Elfhash: %s should be %s" % \
+                                            (elfhash, self.attrs["elfhash"])
 
-                        #
-                        # Not an elf file, or we couldn't check elf -> try
-                        # normal hash.
-                        #
-                        if elfhash is None:
+                        # If we failed to compute the content hash, or the
+                        # content hash failed to verify, try the file hash.
+                        # If the content hash fails to match but the file hash
+                        # matches, it indicates that the content hash algorithm
+                        # changed, since obviously the file hash is a superset
+                        # of the content hash.
+                        if elfhash is None or elferror:
                                 hashvalue, data = misc.get_data_digest(path)
                                 if hashvalue != self.hash:
-                                        errors.append("Hash: %s should be %s" % \
-                                            (hashvalue, self.hash))
+                                        # Prefer the content hash error message.
+                                        if elferror:
+                                                errors.append(elferror)
+                                        else:
+                                                errors.append("Hash: %s should be %s" % \
+                                                    (hashvalue, self.hash))
                                         self.replace_required = True
                 except EnvironmentError, e:
                         if e.errno == errno.EACCES:
