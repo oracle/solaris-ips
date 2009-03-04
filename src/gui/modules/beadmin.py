@@ -166,8 +166,6 @@ class Beadmin:
                     _("Loading Boot Environment Information"))
                 self.w_progressinfo_label.set_text(
                     _("Fetching BE entries..."))
-                self.be_destroy_supports_capital_f = \
-                    self.__check_if_be_supports_capital_f()
                 self.w_progress_dialog.show()
 
         def __progress_pulse(self):
@@ -329,14 +327,14 @@ class Beadmin:
                 not_default = None
                 for row in self.be_list:
                         if row[BE_MARKED]:
-                                succeed = self.__destroy_be(row[BE_NAME])
-                                if succeed == 1:
+                                result = self.__destroy_be(row[BE_NAME])
+                                if result != 0:
                                         not_deleted.append(row[BE_NAME])
                 for row in self.be_list:
                         if row[BE_ACTIVE_DEFAULT] == True and row[BE_ID] != \
                             self.initial_default:
-                                succeed = self.__set_default_be(row[BE_NAME])
-                                if succeed == 1:
+                                result = self.__set_default_be(row[BE_NAME])
+                                if result != 0:
                                         not_default = row[BE_NAME]
                 if len(not_deleted) == 0 and not_default == None:
                         self.progress_stop_thread = True
@@ -530,14 +528,10 @@ class Beadmin:
                 self.w_be_treeview.scroll_to_cell(self.initial_active)
 
         def __destroy_be(self, be_name):
-                cmd = [ "/sbin/beadm", "destroy", "-F", be_name ]
-                if not self.be_destroy_supports_capital_f:
-                        cmd = [ "/sbin/beadm", "destroy", "-f", be_name ]
-                return self.__beadm_invoke_command(cmd)
+                return be.beDestroy(be_name, 1, True)
 
         def __set_default_be(self, be_name):
-                cmd = [ "/sbin/beadm", "activate", be_name ]
-                return self.__beadm_invoke_command(cmd)
+                return be.beActivate(be_name)
 
         def __cell_data_default_function(self, column, renderer, model, itr, data):
                 if itr:
@@ -554,38 +548,6 @@ class Beadmin:
                         else:
                                 self.__set_renderer_active(renderer, True)
 
-        @staticmethod
-        def __beadm_invoke_command(cmd):
-                try:
-                        # Subprocess platform specific, but beadm is only on Solars so we 
-                        # can use it...
-                        stdouterr = open('/dev/null', 'w')
-                        returncode = subprocess.call(cmd, stdout = stdouterr, \
-                            stderr = stdouterr,)
-                except OSError:
-                        returncode = 1
-                return returncode
-
-        @staticmethod
-        def __check_if_be_supports_capital_f():
-                '''The beadmin command changed arguments and before build 86 to supress
-                the prompt back for the destroy operation we had to used -f instead of
-                -F. This function should return True only when the old beadm is used.'''
-                supports_capital_f = True
-                try:
-                        cmd = [ "/sbin/beadm" ]
-                        stdout = open('/dev/null', 'w')
-                        stderr = subprocess.Popen(cmd, stdout = stdout, \
-                            stderr=subprocess.PIPE).stderr
-                        out = stderr.read().split('\n')
-                        for line in out:
-                                if "beadm destroy" in line:
-                                        if "[-f]" in line:
-                                                supports_capital_f = False
-                except OSError:
-                        return supports_capital_f
-                return supports_capital_f
-                
         @staticmethod
         def __set_renderer_active(renderer, active):
                 if active:
