@@ -2878,7 +2878,7 @@ if __name__ == '__main__':
 
         try:
                 opts, args = getopt.getopt(sys.argv[1:], "htR:U:", \
-                    ["help", "test-gui", "image-dir=", "update-all"])
+                    ["help", "test-gui", "image-dir=", "update-all="])
         except getopt.error, msg:
                 print "%s, for help use --help" % msg
                 sys.exit(2)

@@ -43,6 +43,11 @@ try:
         pygtk.require("2.0")
 except ImportError:
         sys.exit(1)
+nobe = False
+try:
+        import libbe as be
+except ImportError:
+        nobe = True
 import pkg.client.progress as progress
 import pkg.misc
 from pkg.client.retrieve import ManifestRetrievalError
@@ -53,6 +58,9 @@ from pkg.misc import TransferTimedOutException, TransportException
 import pkg.gui.beadmin as beadm
 import pkg.gui.misc as gui_misc
 import pkg.gui.enumerations as enumerations
+
+ERROR_FORMAT = "<span color = \"red\">%s</span>"
+
 
 class InstallUpdate(progress.ProgressTracker):
         def __init__(self, list_of_packages, parent, api_o,
@@ -65,6 +73,7 @@ class InstallUpdate(progress.ProgressTracker):
                 api_o.progresstracker = self
                 self.api_o = api_o
                 self.parent = parent
+                self.be_list = None
                 self.be_name = be_name
                 self.parent_name = parent_name
                 self.ipkg_ipkgui_list = pkg_list
@@ -82,6 +91,7 @@ class InstallUpdate(progress.ProgressTracker):
                 self.prev_ind_phase = None
                 self.prev_pkg = None
                 self.progress_stop_timer_running = False
+                self.proposed_be_name = None
                 self.stages = {
                           1:[_("Preparing..."), _("Preparation")],
                           2:[_("Downloading..."), _("Download")],
@@ -134,6 +144,15 @@ class InstallUpdate(progress.ProgressTracker):
                 infobuffer.create_tag("level1", left_margin=30, right_margin=10)
                 infobuffer.create_tag("level2", left_margin=50, right_margin=10)
                 self.w_ua_dialog = w_tree_uaconfirm.get_widget("ua_confirm_dialog")
+                self.w_ua_error_label = w_tree_uaconfirm.get_widget(
+                    "ua_confirm_error_label")
+                self.w_ua_proceed_button = w_tree_uaconfirm.get_widget(
+                    "ua_proceed_button")
+                self.w_ua_be_name_entry = w_tree_uaconfirm.get_widget(
+                    "ua_be_name_entry")
+                self.w_ua_be_name_box = w_tree_uaconfirm.get_widget(
+                    "ua_be_name_box")
+
                 w_ua_proceed_button = w_tree_uaconfirm.get_widget("ua_proceed_button")
                 self.w_progressbar.set_pulse_step(0.02)
                 try:
@@ -150,6 +169,8 @@ class InstallUpdate(progress.ProgressTracker):
                                     self.__on_ua_cancel_button_clicked,
                                 "on_ua_proceed_button_clicked": \
                                 self.__on_ua_proceed_button_clicked,
+                                "on_ua_be_name_entry_changed": \
+                                self.__on_ua_be_name_entry_changed,
                             }
                         dic_removeconfirm = \
                             {
@@ -198,8 +219,14 @@ class InstallUpdate(progress.ProgressTracker):
                         self.w_dialog.set_title(_("Update All"))
                         w_ua_proceed_button.grab_focus()
                         if not self.be_name:
+                                if nobe or not "beVerifyBEName" in be.__dict__:
+                                        self.w_ua_be_name_box.set_property(
+                                            "visible", False)
+                                else:
+                                        self.__setup_be_list()
                                 self.w_ua_dialog.show()
                         else:
+                                self.proposed_be_name = self.be_name
                                 self.__proceed_with_stages()
                 else:
                         self.w_dialog.set_title(_("Install/Update"))
@@ -231,8 +258,57 @@ class InstallUpdate(progress.ProgressTracker):
                 self.w_ua_dialog.hide()
 
         def __on_ua_proceed_button_clicked(self, widget):
+                proposed_be_name = self.w_ua_be_name_entry.get_text()
+                if proposed_be_name != "":
+                        self.proposed_be_name = proposed_be_name
                 self.w_ua_dialog.hide()
                 self.__proceed_with_stages()
+
+        def __setup_be_list(self):
+                be_list = be.beList()
+                error_code = None
+                if len(be_list) > 1 and type(be_list[0]) == type(-1):
+                        error_code = be_list[0]
+                if error_code != None and error_code == 0:
+                        self.be_list = be_list[1]
+                elif error_code == None:
+                        self.be_ist = be_list
+
+        def __is_be_name_in_use(self, name):
+                in_use = False
+                if name == "":
+                        return in_use
+                for bee in self.be_list:
+                        be_name = bee.get("orig_be_name")
+                        if be_name == name:
+                                in_use = True
+                                break
+                return in_use
+ 
+        def __is_be_name_valid(self, name):
+                if name == "":
+                        return True
+                return be.beVerifyBEName(name) == 0
+   
+        def __validate_be_name(self, widget):
+                name = widget.get_text()
+                is_name_valid = self.__is_be_name_valid(name)
+                self.w_ua_error_label.hide()
+                error_str = None
+                if is_name_valid:
+                        is_name_in_use = self.__is_be_name_in_use(name)
+                        if is_name_in_use:
+                                error_str = ERROR_FORMAT % _("BE name is in use")
+                else:
+                        error_str = ERROR_FORMAT % _("BE name is invalid")
+                if error_str != None:
+                        self.w_ua_error_label.set_markup(error_str)
+                        self.w_ua_error_label.show()
+                  
+                self.w_ua_proceed_button.set_sensitive(error_str == None)
+
+        def __on_ua_be_name_entry_changed(self, widget):
+                self.__validate_be_name(widget)
 
         def __on_remove_cancel_button_clicked(self, widget):
                 self.w_removeconfirm_dialog.hide()
@@ -362,6 +438,21 @@ class InstallUpdate(progress.ProgressTracker):
                 except api_errors.CanceledException:
                         self.w_dialog.hide()
                         self.stop_bouncing_progress = True
+                        return
+                except api_errors.BENamingNotSupported:
+                        msg = _("Specifying BE Name not supported.\n")
+                        self.__g_error_stage(msg)
+                        return
+                except api_errors.InvalidBENameException:
+                        msg = _("Invalid BE Name: %s.\n") % self.proposed_be_name
+                        self.__g_error_stage(msg)
+                        return
+                except (api_errors.UnableToCopyBE, 
+                    api_errors.UnableToMountBE,
+                    api_errors.BENameGivenOnDeadBE,
+                    api_errors.UnableToRenameBE), ex:
+                        msg = str(ex)
+                        self.__g_error_stage(msg)
                         return
                 except Exception, uex:
                         if uex.args and \
@@ -569,7 +660,8 @@ class InstallUpdate(progress.ProgressTracker):
                         stuff_to_do, opensolaris_image, cre = \
                             self.api_o.plan_update_all(sys.argv[0],
                             refresh_catalogs = False,
-                            noexecute = False, force = True)
+                            noexecute = False, force = True,
+                            be_name = self.proposed_be_name)
                         if cre and not cre.succeeded:
                                 raise api_errors.CatalogRefreshException(None, None, None
                                     ,_("Catalog refresh failed during Update All."))
