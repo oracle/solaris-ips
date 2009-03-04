@@ -390,13 +390,12 @@ class Repository:
                                     not enabled)
                         except RuntimeError, ex:
                                 if enabled:
-                                        err = _("Failed to disable %s.") % auth
+                                        err = _("Failed to disable %s.\n") % auth
                                 else:
-                                        err = _("Failed to enable %s.") % auth
+                                        err = _("Failed to enable %s.\n") % auth
                                 err += str(ex)
                                 self.__error_occurred(err,
                                     msg_type=gtk.MESSAGE_INFO)
-                                self.__prepare_repository_list()
                         except api_errors.PermissionsException:
                                 if enabled:
                                         err1 = _("Failed to disable %s.") % auth
@@ -405,7 +404,6 @@ class Repository:
                                 err = err1 + _("\nPlease check your permissions.")
                                 self.__error_occurred(err,
                                     msg_type=gtk.MESSAGE_INFO)
-                                self.__prepare_repository_list()
                         except api_errors.CatalogRefreshException:
                                 if enabled:
                                         err1 = _("Failed to disable %s.") % auth
@@ -416,7 +414,6 @@ class Repository:
                                     "Is the repository accessible?")
                                 self.__error_occurred(err,
                                     msg_type=gtk.MESSAGE_INFO)
-                                self.__prepare_repository_list()
 
         def __preferred_default(self, cell, filtered_path):
                 sorted_model = self.w_repository_treeview.get_model()
@@ -447,7 +444,12 @@ class Repository:
                                             "Please check your permissions.")
                                         self.__error_occurred(err,
                                             msg_type=gtk.MESSAGE_INFO) 
-                                        self.__prepare_repository_list()
+                                except Exception, ex:
+                                        err = _("Couldn't change"
+                                            " the preferred authority.\n")
+                                        err += str(ex)
+                                        self.__error_occurred(err,
+                                            msg_type=gtk.MESSAGE_INFO) 
 
         def __progress_pulse(self):
                 if not self.progress_stop_thread:
@@ -698,6 +700,11 @@ class Repository:
                                         err = str(ex)
                                         self.__error_with_reset_repo_selection(err)
                                         return
+                        except Exception, ex:
+                                err = _("Failed to modify %s.\n") % omn
+                                err += str(ex)
+                                self.__error_with_reset_repo_selection(err)
+                                return
                 try:
                         self.__add_repository(name, url, ssl_key, ssl_cert, silent=False)
                         if self.old_modify_preferred:
@@ -746,6 +753,12 @@ class Repository:
                                     "Is the repository accessible?")
                                 gobject.idle_add(self.__error_occurred, err,
                                     gtk.MESSAGE_INFO)
+                except Exception, ex:
+                        err = _("Failed to modify %s.\n") % omn
+                        err += str(ex)
+                        self.__error_with_reset_repo_selection(err)
+                        return
+
                 self.progress_stop_thread = True
                 return
 
@@ -785,7 +798,7 @@ class Repository:
                 except RuntimeError, ex:
                         if not silent:
                                 raise
-                        err = (_("Failed to add %s.") % auth)
+                        err = (_("Failed to add %s.\n") % auth)
                         err += str(ex)
                         self.__error_with_reset_repo_selection(err)
                         return
@@ -805,6 +818,12 @@ class Repository:
                             "\nPlease check the network connection or URL.\nIs the "
                             "repository accessible?")
                         self.__error_with_reset_repo_selection(err, gtk.MESSAGE_INFO)
+                except Exception, ex:
+                        if not silent:
+                                raise
+                        err = (_("Failed to add %s.\n") % auth)
+                        err += str(ex)
+                        self.__error_with_reset_repo_selection(err)
 
         def __delete_repository(self, name, silent=True):
                 try:
@@ -814,7 +833,7 @@ class Repository:
                 except RuntimeError, ex:
                         if not silent:
                                 raise
-                        err = (_("Failed to delete %s.") % name)
+                        err = (_("Failed to delete %s.\n") % name)
                         err += str(ex)
                         self.__error_with_reset_repo_selection(err)
                         return
@@ -825,6 +844,13 @@ class Repository:
                             _("\nPlease check your permissions.")
                         self.__error_with_reset_repo_selection(err,
                             gtk.MESSAGE_INFO)
+                        return
+                except Exception, ex:
+                        if not silent:
+                                raise
+                        err = (_("Failed to delete %s.\n") % name)
+                        err += str(ex)
+                        self.__error_with_reset_repo_selection(err)
 
         def __setup_mirrors(self, mirrors):
                 self.mirror_list.clear()
@@ -858,7 +884,7 @@ class Repository:
                         self.progress_stop_thread = True
                 except RuntimeError, ex:
                         err = (_("Failed to add mirror %(mirror)s for "
-                            "repository %(repository)s.") % \
+                            "repository %(repository)s.\n") % \
                             {'mirror': mirror,
                              'repository': name})
                         err += str(ex)
@@ -875,6 +901,17 @@ class Repository:
                         gobject.idle_add(self.__error_occurred, err,
                             gtk.MESSAGE_INFO)
                         self.progress_stop_thread = True
+                        return
+                except Exception, ex:
+                        err = (_("Failed to add mirror %(mirror)s for "
+                            "repository %(repository)s.\n") % \
+                            {'mirror': mirror,
+                             'repository': name})
+                        err += str(ex)
+                        gobject.idle_add(self.__error_occurred, err,
+                            gtk.MESSAGE_ERROR)
+                        self.progress_stop_thread = True
+                        return
 
         def __delete_mirror(self, name, mirror):
                 try:
@@ -890,7 +927,7 @@ class Repository:
                         self.progress_stop_thread = True
                 except RuntimeError, ex:
                         err = (_("Failed to delete mirror %(mirror)s for "
-                            "repository %(repository)s.") % \
+                            "repository %(repository)s.\n") % \
                             {'mirror': mirror,
                              'repository': name})
                         err += str(ex)
@@ -907,6 +944,17 @@ class Repository:
                         gobject.idle_add(self.__error_occurred, err,
                             gtk.MESSAGE_INFO)
                         self.progress_stop_thread = True
+                        return
+                except Exception, ex:
+                        err = (_("Failed to delete mirror %(mirror)s for "
+                            "repository %(repository)s.\n") % \
+                            {'mirror': mirror,
+                             'repository': name})
+                        err += str(ex)
+                        gobject.idle_add(self.__error_occurred, err,
+                            gtk.MESSAGE_ERROR)
+                        self.progress_stop_thread = True
+                        return
 
         def __delete_selected_mirror(self):
                 tsel = self.w_mirror_treeview.get_selection()
@@ -1065,7 +1113,7 @@ class Repository:
                 model, ite = selection.get_selected()
                 if ite:
                         sel = model.get_value(ite, 0)
-                self.__prepare_repository_list(False, sel)
+                self.progress_stop_thread = True
 
         def __error_occurred(self, error_msg, msg_type=gtk.MESSAGE_ERROR):
                 msgbox = gtk.MessageDialog(parent =
