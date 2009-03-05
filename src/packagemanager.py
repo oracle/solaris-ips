@@ -2690,7 +2690,7 @@ class PackageManager:
                 self.update_statusbar()
                 self.in_setup = False
                 self.cancelled = False
-                if self.initial_section != 0:
+                if self.initial_section != 0 or self.initial_show_filter != 0:
                         self.__application_refilter()
                 self.unset_busy_cursor()
                 Thread(target = self.__enable_disable_update_all).start()                
