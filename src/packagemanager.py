@@ -167,13 +167,16 @@ class PackageManager:
                 self.progress_stop_timer_thread = False
                 self.progress_fraction_time_count = 0
                 self.progress_canceled = False
+                self.catalog_loaded = False
                 self.image_dir_arg = None
                 self.update_all_proceed = False
                 self.ua_be_name = None
                 self.application_path = None
                 self.default_authority = None
                 self.first_run = True
-                self.selected_pkgname = None
+                self.selected_pkgstem = None
+                self.selected_model = None
+                self.selected_path = None
                 self.info_cache = {}
                 self.selected = 0
                 self.selected_pkgs = {}
@@ -1050,6 +1053,8 @@ class PackageManager:
                 self.application_list_filter.refilter()
                 self.w_application_treeview.set_model(model)
                 gobject.idle_add(self.__enable_disable_selection_menus)
+                gobject.idle_add(self.__enable_disable_install_remove)
+                gobject.idle_add(self.__set_empty_details_panel)
                 self.application_treeview_initialized = True
                 self.application_treeview_range = None
                 if self.visible_status_id == 0:
@@ -1272,8 +1277,8 @@ class PackageManager:
                 model, itr = self.package_selection.get_selected()
                 if itr:
                         self.__enable_disable_install_remove()
-                        self.selected_pkgname = \
-                               model.get_value(itr, enumerations.NAME_COLUMN)
+                        self.selected_pkgstem = \
+                               model.get_value(itr, enumerations.STEM_COLUMN)
                         if self.show_info_id != 0:
                                 gobject.source_remove(self.show_info_id)
                                 self.show_info_id = 0
@@ -1390,6 +1395,7 @@ class PackageManager:
                 self.cancelled = True
                 self.in_setup = True
                 self.set_busy_cursor()
+                self.__set_empty_details_panel()
                 auth = [active_authority, ]
                 Thread(target = self.__setup_authority, args = [auth]).start()
                 self.__set_main_view_package_list()
@@ -1420,9 +1426,8 @@ class PackageManager:
                                         self.__add_pkgs_to_lists_from_cache(authority, 
                                             application_list, category_list, 
                                             section_list)
-                        except UnpicklingError:
+                        except (UnpicklingError, EOFError):
                                 #Most likely cache is corrupted, silently load list from api.
-                                #raise
                                 application_list = self.__get_new_application_liststore()
                                 category_list = self.__get_new_category_liststore()
                                 uptodate = False
@@ -1430,7 +1435,9 @@ class PackageManager:
                                 if first_loop == True:
                                         first_loop = False
                                         gobject.idle_add(self.setup_progressdialog_show)
+                                self.catalog_loaded = False
                                 self.api_o.img.load_catalogs(self.pr)
+                                self.catalog_loaded = True
                                 self.__add_pkgs_to_lists_from_api(authority, application_list, 
                                     category_list, section_list)
                                 category_list.prepend([0, _('All'), None, None, False, 
@@ -1726,6 +1733,22 @@ class PackageManager:
                 for pkg_stem in remove_auth:
                         self.__remove_pkg_stem_from_list(pkg_stem)
 
+        def __set_empty_details_panel(self):
+                if self.show_info_id != 0:
+                        gobject.source_remove(self.show_info_id)
+                        self.show_info_id = 0
+                if self.show_licenses_id != 0:
+                        gobject.source_remove(self.show_licenses_id)
+                        self.show_licenses_id = 0
+                pkg_name = _("Package Name")
+                self.w_packagename_label.set_markup("<b>" + pkg_name + "</b>")
+                self.w_general_info_label.set_markup("<b>" + pkg_name + "</b>")
+                self.w_installedfiles_textview.get_buffer().set_text("")
+                self.w_dependencies_textview.get_buffer().set_text("")
+                self.w_generalinfo_textview.get_buffer().set_text("")
+                self.w_license_textview.get_buffer().set_text("")
+                return
+
         def __show_fetching_package_info(self, pkg):
                 pkg_name = pkg.get_name()
                 self.w_packagename_label.set_markup("<b>" + pkg_name + "</b>")
@@ -1778,14 +1801,21 @@ class PackageManager:
                 infobuffer = self.w_generalinfo_textview.get_buffer()
 
                 if not local_info and not remote_info:
+                        network_str = \
+                            _("\nThis might be caused by network problem "
+                            "while accessing the repository.")
                         self.w_shortdescription_label.set_text(
-                            _("Description not available for this package..."))
+                            _("Description not available for this package...") +
+                            network_str)
                         instbuffer.set_text( \
-                            _("Files Details not available for this package..."))
+                            _("Files Details not available for this package...") +
+                            network_str)
                         depbuffer.set_text(_(
-                            "Dependencies info not available for this package..."))
+                            "Dependencies info not available for this package...") +
+                            network_str)
                         infobuffer.set_text(
-                            _("Information not available for this package..."))
+                            _("Information not available for this package...") +
+                            network_str)
                         return
 
                 if not local_info:
@@ -1874,14 +1904,32 @@ class PackageManager:
                 licbuffer.set_text(lic_u)
 
         def __show_licenses(self):
-                self.show_licenses_id = 0
-                Thread(target = self.__show_package_licenses).start()
+                if self.catalog_loaded == False:
+                        return
+                Thread(target = self.__show_package_licenses, 
+                    args = (self.show_licenses_id,)).start()
 
-        def __show_package_licenses(self):
-                if self.selected_pkgname == None:
+        def __show_package_licenses(self, license_id):
+                if self.selected_pkgstem == None:
                         gobject.idle_add(self.__update_package_license, None)
                         return
-                info = self.api_o.info([self.selected_pkgname], True, True)
+                info = None
+                try:
+                        info = self.api_o.info([self.selected_pkgstem],
+                            True, True)
+                except (misc.TransportFailures, retrieve.ManifestRetrievalError):
+                        pass
+                if license_id != self.show_licenses_id:
+                        return
+                if not info:
+                        # Package not installed
+                        try:
+                                info = self.api_o.info([self.selected_pkgstem],
+                                    False, True)
+                        except (misc.TransportFailures, retrieve.ManifestRetrievalError):
+                                pass
+                if license_id != self.show_licenses_id:
+                        return
                 pkgs_info = None
                 package_info = None
                 no_licenses = 0
@@ -1898,9 +1946,13 @@ class PackageManager:
                         gobject.idle_add(self.__update_package_license,
                             package_info.licenses)
 
-        def __get_pkg_info(self, pkg_name, local):
-                info = self.api_o.info([pkg_name], local, get_licenses=False,
-                    get_action_info=True)
+        def __get_pkg_info(self, pkg_stem, local):
+                info = None
+                try:
+                        info = self.api_o.info([pkg_stem], local,
+                            get_licenses=False, get_action_info=True)
+                except (misc.TransportFailures, retrieve.ManifestRetrievalError):
+                        return info
                 pkgs_info = None
                 package_info = None
                 if info:
@@ -1913,30 +1965,37 @@ class PackageManager:
                         return None
 
         def __show_info(self, model, path):
-                self.show_info_id = 0
+                if self.catalog_loaded == False:
+                        self.selected_model = model
+                        self.selected_path = path
+                        return
                 Thread(target = self.__show_package_info,
-                    args = (model, path)).start()
+                    args = (model, path, self.show_info_id)).start()
 
-        def __show_package_info(self, model, path):
+        def __show_package_info(self, model, path, show_id):
+                if not (model and path):
+                        return
                 itr = model.get_iter(path)
                 pkg = model.get_value(itr, enumerations.FMRI_COLUMN)
                 pkg_stem = model.get_value(itr, enumerations.STEM_COLUMN)
                 pkg_status = model.get_value(itr, enumerations.STATUS_COLUMN)
                 if self.info_cache.has_key(pkg_stem):
                         return
-
                 img = self.api_o.img
                 img.history.operation_name = "info"
                 local_info = None
                 remote_info = None
-                if pkg_status == enumerations.INSTALLED or pkg_status == \
-                    enumerations.UPDATABLE:
-                        local_info = self.__get_pkg_info(pkg.get_name(), True)
-                if pkg_status == enumerations.NOT_INSTALLED or pkg_status == \
-                    enumerations.UPDATABLE:
-                        remote_info = self.__get_pkg_info(pkg.get_name(), False)
-                gobject.idle_add(self.__update_package_info, pkg, 
-                    local_info, remote_info)
+                if show_id == self.show_info_id and (pkg_status == 
+                    enumerations.INSTALLED or pkg_status ==
+                    enumerations.UPDATABLE):
+                        local_info = self.__get_pkg_info(pkg_stem, True)
+                if show_id == self.show_info_id and (pkg_status == 
+                    enumerations.NOT_INSTALLED or pkg_status ==
+                    enumerations.UPDATABLE):
+                        remote_info = self.__get_pkg_info(pkg_stem, False)
+                if show_id == self.show_info_id:
+                        gobject.idle_add(self.__update_package_info, pkg, 
+                            local_info, remote_info)
                 img.history.operation_result = history.RESULT_SUCCEEDED
                 return
 
@@ -2123,12 +2182,18 @@ class PackageManager:
                 gobject.idle_add(self.w_updateall_menuitem.set_sensitive, False)
                 update_available = self.__check_if_updates_available()
                 gobject.idle_add(self.__g_enable_disable_update_all, update_available)
+                self.show_info_id = -1
+                gobject.idle_add(self.__show_package_info, 
+                    self.selected_model, self.selected_path, -1)
+                gobject.idle_add(self.__show_licenses)
                 return False
 
         def __check_if_updates_available(self):
                 try:
                         img = self.api_o.img
+                        self.catalog_loaded = False
                         img.load_catalogs(self.pr)
+                        self.catalog_loaded = True
                         pargs = []
                         all_known = False
                         all_versions = False
@@ -2159,7 +2224,9 @@ class PackageManager:
                 full_refresh = True
                 try:
                         self.api_o.refresh(full_refresh)
+                        self.catalog_loaded = False
                         self.api_o.img.load_catalogs(self.pr)
+                        self.catalog_loaded = True
                 except api_errors.UnrecognizedAuthorityException:
                         # In current implementation, this will never happen
                         # We are not refrehsing specific authority
@@ -2690,7 +2757,9 @@ class PackageManager:
                 visible_repository = self.__get_visible_repository_name()
                 default_authority = self.default_authority
                 img.clear_pkg_state()
+                self.catalog_loaded = False
                 img.load_catalogs(self.pr)
+                self.catalog_loaded = True
                 installed_icon = gui_misc.get_icon_pixbuf(self.application_dir, 
                     "status_installed")
                 visible_list = update_list.get(visible_repository)
