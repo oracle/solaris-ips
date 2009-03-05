@@ -455,7 +455,7 @@ class InstallUpdate(progress.ProgressTracker):
                         self.__g_error_stage(msg)
                         return
                 except Exception, uex:
-                        if uex.args and \
+                        if "args" in uex.__dict__ and uex.args and \
                             (uex.args[0] == errno.EDQUOT or uex.args[0] == errno.ENOSPC):
                                 gobject.idle_add(self.__prompt_to_load_beadm)
                                 gobject.idle_add(self.w_dialog.hide)
