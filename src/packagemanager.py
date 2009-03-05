@@ -1532,6 +1532,7 @@ class PackageManager:
                 if self.description_thread_running:
                         self.cancelled = True
                 self.in_setup = True
+                self.visible_repository = None
                 self.w_progress_dialog.set_title(_("Refreshing catalogs"))
                 self.w_progressinfo_label.set_text(_("Refreshing catalogs..."))
                 self.progress_stop_timer_thread = False
