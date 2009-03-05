@@ -272,7 +272,7 @@ class InstallUpdate(progress.ProgressTracker):
                 if error_code != None and error_code == 0:
                         self.be_list = be_list[1]
                 elif error_code == None:
-                        self.be_ist = be_list
+                        self.be_list = be_list
 
         def __is_be_name_in_use(self, name):
                 in_use = False
