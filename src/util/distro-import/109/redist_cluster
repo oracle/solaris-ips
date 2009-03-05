@@ -13,9 +13,9 @@ include common/FSWxorg-fonts-iso8859-9
 include common/FSWxorg-fonts-jiskan
 include common/FSWxorg-fonts-syriac
 include common/FSWxorg-fonts-vera
-$(i386_ONLY)include common/OSOLvpanels
-$(i386_ONLY)include common/OSOLvpanels-mysql
-$(i386_ONLY)include common/OSOLvpanels-sysid
+include common/OSOLvpanels
+include common/OSOLvpanels-mysql
+include common/OSOLvpanels-sysid
 include common/SUNW1394
 include common/SUNW1394h
 include common/SUNWDTraceToolkit
@@ -1557,9 +1557,9 @@ depend FSWxorg-fonts-syriac
 depend FSWxorg-fonts-vera
 $(i386_ONLY)depend NVDAcg
 $(i386_ONLY)depend NVDAgraphics
-$(i386_ONLY)depend OSOLvpanels
-$(i386_ONLY)depend OSOLvpanels-mysql
-$(i386_ONLY)depend OSOLvpanels-sysid
+depend OSOLvpanels
+depend OSOLvpanels-mysql
+depend OSOLvpanels-sysid
 depend SUNW1394
 depend SUNW1394h
 depend SUNWDTraceToolkit
