@@ -1472,8 +1472,9 @@ class PackageManager:
                                 install_update.append(
                                     model.get_value(itr, enumerations.STEM_COLUMN))
                 else:
-                        for authority in self.selected_pkgs:
-                                pkgs = self.selected_pkgs.get(authority)
+                        visible_repository = self.__get_visible_repository_name()
+                        pkgs = self.selected_pkgs.get(visible_repository)
+                        if pkgs:
                                 for pkg_stem in pkgs:
                                         status = pkgs.get(pkg_stem)
                                         if status == enumerations.NOT_INSTALLED or \
@@ -1515,8 +1516,9 @@ class PackageManager:
                                 remove_list.append(
                                     model.get_value(itr, enumerations.STEM_COLUMN))
                 else:
-                        for authority in self.selected_pkgs:
-                                pkgs = self.selected_pkgs.get(authority)
+                        visible_repository = self.__get_visible_repository_name()
+                        pkgs = self.selected_pkgs.get(visible_repository)
+                        if pkgs:
                                 for pkg_stem in pkgs:
                                         status = pkgs.get(pkg_stem)
                                         if status == enumerations.INSTALLED or \
@@ -2145,22 +2147,20 @@ class PackageManager:
 
         def __enable_if_selected_for_removal(self):
                 sensitive = False
-                for authority in self.to_remove:
-                        selected = self.to_remove.get(authority)
-                        if selected > 0:
-                                sensitive = True
-                                break
+                visible_repository = self.__get_visible_repository_name()
+                selected = self.to_remove.get(visible_repository)
+                if selected > 0:
+                        sensitive = True
                 self.w_remove_button.set_sensitive(sensitive)
                 self.w_remove_menuitem.set_sensitive(sensitive)
                 return sensitive
 
         def __enable_if_selected_for_install_update(self):
                 sensitive = False
-                for authority in self.to_install_update:
-                        selected = self.to_install_update.get(authority)
-                        if selected > 0:
-                                sensitive = True
-                                break
+                visible_repository = self.__get_visible_repository_name()
+                selected = self.to_install_update.get(visible_repository)
+                if selected > 0:
+                        sensitive = True
                 self.w_installupdate_button.set_sensitive(sensitive)
                 self.w_installupdate_menuitem.set_sensitive(sensitive)
                 return sensitive
@@ -2735,9 +2735,9 @@ class PackageManager:
                 self.selected = 0
                 sel = 0
                 visible_repository = self.__get_visible_repository_name()
-                for authority in self.selected_pkgs:
-                        pkgs = self.selected_pkgs.get(authority)
-                        self.selected += len(pkgs)
+                pkgs = self.selected_pkgs.get(visible_repository)
+                if pkgs:
+                        self.selected = len(pkgs)
                 for pkg_row in self.application_list:
                         if pkg_row[enumerations.STATUS_COLUMN] == enumerations.INSTALLED \
                             or pkg_row[enumerations.STATUS_COLUMN] == \
