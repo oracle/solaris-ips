@@ -3,4 +3,6 @@ classification "System/Administration and Configuration"
 import SUNWcups-manager
 import SUNWcups-manager-root
 depend SUNWPython
+depend SUNWcups
+depend SUNWpycups
 end package

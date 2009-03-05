@@ -1,0 +1,4 @@
+package SUNWpython26-setuptools
+classification "Development/Python"
+import SUNWpython26-setuptools
+end package

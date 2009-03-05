@@ -27,6 +27,8 @@
 ^src/man/pkgsend.1$
 ^src/pkg$
 ^src/pkg.depotd$
+^src/pkgdefs/pkgproto$
+^src/pkgdefs/protoproto$
 ^src/pkgrecv$
 ^src/pkgsend$
 ^src/pyOpenSSL-.*$

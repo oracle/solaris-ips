@@ -1,0 +1,5 @@
+package SUNWsimplewbem
+classification "System/Enterprise Management"
+import SUNWsimplewbem
+version 1.2.4
+end package

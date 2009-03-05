@@ -1,0 +1,4 @@
+package SUNWonbld
+classification "Development/Distribution Tools"
+import SUNWonbld
+end package

@@ -1,0 +1,5 @@
+package SUNWkonkretcmpi
+classification "Development/C"
+import SUNWkonkretcmpi
+version 0.8.7
+end package

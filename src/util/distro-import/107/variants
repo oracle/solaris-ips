@@ -1,4 +1,0 @@
-#tag package as containing specified architecture variant
-add set name=variant.arch value=$(ARCH)
-#indicate that we're adding zone variants (no nonglobal files for now)
-add set name=variant.zone value=global value=nonglobal

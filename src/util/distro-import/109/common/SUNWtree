@@ -1,0 +1,5 @@
+package SUNWtree
+classification "Applications/System Utilities"
+import SUNWtree
+version 1.5.2.1
+end package

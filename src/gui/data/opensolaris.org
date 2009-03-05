@@ -88,6 +88,12 @@ category = Python
 [SUNWPython25]
 category = Python
 
+[SUNWPython26]
+category = Python
+
+[SUNWPython26-extra]
+category = Python
+
 [SUNWTcl]
 category = Other Languages
 
@@ -671,6 +677,9 @@ category = Media
 category = Services
 
 [SUNWefb]
+category = Display
+
+[SUNWefbcf]
 category = Display
 
 [SUNWefbw]
@@ -1342,6 +1351,9 @@ category = Python
 [SUNWgnome-python-libs]
 category = Python
 
+[SUNWgnome-python26-libs]
+category = Python
+
 [SUNWgnome-remote-desktop]
 category = X11 (System)
 
@@ -1873,6 +1885,9 @@ category = Display
 [SUNWkfbw]
 category = Display
 
+[SUNWkonkretcmpi]
+category = C
+
 [SUNWkos]
 category = Localizations (System)
 
@@ -1892,6 +1907,9 @@ category = GNOME and GTK+
 category = Localizations (System)
 
 [SUNWlang-ar-extra]
+category = Localizations (System)
+
+[SUNWlang-be]
 category = Localizations (System)
 
 [SUNWlang-bg]
@@ -2018,6 +2036,9 @@ category = Localizations (System)
 category = Localizations (System)
 
 [SUNWlang-ja-extra]
+category = Localizations (System)
+
+[SUNWlang-ka]
 category = Localizations (System)
 
 [SUNWlang-kk]
@@ -2620,6 +2641,9 @@ category = Other Languages
 [SUNWogg-vorbis]
 category = Multimedia Libraries
 
+[SUNWonbld]
+category = Distribution Tools
+
 [SUNWopenexr]
 category = Libraries (System)
 
@@ -2821,6 +2845,9 @@ category = Databases
 [SUNWpostgr-83-docs]
 category = Databases (System)
 
+[SUNWpostgr-83-l10n-ja]
+category = Databases (System)
+
 [SUNWpostgr-83-libs]
 category = Databases
 
@@ -2981,6 +3008,9 @@ category = Python
 category = Python
 
 [SUNWpython25-twisted-web2]
+category = Python
+
+[SUNWpython26-setuptools]
 category = Python
 
 [SUNWpyyaml24]
@@ -3214,11 +3244,17 @@ category = System
 [SUNWsfwhea]
 category = System
 
+[SUNWsg3utils]
+category = System Utilities
+
 [SUNWsi3124]
 category = Ports
 
 [SUNWsigcpp]
 category = C++
+
+[SUNWsimplewbem]
+category = Enterprise Management
 
 [SUNWslang]
 category = Other Languages
@@ -3531,6 +3567,9 @@ category = System Utilities
 
 [SUNWtransmission]
 category = Internet
+
+[SUNWtree]
+category = System Utilities
 
 [SUNWts]
 category = Trusted

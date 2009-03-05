@@ -1,0 +1,260 @@
+package NVDAgraphics
+classification "Drivers/Display"
+import NVDAgraphics
+import NVDAgraphicsr
+add driver name=nvidia perms="* 0666 root root" \
+	alias=pci10de,40 \
+	alias=pci10de,41 \
+	alias=pci10de,42 \
+	alias=pci10de,43 \
+	alias=pci10de,44 \
+	alias=pci10de,45 \
+	alias=pci10de,46 \
+	alias=pci10de,47 \
+	alias=pci10de,48 \
+	alias=pci10de,4e \
+	alias=pci10de,90 \
+	alias=pci10de,91 \
+	alias=pci10de,92 \
+	alias=pci10de,93 \
+	alias=pci10de,95 \
+	alias=pci10de,98 \
+	alias=pci10de,99 \
+	alias=pci10de,9d \
+	alias=pci10de,c0 \
+	alias=pci10de,c1 \
+	alias=pci10de,c2 \
+	alias=pci10de,c3 \
+	alias=pci10de,c8 \
+	alias=pci10de,c9 \
+	alias=pci10de,cc \
+	alias=pci10de,cd \
+	alias=pci10de,ce \
+	alias=pci10de,f0 \
+	alias=pci10de,f1 \
+	alias=pci10de,f2 \
+	alias=pci10de,f3 \
+	alias=pci10de,f4 \
+	alias=pci10de,f5 \
+	alias=pci10de,f6 \
+	alias=pci10de,f8 \
+	alias=pci10de,f9 \
+	alias=pci10de,140 \
+	alias=pci10de,141 \
+	alias=pci10de,142 \
+	alias=pci10de,143 \
+	alias=pci10de,144 \
+	alias=pci10de,145 \
+	alias=pci10de,146 \
+	alias=pci10de,147 \
+	alias=pci10de,148 \
+	alias=pci10de,149 \
+	alias=pci10de,14a \
+	alias=pci10de,14c \
+	alias=pci10de,14d \
+	alias=pci10de,14e \
+	alias=pci10de,14f \
+	alias=pci10de,160 \
+	alias=pci10de,161 \
+	alias=pci10de,162 \
+	alias=pci10de,163 \
+	alias=pci10de,164 \
+	alias=pci10de,165 \
+	alias=pci10de,166 \
+	alias=pci10de,167 \
+	alias=pciex10de,168 \
+	alias=pci10de,169 \
+	alias=pci10de,16a \
+	alias=pci10de,191 \
+	alias=pci10de,193 \
+	alias=pci10de,194 \
+	alias=pci10de,197 \
+	alias=pci10de,19d \
+	alias=pci10de,19e \
+	alias=pci10de,1d0 \
+	alias=pci10de,1d1 \
+	alias=pci10de,1d3 \
+	alias=pci10de,1d6 \
+	alias=pci10de,1d7 \
+	alias=pci10de,1d8 \
+	alias=pciex10de,1da \
+	alias=pci10de,1db \
+	alias=pci10de,1dc \
+	alias=pci10de,1dd \
+	alias=pci10de,1de \
+	alias=pci10de,1df \
+	alias=pci10de,211 \
+	alias=pci10de,212 \
+	alias=pciex10de,215 \
+	alias=pciex10de,218 \
+	alias=pci10de,221 \
+	alias=pci10de,222 \
+	alias=pci10de,240 \
+	alias=pci10de,241 \
+	alias=pci10de,242 \
+	alias=pci10de,244 \
+	alias=pci10de,245 \
+	alias=pci10de,247 \
+	alias=pci10de,290 \
+	alias=pci10de,291 \
+	alias=pci10de,292 \
+	alias=pci10de,293 \
+	alias=pci10de,294 \
+	alias=pci10de,295 \
+	alias=pci10de,297 \
+	alias=pci10de,298 \
+	alias=pci10de,299 \
+	alias=pci10de,29a \
+	alias=pci10de,29b \
+	alias=pci10de,29c \
+	alias=pci10de,29d \
+	alias=pci10de,29e \
+	alias=pci10de,29f \
+	alias=pci10de,2e0 \
+	alias=pci10de,2e1 \
+	alias=pci10de,2e2 \
+	alias=pci10de,2e3 \
+	alias=pci10de,2e4 \
+	alias=pci10de,390 \
+	alias=pci10de,391 \
+	alias=pci10de,392 \
+	alias=pci10de,393 \
+	alias=pci10de,394 \
+	alias=pci10de,395 \
+	alias=pci10de,397 \
+	alias=pci10de,398 \
+	alias=pci10de,399 \
+	alias=pci10de,39e \
+	alias=pci10de,3d0 \
+	alias=pci10de,3d1 \
+	alias=pci10de,3d2 \
+	alias=pci10de,3d5 \
+	alias=pci10de,400 \
+	alias=pci10de,401 \
+	alias=pci10de,402 \
+	alias=pci10de,403 \
+	alias=pci10de,404 \
+	alias=pci10de,405 \
+	alias=pci10de,407 \
+	alias=pci10de,408 \
+	alias=pci10de,409 \
+	alias=pci10de,40a \
+	alias=pci10de,40b \
+	alias=pci10de,40c \
+	alias=pci10de,40d \
+	alias=pci10de,40e \
+	alias=pci10de,40f \
+	alias=pci10de,420 \
+	alias=pci10de,421 \
+	alias=pci10de,422 \
+	alias=pci10de,423 \
+	alias=pci10de,424 \
+	alias=pci10de,425 \
+	alias=pci10de,426 \
+	alias=pci10de,427 \
+	alias=pci10de,428 \
+	alias=pci10de,429 \
+	alias=pci10de,42a \
+	alias=pci10de,42b \
+	alias=pci10de,42c \
+	alias=pci10de,42d \
+	alias=pci10de,42e \
+	alias=pci10de,42f \
+	alias=pci10de,531 \
+	alias=pci10de,533 \
+	alias=pci10de,53a \
+	alias=pci10de,53b \
+	alias=pci10de,53e \
+	alias=pci10de,5e0 \
+	alias=pci10de,5e1 \
+	alias=pci10de,5e2 \
+	alias=pci10de,5e3 \
+	alias=pci10de,5f9 \
+	alias=pci10de,5fd \
+	alias=pci10de,5fe \
+	alias=pci10de,600 \
+	alias=pci10de,601 \
+	alias=pci10de,602 \
+	alias=pci10de,604 \
+	alias=pci10de,605 \
+	alias=pci10de,606 \
+	alias=pci10de,608 \
+	alias=pci10de,609 \
+	alias=pci10de,60b \
+	alias=pci10de,60c \
+	alias=pci10de,60d \
+	alias=pci10de,610 \
+	alias=pci10de,611 \
+	alias=pci10de,612 \
+	alias=pci10de,613 \
+	alias=pci10de,614 \
+	alias=pci10de,617 \
+	alias=pci10de,61a \
+	alias=pci10de,61c \
+	alias=pci10de,622 \
+	alias=pci10de,623 \
+	alias=pci10de,628 \
+	alias=pci10de,62a \
+	alias=pci10de,62b \
+	alias=pci10de,62c \
+	alias=pci10de,63a \
+	alias=pci10de,640 \
+	alias=pci10de,643 \
+	alias=pci10de,647 \
+	alias=pci10de,648 \
+	alias=pci10de,649 \
+	alias=pci10de,64a \
+	alias=pci10de,64b \
+	alias=pci10de,64c \
+	alias=pci10de,656 \
+	alias=pci10de,65c \
+	alias=pci10de,6e0 \
+	alias=pci10de,6e1 \
+	alias=pci10de,6e4 \
+	alias=pci10de,6e5 \
+	alias=pci10de,6e8 \
+	alias=pci10de,6e9 \
+	alias=pci10de,6ea \
+	alias=pci10de,6eb \
+	alias=pci10de,6f8 \
+	alias=pci10de,6f9 \
+	alias=pci10de,6fa \
+	alias=pci10de,6fd \
+	alias=pci10de,7e0 \
+	alias=pci10de,7e1 \
+	alias=pci10de,7e3 \
+	alias=pci10de,844 \
+	alias=pci10de,845 \
+	alias=pci10de,847 \
+	alias=pci10de,848 \
+	alias=pci10de,849 \
+	alias=pci10de,84a \
+	alias=pci10de,84b \
+	alias=pci10de,84c \
+	alias=pci10de,84d \
+	alias=pci10de,84f \
+	alias=pci10de,862 \
+	alias=pci10de,863 \
+	alias=pci10de,87a \
+	alias=pci10de,87f
+add link path=dev/nvidia0 target=fbs/nvidia0
+add link path=dev/nvidia1 target=fbs/nvidia1
+add link path=dev/nvidia2 target=fbs/nvidia2
+add link path=dev/nvidia3 target=fbs/nvidia3
+add link path=dev/nvidia4 target=fbs/nvidia4
+add link path=dev/nvidia5 target=fbs/nvidia5
+add link path=dev/nvidia6 target=fbs/nvidia6
+add link path=dev/nvidia7 target=fbs/nvidia7
+add link path=dev/nvidia8 target=fbs/nvidia8
+add link path=dev/nvidia9 target=fbs/nvidia9
+add link path=dev/nvidia10 target=fbs/nvidia10
+add link path=dev/nvidia11 target=fbs/nvidia11
+add link path=dev/nvidia12 target=fbs/nvidia12
+add link path=dev/nvidia13 target=fbs/nvidia13
+add link path=dev/nvidia14 target=fbs/nvidia14
+add link path=dev/nvidia15 target=fbs/nvidia15
+add link path=dev/nvidiactl target=../devices/pseudo/nvidia@255:nvidiactl
+version 0.180.29
+# Depends on ogl-select service from SUNWxwplr to create links at boot
+depend SUNWxwplr
+end package

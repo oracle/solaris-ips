@@ -1,0 +1,6 @@
+package SUNWapch22m-jk
+classification "Web Services/Application and Web Servers"
+import SUNWapch22m-jk
+import SUNWapch22r-jk
+version 1.2.27
+end package

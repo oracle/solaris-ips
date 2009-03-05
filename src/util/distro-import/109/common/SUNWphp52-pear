@@ -1,0 +1,6 @@
+package SUNWphp52-pear
+classification "Development/PHP"
+import SUNWphp52r-pear
+import SUNWphp52u-pear
+version 5.2.8
+end package

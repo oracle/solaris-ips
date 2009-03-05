@@ -90,6 +90,7 @@ GLOBAL_CHATTRS_105 = $(GLOBAL_CHATTRS_101)
 GLOBAL_CHATTRS_106 = $(GLOBAL_CHATTRS_101) variants
 GLOBAL_CHATTRS_107 = $(GLOBAL_CHATTRS_106)
 GLOBAL_CHATTRS_108 = $(GLOBAL_CHATTRS_106)
+GLOBAL_CHATTRS_109 = $(GLOBAL_CHATTRS_106)
 GLOBAL_CHATTRS = $(GLOBAL_CHATTRS_$(BUILDID))
 
 SOLARIS.PY=PYTHONPATH=$(PROTO_AREA)/usr/lib/python2.4/vendor-packages ./solaris.py -b 0.$(BUILDID) $(EXTRA_OPTIONS) -T \*.py \
@@ -131,6 +132,7 @@ ELIDED_FILES_105 = $(ELIDED_FILES_100a)
 ELIDED_FILES_106 = $(ELIDED_FILES_BASE)
 ELIDED_FILES_107 = $(ELIDED_FILES_BASE)
 ELIDED_FILES_108 = $(ELIDED_FILES_BASE)
+ELIDED_FILES_109 = $(ELIDED_FILES_BASE)
 ELIDED_FILES = $(ELIDED_FILES_$(BUILDID))
 
 #
@@ -190,6 +192,19 @@ CACHED_FILES_106 = $(CACHED_FILES_101a)
 CACHED_FILES_107 = $(CACHED_FILES_101a)					\
 	var/svc/manifest/application/x11/x11-server.xml
 CACHED_FILES_108 = $(CACHED_FILES_107)
+CACHED_FILES_109 = $(CACHED_FILES_101)					\
+	boot/solaris.xpm.gz						\
+	etc/skel/.bashrc						\
+	etc/skel/.profile						\
+	kernel/drv/nvidia.conf						\
+	lib/svc/method/svc-ipagent					\
+	lib/svc/method/xvm-vnc-config					\
+	usr/X11/lib/xscreensaver/config/opensolaris-logo.png		\
+	usr/lib/xen/bin/ipagent						\
+	var/svc/manifest/application/graphical-login/gdm.xml		\
+	var/svc/manifest/application/x11/x11-server.xml			\
+	var/svc/manifest/system/ipagent.xml				\
+	var/svc/manifest/system/xvm/vnc-config.xml
 CACHED_FILES = $(CACHED_FILES_$(BUILDID))
 
 FIX_FILES_BASE =				\
@@ -248,6 +263,7 @@ FIX_FILES_105 = $(FIX_FILES_BASE)
 FIX_FILES_106 = $(FIX_FILES_BASE)
 FIX_FILES_107 = $(FIX_FILES_BASE)
 FIX_FILES_108 = $(FIX_FILES_BASE)
+FIX_FILES_109 = $(FIX_FILES_BASE)
 FIX_FILES = $(FIX_FILES_$(BUILDID))
 
 JDKFILES = LICENSE README.html
@@ -299,7 +315,8 @@ BUILDS=	75a			\
 	105			\
 	106			\
 	107			\
-	108
+	108			\
+	109
 
 #
 # Starting in build 80, filelist.ramdisk began moving between various
@@ -312,7 +329,7 @@ FILELIST_RAMDISK_PKG_74		= SUNWcakr.i
 FILELIST_RAMDISK_PKG_72		= SUNWcakr.i
 FILELIST_RAMDISK_PKG_71		= SUNWcakr.i
 
-default:	108/slim_import
+default:	109/slim_import
 
 cluster.import:	$(WOS_PKGS)/.clustertoc Makefile
 	./clustertoc2import.py $(WOS_PKGS)/.clustertoc | \
@@ -486,6 +503,7 @@ INCLUDE_PATH_105 = 105:104:103:102:$(INCLUDE_PATH_101a)
 INCLUDE_PATH_106 = 106:$(INCLUDE_PATH_105)
 INCLUDE_PATH_107 = 107:$(INCLUDE_PATH_106)
 INCLUDE_PATH_108 = 108:$(INCLUDE_PATH_107)
+INCLUDE_PATH_109 = 109:$(INCLUDE_PATH_108)
 
 import:	cluster.import $(TMPPKGS)
 	$(SOLARIS.PY) -s $(REPO) -w $(WOS_PKGS) $(ELIDED_FILES:%=-D %) \

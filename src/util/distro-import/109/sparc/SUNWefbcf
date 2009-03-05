@@ -1,0 +1,4 @@
+package SUNWefbcf
+classification "Drivers/Display"
+import SUNWefbcf
+end package

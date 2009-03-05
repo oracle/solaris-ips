@@ -1,0 +1,4 @@
+package SUNWPython26-extra
+classification "Development/Python"
+import SUNWPython26-extra
+end package

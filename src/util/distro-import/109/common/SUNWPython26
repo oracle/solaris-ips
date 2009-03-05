@@ -1,0 +1,6 @@
+package SUNWPython26
+classification "Development/Python"
+import SUNWPython26
+import SUNWPython26-devel
+version 2.6.1
+end package
