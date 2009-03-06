@@ -37,7 +37,7 @@ import pkg.client.api as api
 import pkg.client.api_errors as api_errors
 import pkg.client.progress as progress
 
-API_VERSION = 1
+API_VERSION = 10
 PKG_CLIENT_NAME = "pkg"
 
 class TestPkgIntent(testutils.SingleDepotTestCase):
@@ -173,7 +173,15 @@ class TestPkgIntent(testutils.SingleDepotTestCase):
 
                 api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
                     progresstracker, lambda x: False, PKG_CLIENT_NAME)
-                api_obj.info(plist, False, False)
+
+                api_obj.info(plist, False, frozenset([api.PackageInfo.IDENTITY,
+                    api.PackageInfo.STATE, api.PackageInfo.PREF_AUTHORITY]))
+
+                entries = self.get_intent_entries()
+                self.assert_(entries == [])
+                
+                api_obj.info(plist, False,
+                    frozenset([api.PackageInfo.DEPENDENCIES]))
 
                 entries = self.get_intent_entries()
                 # Verify that evaluation and processing entries are present

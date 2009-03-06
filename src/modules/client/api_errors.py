@@ -309,3 +309,13 @@ class BENameGivenOnDeadBE(BEException):
 Naming a boot environment when operating on a non-live image is
 not allowed.""")
                          
+class UnrecognizedOptionsToInfo(ApiException):
+        def __init__(self, opts):
+                ApiException.__init__(self)
+                self._opts = opts
+
+        def __str__(self):
+                s = _("Info does not recognize the following options:")
+                for o in self._opts:
+                        s += _(" '") + str(o) + _("'")
+                return s

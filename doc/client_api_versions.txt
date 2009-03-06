@@ -1,7 +1,13 @@
+Version 10:
+Incompatible with clients using versions 1-9:
+Changes:
+    This version changes the interface to info. It removes the action info
+    and licenses flag and 
+
 Version 9:
 Compatible with clients using versions 1-8
 Changes:
-    This version adds an optional argument to plan_update all to allow the
+    This version adds an optional argument to plan_update_all to allow the
     specification of a name for the clone of the BE which is made. It also
     exposes check_be_name as part of the api.
 

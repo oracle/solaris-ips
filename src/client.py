@@ -87,7 +87,7 @@ from pkg.client.retrieve import DatastreamRetrievalError
 from pkg.client.retrieve import CatalogRetrievalError
 from pkg.client.filelist import FileListRetrievalError
 
-CLIENT_API_VERSION = 9
+CLIENT_API_VERSION = 10
 PKG_CLIENT_NAME = "pkg"
 
 def error(text):
@@ -1018,7 +1018,15 @@ def info(img_dir, args):
             progress.NullProgressTracker(), None, PKG_CLIENT_NAME)
 
         try:
-                ret = api_inst.info(pargs, info_local, display_license)
+                info_needed = api.PackageInfo.ALL_OPTIONS
+                if not display_license:
+                        info_needed = api.PackageInfo.ALL_OPTIONS - \
+                            frozenset([api.PackageInfo.LICENSES])
+                try:
+                        ret = api_inst.info(pargs, info_local, info_needed)
+                except api_errors.UnrecognizedOptionsToInfo, e:
+                        error(e)
+                        return 1
                 pis = ret[api.ImageInterface.INFO_FOUND]
                 notfound = ret[api.ImageInterface.INFO_MISSING]
                 illegals = ret[api.ImageInterface.INFO_ILLEGALS]

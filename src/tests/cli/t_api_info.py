@@ -38,7 +38,7 @@ import pkg.client.api as api
 import pkg.client.api_errors as api_errors
 import pkg.client.progress as progress
 
-API_VERSION = 6
+API_VERSION = 10
 PKG_CLIENT_NAME = "pkg"
 
 class TestApiInfo(testutils.SingleDepotTestCase):
@@ -52,8 +52,21 @@ class TestApiInfo(testutils.SingleDepotTestCase):
                     progresstracker, lambda x: False, PKG_CLIENT_NAME)
 
                 self.assertRaises(api_errors.NoPackagesInstalledException,
-                    api_obj.info, [], True, False)
-                
+                    api_obj.info, [], True, api.PackageInfo.ALL_OPTIONS -
+                    (frozenset([api.PackageInfo.LICENSES]) |
+                    api.PackageInfo.ACTION_OPTIONS))
+
+                self.assertRaises(api_errors.UnrecognizedOptionsToInfo,
+                    api_obj.info, [], True, set([-1]))
+                self.assertRaises(api_errors.UnrecognizedOptionsToInfo,
+                    api_obj.info, [], True, set('a'))
+
+                misc_files = ["/tmp/copyright1", "/tmp/example_file"]
+                for p in misc_files:
+                        f = open(p, "w")
+                        f.write(p)
+                        f.close()
+
                 pkg1 = """
                     open jade@1.0,5.11-0
                     add dir mode=0755 owner=root group=bin path=/bin
@@ -73,10 +86,23 @@ class TestApiInfo(testutils.SingleDepotTestCase):
                     close
                 """
 
+                pkg4 = """
+                    open example_pkg@1.0,5.11-0
+                    add depend fmri=pkg:/amber@2.0 type=require
+                    add dir mode=0755 owner=root group=bin path=/bin
+                    add file /tmp/example_file mode=0555 owner=root group=bin path=/bin/example_path
+                    add hardlink path=/bin/example_path2 target=/bin/example_path
+                    add link path=/bin/example_path3 target=/bin/example_path
+                    add set description='FOOO bAr O OO OOO'
+                    add license /tmp/copyright1 license=copyright
+                    add set name=info.classification value=org.opensolaris.category.2008:System/Security/Foo/bar/Baz
+                    close """
+
                 durl = self.dc.get_depot_url()
 
                 self.pkgsend_bulk(durl, pkg1)
                 self.pkgsend_bulk(durl, pkg2)
+                self.pkgsend_bulk(durl, pkg4)
 
                 self.image_create(durl)
 
@@ -84,8 +110,12 @@ class TestApiInfo(testutils.SingleDepotTestCase):
 
                 local = True
                 get_license = False
+
+                info_needed = api.PackageInfo.ALL_OPTIONS - \
+                    (api.PackageInfo.ACTION_OPTIONS |
+                    frozenset([api.PackageInfo.LICENSES]))
                 
-                ret = api_obj.info(["jade"], local, get_license)
+                ret = api_obj.info(["jade"], local, info_needed)
                 self.assert_(not ret[api.ImageInterface.INFO_FOUND])
                 self.assert_(len(ret[api.ImageInterface.INFO_MISSING]) == 1)
                 
@@ -96,7 +126,7 @@ class TestApiInfo(testutils.SingleDepotTestCase):
                 self.pkg("verify -v")
                 
                 ret = api_obj.info(["jade", "turquoise", "emerald"],
-                    local, get_license)
+                    local, info_needed)
                 pis = ret[api.ImageInterface.INFO_FOUND]
                 notfound = ret[api.ImageInterface.INFO_MISSING]
                 illegals = ret[api.ImageInterface.INFO_ILLEGALS]
@@ -107,13 +137,13 @@ class TestApiInfo(testutils.SingleDepotTestCase):
                 self.assert_(len(illegals) == 0)
                 self.assert_(len(pis[0].category_info_list) == 1)
 
-                ret = api_obj.info(["j*"], local, get_license)
+                ret = api_obj.info(["j*"], local, info_needed)
                 pis = ret[api.ImageInterface.INFO_FOUND]
                 notfound = ret[api.ImageInterface.INFO_MISSING]
                 illegals = ret[api.ImageInterface.INFO_ILLEGALS]
                 self.assert_(len(pis))
 
-                ret = api_obj.info(["*a*"], local, get_license)
+                ret = api_obj.info(["*a*"], local, info_needed)
                 pis = ret[api.ImageInterface.INFO_FOUND]
                 notfound = ret[api.ImageInterface.INFO_MISSING]
                 illegals = ret[api.ImageInterface.INFO_ILLEGALS]
@@ -121,7 +151,7 @@ class TestApiInfo(testutils.SingleDepotTestCase):
 
                 local = False
 
-                ret = api_obj.info(["jade"], local, get_license)
+                ret = api_obj.info(["jade"], local, info_needed)
                 pis = ret[api.ImageInterface.INFO_FOUND]
                 notfound = ret[api.ImageInterface.INFO_MISSING]
                 illegals = ret[api.ImageInterface.INFO_ILLEGALS]
@@ -129,7 +159,7 @@ class TestApiInfo(testutils.SingleDepotTestCase):
                 self.assert_(pis[0].state == api.PackageInfo.INSTALLED)
                 self.assert_(len(pis[0].category_info_list) == 1)
 
-                ret = api_obj.info(["turquoise"], local, get_license)
+                ret = api_obj.info(["turquoise"], local, info_needed)
                 pis = ret[api.ImageInterface.INFO_FOUND]
                 notfound = ret[api.ImageInterface.INFO_MISSING]
                 illegals = ret[api.ImageInterface.INFO_ILLEGALS]
@@ -137,7 +167,31 @@ class TestApiInfo(testutils.SingleDepotTestCase):
                 self.assert_(pis[0].state == api.PackageInfo.NOT_INSTALLED)
                 self.assert_(len(pis[0].category_info_list) == 1)
 
-                ret = api_obj.info(["emerald"], local, get_license)
+                ret = api_obj.info(["example_pkg"], local,
+                    api.PackageInfo.ALL_OPTIONS)
+                pis = ret[api.ImageInterface.INFO_FOUND]
+                self.assert_(len(pis) == 1)
+                res = pis[0]
+                self.assert_(res.state == api.PackageInfo.NOT_INSTALLED)
+                self.assert_(len(res.category_info_list) == 1)
+
+                self.assert_(res.pkg_stem is not None)
+                self.assert_(res.summary is not None)
+                self.assert_(res.authority is not None)
+                self.assert_(res.preferred_authority is not None)
+                self.assert_(res.version is not None)
+                self.assert_(res.build_release is not None)
+                self.assert_(res.branch is not None)
+                self.assert_(res.packaging_date is not None)
+                self.assert_(res.size is not None)
+                self.assert_(res.licenses is not None)
+                self.assert_(res.links is not None)
+                self.assert_(res.hardlinks is not None)
+                self.assert_(res.files is not None)
+                self.assert_(res.dirs is not None)
+                self.assert_(res.dependencies is not None)
+
+                ret = api_obj.info(["emerald"], local, info_needed)
                 pis = ret[api.ImageInterface.INFO_FOUND]
                 notfound = ret[api.ImageInterface.INFO_MISSING]
                 illegals = ret[api.ImageInterface.INFO_ILLEGALS]
@@ -146,24 +200,54 @@ class TestApiInfo(testutils.SingleDepotTestCase):
                 local = True
                 get_license = False
                 get_action_info = True
+
+                info_needed = api.PackageInfo.ALL_OPTIONS - \
+                    frozenset([api.PackageInfo.LICENSES])
                 
                 ret = api_obj.info(["jade"],
-                    local, get_license, get_action_info)
+                    local, info_needed)
                 pis = ret[api.ImageInterface.INFO_FOUND]
                 notfound = ret[api.ImageInterface.INFO_MISSING]
                 illegals = ret[api.ImageInterface.INFO_ILLEGALS]
                 self.assert_(len(pis) == 1)
                 self.assert_(len(pis[0].dirs) == 1)
-
+                
+                ret = api_obj.info(["jade"], local, set())
+                pis = ret[api.ImageInterface.INFO_FOUND]
+                self.assert_(len(pis) == 1)
+                res = pis[0]
+                self.assert_(res.pkg_stem is None)
+                self.assert_(res.summary is None)
+                self.assert_(res.category_info_list == [])
+                self.assert_(res.state is None)
+                self.assert_(res.authority is None)
+                self.assert_(res.preferred_authority is None)
+                self.assert_(res.version is None)
+                self.assert_(res.build_release is None)
+                self.assert_(res.branch is None)
+                self.assert_(res.packaging_date is None)
+                self.assert_(res.size is None)
+                self.assert_(res.licenses is None)
+                self.assert_(res.links is None)
+                self.assert_(res.hardlinks is None)
+                self.assert_(res.files is None)
+                self.assert_(res.dirs is None)
+                self.assert_(res.dependencies is None)
+                
                 local = False
 
                 ret = api_obj.info(["jade"],
-                    local, get_license, get_action_info)
+                    local, info_needed)
                 pis = ret[api.ImageInterface.INFO_FOUND]
                 notfound = ret[api.ImageInterface.INFO_MISSING]
                 illegals = ret[api.ImageInterface.INFO_ILLEGALS]
                 self.assert_(len(pis) == 1)
                 self.assert_(len(pis[0].dirs) == 1)
+
+                self.assertRaises(api_errors.UnrecognizedOptionsToInfo,
+                    api_obj.info, ["jade"], local, set([-1]))
+                self.assertRaises(api_errors.UnrecognizedOptionsToInfo,
+                    api_obj.info, ["jade"], local, set('a'))
 
                 # Test as part of bug 4886.
                 # Makes sure that the catalog.pkl files is reread when
@@ -171,12 +255,44 @@ class TestApiInfo(testutils.SingleDepotTestCase):
                 self.pkgsend_bulk(durl, pkg3)
                 time.sleep(1)
                 api_obj2 = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progress.NullProgressTracker(), lambda x: False, PKG_CLIENT_NAME)
+                    progress.NullProgressTracker(), lambda x: False,
+                    PKG_CLIENT_NAME)
                 api_obj2.refresh(False)
 
-                ret = api_obj.info(["foo"], local, get_license)
+                info_needed = api.PackageInfo.ALL_OPTIONS - \
+                    (frozenset([api.PackageInfo.LICENSES]) |
+                    api.PackageInfo.ACTION_OPTIONS)
+                
+                ret = api_obj.info(["foo"], local, info_needed)
                 pis = ret[api.ImageInterface.INFO_FOUND]
                 self.assert_(len(pis) == 1)
+
+                ret = api_obj.info(["foo"], local, set())
+                pis = ret[api.ImageInterface.INFO_FOUND]
+                self.assert_(len(pis) == 1)
+                res = pis[0]
+                self.assert_(res.pkg_stem is None)
+                self.assert_(res.summary is None)
+                self.assert_(res.category_info_list == [])
+                self.assert_(res.state is None)
+                self.assert_(res.authority is None)
+                self.assert_(res.preferred_authority is None)
+                self.assert_(res.version is None)
+                self.assert_(res.build_release is None)
+                self.assert_(res.branch is None)
+                self.assert_(res.packaging_date is None)
+                self.assert_(res.size is None)
+                self.assert_(res.licenses is None)
+                self.assert_(res.links is None)
+                self.assert_(res.hardlinks is None)
+                self.assert_(res.files is None)
+                self.assert_(res.dirs is None)
+                self.assert_(res.dependencies is None)
+
+                self.assertRaises(api_errors.UnrecognizedOptionsToInfo,
+                    api_obj.info, ["foo"], local, set([-1]))
+                self.assertRaises(api_errors.UnrecognizedOptionsToInfo,
+                    api_obj.info, ["foo"], local, set('a'))
 
 
 if __name__ == "__main__":

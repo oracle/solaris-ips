@@ -50,7 +50,7 @@ CATEGORIES_STATUS_COLUMN_INDEX = 0   # Index of Status Column in Categories Tree
 
 STATUS_COLUMN_INDEX = 3   # Index of Status Column in Application TreeView
 
-CLIENT_API_VERSION = 4
+CLIENT_API_VERSION = 10
 PKG_CLIENT_NAME = "packagemanager"
 
 # Load Start Page from lang dir if available
@@ -1919,7 +1919,7 @@ class PackageManager:
                 info = None
                 try:
                         info = self.api_o.info([self.selected_pkgstem],
-                            True, True)
+                            True, api.PackageInfo.LICENSES)
                 except (misc.TransportFailures, retrieve.ManifestRetrievalError):
                         pass
                 if license_id != self.show_licenses_id:
@@ -1928,7 +1928,7 @@ class PackageManager:
                         # Package not installed
                         try:
                                 info = self.api_o.info([self.selected_pkgstem],
-                                    False, True)
+                                    False, api.PackageInfo.LICENSES)
                         except (misc.TransportFailures, retrieve.ManifestRetrievalError):
                                 pass
                 if license_id != self.show_licenses_id:
@@ -1953,7 +1953,8 @@ class PackageManager:
                 info = None
                 try:
                         info = self.api_o.info([pkg_stem], local,
-                            get_licenses=False, get_action_info=True)
+                            api.PackageInfo.ALL_OPTIONS -
+                            frozenset([api.PackageInfo.LICENSES]))
                 except (misc.TransportFailures, retrieve.ManifestRetrievalError):
                         return info
                 pkgs_info = None

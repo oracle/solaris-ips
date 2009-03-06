@@ -62,7 +62,7 @@ __builtin__._ = gettext.gettext
 
 IMAGE_DIRECTORY_DEFAULT = "/"   # Image default directory
 IMAGE_DIR_COMMAND = "svcprop -p update/image_dir svc:/application/pkg/update"
-CLIENT_API_VERSION = 4          # API version
+CLIENT_API_VERSION = 10          # API version
 PKG_CLIENT_NAME = "updatemanager" # API client name
 SELECTION_CHANGE_LIMIT = 0.5    # Time limit in seconds to cancel selection updates
 IND_DELAY = 0.05                # Time delay for printing index progress
@@ -744,14 +744,15 @@ class Updatemanager:
                 self.w_um_dialog.present()
                 
         def __get_info_from_name(self, name, local):
-                get_license = False
-                
                 if self.fmri_description != name:
                         return None
                 if self.__get_api_obj() == None:
                         return None
                         
-                ret = self.__get_api_obj().info([name], local, get_license)
+                ret = self.__get_api_obj().info([name], local,
+                    (api.PackageInfo.ALL_OPTIONS -
+                    frozenset([api.PackageInfo.LICENSES])) -
+                    api.PackageInfo.ACTION_OPTIONS)
                 
                 pis = ret[api.ImageInterface.INFO_FOUND]
                 if len(pis) == 1:

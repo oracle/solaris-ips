@@ -34,7 +34,7 @@ from pkg.client import global_settings
 
 import threading
 
-CURRENT_API_VERSION = 9
+CURRENT_API_VERSION = 10
 
 class ImageInterface(object):
         """This class presents an interface to images that clients may use.
@@ -69,7 +69,7 @@ class ImageInterface(object):
                 canceled changes. It can raise VersionException and
                 ImageNotFoundException."""
 
-                compatible_versions = set([1, 2, 3, 4, 5, 6, 7, 8, 9])
+                compatible_versions = set([10])
 
                 if version_id not in compatible_versions:
                         raise api_errors.VersionException(CURRENT_API_VERSION,
@@ -615,7 +615,7 @@ class ImageInterface(object):
                         license_lst.append(LicenseInfo(text))
                 return license_lst
 
-        def info(self, fmri_strings, local, get_licenses, get_action_info=False):
+        def info(self, fmri_strings, local, info_needed):
                 """Gathers information about fmris. fmri_strings is a list
                 of fmri_names for which information is desired. local
                 determines whether to retrieve the information locally.
@@ -625,6 +625,10 @@ class ImageInterface(object):
                 definition. The values are lists of PackageInfo objects or
                 strings."""
 
+                bad_opts = info_needed - PackageInfo.ALL_OPTIONS
+                if bad_opts:
+                        raise api_errors.UnrecognizedOptionsToInfo(bad_opts)
+                
                 self.img.history.operation_name = "info"
                 self.img.load_catalogs(self.progresstracker)
 
@@ -698,51 +702,80 @@ class ImageInterface(object):
                 pis = []
 
                 for f in fmris:
-                        mfst = self.img.get_manifest(f)
-                        licenses = None
-                        if get_licenses:
-                                licenses = self.__licenses(mfst, local)
-                        authority, name, version = f.tuple()
-                        authority = fmri.strip_auth_pfx(authority)
-                        summary = mfst.get("description", "")
-                        pref_auth = False
-                        if f.preferred_authority():
-                                pref_auth = True
-                        if self.img.is_installed(f):
-                                state = PackageInfo.INSTALLED
-                        else:
-                                state = PackageInfo.NOT_INSTALLED
+                        authority = name = version = release = None
+                        build_release = branch = packaging_date = None
+                        if PackageInfo.IDENTITY in info_needed:
+                                authority, name, version = f.tuple()
+                                authority = fmri.strip_auth_pfx(authority)
+                                release=version.release
+                                build_release=version.build_release
+                                branch=version.branch
+                                packaging_date=version.get_timestamp().ctime()
+                        pref_auth = None
+                        if PackageInfo.PREF_AUTHORITY in info_needed:
+                                pref_auth = False
+                                if f.preferred_authority():
+                                        pref_auth = True
+                        state = None
+                        if PackageInfo.STATE in info_needed:
+                                if self.img.is_installed(f):
+                                        state = PackageInfo.INSTALLED
+                                else:
+                                        state = PackageInfo.NOT_INSTALLED
                         links = hardlinks = files = dirs = dependencies = None
-                        excludes = self.img.list_excludes()
-                        if get_action_info:
-                                links = list(
-                                    mfst.gen_key_attribute_value_by_type("link", excludes))
-                                hardlinks = list(
-                                    mfst.gen_key_attribute_value_by_type(
-                                    "hardlink", excludes))
-                                files = list(
-                                    mfst.gen_key_attribute_value_by_type("file", excludes))
-                                dirs = list(
-                                    mfst.gen_key_attribute_value_by_type("dir", excludes))
-                                dependencies = list(
-                                    mfst.gen_key_attribute_value_by_type(
-                                    "depend", excludes))
-                        cat_info = [
-                            PackageCategory(scheme, cat)
-                            for ca in mfst.gen_actions_by_type("set")
-                            if ca.has_category_info()
-                            for scheme, cat in ca.parse_category_info()
-                        ]
+                        summary = size = licenses = cat_info = None
+
+                        if (frozenset([PackageInfo.SIZE, PackageInfo.LICENSES,
+                            PackageInfo.SUMMARY, PackageInfo.CATEGORIES]) |
+                            PackageInfo.ACTION_OPTIONS) & info_needed:
+                                mfst = self.img.get_manifest(f)
+                                if PackageInfo.SIZE in info_needed:
+                                        size=mfst.size
+                                if PackageInfo.LICENSES in info_needed:
+                                        licenses = self.__licenses(mfst, local)
+                                if PackageInfo.SUMMARY in info_needed:
+                                        summary = mfst.get("description", "")
+
+                                if PackageInfo.ACTION_OPTIONS & info_needed:
+                                        excludes = self.img.list_excludes()
+                                        if PackageInfo.LINKS in info_needed:
+                                                links = list(
+                                                    mfst.gen_key_attribute_value_by_type(
+                                                    "link", excludes))
+                                        if PackageInfo.HARDLINKS in info_needed:
+                                                hardlinks = list(
+                                                    mfst.gen_key_attribute_value_by_type(
+                                                    "hardlink", excludes))
+                                        if PackageInfo.FILES in info_needed:
+                                                files = list(
+                                                    mfst.gen_key_attribute_value_by_type(
+                                                    "file", excludes))
+                                        if PackageInfo.DIRS in info_needed:
+                                                dirs = list(
+                                                    mfst.gen_key_attribute_value_by_type(
+                                                    "dir", excludes))
+                                        if PackageInfo.DEPENDENCIES in \
+                                            info_needed:
+                                                dependencies = list(
+                                                    mfst.gen_key_attribute_value_by_type(
+                                                    "depend", excludes))
+
+                                if PackageInfo.CATEGORIES in info_needed:
+                                        cat_info = [
+                                            PackageCategory(scheme, cat)
+                                            for ca
+                                            in mfst.gen_actions_by_type("set")
+                                            if ca.has_category_info()
+                                            for scheme, cat
+                                            in ca.parse_category_info()
+                                        ]
 
                         pis.append(PackageInfo(pkg_stem=name, summary=summary,
                             category_info_list=cat_info, state=state,
-                            authority=authority,
-                            preferred_authority=pref_auth,
-                            version=version.release,
-                            build_release=version.build_release,
-                            branch=version.branch,
-                            packaging_date=version.get_timestamp().ctime(),
-                            size=mfst.size, pfmri=str(f), licenses=licenses,
+                            authority=authority, preferred_authority=pref_auth,
+                            version=release, build_release=build_release,
+                            branch=branch, packaging_date=packaging_date,
+                            size=size, pfmri=str(f), licenses=licenses,
                             links=links, hardlinks=hardlinks, files=files,
                             dirs=dirs, dependencies=dependencies))
                 if pis:
@@ -883,6 +916,14 @@ class PackageInfo(object):
         # Possible package installation states
         INSTALLED = 1
         NOT_INSTALLED = 2
+
+
+        __NUM_PROPS = 12
+        IDENTITY, SUMMARY, CATEGORIES, STATE, PREF_AUTHORITY, SIZE, LICENSES, \
+            LINKS, HARDLINKS, FILES, DIRS, DEPENDENCIES = range(__NUM_PROPS)
+        ALL_OPTIONS = frozenset(range(__NUM_PROPS))
+        ACTION_OPTIONS = frozenset([LINKS, HARDLINKS, FILES, DIRS,
+            DEPENDENCIES])
         
         def __init__(self, pfmri, pkg_stem=None, summary=None,
             category_info_list=None, state=None, authority=None,
