@@ -82,11 +82,10 @@ GLADEICONS = \
 
 #
 # List of locales for which to build help.  From this we build
-# the list of help file names.  This is disabled for now, as none
-# of these files are packaged yet.
+# the list of help file names.
 #
-HELP_LOCALES = # C de es fr it ja ko pt_BR ru sv zh_CN zh_HK zh_TW
-
+HELP_LOCALES = C de es fr it ja ko pt_BR ru sv zh_CN zh_HK zh_TW
+C_ONLY_HELP_LOCALES = C
 SP_LOCALES = C
 
 #
@@ -97,12 +96,11 @@ SP_LOCALES = C
 #
 BUILDHELPFILES = \
 	$(HELP_LOCALES:%=help/%/package-manager.xml) \
-	$(HELP_LOCALES:%=help/%/%.mo) \
 
 STATICHELPFILES = \
 	$(HELP_LOCALES:%=help/%/legal.xml) \
-	$(HELP_LOCALES:%=help/%/figures/update_all.png) \
-	$(HELP_LOCALES:%=help/%/figures/package_manager.png)
+	$(C_ONLY_HELP_LOCALES:%=help/%/figures/update_all.png) \
+	$(C_ONLY_HELP_LOCALES:%=help/%/figures/package_manager.png)
 
 STATICSPFILES = \
 	$(SP_LOCALES:%=data/startpagebase/%/startpage_star.png) \
@@ -150,7 +148,7 @@ ROOTGLADEICONS = $(GLADEICONS:data/%=$(ROOTSHARE)/%)
 
 ROOTHELPDIRS = \
 	$(HELP_LOCALES:%=$(ROOTHELPSHARE)/%) \
-	$(HELP_LOCALES:%=$(ROOTHELPSHARE)/%/figures) \
+	$(C_ONLY_HELP_LOCALES:%=$(ROOTHELPSHARE)/%/figures) \
 
 ROOTHELPFILES = \
 	$(BUILDHELPFILES:help/%=$(ROOTHELPSHARE)/%) \
