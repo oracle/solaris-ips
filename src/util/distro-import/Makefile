@@ -192,19 +192,7 @@ CACHED_FILES_106 = $(CACHED_FILES_101a)
 CACHED_FILES_107 = $(CACHED_FILES_101a)					\
 	var/svc/manifest/application/x11/x11-server.xml
 CACHED_FILES_108 = $(CACHED_FILES_107)
-CACHED_FILES_109 = $(CACHED_FILES_101)					\
-	boot/solaris.xpm.gz						\
-	etc/skel/.bashrc						\
-	etc/skel/.profile						\
-	kernel/drv/nvidia.conf						\
-	lib/svc/method/svc-ipagent					\
-	lib/svc/method/xvm-vnc-config					\
-	usr/X11/lib/xscreensaver/config/opensolaris-logo.png		\
-	usr/lib/xen/bin/ipagent						\
-	var/svc/manifest/application/graphical-login/gdm.xml		\
-	var/svc/manifest/application/x11/x11-server.xml			\
-	var/svc/manifest/system/ipagent.xml				\
-	var/svc/manifest/system/xvm/vnc-config.xml
+CACHED_FILES_109 = $(CACHED_FILES_107)
 CACHED_FILES = $(CACHED_FILES_$(BUILDID))
 
 FIX_FILES_BASE =				\

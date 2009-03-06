@@ -3,7 +3,7 @@ classification "System/Core"
 import SUNWrmodr
 drop boot/solaris.xpm.gz
 from SUNWfixes import
-boot/solaris.xpm.gz
+boot/solaris.xpm
 boot/solaris/devicedb/master
 end import
 end package

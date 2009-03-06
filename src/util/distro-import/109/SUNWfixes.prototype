@@ -1,6 +1,6 @@
 i pkginfo=SUNWfixes.pkginfo
 f none boot/grub/splash.xpm.gz 0644 root sys
-f none boot/solaris.xpm.gz 0644 root sys
+f none boot/solaris.xpm 0644 root sys
 e none boot/solaris/devicedb/master 0644 root sys
 e none etc/driver_aliases 0644 root sys
 e none etc/hba.conf 0644 root bin
