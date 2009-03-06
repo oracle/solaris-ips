@@ -421,8 +421,10 @@ if __name__ == "__main__":
                 # Not applicable for reindexing operations.
                 content_root = None
 
+        fork_allowed = not reindex
+                
         scfg = config.SvrConfig(repo_path, content_root, AUTH_DEFAULT,
-            auto_create=not readonly, fork_allowed=True)
+            auto_create=not readonly, fork_allowed=fork_allowed)
 
         if readonly:
                 scfg.set_read_only()
@@ -554,9 +556,8 @@ if __name__ == "__main__":
         # Now that our logging, etc. has been setup, it's safe to perform any
         # remaining preparation.
         if reindex:
-                scfg.acquire_catalog(rebuild=False, verbose=True)
                 try:
-                        scfg.catalog.run_update_index()
+                        scfg.acquire_catalog(rebuild=False, verbose=True)
                 except search_errors.IndexingException, e:
                         cherrypy.log(str(e), "INDEX")
                         sys.exit(1)

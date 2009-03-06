@@ -98,13 +98,10 @@ class ServerCatalog(catalog.Catalog):
                 except OSError:
                         pass
 
-                if not self._search_available:
+                if not read_only:
+                        self.refresh_index()
+                else:
                         self._check_search()
-                        if not rebuild and not read_only and \
-                            not self._search_available:
-                                # If search still isn't available, then the
-                                # search indices need to be rebuilt.
-                                self.refresh_index()
 
         @staticmethod
         def whence(cmd):
