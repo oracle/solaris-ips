@@ -1110,6 +1110,8 @@ class Image(object):
 
                 try:
                         version, auth = flines
+                        version = version.strip()
+                        auth = auth.strip()
                 except ValueError:
                         # If we get a ValueError, we've encoutered an
                         # installed file of a previous format.  If we want
@@ -1134,7 +1136,7 @@ class Image(object):
                         # This is where we actually update the installed
                         # file with the new authority.
                         f.seek(0)
-                        f.writelines(["VERSION_1\n", newauth])
+                        f.writelines(["VERSION_1\n", newauth, "\n"])
 
                 f.close()
 
@@ -1175,7 +1177,7 @@ class Image(object):
                                 raise
                         f = file(self._install_file(fmri), "w")
 
-                f.writelines(["VERSION_1\n", fmri.get_authority_str()])
+                f.writelines(["VERSION_1\n", fmri.get_authority_str(), "\n"])
                 f.close()
 
                 fi = file("%s/state/installed/%s" % (self.imgdir,
