@@ -55,6 +55,10 @@ class TestPkgInstallBasics(testutils.SingleDepotTestCase):
             add file /tmp/libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.so.1
             close """
 
+        afoo10 = """
+            open a/foo@1.0,5.11-0
+            close """
+
         bar10 = """
             open bar@1.0,5.11-0
             add depend type=require fmri=pkg:/foo@1.0
@@ -415,14 +419,30 @@ class TestPkgInstallBasics(testutils.SingleDepotTestCase):
                 self.pkg("install foo@1.1", exit=1)
                 self.dc.start()
 
+class TestPkgInstallAmbiguousPackageNames(testutils.SingleDepotTestCase):
+
+        afoo10 = """
+            open a/foo@1.0,5.11-0
+            close """
+
+        bfoo10 = """
+            open b/foo@1.0,5.11-0
+            close """
+
+        bar10 = """
+            open bar@1.0,5.11-0
+            close """
+
         def test_bug_4204(self):
+                """Don't stack trace when printing a PlanCreationException with
+                "multiple_matches" populated (on uninstall)."""
                 durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.foo10)
+                self.pkgsend_bulk(durl, self.afoo10)
                 self.pkgsend_bulk(durl, self.bar10)
                 self.image_create(durl)
 
                 self.pkg("install foo")
-                foo_dir = os.path.join(self.img_path, "var", "pkg", "pkg", "foo")
+                foo_dir = os.path.join(self.img_path, "var", "pkg", "pkg", "a%2Ffoo")
                 old_ver = os.listdir(foo_dir)[0]
                 new_ver = old_ver[:-2]+ str((int(old_ver[-2]) + 1) % 10) + \
                     old_ver[-1]
@@ -430,14 +450,24 @@ class TestPkgInstallBasics(testutils.SingleDepotTestCase):
                     os.path.join(foo_dir, new_ver))
                 state_dir = os.path.join(self.img_path, "var", "pkg", "state",
                     "installed")
-                shutil.copy(os.path.join(state_dir, "foo@" + old_ver),
-                    os.path.join(state_dir, "foo@" + new_ver))
+                shutil.copy(os.path.join(state_dir, "a%2Ffoo@" + old_ver),
+                    os.path.join(state_dir, "a%2Ffoo@" + new_ver))
                 cat_file = os.path.join(self.img_path, "var", "pkg", "catalog",
                     "catalog.pkl")
                 os.unlink(cat_file)
                 # Installing bar seems necessary to cause uninstall foo to fail.
                 self.pkg("install bar")
                 self.pkg("uninstall foo", exit=1)
+
+        def test_bug_6874(self):
+                """Don't stack trace when printing a PlanCreationException with
+                "multiple_matches" populated (on install and image-update)."""
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.afoo10)
+                self.pkgsend_bulk(durl, self.bfoo10)
+                self.image_create(durl)
+
+                self.pkg("install foo", exit=1)
 
 
 class TestPkgInstallCircularDependencies(testutils.SingleDepotTestCase):

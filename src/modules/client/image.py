@@ -2568,7 +2568,8 @@ class Image(object):
                                 continue
 
                         if len(matches) > 1:
-                                multiple_matches.append((ppat, matches))
+                                matchlist = [m for m, state in matches]
+                                multiple_matches.append((ppat, matchlist))
                                 err = 1
                                 continue
 

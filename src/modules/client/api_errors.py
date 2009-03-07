@@ -141,8 +141,8 @@ catalog. Try relaxing the pattern, refreshing and/or examining the catalogs""")
                 if self.multiple_matches:
                         s = _("pkg: '%s' matches multiple packages")
                         for p, lst in self.multiple_matches:
-                                res.append( s % p)
-                                for pfmri, state in lst:
+                                res.append(s % p)
+                                for pfmri in lst:
                                         res.append("\t%s" % pfmri)
 
                 s = _("pkg: '%s' matches no installed packages")
