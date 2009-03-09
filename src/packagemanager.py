@@ -48,7 +48,7 @@ SHOW_STARTPAGE_PREFERENCES = "/apps/packagemanager/preferences/show_startpage"
 TYPEAHEAD_SEARCH_PREFERENCES = "/apps/packagemanager/preferences/typeahead_search"
 CATEGORIES_STATUS_COLUMN_INDEX = 0   # Index of Status Column in Categories TreeView
 
-STATUS_COLUMN_INDEX = 3   # Index of Status Column in Application TreeView
+STATUS_COLUMN_INDEX = 2   # Index of Status Column in Application TreeView
 
 CLIENT_API_VERSION = 10
 PKG_CLIENT_NAME = "packagemanager"
@@ -863,10 +863,9 @@ class PackageManager:
 
         def __application_treeview_size_allocate(self, widget, allocation, user_data):
                 # We ignore any changes in the size during initialization.
-                if self.application_treeview_initialized:
-                        if self.visible_status_id == 0:
-                                self.visible_status_id = gobject.idle_add(
-                                    self.__set_accessible_visible_status)
+                if self.visible_status_id == 0:
+                         self.visible_status_id = gobject.idle_add(
+                            self.__set_accessible_visible_status)
 
         def __application_treeview_vadjustment_changed(self, widget, user_data):
                 self.__set_accessible_visible_status()
