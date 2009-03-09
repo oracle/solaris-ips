@@ -56,12 +56,13 @@ import pkg.misc
 BE_ID,
 BE_MARKED,
 BE_NAME,
+BE_ORIG_NAME,
 BE_DATE_TIME,
 BE_CURRENT_PIXBUF,
 BE_ACTIVE_DEFAULT,
 BE_SIZE,
 BE_EDITABLE
-) = range(8)
+) = range(9)
 
 class Beadmin:
         def __init__(self, parent):
@@ -86,6 +87,7 @@ class Beadmin:
                         gobject.TYPE_INT,         # BE_ID
                         gobject.TYPE_BOOLEAN,     # BE_MARKED
                         gobject.TYPE_STRING,      # BE_NAME
+                        gobject.TYPE_STRING,      # BE_ORIG_NAME
                         gobject.TYPE_STRING,      # BE_DATE_TIME
                         gtk.gdk.Pixbuf,           # BE_CURRENT_PIXBUF
                         gobject.TYPE_BOOLEAN,     # BE_ACTIVE_DEFAULT
@@ -102,7 +104,7 @@ class Beadmin:
                 self.w_beadmin_dialog = w_tree_beadmin.get_widget("beadmin")
                 self.w_be_treeview = w_tree_beadmin.get_widget("betreeview")
                 self.w_cancel_button = w_tree_beadmin.get_widget("cancelbebutton")
-                self.w_reset_button = w_tree_beadmin.get_widget("resetbebutton")
+                self.w_ok_button = w_tree_beadmin.get_widget("okbebutton")
                 w_active_gtkimage = w_tree_beadmin.get_widget("activebeimage")
                 self.w_progress_dialog = w_tree_progress.get_widget("progressdialog")
                 self.w_progressinfo_label = w_tree_progress.get_widget("progressinfo")
@@ -110,34 +112,27 @@ class Beadmin:
                 self.w_progressbar = w_tree_progress.get_widget("progressbar")
                 self.w_beconfirmation_dialog =  \
                     w_tree_beconfirmation.get_widget("beconfirmationdialog")
-                self.w_beconfirmation_treeview = \
-                    w_tree_beconfirmation.get_widget("beconfirmtreeview")
-                self.w_beconfirmationdefault_label = \
-                    w_tree_beconfirmation.get_widget("beconfirmationdefault")
-                self.w_beconfirmationsummary_label = \
-                    w_tree_beconfirmation.get_widget("beconfirmationsummary")
+                self.w_beconfirmation_textview = \
+                    w_tree_beconfirmation.get_widget("beconfirmtext")
                 self.w_cancelbe_button = w_tree_beconfirmation.get_widget("cancel_be")
+                self.w_ok_button.set_sensitive(False)
                 progress_button.hide()
                 self.w_progressbar.set_pulse_step(0.1)
                 self.list_filter = self.be_list.filter_new()
                 self.w_be_treeview.set_model(self.list_filter)
                 self.__init_tree_views()
-                treestore = gtk.ListStore(gobject.TYPE_STRING)
-                self.w_beconfirmation_treeview.set_model(treestore)
-                cell = gtk.CellRendererText()
-                be_column = gtk.TreeViewColumn('BE', cell, text = BE_ID)
-                self.w_beconfirmation_treeview.append_column(be_column)
                 self.active_image = gui_misc.get_icon_pixbuf(
                     self.parent.application_dir, "status_checkmark")
                 w_active_gtkimage.set_from_pixbuf(self.active_image)
+
+                bebuffer = self.w_beconfirmation_textview.get_buffer()
+                bebuffer.create_tag("bold", weight=pango.WEIGHT_BOLD)
 
                 try:
                         dic = \
                             {
                                 "on_cancel_be_clicked": \
                                     self.__on_cancel_be_clicked,
-                                "on_reset_be_clicked": \
-                                    self.__on_reset_be_clicked,
                                 "on_ok_be_clicked": \
                                     self.__on_ok_be_clicked,
                             }
@@ -147,6 +142,8 @@ class Beadmin:
                                     self.__on_cancel_be_conf_clicked,
                                 "on_ok_be_conf_clicked": \
                                     self.__on_ok_be_conf_clicked,
+                                "on_beconfirmationdialog_delete_event": \
+                                    self.__on_beconfirmationdialog_delete_event,
                             }            
                         w_tree_beadmin.signal_autoconnect(dic)
                         w_tree_beconfirmation.signal_autoconnect(dic_conf)
@@ -159,8 +156,6 @@ class Beadmin:
                 sel = self.w_be_treeview.get_selection()
                 self.w_cancel_button.grab_focus()
                 sel.set_mode(gtk.SELECTION_SINGLE)
-                sel = self.w_beconfirmation_treeview.get_selection()
-                sel.set_mode(gtk.SELECTION_NONE)
                 self.w_beadmin_dialog.show_all()
                 self.w_progress_dialog.set_title(
                     _("Loading Boot Environment Information"))
@@ -239,19 +234,11 @@ class Beadmin:
                 column.set_expand(False)
                 self.w_be_treeview.append_column(column)
 
-        def __on_reset_be_clicked(self, widget):
-                self.be_list.clear()
-                self.w_progress_dialog.show()
-                self.progress_stop_thread = False
-                Thread(target = self.__progress_pulse).start()
-                Thread(target = self.__prepare_beadmin_list).start()
-                self.__enable_disable_reset()
-
         def __on_ok_be_clicked(self, widget):
                 self.w_progress_dialog.set_title(_("Applying changes"))
                 self.w_progressinfo_label.set_text(
                     _("Applying changes, please wait ..."))
-                if self.w_reset_button.get_property('sensitive') == 0:
+                if self.w_ok_button.get_property('sensitive') == 0:
                         self.progress_stop_thread = True
                         self.__on_beadmin_delete_event(None, None)
                         return
@@ -259,6 +246,10 @@ class Beadmin:
                 
         def __on_cancel_be_clicked(self, widget):
                 self.__on_beadmin_delete_event(None, None)
+
+        def __on_beconfirmationdialog_delete_event(self, widget, event):
+                self.__on_cancel_be_conf_clicked(widget)
+                return True
 
         def __on_cancel_be_conf_clicked(self, widget):
                 self.w_beconfirmation_dialog.hide()
@@ -274,43 +265,52 @@ class Beadmin:
                 return True
 
         def __activate(self):
-                default = None
-                treestore = self.w_beconfirmation_treeview.get_model()
-                treestore.clear()
-                first = True
+                active_text = _("Active on reboot:\n")
+                delete_text = _("Delete BEs:\n")
+                rename_text = _("Rename BEs:\n")
+                active = ""
+                delete = ""
+                rename = {}
                 for row in self.be_list:
+
                         if row[BE_MARKED]:
-                                treestore.append([row[BE_NAME]])
-                                if first:
-                                        self.w_beconfirmation_treeview.set_sensitive(True)
-                                        first = False
+                                delete += row[BE_NAME] + "\n"
                         if row[BE_ACTIVE_DEFAULT] == True and row[BE_ID] != \
                             self.initial_default:
-                                default = row[BE_NAME]
-                summary_text = ""
-                be_change_no = len(treestore)
-                if  be_change_no == 0:
-                        treestore.append([_("No change")])
-                        self.w_beconfirmation_treeview.set_sensitive(False)
-                else:
-                        summary_text += \
-                            _("%d BE's will be deleted") % be_change_no
-
-                if default:
-                        self.w_beconfirmationdefault_label.set_text(default+"\n")
-                        self.w_beconfirmationdefault_label.set_sensitive(True)
-                        if be_change_no > 0:
-                                summary_text += "\n"
-                        summary_text += \
-                            _("The Active BE will be changed upon reboot")
-                else:
-                        self.w_beconfirmationdefault_label.set_sensitive(False)
-                        self.w_beconfirmationdefault_label.set_text(
-                            _("No change\n"))
-                self.w_beconfirmationsummary_label.set_text(summary_text)
-                self.w_beconfirmation_treeview.expand_all()
+                                active += row[BE_NAME] + "\n"
+                        if row[BE_NAME] != row[BE_ORIG_NAME]:
+                                rename[row[BE_ORIG_NAME]] = row[BE_NAME]
+                textbuf = self.w_beconfirmation_textview.get_buffer()
+                textbuf.set_text("")
+                textiter = textbuf.get_end_iter()
+                if len(active) > 0:
+                        textbuf.insert_with_tags_by_name(textiter,
+                            active_text, "bold")
+                        textbuf.insert_with_tags_by_name(textiter,
+                            active)
+                if len(delete) > 0:
+                        if len(active) > 0:
+                                textbuf.insert_with_tags_by_name(textiter,
+                                    "\n")                                
+                        textbuf.insert_with_tags_by_name(textiter,
+                            delete_text, "bold")
+                        textbuf.insert_with_tags_by_name(textiter,
+                            delete)
+                if len(rename) > 0:
+                        if len(delete) > 0 or len(active) > 0:
+                                textbuf.insert_with_tags_by_name(textiter,
+                                    "\n")                                
+                        textbuf.insert_with_tags_by_name(textiter,
+                            rename_text, "bold")
+                        for orig in rename:
+                                textbuf.insert_with_tags_by_name(textiter,
+                                    orig)
+                                textbuf.insert_with_tags_by_name(textiter,
+                                    _(" to "), "bold")
+                                textbuf.insert_with_tags_by_name(textiter,
+                                    rename.get(orig) + "\n")
                 self.w_cancelbe_button.grab_focus()
-                self.w_beconfirmation_dialog.show()
+                gobject.idle_add(self.w_beconfirmation_dialog.show)
                 self.progress_stop_thread = True                
 
         def __on_progressdialog_progress(self):
@@ -325,18 +325,36 @@ class Beadmin:
         def __delete_activate_be(self):
                 not_deleted = []
                 not_default = None
+                not_renamed = {}
+		# The while gtk.events_pending():
+                #        gtk.main_iteration(False)
+		# Is not working if we are calling libbe, so it is required
+		# To have sleep in few places in this function
+                # Remove
                 for row in self.be_list:
                         if row[BE_MARKED]:
+				time.sleep(0.1)
                                 result = self.__destroy_be(row[BE_NAME])
                                 if result != 0:
                                         not_deleted.append(row[BE_NAME])
+                # Rename
+                for row in self.be_list:
+                        if row[BE_NAME] != row[BE_ORIG_NAME]:
+				time.sleep(0.1)
+                                result = self.__rename_be(row[BE_ORIG_NAME],
+                                    row[BE_NAME])
+                                if result !=0:
+                                        not_renamed[row[BE_ORIG_NAME]] = row[BE_NAME]
+                # Set active
                 for row in self.be_list:
                         if row[BE_ACTIVE_DEFAULT] == True and row[BE_ID] != \
                             self.initial_default:
+				time.sleep(0.1)
                                 result = self.__set_default_be(row[BE_NAME])
                                 if result != 0:
                                         not_default = row[BE_NAME]
-                if len(not_deleted) == 0 and not_default == None:
+                if len(not_deleted) == 0 and not_default == None \
+                    and len(not_renamed) == 0:
                         self.progress_stop_thread = True
                 else:
                         self.progress_stop_thread = True
@@ -351,31 +369,23 @@ class Beadmin:
                                     "Environments:</b>\n")
                                 for row in not_deleted:
                                         msg += row + "\n"
+                        if len(not_renamed) > 0:
+                                if not_default or len(not_deleted):
+                                        msg += "\n"
+                                msg += _("<b>Couldn't rename Boot "
+                                    "Environments:</b>\n")
+                                for orig in not_renamed:
+                                        msg += _("%s <b>to</b> %s\n") % (orig, 
+                                            not_renamed.get(orig))                                
                         gobject.idle_add(self.__error_occured, msg)
                         return
-                self.__on_beadmin_delete_event(None, None)
+                gobject.idle_add(self.__on_beadmin_delete_event, None, None)
                                 
         def __rename_cell(self, model, itr, new_name):
-                self.progress_stop_thread = True
                 model.set_value(itr, BE_NAME, new_name)
 
-        def __rename_be(self, model, itr, new_name):
-                if be.beVerifyBEName(new_name) != 0:
-                        error_msg = _("Failed to rename %s to %s\n\n") % \
-                            (model.get_value(itr, BE_NAME), new_name)
-                        error_msg +=  _("Invalid BE Name")
-                        self.progress_stop_thread = True
-                        gobject.idle_add(self.__error_occured, error_msg, False)
-                        return
-                rc = be.beRename(model.get_value(itr, BE_NAME), new_name)
-                if rc == 0:
-                        gobject.idle_add(self.__rename_cell, model, itr, new_name)
-                else:
-                        error_msg = _("Failed to rename %s to %s\n\n") % \
-                            (model.get_value(itr, BE_NAME), new_name)
-                        error_msg += be.beGetErrDesc(rc)
-                        self.progress_stop_thread = True
-                        gobject.idle_add(self.__error_occured, error_msg, False)
+        def __rename_be(self, orig_name, new_name):
+                return be.beRename(orig_name, new_name)
 
         def __error_occured(self, error_msg, reset=True):
                 msg = error_msg
@@ -388,7 +398,15 @@ class Beadmin:
                 msgbox.run()
                 msgbox.destroy()
                 if reset:
-                        self.__on_reset_be_clicked(None)
+                        self.__on_reset_be()
+
+        def __on_reset_be(self):
+                self.be_list.clear()
+                self.w_progress_dialog.show()
+                self.progress_stop_thread = False
+                Thread(target = self.__progress_pulse).start()
+                Thread(target = self.__prepare_beadmin_list).start()
+                self.w_ok_button.set_sensitive(False)
 
         def __active_pane_toggle(self, cell, filtered_path, filtered_model):
                 model = filtered_model.get_model()
@@ -396,20 +414,26 @@ class Beadmin:
                 itr = model.get_iter(path)
                 if itr:
                         modified = model.get_value(itr, BE_MARKED)
+                        # Do not allow to set active if selected for removal
                         model.set_value(itr, BE_MARKED, not modified)
-                self.__enable_disable_reset()
+                        # Do not allow to rename if we are removing be.
+                        model.set_value(itr, BE_EDITABLE, modified)
+                self.__enable_disable_ok()
                 
-        def __enable_disable_reset(self):
+        def __enable_disable_ok(self):
                 for row in self.be_list:
                         if row[BE_MARKED] == True:
-                                self.w_reset_button.set_sensitive(True)
+                                self.w_ok_button.set_sensitive(True)
                                 return
                         if row[BE_ID] == self.initial_default:
                                 if row[BE_ACTIVE_DEFAULT] == False:
-                                        self.w_reset_button.set_sensitive(True)
+                                        self.w_ok_button.set_sensitive(True)
                                         return
-                self.w_reset_button.set_sensitive(False)
-                return                
+                        if row[BE_NAME] != row[BE_ORIG_NAME]:
+                                self.w_ok_button.set_sensitive(True)
+                                return
+                self.w_ok_button.set_sensitive(False)
+                return
 
         def __be_name_edited(self, cell, filtered_path, new_name, filtered_model):
                 model = filtered_model.get_model()
@@ -418,10 +442,20 @@ class Beadmin:
                 if itr:
                         if model.get_value(itr, BE_NAME) == new_name:
                                 return
-                        self.progress_stop_thread = False
-                        Thread(target = self.__progress_pulse).start()
-                        Thread(target = self.__rename_be, 
-                            args = (model, itr, new_name)).start()
+                        if self.__verify_be_name(new_name) != 0:
+                                return
+                        self.__rename_cell(model, itr, new_name)
+                        self.__enable_disable_ok()                
+                        return
+
+        #TBD: Notify user if name clash using same logic as Repo Add and warning text
+        def __verify_be_name(self, new_name):
+                if be.beVerifyBEName(new_name) != 0:
+                        return -1
+                for row in self.be_list:
+                        if new_name == row[BE_NAME]:
+                                return -1
+                return 0
 
         def __active_pane_default(self, cell, filtered_path, filtered_model):
                 model = filtered_model.get_model()
@@ -432,7 +466,7 @@ class Beadmin:
                 if itr:
                         modified = model.get_value(itr, BE_ACTIVE_DEFAULT)
                         model.set_value(itr, BE_ACTIVE_DEFAULT, not modified)
-                        self.__enable_disable_reset()
+                        self.__enable_disable_ok()
 
         def __create_view_with_be(self, be_list):
                 dates = None
@@ -519,7 +553,7 @@ class Beadmin:
                                                 "Error conversion from %s to UTF-8.") \
                                                 % locale.getpreferredencoding()
                                 self.be_list.insert(j, [j, False,
-                                    name,
+                                    name, name,
                                     date_time, active_img,
                                     active_boot, converted_size, active_img == None])
                                 j += 1
@@ -543,7 +577,9 @@ class Beadmin:
         def __cell_data_delete_function(self, column, renderer, model, itr, data):
                 if itr:
                         if model.get_value(itr, BE_ACTIVE_DEFAULT) or \
-                            (self.initial_active == model.get_value(itr, BE_ID)):
+                            (self.initial_active == model.get_value(itr, BE_ID)) or \
+                            (model.get_value(itr, BE_NAME) !=
+                            model.get_value(itr, BE_ORIG_NAME)):
                                 self.__set_renderer_active(renderer, False)
                         else:
                                 self.__set_renderer_active(renderer, True)
