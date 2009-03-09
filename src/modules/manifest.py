@@ -19,8 +19,11 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+
+#
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
+#
 
 import os
 import errno
@@ -28,7 +31,6 @@ from itertools import groupby, chain, repeat
 from pkg.misc import EmptyI
 
 import pkg.actions as actions
-import pkg.client.filter as filter
 from pkg.actions.attribute import AttributeAction
 
 # The type member is used for the ordering of actions.
@@ -119,7 +121,8 @@ class Manifest(object):
                 return r
 
 
-        def difference(self, origin, origin_exclude=EmptyI, self_exclude=EmptyI):
+        def difference(self, origin, origin_exclude=EmptyI,
+            self_exclude=EmptyI):
                 """Return three lists of action pairs representing origin and
                 destination actions.  The first list contains the pairs
                 representing additions, the second list contains the pairs
@@ -171,16 +174,16 @@ class Manifest(object):
                 """Like the unix utility comm, except that this function
                 takes an arbitrary number of manifests and compares them,
                 returning a tuple consisting of each manifest's actions
-                that are not the same for all manifests, followed by a 
+                that are not the same for all manifests, followed by a
                 list of actions that are the same in each manifest."""
 
                 # construct list of dictionaries of actions in each
                 # manifest, indexed by unique keys
-                m_dicts = [ 
+                m_dicts = [
                     dict(
-                    ((a.name, a.attrs.get(a.key_attr, id(a))), a) for a in m.actions 
-                    )
-                    for m in compare_m                   
+                    ((a.name, a.attrs.get(a.key_attr, id(a))), a)
+                    for a in m.actions)
+                    for m in compare_m
                 ]
                 # construct list of key sets in each dict
                 #
@@ -190,7 +193,7 @@ class Manifest(object):
                 ]
 
                 common_keys = reduce(lambda a, b: a & b, m_sets)
-                
+
                 # determine which common_keys have common actions
                 for k in common_keys.copy():
                         for i in range(len(m_dicts) - 1):
@@ -200,7 +203,7 @@ class Manifest(object):
                                         break
                 return tuple(
                     [
-                        [ m_dicts[i][k] for k in m_sets[i] - common_keys ]
+                        [m_dicts[i][k] for k in m_sets[i] - common_keys]
                         for i in range(len(m_dicts))
                     ]
                     +
@@ -210,7 +213,7 @@ class Manifest(object):
                 )
 
 
-        def combined_difference(self, origin, ov=[], sv=[]):
+        def combined_difference(self, origin, ov=EmptyI, sv=EmptyI):
                 """Where difference() returns three lists, combined_difference()
                 returns a single list of the concatenation of the three."""
                 return list(chain(*self.difference(origin, ov, sv)))
@@ -242,23 +245,23 @@ class Manifest(object):
                         else:
                                 yield a
 
-        def gen_actions_by_type(self, type, excludes=EmptyI):
+        def gen_actions_by_type(self, atype, excludes=EmptyI):
                 """Generate actions in the manifest of type "type"
                 through ordered callable list"""
-                for a in self.actions_bytype.get(type, []):
+                for a in self.actions_bytype.get(atype, []):
                         for c in excludes:
                                 if not c(a):
                                         break
                         else:
                                 yield a
-                       
-        def gen_key_attribute_value_by_type(self, type, excludes=EmptyI):
+
+        def gen_key_attribute_value_by_type(self, atype, excludes=EmptyI):
                 """Generate the value of the key atrribute for each action
                 of type "type" in the manifest."""
 
                 return (
                     a.attrs.get(a.key_attr)
-                    for a in self.gen_actions_by_type(type, excludes)
+                    for a in self.gen_actions_by_type(atype, excludes)
                 )
 
         def duplicates(self, excludes=EmptyI):
@@ -271,9 +274,9 @@ class Manifest(object):
                         return a.name, a.attrs.get(a.key_attr, id(a))
 
                 alldups = []
-                actions = [ a for a in self.gen_actions(excludes)]
+                acts = [a for a in self.gen_actions(excludes)]
 
-                for k, g in groupby(sorted(actions, key=fun), fun):
+                for k, g in groupby(sorted(acts, key=fun), fun):
                         glist = list(g)
                         dups = set()
                         for i in range(len(glist) - 1):
@@ -288,15 +291,15 @@ class Manifest(object):
                 self.img = img
                 self.fmri = fmri
 
-        def set_content(self, str, excludes=EmptyI):
-                """str is the text representation of the manifest"""
+        def set_content(self, content, excludes=EmptyI):
+                """content is the text representation of the manifest"""
                 self.size = 0
                 self.actions = []
                 self.actions_bytype = {}
-                self.variants = {}   
-                self.facets = {}     
-                self.attributes = {} 
- 
+                self.variants = {}
+                self.facets = {}
+                self.attributes = {}
+
                 # So we could build up here the type/key_attr dictionaries like
                 # sdict and odict in difference() above, and have that be our
                 # main datastore, rather than the simple list we have now.  If
@@ -304,7 +307,7 @@ class Manifest(object):
                 # can't be in a manifest twice.  (The problem of having the same
                 # action more than once in packages that can be installed
                 # together has to be solved somewhere else, though.)
-                for l in str.splitlines():
+                for l in content.splitlines():
                         l = l.lstrip()
                         if not l or l[0] == "#":
                                 continue
@@ -315,6 +318,11 @@ class Manifest(object):
                                 # Add the FMRI to the exception and re-raise
                                 e.fmri = self.fmri
                                 raise
+
+                        if action.name == "set" and \
+                            action.attrs["name"] == "authority":
+                                # Translate old action to new.
+                                action.attrs["name"] = "publisher"
 
                         if action.attrs.has_key("path"):
                                 np = action.attrs["path"].lstrip(os.path.sep)
@@ -405,7 +413,8 @@ class Manifest(object):
                                         elif v not in action_dict[tok_type]:
                                                 action_dict[tok_type][v] = [t]
                                         else:
-                                                action_dict[tok_type][v].append(t)
+                                                action_dict[tok_type][v].append(
+                                                    t)
                                         assert action_dict[tok_type][v]
                 return action_dict
 
@@ -433,10 +442,10 @@ class Manifest(object):
         def get_variants(self, name):
                 if name not in self.attributes:
                         return None
-                vars = self.attributes[name]
-                if not isinstance(vars, str):
-                        return vars
-                return [vars]
+                variants = self.attributes[name]
+                if not isinstance(variants, str):
+                        return variants
+                return [variants]
 
         def get(self, key, default):
                 try:

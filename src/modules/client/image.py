@@ -20,12 +20,13 @@
 # CDDL HEADER END
 #
 
+#
 # Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
+#
 
 import cPickle
-import calendar
-import datetime
+import copy
 import errno
 import httplib
 import os
@@ -36,12 +37,6 @@ import tempfile
 import time
 import urllib
 import urllib2
-
-import OpenSSL.crypto as osc
-
-from pkg.misc import msg, emsg
-
-# import uuid           # XXX interesting 2.5 module
 
 import pkg.Uuid25
 import pkg.catalog             as catalog
@@ -56,35 +51,32 @@ import pkg.client.pkgplan      as pkgplan
 import pkg.client.progress     as progress
 import pkg.client.query_engine as query_e
 import pkg.client.retrieve     as retrieve
+import pkg.client.publisher    as publisher
 import pkg.client.variant      as variant
 import pkg.fmri
 import pkg.manifest            as manifest
 import pkg.misc                as misc
 import pkg.portable            as portable
 import pkg.search_errors       as search_errors
-import pkg.updatelog           as updatelog
 import pkg.version
 
-from pkg.misc import versioned_urlopen
-from pkg.misc import EmptyI, EmptyDict
-from pkg.misc import TransportException
-from pkg.misc import TransferTimedOutException
-from pkg.misc import TransportFailures
-from pkg.misc import CLIENT_DEFAULT_MEM_USE_KB
-from pkg.misc import CfgCacheError
 from pkg.actions import MalformedActionError
 from pkg.client import global_settings
 from pkg.client.api_errors import InvalidDepotResponseException
-from pkg.client.imagetypes import *
+from pkg.client.imagetypes import IMG_USER, IMG_ENTIRE
+from pkg.misc import CLIENT_DEFAULT_MEM_USE_KB
+from pkg.misc import CfgCacheError
+from pkg.misc import EmptyI, EmptyDict
+from pkg.misc import msg, emsg
+from pkg.misc import versioned_urlopen
+from pkg.misc import TransportException
+from pkg.misc import TransportFailures
 
 img_user_prefix = ".org.opensolaris,pkg"
 img_root_prefix = "var/pkg"
 
 PKG_STATE_INSTALLED = "installed"
 PKG_STATE_KNOWN = "known"
-
-# Minimum number of days to issue warning before a certificate expires
-MIN_WARN_DAYS = datetime.timedelta(days=30)
 
 class Image(object):
         """An Image object is a directory tree containing the laid-down contents
@@ -199,7 +191,7 @@ class Image(object):
 
                 # right now we don't explicitly set dir/file modes everywhere;
                 # set umask to proper value to prevent problems w/ overly
-                # locked down umask.  
+                # locked down umask.
                 os.umask(0022)
 
         def _check_subdirs(self, sub_d, prefix):
@@ -222,7 +214,7 @@ class Image(object):
                              self._check_subdirs(d, img_root_prefix):
                         rv = IMG_ENTIRE
                 return rv
-                
+
         def find_root(self, d, exact_match=False):
                 # Ascend from the given directory d to find first
                 # encountered image. If exact_match is true, if the
@@ -288,18 +280,22 @@ class Image(object):
                 # make sure we define architecture variant; upgrade config
                 # file if possible.
                 if "variant.arch" not in self.cfg_cache.variants:
-                        self.cfg_cache.variants["variant.arch"] = platform.processor()
+                        self.cfg_cache.variants["variant.arch"] = \
+                            platform.processor()
                         try:
                                 self.save_config()
                         except api_errors.PermissionsException:
                                 pass
                 # make sure we define zone variant; upgrade config if possible
                 if "variant.opensolaris.zone" not in self.cfg_cache.variants:
-                        zone = self.cfg_cache.filters.get("opensolaris.zone", "")
+                        zone = self.cfg_cache.filters.get("opensolaris.zone",
+                            "")
                         if zone == "nonglobal":
-                                self.cfg_cache.variants["variant.opensolaris.zone"] = "nonglobal"
+                                self.cfg_cache.variants[
+                                    "variant.opensolaris.zone"] = "nonglobal"
                         else:
-                                self.cfg_cache.variants["variant.opensolaris.zone"] = "global"
+                                self.cfg_cache.variants[
+                                    "variant.opensolaris.zone"] = "global"
                         try:
                                 self.save_config()
                         except api_errors.PermissionsException:
@@ -335,12 +331,14 @@ class Image(object):
                 self.dl_cache_incoming = os.path.normpath(os.path.join(
                     self.dl_cache_dir, "incoming-%d" % os.getpid()))
 
-        def set_attrs(self, type, root, is_zone, auth_name, auth_url,
-            ssl_key=None, ssl_cert=None, variants=EmptyDict, refresh_allowed=True):
+        def set_attrs(self, imgtype, root, is_zone, prefix, pub_url,
+            ssl_key=None, ssl_cert=None, variants=EmptyDict,
+            refresh_allowed=True):
 
-                self.__set_dirs(imgtype=type, root=root)
+                self.__set_dirs(imgtype=imgtype, root=root)
 
-                if not os.path.exists(os.path.join(self.imgdir, imageconfig.CFG_FILE)):
+                if not os.path.exists(os.path.join(self.imgdir,
+                    imageconfig.CFG_FILE)):
                         self.history.operation_name = "image-create"
                 else:
                         self.history.operation_name = "image-set-attributes"
@@ -351,29 +349,25 @@ class Image(object):
 
                 if is_zone:
                         self.cfg_cache.filters["opensolaris.zone"] = "nonglobal"
-                        self.cfg_cache.variants["variant.opensolaris.zone"] = "nonglobal"
+                        self.cfg_cache.variants[
+                            "variant.opensolaris.zone"] = "nonglobal"
                 else:
-                        self.cfg_cache.variants["variant.opensolaris.zone"] = "global"
+                        self.cfg_cache.variants[
+                            "variant.opensolaris.zone"] = "global"
 
-                newauth = {}
-
-                newauth["prefix"] = auth_name
-                newauth["origin"] = misc.url_affix_trailing_slash(auth_url)
-                newauth["disabled"] = False
-                newauth["mirrors"] = []
-                newauth["ssl_key"] = ssl_key
-                newauth["ssl_cert"] = ssl_cert
-                newauth["uuid"] = pkg.Uuid25.uuid1()
+                repo = publisher.Repository()
+                repo.add_origin(pub_url, ssl_cert=ssl_cert, ssl_key=ssl_key)
+                newpub = publisher.Publisher(prefix, repositories=[repo])
 
                 # Refresh catalog for new server, if allowed.
                 if refresh_allowed:
                         self.retrieve_catalogs(full_refresh=True,
-                            auths=[newauth])
+                            pubs=[newpub])
 
                 # If we reached this point, the refresh succeeded.  Add the
-                # authority to the cfg_cache and save the config.
-                self.cfg_cache.authorities[auth_name] = newauth
-                self.cfg_cache.preferred_authority = auth_name
+                # publisher to the cfg_cache and save the config.
+                self.cfg_cache.publishers[prefix] = newpub
+                self.cfg_cache.preferred_publisher = prefix 
 
                 self.cfg_cache.variants["variant.arch"] = \
                     variants.get("variant.arch", platform.processor())
@@ -386,7 +380,8 @@ class Image(object):
                 return self.root == "/"
 
         def is_zone(self):
-                return self.cfg_cache.variants["variant.opensolaris.zone"] == "nonglobal"
+                return self.cfg_cache.variants[
+                    "variant.opensolaris.zone"] == "nonglobal"
 
         def get_arch(self):
                 return self.cfg_cache.variants["variant.arch"]
@@ -394,67 +389,67 @@ class Image(object):
         def get_root(self):
                 return self.root
 
-        def gen_authorities(self, inc_disabled = False):
+        def gen_publishers(self, inc_disabled=False):
                 if not self.cfg_cache:
                         raise CfgCacheError, "empty ImageConfig"
-                if not self.cfg_cache.authorities:
-                        raise CfgCacheError, "no defined authorities"
-                for a in self.cfg_cache.authorities:
-                        auth = self.cfg_cache.authorities[a]
-                        if inc_disabled or not auth["disabled"]:
-                                yield self.cfg_cache.authorities[a]
+                if not self.cfg_cache.publishers:
+                        raise CfgCacheError, "no defined publishers"
+                for p in self.cfg_cache.publishers:
+                        pub = self.cfg_cache.publishers[p]
+                        if inc_disabled or not pub.disabled:
+                                yield self.cfg_cache.publishers[p]
 
-        def get_url_by_authority(self, authority = None):
-                """Return the URL prefix associated with the given authority.
+        def get_url_by_publisher(self, prefix=None):
+                """Return the URL prefix associated with the given prefix.
                 For the undefined case, represented by None, return the
-                preferred authority."""
+                preferred publisher."""
 
                 # XXX This function is a possible location to insert one or more
                 # policies regarding use of mirror responses, etc.
 
-                if authority == None:
-                        authority = self.cfg_cache.preferred_authority
+                if prefix is None:
+                        prefix = self.cfg_cache.preferred_publisher
 
                 try:
-                        o = self.cfg_cache.authorities[authority]["origin"]
+                        o = self.cfg_cache.publishers[prefix]["origin"]
                 except KeyError:
-                        # If the authority that we're trying to get no longer
-                        # exists, fall back to preferred authority.
-                        authority = self.cfg_cache.preferred_authority
-                        o = self.cfg_cache.authorities[authority]["origin"]
+                        # If the publisher that we're trying to get no longer
+                        # exists, fall back to preferred publisher.
+                        prefix = self.cfg_cache.preferred_publisher
+                        o = self.cfg_cache.publishers[prefix]["origin"]
 
                 return o.rstrip("/")
 
         def gen_depot_status(self):
-                """Walk all authorities and return all depot status
-                objects for both mirrors and primary authorities."""
+                """Walk all publishers and return all depot status
+                objects for both mirrors and primary publishers."""
 
-                auths = self.cfg_cache.authorities
-                # return depot status objects in authority order
-                for auth in auths.keys():
-                        # first yield authority origin
-                        yield self.cfg_cache.authority_status[auth]
+                pubs = self.cfg_cache.publishers
+                # return depot status objects in publisher order
+                for pub in pubs.keys():
+                        # first yield publisher origin
+                        yield self.cfg_cache.publisher_status[pub]
                         # then return mirrors
-                        for ds in self.cfg_cache.mirror_status[auth]:
+                        for ds in self.cfg_cache.mirror_status[pub]:
                                 yield ds
 
-        def num_mirrors(self, auth):
+        def num_mirrors(self, pub):
                 """Return the number of mirrors configured for the
-                given authority."""
+                given publisher."""
 
-                if auth == None:
-                        auth = self.cfg_cache.preferred_authority
+                if pub == None:
+                        pub = self.cfg_cache.preferred_publisher
 
                 try:
-                        num = len(self.cfg_cache.mirror_status[auth])
+                        num = len(self.cfg_cache.mirror_status[pub])
                 except KeyError:
-                        # Auth isn't in the list of mirrors, return 0
+                        # pub isn't in the list of mirrors, return 0
                         num = 0
 
                 return num
 
-        def select_mirror(self, auth = None, chosen_set = None):
-                """For the given authority, look through the status of
+        def select_mirror(self, pub = None, chosen_set = None):
+                """For the given publisher, look through the status of
                 the mirrors.  Pick the best one.  This method returns
                 a DepotStatus object or None.  The chosen_set argument
                 contains a set object that lists the mirrors that were
@@ -462,19 +457,19 @@ class Image(object):
                 by depot status statistics and ensures we don't
                 always pick the same depot."""
 
-                if auth == None:
-                        auth = self.cfg_cache.preferred_authority
+                if pub == None:
+                        pub = self.cfg_cache.preferred_publisher
                 try:
-                        slst = self.cfg_cache.mirror_status[auth]
+                        slst = self.cfg_cache.mirror_status[pub]
                 except KeyError:
-                        # If the authority that we're trying to get no longer
-                        # exists, fall back to preferred authority.
-                        auth = self.cfg_cache.preferred_authority
-                        slst = self.cfg_cache.mirror_status[auth]
+                        # If the publisher that we're trying to get no longer
+                        # exists, fall back to preferred publisher.
+                        pub = self.cfg_cache.preferred_publisher
+                        slst = self.cfg_cache.mirror_status[pub]
 
                 if len(slst) == 0:
-                        if auth in self.cfg_cache.authority_status:
-                                return self.cfg_cache.authority_status[auth]
+                        if pub in self.cfg_cache.publisher_status:
+                                return self.cfg_cache.publisher_status[pub]
                         else:
                                 return None
 
@@ -493,11 +488,11 @@ class Image(object):
                 slst.sort(cmp = cmp_depotstatus)
 
                 # All mirrors in the chosen_set have already been
-                # selected.  Try the authority origin instead.
+                # selected.  Try the publisher origin instead.
                 # Empty chosen_set, next time we start over.
                 if chosen_set and len(chosen_set) == len(slst):
                         chosen_set.clear()
-                        return self.cfg_cache.authority_status[auth]
+                        return self.cfg_cache.publisher_status[pub]
 
                 if chosen_set and slst[0] in chosen_set:
                         for ds in slst:
@@ -506,270 +501,179 @@ class Image(object):
 
                 return slst[0]
 
-        def get_ssl_credentials(self, authority=None, origin=None,
-            authent=None):
-                """Return a tuple containing (ssl_key, ssl_cert) for the
-                specified authority prefix.  If the authority isn't specified,
-                attempt to determine the authority by the given origin.  If
-                neither is specified, use the preferred authority.  Authent
-                is a dictionary argument that contains the authority
-                information.
-                """
+        def get_ssl_credentials(self, prefix=None, origin=None,
+            pubent=None):
+                """Deprecated; this function will be removed in a future
+                release.  This information should be retrieved directly from a
+                repository origin or mirror object.
 
-                # If authent supplied, don't bother with any other
-                # fancy processing.
-                if authent:
-                        return authent["ssl_key"], authent["ssl_cert"]
+                Return a tuple containing (ssl_key, ssl_cert) for the
+                specified publisher prefix.  If the publisher isn't specified,
+                attempt to determine the publisher by the given origin.  If
+                neither is specified, use the preferred publisher.  pubent
+                is a dictionary argument that contains the publisher
+                information."""
 
-                if authority is None:
+                if not pubent and prefix is None:
                         if origin is None:
-                                authority = self.cfg_cache.preferred_authority
+                                prefix = self.cfg_cache.preferred_publisher
                         else:
-                                auths = self.cfg_cache.authorities
-                                for pfx, auth in auths.iteritems():
-                                        if auth["origin"] == origin:
-                                                authority = pfx
+                                pubs = self.cfg_cache.publishers
+                                for pfx, pub in pubs.iteritems():
+                                        repo = pub.selected_repository
+                                        if repo.has_origin(origin):
+                                                prefix = pfx
                                                 break
                                 else:
                                         return None
-                try:
-                        authent = self.cfg_cache.authorities[authority]
-                except KeyError:
-                        authority = self.cfg_cache.preferred_authority
-                        authent = self.cfg_cache.authorities[authority]
 
-                return (authent["ssl_key"], authent["ssl_cert"])
+                # One of these should be defined at this point unless the
+                # caller didn't provide anything.
+                assert prefix or origin or pubent
 
-        @staticmethod
-        def build_cert(path):
-                """Take the file given in path, open it, and use it to create
-                an X509 certificate object."""
+                if not pubent:
+                        try:
+                                pubent = self.cfg_cache.publishers[prefix]
+                        except KeyError:
+                                prefix = self.cfg_cache.preferred_publisher
+                                pubent = self.cfg_cache.publishers[prefix]
 
-                cf = file(path, "rb")
-                certdata = cf.read()
-                cf.close()
-                cert = osc.load_certificate(osc.FILETYPE_PEM, certdata)
-
-                return cert
+                repo = pubent.selected_repository
+                origin = repo.origins[0]
+                return (origin.ssl_key, origin.ssl_cert)
 
         def check_cert_validity(self):
-                """Look through the authorities defined for the image.  Print
+                """Look through the publishers defined for the image.  Print
                 a message and exit with an error if one of the certificates
                 has expired.  If certificates are getting close to expiration,
                 print a warning instead."""
 
-                for a in self.gen_authorities():
-                        pfx, url, ssl_key, ssl_cert, dt, mir = \
-                            self.split_authority(a)
-
-                        if not ssl_cert:
-                                continue
-
-                        try:
-                                cert = self.build_cert(ssl_cert)
-                        except IOError, e:
-                                if e.errno == errno.ENOENT:
-                                        emsg(_("Certificate for authority %s" \
-                                            " not found") % pfx)
-                                        emsg(_("File was supposed to exist at" \
-                                           "  path %s") % ssl_cert)
-                                        return False
-                                else:
-                                        raise
-                        # OpenSSL.crypto.Error
-                        except osc.Error, e:
-                                emsg(_("Certificate for authority %(pfx)s at" \
-                                    " %(ssl_cert)s has an invalid format.") % \
-                                    vars())
-                                return False
-
-                        if cert.has_expired():
-                                emsg(_("Certificate for authority %s" \
-                                    " has expired") % pfx)
-                                emsg(_("Please install a valid certificate"))
-                                return False
-
-                        now = datetime.datetime.utcnow()
-                        nb = cert.get_notBefore()
-                        t = time.strptime(nb, "%Y%m%d%H%M%SZ")
-                        nbdt = datetime.datetime.utcfromtimestamp(
-                            calendar.timegm(t))
-
-                        # PyOpenSSL's has_expired() doesn't validate the notBefore
-                        # time on the certificate.  Don't ask me why.
-
-                        if nbdt > now:
-                                emsg(_("Certificate for authority %s is" \
-                                    " invalid") % pfx)
-                                emsg(_("Certificate effective date is in" \
-                                    " the future"))
-                                return False
-
-                        na = cert.get_notAfter()
-                        t = time.strptime(na, "%Y%m%d%H%M%SZ")
-                        nadt = datetime.datetime.utcfromtimestamp(
-                            calendar.timegm(t))
-
-                        diff = nadt - now
-
-                        if diff <= MIN_WARN_DAYS:
-                                emsg(_("Certificate for authority %s will" \
-                                    " expire in %d days" % (pfx, diff.days)))
-
+                for p in self.gen_publishers():
+                        for r in p.repositories:
+                                for uri in r.origins:
+                                        if uri.ssl_cert:
+                                                misc.validate_ssl_cert(
+                                                    uri.ssl_cert,
+                                                    prefix=p.prefix, uri=uri)
                 return True
 
-        def get_uuid(self, authority):
-                """Return the UUID for the specified authority prefix.  If the
-                policy for sending the UUID is set to false, return None.
-                """
+        def get_uuid(self, prefix):
+                """Deprecated; this function will be removed in a future
+                release.  This information should be retrieved directly from a
+                publisher object.
+
+                Return the UUID for the specified publisher prefix.  If the
+                policy for sending the UUID is set to false, return None."""
+
                 if not self.cfg_cache.get_policy(imageconfig.SEND_UUID):
                         return None
 
                 try:
-                        return self.cfg_cache.authorities[authority]["uuid"]
+                        return self.cfg_cache.publishers[prefix].client_uuid
                 except KeyError:
                         return None
-                        
-        def get_default_authority(self):
-                return self.cfg_cache.preferred_authority
 
-        def has_authority(self, auth_name):
-                return auth_name in self.cfg_cache.authorities
+        def has_publisher(self, prefix=None, alias=None):
+                for pub in self.gen_publishers():
+                        if prefix == pub.prefix or (alias and
+                            alias == pub.alias):
+                                return True
+                return False
 
-        def delete_authority(self, auth_name):
-                self.history.operation_name = "delete-authority"
-                if not self.has_authority(auth_name):
-                        error = "no such authority '%s'" % auth_name
-                        self.history.operation_errors.append(error)
-                        self.history.operation_result = \
-                            history.RESULT_FAILED_UNKNOWN
-                        raise KeyError, error
-                self.cfg_cache.delete_authority(auth_name)
-                self.save_config()
-                self.destroy_catalog(auth_name)
-                self.cache_catalogs()
-                self.history.operation_result = history.RESULT_SUCCEEDED
-
-        def get_authority(self, auth_name):
-                if not self.has_authority(auth_name):
-                        raise KeyError, "no such authority '%s'" % auth_name
-
-                return self.cfg_cache.authorities[auth_name]
-
-        def split_authority(self, auth):
-                prefix = auth["prefix"]
-                update_dt = None
-
+        def remove_publisher(self, prefix=None, alias=None):
+                self.history.log_operation_start("remove-publisher")
                 try:
-                        cat = self.catalogs[prefix]
-                except KeyError:
+                        pub = self.get_publisher(prefix=prefix,
+                            alias=alias)
+                except api_errors.ApiException, e:
+                        self.history.log_operation_end(e)
+                        raise e
+
+                if pub.prefix == self.cfg_cache.preferred_publisher:
+                        e = api_errors.RemovePreferredPublisher()
+                        self.history.log_operation_end(error=e)
+                        raise e
+
+                self.cfg_cache.remove_publisher(prefix)
+                self.save_config()
+                self.destroy_catalog(prefix)
+                self.cache_catalogs()
+                self.history.log_operation_end()
+
+        def get_publishers(self):
+                return self.cfg_cache.publishers
+
+        def get_publisher(self, prefix=None, alias=None, origin=None):
+                publishers = [p for p in self.get_publishers().values()]
+                for pub in publishers:
+                        if prefix and prefix == pub.prefix:
+                                return pub
+                        elif alias and alias == pub.alias:
+                                return pub
+                        elif origin and \
+                            pub.selected_repository.has_origin(origin):
+                                return pub
+                raise api_errors.UnknownPublisher(max(prefix, alias, origin))
+
+        def get_publisher_last_update_time(self, prefix, cached=True):
+                """Returns a datetime object (or 'None') representing the last
+                time the catalog for a publisher was updated.
+                
+                If the catalog has already been loaded, this reflects the
+                in-memory state of the catalog.
+
+                If the catalog has not already been loaded or 'cached' is False,
+                then the catalog will be temporarily loaded and the most recent
+                information returned."""
+
+                if not cached:
+                        try:
+                                cat = self.catalogs[prefix]
+                        except KeyError:
+                                pass
+                        else:
+                                update_dt = cat.last_modified()
+                                if update_dt:
+                                        update_dt = catalog.ts_to_datetime(update_dt)
+                                return update_dt
+
+                # Temporarily retrieve the catalog object, but don't
+                # cache it as that would interfere with load_catalogs.
+                try:
+                        croot = "%s/catalog/%s" % (self.imgdir, prefix)
+                        cat = catalog.Catalog(croot, publisher=prefix)
+                except (EnvironmentError, catalog.CatalogException):
                         cat = None
 
+                update_dt = None
                 if cat:
                         update_dt = cat.last_modified()
                         if update_dt:
                                 update_dt = catalog.ts_to_datetime(update_dt)
+                return update_dt
 
-                return (prefix, auth["origin"], auth["ssl_key"],
-                    auth["ssl_cert"], update_dt, auth["mirrors"])
+        def get_preferred_publisher(self):
+                """Returns the prefix of the preferred publisher."""
+                return self.cfg_cache.preferred_publisher
 
-        def set_preferred_authority(self, auth_name):
-                self.history.operation_name = "set-preferred-authority"
-                if not self.has_authority(auth_name):
-                        error = "no such authority '%s'" % auth_name
-                        self.history.operation_errors.append(error)
-                        self.history.operation_result = \
-                            history.RESULT_FAILED_UNKNOWN
-                        raise KeyError, error
-                if self.get_authority(auth_name)["disabled"]:
-                        error = "authority '%s' is disabled" % auth_name
-                        self.history.operation_errors.append(error)
-                        self.history.operation_result = \
-                            history.RESULT_FAILED_BAD_REQUEST
-                        raise KeyError, error
-                self.cfg_cache.preferred_authority = auth_name
+        def set_preferred_publisher(self, prefix=None, alias=None):
+                self.history.log_operation_start("set-preferred-publisher")
+                try:
+                        pub = self.get_publisher(prefix=prefix, alias=alias)
+                except api_errors.UnknownPublisher, e:
+                        self.history.log_operation_end(error=e)
+                        raise e
+
+                if pub.disabled:
+                        e = api_errors.SetPreferredPublisherDisabled(pub)
+                        self.history.log_operation_end(error=e)
+                        raise e
+                self.cfg_cache.preferred_publisher = pub.prefix
                 self.save_config()
-                self.history.operation_result = history.RESULT_SUCCEEDED
-
-        def set_authority(self, auth_name, origin_url = None, ssl_key = None,
-            ssl_cert = None, refresh_allowed = True, uuid = None,
-            disabled = None):
-                self.history.operation_name = "set-authority"
-                auths = self.cfg_cache.authorities
-
-                refresh_catalog = False
-                purge_catalog = False
-
-                if auth_name in auths:
-                        # Copy old authority information to new entry.
-                        oldauth = auths[auth_name]
-                        newauth = oldauth.copy()
-
-                        # Update any fields that have changed.
-                        if origin_url:
-                                newauth["origin"] = \
-                                    misc.url_affix_trailing_slash(origin_url)
-                                refresh_catalog = True
-                        if ssl_key:
-                                newauth["ssl_key"] = ssl_key
-                        if ssl_cert:
-                                newauth["ssl_cert"] = ssl_cert
-                        if uuid:
-                                newauth["uuid"] = uuid
-                        if disabled != None:
-                                # don't make the preferred authority disabled
-                                # the caller is responsible for checking this
-                                assert(not disabled or \
-                                    auth_name != self.get_default_authority())
-                                newauth["disabled"] = disabled
-                                if disabled:
-                                        purge_catalog = True
-                                else:
-                                        refresh_catalog = True
-                             
-                else:
-                        newauth = {}
-                        newauth["prefix"] = auth_name
-                        newauth["origin"] = \
-                            misc.url_affix_trailing_slash(origin_url)
-                        newauth["mirrors"] = []
-                        newauth["ssl_key"] = ssl_key
-                        newauth["ssl_cert"] = ssl_cert
-                        if not uuid:
-                                uuid = pkg.Uuid25.uuid1()
-                        newauth["uuid"] = uuid
-                        if disabled is None:
-                                disabled = False
-                        newauth["disabled"] = disabled
-                        if not newauth["disabled"]:
-                                refresh_catalog = True
-
-                if refresh_catalog or purge_catalog:
-                        try:
-                                self.destroy_catalog(auth_name)
-                                self.destroy_catalog_cache()
-                        except EnvironmentError, e:
-                                if e.errno == errno.EACCES:
-                                        raise api_errors.PermissionsException(
-                                            e.filename)
-                                raise
-
-                        if purge_catalog:
-                                self.cache_catalogs()
-                        elif refresh_allowed:
-                                self.retrieve_catalogs(full_refresh=True,
-                                    auths=[newauth])
-
-                # If the code got here, it successfully refreshed
-                # the authority, and passed any sanity checks.  Save
-                # the configuration.
-                auths[auth_name] = newauth
-                self.save_config()
-
-                self.history.operation_result = history.RESULT_SUCCEEDED
+                self.history.log_operation_end()
 
         def set_property(self, prop_name, prop_value):
-                assert prop_name != "preferred-authority"
+                assert prop_name != "preferred-publisher"
                 self.cfg_cache.properties[prop_name] = prop_value
                 self.save_config()
 
@@ -780,7 +684,7 @@ class Image(object):
                 return prop_name in self.cfg_cache.properties
 
         def delete_property(self, prop_name):
-                assert prop_name != "preferred-authority"
+                assert prop_name != "preferred-publisher"
                 del self.cfg_cache.properties[prop_name]
                 self.save_config()
 
@@ -788,37 +692,40 @@ class Image(object):
                 for p in self.cfg_cache.properties:
                         yield p
 
-        def add_mirror(self, auth_name, mirror):
-                """Add the mirror URL contained in mirror to
-                auth_name's list of mirrors."""
-                self.history.operation_name = "add-mirror"
-                auths = self.cfg_cache.authorities
-                auths[auth_name]["mirrors"].append(mirror)
+        def add_publisher(self, pub, refresh_allowed=True):
+                """Adds the provided publisher object to the image
+                configuration."""
+                self.history.log_operation_start("add-publisher")
+                for p in self.cfg_cache.publishers.values():
+                        if pub == p or (pub.alias and pub.alias == p.alias):
+                                error = api_errors.DuplicatePublisher(pub)
+                                self.history.log_operation_end(error=error)
+                                raise error
+
+                try:
+                        self.destroy_catalog(pub.prefix)
+                        self.destroy_catalog_cache()
+                except EnvironmentError, e:
+                        if e.errno == errno.EACCES:
+                                raise api_errors.PermissionsException(
+                                    e.filename)
+                        raise
+
+                if refresh_allowed:
+                        self.retrieve_catalogs(full_refresh=True, pubs=[pub])
+
+                # Only after success should the new publisher be added to the
+                # configuration.
+                self.cfg_cache.publishers[pub.prefix] = pub
                 self.save_config()
-                self.history.operation_result = history.RESULT_SUCCEEDED
-
-        def has_mirror(self, auth_name, url):
-                """Returns true if url is in auth_name's list of mirrors."""
-
-                return url in self.cfg_cache.authorities[auth_name]["mirrors"]
-
-        def del_mirror(self, auth_name, mirror):
-                """Remove the mirror URL contained in mirror from
-                auth_name's list of mirrors."""
-
-                self.history.operation_name = "delete-mirror"
-                auths = self.cfg_cache.authorities
-
-                if mirror in self.cfg_cache.authorities[auth_name]["mirrors"]:
-                        auths[auth_name]["mirrors"].remove(mirror)
-                        self.save_config()
-                self.history.operation_result = history.RESULT_SUCCEEDED
+                self.history.log_operation_end()
 
         def verify(self, fmri, progresstracker, **args):
                 """generator that returns any errors in installed pkgs
                 as tuple of action, list of errors"""
 
-                for act in self.get_manifest(fmri).gen_actions(self.list_excludes()):
+                for act in self.get_manifest(fmri).gen_actions(
+                    self.list_excludes()):
                         errors = act.verify(self, pkg_fmri=fmri, **args)
                         progresstracker.verify_add_progress(fmri)
                         actname = act.distinguished_name()
@@ -880,8 +787,8 @@ class Image(object):
                                         raise failures
                         except MalformedActionError, e:
                                 retry_count -= 1
-                                auth = fmri.get_authority()
-                                url = self.cfg_cache.authorities[auth]["origin"]
+                                pub = fmri.get_publisher()
+                                url = self.cfg_cache.publishers[pub]["origin"]
                                 te = misc.TransferContentException(url=url,
                                     reason=str(e))
                                 failures.append(te)
@@ -891,7 +798,7 @@ class Image(object):
 
                 return m
 
-        def __get_touched_manifest(self, fmri):
+        def __get_touched_manifest(self, fmri, intent):
                 """Returns whether intent information has been provided for the
                 given fmri."""
 
@@ -912,9 +819,14 @@ class Image(object):
                         # fmri for the current operation.
                         return False
 
+                if intent not in self.__touched_manifests[op][f]:
+                        # No intent information has been provided for this
+                        # fmri for the current operation and reason.
+                        return False
+
                 return True
 
-        def __set_touched_manifest(self, fmri):
+        def __set_touched_manifest(self, fmri, intent):
                 """Records that intent information has been provided for the
                 given fmri's manifest."""
 
@@ -933,36 +845,39 @@ class Image(object):
                 if f not in self.__touched_manifests[op]:
                         # No intent information has yet been provided for this
                         # fmri for the current operation.
-                        self.__touched_manifests[op][f] = None
+                        self.__touched_manifests[op][f] = { intent: None }
+                else:
+                        # No intent information has yet been provided for this
+                        # fmri for the current operation and reason.
+                        self.__touched_manifests[op][f][intent] = None
 
         def __touch_manifest(self, fmri):
                 """Perform steps necessary to 'touch' a manifest to provide
                 intent information.  Ignores most exceptions as this operation
                 is only for informational purposes."""
 
-                if not self.__get_touched_manifest(fmri):
+                # What is the client currently processing?
+                target, intent = self.state.get_target()
+
+                # Ignore dry-runs of operations or operations which do not have
+                # a set target.
+                if not target or intent == imagestate.INTENT_EVALUATE:
+                        return
+
+                if not self.__get_touched_manifest(fmri, intent):
                         # If the manifest for this fmri hasn't been "seen"
                         # before, determine if intent information needs to be
                         # provided.
 
-                        # What is the client currently processing?
-                        target, intent = self.state.get_target()
-
-                        if target and intent != imagestate.INTENT_EVALUATE:
-                                # If the client is currently performing an
-                                # image-modifying operation, not just an
-                                # an evaluation, then perform further checks.
-
-                                # Ignore the authority for comparison.
-                                na_target = target.get_fmri(anarchy=True)
-                                na_fmri = target.get_fmri(anarchy=True)
-
-                                if na_target == na_fmri:
-                                        # If the client is currently processing
-                                        # the given fmri (for an install, etc.)
-                                        # then intent information is needed.
-                                        retrieve.touch_manifest(self, fmri)
-                                        self.__set_touched_manifest(fmri)
+                        # Ignore the publisher for comparison.
+                        np_target = target.get_fmri(anarchy=True)
+                        np_fmri = fmri.get_fmri(anarchy=True)
+                        if np_target == np_fmri:
+                                # If the client is currently processing
+                                # the given fmri (for an install, etc.)
+                                # then intent information is needed.
+                                retrieve.touch_manifest(self, fmri)
+                                self.__set_touched_manifest(fmri, intent)
 
         def __fetch_manifest(self, fmri, excludes=EmptyI):
                 """Perform steps necessary to get manifest from remote host
@@ -985,14 +900,14 @@ class Image(object):
                 mcontent = retrieve.get_manifest(self, fmri)
                 m.set_content(mcontent)
 
-                # Write the originating authority into the manifest.
+                # Write the originating publisher into the manifest.
                 # Manifests prior to this change won't contain this information.
                 # In that case, the client attempts to re-download the manifest
                 # from the depot.
-                if not fmri.has_authority():
-                        m["authority"] = self.get_default_authority()
+                if not fmri.has_publisher():
+                        m["publisher"] = self.get_preferred_publisher()
                 else:
-                        m["authority"] = fmri.get_authority()
+                        m["publisher"] = fmri.get_publisher()
 
                 try:
                         m.store(mpath)
@@ -1000,28 +915,42 @@ class Image(object):
                         if e.errno not in (errno.EROFS, errno.EACCES):
                                 raise
 
-                self.__set_touched_manifest(fmri)
-                
-                # if we were passed actual excludes, reset 
+                # What is the client currently processing?
+                targets = self.state.get_targets()
+
+                intent = None
+                for entry in targets:
+                        target, reason = entry
+
+                        # Ignore the publisher for comparison.
+                        np_target = target.get_fmri(anarchy=True)
+                        np_fmri = fmri.get_fmri(anarchy=True)
+                        if np_target == np_fmri:
+                                intent = reason
+
+                # If no intent could be found, assume INTENT_INFO.
+                self.__set_touched_manifest(fmri, max(intent,
+                    imagestate.INTENT_INFO))
+
+                # if we were passed actual excludes, reset in-memory
                 # in-memory content to reflect that.
                 if excludes:
                         m.set_content(mcontent, excludes)
                 return m
 
-        def _valid_manifest(self, fmri, manifest):
-                """Check authority attached to manifest.  Make sure
-                it matches authority specified in FMRI."""
+        def _valid_manifest(self, fmri, m):
+                """Check publisher attached to manifest.  Make sure
+                it matches publisher specified in FMRI."""
 
-                authority = fmri.get_authority()
-                if not authority:
-                        authority = self.get_default_authority()
+                pub = fmri.get_publisher()
+                if not pub:
+                        pub = self.get_preferred_publisher()
 
-                if not "authority" in manifest:
+                try:
+                        if m["publisher"] != pub:
+                                return False
+                except KeyError:
                         return False
-
-                if manifest["authority"] != authority:
-                        return False
-
                 return True
 
         def get_manifest_path(self, fmri):
@@ -1047,10 +976,10 @@ class Image(object):
 
                 try:
                         # If the manifest didn't already exist, or isn't from
-                        # the correct authority, or no authority is attached
+                        # the correct publisher, or no publisher is attached
                         # to the manifest, attempt to download a new one.
                         if not m or not self._valid_manifest(fmri, m):
-                                m = self.__fetch_manifest_with_retries(fmri, 
+                                m = self.__fetch_manifest_with_retries(fmri,
                                     excludes)
                 except (retrieve.ManifestRetrievalError,
                     retrieve.DatastreamRetrievalError):
@@ -1089,9 +1018,9 @@ class Image(object):
                 self.__touch_manifest(fmri)
                 return m
 
-        def installed_file_authority(self, filepath):
+        def installed_file_publisher(self, filepath):
                 """Find the pkg's installed file named by filepath.
-                Return the authority that installed this package."""
+                Return the publisher that installed this package."""
 
                 read_only = False
 
@@ -1106,47 +1035,48 @@ class Image(object):
                         f = file(filepath, "r")
 
                 flines = f.readlines()
-                newauth = None
+                newpub = None
 
                 try:
-                        version, auth = flines
+                        version, pub = flines
                         version = version.strip()
-                        auth = auth.strip()
+                        pub = pub.strip()
                 except ValueError:
                         # If we get a ValueError, we've encoutered an
                         # installed file of a previous format.  If we want
                         # upgrade to work in this situation, it's necessary
                         # to assume that the package was installed from
-                        # the preferred authority.  Here, we set up
-                        # the authority to record that.
+                        # the preferred publisher.  Here, we set up
+                        # the publisher to record that.
                         if flines:
-                                auth = flines[0]
-                                auth = auth.strip()
-                                newauth = "%s_%s" % (pkg.fmri.PREF_AUTH_PFX,
-                                    auth)
+                                pub = flines[0]
+                                pub = pub.strip()
+                                newpub = "%s_%s" % (pkg.fmri.PREF_PUB_PFX,
+                                    pub)
                         else:
-                                newauth = "%s_%s" % (pkg.fmri.PREF_AUTH_PFX,
-                                    self.get_default_authority())
+                                newpub = "%s_%s" % (pkg.fmri.PREF_PUB_PFX,
+                                    self.get_preferred_publisher())
 
                         # Exception handler is only part of this code that
-                        # sets newauth
-                        auth = newauth
+                        # sets newpub
+                        pub = newpub
 
-                if newauth and not read_only:
+                if newpub and not read_only:
                         # This is where we actually update the installed
-                        # file with the new authority.
+                        # file with the new publisher.
                         f.seek(0)
-                        f.writelines(["VERSION_1\n", newauth, "\n"])
+                        f.writelines(["VERSION_1\n", newpub, "\n"])
 
                 f.close()
 
-                assert auth
+                assert pub
 
-                return auth
+                return pub
 
         def _install_file(self, fmri):
                 """Returns the path to the "installed" file for a given fmri."""
-                return "%s/pkg/%s/installed" % (self.imgdir, fmri.get_dir_path())
+                return "%s/pkg/%s/installed" % (self.imgdir,
+                    fmri.get_dir_path())
 
         def install_file_present(self, fmri):
                 """Returns true if the package named by the fmri is installed
@@ -1177,7 +1107,7 @@ class Image(object):
                                 raise
                         f = file(self._install_file(fmri), "w")
 
-                f.writelines(["VERSION_1\n", fmri.get_authority_str(), "\n"])
+                f.writelines(["VERSION_1\n", fmri.get_publisher_str(), "\n"])
                 f.close()
 
                 fi = file("%s/state/installed/%s" % (self.imgdir,
@@ -1223,7 +1153,7 @@ class Image(object):
                         if e.errno in (errno.EEXIST, errno.ENOTEMPTY):
                                 return
                         elif e.errno == errno.EACCES:
-                                # The directory may exist and be non-empty 
+                                # The directory may exist and be non-empty
                                 # even though we got EACCES.  Try
                                 # to determine its emptiness another way.
                                 try:
@@ -1231,10 +1161,11 @@ class Image(object):
                                             len(os.listdir(statedir)) > 0:
                                                 return
                                 except EnvironmentError:
-                                        # ignore this error, pass on the original
-                                        # access error
+                                        # ignore this error, pass on the
+                                        # original access error
                                         pass
-                                raise api_errors.PermissionsException(e.filename)
+                                raise api_errors.PermissionsException(
+                                    e.filename)
                         elif e.errno != errno.ENOENT:
                                 raise
 
@@ -1249,7 +1180,8 @@ class Image(object):
                         os.makedirs(tmpdir)
                 except OSError, e:
                         if e.errno == errno.EACCES:
-                                raise api_errors.PermissionsException(e.filename)
+                                raise api_errors.PermissionsException(
+                                    e.filename)
                         if e.errno != errno.EEXIST or \
                             not os.path.isdir(tmpdir):
                                 raise
@@ -1267,8 +1199,8 @@ class Image(object):
                                 continue
 
                         fmristr = urllib.unquote("%s@%s" % (pd, vd))
-                        auth = self.installed_file_authority(path)
-                        f = pkg.fmri.PkgFmri(fmristr, authority = auth)
+                        pub = self.installed_file_publisher(path)
+                        f = pkg.fmri.PkgFmri(fmristr, publisher = pub)
                         fi = file(os.path.join(tmpdir, f.get_link_path()), "w")
                         fi.close()
 
@@ -1295,45 +1227,45 @@ class Image(object):
                 return self.pkg_states.get(pfmri.get_fmri(anarchy = True)[5:],
                     (PKG_STATE_KNOWN, None))[0]
 
-        def get_pkg_auth_by_fmri(self, pfmri):
-                """Return the authority from which 'pfmri' was installed."""
+        def get_pkg_pub_by_fmri(self, pfmri):
+                """Return the publisher from which 'pfmri' was installed."""
 
                 f = self.pkg_states.get(pfmri.get_fmri(anarchy = True)[5:],
                     (PKG_STATE_KNOWN, None))[1]
                 if f:
                         # Return the non-preferred-prefixed name
-                        return f.get_authority()
+                        return f.get_publisher()
                 return None
 
-        def fmri_set_default_authority(self, fmri):
+        def fmri_set_default_publisher(self, fmri):
                 """If the FMRI supplied as an argument does not have
-                an authority, set it to the image's preferred authority."""
+                a publisher, set it to the image's preferred publisher."""
 
-                if fmri.has_authority():
+                if fmri.has_publisher():
                         return
 
-                fmri.set_authority(self.get_default_authority(), True)
+                fmri.set_publisher(self.get_preferred_publisher(), True)
 
         def get_catalog(self, fmri, exception = False):
-                """Given a FMRI, look at the authority and return the
+                """Given a FMRI, look at the publisher and return the
                 correct catalog for this image."""
 
-                # If FMRI has no authority, or is default authority,
-                # then return the catalog for the preferred authority
-                if not fmri.has_authority() or fmri.preferred_authority():
-                        cat = self.catalogs[self.get_default_authority()]
+                # If FMRI has no publisher, or is default publisher,
+                # then return the catalog for the preferred publisher
+                if not fmri.has_publisher() or fmri.preferred_publisher():
+                        cat = self.catalogs[self.get_preferred_publisher()]
                 else:
                         try:
-                                cat = self.catalogs[fmri.get_authority()]
+                                cat = self.catalogs[fmri.get_publisher()]
                         except KeyError:
-                                # If the authority that installed this package
-                                # has vanished, pick the default authority
+                                # If the publisher that installed this package
+                                # has vanished, pick the default publisher
                                 # instead.
                                 if exception:
                                         raise
                                 else:
                                         cat = self.catalogs[\
-                                            self.get_default_authority()]
+                                            self.get_preferred_publisher()]
 
                 return cat
 
@@ -1343,10 +1275,10 @@ class Image(object):
 
                 v = self.get_version_installed(fmri)
 
-                if v and not fmri.has_authority():
-                        fmri.set_authority(v.get_authority_str())
-                elif not fmri.has_authority():
-                        fmri.set_authority(self.get_default_authority(), True)
+                if v and not fmri.has_publisher():
+                        fmri.set_publisher(v.get_publisher_str())
+                elif not fmri.has_publisher():
+                        fmri.set_publisher(self.get_preferred_publisher(), True)
 
                 if v and self.fmri_is_successor(v, fmri):
                         return True
@@ -1378,7 +1310,7 @@ class Image(object):
 
                 v = self.get_version_installed(fmri)
 
-                assert fmri.has_authority()
+                assert fmri.has_publisher()
 
                 if v:
                         return v
@@ -1397,8 +1329,8 @@ class Image(object):
                 """Check that the exact version given in the FMRI is installed
                 in the current image."""
 
-                # All FMRIs passed to is_installed shall have an authority
-                assert fmri.has_authority()
+                # All FMRIs passed to is_installed shall have a publisher
+                assert fmri.has_publisher()
 
                 v = self.get_version_installed(fmri)
                 if not v:
@@ -1407,11 +1339,12 @@ class Image(object):
                 return v == fmri
 
         def list_excludes(self, new_variants=None):
-                """Generate a list of callables that each return True if an action
-                is to be included in the image using the currently defined 
-                variants for the image, or an updated set if new_variants are
-                specified.  The callables take a single action argument.
-                Variants, facets and filters will be handled in this fashion."""
+                """Generate a list of callables that each return True if an
+                action is to be included in the image using the currently
+                defined variants for the image, or an updated set if
+                new_variants are specified.  The callables take a single action
+                argument.  Variants, facets and filters will be handled in
+                this fashion."""
                 # XXX simple for now; facets and filters need impl.
                 if new_variants:
                         new_vars = self.cfg_cache.variants.copy()
@@ -1429,7 +1362,7 @@ class Image(object):
                         progtrack.evaluate_progress(fmri)
                         mfst = self.get_manifest(fmri)
 
-                        for dep in mfst.gen_actions_by_type("depend", 
+                        for dep in mfst.gen_actions_by_type("depend",
                             self.list_excludes()):
                                 if dep.attrs["type"] != "require":
                                         continue
@@ -1456,17 +1389,17 @@ class Image(object):
                                 dependents.extend(self.__req_dependents[f])
                 return dependents
 
-        def __do_get_versions(self, auth):
+        def __do_get_versions(self, pub):
                 """An internal method that is a wrapper around get_catalog.
                 This handles retryable exceptions and timeouts."""
 
                 retry_count = global_settings.PKG_TIMEOUT_MAX
                 failures = TransportFailures()
                 versdict = None
-        
+
                 while not versdict:
                         try:
-                                versdict = retrieve.get_versions(self, auth)
+                                versdict = retrieve.get_versions(self, pub)
                         except TransportException, e:
                                 retry_count -= 1
                                 failures.append(e)
@@ -1476,64 +1409,65 @@ class Image(object):
 
                 return versdict
 
-        def valid_authority_test(self, auth):
-                """Test that the authority supplied in auth actually
+        def valid_publisher_test(self, pub):
+                """Test that the publisher supplied in pub actually
                 points to a valid packaging server."""
 
                 try:
-                        vd = self.__do_get_versions(auth)
+                        vd = self.__do_get_versions(pub)
                 except (retrieve.VersionRetrievalError,
                     TransportFailures), e:
                         # Failure when contacting server.  Report
                         # this as an error.
-                        raise InvalidDepotResponseException(auth["origin"],
+                        raise InvalidDepotResponseException(pub["origin"],
                             "Transport errors encountered when trying to "
                             "contact depot server.  Reported the following "
                             "errors:\n%s" % e)
 
                 if not self._valid_versions_test(vd):
-                        raise InvalidDepotResponseException(auth["origin"],
+                        raise InvalidDepotResponseException(pub["origin"],
                             "Invalid or unparseable version information.")
 
                 return True
 
         def captive_portal_test(self):
                 """A captive portal forces a HTTP client on a network
-                to see a special web page, usually for authentication
+                to see a special web page, usually for pubentication
                 purposes.  (http://en.wikipedia.org/wiki/Captive_portal)."""
 
                 vd = None
 
-                for auth in self.gen_authorities():
+                for pub in self.gen_publishers():
                         try:
-                                vd = self.__do_get_versions(auth)
+                                vd = self.__do_get_versions(pub)
                         except (retrieve.VersionRetrievalError,
                             TransportFailures):
                                 # Encountered a transport error while
-                                # trying to contact this authority.
-                                # Pick another authority instead.
+                                # trying to contact this publisher.
+                                # Pick another publisher instead.
                                 continue
 
                         if self._valid_versions_test(vd):
                                 return
                         else:
-                                raise InvalidDepotResponseException(auth["origin"],
-                                    "This server is not a valid package depot.") 
+                                raise InvalidDepotResponseException(
+                                    pub["origin"], _("This server is not a "
+                                    "valid package depot."))
                 if not vd:
-                        # We got all the way through the list of authorites but
+                        # We got all the way through the list of puborites but
                         # encountered transport errors in every case.  This is
                         # likely a network configuration problem.  Report our
                         # inability to contact a server.
                         raise InvalidDepotResponseException(None,
-                            "Unable to contact any configured authorities. "
+                            "Unable to contact any configured publishers. "
                             "This is likely a network configuration problem.")
 
         def _valid_versions_test(self, versdict):
                 """Check that the versions information contained in
                 versdict contains valid version specifications.
 
-                In order to test for this condition, pick an authority
-                from the list of active authorities.  Check to see if
+                In order to test for this condition, pick a publisher
+                from the list of active publishers.  Check to see if
                 we can connect to it.  If so, test to see if it supports
                 the versions/0 operations.  If versions/0 is not found,
                 we get an unparseable response, or the response does
@@ -1565,7 +1499,7 @@ class Image(object):
                 # Some other error encountered. Fail
                 return False
 
-        def _do_get_catalog(self, auth, hdr, ts):
+        def _do_get_catalog(self, pub, hdr, ts):
                 """An internal method that is a wrapper around get_catalog.
                 This handles retryable exceptions and timeouts."""
 
@@ -1575,7 +1509,7 @@ class Image(object):
 
                 while not success:
                         try:
-                                success = retrieve.get_catalog(self, auth,
+                                success = retrieve.get_catalog(self, pub,
                                     hdr, ts)
                         except TransportException, e:
                                 retry_count -= 1
@@ -1585,76 +1519,76 @@ class Image(object):
                                         raise failures
 
         def retrieve_catalogs(self, full_refresh = False,
-            auths = None, progtrack = None):
+            pubs = None, progtrack = None):
                 failed = []
                 total = 0
                 succeeded = 0
                 cat = None
                 ts = 0
 
-                # XXX The authority validation checks depend upon the
-                # assumption that callers who pass a list of authorties
-                # have newly created the authorities in question and want
+                # XXX The publisher validation checks depend upon the
+                # assumption that callers who pass a list of puborties
+                # have newly created the publishers in question and want
                 # to specifically refresh their catalogs and verify that they
                 # are indeed reachable.
-                if not auths:
-                        # If no auths were passed into this routine, we're
+                if not pubs:
+                        # If no pubs were passed into this routine, we're
                         # performing a refresh of all catalogs.  In that case,
                         # it's best to simply check that we're
                         # not connected to a captive portal.
                         self.captive_portal_test()
-                        authlist = list(self.gen_authorities())
+                        publist = list(self.gen_publishers())
                 else:
                         # The code that's calling us has instantiated
-                        # new authorities.  Verify that each auth is
+                        # new publishers.  Verify that each pub is
                         # valid and reachable.  This is a more strict
                         # check than the captive_portal_test()
-                        authlist = [
-                            auth
-                            for auth in auths
-                            if self.valid_authority_test(auth)
+                        publist = [
+                            pub
+                            for pub in pubs
+                            if self.valid_publisher_test(pub)
                         ]
 
                 if progtrack:
-                        progtrack.refresh_start(len(authlist))
+                        progtrack.refresh_start(len(publist))
 
-                for auth in authlist:
-                        if auth["disabled"]:
+                for pub in publist:
+                        if pub.disabled:
                                 continue
-                                
+
                         total += 1
                         if progtrack:
-                                progtrack.refresh_progress(auth["prefix"])
+                                progtrack.refresh_progress(pub.prefix)
 
-                        full_refresh_this_auth = False
+                        full_refresh_this_pub = False
 
-                        if auth["prefix"] in self.catalogs:
-                                cat = self.catalogs[auth["prefix"]]
+                        if pub.prefix in self.catalogs:
+                                cat = self.catalogs[pub.prefix]
                                 ts = cat.last_modified()
 
                                 # Although we may have a catalog with a
                                 # timestamp, the user may have changed the
-                                # origin URL for the authority.  If this has
+                                # origin URL for the publisher.  If this has
                                 # occurred, we need to perform a full refresh.
-                                if cat.origin() != auth["origin"]:
-                                        full_refresh_this_auth = True
+                                if cat.origin() != pub["origin"]:
+                                        full_refresh_this_pub = True
 
                         if ts and not full_refresh and \
-                            not full_refresh_this_auth:
+                            not full_refresh_this_pub:
                                 hdr = {'If-Modified-Since': ts}
                         else:
                                 hdr = {}
 
                         try:
-                                self._do_get_catalog(auth, hdr, ts)
+                                self._do_get_catalog(pub, hdr, ts)
                         except retrieve.CatalogRetrievalError, e:
-                                failed.append((auth, e))
+                                failed.append((pub, e))
                         except TransportFailures, e:
-                                failed.append((auth, e))
+                                failed.append((pub, e))
                         else:
                                 succeeded += 1
 
-                self.cache_catalogs(auths)
+                self.cache_catalogs(pubs)
                 self.update_installed_pkgs()
 
                 if progtrack:
@@ -1664,33 +1598,33 @@ class Image(object):
                         raise api_errors.CatalogRefreshException(failed, total,
                             succeeded)
 
-        CATALOG_CACHE_VERSION = 1
+        CATALOG_CACHE_VERSION = 2
 
-        def cache_catalogs(self, auths=None):
+        def cache_catalogs(self, pubs=None):
                 """Read in all the catalogs and cache the data."""
                 cache = {}
-                authlist = []
+                publist = []
 
                 try:
-                        authlist = list(self.gen_authorities())
+                        publist = list(self.gen_publishers())
                 except CfgCacheError:
-                        # No authorities defined.  If the caller hasn't
-                        # supplied authorities to cache, raise the error
-                        if not auths:
+                        # No publishers defined.  If the caller hasn't
+                        # supplied publishers to cache, raise the error
+                        if not pubs:
                                 raise
 
-                if auths:
-                        # If caller passed authorities, include this in
-                        # the list of authorities to cache.
-                        authlist.extend(auths)
+                if pubs:
+                        # If caller passed publishers, include this in
+                        # the list of publishers to cache.
+                        publist.extend(pubs)
 
-                for auth in authlist:
-                        croot = "%s/catalog/%s" % (self.imgdir, auth["prefix"])
+                for pub in publist:
+                        croot = "%s/catalog/%s" % (self.imgdir, pub.prefix)
                         # XXX Should I be removing pkg_names.pkl now that we're
                         # not using it anymore?
                         try:
                                 catalog.Catalog.read_catalog(cache,
-                                    croot, auth = auth["prefix"])
+                                    croot, pub = pub.prefix)
                         except EnvironmentError, e:
                                 # If a catalog file is just missing, ignore it.
                                 # If there's a worse error, make sure the user
@@ -1744,35 +1678,36 @@ class Image(object):
                         try:
                                 version, self._catalog = \
                                     cPickle.load(file(cache_file, "rb"))
-                        except (cPickle.PickleError, EnvironmentError, EOFError):
+                        except (cPickle.PickleError, EnvironmentError,
+                            EOFError):
                                 self._catalog = {}
                                 self._catalog_cache_mod_time = None
                                 raise RuntimeError
 
                         self._catalog_cache_mod_time = mod_time
-                        
+
                         # If we don't recognize the version, complain.
                         if version != self.CATALOG_CACHE_VERSION:
                                 raise RuntimeError
 
         def load_catalogs(self, progresstracker):
-                for auth in self.gen_authorities():
-                        croot = "%s/catalog/%s" % (self.imgdir, auth["prefix"])
-                        progresstracker.catalog_start(auth["prefix"])
-                        if auth["prefix"] == self.cfg_cache.preferred_authority:
-                                authpfx = "%s_%s" % (pkg.fmri.PREF_AUTH_PFX,
-                                    auth["prefix"])
+                for pub in self.gen_publishers():
+                        croot = "%s/catalog/%s" % (self.imgdir, pub.prefix)
+                        progresstracker.catalog_start(pub.prefix)
+                        if pub.prefix == self.cfg_cache.preferred_publisher:
+                                pubpfx = "%s_%s" % (pkg.fmri.PREF_PUB_PFX,
+                                    pub.prefix)
                                 c = catalog.Catalog(croot,
-                                    authority=authpfx)
+                                    publisher=pubpfx)
                         else:
                                 c = catalog.Catalog(croot,
-                                    authority = auth["prefix"])
-                        self.catalogs[auth["prefix"]] = c
+                                    publisher=pub.prefix)
+                        self.catalogs[pub.prefix] = c
                         progresstracker.catalog_done()
 
                 # Try to load the catalog cache file.  If that fails, load the
                 # data from the canonical text copies of the catalogs from each
-                # authority.  Try to save it, to spare the time in the future.
+                # publisher.  Try to save it, to spare the time in the future.
                 # XXX Given that this is a read operation, should we be writing?
                 try:
                         self.load_catalog_cache()
@@ -1785,12 +1720,12 @@ class Image(object):
                 for state, f in self.pkg_states.values():
                         if state != PKG_STATE_INSTALLED:
                                 continue
-                        auth, name, vers = f.tuple()
+                        pub, name, vers = f.tuple()
 
                         if name not in self._catalog or \
                             vers not in self._catalog[name]["versions"]:
                                 catalog.Catalog.cache_fmri(self._catalog, f,
-                                    f.get_authority())
+                                    f.get_publisher())
 
         def destroy_catalog_cache(self):
                 pickle_file = os.path.join(self.imgdir, "catalog/catalog.pkl")
@@ -1800,10 +1735,14 @@ class Image(object):
                         if e.errno != errno.ENOENT:
                                 raise
 
-        def destroy_catalog(self, auth_name):
+        def has_catalog(self, prefix):
+                return os.path.exists(os.path.join(self.imgdir, "catalog",
+                    prefix, "catalog"))
+
+        def destroy_catalog(self, prefix):
                 try:
                         shutil.rmtree("%s/catalog/%s" %
-                            (self.imgdir, auth_name))
+                            (self.imgdir, prefix))
                 except OSError, e:
                         if e.errno not in (errno.ENOENT, errno.ESRCH):
                                 raise
@@ -1820,7 +1759,7 @@ class Image(object):
                 if cfmri.is_same_pkg(pfmri):
                         return True
 
-                # Get the catalog for the correct authority
+                # Get the catalog for the correct publisher
                 cat = self.get_catalog(cfmri)
                 return cat.rename_is_same_pkg(cfmri, pfmri)
 
@@ -1829,12 +1768,12 @@ class Image(object):
                 """Since the catalog keeps track of renames, it's no longer
                 sufficient to rely on the FMRI class to determine whether a
                 package is a successor.  This routine takes two FMRIs, and
-                if they have the same authority, checks if they've been
+                if they have the same publisher, checks if they've been
                 renamed.  If a rename has occurred, this runs the is_successor
                 routine from the catalog.  Otherwise, this runs the standard
                 fmri.is_successor() code."""
 
-                # Get the catalog for the correct authority
+                # Get the catalog for the correct publisher
                 cat = self.get_catalog(cfmri)
 
                 # If the catalog has a rename record that names fmri as a
@@ -1885,7 +1824,7 @@ class Image(object):
                 """Build up the package state dictionary.
 
                 This dictionary maps the full fmri string to a tuple of the
-                state, the prefix of the authority from which it's installed,
+                state, the prefix of the publisher from which it's installed,
                 and the fmri object.
 
                 Note that this dictionary only maps installed packages.  Use
@@ -1910,8 +1849,8 @@ class Image(object):
                                 fmristr = urllib.unquote(pl)
                                 tmpf = pkg.fmri.PkgFmri(fmristr)
                                 path = self._install_file(tmpf)
-                                auth = self.installed_file_authority(path)
-                                f = pkg.fmri.PkgFmri(fmristr, authority = auth)
+                                pub = self.installed_file_publisher(path)
+                                f = pkg.fmri.PkgFmri(fmristr, publisher = pub)
 
                                 self.pkg_states[fmristr] = \
                                     (PKG_STATE_INSTALLED, f)
@@ -1928,8 +1867,8 @@ class Image(object):
                                         continue
 
                                 fmristr = urllib.unquote("%s@%s" % (pd, vd))
-                                auth = self.installed_file_authority(path)
-                                f = pkg.fmri.PkgFmri(fmristr, authority = auth)
+                                pub = self.installed_file_publisher(path)
+                                f = pkg.fmri.PkgFmri(fmristr, publisher = pub)
 
                                 self.pkg_states[fmristr] = \
                                     (PKG_STATE_INSTALLED, f)
@@ -1942,7 +1881,8 @@ class Image(object):
                 return pkg.fmri.PkgFmri(myfmri, self.attrs["Build-Release"])
 
         def strtomatchingfmri(self, myfmri):
-                return pkg.fmri.MatchingPkgFmri(myfmri, self.attrs["Build-Release"])
+                return pkg.fmri.MatchingPkgFmri(myfmri,
+                    self.attrs["Build-Release"])
 
         def load_constraints(self, progtrack):
                 """Load constraints for all install pkgs"""
@@ -1951,16 +1891,17 @@ class Image(object):
                         # skip loading if already done
                         if self.constraints.start_loading(fmri):
                                 mfst = self.get_manifest(fmri)
-                                for dep in mfst.gen_actions_by_type("depend", 
+                                for dep in mfst.gen_actions_by_type("depend",
                                     self.list_excludes()):
                                         progtrack.evaluate_progress()
-                                        f, constraint = dep.parse(self, fmri.get_name())
-                                        self.constraints.update_constraints(constraint)
+                                        f, con = dep.parse(self,
+                                            fmri.get_name())
+                                        self.constraints.update_constraints(con)
                                 self.constraints.finish_loading(fmri)
 
         def get_installed_unbound_inc_list(self):
-                """Returns list of packages containing incorporation dependencies
-                on which no other pkgs depend."""
+                """Returns list of packages containing incorporation
+                dependencies on which no other pkgs depend."""
 
                 inc_tuples = []
                 dependents = set()
@@ -1968,19 +1909,20 @@ class Image(object):
                 for fmri in self.gen_installed_pkgs():
                         fmri_name = fmri.get_pkg_stem()
                         mfst = self.get_manifest(fmri)
-                        for dep in mfst.gen_actions_by_type("depend", self.list_excludes()):
+                        for dep in mfst.gen_actions_by_type("depend",
+                            self.list_excludes()):
                                 con_fmri = dep.get_constrained_fmri(self)
                                 if con_fmri:
                                         con_name = con_fmri.get_pkg_stem()
                                         dependents.add(con_name)
                                         inc_tuples.append((fmri_name, con_name))
-                # remove those incorporations which are depended on by other 
+                # remove those incorporations which are depended on by other
                 # incorporations.
                 deletions = 0
                 for i, a in enumerate(inc_tuples[:]):
                         if a[0] in dependents:
                                 del inc_tuples[i - deletions]
-                                
+
                 return list(set([ a[0] for a in inc_tuples ]))
 
         def get_user_by_name(self, name):
@@ -2017,17 +1959,17 @@ class Image(object):
                 """Applies a matcher to a name across a list of patterns.
                 Returns all tuples of patterns which match the name.  Each tuple
                 contains the index into the original list, the pattern itself,
-                the package version, the authority, and the raw authority
+                the package version, the publisher, and the raw publisher
                 string."""
                 return [
                     (i, pat, pat.tuple()[2],
-                        pat.get_authority(), pat.get_authority_str())
+                        pat.get_publisher(), pat.get_publisher_str())
                     for i, pat in enumerate(patterns)
                     if matcher(name, pat.tuple()[1])
                 ]
 
-        def __inventory(self, patterns = None, all_known = False, matcher = None,
-            constraint = pkg.version.CONSTRAINT_AUTO):
+        def __inventory(self, patterns=None, all_known=False, matcher=None,
+            constraint=pkg.version.CONSTRAINT_AUTO):
                 """Private method providing the back-end for inventory()."""
 
                 if not matcher:
@@ -2048,8 +1990,8 @@ class Image(object):
                                         if "*" in pat or "?" in pat:
                                                 matcher = pkg.fmri.glob_match
                                                 patterns[i] = \
-                                                    pkg.fmri.MatchingPkgFmri(pat,
-                                                        "5.11")
+                                                    pkg.fmri.MatchingPkgFmri(
+                                                        pat, "5.11")
                                         else:
                                                 patterns[i] = \
                                                     pkg.fmri.PkgFmri(pat,
@@ -2060,13 +2002,13 @@ class Image(object):
                 if illegals:
                         raise api_errors.InventoryException(illegal=illegals)
 
-                pauth = self.cfg_cache.preferred_authority
+                ppub = self.cfg_cache.preferred_publisher
 
                 # matchingpats is the set of all the patterns which matched a
                 # package in the catalog.  This allows us to return partial
                 # failure if some patterns match and some don't.
                 # XXX It would be nice to keep track of why some patterns failed
-                # to match -- based on name, version, or authority.
+                # to match -- based on name, version, or publisher.
                 matchingpats = set()
 
                 # XXX Perhaps we shouldn't sort here, but in the caller, to save
@@ -2107,42 +2049,42 @@ class Image(object):
                                         continue
 
                                 # Like the version skipping above, do the same
-                                # for authorities.
-                                authlist = set(self._catalog[name][str(ver)][1])
+                                # for publishers.
+                                publist = set(self._catalog[name][str(ver)][1])
                                 nomatch = []
                                 for i, match in enumerate(vmatches):
                                         if match[3] and \
-                                            match[3] not in authlist:
+                                            match[3] not in publist:
                                                 nomatch.append(i)
 
-                                amatches = [
+                                pmatches = [
                                     vmatches[i]
                                     for i, match in enumerate(vmatches)
                                     if i not in nomatch
                                 ]
 
-                                if vmatches and not amatches:
+                                if vmatches and not pmatches:
                                         continue
 
                                 # If no patterns were specified or any still-
-                                # matching pattern specified no authority, we
-                                # use the entire authlist for this version.
-                                # Otherwise, we use the intersection of authlist
-                                # and the auths in the patterns.
-                                aset = set(i[3] for i in amatches)
+                                # matching pattern specified no publisher, we
+                                # use the entire publist for this version.
+                                # Otherwise, we use the intersection of publist
+                                # and the pubs in the patterns.
+                                aset = set(i[3] for i in pmatches)
                                 if aset and None not in aset:
-                                        authlist = set(
+                                        publist = set(
                                             m[3:5]
-                                            for m in amatches
-                                            if m[3] in authlist
+                                            for m in pmatches
+                                            if m[3] in publist
                                         )
                                 else:
-                                        authlist = zip(authlist, authlist)
+                                        publist = zip(publist, publist)
 
                                 pfmri = self._catalog[name][str(ver)][0]
 
                                 inst_state = self.get_pkg_state_by_fmri(pfmri)
-                                inst_auth = self.get_pkg_auth_by_fmri(pfmri)
+                                inst_pub = self.get_pkg_pub_by_fmri(pfmri)
                                 state = {
                                     "upgradable": ver != newest,
                                     "frozen": False,
@@ -2151,19 +2093,19 @@ class Image(object):
                                 }
 
                                 # We yield copies of the fmri objects in the
-                                # catalog because we add the authorities in, and
+                                # catalog because we add the publishers in, and
                                 # don't want to mess up the canonical catalog.
-                                # If a pattern had specified an authority as
+                                # If a pattern had specified a publisher as
                                 # preferred, be sure to emit an fmri that way,
                                 # too.
                                 yielded = False
                                 if all_known:
-                                        for auth, rauth in authlist:
+                                        for pub, rpub in publist:
                                                 nfmri = pfmri.copy()
-                                                nfmri.set_authority(rauth,
-                                                    auth == pauth)
+                                                nfmri.set_publisher(rpub,
+                                                    pub == ppub)
                                                 st = state.copy()
-                                                if auth == inst_auth:
+                                                if pub == inst_pub:
                                                         st["state"] = \
                                                             PKG_STATE_INSTALLED
                                                 else:
@@ -2173,19 +2115,21 @@ class Image(object):
                                                 yielded = True
                                 elif inst_state == PKG_STATE_INSTALLED:
                                         nfmri = pfmri.copy()
-                                        nfmri.set_authority(inst_auth,
-                                            inst_auth == pauth)
+                                        nfmri.set_publisher(inst_pub,
+                                            inst_pub == ppub)
                                         state["state"] = inst_state
                                         yield nfmri, state
                                         yielded = True
 
                                 if yielded:
-                                        matchingpats |= set(i[:2] for i in amatches)
+                                        matchingpats |= set(
+                                            i[:2] for i in pmatches)
 
                 nonmatchingpats = [
                     opatterns[i]
                     for i, f in set(enumerate(patterns)) - matchingpats
                 ]
+
                 if nonmatchingpats:
                         raise api_errors.InventoryException(
                             notfound=nonmatchingpats)
@@ -2213,14 +2157,14 @@ class Image(object):
                 # "preferred" and "first_only" are private arguments that are
                 # currently only used in evaluate_fmri(), but could be made more
                 # generally useful.  "preferred" ensures that all potential
-                # matches from the preferred authority are generated before
-                # those from non-preferred authorities.  In the current
+                # matches from the preferred publisher are generated before
+                # those from non-preferred publishers.  In the current
                 # implementation, this consumes more memory.  "first_only"
                 # signals us to return only the first match, which allows us to
                 # save all the memory that "preferred" currently eats up.
                 preferred = kwargs.pop("preferred", False)
                 first_only = kwargs.pop("first_only", False)
-                pauth = self.cfg_cache.preferred_authority
+                ppub = self.cfg_cache.preferred_publisher
 
                 if not preferred:
                         for f in self.__inventory(*args, **kwargs):
@@ -2229,7 +2173,7 @@ class Image(object):
                         nplist = []
                         firstnp = None
                         for f in self.__inventory(*args, **kwargs):
-                                if f[0].get_authority() == pauth:
+                                if f[0].get_publisher() == ppub:
                                         yield f
                                         if first_only:
                                                 return
@@ -2289,28 +2233,40 @@ class Image(object):
                 failed = []
 
                 if not servers:
-                        servers = self.gen_authorities()
+                        servers = self.gen_publishers()
 
-                for auth in servers:
-                        ssl_tuple = self.get_ssl_credentials(
-                            authority = auth.get("prefix", None),
-                            origin = auth["origin"])
-                        try:
-                                uuid = self.get_uuid(auth["prefix"])
-                        except KeyError:
-                                uuid = None
+                for pub in servers:
+                        if not isinstance(pub, publisher.Publisher):
+                                origin = pub["origin"]
+                                try:
+                                        pub = self.get_publisher(
+                                            origin=origin)
+                                except api_errors.UnknownPublisher:
+                                        pass
+                                else:
+                                        repo = pub.selected_repository
+                                        origin = repo.get_origin(origin)
+                        else:
+                                origin = pub.selected_repository.origins[0]
+
+                        uuid = None
+                        ssl_tuple = (None, None)
+                        if isinstance(origin, publisher.RepositoryURI):
+                                ssl_tuple = (origin.ssl_key, origin.ssl_cert)
+                                uuid = self.get_uuid(pub.prefix)
+                                origin = origin.uri
 
                         try:
-                                res, v = versioned_urlopen(auth["origin"],
-                                    "search", [0], urllib.quote(args[0], ""),
+                                res, v = versioned_urlopen(origin, "search",
+                                    [0], urllib.quote(args[0], ""),
                                     ssl_creds=ssl_tuple, imgtype=self.type,
                                     uuid=uuid)
                         except urllib2.HTTPError, e:
                                 if e.code != httplib.NOT_FOUND:
-                                        failed.append((auth, e))
+                                        failed.append((pub, e))
                                 continue
                         except urllib2.URLError, e:
-                                failed.append((auth, e))
+                                failed.append((pub, e))
                                 continue
 
                         try:
@@ -2322,7 +2278,7 @@ class Image(object):
                                         else:
                                                 yield fields[:4]
                         except socket.timeout, e:
-                                failed.append((auth, e))
+                                failed.append((pub, e))
                                 continue
 
                 if failed:
@@ -2360,9 +2316,9 @@ class Image(object):
                         shutil.rmtree(self.dl_cache_dir, True)
 
         def salvagedir(self, path):
-                """Called when directory contains something and it's not supposed
-                to because it's being deleted. XXX Need to work out a better error
-                passback mechanism. Path is rooted in /...."""
+                """Called when directory contains something and it's not
+                supposed to because it's being deleted. XXX Need to work out a
+                better error passback mechanism. Path is rooted in /...."""
 
                 salvagedir = os.path.normpath(
                     os.path.join(self.imgdir, "lost+found",
@@ -2371,13 +2327,15 @@ class Image(object):
                 parent = os.path.dirname(salvagedir)
                 if not os.path.exists(parent):
                         os.makedirs(parent)
-                shutil.move(os.path.normpath(os.path.join(self.root, path)), salvagedir)
+                shutil.move(os.path.normpath(os.path.join(self.root, path)),
+                    salvagedir)
                 # XXX need a better way to do this.
                 emsg("\nWarning - directory %s not empty - contents preserved "
                         "in %s" % (path, salvagedir))
 
         def temporary_file(self):
-                """ create a temp file under image directory for various purposes"""
+                """create a temp file under image directory for various
+                purposes"""
                 tempdir = os.path.normpath(os.path.join(self.imgdir, "tmp"))
                 if not os.path.exists(tempdir):
                         os.makedirs(tempdir)
@@ -2385,7 +2343,8 @@ class Image(object):
                 os.close(fd)
                 return name
 
-        def expanddirs(self, dirs):
+        @staticmethod
+        def expanddirs(dirs):
                 """given a set of directories, return expanded set that includes
                 all components"""
                 out = set()
@@ -2403,16 +2362,16 @@ class Image(object):
                 to assemble an appropriate image plan.  This is a helper
                 routine for some common operations in the client.
 
-                This method checks all authorities for a package match;
-                however, it defaults to choosing the preferred authority
+                This method checks all publishers for a package match;
+                however, it defaults to choosing the preferred publisher
                 when an ambiguous package name is specified.  If the user
-                wishes to install a package from a non-preferred authority,
-                the full FMRI that contains an authority should be used
+                wishes to install a package from a non-preferred publisher,
+                the full FMRI that contains a publisher should be used
                 to name the package."""
 
                 if filters is None:
                         filters = []
-                
+
                 error = 0
                 ip = imageplan.ImagePlan(self, progtrack, check_cancelation,
                     filters=filters, noexecute=noexecute)
@@ -2429,7 +2388,7 @@ class Image(object):
                 # done first
 
                 inc_list = self.get_installed_unbound_inc_list()
-                
+
                 head = []
                 tail = []
 
@@ -2449,19 +2408,22 @@ class Image(object):
                 for p in pkg_list:
                         progtrack.evaluate_progress()
                         try:
-                                conp = pkg.fmri.PkgFmri(p, self.attrs["Build-Release"])
+                                conp = pkg.fmri.PkgFmri(p,
+                                    self.attrs["Build-Release"])
                         except pkg.fmri.IllegalFmri:
                                 illegal_fmris.append(p)
                                 error = 1
                                 continue
                         try:
-                                conp = self.constraints.apply_constraints_to_fmri(conp)
+                                conp = \
+                                    self.constraints.apply_constraints_to_fmri(
+                                    conp)
                         except constraint.ConstraintException, e:
                                 error = 1
-                                constraint_violations.extend(str(e).split("\n"))                               
+                                constraint_violations.extend(str(e).split("\n"))
                                 continue
                         try:
-                                matches = list(self.inventory([ conp ],
+                                matches = list(self.inventory([conp],
                                     all_known = True))
                         except api_errors.InventoryException, e:
                                 assert(not (e.notfound and e.illegal))
@@ -2478,7 +2440,7 @@ class Image(object):
                         npnames = {}
                         npmatch = []
                         for m, state in matches:
-                                if m.preferred_authority():
+                                if m.preferred_publisher():
                                         pnames[m.get_pkg_stem()] = 1
                                         pmatch.append(m)
                                 else:
@@ -2503,7 +2465,7 @@ class Image(object):
 
                 if error != 0:
                         raise api_errors.PlanCreationException(unfound_fmris,
-                            multiple_matches, [], illegal_fmris, 
+                            multiple_matches, [], illegal_fmris,
                             constraint_violations=constraint_violations)
 
                 if verbose:
@@ -2599,7 +2561,7 @@ class Image(object):
                 #
                 # This routine makes the distinction between the "target image",
                 # which will be altered, and the "running image", which is
-                # to say whatever image appears to contain the version of the 
+                # to say whatever image appears to contain the version of the
                 # pkg command we're running.
                 #
 
@@ -2621,7 +2583,7 @@ class Image(object):
                         progtrack = progress.QuietProgressTracker()
 
                 img = self
-                
+
                 if not img.is_liveroot():
                         newimg = Image()
                         cmdpath = os.path.join(os.getcwd(), actual_cmd)

@@ -20,8 +20,10 @@
 # CDDL HEADER END
 #
 
+#
 # Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
+#
 
 import testutils
 if __name__ == "__main__":
@@ -314,13 +316,13 @@ close """
 
         res_local_fat10_i386_star = res_fat10_i386.union(set([
             "variant.arch set       sparc                     pkg:/fat@1.0-0\n",
-            "authority  set       test                      pkg:/fat@1.0-0\n",
+            "publisher  set       test                      pkg:/fat@1.0-0\n",
             "fmri       set       fmri                      pkg:/fat@1.0-0\n"
         ]))
 
         res_local_fat10_sparc_star = res_fat10_sparc.union(set([
             "variant.arch set       i386                      pkg:/fat@1.0-0\n",
-            "authority  set       test                      pkg:/fat@1.0-0\n",
+            "publisher  set       test                      pkg:/fat@1.0-0\n",
             "fmri       set       fmri                      pkg:/fat@1.0-0\n"
         ]))
 
@@ -1132,7 +1134,7 @@ class TestPkgSearchMulti(testutils.ManyDepotTestCase):
                 self.pkgsend_bulk(durl2, self.example_pkg10)
 
                 self.image_create(durl1, prefix = "test1")
-                self.pkg("set-authority -O " + durl2 + " test2")
+                self.pkg("set-publisher -O " + durl2 + " test2")
 
         def test_bug_2955(self):
                 """See http://defect.opensolaris.org/bz/show_bug.cgi?id=2955"""

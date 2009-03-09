@@ -20,8 +20,10 @@
 # CDDL HEADER END
 #
 
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+#
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
+#
 
 import testutils
 if __name__ == "__main__":
@@ -38,7 +40,7 @@ import pkg.client.api as api
 import pkg.client.api_errors as api_errors
 import pkg.client.progress as progress
 
-API_VERSION = 10
+API_VERSION = 11
 PKG_CLIENT_NAME = "pkg"
 
 class TestApiInfo(testutils.SingleDepotTestCase):
@@ -177,8 +179,8 @@ class TestApiInfo(testutils.SingleDepotTestCase):
 
                 self.assert_(res.pkg_stem is not None)
                 self.assert_(res.summary is not None)
-                self.assert_(res.authority is not None)
-                self.assert_(res.preferred_authority is not None)
+                self.assert_(res.publisher is not None)
+                self.assert_(res.preferred_publisher is not None)
                 self.assert_(res.version is not None)
                 self.assert_(res.build_release is not None)
                 self.assert_(res.branch is not None)
@@ -220,8 +222,8 @@ class TestApiInfo(testutils.SingleDepotTestCase):
                 self.assert_(res.summary is None)
                 self.assert_(res.category_info_list == [])
                 self.assert_(res.state is None)
-                self.assert_(res.authority is None)
-                self.assert_(res.preferred_authority is None)
+                self.assert_(res.publisher is None)
+                self.assert_(res.preferred_publisher is None)
                 self.assert_(res.version is None)
                 self.assert_(res.build_release is None)
                 self.assert_(res.branch is None)
@@ -275,8 +277,8 @@ class TestApiInfo(testutils.SingleDepotTestCase):
                 self.assert_(res.summary is None)
                 self.assert_(res.category_info_list == [])
                 self.assert_(res.state is None)
-                self.assert_(res.authority is None)
-                self.assert_(res.preferred_authority is None)
+                self.assert_(res.publisher is None)
+                self.assert_(res.preferred_publisher is None)
                 self.assert_(res.version is None)
                 self.assert_(res.build_release is None)
                 self.assert_(res.branch is None)

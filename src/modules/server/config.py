@@ -47,21 +47,21 @@ class SvrConfigError(Exception):
 
 # depot Server Configuration
 class SvrConfig(object):
-        """Server configuration and state object.  The authority is the default
-        authority under which packages will be stored.  Repository locations are
+        """Server configuration and state object.  The publisher is the default
+        publisher under which packages will be stored.  Repository locations are
         the primary derived configuration.  State is the current set of
         transactions and packages stored by the repository.
 
         If 'auto_create' is True, a new repository will be created at the
         location specified by 'repo_root' if one does not already exist."""
 
-        def __init__(self, repo_root, content_root, authority,
+        def __init__(self, repo_root, content_root, publisher,
             auto_create=False, fork_allowed=False):
                 self.set_repo_root(repo_root)
                 self.set_content_root(content_root)
 
                 self.auto_create = auto_create
-                self.authority = authority
+                self.publisher = publisher
                 self.fork_allowed = fork_allowed
                 self.read_only = False
                 self.mirror = False

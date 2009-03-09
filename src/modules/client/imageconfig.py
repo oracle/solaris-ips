@@ -20,30 +20,30 @@
 # CDDL HEADER END
 #
 
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 import ConfigParser
-import re
 import errno
 import os.path
 import pkg.fmri as fmri
-import pkg.misc as misc
 import pkg.client.api_errors as api_errors
+import pkg.client.publisher as publisher
 import pkg.client.variant as variant
-from pkg.misc import msg
+from pkg.misc import emsg
 import pkg.portable as portable
+import re
 
 class DepotStatus(object):
         """An object that encapsulates status about a depot server.
         This includes things like observed performance, availability,
         successful and unsuccessful transaction rates, etc."""
 
-        def __init__(self, authority, url):
-                """Authority is the authority prefix for this depot.
-                Url is the URL that names the server or mirror itself."""
+        def __init__(self, prefix, url):
+                """prefix is the publisher prefix for this depot.  url is the
+                URL that names the server or mirror itself."""
 
-                self.auth = authority
+                self.prefix = prefix
                 self.url = url.rstrip("/")
                 self.available = True
 
@@ -91,30 +91,30 @@ DA_FILE = "disabled_auth"
 
 class ImageConfig(object):
         """An ImageConfig object is a collection of configuration information:
-        URLs, authorities, properties, etc. that allow an Image to operate."""
+        URLs, publishers, properties, etc. that allow an Image to operate."""
 
         # XXX The SSL ssl_key attribute asserts that there is one
-        # ssl_key per authority.  This may be insufficiently general:  we
+        # ssl_key per publisher.  This may be insufficiently general:  we
         # may need one ssl_key per mirror.
 
         # XXX Use of ConfigParser is convenient and at most speculative--and
         # definitely not interface.
 
         def __init__(self):
-                self.authorities = {}
-                self.authority_status = {}
+                self.publishers = {}
+                self.publisher_status = {}
                 self.mirror_status = {}
                 self.properties = dict((
                     (p, str(v)) 
                     for p, v in default_policies.iteritems()
                 ))
-                self.preferred_authority = None
+                self.preferred_publisher = None
                 self.filters = {}
                 self.variants = variant.Variants()
                 self.children = []
 
         def __str__(self):
-                return "%s\n%s" % (self.authorities, self.properties)
+                return "%s\n%s" % (self.publishers, self.properties)
 
         def get_policy(self, policy):
                 """Return a boolean value for the named policy.  Returns
@@ -127,25 +127,27 @@ class ImageConfig(object):
                         return policystr.lower() in ("true", "yes")
                 return default_policies[policy]
                 
-        def read(self, dir):
-                """Read the config files for the image from the given directory."""
+        def read(self, path):
+                """Read the config files for the image from the given directory.
+                """
 
                 cp = ConfigParser.SafeConfigParser()
 
-                ccfile = os.path.join(dir, CFG_FILE)
+                ccfile = os.path.join(path, CFG_FILE)
                 r = cp.read(ccfile)
                 if len(r) == 0:
-                        raise RuntimeError("Couldn't read configuration from %s" % ccfile)
+                        raise RuntimeError("Couldn't read configuration from "
+                            "%s" % ccfile)
 
                 assert r[0] == ccfile
 
                 for s in cp.sections():
                         if re.match("authority_.*", s):
-                                k, a = self.read_authority(cp, s)
+                                k, a = self.read_publisher(cp, s)
                                 ms = []
 
-                                self.authorities[k] = a
-                                self.authority_status[k] = DepotStatus(k,
+                                self.publishers[k] = a
+                                self.publisher_status[k] = DepotStatus(k,
                                     a["origin"])
 
                                 for mirror in a["mirrors"]:
@@ -153,8 +155,8 @@ class ImageConfig(object):
 
                                 self.mirror_status[k] = ms
                                 
-                                if self.preferred_authority == None:
-                                        self.preferred_authority = k
+                                if self.preferred_publisher == None:
+                                        self.preferred_publisher = k
 
                 # read in the policy section to provide backward
                 # compatibility for older images
@@ -175,36 +177,56 @@ class ImageConfig(object):
                         for o in cp.options("variant"):
                                 self.variants[o] = cp.get("variant", o)
 
-                if "preferred-authority" in self.properties:
-                        self.preferred_authority = self.properties["preferred-authority"]
+                try:
+                        self.preferred_publisher = \
+                            self.properties["preferred-publisher"]
+                except KeyError:
+                        try:
+                                # Compatibility with older clients.
+                                self.properties["preferred-publisher"] = \
+                                    self.properties["preferred-authority"]
+                                self.preferred_publisher = \
+                                    self.properties["preferred-publisher"]
+                                del self.properties["preferred-authority"]
+                        except KeyError:
+                                pass
 
-                # read disabled authority file
+                # read disabled publisher file
                 # XXX when compatility with the old code is no longer needed,
                 # this can be removed
                 cp = ConfigParser.SafeConfigParser()
-                dafile = os.path.join(dir, DA_FILE)
+                dafile = os.path.join(path, DA_FILE)
                 if os.path.exists(dafile):
                         r = cp.read(dafile)
                         if len(r) == 0:
-                                raise RuntimeError("Couldn't read configuration from %s" % dafile)
+                                raise RuntimeError("Couldn't read "
+                                    "configuration from %s" % dafile)
                         for s in cp.sections():
                                 if re.match("authority_.*", s):
-                                        k, a = self.read_authority(cp, s)
-                                        self.authorities[k] = a
+                                        k, a = self.read_publisher(cp, s)
+                                        self.publishers[k] = a
                                         # status objects are not created for
-                                        # disabled authorities
+                                        # disabled publishers
 
-        def write(self, dir):
+        def write(self, path):
                 """Write the configuration to the given directory"""
                 cp = ConfigParser.SafeConfigParser()
                 # XXX the use of the disabled_auth file can be removed when
                 # compatibility with the older code is no longer needed
                 da = ConfigParser.SafeConfigParser()
-                self.properties["preferred-authority"] = self.preferred_authority
+
+                try:
+                        del self.properties["preferred-publisher"]
+                except KeyError:
+                        pass
+
+                self.properties["preferred-authority"] = \
+                    self.preferred_publisher
 
                 cp.add_section("property")
                 for p in self.properties:
-                        cp.set("property", p, self.properties[p].encode('utf-8'))
+                        cp.set("property", p,
+                            self.properties[p].encode("utf-8"))
 
                 cp.add_section("filter")
                 for f in self.filters:
@@ -214,27 +236,56 @@ class ImageConfig(object):
                 for f in self.variants:
                         cp.set("variant", f, str(self.variants[f]))
 
-                for a in self.authorities:
-                        auth = self.authorities[a]
-                        section = "authority_%s" % auth["prefix"]
+                for prefix in self.publishers:
+                        pub = self.publishers[prefix]
+                        section = "authority_%s" % pub.prefix
 
                         c = cp
-                        if auth["disabled"]:
+                        if pub.disabled:
                                 c = da
 
                         c.add_section(section)
-                        c.set(section, "prefix", auth["prefix"])
-                        c.set(section, "origin", auth["origin"])
-                        c.set(section, "disabled", str(auth["disabled"]))
-                        c.set(section, "mirrors", str(auth["mirrors"]))
-                        c.set(section, "ssl_key", str(auth["ssl_key"]))
-                        c.set(section, "ssl_cert", str(auth["ssl_cert"]))
-                        c.set(section, "uuid", str(auth["uuid"]))
+                        c.set(section, "alias", str(pub.alias))
+                        c.set(section, "prefix", str(pub.prefix))
+                        c.set(section, "disabled", str(pub.disabled))
+
+                        repo = pub.selected_repository
+                        c.set(section, "origin", repo.origins[0].uri)
+                        c.set(section, "mirrors",
+                            str([u.uri for u in repo.mirrors]))
+
+                        # XXX this should be per origin or mirror
+                        c.set(section, "ssl_key", str(pub["ssl_key"]))
+                        c.set(section, "ssl_cert", str(pub["ssl_cert"]))
+
+                        # XXX this should really be client_uuid, but is being
+                        # left with this name for compatibility with older
+                        # clients.
+                        c.set(section, "uuid", str(pub.client_uuid))
+
+                        # Write selected repository data.
+                        # XXX this is temporary until a switch to a more
+                        # expressive configuration format is made.
+                        repo = pub.selected_repository
+                        repo_data = {
+                            "collection_type": repo.collection_type,
+                            "description": repo.description,
+                            "legal_uris": [u.uri for u in repo.legal_uris],
+                            "name": repo.name,
+                            "refresh_seconds": repo.refresh_seconds,
+                            "registered": repo.registered,
+                            "registration_uri": repo.registration_uri,
+                            "related_uris": [u.uri for u in repo.related_uris],
+                            "sort_policy": repo.sort_policy,
+                        }
+
+                        for key, val in repo_data.iteritems():
+                                c.set(section, "repo.%s" % key, str(val))
 
                 # XXX Child images
 
                 for afile, acp in [(CFG_FILE, cp), (DA_FILE, da)]:
-                        thefile = os.path.join(dir, afile)
+                        thefile = os.path.join(path, afile)
                         if len(acp.sections()) == 0:
                                 if os.path.exists(thefile):
                                         portable.remove(thefile)
@@ -248,18 +299,18 @@ class ImageConfig(object):
                                 raise
                         acp.write(f)
 
-        def delete_authority(self, auth):
-                del self.authorities[auth]
+        def remove_publisher(self, prefix):
+                del self.publishers[prefix]
 
         @staticmethod
-        def read_list(str):
+        def read_list(list_str):
                 """Take a list in string representation and convert it back
                 to a Python list."""
                 
                 # Strip brackets and any whitespace
-                str = str.strip("][ ")
+                list_str = list_str.strip("][ ")
                 # Strip comma and any whitespeace
-                lst = str.split(", ")
+                lst = list_str.split(", ")
                 # Strip empty whitespace, single, and double quotation marks
                 lst = [ s.strip("' \"") for s in lst ]
                 # Eliminate any empty strings
@@ -267,49 +318,129 @@ class ImageConfig(object):
 
                 return lst
 
-        def read_authority(self, cp, s):
-                # authority block has prefix, origin, and mirrors
-                a = {}
-                k = cp.get(s, "prefix")
+        def read_publisher(self, cp, s):
+                # publisher block has alias, prefix, origin, and mirrors
+                try:
+                        alias = cp.get(s, "alias")
+                except ConfigParser.NoOptionError:
+                        alias = None
 
-                if k.startswith(fmri.PREF_AUTH_PFX):
+                prefix = cp.get(s, "prefix")
+
+                if prefix.startswith(fmri.PREF_PUB_PFX):
                         raise RuntimeError(
-                            "Invalid Authority name: %s" % k)
+                            "Invalid Publisher name: %s" % prefix)
 
-                a["prefix"] = k
-                a["origin"] = cp.get(s, "origin")
+                origin = cp.get(s, "origin")
                 try:
                         d = cp.get(s, "disabled")
                 except ConfigParser.NoOptionError:
                         d = 'False'
-                a["disabled"] = d.lower() in ("true", "yes")
+                disabled = d.lower() in ("true", "yes")
 
                 mir_str = cp.get(s, "mirrors")
                 if mir_str == "None":
-                        a["mirrors"] = []
+                        mirrors = []
                 else:
-                        a["mirrors"] = self.read_list(mir_str)
+                        mirrors = self.read_list(mir_str)
 
                 try:
-                        a["ssl_key"] = cp.get(s, "ssl_key")
-                        if a["ssl_key"] == "None":
-                                a["ssl_key"] = None
+                        ssl_key = cp.get(s, "ssl_key")
+                        if ssl_key == "None":
+                                ssl_key = None
                 except ConfigParser.NoOptionError:
-                        a["ssl_key"] = None
+                        ssl_key = None
 
                 try:
-                        a["ssl_cert"] = cp.get(s, "ssl_cert")
-                        if a["ssl_cert"] == "None":
-                                a["ssl_cert"] = None
+                        ssl_cert = cp.get(s, "ssl_cert")
+                        if ssl_cert == "None":
+                                ssl_cert = None
                 except ConfigParser.NoOptionError:
-                        a["ssl_cert"] = None
+                        ssl_cert = None
 
                 try:
-                        a["uuid"] = cp.get(s, "uuid")
+                        # XXX this should really be client_uuid, but is being
+                        # left with this name for compatibility with older
+                        # clients.
+                        client_uuid = cp.get(s, "uuid")
+                        if client_uuid == "None":
+                                client_uuid = None
                 except ConfigParser.NoOptionError:
-                        a["uuid"] = "None"
+                        client_uuid = None
 
-                a["origin"] = \
-                    misc.url_affix_trailing_slash(a["origin"])
+                # Load selected repository data.
+                # XXX this is temporary until a switch to a more expressive
+                # configuration format is made.
+                repo_data = {
+                    "collection_type": None,
+                    "description": None,
+                    "legal_uris": None,
+                    "name": None,
+                    "refresh_seconds": None,
+                    "registered": None,
+                    "registration_uri": None,
+                    "related_uris": None,
+                    "sort_policy": None,
+                }
 
-                return k, a
+                for key in repo_data:
+                        try:
+                                val = cp.get(s, "repo.%s" % key)
+                                if key.endswith("_uris"):
+                                        val = self.read_list(val)
+                                        if val == "None":
+                                                val = []
+                                else:
+                                        if val == "None":
+                                                val = None
+                                repo_data[key] = val
+                        except ConfigParser.NoOptionError:
+                                if key.endswith("_uris"):
+                                        repo_data[key] = []
+                                else:
+                                        repo_data[key] = None
+
+                # Normalize/sanitize repository data.
+                val = repo_data["registered"]
+                if val is not None and val.lower() in ("true", "yes", "1"):
+                        repo_data["registered"] = True
+                else:
+                        repo_data["registered"] = False
+
+                for attr in ("collection_type", "sort_policy"):
+                        if not repo_data[attr]:
+                                # Assume default value for attr.
+                                del repo_data[attr]
+
+                # Guard against invalid configuration for ssl information. If
+                # this isn't done, the user won't be able to load the client
+                # to fix the problem.
+                if not origin.startswith("https"):
+                        ssl_key = None
+                        ssl_cert = None
+
+                if ssl_key:
+                        ssl_key = os.path.abspath(ssl_key)
+                        if not os.path.exists(ssl_key):
+                                # XXX need client messaging framework
+                                emsg(api_errors.NoSuchCertificate(ssl_key,
+                                    uri=origin, publisher=prefix))
+                                ssl_key = None
+
+                if ssl_cert:
+                        ssl_cert = os.path.abspath(ssl_cert)
+                        if not os.path.exists(ssl_cert):
+                                # XXX need client messaging framework
+                                emsg(api_errors.NoSuchCertificate(ssl_cert,
+                                    uri=origin, publisher=prefix))
+                                ssl_cert = None
+
+                r = publisher.Repository(**repo_data)
+                r.add_origin(origin, ssl_cert=ssl_cert, ssl_key=ssl_key)
+                for m in mirrors:
+                        r.add_mirror(m, ssl_cert=ssl_cert, ssl_key=ssl_key)
+                pub = publisher.Publisher(prefix, alias=alias,
+                    client_uuid=client_uuid, disabled=disabled,
+                    repositories=[r])
+
+                return prefix, pub

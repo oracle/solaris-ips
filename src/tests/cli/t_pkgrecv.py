@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -78,8 +78,8 @@ class TestPkgrecvMulti(testutils.ManyDepotTestCase):
         def setUp(self):
                 """ Start two depots.
                     depot 1 gets foo and moo, depot 2 gets foo and bar
-                    depot1 is mapped to authority test1 (preferred)
-                    depot2 is mapped to authority test2 """
+                    depot1 is mapped to publisher test1 (preferred)
+                    depot2 is mapped to publisher test2 """
 
                 testutils.ManyDepotTestCase.setUp(self, 2)
 

@@ -46,7 +46,7 @@ from pkg.misc import EmptyI
 class ServerCatalog(catalog.Catalog):
         """The catalog information which is only needed by the server."""
 
-        def __init__(self, cat_root, authority=None, pkg_root=None,
+        def __init__(self, cat_root, publisher=None, pkg_root=None,
             read_only=False, index_root=None, repo_root=None,
             rebuild=False, verbose=False, fork_allowed=False):
 
@@ -85,7 +85,7 @@ class ServerCatalog(catalog.Catalog):
 
                 self.refresh_again = False
 
-                catalog.Catalog.__init__(self, cat_root, authority, pkg_root,
+                catalog.Catalog.__init__(self, cat_root, publisher, pkg_root,
                     read_only, rebuild)
 
                 searchdb_file = os.path.join(self.repo_root, "search")
@@ -304,7 +304,7 @@ class ServerCatalog(catalog.Catalog):
                 return self._search_available or self._check_search()
 
         @staticmethod
-        def read_catalog(cat, path, auth=None):
+        def read_catalog(cat, path, pub=None):
                 """Read the catalog file in "path" and combine it with the
                 existing data in "catalog"."""
 
@@ -315,7 +315,7 @@ class ServerCatalog(catalog.Catalog):
                                 continue
 
                         f = fmri.PkgFmri(line[7:])
-                        ServerCatalog.cache_fmri(cat, f, auth)
+                        ServerCatalog.cache_fmri(cat, f, pub)
 
                 catf.close()
 

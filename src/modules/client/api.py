@@ -22,19 +22,25 @@
 # Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
-import pkg.search_errors as search_errors
+import copy
+import errno
+import os
 import pkg.client.bootenv as bootenv
 import pkg.client.image as image
 import pkg.client.api_errors as api_errors
 import pkg.client.history as history
-import pkg.misc as misc
+import pkg.client.publisher as publisher
 import pkg.fmri as fmri
+import pkg.misc as misc
+import pkg.search_errors as search_errors
 from pkg.client.imageplan import EXECUTED_OK
 from pkg.client import global_settings
-
+import simplejson as json
 import threading
+import urllib2
 
-CURRENT_API_VERSION = 10
+CURRENT_API_VERSION = 11
+CURRENT_P5I_VERSION = 1
 
 class ImageInterface(object):
         """This class presents an interface to images that clients may use.
@@ -69,7 +75,7 @@ class ImageInterface(object):
                 canceled changes. It can raise VersionException and
                 ImageNotFoundException."""
 
-                compatible_versions = set([10])
+                compatible_versions = set([11])
 
                 if version_id not in compatible_versions:
                         raise api_errors.VersionException(CURRENT_API_VERSION,
@@ -101,7 +107,7 @@ class ImageInterface(object):
         @staticmethod
         def check_be_name(be_name):
                 return bootenv.BootEnv.check_be_name(be_name)
-                
+
         def plan_install(self, pkg_list, filters, refresh_catalogs=True,
             noexecute=False, verbose=False, update_index=True):
                 """Contructs a plan to install the packages provided in
@@ -115,11 +121,10 @@ class ImageInterface(object):
                 two things. The first is a boolean which tells the client
                 whether there is anything to do. The third is either None, or an
                 exception which indicates partial success. It can raise
-                InvalidCertException, PlanCreationException,
-                NetworkUnavailableException, PermissionsException and
-                InventoryException. The noexecute argument is included for
-                compatibility with operational history. The hope is it can be
-                removed in the future."""
+                PlanCreationException, NetworkUnavailableException,
+                PermissionsException and InventoryException. The noexecute
+                argument is included for compatibility with operational
+                history. The hope is it can be removed in the future."""
 
                 self.__activity_lock.acquire()
                 try:
@@ -128,11 +133,16 @@ class ImageInterface(object):
                                 raise api_errors.PlanExistsException(
                                     self.plan_type)
                         try:
-                                self.img.history.operation_name = "install"
+                                self.log_operation_start("install")
                                 # Verify validity of certificates before
-                                # attempting network operations
-                                if not self.img.check_cert_validity():
-                                        raise api_errors.InvalidCertException()
+                                # attempting network operations.
+                                try:
+                                        self.img.check_cert_validity()
+                                except api_errors.ExpiringCertificate, e:
+                                        misc.emsg(e)
+                                except api_errors.CertificateError, e:
+                                        self.log_operation_end(error=e)
+                                        raise
 
                                 self.img.load_catalogs(self.progresstracker)
 
@@ -169,32 +179,22 @@ class ImageInterface(object):
                                     self.img.imageplan)
                                 if self.img.imageplan.nothingtodo() or \
                                     noexecute:
-                                        self.img.history.operation_result = \
-                                            history.RESULT_NOTHING_TO_DO
+                                        self.log_operation_end(
+                                            result=history.RESULT_NOTHING_TO_DO)
                                 self.img.imageplan.update_index = update_index
                                 res = not self.img.imageplan.nothingtodo()
-                        except api_errors.CanceledException:
-                                self.__reset_unlock()
-                                self.img.history.operation_result = \
-                                    history.RESULT_CANCELED
-                                raise
                         except api_errors.PlanCreationException, e:
                                 self.__reset_unlock()
                                 self.__set_history_PlanCreationException(e)
                                 raise
-                        except fmri.IllegalFmri:
+                        except (api_errors.CanceledException, fmri.IllegalFmri,
+                            Exception), e:
                                 self.__reset_unlock()
-                                self.img.history.operation_result = \
-                                    history.RESULT_FAILED_BAD_REQUEST
-                                raise
-                        except Exception:
-                                self.__reset_unlock()
-                                self.img.history.operation_result = \
-                                    history.RESULT_FAILED_UNKNOWN
+                                self.log_operation_end(error=e)
                                 raise
                 finally:
                         self.__activity_lock.release()
-                
+
                 return res, exception_caught
 
 
@@ -217,7 +217,7 @@ class ImageInterface(object):
                                 raise api_errors.PlanExistsException(
                                     self.plan_type)
                         try:
-                                self.img.history.operation_name = "uninstall"
+                                self.log_operation_start("uninstall")
                                 self.img.load_catalogs(self.progresstracker)
 
                                 self.img.make_uninstall_plan(pkg_list,
@@ -269,7 +269,7 @@ class ImageInterface(object):
                         self.__activity_lock.release()
 
                 return res
-                
+
         def plan_update_all(self, actual_cmd, refresh_catalogs=True,
             noexecute=False, force=False, verbose=False, update_index=True,
             be_name=None):
@@ -298,7 +298,7 @@ class ImageInterface(object):
                                 raise api_errors.PlanExistsException(
                                     self.plan_type)
                         try:
-                                self.img.history.operation_name = "image-update"
+                                self.log_operation_start("image-update")
                                 exception_caught = None
                                 if not self.check_be_name(be_name):
                                         raise api_errors.InvalidBENameException(
@@ -306,9 +306,14 @@ class ImageInterface(object):
                                 self.be_name = be_name
 
                                 # Verify validity of certificates before
-                                # attempting network operations
-                                if not self.img.check_cert_validity():
-                                        raise api_errors.InvalidCertException()
+                                # attempting network operations.
+                                try:
+                                        self.img.check_cert_validity()
+                                except api_errors.ExpiringCertificate, e:
+                                        misc.emsg(e)
+                                except api_errors.CertificateError, e:
+                                        self.log_operation_end(error=e)
+                                        raise
 
                                 self.img.load_catalogs(self.progresstracker)
 
@@ -345,7 +350,8 @@ class ImageInterface(object):
                                                     actual_cmd,
                                                     self.__check_cancelation,
                                                     noexecute,
-                                                    refresh_catalogs, self.progresstracker):
+                                                    refresh_catalogs,
+                                                    self.progresstracker):
                                                         self.img.history.operation_result = \
                                                             history.RESULT_FAILED_CONSTRAINED
                                                         raise api_errors.IpkgOutOfDateException()
@@ -354,9 +360,9 @@ class ImageInterface(object):
                                                 # so we proceed
                                                 pass
 
-                                pkg_list = [ 
-                                        ipkg.get_pkg_stem()
-                                        for ipkg in self.img.gen_installed_pkgs() 
+                                pkg_list = [
+                                    ipkg.get_pkg_stem()
+                                    for ipkg in self.img.gen_installed_pkgs()
                                 ]
 
                                 self.img.make_install_plan(pkg_list,
@@ -408,14 +414,14 @@ class ImageInterface(object):
                                 raise
                 finally:
                         self.__activity_lock.release()
-                
+
                 return res, opensolaris_image, exception_caught
 
         def describe(self):
                 """Returns None if no plan is ready yet, otherwise returns
                 a PlanDescription"""
                 return self.plan_desc
-                
+
         def prepare(self):
                 """Takes care of things which must be done before the plan
                 can be executed. This includes downloading the packages to
@@ -478,7 +484,7 @@ class ImageInterface(object):
 
                         if self.executed:
                                 raise api_errors.AlreadyExecutedException()
-                        
+
                         assert self.plan_type == self.__INSTALL or \
                             self.plan_type == self.__UNINSTALL or \
                             self.plan_type == self.__IMAGE_UPDATE
@@ -547,39 +553,45 @@ class ImageInterface(object):
                         self.executed = True
                 finally:
                         self.__activity_lock.release()
-                        
-                
-        def refresh(self, full_refresh, auths=None):
-                """Refreshes the catalogs. full_refresh controls whether to do
-                a full retrieval of the catalog from the authority or only
-                update the existing catalog. auths is a list of authorities to
-                refresh. Passing an empty list or using the default value means
-                all known authorities will be refreshed. While it currently
-                returns an image object, this is an expedient for allowing
-                existing code to work while the rest of the API is put into
-                place."""
-                
+
+
+        def refresh(self, full_refresh, pubs=None):
+                """Refreshes the metadata for a publisher (e.g. catalog).
+
+                'full_refresh' is a boolean value indicating whether a full
+                retrieval of the catalog or only an update to the existing
+                catalog should be performed.
+
+                'pubs' is a list of prefixes of publishers to refresh.  Passing
+                an empty list or using the default value means all known
+                publishers will be refreshed.
+
+                Currently returns an image object, allowing existing code to
+                work while the rest of the API is put into place."""
+
+                self.log_operation_start("refresh-publisher")
                 self.__activity_lock.acquire()
                 self.__set_can_be_canceled(False)
                 try:
                         # Verify validity of certificates before attempting
-                        # network operations
-                        if not self.img.check_cert_validity():
-                                raise api_errors.InvalidCertException()
+                        # network operations.
+                        try:
+                                self.img.check_cert_validity()
+                        except api_errors.ExpiringCertificate, e:
+                                misc.emsg(e)
 
-                        auths_to_refresh = []
-                        
-                        if not auths:
-                                auths = []
-                        for auth in auths:
-                                try:
-                                        a = self.img.get_authority(auth)
-                                except KeyError:
-                                        raise api_errors.UnrecognizedAuthorityException(auth)
-                                if a["disabled"]:
-                                        raise api_errors.UnrecognizedAuthorityException(auth)
-                                auths_to_refresh.append(a)
+                        pubs_to_refresh = []
 
+                        if not pubs:
+                                # Omit disabled publishers.
+                                pubs = [p for p in self.img.gen_publishers()]
+                        for pub in pubs:
+                                p = pub
+                                if not isinstance(p, publisher.Publisher):
+                                        p = self.img.get_publisher(prefix=pub)
+                                if p.disabled:
+                                        raise api_errors.DisabledPublisher(pub)
+                                pubs_to_refresh.append(p)
 
                         # Ensure Image directory structure is valid.
                         self.img.mkdirs()
@@ -589,12 +601,13 @@ class ImageInterface(object):
                         self.img.load_catalogs(self.progresstracker)
 
                         self.img.retrieve_catalogs(full_refresh,
-                            auths_to_refresh)
+                            pubs_to_refresh)
 
                         return self.img
-                        
+
                 finally:
                         self.__activity_lock.release()
+                        self.log_operation_end()
 
         def __licenses(self, mfst, local):
                 """Private function. Returns the license info from the
@@ -616,27 +629,25 @@ class ImageInterface(object):
                 return license_lst
 
         def info(self, fmri_strings, local, info_needed):
-                """Gathers information about fmris. fmri_strings is a list
-                of fmri_names for which information is desired. local
-                determines whether to retrieve the information locally.
-                get_licenses determines whether to retrieve the text of
-                the licenses. It returns a dictionary of lists. The keys
-                for the dictionary are the constants specified in the class
-                definition. The values are lists of PackageInfo objects or
-                strings."""
+                """Gathers information about fmris.  fmri_strings is a list
+                of fmri_names for which information is desired.  local
+                determines whether to retrieve the information locally.  It
+                returns a dictionary of lists.  The keys for the dictionary are
+                the constants specified in the class definition.  The values are
+                lists of PackageInfo objects or strings."""
 
                 bad_opts = info_needed - PackageInfo.ALL_OPTIONS
                 if bad_opts:
                         raise api_errors.UnrecognizedOptionsToInfo(bad_opts)
-                
-                self.img.history.operation_name = "info"
+
+                self.log_operation_start("info")
                 self.img.load_catalogs(self.progresstracker)
 
                 fmris = []
                 notfound = []
                 multiple_matches = []
                 illegals = []
-                
+
                 if local:
                         fmris, notfound, illegals = \
                             self.img.installed_fmris_from_args(fmri_strings)
@@ -646,12 +657,15 @@ class ImageInterface(object):
                                 raise api_errors.NoPackagesInstalledException()
                 else:
                         # Verify validity of certificates before attempting
-                        # network operations
-                        if not self.img.check_cert_validity():
-                                self.img.history.operation_result = \
-                                    history.RESULT_FAILED_TRANSPORT
-                                raise api_errors.InvalidCertException()
-                        
+                        # network operations.
+                        try:
+                                self.img.check_cert_validity()
+                        except api_errors.ExpiringCertificate, e:
+                                misc.emsg(e)
+                        except api_errors.CertificateError, e:
+                                self.log_operation_end(error=e)
+                                raise
+
                         # XXX This loop really needs not to be copied from
                         # Image.make_install_plan()!
                         for p in fmri_strings:
@@ -673,7 +687,7 @@ class ImageInterface(object):
                                 npnames = {}
                                 npmatch = []
                                 for m, state in matches:
-                                        if m.preferred_authority():
+                                        if m.preferred_publisher():
                                                 pnames[m.get_pkg_stem()] = 1
                                                 pmatch.append(m)
                                         else:
@@ -702,20 +716,20 @@ class ImageInterface(object):
                 pis = []
 
                 for f in fmris:
-                        authority = name = version = release = None
+                        pub = name = version = release = None
                         build_release = branch = packaging_date = None
                         if PackageInfo.IDENTITY in info_needed:
-                                authority, name, version = f.tuple()
-                                authority = fmri.strip_auth_pfx(authority)
-                                release=version.release
-                                build_release=version.build_release
-                                branch=version.branch
-                                packaging_date=version.get_timestamp().ctime()
-                        pref_auth = None
+                                pub, name, version = f.tuple()
+                                pub = fmri.strip_pub_pfx(pub)
+                                release = version.release
+                                build_release = version.build_release
+                                branch = version.branch
+                                packaging_date = version.get_timestamp().ctime()
+                        pref_pub = None
                         if PackageInfo.PREF_AUTHORITY in info_needed:
-                                pref_auth = False
-                                if f.preferred_authority():
-                                        pref_auth = True
+                                pref_pub = False
+                                if f.preferred_publisher():
+                                        pref_pub = True
                         state = None
                         if PackageInfo.STATE in info_needed:
                                 if self.img.is_installed(f):
@@ -772,7 +786,7 @@ class ImageInterface(object):
 
                         pis.append(PackageInfo(pkg_stem=name, summary=summary,
                             category_info_list=cat_info, state=state,
-                            authority=authority, preferred_authority=pref_auth,
+                            publisher=pub, preferred_publisher=pref_pub,
                             version=release, build_release=build_release,
                             branch=branch, packaging_date=packaging_date,
                             size=size, pfmri=str(f), licenses=licenses,
@@ -793,7 +807,7 @@ class ImageInterface(object):
                     self.INFO_MULTI_MATCH: multiple_matches,
                     self.INFO_ILLEGALS: illegals
                 }
-                        
+
         def can_be_canceled(self):
                 """Returns true if the API is in a cancelable state."""
                 return self.__can_be_canceled
@@ -834,7 +848,7 @@ class ImageInterface(object):
                 code to use to determine whether the current action has been
                 canceled."""
                 return self.__canceling
-                
+
         def cancel(self):
                 """Used for asynchronous cancelation. It returns the API
                 to the state it was in prior to the current method being
@@ -860,14 +874,403 @@ class ImageInterface(object):
         def __set_history_PlanCreationException(self, e):
                 if e.unfound_fmris or e.multiple_matches or \
                     e.missing_matches or e.illegal:
-                        self.img.history.operation_result = \
-                            history.RESULT_FAILED_BAD_REQUEST
+                        self.log_operation_end(error=e,
+                            result=history.RESULT_FAILED_BAD_REQUEST)
                 elif e.constraint_violations:
-                        self.img.history.operation_result = \
-                            history.RESULT_FAILED_CONSTRAINED
+                        self.log_operation_end(error=e,
+                            result=history.RESULT_FAILED_CONSTRAINED)
                 else:
-                        self.img.history.operation_result = \
-                            history.RESULT_FAILED_UNKNOWN
+                        self.log_operation_end(error=e)
+
+        def add_publisher(self, pub, refresh_allowed=True):
+                """Add the provided publisher object to the image
+                configuration."""
+                self.img.add_publisher(pub, refresh_allowed=refresh_allowed)
+
+        def get_preferred_publisher(self):
+                """Returns the preferred publisher object for the image."""
+                return self.get_publisher(
+                    prefix=self.img.get_preferred_publisher())
+
+        def get_publisher(self, prefix=None, alias=None, duplicate=False):
+                """Retrieves a publisher object matching the provided prefix
+                (name) or alias.
+
+                'duplicate' is an optional boolean value indicating whether
+                a copy of the publisher object should be returned instead
+                of the original.
+                """
+                pub = self.img.get_publisher(prefix=prefix, alias=alias)
+                if duplicate:
+                        # Never return the original so that changes to the
+                        # retrieved object are not reflected until
+                        # update_publisher is called.
+                        return copy.copy(pub)
+                return pub
+
+        def get_publishers(self, duplicate=False):
+                """Returns a list of the publisher objects for the current
+                image.
+
+                'duplicate' is an optional boolean value indicating whether
+                copies of the publisher objects should be returned instead
+                of the originals.
+                """
+                if duplicate:
+                        # Return a copy so that changes to the retrieved objects
+                        # are not reflected until update_publisher is called.
+                        pubs = [
+                            copy.copy(p)
+                            for p in self.img.get_publishers().values()
+                        ]
+                else:
+                        pubs = self.img.get_publishers().values()
+                return misc.get_sorted_publishers(pubs,
+                    preferred=self.img.get_preferred_publisher())
+
+        def get_publisher_last_update_time(self, prefix=None, alias=None):
+                """Returns a datetime object representing the last time the
+                catalog for a publisher was modified or None."""
+                if alias:
+                        prefix = self.get_publisher(alias=alias).prefix
+                dt = None
+                self.__activity_lock.acquire()
+                try:
+                        self.__set_can_be_canceled(True)
+                        try:
+                                dt = self.img.get_publisher_last_update_time(
+                                    prefix)
+                        except api_errors.CanceledException:
+                                self.__reset_unlock()
+                                raise
+                        except Exception:
+                                self.__reset_unlock()
+                                raise
+                finally:
+                        self.__activity_lock.release()
+                return dt
+
+        def has_publisher(self, prefix=None, alias=None):
+                """Retrieves a publisher object matching the provided prefix
+                (name) or alias."""
+                return self.img.has_publisher(prefix=prefix, alias=alias)
+
+        def remove_publisher(self, prefix=None, alias=None):
+                """Removes a publisher object matching the provided prefix
+                (name) or alias."""
+                self.img.remove_publisher(prefix=prefix, alias=alias)
+
+        def set_preferred_publisher(self, prefix=None, alias=None):
+                """Sets the preferred publisher for the image."""
+                self.img.set_preferred_publisher(prefix=prefix, alias=alias)
+
+        def update_publisher(self, pub, refresh_allowed=True):
+                """Replaces an existing publisher object with the provided one
+                using the _source_object_id identifier set during copy.
+
+                'refresh_allowed' is an optional boolean value indicating
+                whether a refresh of publisher metadata (such as its catalog)
+                should be performed if transport information is changed for a
+                repository, mirror, or origin.  If False, no attempt will be
+                made to retrieve publisher metadata."""
+
+                self.log_operation_start("update-publisher")
+
+                if pub.disabled and \
+                    pub.prefix == self.img.get_preferred_publisher():
+                        raise api_errors.SetPreferredPublisherDisabled(
+                            pub.prefix)
+
+                refresh_catalog = False
+                purge_catalog = False
+
+                def need_refresh(oldo, newo):
+                        if oldo.disabled and not newo.disabled:
+                                # The publisher has been re-enabled, so
+                                # retrieve the catalog.
+                                return True
+
+                        if len(newo.repositories) != len(oldo.repositories):
+                                # If there are an unequal number of repositories
+                                # then some have been added or removed.
+                                return True
+
+                        matched = 0
+                        for oldr in oldo.repositories:
+                                for newr in newo.repositories:
+                                        if newr._source_object_id == id(oldr):
+                                                matched += 1
+                                                if oldr.origins != newr.origins:
+                                                        return True
+
+                        if matched != len(newo.repositories):
+                                # If not all of the repositories match up, then
+                                # one has been removed or added, or an origin
+                                # URI has changed.
+                                return True
+                        return False
+
+                updated = False
+                publishers = self.img.get_publishers()
+                for key, old in publishers.iteritems():
+                        if pub._source_object_id == id(old):
+                                if need_refresh(old, pub):
+                                        refresh_catalog = True
+                                elif pub.disabled:
+                                        purge_catalog = True
+                                del publishers[key]
+                                publishers[pub.prefix] = pub
+                                updated = True
+
+                if not updated:
+                        # If a matching publisher couldn't be found and
+                        # replaced, something is wrong (client api usage
+                        # error).
+                        e = api_errors.UnknownPublisher(pub)
+                        self.log_operation_end(e)
+                        raise e
+
+                if refresh_allowed and not refresh_catalog:
+                        # If the publisher's catalog is missing, retrieve it.
+                        refresh_catalog = not self.img.has_catalog(pub.prefix)
+
+                if refresh_catalog or purge_catalog:
+                        try:
+                                self.img.destroy_catalog(pub)
+                                self.img.destroy_catalog_cache()
+                        except EnvironmentError, e:
+                                if e.errno == errno.EACCES:
+                                        raise api_errors.PermissionsException(
+                                            e.filename)
+                                raise
+
+                        if purge_catalog:
+                                self.img.cache_catalogs()
+                        elif refresh_allowed:
+                                self.refresh(True, pubs=[pub])
+
+                # Successful refresh or purge has happened, so save
+                # final configuration.
+                self.img.save_config()
+                self.log_operation_end()
+                return
+
+        def log_operation_end(self, error=None, result=None):
+                """Marks the end of an operation to be recorded in image
+                history.
+
+                'result' should be a pkg.client.history constant value
+                representing the outcome of an operation.  If not provided,
+                and 'error' is provided, the final result of the operation will
+                be based on the class of 'error' and 'error' will be recorded
+                for the current operation.  If 'result' and 'error' is not
+                provided, success is assumed."""
+                self.img.history.log_operation_end(error=error, result=result)
+
+        def log_operation_error(self, error):
+                """Adds an error to the list of errors to be recorded in image
+                history for the current opreation."""
+                self.img.history.log_operation_error(error)
+
+        def log_operation_start(self, name):
+                """Marks the start of an operation to be recorded in image
+                history."""
+                self.img.history.log_operation_start(name)
+
+        def parse_p5i(self, fileobj=None, location=None):
+                """Reads the pkg(5) publisher json formatted data at 'location'
+                or from the provided file-like object 'fileobj' and returns a
+                list of tuples of the format (publisher object, pkg_names).
+                pkg_names is a list of strings representing package names or
+                FMRIs.  If any pkg_names not specific to a publisher were
+                provided, the last tuple returned will be of the format (None,
+                pkg_names).
+
+                'fileobj' is an optional file-like object that must support a
+                'read' method for retrieving data.
+
+                'location' is an optional string value that should either start
+                with a leading slash and be pathname of a file or a URI string.
+                If it is a URI string, supported protocol schemes are 'file',
+                'ftp', 'http', and 'https'.
+
+                'fileobj' or 'location' must be provided."""
+
+                if location is None and fileobj is None:
+                        raise api_errors.InvalidResourceLocation(location)
+
+                if location:
+                        if location.startswith(os.path.sep):
+                                location = os.path.abspath(location)
+                                location = "file://" + location
+
+                        try:
+                                fileobj = urllib2.urlopen(location)
+                        except (EnvironmentError, ValueError,
+                            urllib2.HTTPError), e:
+                                raise api_errors.RetrievalError(e,
+                                    location=location)
+
+                try:
+                        dump_struct = json.load(fileobj)
+                except (EnvironmentError, urllib2.HTTPError), e:
+                        raise api_errors.RetrievalError(e)
+                except ValueError, e:
+                        # Not a valid json file.
+                        raise api_errors.InvalidP5IFile(e)
+
+                try:
+                        ver = int(dump_struct["version"])
+                except KeyError:
+                        raise api_errors.InvalidP5IFile(_("missing version"))
+                except ValueError:
+                        raise api_errors.InvalidP5IFile(_("invalid version"))
+
+                if ver > CURRENT_P5I_VERSION:
+                        raise api_errors.UnsupportedP5IFile()
+
+                result = []
+                try:
+                        plist = dump_struct.get("publishers", [])
+
+                        for p in plist:
+                                alias = p.get("alias", None)
+                                prefix = p.get("name", None)
+
+                                if not prefix:
+                                        prefix = "Unknown"
+
+                                pub = publisher.Publisher(prefix, alias=alias)
+                                pkglist = p.get("packages", [])
+                                result.append((pub, pkglist))
+
+                                for r in p.get("repositories", []):
+                                        rargs = {}
+                                        for prop in ("collection_type",
+                                            "description", "name",
+                                            "refresh_seconds",
+                                            "registration_uri"):
+                                                val = r.get(prop, None)
+                                                if val is None or val == "None":
+                                                        continue
+                                                rargs[prop] = val
+
+                                        for prop in ("legal_uris", "mirrors",
+                                            "origins", "related_uris"):
+                                                val = r.get(prop, [])
+                                                if not isinstance(val, list):
+                                                        continue
+                                                rargs[prop] = val
+
+                                        if rargs.get("origins", None):
+                                                repo = publisher.Repository(
+                                                    **rargs)
+                                                pub.add_repository(repo)
+
+                        pkglist = dump_struct.get("packages", [])
+                        if pkglist:
+                                result.append((None, pkglist))
+                except (api_errors.PublisherError, TypeError, ValueError), e:
+                        raise api_errors.InvalidP5IFile(str(e))
+                return result
+
+        def write_p5i(self, fileobj, pkg_names=None, pubs=None):
+                """Writes the publisher, repository, and provided package names
+                to the provided file-like object 'fileobj' in json p5i format.
+
+                'fileobj' is only required to have a 'write' method that accepts
+                data to be written as a parameter.
+
+                'pkg_names' is a dict of lists, tuples, or sets indexed by
+                publisher prefix that contain package names, FMRI strings, or
+                package info objects.  A prefix of "" can be used for packages
+                that are not specific to a publisher.
+
+                'pubs' is an optional list of publisher prefixes or Publisher
+                objects.  If not provided, the information for all publishers
+                (excluding those disabled) will be output."""
+
+                dump_struct = {
+                    "packages": [],
+                    "publishers": [],
+                    "version": CURRENT_P5I_VERSION,
+                }
+
+                if not pubs:
+                        plist = [
+                            p for p in self.get_publishers()
+                            if not p.disabled
+                        ]
+                else:
+                        plist = []
+                        for p in pubs:
+                                if not isinstance(p, publisher.Publisher):
+                                        plist.append(self.img.get_publisher(
+                                            prefix=p, alias=p))
+                                else:
+                                        plist.append(p)
+
+                if pkg_names is None:
+                        pkg_names = {}
+
+                def copy_pkg_names(source, dest):
+                        for entry in source:
+                                # Publisher information is intentionally
+                                # omitted as association with this specific
+                                # publisher is implied by location in the
+                                # output.
+                                if isinstance(entry, PackageInfo):
+                                        dest.append(entry.fmri.get_fmri(
+                                            anarchy=True))
+                                elif isinstance(entry, fmri.PkgFmri):
+                                        dest.append(entry.get_fmri(
+                                            anarchy=True))
+                                else:
+                                        dest.append(str(entry))
+
+                dpubs = dump_struct["publishers"]
+                for p in plist:
+                        dpub = {
+                            "alias": p.alias,
+                            "name": p.prefix,
+                            "packages": [],
+                            "repositories": []
+                        }
+                        dpubs.append(dpub)
+
+                        try:
+                                copy_pkg_names(pkg_names[p.prefix],
+                                    dpub["packages"])
+                        except KeyError:
+                                pass
+
+                        drepos = dpub["repositories"]
+                        for r in p.repositories:
+                                reg_uri = ""
+                                if r.registration_uri:
+                                        reg_uri = r.registration_uri.uri
+
+                                drepos.append({
+                                    "collection_type": r.collection_type,
+                                    "description": r.description,
+                                    "legal_uris": [u.uri for u in r.legal_uris],
+                                    "mirrors": [u.uri for u in r.mirrors],
+                                    "name": r.name,
+                                    "origins": [u.uri for u in r.origins],
+                                    "refresh_seconds": r.refresh_seconds,
+                                    "registration_uri": reg_uri,
+                                    "related_uris": [
+                                        u.uri for u in r.related_uris
+                                    ],
+                                })
+
+                try:
+                        copy_pkg_names(pkg_names[""], dump_struct["packages"])
+                except KeyError:
+                        pass
+
+                return json.dump(dump_struct, fileobj, ensure_ascii=False,
+                    allow_nan=False, indent=2, sort_keys=True)
 
 
 class PlanDescription(object):
@@ -907,7 +1310,7 @@ class PackageCategory(object):
                         return "%s (%s)" % (self.category, self.scheme)
                 else:
                         return "%s" % self.category
-        
+
 class PackageInfo(object):
         """A class capturing the information about packages that a client
         could need. The fmri is guaranteed to be set. All other values may
@@ -918,16 +1321,17 @@ class PackageInfo(object):
         NOT_INSTALLED = 2
 
 
+
         __NUM_PROPS = 12
         IDENTITY, SUMMARY, CATEGORIES, STATE, PREF_AUTHORITY, SIZE, LICENSES, \
             LINKS, HARDLINKS, FILES, DIRS, DEPENDENCIES = range(__NUM_PROPS)
         ALL_OPTIONS = frozenset(range(__NUM_PROPS))
         ACTION_OPTIONS = frozenset([LINKS, HARDLINKS, FILES, DIRS,
             DEPENDENCIES])
-        
+
         def __init__(self, pfmri, pkg_stem=None, summary=None,
-            category_info_list=None, state=None, authority=None,
-            preferred_authority=None, version=None, build_release=None,
+            category_info_list=None, state=None, publisher=None,
+            preferred_publisher=None, version=None, build_release=None,
             branch=None, packaging_date=None, size=None, licenses=None,
             links=None, hardlinks=None, files=None, dirs=None,
             dependencies=None):
@@ -937,8 +1341,8 @@ class PackageInfo(object):
                         category_info_list = []
                 self.category_info_list = category_info_list
                 self.state = state
-                self.authority = authority
-                self.preferred_authority = preferred_authority
+                self.publisher = publisher
+                self.preferred_publisher = preferred_publisher
                 self.version = version
                 self.build_release = build_release
                 self.branch = branch
@@ -959,9 +1363,10 @@ class PackageInfo(object):
         def build_from_fmri(f):
                 if not f:
                         return f
-                authority, name, version = f.tuple()
-                authority = fmri.strip_auth_pfx(authority)
-                return PackageInfo(pkg_stem=name, authority=authority,
+                pub, name, version = f.tuple()
+                pub = fmri.strip_pub_pfx(pub)
+                return PackageInfo(pkg_stem=name, publisher=pub,
                     version=version.release,
                     build_release=version.build_release, branch=version.branch,
-                    packaging_date=version.get_timestamp().ctime(), pfmri=str(f))
+                    packaging_date=version.get_timestamp().ctime(),
+                    pfmri=str(f))

@@ -19,8 +19,12 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+
+#
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
+#
+
 #
 # fmribench - benchmark fmri creation and other related operations
 #
@@ -116,13 +120,13 @@ f1 = fmri.PkgFmri("pkg:/SUNWxwssu@0.5.11,5.11-0.72")""",
         """str(f1)"""
         ],
 
-        [ "fmri to string (no authority)", 100000,
+        [ "fmri to string (no publisher)", 100000,
         """import pkg.fmri as fmri
 f1 = fmri.PkgFmri("pkg:/SUNWxwssu@0.5.11,5.11-0.72:20070921T203926Z")""",
         """str(f1)"""
         ],
 
-        [ "fmri to string (with authority)", 100000,
+        [ "fmri to string (with publisher)", 100000,
         """import pkg.fmri as fmri
 f1 = fmri.PkgFmri("pkg://origin/SUNWxwssu@0.5.11,5.11-0.72:20070921T203926Z")""",
         """str(f1)"""

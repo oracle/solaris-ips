@@ -27,11 +27,12 @@ import testutils
 if __name__ == "__main__":
 	testutils.setup_environment("../../../proto")
 
-import unittest
+import difflib
 import os
 import re
 import shutil
-import difflib
+import tempfile
+import unittest
 
 class TestPkgRefreshMulti(testutils.ManyDepotTestCase):
 
@@ -64,7 +65,7 @@ class TestPkgRefreshMulti(testutils.ManyDepotTestCase):
 
                 self.durl1 = self.dcs[1].get_depot_url()
                 self.durl2 = self.dcs[2].get_depot_url()
-        
+
         def reduce_spaces(self, string):
                 """Reduce runs of spaces down to a single space."""
                 return re.sub(" +", " ", string)
@@ -90,7 +91,7 @@ class TestPkgRefreshMulti(testutils.ManyDepotTestCase):
                                 tmp_e, tmp_a,
                                 "Expected output", "Actual output",
                                 lineterm="")))
-        
+
         def checkAnswer(self,expected, actual):
                 return self._check(
                     self.reduce_spaces(expected),
@@ -105,10 +106,10 @@ class TestPkgRefreshMulti(testutils.ManyDepotTestCase):
                 self.pkg("refresh")
                 self.pkg("refresh --full")
                 self.pkg("refresh -F", exit=2)
-       
+
         def test_general_refresh(self):
                 self.image_create(self.durl1, prefix = "test1")
-                self.pkg("set-authority -O " + self.durl2 + " test2")
+                self.pkg("set-publisher -O " + self.durl2 + " test2")
                 self.pkgsend_bulk(self.durl1, self.foo10)
                 self.pkgsend_bulk(self.durl2, self.foo12)
                 self.pkg("refresh")
@@ -120,7 +121,7 @@ class TestPkgRefreshMulti(testutils.ManyDepotTestCase):
 
         def test_specific_refresh(self):
                 self.image_create(self.durl1, prefix = "test1")
-                self.pkg("set-authority -O " + self.durl2 + " test2")
+                self.pkg("set-publisher -O " + self.durl2 + " test2")
                 self.pkgsend_bulk(self.durl1, self.foo10)
                 self.pkgsend_bulk(self.durl2, self.foo12)
                 self.pkg("refresh test1")
@@ -135,7 +136,7 @@ class TestPkgRefreshMulti(testutils.ManyDepotTestCase):
                     "foo (test2) 1.2-0 known ----\n"
                 self.checkAnswer(expected, self.output)
                 self.pkg("refresh unknownAuth", exit=1)
-                self.pkg("set-authority -P test2")
+                self.pkg("set-publisher -P test2")
                 self.pkg("list -aH pkg:/foo")
                 expected = \
                     "foo (test1) 1.0-0 known u---\n" + \
@@ -152,7 +153,7 @@ class TestPkgRefreshMulti(testutils.ManyDepotTestCase):
                 self.checkAnswer(expected, self.output)
 
 
-        def test_set_authority_induces_full_refresh(self):
+        def test_set_publisher_induces_full_refresh(self):
                 self.pkgsend_bulk(self.durl2, self.foo11)
                 self.pkgsend_bulk(self.durl1, self.foo10)
                 self.image_create(self.durl1, prefix = "test1")
@@ -160,21 +161,21 @@ class TestPkgRefreshMulti(testutils.ManyDepotTestCase):
                 expected = \
                     "foo 1.0-0 known ----\n"
                 self.checkAnswer(expected, self.output)
-                self.pkg("set-authority --no-refresh -O " +
+                self.pkg("set-publisher --no-refresh -O " +
                     self.durl2 + " test1")
                 self.pkg("list -aH pkg:/foo", exit=1)
-                self.pkg("set-authority -O " + self.durl2 + " test1") 
+                self.pkg("set-publisher -O " + self.durl2 + " test1")
                 self.pkg("list -aH pkg:/foo")
                 expected = \
                     "foo 1.1-0 known ----\n"
                 self.checkAnswer(expected, self.output)
-                self.pkg("set-authority -O " + self.durl1 + " test2")
+                self.pkg("set-publisher -O " + self.durl1 + " test2")
                 self.pkg("list -aH pkg:/foo")
                 expected = \
                     "foo 1.1-0 known ----\n" \
                     "foo (test2) 1.0-0 known ----\n"
-                
-        def test_set_authority_induces_delayed_full_refresh(self):
+
+        def test_set_publisher_induces_delayed_full_refresh(self):
                 self.pkgsend_bulk(self.durl2, self.foo11)
                 self.pkgsend_bulk(self.durl1, self.foo10)
                 self.image_create(self.durl1, prefix = "test1")
@@ -183,7 +184,7 @@ class TestPkgRefreshMulti(testutils.ManyDepotTestCase):
                     "foo 1.0-0 known ----\n"
                 self.checkAnswer(expected, self.output)
                 self.dcs[2].stop()
-                self.pkg("set-authority --no-refresh -O " + self.durl2 + " test1")
+                self.pkg("set-publisher --no-refresh -O " + self.durl2 + " test1")
                 self.pkg("list -aH pkg:/foo", exit=1)
                 self.dcs[2].start()
                 self.pkg("refresh test1")
@@ -191,6 +192,32 @@ class TestPkgRefreshMulti(testutils.ManyDepotTestCase):
                 expected = \
                     "foo 1.1-0 known ----\n"
                 self.checkAnswer(expected, self.output)
+
+        def test_refresh_certificate_problems(self):
+                """Verify that an invalid or inaccessible certificate does not
+                cause unexpected failure."""
+
+                self.image_create(self.durl1)
+
+                key_fh, key_path = tempfile.mkstemp(dir=self.get_test_prefix())
+                cert_fh, cert_path = tempfile.mkstemp(dir=self.get_test_prefix())
+
+                self.pkg("set-publisher --no-refresh -O https://%s1 test1" %
+                    self.bogus_url)
+                self.pkg("set-publisher --no-refresh -c %s test1" % cert_path)
+                self.pkg("set-publisher --no-refresh -k %s test1" % key_path)
+
+                os.close(key_fh)
+                os.close(cert_fh)
+
+                os.chmod(cert_path, 0000)
+                # Verify that an invalid certificate results in a normal failure
+                # when attempting to refresh.
+                self.pkg("refresh test1", exit=1)
+
+                # Verify that an inaccessible certificate results in a normal
+                # failure when attempting to refresh.
+                self.pkg("refresh test1", su_wrap=True, exit=1)
 
 if __name__ == "__main__":
         unittest.main()

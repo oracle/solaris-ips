@@ -20,18 +20,18 @@
 # CDDL HEADER END
 #
 
+#
 # Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
+#
 
 import os
 import errno
-import pkg.fmri as fmri
 import pkg.client.api_errors as api_errors
 import pkg.client.imagestate as imagestate
 import pkg.client.pkgplan as pkgplan
 import pkg.client.indexer as indexer
 import pkg.search_errors as se
-from pkg.client.imageconfig import REQUIRE_OPTIONAL
 import pkg.client.actuator as actuator
 
 from pkg.client.filter import compile_filter
@@ -71,7 +71,8 @@ class ImagePlan(object):
         plan to identify when this operation is safe or unsafe."""
 
         def __init__(self, image, progtrack, check_cancelation,
-            recursive_removal=False, filters=None, variants=None, noexecute=False):
+            recursive_removal=False, filters=None, variants=None,
+            noexecute=False):
                 if filters is None:
                         filters = []
                 self.image = image
@@ -121,7 +122,7 @@ class ImagePlan(object):
                 s = ""
                 for pp in self.pkg_plans:
                         s = s + "%s\n" % pp
-                
+
                 s = s + "Actuators:\n%s" % self.actuators
                 return s
 
@@ -141,21 +142,22 @@ class ImagePlan(object):
                         msg("%s -> %s" % (pp.origin_fmri, pp.destination_fmri))
                 msg("Actuators:\n%s" % self.actuators)
 
-        def is_proposed_fmri(self, fmri):
+        def is_proposed_fmri(self, pfmri):
                 for pf in self.target_fmris:
-                        if self.image.fmri_is_same_pkg(fmri, pf):
-                                return not self.image.fmri_is_successor(fmri, pf)
+                        if self.image.fmri_is_same_pkg(pfmri, pf):
+                                return not self.image.fmri_is_successor(pfmri,
+                                    pf)
                 return False
 
-        def is_proposed_rem_fmri(self, fmri):
+        def is_proposed_rem_fmri(self, pfmri):
                 for pf in self.target_rem_fmris:
-                        if self.image.fmri_is_same_pkg(fmri, pf):
+                        if self.image.fmri_is_same_pkg(pfmri, pf):
                                 return True
                 return False
 
-        def propose_fmri(self, fmri):
+        def propose_fmri(self, pfmri):
                 # is a version of fmri.stem in the inventory?
-                if self.image.has_version_installed(fmri):
+                if self.image.has_version_installed(pfmri):
                         return
 
                 #   is there a freeze or incorporation statement?
@@ -166,51 +168,50 @@ class ImagePlan(object):
                 # update so that we meet any optional dependencies
                 #
 
-                fmri = self.image.constraints.apply_constraints_to_fmri(fmri)
-                self.image.fmri_set_default_authority(fmri)
-                
+                pfmri = self.image.constraints.apply_constraints_to_fmri(pfmri)
+                self.image.fmri_set_default_publisher(pfmri)
+
                 # Add fmri to target list only if it (or a successor) isn't
                 # there already.
                 for i, p in enumerate(self.target_fmris):
-                        if self.image.fmri_is_successor(fmri, p):
-                                self.target_fmris[i] = fmri
+                        if self.image.fmri_is_successor(pfmri, p):
+                                self.target_fmris[i] = pfmri
                                 break
-                        if self.image.fmri_is_successor(p, fmri):
+                        if self.image.fmri_is_successor(p, pfmri):
                                 break
                 else:
-                        self.target_fmris.append(fmri)
-
+                        self.target_fmris.append(pfmri)
                 return
 
-        def get_proposed_version(self, fmri):
+        def get_proposed_version(self, pfmri):
                 """ Return version of fmri already proposed, or None
                 if not proposed yet."""
                 for p in self.target_fmris:
-                        if fmri.get_name() == p.get_name():
+                        if pfmri.get_name() == p.get_name():
                                 return p
                 else:
                         return None
 
-        def older_version_proposed(self, fmri):
-                # returns true if older version of this fmri has been
-                # proposed already
+        def older_version_proposed(self, pfmri):
+                # returns true if older version of this pfmri has been proposed
+                # already
                 for p in self.target_fmris:
-                        if self.image.fmri_is_successor(fmri, p):
+                        if self.image.fmri_is_successor(pfmri, p):
                                 return True
                 return False
 
         # XXX Need to make sure that the same package isn't being added and
         # removed in the same imageplan.
-        def propose_fmri_removal(self, fmri):
-                if not self.image.has_version_installed(fmri):
+        def propose_fmri_removal(self, pfmri):
+                if not self.image.has_version_installed(pfmri):
                         return
 
                 for i, p in enumerate(self.target_rem_fmris):
-                        if self.image.fmri_is_successor(fmri, p):
-                                self.target_rem_fmris[i] = fmri
+                        if self.image.fmri_is_successor(pfmri, p):
+                                self.target_rem_fmris[i] = pfmri
                                 break
                 else:
-                        self.target_rem_fmris.append(fmri)
+                        self.target_rem_fmris.append(pfmri)
 
         def gen_new_installed_pkgs(self):
                 """ generates all the fmris in the new set of installed pkgs"""
@@ -220,21 +221,22 @@ class ImagePlan(object):
                 for p in self.pkg_plans:
                         p.update_pkg_set(fmri_set)
 
-                for fmri in fmri_set:
-                        yield fmri
+                for pfmri in fmri_set:
+                        yield pfmri
 
         def gen_new_installed_actions(self):
                 """generates actions in new installed image"""
-                for fmri in self.gen_new_installed_pkgs():
-                        m = self.image.get_manifest(fmri)
+                for pfmri in self.gen_new_installed_pkgs():
+                        m = self.image.get_manifest(pfmri)
                         for act in m.gen_actions(self.new_excludes):
                                 yield act
 
-        def gen_new_installed_actions_bytype(self, type):
+        def gen_new_installed_actions_bytype(self, atype):
                 """generates actions in new installed image"""
-                for fmri in self.gen_new_installed_pkgs():
-                        m = self.image.get_manifest(fmri)
-                        for act in m.gen_actions_by_type(type, self.new_excludes):
+                for pfmri in self.gen_new_installed_pkgs():
+                        m = self.image.get_manifest(pfmri)
+                        for act in m.gen_actions_by_type(atype,
+                            self.new_excludes):
                                 yield act
 
         def get_directories(self):
@@ -267,7 +269,7 @@ class ImagePlan(object):
                                         d[t] = [act]
                 self.__link_actions = d
                 return self.__link_actions
-                
+
         def evaluate_fmri(self, pfmri):
                 self.progtrack.evaluate_progress(pfmri)
                 self.image.state.set_target(pfmri, self.__intent)
@@ -275,7 +277,7 @@ class ImagePlan(object):
                 if self.check_cancelation():
                         raise api_errors.CanceledException()
 
-                self.image.fmri_set_default_authority(pfmri)
+                self.image.fmri_set_default_publisher(pfmri)
 
                 m = self.image.get_manifest(pfmri)
 
@@ -288,40 +290,41 @@ class ImagePlan(object):
 
                 # build list of (action, fmri, constraint) of dependencies
                 a_list = [
-                    (a,) + a.parse(self.image, pfmri.get_name())                        
+                    (a,) + a.parse(self.image, pfmri.get_name())
                     for a in m.gen_actions_by_type("depend", self.new_excludes)
                 ]
 
                 # Update constraints first to avoid problems w/ depth first
-                # traversal of dependencies; we may violate an existing constraint
-                # here.
+                # traversal of dependencies; we may violate an existing
+                # constraint here.
                 if self.image.constraints.start_loading(pfmri):
                         for a, f, constraint in a_list:
-                                self.image.constraints.update_constraints(constraint)
+                                self.image.constraints.update_constraints(
+                                    constraint)
                         self.image.constraints.finish_loading(pfmri)
 
                 # now check what work is required
                 for a, f, constraint in a_list:
- 
+
                         # discover if we have an installed or proposed
-                        # version of this pkg already; proposed fmris 
+                        # version of this pkg already; proposed fmris
                         # will always be newer
                         ref_fmri = self.get_proposed_version(f)
                         if not ref_fmri:
                                 ref_fmri = self.image.get_version_installed(f)
 
-                        # check if new constraint requires us to make any changes
-                        # to already proposed pkgs or existing ones.
+                        # check if new constraint requires us to make any
+                        # changes to already proposed pkgs or existing ones.
                         if not constraint.check_for_work(ref_fmri):
                                 continue
-                        # Apply any active optional/incorporation constraints 
+                        # Apply any active optional/incorporation constraints
                         # from other packages
 
                         cf = self.image.constraints.apply_constraints_to_fmri(f)
-                         
+
                         # This will be the newest version of the specified
                         # dependency package, coming from the preferred
-                        # authority, if it's available there.
+                        # publisher, if it's available there.
                         cf = self.image.inventory([ cf ],
                             all_known = True, preferred = True,
                             first_only = True).next()[0]
@@ -353,7 +356,7 @@ class ImagePlan(object):
                         self.target_update_count += 1
                 else:
                         self.target_insall_count += 1
-                        
+
                 self.pkg_plans.append(pp)
 
         def evaluate_fmri_removal(self, pfmri):
@@ -406,9 +409,6 @@ class ImagePlan(object):
 
         def evaluate(self):
                 assert self.state == UNEVALUATED
-                
-                evaluate_npkgs = len(self.target_fmris) + \
-                    len(self.target_rem_fmris)
 
                 outstring = ""
 
@@ -445,19 +445,22 @@ class ImagePlan(object):
 
                 self.state = EVALUATED_PKGS
 
-                self.removal_actions = [ (p, src, dest)
-                                         for p in self.pkg_plans
-                                         for src, dest in p.gen_removal_actions()
+                self.removal_actions = [
+                    (p, src, dest)
+                    for p in self.pkg_plans
+                    for src, dest in p.gen_removal_actions()
                 ]
 
-                self.update_actions = [ (p, src, dest)
-                                        for p in self.pkg_plans
-                                        for src, dest in p.gen_update_actions()
+                self.update_actions = [
+                    (p, src, dest)
+                    for p in self.pkg_plans
+                    for src, dest in p.gen_update_actions()
                 ]
 
-                self.install_actions = [ (p, src, dest)
-                                         for p in self.pkg_plans
-                                         for src, dest in p.gen_install_actions()
+                self.install_actions = [
+                    (p, src, dest)
+                    for p in self.pkg_plans
+                    for src, dest in p.gen_install_actions()
                 ]
 
                 self.progtrack.evaluate_progress()
@@ -481,7 +484,8 @@ class ImagePlan(object):
                         if a[1].name == "file":
                                 attrs = a[1].attrs
                                 fname = attrs.get("original_name",
-                                    "%s:%s" % (a[0].origin_fmri.get_name(), attrs["path"]))
+                                    "%s:%s" % (a[0].origin_fmri.get_name(),
+                                    attrs["path"]))
                                 named_removals[fname] = \
                                     (i - deletions,
                                     id(self.removal_actions[i-deletions][1]))
@@ -491,20 +495,22 @@ class ImagePlan(object):
                 self.progtrack.evaluate_progress()
 
                 for a in self.install_actions:
-                        # In order to handle editable files that move their path or
-                        # change pkgs, for all new files with original_name attribute,
-                        # make sure file isn't being removed by checking removal list.
-                        # if it is, tag removal to save file, and install to recover
-                        # cached version... caching is needed if directories
-                        # are removed or don't exist yet.
-                        if a[2].name == "file" and "original_name" in a[2].attrs and \
-                            a[2].attrs["original_name"] in named_removals:
+                        # In order to handle editable files that move their path
+                        # or change pkgs, for all new files with original_name
+                        # attribute, make sure file isn't being removed by
+                        # checking removal list.  If it is, tag removal to save
+                        # file, and install to recover cached version... caching
+                        # is needed if directories are removed or don't exist
+                        # yet.
+                        if (a[2].name == "file" and "original_name" in
+                            a[2].attrs and a[2].attrs["original_name"] in
+                            named_removals):
                                 cache_name = a[2].attrs["original_name"]
                                 index = named_removals[cache_name][0]
-                                assert(id(self.removal_actions[index][1]) == 
+                                assert(id(self.removal_actions[index][1]) ==
                                        named_removals[cache_name][1])
-                                self.removal_actions[index][1].attrs["save_file"] = \
-                                    cache_name
+                                self.removal_actions[index][1].attrs[
+                                    "save_file"] = cache_name
                                 a[2].attrs["save_file"] = cache_name
 
                         self.actuators.scan_install(a[2].attrs)
@@ -514,13 +520,16 @@ class ImagePlan(object):
                 l_actions = self.get_link_actions()
                 l_refresh = []
                 for a in self.update_actions:
-                        # for any files being updated that are the target of
+                        # For any files being updated that are the target of
                         # _any_ hardlink actions, append the hardlink actions
-                        # to the update list so that they are not broken...
-                        if a[2].name == "file": 
+                        # to the update list so that they are not broken.
+                        if a[2].name == "file":
                                 path = a[2].attrs["path"]
                                 if path in l_actions:
-                                        l_refresh.extend([(a[0], l, l) for l in l_actions[path]])
+                                        l_refresh.extend([
+                                            (a[0], l, l)
+                                            for l in l_actions[path]
+                                        ])
 
                         # scan both old and new actions
                         # repairs may result in update action w/o orig action
@@ -568,7 +577,7 @@ class ImagePlan(object):
                 preexecute, execute and postexecute
                 execute actions need to be sorted across packages
                 """
-                
+
                 assert self.state == EVALUATED_OK
 
                 if self.nothingtodo():
@@ -641,34 +650,39 @@ class ImagePlan(object):
                 # The following constraints are key in understanding imageplan
                 # execution:
                 #
-                # 1) All non-directory actions (files, users, hardlinks, symbolic
-                # links, etc.) must appear in only a single installed package. 
+                # 1) All non-directory actions (files, users, hardlinks,
+                # symbolic links, etc.) must appear in only a single installed
+                # package.
                 #
                 # 2) All installed packages must be consistent in their view of
-                # action types; if /usr/openwin is a directory in one package, it
-                # must be a directory in all packages, never a symbolic link.  This
-                # includes implicitly defined directories.
-                # 
-                # A key goal in IPS is to be able to undergo an arbtrary transformation
-                # in package contents in a single step.  Packages must be able to exchange
-                # files, convert directories to symbolic links, etc.; so long as the start
-                # and end states meet the above two constraints IPS must be able to transition
+                # action types; if /usr/openwin is a directory in one package,
+                # it must be a directory in all packages, never a symbolic link;
+                # this includes implicitly defined directories.
+                #
+                # A key goal in IPS is to be able to undergo an arbtrary
+                # transformation in package contents in a single step.  Packages
+                # must be able to exchange files, convert directories to
+                # symbolic links, etc.; so long as the start and end states meet
+                # the above two constraints IPS must be able to transition
                 # between the states directly.  This leads to the following:
-                # 
-                # 1) All actions must be ordered across packages; packages cannot be updated 
-                #    one at a time.
                 #
-                #    This is readily apparent when one considers two packages exchanging 
-                #    files in their new versions; in each case the package now owning the
-                #    file must be installed last, but it is not possible for each package to
-                #    to be installed before the other.  Clearly, all the removals must be done 
-                #    first, followed by the installs and updates.
+                # 1) All actions must be ordered across packages; packages
+                # cannot be updated one at a time.
                 #
-                # 2) Installs of new actions must preceed updates of existing ones.
-                #    
-                #    In order to accomodate changes of file ownership of existing files
-                #    to a newly created user, it is necessary for the installation of that
-                #    user to preceed the update of files to reflect their new ownership.
+                #    This is readily apparent when one considers two packages
+                #    exchanging files in their new versions; in each case the
+                #    package now owning the file must be installed last, but it
+                #    is not possible for each package to be installed before the
+                #    other.  Clearly, all the removals must be done first,
+                #    followed by the installs and updates.
+                #
+                # 2) Installs of new actions must preceed updates of existing
+                # ones.
+                #
+                #    In order to accomodate changes of file ownership of
+                #    existing files to a newly created user, it is necessary
+                #    for the installation of that user to preceed the update of
+                #    files to reflect their new ownership.
                 #
 
                 if self.nothingtodo():
@@ -681,7 +695,7 @@ class ImagePlan(object):
 
                 try:
                         try:
-                
+
                                 # execute removals
 
                                 self.progtrack.actions_set_goal("Removal Phase",
@@ -731,7 +745,7 @@ class ImagePlan(object):
                         self.actuators.exec_post_actuators(self.image)
 
                 self.state = EXECUTED_OK
-                
+
                 # reduce memory consumption
 
                 del self.removal_actions
@@ -743,7 +757,7 @@ class ImagePlan(object):
                 del self.__directories
 
                 del self.actuators
-                
+
                 # Perform the incremental update to the search indexes
                 # for all changed packages
                 if self.update_index:

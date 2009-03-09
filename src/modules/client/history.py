@@ -20,8 +20,10 @@
 # CDDL HEADER END
 #
 
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+#
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
+#
 
 import errno
 import os
@@ -31,34 +33,48 @@ import xml.dom.minidom as xmini
 import xml.parsers.expat as expat
 
 import pkg
+import pkg.client.api_errors as api_errors
+import pkg.fmri as fmri
 import pkg.misc as misc
 import pkg.portable as portable
 
 # Constants for the (outcome, reason) combination for operation result.
-# Indicates that the operation succeeded.
-RESULT_SUCCEEDED = ["Succeeded"]
 # Indicates that the user canceled the operation.
 RESULT_CANCELED = ["Canceled"]
 # Indicates that the operation had no work to perform or didn't need to make
 # any changes to the image.
 RESULT_NOTHING_TO_DO = ["Nothing to do"]
-# Indicates that the operation failed for an unknown reason.
-RESULT_FAILED_UNKNOWN = ["Failed", "Unknown"]
-# Indicates that the operation failed due to package constraints or because of
-# a restriction enforced by the client (e.g. SUNWipkg out of date).
-RESULT_FAILED_CONSTRAINED = ["Failed", "Constrained"]
+# Indicates that the operation succeeded.
+RESULT_SUCCEEDED = ["Succeeded"]
 # Indicates that the user or client provided bad information which resulted in
 # operation failure.
 RESULT_FAILED_BAD_REQUEST = ["Failed", "Bad Request"]
+# Indicates that the operation failed due to a configuration error (such as an
+# invalid SSL Certificate, etc.).
+RESULT_FAILED_CONFIGURATION = ["Failed", "Configuration"]
+# Indicates that the operation failed due to package constraints or because of
+# a restriction enforced by the client (e.g. SUNWipkg out of date).
+RESULT_FAILED_CONSTRAINED = ["Failed", "Constrained"]
 # Indicates that a search operation failed.
 RESULT_FAILED_SEARCH = ["Failed", "Search"]
 # Indicates that there was a problem writing a file or a permissions error.
 RESULT_FAILED_STORAGE = ["Failed", "Storage"]
 # Indicates that a transport error caused the operation to fail.
 RESULT_FAILED_TRANSPORT = ["Failed", "Transport"]
+# Indicates that the operation failed for an unknown reason.
+RESULT_FAILED_UNKNOWN = ["Failed", "Unknown"]
 
 # Operations that are discarded, not saved, when recorded by history.
 DISCARDED_OPERATIONS = ["contents", "info", "list"]
+
+# Cross-reference table for errors and results.  Entries should be ordered
+# most-specific to least-specific.
+error_results = {
+    api_errors.CertificateError: RESULT_FAILED_CONFIGURATION,
+    api_errors.PublisherError: RESULT_FAILED_BAD_REQUEST,
+    api_errors.CanceledException: RESULT_CANCELED,
+    fmri.IllegalFmri: RESULT_FAILED_BAD_REQUEST,
+}
 
 class _HistoryException(Exception):
         """Private base exception class for all History exceptions."""
@@ -579,3 +595,45 @@ class History(object):
                         # caused the client to abort() also caused the storage
                         # of the history information to fail.
                         return
+
+        def log_operation_start(self, name):
+                """Marks the start of an operation to be recorded in image
+                history."""
+                self.operation_name = name
+
+        def log_operation_end(self, error=None, result=None):
+                """Marks the end of an operation to be recorded in image
+                history.
+
+                'result' should be a pkg.client.history constant value
+                representing the outcome of an operation.  If not provided,
+                and 'error' is provided, the final result of the operation will
+                be based on the class of 'error' and 'error' will be recorded
+                for the current operation.  If 'result' and 'error' is not
+                provided, success is assumed."""
+
+                if error and not result:
+                        try:
+                                # Attempt get an exact error match first.
+                                result = error_results[error.__class__]
+                        except (AttributeError, KeyError):
+                                # Failing an exact match, determine if this
+                                # error is a subclass of an existing one.
+                                for entry, val in error_results.iteritems():
+                                        if isinstance(error, entry):
+                                                result = val
+                                                break
+                        if not result:
+                                # If a result could still not be determined,
+                                # assume unknown failure case.
+                                result = RESULT_FAILED_UNKNOWN
+                elif not result:
+                        # Assume success if no error and no result.
+                        result = RESULT_SUCCEEDED
+                self.operation_result = result
+
+        def log_operation_error(self, error):
+                """Adds an error to the list of errors to be recorded in image
+                history for the current opreation."""
+                if self.operation_name:
+                        self.operation_errors.append(error)

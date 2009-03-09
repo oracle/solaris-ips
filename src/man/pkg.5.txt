@@ -17,12 +17,12 @@ DESCRIPTION
 
      Each package is represented by a fault management resource identifier
      (FMRI) with the scheme 'pkg:'.  The full FMRI for a package consists
-     of the scheme, an authority, the package name, and a version string in
+     of the scheme, a publisher, the package name, and a version string in
      the following format:
 
          pkg://opensolaris.org/library/libc@5.11,5.11-0.75:20071001T163427Z
 
-     'opensolaris.org' is the authority.  'library/libc' is the package
+     'opensolaris.org' is the publisher.  'library/libc' is the package
      name.  Although the namespace is hierarchical and arbitrarily deep,
      there is no enforced containment -- the name is essentially arbitrary.
 
@@ -53,7 +53,7 @@ DESCRIPTION
 
      Many parts of the system, when appropriate, will contract FMRIs when
      displaying them to reduce the volume of information provided.
-     Typically, the scheme, authority, build version, and timestamp will be
+     Typically, the scheme, publisher, build version, and timestamp will be
      elided, and sometimes the versioning information altogether.
 
   Actions
@@ -350,7 +350,7 @@ DESCRIPTION
   Client-Server Operation
      TBD
 
-  Authorities and Mirroring
+  Publishers and Mirroring
      TBD
 
   Images and Substrates
@@ -371,7 +371,7 @@ DESCRIPTION
 
         send-uuid
             When true, a unique identifier (UUID) that identifies the image
-            to the authority is sent on all requests.  Default value: False 
+            to the publisher is sent on all requests.  Default value: False 
 
 ATTRIBUTES
      See attributes(5) for descriptions of the  following  attri-

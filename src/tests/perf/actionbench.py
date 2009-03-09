@@ -19,8 +19,12 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+
+#
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
+#
+
 #
 # actionbench - benchmark action creation
 #
@@ -148,7 +152,7 @@ dir group=bin mode=0755 opensolaris.zone=global owner=root path=lib/svc/method
 file dbd52c79aa5a1dc92232994a815718dedbc70eec elfarch=i386 elfbits=32 elfhash=2b510c241544342123d3591ea17548a075192d89 group=bin mode=0555 owner=root path=usr/lib/zones/zoneadmd pkg.size=109720
 legacy arch=i386 category=system desc="Solaris Zones Configuration and Administration" hotline="Please contact your local service provider" name="Solaris Zones (Usr)" pkg=SUNWzoneu vendor="Sun Microsystems, Inc." version=11.11,REV=2008.01.05.16.07
 file 1269a117ab6ed3eb8e86f34aabfffba1221ac829 group=bin mode=0444 opensolaris.zone=global owner=root path=etc/zones/SUNWdefault.xml pkg.size=1366
-set name=authority value=foo
+set name=publisher value=foo
 dir group=sys mode=0755 owner=root path=usr/kernel/drv/amd64
 file 2c9c0651e59cbb4b12dd9c8b9502003fd4b0af74 group=bin mode=0755 owner=root path=usr/lib/brand/native/postclone pkg.size=1635
 file 0049f03d9a0fc515a0b89579abac3f2d04f0dede elfarch=i386 elfbits=32 elfhash=4777a16b7740405428b46a221ba30e36916db4e8 group=bin mode=0555 owner=root path=usr/sbin/zoneadm pkg.size=107864

@@ -20,8 +20,10 @@
 # CDDL HEADER END
 #
 
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+#
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
+#
 
 import testutils
 if __name__ == "__main__":
@@ -74,14 +76,14 @@ class TestPkgInfoBasics(testutils.SingleDepotTestCase):
                 self.pkg("unset-property require-optional")
 
         def test_bug_4372(self):
-                """Verify that preferred-authority cannot be changed using the
+                """Verify that preferred-publisher cannot be changed using the
                 property commands, but can be read."""
                 durl = self.dc.get_depot_url()
                 self.image_create(durl)
 
-                self.pkg("set-property preferred-authority foo", exit=1)
-                self.pkg("unset-property preferred-authority", exit=1)
-                self.pkg("property preferred-authority")
+                self.pkg("set-property preferred-publisher foo", exit=1)
+                self.pkg("unset-property preferred-publisher", exit=1)
+                self.pkg("property preferred-publisher")
 
 if __name__ == "__main__":
         unittest.main()

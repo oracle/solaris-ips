@@ -14,18 +14,19 @@ image-modifying operations that they perform.
     The following operations are currently recorded by the clients that are
     part of pkg(5):
 
-        add-mirror
-        delete-authority
-        delete-mirror
+        add-publisher
         image-create
         image-set-attributes
         image-update
         install
         purge-history
         rebuild-index
-        set-authority
-        set-preferred-authority
+        refresh-publisher
+        remove-publisher
+        set-publisher
+        set-preferred-publisher
         uninstall
+        update-publisher
 
     These operations were chosen because they have the potential to alter the
     behavior of pkg(5) operations or because they modify an image.

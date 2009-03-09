@@ -20,8 +20,10 @@
 # CDDL HEADER END
 #
 
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+#
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
+#
 
 import testutils
 if __name__ == "__main__":
@@ -87,7 +89,7 @@ class TestPkgList(testutils.ManyDepotTestCase):
 
                 self.image_create(durl1, prefix = "test1")
 
-                self.pkg("set-authority -O " + durl2 + " test2")
+                self.pkg("set-publisher -O " + durl2 + " test2")
 
         def reduceSpaces(self, string):
                 """Reduce runs of spaces down to a single space."""
@@ -118,7 +120,7 @@ class TestPkgList(testutils.ManyDepotTestCase):
                 self.assertEqualDiff(expected, output)
 
         def test_list_2(self):
-                """List all "foo@1.0", regardless of authority, with "pkg:/"
+                """List all "foo@1.0", regardless of publisher, with "pkg:/"
                 prefix."""
                 self.pkg("list -aH pkg:/foo@1.0,5.11-0")
                 expected = \
@@ -128,7 +130,7 @@ class TestPkgList(testutils.ManyDepotTestCase):
                 self.assertEqualDiff(expected, output)
 
         def test_list_3(self):
-                """List all "foo@1.0", regardless of authority, without "pkg:/"
+                """List all "foo@1.0", regardless of publisher, without "pkg:/"
                 prefix."""
                 self.pkg("list -aH pkg:/foo@1.0,5.11-0")
                 expected = \
@@ -139,7 +141,7 @@ class TestPkgList(testutils.ManyDepotTestCase):
                 self.assertEqualDiff(expected, output)
 
         def test_list_4(self):
-                """List all versions of package foo, regardless of authority."""
+                """List all versions of package foo, regardless of publisher."""
                 self.pkg("list -aHf foo")
                 expected = \
                     "foo         1.2.1-0 known ----\n" \
@@ -185,7 +187,7 @@ class TestPkgList(testutils.ManyDepotTestCase):
                 self.assertEqualDiff(expected, output)
                 
         def test_list_6(self):
-                """Show versions 1.0 and 1.1 of foo only from authority test2."""
+                """Show versions 1.0 and 1.1 of foo only from publisher test2."""
                 self.pkg("list -aHf pkg://test2/foo")
                 expected = \
                     "foo (test2) 1.2.1-0 known ----\n" + \
@@ -229,7 +231,7 @@ class TestPkgList(testutils.ManyDepotTestCase):
                 self.assertEqualDiff(expected, output)
 
         def test_list_matching(self):
-                """List all versions of package foo, regardless of authority."""
+                """List all versions of package foo, regardless of publisher."""
                 self.pkg("list -aHf foo*")
                 expected = \
                     "foo         1.2.1-0 known ----\n" \

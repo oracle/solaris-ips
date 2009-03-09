@@ -20,8 +20,10 @@
 # CDDL HEADER END
 #
 
+#
 # Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
+#
 
 import testutils
 if __name__ == "__main__":
@@ -37,7 +39,7 @@ import pkg.client.api as api
 import pkg.client.api_errors as api_errors
 import pkg.client.progress as progress
 
-API_VERSION = 10
+API_VERSION = 11
 PKG_CLIENT_NAME = "pkg"
 
 class TestPkgIntent(testutils.SingleDepotTestCase):
@@ -201,27 +203,14 @@ class TestPkgIntent(testutils.SingleDepotTestCase):
                 self.image_create(durl)
                 progresstracker = progress.NullProgressTracker()
 
-                # A new api object has to be used everytime because multiple
-                # executions of the same operation with the same api object
-                # will not (intentionally) result in intent information being
-                # sent every time.
-
                 # Test install.
                 api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
                     progresstracker, lambda x: False, PKG_CLIENT_NAME)
                 self.__do_install(api_obj, ["foo"], noexecute=True)
-
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
                 self.__do_install(api_obj, ["foo"])
 
                 # Test uninstall.
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
                 self.__do_uninstall(api_obj, ["foo"], noexecute=True)
-
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
                 self.__do_uninstall(api_obj, ["foo"])
 
                 entries = self.get_intent_entries()
@@ -268,35 +257,16 @@ class TestPkgIntent(testutils.SingleDepotTestCase):
                 self.image_create(durl)
                 progresstracker = progress.NullProgressTracker()
 
-                # A new api object has to be used everytime because multiple
-                # executions of the same operation with the same api object
-                # will not (intentionally) result in intent information being
-                # sent every time.
-
                 # Test install.
                 api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
                     progresstracker, lambda x: True, PKG_CLIENT_NAME)
                 self.__do_install(api_obj, ["foo@1.0"], noexecute=True)
-
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: True, PKG_CLIENT_NAME)
                 self.__do_install(api_obj, ["foo@1.0"])
-
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: True, PKG_CLIENT_NAME)
                 self.__do_install(api_obj, ["foo@1.1"], noexecute=True)
-
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: True, PKG_CLIENT_NAME)
                 self.__do_install(api_obj, ["foo@1.1"])
 
                 # Test uninstall.
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: True, PKG_CLIENT_NAME)
                 self.__do_uninstall(api_obj, ["foo"], noexecute=True)
-
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: True, PKG_CLIENT_NAME)
                 self.__do_uninstall(api_obj, ["foo"])
 
                 entries = self.get_intent_entries()
@@ -428,7 +398,6 @@ class TestPkgIntent(testutils.SingleDepotTestCase):
                 progresstracker = progress.NullProgressTracker()
                 api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
                     progresstracker, lambda x: True, PKG_CLIENT_NAME)
-
                 self.__do_install(api_obj, ["bar@1.0"])
 
                 # Only testing for process; no need to re-test for evaluate.

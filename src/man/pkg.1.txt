@@ -18,11 +18,11 @@ SYNOPSIS
      /usr/bin/pkg list [-aHsuvf] [pkg_fmri_pattern ...]
      /usr/bin/pkg search [-lrI] [-s server] token
 
-     /usr/bin/pkg refresh [--full] [authority ...]
+     /usr/bin/pkg refresh [--full] [publisher ...]
 
      /usr/bin/pkg image-create [-fFPUz] [--force] [--full|--partial|--user]
          [--zone] [-k ssl_key] [-c ssl_cert] [--no-refresh]
-         -a authority=origin_url dir
+         -a publisher=origin_url dir
      /usr/bin/pkg image-update [-fnvq] [--be-name name] [--no-refresh]
          [--no-index]
 
@@ -30,12 +30,12 @@ SYNOPSIS
      /usr/bin/pkg unset-property propname ...
      /usr/bin/pkg property [-H] [propname ...]
 
-     /usr/bin/pkg set-authority [-Ped] [-k ssl_key] [-c ssl_cert]
+     /usr/bin/pkg set-publisher [-Ped] [-k ssl_key] [-c ssl_cert]
          [-O origin_url] [-m mirror_to_add | --add-mirror=mirror_to_add]
          [-M mirror_to_remove | --remove-mirror=mirror_to_remove]
-         [--enable] [--disable] [--no-refresh] [--reset-uuid] authority
-     /usr/bin/pkg unset-authority authority ...
-     /usr/bin/pkg authority [-HPa] [authority ...]
+         [--enable] [--disable] [--no-refresh] [--reset-uuid] publisher
+     /usr/bin/pkg unset-publisher publisher ...
+     /usr/bin/pkg publisher [-HPa] [publisher ...]
 
      /usr/bin/pkg history [-Hl]
      /usr/bin/pkg purge-history
@@ -49,9 +49,9 @@ DESCRIPTION
      pkg is the retrieval client for the image packaging system.  With a
      valid configuration, pkg can be invoked to create locations for
      packages to be installed, called 'images', and install packages
-     into those images.  Packages are published by authorities, who may
+     into those images.  Packages are published by publishers, who may
      make their packages available at one or more repositories.  pkg,
-     then, retrieves packages from an authority's repository and
+     then, retrieves packages from a publisher's repository and
      installs them into an image.
 
      pkg can also uninstall packages, refresh the package catalogs,
@@ -80,24 +80,24 @@ SUBCOMMANDS
      The following subcommands are supported:
 
      image-create [-fFPUz] [--force] [--full|--partial|--user] [--zone]
-       [-k ssl_key] [-c ssl_cert] [--no-refresh] -a authority=origin_url dir
+       [-k ssl_key] [-c ssl_cert] [--no-refresh] -a publisher=origin_url dir
           Create, at location given by dir, an image suitable for package
           operations.  The default image type is user, as given by the -U
           (--user) option.  The image type may be set to a full image (-F
           or --full) or to a partial image (-P or --partial) linked to the
           full image enclosing the given dir path.
 
-          A preferred authority must be set using the -a option.  An
-          attempt to retrieve the catalog associated with this authority
+          A preferred publisher must be set using the -a option.  An
+          attempt to retrieve the catalog associated with this publisher
           will be made following the initial creation operations.
 
-          For authorities using client SSL authentication, a client key and
+          For publishers using client SSL authentication, a client key and
           client certificate may be registered via the -c and -k options.
 
           If the image is to be run within nonglobal zone context, then
           the -z (--zone) option can be used to set an appropriate filter.
 
-          With --no-refresh, do not attempt to contact the image's authority
+          With --no-refresh, do not attempt to contact the image's publisher
           to retrieve its catalog.
 
           With -f (--force), force the creation of an image over an existing
@@ -115,7 +115,7 @@ SUBCOMMANDS
           With the -v option, issue verbose progress messages during the
           requested operation.  With the -q option, be completely silent.
 
-          With  --no-refresh, do not attempt to contact the image's authorities
+          With  --no-refresh, do not attempt to contact the image's publishers
           to retrieve their catalogs.  With --no-index do not update the
           search indices after the operation has completed successfully.
 
@@ -123,9 +123,9 @@ SUBCOMMANDS
           argument given.  This option is only valid if a new boot environment
           is created during image update. See also beadm(1m).
 
-     refresh [--full] [authority ...]
-          Retrieve updates to the catalogs for each authority specified.
-          When given no arguments, retrieves updates for each authority
+     refresh [--full] [publisher ...]
+          Retrieve updates to the catalogs for each publisher specified.
+          When given no arguments, retrieves updates for each publisher
           registered within the image. With --full, retrieve the full
           catalogs.
 
@@ -142,7 +142,7 @@ SUBCOMMANDS
           uninstall any packages which are dependent on the initial
           package.
 
-          With --no-refresh, do not attempt to contact the image's authorities
+          With --no-refresh, do not attempt to contact the image's publishers
           to retrieve their catalogs. With --no-index do not update the
           search indices after the operation has completed successfully.
 
@@ -209,7 +209,7 @@ SUBCOMMANDS
                                 the package containing the action, such
                                 as pkg://opensolaris.org/SUNWzone@0.5.11-0.79
 
-          pkg.authority         Corresponds to the authority of the
+          pkg.publisher         Corresponds to the publisher of the
                                 the package containing the action, such
                                 as "opensolaris.org"
 
@@ -221,7 +221,7 @@ SUBCOMMANDS
           By default, and with -l, search the image's installed packages.
 
           With -r, search the repositories corresponding to the image's
-          authorities.
+          publishers.
 
           With -s, search the identified server, which is expected to be
           a pkg(5) repository, at the given URL.  This may be specified
@@ -256,13 +256,13 @@ SUBCOMMANDS
 
      set-property propname propvalue
           Update an existing image property or add a new image property;
-          except for preferred-authority, which can only be changed using
-          set-authority.
+          except for preferred-publisher, which can only be changed using
+          set-publisher.
 
      unset-property propname ...
           Remove an existing image property or properties; except for
-          preferred-authority, which can only be changed using
-          set-authority.
+          preferred-publisher, which can only be changed using
+          set-publisher.
 
      property [-H] [propname ...]
           Display image property information.  With no argument, display the
@@ -270,46 +270,46 @@ SUBCOMMANDS
           property names is requested, display the names and values for those
           properties.  With -H, omit the headers from the listing.
 
-     set-authority [-Ped] [-k ssl_key] [-c ssl_cert] [-O origin_url]
+     set-publisher [-Ped] [-k ssl_key] [-c ssl_cert] [-O origin_url]
        [-m mirror_to_add | --add-mirror=mirror_to_add]
        [-M mirror_to_remove | --remove-mirror=mirror_to_remove]
-       [--enable] [--disable] [--no-refresh] [--reset-uuid] authority
-          Update an existing authority or add an additional package
-          authority.  With -P, set the specified authority as the
-          preferred authority.  With -c and -k, specify client SSL
+       [--enable] [--disable] [--no-refresh] [--reset-uuid] publisher
+          Update an existing publisher or add an additional package
+          publisher.  With -P, set the specified publisher as the
+          preferred publisher.  With -c and -k, specify client SSL
           certificate and key respectively.  The -O option sets the URL
-          prefix for the origin packaging repository for the authority.
+          prefix for the origin packaging repository for the publisher.
 
-          With --no-refresh, do not attempt to contact the authority
+          With --no-refresh, do not attempt to contact the publisher
           specified to retrieve its catalog.
 
           With --reset-uuid, choose a new unique identifier that identifies
-          this image to its authority.
+          this image to its publisher.
 
           With -m (--add-mirror), add the URL as a mirror for the given
-          authority.
+          publisher.
 
           With -M (--remove-mirror), remove the URL from the list of mirrors
-          for the given authority.
+          for the given publisher.
 
-          With -e (--enable), enable the authority; with -d (--disable), disable
-          the authority.  A disabled authority is not used when populating the
+          With -e (--enable), enable the publisher; with -d (--disable), disable
+          the publisher.  A disabled publisher is not used when populating the
           package list or in certain package operations (install, uninstall, and
-          image-update).  However, the properties for a disabled authority can
-          still be set and viewed.  If only one authority exists, it cannot be
+          image-update).  However, the properties for a disabled publisher can
+          still be set and viewed.  If only one publisher exists, it cannot be
           disabled.
 
-     unset-authority authority ...
-          Remove the configuration associated with the given authority
-          or authorities.
+     unset-publisher publisher ...
+          Remove the configuration associated with the given publisher
+          or publishers.
 
-     authority [-HPa] [authority ...]
-          Display authority information.  With no arguments, display the
-          list of enabled authorities, and their origin URLs.  If
-          specific authorities are requested, display the configuration
-          values, including mirrors, associated with those authorities.  With
+     publisher [-HPa] [publisher ...]
+          Display publisher information.  With no arguments, display the
+          list of enabled publishers, and their origin URLs.  If
+          specific publishers are requested, display the configuration
+          values, including mirrors, associated with those publishers.  With
           -H, omit the headers from the listing.  With -P, display only the
-          preferred authority. With -a, display all authorities (including those
+          preferred publisher. With -a, display all publishers (including those
           that are disabled).
 
      history [-Hl]
@@ -336,7 +336,7 @@ SUBCOMMANDS
           Display a usage message.
 
 EXAMPLES
-     Example 1:  Create a new, full image, with authority example.com,
+     Example 1:  Create a new, full image, with publisher example.com,
      stored at /aux0/example_root
 
      $ pkg image-create -F -a example.com=http://pkg.example.com:10000 \
@@ -401,7 +401,7 @@ FILES
      type, starting at $META as above.
 
      $META/catalog              Directory of catalogs from defined
-                                authorities.
+                                publishers.
 
 ATTRIBUTES
      See attributes(5) for descriptions of the  following  attri-

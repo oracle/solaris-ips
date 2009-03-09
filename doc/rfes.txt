@@ -38,7 +38,7 @@
 11.  [pelegri]  Use of package-level metadata to provide additional
      information, such as links to training/learning resources,
      declarations of related packages, endorsements by certifying
-     authorities.
+     publishers.
 
 12.  [sch]  Support use of :timestamp field for "newer" and "older"
      queries.

@@ -19,10 +19,17 @@
 #
 # CDDL HEADER END
 #
+
+#
 # Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
+#
 
-from pkg.misc import EmptyI
+import urlparse
+
+# EmptyI for argument defaults; can't import from misc due to circular
+# dependency.
+EmptyI = tuple()
 
 class ApiException(Exception):
         pass
@@ -48,9 +55,6 @@ class VersionException(ApiException):
                 ApiException.__init__(self)
                 self.expected_version = expected_version
                 self.received_version = received_version
-
-class InvalidCertException(ApiException):
-        pass
 
 class PlanExistsException(ApiException):
         def __init__(self, plan_type):
@@ -83,11 +87,6 @@ class CanceledException(ApiException):
 class PlanMissingException(ApiException):
         pass
 
-class UnrecognizedAuthorityException(ApiException):
-        def __init__(self, auth):
-                ApiException.__init__(self)
-                self.auth = auth
-
 class NoPackagesInstalledException(ApiException):
         pass
 
@@ -98,13 +97,14 @@ class PermissionsException(ApiException):
 
         def __str__(self):
                 if self.path:
-                        return _("Could not operate on %s\nbecause of insufficient "
-                                "permissions. Please try the command again using pfexec\n"
-                                "or otherwise increase your permissions.") % self.path
+                        return _("Could not operate on %s\nbecause of "
+                            "insufficient permissions. Please try the command "
+                            "again using pfexec\nor otherwise increase your "
+                            "privileges.") % self.path
                 else:
                         return _("""
 Could not complete the operation because of insufficient permissions. Please
-try the command again using pfexec or otherwise increase your permissions.
+try the command again using pfexec or otherwise increase your privileges.
 """)
 
 class FileInUseException(PermissionsException):
@@ -119,8 +119,8 @@ class FileInUseException(PermissionsException):
 
 class PlanCreationException(ApiException):
         def __init__(self, unfound_fmris=EmptyI, multiple_matches=EmptyI,
-            missing_matches=EmptyI, illegal=EmptyI, constraint_violations=EmptyI, 
-            badarch=EmptyI):
+            missing_matches=EmptyI, illegal=EmptyI,
+            constraint_violations=EmptyI, badarch=EmptyI):
                 ApiException.__init__(self)
                 self.unfound_fmris         = unfound_fmris
                 self.multiple_matches      = multiple_matches
@@ -135,8 +135,8 @@ class PlanCreationException(ApiException):
                         s = _("""\
 pkg: The following pattern(s) did not match any packages in the current
 catalog. Try relaxing the pattern, refreshing and/or examining the catalogs""")
-                        res += [ s ]
-                        res += [ "\t%s" % p for p in self.unfound_fmris ]
+                        res += [s]
+                        res += ["\t%s" % p for p in self.unfound_fmris]
 
                 if self.multiple_matches:
                         s = _("pkg: '%s' matches multiple packages")
@@ -152,9 +152,10 @@ catalog. Try relaxing the pattern, refreshing and/or examining the catalogs""")
                 res += [ s % p for p in self.illegal ]
 
                 if self.constraint_violations:
-                        s = _("pkg: the following package(s) violated constraints:")
-                        res += [ s ] 
-                        res += [ "\t%s" % p for p in self.constraint_violations ]
+                        s = _("pkg: the following package(s) violated "
+                            "constraints:")
+                        res += [s] 
+                        res += ["\t%s" % p for p in self.constraint_violations]
 
                 if self.badarch:
                         s = _("'%s' supports the following architectures: %s")
@@ -189,7 +190,7 @@ class InventoryException(ApiException):
                 if self.notfound:
                         outstr += _("No matching package could be found for "
                             "the following FMRIs in any of the catalogs for "
-                            "the current authorities:\n")
+                            "the current publishers:\n")
 
                         for x in self.notfound:
                                 outstr += "%s\n" % x
@@ -235,6 +236,7 @@ class InvalidDepotResponseException(ApiException):
         """Raised when the depot doesn't have versions of operations
         that the client needs to operate successfully."""
         def __init__(self, url, data):
+                ApiException.__init__(self)
                 self.url = url
                 self.data = data
 
@@ -250,6 +252,76 @@ class InvalidDepotResponseException(ApiException):
 class BEException(ApiException):
         def __init__(self):
                 ApiException.__init__(self)
+
+
+class DataError(ApiException):
+        """Base exception class used for all data related errors."""
+
+        def __init__(self, *args, **kwargs):
+                ApiException.__init__(self, *args)
+                if args:
+                        self.data = args[0]
+                else:
+                        self.data = None
+                self.args = kwargs
+
+
+class InvalidP5IFile(DataError):
+        """Used to indicate that the specified location does not contain a
+        valid p5i-formatted file."""
+
+        def __str__(self):
+                if self.data:
+                        return _("The specified file is in an unrecognized "
+                            "format or does not contain valid publisher "
+                            "information: %s") % self.data
+                return _("The specified file is in an unrecognized format or "
+                    "does not contain valid publisher information.")
+
+
+class UnsupportedP5IFile(DataError):
+        """Used to indicate that an attempt to read an unsupported version
+        of pkg(5) info file was attempted."""
+
+        def __str__(self):
+                return _("Unsupported pkg(5) publisher information data "
+                    "format.")
+
+
+class TransportError(ApiException):
+        """Base exception class for all transfer exceptions."""
+
+        def __init__(self, *args, **kwargs):
+                ApiException.__init__(self, *args)
+                if args:
+                        self.data = args[0]
+                else:
+                        self.data = None
+                self.args = kwargs
+
+        def __str__(self):
+                return str(self.data)
+
+
+class RetrievalError(TransportError):
+        """Used to indicate that a a requested resource could not be
+        retrieved."""
+
+        def __str__(self):
+                location = self.args.get("location", None)
+                if location:
+                        return _("Error encountered while retrieving data from "
+                            "'%s':\n%s") % (location, self.data)
+                return _("Error encountered while retrieving data from: %s") % \
+                    self.data
+
+
+class InvalidResourceLocation(TransportError):
+        """Used to indicate that an invalid transport location was provided."""
+
+        def __str__(self):
+                return _("'%s' is not a valid location.") % self.data
+
 
 class InvalidBENameException(BEException):
         def __init__(self, be_name):
@@ -308,7 +380,8 @@ class BENameGivenOnDeadBE(BEException):
                 return _("""\
 Naming a boot environment when operating on a non-live image is
 not allowed.""")
-                         
+
+
 class UnrecognizedOptionsToInfo(ApiException):
         def __init__(self, opts):
                 ApiException.__init__(self)
@@ -319,3 +392,352 @@ class UnrecognizedOptionsToInfo(ApiException):
                 for o in self._opts:
                         s += _(" '") + str(o) + _("'")
                 return s
+
+
+class PublisherError(ApiException):
+        """Base exception class for all publisher exceptions."""
+
+        def __init__(self, *args, **kwargs):
+                ApiException.__init__(self, *args)
+                if args:
+                        self.data = args[0]
+                else:
+                        self.data = None
+                self.args = kwargs
+
+        def __str__(self):
+                return str(self.data)
+
+
+class BadPublisherPrefix(PublisherError):
+        """Used to indicate that a publisher name is not valid."""
+
+        def __str__(self):
+                return _("'%s' is not a valid publisher name.") % self.data
+
+
+class BadRepositoryAttributeValue(PublisherError):
+        """Used to indicate that the specified repository attribute value is
+        invalid."""
+
+        def __str__(self):
+                return _("'%(value)s' is not a valid value for repository "
+                    "attribute '%(attribute)s'.") % {
+                    "value": self.args["value"], "attribute": self.data }
+
+
+class BadRepositoryCollectionType(PublisherError):
+        """Used to indicate that the specified repository collection type is
+        invalid."""
+
+        def __init__(self, *args, **kwargs):
+                PublisherError.__init__(self, *args, **kwargs)
+
+        def __str__(self):
+                return _("'%s' is not a valid repository collection type.") % \
+                    self.data
+
+
+class BadRepositoryURI(PublisherError):
+        """Used to indicate that a repository URI is not syntactically valid."""
+
+        def __str__(self):
+                return _("'%s' is not a valid URI.") % self.data
+
+
+class BadRepositoryURIPriority(PublisherError):
+        """Used to indicate that the priority specified for a repository URI is
+        not valid."""
+
+        def __str__(self):
+                return _("'%s' is not a valid URI priority; integer value "
+                    "expected.") % self.data
+
+
+class BadRepositoryURISortPolicy(PublisherError):
+        """Used to indicate that the specified repository URI sort policy is
+        invalid."""
+
+        def __init__(self, *args, **kwargs):
+                PublisherError.__init__(self, *args, **kwargs)
+
+        def __str__(self):
+                return _("'%s' is not a valid repository URI sort policy.") % \
+                    self.data
+
+
+class DisabledPublisher(PublisherError):
+        """Used to indicate that an attempt to use a disabled publisher occurred
+        during an operation."""
+
+        def __str__(self):
+                return _("Publisher '%s' is disabled and cannot be used for "
+                    "packaging operations.") % self.data
+
+
+class DuplicatePublisher(PublisherError):
+        """Used to indicate that a publisher with the same name or alias already
+        exists for an image."""
+
+        def __str__(self):
+                return _("A publisher with the same name or alias as '%s' "
+                    "already exists.") % self.data
+
+
+class DuplicateRepository(PublisherError):
+        """Used to indicate that a repository with the same origin uris
+        already exists for a publisher."""
+
+        def __str__(self):
+                return _("A repository with the same name or origin URIs "
+                   "already exists for publisher '%s'.") % self.data
+
+
+class DuplicateRepositoryMirror(PublisherError):
+        """Used to indicate that a repository URI is already in use by another
+        repository mirror."""
+
+        def __str__(self):
+                return _("Mirror '%s' already exists for the specified "
+                    "repository.") % self.data
+
+
+class DuplicateRepositoryOrigin(PublisherError):
+        """Used to indicate that a repository URI is already in use by another
+        repository origin."""
+
+        def __str__(self):
+                return _("Origin '%s' already exists for the specified "
+                    "repository.") % self.data
+
+
+class RemovePreferredPublisher(PublisherError):
+        """Used to indicate an attempt to remove the preferred publisher was
+        made."""
+
+        def __str__(self):
+                return _("The preferred publisher cannot be removed.")
+
+
+class SelectedRepositoryRemoval(PublisherError):
+        """Used to indicate that an attempt to remove the selected repository
+        for a publisher was made."""
+
+        def __str__(self):
+                return _("Cannot remove the selected repository for a "
+                    "publisher.")
+
+
+class SetPreferredPublisherDisabled(PublisherError):
+        """Used to indicate an attempt to set a disabled publisher as the
+        preferred publisher was made."""
+
+        def __str__(self):
+                return _("Publisher '%(pub)s' is disabled and cannot be set as "
+                    "the preferred publisher.") % self.data
+
+
+class UnknownLegalURI(PublisherError):
+        """Used to indicate that no matching legal URI could be found using the
+        provided criteria."""
+
+        def __str__(self):
+                return _("Unknown legal URI '%s'.") % self.data
+
+
+class UnknownPublisher(PublisherError):
+        """Used to indicate that no matching publisher could be found using the
+        provided criteria."""
+
+        def __str__(self):
+                return _("Unknown publisher '%s'.") % self.data
+
+
+class UnknownRelatedURI(PublisherError):
+        """Used to indicate that no matching related URI could be found using
+        the provided criteria."""
+
+        def __str__(self):
+                return _("Unknown related URI '%s'.") % self.data
+
+
+class UnknownRepository(PublisherError):
+        """Used to indicate that no matching repository could be found using the
+        provided criteria."""
+
+        def __str__(self):
+                return _("Unknown repository '%s'.") % self.data
+
+
+class UnknownRepositoryMirror(PublisherError):
+        """Used to indicate that a repository URI could not be found in the
+        list of repository mirrors."""
+
+        def __str__(self):
+                return _("Unknown repository mirror '%s'.") % self.data
+
+
+class UnknownRepositoryOrigin(PublisherError):
+        """Used to indicate that a repository URI could not be found in the
+        list of repository origins."""
+
+        def __str__(self):
+                return _("Unknown repository origin '%s'") % self.data
+
+
+class UnsupportedRepositoryURI(PublisherError):
+        """Used to indicate that the specified repository URI uses an
+        unsupported scheme."""
+
+        def __str__(self):
+                if self.data:
+                        scheme = urlparse.urlsplit(self.data,
+                            allow_fragments=0)[0]
+                        return _("The URI '%(uri)s' contains an unsupported "
+                            "scheme '%(scheme)s'.") % { "uri": self.data,
+                            "scheme": scheme }
+                return _("The specified URI contains an unsupported scheme.")
+
+
+class UnsupportedRepositoryURIAttribute(PublisherError):
+        """Used to indicate that the specified repository URI attribute is not
+        supported for the URI's scheme."""
+
+        def __str__(self):
+                return _("'%(attr)s' is not supported for '%(scheme)s'.") % {
+                    "attr": self.data, "scheme": self.args["scheme"] }
+
+
+class CertificateError(ApiException):
+        """Base exception class for all certificate exceptions."""
+
+        def __init__(self, *args, **kwargs):
+                ApiException.__init__(self, *args)
+                if args:
+                        self.data = args[0]
+                else:
+                        self.data = None
+                self.args = kwargs
+
+        def __str__(self):
+                return str(self.data)
+
+
+class ExpiredCertificate(CertificateError):
+        """Used to indicate that a certificate has expired."""
+
+        def __str__(self):
+                publisher = self.args.get("publisher", None)
+                uri = self.args.get("uri", None)
+                if publisher:
+                        if uri:
+                                return _("Certificate '%(cert)s' for publisher "
+                                    "'%(pub)s' needed to access '%(uri)s', "
+                                    "has expired.  Please install a valid "
+                                    "certificate.") % { "cert": self.data,
+                                    "uri": uri }
+                        return _("Certificate '%(cert)s' for publisher "
+                            "'%(pub)s', has expired.  Please install a valid "
+                            "certificate.") % { "cert": self.data,
+                            "pub": publisher }
+                if uri:
+                        return _("Certificate '%(cert)s', needed to access "
+                            "'%(uri)s', has expired.  Please install a valid "
+                            "certificate.") % { "cert": self.data, "uri": uri }
+                return _("Certificate '%s' has expired.  Please install a "
+                    "valid certificate.") % self.data
+
+
+class ExpiringCertificate(CertificateError):
+        """Used to indicate that a certificate has expired."""
+
+        def __str__(self):
+                publisher = self.args.get("publisher", None)
+                uri = self.args.get("uri", None)
+                days = self.args.get("days", 0)
+                if publisher:
+                        if uri:
+                                return _("Certificate '%(cert)s' for publisher "
+                                    "'%(pub)s', needed to access '%(uri)s', "
+                                    "will expire in '%(days)s' days.") % {
+                                    "cert": self.data, "pub": publisher,
+                                    "uri": uri, "days": days }
+                        return _("Certificate '%(cert)s' for publisher "
+                            "'%(pub)s' will expire in '%(days)s' days.") % {
+                            "cert": self.data, "pub": publisher, "days": days }
+                if uri:
+                        return _("Certificate '%(cert)s', needed to access "
+                            "'%(uri)s', will expire in '%(days)s' days.") % {
+                            "cert": self.data, "uri": uri, "days": days }
+                return _("Certificate '%(cert)s' will expire in "
+                    "'%(days)s' days.") % { "cert": self.data, "days": days }
+
+
+class InvalidCertificate(CertificateError):
+        """Used to indicate that a certificate is invalid."""
+
+        def __str__(self):
+                publisher = self.args.get("publisher", None)
+                uri = self.args.get("uri", None)
+                if publisher:
+                        if uri:
+                                return _("Certificate '%(cert)s' for publisher "
+                                    "'%(pub)s', needed to access '%(uri)s', is "
+                                    "invalid.") % { "cert": self.data,
+                                    "pub": publisher, "uri": uri }
+                        return _("Certificate '%(cert)s' for publisher "
+                            "'%(pub)s' is invalid.") % { "cert": self.data,
+                            "pub": publisher }
+                if uri:
+                        return _("Certificate '%(cert)s' needed to access "
+                            "'%(uri)s' is invalid.") % { "cert": self.data,
+                            "uri": uri }
+                return _("Invalid certificate '%s'.") % self.data
+
+
+class NoSuchCertificate(CertificateError):
+        """Used to indicate that a certificate could not be found."""
+
+        def __str__(self):
+                publisher = self.args.get("publisher", None)
+                uri = self.args.get("uri", None)
+                if publisher:
+                        if uri:
+                                return _("Unable to locate certificate "
+                                    "'%(cert)s' for publisher '%(pub)s' needed "
+                                    "to access '%(uri)s'.") % {
+                                    "cert": self.data, "pub": publisher,
+                                    "uri": uri }
+                        return _("Unable to locate certificate '%(cert)s' for "
+                            "publisher '%(pub)s'.") % { "cert": self.data,
+                            "pub": publisher }
+                if uri:
+                        return _("Unable to locate certificate '%(cert)s' "
+                            "needed to access '%(uri)s'.") % {
+                            "cert": self.data, "uri": uri }
+                return _("Unable to locate certificate '%s'.") % self.data
+
+
+class NotYetValidCertificate(CertificateError):
+        """Used to indicate that a certificate is not yet valid (future
+        effective date)."""
+
+        def __str__(self):
+                publisher = self.args.get("publisher", None)
+                uri = self.args.get("uri", None)
+                if publisher:
+                        if uri:
+                                return _("Certificate '%(cert)s' for publisher "
+                                    "'%(pub)s', needed to access '%(uri)s', "
+                                    "has a future effective date.") % {
+                                    "cert": self.data, "pub": publisher,
+                                    "uri": uri }
+                        return _("Certificate '%(cert)s' for publisher "
+                            "'%(pub)s' has a future effective date.") % {
+                            "cert": self.data, "pub": publisher }
+                if uri:
+                        return _("Certificate '%(cert)s' needed to access "
+                            "'%(uri)s' has a future effective date.") % {
+                            "cert": self.data, "uri": uri }
+                return _("Certificate '%s' has a future effective date.") % \
+                    self.data

@@ -7,10 +7,10 @@ TODO
 
 1.  Algorithms/Logic
 
-	- Preferred authority fallback
+	- Preferred publisher fallback
 		- a discussion of catalogs, comparisons between, and
 		  operations on
-		- per-package authority association
+		- per-package publisher association
 
 	- Catalog update mechanism
 		- event oriented
@@ -35,7 +35,7 @@ TODO
 
 	- Compatibility options
 		- understand SysV as fixed version:timestamp packages
-		  from a legacy authority?
+		  from a legacy publisher?
 
 2.  Formats/interfaces
 

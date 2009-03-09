@@ -20,8 +20,10 @@
 # CDDL HEADER END
 #
 
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+#
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
+#
 
 import testutils
 if __name__ == "__main__":
@@ -90,11 +92,11 @@ class TestPkgHistory(testutils.ManyDepotTestCase):
                     "install foo",
                     "uninstall foo",
                     "image-update",
-                    "set-authority -O " + durl2 + " test2",
-                    "set-authority -P test1",
-                    "set-authority -m " + durl2 + " test1",
-                    "set-authority -M " + durl2 + " test1",
-                    "unset-authority test2",
+                    "set-publisher -O " + durl2 + " test2",
+                    "set-publisher -P test1",
+                    "set-publisher -m " + durl2 + " test1",
+                    "set-publisher -M " + durl2 + " test1",
+                    "unset-publisher test2",
                     "rebuild-index"
                 ]
 
@@ -102,11 +104,10 @@ class TestPkgHistory(testutils.ManyDepotTestCase):
                     "install",
                     "uninstall",
                     "image-update",
-                    "set-authority",
-                    "set-preferred-authority",
-                    "add-mirror",
-                    "delete-mirror",
-                    "delete-authority",
+                    "add-publisher",
+                    "update-publisher",
+                    "set-preferred-publisher",
+                    "remove-publisher",
                     "rebuild-index"
                 ]
 

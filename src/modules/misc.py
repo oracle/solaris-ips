@@ -25,10 +25,14 @@
 
 import calendar
 import cStringIO
+import datetime
 import errno
 import httplib
 import locale
+import OpenSSL.crypto as osc
+import operator
 import os
+import pkg.client.api_errors as api_errors
 import pkg.portable as portable
 import pkg.urlhelpers as urlhelpers
 import platform
@@ -46,6 +50,9 @@ import zlib
 from pkg.client.imagetypes import img_type_names, IMG_NONE
 from pkg.client import global_settings
 from pkg import VERSION
+
+# Minimum number of days to issue warning before a certificate expires
+MIN_WARN_DAYS = datetime.timedelta(days=30)
 
 def time_to_timestamp(t):
         """convert seconds since epoch to %Y%m%dT%H%M%SZ format"""
@@ -168,8 +175,8 @@ _hostname_re = re.compile("^[a-zA-Z0-9](?:[a-zA-Z0-9\-]*[a-zA-Z0-9]+\.?)*$")
 _invalid_host_chars = re.compile(".*[^a-zA-Z0-9\-\.]+")
 _valid_proto = ["http", "https"]
 
-def valid_auth_prefix(prefix):
-        """Verify that the authority prefix only contains valid characters."""
+def valid_pub_prefix(prefix):
+        """Verify that the publisher prefix only contains valid characters."""
 
         # This is a workaround for the the hostname_re being slow when
         # it comes to finding invalid characters in the prefix string.
@@ -183,8 +190,8 @@ def valid_auth_prefix(prefix):
 
         return False
 
-def valid_auth_url(url):
-        """Verify that the authority URL contains only valid characters."""
+def valid_pub_url(url):
+        """Verify that the publisher URL contains only valid characters."""
 
         # First split the URL and check if the scheme is one we support
         o = urlparse.urlsplit(url)
@@ -464,9 +471,9 @@ def get_inventory_list(image, pargs, all_known, all_versions):
                 # not provide the desired ordering. It uses the same
                 # ordering on package names as fmri.__cmp__ but it
                 # reverse sorts on version, so that 98 comes before 97.
-                # Also, authorities are taken into account so that
-                # preferred authorities come before others. Finally,
-                # authorties are presented in alphabetical order.
+                # Also, publishers are taken into account so that
+                # preferred publishers come before others. Finally,
+                # publishers are presented in alphabetical order.
                 def __fmri_cmp((f1, s1), (f2, s2)):
                         t = cmp(f1.pkg_name, f2.pkg_name)
                         if t != 0:
@@ -474,12 +481,12 @@ def get_inventory_list(image, pargs, all_known, all_versions):
                         t = cmp(f2, f1)
                         if t != 0:
                                 return t
-                        if f1.preferred_authority():
+                        if f1.preferred_publisher():
                                 return -1
-                        if f2.preferred_authority():
+                        if f2.preferred_publisher():
                                 return 1
-                        return cmp(f1.get_authority(),
-                            f2.get_authority())
+                        return cmp(f1.get_publisher(),
+                            f2.get_publisher())
                 
                 res.sort(cmp=__fmri_cmp)
         return res
@@ -750,6 +757,79 @@ class ImmutableDict(dict):
 
         def __oops(self):
                 raise TypeError, "Item assignment to ImmutableDict"
+
+def get_sorted_publishers(pubs, preferred=None):
+        spubs = []
+        for p in sorted(pubs, key=operator.attrgetter("prefix")):
+                if preferred and preferred == p.prefix:
+                        spubs.insert(0, p)
+                else:
+                        spubs.append(p)
+        return spubs
+
+def build_cert(path, uri=None, pub=None):
+        """Take the file given in path, open it, and use it to create
+        an X509 certificate object.
+
+        'uri' is an optional value indicating the uri associated with or that
+        requires the certificate for access.
+
+        'pub' is an optional string value containing the name (prefix) of a
+        related publisher."""
+
+        try:
+                cf = file(path, "rb")
+                certdata = cf.read()
+                cf.close()
+        except EnvironmentError, e:
+                if e.errno == errno.ENOENT:
+                        raise api_errors.NoSuchCertificate(path, uri=uri,
+                            publisher=pub)
+                if e.errno == errno.EACCES:
+                        raise api_errors.PermissionsException(e.filename)
+                raise
+
+        try:
+                return osc.load_certificate(osc.FILETYPE_PEM, certdata)
+        except osc.Error, e:
+                # OpenSSL.crypto.Error
+                raise api_errors.InvalidCertificate(path, uri=uri,
+                    publisher=pub)
+
+def validate_ssl_cert(ssl_cert, prefix=None, uri=None):
+        """Validates the indicated certificate and returns a pyOpenSSL object
+        representing it if it is valid."""
+        cert = build_cert(ssl_cert, uri=uri, pub=prefix)
+
+        if cert.has_expired():
+                raise api_errors.ExpiredCertificate(ssl_cert, uri=uri,
+                    publisher=prefix)
+
+        now = datetime.datetime.utcnow()
+        nb = cert.get_notBefore()
+        t = time.strptime(nb, "%Y%m%d%H%M%SZ")
+        nbdt = datetime.datetime.utcfromtimestamp(
+            calendar.timegm(t))
+
+        # PyOpenSSL's has_expired() doesn't validate the notBefore
+        # time on the certificate.  Don't ask me why.
+
+        if nbdt > now:
+                raise api_errors.NotYetValidCertificate(ssl_cert, uri=uri,
+                    publisher=prefix)
+
+        na = cert.get_notAfter()
+        t = time.strptime(na, "%Y%m%d%H%M%SZ")
+        nadt = datetime.datetime.utcfromtimestamp(
+            calendar.timegm(t))
+
+        diff = nadt - now
+
+        if diff <= MIN_WARN_DAYS:
+                raise api_errors.ExpiringCertificate(ssl_cert, uri=uri,
+                    publisher=prefix, days=diff.days)
+
+        return cert
 
 EmptyDict = ImmutableDict()
 

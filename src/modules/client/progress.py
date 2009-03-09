@@ -29,7 +29,7 @@ import errno
 import sys
 import os
 import time
-from pkg.misc import msg, PipeError
+from pkg.misc import PipeError
 import pkg.portable as portable
 
 IND_DELAY = 0.05
@@ -59,9 +59,9 @@ class ProgressTracker(object):
         def reset(self):
                 self.cat_cur_catalog = None
 
-                self.refresh_auth_cnt = 0
-                self.refresh_cur_auth_cnt = 0
-                self.refresh_cur_auth = None
+                self.refresh_pub_cnt = 0
+                self.refresh_cur_pub_cnt = 0
+                self.refresh_cur_pub = None
 
                 self.ver_cur_fmri = None
 
@@ -98,14 +98,14 @@ class ProgressTracker(object):
         def catalog_done(self):
                 self.cat_output_done()
 
-        def refresh_start(self, auth_cnt):
-                self.refresh_auth_cnt = auth_cnt
-                self.refresh_cur_auth_cnt = 0
+        def refresh_start(self, pub_cnt):
+                self.refresh_pub_cnt = pub_cnt
+                self.refresh_cur_pub_cnt = 0
                 self.refresh_output_start()
 
-        def refresh_progress(self, auth):
-                self.refresh_cur_auth = auth
-                self.refresh_cur_auth_cnt += 1
+        def refresh_progress(self, pub):
+                self.refresh_cur_pub = pub
+                self.refresh_cur_pub_cnt += 1
                 self.refresh_output_progress()
 
         def refresh_done(self):
@@ -170,7 +170,8 @@ class ProgressTracker(object):
                 assert self.dl_cur_nbytes == self.dl_goal_nbytes
 
         def download_get_progress(self):
-                return (self.dl_cur_npkgs, self.dl_cur_nfiles, self.dl_cur_nbytes)
+                return (self.dl_cur_npkgs, self.dl_cur_nfiles,
+                    self.dl_cur_nbytes)
 
         def actions_set_goal(self, phase, nactions):
                 self.act_phase = phase
@@ -208,10 +209,12 @@ class ProgressTracker(object):
         # called directly.  Subclasses should implement all of these methods.
         #
         def cat_output_start(self):
-                raise NotImplementedError("cat_output_start() not implemented in superclass")
+                raise NotImplementedError("cat_output_start() not implemented "
+                    "in superclass")
 
         def cat_output_done(self):
-                raise NotImplementedError("cat_output_done() not implemented in superclass")
+                raise NotImplementedError("cat_output_done() not implemented "
+                    "in superclass")
 
         def refresh_output_start(self):
                 return
@@ -223,37 +226,48 @@ class ProgressTracker(object):
                 return
 
         def eval_output_start(self):
-                raise NotImplementedError("eval_output_start() not implemented in superclass")
+                raise NotImplementedError("eval_output_start() not implemented "
+                    "in superclass")
 
         def eval_output_progress(self):
-                raise NotImplementedError("eval_output_progress() not implemented in superclass")
+                raise NotImplementedError("eval_output_progress() not "
+                    "implemented in superclass")
 
         def eval_output_done(self):
-                raise NotImplementedError("eval_output_done() not implemented in superclass")
+                raise NotImplementedError("eval_output_done() not implemented "
+                    "in superclass")
 
         def ver_output(self):
-                raise NotImplementedError("ver_output() not implemented in superclass")
+                raise NotImplementedError("ver_output() not implemented in "
+                    "superclass")
 
         def ver_output_error(self, actname, errors):
-                raise NotImplementedError("ver_output_error() not implemented in superclass")
+                raise NotImplementedError("ver_output_error() not implemented "
+                    "in superclass")
 
         def dl_output(self):
-                raise NotImplementedError("dl_output() not implemented in superclass")
+                raise NotImplementedError("dl_output() not implemented in "
+                    "superclass")
 
         def dl_output_done(self):
-                raise NotImplementedError("dl_output_done() not implemented in superclass")
+                raise NotImplementedError("dl_output_done() not implemented "
+                    "in superclass")
 
-        def act_output(self):
-                raise NotImplementedError("act_output() not implemented in superclass")
+        def act_output(self, force=False):
+                raise NotImplementedError("act_output() not implemented in "
+                    "superclass")
 
         def act_output_done(self):
-                raise NotImplementedError("act_output_done() not implemented in superclass")
+                raise NotImplementedError("act_output_done() not implemented "
+                    "in superclass")
 
-        def ind_output(self):
-                raise NotImplementedError("ind_output() not implemented in superclass")
+        def ind_output(self, force=False):
+                raise NotImplementedError("ind_output() not implemented in "
+                    "superclass")
 
         def ind_output_done(self):
-                raise NotImplementedError("ind_output_done() not implemented in superclass")
+                raise NotImplementedError("ind_output_done() not implemented "
+                    "in superclass")
 
 
 class ProgressTrackerException(Exception):
@@ -274,31 +288,44 @@ class QuietProgressTracker(ProgressTracker):
         def __init__(self):
                 ProgressTracker.__init__(self)
 
-        def cat_output_start(self): return
+        def cat_output_start(self):
+                return
 
-        def cat_output_done(self): return
+        def cat_output_done(self):
+                return
 
-        def eval_output_start(self): return
+        def eval_output_start(self):
+                return
 
-        def eval_output_progress(self): return
+        def eval_output_progress(self):
+                return
 
-        def eval_output_done(self): return
+        def eval_output_done(self):
+                return
 
-        def ver_output(self): return
+        def ver_output(self):
+                return
 
-        def ver_output_error(self, actname, errors): return
+        def ver_output_error(self, actname, errors):
+                return
 
-        def dl_output(self): return
+        def dl_output(self):
+                return
 
-        def dl_output_done(self): return
+        def dl_output_done(self):
+                return
 
-        def act_output(self): return
+        def act_output(self, force=False):
+                return
 
-        def act_output_done(self): return
+        def act_output_done(self):
+                return
 
-        def ind_output(self): return
+        def ind_output(self, force=False):
+                return
 
-        def ind_output_done(self): return
+        def ind_output_done(self):
+                return
 
 
 class NullProgressTracker(QuietProgressTracker):
@@ -321,19 +348,26 @@ class CommandLineProgressTracker(ProgressTracker):
                 ProgressTracker.__init__(self)
                 self.dl_last_printed_pkg = None
 
-        def cat_output_start(self): return
+        def cat_output_start(self):
+                return
 
-        def cat_output_done(self): return
+        def cat_output_done(self):
+                return
 
-        def eval_output_start(self): return
+        def eval_output_start(self):
+                return
 
-        def eval_output_progress(self): return
+        def eval_output_progress(self):
+                return
 
-        def eval_output_done(self): return
+        def eval_output_done(self):
+                return
 
-        def ver_output(self): return
+        def ver_output(self):
+                return
 
-        def ver_output_error(self, actname, errors): return
+        def ver_output_error(self, actname, errors):
+                return
 
         def dl_output(self):
                 try:
@@ -358,7 +392,7 @@ class CommandLineProgressTracker(ProgressTracker):
                                 raise PipeError, e
                         raise
 
-        def act_output(self):
+        def act_output(self, force=False):
                 if self.act_phase != self.act_phase_last:
                         try:
                                 print "%s ... " % self.act_phase,
@@ -378,7 +412,7 @@ class CommandLineProgressTracker(ProgressTracker):
                                 raise PipeError, e
                         raise
 
-        def ind_output(self):
+        def ind_output(self, force=False):
                 if self.ind_phase != self.ind_phase_last:
                         try:
                                 print "%s ... " % self.ind_phase,
@@ -473,8 +507,8 @@ class FancyUNIXProgressTracker(ProgressTracker):
                         print " " * self.cat_curstrlen,
                         print self.cr,
                         s = "Refreshing Catalog %d/%d %s" % \
-                            (self.refresh_cur_auth_cnt, self.refresh_auth_cnt,
-                            self.refresh_cur_auth)
+                            (self.refresh_cur_pub_cnt, self.refresh_pub_cnt,
+                            self.refresh_cur_pub)
                         self.cat_curstrlen = len(s)
                         print "%s" % s,
                         sys.stdout.flush()
@@ -515,7 +549,8 @@ class FancyUNIXProgressTracker(ProgressTracker):
                         self.spinner = 0
                 try:
                         print self.cr,
-                        s = "Creating Plan %c" % self.spinner_chars[self.spinner]
+                        s = "Creating Plan %c" % self.spinner_chars[
+                            self.spinner]
                         self.cat_curstrlen = len(s)
                         print "%s" % s,
                         sys.stdout.flush()
@@ -616,7 +651,7 @@ class FancyUNIXProgressTracker(ProgressTracker):
                                 raise PipeError, e
                         raise
 
-        def act_output(self, force = False):
+        def act_output(self, force=False):
                 if force or (time.time() - self.last_print_time) >= 0.05:
                         self.last_print_time = time.time()
                 else:

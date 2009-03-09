@@ -35,7 +35,7 @@ IMAGES
 2.2.1.  Configuration inheritance
 
     Some aspects of configuration can be shared between all images.  For
-    instance, a user image may specify authorities beyond those encoded
+    instance, a user image may specify publishers beyond those encoded
     into the system defaults.  So, a user image must have authoritative
     configuration, but be able to draw on the parent image's state for
     default settings.
@@ -81,14 +81,14 @@ IMAGES
 
 2.2.2.  Configuration components
 
-    List of authorities.  For each authority, we have a prefix, an
+    List of publishers.  For each publisher, we have a prefix, an
     origin URL, a list of mirror URLs, and annotations.
 
-    authority_[escaped_name]/  Property group of type "com.sun.pkg,authority"
-      /prefix                  pkg: authority
+    publisher_[escaped_name]/  Property group of type "com.sun.pkg,publisher"
+      /prefix                  pkg: publisher
       /origin                  http:, https:, or ftp: URL
       /mirrors                 list of URLs
-      /disabled                boolean indicating whether authority should be used
+      /disabled                boolean indicating whether publisher should be used
 
     Image properties.  The image has a collection of simple properties,
     like machine type and policies that control the behavior of the pkg(5)
@@ -101,7 +101,7 @@ IMAGES
       /flush-content-cache-on-success
                                 should downloaded compressed files be removed
                                 after a successful install
-      /preferred-authority      preferred authority for unknown package lookups
+      /preferred-publisher      preferred publisher for unknown package lookups
       /title                    title of image for use in GUIs and other UIs
       /description              longer description of the content of the image
       /[various]

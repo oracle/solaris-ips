@@ -49,11 +49,21 @@ Display-Copyrights: False
 name = an image
                 
 [authority_sfbay.sun.com]
+alias: zruty
 prefix: sfbay.sun.com
-origin: http://zruty.sfbay:10001
+origin: http://zruty.sfbay:10001/
 mirrors:
 ssl_key:
 ssl_cert:
+repo.collection_type: supplemental
+repo.description: Lots of development packages here.
+repo.legal_uris: ['http://zruty.sfbay:10001/legal.html', 'http://zruty.sfbay:10001/tos.html']
+repo.name: zruty development repository
+repo.refresh_seconds: 86400
+repo.registered: True
+repo.registration_uri: http://zruty.sfbay:10001/reg.html
+repo.related_uris:
+sort_policy: priority
 """)
                 f.close()
                 self.ic = imageconfig.ImageConfig()
@@ -64,10 +74,31 @@ ssl_cert:
                 except:
                         pass
 
-        def test_read(self):
+        def test_0_read(self):
+                """Verify that read works and that values are read properly."""
                 self.ic.read(self.sample_dir)
 
-        def test_unicode(self):
+                pub = self.ic.publishers["sfbay.sun.com"]
+                self.assertEqual(pub.alias, "zruty")
+                repo = pub.selected_repository
+                origin = repo.origins[0]
+                self.assertEqual(origin.uri, "http://zruty.sfbay:10001/")
+                self.assertEqual(origin.ssl_key, None)
+                self.assertEqual(origin.ssl_cert, None)
+                self.assertEqual(repo.collection_type, "supplemental")
+                self.assertEqual(repo.description,
+                    "Lots of development packages here.")
+                self.assertEqual([u.uri for u in repo.legal_uris],
+                    ["http://zruty.sfbay:10001/legal.html",
+                    "http://zruty.sfbay:10001/tos.html"])
+                self.assertEqual(repo.name, "zruty development repository")
+                self.assertEqual(repo.refresh_seconds, 86400)
+                self.assertEqual(repo.registered, True)
+                self.assertEqual(repo.registration_uri, "http://zruty.sfbay:10001/reg.html")
+                self.assertEqual(repo.related_uris, [])
+                self.assertEqual(repo.sort_policy, "priority")
+
+        def test_1_unicode(self):
                 self.ic.read(self.sample_dir)
                 ustr = u'abc\u3041def'
                 self.ic.properties['name'] = ustr
@@ -79,7 +110,7 @@ ssl_cert:
                 shutil.rmtree(newdir)
                 self.assert_(ustr == ustr2)
 
-        def test_missing_conffile(self):
+        def test_2_missing_conffile(self):
                 #
                 #  See what happens if the conf file is missing.
                 #

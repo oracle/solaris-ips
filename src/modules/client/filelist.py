@@ -36,7 +36,6 @@ from tarfile import ReadError
 
 import pkg.pkgtarfile as ptf
 import pkg.portable as portable
-import pkg.fmri
 import pkg.client.api_errors as api_errors
 import pkg.misc as misc
 from pkg.client import global_settings
@@ -100,13 +99,13 @@ class FileList(object):
                 self.effective_nfiles = 0
 
                 if fmri:
-                        auth, pkg_name, version = self.fmri.tuple()
+                        pub = self.fmri.get_publisher()
 
-                        self.authority = pkg.fmri.strip_auth_pfx(auth)
-                        self.ssl_tuple = self.image.get_ssl_credentials(auth)
-                        self.uuid = self.image.get_uuid(self.authority)
+                        self.publisher = pub
+                        self.ssl_tuple = self.image.get_ssl_credentials(pub)
+                        self.uuid = self.image.get_uuid(self.publisher)
                 else:
-                        self.authority = None
+                        self.publisher = None
                         self.ssl_tuple = None
                         self.uuid = None
 
@@ -225,7 +224,7 @@ class FileList(object):
                 """A wrapper around _get_files.  This handles exceptions
                 that might occur and deals with timeouts."""
 
-                num_mirrors = self.image.num_mirrors(self.authority)
+                num_mirrors = self.image.num_mirrors(self.publisher)
                 max_timeout = global_settings.PKG_TIMEOUT_MAX
                 if num_mirrors > 0:
                         retry_count = max_timeout * (num_mirrors + 1)
@@ -491,7 +490,7 @@ class FileList(object):
                 elif self.ds:
                         self.url = self.ds.url
                 else:
-                        self.ds = self.image.select_mirror(self.authority,
+                        self.ds = self.image.select_mirror(self.publisher,
                             chosen_set)
                         self.url = self.ds.url
                         chosen_set.add(self.ds)
@@ -529,7 +528,7 @@ class FileList(object):
                                     "computed: %s" % (action.hash, fhash))
                         return
 
-                newhash, cdata = misc.get_data_digest(filepath)
+                newhash = misc.get_data_digest(filepath)[0]
                 if chash != newhash:
                         os.remove(filepath)
                         raise InvalidContentException(path,

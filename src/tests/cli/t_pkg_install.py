@@ -20,8 +20,10 @@
 # CDDL HEADER END
 #
 
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+#
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
+#
 
 import testutils
 if __name__ == "__main__":
@@ -1733,8 +1735,8 @@ class TestTwoDepots(testutils.ManyDepotTestCase):
         def setUp(self):
                 """ Start two depots.
                     depot 1 gets foo and moo, depot 2 gets foo and bar
-                    depot1 is mapped to authority test1 (preferred)
-                    depot2 is mapped to authority test2 """
+                    depot1 is mapped to publisher test1 (preferred)
+                    depot2 is mapped to publisher test2 """
 
                 testutils.ManyDepotTestCase.setUp(self, 2)
 
@@ -1756,11 +1758,11 @@ class TestTwoDepots(testutils.ManyDepotTestCase):
                 self.pkgsend_bulk(durl2, self.upgrade_p11)
                 self.pkgsend_bulk(durl2, self.upgrade_np10)
 
-                # Create image and hence primary authority
+                # Create image and hence primary publisher
                 self.image_create(durl1, prefix="test1")
 
-                # Create second authority using depot #2
-                self.pkg("set-authority -O " + durl2 + " test2")
+                # Create second publisher using depot #2
+                self.pkg("set-publisher -O " + durl2 + " test2")
 
         def tearDown(self):
                 testutils.ManyDepotTestCase.tearDown(self)
@@ -1791,40 +1793,40 @@ class TestTwoDepots(testutils.ManyDepotTestCase):
                 self.pkg("uninstall foo")
 
         def test_basics_2(self):
-                """ Test install from an explicit preferred authority """
+                """ Test install from an explicit preferred publisher """
                 self.pkg("install pkg://test1/foo")
                 self.pkg("list foo")
                 self.pkg("list pkg://test1/foo")
                 self.pkg("uninstall foo")
 
         def test_basics_3(self):
-                """ Test install from an explicit non-preferred authority """
+                """ Test install from an explicit non-preferred publisher """
                 self.pkg("install pkg://test2/foo")
                 self.pkg("list foo")
                 self.pkg("list pkg://test2/foo")
                 self.pkg("uninstall foo")
 
         def test_upgrade_preferred_to_non_preferred(self):
-                """Install a package from the preferred authority, and then
+                """Install a package from the preferred publisher, and then
                 upgrade it, implicitly switching to a non-preferred
-                authority."""
+                publisher."""
                 self.pkg("list -a upgrade-p")
                 self.pkg("install upgrade-p@1.0")
                 self.pkg("install upgrade-p@1.1")
                 self.pkg("uninstall upgrade-p")
 
         def test_upgrade_non_preferred_to_preferred(self):
-                """Install a package from a non-preferred authority, and then
-                upgrade it, implicitly switching to the preferred authority."""
+                """Install a package from a non-preferred publisher, and then
+                upgrade it, implicitly switching to the preferred publisher."""
                 self.pkg("list -a upgrade-np")
                 self.pkg("install upgrade-np@1.0")
                 self.pkg("install upgrade-np@1.1")
                 self.pkg("uninstall upgrade-np")
 
         def test_upgrade_preferred_to_non_preferred_incorporated(self):
-                """Install a package from the preferred authority, and then
+                """Install a package from the preferred publisher, and then
                 upgrade it, implicitly switching to a non-preferred
-                authority, when the package is constrained by an
+                publisher, when the package is constrained by an
                 incorporation."""
                 self.pkg("list -a upgrade-p incorp-p")
                 self.pkg("install incorp-p@1.0")
@@ -1834,9 +1836,9 @@ class TestTwoDepots(testutils.ManyDepotTestCase):
                 self.pkg("uninstall upgrade-p")
 
         def test_upgrade_non_preferred_to_preferred_incorporated(self):
-                """Install a package from the preferred authority, and then
+                """Install a package from the preferred publisher, and then
                 upgrade it, implicitly switching to a non-preferred
-                authority, when the package is constrained by an
+                publisher, when the package is constrained by an
                 incorporation."""
                 self.pkg("list -a upgrade-np incorp-np")
                 self.pkg("install incorp-np@1.0")
@@ -1845,22 +1847,22 @@ class TestTwoDepots(testutils.ManyDepotTestCase):
                 self.pkg("list upgrade-np@1.1")
                 self.pkg("uninstall upgrade-np")
 
-        def test_uninstall_from_wrong_authority(self):
-                """Install a package from an authority and try to remove it
-                using a different authority name; this should fail."""
+        def test_uninstall_from_wrong_publisher(self):
+                """Install a package from a publisher and try to remove it
+                using a different publisher name; this should fail."""
                 self.pkg("install foo")
                 self.pkg("uninstall pkg://test2/foo", exit=1)
                 # Check to make sure that uninstalling using the explicit
-                # authority works
+                # publisher works
                 self.pkg("uninstall pkg://test1/foo")
 
-        def test_yyy_install_after_authority_removal(self):
-                """Install a package from an authority that has an optional
-                dependency; then change the preferred authority and remove the
-                original authority and attempt to uninstall the package."""
+        def test_yyy_install_after_publisher_removal(self):
+                """Install a package from a publisher that has an optional
+                dependency; then change the preferred publisher and remove the
+                original publisher and attempt to uninstall the package."""
                 self.pkg("install quux@1.0")
-                self.pkg("set-authority -P test2")
-                self.pkg("unset-authority test1")
+                self.pkg("set-publisher -P test2")
+                self.pkg("unset-publisher test1")
                 # 
                 # 
                 self.pkg("install quux@1.0")
@@ -1868,25 +1870,25 @@ class TestTwoDepots(testutils.ManyDepotTestCase):
                 self.pkg("image-update") 
                 # Change the image metadata back to where it was, in preparation
                 # for subsequent tests.
-                self.pkg("set-authority -O %s -P test1" % \
+                self.pkg("set-publisher -O %s -P test1" % \
                     self.dcs[1].get_depot_url())
 
-        def test_zzz_uninstall_after_preferred_authority_change(self):
-                """Install a package from the preferred authority, change the
-                preferred authority, and attempt to remove the package."""
+        def test_zzz_uninstall_after_preferred_publisher_change(self):
+                """Install a package from the preferred publisher, change the
+                preferred publisher, and attempt to remove the package."""
                 self.pkg("install foo@1.0")
-                self.pkg("set-authority -P test2")
+                self.pkg("set-publisher -P test2")
                 self.pkg("uninstall foo")
                 # Change the image metadata back to where it was, in preparation
                 # for the next test.
-                self.pkg("set-authority -P test1")
+                self.pkg("set-publisher -P test1")
 
-        def test_zzz_uninstall_after_preferred_authority_removal(self):
-                """Install a package from the preferred authority, remove the
-                preferred authority, and attempt to remove the package."""
+        def test_zzz_uninstall_after_preferred_publisher_removal(self):
+                """Install a package from the preferred publisher, remove the
+                preferred publisher, and attempt to remove the package."""
                 self.pkg("install foo@1.0")
-                self.pkg("set-authority -P test2")
-                self.pkg("unset-authority test1")
+                self.pkg("set-publisher -P test2")
+                self.pkg("unset-publisher test1")
                 self.pkg("uninstall foo")
 
 

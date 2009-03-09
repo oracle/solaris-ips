@@ -42,52 +42,46 @@
 # PKG_IMAGE_TYPE [entire, partial, user] - type of image
 #       XXX or is this in the Image configuration?
 
+import calendar
+import datetime
+import errno
 import getopt
 import gettext
-import locale
 import itertools
+import locale
 import os
 import socket
 import sys
+import time
 import traceback
 import urllib2
 import urlparse
-import datetime
-import time
-import calendar
-import errno
 
-import OpenSSL.crypto
-
-from pkg.client import global_settings
-import pkg.client.bootenv as bootenv
-import pkg.client.image as image
-import pkg.client.filelist as filelist
-import pkg.client.progress as progress
-import pkg.client.history as history
+import pkg
 import pkg.client.api as api
 import pkg.client.api_errors as api_errors
+import pkg.client.bootenv as bootenv
+import pkg.client.filelist as filelist
+import pkg.client.history as history
+import pkg.client.image as image
+import pkg.client.imagetypes as imgtypes
+import pkg.client.progress as progress
+import pkg.client.publisher as publisher
 import pkg.search_errors as search_errors
 import pkg.fmri as fmri
 import pkg.misc as misc
-from pkg.misc import msg, emsg, PipeError
-import pkg.version
-import pkg.Uuid25
-import pkg
+
+from pkg.client import global_settings
 from pkg.client.debugvalues import DebugValues
-
-from pkg.client.history import RESULT_FAILED_UNKNOWN
-from pkg.client.history import RESULT_CANCELED
-from pkg.client.history import RESULT_FAILED_TRANSPORT
-from pkg.client.history import RESULT_SUCCEEDED
-from pkg.client.history import RESULT_FAILED_SEARCH
-from pkg.client.history import RESULT_FAILED_STORAGE
-from pkg.client.retrieve import ManifestRetrievalError
-from pkg.client.retrieve import DatastreamRetrievalError
-from pkg.client.retrieve import CatalogRetrievalError
+from pkg.client.history import (RESULT_CANCELED, RESULT_FAILED_BAD_REQUEST,
+    RESULT_FAILED_CONFIGURATION, RESULT_FAILED_SEARCH, RESULT_FAILED_STORAGE,
+    RESULT_FAILED_TRANSPORT, RESULT_FAILED_UNKNOWN, RESULT_SUCCEEDED)
 from pkg.client.filelist import FileListRetrievalError
+from pkg.client.retrieve import (CatalogRetrievalError,
+    DatastreamRetrievalError, ManifestRetrievalError)
+from pkg.misc import msg, emsg, PipeError
 
-CLIENT_API_VERSION = 10
+CLIENT_API_VERSION = 11
 PKG_CLIENT_NAME = "pkg"
 
 def error(text):
@@ -105,6 +99,14 @@ def error(text):
         # program name on all platforms.
         emsg(ws + "pkg: " + text_nows)
 
+def cmd_error(cmd, text):
+        error("%s: %s" % (cmd, text))
+
+def cmd_usage(cmd, usage_error=None):
+        if usage_error:
+                return usage("%s: %s" % (cmd, usage_error))
+        return usage()
+
 def usage(usage_error = None):
         """Emit a usage message and optionally prefix it with a more
             specific error message.  Causes program to exit. """
@@ -121,7 +123,7 @@ Basic subcommands:
         pkg uninstall [-nrvq] [--no-index] package...
         pkg list [-aHsuvf] [package...]
         pkg image-update [-fnvq] [--be-name name] [--no-refresh] [--no-index]
-        pkg refresh [--full] [authority ...]
+        pkg refresh [--full] [publisher ...]
         pkg version
         pkg help
 
@@ -140,12 +142,12 @@ Advanced subcommands:
         pkg unset-property propname ...
         pkg property [-H] [propname ...]
 
-        pkg set-authority [-Ped] [-k ssl_key] [-c ssl_cert] [--reset-uuid]
+        pkg set-publisher [-Ped] [-k ssl_key] [-c ssl_cert] [--reset-uuid]
             [-O origin_url] [-m mirror_to_add | --add-mirror=mirror_to_add]
             [-M mirror_to_remove | --remove-mirror=mirror_to_remove]
-            [--enable] [--disable] [--no-refresh] authority
-        pkg unset-authority authority ...
-        pkg authority [-HPa] [authority ...]
+            [--enable] [--disable] [--no-refresh] publisher
+        pkg unset-publisher publisher ...
+        pkg publisher [-HPa] [publisher ...]
         pkg history [-Hl]
         pkg purge-history
         pkg rebuild-index
@@ -250,11 +252,11 @@ def list_inventory(img, args):
                                                     ("FMRI", "STATE", "UFIX"))
                                         elif summary:
                                                 msg(fmt_str % \
-                                                    ("NAME (AUTHORITY)",
+                                                    ("NAME (PUBLISHER)",
                                                     "SUMMARY"))
                                         else:
                                                 msg(fmt_str % \
-                                                    ("NAME (AUTHORITY)",
+                                                    ("NAME (PUBLISHER)",
                                                     "VERSION", "STATE", "UFIX"))
                                 found = True
                         ufix = "%c%c%c%c" % \
@@ -263,23 +265,24 @@ def list_inventory(img, args):
                             state["incorporated"] and "i" or "-",
                             state["excludes"] and "x" or "-")
 
-                        if pfmri.preferred_authority():
-                                auth = ""
+                        if pfmri.preferred_publisher():
+                                pub = ""
                         else:
-                                auth = " (" + pfmri.get_authority() + ")"
+                                pub = " (" + pfmri.get_publisher() + ")"
 
                         if verbose:
-                                pf = pfmri.get_fmri(img.get_default_authority())
+                                pf = pfmri.get_fmri(
+                                    img.get_preferred_publisher())
                                 msg("%-64s %-10s %s" % (pf, state["state"],
                                     ufix))
                         elif summary:
-                                pf = pfmri.get_name() + auth
+                                pf = pfmri.get_name() + pub
 
                                 m = img.get_manifest(pfmri)
                                 msg(fmt_str % (pf, m.get("description", "")))
 
                         else:
-                                pf = pfmri.get_name() + auth
+                                pf = pfmri.get_name() + pub
                                 msg(fmt_str % (pf, pfmri.get_version(),
                                     state["state"], ufix))
 
@@ -471,7 +474,7 @@ def image_update(img_dir, args):
         """Attempt to take all installed packages specified to latest
         version."""
 
-        # XXX Authority-catalog issues.
+        # XXX Publisher-catalog issues.
         # XXX Are filters appropriate for an image update?
         # XXX Leaf package refinements.
 
@@ -629,16 +632,16 @@ def print_mirror_stats(api_inst):
         """Given an api_inst object, print depot status information."""
 
         status_fmt = "%-10s %-35s %10s %10s"
-        print status_fmt % ("Authority", "URL", "Success", "Failure")
+        print status_fmt % ("Publisher", "URI", "Success", "Failure")
 
         for ds in api_inst.img.gen_depot_status():
-               print status_fmt % (ds.auth, ds.url, ds.good_tx, ds.errors)
+                print status_fmt % (ds.prefix, ds.url, ds.good_tx, ds.errors)
 
 def install(img_dir, args):
         """Attempt to take package specified to INSTALLED state.  The operands
         are interpreted as glob patterns."""
 
-        # XXX Authority-catalog issues.
+        # XXX Publisher-catalog issues.
 
         opts, pargs = getopt.getopt(args, "nvb:f:q", ["no-refresh", "no-index"])
 
@@ -702,7 +705,7 @@ def install(img_dir, args):
                 else:
                         raise RuntimeError("Catalog refresh failed during"
                             " install.")
-        except api_errors.InvalidCertException:
+        except api_errors.CertificateError:
                 return 1
         except (api_errors.PlanCreationException,
             api_errors.NetworkUnavailableException,
@@ -896,10 +899,6 @@ def unfreeze(img, args):
 def search(img, args):
         """Search through the reverse index databases for the given token."""
 
-        # Verify validity of certificates before attempting network operations
-        if not img.check_cert_validity():
-                return 1
-
         opts, pargs = getopt.getopt(args, "lrs:I")
 
         local = remote = case_sensitive = False
@@ -910,12 +909,12 @@ def search(img, args):
                 elif opt == "-r":
                         remote = True
                 elif opt == "-s":
-                        if not misc.valid_auth_url(arg):
+                        if not misc.valid_pub_url(arg):
                                 orig_arg = arg
                                 arg = "http://" + arg
-                                if not misc.valid_auth_url(arg):
+                                if not misc.valid_pub_url(arg):
                                         error(_("%s is not a valid "
-                                            "server URL.") % orig_arg)
+                                            "server URI.") % orig_arg)
                                         return 1
                         remote = True
                         servers.append({"origin": arg})
@@ -943,6 +942,17 @@ def search(img, args):
                         return 1
 
         if remote:
+                # Verify validity of certificates before attempting network
+                # operations.
+                try:
+                        img.check_cert_validity()
+                except api_errors.PermissionsException, e:
+                        error("\n" + str(e))
+                        return 1
+                except api_errors.CertificateError, e:
+                        error(_("search: %s") % e)
+                        return 1
+
                 searches.append(img.remote_search(pargs, servers))
 
         # By default assume we don't find anything.
@@ -968,17 +978,17 @@ def search(img, args):
 
         except RuntimeError, failed:
                 emsg("Some servers failed to respond:")
-                for auth, err in failed.args[0]:
+                for pub, err in failed.args[0]:
                         if isinstance(err, urllib2.HTTPError):
                                 emsg("    %s: %s (%d)" % \
-                                    (auth["origin"], err.msg, err.code))
+                                    (pub["origin"], err.msg, err.code))
                         elif isinstance(err, urllib2.URLError):
                                 if isinstance(err.args[0], socket.timeout):
                                         emsg("    %s: %s" % \
-                                            (auth["origin"], "timeout"))
+                                            (pub["origin"], "timeout"))
                                 else:
                                         emsg("    %s: %s" % \
-                                            (auth["origin"], err.args[0][1]))
+                                            (pub["origin"], err.args[0][1]))
 
                 retcode = 4
 
@@ -1032,6 +1042,9 @@ def info(img_dir, args):
                 illegals = ret[api.ImageInterface.INFO_ILLEGALS]
                 multi_match = ret[api.ImageInterface.INFO_MULTI_MATCH]
 
+        except api_errors.PermissionsException, e:
+                error(e)
+                return 1
         except api_errors.NoPackagesInstalledException:
                 error(_("no packages installed"))
                 return 1
@@ -1070,8 +1083,8 @@ def info(img_dir, args):
 
                 msg(_("         State:"), state)
 
-                # XXX even more info on the authority would be nice?
-                msg(_("     Authority:"), pi.authority)
+                # XXX even more info on the publisher would be nice?
+                msg(_("     Publisher:"), pi.publisher)
                 msg(_("       Version:"), pi.version)
                 msg(_(" Build Release:"), pi.build_release)
                 msg(_("        Branch:"), pi.branch)
@@ -1171,8 +1184,8 @@ def display_contents_results(actionlist, attrs, sort_attrs, action_types,
                         elif attr == "pkg.shortfmri":
                                 a = manifest.fmri.get_short_fmri()
                                 just = JUST_LEFT
-                        elif attr == "pkg.authority":
-                                a = manifest.fmri.get_authority()
+                        elif attr == "pkg.publisher":
+                                a = manifest.fmri.get_publisher()
                                 just = JUST_LEFT
                         else:
                                 a = ""
@@ -1239,12 +1252,11 @@ def list_contents(img, args):
         opts, pargs = getopt.getopt(args, "Ho:s:t:mfr")
 
         valid_special_attrs = [ "action.name", "action.key", "action.raw",
-            "pkg.name", "pkg.fmri", "pkg.shortfmri", "pkg.authority",
+            "pkg.name", "pkg.fmri", "pkg.shortfmri", "pkg.publisher",
             "pkg.size" ]
 
         display_headers = True
         display_raw = False
-        display_nofilters = False
         remote = False
         local = False
         attrs = []
@@ -1263,9 +1275,6 @@ def list_contents(img, args):
                         remote = True
                 elif opt == "-m":
                         display_raw = True
-                elif opt == "-f":
-                        # Undocumented, for now.
-                        display_nofilters = True
 
         if not remote and not local:
                 local = True
@@ -1321,9 +1330,11 @@ def list_contents(img, args):
         elif remote:
                 # Verify validity of certificates before attempting network
                 # operations
-                if not img.check_cert_validity():
-                        img.history.operation_result = \
-                            history.RESULT_FAILED_TRANSPORT
+                try:
+                        img.check_cert_validity()
+                except (api_errors.CertificateError,
+                    api_errors.PermissionsException), e:
+                        img.history.log_operation_end(error=e)
                         return 1
 
                 fmris = []
@@ -1345,7 +1356,7 @@ def list_contents(img, args):
                         npnames = {}
                         npmatch = []
                         for m, state in matches:
-                                if m.preferred_authority():
+                                if m.preferred_publisher():
                                         pnames[m.get_pkg_stem()] = 1
                                         pmatch.append(m)
                                 else:
@@ -1392,7 +1403,6 @@ def list_contents(img, args):
                 else:
                         sort_attrs = attrs[:1]
 
-        filt = not display_nofilters
         manifests = ( img.get_manifest(f) for f in fmris )
 
         actionlist = [ (m, a)
@@ -1429,7 +1439,7 @@ def display_catalog_failures(cre):
         succeeded = cre.succeeded
         msg(_("pkg: %s/%s catalogs successfully updated:") % (succeeded, total))
 
-        for auth, err in cre.failed:
+        for pub, err in cre.failed:
                 if isinstance(err, urllib2.HTTPError):
                         emsg("   %s: %s - %s" % \
                             (err.filename, err.code, err.msg))
@@ -1437,22 +1447,22 @@ def display_catalog_failures(cre):
                         if err.args[0][0] == 8:
                                 emsg("    %s: %s" % \
                                     (urlparse.urlsplit(
-                                        auth["origin"])[1].split(":")[0],
+                                        pub["origin"])[1].split(":")[0],
                                     err.args[0][1]))
                         else:
                                 if isinstance(err.args[0], socket.timeout):
                                         emsg("    %s: %s" % \
-                                            (auth["origin"], "timeout"))
+                                            (pub["origin"], "timeout"))
                                 else:
                                         emsg("    %s: %s" % \
-                                            (auth["origin"], err.args[0][1]))
+                                            (pub["origin"], err.args[0][1]))
                 elif isinstance(err, CatalogRetrievalError) and \
                     isinstance(err.exc, EnvironmentError) and \
                     err.exc.errno == errno.EACCES:
-                        if err.auth:
+                        if err.prefix:
                                 emsg("   ", _("Could not update catalog "
                                      "for '%s' due to insufficient "
-                                     "permissions.") % err.auth)
+                                     "permissions.") % err.prefix)
                         else:
                                 emsg("   ", _("Could not update a catalog "
                                      "due to insufficient permissions."))
@@ -1489,11 +1499,9 @@ def catalog_refresh(img_dir, args):
 
         try:
                 api_inst.refresh(full_refresh, pargs)
-        except api_errors.UnrecognizedAuthorityException, e:
-                tmp = _("%s is not a recognized or enabled authority to " \
-                    "refresh. \n'pkg authority' will show a" \
-                    " list of authorities.")
-                error(tmp % e.auth)
+        except api_errors.PublisherError, e:
+                error(e)
+                error(_("'pkg publisher' will show a list of publishers."))
                 return 1
         except (api_errors.PermissionsException,
             api_errors.NetworkUnavailableException), e:
@@ -1509,10 +1517,10 @@ def catalog_refresh(img_dir, args):
         else:
                 return 0
 
-def authority_set(img, args):
-        """pkg set-authority [-Ped] [-k ssl_key] [-c ssl_cert] [--reset-uuid]
+def publisher_set(img_dir, args):
+        """pkg set-publisher [-Ped] [-k ssl_key] [-c ssl_cert] [--reset-uuid]
             [-O origin_url] [-m mirror to add] [-M mirror to remove]
-            [--enable] [--disable] [--no-refresh] authority"""
+            [--enable] [--disable] [--no-refresh] publisher"""
 
         preferred = False
         ssl_key = None
@@ -1551,64 +1559,124 @@ def authority_set(img, args):
                         disable = True
 
         if len(pargs) == 0:
-                usage(
-                    _("set-authority: requires an authority name"))
+                cmd_usage("set-publisher", _("requires a publisher name"))
         elif len(pargs) > 1:
-                usage(
-                    _("set-authority: only one authority name may be specified"))
+                cmd_usage("set-publisher", _("only one publisher name may be "
+                        "specified"))
 
-        auth = pargs[0]
+        name = pargs[0]
 
-        if ssl_key:
-                ssl_key = os.path.abspath(ssl_key)
-                if not os.path.exists(ssl_key):
-                        error(_("set-authority: SSL key file '%s' does not " \
-                            "exist") % ssl_key)
+        if preferred and disable:
+                cmd_usage("set-publisher", _("the -p and -d options may not be "
+                    "combined"))
+
+        progresstracker = get_tracker(True)
+        try:
+                api_inst = api.ImageInterface(img_dir, CLIENT_API_VERSION,
+                    progresstracker, None, PKG_CLIENT_NAME)
+        except api_errors.ImageNotFoundException, e:
+                cmd_error("set-publisher",
+                    _("'%s' is not an install image") % e.user_dir)
+                return 1
+
+        new_pub = False
+        try:
+                pub = api_inst.get_publisher(prefix=name, alias=name,
+                    duplicate=True)
+                if reset_uuid:
+                        pub.reset_client_uuid()
+                repo = pub.selected_repository
+        except api_errors.PermissionsException, e:
+                cmd_error("set-publisher", e)
+                return 1
+        except api_errors.UnknownPublisher:
+                if not origin_url:
+                        cmd_error("set-publisher", _("publisher does not "
+                            "exist. Use -O to define origin URI for new "
+                            "publisher."))
+                        return 1
+                # No pre-existing, so create a new one.
+                repo = publisher.Repository()
+                pub = publisher.Publisher(name, repositories=[repo])
+                new_pub = True
+
+        if disable is not None:
+                # Set disabled property only if provided.
+                pub.disabled = disable
+
+        if origin_url:
+                try:
+                        if not repo.origins:
+                                # New publisher case.
+                                repo.add_origin(origin_url)
+                                origin = repo.origins[0]
+                        else:
+                                origin = repo.origins[0]
+                                origin.uri = origin_url
+
+                        # XXX once image configuration supports storing this
+                        # information at the uri level, ssl info should be set
+                        # here.
+                except api_errors.PublisherError, e:
+                        cmd_error("set-publisher", e)
                         return 1
 
-        if ssl_cert:
-                ssl_cert = os.path.abspath(ssl_cert)
-                if not os.path.exists(ssl_cert):
-                        error(_("set-authority: SSL key cert '%s' does not " \
-                            "exist") % ssl_cert)
+        if add_mirror:
+                try:
+                        # XXX once image configuration supports storing this
+                        # information at the uri level, ssl info should be set
+                        # here.
+                        repo.add_mirror(add_mirror)
+                except (api_errors.PublisherError,
+                    api_errors.CertificateError), e:
+                        cmd_error("set-publisher", e)
                         return 1
 
+        if remove_mirror:
+                try:
+                        repo.remove_mirror(remove_mirror)
+                except api_errors.PublisherError, e:
+                        cmd_error("set-publisher", e)
+                        return 1
 
-        if not img.has_authority(auth) and origin_url == None:
-                error(_("set-authority: authority does not exist. Use " \
-                    "-O to define origin URL for new authority"))
-                return 1
-
-        elif not img.has_authority(auth) and not misc.valid_auth_prefix(auth):
-                error(_("set-authority: authority name has invalid characters"))
-                return 1
-
-        if origin_url and not misc.valid_auth_url(origin_url):
-                error(_("set-authority: authority URL is invalid"))
-                return 1
-
-        if disable and auth == img.get_default_authority():
-                error(_("set-authority: cannot disable the preferred authority"))
-                return 1
-
-        uuid = None
-        if reset_uuid:
-                uuid = pkg.Uuid25.uuid1()
+        # None is checked for here so that a client can unset a ssl_cert or
+        # ssl_key by using -k "" or -c "".
+        if ssl_cert is not None or ssl_key is not None:
+                # Assume the user wanted to update the ssl_cert or ssl_key
+                # information for *all* of the currently selected
+                # repository's origins and mirrors.
+                try:
+                        for uri in repo.origins:
+                                if ssl_cert is not None:
+                                        uri.ssl_cert = ssl_cert
+                                if ssl_key is not None:
+                                        uri.ssl_key = ssl_key
+                        for uri in repo.mirrors:
+                                if ssl_cert is not None:
+                                        uri.ssl_cert = ssl_cert
+                                if ssl_key is not None:
+                                        uri.ssl_key = ssl_key
+                except (api_errors.PublisherError,
+                    api_errors.CertificateError), e:
+                        cmd_error("set-publisher", e)
+                        return 1
 
         try:
-                img.set_authority(auth, origin_url=origin_url,
-                    ssl_key=ssl_key, ssl_cert=ssl_cert,
-                    refresh_allowed=refresh_catalogs, uuid=uuid,
-                    disabled=disable)
+                if new_pub:
+                        api_inst.add_publisher(pub,
+                            refresh_allowed=refresh_catalogs)
+                else:
+                        api_inst.update_publisher(pub,
+                            refresh_allowed=refresh_catalogs)
         except api_errors.CatalogRefreshException, e:
                 text = "Could not refresh the catalog for %s"
-                error(_(text) % auth)
+                error(_(text) % pub)
                 return 1
         except api_errors.InvalidDepotResponseException, e:
-                error(_("The URL '%s' does not appear to point to a "
-                    "valid pkg server.\nPlease check the server's "
-                    "address and client's network configuration."
-                    "\nAdditional details:\n\n%s" % (origin_url, e)))
+                error(_("The origin URIs for '%s' do not appear to point to a "
+                    "valid pkg server.\nPlease check the server's address and "
+                    "client's network configuration."
+                    "\nAdditional details:\n\n%s" % (pub.prefix, e)))
                 return 1
         except api_errors.PermissionsException, e:
                 # Prepend a newline because otherwise the exception will
@@ -1617,75 +1685,39 @@ def authority_set(img, args):
                 return 1
 
         if preferred:
-                if img.get_authority(auth)["disabled"]:
-                        error(_("set-authority: the preferred authority must be enabled"))
-                        return 1
-                img.set_preferred_authority(auth)
-
-        if add_mirror:
-
-                if not misc.valid_auth_url(add_mirror):
-                        error(_("set-authority: added mirror's URL is invalid"))
-                        return 1
-
-                if img.has_mirror(auth, add_mirror):
-                        error(_("set-authority: mirror already exists"))
-                        return 1
-
-                img.add_mirror(auth, add_mirror)
-
-        if remove_mirror:
-
-                if not misc.valid_auth_url(remove_mirror):
-                        error(_("set-authority: removed mirror has bad URL"))
-                        return 1
-
-                if not img.has_mirror(auth, remove_mirror):
-                        error(_("set-authority: mirror does not exist"))
-                        return 1
-
-
-                img.del_mirror(auth, remove_mirror)
-
+                api_inst.set_preferred_publisher(prefix=pub.prefix)
 
         return 0
 
-def authority_unset(img, args):
-        """pkg unset-authority authority ..."""
-
-        # is this an existing authority in our image?
-        # if so, delete it
-        # if not, error
-        preferred_auth = img.get_default_authority()
+def publisher_unset(img_dir, args):
+        """pkg unset-publisher publisher ..."""
 
         if len(args) == 0:
                 usage()
 
-        for a in args:
-                if not img.has_authority(a):
-                        error(_("unset-authority: no such authority: %s") \
-                            % a)
-                        return 1
+        progresstracker = get_tracker(True)
+        try:
+                api_inst = api.ImageInterface(img_dir, CLIENT_API_VERSION,
+                    progresstracker, None, PKG_CLIENT_NAME)
+        except api_errors.ImageNotFoundException, e:
+                error(_("'%s' is not an install image") % e.user_dir)
+                return 1
 
-                if a == preferred_auth:
-                        error(_("unset-authority: removal of preferred " \
-                            "authority not allowed."))
-                        return 1
+        for name in args:
                 try:
-                        img.delete_authority(a)
-                except api_errors.PermissionsException, e:
+                        api_inst.remove_publisher(prefix=name, alias=name)
+                except (api_errors.PermissionsException,
+                    api_errors.PublisherError), e:
                         # Prepend a newline because otherwise the exception
                         # will be printed on the same line as the spinner.
                         error("\n" + str(e))
                         return 1
-
         return 0
 
-def authority_list(img, args):
-        """pkg authorities"""
+def publisher_list(img_dir, args):
+        """pkg publishers"""
         omit_headers = False
         preferred_only = False
-        preferred_authority = img.get_default_authority()
         inc_disabled = False
 
         opts, pargs = getopt.getopt(args, "HPa")
@@ -1697,82 +1729,151 @@ def authority_list(img, args):
                 if opt == "-a":
                         inc_disabled = True
 
-        if len(pargs) == 0:
-                if not omit_headers:
-                        msg("%-35s %s" % ("AUTHORITY", "URL"))
+        progresstracker = get_tracker(True)
 
-                if preferred_only:
-                        auths = [img.get_authority(preferred_authority)]
-                else:
-                        auths = img.gen_authorities(inc_disabled=inc_disabled)
+        try:
+                api_inst = api.ImageInterface(img_dir, CLIENT_API_VERSION,
+                    progresstracker, None, PKG_CLIENT_NAME)
+        except api_errors.ImageNotFoundException, e:
+                error(_("'%s' is not an install image") % e.user_dir)
+                return 1
 
-                for a in auths:
-                        # summary list
-                        pfx, url, ssl_key, ssl_cert, dt, mir = \
-                            img.split_authority(a)
+        cert_cache = {}
+        def get_cert_info(ssl_cert):
+                if not ssl_cert:
+                        return None
+                if ssl_cert not in cert_cache:
+                        c = cert_cache[ssl_cert] = {}
+                        errors = c["errors"] = []
+                        times = c["info"] = {
+                            "effective": "",
+                            "expiration": "",
+                        }
 
-                        if not preferred_only and pfx == preferred_authority:
-                                pfx += " (preferred)"
-                        if a["disabled"]:
-                                pfx += " (disabled)"
-                        msg("%-35s %s" % (pfx, url))
-        else:
-                img.load_catalogs(get_tracker())
-
-                for a in pargs:
-                        if not img.has_authority(a):
-                                error(_("authority: no such authority: %s") \
-                                    % a)
-                                return 1
-
-                        # detailed print
-                        auth = img.get_authority(a)
-                        pfx, url, ssl_key, ssl_cert, dt, mir = \
-                            img.split_authority(auth)
-
-                        if dt:
-                                dt = dt.ctime()
-
-                        if ssl_cert:
-                                try:
-                                        cert = img.build_cert(ssl_cert)
-                                except (IOError, OpenSSL.crypto.Error):
-                                        error(_("SSL certificate for %s" \
-                                            "is invalid or non-existent.") % \
-                                            pfx)
-                                        error(_("Please check file at %s") %\
-                                            ssl_cert)
-                                        continue
-
+                        try:
+                                cert = misc.validate_ssl_cert(ssl_cert)
+                        except (EnvironmentError,
+                            api_errors.CertificateError,
+                            api_errors.PermissionsException), e:
+                                # If the cert information can't be retrieved,
+                                # add the errors to a list and continue on.
+                                errors.append(e)
+                                c["valid"] = False
+                        else:
                                 nb = cert.get_notBefore()
                                 t = time.strptime(nb, "%Y%m%d%H%M%SZ")
                                 nb = datetime.datetime.utcfromtimestamp(
                                     calendar.timegm(t))
+                                times["effective"] = nb.ctime()
 
                                 na = cert.get_notAfter()
                                 t = time.strptime(na, "%Y%m%d%H%M%SZ")
                                 na = datetime.datetime.utcfromtimestamp(
                                     calendar.timegm(t))
-                        else:
-                                cert = None
+                                times["expiration"] = na.ctime()
+                                c["valid"] = True
+
+                return cert_cache[ssl_cert]
+
+        retcode = 0
+        if len(pargs) == 0:
+                fmt = "%-24s %-12s %-8s %-8s %s"
+                if not omit_headers:
+                        msg(fmt % (_("PUBLISHER"), "", _("TYPE"), _("STATUS"),
+                            _("URI")))
+
+                pref_pub = api_inst.get_preferred_publisher()
+                if preferred_only:
+                        pubs = [pref_pub]
+                else:
+                        pubs = [
+                            p for p in api_inst.get_publishers()
+                            if inc_disabled or not p.disabled
+                        ]
+
+                for p in pubs:
+                        pfx = p.prefix
+                        pstatus = ""
+                        if not preferred_only and p == pref_pub:
+                                pstatus = _("(preferred)")
+                        if p.disabled:
+                                pstatus = _("(disabled)")
+
+                        # Only show the selected repository's information in
+                        # summary view.
+                        r = p.selected_repository
+                        for uri in r.origins:
+                                # XXX get the real origin status
+                                msg(fmt % (pfx, pstatus, _("origin"), "online",
+                                    uri))
+                        for uri in r.mirrors:
+                                # XXX get the real mirror status
+                                msg(fmt % (pfx, pstatus, _("mirror"), "online",
+                                    uri))
+        else:
+                def display_ssl_info(uri):
+                        retcode = 0
+                        c = get_cert_info(uri.ssl_cert)
+                        msg(_("              SSL Key:"), uri.ssl_key)
+                        msg(_("             SSL Cert:"), uri.ssl_cert)
+
+                        if not c:
+                                return retcode
+
+                        if c["errors"]:
+                                retcode = 1
+
+                        for e in c["errors"]:
+                                emsg("\n" + str(e) + "\n")
+
+                        if c["valid"]:
+                                msg(_(" Cert. Effective Date:"),
+                                    c["info"]["effective"])
+                                msg(_("Cert. Expiration Date:"),
+                                    c["info"]["expiration"])
+                        return retcode
+
+                def display_repository(r):
+                        retcode = 0
+                        for uri in r.origins:
+                                msg(_("           Origin URI:"), uri)
+                                rval = display_ssl_info(uri)
+                                if rval == 1:
+                                        retcode = 3
+
+                        for uri in r.mirrors:
+                                msg(_("           Mirror URI:"), uri)
+                                rval = display_ssl_info(uri)
+                                if rval == 1:
+                                        retcode = 3
+                        return retcode
+
+                for name in pargs:
+                        # detailed print
+                        pub = api_inst.get_publisher(prefix=name, alias=name)
+                        dt = api_inst.get_publisher_last_update_time(pub.prefix)
+                        if dt:
+                                dt = dt.ctime()
 
                         msg("")
-                        msg("           Authority:", pfx)
-                        msg("          Origin URL:", url)
-                        msg("             SSL Key:", ssl_key)
-                        msg("            SSL Cert:", ssl_cert)
-                        if cert:
-                                msg(" Cert Effective Date:", nb.ctime())
-                                msg("Cert Expiration Date:", na.ctime())
-                        msg("                UUID:", auth["uuid"])
-                        msg("     Catalog Updated:", dt)
-                        msg("             Mirrors:", mir)
-                        e = "Yes"
-                        if auth["disabled"]:
-                                e = "No"
-                        msg("             Enabled:", e)
+                        msg(_("            Publisher:"), pub.prefix)
+                        msg(_("                Alias:"), pub.alias)
 
-        return 0
+                        for r in pub.repositories:
+                                rval = display_repository(r)
+                                if rval != 0:
+                                        # There was an error in displaying some
+                                        # of the information about a repository.
+                                        # However, continue on.
+                                        retcode = rval
+
+                        msg(_("          Client UUID:"), pub.client_uuid)
+                        msg(_("      Catalog Updated:"), dt)
+                        if pub.disabled:
+                                msg(_("              Enabled:"), _("No"))
+                        else:
+                                msg(_("              Enabled:"), _("Yes"))
+        return retcode
 
 def property_set(img, args):
         """pkg set-property propname propvalue"""
@@ -1784,9 +1885,9 @@ def property_set(img, args):
         except ValueError:
                 usage(_("set-property: requires a property name and value"))
 
-        if propname == "preferred-authority":
-                error(_("set-property: set-authority must be used to change "
-                        "the preferred authority"))
+        if propname == "preferred-publisher":
+                error(_("set-property: set-publisher must be used to change "
+                        "the preferred publisher"))
                 return 1
 
         try:
@@ -1812,9 +1913,9 @@ def property_unset(img, args):
                 usage(_("unset-property: requires at least one property name"))
 
         for p in pargs:
-                if p == "preferred-authority":
-                        error(_("unset-property: set-authority must be used to "
-                            "change the preferred authority"))
+                if p == "preferred-publisher":
+                        error(_("unset-property: set-publisher must be used to "
+                            "change the preferred publisher"))
                         return 1
 
                 try:
@@ -1859,7 +1960,7 @@ def property_list(img, args):
 
 def image_create(img, args):
         """Create an image of the requested kind, at the given path.  Load
-        catalog for initial authority for convenience.
+        catalog for initial publisher for convenience.
 
         At present, it is legitimate for a user image to specify that it will be
         deployed in a zone.  An easy example would be a program with an optional
@@ -1870,25 +1971,25 @@ def image_create(img, args):
         is_zone = False
         ssl_key = None
         ssl_cert = None
-        auth_name = None
-        auth_url = None
+        pub_name = None
+        pub_url = None
         refresh_catalogs = True
         force = False
         variants = {}
 
         opts, pargs = getopt.getopt(args, "fFPUza:k:c:",
-            ["force", "full", "partial", "user", "zone", "authority=",
+            ["force", "full", "partial", "user", "zone", "publisher=",
                 "no-refresh", "variant="])
 
         for opt, arg in opts:
                 if opt == "-f" or opt == "--force":
                         force = True
                 if opt == "-F" or opt == "--full":
-                        imgtype = image.IMG_ENTIRE
+                        imgtype = imgtypes.IMG_ENTIRE
                 if opt == "-P" or opt == "--partial":
-                        imgtype = image.IMG_PARTIAL
+                        imgtype = imgtypes.IMG_PARTIAL
                 if opt == "-U" or opt == "--user":
-                        imgtype = image.IMG_USER
+                        imgtype = imgtypes.IMG_USER
                 if opt == "-z" or opt == "--zone":
                         is_zone = True
                         imgtype = image.IMG_ENTIRE
@@ -1898,11 +1999,11 @@ def image_create(img, args):
                         ssl_key = arg
                 if opt == "-c":
                         ssl_cert = arg
-                if opt == "-a" or opt == "--authority":
+                if opt == "-a" or opt == "--publisher":
                         try:
-                                auth_name, auth_url = arg.split("=", 1)
+                                pub_name, pub_url = arg.split("=", 1)
                         except ValueError:
-                                usage(_("image-create requires authority "
+                                usage(_("image-create requires publisher "
                                     "argument to be of the form "
                                     "'<prefix>=<url>'."))
                 if opt == "--variant":
@@ -1922,36 +2023,36 @@ def image_create(img, args):
         if ssl_key:
                 ssl_key = os.path.abspath(ssl_key)
                 if not os.path.exists(ssl_key):
-                        msg(_("pkg: set-authority: SSL key file '%s' does " \
+                        msg(_("pkg: set-publisher: SSL key file '%s' does " \
                             "not exist") % ssl_key)
                         return 1
 
         if ssl_cert:
                 ssl_cert = os.path.abspath(ssl_cert)
                 if not os.path.exists(ssl_cert):
-                        msg(_("pkg: set-authority: SSL key cert '%s' does " \
+                        msg(_("pkg: set-publisher: SSL key cert '%s' does " \
                             "not exist") % ssl_cert)
                         return 1
 
-        if not auth_name and not auth_url:
-                usage(_("image-create requires an authority argument"))
+        if not pub_name and not pub_url:
+                usage(_("image-create requires a publisher argument"))
 
-        if not auth_name or not auth_url:
-                usage(_("image-create requires authority argument to be of "
+        if not pub_name or not pub_url:
+                usage(_("image-create requires publisher argument to be of "
                     "the form '<prefix>=<url>'."))
 
-        if auth_name.startswith(fmri.PREF_AUTH_PFX):
+        if pub_name.startswith(fmri.PREF_PUB_PFX):
                 error(_("image-create requires that a prefix not match: %s"
-                        % fmri.PREF_AUTH_PFX))
+                        % fmri.PREF_PUB_PFX))
                 return 1
 
-        if not misc.valid_auth_prefix(auth_name):
-                error(_("image-create: authority prefix has invalid " \
+        if not misc.valid_pub_prefix(pub_name):
+                error(_("image-create: publisher prefix has invalid " \
                     "characters"))
                 return 1
 
-        if not misc.valid_auth_url(auth_url):
-                error(_("image-create: authority URL is invalid"))
+        if not misc.valid_pub_url(pub_url):
+                error(_("image-create: publisher URI is invalid"))
                 return 1
 
         image_dir = pargs[0]
@@ -1970,18 +2071,21 @@ def image_create(img, args):
                 return 1
 
         try:
-                img.set_attrs(imgtype, image_dir, is_zone, auth_name, auth_url,
+                img.set_attrs(imgtype, image_dir, is_zone, pub_name, pub_url,
                     ssl_key=ssl_key, ssl_cert=ssl_cert, variants=variants,
                     refresh_allowed=refresh_catalogs)
         except OSError, e:
                 error(_("cannot create image at %s: %s") % \
                     (image_dir, e.args[1]))
                 return 1
+        except api_errors.PermissionsException, e:
+                cmd_error("image-create", e)
+                return 1
         except api_errors.InvalidDepotResponseException, e:
-                error(_("The URL '%s' does not appear to point to a "
+                error(_("The URI '%s' does not appear to point to a "
                     "valid pkg server.\nPlease check the server's "
                     "address and client's network configuration."
-                    "\nAdditional details:\n\n%s" % (auth_url, e)))
+                    "\nAdditional details:\n\n%s" % (pub_url, e)))
                 return 1
         except api_errors.CatalogRefreshException, cre:
                 if display_catalog_failures(cre) == 0:
@@ -2005,6 +2109,9 @@ def rebuild_index(img, pargs):
         try:
                 img.history.operation_name = "rebuild-index"
                 img.rebuild_search_index(get_tracker(quiet))
+        except api_errors.PermissionsException, e:
+                cmd_error("rebuild-index", e)
+                return 1
         except api_errors.CorruptedIndexException:
                 img.history.operation_result = RESULT_FAILED_SEARCH
                 error(INCONSISTENT_INDEX_ERROR_MESSAGE)
@@ -2051,6 +2158,9 @@ def history_list(img, args):
                 try:
                         he = history.History(root_dir=img.history.root_dir,
                             filename=entry)
+                except api_errors.PermissionsException, e:
+                        cmd_error("history", e)
+                        return 1
                 except history.HistoryLoadException, e:
                         if e.parse_failure:
                                 # Ignore corrupt entries.
@@ -2134,10 +2244,11 @@ def main_func():
         for opt, arg in opts:
                 if opt == "-D" or opt == "--debug":
                         try:
-                                key, value = arg.split('=', 1)
-                        except:
-                                usage(_("%s takes argument of form name=value, not %s")
-                                    % (opt, arg))
+                                key, value = arg.split("=", 1)
+                        except (AttributeError, ValueError):
+                                usage(_("%(opt)s takes argument of form "
+                                    "name=value, not %(arg)s") % { "opt":  opt,
+                                    "arg": arg })
                         DebugValues.set_value(key, value)
                 elif opt == "-R":
                         mydir = arg
@@ -2218,7 +2329,11 @@ def main_func():
                         error(_("No image found."))
                 return 1
 
-        img.load_config()
+        try:
+                img.load_config()
+        except api_errors.ApiException, e:
+                error(_("client configuration error: %s") % e)
+                return 1
 
         try:
                 if subcommand == "refresh":
@@ -2245,12 +2360,12 @@ def main_func():
                         return fix_image(img, pargs)
                 elif subcommand == "verify":
                         return verify_image(img, pargs)
-                elif subcommand == "set-authority":
-                        return authority_set(img, pargs)
-                elif subcommand == "unset-authority":
-                        return authority_unset(img, pargs)
-                elif subcommand == "authority":
-                        return authority_list(img, pargs)
+                elif subcommand == "set-publisher":
+                        return publisher_set(mydir, pargs)
+                elif subcommand == "unset-publisher":
+                        return publisher_unset(mydir, pargs)
+                elif subcommand == "publisher":
+                        return publisher_list(mydir, pargs)
                 elif subcommand == "set-property":
                         return property_set(img, pargs)
                 elif subcommand == "unset-property":
@@ -2289,6 +2404,16 @@ if __name__ == "__main__":
                         __img.history.abort(RESULT_CANCELED)
                 # We don't want to display any messages here to prevent
                 # possible further broken pipe (EPIPE) errors.
+                __ret = 1
+        except api_errors.CertificateError, __e:
+                if __img:
+                        __img.history.abort(RESULT_FAILED_CONFIGURATION)
+                error(__e)
+                __ret = 1
+        except api_errors.PublisherError, __e:
+                if __img:
+                        __img.history.abort(RESULT_FAILED_BAD_REQUEST)
+                error(__e)
                 __ret = 1
         except misc.TransportException, __e:
                 if __img:

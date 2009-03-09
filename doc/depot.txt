@@ -114,14 +114,14 @@ DEPOT
 
     The above example can be broken down into four basic components:
 
-        authority_origin_url    - http://pkg.opensolaris.org/release/
+        publisher_origin_url    - http://pkg.opensolaris.org/release/
         operation_name          - manifest
         protocol_version        - 0
         operation_arguments     - SUNWvim%407.1.284%2C5.11-0.101%3A20081119T230659Z
 
     Each of these components can be described as follows:
 
-        authority_origin_url    - A URL that can be used to access a depot
+        publisher_origin_url    - A URL that can be used to access a depot
                                   server's repository.
 
         operation_name          - The name of the operation that the client is
@@ -268,7 +268,7 @@ DEPOT
 
             Expects:
                 A URL-encoded pkg(5) FMRI, excluding the 'pkg:/' scheme prefix
-                and authority information, and including the full version
+                and publisher information, and including the full version
                 information.
 
             Returns:
@@ -278,7 +278,7 @@ DEPOT
             Sample Output:
                 Name: entire
                 Summary: entire incorporation
-                Authority: Unknown
+                Publisher: Unknown
                 Version: 0.5.11
                 Build Release: 5.11
                 Branch: 0.101
@@ -299,7 +299,7 @@ DEPOT
 
             Expects:
                 A URL-encoded pkg(5) FMRI excluding the 'pkg:/' scheme prefix
-                and authority information and including the full version
+                and publisher information and including the full version
                 information.
 
             Returns:

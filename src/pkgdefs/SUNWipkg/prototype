@@ -103,6 +103,8 @@ f none usr/lib/python2.4/vendor-packages/pkg/client/pkgplan.py 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/client/pkgplan.pyc 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/client/progress.py 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/client/progress.pyc 444 root bin
+f none usr/lib/python2.4/vendor-packages/pkg/client/publisher.py 444 root bin
+f none usr/lib/python2.4/vendor-packages/pkg/client/publisher.pyc 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/client/query_engine.py 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/client/query_engine.pyc 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/client/retrieve.py 444 root bin

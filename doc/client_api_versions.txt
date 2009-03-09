@@ -1,3 +1,118 @@
+Version 11:
+Incompatible with clients using versions 1-10:
+Changes:
+   This version changes all parameter names and property names from 'authority'
+   to 'publisher'.  For example, parameters named 'auths' were changed to
+   'pubs'; parameters named 'authent' were changed to 'pubent' and so forth.
+
+   In addition, the following new api functions were added to ImageInterface:
+        def add_publisher(self, pub, refresh_allowed=True):
+                """Add the provided publisher object to the image
+                configuration."""
+
+        def get_preferred_publisher(self):
+                """Returns the preferred publisher object for the image."""
+
+        def get_publisher(self, prefix=None, alias=None, duplicate=False):
+                """Retrieves a publisher object matching the provided prefix
+                (name) or alias.
+
+                'duplicate' is an optional boolean value indicating whether
+                a copy of the publisher object should be returned instead
+                of the original.
+                """
+
+        def get_publishers(self, duplicate=False):
+                """Returns a list of the publisher objects for the current
+                image.
+
+                'duplicate' is an optional boolean value indicating whether
+                copies of the publisher objects should be returned instead
+                of the originals.
+                """
+
+        def get_publisher_last_update_time(self, prefix=None, alias=None):
+                """Returns a datetime object representing the last time the
+                catalog for a publisher was modified or None."""
+
+        def has_publisher(self, prefix=None, alias=None):
+                """Retrieves a publisher object matching the provided prefix
+                (name) or alias."""
+
+        def remove_publisher(self, prefix=None, alias=None):
+                """Removes a publisher object matching the provided prefix
+                (name) or alias."""
+
+        def set_preferred_publisher(self, prefix=None, alias=None):
+                """Sets the preferred publisher for the image."""
+
+        def update_publisher(self, pub, refresh_allowed=True):
+                """Replaces an existing publisher object with the provided one
+                using the _source_object_id identifier set during copy."""
+
+        def update_publisher(self, pub, refresh_allowed=True):
+                """Replaces an existing publisher object with the provided one
+                using the _source_object_id identifier set during copy.
+
+                'refresh_allowed' is an optional boolean value indicating
+                whether a refresh of publisher metadata (such as its catalog)
+                should be performed if transport information is changed for a
+                repository, mirror, or origin.  If False, no attempt will be
+                made to retrieve publisher metadata."""
+
+
+        def log_operation_end(self, error=None, result=None):
+                """Marks the end of an operation to be recorded in image
+                history.
+
+                'result' should be a pkg.client.history constant value
+                representing the outcome of an operation.  If not provided,
+                and 'error' is provided, the final result of the operation will
+                be based on the class of 'error' and 'error' will be recorded
+                for the current operation.  If 'result' and 'error' is not
+                provided, success is assumed."""
+
+        def log_operation_error(self, error):
+                """Adds an error to the list of errors to be recorded in image
+                history for the current opreation."""
+
+        def log_operation_start(self, name):
+                """Marks the start of an operation to be recorded in image
+                history."""
+ 
+        def parse_p5i(self, fileobj=None, location=None):
+                """Reads the pkg(5) publisher json formatted data at 'location'
+                or from the provided file-like object 'fileobj' and returns a
+                list of tuples of the format (publisher object, pkg_names).
+                pkg_names is a list of strings representing package names or
+                FMRIs.  If any pkg_names not specific to a publisher were
+                provided, the last tuple returned will be of the format (None,
+                pkg_names).
+
+                'fileobj' is an optional file-like object that must support a
+                'read' method for retrieving data.
+
+                'location' is an optional string value that should either start
+                with a leading slash and be pathname of a file or a URI string.
+
+                'fileobj' or 'location' must be provided."""
+
+        def write_p5i(self, fileobj, pkg_names=None, pubs=None):
+                """Writes the publisher, repository, and provided package names
+                to the provided file-like object 'fileobj' in json p5i format.
+
+                'fileobj' is only required to have a 'write' method that accepts
+                data to be written as a parameter.
+
+                'pkg_names' is a dict of lists, tuples, or sets indexed by
+                publisher prefix that contain package names, FMRI strings, or
+                package info objects.  A prefix of "" can be used for packages
+                that are not specific to a publisher.
+
+                'pubs' is an optional list of publisher prefixes or Publisher
+                objects.  If not provided, the information for all publishers
+                (excluding those disabled) will be output."""
+
 Version 10:
 Incompatible with clients using versions 1-9:
 Changes:
@@ -155,7 +270,7 @@ Version 0:
 
         def refresh(self, full_refresh, auths=None):
                 """Refreshes the catalogs. full_refresh controls whether to do
-                a full retrieval of the catalog from the authority or only
+                a full retrieval of the catalog from the publisher or only
                 update the existing catalog. auths is a list of authorities to
                 refresh. Passing an empty list or using the default value means
                 all known authorities will be refreshed. While it currently

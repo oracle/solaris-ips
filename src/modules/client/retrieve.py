@@ -41,22 +41,22 @@ from pkg.client.api_errors import InvalidDepotResponseException
 
 class CatalogRetrievalError(Exception):
         """Used when catalog retrieval fails"""
-        def __init__(self, data, exc=None, auth=None):
+        def __init__(self, data, exc=None, prefix=None):
                 Exception.__init__(self)
                 self.data = data
                 self.exc = exc
-                self.auth = auth
+                self.prefix = prefix
 
         def __str__(self):
                 return str(self.data)
 
 class VersionRetrievalError(Exception):
         """Used when catalog retrieval fails"""
-        def __init__(self, data, exc=None, auth=None):
+        def __init__(self, data, exc=None, prefix=None):
                 Exception.__init__(self)
                 self.data = data
                 self.exc = exc
-                self.auth = auth
+                self.prefix = prefix
 
         def __str__(self):
                 return str(self.data)
@@ -82,18 +82,18 @@ class DatastreamRetrievalError(Exception):
 # client/retrieve.py - collected methods for retrieval of pkg components
 # from repositories
 
-def get_catalog(img, auth, hdr, ts):
+def get_catalog(img, pub, hdr, ts):
         """Get a catalog from a remote host.  Img is the image object
-        that we're updating.  Auth is the authority from which the
+        that we're updating.  pub is the publisher from which the
         catalog will be retrieved.  Additional headers are contained
         in hdr.  Ts is the timestamp if we're performing an incremental
         catalog operation."""
 
-        prefix = auth["prefix"]
-        ssl_tuple = img.get_ssl_credentials(authent=auth)
+        prefix = pub["prefix"]
+        ssl_tuple = img.get_ssl_credentials(pubent=pub)
 
         try:
-                c, v = versioned_urlopen(auth["origin"],
+                c, v = versioned_urlopen(pub["origin"],
                     "catalog", [0], ssl_creds=ssl_tuple,
                     headers=hdr, imgtype=img.type,
                     uuid=img.get_uuid(prefix))
@@ -138,7 +138,7 @@ def get_catalog(img, auth, hdr, ts):
         croot = "%s/catalog/%s" % (img.imgdir, prefix)
 
         try:
-                updatelog.recv(c, croot, ts, auth)
+                updatelog.recv(c, croot, ts, pub)
         except (ValueError, httplib.IncompleteRead):
                 raise TransferContentException(prefix,
                     "Incomplete Read from remote host")
@@ -178,7 +178,7 @@ def __get_intent_str(img, fmri):
         target_pkg = None
         initial_pkg = None
         needed_by_pkg = None
-        current_auth = fmri.get_authority()
+        current_pub = fmri.get_publisher()
 
         targets = img.state.get_targets()
         if targets:
@@ -186,7 +186,7 @@ def __get_intent_str(img, fmri):
                 # manifest for this fmri and what its current target is.
                 target, reason = targets[-1]
 
-                # Compare the FMRIs with no authority information embedded.
+                # Compare the FMRIs with no publisher information embedded.
                 na_current = fmri.get_fmri(anarchy=True)
                 na_target = target.get_fmri(anarchy=True)
 
@@ -196,10 +196,10 @@ def __get_intent_str(img, fmri):
                         # target.  If they do not match, then the target fmri is
                         # being retrieved for information purposes only (e.g.
                         # dependency calculation, etc.).
-                        target_auth = target.get_authority()
-                        if target_auth == current_auth:
+                        target_pub = target.get_publisher()
+                        if target_pub == current_pub:
                                 # Prevent providing information across
-                                # authorities.
+                                # publishers.
                                 target_pkg = na_target[len("pkg:/"):]
                         else:
                                 target_pkg = "unknown"
@@ -208,10 +208,10 @@ def __get_intent_str(img, fmri):
                         # caused the current and needed_by fmris to be
                         # retrieved.
                         initial = targets[0][0]
-                        initial_auth = initial.get_authority()
-                        if initial_auth == current_auth:
+                        initial_pub = initial.get_publisher()
+                        if initial_pub == current_pub:
                                 # Prevent providing information across
-                                # authorities.
+                                # publishers.
                                 initial_pkg = initial.get_fmri(
                                     anarchy=True)[len("pkg:/"):]
 
@@ -236,17 +236,17 @@ def __get_intent_str(img, fmri):
                                 # current one in the target list.
                                 needed_by = targets[-2][0]
 
-                                needed_by_auth = needed_by.get_authority()
-                                if needed_by_auth == current_auth:
-                                        # To prevent dependency information being shared
-                                        # across authority boundaries, authorities must
-                                        # match.
+                                needed_by_pub = needed_by.get_publisher()
+                                if needed_by_pub == current_pub:
+                                        # To prevent dependency information
+                                        # being shared across publisher
+                                        # boundaries, publishers must match.
                                         needed_by_pkg = needed_by.get_fmri(
                                             anarchy=True)[len("pkg:/"):]
                                 else:
-                                        # If they didn't match, indicate that the
-                                        # package is needed by another, but not which
-                                        # one.
+                                        # If they didn't match, indicate that
+                                        # the package is needed by another, but
+                                        # not which one.
                                         needed_by_pkg = "unknown"
         else:
                 # An operation is being performed that has not provided any
@@ -266,10 +266,10 @@ def __get_intent_str(img, fmri):
                         # We didn't get a match back, drive on.
                         pass
                 else:
-                        prior_auth = prior.get_authority()
-                        if prior_auth != current_auth:
+                        prior_pub = prior.get_publisher()
+                        if prior_pub != current_pub:
                                 # Prevent providing information across
-                                # authorities by indicating that a prior
+                                # publishers by indicating that a prior
                                 # version was installed, but not which one.
                                 prior_version = "unknown"
 
@@ -292,11 +292,11 @@ def get_datastream(img, fmri, fhash):
         """Retrieve a file handle based on a package fmri and a file hash.
         """
 
-        authority = fmri.get_authority_str()
-        authority = pkg.fmri.strip_auth_pfx(authority)
-        url_prefix = img.get_url_by_authority(authority)
-        ssl_tuple = img.get_ssl_credentials(authority)
-        uuid = img.get_uuid(authority)
+        publisher = fmri.get_publisher_str()
+        publisher = pkg.fmri.strip_pub_pfx(publisher)
+        url_prefix = img.get_url_by_publisher(publisher)
+        ssl_tuple = img.get_ssl_credentials(publisher)
+        uuid = img.get_uuid(publisher)
 
         try:
                 f = versioned_urlopen(url_prefix, "file", [0], fhash,
@@ -323,11 +323,11 @@ def __get_manifest(img, fmri, method):
         for the related manifest and send intent information.
         """
 
-        authority = fmri.get_authority_str()
-        authority = pkg.fmri.strip_auth_pfx(authority)
-        url_prefix = img.get_url_by_authority(authority)
-        ssl_tuple = img.get_ssl_credentials(authority)
-        uuid = img.get_uuid(authority)
+        publisher = fmri.get_publisher_str()
+        publisher = pkg.fmri.strip_pub_pfx(publisher)
+        url_prefix = img.get_url_by_publisher(publisher)
+        ssl_tuple = img.get_ssl_credentials(publisher)
+        uuid = img.get_uuid(publisher)
 
         # Tell the server why this resource is being requested.
         headers = {
@@ -343,9 +343,9 @@ def get_manifest(img, fmri):
         the caller.
         """
 
-        authority = fmri.tuple()[0]
-        authority = pkg.fmri.strip_auth_pfx(authority)
-        url_prefix = img.get_url_by_authority(authority)
+        publisher = fmri.tuple()[0]
+        publisher = pkg.fmri.strip_pub_pfx(publisher)
+        url_prefix = img.get_url_by_publisher(publisher)
 
         try:
                 m = __get_manifest(img, fmri, "GET")
@@ -416,9 +416,8 @@ def touch_manifest(img, fmri):
         """Perform a HEAD operation on the manifest for the given fmri.
         """
 
-        authority = fmri.get_authority_str()
-        authority = pkg.fmri.strip_auth_pfx(authority)
-        url_prefix = img.get_url_by_authority(authority)
+        publisher = fmri.get_publisher_str()
+        publisher = pkg.fmri.strip_pub_pfx(publisher)
 
         try:
                 __get_manifest(img, fmri, "HEAD")
@@ -429,17 +428,17 @@ def touch_manifest(img, fmri):
                 # operation that returns no information.
                 pass
 
-def get_versions(img, auth):
+def get_versions(img, pub):
         """Get version information from a remote host.
 
         Img is the image object that the retrieve is using.
-        Auth is the authority that will be queried for version information."""
+        pub is the publisher that will be queried for version information."""
 
-        prefix = auth["prefix"]
-        ssl_tuple = img.get_ssl_credentials(authent=auth)
+        prefix = pub["prefix"]
+        ssl_tuple = img.get_ssl_credentials(pubent=pub)
 
         try:
-                s, v = versioned_urlopen(auth["origin"],
+                s, v = versioned_urlopen(pub["origin"],
                     "versions", [0], ssl_creds=ssl_tuple,
                     imgtype=img.type, uuid=img.get_uuid(prefix))
         except urllib2.HTTPError, e:
@@ -501,5 +500,5 @@ def get_versions(img, auth):
                     for s in (l.strip() for l in verlines)
                 )
         except ValueError:
-                raise InvalidDepotResponseException(auth["origin"],
+                raise InvalidDepotResponseException(pub["origin"],
                     "Unable to parse server response")

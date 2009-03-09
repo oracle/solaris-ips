@@ -286,7 +286,7 @@ class ConfigInterface(_Interface):
                                 description     A descriptive paragraph for the
                                                 feed.
 
-                                authority       A fully-qualified domain name or
+                                publisher       A fully-qualified domain name or
                                                 email address that is used to
                                                 generate a unique identifier for
                                                 each entry in the feed.

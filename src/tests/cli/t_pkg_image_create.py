@@ -20,8 +20,10 @@
 # CDDL HEADER END
 #
 
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+#
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
+#
 
 import testutils
 if __name__ == "__main__":
@@ -51,7 +53,7 @@ class TestPkgImageCreateBasics(testutils.SingleDepotTestCase):
 
 
         def test_766(self):
-                """Bug 766: image-create without authority prefix specified."""
+                """Bug 766: image-create without publisher prefix specified."""
 
                 durl = self.dc.get_depot_url()
 
@@ -108,7 +110,7 @@ class TestImageCreateNoDepot(testutils.CliTestCase):
 		    self.image_create, durl)
 
         def test_765(self):
-                """Bug 765: malformed authority URL."""
+                """Bug 765: malformed publisher URL."""
 
                 durl = "bar=baz"
                 self.assertRaises(testutils.UnexpectedExitCodeException, \
@@ -122,13 +124,13 @@ class TestImageCreateNoDepot(testutils.CliTestCase):
 
         def test_763c(self):
                 """Bug 763, traceback 3: -a given to image-create, but no
-                authority specified."""
+                publisher specified."""
 
                 self.assertRaises(testutils.UnexpectedExitCodeException, \
                     self.pkg, "image-create -a foo")
 
-        def test_bad_authority_options(self):
-                """More tests that abuse the authority prefix and URL."""
+        def test_bad_publisher_options(self):
+                """More tests that abuse the publisher prefix and URL."""
 
                 self.assertRaises(testutils.UnexpectedExitCodeException, \
                     self.pkg, "image-create -a $%^8" + ("=http://%s1" %
@@ -165,7 +167,7 @@ class TestPkgImageCreateNoDepot(testutils.CliTestCase):
 		    self.image_create, durl)
 
         def test_765(self):
-                """Bug 765: malformed authority URL."""
+                """Bug 765: malformed publisher URL."""
 
                 durl = "bar=baz"
                 self.assertRaises(testutils.UnexpectedExitCodeException, \
@@ -179,13 +181,13 @@ class TestPkgImageCreateNoDepot(testutils.CliTestCase):
 
         def test_763c(self):
                 """Bug 763, traceback 3: -a given to image-create, but no
-                authority specified."""
+                publisher specified."""
 
                 self.assertRaises(testutils.UnexpectedExitCodeException, \
                     self.pkg, "image-create -a foo")
 
-        def test_bad_authority_options(self):
-                """More tests that abuse the authority prefix and URL."""
+        def test_bad_publisher_options(self):
+                """More tests that abuse the publisher prefix and URL."""
 
                 self.assertRaises(testutils.UnexpectedExitCodeException, \
                     self.pkg, "image-create -a $%^8" + ("=http://%s1" %

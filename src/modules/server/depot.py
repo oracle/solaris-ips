@@ -661,11 +661,11 @@ class DepotHTTP(object):
 
                 m.set_content(file(mpath).read())
 
-                authority, name, ver = f.tuple()
-                if authority:
-                        authority = fmri.strip_auth_pfx(authority)
+                publisher, name, ver = f.tuple()
+                if publisher:
+                        publisher = fmri.strip_pub_pfx(publisher)
                 else:
-                        authority = "Unknown"
+                        publisher = "Unknown"
                 summary = m.get("description", "")
 
                 lsummary = cStringIO.StringIO()
@@ -684,7 +684,7 @@ class DepotHTTP(object):
                 return """\
           Name: %s
        Summary: %s
-     Authority: %s
+     Publisher: %s
        Version: %s
  Build Release: %s
         Branch: %s
@@ -694,6 +694,6 @@ Packaging Date: %s
 
 License:
 %s
-""" % (name, summary, authority, ver.release, ver.build_release,
+""" % (name, summary, publisher, ver.release, ver.build_release,
     ver.branch, ver.get_timestamp().ctime(), misc.bytes_to_str(m.size),
     f, lsummary.read())

@@ -82,7 +82,7 @@ class Catalog(object):
 
         S Last-Modified: [timespec]
 
-        XXX A authority mirror-uri ...
+        XXX A publisher mirror-uri ...
         XXX ...
 
         V fmri
@@ -119,21 +119,21 @@ class Catalog(object):
         # spread out into chunks, and may require a delta-oriented update
         # interface.
 
-        def __init__(self, cat_root, authority = None, pkg_root = None,
+        def __init__(self, cat_root, publisher = None, pkg_root = None,
             read_only = False, rebuild = True):
                 """Create a catalog.  If the path supplied does not exist,
                 this will create the required directory structure.
                 Otherwise, if the directories are already in place, the
                 existing catalog is opened.  If pkg_root is specified
                 and no catalog is found at cat_root, the catalog will be
-                rebuilt.  authority names the authority that
+                rebuilt.  publisher names the publisher that
                 is represented by this catalog."""
 
                 self.catalog_root = cat_root
                 self.catalog_file = os.path.normpath(os.path.join(
                     self.catalog_root, "catalog"))
                 self.attrs = {}
-                self.auth = authority
+                self.pub = publisher
                 self.renamed = None
                 self.pkg_root = pkg_root
                 self.read_only = read_only
@@ -268,20 +268,20 @@ class Catalog(object):
                 return ts
 
         @staticmethod
-        def cache_fmri(d, pfmri, auth):
+        def cache_fmri(d, pfmri, pub):
                 """Store the fmri in a data structure 'd' for fast lookup.
 
                 'd' is a dict that maps each package name to another dictionary,
                 itself mapping each version string to a tuple of the fmri object
-                and a list of authorities from which the package version is
+                and a list of publishers from which the package version is
                 available, as well as a special key, "versions", which maps to a
                 list of version objects, kept in sorted order.
 
                     pkg_name1: {
                         "versions": [ <version1>, <version2>, <version3>, ... ],
-                        "version1": ( <fmri1>, [ "auth1", "auth2", ... ],
-                        "version2": ( <fmri2>, [ "auth1", "auth2", ... ],
-                        "version3": ( <fmri3>, [ "auth1", "auth2", ... ],
+                        "version1": ( <fmri1>, [ "pub1", "pub2", ... ],
+                        "version2": ( <fmri2>, [ "pub1", "pub2", ... ],
+                        "version3": ( <fmri3>, [ "pub1", "pub2", ... ],
                         ...
                     },
                     pkg_name2: {
@@ -292,7 +292,7 @@ class Catalog(object):
                 (where names in quotes are strings, names in angle brackets are
                 objects, and the rest of the syntax is Pythonic.
 
-                The fmri is expected not to have an embedded authority.  If it
+                The fmri is expected not to have an embedded publisher.  If it
                 does, it will be ignored."""
 
                 pversion = str(pfmri.version)
@@ -301,17 +301,17 @@ class Catalog(object):
                         # structure.
                         d[pfmri.pkg_name] = {
                             "versions": [ pfmri.version ],
-                            pversion: (pfmri, [ auth ])
+                            pversion: (pfmri, [ pub ])
                         }
                 elif pversion not in d[pfmri.pkg_name]:
-                        d[pfmri.pkg_name][pversion] = (pfmri, [ auth ])
+                        d[pfmri.pkg_name][pversion] = (pfmri, [ pub ])
                         bisect.insort(
                             d[pfmri.pkg_name]["versions"], pfmri.version)
                 else:
-                        d[pfmri.pkg_name][pversion][1].append(auth)
+                        d[pfmri.pkg_name][pversion][1].append(pub)
 
         @staticmethod
-        def read_catalog(catalog, path, auth=None):
+        def read_catalog(catalog, path, pub=None):
                 """Read the catalog file in "path" and combine it with the
                 existing data in "catalog"."""
 
@@ -322,7 +322,7 @@ class Catalog(object):
                                 continue
 
                         f = fmri.PkgFmri(line[6:].replace(" ", "@"))
-                        Catalog.cache_fmri(catalog, f, auth)
+                        Catalog.cache_fmri(catalog, f, pub)
 
                 catf.close()
 
@@ -485,7 +485,7 @@ class Catalog(object):
                                 if pkg == "pkg":
                                         yield fmri.PkgFmri("%s@%s" %
                                             (cat_name, cat_version),
-                                            authority = self.auth)
+                                            publisher = self.pub)
                         except ValueError:
                                 # Handle old two-column catalog file, mostly in
                                 # use on server.  If *this* doesn't work, we
@@ -495,10 +495,10 @@ class Catalog(object):
                                 except ValueError:
                                         raise RuntimeError, \
                                             "corrupt catalog entry for " \
-                                            "authority '%s': %s" % \
-                                            (self.auth, entry)
+                                            "publisher '%s': %s" % \
+                                            (self.pub, entry)
                                 yield fmri.PkgFmri(cat_fmri,
-                                    authority = self.auth)
+                                    publisher = self.pub)
 
                 pfile.close()
 
@@ -596,7 +596,7 @@ class Catalog(object):
                 return self.attrs.get("origin", None)
 
         @classmethod
-        def recv(cls, filep, path, auth=None, content_size=-1):
+        def recv(cls, filep, path, pub=None, content_size=-1):
                 """A static method that takes a file-like object and
                 a path.  This is the other half of catalog.send().  It
                 reads a stream as an incoming catalog and lays it down
@@ -669,9 +669,9 @@ class Catalog(object):
                         os.remove(catpath)
                         raise bad_fmri
 
-                # Write the authority's origin into our attributes
-                if auth:
-                        origstr = "S origin: %s\n" % auth["origin"]
+                # Write the publisher's origin into our attributes
+                if pub:
+                        origstr = "S origin: %s\n" % pub["origin"]
                         attrf.write(origstr)
 
                 attrf.close()
@@ -1030,11 +1030,11 @@ def extract_matching_fmris(pkgs, patterns=None, matcher=None,
                             fmri.PkgFmri(pattern, "5.11").tuple()
 
         def by_pattern(p):
-                cat_auth, cat_name, cat_version = p.tuple()
+                cat_pub, cat_name, cat_version = p.tuple()
                 for pattern in patterns:
-                        pat_auth, pat_name, pat_version = tuples[pattern]
-                        if (fmri.is_same_authority(pat_auth, cat_auth) or not \
-                            pat_auth) and matcher(cat_name, pat_name):
+                        pat_pub, pat_name, pat_version = tuples[pattern]
+                        if (fmri.is_same_publisher(pat_pub, cat_pub) or not \
+                            pat_pub) and matcher(cat_name, pat_name):
                                 if not pat_version or \
                                     p.version.is_successor(
                                     pat_version, constraint) or \
@@ -1045,8 +1045,8 @@ def extract_matching_fmris(pkgs, patterns=None, matcher=None,
                                                 else:
                                                         counthash[pattern] = 1
 
-                                        if pat_auth:
-                                                p.set_authority(pat_auth)
+                                        if pat_pub:
+                                                p.set_publisher(pat_pub)
                                         return p
 
         def by_version(p):

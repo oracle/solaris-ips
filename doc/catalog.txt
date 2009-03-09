@@ -52,13 +52,13 @@ The inventory is stored under
 
 If some instance of which@2.16 is installed, we would have a directory
 
-/var/pkg/db/pkg/[authority?]/which/2.16
-				authority
+/var/pkg/db/pkg/[publisher?]/which/2.16
+				publisher
 				manifest
 				state
 
 XXX Can we have two packages with the same name, but from different
-authorities?
+publishers?
 
 An open question is whether we store one or more reverse indices in the
 inventory.  We could have indices into basenames, pathnames, and
@@ -85,7 +85,7 @@ entries.
 
 In a directory-based approach, we might have
 
-/var/pkg/catalog/repository_authority/category/package/versions
+/var/pkg/catalog/repository_publisher/category/package/versions
 
 with example
 

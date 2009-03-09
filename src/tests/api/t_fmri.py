@@ -20,8 +20,10 @@
 # CDDL HEADER END
 #
 
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+#
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
+#
 
 import unittest
 import pkg.fmri as fmri
@@ -63,7 +65,7 @@ class TestFMRI(pkg5unittest.Pkg5TestCase):
                 self.n8 = fmri.PkgFmri(
                     "pkg://origin/SUNWxwssu@0.5.11,5.11-0.72:20070922T153047Z")
                 self.n9 = fmri.PkgFmri("sunos/coreutils@6.8,5.11-0",
-                    authority = "opensolaris.org")
+                    publisher = "opensolaris.org")
                 self.n10 = fmri.PkgFmri(
                     "pkg://origin2/SUNWxwssu@0.5.11,5.11-0.72:20070922T153047Z")
                 # same as n10
@@ -108,15 +110,15 @@ class TestFMRI(pkg5unittest.Pkg5TestCase):
         def testfmrisimilar3(self):
                 self.assert_(not self.n1.is_similar(self.n6))
 
-        def testfmrihasauthority(self):
-                self.assert_(self.n1.has_authority() == True)
-                self.assert_(self.n2.has_authority() == False)
-                self.assert_(self.n3.has_authority() == False)
-                self.assert_(self.n4.has_authority() == False)
-                self.assert_(self.n5.has_authority() == False)
-                self.assert_(self.n6.has_authority() == False)
-                self.assert_(self.n7.has_authority() == True)
-                self.assert_(self.n8.has_authority() == True)
+        def testfmrihaspublisher(self):
+                self.assert_(self.n1.has_publisher() == True)
+                self.assert_(self.n2.has_publisher() == False)
+                self.assert_(self.n3.has_publisher() == False)
+                self.assert_(self.n4.has_publisher() == False)
+                self.assert_(self.n5.has_publisher() == False)
+                self.assert_(self.n6.has_publisher() == False)
+                self.assert_(self.n7.has_publisher() == True)
+                self.assert_(self.n8.has_publisher() == True)
 
         def testfmrihasversion(self):
                 self.assert_(self.n1.has_version() == False)

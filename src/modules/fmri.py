@@ -19,7 +19,9 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+
+#
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -29,20 +31,21 @@ import urllib
 
 from version import Version, IllegalVersion
 
-# In order to keep track of what authority is presently the preferred authority,
-# a prefix is included ahead of the name of the authority.  If this prefix is
-# present, the authority is considered to be the current preferred authority for
+# In order to keep track of what publisher is presently the preferred publisher,
+# a prefix is included ahead of the name of the publisher.  If this prefix is
+# present, the publisher is considered to be the current preferred publisher for
 # the image.  This is where we define the prefix, since it's used primarily in
-# the FMRI.  PREF_AUTH_PFX => preferred authority prefix.
-PREF_AUTH_PFX = "_PRE"
+# the FMRI.  PREF_PUB_PFX => preferred publisher prefix.
+PREF_PUB_PFX = "_PRE"
 
 #
-# For is_same_authority(), we need a version of this constant with the
+# For is_same_publisher(), we need a version of this constant with the
 # trailing _ attached.
 #
-PREF_AUTH_PFX_ = PREF_AUTH_PFX + "_"
+PREF_PUB_PFX_ = PREF_PUB_PFX + "_"
 
-g_valid_pkg_name = re.compile("^[A-Za-z0-9][A-Za-z0-9_\-\.\+]*(/[A-Za-z0-9][A-Za-z0-9_\-\.\+]*)*$")
+g_valid_pkg_name = re.compile("^[A-Za-z0-9][A-Za-z0-9_\-\.\+]*(/[A-Za-z0-9]"
+    "[A-Za-z0-9_\-\.\+]*)*$")
 
 class IllegalFmri(Exception):
 
@@ -72,8 +75,8 @@ class IllegalMatchingFmri(IllegalFmri):
         msg_prefix = "Illegal matching pattern"
 
 class PkgFmri(object):
-        """The authority is the anchor of a package namespace.  Clients can
-        choose to take packages from multiple authorities, and specify a default
+        """The publisher is the anchor of a package namespace.  Clients can
+        choose to take packages from multiple publishers, and specify a default
         search path.  In general, package names may also be prefixed by a domain
         name, reverse domain name, or a stock symbol to avoid conflict.  The
         unprefixed namespace is expected to be managed by architectural review.
@@ -86,37 +89,37 @@ class PkgFmri(object):
         # Stored in a class variable so that subclasses can override
         valid_pkg_name = g_valid_pkg_name
 
-        def __init__(self, fmri, build_release = None, authority = None):
+        def __init__(self, fmri, build_release = None, publisher = None):
                 """XXX pkg:/?pkg_name@version not presently supported."""
                 fmri = fmri.rstrip()
 
                 veridx, nameidx = PkgFmri.gen_fmri_indexes(fmri)
 
                 if veridx != None:
-			try:
-				self.version = Version(fmri[veridx + 1:],
-				    build_release)
-			except IllegalVersion, iv:
-				raise IllegalFmri(fmri, IllegalFmri.BAD_VERSION,
+                        try:
+                                self.version = Version(fmri[veridx + 1:],
+                                    build_release)
+                        except IllegalVersion, iv:
+                                raise IllegalFmri(fmri, IllegalFmri.BAD_VERSION,
                                     nested_exc=iv)
                 else:
                         self.version = veridx = None
 
-                self.authority = authority
+                self.publisher = publisher
                 if fmri.startswith("pkg://"):
-                        self.authority = fmri[6:nameidx - 1]
+                        self.publisher = fmri[6:nameidx - 1]
 
                 if veridx != None:
                         self.pkg_name = fmri[nameidx:veridx]
                 else:
                         self.pkg_name = fmri[nameidx:]
 
-		if not self.pkg_name:
-			raise IllegalFmri(fmri, IllegalFmri.SYNTAX_ERROR,
+                if not self.pkg_name:
+                        raise IllegalFmri(fmri, IllegalFmri.SYNTAX_ERROR,
                             detail="Missing package name")
                      
                 if not self.valid_pkg_name.match(self.pkg_name):
-			raise IllegalFmri(fmri, IllegalFmri.BAD_PACKAGENAME,
+                        raise IllegalFmri(fmri, IllegalFmri.BAD_PACKAGENAME,
                             detail=self.pkg_name) 
 
         def copy(self):
@@ -133,12 +136,12 @@ class PkgFmri(object):
 
                 if fmri.startswith("pkg://"):
                         nameidx = fmri.find("/", 6)
-			if nameidx == -1:
-				raise IllegalFmri(fmri,
+                        if nameidx == -1:
+                                raise IllegalFmri(fmri,
                                     IllegalFmri.SYNTAX_ERROR,
-                                    detail="Missing '/' after authority name")
-			# Name starts after / which terminates authority
-			nameidx += 1
+                                    detail="Missing '/' after publisher name")
+                        # Name starts after / which terminates publisher
+                        nameidx += 1
                 elif fmri.startswith("pkg:/"):
                         nameidx = 5
                 else:
@@ -146,34 +149,34 @@ class PkgFmri(object):
 
                 return (veridx, nameidx)
 
-        def get_authority(self):
-                """Return the name of the authority that is contained
+        def get_publisher(self):
+                """Return the name of the publisher that is contained
                 within this FMRI.  This strips off extraneous data
-                that may be attached to the authority.  The output
-                is suitable as a key into the authority["prefix"] table."""
+                that may be attached to the publisher.  The output
+                is suitable as a key into the publisher["prefix"] table."""
 
-                # Strip off preferred authority prefix, if it exists.
-                if self.authority and self.authority.startswith(PREF_AUTH_PFX):
-                        r = self.authority.rsplit('_', 1)
+                # Strip off preferred publisher prefix, if it exists.
+                if self.publisher and self.publisher.startswith(PREF_PUB_PFX):
+                        r = self.publisher.rsplit('_', 1)
                         a = r[len(r) - 1]
                         return a
 
-                # Otherwise just return the authority
-                return self.authority
+                # Otherwise just return the publisher
+                return self.publisher
 
-        def set_authority(self, authority, preferred = False):
-                """Set the FMRI's authority.  If this is a preferred
-                authority, set preferred to True."""
+        def set_publisher(self, publisher, preferred = False):
+                """Set the FMRI's publisher.  If this is a preferred
+                publisher, set preferred to True."""
 
-                if preferred and not authority.startswith(PREF_AUTH_PFX):
-                        self.authority = "%s_%s" % (PREF_AUTH_PFX, authority)
+                if preferred and not publisher.startswith(PREF_PUB_PFX):
+                        self.publisher = "%s_%s" % (PREF_PUB_PFX, publisher)
                 else:
-                        self.authority = authority
+                        self.publisher = publisher
 
-        def has_authority(self):
-                """Returns true if the FMRI has an authority."""
+        def has_publisher(self):
+                """Returns true if the FMRI has a publisher."""
 
-                if self.authority:
+                if self.publisher:
                         return True
 
                 return False
@@ -184,23 +187,23 @@ class PkgFmri(object):
                         return True
                 return False
 
-        def preferred_authority(self):
-                """Returns true if this FMRI's authority is the preferred
-                authority."""
+        def preferred_publisher(self):
+                """Returns true if this FMRI's publisher is the preferred
+                publisher."""
 
-                if not self.authority or \
-                    self.authority.startswith(PREF_AUTH_PFX):
+                if not self.publisher or \
+                    self.publisher.startswith(PREF_PUB_PFX):
                         return True
 
                 return False
 
-        def get_authority_str(self):
+        def get_publisher_str(self):
                 """Return the bare string that specifies everything about
-                the authority.  This should only be used by code that
-                must write out (or restore) the complete authority
+                the publisher.  This should only be used by code that
+                must write out (or restore) the complete publisher
                 information to disk."""
 
-                return self.authority
+                return self.publisher
 
         def get_name(self):
                 return self.pkg_name
@@ -217,42 +220,41 @@ class PkgFmri(object):
         def get_version(self):
                 return self.version.get_short_version()
 
-        def get_pkg_stem(self, default_authority = None, anarchy = False,
-            include_pkg = True):
+        def get_pkg_stem(self, anarchy=False, include_pkg=True):
                 """Return a string representation of the FMRI without a specific
-                version.  Anarchy returns a stem without any authority."""
+                version.  Anarchy returns a stem without any publisher."""
                 pkg_str = ""
-                if not self.authority or \
-                    self.authority.startswith(PREF_AUTH_PFX) or anarchy:
+                if not self.publisher or \
+                    self.publisher.startswith(PREF_PUB_PFX) or anarchy:
                         if include_pkg:
                                 pkg_str = "pkg:/"
                         return "%s%s" % (pkg_str, self.pkg_name)
                 if include_pkg:
                         pkg_str = "pkg://"
-                return "%s%s/%s" % (pkg_str, self.authority, self.pkg_name)
+                return "%s%s/%s" % (pkg_str, self.publisher, self.pkg_name)
 
-        def get_short_fmri(self, default_authority = None):
+        def get_short_fmri(self, default_publisher = None):
                 """Return a string representation of the FMRI without a specific
                 version."""
-                authority = self.authority
-                if not authority:
-                        authority = default_authority
+                publisher = self.publisher
+                if not publisher:
+                        publisher = default_publisher
 
-                if not authority or authority.startswith(PREF_AUTH_PFX):
+                if not publisher or publisher.startswith(PREF_PUB_PFX):
                         return "pkg:/%s@%s" % (self.pkg_name,
                             self.version.get_short_version())
 
-                return "pkg://%s/%s@%s" % (authority, self.pkg_name,
+                return "pkg://%s/%s@%s" % (publisher, self.pkg_name,
                     self.version.get_short_version())
 
-        def get_fmri(self, default_authority = None, anarchy = False):
+        def get_fmri(self, default_publisher = None, anarchy = False):
                 """Return a string representation of the FMRI.
-                Anarchy returns a string without any authority."""
-                authority = self.authority
-                if authority == None:
-                        authority = default_authority
+                Anarchy returns a string without any publisher."""
+                publisher = self.publisher
+                if publisher == None:
+                        publisher = default_publisher
 
-                if not authority or authority.startswith(PREF_AUTH_PFX) \
+                if not publisher or publisher.startswith(PREF_PUB_PFX) \
                     or anarchy:
                         if self.version == None:
                                 return "pkg:/%s" % self.pkg_name
@@ -260,9 +262,9 @@ class PkgFmri(object):
                         return "pkg:/%s@%s" % (self.pkg_name, self.version)
 
                 if self.version == None:
-                        return "pkg://%s/%s" % (authority, self.pkg_name)
+                        return "pkg://%s/%s" % (publisher, self.pkg_name)
 
-                return "pkg://%s/%s@%s" % (authority, self.pkg_name,
+                return "pkg://%s/%s@%s" % (publisher, self.pkg_name,
                                 self.version)
 
         def __str__(self):
@@ -271,17 +273,17 @@ class PkgFmri(object):
 
         def __repr__(self):
                 """Return as specific an FMRI representation as possible."""
-                if not self.authority:
+                if not self.publisher:
                         if not self.version:
                                 fmristr = "pkg:/%s" % self.pkg_name
                         else:
                                 fmristr = "pkg:/%s@%s" % (self.pkg_name,
                                     self.version)
                 elif not self.version:
-                        fmristr = "pkg://%s/%s" % (self.authority,
+                        fmristr = "pkg://%s/%s" % (self.publisher,
                             self.pkg_name)
                 else:
-                        fmristr = "pkg://%s/%s@%s" % (self.authority,
+                        fmristr = "pkg://%s/%s@%s" % (self.publisher,
                             self.pkg_name, self.version)
 
                 return "<pkg.fmri.PkgFmri '%s' at %#x>" % (fmristr, id(self))
@@ -350,7 +352,7 @@ class PkgFmri(object):
                 return self.pkg_name == other.pkg_name
 
         def tuple(self):
-                return self.get_authority_str(), self.pkg_name, self.version
+                return self.get_publisher_str(), self.pkg_name, self.version
 
         def is_name_match(self, fmristr):
                 """True if the regular expression given in fmristr matches the
@@ -388,6 +390,7 @@ class MatchingPkgFmri(PkgFmri):
                         raise IllegalMatchingFmri(e.fmri, e.reason,
                             detail=e.detail, nested_exc=e.nested_exc)
 
+
 def fmri_match(pkg_name, pattern):
         """Returns true if 'pattern' is a proper subset of 'pkg_name'."""
         return ("/" + pkg_name).endswith("/" + pattern)
@@ -396,7 +399,8 @@ def glob_match(pkg_name, pattern):
         return fnmatch.fnmatchcase(pkg_name, pattern)
 
 def regex_match(pkg_name, pattern):
-        """Returns true if 'pattern' is a regular expression matching 'pkg_name'."""
+        """Returns true if 'pattern' is a regular expression matching
+        'pkg_name'."""
         return re.search(pattern, pkg_name)
 
 def exact_name_match(pkg_name, pattern):
@@ -417,18 +421,18 @@ def extract_pkg_name(fmri):
 
         return pkg_name
 
-def strip_auth_pfx(auth):
-        """Strip the PREF_AUTH_PFX off of an authority."""
-        if auth.startswith(PREF_AUTH_PFX_):
-                outstr = auth[len(PREF_AUTH_PFX_):]
+def strip_pub_pfx(pub):
+        """Strip the PREF_PUB_PFX off of a publisher."""
+        if pub.startswith(PREF_PUB_PFX_):
+                outstr = pub[len(PREF_PUB_PFX_):]
         else:
-                outstr = auth
+                outstr = pub
 
         return outstr
         
 
-def is_same_authority(auth1, auth2):
-        """Compare two authorities.  Return true if they are the same, false
+def is_same_publisher(pub1, pub2):
+        """Compare two publishers.  Return true if they are the same, false
            otherwise. """
         #
         # This code is performance sensitive.  Ensure that you benchmark
@@ -436,19 +440,19 @@ def is_same_authority(auth1, auth2):
         #
 
         # Fastest path for most common case.
-        if auth1 == auth2:
+        if pub1 == pub2:
                 return True
 
-        if auth1 == None:
-                auth1 = ""
-        if auth2 == None:
-                auth2 = ""
+        if pub1 == None:
+                pub1 = ""
+        if pub2 == None:
+                pub2 = ""
 
         # String concatenation and string equality are both pretty fast.
-        if ((PREF_AUTH_PFX_ + auth1) == auth2) or \
-            (auth1 == (PREF_AUTH_PFX_ + auth2)):
+        if ((PREF_PUB_PFX_ + pub1) == pub2) or \
+            (pub1 == (PREF_PUB_PFX_ + pub2)):
                 return True
-        if auth1.startswith(PREF_AUTH_PFX_) and auth2.startswith(PREF_AUTH_PFX_):
+        if pub1.startswith(PREF_PUB_PFX_) and pub2.startswith(PREF_PUB_PFX_):
                 return True
         return False
 

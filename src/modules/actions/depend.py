@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -51,9 +51,8 @@ class DependencyAction(generic.Action):
         transfer - dependency on minimum version of other package that donated
         components to this package at earlier version.  Other package need not
         be installed, but if it is, it must be at the specified version.  Effect
-        is the same as optional, but the semantics are different.  OpenSolaris 
-        doesn't use these for bundled packages, as incorporations are 
-        preferred.
+        is the same as optional, but the semantics are different.  OpenSolaris
+        doesn't use these for bundled packages, as incorporations are preferred.
 
         incorporate - optional freeze at specified version
 
@@ -73,7 +72,6 @@ class DependencyAction(generic.Action):
                 except ValueError:
                         print "Warning: failed to clean FMRI: %s" % \
                             self.attrs["fmri"]
-                        pass
 
         def clean_fmri(self):
                 """ Clean up an invalid depend fmri into one which
@@ -120,9 +118,9 @@ class DependencyAction(generic.Action):
                 dots = verdots.split(".")
 
                 # Do the correction
-                cleanvers = ".".join([str(int(x)) for x in dots])
+                cleanvers = ".".join([str(int(s)) for s in dots])
 
-                # 
+                #
                 # Next, find the branch if it exists, the first '-'
                 # following the version.
                 #
@@ -147,7 +145,7 @@ class DependencyAction(generic.Action):
                         cleanfmri = fmri_string[:verbegin] + cleanvers + \
                             fmri_string[verend:branchbegin] + cleanbranch + \
                             fmri_string[branchend:]
-                            
+
                 # XXX enable if you need to debug
                 #if cleanfmri != fmri_string:
                 #       print "corrected invalid fmri: %s -> %s" % \
@@ -158,54 +156,55 @@ class DependencyAction(generic.Action):
                 """ returns fmri of incorporation pkg or None if not
                 an incorporation"""
 
-                type = self.attrs["type"]
-                if type != "incorporate":
+                ctype = self.attrs["type"]
+                if ctype != "incorporate":
                         return None
 
                 pkgfmri = self.attrs["fmri"]
                 f = fmri.PkgFmri(pkgfmri, image.attrs["Build-Release"])
-                image.fmri_set_default_authority(f)
-        
+                image.fmri_set_default_publisher(f)
+
                 return f
 
         def parse(self, image, source_name):
                 """decode depend action into fmri & constraint"""
-                type = self.attrs["type"]
+                ctype = self.attrs["type"]
                 fmristr = self.attrs["fmri"]
                 f = fmri.PkgFmri(fmristr, image.attrs["Build-Release"])
                 min_ver = f.version
 
                 if min_ver == None:
-                        min_ver = pkg.version.Version("0", image.attrs["Build-Release"])
+                        min_ver = pkg.version.Version("0",
+                            image.attrs["Build-Release"])
 
                 name = f.get_name()
                 max_ver = None
 
-                if type == "require":
+                if ctype == "require":
                         presence = constraint.Constraint.ALWAYS
-                elif type == "exclude":
+                elif ctype == "exclude":
                         presence = constraint.Constraint.NEVER
-                elif type == "incorporate":
+                elif ctype == "incorporate":
                         presence = constraint.Constraint.MAYBE
                         max_ver = min_ver
-                elif type == "optional":
+                elif ctype == "optional":
                         if image.cfg_cache.get_policy(REQUIRE_OPTIONAL):
                                 presence = constraint.Constraint.ALWAYS
                         else:
-                                presence = constraint.Constraint.MAYBE                        
-                if type == "transfer":
+                                presence = constraint.Constraint.MAYBE
+                elif ctype == "transfer":
                         presence = constraint.Constraint.MAYBE
 
-                return f, constraint.Constraint(name, min_ver, max_ver, 
+                return f, constraint.Constraint(name, min_ver, max_ver,
                     presence, source_name)
 
         def verify(self, image, **args):
                 # XXX Exclude and range between min and max not yet handled
 
-                type = self.attrs["type"]
+                ctype = self.attrs["type"]
 
-                if type not in self.known_types:
-                        return ["Unknown type (%s) in depend action" % type]
+                if ctype not in self.known_types:
+                        return ["Unknown type (%s) in depend action" % ctype]
 
                 pkgfmri = self.attrs["fmri"]
                 f = fmri.PkgFmri(pkgfmri, image.attrs["Build-Release"])
@@ -216,7 +215,7 @@ class DependencyAction(generic.Action):
 
                 if cons.max_ver:
                         max_fmri = min_fmri.copy()
-                        max_fmri.version = cons.max_ver 
+                        max_fmri.version = cons.max_ver
                 else:
                         max_fmri = None
 
@@ -228,22 +227,22 @@ class DependencyAction(generic.Action):
                             min_fmri.version.is_successor(vi,
                             pkg.version.CONSTRAINT_NONE):
                                 return ["%s dependency %s is downrev (%s)" %
-                                    (type, min_fmri, installed_version)]
+                                    (ctype, min_fmri, installed_version)]
                         if max_fmri and vi > max_fmri.version and \
-                            not vi.is_successor(max_fmri.version, 
+                            not vi.is_successor(max_fmri.version,
                             pkg.version.CONSTRAINT_AUTO):
                                 return ["%s dependency %s is uprev (%s)" %
-                                    (type, max_fmri, installed_version)]
+                                    (ctype, max_fmri, installed_version)]
                 elif required:
                         return ["Required dependency %s is not installed" % f]
 
                 return []
 
         def generate_indices(self):
-                type = self.attrs["type"]
-                fmri = self.attrs["fmri"]
+                ctype = self.attrs["type"]
+                pfmri = self.attrs["fmri"]
 
-                if type not in self.known_types:
+                if ctype not in self.known_types:
                         return {}
 
                 #
@@ -254,45 +253,11 @@ class DependencyAction(generic.Action):
                 # manually.
                 #
                 # XXX This code will need to change once we start using fmris
-                # with authorities.
+                # with publishers.
                 #
-                if fmri.startswith("pkg:/"):
-                        fmri = fmri[5:]
+                if pfmri.startswith("pkg:/"):
+                        pfmri = pfmri[5:]
                 # Note that this creates a directory hierarchy!
-                fmri = urllib.quote(fmri, "@").replace("@", "/")
+                pfmri = urllib.quote(pfmri, "@").replace("@", "/")
 
-                return {
-                    "depend": fmri
-                }
-
-if __name__ == "__main__":
-        x = DependencyAction(fmri="pkg:/SUNWpool@1,2-3", type="require")
-        print x
-        x = DependencyAction(fmri="pkg:/SUNWpool@0.5.11-0.97", type="require")
-        print x
-        x = DependencyAction(fmri="pkg:/SUNWpool@0.05.011-0.97", type="require")
-        print x
-        x = DependencyAction(fmri="pkg:/SUNWpool@0.05.011-0.097", type="require")
-        print x
-        x = DependencyAction(fmri="pkg:/SUNWpool@0.05.011,3.4-0.097", type="require")
-        print x
-        x = DependencyAction(fmri="pkg:/SUNWpool@0", type="require")
-        print x
-        x = DependencyAction(fmri="pkg:/SUNWpool@0-0", type="require")
-        print x
-        x = DependencyAction(fmri="pkg:/SUNWpool@0", type="require")
-        print x
-        x = DependencyAction(fmri="pkg:/SUNWpool@0-0", type="require")
-        print x
-        x = DependencyAction(fmri="pkg:/SUNWpool@", type="require")
-        print x
-        x = DependencyAction(fmri="pkg:/SUNWpool@-", type="require")
-        print x
-        x = DependencyAction(fmri="pkg:/SUNWpool@-:", type="require")
-        print x
-        x = DependencyAction(fmri="pkg:/SUNWpool@1-2:", type="require")
-        print x
-        x = DependencyAction(fmri="pkg:/SUNWpool@x.y", type="require")
-        print x
-        x = DependencyAction(fmri="pkg:/SUNWpool@1,2-", type="require")
-        print x
+                return { "depend": pfmri }

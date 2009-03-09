@@ -205,7 +205,7 @@ class Transaction(object):
                         return m.group(1), urllib.unquote(m.group(2))
 
                 trans_id = self.get_basename()
-                timestamp, pkg_fmri = split_trans_id(trans_id)
+                pkg_fmri = split_trans_id(trans_id)[1]
 
                 # set package state to SUBMITTED
                 pkg_state = "SUBMITTED"
@@ -363,7 +363,7 @@ class Transaction(object):
 
                 cfg = self.cfg
 
-                authority, pkg_name, version = self.fmri.tuple()
+                pkg_name = self.fmri.pkg_name
                 pkgdir = os.path.join(cfg.pkg_root, urllib.quote(pkg_name, ""))
 
                 # If the directory isn't there, create it.
