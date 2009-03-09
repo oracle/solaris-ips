@@ -1918,16 +1918,16 @@ class PackageManager:
                 info = None
                 try:
                         info = self.api_o.info([self.selected_pkgstem],
-                            True, api.PackageInfo.LICENSES)
+                            True, frozenset([api.PackageInfo.LICENSES]))
                 except (misc.TransportFailures, retrieve.ManifestRetrievalError):
                         pass
                 if license_id != self.show_licenses_id:
                         return
-                if not info:
-                        # Package not installed
+                if not info or (info and len(info.get(0)) == 0):
                         try:
+                        # Get license from remote
                                 info = self.api_o.info([self.selected_pkgstem],
-                                    False, api.PackageInfo.LICENSES)
+                                    False, frozenset([api.PackageInfo.LICENSES]))
                         except (misc.TransportFailures, retrieve.ManifestRetrievalError):
                                 pass
                 if license_id != self.show_licenses_id:
