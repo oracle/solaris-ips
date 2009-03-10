@@ -70,6 +70,7 @@ api.t_fmri.py TestFMRI.testbadfmri7|pass
 api.t_fmri.py TestFMRI.testbadfmri8|pass
 api.t_fmri.py TestFMRI.testbadfmri9|pass
 api.t_fmri.py TestFMRI.testbadfmri_pkgname|pass
+api.t_fmri.py TestFMRI.testbadversionexception|pass
 api.t_fmri.py TestFMRI.testfmricmp1|pass
 api.t_fmri.py TestFMRI.testfmricmp2|pass
 api.t_fmri.py TestFMRI.testfmricmp3|pass
@@ -92,6 +93,7 @@ api.t_fmri.py TestFMRI.testgoodfmris_dots|pass
 api.t_fmri.py TestFMRI.testgoodfmris_pluses|pass
 api.t_fmri.py TestFMRI.testgoodfmris_slashes|pass
 api.t_fmri.py TestFMRI.testgoodfmris_unders|pass
+api.t_fmri.py TestFMRI.testunsupported|pass
 api.t_history.py TestHistory.test_0_valid_operation|pass
 api.t_history.py TestHistory.test_1_client_info|pass
 api.t_history.py TestHistory.test_2_clear|pass
@@ -237,6 +239,7 @@ cli.t_pkg_depotd.py TestPkgDepot.testStartStop|pass
 cli.t_pkg_depotd.py TestPkgDepot.test_bad_fmris|pass
 cli.t_pkg_depotd.py TestPkgDepot.test_bug_1876|pass
 cli.t_pkg_depotd.py TestPkgDepot.test_bug_3365|pass
+cli.t_pkg_depotd.py TestPkgDepot.test_bug_3739|pass
 cli.t_pkg_depotd.py TestPkgDepot.test_bug_4489|pass
 cli.t_pkg_depotd.py TestPkgDepot.test_bug_5366|pass
 cli.t_pkg_depotd.py TestPkgDepot.test_depot_ping|pass

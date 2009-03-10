@@ -137,7 +137,7 @@ class Transaction(object):
                 try:
                         self.fmri = fmri.PkgFmri(self.pkg_name,
                             self.client_release)
-                except fmri.IllegalFmri, e:
+                except fmri.FmriError, e:
                         raise TransactionOperationError(e)
 
                 # We must have a version supplied for publication.

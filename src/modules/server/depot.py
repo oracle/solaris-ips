@@ -303,7 +303,7 @@ class DepotHTTP(object):
                         pfmri = "/".join(tokens)
                         fpath = self.__repo.manifest(pfmri)
                 except (IndexError, repo.RepositoryInvalidFMRIError), e:
-                        raise cherrypy.HTTPError(httplib.NOT_FOUND, str(e))
+                        raise cherrypy.HTTPError(httplib.BAD_REQUEST, str(e))
                 except repo.RepositoryError, e:
                         # Treat any remaining repository error as a 404, but
                         # log the error and include the real failure
@@ -648,14 +648,21 @@ class DepotHTTP(object):
 
                 try:
                         f = fmri.PkgFmri(pfmri, None)
-                except fmri.IllegalFmri, e:
-                        # If we couldn't parse the FMRI for whatever reason,
+                except fmri.FmriError, e:
+                        # If the FMRI couldn't be parsed for whatever reason,
                         # assume the client made a bad request.
                         raise cherrypy.HTTPError(httplib.BAD_REQUEST, str(e))
 
                 m = manifest.Manifest()
                 m.set_fmri(None, pfmri)
-                mpath = os.path.join(self.scfg.pkg_root, f.get_dir_path())
+
+                try:
+                        mpath = os.path.join(self.scfg.pkg_root, f.get_dir_path())
+                except fmri.FmriError, e:
+                        # If the FMRI operation couldn't be performed, assume
+                        # the client made a bad request.
+                        raise cherrypy.HTTPError(httplib.BAD_REQUEST, str(e))
+
                 if not os.path.exists(mpath):
                         raise cherrypy.HTTPError(httplib.NOT_FOUND)
 

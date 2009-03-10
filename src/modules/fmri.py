@@ -29,7 +29,7 @@ import fnmatch
 import re
 import urllib
 
-from version import Version, IllegalVersion
+from version import Version, VersionError
 
 # In order to keep track of what publisher is presently the preferred publisher,
 # a prefix is included ahead of the name of the publisher.  If this prefix is
@@ -44,10 +44,18 @@ PREF_PUB_PFX = "_PRE"
 #
 PREF_PUB_PFX_ = PREF_PUB_PFX + "_"
 
-g_valid_pkg_name = re.compile("^[A-Za-z0-9][A-Za-z0-9_\-\.\+]*(/[A-Za-z0-9]"
-    "[A-Za-z0-9_\-\.\+]*)*$")
+g_valid_pkg_name = \
+    re.compile("^[A-Za-z0-9][A-Za-z0-9_\-\.\+]*(/[A-Za-z0-9][A-Za-z0-9_\-\.\+]*)*$")
 
-class IllegalFmri(Exception):
+class FmriError(Exception):
+        """Base exception class for FMRI errors."""
+
+        def __init__(self, fmri):
+                Exception.__init__(self)
+                self.fmri = fmri
+ 
+
+class IllegalFmri(FmriError):
 
         BAD_VERSION = 1
         BAD_PACKAGENAME = 2
@@ -56,9 +64,8 @@ class IllegalFmri(Exception):
         msg_prefix = "Illegal FMRI"
 
         def __init__(self, fmri, reason, detail=None, nested_exc=None):
-                Exception.__init__(self)
+                FmriError.__init__(self, fmri)
                 self.reason = reason
-                self.fmri = fmri
                 self.detail = detail
                 self.nested_exc = nested_exc
 
@@ -71,8 +78,19 @@ class IllegalFmri(Exception):
                 if self.reason == IllegalFmri.SYNTAX_ERROR:
                         return outstr + self.detail
 
+
 class IllegalMatchingFmri(IllegalFmri):
         msg_prefix = "Illegal matching pattern"
+
+
+class MissingVersionError(FmriError):
+        """Used to indicate that the requested operation is not supported for
+        the fmri since version information is missing."""
+
+        def __str__(self):
+                return _("FMRI '%s' is missing version information.") % \
+                    self.fmri
+
 
 class PkgFmri(object):
         """The publisher is the anchor of a package namespace.  Clients can
@@ -99,9 +117,10 @@ class PkgFmri(object):
                         try:
                                 self.version = Version(fmri[veridx + 1:],
                                     build_release)
-                        except IllegalVersion, iv:
+                        except VersionError, iv:
                                 raise IllegalFmri(fmri, IllegalFmri.BAD_VERSION,
                                     nested_exc=iv)
+
                 else:
                         self.version = veridx = None
 
@@ -322,7 +341,8 @@ class PkgFmri(object):
                 if stemonly:
                         return "%s" % (urllib.quote(self.pkg_name, ""))
 
-                assert self.version != None
+                if self.version is None:
+                        raise MissingVersionError(self)
 
                 return "%s@%s" % (urllib.quote(self.pkg_name, ""),
                     urllib.quote(str(self.version), ""))
@@ -333,7 +353,8 @@ class PkgFmri(object):
                 if stemonly:
                         return "%s" % (urllib.quote(self.pkg_name, ""))
 
-                assert self.version != None
+                if self.version is None:
+                        raise MissingVersionError(self)
 
                 return "%s/%s" % (urllib.quote(self.pkg_name, ""),
                     urllib.quote(self.version.__str__(), ""))
@@ -341,7 +362,9 @@ class PkgFmri(object):
         def get_url_path(self):
                 """Return the escaped URL path fragment for this FMRI.
                 Requires a version to be defined."""
-                assert self.version != None
+
+                if self.version is None:
+                        raise MissingVersionError(self)
 
                 return "%s@%s" % (urllib.quote(self.pkg_name, ""),
                     urllib.quote(self.version.__str__(), ""))
@@ -452,7 +475,8 @@ def is_same_publisher(pub1, pub2):
         if ((PREF_PUB_PFX_ + pub1) == pub2) or \
             (pub1 == (PREF_PUB_PFX_ + pub2)):
                 return True
-        if pub1.startswith(PREF_PUB_PFX_) and pub2.startswith(PREF_PUB_PFX_):
+        if pub1.startswith(PREF_PUB_PFX_) and \
+            pub2.startswith(PREF_PUB_PFX_):
                 return True
         return False
 

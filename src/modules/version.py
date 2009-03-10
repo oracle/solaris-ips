@@ -27,7 +27,6 @@
 
 import calendar
 import datetime
-import exceptions
 import time
 
 CONSTRAINT_NONE = 0
@@ -43,10 +42,15 @@ CONSTRAINT_BRANCH_MINOR = 102
 
 CONSTRAINT_SEQUENCE = 300
 
-class IllegalDotSequence(exceptions.Exception):
-        def __init__(self, *args):
-                exceptions.Exception.__init__(self, *args)
+class VersionError(Exception):
+        """Base exception class for all version errors."""
 
+        def __init__(self, *args):
+                Exception.__init__(self, *args)
+
+
+class IllegalDotSequence(VersionError):
+        """Used to indicate that the specified DotSequence is not valid."""
 
 class DotSequence(list):
         """A DotSequence is the typical "x.y.z" string used in software
@@ -168,10 +172,8 @@ class MatchingDotSequence(DotSequence):
                 return True
 
 
-class IllegalVersion(exceptions.Exception):
-        def __init__(self, *args):
-                exceptions.Exception.__init__(self, *args)
-
+class IllegalVersion(VersionError):
+        """Used to indicate that the specified version string is not valid."""
 
 class Version(object):
         """Version format is release[,build_release]-branch:datetime, which we
@@ -249,8 +251,8 @@ class Version(object):
                                             build_string))
                                 self.build_release = DotSequence(build_string)
 
-                except IllegalDotSequence, id:
-                        raise IllegalVersion("Bad Version: %s" % id)
+                except IllegalDotSequence, e:
+                        raise IllegalVersion("Bad Version: %s" % e)
 
                 #
                 # In 99% of the cases in which we use date and time, it's solely
@@ -500,7 +502,7 @@ class MatchingVersion(Version):
                         else:
                                 try:
                                         branch, rem = rem.split(":")
-                                except:
+                                except (TypeError, ValueError):
                                         branch = rem
                                 else:
                                         timestr = rem
@@ -527,8 +529,8 @@ class MatchingVersion(Version):
                                                 val = MatchingDotSequence(val)
                                         setattr(self, attr, val)
                                         break
-                except IllegalDotSequence, id:
-                        raise IllegalVersion("Bad Version: %s" % id)
+                except IllegalDotSequence, e:
+                        raise IllegalVersion("Bad Version: %s" % e)
 
                 outstr = str(release)
                 if build_release is not None:

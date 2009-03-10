@@ -168,6 +168,22 @@ class TestPkgDepot(testutils.SingleDepotTestCase):
                 plist = self.pkgsend_bulk(depot_url, self.info10)
                 misc.versioned_urlopen(depot_url, "info", [0], plist[0])
 
+        def test_bug_3739(self):
+                """Verify that a depot will return a 400 (Bad Request) error
+                whenever it is provided malformed FMRIs."""
+
+                durl = self.dc.get_depot_url()
+
+                for operation in ("info", "manifest"):
+                        for entry in ("BRCMbnx", "BRCMbnx%40a",
+                            "BRCMbnx%400.5.11%2C5.11-0.101%3A20081119T231649a"):
+                                try:
+                                        urllib2.urlopen("%s/%s/0/%s" % (durl,
+                                            operation, entry))
+                                except urllib2.HTTPError, e:
+                                        if e.code != httplib.BAD_REQUEST:
+                                                raise
+
         def test_bug_5366(self):
                 """Publish a package with slashes in the name, and then verify
                 that the depot manifest and info operations work regardless of

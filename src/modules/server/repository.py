@@ -30,7 +30,6 @@ import pkg.fmri as fmri
 import pkg.misc as misc
 import pkg.server.repositoryconfig as rc
 import pkg.server.transaction as trans
-import pkg.version as version
 
 class RepositoryError(Exception):
         """Base exception class for all Repository exceptions."""
@@ -66,9 +65,6 @@ class RepositoryFileNotFoundError(RepositoryError):
 
 class RepositoryInvalidFMRIError(RepositoryError):
         """Used to indicate that the FMRI provided is invalid."""
-
-        def __str__(self):
-                return _("The specified FMRI '%s' is invalid.") % self.data
 
 
 class RepositoryInvalidTransactionIDError(RepositoryError):
@@ -281,9 +277,8 @@ class Repository(object):
                         if not isinstance(pfmri, fmri.PkgFmri):
                                 pfmri = fmri.PkgFmri(pfmri, None)
                         fpath = pfmri.get_dir_path()
-                except (IndexError, fmri.IllegalFmri,
-                    version.IllegalDotSequence, version.IllegalVersion), e:
-                        raise RepositoryInvalidFMRIError(e, pfmri)
+                except fmri.FmriError, e:
+                        raise RepositoryInvalidFMRIError(e)
 
                 return os.path.join(self.scfg.pkg_root, fpath)
 
@@ -306,13 +301,13 @@ class Repository(object):
                 if not isinstance(src_fmri, fmri.PkgFmri):
                         try:
                                 src_fmri = fmri.PkgFmri(src_fmri, None)
-                        except fmri.IllegalFmri, e:
+                        except fmri.FmriError, e:
                                 raise RepositoryInvalidFMRIError(e)
 
                 if not isinstance(dest_fmri, fmri.PkgFmri):
                         try:
                                 dest_fmri = fmri.PkgFmri(dest_fmri, None)
-                        except fmri.IllegalFmri, e:
+                        except fmri.FmriError, e:
                                 raise RepositoryInvalidFMRIError(e)
 
                 try:

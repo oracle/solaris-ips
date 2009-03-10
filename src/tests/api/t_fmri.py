@@ -27,7 +27,6 @@
 
 import unittest
 import pkg.fmri as fmri
-import pkg.version as version
 
 import os
 import sys
@@ -94,7 +93,7 @@ class TestFMRI(pkg5unittest.Pkg5TestCase):
                 self.assert_(not self.n5.is_successor(self.n4))
 
         def testfmrisuccessor5(self):
-                """ is_successor should return true on equality """
+                """is_successor should return true on equality"""
                 self.assert_(self.n5.is_successor(self.n5))
 
         def testfmrisuccessor6(self):
@@ -258,11 +257,27 @@ class TestFMRI(pkg5unittest.Pkg5TestCase):
                 fmri.PkgFmri("pkg:/a/b/c/d/e/f/g/H/I/J/0/1/2")
 
         def testfmrihash(self):
-                """ FMRIs override __hash__.  Test that this is working
-                    properly """
+                """FMRIs override __hash__.  Test that this is working
+                properly."""
                 a = {}
                 a[self.n10] = 1
                 self.assert_(a[self.n11] == 1)
+
+        def testunsupported(self):
+                """Verify that unsupported operations on a partial FMRI raise
+                the correct exceptions."""
+
+                f = fmri.PkgFmri("BRCMbnx")
+                self.assertRaises(fmri.MissingVersionError, f.get_dir_path)
+                self.assertRaises(fmri.MissingVersionError, f.get_link_path)
+                self.assertRaises(fmri.MissingVersionError, f.get_url_path)
+
+        def testbadversionexception(self):
+                """Verify that a bad version in an FMRI still only raises an
+                FMRI exception."""
+
+                self.assertRaises(fmri.IllegalFmri, fmri.PkgFmri,
+                    "BRCMbnx@0.5.aa,5.aa-0.aa")
 
 if __name__ == "__main__":
         unittest.main()
