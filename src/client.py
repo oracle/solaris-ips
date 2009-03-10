@@ -2360,11 +2360,11 @@ def main_func():
                         return fix_image(img, pargs)
                 elif subcommand == "verify":
                         return verify_image(img, pargs)
-                elif subcommand == "set-publisher":
+                elif subcommand in ("set-authority", "set-publisher"):
                         return publisher_set(mydir, pargs)
-                elif subcommand == "unset-publisher":
+                elif subcommand in ("unset-authority", "unset-publisher"):
                         return publisher_unset(mydir, pargs)
-                elif subcommand == "publisher":
+                elif subcommand in ("authority", "publisher"):
                         return publisher_list(mydir, pargs)
                 elif subcommand == "set-property":
                         return property_set(img, pargs)
