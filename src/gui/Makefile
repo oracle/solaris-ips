@@ -33,40 +33,34 @@ ROOTETC = ../../proto/root_${MACH}/etc
 ROOTUSRLIB = $(ROOT)/lib
 
 ROOTAPPICONSHARE = $(ROOT)/share/icons/hicolor/48x48/apps
-ROOTMIMETYPESHARE = $(ROOT)/share/mime/packages
-ROOTMIMEICONSHARE = $(ROOT)/share/icons/hicolor/48x48/mimetypes
 ROOTDATASHARE = $(ROOTSHARE)/data
 ROOTDESKTOPSHARE = $(ROOT)/share/applications
 ROOTGCONFSHARE = $(ROOTETC)/gconf/schemas
 ROOTHELPSHARE = $(ROOT)/share/gnome/help/package-manager
-ROOTSPSHARE = $(ROOT)/share/package-manager/data/startpagebase
 ROOTICONSHARE = $(ROOT)/share/icons/package-manager
+ROOTMIMEICONSHARE = $(ROOT)/share/icons/hicolor/48x48/mimetypes
+ROOTMIMETYPESHARE = $(ROOT)/share/mime/packages
 ROOTPYTHON = $(ROOTUSRLIB)/python2.4
 ROOTPYTHONPKG = $(ROOTPYTHONVENDOR)/pkg/gui
 ROOTPYTHONVENDOR = $(ROOTPYTHON)/vendor-packages
 ROOTSHARE = $(ROOT)/share/package-manager
+ROOTSPSHARE = $(ROOT)/share/package-manager/data/startpagebase
 
 ROOTDIRS = \
    $(ROOTAPPICONSHARE) \
-   $(ROOTMIMETYPESHARE) \
-   $(ROOTMIMEICONSHARE) \
    $(ROOTDATASHARE) \
    $(ROOTDESKTOPSHARE) \
    $(ROOTGCONFSHARE) \
    $(ROOTHELPSHARE) \
-   $(ROOTSPSHARE) \
    $(ROOTICONSHARE) \
+   $(ROOTMIMEICONSHARE) \
+   $(ROOTMIMETYPESHARE) \
    $(ROOTPYTHONPKG) \
-   $(ROOTSHARE)
+   $(ROOTSHARE) \
+   $(ROOTSPSHARE)
 
 APPICONS = \
    data/packagemanager.png
-
-MIMETYPE = \
-   data/packagemanager-info.xml
-
-MIMEICONS = \
-   data/gnome-mime-application-vnd.pkg5.info.png
 
 CATALOG = \
    data/opensolaris.org \
@@ -90,12 +84,18 @@ GLADEICONS = \
    data/legend_newupdate.png \
    data/new_star_24x.png
 
+MIMEICONS = \
+   data/gnome-mime-application-vnd.pkg5.info.png
+
+MIMETYPE = \
+   data/packagemanager-info.xml
+
 #
 # List of locales for which to build help.  From this we build
 # the list of help file names.
 #
-HELP_LOCALES = C de es fr it ja ko pt_BR ru sv zh_CN zh_HK zh_TW
 C_ONLY_HELP_LOCALES = C
+HELP_LOCALES = C de es fr it ja ko pt_BR ru sv zh_CN zh_HK zh_TW
 SP_LOCALES = C
 
 #
@@ -106,21 +106,6 @@ SP_LOCALES = C
 #
 BUILDHELPFILES = \
 	$(HELP_LOCALES:%=help/%/package-manager.xml) \
-
-STATICHELPFILES = \
-	$(HELP_LOCALES:%=help/%/legal.xml) \
-	$(C_ONLY_HELP_LOCALES:%=help/%/figures/update_all.png) \
-	$(C_ONLY_HELP_LOCALES:%=help/%/figures/package_manager.png)
-
-STATICSPFILES = \
-	$(SP_LOCALES:%=data/startpagebase/%/startpage_star.png) \
-	$(SP_LOCALES:%=data/startpagebase/%/opensolaris.png) \
-	$(SP_LOCALES:%=data/startpagebase/%/startpage.html) \
-	$(SP_LOCALES:%=data/startpagebase/%/startpage_learn.png) \
-	$(SP_LOCALES:%=data/startpagebase/%/startpage_use.png) \
-	$(SP_LOCALES:%=data/startpagebase/%/startpage_share.png) \
-	$(SP_LOCALES:%=data/startpagebase/%/startpage_ignite.png) \
-	$(SP_LOCALES:%=data/startpagebase/%/stub_test.html)
 
 ICONS = \
    data/icons/status_checkmark.png \
@@ -143,15 +128,25 @@ PYMODS = \
 
 PYCMODS = $(PYMODS:%.py=%.pyc)
 
+STATICHELPFILES = \
+	$(HELP_LOCALES:%=help/%/legal.xml) \
+	$(C_ONLY_HELP_LOCALES:%=help/%/figures/update_all.png) \
+	$(C_ONLY_HELP_LOCALES:%=help/%/figures/package_manager.png)
+
+STATICSPFILES = \
+	$(SP_LOCALES:%=data/startpagebase/%/startpage_star.png) \
+	$(SP_LOCALES:%=data/startpagebase/%/opensolaris.png) \
+	$(SP_LOCALES:%=data/startpagebase/%/startpage.html) \
+	$(SP_LOCALES:%=data/startpagebase/%/startpage_learn.png) \
+	$(SP_LOCALES:%=data/startpagebase/%/startpage_use.png) \
+	$(SP_LOCALES:%=data/startpagebase/%/startpage_share.png) \
+	$(SP_LOCALES:%=data/startpagebase/%/startpage_ignite.png) \
+	$(SP_LOCALES:%=data/startpagebase/%/stub_test.html)
 
 #
 # Define the paths to all of the stuff we'll install.
 #
 ROOTAPPICONS = $(APPICONS:data/%=$(ROOTAPPICONSHARE)/%)
-
-ROOTMIMETYPE = $(MIMETYPE:data/%=$(ROOTMIMETYPESHARE)/%)
-
-ROOTMIMEICONS = $(MIMEICONS:data/%=$(ROOTMIMEICONSHARE)/%)
 
 ROOTCATALOG = $(CATALOG:data/%=$(ROOTDATASHARE)/%)
 
@@ -168,6 +163,10 @@ ROOTHELPDIRS = \
 ROOTHELPFILES = \
 	$(BUILDHELPFILES:help/%=$(ROOTHELPSHARE)/%) \
 	$(STATICHELPFILES:help/%=$(ROOTHELPSHARE)/%)
+
+ROOTMIMEICONS = $(MIMEICONS:data/%=$(ROOTMIMEICONSHARE)/%)
+
+ROOTMIMETYPE = $(MIMETYPE:data/%=$(ROOTMIMETYPESHARE)/%)
 
 ROOTSPDIRS = \
 	$(SP_LOCALES:%=$(ROOTSPSHARE)/%)
@@ -187,18 +186,18 @@ ROOTPYCALLMODS = $(ROOTPYMODS:%.py=%.pyc)
 
 ROOTCOMPONENTS = \
    $(ROOTAPPICONS) \
-   $(ROOTMIMETYPE) \
-   $(ROOTMIMEICONS) \
    $(ROOTCATALOG) \
    $(ROOTDESKTOP) \
    $(ROOTGCONF) \
    $(ROOTGLADEICONS) \
    $(ROOTHELPFILES) \
-   $(ROOTSPFILES) \
    $(ROOTICONS) \
+   $(ROOTMIMEICONS) \
+   $(ROOTMIMETYPE) \
    $(ROOTPYGLADE) \
    $(ROOTPYMODS) \
-   $(ROOTPYCALLMODS)
+   $(ROOTPYCALLMODS) \
+   $(ROOTSPFILES)
 
 #
 # Triggered by all:'s dependency.  Drives production of e.g.
@@ -270,9 +269,13 @@ $(ROOTDIRS):
 $(ROOTAPPICONSHARE)/%: $(ROOTDIRS) data/%
 	$(INSTALL) -f $(ROOTAPPICONSHARE) -m 0644 $<
 
+# Ordering of Rules important to have these executed first before more general rules
+# Breaking Alphabetical layout
 $(ROOTMIMETYPESHARE)/%: $(ROOTDIRS) data/%
 	$(INSTALL) -f $(ROOTMIMETYPESHARE) -m 0644 $<
 
+# Ordering of Rules important to have these executed first before more general rules
+# Breaking Alphabetical layout
 $(ROOTMIMEICONSHARE)/%: $(ROOTDIRS) data/%
 	$(INSTALL) -f $(ROOTMIMEICONSHARE) -m 0644 $<
 

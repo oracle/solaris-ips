@@ -117,7 +117,7 @@ additional-builtins=_
 [DESIGN]
 
 # Maximum number of arguments for function / method
-max-args=20
+max-args=15
 
 # Maximum number of locals for function / method body
 max-locals=60
