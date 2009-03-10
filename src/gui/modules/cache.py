@@ -30,7 +30,7 @@ import pkg.catalog as catalog
 import pkg.gui.enumerations as enumerations
 import pkg.gui.misc as gui_misc
 
-CACHE_VERSION=3
+CACHE_VERSION=4
 INDEX_HASH_LENGTH=41
 
 class CacheListStores:
@@ -41,14 +41,14 @@ class CacheListStores:
                 self.category_icon = gui_misc.get_pixbuf_from_path(application_dir +
                     "/usr/share/package-manager/", "legend_newupdate")
 
-        def check_if_cache_uptodate(self, authority):
+        def check_if_cache_uptodate(self, publisher):
                 try:
-                        info = self.__load_cache_info(authority)
+                        info = self.__load_cache_info(publisher)
                         if info:
                                 if info.get("version") != CACHE_VERSION:
                                         return False
                                 image_last_modified = \
-                                    self.__get_authority_timestamp(authority)
+                                    self.__get_publisher_timestamp(publisher)
                                 cache_last_modified = info.get("date")
                                 if not cache_last_modified or \
                                     cache_last_modified != image_last_modified:
@@ -91,39 +91,33 @@ class CacheListStores:
                         return index_hash
                 return index_hash
 
-        def __get_authority_timestamp(self, authority):
-                img = self.api_o.img
-                catalog_o = img.catalogs.get(authority)
-                last_modified = None
-                if not catalog_o:
-                        croot = "%s/catalog/%s" % (img.imgdir, authority)
-                        catalog_o = catalog.Catalog(croot,
-                            authority = authority)
-                if catalog_o:
-                        last_modified = catalog_o.last_modified()
-                return last_modified
+        def __get_publisher_timestamp(self, publisher):
+                dt = self.api_o.get_publisher_last_update_time(prefix=publisher)
+                if dt:
+                        return dt.ctime()
+                return dt
 
-        def dump_datamodels(self, authority, application_list, category_list, 
+        def dump_datamodels(self, publisher, application_list, category_list, 
             section_list):
                 cache_dir = self.__get_cache_dir()
                 if not cache_dir:
                         return
                 dump_info = {}
                 dump_info["version"] = CACHE_VERSION
-                dump_info["date"] = self.__get_authority_timestamp(authority)
-                dump_info["authority"] = authority
+                dump_info["date"] = self.__get_publisher_timestamp(publisher)
+                dump_info["publisher"] = publisher
                 dump_info["index_hash"] = self.__get_index_hash()
                 try:
-                        self.__dump_cache_file(cache_dir + authority+".cpl", dump_info)
-                        self.__dump_category_list(authority, category_list)
-                        self.__dump_application_list(authority, application_list)
-                        self.__dump_section_list(authority, section_list)
+                        self.__dump_cache_file(cache_dir + publisher+".cpl", dump_info)
+                        self.__dump_category_list(publisher, category_list)
+                        self.__dump_application_list(publisher, application_list)
+                        self.__dump_section_list(publisher, section_list)
                 except IOError:
                         #Silently return, as probably user doesn't have permissions or
                         #other error which simply doesn't affect the GUI work
                         return
 
-        def __dump_category_list(self, authority, category_list):
+        def __dump_category_list(self, publisher, category_list):
                 cache_dir = self.__get_cache_dir()
                 if not cache_dir:
                         return
@@ -139,9 +133,9 @@ class CacheListStores:
                         cat["visible"] = category[enumerations.CATEGORY_VISIBLE]
                         cat["section_list"] = category[enumerations.SECTION_LIST_OBJECT]
                         categories.append(cat)
-                self.__dump_cache_file(cache_dir + authority+"_categories.cpl", categories)
+                self.__dump_cache_file(cache_dir + publisher+"_categories.cpl", categories)
 
-        def __dump_application_list(self, authority, application_list):
+        def __dump_application_list(self, publisher, application_list):
                 cache_dir = self.__get_cache_dir()
                 if not cache_dir:
                         return
@@ -158,9 +152,9 @@ class CacheListStores:
                         app["is_visible"] = application[enumerations.IS_VISIBLE_COLUMN]
                         app["category_list"] = application[enumerations.CATEGORY_LIST_COLUMN]
                         apps.append(app)
-                self.__dump_cache_file(cache_dir + authority+"_packages.cpl", apps)
+                self.__dump_cache_file(cache_dir + publisher+"_packages.cpl", apps)
 
-        def __dump_section_list(self, authority, section_list):
+        def __dump_section_list(self, publisher, section_list):
                 cache_dir = self.__get_cache_dir()
                 if not cache_dir:
                         return
@@ -172,20 +166,20 @@ class CacheListStores:
                         sec["subcategory"] = section[enumerations.SECTION_SUBCATEGORY]
                         sec["enabled"] = section[enumerations.SECTION_ENABLED]
                         sections.append(sec)
-                self.__dump_cache_file(cache_dir + authority+"_sections.cpl", sections)
+                self.__dump_cache_file(cache_dir + publisher+"_sections.cpl", sections)
 
-        def __load_cache_info(self, authority):
+        def __load_cache_info(self, publisher):
                 cache_dir = self.__get_cache_dir()
                 if not cache_dir:
                         return None
-                info = self.__read_cache_file(cache_dir + authority+".cpl")
+                info = self.__read_cache_file(cache_dir + publisher+".cpl")
                 return info
 
-        def load_category_list(self, authority, category_list):
+        def load_category_list(self, publisher, category_list):
                 cache_dir = self.__get_cache_dir()
                 if not cache_dir:
                         return
-                categories = self.__read_cache_file(cache_dir + authority+"_categories.cpl")
+                categories = self.__read_cache_file(cache_dir + publisher+"_categories.cpl")
                 cat_count = 0
                 for cat in categories:
                         cat_id = cat.get("id")
@@ -205,18 +199,18 @@ class CacheListStores:
                         category_list.insert(cat_count, cat)
                         cat_count += 1
 
-        def load_application_list(self, authority, application_list, 
+        def load_application_list(self, publisher, application_list, 
             selected_pkgs=None):
                 cache_dir = self.__get_cache_dir()
                 if not cache_dir:
                         return
-                applications = self.__read_cache_file(cache_dir + authority+"_packages.cpl")
+                applications = self.__read_cache_file(cache_dir + publisher+"_packages.cpl")
                 app_count = len(application_list)
                 if app_count > 0:
                         app_count += 1
-                selected_pkgs_auth = None
+                selected_pkgs_pub = None
                 if selected_pkgs != None:
-                        selected_pkgs_auth = selected_pkgs.get(authority)
+                        selected_pkgs_pub = selected_pkgs.get(publisher)
                 for app in applications:
                         marked = False
                         status_icon = None
@@ -229,8 +223,8 @@ class CacheListStores:
                                 status_icon = self.update_available_icon
                         fmri = app.get("fmri")
                         stem = app.get("stem")
-                        if selected_pkgs_auth != None:
-                                if stem in selected_pkgs_auth:
+                        if selected_pkgs_pub != None:
+                                if stem in selected_pkgs_pub:
                                         marked = True
                         display_name = app.get("display_name")
                         is_visible = app.get("is_visible")
@@ -244,11 +238,11 @@ class CacheListStores:
                         application_list.insert(app_count, app)
                         app_count += 1
 
-        def load_section_list(self, authority, section_list):
+        def load_section_list(self, publisher, section_list):
                 cache_dir = self.__get_cache_dir()
                 if not cache_dir:
                         return
-                sections = self.__read_cache_file(cache_dir + authority+"_sections.cpl")
+                sections = self.__read_cache_file(cache_dir + publisher+"_sections.cpl")
                 sec_count = 0
                 for sec in sections:
                         sec_id = sec.get("id")

@@ -62,7 +62,7 @@ __builtin__._ = gettext.gettext
 
 IMAGE_DIRECTORY_DEFAULT = "/"   # Image default directory
 IMAGE_DIR_COMMAND = "svcprop -p update/image_dir svc:/application/pkg/update"
-CLIENT_API_VERSION = 10          # API version
+CLIENT_API_VERSION = 11          # API version
 PKG_CLIENT_NAME = "updatemanager" # API client name
 SELECTION_CHANGE_LIMIT = 0.5    # Time limit in seconds to cancel selection updates
 IND_DELAY = 0.05                # Time delay for printing index progress

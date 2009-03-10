@@ -117,7 +117,7 @@ additional-builtins=_
 [DESIGN]
 
 # Maximum number of arguments for function / method
-max-args=10
+max-args=20
 
 # Maximum number of locals for function / method body
 max-locals=60
@@ -137,7 +137,7 @@ max-parents=7
 # Maximum number of attributes for a class (see R0902).
 # Require large number of instance attributes as we are loading up handles to widget elements and only want to do this in init
 # for performance reasons
-max-attributes=100
+max-attributes=150
 
 # Minimum number of public methods for a class (see R0903).
 min-public-methods=0

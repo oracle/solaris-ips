@@ -66,10 +66,12 @@ class InstallUpdate(progress.ProgressTracker):
         def __init__(self, list_of_packages, parent, api_o,
             ips_update = False, action = -1, be_name = None, 
             parent_name = "", pkg_list = None, main_window = None,
-            icon_confirm_dialog = None):
+            icon_confirm_dialog = None, title = None, web_install = False):
                 if action == -1:
                         return
                 progress.ProgressTracker.__init__(self)
+                self.web_install = web_install
+                self.web_updates_list = None
                 api_o.progresstracker = self
                 self.api_o = api_o
                 self.parent = parent
@@ -78,6 +80,7 @@ class InstallUpdate(progress.ProgressTracker):
                 self.parent_name = parent_name
                 self.ipkg_ipkgui_list = pkg_list
                 self.icon_confirm_dialog = icon_confirm_dialog
+                self.title = title
                 self.w_main_window = main_window
                 self.ips_update = ips_update
                 self.list_of_packages = list_of_packages
@@ -229,7 +232,10 @@ class InstallUpdate(progress.ProgressTracker):
                                 self.proposed_be_name = self.be_name
                                 self.__proceed_with_stages()
                 else:
-                        self.w_dialog.set_title(_("Install/Update"))
+                        if self.title != None:
+                                self.w_dialog.set_title(self.title)
+                        else:
+                                self.w_dialog.set_title(_("Install/Update"))
                         self.__proceed_with_stages()
 
 
@@ -253,9 +259,19 @@ class InstallUpdate(progress.ProgressTracker):
                         self.w_cancel_button.set_sensitive(False)
                 if self.operations_done:
                         self.w_dialog.hide()
+                        if self.web_install:
+                                gobject.idle_add(self.parent.update_package_list, 
+                                    self.web_updates_list)
+                                return
+                        gobject.idle_add(self.parent.update_package_list, None)
 
         def __on_ua_cancel_button_clicked(self, widget):
                 self.w_ua_dialog.hide()
+                if self.web_install:
+                        gobject.idle_add(self.parent.update_package_list, 
+                            self.web_updates_list)
+                        return
+                gobject.idle_add(self.parent.update_package_list, None)
 
         def __on_ua_proceed_button_clicked(self, widget):
                 proposed_be_name = self.w_ua_be_name_entry.get_text()
@@ -353,7 +369,7 @@ class InstallUpdate(progress.ProgressTracker):
                                 else:
                                         self.api_o.reset()
                         self.__proceed_with_stages_thread()
-                except api_errors.InvalidCertException:
+                except api_errors.CertificateError:
                         self.stop_bouncing_progress = True
                         msg = _("Accessing this restricted repository failed."
                             "\nYou either need to register to access this repository,"
@@ -381,9 +397,10 @@ class InstallUpdate(progress.ProgressTracker):
                 except (api_errors.NetworkUnavailableException, 
                     TransferTimedOutException, TransportException, URLError, 
                     ManifestRetrievalError, DatastreamRetrievalError, 
-                    FileListRetrievalError):
+                    FileListRetrievalError), ex:
                         msg = _("Please check the network "
-                            "connection.\nIs the repository accessible?")
+                            "connection.\nIs the repository accessible?\n\n"
+                            "%s" % str(ex))
                         self.__g_error_stage(msg)
                         return
                 except api_errors.IpkgOutOfDateException:
@@ -501,6 +518,12 @@ class InstallUpdate(progress.ProgressTracker):
                         self.api_o.execute_plan()
                         gobject.idle_add(self.__operations_done)
                 else:
+                        if self.web_install:
+                                gobject.idle_add(self.w_expander.hide)
+                                gobject.idle_add(self.__operations_done, 
+                                    _("All packages already installed."))
+                                return
+                                
                         msg = None
                         if self.action == enumerations.INSTALL_UPDATE:
                                 msg = _("Selected package(s) cannot be updated on "
@@ -555,6 +578,7 @@ class InstallUpdate(progress.ProgressTracker):
                 gobject.idle_add(self.current_stage_icon.set_from_stock, 
                     gtk.STOCK_DIALOG_ERROR, gtk.ICON_SIZE_MENU)
                 gobject.idle_add(self.w_expander.set_expanded, True)
+                gobject.idle_add(self.w_cancel_button.set_sensitive, True)
 
         def __g_exception_stage(self, tracebk):
                 self.operations_done = True
@@ -581,6 +605,7 @@ class InstallUpdate(progress.ProgressTracker):
                         msg = _("No futher information available")
                         self.__g_update_details_text("%s\n" % msg, "level2")
                 gobject.idle_add(self.w_expander.set_expanded, True)
+                gobject.idle_add(self.w_cancel_button.set_sensitive, True)
 
         def __start_substage(self, text, bounce_progress=True):
                 if text:
@@ -667,12 +692,14 @@ class InstallUpdate(progress.ProgressTracker):
                                     ,_("Catalog refresh failed during Update All."))
                 return stuff_to_do
 
-        def __operations_done(self):
+        def __operations_done(self, alternate_done_txt = None):
                 done_txt = _("Installation completed successfully.")
                 if self.action == enumerations.REMOVE:
                         done_txt = _("Packages removed successfully.")
                 elif self.action == enumerations.IMAGE_UPDATE:
                         done_txt = _("Packages updated successfully.")
+                if alternate_done_txt != None:
+                        done_txt = alternate_done_txt
                 self.w_stages_box.hide()
                 self.w_stages_icon.set_from_stock(
                     gtk.STOCK_OK, gtk.ICON_SIZE_DND)
@@ -684,9 +711,11 @@ class InstallUpdate(progress.ProgressTracker):
                 self.stop_bouncing_progress = True
                 self.operations_done = True
                 if self.parent != None:
-                        if not self.ips_update and not self.action == \
-                            enumerations.IMAGE_UPDATE:
+                        if not self.web_install and not self.ips_update \
+                            and not self.action == enumerations.IMAGE_UPDATE:
                                 self.parent.update_package_list(self.update_list)
+                        if self.web_install:
+                                self.web_updates_list = self.update_list
                 if self.ips_update:
                         self.w_dialog.hide()
                         self.parent.restart_after_ips_update("be_name")
@@ -748,12 +777,12 @@ class InstallUpdate(progress.ProgressTracker):
                 s_ver = pkginfo.version
                 s_bran = pkginfo.branch
                 pkg_name = pkginfo.pkg_stem
-                pkg_authority = pkginfo.authority
-                if not pkg_authority in self.update_list:
-                        self.update_list[pkg_authority] = []
-                auth_list = self.update_list.get(pkg_authority)
-                if not pkg_name in auth_list:
-                        auth_list.append(pkg_name)
+                pkg_publisher = pkginfo.publisher
+                if not pkg_publisher in self.update_list:
+                        self.update_list[pkg_publisher] = []
+                pub_list = self.update_list.get(pkg_publisher)
+                if not pkg_name in pub_list:
+                        pub_list.append(pkg_name)
                 l_ver = 0
                 version_pref = ""
                 while l_ver < len(s_ver) -1:

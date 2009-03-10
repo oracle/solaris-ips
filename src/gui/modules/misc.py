@@ -31,6 +31,10 @@ try:
 except ImportError:
         sys.exit(1)
 
+def get_app_pixbuf(application_dir, icon_name):
+        return get_pixbuf_from_path(application_dir +
+            "/usr/share/package-manager/", icon_name)
+
 def get_icon_pixbuf(application_dir, icon_name):
         return get_pixbuf_from_path(application_dir +
             "/usr/share/icons/package-manager/", icon_name)

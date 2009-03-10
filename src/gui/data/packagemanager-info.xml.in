@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<mime-info xmlns='http://www.freedesktop.org/standards/shared-mime-info'>
+<mime-type type="application/vnd.pkg5.info">
+<comment>IPS info files</comment>
+<glob pattern="*.p5i"/>
+</mime-type>
+</mime-info>

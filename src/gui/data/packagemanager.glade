@@ -2440,6 +2440,7 @@ new repository first and then modify it to add this information.</property>
                 </child>
                 <child>
                   <widget class="GtkHBox" id="hbox36">
+                    <property name="visible">True</property>
                     <property name="no_show_all">True</property>
                     <child>
                       <widget class="GtkAlignment" id="alignment27">

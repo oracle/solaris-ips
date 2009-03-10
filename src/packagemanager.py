@@ -50,7 +50,7 @@ CATEGORIES_STATUS_COLUMN_INDEX = 0   # Index of Status Column in Categories Tree
 
 STATUS_COLUMN_INDEX = 2   # Index of Status Column in Application TreeView
 
-CLIENT_API_VERSION = 10
+CLIENT_API_VERSION = 11
 PKG_CLIENT_NAME = "packagemanager"
 
 # Load Start Page from lang dir if available
@@ -72,6 +72,7 @@ EXTERNAL_URI = 'uri'           # External field: uri to navigate to in external
 EXTERNAL_PROTOCOL = 'protocol' # External field: optional protocol scheme,
                                # defaults to http
 DEFAULT_PROTOCOL = 'http'
+PKGINFO_SUFFIX   = '.p5i'      # Mime type file extension
 
 import getopt
 import os
@@ -100,7 +101,6 @@ try:
 except ImportError:
         sys.exit(1)
 import pkg.misc as misc
-import pkg.client.history as history
 import pkg.client.progress as progress
 import pkg.client.api_errors as api_errors
 import pkg.client.api as api
@@ -114,6 +114,7 @@ import pkg.gui.imageinfo as imageinfo
 import pkg.gui.installupdate as installupdate
 import pkg.gui.enumerations as enumerations
 import pkg.gui.parseqs as parseqs
+import pkg.gui.webinstall as webinstall
 from pkg.client import global_settings
 
 # Put _() in the global namespace
@@ -172,7 +173,7 @@ class PackageManager:
                 self.update_all_proceed = False
                 self.ua_be_name = None
                 self.application_path = None
-                self.default_authority = None
+                self.default_publisher = None
                 self.first_run = True
                 self.selected_pkgstem = None
                 self.selected_model = None
@@ -201,6 +202,7 @@ class PackageManager:
                 self.category_list = None
                 self.repositories_list = None
                 self.pr = progress.NullProgressTracker()
+                self.pylintstub = None
                 
                 # Create Widgets and show gui
                 self.gladefile = self.application_dir + \
@@ -774,6 +776,7 @@ class PackageManager:
                     application_list_sort)
                 category_selection = self.w_categories_treeview.get_selection()
                 category_model, category_iter = category_selection.get_selected()
+                self.pylintstub = category_model
                 if not category_iter:         #no category was selected, so select "All"
                         category_selection.select_path(0)
                         category_model, category_iter = category_selection.get_selected()
@@ -958,7 +961,8 @@ class PackageManager:
                         for column in columns:
                                 treeview.remove_column(column)
 
-        def __init_sections(self, section_list):
+        @staticmethod
+        def __init_sections(section_list):
                 '''This function is for initializing sections combo box, also adds "All"
                 Category. It sets active section combobox entry "All"'''
                 cat_path = None
@@ -1371,62 +1375,63 @@ class PackageManager:
 
         def __on_repositorycombobox_changed(self, widget):
                 '''On repository combobox changed'''
-                active_authority = self.__get_active_authority()
-                if self.visible_repository == active_authority:
+                active_publisher = self.__get_active_publisher()
+                if self.visible_repository == active_publisher:
                         # If we are coming back to the same repository, we do
-                        # not want to setup authorities. This is the case when
+                        # not want to setup publishers. This is the case when
                         # we are calling Add... then we are firing the event for
                         # Add... case and imidiatelly coming back to the
                         # previously selected repository.
                         return
                 # Checking for Add... is fine enought, as the repository name can't
                 # contain "..." in the name.
-                if active_authority == _("Add..."):
+                if active_publisher == _("Add..."):
                         model = self.w_repository_combobox.get_model()
                         index = -1
                         for entry in model:
                                 if entry[1] == self.visible_repository:
                                         index = entry[0]
                         # We do not want to switch permanently to the Add...
-                        self.w_repository_combobox.set_active(index)                        
+                        self.w_repository_combobox.set_active(index)
                         self.__on_edit_repositories_activate(None)
                         return
                 self.cancelled = True
                 self.in_setup = True
                 self.set_busy_cursor()
                 self.__set_empty_details_panel()
-                auth = [active_authority, ]
-                Thread(target = self.__setup_authority, args = [auth]).start()
+                pub = [active_publisher, ]
+                Thread(target = self.__setup_publisher, args = [pub]).start()
                 self.__set_main_view_package_list()
 
-        def __get_active_authority(self):
-                auth_iter = self.w_repository_combobox.get_active_iter()
-                return self.repositories_list.get_value(auth_iter, \
+        def __get_active_publisher(self):
+                pub_iter = self.w_repository_combobox.get_active_iter()
+                return self.repositories_list.get_value(pub_iter, \
                             enumerations.REPOSITORY_NAME)
 
-        def __setup_authority(self, authorities=[]):
+        def __setup_publisher(self, publishers=[]):
                 application_list, category_list , section_list = \
-                    self.__get_application_categories_lists(authorities)
+                    self.__get_application_categories_lists(publishers)
                 gobject.idle_add(self.__init_tree_views, application_list,
                     category_list, section_list)
 
-        def __get_application_categories_lists(self, authorities=[]):
+        def __get_application_categories_lists(self, publishers=[]):
                 if not self.visible_repository:
-                        self.visible_repository = self.__get_active_authority()
+                        self.visible_repository = self.__get_active_publisher()
                 application_list = self.__get_new_application_liststore()
                 category_list = self.__get_new_category_liststore()
                 section_list = self.__get_new_section_liststore()
                 first_loop = True
-                for authority in authorities:
+                for publisher in publishers:
                         uptodate = False
                         try:
-                                uptodate = self.__check_if_cache_uptodate(authority)
+                                uptodate = self.__check_if_cache_uptodate(publisher)
                                 if uptodate:
-                                        self.__add_pkgs_to_lists_from_cache(authority, 
+                                        self.__add_pkgs_to_lists_from_cache(publisher,
                                             application_list, category_list, 
                                             section_list)
                         except (UnpicklingError, EOFError):
-                                #Most likely cache is corrupted, silently load list from api.
+                                #Most likely cache is corrupted, silently load list
+                                #from api.
                                 application_list = self.__get_new_application_liststore()
                                 category_list = self.__get_new_category_liststore()
                                 uptodate = False
@@ -1437,8 +1442,8 @@ class PackageManager:
                                 self.catalog_loaded = False
                                 self.api_o.img.load_catalogs(self.pr)
                                 self.catalog_loaded = True
-                                self.__add_pkgs_to_lists_from_api(authority, application_list, 
-                                    category_list, section_list)
+                                self.__add_pkgs_to_lists_from_api(publisher,
+                                    application_list, category_list, section_list)
                                 category_list.prepend([0, _('All'), None, None, False, 
                                     True, None])
                         if self.application_list and self.category_list and \
@@ -1446,20 +1451,20 @@ class PackageManager:
                                 self.__dump_datamodels(self.visible_repository, 
                                     self.application_list, self.category_list,
                                     self.section_list)
-                        self.visible_repository = self.__get_active_authority()
+                        self.visible_repository = self.__get_active_publisher()
                         self.visible_repository_uptodate = uptodate
                 return application_list, category_list, section_list
 
-        def __check_if_cache_uptodate(self, authority):
+        def __check_if_cache_uptodate(self, publisher):
                 if self.cache_o:
-                        return self.cache_o.check_if_cache_uptodate(authority)
+                        return self.cache_o.check_if_cache_uptodate(publisher)
                 return False
 
-        def __dump_datamodels(self, authority, application_list, category_list,
+        def __dump_datamodels(self, publisher, application_list, category_list,
             section_list):
                 if self.cache_o:
                         Thread(target = self.cache_o.dump_datamodels,
-                            args = (authority, application_list, category_list,
+                            args = (publisher, application_list, category_list,
                             section_list)).start()
 
         def __on_install_update(self, widget):
@@ -1586,25 +1591,22 @@ class PackageManager:
                 return False
 
         def __setup_repositories_combobox(self, api_o, repositories_list):
-                img = api_o.img
-                if img == None:
-                        return
                 self.__disconnect_repository_model()
-                img.load_config()
-                auths = img.gen_authorities()
-                default_auth = img.get_default_authority()
-                if self.default_authority != default_auth:
+                default_pub = api_o.get_preferred_publisher().prefix
+                if self.default_publisher != default_pub:
                         self.__clear_pkg_selections()
-                        self.default_authority = default_auth
+                        self.default_publisher = default_pub
                 selected_repos = []
                 enabled_repos = []
                 for repo in self.selected_pkgs:
                         selected_repos.append(repo)
                 i = 0
                 active = 0
-                for repo in auths:
-                        prefix = repo.get("prefix")
-                        if cmp(prefix, self.default_authority) == 0:
+                for pub in api_o.get_publishers():
+                        if pub.disabled:
+                                continue
+                        prefix = pub.prefix
+                        if cmp(prefix, self.default_publisher) == 0:
                                 active = i
                         repositories_list.append([i, prefix, ])
                         enabled_repos.append(prefix)
@@ -1620,7 +1622,7 @@ class PackageManager:
                 for pkg_stem in pkgs_to_remove:
                         self.__remove_pkg_stem_from_list(pkg_stem)
                 self.w_repository_combobox.set_model(repositories_list)
-                if self.default_authority:
+                if self.default_publisher:
                         self.w_repository_combobox.set_active(active)
                 else:
                         self.w_repository_combobox.set_active(0)
@@ -1653,41 +1655,41 @@ class PackageManager:
                         self.w_reload_button.set_sensitive(False)
 
         def __add_pkg_stem_to_list(self, stem, status):
-                authority = self.__get_active_authority()
-                if self.selected_pkgs.get(authority) == None:
-                        self.selected_pkgs[authority] = {}
-                self.selected_pkgs.get(authority)[stem] = status
+                publisher = self.__get_active_publisher()
+                if self.selected_pkgs.get(publisher) == None:
+                        self.selected_pkgs[publisher] = {}
+                self.selected_pkgs.get(publisher)[stem] = status
                 if status == enumerations.NOT_INSTALLED or \
                     status == enumerations.UPDATABLE:
-                        if self.to_install_update.get(authority) == None:
-                                self.to_install_update[authority] = 1
+                        if self.to_install_update.get(publisher) == None:
+                                self.to_install_update[publisher] = 1
                         else:
-                                self.to_install_update[authority] += 1
+                                self.to_install_update[publisher] += 1
                 if status == enumerations.UPDATABLE or status == enumerations.INSTALLED:
-                        if self.to_remove.get(authority) == None:
-                                self.to_remove[authority] = 1
+                        if self.to_remove.get(publisher) == None:
+                                self.to_remove[publisher] = 1
                         else:
-                                self.to_remove[authority] += 1
+                                self.to_remove[publisher] += 1
                 self.__update_tooltips()
 
         def __update_tooltips(self):
                 to_remove = None
                 to_install = None
                 no_iter = 0
-                for authority in self.to_remove:
-                        packages = self.to_remove.get(authority)
+                for publisher in self.to_remove:
+                        packages = self.to_remove.get(publisher)
                         if packages > 0:
                                 if no_iter == 0:
                                         to_remove = _("Selected for Removal:")
-                                to_remove += "\n   %s: %d" % (authority, packages)
+                                to_remove += "\n   %s: %d" % (publisher, packages)
                                 no_iter += 1
                 no_iter = 0
-                for authority in self.to_install_update:
-                        packages = self.to_install_update.get(authority)
+                for publisher in self.to_install_update:
+                        packages = self.to_install_update.get(publisher)
                         if packages > 0:
                                 if no_iter == 0:
                                         to_install = _("Selected for Install/Update:")
-                                to_install += "\n   %s: %d" % (authority, packages)
+                                to_install += "\n   %s: %d" % (publisher, packages)
                                 no_iter += 1
                 if not to_install:
                         to_install = _("Select packages by marking checkbox\n"+
@@ -1700,39 +1702,39 @@ class PackageManager:
                 self.w_remove_button.set_tooltip(self.remove_button_tooltip, to_remove)
 
         def __remove_pkg_stem_from_list(self, stem):
-                remove_auth = []
-                for authority in self.selected_pkgs:
-                        pkgs = self.selected_pkgs.get(authority)
+                remove_pub = []
+                for publisher in self.selected_pkgs:
+                        pkgs = self.selected_pkgs.get(publisher)
                         status = None
                         if stem in pkgs:
                                 status = pkgs.pop(stem)
                         if status == enumerations.NOT_INSTALLED or \
                             status == enumerations.UPDATABLE:
-                                if self.to_install_update.get(authority) == None:
-                                        self.to_install_update[authority] = 0
+                                if self.to_install_update.get(publisher) == None:
+                                        self.to_install_update[publisher] = 0
                                 else:
-                                        self.to_install_update[authority] -= 1
+                                        self.to_install_update[publisher] -= 1
                         if status == enumerations.UPDATABLE or \
                             status == enumerations.INSTALLED:
-                                if self.to_remove.get(authority) == None:
-                                        self.to_remove[authority] = 0
+                                if self.to_remove.get(publisher) == None:
+                                        self.to_remove[publisher] = 0
                                 else:
-                                        self.to_remove[authority] -= 1
+                                        self.to_remove[publisher] -= 1
                         if len(pkgs) == 0:
-                                remove_auth.append(authority)
-                for authority in remove_auth:
-                        self.selected_pkgs.pop(authority)
+                                remove_pub.append(publisher)
+                for publisher in remove_pub:
+                        self.selected_pkgs.pop(publisher)
                 self.__update_tooltips()
 
         def __clear_pkg_selections(self):
                 # We clear the selections as the preffered repository was changed
                 # and pkg stems are not valid.
-                remove_auth = []
-                for authority in self.selected_pkgs:
-                        stems = self.selected_pkgs.get(authority)
+                remove_pub = []
+                for publisher in self.selected_pkgs:
+                        stems = self.selected_pkgs.get(publisher)
                         for pkg_stem in stems:
-                                remove_auth.append(pkg_stem)
-                for pkg_stem in remove_auth:
+                                remove_pub.append(pkg_stem)
+                for pkg_stem in remove_pub:
                         self.__remove_pkg_stem_from_list(pkg_stem)
 
         def __set_empty_details_panel(self):
@@ -1984,8 +1986,7 @@ class PackageManager:
                 pkg_status = model.get_value(itr, enumerations.STATUS_COLUMN)
                 if self.info_cache.has_key(pkg_stem):
                         return
-                img = self.api_o.img
-                img.history.operation_name = "info"
+                self.api_o.log_operation_start("info")
                 local_info = None
                 remote_info = None
                 if show_id == self.show_info_id and (pkg_status == 
@@ -1999,7 +2000,7 @@ class PackageManager:
                 if show_id == self.show_info_id:
                         gobject.idle_add(self.__update_package_info, pkg, 
                             local_info, remote_info)
-                img.history.operation_result = history.RESULT_SUCCEEDED
+                self.api_o.log_operation_end()
                 return
 
         # This function is ported from pkg.actions.generic.distinguished_name()
@@ -2061,8 +2062,8 @@ class PackageManager:
                                     filter_id))
                 else:
                         return False
-
-        def __is_package_filtered(self, model, itr, filter_id):
+        @staticmethod
+        def __is_package_filtered(model, itr, filter_id):
                 '''Function for filtercombobox'''
                 if filter_id == 0:
                         return True
@@ -2083,14 +2084,14 @@ class PackageManager:
                         pkg = model.get_value(itr, enumerations.FMRI_COLUMN)
                         if not pkg:
                                 return False
-                        if cmp(pkg.get_authority(), visible_repository) == 0:
+                        if cmp(pkg.get_publisher(), visible_repository) == 0:
                                 return True
                         else:
                                 return False
 
         def __get_visible_repository_name(self):
-                auth_iter = self.w_repository_combobox.get_active_iter()
-                visible = self.repositories_list.get_value(auth_iter, \
+                pub_iter = self.w_repository_combobox.get_active_iter()
+                visible = self.repositories_list.get_value(pub_iter, \
                     enumerations.REPOSITORY_NAME)
                 return visible
 
@@ -2202,7 +2203,9 @@ class PackageManager:
                             all_known, all_versions)
                         for pfmri, state in res:
                                 if state["upgradable"]:
+                                        self.pylintstub = pfmri    
                                         return True
+                                        
                 except api_errors.InventoryException:
                         return False
                 return False
@@ -2222,15 +2225,14 @@ class PackageManager:
 
         def __catalog_refresh(self, reload_gui=True):
                 """Update image's catalogs."""
-                full_refresh = True
                 try:
-                        self.api_o.refresh(full_refresh)
+                        self.api_o.refresh(True)
                         self.catalog_loaded = False
                         self.api_o.img.load_catalogs(self.pr)
                         self.catalog_loaded = True
-                except api_errors.UnrecognizedAuthorityException:
+                except api_errors.PublisherError:
                         # In current implementation, this will never happen
-                        # We are not refrehsing specific authority
+                        # We are not refrehsing specific publisher
                         self.__catalog_refresh_done()
                         raise
                 except api_errors.PermissionsException:
@@ -2245,7 +2247,7 @@ class PackageManager:
                         ermsg += _("Details:\n")
                         ermsg += "%s/%s" % (succeeded, total) 
                         ermsg += _(" catalogs successfully updated:\n") 
-                        for auth, err in cre.failed:
+                        for pub, err in cre.failed:
                                 if isinstance(err, HTTPError):
                                         ermsg += "   %s: %s - %s\n" % \
                                             (err.filename, err.code, err.msg)
@@ -2253,16 +2255,16 @@ class PackageManager:
                                         if err.args[0][0] == 8:
                                                 ermsg += "    %s: %s\n" % \
                                                     (urlparse.urlsplit(
-                                                        auth["origin"])[1].split(":")[0],
+                                                        pub["origin"])[1].split(":")[0],
                                                     err.args[0][1])
                                         else:
                                                 if isinstance(err.args[0], \
                                                     socket.timeout):
                                                         ermsg += "    %s: %s\n" % \
-                                                            (auth["origin"], "timeout")
+                                                            (pub["origin"], "timeout")
                                                 else:
                                                         ermsg += "    %s: %s\n" % \
-                                                            (auth["origin"], \
+                                                            (pub["origin"], \
                                                             err.args[0][1])
                                 elif "data" in err.__dict__ and err.data:
                                         ermsg += err.data
@@ -2275,7 +2277,7 @@ class PackageManager:
                         self.__catalog_refresh_done()
                         return -1
 
-                except api_errors.UnrecognizedAuthorityException:
+                except api_errors.PublisherError:
                         self.__catalog_refresh_done()
                         raise
                 except Exception:
@@ -2285,20 +2287,20 @@ class PackageManager:
                         self.__catalog_refresh_done()
                 return 0
 
-        def __add_pkgs_to_lists_from_cache(self, authority, application_list, 
+        def __add_pkgs_to_lists_from_cache(self, publisher, application_list, 
             category_list, section_list):
                 if self.cache_o:
-                        self.cache_o.load_application_list(authority, application_list, 
+                        self.cache_o.load_application_list(publisher, application_list, 
                             self.selected_pkgs)
-                        self.cache_o.load_category_list(authority, category_list)
-                        self.cache_o.load_section_list(authority, section_list)
+                        self.cache_o.load_category_list(publisher, category_list)
+                        self.cache_o.load_section_list(publisher, section_list)
 
-        def __add_pkgs_to_lists_from_api(self, authority, application_list,
+        def __add_pkgs_to_lists_from_api(self, publisher, application_list,
             category_list, section_list):
                 """ This method set up image from the given directory and
                 returns the image object or None"""                
                 pargs = []
-                pargs.append("pkg://" + authority + "/*")
+                pargs.append("pkg://" + publisher + "/*")
                 try:
                         pkgs_known = misc.get_inventory_list(self.api_o.img, pargs, 
                             True, True)
@@ -2368,7 +2370,7 @@ class PackageManager:
                                     application_list,
                                     pkg_add, pkg_name,
                                     category_icon,
-                                    categories, category_list, authority)
+                                    categories, category_list, publisher)
                                 pkg_add += 1
                         prev_stem = pkg.get_pkg_stem()
                         prev_pfmri_str = pkg.get_short_fmri()
@@ -2396,8 +2398,8 @@ class PackageManager:
                                 else:
                                         status_icon = installed_icon
                         marked = False
-                        authority = self.__get_active_authority()
-                        pkgs = self.selected_pkgs.get(authority)
+                        publisher = self.__get_active_publisher()
+                        pkgs = self.selected_pkgs.get(publisher)
                         if pkgs != None:
                                 if pkg_stem in pkgs:
                                         marked = True
@@ -2409,11 +2411,11 @@ class PackageManager:
                         pkg_count += 1
 
                 self.__add_package_to_list(next_app, application_list, pkg_add, 
-                    pkg_name, category_icon, categories, category_list, authority)
+                    pkg_name, category_icon, categories, category_list, publisher)
                 pkg_add += 1
-                for authority in sections:
-                        for section in sections[authority]:
-                                for category in sections[authority][section].split(","):
+                for publisher in sections:
+                        for section in sections[publisher]:
+                                for category in sections[publisher][section].split(","):
                                         self.__add_category_to_section(_(category),
                                             _(section), category_list, section_list)
  
@@ -2428,11 +2430,11 @@ class PackageManager:
                 return
 
         def __add_package_to_list(self, app, application_list, pkg_add, 
-            pkg_name, category_icon, categories, category_list, authority):
+            pkg_name, category_icon, categories, category_list, publisher):
                 row_iter = application_list.insert(pkg_add, app)
-                cat_auth = categories.get(authority)
-                if pkg_name in cat_auth:
-                        pkg_categories = cat_auth.get(pkg_name)
+                cat_pub = categories.get(publisher)
+                if pkg_name in cat_pub:
+                        pkg_categories = cat_pub.get(pkg_name)
                         for pcat in pkg_categories.split(","):
                                 self.__add_package_to_category(_(pcat), None, 
                                     category_icon, row_iter, application_list, 
@@ -2474,7 +2476,8 @@ class PackageManager:
                         application_list.set(package,
                             enumerations.CATEGORY_LIST_COLUMN, category_list)
 
-        def __add_category_to_section(self, category_name, section_name, category_list, 
+        @staticmethod
+        def __add_category_to_section(category_name, section_name, category_list, 
             section_list):
                 '''Adds the section to section list in category. If there is no such 
                 section, than it is not added. If there was already section than it
@@ -2489,7 +2492,8 @@ class PackageManager:
                                             category_name:
                                                 section_lst = category[ \
                                                     enumerations.SECTION_LIST_OBJECT]
-                                                section[enumerations.SECTION_ENABLED] = True
+                                                section[enumerations.SECTION_ENABLED] = \
+                                                    True
                                                 if not section_lst:
                                                         category[ \
                                                     enumerations.SECTION_LIST_OBJECT] = \
@@ -2655,7 +2659,8 @@ class PackageManager:
                 self.image_directory = image_directory
                 if not self.api_o:
                         self.api_o = self.__get_api_object(image_directory, self.pr)
-                        self.cache_o = self.__get_cache_obj(self.application_dir, self.api_o)
+                        self.cache_o = self.__get_cache_obj(self.application_dir,
+                            self.api_o)
                 self.repositories_list = self.__get_new_repositories_liststore()
                 self.__setup_repositories_combobox(self.api_o, self.repositories_list)
 
@@ -2726,8 +2731,8 @@ class PackageManager:
                         count += 1
                         if count % 2 ==  0:
                                 time.sleep(0.001)
-                img.history.operation_name = "info"
-                img.history.operation_result = history.RESULT_SUCCEEDED
+                self.api_o.log_operation_start("info")
+                self.api_o.log_operation_end()
                 self.description_thread_running = False
                 
         def update_statusbar(self):
@@ -2754,9 +2759,11 @@ class PackageManager:
                 self.w_main_statusbar.push(0, status_str)
 
         def update_package_list(self, update_list):
+                if update_list == None:
+                        return
                 img = self.api_o.img
                 visible_repository = self.__get_visible_repository_name()
-                default_authority = self.default_authority
+                default_publisher = self.default_publisher
                 img.clear_pkg_state()
                 self.catalog_loaded = False
                 img.load_catalogs(self.pr)
@@ -2791,13 +2798,14 @@ class PackageManager:
                         self.__dump_datamodels(visible_repository, 
                                 self.application_list, self.category_list,
                                 self.section_list)
-                for authority in update_list:
-                        if authority != visible_repository:
-                                pkg_list = update_list.get(authority)
+                for publisher in update_list:
+                        if publisher != visible_repository:
+                                pkg_list = update_list.get(publisher)
                                 for pkg in pkg_list:
                                         pkg_stem = None
-                                        if authority != default_authority:
-                                                pkg_stem = "pkg://%s/%s" % (authority, pkg)
+                                        if publisher != default_publisher:
+                                                pkg_stem = "pkg://%s/%s" % \
+                                                        (publisher, pkg)
                                         else:
                                                 pkg_stem = "pkg:/%s" % pkg
                                         if pkg_stem:
@@ -2942,22 +2950,25 @@ def main():
 
 if __name__ == '__main__':
         debug = False
-        packagemanager = PackageManager()
         passed_test_arg = False
-        passed_imagedir_arg = False
+        update_all_proceed = False
+        ua_be_name = None
+        app_path = None
+        image_dir = None
+        info_install = False
 
         try:
-                opts, args = getopt.getopt(sys.argv[1:], "htR:U:", \
-                    ["help", "test-gui", "image-dir=", "update-all="])
+                opts, args = getopt.getopt(sys.argv[1:], "htR:U:i", \
+                    ["help", "test-gui", "image-dir=", "update-all=", "info-install"])
         except getopt.error, msg:
                 print "%s, for help use --help" % msg
                 sys.exit(2)
 
         if os.path.isabs(sys.argv[0]):
-                packagemanager.application_path = sys.argv[0]
+                app_path = sys.argv[0]
         else: 
                 cmd = os.path.join(os.getcwd(), sys.argv[0])
-                packagemanager.application_path = os.path.realpath(cmd)
+                app_path = os.path.realpath(cmd)
 
         for option, argument in opts:
                 if option in ("-h", "--help"):
@@ -2969,22 +2980,37 @@ Use -U (--update-all) to proceed with Update All"""
                 if option in ("-t", "--test-gui"):
                         passed_test_arg = True
                 if option in ("-R", "--image-dir"):
-                        packagemanager.image_dir_arg = argument
                         image_dir = argument
-                        passed_imagedir_arg = True
                 if option in ("-U", "--update-all"):
-                        packagemanager.update_all_proceed = True
-                        packagemanager.ua_be_name = argument
+                        update_all_proceed = True
+                        ua_be_name = argument
+                if option in ("-i", "--info-install"):
+                        info_install = True
 
-        if passed_test_arg and passed_imagedir_arg:
+        if passed_test_arg and image_dir != None:
                 print "Options -R and -t can not be used together."
                 sys.exit(2)
-        if not passed_imagedir_arg:
+        if image_dir == None:
                 try:
                         image_dir = os.environ["PKG_IMAGE"]
                 except KeyError:
                         image_dir = os.getcwd()
 
+        
+        # Setup webinstall
+        if info_install or (len(sys.argv) == 2 and sys.argv[1].endswith(PKGINFO_SUFFIX)):
+                webinstall = webinstall.Webinstall(image_dir)
+                webinstall.process_param(sys.argv[1])
+                main() 
+                sys.exit(0)
+        
+        # Setup packagemanager
+        packagemanager = PackageManager()
+        packagemanager.application_path = app_path
+        packagemanager.image_dir_arg = image_dir
+        packagemanager.update_all_proceed = update_all_proceed
+        packagemanager.ua_be_name = ua_be_name
+        
         while gtk.events_pending():
                 gtk.main_iteration(False)
 

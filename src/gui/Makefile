@@ -33,6 +33,8 @@ ROOTETC = ../../proto/root_${MACH}/etc
 ROOTUSRLIB = $(ROOT)/lib
 
 ROOTAPPICONSHARE = $(ROOT)/share/icons/hicolor/48x48/apps
+ROOTMIMETYPESHARE = $(ROOT)/share/mime/packages
+ROOTMIMEICONSHARE = $(ROOT)/share/icons/hicolor/48x48/mimetypes
 ROOTDATASHARE = $(ROOTSHARE)/data
 ROOTDESKTOPSHARE = $(ROOT)/share/applications
 ROOTGCONFSHARE = $(ROOTETC)/gconf/schemas
@@ -46,6 +48,8 @@ ROOTSHARE = $(ROOT)/share/package-manager
 
 ROOTDIRS = \
    $(ROOTAPPICONSHARE) \
+   $(ROOTMIMETYPESHARE) \
+   $(ROOTMIMEICONSHARE) \
    $(ROOTDATASHARE) \
    $(ROOTDESKTOPSHARE) \
    $(ROOTGCONFSHARE) \
@@ -57,6 +61,12 @@ ROOTDIRS = \
 
 APPICONS = \
    data/packagemanager.png
+
+MIMETYPE = \
+   data/packagemanager-info.xml
+
+MIMEICONS = \
+   data/gnome-mime-application-vnd.pkg5.info.png
 
 CATALOG = \
    data/opensolaris.org \
@@ -127,6 +137,7 @@ PYMODS = \
    modules/repository.py \
    modules/enumerations.py \
    modules/parseqs.py \
+   modules/webinstall.py \
    modules/misc.py \
    modules/beadmin.py
 
@@ -137,6 +148,10 @@ PYCMODS = $(PYMODS:%.py=%.pyc)
 # Define the paths to all of the stuff we'll install.
 #
 ROOTAPPICONS = $(APPICONS:data/%=$(ROOTAPPICONSHARE)/%)
+
+ROOTMIMETYPE = $(MIMETYPE:data/%=$(ROOTMIMETYPESHARE)/%)
+
+ROOTMIMEICONS = $(MIMEICONS:data/%=$(ROOTMIMEICONSHARE)/%)
 
 ROOTCATALOG = $(CATALOG:data/%=$(ROOTDATASHARE)/%)
 
@@ -172,6 +187,8 @@ ROOTPYCALLMODS = $(ROOTPYMODS:%.py=%.pyc)
 
 ROOTCOMPONENTS = \
    $(ROOTAPPICONS) \
+   $(ROOTMIMETYPE) \
+   $(ROOTMIMEICONS) \
    $(ROOTCATALOG) \
    $(ROOTDESKTOP) \
    $(ROOTGCONF) \
@@ -252,6 +269,12 @@ $(ROOTDIRS):
 
 $(ROOTAPPICONSHARE)/%: $(ROOTDIRS) data/%
 	$(INSTALL) -f $(ROOTAPPICONSHARE) -m 0644 $<
+
+$(ROOTMIMETYPESHARE)/%: $(ROOTDIRS) data/%
+	$(INSTALL) -f $(ROOTMIMETYPESHARE) -m 0644 $<
+
+$(ROOTMIMEICONSHARE)/%: $(ROOTDIRS) data/%
+	$(INSTALL) -f $(ROOTMIMEICONSHARE) -m 0644 $<
 
 $(ROOTSPDIRS): $(ROOTDIRS)
 	$(INSTALL) -d -m 0755 $@

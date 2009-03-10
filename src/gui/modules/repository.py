@@ -26,8 +26,10 @@
 import sys
 import os
 from threading import Thread
+from pkg.client.api_errors import InvalidDepotResponseException
 
 try:
+        import gnome
         import gobject
         gobject.threads_init()
         import gtk
@@ -37,6 +39,7 @@ try:
 except ImportError:
         sys.exit(1)
 
+import pkg.client.publisher as publisher
 import pkg.client.api_errors as api_errors
 import pkg.misc as misc
 import pkg.gui.enumerations as enumerations
@@ -44,19 +47,23 @@ import pkg.gui.enumerations as enumerations
 ERROR_FORMAT = "<span color = \"red\">%s</span>"
 
 class Repository:
-        def __init__(self, parent):
+        def __init__(self, parent, webinstall_new=False):
                 self.parent = parent
-                self.img = parent.api_o.img
+                self.api_o = parent.api_o
+                self.webinstall_new = webinstall_new
+                self.registration_url = None
+                self.pub_copy = None
+                self.repo_copy = None
 
                 self.repository_list = \
                     gtk.ListStore(
-                        gobject.TYPE_STRING,      # enumerations.AUTHORITY_NAME
-                        gobject.TYPE_BOOLEAN,     # enumerations.AUTHORITY_PREFERRED
-                        gobject.TYPE_STRING,      # enumerations.AUTHORITY_URL
-                        gobject.TYPE_STRING,      # enumerations.AUTHORITY_SSL_KEY
-                        gobject.TYPE_STRING,      # enumerations.AUTHORITY_SSL_CERT
-                        gobject.TYPE_PYOBJECT,    # enumerations.AUTHORITY_MIRRORS
-                        gobject.TYPE_BOOLEAN,     # enumerations.AUTHORITY_ENABLED
+                        gobject.TYPE_STRING,      # enumerations.PUBLISHER_NAME
+                        gobject.TYPE_BOOLEAN,     # enumerations.PUBLISHER_PREFERRED
+                        gobject.TYPE_STRING,      # enumerations.PUBLISHER_URL
+                        gobject.TYPE_STRING,      # enumerations.PUBLISHER_SSL_KEY
+                        gobject.TYPE_STRING,      # enumerations.PUBLISHER_SSL_CERT
+                        gobject.TYPE_PYOBJECT,    # enumerations.PUBLISHER_MIRRORS
+                        gobject.TYPE_BOOLEAN,     # enumerations.PUBLISHER_ENABLED
                         )
                 self.mirror_list = \
                     gtk.ListStore(
@@ -76,6 +83,7 @@ class Repository:
                 progress_button = w_tree_progress.get_widget("progresscancel")
                 self.w_progressbar = w_tree_progress.get_widget("progressbar")
                 self.w_repository_dialog = w_tree_repository.get_widget("repository")
+                self.error_dialog_parent =  self.w_repository_dialog
                 self.w_repository_name = w_tree_repository.get_widget("repositoryname")
                 self.w_repository_url = w_tree_repository.get_widget("repositoryurl")
                 self.w_repository_treeview = \
@@ -101,6 +109,8 @@ class Repository:
                     w_tree_repositorymodify.get_widget("repositorymodifyname")
                 self.w_repositorymodify_url = \
                     w_tree_repositorymodify.get_widget("repositorymodifyurl")
+                self.w_repositorymodify_error_label = \
+                        w_tree_repositorymodify.get_widget("moderror_label")
                 self.w_repositorymodify_keybrowse_button = \
                     w_tree_repositorymodify.get_widget("modkeybrowse")
                 self.w_repositorymodify_certbrowse_button = \
@@ -115,6 +125,21 @@ class Repository:
                     w_tree_repositorymodify.get_widget("repositorymodifycancel")
                 self.w_mirror_treeview = \
                     w_tree_repositorymodify.get_widget("mirrortreeview")
+                self.w_repositorymodify_title_label = \
+                    w_tree_repositorymodify.get_widget("repositorymodifytitlelabel")
+                    
+                self.w_repositorymodify_registration_comment_label = \
+                    w_tree_repositorymodify.get_widget(
+                        "repositorymodifyregistrationcommentlabel")
+                self.w_repositorymodify_registration_link = \
+                    w_tree_repositorymodify.get_widget(
+                        "repositorymodifyregistrationlinkbutton")                    
+                    
+                self.w_repositorymodify_ssl_expander = \
+                    w_tree_repositorymodify.get_widget("repositorymodifysslexpander")
+                self.w_repositorymodify_mirrors_expander = \
+                    w_tree_repositorymodify.get_widget("repositorymodifymirrorsexpander")
+
                 self.mirror_list_filter = self.mirror_list.filter_new()
                 self.w_mirror_add_entry = \
                     w_tree_repositorymodify.get_widget("addmirror_entry")
@@ -122,7 +147,9 @@ class Repository:
                     w_tree_repositorymodify.get_widget("addmirror_button")
                 self.w_mirror_remove_button = \
                     w_tree_repositorymodify.get_widget("mirrorremove")
-
+                self.w_repositorymodify_url.connect('focus-in-event', 
+                    self.on_focus_in_modurl)
+                    
                 #Modify name of the repository is disabled, see #4990
                 self.w_repositorymodify_name.set_sensitive(False)
 
@@ -158,11 +185,6 @@ class Repository:
                 self.w_progress_dialog.set_transient_for(self.w_repository_dialog)
                 self.w_sslkeyandcert_dialog.set_transient_for(self.w_repository_dialog)
                 self.w_repositorymodify_dialog.set_transient_for(self.w_repository_dialog)
-                self.old_modify_name = None
-                self.old_modify_url = None
-                self.old_modify_preferred = False
-                self.old_modify_ssl_key = None
-                self.old_modify_ssl_cert = None
                 self.is_name_valid = False
                 self.is_url_valid = False
                 self.name_error = None
@@ -198,6 +220,10 @@ class Repository:
                                     self.__on_repositorymodifycancel_clicked,
                                 "on_repositorymodifyok_clicked": \
                                     self.__on_repositorymodifyok_clicked,
+                                "on_repositorymodifyregistrationlinkbutton_clicked": \
+                                    self.__on_repositorymodifyregistrationlink_clicked,
+                                "on_repositorymodifyurl_changed": \
+                                    self.__on_repositorymodifyurl_changed,
                                 "on_sslkeybrowse_clicked": \
                                     self.__on_modify_keybrowse_clicked,
                                 "on_sslcertbrowse_clicked": \
@@ -238,9 +264,74 @@ class Repository:
                             "Check repository.py signals") \
                             % error
 
-                Thread(target = self.__prepare_repository_list).start()
-                self.w_repository_dialog.show_all()
+                if not self.webinstall_new:
+                        Thread(target = self.__prepare_repository_list).start()
+                        self.w_repository_dialog.show_all()
                 self.w_repository_error_label.hide()
+
+        def webinstall_new_pub(self, parent, pub = None):
+                if pub == None:
+                        return
+                self.w_progress_dialog.set_transient_for(parent)
+                auth = origin_uri = registration_url = mirror_datalist = None
+                
+                self.pub_copy = pub
+                self.repo_copy = pub.selected_repository
+
+                auth = self.pub_copy.prefix
+                origin_uri = self.repo_copy.origins[0].uri
+
+                scheme = None                
+                if origin_uri != None and origin_uri.startswith("https"):
+                        scheme = "https"
+
+                reg_uri = self.__get_registration_uri(self.repo_copy)
+                if reg_uri != None:
+                        registration_url = reg_uri
+                elif scheme == "https":
+                        registration_url = origin_uri
+                mirror_datalist = self.repo_copy.mirrors
+
+                self.__webinstall_new_repository(parent, auth, origin_uri,
+                    registration_url, mirror_datalist, scheme)
+
+        def __webinstall_new_repository(self, parent, auth = None, origin_uri = None,
+            registration_url = None, mirror_datalist = None, scheme = None):
+                if (auth == None or origin_uri == None):
+                        return
+                        
+                self.registration_url = registration_url
+                self.error_dialog_parent = parent
+                self.w_repositorymodify_dialog.set_title(
+                    _("Add New Repository"))
+                self.w_repositorymodify_name.set_text(auth)
+                self.w_repositorymodify_url.set_text(origin_uri)
+                self.w_repositorymodify_name.set_sensitive(False)
+                self.w_repositorymodify_url.set_sensitive(False)
+                self.w_repositorymodify_dialog.set_modal(True)
+                self.w_repositorymodify_dialog.set_transient_for(parent)
+                self.w_repositorymodify_title_label.set_markup(
+                    _("<b>New Repository</b>"))
+
+                if scheme != "https" and registration_url == None:
+                        self.__on_repositorymodifyok_clicked(None)
+                        return
+                        
+                self.w_repositorymodify_ssl_expander.set_expanded(True)
+                self.w_repositorymodify_registration_link.set_uri(registration_url)
+                        
+                self.w_repositorymodify_dialog.show_all()
+                self.w_repositorymodify_error_label.hide()
+
+                if scheme == "https":
+                        self.w_repositorymodify_ssl_expander.show()
+                else:
+                        self.w_repositorymodify_ssl_expander.hide()
+                        
+                if mirror_datalist == None or len(mirror_datalist) == 0:
+                        self.w_repositorymodify_mirrors_expander.hide()
+                else:
+                        gobject.idle_add(self.__setup_mirrors, mirror_datalist)
 
         def on_focus_in(self, widget, event):
                 self.w_repository_modify_button.set_sensitive(False)
@@ -250,6 +341,9 @@ class Repository:
                 self.__validate_name(widget)
                 self.w_repository_modify_button.set_sensitive(False)
                 self.w_repository_remove_button.set_sensitive(False)
+
+        def on_focus_in_modurl(self, widget, event):
+                self.__validate_modurl(widget)
 
         def on_focus_in_url(self, widget, event):
                 self.__validate_url(widget)
@@ -263,20 +357,20 @@ class Repository:
                 repository_list_sort = gtk.TreeModelSort(self.repository_list_filter)
                 name_renderer = gtk.CellRendererText()
                 column = gtk.TreeViewColumn(_("Repository Name"),
-                    name_renderer,  text = enumerations.AUTHORITY_NAME)
+                    name_renderer,  text = enumerations.PUBLISHER_NAME)
                 column.set_expand(True)
-                column.set_sort_column_id(enumerations.AUTHORITY_NAME)
+                column.set_sort_column_id(enumerations.PUBLISHER_NAME)
                 column.set_sort_indicator(True)
                 column.set_cell_data_func(name_renderer,
                     self.name_data_function, None)
                 self.w_repository_treeview.append_column(column)
                 radio_renderer = gtk.CellRendererToggle()
                 column = gtk.TreeViewColumn(_("Preferred"),
-                    radio_renderer, active = enumerations.AUTHORITY_PREFERRED)
+                    radio_renderer, active = enumerations.PUBLISHER_PREFERRED)
                 radio_renderer.set_property("activatable", True)
                 radio_renderer.set_property("radio", True)
                 column.set_expand(False)
-                column.set_sort_column_id(enumerations.AUTHORITY_PREFERRED)
+                column.set_sort_column_id(enumerations.PUBLISHER_PREFERRED)
                 column.set_sort_indicator(True)
                 radio_renderer.connect('toggled', self.__preferred_default)
                 column.set_cell_data_func(radio_renderer,
@@ -284,10 +378,10 @@ class Repository:
                 self.w_repository_treeview.append_column(column)
                 toggle_renderer = gtk.CellRendererToggle()
                 column = gtk.TreeViewColumn(_("Enabled"),
-                    toggle_renderer, active = enumerations.AUTHORITY_ENABLED)
+                    toggle_renderer, active = enumerations.PUBLISHER_ENABLED)
                 toggle_renderer.set_property("activatable", True)
                 column.set_expand(False)
-                column.set_sort_column_id(enumerations.AUTHORITY_ENABLED)
+                column.set_sort_column_id(enumerations.PUBLISHER_ENABLED)
                 column.set_sort_indicator(True)
                 toggle_renderer.connect('toggled', self.__enable_disable)
                 column.set_cell_data_func(toggle_renderer, 
@@ -300,18 +394,17 @@ class Repository:
                 self.w_mirror_treeview.append_column(column)
                 self.w_repository_treeview.set_model(repository_list_sort)
 
-        def __prepare_repository_list(self, clear_add_entries=True, selected_auth=None,
+        def __prepare_repository_list(self, clear_add_entries=True, selected_pub=None,
             stop_thread=True):
                 self.number_of_changes += 1
-                self.img.load_config()
-                auths = self.img.gen_authorities(inc_disabled=True)
-                gobject.idle_add(self.__create_view_with_auths, auths,
-                    clear_add_entries, selected_auth)
+                pubs = self.api_o.get_publishers()
+                gobject.idle_add(self.__create_view_with_pubs, pubs,
+                    clear_add_entries, selected_pub)
                 if stop_thread:
                         self.progress_stop_thread = True
                 return
 
-        def __create_view_with_auths(self, auths, clear_add_entries, selected_auth):
+        def __create_view_with_pubs(self, pubs, clear_add_entries, selected_pub):
                 model = self.w_repository_treeview.get_model()
                 self.w_repository_treeview.set_model(None)
                 self.repository_list.clear()
@@ -320,51 +413,54 @@ class Repository:
                         self.w_repository_url.set_text("")
                 self.w_repository_name.grab_focus()
                 j = 0
-                select_auth = -1
-                self.preferred = self.img.get_default_authority()
+                select_pub = -1
+                pref_pub = self.api_o.get_preferred_publisher()
+                self.preferred = pref_pub.prefix
                 self.original_preferred = self.preferred
-                for a in auths:
-                        l = self.img.split_authority(a)
-                        name = l[0]
+                for pub in pubs:
+                        repo = pub.selected_repository
+                        origin = repo.origins[0]
+
+                        name = pub.prefix
                         is_preferred = name == self.preferred
                         if is_preferred:
                                 self.initial_default = j
-                        if selected_auth:
-                                if name == selected_auth:
-                                        select_auth = j
-                        self.repository_list.insert(j, 
-                            [name, is_preferred, l[1], l[2], l[3], l[5], \
-                            not a["disabled"]])
+                        if selected_pub:
+                                if name == selected_pub:
+                                        select_pub = j
+                        self.repository_list.insert(j, [name, is_preferred,
+                            origin.uri, origin.ssl_key, origin.ssl_cert,
+                            [m.uri for m in repo.mirrors], not pub.disabled])
                         j += 1
                 if j > 0:
                         self.w_repository_modify_button.set_sensitive(False)
                         self.w_repository_remove_button.set_sensitive(False)
                 self.w_repository_treeview.set_model(model)
-                if select_auth == -1:
-                        select_auth = self.initial_default
-                self.w_repository_treeview.set_cursor(select_auth,
+                if select_pub == -1:
+                        select_pub = self.initial_default
+                self.w_repository_treeview.set_cursor(select_pub,
                     None, start_editing=False)
-                self.w_repository_treeview.scroll_to_cell(select_auth)
+                self.w_repository_treeview.scroll_to_cell(select_pub)
 
         @staticmethod
         def name_data_function(column, renderer, model, itr, data):
                 if itr:
                         renderer.set_property("sensitive", 
 
-                            model.get_value(itr, enumerations.AUTHORITY_ENABLED))
+                            model.get_value(itr, enumerations.PUBLISHER_ENABLED))
 
         @staticmethod
         def radio_data_function(column, renderer, model, itr, data):
                 if itr:
                         renderer.set_property("sensitive", 
-                            model.get_value(itr, enumerations.AUTHORITY_ENABLED))
+                            model.get_value(itr, enumerations.PUBLISHER_ENABLED))
 
         @staticmethod
         def toggle_data_function(column, renderer, model, itr, data):
                 if itr:
                         renderer.set_property("sensitive", 
                             not model.get_value(itr, 
-                            enumerations.AUTHORITY_PREFERRED))
+                            enumerations.PUBLISHER_PREFERRED))
 
         def __enable_disable(self, cell, filtered_path):
                 sorted_model = self.w_repository_treeview.get_model()
@@ -374,41 +470,42 @@ class Repository:
                 itr = model.get_iter(path)
                 if itr:
                         preferred = model.get_value(itr, 
-                            enumerations.AUTHORITY_PREFERRED)
+                            enumerations.PUBLISHER_PREFERRED)
                         if preferred == True:
                                 return
                         enabled = model.get_value(itr,
-                            enumerations.AUTHORITY_ENABLED)
-                        auth = model.get_value(itr, enumerations.AUTHORITY_NAME)
+                            enumerations.PUBLISHER_ENABLED)
+                        pub = model.get_value(itr, enumerations.PUBLISHER_NAME)
                         try:
-                                self.img.set_authority(auth,
-                                    refresh_allowed=False,
-                                    disabled=enabled)
+                                pub = self.api_o.get_publisher(pub, duplicate=True)
+                                pub.disabled = enabled
+                                self.api_o.update_publisher(pub,
+                                    refresh_allowed=False)
                                 self.number_of_changes += 1
                                 model.set_value(itr, 
-                                    enumerations.AUTHORITY_ENABLED,
+                                    enumerations.PUBLISHER_ENABLED,
                                     not enabled)
-                        except RuntimeError, ex:
+                        except api_errors.PublisherError, ex:
                                 if enabled:
-                                        err = _("Failed to disable %s.\n") % auth
+                                        err = _("Failed to disable %s.\n") % pub
                                 else:
-                                        err = _("Failed to enable %s.\n") % auth
+                                        err = _("Failed to enable %s.\n") % pub
                                 err += str(ex)
                                 self.__error_occurred(err,
                                     msg_type=gtk.MESSAGE_INFO)
                         except api_errors.PermissionsException:
                                 if enabled:
-                                        err1 = _("Failed to disable %s.") % auth
+                                        err1 = _("Failed to disable %s.") % pub
                                 else:
-                                        err1 = _("Failed to enable %s.") % auth
+                                        err1 = _("Failed to enable %s.") % pub
                                 err = err1 + _("\nPlease check your permissions.")
                                 self.__error_occurred(err,
                                     msg_type=gtk.MESSAGE_INFO)
                         except api_errors.CatalogRefreshException:
                                 if enabled:
-                                        err1 = _("Failed to disable %s.") % auth
+                                        err1 = _("Failed to disable %s.") % pub
                                 else:
-                                        err1 = _("Failed to enable %s.") % auth
+                                        err1 = _("Failed to enable %s.") % pub
                                 err = err1 + _(
                                     "\nPlease check the network connection or URL.\n"
                                     "Is the repository accessible?")
@@ -423,31 +520,29 @@ class Repository:
                 itr = model.get_iter(path)
                 if itr:
                         preferred = model.get_value(itr, 
-                            enumerations.AUTHORITY_PREFERRED)
+                            enumerations.PUBLISHER_PREFERRED)
                         enabled = model.get_value(itr,
-                            enumerations.AUTHORITY_ENABLED)
+                            enumerations.PUBLISHER_ENABLED)
                         if preferred == False and enabled == True:
-                                auth = model.get_value(itr, 
-                                    enumerations.AUTHORITY_NAME)
+                                pub = model.get_value(itr, 
+                                    enumerations.PUBLISHER_NAME)
                                 try:
-                                        self.img.set_preferred_authority(auth)
-                                        self.preferred = auth
-                                        index = enumerations.AUTHORITY_PREFERRED
+                                        self.api_o.set_preferred_publisher(pub)
+                                        self.preferred = pub
+                                        index = enumerations.PUBLISHER_PREFERRED
                                         for row in model:
                                                 row[index] = False
                                         model.set_value(itr, 
-                                            enumerations.AUTHORITY_PREFERRED,
+                                            enumerations.PUBLISHER_PREFERRED,
                                             not preferred)
+                                except api_errors.PublisherError, err:
+                                        self.__error_occurred(str(err),
+                                            msg_type=gtk.MESSAGE_INFO) 
+                                        self.__prepare_repository_list()
                                 except api_errors.PermissionsException:
                                         err = _("Couldn't change"
-                                            " the preferred authority.\n"
+                                            " the preferred publisher.\n"
                                             "Please check your permissions.")
-                                        self.__error_occurred(err,
-                                            msg_type=gtk.MESSAGE_INFO) 
-                                except Exception, ex:
-                                        err = _("Couldn't change"
-                                            " the preferred authority.\n")
-                                        err += str(ex)
                                         self.__error_occurred(err,
                                             msg_type=gtk.MESSAGE_INFO) 
 
@@ -463,32 +558,50 @@ class Repository:
         def __on_repositoryurl_changed(self, widget):
                 self.__validate_url(widget)
 
+        def __on_repositorymodifyurl_changed(self, widget):
+                self.__validate_modurl(widget)
+
         def __validate_url(self, widget):
-                url = widget.get_text()
+                w_url_text = widget
+                w_error_label = self.w_repository_error_label
+                w_action_button = self.w_repository_add_button
+                self.__validate_url_generic(w_url_text, w_error_label, w_action_button,
+                    self.is_name_valid)
+
+        def __validate_modurl(self, widget):
+                w_url_text = widget
+                w_error_label = self.w_repositorymodify_error_label
+                w_action_button = self.w_repositorymodify_ok_button
+                self.__validate_url_generic(w_url_text, w_error_label, w_action_button, 
+                    True)
+
+        def __validate_url_generic(self, w_url_text, w_error_label, w_action_button,
+                name_valid = False):
+                url = w_url_text.get_text()
                 self.is_url_valid = self.__is_url_valid(url)
-                self.w_repository_error_label.hide()
+                w_error_label.hide()
                 if self.is_url_valid:
-                        if self.is_name_valid:
-                                self.w_repository_add_button.set_sensitive(True)
+                        if name_valid:
+                                w_action_button.set_sensitive(True)
                         else:
-                                self.w_repository_add_button.set_sensitive(False)
+                                w_action_button.set_sensitive(False)
                                 if self.name_error != None:
                                         error_str = ERROR_FORMAT % self.name_error
-                                        self.w_repository_error_label.set_markup(
+                                        w_error_label.set_markup(
                                             error_str)
-                                        self.w_repository_error_label.show()
+                                        w_error_label.show()
                 else:
-                        self.w_repository_add_button.set_sensitive(False)
+                        w_action_button.set_sensitive(False)
                         if self.url_error != None:
                                 error_str = ERROR_FORMAT % self.url_error
-                                self.w_repository_error_label.set_markup(error_str)
-                                self.w_repository_error_label.show()
+                                w_error_label.set_markup(error_str)
+                                w_error_label.show()
                         
         def __is_name_valid(self, name):
                 self.name_error = None
                 if len(name) == 0:
                         return False
-                if not misc.valid_auth_prefix(name):
+                if not misc.valid_pub_prefix(name):
                         self.name_error = _("Name contains invalid characters")
                         return False
 
@@ -505,7 +618,7 @@ class Repository:
                 if len(name) == 0:
                         return False
 
-                if not misc.valid_auth_url(name):
+                if not misc.valid_pub_url(name):
                         # Check whether the user has started typing a valid URL.
                         # If he has we do not display an error message.
                         valid_start = False
@@ -577,6 +690,10 @@ class Repository:
         def __do_add_repository(self, name, url, ssl_key=None, ssl_cert=None):
                 p_title = _("Applying changes")
                 p_text = _("Applying changes, please wait ...")
+                repo = publisher.Repository()
+                repo.add_origin(url)
+                self.pub_copy = publisher.Publisher(name, repositories=[repo])
+                
                 self.__run_with_prog_in_thread(self.__add_repository, p_title,
                     p_text, name, url, ssl_key, ssl_cert)
 
@@ -596,180 +713,154 @@ class Repository:
                     p_text)
 
         def __on_repositorymodify_clicked(self, widget):
+                self.__clear_repositorymodify()
+                self.pub_copy = None
+                self.repo_copy = None
+                
                 tsel = self.w_repository_treeview.get_selection()
                 selection = tsel.get_selected()
                 itr = selection[1]
-                if itr != None:
-                        model = selection[0]
-                        self.old_modify_name = model.get_value(itr, 
-                            enumerations.AUTHORITY_NAME)
-                        self.old_modify_url = model.get_value(itr,
-                            enumerations.AUTHORITY_URL)
-                        self.old_modify_ssl_key = model.get_value(itr,
-                            enumerations.AUTHORITY_SSL_KEY)
-                        self.old_modify_ssl_cert = model.get_value(itr,
-                            enumerations.AUTHORITY_SSL_CERT)
-                        self.old_modify_preferred = model.get_value(itr,
-                            enumerations.AUTHORITY_PREFERRED)
-                        self.mirror_list.clear()
-                        mirrors = model.get_value(itr,
-                            enumerations.AUTHORITY_MIRRORS)
-                        self.__setup_mirrors(mirrors)
-                        self.w_repositorymodify_name.set_text(self.old_modify_name)
-                        self.w_repositorymodify_url.set_text(self.old_modify_url)
-                        if self.old_modify_ssl_key != None:
-                                self.w_repositorymodify_key_entry.set_text(
-                                    self.old_modify_ssl_key)
-                        if self.old_modify_ssl_cert != None:
-                                self.w_repositorymodify_cert_entry.set_text(
-                                    self.old_modify_ssl_cert)
-                        self.w_mirror_add_button.set_sensitive(False)
-                        self.w_repositorymodify_dialog.show_all()
+                if itr == None:
+                        return
+                        
+                model = selection[0]
+                prefix = model.get_value(itr, enumerations.PUBLISHER_NAME)
+                url = model.get_value(itr, enumerations.PUBLISHER_URL)
+                
+                try:                        
+                        self.pub_copy = self.api_o.get_publisher(prefix,
+                            duplicate=True)
+                        self.repo_copy = self.pub_copy.selected_repository
+                        
+                except api_errors.PublisherError, ex:
+                        gobject.idle_add(self.__error_occurred, str(ex),
+                            gtk.MESSAGE_ERROR)
+                        gobject.idle_add(self.w_repository_name.grab_focus)
+                        return
+                                        
+                self.mirror_list.clear()
+                self.__setup_mirrors(self.repo_copy.mirrors)
+                if len(self.repo_copy.mirrors) > 0:
+                        self.w_repositorymodify_mirrors_expander.set_expanded(True)
 
+                self.w_repositorymodify_name.set_text(prefix)
+                self.w_repositorymodify_url.set_text(url)
+                
+                origin = self.repo_copy.origins[0]
+                if origin.ssl_key != None:
+                        self.w_repositorymodify_key_entry.set_text(origin.ssl_key)
+                if origin.ssl_cert != None:
+                        self.w_repositorymodify_cert_entry.set_text(
+                            origin.ssl_cert)
+                self.w_mirror_add_button.set_sensitive(False)
+                
+                self.w_repositorymodify_dialog.show_all()
+                self.w_repositorymodify_error_label.hide()
+                self.w_repositorymodify_registration_comment_label.hide()
+                self.w_repositorymodify_registration_link.hide()
+                self.w_repositorymodify_registration_link.set_uri("")
+                self.w_repositorymodify_ssl_expander.set_expanded(False) 
+                
+                reg_uri = self.__get_registration_uri(self.repo_copy)
+                if reg_uri == None and origin.ssl_key == None:
+                        return
+                            
+                self.w_repositorymodify_registration_comment_label.show()
+                self.w_repositorymodify_registration_link.show()
+                                
+                if reg_uri != None:
+                        self.registration_url = reg_uri
+                else:
+                        self.registration_url = url
+                self.w_repositorymodify_registration_link.set_uri(self.registration_url)
+                        
+                if origin.ssl_key != None:
+                        self.w_repositorymodify_ssl_expander.set_expanded(True)
+                
+        @staticmethod
+        def __get_registration_uri(repo):
+                #TBD: Change Publisher API to return an RegistrationURI or a String
+                # but not either.
+                # Currently RegistrationURI is coming back with a trailing / this should
+                # be removed.
+                if repo == None:
+                        return None                      
+                if repo.registration_uri == None:
+                        return None
+                ret_uri = None
+                if isinstance(repo.registration_uri, str):
+                        if len(repo.registration_uri) > 0:
+                                ret_uri = repo.registration_uri.strip("/")
+                elif isinstance(repo.registration_uri, publisher.RepositoryURI):
+                        uri = repo.registration_uri.uri
+                        if uri != None and len(uri) > 0:
+                                ret_uri = uri.strip("/")                
+                return ret_uri              
+                
         def __on_repository_delete_event(self, widget, event):
                 self.__on_repositoryclose_clicked(widget)
 
         def __on_repositoryclose_clicked(self, widget):
                 # if the number is greater then 1 it means that we did something
                 # to the repository list and it is safer to reload package info
-                if self.number_of_changes > 1 or \
-                    self.original_preferred != self.preferred:
+                if (not self.webinstall_new and self.number_of_changes > 1) or \
+                    (not self.webinstall_new and 
+                    self.original_preferred != self.preferred):
                         self.parent.reload_packages()
                 self.w_repository_dialog.hide()
 
+        def __on_repositorymodifyregistrationlink_clicked(self, widget):
+                try:
+                        gnome.url_show(self.registration_url)
+                except gobject.GError:
+                        self.__error_occurred(_("Unable to navigate to:\n\t%s") % 
+                            self.registration_url, title=_("Registration"))
+                
         def __on_repositorymodifyok_clicked(self, widget):
-                self.w_repository_treeview.grab_focus()
                 self.w_repositorymodify_dialog.hide()
                 name =  self.w_repositorymodify_name.get_text()
                 url =  self.w_repositorymodify_url.get_text()
+                if self.webinstall_new:
+                        p_title = _("Adding New Repository")
+                        p_text = _("Adding:\n\t%s (%s)..." % (name, url))
+                else:
+                        self.w_repository_treeview.grab_focus()
+                        p_title = _("Applying changes")
+                        p_text = _("Applying changes, please wait ...")
+                        
                 ssl_key =  self.w_repositorymodify_key_entry.get_text()
                 if ssl_key == "":
                         ssl_key = None
                 ssl_cert =  self.w_repositorymodify_cert_entry.get_text()
                 if ssl_cert == "":
                         ssl_cert = None
-                p_title = _("Applying changes")
-                p_text = _("Applying changes, please wait ...")
-                self.__run_with_prog_in_thread(self.__update_repository, p_title,
+                self.__run_with_prog_in_thread(self.__add_repository, p_title,
                     p_text, name, url, ssl_key, ssl_cert)
-
-        def __update_repository(self, name, url, ssl_key, ssl_cert):
-                url_same = True
-                name_same = True
-                ssl_key_same = True
-                ssl_cert_same = True
-                if name != self.old_modify_name:
-                        name_same = False
-                if url != self.old_modify_url:
-                        url_same = False
-                if ssl_key != self.old_modify_ssl_key:
-                        ssl_key_same = False
-                if ssl_cert != self.old_modify_ssl_cert:
-                        ssl_cert_same = False
-                if url_same and name_same and ssl_key_same and ssl_cert_same:
-                        self.progress_stop_thread = True
-                        return
-                #we don't enable changing the name of the repository
-                #so this part of the code should be skipped in the current
-                #implementation.
-                if not name_same:
-                        omn = self.old_modify_name
-                        if not self.__is_name_valid(name):
-                                self.progress_stop_thread = True
-                                err = _("Failed to modify %(old_name)s."
-                                    "\nThe chosen repository name %(new_name)s is "
-                                    "already in use") % \
-                                    {'old_name': omn,
-                                     'new_name': name}
-                                gobject.idle_add(self.__error_occurred, err)
-                                self.progress_stop_thread = True
-                                return
-                        try:
-                                self.__delete_repository(self.old_modify_name, False)
-                        except api_errors.PermissionsException:
-                                # Do nothing
-                                err = _("Failed to modify %s." 
-                                    "\nPlease check your permissions.") % omn
-                                self.__error_with_reset_repo_selection(err,
-                                    gtk.MESSAGE_INFO)
-                                return
-                        except RuntimeError, ex:
-                                if "no defined authorities" in str(ex):
-                                        pass
-                                else:
-                                        err = str(ex)
-                                        self.__error_with_reset_repo_selection(err)
-                                        return
-                        except Exception, ex:
-                                err = _("Failed to modify %s.\n") % omn
-                                err += str(ex)
-                                self.__error_with_reset_repo_selection(err)
-                                return
-                try:
-                        self.__add_repository(name, url, ssl_key, ssl_cert, silent=False)
-                        if self.old_modify_preferred:
-                                self.img.set_preferred_authority(name)
-                                self.__prepare_repository_list(False)
-                except api_errors.PermissionsException:
-                        # Do nothing
-                        somn = self.old_modify_name
-                        err = _("Failed to modify %s."
-                            "\nPlease check your permissions.") % omn
-                        self.__error_with_reset_repo_selection(err,
-                            gtk.MESSAGE_INFO)
-                        return
-                except RuntimeError, ex:
-                        #The "no defined authorities" should never happen
-                        #Because we skipped removal of repository during name
-                        #change as we disabled name changing.
-                        if "no defined authorities" in str(ex):
-                                pass
-                        else:
-                                err = str(ex)
-                                self.__error_with_reset_repo_selection(err)
-                                return
-                except api_errors.CatalogRefreshException:
-                        try:
-                                somn = self.old_modify_name
-                                self.__add_repository(somn,
-                                    self.old_modify_url, silent=False, stop_thread=False)
-                                if somn != name:
-                                        self.__delete_repository(name, False)
-                                err = _("Failed to modify %s.") % somn + \
-                                    _(
-                                    "\nPlease check the network connection or URL.\n"
-                                    "Is the repository accessible?")
-                                gobject.idle_add(self.__error_occurred, err,
-                                    gtk.MESSAGE_INFO)
-                        except api_errors.CatalogRefreshException:
-                                #We need to show at least one warning dialog
-                                #This is for repository which didn't existed 
-                                #and was modified
-                                #To not existed repository
-                                somn = self.old_modify_name
-                                err = _("Failed to modify %s.") % somn + \
-                                    _(
-                                    "\nPlease check the network connection or URL.\n"
-                                    "Is the repository accessible?")
-                                gobject.idle_add(self.__error_occurred, err,
-                                    gtk.MESSAGE_INFO)
-                except Exception, ex:
-                        err = _("Failed to modify %s.\n") % omn
-                        err += str(ex)
-                        self.__error_with_reset_repo_selection(err)
-                        return
-
-                self.progress_stop_thread = True
-                return
-
+                    
+                self.__clear_repositorymodify()
 
         def __on_repositorymodify_delete_event(self, widget, event):
                 self.__on_repositorymodifycancel_clicked(widget)
+                return True
 
+        def __clear_repositorymodify(self):
+                self.w_repositorymodify_registration_comment_label.hide()
+                self.w_repositorymodify_registration_link.hide()
+                self.w_repositorymodify_registration_link.set_uri("")
+                
+                self.w_repositorymodify_ssl_expander.set_expanded(False)                
+                self.w_repositorymodify_key_entry.set_text("")
+                self.w_repositorymodify_cert_entry.set_text("")
+                
+                self.w_repositorymodify_mirrors_expander.set_expanded(False)
+                self.w_mirror_add_entry.set_text("")
+                
         def __on_repositorymodifycancel_clicked(self, widget):
                 self.w_repository_treeview.grab_focus()
                 self.w_repositorymodify_dialog.hide()
-
+                self.webinstall_new = False
+                self.__clear_repositorymodify()
+                
         def __delete_selected_row(self):
                 tsel = self.w_repository_treeview.get_selection()
                 selection = tsel.get_selected()
@@ -779,63 +870,98 @@ class Repository:
                         name = model.get_value(itr, 0)
                         self.__delete_repository(name)
 
-        def __add_repository(self, auth, origin_url, ssl_key=None, 
+        def __add_repository(self, prefix, origin_url, ssl_key=None, 
             ssl_cert=None, silent=True, stop_thread=True):
+                if self.pub_copy == None:
+                        return
+                pub = self.pub_copy
+                repo = pub.selected_repository
 
-                if not misc.valid_auth_url(origin_url):
-                        err = _("Invalid URL:\n%s" % origin_url)
-                        gobject.idle_add(self.__error_occurred, err)
+                try:
+                        new_pub = not self.api_o.has_publisher(pub.prefix)
+
+                        # XXX once image configuration supports storing this
+                        # information at the uri level, ssl info should
+                        # be set here instead of below.
+                        if not repo.origins:
+                                repo.add_origin(origin_url)
+                                origin = repo.origins[0]
+                        else:
+                                origin = repo.origins[0]
+                                origin.uri = origin_url
+
+                        for uri in repo.origins:
+                                if ssl_cert is not None:
+                                        uri.ssl_cert = ssl_cert
+                                if ssl_key is not None:
+                                        uri.ssl_key = ssl_key
+                        for uri in repo.mirrors:
+                                if ssl_cert is not None:
+                                        uri.ssl_cert = ssl_cert
+                                if ssl_key is not None:
+                                        uri.ssl_key = ssl_key
+                                        
+                        if new_pub:
+                                self.api_o.add_publisher(pub)
+                        else:
+                                self.api_o.update_publisher(pub)
+                                
+                        if self.webinstall_new:
+                                self.webinstall_new = False
+                                self.progress_stop_thread = True
+                                self.parent.reload_packages()
+                        else:
+                                self.__prepare_repository_list(silent,
+                                        selected_pub=prefix, stop_thread=stop_thread)
+                        self.pub_copy = None
+                        self.repo_copy = None
+                        
+                except api_errors.PublisherError, ex:
+                        if not silent:
+                                raise
+                        gobject.idle_add(self.__error_occurred, str(ex),
+                            gtk.MESSAGE_ERROR)
                         gobject.idle_add(self.w_repository_name.grab_focus)
                         self.progress_stop_thread = True
-                        return
-                try:
-                        refresh_catalogs = True
-                        self.img.set_authority(auth, origin_url=origin_url,
-                            ssl_key=ssl_key, ssl_cert=ssl_cert,
-                            refresh_allowed=refresh_catalogs)
-                        self.__prepare_repository_list(silent,
-                            auth, stop_thread=stop_thread)
+                except InvalidDepotResponseException, idrex:
+                        if not silent:
+                                raise
+                        err = (_("Failed to add repository: %s\n\n") % prefix)
+                        err += str(idrex)
+                        self.__error_with_reset_repo_selection(err)
                 except RuntimeError, ex:
                         if not silent:
                                 raise
-                        err = (_("Failed to add %s.\n") % auth)
+                        err = (_("Failed to add %s.\n") % prefix)
                         err += str(ex)
                         self.__error_with_reset_repo_selection(err)
                         return
                 except api_errors.PermissionsException:
                         if not silent:
                                 raise
-                        err = (_("Failed to add %s.") % auth) + \
+                        err = (_("Failed to add %s.") % prefix) + \
                             _("\nPlease check your permissions.")
                         self.__error_with_reset_repo_selection(err,
                             gtk.MESSAGE_INFO)
                 except api_errors.CatalogRefreshException:
                         if not silent:
                                 raise
-                        self.__delete_repository(auth)
-                        err = _("Failed to add %s.") % auth + \
+                        self.__delete_repository(pub)
+                        err = _("Failed to add %s.") % prefix + \
                             _(
                             "\nPlease check the network connection or URL.\nIs the "
                             "repository accessible?")
                         self.__error_with_reset_repo_selection(err, gtk.MESSAGE_INFO)
-                except Exception, ex:
-                        if not silent:
-                                raise
-                        err = (_("Failed to add %s.\n") % auth)
-                        err += str(ex)
-                        self.__error_with_reset_repo_selection(err)
 
         def __delete_repository(self, name, silent=True):
                 try:
-                        self.img.delete_authority(name)
+                        self.api_o.remove_publisher(name)
                         self.__prepare_repository_list(clear_add_entries = False, \
                             stop_thread = silent)
-                except RuntimeError, ex:
+                except api_errors.PublisherError, ex:
                         if not silent:
                                 raise
-                        err = (_("Failed to delete %s.\n") % name)
-                        err += str(ex)
-                        self.__error_with_reset_repo_selection(err)
+                        self.__error_with_reset_repo_selection(str(ex))
                         return
                 except api_errors.PermissionsException:
                         if not silent:
@@ -844,13 +970,6 @@ class Repository:
                             _("\nPlease check your permissions.")
                         self.__error_with_reset_repo_selection(err,
                             gtk.MESSAGE_INFO)
-                        return
-                except Exception, ex:
-                        if not silent:
-                                raise
-                        err = (_("Failed to delete %s.\n") % name)
-                        err += str(ex)
-                        self.__error_with_reset_repo_selection(err)
 
         def __setup_mirrors(self, mirrors):
                 self.mirror_list.clear()
@@ -868,111 +987,35 @@ class Repository:
                         self.w_mirror_remove_button.set_sensitive(False)
 
         def __add_mirror(self):
-                name = self.w_repositorymodify_name.get_text()
                 mirror = self.w_mirror_add_entry.get_text()
+                self.w_mirror_add_entry.set_text("")
                 try:
-                        self.img.add_mirror(name, mirror)
-                        self.w_mirror_add_entry.set_text("")
-                        tsel = self.w_repository_treeview.get_selection()
-                        selection = tsel.get_selected()
-                        itr = selection[1]
-                        if itr != None:
-                                model = selection[0]
-                                mirrors = model.get_value(itr,
-                                    enumerations.AUTHORITY_MIRRORS)
-                                gobject.idle_add(self.__setup_mirrors, mirrors)
-                        self.progress_stop_thread = True
-                except RuntimeError, ex:
-                        err = (_("Failed to add mirror %(mirror)s for "
-                            "repository %(repository)s.\n") % \
-                            {'mirror': mirror,
-                             'repository': name})
-                        err += str(ex)
-                        gobject.idle_add(self.__error_occurred, err,
-                            gtk.MESSAGE_ERROR)
-                        self.progress_stop_thread = True
-                        return
-                except api_errors.PermissionsException:
-                        err = (_("Failed to add mirror %(mirror)s for "
-                            "repository %(repository)s.") % \
-                            {'mirror': mirror,
-                             'repository': name}) + \
-                            _("\nPlease check your permissions.")
-                        gobject.idle_add(self.__error_occurred, err,
-                            gtk.MESSAGE_INFO)
-                        self.progress_stop_thread = True
-                        return
-                except Exception, ex:
-                        err = (_("Failed to add mirror %(mirror)s for "
-                            "repository %(repository)s.\n") % \
-                            {'mirror': mirror,
-                             'repository': name})
-                        err += str(ex)
-                        gobject.idle_add(self.__error_occurred, err,
-                            gtk.MESSAGE_ERROR)
-                        self.progress_stop_thread = True
-                        return
+                        self.repo_copy.add_mirror(mirror)
+                except api_errors.PublisherError, ex:
+                        self.__error_with_reset_repo_selection(str(ex))
+                        return                        
+                gobject.idle_add(self.__setup_mirrors, self.repo_copy.mirrors)
 
-        def __delete_mirror(self, name, mirror):
+        def __delete_mirror(self, mirror):
                 try:
-                        self.img.del_mirror(name, mirror)
-                        tsel = self.w_repository_treeview.get_selection()
-                        selection = tsel.get_selected()
-                        itr = selection[1]
-                        if itr != None:
-                                model = selection[0]
-                                mirrors = model.get_value(itr,
-                                    enumerations.AUTHORITY_MIRRORS)
-                                gobject.idle_add(self.__setup_mirrors, mirrors)
-                        self.progress_stop_thread = True
-                except RuntimeError, ex:
-                        err = (_("Failed to delete mirror %(mirror)s for "
-                            "repository %(repository)s.\n") % \
-                            {'mirror': mirror,
-                             'repository': name})
-                        err += str(ex)
-                        gobject.idle_add(self.__error_occurred, err,
-                            gtk.MESSAGE_ERROR)
-                        self.progress_stop_thread = True
-                        return
-                except api_errors.PermissionsException:
-                        err = (_("Failed to delete mirror %(mirror)s for "
-                            "repository %(repository)s.") % \
-                            {'mirror': mirror,
-                             'repository': name}) + \
-                            _("\nPlease check your permissions.")
-                        gobject.idle_add(self.__error_occurred, err,
-                            gtk.MESSAGE_INFO)
-                        self.progress_stop_thread = True
-                        return
-                except Exception, ex:
-                        err = (_("Failed to delete mirror %(mirror)s for "
-                            "repository %(repository)s.\n") % \
-                            {'mirror': mirror,
-                             'repository': name})
-                        err += str(ex)
-                        gobject.idle_add(self.__error_occurred, err,
-                            gtk.MESSAGE_ERROR)
-                        self.progress_stop_thread = True
-                        return
+                        self.repo_copy.remove_mirror(mirror)
+                except api_errors.PublisherError, ex:
+                        self.__error_with_reset_repo_selection(str(ex))
+                        return                        
+                gobject.idle_add(self.__setup_mirrors, self.repo_copy.mirrors)
 
         def __delete_selected_mirror(self):
                 tsel = self.w_mirror_treeview.get_selection()
                 selection = tsel.get_selected()
                 itr = selection[1]
-                if itr != None:
-                        model = selection[0]
-                        mirror = model.get_value(itr, 0)
-                        name = self.w_repositorymodify_name.get_text()
-                        self.__delete_mirror(name, mirror)
-                else:
-                        self.progress_stop_thread = True
+                if itr == None:
+                        return
+                model = selection[0]
+                mirror = model.get_value(itr, 0)
+                self.__delete_mirror(mirror)
 
         def __on_mirror_remove_clicked(self, widget):
-                p_title = _("Applying changes")
-                p_text = _("Applying changes, please wait ...")
-                self.__run_with_prog_in_thread(self.__delete_selected_mirror, p_title,
-                    p_text)
+                self.__delete_selected_mirror()
 
         def __on_mirrorentry_changed(self, widget):
                 url = widget.get_text()
@@ -982,10 +1025,7 @@ class Repository:
                         self.w_mirror_add_button.set_sensitive(False)
 
         def __on_mirroradd_button_clicked(self, widget):
-                p_title = _("Applying changes")
-                p_text = _("Applying changes, please wait ...")
-                self.__run_with_prog_in_thread(self.__add_mirror, p_title,
-                    p_text)
+                self.__add_mirror()
 
         def __on_mod_key_or_cert_entry_changed(self, widget):
                 key = self.w_repositorymodify_key_entry.get_text()
@@ -1115,15 +1155,19 @@ class Repository:
                         sel = model.get_value(ite, 0)
                 self.progress_stop_thread = True
 
-        def __error_occurred(self, error_msg, msg_type=gtk.MESSAGE_ERROR):
+        def __error_occurred(self, error_msg, msg_type=gtk.MESSAGE_ERROR, title = None):
                 msgbox = gtk.MessageDialog(parent =
-                    self.w_repository_dialog,
+                    self.error_dialog_parent,
                     buttons = gtk.BUTTONS_CLOSE,
                     flags = gtk.DIALOG_MODAL,
                     type = msg_type,
                     message_format = None)
                 msgbox.set_markup(error_msg)
-                msgbox.set_title("Edit Repositories error")
+                if title != None:
+                        msgbox.set_title(title)
+                else:   # More Generic for WebInstall
+                        msgbox.set_title(_("Repository error"))
+                        
                 msgbox.run()
                 msgbox.destroy()
 
