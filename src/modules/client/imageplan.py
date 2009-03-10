@@ -33,6 +33,7 @@ import pkg.client.pkgplan as pkgplan
 import pkg.client.indexer as indexer
 import pkg.search_errors as se
 import pkg.client.actuator as actuator
+import pkg.fmri as fmri
 
 from pkg.client.filter import compile_filter
 from pkg.misc import msg
@@ -324,10 +325,11 @@ class ImagePlan(object):
 
                         # This will be the newest version of the specified
                         # dependency package, coming from the preferred
-                        # publisher, if it's available there.
-                        cf = self.image.inventory([ cf ],
-                            all_known = True, preferred = True,
-                            first_only = True).next()[0]
+                        # publisher, if it's available there.  Package names
+                        # specified in dependencies are treated as exact.
+                        cf = self.image.inventory([ cf ], all_known=True,
+                            matcher=fmri.exact_name_match, preferred=True,
+                            first_only=True).next()[0]
 
                         # XXX LOG "adding dependency %s" % pfmri
 

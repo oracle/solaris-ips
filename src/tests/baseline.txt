@@ -303,8 +303,11 @@ cli.t_pkg_install.py TestPkgInstallActions.test_uninstall_without_perms|pass
 cli.t_pkg_install.py TestPkgInstallActions.test_upgrade_with_user|pass
 cli.t_pkg_install.py TestPkgInstallActions.test_usertest|pass
 cli.t_pkg_install.py TestPkgInstallActions.test_valid_open|pass
-cli.t_pkg_install.py TestPkgInstallAmbiguousPackageNames.test_bug_4204|pass
-cli.t_pkg_install.py TestPkgInstallAmbiguousPackageNames.test_bug_6874|pass
+cli.t_pkg_install.py TestPkgInstallAmbiguousPatterns.test_bug_4204|pass
+cli.t_pkg_install.py TestPkgInstallAmbiguousPatterns.test_bug_6874|pass
+cli.t_pkg_install.py TestPkgInstallAmbiguousPatterns.test_ambiguous_pattern_install|pass
+cli.t_pkg_install.py TestPkgInstallAmbiguousPatterns.test_ambiguous_pattern_depend|pass
+cli.t_pkg_install.py TestPkgInstallAmbiguousPatterns.test_non_ambiguous_fragment|pass
 cli.t_pkg_install.py TestPkgInstallBasics.test_basics_1|pass
 cli.t_pkg_install.py TestPkgInstallBasics.test_basics_2|pass
 cli.t_pkg_install.py TestPkgInstallBasics.test_basics_3|pass

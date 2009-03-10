@@ -2422,9 +2422,20 @@ class Image(object):
                                 error = 1
                                 constraint_violations.extend(str(e).split("\n"))
                                 continue
+
+                        # If we were passed in an fmri object or a string that
+                        # anchors the package stem with the scheme, match on the
+                        # stem exactly as given.  Otherwise we can let the
+                        # default, looser matching mechanism be used.
+                        # inventory() will override if globbing characters are
+                        # used.
+                        matcher = None
+                        if isinstance(p, pkg.fmri.PkgFmri) or p.startswith("pkg:/"):
+                                matcher = pkg.fmri.exact_name_match
+
                         try:
                                 matches = list(self.inventory([conp],
-                                    all_known = True))
+                                    all_known=True, matcher=matcher))
                         except api_errors.InventoryException, e:
                                 assert(not (e.notfound and e.illegal))
                                 assert(e.notfound or e.illegal)

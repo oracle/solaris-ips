@@ -421,7 +421,12 @@ class TestPkgInstallBasics(testutils.SingleDepotTestCase):
                 self.pkg("install foo@1.1", exit=1)
                 self.dc.start()
 
-class TestPkgInstallAmbiguousPackageNames(testutils.SingleDepotTestCase):
+class TestPkgInstallAmbiguousPatterns(testutils.SingleDepotTestCase):
+
+        # An "ambiguous" package name pattern is one which, because of the
+        # pattern matching rules, might refer to more than one package.  This
+        # may be as obvious as the pattern "SUNW*", but also like the pattern
+        # "foo", where "foo" and "a/foo" both exist in the catalog.
 
         afoo10 = """
             open a/foo@1.0,5.11-0
@@ -433,6 +438,28 @@ class TestPkgInstallAmbiguousPackageNames(testutils.SingleDepotTestCase):
 
         bar10 = """
             open bar@1.0,5.11-0
+            close """
+
+        foo10 = """
+            open foo@1.0,5.11-0
+            close """
+
+        foo11 = """
+            open foo@1.1,5.11-0
+            close """
+
+        anotherfoo11 = """
+            open another/foo@1.1,5.11-0
+            close """
+
+        depender10 = """
+            open depender@1.0,5.11-0
+            add depend type=require fmri=foo@1.0
+            close """
+
+        depender11 = """
+            open depender@1.1,5.11-0
+            add depend type=require fmri=foo@1.1
             close """
 
         def test_bug_4204(self):
@@ -471,6 +498,61 @@ class TestPkgInstallAmbiguousPackageNames(testutils.SingleDepotTestCase):
 
                 self.pkg("install foo", exit=1)
 
+        def test_ambiguous_pattern_install(self):
+                """An image-update should never get confused about an existing
+                package being part of an ambiguous set of package names."""
+
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.foo10)
+
+                self.image_create(durl)
+                self.pkg("install foo")
+
+                self.pkgsend_bulk(durl, self.anotherfoo11)
+                self.pkg("image-update -v")
+
+        def test_ambiguous_pattern_depend(self):
+                """A dependency on a package should pull in an exact name
+                match."""
+
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.depender10)
+                self.pkgsend_bulk(durl, self.foo10)
+
+                self.image_create(durl)
+                self.pkg("install depender")
+
+                self.pkgsend_bulk(durl, self.foo11)
+                self.pkgsend_bulk(durl, self.anotherfoo11)
+                self.pkgsend_bulk(durl, self.depender11)
+
+                self.pkg("install depender")
+
+                # Make sure that we didn't get other/foo from the dependency.
+                # Note that because inventory() sorts by package name and
+                # evaluate_fmri() only looks at the first value, this package
+                # name must sort before "foo" in order to cause a faillure here.
+                self.pkg("list another/foo", exit=1)
+
+        def test_non_ambiguous_fragment(self):
+                """We should be able to refer to a package by its "basename", if
+                that component is unique."""
+
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.anotherfoo11)
+                self.image_create(durl)
+
+                # Right now, this is not exact, but still unambiguous
+                self.pkg("install foo")
+
+                # Create ambiguity
+                self.pkgsend_bulk(durl, self.foo11)
+
+                # This is unambiguous, should succeed
+                self.pkg("install pkg:/foo")
+
+                # This is now ambiguous, should fail
+                self.pkg("install foo", exit=1)
 
 class TestPkgInstallCircularDependencies(testutils.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
