@@ -1130,10 +1130,14 @@ class PackageManager:
                         iter_next = sort_filt_model.iter_next(iter_next)
                 for path in list_of_paths:
                         itr = model.get_iter(path)
-                        model.set_value(itr, enumerations.MARK_COLUMN, True)
-                        pkg_stem = model.get_value(itr, enumerations.STEM_COLUMN)
-                        pkg_status = model.get_value(itr, enumerations.STATUS_COLUMN)
-                        self.__add_pkg_stem_to_list(pkg_stem, pkg_status)
+                        already_marked = model.get_value(itr, enumerations.MARK_COLUMN)
+                        if not already_marked:
+                                model.set_value(itr, enumerations.MARK_COLUMN, True)
+                                pkg_stem = model.get_value(itr,
+                                    enumerations.STEM_COLUMN)
+                                pkg_status = model.get_value(itr,
+                                    enumerations.STATUS_COLUMN)
+                                self.__add_pkg_stem_to_list(pkg_stem, pkg_status)
                 self.__enable_disable_selection_menus()
                 self.update_statusbar()
                 self.__enable_disable_install_remove()
@@ -1188,9 +1192,12 @@ class PackageManager:
                         iter_next = sort_filt_model.iter_next(iter_next)
                 for path in list_of_paths:
                         itr = model.get_iter(path)
-                        model.set_value(itr, enumerations.MARK_COLUMN, False)
-                        self.__remove_pkg_stem_from_list(model.get_value(itr, 
-                            enumerations.STEM_COLUMN))
+                        already_deselected = not model.get_value(itr,
+                            enumerations.MARK_COLUMN)
+                        if not already_deselected:
+                                model.set_value(itr, enumerations.MARK_COLUMN, False)
+                                self.__remove_pkg_stem_from_list(model.get_value(itr,
+                                    enumerations.STEM_COLUMN))
                 self.__enable_disable_selection_menus()
                 self.update_statusbar()
                 self.__enable_disable_install_remove()
