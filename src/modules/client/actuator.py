@@ -268,7 +268,7 @@ class Actuator(GenericActuator):
                 return self.__smf_svc_get_state(fmri) < SMF_SVC_TMP_ENABLED
 
         def __get_smf_props(self, svcfmri):
-                args = (svcprop_path, "-cq", svcfmri)
+                args = (svcprop_path, "-c", svcfmri)
 
                 try:
                         buf = self.__call(args)
@@ -287,8 +287,8 @@ class Actuator(GenericActuator):
                             os.path.join(self.cmd_path,
                             args[0].lstrip("/")),) + args[1:]
                 try:
-                        proc = subprocess.Popen(args, stdout = subprocess.PIPE,
-                            stderr = subprocess.STDOUT)
+                        proc = subprocess.Popen(args, stdout=subprocess.PIPE,
+                            stderr=subprocess.STDOUT)
                         buf = proc.stdout.readlines()
                         ret = proc.wait()
                 except OSError, e:
