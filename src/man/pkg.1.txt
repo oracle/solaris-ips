@@ -70,11 +70,14 @@ DESCRIPTION
      in the parent directories, the invocation will fail.
 
 OPTIONS
-     The following option is supported:
+     The following options are supported:
 
      -R dir
           Operate on the image rooted at dir, rather than the one discovered
           automatically.
+
+     --help or -?
+          Displays a usage message.
 
 SUBCOMMANDS
      The following subcommands are supported:
@@ -331,9 +334,6 @@ SUBCOMMANDS
           Display a unique string identifying the version of pkg(1).  This
           string is not guaranteed to be comparable in any fashion between
           versions.
-
-     help
-          Display a usage message.
 
 EXAMPLES
      Example 1:  Create a new, full image, with publisher example.com,

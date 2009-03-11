@@ -125,7 +125,6 @@ Basic subcommands:
         pkg image-update [-fnvq] [--be-name name] [--no-refresh] [--no-index]
         pkg refresh [--full] [publisher ...]
         pkg version
-        pkg help
 
 Advanced subcommands:
         pkg info [-lr] [--license] [pkg_fmri_pattern ...]
@@ -154,7 +153,7 @@ Advanced subcommands:
 
 Options:
         -R dir
-        -D/--debug name=value
+        --help or -?
 
 Environment:
         PKG_IMAGE"""))
@@ -2237,10 +2236,12 @@ def main_func():
         gettext.install("pkg", "/usr/share/locale")
 
         try:
-                opts, pargs = getopt.getopt(sys.argv[1:], "R:D:", ["debug="])
+                opts, pargs = getopt.getopt(sys.argv[1:], "R:D:?",
+                    ["debug=", "help"])
         except getopt.GetoptError, e:
                 usage(_("illegal global option -- %s") % e.opt)
 
+        show_usage = False
         for opt, arg in opts:
                 if opt == "-D" or opt == "--debug":
                         try:
@@ -2252,12 +2253,23 @@ def main_func():
                         DebugValues.set_value(key, value)
                 elif opt == "-R":
                         mydir = arg
+                elif opt in ("--help", "-?"):
+                        show_usage = True
 
-        if pargs == None or len(pargs) == 0:
-                usage()
+        subcommand = None
+        if pargs:
+                subcommand = pargs[0]
+                pargs.pop(0)
+                if subcommand == "help":
+                        show_usage = True
 
-        subcommand = pargs[0]
-        del pargs[0]
+        if not subcommand or show_usage:
+                try:
+                        usage()
+                except SystemExit:
+                        if show_usage:
+                                return 0
+                        return 2
 
         socket.setdefaulttimeout(
             int(os.environ.get("PKG_CLIENT_TIMEOUT", "30"))) # in seconds
@@ -2286,11 +2298,6 @@ def main_func():
                             "('%s')") % " ".join(pargs))
                 msg(pkg.VERSION)
                 return 0
-        elif subcommand == "help":
-                try:
-                        usage()
-                except SystemExit:
-                        return 0
 
         provided_image_dir = True
         pkg_image_used = False
