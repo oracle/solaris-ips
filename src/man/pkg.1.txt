@@ -108,11 +108,11 @@ SUBCOMMANDS
 
      image-update [-fnvq] [--be-name name] [--no-refresh] [--no-index]
           Update all installed packages in the current image to the
-          latest available version.  
+          latest available version.
 
-          With the -f option, skip safety checks.  
+          With the -f option, skip safety checks.
 
-          With the -n option, execute the requested operation but make no 
+          With the -n option, execute the requested operation but make no
           persistent changes to the image.
 
           With the -v option, issue verbose progress messages during the
@@ -269,7 +269,7 @@ SUBCOMMANDS
 
      property [-H] [propname ...]
           Display image property information.  With no argument, display the
-          names and values for all image properties.  If a specific list of 
+          names and values for all image properties.  If a specific list of
           property names is requested, display the names and values for those
           properties.  With -H, omit the headers from the listing.
 
@@ -388,6 +388,9 @@ EXIT STATUS
      1     Something bad happened.
 
      2     Invalid command line options were specified.
+
+     3     Multiple operations were requested, but only some of them
+           succeeded.
 
 FILES
      var/pkg                    Metadata location for full and partial

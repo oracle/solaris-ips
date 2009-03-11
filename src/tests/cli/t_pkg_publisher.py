@@ -67,7 +67,42 @@ class TestPkgPublisherBasics(testutils.SingleDepotTestCase):
                 self.pkg("publisher | grep test2")
                 self.pkg("unset-publisher test1")
                 self.pkg("publisher | grep test1", exit=1)
+
+                # Now verify that partial success (3) or complete failure (1)
+                # is properly returned if an attempt to remove one or more
+                # publishers only results in some of them being removed:
+
+                # ...when one of two provided is unknown.
+                self.pkg("set-publisher --no-refresh -O http://%s2 test3" %
+                    self.bogus_url)
+                self.pkg("unset-publisher test3 test4", exit=3)
+
+                # ...when one of two provided is preferred (test2).
+                self.pkg("set-publisher --no-refresh -O http://%s2 test3" %
+                    self.bogus_url)
+                self.pkg("unset-publisher test2 test3", exit=3)
+
+                # ...when all provided are unknown.
+                self.pkg("unset-publisher test3 test4", exit=1)
+                self.pkg("unset-publisher test3", exit=1)
+
+                # ...when all provided are preferred.
                 self.pkg("unset-publisher test2", exit=1)
+
+                # Now verify that success occurs when attempting to remove
+                # one or more publishers:
+
+                # ...when one is provided and not preferred.
+                self.pkg("set-publisher --no-refresh -O http://%s2 test3" %
+                    self.bogus_url)
+                self.pkg("unset-publisher test3")
+
+                # ...when two are provided and not preferred.
+                self.pkg("set-publisher --no-refresh -O http://%s2 test3" %
+                    self.bogus_url)
+                self.pkg("set-publisher --no-refresh -O http://%s2 test4" %
+                    self.bogus_url)
+                self.pkg("unset-publisher test3 test4")
 
         def test_publisher_uuid(self):
                 """verify uuid is set manually and automatically for a

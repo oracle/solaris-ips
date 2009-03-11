@@ -1702,16 +1702,35 @@ def publisher_unset(img_dir, args):
                 error(_("'%s' is not an install image") % e.user_dir)
                 return 1
 
+        errors = []
         for name in args:
                 try:
                         api_inst.remove_publisher(prefix=name, alias=name)
                 except (api_errors.PermissionsException,
                     api_errors.PublisherError), e:
-                        # Prepend a newline because otherwise the exception
-                        # will be printed on the same line as the spinner.
-                        error("\n" + str(e))
-                        return 1
-        return 0
+                        errors.append((name, e))
+
+        retcode = 0
+        if errors:
+                if len(errors) == len(args):
+                        # If the operation failed for every provided publisher
+                        # prefix or alias, complete failure occurred.
+                        retcode = 1
+                else:
+                        # If the operation failed for only some of the provided
+                        # publisher prefixes or aliases, then partial failure
+                        # occurred.
+                        retcode = 3
+
+                msg = ""
+                for name, err in errors:
+                        msg += "\n"
+                        msg += _("Removal failed for '%(pub)s': %(msg)s") % {
+                            "pub": name, "msg": err }
+                        msg += "\n"
+                cmd_error("unset-publisher", msg)
+
+        return retcode
 
 def publisher_list(img_dir, args):
         """pkg publishers"""
