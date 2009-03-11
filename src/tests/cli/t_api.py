@@ -54,7 +54,7 @@ class TestPkgApi(testutils.SingleDepotTestCase):
 
         foo12 = """
             open foo@1.2,5.11-0
-            add file /tmp/libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.so.1
+            add file $test_prefix/libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.so.1
             close """
         
         bar10 = """
@@ -96,22 +96,27 @@ class TestPkgApi(testutils.SingleDepotTestCase):
 }"""
 
 
-        misc_files = [ "/tmp/libc.so.1", "/tmp/cat", "/tmp/baz" ]
+        misc_files = [ "libc.so.1" ]
 
         def setUp(self):
                 testutils.SingleDepotTestCase.setUp(self)
+
+                self.foo12 = self.foo12.replace("$test_prefix",
+                    self.get_test_prefix())
+
                 for p in self.misc_files:
-                        f = open(p, "w")
+                        fpath = os.path.join(self.get_test_prefix(), p)
+                        f = open(fpath, "wb")
                         # write the name of the file into the file, so that
                         # all files have differing contents
-                        f.write(p)
-                        f.close
-                        self.debug("wrote %s" % p)
+                        f.write(fpath)
+                        f.close()
+                        self.debug("wrote %s" % fpath)
 
         def tearDown(self):
                 testutils.SingleDepotTestCase.tearDown(self)
                 for p in self.misc_files:
-                        os.remove(p)
+                        os.remove(os.path.join(self.get_test_prefix(), p))
 
         def __try_bad_installs(self, api_obj):
 
@@ -420,16 +425,20 @@ class TestPkgApi(testutils.SingleDepotTestCase):
                 fobj.close()
                 fobj = None
 
+                # Verify that appropriate exceptions are raised for p5i
+                # information that can't be retrieved (doesn't exist).
+                nefpath = os.path.join(self.get_test_prefix(), "non-existent")
+                self.assertRaises(api_errors.RetrievalError,
+                    api_obj.parse_p5i, location="file://%s" % nefpath)
+
+                self.assertRaises(api_errors.RetrievalError,
+                    api_obj.parse_p5i, location=nefpath)
+
                 # Verify that appropriate exceptions are raised for invalid
                 # p5i information.
-                self.assertRaises(api_errors.RetrievalError,
-                    api_obj.parse_p5i, location="file://foo")
+                lcpath = os.path.join(self.get_test_prefix(), "libc.so.1")
+                self.assertRaises(api_errors.InvalidP5IFile, api_obj.parse_p5i,
+                    location="file://%s" % lcpath)
 
-                self.assertRaises(api_errors.RetrievalError,
-                    api_obj.parse_p5i, location="/tmp/foo")
-
-                self.assertRaises(api_errors.InvalidP5IFile,
-                    api_obj.parse_p5i, location="/tmp/libc.so.1")
-
-                self.assertRaises(api_errors.InvalidP5IFile,
-                    api_obj.parse_p5i, location="file:///tmp/libc.so.1")
+                self.assertRaises(api_errors.InvalidP5IFile, api_obj.parse_p5i,
+                    location=lcpath)
