@@ -166,10 +166,11 @@ class UserAction(generic.Action):
                 if "group-list" in self.attrs:
                         self.attrs["group-list"] = sorted(self.attrs["group-list"])
 
-                return [ "%s: '%s' should be '%s'" % (a, cur_attrs.get(a, "<missing>"), self.attrs.get(a, "<missing>"))
-                         for a in self.attrs
-                         if self.attrs[a] != cur_attrs.get(a, None)
-                         ]
+                return [ "%s: '%s' should be '%s'" % 
+                      (a, cur_attrs[a], self.attrs[a])
+                      for a in self.attrs
+                      if a in cur_attrs and self.attrs[a] != cur_attrs[a]
+                      ]
                                 
         def remove(self, pkgplan):
                 """client-side method that removes this user"""

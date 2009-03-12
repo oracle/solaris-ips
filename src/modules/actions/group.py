@@ -88,12 +88,14 @@ class GroupAction(generic.Action):
                 gr = GroupFile(img.get_root())
 
                 cur_attrs = gr.getvalue(self.attrs)
-                
-                return [ "%s: '%s' should be '%s'" % (a, cur_attrs[a], self.attrs[a])
-                         for a in self.attrs
-                         if self.attrs[a] != cur_attrs[a]
-                         ]
-                                
+
+                return [ "%s: '%s' should be '%s'" % 
+                       (a, cur_attrs[a], self.attrs[a])
+                      for a in self.attrs
+                      if a in cur_attrs and self.attrs[a] != cur_attrs[a]
+                      ]
+
+
         def remove(self, pkgplan):
                 """client-side method that removes this group"""
                 if not have_cfgfiles:
