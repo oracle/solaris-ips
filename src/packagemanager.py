@@ -175,6 +175,7 @@ class PackageManager:
                 self.application_path = None
                 self.default_publisher = None
                 self.first_run = True
+                self.in_search = False
                 self.selected_pkgstem = None
                 self.selected_model = None
                 self.selected_path = None
@@ -287,6 +288,7 @@ class PackageManager:
                 self.w_clear_search_button.set_sensitive(False)
                 clear_search_image = w_tree_main.get_widget("clear_image")
                 clear_search_image.set_from_stock(gtk.STOCK_CLEAR, gtk.ICON_SIZE_MENU)
+                self.saved_filter_combobox_active = enumerations.FILTER_ALL
                 toolbar =  w_tree_main.get_widget("toolbutton2")
                 toolbar.set_expand(True)
                 self.__init_repository_tree_view()
@@ -785,6 +787,8 @@ class PackageManager:
                             self.__on_category_selection_changed, None)
                         self.w_categories_treeview.connect("row-activated",
                             self.__on_category_row_activated, None)
+                        self.w_categories_treeview.connect("focus-in-event",
+                            self.__on_category_focus_in, None)
                         self.package_selection.set_mode(gtk.SELECTION_SINGLE)
                         self.package_selection.connect("changed",
                             self.__on_package_selection_changed, None)
@@ -982,19 +986,23 @@ class PackageManager:
                 section_list.append([9, _('Web Services'), cat_path, enabled ])
 
         def __init_show_filter(self):
-                self.filter_list.append([0, _('All Packages'), ])
-                self.filter_list.append([1, _('Installed Packages'), ])
-                self.filter_list.append([2, _('Updates'), ])
-                self.filter_list.append([3, _('Non-installed Packages'), ])
+                self.filter_list.append([enumerations.FILTER_ALL, _('All Packages'), ])
+                self.filter_list.append([enumerations.FILTER_INSTALLED,
+                    _('Installed Packages'), ])
+                self.filter_list.append([enumerations.FILTER_UPDATES,
+                    _('Updates'), ])
+                self.filter_list.append([enumerations.FILTER_NOT_INSTALLED, 
+                    _('Non-installed Packages'), ])
                 self.filter_list.append([-1, "", ])
-                self.filter_list.append([5, _('Selected Packages'), ])
-                if self.initial_show_filter >= 0 and \
+                self.filter_list.append([enumerations.FILTER_SELECTED,
+                    _('Selected Packages'), ])
+                if self.initial_show_filter >= enumerations.FILTER_ALL and \
                     self.initial_show_filter < len(self.filter_list):
                         row = self.filter_list[self.initial_show_filter]
                         if row[enumerations.SECTION_ID] != self.initial_show_filter:
-                                self.initial_show_filter = 0
+                                self.initial_show_filter = enumerations.FILTER_ALL
                 else:
-                        self.initial_show_filter = 0
+                        self.initial_show_filter = enumerations.FILTER_ALL
 
 
         def __on_cancel_progressdialog_clicked(self, widget):
@@ -1033,8 +1041,13 @@ class PackageManager:
                         self.__do_search()
                 
         def __do_search(self):
+                active = self.w_filter_combobox.get_active()
+                if active != enumerations.FILTER_SELECTED:
+                        self.saved_filter_combobox_active = active
+                self.in_search = True
                 self.__set_main_view_package_list()
                 self.set_busy_cursor()
+                self.w_filter_combobox.set_active(enumerations.FILTER_ALL)
                 if self.application_refilter_id != 0:
                         gobject.source_remove(self.application_refilter_id)
                         self.application_refilter_id = 0
@@ -1045,6 +1058,7 @@ class PackageManager:
                         self.application_refilter_id = \
                             gobject.timeout_add(TYPE_AHEAD_DELAY, 
                             self.__application_refilter)
+                self.in_search = False
 
         def __application_refilter(self):
                 ''' Disconnecting the model from the treeview improves
@@ -1250,8 +1264,13 @@ class PackageManager:
                         self.w_copy_menuitem.set_sensitive(False)
                         self.w_clear_menuitem.set_sensitive(False)
 
+        def __on_category_focus_in(self, widget, event, user):
+                self.__on_category_row_activated(None, None, None, user)
+
         def __on_category_row_activated(self, view, path, col, user):
                 '''This function is for handling category double click activations'''
+                self.w_filter_combobox.set_active(self.saved_filter_combobox_active)
+                self.w_searchentry_dialog.delete_text(0, -1)
                 if self.w_main_view_notebook.get_current_page() != NOTEBOOK_START_PAGE:
                         return
                 self.__set_main_view_package_list()
@@ -1270,6 +1289,8 @@ class PackageManager:
                 '''This function is for handling category selection changes'''
                 if self.in_setup:
                         return
+                self.w_filter_combobox.set_active(self.saved_filter_combobox_active)
+                self.w_searchentry_dialog.delete_text(0, -1)
                 self.__set_main_view_package_list()
                 model, itr = selection.get_selected()
                 if itr:
@@ -1308,8 +1329,12 @@ class PackageManager:
 
         def __on_filtercombobox_changed(self, widget):
                 '''On filter combobox changed'''
-                if self.in_setup:
+                if self.in_setup or self.in_search:
                         return
+                active = self.w_filter_combobox.get_active()
+                if active != enumerations.FILTER_SELECTED:
+                        self.saved_filter_combobox_active = active
+                self.w_searchentry_dialog.delete_text(0, -1)
                 self.__set_main_view_package_list()
                 self.set_busy_cursor()
                 gobject.idle_add(self.__application_refilter)
@@ -1404,6 +1429,7 @@ class PackageManager:
                         return
                 self.cancelled = True
                 self.in_setup = True
+                self.w_searchentry_dialog.delete_text(0, -1)
                 self.set_busy_cursor()
                 self.__set_empty_details_panel()
                 pub = [active_publisher, ]
@@ -2023,8 +2049,20 @@ class PackageManager:
                 application view'''
                 if self.in_setup or self.cancelled:
                         return False
+                search_text = self.w_searchentry_dialog.get_text()
+                if not search_text == "":
+                        if not model.get_value(itr, enumerations.NAME_COLUMN) == None:
+                                if search_text.lower() in model.get_value(itr,
+                                    enumerations.NAME_COLUMN).lower():
+                                        return True
+                        if not model.get_value(itr, enumerations.DESCRIPTION_COLUMN) == \
+                            None:
+                                if search_text.lower() in model.get_value(itr,
+                                    enumerations.DESCRIPTION_COLUMN).lower():
+                                        return True
+                        return False
                 filter_id = self.w_filter_combobox.get_active()
-                if filter_id == 5:
+                if filter_id == enumerations.FILTER_SELECTED:
                         return model.get_value(itr, enumerations.MARK_COLUMN)
                 # XXX Show filter, chenge text to integers 
                 selected_category = 0
@@ -2045,42 +2083,31 @@ class PackageManager:
                 elif category_list:
                         #The selected category is "All" so we need to check
                         #If the package belongs to one of the visible categories
-                        for visible_category in self.w_categories_treeview.get_model():
+                        for visible_category in category_model:
                                 visible_id = visible_category[enumerations.CATEGORY_ID]
                                 if visible_id in category_list:
                                         category = True
                                         break
                 if (model.get_value(itr, enumerations.IS_VISIBLE_COLUMN) == False):
                         return False
-                if self.w_searchentry_dialog.get_text() == "":
-                        return (category &
+                if search_text == "":
+                        return (category & 
                             self.__is_package_filtered(model, itr, filter_id))
-                if not model.get_value(itr, enumerations.NAME_COLUMN) == None:
-                        if self.w_searchentry_dialog.get_text().lower() in \
-                            model.get_value(itr, enumerations.NAME_COLUMN).lower():
-                                return (category &
-                                    self.__is_package_filtered(model, itr, filter_id))
-                if not model.get_value(itr, enumerations.DESCRIPTION_COLUMN) == None:
-                        if self.w_searchentry_dialog.get_text().lower() in \
-                            model.get_value \
-                            (itr, enumerations.DESCRIPTION_COLUMN).lower():
-                                return (category &
-                                    self.__is_package_filtered(model, itr, 
-                                    filter_id))
                 else:
                         return False
+
         @staticmethod
         def __is_package_filtered(model, itr, filter_id):
                 '''Function for filtercombobox'''
-                if filter_id == 0:
+                if filter_id == enumerations.FILTER_ALL:
                         return True
                 status = model.get_value(itr, enumerations.STATUS_COLUMN)
-                if filter_id == 1:
+                if filter_id == enumerations.FILTER_INSTALLED:
                         return (status == enumerations.INSTALLED or status == \
                             enumerations.UPDATABLE)
-                elif filter_id == 2:
+                elif filter_id == enumerations.FILTER_UPDATES:
                         return status == enumerations.UPDATABLE
-                elif filter_id == 3:
+                elif filter_id == enumerations.FILTER_NOT_INSTALLED:
                         return status == enumerations.NOT_INSTALLED
 
         def __is_pkg_repository_visible(self, model, itr):
@@ -2630,7 +2657,8 @@ class PackageManager:
 
         @staticmethod
         def update_desc(description, pkg):
-                pkg[enumerations.DESCRIPTION_COLUMN] = description
+                if pkg[enumerations.DESCRIPTION_COLUMN] != description:
+                        pkg[enumerations.DESCRIPTION_COLUMN] = description
                 return
 
 #-----------------------------------------------------------------------------#
@@ -2691,7 +2719,6 @@ class PackageManager:
 
         def process_package_list_end(self):
                 self.__set_first_category_text()
-                self.__get_manifests_thread()
                 self.in_startpage_startup = False
                 if self.update_all_proceed:
                 # TODO: Handle situation where only SUNWipkg/SUNWipg-gui have been updated
@@ -2703,10 +2730,13 @@ class PackageManager:
                 self.update_statusbar()
                 self.in_setup = False
                 self.cancelled = False
-                if self.initial_section != 0 or self.initial_show_filter != 0:
+                if self.initial_section != 0 or \
+                    self.initial_show_filter != enumerations.FILTER_ALL:
                         self.__application_refilter()
                 self.unset_busy_cursor()
                 Thread(target = self.__enable_disable_update_all).start()                
+                self.__get_manifests_thread()
+
         def __get_manifests_thread(self):
                 Thread(target = self.get_manifests_for_packages,
                     args = ()).start()
@@ -2720,7 +2750,7 @@ class PackageManager:
                 locally tries to retrieve it. For installed packages gets manifest
                 for the particular version (local operation only), if the package is 
                 not installed than the newest one'''
-                time.sleep(3)
+                time.sleep(2)
                 count = 0
                 self.description_thread_running = True
                 img = self.api_o.img
