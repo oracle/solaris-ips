@@ -243,7 +243,7 @@ class DependencyAction(generic.Action):
                 pfmri = self.attrs["fmri"]
 
                 if ctype not in self.known_types:
-                        return {}
+                        return []
 
                 #
                 # XXX Ideally, we'd turn the string into a PkgFmri, and separate
@@ -260,4 +260,6 @@ class DependencyAction(generic.Action):
                 # Note that this creates a directory hierarchy!
                 pfmri = urllib.quote(pfmri, "@").replace("@", "/")
 
-                return { "depend": pfmri }
+                return [
+                        ("depend", None, pfmri, None)
+                ]

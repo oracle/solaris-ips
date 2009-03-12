@@ -38,9 +38,8 @@ import pkg.fmri as fmri
 import pkg.indexer as indexer
 import pkg.manifest as manifest
 import pkg.pkgsubprocess as subprocess
-import pkg.server.query_engine as query_e
+import pkg.server.query_parser as query_p
 
-from pkg.misc import SERVER_DEFAULT_MEM_USE_KB
 from pkg.misc import EmptyI
 
 class ServerCatalog(catalog.Catalog):
@@ -65,10 +64,6 @@ class ServerCatalog(catalog.Catalog):
                 # prevents more than one indexing process being run at the same
                 # time.
                 self.searchdb_update_handle_lock = threading.Lock()
-
-                if self.index_root:
-                        self.query_engine = \
-                            query_e.ServerQueryEngine(self.index_root)
 
                 if os.name == 'posix':
                         try:
@@ -167,7 +162,7 @@ class ServerCatalog(catalog.Catalog):
                                 # a change in status of the server.
                                 ind = indexer.Indexer(self.index_root,
                                     self.get_server_manifest,
-                                    SERVER_DEFAULT_MEM_USE_KB)
+                                    self.get_manifest_path)
                                 ind.setup()
                                 if not self._search_available:
                                         self.__log("Search Available", "INDEX")
@@ -193,12 +188,12 @@ class ServerCatalog(catalog.Catalog):
                         self.__update_searchdb_unlocked(fmris_to_index)
                 else:
                         ind = indexer.Indexer(self.index_root,
-                            self.get_server_manifest, SERVER_DEFAULT_MEM_USE_KB)
+                            self.get_server_manifest, self.get_manifest_path)
                         ind.setup()
 
         def _check_search(self):
                 ind = indexer.Indexer(self.index_root,
-                    self.get_server_manifest, SERVER_DEFAULT_MEM_USE_KB)
+                    self.get_server_manifest, self.get_manifest_path)
                 if ind.check_index_existence():
                         self._search_available = True
                         self.__log("Search Available", "INDEX")
@@ -276,7 +271,7 @@ class ServerCatalog(catalog.Catalog):
 
                 if fmris:
                         index_inst = indexer.Indexer(self.index_root,
-                            self.get_server_manifest, SERVER_DEFAULT_MEM_USE_KB)
+                            self.get_server_manifest, self.get_manifest_path)
                         index_inst.server_update_index(fmris)
 
         def get_manifest_path(self, f):
@@ -290,15 +285,15 @@ class ServerCatalog(catalog.Catalog):
                 m.set_content(mcontent, EmptyI)
                 return m
 
-        def search(self, token):
-                """Search through the search database for 'token'.  Return a
-                list of token type / fmri pairs."""
+        def search(self, q):
                 assert self.index_root
-                if not self.query_engine:
-                        self.query_engine = \
-                            query_e.ServerQueryEngine(self.index_root)
-                query = query_e.Query(token, case_sensitive=False)
-                return self.query_engine.search(query)
+                l = query_p.QueryLexer()
+                l.build()
+                qp = query_p.QueryParser(l)
+                query = qp.parse(q.encoded_text())
+                query.set_info(q.num_to_return, q.start_point, self.index_root,
+                    self.get_manifest_path, q.case_sensitive)
+                return query.search(self.fmris)                
 
         def search_available(self):
                 return self._search_available or self._check_search()
@@ -318,4 +313,3 @@ class ServerCatalog(catalog.Catalog):
                         ServerCatalog.cache_fmri(cat, f, pub)
 
                 catf.close()
-

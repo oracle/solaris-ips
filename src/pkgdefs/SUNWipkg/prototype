@@ -105,8 +105,8 @@ f none usr/lib/python2.4/vendor-packages/pkg/client/progress.py 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/client/progress.pyc 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/client/publisher.py 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/client/publisher.pyc 444 root bin
-f none usr/lib/python2.4/vendor-packages/pkg/client/query_engine.py 444 root bin
-f none usr/lib/python2.4/vendor-packages/pkg/client/query_engine.pyc 444 root bin
+f none usr/lib/python2.4/vendor-packages/pkg/client/query_parser.py 444 root bin
+f none usr/lib/python2.4/vendor-packages/pkg/client/query_parser.pyc 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/client/retrieve.py 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/client/retrieve.pyc 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/client/variant.py 444 root bin
@@ -151,8 +151,8 @@ f none usr/lib/python2.4/vendor-packages/pkg/publish/__init__.py 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/publish/__init__.pyc 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/publish/transaction.py 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/publish/transaction.pyc 444 root bin
-f none usr/lib/python2.4/vendor-packages/pkg/query_engine.py 444 root bin
-f none usr/lib/python2.4/vendor-packages/pkg/query_engine.pyc 444 root bin
+f none usr/lib/python2.4/vendor-packages/pkg/query_parser.py 444 root bin
+f none usr/lib/python2.4/vendor-packages/pkg/query_parser.pyc 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/search_errors.py 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/search_errors.pyc 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/search_storage.py 444 root bin
@@ -176,8 +176,8 @@ f none usr/lib/python2.4/vendor-packages/pkg/server/face.py 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/server/face.pyc 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/server/feed.py 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/server/feed.pyc 444 root bin
-f none usr/lib/python2.4/vendor-packages/pkg/server/query_engine.py 444 root bin
-f none usr/lib/python2.4/vendor-packages/pkg/server/query_engine.pyc 444 root bin
+f none usr/lib/python2.4/vendor-packages/pkg/server/query_parser.py 444 root bin
+f none usr/lib/python2.4/vendor-packages/pkg/server/query_parser.pyc 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/server/repository.py 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/server/repository.pyc 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/server/repositoryconfig.py 444 root bin

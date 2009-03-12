@@ -38,7 +38,7 @@ import pkg.client.api as api
 import pkg.client.api_errors as api_errors
 import pkg.client.progress as progress
 
-API_VERSION = 11
+API_VERSION = 12
 PKG_CLIENT_NAME = "pkg"
 
 class TestPkgApiInstall(testutils.SingleDepotTestCase):
@@ -213,9 +213,9 @@ class TestPkgApiInstall(testutils.SingleDepotTestCase):
                 self.pkg("verify")
                 self.pkg("list")
 
-                self.pkg("search /lib/libc.so.1")
+                self.pkg("search -l /lib/libc.so.1")
                 self.pkg("search -r /lib/libc.so.1")
-                self.pkg("search blah", exit = 1)
+                self.pkg("search -l blah", exit = 1)
                 self.pkg("search -r blah", exit = 1)
 
                 # check to make sure timestamp was set to correct value

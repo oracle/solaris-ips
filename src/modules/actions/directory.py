@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -35,6 +35,7 @@ import errno
 from stat import *
 import generic
 import pkg.portable as portable
+import pkg.actions
 
 class DirectoryAction(generic.Action):
         """Class representing a directory-type packaging object."""
@@ -45,6 +46,12 @@ class DirectoryAction(generic.Action):
 
         def __init__(self, data=None, **attrs):
                 generic.Action.__init__(self, data, **attrs)
+                if "path" in self.attrs:
+                        self.attrs["path"] = self.attrs["path"].lstrip(
+                            os.path.sep)
+                        if not self.attrs["path"]:
+                                raise pkg.actions.InvalidActionError(
+                                    str(self), _("Empty path attribute"))
 
         def compare(self, other):
                 return cmp(self.attrs["path"], other.attrs["path"])
@@ -158,8 +165,10 @@ class DirectoryAction(generic.Action):
                                 raise
 
         def generate_indices(self):
-                return {
-                    "basename": os.path.basename(
-                        self.attrs["path"].rstrip(os.path.sep)),
-                    "path": os.path.sep + self.attrs["path"]
-                }
+                return [
+                    ("directory", "basename",
+                    os.path.basename(self.attrs["path"].rstrip(os.path.sep)),
+                    None),
+                    ("directory", "path", os.path.sep + self.attrs["path"],
+                    None)
+                ]

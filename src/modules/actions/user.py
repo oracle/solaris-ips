@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -195,6 +195,4 @@ class UserAction(generic.Action):
                         pw.unlockfile()
 
         def generate_indices(self):
-                return {
-                    "username": self.attrs["username"]
-                }
+                return [("user", "name", self.attrs["username"], None)]

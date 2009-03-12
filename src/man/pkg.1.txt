@@ -16,7 +16,7 @@ SYNOPSIS
      /usr/bin/pkg contents [-Hmr] [-o attribute ...] [-s sort_key]
          [-t action_type ... ] [pkg_fmri_pattern ...]
      /usr/bin/pkg list [-aHsuvf] [pkg_fmri_pattern ...]
-     /usr/bin/pkg search [-lrI] [-s server] token
+     /usr/bin/pkg search [-lrI] [-s server] query
 
      /usr/bin/pkg refresh [--full] [publisher ...]
 
@@ -217,25 +217,43 @@ SUBCOMMANDS
                                 the package containing the action, such
                                 as "opensolaris.org"
 
-     search [-lrI] [-s server] token
-          Search for the token "token", and display the FMRIs in which the token
-          was found.  Which tokens are indexed are action-dependent, but may
+     search [-lrI] [-s server] query
+          Search for matches to the query, and display the results.  
+          Which tokens are indexed are action-dependent, but may
           include content hashes and pathnames.
 
-          By default, and with -l, search the image's installed packages.
+          By default, and with -r, search the repositories corresponding 
+          to the image's publishers.
 
-          With -r, search the repositories corresponding to the image's
-          publishers.
+          With -l, search the image's installed packages.
 
           With -s, search the identified server, which is expected to be
           a pkg(5) repository, at the given URI.  This may be specified
           multiple times.
 
-	  With -I, use a case sensitive search. Note: -I cannot currently
-	  be used with -r or -s.
+	  With -I, use a case-sensitive search.
 
           Both -l and -r (or -s) may be specified together, in which case both
           local and remote searches will be performed.
+
+          In addition to simple token matching and wildcard search, a more
+          complicated query language is supported.  Phrases may be searched for
+          by using ' or ".  Note: Please make sure to take your shell into 
+          account so that pkg actually sees the ' or ".  
+
+          Boolean search using AND and OR is supported.  Field, or structured, 
+          queries are supported. The syntax for these is 
+          pkg_name:action_type:key:token.  Missing fields are implictly 
+          wildcarded.  A search for :basename:pkg would match all actions 
+          types in all packages with a key of basename and which matched
+          the token 'pkg'.  Explict wildcards are supported in the pkg_name and
+          token fields, action_type and key must match exactly.  
+
+          To convert actions to the packages which contain those actions, 
+          use '<>'.  With the -a option, Searching for 'token' results in 
+          information about the actions matching token, while searching for
+          '<token>' results in a list of packages containing actions which
+          matched token.
 
      list [-aHsuvf] [pkg_fmri_pattern ...]
           Report on the state of packages in the current image.  With

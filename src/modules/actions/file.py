@@ -38,6 +38,7 @@ import generic
 import pkg.misc as misc
 import pkg.portable as portable
 import pkg.client.api_errors as api_errors
+import pkg.actions
 try:
         import pkg.elf as elf
         haveelf = True
@@ -55,6 +56,12 @@ class FileAction(generic.Action):
                 generic.Action.__init__(self, data, **attrs)
                 self.hash = "NOHASH"
                 self.replace_required = False
+                if "path" in self.attrs:
+                        self.attrs["path"] = self.attrs["path"].lstrip(
+                            os.path.sep)
+                        if not self.attrs["path"]:
+                                raise pkg.actions.InvalidActionError(
+                                    str(self), _("Empty path attribute"))
 
         # this check is only needed on Windows
         if portable.ostype == "windows":
@@ -371,11 +378,12 @@ class FileAction(generic.Action):
                 return False
 
         def generate_indices(self):
-                return {
-                    "content": self.hash,
-                    "basename": os.path.basename(self.attrs["path"]),
-                    "path": os.path.sep + self.attrs["path"]
-                }
+                return [
+                    ("file", "content", self.hash, self.hash),
+                    ("file", "basename", os.path.basename(self.attrs["path"]),
+                    None),
+                    ("file", "path", os.path.sep + self.attrs["path"], None)
+                ]
 
         def save_file(self, image, full_path):
                 """save a file for later (in same process invocation) 

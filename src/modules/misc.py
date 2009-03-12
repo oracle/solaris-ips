@@ -130,13 +130,16 @@ def versioned_urlopen(base_uri, operation, versions = None, tail = None,
         if not headers:
                 headers = {}
 
-        for version in versions:
+        for i, version in enumerate(versions):
                 if base_uri[-1] != '/':
                         base_uri += '/'
 
                 if tail:
+                        tail_str = tail
+                        if isinstance(tail, list):
+                                tail_str = tail[i]
                         uri = urlparse.urljoin(base_uri, "%s/%s/%s" % \
-                            (operation, version, tail))
+                            (operation, version, tail_str))
                 else:
                         uri = urlparse.urljoin(base_uri, "%s/%s" % \
                             (operation, version))
@@ -157,8 +160,7 @@ def versioned_urlopen(base_uri, operation, versions = None, tail = None,
                 try:
                         c = url_opener(req)
                 except urllib2.HTTPError, e:
-                        if e.code != httplib.NOT_FOUND or \
-                            e.msg != "Version not supported":
+                        if e.code != httplib.NOT_FOUND:
                                 raise
                         continue
                 # XXX catch BadStatusLine and convert to INTERNAL_SERVER_ERROR?
@@ -457,7 +459,7 @@ def get_inventory_list(image, pargs, all_known, all_versions):
                 for pfmri, state in res:
                         if state["state"] == "installed":
                                 installed.append((pfmri, state))
-                        hv = pfmri.get_pkg_stem(include_pkg=False)
+                        hv = pfmri.get_pkg_stem(include_scheme=False)
                         if hv in most_recent:
                                 stored_pfmri, stored_state = \
                                     most_recent[hv]
@@ -710,19 +712,6 @@ class InvalidContentException(TransportException):
                 if r != 0:
                         return r
                 return cmp(self.data, other.data)
-
-# Default maximum memory useage during indexing
-# This is a soft cap since memory usage is estimated.
-try:
-        phys_pages = os.sysconf("SC_PHYS_PAGES")
-        page_size = os.sysconf("SC_PAGE_SIZE")
-        SERVER_DEFAULT_MEM_USE_KB = (phys_pages / 1024.0) * page_size / 3
-        CLIENT_DEFAULT_MEM_USE_KB = SERVER_DEFAULT_MEM_USE_KB / 2.0
-except KeyboardInterrupt:
-        raise
-except:
-        CLIENT_DEFAULT_MEM_USE_KB = 100
-        SERVER_DEFAULT_MEM_USE_KB = 500
 
 # ImmutableDict and EmptyI for argument defaults
 EmptyI = tuple()

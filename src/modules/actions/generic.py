@@ -268,35 +268,27 @@ class Action(object):
                 return (l)
 
         def generate_indices(self):
-                """Generate for the reverse index database data for this action.
+                """Generate the information needed to index this action.
 
-                See pkg.client.pkgplan.make_indices for more information about
-                the reverse index database.
-
-                This method returns a dictionary mapping attribute names to
-                their values.  This is not simply the action attribute
-                dictionary, 'attrs', as not necessarily all of these attributes
-                are interesting to look up, and there may be others which are
-                derived from the canonical attributes (like the path's basename).
+                This method, and the overriding methods in subclasses, produce
+                a list of four-tuples.  The tuples are of the form
+                (action_name, key, token, full value).  action_name is the
+                string representation of the kind of action generating the
+                tuple.  'file' and 'depend' are two examples.  It is required to
+                not be None.  Key is the string representation of the name of
+                the attribute being indexed.  Examples include 'basename' and
+                'path'.  Token is the token to be searched against.  Full value
+                is the value to display to the user in the event this token
+                matches their query.  This is useful for things like categories
+                where what matched the query may be a substring of what the
+                desired user output is.
                 """
 
-                indices = {}
-
-                # XXX What about derived indices -- those which aren't one of
-                # the attributes, such as basename?  Just push computing them
-                # into the subclasses?  Or is this simple enough that we have no
-                # need for a generic.generate_indices() that does anything
-                # interesting?
-                if hasattr(self, "reverse_indices"):
-                        indices.update(
-                            (idx, self.attrs[idx])
-                            for idx in self.reverse_indices
-                        )
-
                 if hasattr(self, "hash"):
-                        indices["content"] = self.hash
-
-                return indices
+                        return [
+                            (self.name, "content", self.hash, self.hash),
+                        ]
+                return []
 
         def distinguished_name(self):
                 """ Return the distinguishing name for this action,
@@ -459,3 +451,12 @@ class Action(object):
         def postremove(self, pkgplan):
                 """Client-side method that performs post-remove actions."""
                 pass
+
+        def include_this(self, excludes):
+                """Callables in excludes list returns True
+                if action is to be included, False if
+                not"""
+                for c in excludes:
+                        if not c(self):
+                                return False
+                return True

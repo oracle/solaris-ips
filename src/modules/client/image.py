@@ -28,15 +28,12 @@
 import cPickle
 import copy
 import errno
-import httplib
 import os
 import platform
 import shutil
-import socket
 import tempfile
 import time
 import urllib
-import urllib2
 
 import pkg.Uuid25
 import pkg.catalog             as catalog
@@ -46,25 +43,21 @@ import pkg.client.history      as history
 import pkg.client.imageconfig  as imageconfig
 import pkg.client.imageplan    as imageplan
 import pkg.client.imagestate   as imagestate
-import pkg.client.indexer      as indexer
 import pkg.client.pkgplan      as pkgplan
 import pkg.client.progress     as progress
-import pkg.client.query_engine as query_e
-import pkg.client.retrieve     as retrieve
 import pkg.client.publisher    as publisher
+import pkg.client.retrieve     as retrieve
 import pkg.client.variant      as variant
 import pkg.fmri
 import pkg.manifest            as manifest
 import pkg.misc                as misc
 import pkg.portable            as portable
-import pkg.search_errors       as search_errors
 import pkg.version
 
 from pkg.actions import MalformedActionError
 from pkg.client import global_settings
 from pkg.client.api_errors import InvalidDepotResponseException
 from pkg.client.imagetypes import IMG_USER, IMG_ENTIRE
-from pkg.misc import CLIENT_DEFAULT_MEM_USE_KB
 from pkg.misc import CfgCacheError
 from pkg.misc import EmptyI, EmptyDict
 from pkg.misc import msg, emsg
@@ -2197,93 +2190,6 @@ class Image(object):
                 """
                 self.index_dir = os.path.join(self.imgdir, postfix)
 
-        def degraded_local_search(self, args):
-                msg("Search capabilities and performance are degraded.\n"
-                    "To improve, run 'pkg rebuild-index'.")
-                res = []
-
-                for fmri in self.gen_installed_pkgs():
-                        m = self.get_manifest(fmri, add_to_cache=False)
-                        new_dict = m.search_dict()
-
-                        tok = args[0]
-
-                        for tok_type in new_dict.keys():
-                                if new_dict[tok_type].has_key(tok):
-                                        ak_list = new_dict[tok_type][tok]
-                                        for action, keyval in ak_list:
-                                                yield tok_type, fmri, action, \
-                                                    keyval
-
-        def local_search(self, args, case_sensitive):
-                """Search the image for the token in args[0]."""
-                assert args[0]
-                self.update_index_dir()
-                qe = query_e.ClientQueryEngine(self.index_dir)
-                query = query_e.Query(args[0], case_sensitive)
-                try:
-                        res = qe.search(query, self.gen_installed_pkg_names())
-                except search_errors.NoIndexException:
-                        res = self.degraded_local_search(args)
-                return res
-
-        def remote_search(self, args, servers = None):
-                """Search for the token in args[0] on the servers in 'servers'.
-                If 'servers' is empty or None, search on all known servers."""
-                failed = []
-
-                if not servers:
-                        servers = self.gen_publishers()
-
-                for pub in servers:
-                        if not isinstance(pub, publisher.Publisher):
-                                origin = pub["origin"]
-                                try:
-                                        pub = self.get_publisher(
-                                            origin=origin)
-                                except api_errors.UnknownPublisher:
-                                        pass
-                                else:
-                                        repo = pub.selected_repository
-                                        origin = repo.get_origin(origin)
-                        else:
-                                origin = pub.selected_repository.origins[0]
-
-                        uuid = None
-                        ssl_tuple = (None, None)
-                        if isinstance(origin, publisher.RepositoryURI):
-                                ssl_tuple = (origin.ssl_key, origin.ssl_cert)
-                                uuid = self.get_uuid(pub.prefix)
-                                origin = origin.uri
-
-                        try:
-                                res, v = versioned_urlopen(origin, "search",
-                                    [0], urllib.quote(args[0], ""),
-                                    ssl_creds=ssl_tuple, imgtype=self.type,
-                                    uuid=uuid)
-                        except urllib2.HTTPError, e:
-                                if e.code != httplib.NOT_FOUND:
-                                        failed.append((pub, e))
-                                continue
-                        except urllib2.URLError, e:
-                                failed.append((pub, e))
-                                continue
-
-                        try:
-                                for line in res:
-                                        line = line.strip()
-                                        fields = line.split(None, 3)
-                                        if len(fields) < 4:
-                                                yield fields[:2] + [ "", "" ]
-                                        else:
-                                                yield fields[:4]
-                        except socket.timeout, e:
-                                failed.append((pub, e))
-                                continue
-
-                if failed:
-                        raise RuntimeError, failed
-
         def incoming_download_dir(self):
                 """Return the directory path for incoming downloads
                 that have yet to be completed.  Once a file has been
@@ -2646,14 +2552,3 @@ class Image(object):
                         notfound = e.notfound
 
                 return found, notfound, illegals
-
-        def rebuild_search_index(self, progtracker):
-                """Rebuilds the search indexes.  Removes all
-                existing indexes and replaces them from scratch rather than
-                performing the incremental update which is usually used."""
-                self.update_index_dir()
-                if not os.path.isdir(self.index_dir):
-                        self.mkdirs()
-                ind = indexer.Indexer(self.index_dir, self.get_manifest,
-                    CLIENT_DEFAULT_MEM_USE_KB, progtracker)
-                ind.rebuild_index_from_scratch(self.gen_installed_pkgs())

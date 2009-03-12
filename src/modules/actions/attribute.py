@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -32,7 +32,6 @@ attribute of a package (package metadata).  Attributes are typed, and the
 possible types are: XXX."""
 
 import generic
-import re
 import pkg.fmri as fmri
 
 class AttributeAction(generic.Action):
@@ -64,46 +63,57 @@ class AttributeAction(generic.Action):
                 """Generates the indices needed by the search dictionary."""
                 if self.has_category_info():
                         try:
-                                return dict(
-                                    (all_levels, [all_levels] + all_levels.split("/"))
+
+                                return [
+                                    (self.name, self.attrs["name"],
+                                    [all_levels] +
+                                    [t.split() for t in all_levels.split("/")],
+                                    all_levels)
                                     for scheme, all_levels
                                     in self.parse_category_info()
-                                )
+                                ]
                         except ValueError:
                                 pass
 
                 if self.attrs["name"] == "description" or \
                     " " in self.attrs["value"]:
-                        return dict(
-                            (w, w)
+                        return [
+                            (self.name, self.attrs["name"], w, None)
                             for w in self.attrs["value"].split()
-                        )
+                        ]
                 elif self.attrs["name"] == "fmri":
                         fmri_obj = fmri.PkgFmri(self.attrs["value"])
 
-                        return {
-                            self.attrs["name"]: [
-                                  fmri_obj.get_pkg_stem(include_pkg=False),
-                                  str(fmri_obj.version.build_release),
-                                  str(fmri_obj.version.release),
-                                  str(fmri_obj.version.timestr)
+                        return [
+                            (self.name, self.attrs["name"], w,
+                            fmri_obj.get_pkg_stem(include_scheme=False))
+                            for w in [
+                                fmri_obj.get_pkg_stem(include_scheme=False),
+                                str(fmri_obj.version.build_release),
+                                str(fmri_obj.version.release),
+                                str(fmri_obj.version.timestr)
                             ]
-                        }
+                            
+                        ]
                 elif isinstance(self.attrs["value"], list):
-                        tmp = {}
+                        tmp = []
                         for v in self.attrs["value"]:
                                 assert isinstance(v, basestring)
                                 if " " in v:
                                         words = v.split()
                                         for w in words:
-                                                tmp[w] = w
+                                                tmp.append((self.name,
+                                                    self.attrs["name"], w,
+                                                    None))
                                 else:
-                                        tmp[v] = v
+                                        tmp.append((self.name,
+                                            self.attrs["name"], v, None))
                         return  tmp
                 else:
-                        return {
-                             self.attrs["value"]: self.attrs["value"]
-                        }
+                        return [
+                            (self.name, self.attrs["name"],
+                            self.attrs["value"], None)
+                        ]
 
         def has_category_info(self):
                 return self.attrs["name"] == "info.classification"

@@ -32,6 +32,7 @@ import cStringIO
 import errno
 import httplib
 import inspect
+import itertools
 import os
 import re
 import socket
@@ -55,6 +56,8 @@ import pkg.misc as misc
 
 import pkg.server.face as face
 import pkg.server.repository as repo
+
+from pkg.server.query_parser import Query
 
 class Dummy(object):
         """Dummy object used for dispatch method mapping."""
@@ -208,10 +211,12 @@ class DepotHTTP(object):
                 except IndexError:
                         token = None
 
+                query_args_lst = [str(Query(token, case_sensitive=False,
+                    return_type=Query.RETURN_ACTIONS, num_to_return=None,
+                    start_point=None))]
+                        
                 try:
-                        res = self.__repo.search(token)
-                except repo.RepositorySearchTokenError, e:
-                        raise cherrypy.HTTPError(httplib.BAD_REQUEST, str(e))
+                        res_list = self.__repo.search(query_args_lst)
                 except repo.RepositorySearchUnavailableError, e:
                         raise cherrypy.HTTPError(httplib.SERVICE_UNAVAILABLE,
                             str(e))
@@ -222,23 +227,92 @@ class DepotHTTP(object):
                         cherrypy.log("Request failed: %s" % str(e))
                         raise cherrypy.HTTPError(httplib.NOT_FOUND, str(e))
 
-                # This is a special hook just for this request so that if an
-                # exception is encountered, the search will be finished properly
-                # regardless of which thread is executing.  It only needs to be
-                # called if the call to search() succeeded.
-                cherrypy.request.hooks.attach('on_end_request',
-                    self.__repo.search_done, failsafe=True)
-
-                # The query_engine returns four pieces of information in the
-                # proper order. Put those four pieces of information into a
-                # string that the client can understand.
                 def output():
-                        for l in res:
-                                yield ("%s %s %s %s\n" % (l[0], l[1], l[2],
-                                    l[3]))
+                        for i, res in enumerate(res_list):
+                                for v, return_type, vals in res:
+                                        fmri_str, fv, line = vals
+                                        a = actions.fromstr(line.rstrip())
+                                        if isinstance(a,
+                                            actions.attribute.AttributeAction):
+                                                yield "%s %s %s %s\n" % \
+                                                    (a.attrs.get(a.key_attr),
+                                                    fmri_str, a.name, fv)
+                                        else:
+                                                yield "%s %s %s %s\n" % \
+                                                    (fv, fmri_str, a.name,
+                                                    a.attrs.get(a.key_attr))
+
                 return output()
 
         search_0._cp_config = { "response.stream": True }
+
+        
+        def search_1(self, *args, **params):
+                """Based on the request path, return a list of packages that
+                match the specified criteria."""
+                query_str_lst = []
+
+                try:
+                        query_str_lst = [args[0]]
+                except IndexError:
+                        pass
+
+                if not query_str_lst:
+                        query_str_lst = params.values()
+                elif params.values():
+                        raise cherrypy.HTTPError(httplib.BAD_REQUEST,
+                            "args:%s, params:%s" % (args, params))
+
+                if not query_str_lst:
+                        raise cherrypy.HTTPError(httplib.BAD_REQUEST)
+
+                response = cherrypy.response
+
+                if not self.scfg.search_available():
+                        raise cherrypy.HTTPError(httplib.SERVICE_UNAVAILABLE,
+                            "Search temporarily unavailable")
+
+                try:
+                        res_list = self.__repo.search(query_str_lst)
+                except repo.RepositorySearchUnavailableError, e:
+                        raise cherrypy.HTTPError(httplib.SERVICE_UNAVAILABLE,
+                            str(e))
+                except repo.RepositoryError, e:
+                        # Treat any remaining repository error as a 404, but
+                        # log the error and include the real failure
+                        # information.
+                        cherrypy.log("Request failed: %s" % str(e))
+                        raise cherrypy.HTTPError(httplib.NOT_FOUND, str(e))
+
+                response.headers["Content-type"] = "text/plain"
+
+                if len(res_list) == 1:
+                        try:
+                                tmp = res_list[0].next()
+                                res_list = [itertools.chain([tmp], res_list[0])]
+                        except StopIteration:
+                                cherrypy.response.status = httplib.NO_CONTENT
+                                return
+                
+                def output():
+                        yield str(Query.VALIDATION_STRING[1])
+                        for i, res in enumerate(res_list):
+                                for v, return_type, vals in res:
+                                        if return_type == Query.RETURN_ACTIONS:
+                                                fmri_str, fv, line = vals
+                                                yield "%s %s %s %s %s\n" % \
+                                                    (i, return_type, fmri_str,
+                                                    urllib.quote(fv),
+                                                    line.rstrip())
+                                        elif return_type == \
+                                            Query.RETURN_PACKAGES:
+                                                fmri_str = vals
+                                                yield "%s %s %s\n" % \
+                                                    (i, return_type, fmri_str)
+                return output()
+
+        search_1._cp_config = { "response.stream": True }
+
 
         def catalog_0(self, *tokens):
                 """Provide an incremental update or full version of the

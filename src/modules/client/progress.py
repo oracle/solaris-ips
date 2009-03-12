@@ -203,6 +203,9 @@ class ProgressTracker(object):
                         self.ind_output_done()
                 assert self.ind_goal_nitems == self.ind_cur_nitems
 
+        def index_optimize(self):
+                return
+
         #
         # This set of methods should be regarded as abstract *and* protected.
         # If you aren't in this class hierarchy, these should not be
@@ -688,6 +691,13 @@ class FancyUNIXProgressTracker(ProgressTracker):
                                 raise PipeError, e
                         raise
 
+        def index_optimize(self):
+                self.ind_output_done()
+                self.ind_started = False
+                self.last_print_time = 0
+                print "Optimizing Index..."
+                sys.stdout.flush()
+                
         def ind_output(self, force=False):
                 if force or (time.time() - self.last_print_time) >= IND_DELAY:
                         self.last_print_time = time.time()

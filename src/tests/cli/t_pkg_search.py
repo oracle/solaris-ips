@@ -38,7 +38,7 @@ import time
 
 import pkg.depotcontroller as dc
 
-import pkg.client.query_engine as query_engine
+import pkg.client.query_parser as query_parser
 import pkg.portable as portable
 import pkg.search_storage as ss
 
@@ -80,7 +80,6 @@ class TestPkgSearchBasics(testutils.SingleDepotTestCase):
         bad_pkg10 = """
             open bad_pkg@1.0,5.11-0
             add dir path=foo/ mode=0755 owner=root group=bin
-            add dir path=/ mode=0755 owner=root group=bin
             close """
 
         space_pkg10 = """
@@ -121,8 +120,8 @@ add set name=description value="i386 variant" variant.arch=i386
 add set name=description value="sparc variant" variant.arch=sparc
 close """
 
-
         headers = "INDEX      ACTION    VALUE                     PACKAGE\n"
+        pkg_headers = "PACKAGE\n"
 
         res_remote_path = set([
             headers,
@@ -145,6 +144,12 @@ close """
 
         ])
 
+        res_remote_bug_id_4725245 = set([
+            headers,
+            "com.sun.service.bug_ids set       4725245                   pkg:/example_pkg@1.0-0\n"
+
+        ])
+
         res_remote_inc_changes = set([
             headers,
             "com.sun.service.incorporated_changes set       6556919                   pkg:/example_pkg@1.0-0\n",
@@ -157,9 +162,19 @@ close """
             "com.sun.service.random_test set       42                        pkg:/example_pkg@1.0-0\n"
         ])
 
+        res_remote_random_test_79 = set([
+            headers,
+            "com.sun.service.random_test set       79                        pkg:/example_pkg@1.0-0\n"
+        ])
+        
         res_remote_keywords = set([
             headers,
             "com.sun.service.keywords set       separator                 pkg:/example_pkg@1.0-0\n"
+        ])
+
+        res_remote_keywords_sort_phrase = set([
+            headers,
+            "com.sun.service.keywords set       sort 0x86                 pkg:/example_pkg@1.0-0\n"
         ])
 
         res_remote_wildcard = set([
@@ -207,7 +222,7 @@ close """
         ])
         
         local_fmri_string = \
-            "fmri       set       fmri                      pkg:/example_pkg@1.0-0\n"
+            "fmri       set       example_pkg               pkg:/example_pkg@1.0-0\n"
 
 
         res_local_pkg = set([
@@ -224,6 +239,7 @@ close """
         res_local_inc_changes = copy.copy(res_remote_inc_changes)
 
         res_local_random_test = copy.copy(res_remote_random_test)
+        res_local_random_test_79 = copy.copy(res_remote_random_test_79)
 
         res_local_keywords = copy.copy(res_remote_keywords)
 
@@ -258,7 +274,6 @@ close """
 
         res_local_degraded_openssl = res_local_openssl.union(degraded_warning)
 
-
         res_local_path_example11 = set([
             headers,
             "basename   file      bin/example_path11        pkg:/example_pkg@1.1-0\n"
@@ -272,12 +287,12 @@ close """
         res_local_wildcard_example11 = set([
             headers,
             "basename   file      bin/example_path11        pkg:/example_pkg@1.1-0\n",
-            "fmri       set       fmri                      pkg:/example_pkg@1.1-0\n"
+            "fmri       set       example_pkg               pkg:/example_pkg@1.1-0\n"
        ])
 
         res_local_pkg_example11 = set([
             headers,
-            "fmri       set       fmri                      pkg:/example_pkg@1.1-0\n"
+            "fmri       set       example_pkg               pkg:/example_pkg@1.1-0\n"
         ])
 
         res_cat_pkg10 = set([
@@ -294,7 +309,6 @@ close """
             headers,
             "info.classification set       foo/bar/baz/bill/beam/asda pkg:/cat3@1.0-0\n"
         ])
-
 
         res_fat10_i386 = set([
             headers,
@@ -317,16 +331,15 @@ close """
         res_local_fat10_i386_star = res_fat10_i386.union(set([
             "variant.arch set       sparc                     pkg:/fat@1.0-0\n",
             "publisher  set       test                      pkg:/fat@1.0-0\n",
-            "fmri       set       fmri                      pkg:/fat@1.0-0\n"
+            "fmri       set       fat                       pkg:/fat@1.0-0\n"
         ]))
 
         res_local_fat10_sparc_star = res_fat10_sparc.union(set([
             "variant.arch set       i386                      pkg:/fat@1.0-0\n",
             "publisher  set       test                      pkg:/fat@1.0-0\n",
-            "fmri       set       fmri                      pkg:/fat@1.0-0\n"
+            "fmri       set       fat                       pkg:/fat@1.0-0\n"
         ]))
 
-        
         misc_files = ['/tmp/example_file']
 
         # This is a copy of the 3.81%2C5.11-0.89%3A20080527T163123Z version of
@@ -374,6 +387,36 @@ close
 
         ])
 
+        res_local_pkg_ret_pkg = set([
+            pkg_headers,
+            "pkg:/example_pkg@1.0-0\n"
+        ])
+
+        res_remote_pkg_ret_pkg = set([
+            pkg_headers,
+            "pkg:/example_pkg@1.0-0 (test)\n"
+        ])
+
+        res_remote_file = set([
+            'path       file      bin/example_path          pkg:/example_pkg@1.0-0\n',
+            '820157a2043e3135f342b238129b556aade20347 file      bin/example_path          pkg:/example_pkg@1.0-0\n'
+        ]) | res_remote_path
+
+
+        res_remote_url = set([
+             headers,
+             'com.sun.service.info_url set       http://service.opensolaris.com/xml/pkg/SUNWcsu@0.5.11,5.11-1:20080514I120000Z pkg:/example_pkg@1.0-0\n'
+        ])
+
+        res_remote_path_extra = set([
+             headers,
+             'path       file      bin/example_path          pkg:/example_pkg@1.0-0\n',
+             'basename   file      bin/example_path          pkg:/example_pkg@1.0-0\n',
+             '820157a2043e3135f342b238129b556aade20347 file      bin/example_path          pkg:/example_pkg@1.0-0\n'
+        ])
+
+
+        
         def setUp(self):
                 for p in self.misc_files:
                         f = open(p, "w")
@@ -396,7 +439,8 @@ close
                 shutil.rmtree(self.testdata_dir)
 
         def _set_low_mem(self):
-                self.init_mem_setting = os.environ.get("PKG_INDEX_MAX_RAM", None)
+                self.init_mem_setting = \
+                    os.environ.get("PKG_INDEX_MAX_RAM", None)
                 os.environ["PKG_INDEX_MAX_RAM"] = "0"
 
         def _unset_low_mem(self):
@@ -423,9 +467,11 @@ close
                 outfile = os.path.join(self.testdata_dir, "res")
                 if remote:
                         token = "-r " + token
+                else:
+                        token = "-l " + token
                 if case_sensitive:
                         token = "-I " + token
-                self.pkg("search " + token + " > " + outfile)
+                self.pkg("search -a " + token + " > " + outfile)
                 res_list = (open(outfile, "rb")).readlines()
                 self._check(set(res_list), test_value)
 
@@ -434,16 +480,49 @@ close
                 # package name unless it's set inside the
                 # manifest which happens at install time on
                 # the client side.
-                self.pkg("search -r example_pkg", exit=1)
+                self.pkg("search -a -r example_pkg", exit=1)
 
                 self._search_op(True, "example_path", self.res_remote_path)
+                self._search_op(True, "'(example_path)'", self.res_remote_path)
+                self._search_op(True, "'<exam*:::>'",
+                    self.res_remote_pkg_ret_pkg)
+                self._search_op(True, "'::com.sun.service.info_url:'",
+                    self.res_remote_url)
+                self._search_op(True, "':::e* AND *path'", self.res_remote_path)
+                self._search_op(True, "e* AND *path", self.res_remote_path)
+                self._search_op(True, "'<e*>'", self.res_remote_pkg_ret_pkg)
+                self._search_op(True, "'<e*> AND <e*>'",
+                    self.res_remote_pkg_ret_pkg)
+                self._search_op(True, "'<e*> OR <e*>'",
+                    self.res_remote_pkg_ret_pkg)
+                self._search_op(True, "'<exam:::>'",
+                    self.res_remote_pkg_ret_pkg)
+                self._search_op(True, "'exam:::e*path'", self.res_remote_path)
+                self._search_op(True, "'exam:::e*path AND e*:::'",
+                    self.res_remote_path)
+                self._search_op(True, "'e*::: AND exam:::*path'",
+                    self.res_remote_path_extra)
                 self._search_op(True, "example*", self.res_remote_wildcard)
                 self._search_op(True, "/bin", self.res_remote_bin)
                 self._search_op(True, "4851433", self.res_remote_bug_id)
+                self._search_op(True, "'<4851433> AND <4725245>'",
+                    self.res_remote_pkg_ret_pkg)
+                self._search_op(True, "4851433 AND 4725245",
+                    self.res_remote_bug_id)
+                self._search_op(True, "4851433 AND 4725245 OR example_path",
+                    self.res_remote_bug_id)
+                self._search_op(True, "'4851433 AND (4725245 OR example_path)'",
+                    self.res_remote_bug_id)
+                self._search_op(True, "'(4851433 AND 4725245) OR example_path'",
+                    self.res_remote_bug_id | self.res_remote_path)
+                self._search_op(True, "4851433 OR 4725245", self.res_remote_bug_id | self.res_remote_bug_id_4725245)
                 self._search_op(True, "6556919", self.res_remote_inc_changes)
                 self._search_op(True, "6556?19", self.res_remote_inc_changes)
-                self._search_op(True, "42", self.res_remote_random_test) 
+                self._search_op(True, "42", self.res_remote_random_test)
+                self._search_op(True, "79", self.res_remote_random_test_79)
                 self._search_op(True, "separator", self.res_remote_keywords)
+                self._search_op(True, "'\"sort 0x86\"'",
+                    self.res_remote_keywords_sort_phrase)
                 self._search_op(True, "*example*", self.res_remote_glob)
                 self._search_op(True, "fooo", self.res_remote_foo)
                 self._search_op(True, "fo*", self.res_remote_foo)
@@ -457,8 +536,14 @@ close
                 # was found during development. This prevents regression back
                 # to that bug. Exit status of 1 is expected because the
                 # token isn't in the packages.
-                self.pkg("search -r a_non_existent_token", exit=1)
-                self.pkg("search -r a_non_existent_token", exit=1)
+                self.pkg("search -a -r a_non_existent_token", exit=1)
+                self.pkg("search -a -r a_non_existent_token", exit=1)
+
+                self.pkg("search -a -r '42 AND 4641790'", exit=1)
+                self.pkg("search -a -r '<e*> AND e*'", exit=1)
+                self.pkg("search -a -r 'e* AND <e*>'", exit=1)
+                self.pkg("search -a -r '<e*> OR e*'", exit=1)
+                self.pkg("search -a -r 'e* OR <e*>'", exit=1)
                 
         def _run_local_tests(self):
                 outfile = os.path.join(self.testdata_dir, "res")
@@ -468,14 +553,50 @@ close
                 # into it.
 
                 self._search_op(False, "example_pkg", self.res_local_pkg)
-                self._search_op(False, "example_path", self.res_local_path)
+                self._search_op(False, "'(example_pkg)'", self.res_local_pkg)
+                self._search_op(False, "'<exam*:::>'",
+                    self.res_local_pkg_ret_pkg)
+                self._search_op(False, "'::com.sun.service.info_url:'",
+                    self.res_remote_url)
+                self._search_op(False, "':::e* AND *path'",
+                    self.res_remote_path)
+                self._search_op(False, "e* AND *path", self.res_local_path)
+                self._search_op(False, "'<e*>'", self.res_local_pkg_ret_pkg)
+                self._search_op(False, "'<e*> AND <e*>'",
+                    self.res_local_pkg_ret_pkg)
+                self._search_op(False, "'<e*> OR <e*>'",
+                    self.res_local_pkg_ret_pkg)
+                self._search_op(False, "'<exam:::>'",
+                    self.res_local_pkg_ret_pkg)
+                self._search_op(False, "'exam:::e*path'", self.res_remote_path)
+                self._search_op(False, "'exam:::e*path AND e:::'",
+                    self.res_remote_path)
+                self._search_op(False, "'e::: AND exam:::e*path'",
+                    self.res_remote_path_extra)
                 self._search_op(False, "example*", self.res_local_wildcard)
                 self._search_op(False, "/bin", self.res_local_bin)
                 self._search_op(False, "4851433", self.res_local_bug_id)
+                self._search_op(False, "'<4851433> AND <4725245>'",
+                    self.res_local_pkg_ret_pkg)
+                self._search_op(False, "4851433 AND 4725245",
+                    self.res_remote_bug_id)
+                self._search_op(False, "4851433 AND 4725245 OR example_path",
+                    self.res_remote_bug_id)
+                self._search_op(False,
+                    "'4851433 AND (4725245 OR example_path)'",
+                    self.res_remote_bug_id)
+                self._search_op(False,
+                    "'(4851433 AND 4725245) OR example_path'",
+                    self.res_remote_bug_id | self.res_local_path)
+                self._search_op(False, "4851433 OR 4725245",
+                    self.res_remote_bug_id | self.res_remote_bug_id_4725245)
                 self._search_op(False, "6556919", self.res_local_inc_changes)
                 self._search_op(False, "65569??", self.res_local_inc_changes)
                 self._search_op(False, "42", self.res_local_random_test)
+                self._search_op(False, "79", self.res_local_random_test_79)
                 self._search_op(False, "separator", self.res_local_keywords)
+                self._search_op(False, "'\"sort 0x86\"'",
+                    self.res_remote_keywords_sort_phrase)
                 self._search_op(False, "*example*", self.res_local_glob)
                 self._search_op(False, "fooo", self.res_local_foo)
                 self._search_op(False, "fo*", self.res_local_foo)
@@ -489,31 +610,13 @@ close
                 # was found during development. These tests prevent regression
                 # back to that bug. Exit status of 1 is expected because the
                 # token isn't in the packages.
-                self.pkg("search a_non_existent_token", exit=1)
-                self.pkg("search a_non_existent_token", exit=1)
-
-        def _run_local_degraded_tests(self):
-                outfile = os.path.join(self.testdata_dir, "res")
-
-                # This finds something because the client side
-                # manifest has had the name of the package inserted
-                # into it.
-
-                self._search_op(False, "example_pkg", self.res_local_degraded_pkg)
-                self._search_op(False, "example_path", self.res_local_degraded_path)
-                self._search_op(False, "/bin", self.res_local_degraded_bin)
-                self._search_op(False, "4851433", self.res_local_degraded_bug_id)
-                self._search_op(False, "6556919", self.res_local_degraded_inc_changes)
-                self._search_op(False, "42", self.res_local_degraded_random_test)
-                self._search_op(False, "separator", self.res_local_degraded_keywords)
-                self._search_op(False, "OpenSSL", self.res_local_degraded_openssl)
-
-                # These tests are included because a specific bug
-                # was found during development. These tests prevent regression
-                # back to that bug. Exit status of 1 is expected because the
-                # token isn't in the packages.
-                self.pkg("search a_non_existent_token", exit=1)
-                self.pkg("search a_non_existent_token", exit=1)
+                self.pkg("search -a -l a_non_existent_token", exit=1)
+                self.pkg("search -a -l a_non_existent_token", exit=1)
+                self.pkg("search -a -l '42 AND 4641790'", exit=1)
+                self.pkg("search -a -l '<e*> AND e*'", exit=1)
+                self.pkg("search -a -l 'e* AND <e*>'", exit=1)
+                self.pkg("search -a -l '<e*> OR e*'", exit=1)
+                self.pkg("search -a -l 'e* OR <e*>'", exit=1)
 
         def _run_local_tests_example11_installed(self):
                 outfile = os.path.join(self.testdata_dir, "res")
@@ -522,24 +625,27 @@ close
                 # manifest has had the name of the package inserted
                 # into it.
 
-                self._search_op(False, "example_pkg", self.res_local_pkg_example11)
-                self.pkg("search  example_path", exit=1)
-                self._search_op(False, "example_path11", self.res_local_path_example11)
-                self._search_op(False, "example*", self.res_local_wildcard_example11)
+                self._search_op(False, "example_pkg",
+                    self.res_local_pkg_example11)
+                self.pkg("search -a -l example_path", exit=1)
+                self._search_op(False, "example_path11",
+                    self.res_local_path_example11)
+                self._search_op(False, "example*",
+                    self.res_local_wildcard_example11)
                 self._search_op(False, "/bin", self.res_local_bin_example11)
 
         def _run_local_empty_tests(self):
-                self.pkg("search  example_pkg", exit=1)
-                self.pkg("search  example_path", exit=1)
-                self.pkg("search  example*", exit=1)
-                self.pkg("search  /bin", exit=1)
+                self.pkg("search -a -l example_pkg", exit=1)
+                self.pkg("search -a -l example_path", exit=1)
+                self.pkg("search -a -l example*", exit=1)
+                self.pkg("search -a -l /bin", exit=1)
 
         def _run_remote_empty_tests(self):
-                self.pkg("search -r example_pkg", exit=1)
-                self.pkg("search -r example_path", exit=1)
-                self.pkg("search -r example*", exit=1)
-                self.pkg("search -r /bin", exit=1)
-                self.pkg("search -r *unique*", exit=1)
+                self.pkg("search -a -r example_pkg", exit=1)
+                self.pkg("search -a -r example_path", exit=1)
+                self.pkg("search -a -r example*", exit=1)
+                self.pkg("search -a -r /bin", exit=1)
+                self.pkg("search -a -r *unique*", exit=1)
 
         @staticmethod
         def _restore_dir(index_dir, index_dir_tmp):
@@ -647,8 +753,10 @@ close
 
                 self.image_create(durl)
                 self._run_remote_tests()
+                self._search_op(True, "':file::'", self.res_remote_file)
+                self.pkg("search '*'")
                 
-        def test_local(self):
+        def test_local_0(self):
                 """Install one package, and run the search suite."""
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.example_pkg10)
@@ -734,17 +842,15 @@ close
                 
                 index_dir = os.path.join(self.img_path, "var","pkg","index")
 
-                qe = query_engine.ClientQueryEngine(index_dir)
-                
-                for d in qe._data_dict.values():
+                for d in query_parser.TermQuery._global_data_dict.values():
                         orig_fn = d.get_file_name()
                         orig_path = os.path.join(index_dir, orig_fn)
                         dest_fn = orig_fn + "TMP"
                         dest_path = os.path.join(index_dir, dest_fn)
                         portable.rename(orig_path, dest_path)
-                        self.pkg("search  example_pkg", exit=1)
+                        self.pkg("search -l example_pkg", exit=1)
                         portable.rename(dest_path, orig_path)
-                        self.pkg("search  example_pkg")
+                        self.pkg("search -l example_pkg")
                         
         def test_mismatched_versions(self):
                 """Test to check for stack trace when files missing.
@@ -757,37 +863,35 @@ close
                 
                 index_dir = os.path.join(self.img_path, "var","pkg","index")
 
-                qe = query_engine.ClientQueryEngine(index_dir)
-                
-                for d in qe._data_dict.values():
+                for d in query_parser.TermQuery._global_data_dict.values():
                         orig_fn = d.get_file_name()
                         orig_path = os.path.join(index_dir, orig_fn)
                         dest_fn = orig_fn + "TMP"
                         dest_path = os.path.join(index_dir, dest_fn)
                         shutil.copy(orig_path, dest_path)
                         self._overwrite_version_number(orig_path)
-                        self.pkg("search  example_pkg", exit=1)
+                        self.pkg("search -l example_pkg", exit=1)
                         portable.rename(dest_path, orig_path)
-                        self.pkg("search  example_pkg")
+                        self.pkg("search -l example_pkg")
                         self._overwrite_version_number(orig_path)
                         self.pkg("uninstall example_pkg")
-                        self.pkg("search example_pkg", exit=1)
+                        self.pkg("search -l example_pkg", exit=1)
                         self._overwrite_version_number(orig_path)
                         self.pkg("install example_pkg")
-                        self.pkg("search example_pkg")
+                        self.pkg("search -l example_pkg")
                         
-                ffh = qe._data_dict['fmri_hash']
+                ffh = ss.IndexStoreSetHash(ss.FULL_FMRI_HASH_FILE)
                 ffh_path = os.path.join(index_dir, ffh.get_file_name())
                 dest_path = ffh_path + "TMP"
                 shutil.copy(ffh_path, dest_path)
                 self._overwrite_hash(ffh_path)
-                self.pkg("search example_pkg", exit=1)
+                self.pkg("search -l example_pkg", exit=1)
                 portable.rename(dest_path, ffh_path)
-                self.pkg("search  example_pkg")
+                self.pkg("search -l example_pkg")
                 self._overwrite_hash(ffh_path)
                 self.pkg("uninstall example_pkg")
-                self.pkg("search example_pkg", exit=1)
-
+                self.pkg("search -l example_pkg", exit=1)
+                
         def test_degraded_search(self):
                 """Test to check for stack trace when files missing.
                 Bug 2753"""
@@ -799,7 +903,7 @@ close
                 
                 index_dir = os.path.join(self.img_path, "var","pkg","index")
                 shutil.rmtree(index_dir)
-                self._run_local_degraded_tests()
+                self._run_local_tests()
 
         def test_bug_2989_1(self):
                 durl = self.dc.get_depot_url()
@@ -902,9 +1006,9 @@ close
 
                 self.image_create(durl)
                 self.pkg("install example_pkg")
-                self.pkg("search -I fooo", exit=1)
-                self.pkg("search -I fo*", exit=1)
-                self.pkg("search -I bar", exit=1)
+                self.pkg("search -l -I fooo", exit=1)
+                self.pkg("search -l -I fo*", exit=1)
+                self.pkg("search -l -I bar", exit=1)
                 self._search_op(False, "FOOO", self.res_local_foo, True)
                 self._search_op(False, "bAr", self.res_local_bar, True)
 
@@ -929,7 +1033,7 @@ close
                 self.pkgsend_bulk(durl, self.bad_pkg10)
                 self.image_create(durl)
                 self.pkg("search -r foo")
-                self.pkg("search -r /")
+                self.pkg("search -r /", exit=1)
 
         def test_bug_2849(self):
                 """Checks if things with spaces break the indexer."""
@@ -945,19 +1049,19 @@ close
                 self.pkg("refresh")
                 self.pkg("install space_pkg")
 
-                self.pkg("search with", exit=1)
-                self.pkg("search with*")
-                self.pkg("search *space")
-                self.pkg("search unique_dir")
+                self.pkg("search -l with", exit=1)
+                self.pkg("search -l with*")
+                self.pkg("search -l *space")
+                self.pkg("search -l unique_dir")
                 self.pkg("search -r with", exit=1)
                 self.pkg("search -r with*")
                 self.pkg("search -r *space")
                 self.pkgsend_bulk(durl, self.space_pkg10)
                 self.pkg("install space_pkg")
-                self.pkg("search with", exit=1)
-                self.pkg("search with*")
-                self.pkg("search *space")
-                self.pkg("search unique_dir")
+                self.pkg("search -l with", exit=1)
+                self.pkg("search -l with*")
+                self.pkg("search -l *space")
+                self.pkg("search -l unique_dir")
 
         def test_bug_2863(self):
                 """Test local case sensitive search"""
@@ -1005,8 +1109,8 @@ close
                 offset = 2
                 depot_logfile = os.path.join(self.get_test_prefix(),
                     self.id(), "depot_logfile%d" % offset)
-                tmp_dc = self.start_depot(12000 + offset, depotpath, depot_logfile,
-                    refresh_index=True)
+                tmp_dc = self.start_depot(12000 + offset, depotpath,
+                    depot_logfile, refresh_index=True)
                 self._run_remote_tests()
                 tmp_dc.kill()
 
@@ -1040,15 +1144,15 @@ close
                 def _run_cat2_tests(self, remote):
                         self._search_op(remote, "Applications",
                             self.res_cat2_pkg10, case_sensitive=False)
-                        self.pkg("search -r Sound", exit=1)
-                        self._search_op(remote, "'Sound and Video'",
+                        self.pkg("search -r Sound")
+                        self._search_op(remote, "'\"Sound and Video\"'",
                             self.res_cat2_pkg10, case_sensitive=False)
                         self._search_op(remote, "Sound*",
                             self.res_cat2_pkg10, case_sensitive=False)
                         self._search_op(remote, "*Video",
                             self.res_cat2_pkg10, case_sensitive=False)
                         self._search_op(remote,
-                            "'Applications/Sound and Video'",
+                            "'\"Applications/Sound and Video\"'",
                             self.res_cat2_pkg10, case_sensitive=False)
                 def _run_cat3_tests(self, remote):
                         self._search_op(remote, "foo",
@@ -1094,7 +1198,8 @@ close
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.fat_pkg10)
                 
-                self.image_create(durl, additional_args="--variant variant.arch=i386")
+                self.image_create(durl,
+                    additional_args="--variant variant.arch=i386")
 
                 remote = True
                 
@@ -1109,7 +1214,8 @@ close
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.fat_pkg10)
                 
-                self.image_create(durl, additional_args="--variant variant.arch=sparc")
+                self.image_create(durl,
+                    additional_args="--variant variant.arch=sparc")
 
                 remote = True
                 

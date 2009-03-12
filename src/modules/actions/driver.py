@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -792,10 +792,11 @@ class DriverAction(generic.Action):
                                         e[0], e[1])
 
         def generate_indices(self):
-                ret = {}
+                ret = []
                 if "name" in self.attrs:
-                        ret["driver_name"] = self.attrs["name"]
+                        ret.append(("driver", "driver_name", self.attrs["name"],
+                            None))
                 if "alias" in self.attrs:
-                        ret["driver_aliases"] = self.attrs["alias"]
+                        ret.append(("driver", "alias", self.attrs["alias"],
+                            None))
                 return ret
-

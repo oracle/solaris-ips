@@ -19,8 +19,11 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+
+#
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
+#
 
 # __str__ methods defined for subclasses of IndexError should be defined
 # for the server implementations. If the client needs different messages
@@ -31,11 +34,6 @@ class IndexingException(Exception):
         """ The base class for all exceptions that can occur while indexing. """
         def __init__(self, cause):
                 self.cause = cause
-
-class IncorrectIndexFileHash(IndexingException):
-        """This is used when file with a hash in it has more than one entry."""
-        def __init__(self):
-                IndexingException.__init__(self, None)
 
 class InconsistentIndexException(IndexingException):
         """ This is used when the existing index is found to have inconsistent
@@ -71,3 +69,41 @@ class NoIndexException(Exception):
                 return "Could not find index to search, looked in: %s" \
                     % self.index_dir
 
+class IncorrectIndexFileHash(Exception):
+        """This is used when the index hash value doesn't match the hash of the
+        packages installed in the image."""
+        def __init__(self, existing_val, incoming_val):
+                Exception.__init__(self)
+                self.ev = existing_val
+                self.iv = incoming_val
+
+        def __str__(self):
+                return "existing_val was:%s\nincoming_val was:%s" % \
+                    (self.ev, self.iv)
+
+class MainDictParsingException(Exception):
+        def __init__(self, split_chars, unquote_list, line, file_pos):
+                self.split_chars = split_chars
+                self.unquote_list = unquote_list
+                self.line = line
+                self.file_pos = file_pos
+                
+        
+class EmptyUnquoteList(MainDictParsingException):
+        def __init__(self, split_chars, line):
+                Exception.__init__(self, split_chars, None, line)
+
+        def __str__(self):
+                return _("Got an empty unquote_list while indexing. split_chars"
+                    " was %(sc)s and line was %(l)s" %
+                    { "sc": self.split_chars, "l": self.line })
+
+class EmptyMainDictLine(MainDictParsingException):
+        def __init__(self, split_chars, unquote_list):
+                Exception.__init__(self, split_chars, unquote_list, None)
+
+        def __str__(self):
+                return _("Had an empty line in the main dictionary. split_chars"
+                    " is %(sc)s and unquote_list is %(ul)s.%(s)s" %
+                    { "sc": self.split_chars, "ul": self.unquote_list, "l": s })
+        

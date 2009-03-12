@@ -31,13 +31,13 @@ import pkg.client.api_errors as api_errors
 import pkg.client.imagestate as imagestate
 import pkg.client.pkgplan as pkgplan
 import pkg.client.indexer as indexer
+import pkg.client.variant as variant
 import pkg.search_errors as se
 import pkg.client.actuator as actuator
 import pkg.fmri as fmri
 
 from pkg.client.filter import compile_filter
 from pkg.misc import msg
-from pkg.misc import CLIENT_DEFAULT_MEM_USE_KB
 
 from pkg.client.retrieve import ManifestRetrievalError
 from pkg.client.retrieve import DatastreamRetrievalError
@@ -596,13 +596,12 @@ class ImagePlan(object):
                 if self.update_index:
                         try:
                                 self.image.update_index_dir()
-                                ind = indexer.Indexer(self.image.index_dir,
+                                ind = indexer.Indexer(self.image,
                                     self.image.get_manifest,
-                                    CLIENT_DEFAULT_MEM_USE_KB,
-                                    progtrack=self.progtrack)
-                                if not ind.check_index_existence() or \
-                                    not ind.check_index_has_exactly_fmris(
-                                        self.image.gen_installed_pkg_names()):
+                                    self.image.get_manifest_path,
+                                    progtrack=self.progtrack,
+                                    excludes=self.old_excludes)
+                                if not ind.check_index_existence():
                                         # XXX Once we have a framework for
                                         # emitting a message to the user in
                                         # this spot in the code, we should tell
@@ -611,6 +610,13 @@ class ImagePlan(object):
                                         # allow us to debug the code.
                                         ind.rebuild_index_from_scratch(
                                             self.image.gen_installed_pkgs())
+                                else:
+                                        try:
+                                                ind.check_index_has_exactly_fmris(
+                                                        self.image.gen_installed_pkg_names())
+                                        except se.IncorrectIndexFileHash:
+                                                ind.rebuild_index_from_scratch(
+                                                        self.image.gen_installed_pkgs())
                         except se.IndexingException:
                                 # If there's a problem indexing, we want to
                                 # attempt to finish the installation anyway. If
@@ -771,12 +777,13 @@ class ImagePlan(object):
                         del self.pkg_plans
                         self.progtrack.actions_set_goal("Index Phase",
                             len(plan_info))
+                        self.image.update_index_dir()
+                        ind = indexer.Indexer(self.image,
+                            self.image.get_manifest,
+                            self.image.get_manifest_path,
+                            progtrack=self.progtrack,
+                            excludes=self.new_excludes)
                         try:
-                                self.image.update_index_dir()
-                                ind = indexer.Indexer(self.image.index_dir,
-                                    self.image.get_manifest,
-                                    CLIENT_DEFAULT_MEM_USE_KB,
-                                    progtrack=self.progtrack)
                                 ind.client_update_index((self.filters,
                                     plan_info))
                         except (KeyboardInterrupt,
@@ -786,10 +793,20 @@ class ImagePlan(object):
                                 # trying again will fix this problem.
                                 raise
                         except Exception, e:
+                                # It's important to delete and rebuild from
+                                # scratch rather than using the existing
+                                # indexer because otherwise the state will
+                                # become confused.
                                 del(ind)
                                 # XXX Once we have a framework for emitting a
                                 # message to the user in this spot in the code,
                                 # we should tell them something has gone wrong
                                 # so that we continue to get feedback to allow
                                 # us to debug the code.
-                                self.image.rebuild_search_index(self.progtrack)
+                                ind = indexer.Indexer(self.image,
+                                    self.image.get_manifest,
+                                    self.image.get_manifest_path,
+                                    progtrack=self.progtrack,
+                                    excludes=self.new_excludes)
+                                ind.rebuild_index_from_scratch(
+                                    self.image.gen_installed_pkgs())

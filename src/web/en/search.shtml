@@ -87,64 +87,58 @@ matching characters use '[' and ']':<br/>
                 results = catalog.search(token_val)
 %>\
 %       if searched and results:
-%               for index, pfmri, action, value in results:
-                        ## Only print row for first result.  Can't do this
-                        ## before now since results is a generator.
-%                       if rclass is None:
+%               for v, return_type, vals in results:
+<%
+                                pfmri = vals
+%>
+			        ## Only print row for first result.  Can't do this
+			        ## before now since results is a generator.
+%                               if rclass is None:
                 <table summary="A list of packages from the repository catalog
  that matched the specified search criteria.">
                         <tr class="first">
-                                <th>Index</th>
-                                <th>Action</th>
-                                <th>Value</th>
                                 <th>Package</th>
                         </tr>
-%                       endif
+%                               endif
 <%
-                        result_count += 1
-                        if rclass is None or rclass == ' class="odd"':
-                                rclass = ""
-                        else:
-                                rclass = ' class="odd"'
+                                result_count += 1
+                                if rclass is None or rclass == ' class="odd"':
+                                        rclass = ""
+                                else:
+                                        rclass = ' class="odd"'
 
-                        phref = self.shared.rpath(g_vars, "info/0/%s" % (
-                            urllib.quote(pfmri[len("pkg:/"):], ""))) 
+                                phref = self.shared.rpath(g_vars, "info/0/%s" % (
+                                    urllib.quote(pfmri, ""))) 
 %>\
                         <tr${rclass} >
-                                <td>${index}</td>
-                                <td>${action}</td>
-                                <td>${value | h}</td>
                                 <td><a href="${phref}">${pfmri}</a></td>
                         </tr>
-%                       if result_count > max_results:
+%                               if result_count > max_results:
                         <tr class="last">
-                                <td colspan="4">More than ${max_results}
+                                <td>More than ${max_results}
 record(s) matched your query; the rest will not be shown.  Please refine your
 query and try again.</td>
 <%
-                                break
+                                        break
 %>
                         </tr>
-%                       endif
+%                               endif
 %               else:
 %                       if result_count > 0:
                                 <tr class="last">
-                                        <td colspan="4">${result_count} record(s) found</td>
+                                        <td>${result_count} record(s) found</td>
                                 </tr>
-%                       endif
-%               endfor
-<%
-                catalog.search_done()
-%>
+%                               endif
                 </table>
+%               endfor
 %       endif
 %       if searched and rclass is None:
                 <p>Your search - <b>${token_val | h}</b> - did not match any packages.</p>
                 <p>Suggestions:</p>
                 <ul>
                         <li>Ensure that all words are spelled correctly.</li>
-                        <li>Try a different keyword.</li>
-                        <li>Try a more general keyword.</li>
+                        <li>Try different keywords.</li>
+                        <li>Try more general keywords.</li>
                 </ul>
 %       endif
         </div>

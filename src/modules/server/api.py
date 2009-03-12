@@ -28,8 +28,9 @@ import cherrypy
 import pkg.catalog
 import pkg.version
 import pkg.server.api_errors as api_errors
+import pkg.server.query_parser as qp
 
-CURRENT_API_VERSION = 2
+CURRENT_API_VERSION = 3
 
 class BaseInterface(object):
         """This class represents a base API object that is provided by the
@@ -55,7 +56,7 @@ class _Interface(object):
         """Private base class used for api interface objects.
         """
         def __init__(self, version_id, base):
-                compatible_versions = set([2])
+                compatible_versions = set([3])
                 if version_id not in compatible_versions:
                         raise api_errors.VersionException(CURRENT_API_VERSION,
                             version_id)
@@ -132,16 +133,14 @@ class CatalogInterface(_Interface):
                         return None
                 return self.__catalog.npkgs()
 
-        def search(self, token):
-                """Searches the catalog for 'token'.  Returns a generator object
-                for a list of token type / fmri pairs or an empty list if search
-                is not available.  search_done() must be called after the caller
-                has finished retrieving the results of this function for proper
-                cleanup.
-                """
+        def search(self, tokens, case_sensitive=False,
+            return_type=qp.Query.RETURN_PACKAGES, start_point=None, num_to_return=None):
+                tokens = tokens.split()
                 if not self.search_available:
                         return []
-                return self.__catalog.search(token)
+                query = qp.Query(" ".join(tokens), case_sensitive,
+                    return_type, start_point, num_to_return)
+                return self.__catalog.search(query)
 
         @property
         def search_available(self):
@@ -152,12 +151,6 @@ class CatalogInterface(_Interface):
                         return False
                 return self.__catalog.search_available()
 
-        def search_done(self):
-                """Indicates that a client is finished retrieving results from
-                search(); this function must be called after search() for proper
-                cleanup.  Does not return a value.
-                """
-                self.__catalog.query_engine.search_done()
 
 class ConfigInterface(_Interface):
         """This class presents a read-only interface to configuration

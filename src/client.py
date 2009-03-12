@@ -58,6 +58,7 @@ import urllib2
 import urlparse
 
 import pkg
+import pkg.actions as actions
 import pkg.client.api as api
 import pkg.client.api_errors as api_errors
 import pkg.client.bootenv as bootenv
@@ -67,9 +68,9 @@ import pkg.client.image as image
 import pkg.client.imagetypes as imgtypes
 import pkg.client.progress as progress
 import pkg.client.publisher as publisher
-import pkg.search_errors as search_errors
 import pkg.fmri as fmri
 import pkg.misc as misc
+import pkg.search_errors as search_errors
 
 from pkg.client import global_settings
 from pkg.client.debugvalues import DebugValues
@@ -81,7 +82,7 @@ from pkg.client.retrieve import (CatalogRetrievalError,
     DatastreamRetrievalError, ManifestRetrievalError)
 from pkg.misc import msg, emsg, PipeError
 
-CLIENT_API_VERSION = 11
+CLIENT_API_VERSION = 12
 PKG_CLIENT_NAME = "pkg"
 
 def error(text):
@@ -128,7 +129,7 @@ Basic subcommands:
 
 Advanced subcommands:
         pkg info [-lr] [--license] [pkg_fmri_pattern ...]
-        pkg search [-lrI] [-s server] token
+        pkg search [-lrI] [-s server] query
         pkg verify [-Hqv] [pkg_fmri_pattern ...]
         pkg fix [pkg_fmri_pattern ...]
         pkg contents [-Hmr] [-o attribute ...] [-s sort_key]
@@ -606,6 +607,9 @@ def image_update(img_dir, args):
                 # be printed on the same line as the spinner.
                 error("\n" + str(e))
                 ret_code = 1
+        except api_errors.MainDictParsingException, e:
+                error(str(e))
+                ret_code = 1
         except api_errors.BEException, e:
                 error(_(e))
                 return 1
@@ -763,6 +767,9 @@ def install(img_dir, args):
                 # be printed on the same line as the spinner.
                 error("\n" + str(e))
                 ret_code = 1
+        except api_errors.MainDictParsingException, e:
+                error(str(e))
+                ret_code = 1
         except KeyboardInterrupt:
                 raise
         except Exception, e:
@@ -877,6 +884,9 @@ the following packages that depend on it:""" % e[0])
                 # be printed on the same line as the spinner.
                 error("\n" + str(e))
                 ret_code = 1
+        except api_errors.MainDictParsingException, e:
+                error(str(e))
+                ret_code = 1
         except KeyboardInterrupt:
                 raise
         except Exception, e:
@@ -896,16 +906,55 @@ def unfreeze(img, args):
         state."""
         return 0
 
-def search(img, args):
-        """Search through the reverse index databases for the given token."""
+def process_v_0_search(tup, first):
+        index, mfmri, action, value = tup
+        if first:
+                msg("%-10s %-9s %-25s %s" %
+                    ("INDEX", "ACTION", "VALUE", "PACKAGE"))
+        msg("%-10s %-9s %-25s %s" % (index, action, value,
+            fmri.PkgFmri(str(mfmri)).get_short_fmri()))
 
-        opts, pargs = getopt.getopt(args, "lrs:I")
+def __convert_output(a_str, match):
+        a = actions.fromstr(a_str.rstrip())
+        if isinstance(a, actions.attribute.AttributeAction):
+                return a.attrs.get(a.key_attr), a.name, match
+        return match, a.name, a.attrs.get(a.key_attr)
+
+def process_v_1_search(tup, first, return_type, pub):
+        if return_type == api.Query.RETURN_ACTIONS:
+                pfmri, match, action = tup
+                if first:
+                        msg("%-10s %-9s %-25s %s" %
+                            ("INDEX", "ACTION", "VALUE", "PACKAGE"))
+                out1, out2, out3 = __convert_output(action, match)
+                msg("%-10s %-9s %-25s %s" %
+                    (out1, out2, out3,
+                    fmri.PkgFmri(str(pfmri)).get_short_fmri()))
+        else:
+                pfmri = tup
+                if first:
+                        msg("%s" % ("PACKAGE"))
+                pub_name = ''
+                if pub is not None and "prefix" in pub:
+                        pub_name = " (%s)" % pub.prefix
+                msg("%s%s" %
+                    (fmri.PkgFmri(str(pfmri)).get_short_fmri(), pub_name))
+
+def search(img_dir, args):
+        """Search for the given token."""
+
+        opts, pargs = getopt.getopt(args, "alprs:I")
 
         local = remote = case_sensitive = False
         servers = []
+        return_actions = True
         for opt, arg in opts:
-                if opt == "-l":
+                if opt == "-a":
+                        return_actions = True
+                elif opt == "-l":
                         local = True
+                elif opt == "-p":
+                        return_actions = False
                 elif opt == "-r":
                         remote = True
                 elif opt == "-s":
@@ -914,7 +963,7 @@ def search(img, args):
                                 arg = "http://" + arg
                                 if not misc.valid_pub_url(arg):
                                         error(_("%s is not a valid "
-                                            "server URI.") % orig_arg)
+                                            "server URL.") % orig_arg)
                                         return 1
                         remote = True
                         servers.append({"origin": arg})
@@ -922,76 +971,67 @@ def search(img, args):
                         case_sensitive = True
 
         if not local and not remote:
-                local = True
-
-        if remote and case_sensitive:
-                emsg("Case sensitive remote search not currently supported.")
-                usage()
+                remote = True
 
         if not pargs:
                 usage()
 
+        progresstracker = get_tracker(False)
+
         searches = []
-        if local:
-                try:
-                        searches.append(img.local_search(pargs, case_sensitive))
-                except (search_errors.InconsistentIndexException,
-                        search_errors.IncorrectIndexFileHash):
-                        error("The search index appears corrupted.  Please "
-                            "rebuild the index with 'pkg rebuild-index'.")
-                        return 1
-
-        if remote:
-                # Verify validity of certificates before attempting network
-                # operations.
-                try:
-                        img.check_cert_validity()
-                except api_errors.PermissionsException, e:
-                        error("\n" + str(e))
-                        return 1
-                except api_errors.CertificateError, e:
-                        error(_("search: %s") % e)
-                        return 1
-
-                searches.append(img.remote_search(pargs, servers))
-
-        # By default assume we don't find anything.
-        retcode = 1
 
         try:
+                api_inst = api.ImageInterface(img_dir, CLIENT_API_VERSION,
+                    progresstracker, None, PKG_CLIENT_NAME)
+        except api_errors.ImageNotFoundException, e:
+                error(_("'%s' is not an install image") % e.user_dir)
+                return 1
+        try:
+                query = [api.Query(" ".join(pargs), case_sensitive,
+                    return_actions)]
+        except api_errors.BooleanQueryException, e:
+                error(e)
+                return 1
+        
+        try:
+                if local:
+                        searches.append(api_inst.local_search(query))
+                if remote:
+                        searches.append(api_inst.remote_search(query,
+                            servers=servers))
+
+                # By default assume we don't find anything.
+                retcode = 1
+
                 first = True
-                for index, mfmri, action, value in itertools.chain(*searches):
-                        retcode = 0
-                        if first:
-                                if action and value:
-                                        msg("%-10s %-9s %-25s %s" % ("INDEX",
-                                            "ACTION", "VALUE", "PACKAGE"))
-                                else:
-                                        msg("%-10s %s" % ("INDEX", "PACKAGE"))
+                for query_num, pub, (v, return_type, tmp) in \
+                    itertools.chain(*searches):
+                        if v == 0:
+                                process_v_0_search(tmp, first)
+                                retcode = 0
                                 first = False
-                        if action and value:
-                                msg("%-10s %-9s %-25s %s" % (index, action,
-                                    value, fmri.PkgFmri(str(mfmri)
-                                    ).get_short_fmri()))
                         else:
-                                msg("%-10s %s" % (index, mfmri))
-
-        except RuntimeError, failed:
-                emsg("Some servers failed to respond:")
-                for pub, err in failed.args[0]:
-                        if isinstance(err, urllib2.HTTPError):
-                                emsg("    %s: %s (%d)" % \
-                                    (pub["origin"], err.msg, err.code))
-                        elif isinstance(err, urllib2.URLError):
-                                if isinstance(err.args[0], socket.timeout):
-                                        emsg("    %s: %s" % \
-                                            (pub["origin"], "timeout"))
-                                else:
-                                        emsg("    %s: %s" % \
-                                            (pub["origin"], err.args[0][1]))
-
+                                process_v_1_search(tmp, first, return_type, pub)
+                                retcode = 0
+                                first = False
+        except (api_errors.IncorrectIndexFileHash,
+            api_errors.InconsistentIndexException):
+                error("The search index appears corrupted.  Please "
+                    "rebuild the index with 'pkg rebuild-index'.")
+                return 1
+        except api_errors.ProblematicSearchServers, e:
+                error(e)
                 retcode = 4
-
+        except api_errors.SlowSearchUsed, e:
+                error(e)
+        except api_errors.BooleanQueryException, e:
+                error(e)
+                return 1
+        except (api_errors.IncorrectIndexFileHash,
+            api_errors.InconsistentIndexException):
+                error("The search index appears corrupted.  Please "
+                    "rebuild the index with 'pkg rebuild-index'.")
+                return 1
         return retcode
 
 def info(img_dir, args):
@@ -2116,7 +2156,7 @@ def image_create(img, args):
         return 0
 
 
-def rebuild_index(img, pargs):
+def rebuild_index(img_dir, pargs):
         """pkg rebuild-index
 
         Forcibly rebuild the search indexes. Will remove existing indexes
@@ -2126,26 +2166,25 @@ def rebuild_index(img, pargs):
         if pargs:
                 usage(_("rebuild-index: command does not take operands " \
                     "('%s')") % " ".join(pargs))
+        try:
+                api_inst = api.ImageInterface(img_dir, CLIENT_API_VERSION,
+                    get_tracker(quiet), None, PKG_CLIENT_NAME)
+        except api_errors.ImageNotFoundException, e:
+                error(_("'%s' is not an install image") % e.user_dir)
+                return 1
 
         try:
-                img.history.operation_name = "rebuild-index"
-                img.rebuild_search_index(get_tracker(quiet))
-        except api_errors.PermissionsException, e:
-                cmd_error("rebuild-index", e)
-                return 1
+                api_inst.rebuild_search_index()
         except api_errors.CorruptedIndexException:
-                img.history.operation_result = RESULT_FAILED_SEARCH
                 error(INCONSISTENT_INDEX_ERROR_MESSAGE)
                 return 1
-        # Because rebuild_index is not currently running through the API, it's
-        # necessary to catch the search_error version.
-        except (api_errors.ProblematicPermissionsIndexException,
-            search_errors.ProblematicPermissionsIndexException), e:
-                img.history.operation_result = RESULT_FAILED_STORAGE
+        except api_errors.ProblematicPermissionsIndexException, e:
                 error(str(e) + PROBLEMATIC_PERMISSIONS_ERROR_MESSAGE)
                 return 1
+        except api_errors.MainDictParsingException, e:
+                error(str(e))
+                return 1
         else:
-                img.history.operation_result = RESULT_SUCCEEDED
                 return 0
 
 def history_list(img, args):
@@ -2380,7 +2419,7 @@ def main_func():
                 elif subcommand == "unfreeze":
                         return unfreeze(img, pargs)
                 elif subcommand == "search":
-                        return search(img, pargs)
+                        return search(mydir, pargs)
                 elif subcommand == "info":
                         return info(mydir, pargs)
                 elif subcommand == "contents":
@@ -2409,7 +2448,7 @@ def main_func():
                                 msg(_("History purged."))
                         return ret_code
                 elif subcommand == "rebuild-index":
-                        return rebuild_index(img, pargs)
+                        return rebuild_index(mydir, pargs)
                 else:
                         usage(_("unknown subcommand '%s'") % subcommand)
 

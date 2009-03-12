@@ -32,6 +32,7 @@
 ^src/pkgdefs/protoproto$
 ^src/pkgrecv$
 ^src/pkgsend$
+^src/ply-.*$
 ^src/pyOpenSSL-.*$
 ^src/um/data/updatemanager-preferences.schemas$
 ^src/um/data/updatemanager.desktop$

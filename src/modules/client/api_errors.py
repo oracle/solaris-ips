@@ -25,6 +25,8 @@
 # Use is subject to license terms.
 #
 
+import socket
+import urllib2
 import urlparse
 
 # EmptyI for argument defaults; can't import from misc due to circular
@@ -215,6 +217,16 @@ class ProblematicPermissionsIndexException(IndexingException):
                     "%s because of incorrect " \
                     "permissions. Please correct this issue then " \
                     "rebuild the index." % self.cause
+
+
+class MainDictParsingException(ApiException):
+        """This is used when the main dictionary could not parse a line."""
+        def __init__(self, e):
+                ApiException.__init__(self)
+                self.e = e
+
+        def __str__(self):
+                return str(e)
         
 
 class NonLeafPackageException(ApiException):
@@ -248,11 +260,6 @@ class InvalidDepotResponseException(ApiException):
                         s += "\nEncountered the following error(s):\n%s" % \
                             self.data
                 return s
-
-class BEException(ApiException):
-        def __init__(self):
-                ApiException.__init__(self)
-
 
 class DataError(ApiException):
         """Base exception class used for all data related errors."""
@@ -322,6 +329,9 @@ class InvalidResourceLocation(TransportError):
         def __str__(self):
                 return _("'%s' is not a valid location.") % self.data
 
+class BEException(ApiException):
+        def __init__(self):
+                ApiException.__init__(self)
 
 class InvalidBENameException(BEException):
         def __init__(self, be_name):
@@ -391,6 +401,78 @@ class UnrecognizedOptionsToInfo(ApiException):
                 s = _("Info does not recognize the following options:")
                 for o in self._opts:
                         s += _(" '") + str(o) + _("'")
+                return s
+
+
+class ProblematicSearchServers(ApiException):
+        def __init__(self, failed, invalid):
+                self.failed_servers = failed
+                self.invalid_servers  = invalid
+
+        def __str__(self):
+                s = _("Some servers failed to respond appropriately:\n")
+                for pub, err in self.failed_servers:
+                        if isinstance(err, urllib2.HTTPError):
+                                s += _("    %(o)s: %(msg)s (%(code)d)\n" % \
+                                    { 'o':pub["origin"], 'msg':err.msg,
+                                    'code':err.code })
+                        elif isinstance(err, urllib2.URLError):
+                                if isinstance(err.args[0], socket.timeout):
+                                        s += _("    %(o)s: %(to)s\n" % \
+                                            { 'o':pub["origin"],
+                                            'to':"timeout" })
+                                else:
+                                        s += _("    %(o)s: %(other)s\n" % \
+                                            { 'o':pub["origin"],
+                                            'other':err.args[0][1] })
+                        elif isinstance(err, RuntimeError):
+                                s += _("    %(o)s: %(msg)s\n" % \
+                                    { 'o':pub["origin"], 'msg':str(err)})
+                        else:
+                                s += "FOO" + str(err)
+                for pub in self.invalid_servers:
+                        s += _("%s appears not to be a valid package depot.\n" \
+                            % pub['origin'])
+                return s
+
+
+class IncorrectIndexFileHash(ApiException):
+        """This is used when the index hash value doesn't match the hash of the
+        packages installed in the image."""
+        pass
+
+
+class InconsistentIndexException(ApiException):
+        """This is used when the existing index is found to have inconsistent
+        versions."""
+        def __init__(self, e):
+                self.exception = e
+
+        def __str__(self):
+                return str(self.exception)
+
+
+class SlowSearchUsed(ApiException):
+        def __str__(self):
+                return _("Search capabilities and performance are degraded.\n"
+                    "To improve, run 'pkg rebuild-index'.")
+
+
+class BooleanQueryException(ApiException):
+        def __init__(self, ac, pc):
+                ApiException.__init__(self)
+                self.action_child = ac
+                self.package_child = pc
+
+        def __str__(self):
+                ac_s = _("This expression produces action results:\n")
+                ac_q = "%s\n" % self.action_child
+                pc_s = _("This expression produces package results:\n")
+                pc_q = "%s\n" % self.package_child
+                s = _("%(ac_s)s%(ac_q)s%(pc_s)s%(pc_q)s'AND' and 'OR' require "
+                    "those expressions to produce the same type of results.") \
+                    % { "ac_s" : ac_s, "ac_q" : ac_q, "pc_s" : pc_s,
+                    "pc_q" : pc_q }
                 return s
 
 
@@ -741,3 +823,12 @@ class NotYetValidCertificate(CertificateError):
                             "cert": self.data, "uri": uri }
                 return _("Certificate '%s' has a future effective date.") % \
                     self.data
+
+
+class ServerReturnError(ApiException):
+        def __init__(self, line):
+                ApiException.__init__(self)
+                self.line = line
+
+        def __str__(self):
+                return _("Gave a bad response:%s") % line

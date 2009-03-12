@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -109,8 +109,5 @@ class GroupAction(generic.Action):
                     gr.writefile()
 
         def generate_indices(self):
-                return {
-                    "groupname": self.attrs["groupname"]
-                }
-                
+                return [("group", "name", self.attrs["groupname"], None)]
 

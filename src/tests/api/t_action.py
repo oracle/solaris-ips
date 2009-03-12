@@ -86,7 +86,7 @@ Incorrect attribute list.
                 self.assertAttributes(a, ["name", "value", "path"])
                 self.assertAttributeValue(a, "name", "foo")
                 self.assertAttributeValue(a, "value", "bar")
-                self.assertAttributeValue(a, "path", "/tmp/foo")
+                self.assertAttributeValue(a, "path", "tmp/foo")
 
                 # Make sure that unescaped double quotes are parsed properly
                 # inside a single-quoted value.
@@ -94,7 +94,7 @@ Incorrect attribute list.
                 self.assertAttributes(a, ["name", "path", "value"])
                 self.assertAttributeValue(a, "name", "f\"o\"o")
                 self.assertAttributeValue(a, "value", "bar")
-                self.assertAttributeValue(a, "path", "/tmp/foo")
+                self.assertAttributeValue(a, "path", "tmp/foo")
 
                 # Make sure that escaped single quotes are parsed properly
                 # inside a single-quoted value.
@@ -102,7 +102,7 @@ Incorrect attribute list.
                 self.assertAttributes(a, ["name", "path", "value"])
                 self.assertAttributeValue(a, "name", "f'o'o")
                 self.assertAttributeValue(a, "value", "bar")
-                self.assertAttributeValue(a, "path", "/tmp/foo")
+                self.assertAttributeValue(a, "path", "tmp/foo")
 
                 # You should be able to separate key/value pairs with tabs as
                 # well as spaces.
@@ -110,26 +110,26 @@ Incorrect attribute list.
                 self.assertAttributes(a, ["name", "path", "value"])
                 self.assertAttributeValue(a, "name", "foo")
                 self.assertAttributeValue(a, "value", "bar")
-                self.assertAttributeValue(a, "path", "/tmp/foo")
+                self.assertAttributeValue(a, "path", "tmp/foo")
 
                 # Unescaped, unpaired quotes are allowed in the middle of values
                 # without further quoting
                 a = action.fromstr("file 12345 name=foo\"bar path=/tmp/foo")
                 self.assertAttributes(a, ["name", "path"])
                 self.assertAttributeValue(a, "name", "foo\"bar")
-                self.assertAttributeValue(a, "path", "/tmp/foo")
+                self.assertAttributeValue(a, "path", "tmp/foo")
 
                 # They can even be paired.  Note this is not like shell quoting.
                 a = action.fromstr("file 12345 name=foo\"bar\"baz path=/tmp/foo")
                 self.assertAttributes(a, ["name", "path"])
                 self.assertAttributeValue(a, "name", "foo\"bar\"baz")
-                self.assertAttributeValue(a, "path", "/tmp/foo")
+                self.assertAttributeValue(a, "path", "tmp/foo")
 
                 # An unquoted value can end in an escaped backslash
                 a = action.fromstr("file 12345 name=foo\\ path=/tmp/foo")
                 self.assertAttributes(a, ["name", "path"])
                 self.assertAttributeValue(a, "name", "foo\\")
-                self.assertAttributeValue(a, "path", "/tmp/foo")
+                self.assertAttributeValue(a, "path", "tmp/foo")
 
                 # An action with multiple identical attribute names should
                 # result in an attribute with a list value.

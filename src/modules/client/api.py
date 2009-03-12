@@ -24,22 +24,38 @@
 
 import copy
 import errno
+import httplib
+import threading
+import urllib
+import urllib2
+import socket
 import os
-import pkg.client.bootenv as bootenv
-import pkg.client.image as image
-import pkg.client.api_errors as api_errors
-import pkg.client.history as history
-import pkg.client.publisher as publisher
-import pkg.fmri as fmri
-import pkg.misc as misc
-import pkg.search_errors as search_errors
-from pkg.client.imageplan import EXECUTED_OK
-from pkg.client import global_settings
 import simplejson as json
 import threading
 import urllib2
 
-CURRENT_API_VERSION = 11
+import pkg.client.api_errors as api_errors
+import pkg.client.bootenv as bootenv
+import pkg.client.history as history
+import pkg.client.image as image
+import pkg.client.indexer as indexer
+import pkg.client.publisher as publisher
+import pkg.client.query_parser as query_p
+import pkg.client.variant as variant
+import pkg.fmri as fmri
+import pkg.misc as misc
+import pkg.search_errors as search_errors
+
+from pkg.client.imageplan import EXECUTED_OK
+from pkg.client import global_settings
+
+from pkg.misc import versioned_urlopen
+from pkg.client.history import RESULT_SUCCEEDED
+from pkg.client.history import RESULT_FAILED_STORAGE
+
+from pkg.query_parser import BooleanQueryException
+
+CURRENT_API_VERSION = 12
 CURRENT_P5I_VERSION = 1
 
 class ImageInterface(object):
@@ -75,7 +91,7 @@ class ImageInterface(object):
                 canceled changes. It can raise VersionException and
                 ImageNotFoundException."""
 
-                compatible_versions = set([11])
+                compatible_versions = set([12])
 
                 if version_id not in compatible_versions:
                         raise api_errors.VersionException(CURRENT_API_VERSION,
@@ -184,13 +200,13 @@ class ImageInterface(object):
                                 self.img.imageplan.update_index = update_index
                                 res = not self.img.imageplan.nothingtodo()
                         except api_errors.PlanCreationException, e:
-                                self.__reset_unlock()
                                 self.__set_history_PlanCreationException(e)
+                                self.__reset_unlock()
                                 raise
                         except (api_errors.CanceledException, fmri.IllegalFmri,
                             Exception), e:
-                                self.__reset_unlock()
                                 self.log_operation_end(error=e)
+                                self.__reset_unlock()
                                 raise
                 finally:
                         self.__activity_lock.release()
@@ -242,28 +258,28 @@ class ImageInterface(object):
                                 self.img.imageplan.update_index = update_index
                                 res = not self.img.imageplan.nothingtodo()
                         except api_errors.CanceledException:
-                                self.__reset_unlock()
                                 self.img.history.operation_result = \
                                     history.RESULT_CANCELED
+                                self.__reset_unlock()
                                 raise
                         except api_errors.NonLeafPackageException, e:
-                                self.__reset_unlock()
                                 self.img.history.operation_result = \
                                     history.RESULT_FAILED_CONSTRAINED
+                                self.__reset_unlock()
                                 raise
                         except api_errors.PlanCreationException, e:
-                                self.__reset_unlock()
                                 self.__set_history_PlanCreationException(e)
+                                self.__reset_unlock()
                                 raise
                         except fmri.IllegalFmri:
-                                self.__reset_unlock()
                                 self.img.history.operation_result = \
                                     history.RESULT_FAILED_BAD_REQUEST
+                                self.__reset_unlock()
                                 raise
                         except Exception:
-                                self.__reset_unlock()
                                 self.img.history.operation_result = \
                                     history.RESULT_FAILED_UNKNOWN
+                                self.__reset_unlock()
                                 raise
                 finally:
                         self.__activity_lock.release()
@@ -396,21 +412,21 @@ class ImageInterface(object):
                                     history.RESULT_FAILED_BAD_REQUEST
                                 raise
                         except api_errors.CanceledException:
-                                self.__reset_unlock()
                                 self.img.history.operation_result = \
                                     history.RESULT_CANCELED
+                                self.__reset_unlock()
                                 raise
                         except api_errors.PlanCreationException, e:
-                                self.__reset_unlock()
                                 self.__set_history_PlanCreationException(e)
+                                self.__reset_unlock()
                                 raise
                         except api_errors.IpkgOutOfDateException:
                                 self.__reset_unlock()
                                 raise
                         except Exception:
-                                self.__reset_unlock()
                                 self.img.history.operation_result = \
                                     history.RESULT_FAILED_UNKNOWN
+                                self.__reset_unlock()
                                 raise
                 finally:
                         self.__activity_lock.release()
@@ -528,6 +544,11 @@ class ImageInterface(object):
                                     history.RESULT_FAILED_SEARCH
                                 self.img.cleanup_downloads()
                                 raise api_errors.CorruptedIndexException(e)
+                        except search_errors.MainDictParsingException, e:
+                                self.img.history.operation_result = \
+                                    history.RESULT_FAILED_STORAGE
+                                self.img.cleanup_downloads()
+                                raise api_errors.MainDictParsingException(e)
                         except Exception, e:
                                 self.img.history.operation_result = \
                                     history.RESULT_FAILED_UNKNOWN
@@ -881,6 +902,208 @@ class ImageInterface(object):
                             result=history.RESULT_FAILED_CONSTRAINED)
                 else:
                         self.log_operation_end(error=e)
+
+        def local_search(self, query_lst):
+                for i, q in enumerate(query_lst):
+                        l = query_p.QueryLexer()
+                        l.build()
+                        qp = query_p.QueryParser(l)
+                        try:
+                                query = qp.parse(q.encoded_text())
+                        except BooleanQueryException, e:
+                                raise api_errors.BooleanQueryException(e.ac,
+                                    e.pc)
+                        self.img.update_index_dir()
+                        assert self.img.index_dir
+                        try:
+                                query.set_info(q.num_to_return, q.start_point,
+                                    self.img.index_dir,
+                                    self.img.get_manifest_path,
+                                    self.img.gen_installed_pkg_names,
+                                    q.case_sensitive)
+                                excludes = [variant.Variants(
+                                    {"variant.arch": self.img.get_arch()}
+                                    ).allow_action]
+                                res = query.search(self.img.gen_installed_pkgs,
+                                    self.img.get_manifest_path, excludes)
+                        except search_errors.InconsistentIndexException, e:
+                                raise api_errors.InconsistentIndexException(e)
+                        return ((i, None, r) for r in res)
+
+        @staticmethod
+        def __parse_v_0(line, pub, v):
+                line = line.strip()
+                fields = line.split(None, 3)
+                return (0, pub, (v, Query.RETURN_ACTIONS, (fields[:4])))
+
+        @staticmethod
+        def __parse_v_1(line, pub, v):
+                fields = line.split(None, 2)
+                if len(fields) != 3:
+                        raise api_errors.ServerReturnError(line)
+                try:
+                        return_type = int(fields[1])
+                except ValueError:
+                        raise api_errors.ServerReturnError(line)
+                if return_type == Query.RETURN_ACTIONS:
+                        subfields = fields[2].split(None, 2)
+                        return (fields[0], pub, (v, return_type,
+                            (subfields[0], urllib.unquote(subfields[1]),
+                            subfields[2])))
+                elif return_type == Query.RETURN_PACKAGES:
+                        return (fields[0], pub, (v, return_type, fields[2]))
+                else:
+                        raise api_errors.ServerReturnError(line)
+
+        def remote_search(self, query_str_and_args_lst, servers=None):
+                failed = []
+                invalid = []
+                
+                if not servers:
+                        servers = self.img.gen_publishers()
+
+                single = True
+                
+                if not len(query_str_and_args_lst) == 1:
+                        single = False
+
+                allow_version_zero = single
+
+                version_list = [1]
+                
+                if single:
+                        method = "GET"
+                        q = query_str_and_args_lst[0]
+                        qs = [urllib.quote(str(q), safe='')]
+                        version_1_data = None
+                        l = query_p.QueryLexer()
+                        l.build()
+                        qp = query_p.QueryParser(l)
+                        try:
+                                query = qp.parse(q.encoded_text())
+                        except BooleanQueryException, e:
+                                raise api_errors.BooleanQueryException(e.ac,
+                                    e.pc)
+                        if query.allow_version(0):
+                                version_list.append(0)
+                                qs.append(urllib.quote(q.ver_0(), safe=''))
+                        
+                else:
+                        method = "POST"
+                        qs = None
+                        version_1_data = urllib.urlencode(
+                            [(i, str(q))
+                            for i, q in enumerate(query_str_and_args_lst)])
+
+                for pub in servers:
+                        prefix = None
+                        uuid = None
+                        if not isinstance(pub, publisher.Publisher):
+                                origin = pub["origin"]
+                                try:
+                                        pub = self.img.get_publisher(
+                                            origin=origin)
+                                except api_errors.UnknownPublisher:
+                                        pass
+                                else:
+                                        repo = pub.selected_repository
+                                        origin = repo.get_origin(origin)
+                                        prefix = pub.prefix
+                                        uuid = pub.client_uuid
+                        else:
+                                origin = pub.selected_repository.origins[0]
+
+                        uuid = None
+                        ssl_key = None
+                        ssl_cert = None
+                        if isinstance(origin, publisher.RepositoryURI):
+                                ssl_key = origin.ssl_key
+                                ssl_cert = origin.ssl_cert
+                                origin = origin.uri
+                        if ssl_cert:
+                                try:
+                                        misc.validate_ssl_cert(ssl_cert, prefix=prefix, uri=origin)
+                                except api_errors.CertificateError, e:
+                                        failed.append((pub, e))
+                                        continue
+                        ssl_tuple = (ssl_key, ssl_cert)
+                        try:
+                                res, v = versioned_urlopen(origin,
+                                    "search", version_list, tail=qs,
+                                    data=version_1_data,
+                                    ssl_creds=ssl_tuple, imgtype=self.img.type,
+                                    method=method, uuid=uuid)
+                        except urllib2.HTTPError, e:
+                                if e.code != httplib.NOT_FOUND and \
+                                    e.code != httplib.NO_CONTENT:
+                                        failed.append((pub, e))
+                                continue
+                        except urllib2.URLError, e:
+                                failed.append((pub, e))
+                                continue
+                        except RuntimeError, e:
+                                failed.append((pub, e))
+                                continue
+
+                        try:
+                                if v == 0:
+                                        for line in res:
+                                                yield self.__parse_v_0(line, pub, v)
+                                else:
+                                        if not self.validate_response(res, v):
+                                                invalid.append(pub)
+                                                continue
+                                        for line in res:
+                                                yield self.__parse_v_1(line, pub, v)
+                        except socket.timeout, e:
+                                failed.append((pub, e))
+                                continue
+                        except api_errors.ServerReturnError, e:
+                                failed.append((pub, e))
+                                continue
+                if failed or invalid:
+                        raise api_errors.ProblematicSearchServers(failed,
+                            invalid)
+
+        def rebuild_search_index(self):
+                """Rebuilds the search indexes.  Removes all
+                existing indexes and replaces them from scratch rather than
+                performing the incremental update which is usually used.
+                This is useful for times when the index for the client has
+                been corrupted."""
+                self.img.update_index_dir()
+                self.img.history.operation_name = "rebuild-index"
+                if not os.path.isdir(self.img.index_dir):
+                        self.img.mkdirs()
+                try:
+                        excludes = [variant.Variants(
+                            {"variant.arch": self.img.get_arch()}).allow_action]
+                        ind = indexer.Indexer(self.img, self.img.get_manifest,
+                            self.img.get_manifest_path,
+                            self.progresstracker, excludes)
+                        ind.rebuild_index_from_scratch(
+                            self.img.gen_installed_pkgs())
+                except search_errors.ProblematicPermissionsIndexException, e:
+                        self.img.history.operation_result = \
+                            RESULT_FAILED_STORAGE
+                        raise api_errors.ProblematicPermissionsIndexException(e)
+                except search_errors.MainDictParsingException, e:
+                        self.img.history.operation_result = \
+                            history.RESULT_FAILED_STORAGE
+                        self.img.cleanup_downloads()
+                        raise api_errors.MainDictParsingException(e)
+                else:
+                        self.img.history.operation_result = RESULT_SUCCEEDED
+
+
+                
+        @staticmethod
+        def validate_response(res, v):
+                try:
+                        s = res.next()
+                        return s == Query.VALIDATION_STRING[v]
+                except StopIteration:
+                        return False
 
         def add_publisher(self, pub, refresh_allowed=True):
                 """Add the provided publisher object to the image
@@ -1271,6 +1494,17 @@ class ImageInterface(object):
 
                 return json.dump(dump_struct, fileobj, ensure_ascii=False,
                     allow_nan=False, indent=2, sort_keys=True)
+
+
+class Query(query_p.Query):
+        def __init__(self, text, case_sensitive, return_actions=True,
+            num_to_return=None, start_point=None):
+                if return_actions:
+                        return_type = query_p.Query.RETURN_ACTIONS
+                else:
+                        return_type = query_p.Query.RETURN_PACKAGES
+                query_p.Query.__init__(self, text, case_sensitive, return_type,
+                    num_to_return, start_point)
 
 
 class PlanDescription(object):

@@ -28,6 +28,7 @@ import os
 import pkg.catalog as catalog
 import pkg.fmri as fmri
 import pkg.misc as misc
+import pkg.server.query_parser as query_p
 import pkg.server.repositoryconfig as rc
 import pkg.server.transaction as trans
 
@@ -323,22 +324,11 @@ class Repository(object):
                 """Updates the repository's search indices."""
                 self.scfg.catalog.refresh_index()
 
-        def search(self, token):
-                """Generates a list of token type and fmri pairs.  search_done
-                search_done must be called by the caller of this function to
-                to ensure the repository is ready for the next search."""
-
-                if token is None:
-                        raise RepositorySearchTokenError(token)
-
-                if not self.scfg.search_available():
-                        raise RepositorySearchUnavailableError()
-
-                def output():
-                        for l in self.scfg.catalog.search(token):
-                                yield l
-                return output()
-
-        def search_done(self):
-                """Prepares the repository for the next search."""
-                self.scfg.catalog.query_engine.search_done()
+        def search(self, query_str_lst):
+                query_lst = [query_p.Query.fromstr(s) for s in query_str_lst]
+                
+                res_list = [
+                    self.scfg.catalog.search(q)
+                    for q in query_lst
+                ]
+                return res_list

@@ -80,6 +80,13 @@ MAKOARC = '%s-%s.tar.gz' % (MAKO, MAKOVER)
 MAKODIR = '%s-%s' % (MAKO, MAKOVER)
 MAKOURL = 'http://www.makotemplates.org/downloads/%s' % (MAKOARC)
 
+PLY = 'ply'
+PLYIDIR = 'ply'
+PLYVER = '3.1'
+PLYARC = '%s-%s.tar.gz' % (PLY, PLYVER)
+PLYDIR = '%s-%s' % (PLY, PLYVER)
+PLYURL = 'http://www.dabeaz.com/ply/%s' % (PLYARC)
+
 osname = platform.uname()[0].lower()
 ostype = arch = 'unknown'
 if osname == 'sunos':
@@ -397,6 +404,7 @@ class install_func(_install):
                         install_sw(PO, POVER, POARC, PODIR, POURL, POIDIR)
                         os.environ = saveenv
                 install_sw(MAKO, MAKOVER, MAKOARC, MAKODIR, MAKOURL, MAKOIDIR)
+                install_sw(PLY, PLYVER, PLYARC, PLYDIR, PLYURL, PLYIDIR)
 
                 # Remove some bits that we're not going to package, but be sure
                 # not to complain if we try to remove them twice.
@@ -547,6 +555,7 @@ class clobber_func(Command):
                 remove_sw(CP)
                 remove_sw(PO)
                 remove_sw(MAKO)
+                remove_sw(PLY)
 
 class test_func(Command):
         # NOTE: these options need to be in sync with tests/run.py

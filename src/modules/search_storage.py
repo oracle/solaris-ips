@@ -19,11 +19,11 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
 
-# need to add locks to the dictionary reading so that we don't have
-# multiple threads loading in the dictionary at the same time
+#
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Use is subject to license terms.
+#
 
 import os
 import errno
@@ -35,13 +35,11 @@ import pkg.fmri as fmri
 import pkg.search_errors as search_errors
 import pkg.portable as portable
 
-FMRI_FILE = 'id_to_fmri_dict.ascii'
-ACTION_FILE = 'id_to_action_dict.ascii'
-TT_FILE = 'id_to_token_type_dict.ascii'
-VERSION_FILE = 'id_to_version_dict.ascii'
-KEYVAL_FILE = 'id_to_keyval_dict.ascii'
+FAST_ADD = 'fast_add.v1'
+FAST_REMOVE = 'fast_remove.v1'
+MANIFEST_LIST = 'manf_list.v1'
 FULL_FMRI_FILE = 'full_fmri_list'
-MAIN_FILE = 'main_dict.ascii.v1'
+MAIN_FILE = 'main_dict.ascii.v2'
 BYTE_OFFSET_FILE = 'token_byte_offset.v1'
 FULL_FMRI_HASH_FILE = 'full_fmri_list.hash'
 
@@ -157,6 +155,9 @@ class IndexStoreBase(object):
         def get_file_path(self):
                 return self._file_path
 
+        def __copy__(self):
+                return self.__class__(self._name)
+
         def close_file_handle(self):
                 """Closes the file handle and clears it so that it cannot
                 be reused.
@@ -242,56 +243,109 @@ class IndexStoreMainDict(IndexStoreBase):
                 return self._file_handle
 
         @staticmethod
+        def __parse_main_dict_line_help(split_chars, unquote_list, line):
+                if not split_chars:
+                        if not line:
+                                raise se.EmptyMainDictLine(split_chars, unquote_list)
+                        elif not unquote_list:
+                                raise se.EmptyUnquoteList(split_chars, line)
+                        else:
+                                assert len(unquote_list) == 1
+                                if unquote_list[0]:
+                                        return urllib.unquote(line)
+                                else:
+                                        return line
+                else:
+                        cur_char = split_chars[0]
+                        tmp = line.split(cur_char)
+                        if unquote_list[0]:
+                                header = urllib.unquote(tmp[0])
+                        else:
+                                header = tmp[0]
+                        return (header, [
+                            IndexStoreMainDict.__parse_main_dict_line_help(
+                            split_chars[1:], unquote_list[1:], x)
+                            for x
+                            in tmp[1:]])
+        
+        @staticmethod
         def parse_main_dict_line(line):
                 """Parses one line of a main dictionary file.
                 Changes to this function must be paired with changes to
                 write_main_dict_line below.
                 """
+
                 line = line.rstrip('\n')
-                tok_end = line.find(' ')
-                assert tok_end > 0
-                tok = urllib.unquote(line[:tok_end])
-                entries = line[tok_end + 2:].split('(')
-                res = []
-                for entry in entries:
-                        tup, lst = entry.split('=>')
-                        fmri_ids_text = lst.strip()
-                        fmri_ids = fmri_ids_text.split(' ')
-                        fmri_ids[len(fmri_ids) - 1] = \
-                            fmri_ids[len(fmri_ids) - 1].strip(')')
-                        tok_type_id, action_id, keyval_id = tup.split(',')
-                        tok_type_id = int(tok_type_id)
-                        action_id = int(action_id)
-                        keyval_id = int(keyval_id)
-                        processed_fmris = []
-                        for label in fmri_ids:
-                                fmri_id, version_id = label.split(',')
-                                fmri_id = int(fmri_id)
-                                version_id = int(version_id)
-                                processed_fmris.append((fmri_id, version_id))
-                        res.append((tok_type_id, action_id, keyval_id,
-                            processed_fmris))
-                return (tok, res)
+                return IndexStoreMainDict.__parse_main_dict_line_help(
+                    [" ", "!", "@", "#", ","],
+                    [True, False, False, True, False, False], line)
 
         @staticmethod
-        def write_main_dict_line(file_handle, token, dictionary):
+        def __write_main_dict_line_help(file_handle, sep_chars, quote, entries):
+                assert sep_chars
+                if not isinstance(entries, tuple):
+                        assert len(sep_chars) == 1
+                        file_handle.write(sep_chars[0])
+                        if quote[0]:
+                                file_handle.write(urllib.quote(str(entries)))
+                        else:
+                                file_handle.write(str(entries))
+                        return
+                header, entries = entries
+                file_handle.write(sep_chars[0])
+                if quote[0]:
+                        file_handle.write(urllib.quote(str(header)))
+                else:
+                        file_handle.write(str(header))
+                for e in entries:
+                        IndexStoreMainDict.__write_main_dict_line_help(
+                            file_handle, sep_chars[1:], quote[1:], e)
+        
+        @staticmethod
+        def write_main_dict_line(file_handle, token, lst):
                 """Paired with parse_main_dict_line above. Writes
                 a line in a main dictionary file in the appropriate format.
                 """
-                file_handle.write(urllib.quote(token))
-                for k in dictionary.keys():
-                        tok_type_id, action_id, keyval_id = k
-                        file_handle.write(" (" + str(tok_type_id) +
-                                          "," + str(action_id) + "," +
-                                          str(keyval_id) + " =>")
-                        tmp_list = list(dictionary[k])
-                        tmp_list.sort()
-                        for pkg_id, version_id in tmp_list:
-                                file_handle.write(" " + str(pkg_id) + "," +
-                                                  str(version_id))
-                        file_handle.write(")")
+                IndexStoreMainDict.__write_main_dict_line_help(file_handle,
+                    ["", " ", "!", "@", "#", ","],
+                    [True, False, False, True, False, False], (token, lst))
                 file_handle.write("\n")
 
+        @staticmethod
+        def __transform_main_dict_line_help(sep_chars, quote, entries):
+                assert sep_chars
+                ret = [sep_chars[0]]
+                if not isinstance(entries, tuple):
+                        assert len(sep_chars) == 1
+                        if quote[0]:
+                                ret.append(urllib.quote(str(entries)))
+                        else:
+                                ret.append(str(entries))
+                        return ret
+                header, entries = entries
+                if quote[0]:
+                        ret.append(urllib.quote(str(header)))
+                else:
+                        ret.append(str(header))
+                for e in entries:
+                        tmp = \
+                            IndexStoreMainDict.__transform_main_dict_line_help(
+                            sep_chars[1:], quote[1:], e)
+                        ret.extend(tmp)
+
+                return ret
+        
+        @staticmethod
+        def transform_main_dict_line(token, lst):
+                """Paired with parse_main_dict_line above. Writes
+                a line in a main dictionary file in the appropriate format.
+                """
+                tmp = IndexStoreMainDict.__transform_main_dict_line_help(
+                    ["", " ", "!", "@", "#", ","],
+                    [True, False, False, True, False, False], (token, lst))
+                tmp.append("\n")
+                return "".join(tmp)
+                
         def count_entries_removed_during_partial_indexing(self):
                 """Returns the number of entries removed during a second phase
                 of indexing.
@@ -485,17 +539,21 @@ class IndexStoreDict(IndexStoreBase):
                                 line = line.rstrip('\n')
                                 self._dict[line_cnt] = line
 
-        def matching_read_dict_file(self, in_set):
+        def matching_read_dict_file(self, in_set, update=False):
                 """If it's necessary to reread the file, it rereads the
                 file. It matches the line it reads against the contents of
                 in_set. If a match is found, the entry on the line is stored
                 for later use, otherwise the line is skipped. When all items
                 in in_set have been matched, the method is done and returns.
                 """
-                if self.should_reread():
-                        self._dict.clear()
+                if update or self.should_reread():
+                        if not update:
+                                self._dict.clear()
                         match_cnt = 0
                         max_match = len(in_set)
+                        self._file_handle.seek(0)
+                        # skip the version line
+                        self._file_handle.next()
                         for i, line in enumerate(self._file_handle):
                                 if i in in_set:
                                         match_cnt += 1
@@ -562,12 +620,13 @@ class IndexStoreDictMutable(IndexStoreBase):
                 """
                 self.write_dict_file(use_dir, version_num)
                 self._file_handle = open(os.path.join(use_dir, self._name),
-                    'ab')
+                    'ab', buffering=131072)
 
         def write_entity(self, entity, my_id):
                 """Writes the entity out to the file with my_id """
                 assert self._file_handle is not None
-                self._file_handle.write(self.__quote(str(entity)) + " " + str(my_id) + "\n")
+                self._file_handle.write(self.__quote(str(entity)) + " " +
+                    str(my_id) + "\n")
 
         def write_dict_file(self, path, version_num):
                 """ Generates an iterable list of string representations of
@@ -614,17 +673,15 @@ class IndexStoreSetHash(IndexStoreBase):
                 for res, line in enumerate(self._file_handle):
                         assert res < 1
                         self.hash_val = line.rstrip()
-                if res > 0:
-                        raise search_errors.IncorrectIndexFileHash(res)
                 return res
-                
+
         def check_against_file(self, vals):
                 """Check the hash value of vals against the value stored
                 in the file for this object."""
-                if self.hash_val == sha.new().hexdigest():
-                        self.read_dict_file()
                 incoming_hash = self.calc_hash(vals)
-                return self.hash_val == incoming_hash 
+                if self.hash_val != incoming_hash:
+                        raise search_errors.IncorrectIndexFileHash(
+                            self.hash_val, incoming_hash)
 
         def count_entries_removed_during_partial_indexing(self):
                 """Returns the number of entries removed during a second phase

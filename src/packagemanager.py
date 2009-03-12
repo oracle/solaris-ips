@@ -50,7 +50,7 @@ CATEGORIES_STATUS_COLUMN_INDEX = 0   # Index of Status Column in Categories Tree
 
 STATUS_COLUMN_INDEX = 2   # Index of Status Column in Application TreeView
 
-CLIENT_API_VERSION = 11
+CLIENT_API_VERSION = 12
 PKG_CLIENT_NAME = "packagemanager"
 
 # Load Start Page from lang dir if available

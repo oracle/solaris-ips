@@ -239,16 +239,16 @@ class PkgFmri(object):
         def get_version(self):
                 return self.version.get_short_version()
 
-        def get_pkg_stem(self, anarchy=False, include_pkg=True):
+        def get_pkg_stem(self, anarchy=False, include_scheme=True):
                 """Return a string representation of the FMRI without a specific
                 version.  Anarchy returns a stem without any publisher."""
                 pkg_str = ""
                 if not self.publisher or \
                     self.publisher.startswith(PREF_PUB_PFX) or anarchy:
-                        if include_pkg:
+                        if include_scheme:
                                 pkg_str = "pkg:/"
                         return "%s%s" % (pkg_str, self.pkg_name)
-                if include_pkg:
+                if include_scheme:
                         pkg_str = "pkg://"
                 return "%s%s/%s" % (pkg_str, self.publisher, self.pkg_name)
 
@@ -266,24 +266,31 @@ class PkgFmri(object):
                 return "pkg://%s/%s@%s" % (publisher, self.pkg_name,
                     self.version.get_short_version())
 
-        def get_fmri(self, default_publisher = None, anarchy = False):
+        def get_fmri(self, default_publisher=None, anarchy=False,
+            include_scheme=True):
                 """Return a string representation of the FMRI.
                 Anarchy returns a string without any publisher."""
+                pkg_str = ""
                 publisher = self.publisher
                 if publisher == None:
                         publisher = default_publisher
 
                 if not publisher or publisher.startswith(PREF_PUB_PFX) \
                     or anarchy:
+                        if include_scheme:
+                                pkg_str = "pkg:/"
                         if self.version == None:
-                                return "pkg:/%s" % self.pkg_name
+                                return "%s%s" % (pkg_str, self.pkg_name)
 
-                        return "pkg:/%s@%s" % (self.pkg_name, self.version)
+                        return "%s%s@%s" % (pkg_str, self.pkg_name,
+                            self.version)
 
+                if include_scheme:
+                        pkg_str = "pkg://"
                 if self.version == None:
-                        return "pkg://%s/%s" % (publisher, self.pkg_name)
+                        return "%s%s/%s" % (pkg_str, publisher, self.pkg_name)
 
-                return "pkg://%s/%s@%s" % (publisher, self.pkg_name,
+                return "%s%s/%s@%s" % (pkg_str, publisher, self.pkg_name,
                                 self.version)
 
         def __str__(self):

@@ -328,16 +328,7 @@ class Manifest(object):
                                 np = action.attrs["path"].lstrip(os.path.sep)
                                 action.attrs["path"] = np
 
-                        def include_this(a, excludes):
-                                """Callables in excludes list returns True
-                                if action is to be included, False if
-                                not"""
-                                for c in excludes:
-                                        if not c(a):
-                                                return False
-                                return True
-
-                        if not include_this(action, excludes):
+                        if not action.include_this(excludes):
                                 continue
 
                         self.size += int(action.attrs.get("pkg.size", "0"))
@@ -369,53 +360,53 @@ class Manifest(object):
                                                 d[v].add(action.attrs[v])
                 return
 
-        def search_dict(self):
-                """Return the dictionary used for searching."""
+        @staticmethod
+        def search_dict(file_path, excludes, return_line=False):
+                file_handle = file(file_path)
+                cur_pos = 0
+                line = file_handle.readline()
                 action_dict = {}
-                for a in self.actions:
-                        for k, v in a.generate_indices().iteritems():
-                                # v is the token to be searched on. If the
-                                # token is empty, it cannot be retrieved and
-                                # it should not be placed in the dictionary.
-                                if v == "":
-                                        continue
-                                # Special handling of AttributeActions is
-                                # needed inorder to place the correct values
-                                # into the correct output columns. This is
-                                # the pattern of which information changes
-                                # on an item by item basis is differs for
-                                # AttributeActions.
-                                #
-                                # The right solution is probably to reorganize
-                                # this function and all the generate_indicies
-                                # functions to allow the necessary flexibility.
-                                if isinstance(a,
-                                    actions.attribute.AttributeAction):
-                                        tok_type = a.attrs.get(a.key_attr)
-                                        t = (a.name, k)
+                def __handle_list(lst, cp):
+                        for action_name, subtype, tok, full_value in lst:
+                                if action_name == "set":
+                                        if full_value is None:
+                                                full_value = tok
                                 else:
-                                        tok_type = k
-                                        t = (a.name, a.attrs.get(a.key_attr))
-                                # The value might be a list if an indexed
-                                # action attribute is multivalued, such as
-                                # driver aliases.
-                                if isinstance(v, list):
-                                        if tok_type in action_dict:
-                                                action_dict[tok_type].update(
-                                                    dict((i, [t]) for i in v))
-                                        else:
-                                                action_dict[tok_type] = \
-                                                    dict((i, [t]) for i in v)
+                                        if full_value is None:
+                                                full_value = subtype
+                                        if full_value is None:
+                                                full_value = action_name
+                                if isinstance(tok, list):
+                                        __handle_list([
+                                            (action_name, subtype, t,
+                                            full_value)
+                                            for t in tok
+                                        ], cp)
                                 else:
-                                        if tok_type not in action_dict:
-                                                action_dict[tok_type] = \
-                                                    { v: [t] }
-                                        elif v not in action_dict[tok_type]:
-                                                action_dict[tok_type][v] = [t]
+                                        if (tok, action_name, subtype,
+                                            full_value) in action_dict:
+                                                action_dict[(tok, action_name,
+                                                    subtype, full_value)
+                                                    ].append(cp)
                                         else:
-                                                action_dict[tok_type][v].append(
-                                                    t)
-                                        assert action_dict[tok_type][v]
+                                                action_dict[(tok, action_name,
+                                                    subtype, full_value)] = [cp]
+                while line:
+                        l = line.strip()
+                        if l and l[0] != "#":
+                                action = actions.fromstr(l)
+                                if action.include_this(excludes):
+                                        if action.attrs.has_key("path"):
+                                                np = action.attrs["path"].lstrip(os.path.sep)
+                                                action.attrs["path"] = np
+                                        arg = cur_pos
+                                        if return_line:
+                                                arg = l
+                                        __handle_list(action.generate_indices(),
+                                            arg)
+                        cur_pos = file_handle.tell()
+                        line = file_handle.readline()
+                file_handle.close()
                 return action_dict
 
         def store(self, mfst_path):

@@ -195,9 +195,9 @@ class TestPkgInstallBasics(testutils.SingleDepotTestCase):
                 self.pkg("verify")
                 self.pkg("list")
 
-                self.pkg("search /lib/libc.so.1")
+                self.pkg("search -l /lib/libc.so.1")
                 self.pkg("search -r /lib/libc.so.1")
-                self.pkg("search blah", exit = 1)
+                self.pkg("search -l blah", exit = 1)
                 self.pkg("search -r blah", exit = 1)
 
                 # check to make sure timestamp was set to correct value

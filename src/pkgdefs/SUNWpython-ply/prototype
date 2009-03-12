@@ -1,0 +1,22 @@
+i pkginfo
+i copyright
+d none usr 755 root sys
+d none usr/lib 755 root bin
+d none usr/lib/python2.4 755 root bin
+d none usr/lib/python2.4/vendor-packages 755 root bin
+d none usr/lib/python2.4/vendor-packages/ply 755 root bin
+d none usr/lib/python2.4/vendor-packages/ply-3.1-py2.4.egg-info 755 root bin
+f none usr/lib/python2.4/vendor-packages/ply-3.1-py2.4.egg-info/dependency_links.txt 444 root bin
+f none usr/lib/python2.4/vendor-packages/ply-3.1-py2.4.egg-info/PKG-INFO 444 root bin
+f none usr/lib/python2.4/vendor-packages/ply-3.1-py2.4.egg-info/SOURCES.txt 444 root bin
+f none usr/lib/python2.4/vendor-packages/ply-3.1-py2.4.egg-info/top_level.txt 444 root bin
+f none usr/lib/python2.4/vendor-packages/ply/cpp.py 444 root bin
+f none usr/lib/python2.4/vendor-packages/ply/cpp.pyc 444 root bin
+f none usr/lib/python2.4/vendor-packages/ply/ctokens.py 444 root bin
+f none usr/lib/python2.4/vendor-packages/ply/ctokens.pyc 444 root bin
+f none usr/lib/python2.4/vendor-packages/ply/__init__.py 444 root bin
+f none usr/lib/python2.4/vendor-packages/ply/__init__.pyc 444 root bin
+f none usr/lib/python2.4/vendor-packages/ply/lex.py 444 root bin
+f none usr/lib/python2.4/vendor-packages/ply/lex.pyc 444 root bin
+f none usr/lib/python2.4/vendor-packages/ply/yacc.py 444 root bin
+f none usr/lib/python2.4/vendor-packages/ply/yacc.pyc 444 root bin

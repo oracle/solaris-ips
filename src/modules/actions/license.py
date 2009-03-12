@@ -144,3 +144,11 @@ class LicenseAction(generic.Action):
                         return file(path, "rb")
 
                 return opener
+
+        def generate_indices(self):
+                indices = [("license", idx, self.attrs[idx], None)
+                           for idx in self.reverse_indices]
+                if hasattr(self, "hash"):
+                        indices.append(("license", "content", self.hash, None))
+
+                return indices

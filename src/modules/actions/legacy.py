@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -149,6 +149,4 @@ class LegacyAction(generic.Action):
                                         os.unlink(pkginfo)
 
         def generate_indices(self):
-                return {
-                    "legacy_pkg": self.attrs["pkg"]
-                }
+                return [("legacy", "legacy_pkg", self.attrs["pkg"], None)]

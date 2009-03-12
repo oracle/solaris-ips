@@ -30,12 +30,14 @@
 
 import pkg.indexer as indexer
 import pkg.search_storage as ss
+from pkg.misc import EmptyI
 
 class Indexer(indexer.Indexer):
-        def __init__(self, index_dir, get_manf_func, default_max_ram_use,
-            progtrack=None):
-                indexer.Indexer.__init__(self, index_dir, get_manf_func,
-                    default_max_ram_use, progtrack)
+        def __init__(self, image, get_manf_func, get_manifest_path,
+            progtrack=None, excludes=EmptyI):
+                indexer.Indexer.__init__(self, image.index_dir, get_manf_func,
+                    get_manifest_path, progtrack, excludes)
+                self.image = image
                 self._data_dict['full_fmri_hash'] = \
                     ss.IndexStoreSetHash('full_fmri_list.hash')
                 self._data_full_fmri_hash = self._data_dict['full_fmri_hash']
@@ -63,4 +65,3 @@ class Indexer(indexer.Indexer):
                         for d in self._data_dict.values():
                                 d.close_file_handle()
                 return res is not None
-

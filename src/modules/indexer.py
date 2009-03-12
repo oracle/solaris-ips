@@ -25,67 +25,6 @@
 
 # Indexer is a class designed to index a set of manifests or pkg plans
 # and provide a compact representation on disk which is quickly searchable.
-#
-# The file format it uses consists of 7 dictionaries. Each of these dictionaries
-# list a version number in their first line. This version number is what allows
-# the files to be opened consistently even when an re-index is happeneing. 5
-# of these dictionaries (id_to_fmri_dict, id_to_action_dict,
-# id_to_token_type_dict, id_to_keyval_dict and id_to_version_dict) are stored
-# as an unsorted list. The line number of each entry corresponds to the id
-# number the main dictionary uses for that entry. Full fmri list is a list of
-# all packages which the current index has indexed. This is used for checking
-# whether a package needs to be reindexed on a catalog rebuild.
-#
-# Here is an example of a line from the main dictionary, it is explained below:
-# %gconf.xml (5,3,65689 => 249,202) (5,3,65690 => 249,202)
-# (5,3,65691 => 249,202) (5,3,65692 => 249,202)
-#
-# The main dictionary has a more complicated format. Each line begins with a
-# search token (%gconf.xml) followed by a list of mappings. Each mapping takes
-# a token_type, action, and keyvalue tuple ((5,3,65689), (5,3,65690), 
-# (5,3,65691), (5,3,65692)) to a list of pkg-stem, version pairs (249,202) in
-# which the token is found in an action with token_type, action, and keyvalues
-# matching the tuple. Further compaction is gained by storing everything but
-# the token as an id which the other dictionaries can turn into human-readable
-# content.
-#
-# In short, the definition of a main dictionary entry is:
-# Note: "(", ")", and "=>" actually appear in the file
-#       "[", "]", and "+" are used to specify pattern
-# token [(token_type_id, action_id, keyval_id => [pkg_stem_id,version_id ]+)]+
-#
-# To use this class, construct one passing the directory to use for index
-# storage to the contructor. For example:
-# ind = Indexer('/usr/foo/path/to/image/or/repo/index')
-# Externally, create either a list of fmri and path to that fmri pairs
-# or build a pkg_plan. These should contain the changed, added, or removed,
-# packages to the system.
-#
-# The client code should use
-# client_update_index(pkgplanList, tmp_index_dir = ?)
-# where tmp_index_dir allows a different directory than the default to be
-# used for storing the index while it's being built. The default is to
-# create a subdirectory TMP of the index directory and store the output
-# in there temporarily.
-#
-# The server code should use
-# server_update_index(self, fmris, tmp_index_dir = ?)
-#
-# The assumption is that the client will always be passing pkg plans
-# (with one exception) while the server will always be passing
-# fmri's. The one exception to the client side assumption is when the index is
-# being rebuilt. In that case, the client calls check_index. check_index only
-# rebuilds the index if the index is empty or if it is forced
-# to by an argument.
-#
-# If the storage structure is changed substantially, it will be necessary
-# to change _calc_ram_use to reflect the new structures. The figures used
-# were generated during a server index of a repository by taking a sampling
-# of the internal structures after every manifest read and observing the memory
-# usage reported by pmap. This provided a correlation of .9966 between the
-# predicted and observed memory used during that run. When applied to a client
-# side index it provided a correlation of .9964 between the predicted and
-# observed memory used.
 
 import os
 import urllib
@@ -94,9 +33,11 @@ import errno
 
 import pkg.version
 
+import pkg.fmri as fmri
 import pkg.manifest as manifest
 import pkg.search_storage as ss
 import pkg.search_errors as search_errors
+from pkg.misc import EmptyI
 
 # Constants for indicating whether pkgplans or fmri-manifest path pairs are
 # used as arguments.
@@ -107,19 +48,26 @@ INITIAL_VERSION_NUMBER = 1
 
 FILE_OPEN_TIMEOUT_SECS = 2
 
+MAX_ADDED_NUMBER_PACKAGES = 20
+
+SORT_FILE_PREFIX = "sort."
+
+# Set max sort file as 128M, which is a tell position of that value.
+SORT_FILE_MAX_SIZE = 128 * 1024 * 1024
+
 class Indexer(object):
         """ See block comment at top for documentation """
         file_version_string = "VERSION: "
 
-        def __init__(self, index_dir, get_manifest_func, default_max_ram_use,
-            progtrack=None):
+        def __init__(self, index_dir, get_manifest_func, get_manifest_path_func,
+            progtrack=None, excludes=EmptyI):
                 self._num_keys = 0
                 self._num_manifests = 0
                 self._num_entries = 0
-                self._max_ram_use = float(os.environ.get("PKG_INDEX_MAX_RAM",
-                    default_max_ram_use)) * 1024
-                self._get_manf_func = get_manifest_func
-
+                self.get_manifest_func = get_manifest_func
+                self.get_manifest_path_func = get_manifest_path_func
+                self.excludes = excludes
+                
                 # This structure was used to gather all index files into one
                 # location. If a new index structure is needed, the files can
                 # be added (or removed) from here. Providing a list or
@@ -127,31 +75,25 @@ class Indexer(object):
                 # index files.
 
                 self._data_dict = {
-                        'fmri': ss.IndexStoreListDict(ss.FMRI_FILE),
-                        'action':
-                            ss.IndexStoreListDict(ss.ACTION_FILE),
-                        'tok_type':
-                            ss.IndexStoreListDict(ss.TT_FILE),
-                        'version':
-                            ss.IndexStoreListDict(ss.VERSION_FILE,
-                                Indexer._build_version),
-                        'keyval':
-                            ss.IndexStoreListDict(ss.KEYVAL_FILE),
-                        'full_fmri': ss.IndexStoreSet(ss.FULL_FMRI_FILE),
-                        'main_dict': ss.IndexStoreMainDict(ss.MAIN_FILE),
-                        'token_byte_offset':
+                        "fast_add":
+                            ss.IndexStoreSet(ss.FAST_ADD),
+                        "fast_remove":
+                            ss.IndexStoreSet(ss.FAST_REMOVE),
+                        "manf":
+                            ss.IndexStoreListDict(ss.MANIFEST_LIST),
+                        "full_fmri": ss.IndexStoreSet(ss.FULL_FMRI_FILE),
+                        "main_dict": ss.IndexStoreMainDict(ss.MAIN_FILE),
+                        "token_byte_offset":
                             ss.IndexStoreDictMutable(ss.BYTE_OFFSET_FILE)
                         }
 
-                self._data_fmri = self._data_dict['fmri']
-                self._data_action = self._data_dict['action']
-                self._data_tok_type = self._data_dict['tok_type']
-                self._data_version = self._data_dict['version']
-                self._data_keyval = self._data_dict['keyval']
-                self._data_full_fmri = self._data_dict['full_fmri']
-                self._data_main_dict = self._data_dict['main_dict']
-                self._data_token_offset = self._data_dict['token_byte_offset']
-
+                self._data_fast_add = self._data_dict["fast_add"]
+                self._data_fast_remove = self._data_dict["fast_remove"]
+                self._data_manf = self._data_dict["manf"]
+                self._data_full_fmri = self._data_dict["full_fmri"]
+                self._data_main_dict = self._data_dict["main_dict"]
+                self._data_token_offset = self._data_dict["token_byte_offset"]
+                
                 self._index_dir = index_dir
                 self._tmp_dir = os.path.join(self._index_dir, "TMP")
 
@@ -163,6 +105,13 @@ class Indexer(object):
                 self._progtrack = progtrack
 
                 self._file_timeout_secs = FILE_OPEN_TIMEOUT_SECS
+
+                self._sort_fh = None
+                self._sort_file_num = 0
+                self._sort_file_bytes = 0
+
+                self.at_fh = {}
+                self.st_fh = {}
 
         @staticmethod
         def _build_version(vers):
@@ -198,7 +147,7 @@ class Indexer(object):
                                         if self._progtrack is not None:
                                                 self._progtrack.index_add_progress()
                         except:
-                                self._data_dict['main_dict'].close_file_handle()
+                                self._data_dict["main_dict"].close_file_handle()
                                 raise
                 finally:
                         for d in self._data_dict.values():
@@ -208,260 +157,206 @@ class Indexer(object):
                 if self._progtrack is not None:
                         self._progtrack.index_done()
 
-        def _add_terms(self, added_fmri, new_dict, added_dict):
-                """ Adds the terms in new_dict to added_dict as pointers to
-                added_fmri. Returns the number of entries added.
-                """
+        def __close_sort_fh(self):
+                self._sort_fh.close()
+                tmp_file_name = os.path.join(self._tmp_dir,
+                    SORT_FILE_PREFIX + str(self._sort_file_num - 1))
+                tmp_fh = file(tmp_file_name, "rb")
+                l = tmp_fh.readlines()
+                tmp_fh.close()
+                l.sort()
+                tmp_fh = file(tmp_file_name, "wb")
+                tmp_fh.writelines(l)
+                tmp_fh.close()
 
-                # Originally the structure of added_dict was
-                # dict -> dict -> set. This arrangement wasted an enormous
-                # amount of space on the overhead of the second level
-                # dictionaries and third level sets. That structure was
-                # replaced by dict -> list of
-                # (key, list of (fmri, version) tuples) tuples.
-                #
-                # Because the second and third levels are small,
-                # especially compared to the top level, doing a linear search
-                # through the second level list is worth the savings of not
-                # using dictionaries at the second level.
-                #
-                # The use of a set at the third level was to prevent
-                # duplicate entries of a fmri-version tuple; however, this
-                # should almost never happen as manifests cannot 
-                # contain duplicate actions. The only way for duplicate
-                # entries to occur is for a token to be repeated
-                # within an action. For example a description of "the package
-                # installs foo in the bar directory and installs baz in the
-                # random directory" would have duplicate entries for "the"
-                # and "installs." This problem is resolved by the conversion
-                # of the list into a set in write_main_dict_line prior to the
-                # list being written to.
+        def _add_terms(self, pfmri, new_dict):
+                pfmri = pfmri.get_fmri(anarchy=True, include_scheme=False)
+                p_id = self._data_manf.get_id_and_add(pfmri)
+                pfmri = p_id
+                
+                for tok_tup in new_dict.keys():
+                        tok, action_type, subtype, fv = tok_tup
+                        lst = [(action_type, [(subtype, [(fv, [(pfmri,
+                            list(new_dict[tok_tup]))])])])]
+                        s = ss.IndexStoreMainDict.transform_main_dict_line(tok,
+                            lst)
+                        if len(s) + self._sort_fh.tell() >= SORT_FILE_MAX_SIZE:
+                                self.__close_sort_fh()
+                                self._sort_fh = file(os.path.join(self._tmp_dir,
+                                    SORT_FILE_PREFIX +
+                                    str(self._sort_file_num)), "wb")
+                                self._sort_file_num += 1
+                        self._sort_fh.write(s)
+                return
 
-                added_terms = 0
-                version = added_fmri.version
-                pkg_stem = added_fmri.get_pkg_stem(anarchy=True)
-                fmri_id = self._data_fmri.get_id_and_add(pkg_stem)
-                version_id = self._data_version.get_id_and_add(version)
-                for tok_type in new_dict.keys():
-                        tok_type_id = \
-                            self._data_tok_type.get_id_and_add(tok_type)
-                        for tok in new_dict[tok_type]:
-                                if not (tok in added_dict):
-                                        added_dict[tok] = []
-                                ak_list = new_dict[tok_type][tok]
-                                for action, keyval in ak_list:
-                                        action_id = self._data_action.get_id_and_add(action)
-                                        keyval_id = self._data_keyval.get_id_and_add(keyval)
-                                        s = (tok_type_id, action_id, keyval_id)
-                                        found = False
-                                        tup = fmri_id, version_id
-                                        for (list_s, list_set) in \
-                                            added_dict[tok]:
-                                                if list_s == s:
-                                                        list_set.append(tup)
-                                                        found = True
-                                                        break
-                                        if not found:
-                                                tmp_set = []
-                                                tmp_set.append(tup)
-                                                added_dict[tok].append(
-                                                    (s, tmp_set))
-                                        added_terms += 1
-                return added_terms
+        def _fast_update(self, filters_pkgplan_list):
+                filters, pkgplan_list = filters_pkgplan_list
+                for p in pkgplan_list:
+                        d_fmri, o_fmri = p
 
-        @staticmethod
-        def _calc_ram_use(dict_size, ids, total_terms):
-                """ Estimates RAM used based on size of added and
-                removed dictionaries. It returns an estimated size in KB.
-                """
-                # As noted above, these numbers were estimated through
-                # experimentation. Do not change these unless the
-                # data structure has changed. If it's necessary to change
-                # them, resstimating them experimentally will
-                # be necessary.
-                return 0.5892 * dict_size +  -0.12295 * ids + \
-                    -0.009595 * total_terms + 23512
-
-        def _process_pkgplan_list(self, pkgplan_info, start_point):
-                """ Takes a list of pkg plans and updates the internal storage
-                to reflect the changes to the installed packages that plan
-                reflects.
-                """
-                (d_filters, pkgplan_list) = pkgplan_info
-
-                added_dict = {}
-                removed_packages = set()
-
-                remove_action_ids = set()
-                remove_keyval_ids = set()
-                remove_fmri_ids = set()
-                remove_version_ids = set()
-                remove_tok_type_ids = set()
-
-                total_terms = 0
-                stopping_early = False
-
-                if self._progtrack is not None and start_point == 0:
-                        self._progtrack.index_set_goal("Indexing Packages",
-                            len(pkgplan_list))
-
-                while start_point < len(pkgplan_list) and not stopping_early:
-                        d_fmri, o_fmri = pkgplan_list[start_point]
-                        dest_fmri = d_fmri
-                        origin_fmri = o_fmri
-
-                        start_point += 1
-
-                        # The pkg plan for a newly added package has an origin
-                        # fmri of None. In that case, there's nothing
-                        # to remove.
-                        if origin_fmri is not None:
-                                self._data_full_fmri.remove_entity(
-                                    origin_fmri.get_fmri(anarchy=True))
-                                mfst = self._get_manf_func(origin_fmri,
-                                    add_to_cache=False)
-                                origin_dict = mfst.search_dict()
-                                version = origin_fmri.version
-                                pkg_stem = \
-                                    origin_fmri.get_pkg_stem(anarchy=True)
-                                fmri_id = self._data_fmri.get_id(pkg_stem)
-                                version_id = self._data_version.get_id(version)
-                                remove_fmri_ids.add(fmri_id)
-                                remove_version_ids.add(version_id)
-                                for tok_type in origin_dict.keys():
-                                        tok_type_id = \
-                                            self._data_tok_type.get_id(tok_type)
-                                        remove_tok_type_ids.add(tok_type_id)
-                                        for tok in origin_dict[tok_type]:
-                                                ak_list = \
-                                                    origin_dict[tok_type][tok]
-                                                for action, keyval in ak_list:
-                                                        action_id = \
-                                                            self._data_action.get_id(action)
-                                                        keyval_id = \
-                                                            self._data_keyval.get_id(keyval)
-                                                        remove_action_ids.add(action_id)
-                                                        remove_keyval_ids.add(keyval_id)
-                                                        removed_packages.add( \
-                                                            (fmri_id,
-                                                            version_id))
-
-                        # The pkg plan when a package is uninstalled has a
-                        # dest_fmri of None, in which case there's nothing
-                        # to add.
-                        if dest_fmri is not None:
+                        if d_fmri:
                                 self._data_full_fmri.add_entity(
-                                    dest_fmri.get_fmri(anarchy=True))
-                                mfst = self._get_manf_func(dest_fmri,
-                                    add_to_cache=False)
-                                dest_dict = mfst.search_dict()
-                                total_terms += self._add_terms(dest_fmri,
-                                    dest_dict, added_dict)
-
-                        t_cnt = 0
-                        for d in self._data_dict.values():
-                                t_cnt += d.count_entries_removed_during_partial_indexing()
-
-                        est_ram_use = self._calc_ram_use(len(added_dict), t_cnt,
-                            (total_terms + len(removed_packages)))
-
+                                    d_fmri.get_fmri(anarchy=True))
+                                d_tmp = d_fmri.get_fmri(anarchy=True,
+                                    include_scheme=False)
+                                assert not self._data_fast_add.has_entity(d_tmp)
+                                if self._data_fast_remove.has_entity(d_tmp):
+                                        self._data_fast_remove.remove_entity(
+                                            d_tmp)
+                                else:
+                                        self._data_fast_add.add_entity(d_tmp)
+                        if o_fmri:
+                                self._data_full_fmri.remove_entity(
+                                    o_fmri.get_fmri(anarchy=True))
+                                o_tmp = o_fmri.get_fmri(anarchy=True,
+                                    include_scheme=False)
+                                assert not self._data_fast_remove.has_entity(
+                                    o_tmp)
+                                if self._data_fast_add.has_entity(o_tmp):
+                                        self._data_fast_add.remove_entity(o_tmp)
+                                else:
+                                        self._data_fast_remove.add_entity(o_tmp)
+                        
                         if self._progtrack is not None:
                                 self._progtrack.index_add_progress()
+                return
 
-                        if est_ram_use >= self._max_ram_use:
-                                stopping_early = True
-                                break
-
-                return (stopping_early, start_point, (added_dict,
-                    removed_packages, remove_action_ids, remove_fmri_ids,
-                    remove_keyval_ids, remove_tok_type_ids, remove_version_ids))
-
-        def _process_fmris(self, fmris, start_point):
-                """ Takes fmris and updates the internal storage to reflect the
-                new packages.
+        def _process_fmris(self, fmris):
+                """ Takes a list of fmris and updates the
+                internal storage to reflect the new packages.
                 """
-                added_dict = {}
-                removed_packages = set()
+                removed_paths = []
 
-                remove_action_ids = set()
-                remove_keyval_ids = set()
-                remove_fmri_ids = set()
-                remove_version_ids = set()
-                remove_tok_type_ids = set()
-
-                stopping_early = False
-                total_terms = 0
-
-                if self._progtrack is not None and start_point == 0:
-                        self._progtrack.index_set_goal("Indexing Packages",
-                            len(fmris))
-
-                while start_point < len(fmris) and \
-                    not stopping_early:
-                        added_fmri = fmris[start_point]
-                        start_point += 1
+                for added_fmri in fmris:
                         self._data_full_fmri.add_entity(
                             added_fmri.get_fmri(anarchy=True))
-                        mfst = self._get_manf_func(added_fmri,
-                            add_to_cache=False)
-                        new_dict = mfst.search_dict()
-                        total_terms += self._add_terms(added_fmri, new_dict,
-                            added_dict)
-
-                        t_cnt = 0
-                        for d in self._data_dict.values():
-                                t_cnt += \
-                                    d.count_entries_removed_during_partial_indexing()
-
-                        est_ram_use = self._calc_ram_use(len(added_dict), t_cnt,
-                            (total_terms + len(removed_packages)))
+                        new_dict = manifest.Manifest.search_dict(
+                            self.get_manifest_path_func(added_fmri),
+                            self.excludes)
+                        self._add_terms(added_fmri, new_dict)
 
                         if self._progtrack is not None:
                                 self._progtrack.index_add_progress()
+                return removed_paths
 
-                        if est_ram_use >= self._max_ram_use:
-                                stopping_early = True
-                                break
-
-                return (stopping_early, start_point, (added_dict,
-                    removed_packages, remove_action_ids, remove_fmri_ids,
-                    remove_keyval_ids, remove_tok_type_ids, remove_version_ids))
-
-        def _write_main_dict_line(self, file_handle, token, k_k_list_list,
-            remove_action_ids, remove_keyval_ids, remove_tok_type_ids,
-            remove_fmri_ids, remove_version_ids):
+        def _write_main_dict_line(self, file_handle, token,
+            fv_fmri_pos_list_list, out_dir):
                 """ Writes out the new main dictionary file and also adds the
                 token offsets to _data_token_offset.
                 """
 
-                cur_location = file_handle.tell()
+                cur_location = str(file_handle.tell())
                 self._data_token_offset.write_entity(token, cur_location)
 
-                tmp = {}
+                for at, st_list in fv_fmri_pos_list_list:
+                        if at not in self.at_fh:
+                                self.at_fh[at] = file(os.path.join(out_dir,
+                                    "__at_" + at), "wb")
+                        self.at_fh[at].write(cur_location)
+                        self.at_fh[at].write("\n")
+                        for st, fv_list in st_list:
+                                if st not in self.st_fh:
+                                        self.st_fh[st] = \
+                                            file(os.path.join(out_dir,
+                                            "__st_" + st), "wb")
+                                self.st_fh[st].write(cur_location)
+                                self.st_fh[st].write("\n")
+                                for fv, p_list in fv_list:
+                                        for p_id, m_off_set in p_list:
+                                                p_id = int(p_id)
+                                                pfmri = self._data_manf.get_entity(p_id)
+                                                pfmri = fmri.PkgFmri(pfmri)
+                                                dir = os.path.join(out_dir,
+                                                    "pkg",
+                                                    pfmri.get_pkg_stem(
+                                                    anarchy=True,
+                                                    include_scheme=False))
+                                                if not os.path.exists(dir):
+                                                        os.makedirs(dir)
+                                                path = os.path.join(dir,
+                                                    str(pfmri.version))
+                                                fh = open(path, "ab")
+                                                fh.write(cur_location)
+                                                fh.write("\n")
+                                                fh.close()
 
-                for (k, k_list) in k_k_list_list:
-                        tok_type_id, action_id, keyval_id = k
-                        remove_action_ids.discard(action_id)
-                        remove_keyval_ids.discard(keyval_id)
-                        remove_tok_type_ids.discard(tok_type_id)
-                        # This conversion to a set is necessary to prevent
-                        # duplicate entries. See the block comment in
-                        # add_terms for more details.
-                        tmp[k] = set(k_list)
-                        for pkg_id, version_id in k_list:
-                                remove_fmri_ids.discard(pkg_id)
-                                remove_version_ids.discard(version_id)
+                
                 self._data_main_dict.write_main_dict_line(file_handle,
-                    token, tmp)
+                    token, fv_fmri_pos_list_list)
 
 
+        @staticmethod
+        def __splice(ret_list, source_list):
+                tmp_res = []
+                for val, sublist in source_list:
+                        found = False
+                        for r_val, r_sublist in ret_list:
+                                if val == r_val:
+                                        found = True
+                                        Indexer.__splice(r_sublist, sublist)
+                                        break
+                        if not found:
+                                tmp_res.append((val, sublist))
+                ret_list.extend(tmp_res)
+
+        def _gen_new_toks_from_files(self):
+                def get_line(fh):
+                        try:
+                                return ss.IndexStoreMainDict.parse_main_dict_line(fh.next())
+                        except StopIteration:
+                                return None
+                fh_dict = dict([
+                    (i, file(os.path.join(self._tmp_dir,
+                    SORT_FILE_PREFIX + str(i))))
+                    for i in range(self._sort_file_num)
+                ])
+                cur_toks = {}
+                for i in fh_dict.keys():
+                        line = get_line(fh_dict[i])
+                        if line is None:
+                                del fh_dict[i]
+                        else:
+                                cur_toks[i] = line
+                while cur_toks:
+                        min_token = None
+                        matches = []
+                        for i in fh_dict.keys():
+                                cur_tok, info = cur_toks[i]
+                                if cur_tok is None:
+                                        continue
+                                if min_token is None or cur_tok < min_token:
+                                        min_token = cur_tok
+                                        matches = [i]
+                                elif cur_tok == min_token:
+                                        matches.append(i)
+                        assert min_token is not None
+                        assert len(matches) > 0
+                        res = None
+                        for i in matches:
+                                new_tok, new_info = cur_toks[i]
+                                assert new_tok == min_token
+                                try:
+                                        while new_tok == min_token:
+                                                if res is None:
+                                                        res = new_info
+                                                else:
+                                                        self.__splice(res, new_info)
+                                                new_tok, new_info = \
+                                                    ss.IndexStoreMainDict.parse_main_dict_line(fh_dict[i].next())
+                                        cur_toks[i] = new_tok, new_info
+                                except StopIteration:
+                                        fh_dict[i].close()
+                                        del fh_dict[i]
+                                        del cur_toks[i]
+                        assert res is not None
+                        yield min_token, res
+                return
+                
         def _update_index(self, dicts, out_dir):
                 """ Processes the main dictionary file and writes out a new
                 main dictionary file reflecting the changes in the packages.
                 """
-                (added_dict, removed_packages, remove_action_ids,
-                 remove_fmri_ids, remove_keyval_ids, remove_tok_type_ids,
-                 remove_version_ids) = dicts
+                removed_paths = dicts
 
                 if self.empty_index:
                         file_handle = []
@@ -480,74 +375,77 @@ class Indexer(object):
                 # the version information the search storage class added.
                 out_main_dict_handle = \
                     open(os.path.join(out_dir,
-                        self._data_main_dict.get_file_name()), 'ab')
+                        self._data_main_dict.get_file_name()), "ab",
+                        buffering=131072)
 
                 self._data_token_offset.open_out_file(out_dir,
                     self.file_version_number)
 
-                added_toks = added_dict.keys()
-                added_toks.sort()
-                added_toks.reverse()
+                new_toks_available = True
+                new_toks_it = self._gen_new_toks_from_files()
+                try:
+                        tmp = new_toks_it.next()
+                        next_new_tok, new_tok_info = tmp
+                except StopIteration:
+                        new_toks_available = False
 
                 try:
                         for line in file_handle:
-                                (tok, entries) = \
+                                (tok, at_lst) = \
                                     self._data_main_dict.parse_main_dict_line(
                                     line)
-                                new_entries = []
-                                for (tok_type_id, action_id, keyval_id,
-                                    fmri_ids) in entries:
-                                        k = (tok_type_id, action_id, keyval_id)
-                                        fmris = []
-                                        for fmri_version in fmri_ids:
-                                                if not fmri_version in \
-                                                    removed_packages:
-                                                        fmris.append(
-                                                            fmri_version)
-                                        if fmris:
-                                                new_entries.append((k, fmris))
+                                existing_entries = []
+                                for at, st_list in at_lst:
+                                        st_res = []
+                                        for st, fv_list in st_list:
+                                                fv_res = []
+                                                for fv, p_list in fv_list:
+                                                        p_res = []
+                                                        for p_id, m_off_set in \
+                                                                    p_list:
+                                                                p_id = int(p_id)
+                                                                pfmri = self._data_manf.get_entity(p_id)
+                                                                if pfmri not in removed_paths:
+                                                                        p_res.append((p_id, m_off_set))
+                                                        if p_res:
+                                                                fv_res.append(
+                                                                    (fv, p_res))
+                                                if fv_res:
+                                                        st_res.append(
+                                                            (st, fv_res))
+                                        if st_res:
+                                                existing_entries.append(
+                                                    (at, st_res))
                                 # Add tokens newly discovered in the added
                                 # packages which are alphabetically earlier
                                 # than the token most recently read from the
                                 # existing main dictionary file.
-                                while added_toks and (added_toks[-1] < tok):
-                                        new_tok = added_toks.pop()
-                                        assert len(new_tok) > 0
+                                while new_toks_available and next_new_tok < tok:
+                                        assert len(next_new_tok) > 0
                                         self._write_main_dict_line(
-                                            out_main_dict_handle,
-                                            new_tok, added_dict[new_tok],
-                                            remove_action_ids,
-                                            remove_keyval_ids,
-                                            remove_tok_type_ids,
-                                            remove_fmri_ids, remove_version_ids)
+                                            out_main_dict_handle, next_new_tok,
+                                            new_tok_info, out_dir)
+                                        try:
+                                                next_new_tok, new_tok_info = \
+                                                    new_toks_it.next()
+                                        except StopIteration:
+                                                new_toks_available = False
+                                                del next_new_tok
+                                                del new_tok_info
 
                                 # Combine the information about the current
                                 # token from the new packages with the existing
                                 # information for that token.
-                                if added_dict.has_key(tok):
-                                        tmp = added_toks.pop()
-                                        assert tmp == tok
-                                        for (k, k_list) in added_dict[tok]:
-                                                found = False
-                                                for (j, j_list) in new_entries:
-                                                        if j == k:
-                                                                found = True
-                                                                j_list.extend(
-                                                                    k_list)
-                                                                break
-                                                if not found:
-                                                        new_entries.append(
-                                                            (k, k_list))
+                                if new_toks_available and next_new_tok == tok:
+                                        self.__splice(existing_entries,
+                                            new_tok_info)
                                 # If this token has any packages still
                                 # associated with it, write them to the file.
-                                if new_entries:
+                                if existing_entries:
                                         assert len(tok) > 0
                                         self._write_main_dict_line(
                                             out_main_dict_handle,
-                                            tok, new_entries, remove_action_ids,
-                                            remove_keyval_ids,
-                                            remove_tok_type_ids,
-                                            remove_fmri_ids, remove_version_ids)
+                                            tok, existing_entries, out_dir)
                 finally:
                         if not self.empty_index:
                                 file_handle.close()
@@ -555,33 +453,19 @@ class Indexer(object):
 
                 # For any new tokens which are alphabetically after the last
                 # entry in the existing file, add them to the end of the file.
-                while added_toks:
-                        new_tok = added_toks.pop()
-                        assert len(new_tok) > 0
+                while new_toks_available:
+                        assert len(next_new_tok) > 0
                         self._write_main_dict_line(
-                            out_main_dict_handle,
-                            new_tok, added_dict[new_tok], remove_action_ids,
-                            remove_keyval_ids, remove_tok_type_ids,
-                            remove_fmri_ids, remove_version_ids)
+                            out_main_dict_handle, next_new_tok,
+                            new_tok_info, out_dir)
+                        try:
+                                next_new_tok, new_tok_info = new_toks_it.next()
+                        except StopIteration:
+                                new_toks_available = False
                 out_main_dict_handle.close()
                 self._data_token_offset.close_file_handle()
 
-                # Things in remove_* are no longer found in the
-                # main dictionary and can be safely removed. This
-                # allows for reuse of space.
-                for tmp_id in remove_action_ids:
-                        self._data_action.remove_id(tmp_id)
-                for tmp_id in remove_keyval_ids:
-                        self._data_keyval.remove_id(tmp_id)
-                for tmp_id in remove_fmri_ids:
-                        self._data_fmri.remove_id(tmp_id)
-                for tmp_id in remove_tok_type_ids:
-                        self._data_tok_type.remove_id(tmp_id)
-                for tmp_id in remove_version_ids:
-                        self._data_version.remove_id(tmp_id)
-
-                added_dict.clear()
-                removed_packages.clear()
+                removed_paths = []
 
         def _write_assistant_dicts(self, out_dir):
                 """ Write out the companion dictionaries needed for
@@ -592,13 +476,10 @@ class Indexer(object):
                             d == self._data_token_offset:
                                 continue
                         d.write_dict_file(out_dir, self.file_version_number)
-
+                        
         def _generic_update_index(self, inputs, input_type,
-                                   tmp_index_dir = None):
-                """ Performs all the steps needed to update the indexes.
-                Inputs is an iterable object which either iterates over
-                tuples of fmris, or over fmris. Which is given is
-                signified by input_type"""
+            tmp_index_dir=None, image=None):
+                """ Performs all the steps needed to update the indexes."""
                 
                 # Allow the use of a directory other than the default
                 # directory to store the intermediate results in.
@@ -609,59 +490,73 @@ class Indexer(object):
                 # Read the existing dictionaries.
                 self._read_input_indexes(self._index_dir)
 
-                # If the tmp_index_dir exists, it suggests a previous indexing
-                # attempt aborted or that another indexer is running. In either
-                # case, throw an exception.
+                
                 try:
-                        os.makedirs(tmp_index_dir)
-                except OSError, e:
-                        if e.errno == errno.EEXIST:
-                                raise \
-                                    search_errors.PartialIndexingException(
-                                    tmp_index_dir)
-                        else:
-                                raise
-
-                more_to_do = True
-                start_point = 0
-                inputs = list(inputs)
-
-                while more_to_do:
-
-                        assert start_point >= 0
+                        # If the tmp_index_dir exists, it suggests a previous
+                        # indexing attempt aborted or that another indexer is
+                        # running. In either case, throw an exception.
+                        try:
+                                os.makedirs(os.path.join(tmp_index_dir))
+                                os.makedirs(os.path.join(tmp_index_dir, "pkg"))
+                        except OSError, e:
+                                if e.errno == errno.EEXIST:
+                                        raise search_errors.PartialIndexingException(tmp_index_dir)
+                                else:
+                                        raise
+                        inputs = list(inputs)
+                        skip = False
 
                         if input_type == IDX_INPUT_TYPE_PKG:
-                                (more_to_do, start_point, dicts) = \
-                                    self._process_pkgplan_list(inputs,
-                                        start_point)
+                                assert image
+                                if self._progtrack is not None:
+                                        self._progtrack.index_set_goal(
+                                            "Indexing Packages",
+                                            len(inputs[1]))
+                                self._fast_update(inputs)
+                                skip = True
+                                if len(self._data_fast_add._set) > \
+                                    MAX_ADDED_NUMBER_PACKAGES:
+                                        self._data_main_dict.close_file_handle()
+                                        if self._progtrack:
+                                                self._progtrack.index_optimize()
+                                        image.rebuild_search_index(
+                                            self._progtrack)
+                                        return
+
                         elif input_type == IDX_INPUT_TYPE_FMRI:
-                                (more_to_do, start_point, dicts) = \
-                                    self._process_fmris(
-                                        inputs, start_point)
+                                assert not self._sort_fh
+                                self._sort_fh = file(os.path.join(self._tmp_dir,
+                                    SORT_FILE_PREFIX +
+                                    str(self._sort_file_num)), "wb")
+                                self._sort_file_num += 1
+
+                                if self._progtrack is not None:
+                                        self._progtrack.index_set_goal(
+                                            "Indexing Packages",
+                                            len(inputs))
+                                dicts = self._process_fmris(inputs)
+                                # Update the main dictionary file
+                                self.__close_sort_fh()
+                                self._update_index(dicts, tmp_index_dir)
+
+                                self.empty_index = False
                         else:
-                                raise RuntimeError("Got unknown input_type: %s", 
-                                    input_type)
+                                raise RuntimeError(
+                                    "Got unknown input_type: %s", input_type)
 
-                        # Update the main dictionary file
-                        self._update_index(dicts, tmp_index_dir)
+                        # Write out the helper dictionaries
+                        self._write_assistant_dicts(tmp_index_dir)
 
-                        self.empty_index = False
+                        # Move all files from the tmp directory into the index
+                        # dir. Note: the need for consistent_open is that
+                        # migrate is not an atomic action.
+                        self._migrate(source_dir = tmp_index_dir, skip=skip)
 
-                        if more_to_do:
-                                self._data_main_dict.shift_file(tmp_index_dir,
-                                    ("_" + str(start_point)))
-
-                # Write out the helper dictionaries
-                self._write_assistant_dicts(tmp_index_dir)
-
-                # Move all files from the tmp directory into the index dir
-                # Note: the need for consistent_open is that migrate is not
-                # an atomic action.
-                self._migrate(source_dir = tmp_index_dir)
-
-                if self._progtrack is not None:
-                        self._progtrack.index_done()
-
+                        if self._progtrack is not None:
+                                self._progtrack.index_done()
+                finally:
+                        self._data_main_dict.close_file_handle()
+                
         def client_update_index(self, pkgplan_list, tmp_index_dir = None):
                 """ This version of update index is designed to work with the
                 client side of things. Specifically, it expects a pkg plan
@@ -671,6 +566,7 @@ class Indexer(object):
                 accidentally removing files.
                 """
                 assert self._progtrack is not None
+
                 self._generic_update_index(pkgplan_list, IDX_INPUT_TYPE_PKG,
                     tmp_index_dir)
 
@@ -684,8 +580,8 @@ class Indexer(object):
                 specified, it must NOT exist in the current directory structure.
                 This prevents the indexer from accidentally removing files.
                 """
-                self._generic_update_index(fmris, IDX_INPUT_TYPE_FMRI,
-                    tmp_index_dir)
+                self._generic_update_index(fmris,
+                    IDX_INPUT_TYPE_FMRI, tmp_index_dir)
 
         def check_index_existence(self):
                 """ Returns a boolean value indicating whether a consistent
@@ -724,8 +620,8 @@ class Indexer(object):
                         if e.errno == errno.EACCES:
                                 raise search_errors.ProblematicPermissionsIndexException(
                                     self._index_dir)
-                self._generic_update_index(fmris, IDX_INPUT_TYPE_FMRI,
-                    tmp_index_dir)
+                self._generic_update_index(fmris,
+                    IDX_INPUT_TYPE_FMRI, tmp_index_dir)
                 self.empty_index = False
 
         def setup(self):
@@ -734,6 +630,10 @@ class Indexer(object):
                 """
                 absent = False
                 present = False
+
+                if not os.path.exists(os.path.join(self._index_dir, "pkg")):
+                        os.makedirs(os.path.join(self._index_dir, "pkg"))
+                
                 for d in self._data_dict.values():
                         file_path = os.path.join(self._index_dir,
                             d.get_file_name())
@@ -760,7 +660,7 @@ class Indexer(object):
                 """ Checks fmri_set to see which members have not been indexed.
                 It modifies fmri_set.
                 """
-                data =  ss.IndexStoreSet('full_fmri_list')
+                data =  ss.IndexStoreSet("full_fmri_list")
                 try:
                         data.open(index_root)
                 except IOError, e:
@@ -774,7 +674,7 @@ class Indexer(object):
                 finally:
                         data.close_file_handle()
 
-        def _migrate(self, source_dir = None, dest_dir = None):
+        def _migrate(self, source_dir=None, dest_dir=None, skip=False):
                 """ Moves the indexes from a temporary directory to the
                 permanent one.
                 """
@@ -783,16 +683,30 @@ class Indexer(object):
                 if not dest_dir:
                         dest_dir = self._index_dir
                 assert not (source_dir == dest_dir)
-                logfile = os.path.join(dest_dir, "log")
-                lf = open(logfile, 'wb')
-                lf.write("moving " + source_dir + " to " + dest_dir + "\n")
-                lf.flush()
-
+                try:
+                        shutil.rmtree(os.path.join(dest_dir, "pkg"))
+                except EnvironmentError, e:
+                        if e.errno not in (errno.ENOENT, errno.ESRCH):
+                                raise
+                
+                shutil.move(os.path.join(source_dir, "pkg"),
+                    os.path.join(dest_dir, "pkg"))
+                
                 for d in self._data_dict.values():
-                        shutil.move(os.path.join(source_dir, d.get_file_name()),
-                            os.path.join(dest_dir, d.get_file_name()))
+                        if skip and (d == self._data_main_dict or
+                            d == self._data_token_offset):
+                                continue
+                        else:
+                                shutil.move(os.path.join(source_dir,
+                                    d.get_file_name()),
+                                    os.path.join(dest_dir, d.get_file_name()))
+                for at, fh in self.at_fh.items():
+                        fh.close()
+                        shutil.move(os.path.join(source_dir, "__at_" + at),
+                                    os.path.join(dest_dir, "__at_" + at))
 
-                lf.write("finished moving\n")
-                lf.close()
-                os.remove(logfile)
+                for st, fh in self.st_fh.items():
+                        fh.close()
+                        shutil.move(os.path.join(source_dir, "__st_" + st),
+                                    os.path.join(dest_dir, "__st_" + st))
                 shutil.rmtree(source_dir)
