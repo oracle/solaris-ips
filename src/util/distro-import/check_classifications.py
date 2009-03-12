@@ -45,7 +45,7 @@ class CheckClassifications(object):
 
       $ pfexec pkg list -a
 
-    to get a list of all the "latest" packages in the current authority.
+    to get a list of all the "latest" packages in the current publisher.
     Then for each one, it'll  do:
 
       $ pfexec pkg info -r <package_name>
@@ -61,12 +61,12 @@ class CheckClassifications(object):
     Flagged output lines start with "***".
 
     If you want to check the classifications for a repository that is not
-    the current authority, then you will need to do:
+    the current publisher, then you will need to do:
 
-      $ pfexec pkg set-authority -P -O http://new.authority.org new-authority
+      $ pfexec pkg set-publisher -P -O http://new.publisher.org new-publisher
       $ python check_classifications.py > classification_output.txt
-      $ pfexec pkg set-authority -P old-authority
-      $ pfexec pkg unset-authority new-authority 
+      $ pfexec pkg set-publisher -P old-publisher
+      $ pfexec pkg unset-publisher new-publisher 
 
     """
 

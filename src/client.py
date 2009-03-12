@@ -135,16 +135,17 @@ Advanced subcommands:
             [-t action_type ... ] [pkg_fmri_pattern ...]
         pkg image-create [-fFPUz] [--force] [--full|--partial|--user] [--zone]
             [-k ssl_key] [-c ssl_cert] [--no-refresh] 
-            [--variant <variant_spec>=<instance>] -a <prefix>=<url> dir
+            [--variant <variant_spec>=<instance>]
+            (-p|--publisher) name=uri dir
 
         pkg set-property propname propvalue
         pkg unset-property propname ...
         pkg property [-H] [propname ...]
 
-        pkg set-publisher [-Ped] [-k ssl_key] [-c ssl_cert] [--reset-uuid]
-            [-O origin_url] [-m mirror_to_add | --add-mirror=mirror_to_add]
+        pkg set-publisher [-Ped] [-k ssl_key] [-c ssl_cert]
+            [-O origin_uri] [-m mirror_to_add | --add-mirror=mirror_to_add]
             [-M mirror_to_remove | --remove-mirror=mirror_to_remove]
-            [--enable] [--disable] [--no-refresh] publisher
+            [--enable] [--disable] [--no-refresh] [--reset-uuid] publisher
         pkg unset-publisher publisher ...
         pkg publisher [-HPa] [publisher ...]
         pkg history [-Hl]
@@ -1995,9 +1996,9 @@ def image_create(img, args):
         force = False
         variants = {}
 
-        opts, pargs = getopt.getopt(args, "fFPUza:k:c:",
-            ["force", "full", "partial", "user", "zone", "publisher=",
-                "no-refresh", "variant="])
+        opts, pargs = getopt.getopt(args, "fFPUza:p:k:c:",
+            ["force", "full", "partial", "user", "zone", "authority=",
+                "publisher=", "no-refresh", "variant="])
 
         for opt, arg in opts:
                 if opt == "-f" or opt == "--force":
@@ -2017,7 +2018,9 @@ def image_create(img, args):
                         ssl_key = arg
                 if opt == "-c":
                         ssl_cert = arg
-                if opt == "-a" or opt == "--publisher":
+
+                # -a is deprecated and will be removed at a future date.
+                if opt in ("-a", "-p", "--publisher"):
                         try:
                                 pub_name, pub_url = arg.split("=", 1)
                         except ValueError:

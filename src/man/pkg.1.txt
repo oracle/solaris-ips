@@ -22,7 +22,7 @@ SYNOPSIS
 
      /usr/bin/pkg image-create [-fFPUz] [--force] [--full|--partial|--user]
          [--zone] [-k ssl_key] [-c ssl_cert] [--no-refresh]
-         -a publisher=origin_url dir
+         (-p|--publisher) name=uri dir
      /usr/bin/pkg image-update [-fnvq] [--be-name name] [--no-refresh]
          [--no-index]
 
@@ -31,7 +31,7 @@ SYNOPSIS
      /usr/bin/pkg property [-H] [propname ...]
 
      /usr/bin/pkg set-publisher [-Ped] [-k ssl_key] [-c ssl_cert]
-         [-O origin_url] [-m mirror_to_add | --add-mirror=mirror_to_add]
+         [-O origin_uri] [-m mirror_to_add | --add-mirror=mirror_to_add]
          [-M mirror_to_remove | --remove-mirror=mirror_to_remove]
          [--enable] [--disable] [--no-refresh] [--reset-uuid] publisher
      /usr/bin/pkg unset-publisher publisher ...
@@ -83,16 +83,17 @@ SUBCOMMANDS
      The following subcommands are supported:
 
      image-create [-fFPUz] [--force] [--full|--partial|--user] [--zone]
-       [-k ssl_key] [-c ssl_cert] [--no-refresh] -a publisher=origin_url dir
+       [-k ssl_key] [-c ssl_cert] [--no-refresh]
+       (-p|--publisher) name=origin_uri dir
           Create, at location given by dir, an image suitable for package
           operations.  The default image type is user, as given by the -U
           (--user) option.  The image type may be set to a full image (-F
           or --full) or to a partial image (-P or --partial) linked to the
           full image enclosing the given dir path.
 
-          A preferred publisher must be set using the -a option.  An
-          attempt to retrieve the catalog associated with this publisher
-          will be made following the initial creation operations.
+          A preferred publisher must be provided using the -p or --publisher
+          option.  An attempt to retrieve the catalog associated with this
+          publisher will be made following the initial creation operations.
 
           For publishers using client SSL authentication, a client key and
           client certificate may be registered via the -c and -k options.
@@ -227,7 +228,7 @@ SUBCOMMANDS
           publishers.
 
           With -s, search the identified server, which is expected to be
-          a pkg(5) repository, at the given URL.  This may be specified
+          a pkg(5) repository, at the given URI.  This may be specified
           multiple times.
 
 	  With -I, use a case sensitive search. Note: -I cannot currently
@@ -273,15 +274,18 @@ SUBCOMMANDS
           property names is requested, display the names and values for those
           properties.  With -H, omit the headers from the listing.
 
-     set-publisher [-Ped] [-k ssl_key] [-c ssl_cert] [-O origin_url]
+     set-publisher [-Ped] [-k ssl_key] [-c ssl_cert] [-O origin_uri]
        [-m mirror_to_add | --add-mirror=mirror_to_add]
        [-M mirror_to_remove | --remove-mirror=mirror_to_remove]
        [--enable] [--disable] [--no-refresh] [--reset-uuid] publisher
           Update an existing publisher or add an additional package
-          publisher.  With -P, set the specified publisher as the
-          preferred publisher.  With -c and -k, specify client SSL
-          certificate and key respectively.  The -O option sets the URL
-          prefix for the origin packaging repository for the publisher.
+          publisher.
+
+          With -P, set the specified publisher as the preferred publisher.
+
+          With -c and -k, specify client SSL certificate and key respectively.
+
+          With -O, set the origin URI for the publisher packaging repository.
 
           With --no-refresh, do not attempt to contact the publisher
           specified to retrieve its catalog.
@@ -289,10 +293,10 @@ SUBCOMMANDS
           With --reset-uuid, choose a new unique identifier that identifies
           this image to its publisher.
 
-          With -m (--add-mirror), add the URL as a mirror for the given
+          With -m (--add-mirror), add the URI as a mirror for the given
           publisher.
 
-          With -M (--remove-mirror), remove the URL from the list of mirrors
+          With -M (--remove-mirror), remove the URI from the list of mirrors
           for the given publisher.
 
           With -e (--enable), enable the publisher; with -d (--disable), disable
@@ -308,7 +312,7 @@ SUBCOMMANDS
 
      publisher [-HPa] [publisher ...]
           Display publisher information.  With no arguments, display the
-          list of enabled publishers, and their origin URLs.  If
+          list of enabled publishers, their origin URIs, and mirrors.  If
           specific publishers are requested, display the configuration
           values, including mirrors, associated with those publishers.  With
           -H, omit the headers from the listing.  With -P, display only the
@@ -432,7 +436,7 @@ NOTES
 
      The pkg(1) command recognizes use of the http_proxy environment
      variable to select a suitable HTTP proxy server.  At present,
-     particular care is needed when using local repository URLs--such as
+     particular care is needed when using local repository URIs--such as
      http://localhost:10000/--with the http_proxy environment variable;
      this behaviour may change in a future version of image packaging.
 

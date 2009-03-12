@@ -303,7 +303,7 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
 
                 self.image_destroy()
                 os.mkdir(self.img_path)
-                cmdline = "pkg image-create -F -a %s=%s %s %s" % \
+                cmdline = "pkg image-create -F -p %s=%s %s %s" % \
                     (prefix, repourl, additional_args, self.img_path)
                 self.debugcmd(cmdline)
 
@@ -688,10 +688,10 @@ class SingleDepotTestCaseCorruptImage(SingleDepotTestCase):
 
                 for s in subdirs:
                         if s == "var/pkg":
-                                cmdline = "pkg image-create -F -a %s=%s %s" % \
+                                cmdline = "pkg image-create -F -p %s=%s %s" % \
                                     (prefix, repourl, self.img_path)
                         elif s == ".org.opensolaris,pkg":
-                                cmdline = "pkg image-create -U -a %s=%s %s" % \
+                                cmdline = "pkg image-create -U -p %s=%s %s" % \
                                     (prefix, repourl, self.img_path)
                         else:
                                 raise RuntimeError("Got unknown subdir option:"

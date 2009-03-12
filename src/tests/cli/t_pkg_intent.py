@@ -177,7 +177,7 @@ class TestPkgIntent(testutils.SingleDepotTestCase):
                     progresstracker, lambda x: False, PKG_CLIENT_NAME)
 
                 api_obj.info(plist, False, frozenset([api.PackageInfo.IDENTITY,
-                    api.PackageInfo.STATE, api.PackageInfo.PREF_AUTHORITY]))
+                    api.PackageInfo.STATE, api.PackageInfo.PREF_PUBLISHER]))
 
                 entries = self.get_intent_entries()
                 self.assert_(entries == [])

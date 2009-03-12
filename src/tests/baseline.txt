@@ -261,14 +261,10 @@ cli.t_pkg_image_create.py TestImageCreateNoDepot.test_bad_publisher_options|pass
 cli.t_pkg_image_create.py TestPkgImageCreateBasics.test_3588|pass
 cli.t_pkg_image_create.py TestPkgImageCreateBasics.test_3588_1|pass
 cli.t_pkg_image_create.py TestPkgImageCreateBasics.test_3588_2|pass
+cli.t_pkg_image_create.py TestPkgImageCreateBasics.test_4_options|pass
 cli.t_pkg_image_create.py TestPkgImageCreateBasics.test_766|pass
 cli.t_pkg_image_create.py TestPkgImageCreateBasics.test_basic|pass
 cli.t_pkg_image_create.py TestPkgImageCreateBasics.test_image_create_bad_opts|pass
-cli.t_pkg_image_create.py TestPkgImageCreateNoDepot.test_763a|pass
-cli.t_pkg_image_create.py TestPkgImageCreateNoDepot.test_763c|pass
-cli.t_pkg_image_create.py TestPkgImageCreateNoDepot.test_765|pass
-cli.t_pkg_image_create.py TestPkgImageCreateNoDepot.test_bad_image_create|pass
-cli.t_pkg_image_create.py TestPkgImageCreateNoDepot.test_bad_publisher_options|pass
 cli.t_pkg_image_update.py TestImageUpdate.test_image_update_bad_opts|pass
 cli.t_pkg_info.py TestPkgInfoBasics.test_bug_2274|pass
 cli.t_pkg_info.py TestPkgInfoBasics.test_info_empty_image|pass

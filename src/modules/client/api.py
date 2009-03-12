@@ -726,7 +726,7 @@ class ImageInterface(object):
                                 branch = version.branch
                                 packaging_date = version.get_timestamp().ctime()
                         pref_pub = None
-                        if PackageInfo.PREF_AUTHORITY in info_needed:
+                        if PackageInfo.PREF_PUBLISHER in info_needed:
                                 pref_pub = False
                                 if f.preferred_publisher():
                                         pref_pub = True
@@ -1320,10 +1320,8 @@ class PackageInfo(object):
         INSTALLED = 1
         NOT_INSTALLED = 2
 
-
-
         __NUM_PROPS = 12
-        IDENTITY, SUMMARY, CATEGORIES, STATE, PREF_AUTHORITY, SIZE, LICENSES, \
+        IDENTITY, SUMMARY, CATEGORIES, STATE, PREF_PUBLISHER, SIZE, LICENSES, \
             LINKS, HARDLINKS, FILES, DIRS, DEPENDENCIES = range(__NUM_PROPS)
         ALL_OPTIONS = frozenset(range(__NUM_PROPS))
         ACTION_OPTIONS = frozenset([LINKS, HARDLINKS, FILES, DIRS,
