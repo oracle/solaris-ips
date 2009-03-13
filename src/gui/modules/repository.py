@@ -466,88 +466,120 @@ class Repository:
                             enumerations.PUBLISHER_PREFERRED))
 
         def __enable_disable(self, cell, filtered_path):
+                p_title = _("Applying changes")
+                p_text = _("Applying changes, please wait ...")
+                self.__run_with_prog_in_thread(self.__enable_disable_in_thread, p_title,
+                    p_text, cell, filtered_path)
+
+        def __enable_disable_in_thread(self, cell, filtered_path):
                 sorted_model = self.w_repository_treeview.get_model()
                 filtered_model = sorted_model.get_model()
                 model = filtered_model.get_model()
                 path = sorted_model.convert_path_to_child_path(filtered_path)
                 itr = model.get_iter(path)
-                if itr:
-                        preferred = model.get_value(itr, 
-                            enumerations.PUBLISHER_PREFERRED)
-                        if preferred == True:
-                                return
-                        enabled = model.get_value(itr,
-                            enumerations.PUBLISHER_ENABLED)
-                        pub = model.get_value(itr, enumerations.PUBLISHER_NAME)
-                        try:
-                                pub = self.api_o.get_publisher(pub, duplicate=True)
-                                pub.disabled = enabled
-                                self.api_o.update_publisher(pub,
-                                    refresh_allowed=False)
-                                self.number_of_changes += 1
-                                model.set_value(itr, 
-                                    enumerations.PUBLISHER_ENABLED,
-                                    not enabled)
-                        except api_errors.PublisherError, ex:
-                                if enabled:
-                                        err = _("Failed to disable %s.\n") % pub
-                                else:
-                                        err = _("Failed to enable %s.\n") % pub
-                                err += str(ex)
-                                self.__error_occurred(err,
-                                    msg_type=gtk.MESSAGE_INFO)
-                        except api_errors.PermissionsException:
-                                if enabled:
-                                        err1 = _("Failed to disable %s.") % pub
-                                else:
-                                        err1 = _("Failed to enable %s.") % pub
-                                err = err1 + _("\nPlease check your permissions.")
-                                self.__error_occurred(err,
-                                    msg_type=gtk.MESSAGE_INFO)
-                        except api_errors.CatalogRefreshException:
-                                if enabled:
-                                        err1 = _("Failed to disable %s.") % pub
-                                else:
-                                        err1 = _("Failed to enable %s.") % pub
-                                err = err1 + _(
-                                    "\nPlease check the network connection or URL.\n"
-                                    "Is the repository accessible?")
-                                self.__error_occurred(err,
-                                    msg_type=gtk.MESSAGE_INFO)
+                if itr == None:
+                        self.progress_stop_thread = True
+                        return
+                        
+                preferred = model.get_value(itr, 
+                    enumerations.PUBLISHER_PREFERRED)
+                if preferred == True:
+                        self.progress_stop_thread = True
+                        return
+                enabled = model.get_value(itr,
+                    enumerations.PUBLISHER_ENABLED)
+                pub = model.get_value(itr, enumerations.PUBLISHER_NAME)
+                try:
+                        pub = self.api_o.get_publisher(pub, duplicate=True)
+                        pub.disabled = enabled
+                        self.api_o.update_publisher(pub,
+                            refresh_allowed=False)
+                        self.number_of_changes += 1
+                        gobject.idle_add(model.set_value, itr, 
+                            enumerations.PUBLISHER_ENABLED, not enabled)
+                        self.progress_stop_thread = True
+                except api_errors.PublisherError, pex:
+                        self.progress_stop_thread = True
+                        if enabled:
+                                err = _("Failed to disable %s.\n") % pub
+                        else:
+                                err = _("Failed to enable %s.\n") % pub
+                        err += str(pex)
+                        gobject.idle_add(self.__error_occurred, err, gtk.MESSAGE_INFO)
+                except api_errors.PermissionsException:
+                        self.progress_stop_thread = True
+                        if enabled:
+                                err1 = _("Failed to disable %s.") % pub
+                        else:
+                                err1 = _("Failed to enable %s.") % pub
+                        err = err1 + _("\nPlease check your permissions.")
+                        gobject.idle_add(self.__error_occurred, err, gtk.MESSAGE_INFO)
+                except api_errors.CatalogRefreshException:
+                        self.progress_stop_thread = True
+                        if enabled:
+                                err1 = _("Failed to disable %s.") % pub
+                        else:
+                                err1 = _("Failed to enable %s.") % pub
+                        err = err1 + _(
+                            "\nPlease check the network connection or URL.\n"
+                            "Is the repository accessible?")
+                        gobject.idle_add(self.__error_occurred, err, gtk.MESSAGE_INFO)
+                except RuntimeError, rex:
+                        self.progress_stop_thread = True
+                        if enabled:
+                                err1 = _("Failed to disable %s.") % pub
+                        else:
+                                err1 = _("Failed to enable %s.") % pub
+                        err = err1 + _("\nUnexpected error.\n")
+                        err += str(rex)
+                        gobject.idle_add(self.__error_occurred, err)
 
         def __preferred_default(self, cell, filtered_path):
+                p_title = _("Applying changes")
+                p_text = _("Applying changes, please wait ...")
+                self.__run_with_prog_in_thread(self.__preferred_default_in_thread,
+                    p_title, p_text, cell, filtered_path)
+
+        def __preferred_default_in_thread(self, cell, filtered_path):
                 sorted_model = self.w_repository_treeview.get_model()
                 filtered_model = sorted_model.get_model()
                 model = filtered_model.get_model()
                 path = sorted_model.convert_path_to_child_path(filtered_path)
                 itr = model.get_iter(path)
-                if itr:
-                        preferred = model.get_value(itr, 
-                            enumerations.PUBLISHER_PREFERRED)
-                        enabled = model.get_value(itr,
-                            enumerations.PUBLISHER_ENABLED)
-                        if preferred == False and enabled == True:
-                                pub = model.get_value(itr, 
-                                    enumerations.PUBLISHER_NAME)
-                                try:
-                                        self.api_o.set_preferred_publisher(pub)
-                                        self.preferred = pub
-                                        index = enumerations.PUBLISHER_PREFERRED
-                                        for row in model:
-                                                row[index] = False
-                                        model.set_value(itr, 
-                                            enumerations.PUBLISHER_PREFERRED,
-                                            not preferred)
-                                except api_errors.PublisherError, err:
-                                        self.__error_occurred(str(err),
-                                            msg_type=gtk.MESSAGE_INFO) 
-                                        self.__prepare_repository_list()
-                                except api_errors.PermissionsException:
-                                        err = _("Couldn't change"
-                                            " the preferred publisher.\n"
-                                            "Please check your permissions.")
-                                        self.__error_occurred(err,
-                                            msg_type=gtk.MESSAGE_INFO) 
+                if itr == None:
+                        self.progress_stop_thread = True
+                        return
+                        
+                preferred = model.get_value(itr, 
+                    enumerations.PUBLISHER_PREFERRED)
+                enabled = model.get_value(itr,
+                    enumerations.PUBLISHER_ENABLED)
+                if preferred == False and enabled == True:
+                        pub = model.get_value(itr, 
+                            enumerations.PUBLISHER_NAME)
+                        try:
+                                self.api_o.set_preferred_publisher(pub)
+                                self.preferred = pub
+                                index = enumerations.PUBLISHER_PREFERRED
+                                for row in model:
+                                        row[index] = False
+                                gobject.idle_add(model.set_value, itr,
+                                    enumerations.PUBLISHER_PREFERRED, not preferred)
+                                self.progress_stop_thread = True
+                        except api_errors.PublisherError, pex:
+                                self.progress_stop_thread = True
+                                gobject.idle_add(self.__error_occurred, str(pex), 
+                                    gtk.MESSAGE_INFO)
+                                self.__prepare_repository_list()
+                        except api_errors.PermissionsException:
+                                self.progress_stop_thread = True
+                                err = _("Couldn't change"
+                                    " the preferred publisher.\n"
+                                    "Please check your permissions.")
+                                gobject.idle_add(self.__error_occurred, err,
+                                    gtk.MESSAGE_INFO)
+                else:
+                        self.progress_stop_thread = True
 
         def __progress_pulse(self):
                 if not self.progress_stop_thread:
@@ -923,19 +955,21 @@ class Repository:
                         self.repo_copy = None
                         
                 except api_errors.PublisherError, ex:
+                        self.progress_stop_thread = True
                         if not silent:
                                 raise
                         gobject.idle_add(self.__error_occurred, str(ex),
                             gtk.MESSAGE_ERROR)
                         gobject.idle_add(self.w_repository_name.grab_focus)
-                        self.progress_stop_thread = True
                 except InvalidDepotResponseException, idrex:
+                        self.progress_stop_thread = True
                         if not silent:
                                 raise
                         err = (_("Failed to add repository: %s\n\n") % prefix)
                         err += str(idrex)
                         self.__error_with_reset_repo_selection(err)
                 except RuntimeError, ex:
+                        self.progress_stop_thread = True
                         if not silent:
                                 raise
                         err = (_("Failed to add %s.\n") % prefix)
@@ -943,6 +977,7 @@ class Repository:
                         self.__error_with_reset_repo_selection(err)
                         return
                 except api_errors.PermissionsException:
+                        self.progress_stop_thread = True
                         if not silent:
                                 raise
                         err = (_("Failed to add %s.") % prefix) + \
@@ -950,6 +985,7 @@ class Repository:
                         self.__error_with_reset_repo_selection(err,
                             gtk.MESSAGE_INFO)
                 except api_errors.CatalogRefreshException:
+                        self.progress_stop_thread = True
                         if not silent:
                                 raise
                         self.__delete_repository(pub)
