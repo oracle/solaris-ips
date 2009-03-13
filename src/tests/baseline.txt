@@ -1,6 +1,7 @@
 api.t_action.py TestActions.test_action_errors|pass
 api.t_action.py TestActions.test_action_parser|pass
 api.t_action.py TestActions.test_action_tostr|pass
+api.t_bootenv.py TestBootEnv.test_api_consistency|pass
 api.t_catalog.py TestCatalog.test_bug_5603|pass
 api.t_catalog.py TestCatalog.test_extract_by_version|pass
 api.t_catalog.py TestCatalog.testcatalogfmris1|pass

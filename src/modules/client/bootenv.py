@@ -366,6 +366,12 @@ class BootEnvNull(object):
         def exists(self):
                 return False
 
+        @staticmethod
+        def check_be_name(be_name):
+                if be_name is None:
+                        return True
+                raise api_errors.BENamingNotSupported(be_name)
+
         def init_image_recovery(self, img, be_name=None):
                 if be_name is not None:
                         raise api_errors.BENameGivenOnDeadBE(be_name)
