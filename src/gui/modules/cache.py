@@ -151,6 +151,7 @@ class CacheListStores:
                         app["display_name"] = application[enumerations.DISPLAY_NAME_COLUMN]
                         app["is_visible"] = application[enumerations.IS_VISIBLE_COLUMN]
                         app["category_list"] = application[enumerations.CATEGORY_LIST_COLUMN]
+                        app["pkg_authority"] = application[enumerations.AUTHORITY_COLUMN]
                         apps.append(app)
                 self.__dump_cache_file(cache_dir + publisher+"_packages.cpl", apps)
 
@@ -229,11 +230,12 @@ class CacheListStores:
                         display_name = app.get("display_name")
                         is_visible = app.get("is_visible")
                         category_list = app.get("category_list")
+                        pkg_authority = app.get("pkg_authority")
                         app = \
                             [
                                 marked, status_icon, name, description, status,
                                 fmri, stem, display_name, is_visible, 
-                                category_list
+                                category_list, pkg_authority
                             ]
                         application_list.insert(app_count, app)
                         app_count += 1

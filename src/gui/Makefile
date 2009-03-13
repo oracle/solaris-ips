@@ -82,6 +82,7 @@ GLADEICONS = \
    data/install_update24x.png \
    data/legend_installed.png \
    data/legend_newupdate.png \
+   data/arrow.png \
    data/new_star_24x.png
 
 MIMEICONS = \
@@ -111,6 +112,8 @@ ICONS = \
    data/icons/status_checkmark.png \
    data/icons/status_installed.png \
    data/icons/status_newupdate.png \
+   data/icons/search.png \
+   data/icons/search_all.png \
    data/icons/progress_checkmark.png \
    data/icons/progress_blank.png
 

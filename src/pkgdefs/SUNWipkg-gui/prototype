@@ -54,6 +54,8 @@ f none usr/share/icons/hicolor/48x48/mimetypes/gnome-mime-application-vnd.pkg5.i
 d none usr/share/icons/package-manager 755 root other
 f none usr/share/icons/package-manager/progress_blank.png 444 root other
 f none usr/share/icons/package-manager/progress_checkmark.png 444 root other
+f none usr/share/icons/package-manager/search.png 444 root other
+f none usr/share/icons/package-manager/search_all.png 444 root other
 f none usr/share/icons/package-manager/status_checkmark.png 444 root other
 f none usr/share/icons/package-manager/status_installed.png 444 root other
 f none usr/share/icons/package-manager/status_newupdate.png 444 root other
@@ -63,6 +65,7 @@ f none usr/share/mime/packages/packagemanager-info.xml 644 root bin
 d none usr/share/package-manager 755 root bin
 f none usr/share/package-manager/PM_app_48x.png 444 root bin
 f none usr/share/package-manager/PM_package_36x.png 444 root bin
+f none usr/share/package-manager/arrow.png 444 root bin
 f none usr/share/package-manager/install_update24x.png 444 root bin
 f none usr/share/package-manager/legend_installed.png 444 root bin
 f none usr/share/package-manager/legend_newupdate.png 444 root bin

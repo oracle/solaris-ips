@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.4.5 on Mon Mar  9 11:30:47 2009 -->
+<!--Generated with glade3 3.4.5 on Fri Mar 13 10:53:38 2009 -->
 <glade-interface>
   <widget class="GtkWindow" id="mainwindow">
     <property name="width_request">750</property>
@@ -364,32 +364,105 @@
                     <property name="bottom_padding">11</property>
                     <property name="right_padding">14</property>
                     <child>
-                      <widget class="GtkHBox" id="hbox16">
+                      <widget class="GtkHBox" id="hbox5">
                         <property name="visible">True</property>
-                        <property name="spacing">6</property>
+                        <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                         <child>
-                          <widget class="GtkLabel" id="label1">
+                          <widget class="GtkLabel" id="label3">
                             <property name="visible">True</property>
                             <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                            <property name="xalign">1</property>
-                            <property name="yalign">0.60000002384185791</property>
-                            <property name="label" translatable="yes">&lt;i&gt;_Repository:&lt;/i&gt;</property>
-                            <property name="use_markup">True</property>
+                            <property name="label" translatable="yes">Se_arch:</property>
                             <property name="use_underline">True</property>
-                            <property name="justify">GTK_JUSTIFY_RIGHT</property>
-                            <property name="mnemonic_widget">repositorycombobox</property>
-                          </widget>
-                        </child>
-                        <child>
-                          <widget class="GtkComboBox" id="repositorycombobox">
-                            <property name="width_request">205</property>
-                            <property name="visible">True</property>
-                            <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                            <signal name="changed" handler="on_repositorycombobox_changed"/>
+                            <property name="mnemonic_widget">searchentry</property>
                           </widget>
                           <packing>
-                            <property name="pack_type">GTK_PACK_END</property>
+                            <property name="padding">6</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <widget class="GtkButton" id="set_search">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">True</property>
+                            <property name="relief">GTK_RELIEF_NONE</property>
+                            <property name="focus_on_click">False</property>
+                            <property name="xalign">0</property>
+                            <property name="yalign">0</property>
+                            <property name="response_id">0</property>
+                            <signal name="button_press_event" handler="on_set_search_button_press_event"/>
+                            <child>
+                              <widget class="GtkHBox" id="hbox23">
+                                <property name="visible">True</property>
+                                <child>
+                                  <widget class="GtkImage" id="search_image">
+                                    <property name="visible">True</property>
+                                    <property name="xalign">0</property>
+                                    <property name="stock">gtk-missing-image</property>
+                                  </widget>
+                                </child>
+                                <child>
+                                  <widget class="GtkImage" id="search_image_arrow">
+                                    <property name="visible">True</property>
+                                    <property name="pixbuf">arrow.png</property>
+                                    <property name="icon_size">1</property>
+                                  </widget>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">False</property>
+                                    <property name="position">1</property>
+                                  </packing>
+                                </child>
+                              </widget>
+                            </child>
+                          </widget>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">False</property>
                             <property name="position">1</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <widget class="GtkEntry" id="searchentry">
+                            <property name="width_request">177</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+                            <property name="tooltip" translatable="yes">Type text to search name and description of the package.</property>
+                            <accessibility>
+                              <atkproperty name="AtkObject::accessible_name" translatable="yes">Search</atkproperty>
+                            </accessibility>
+                            <signal name="changed" handler="on_searchentry_changed"/>
+                            <signal name="focus_out_event" handler="on_searchentry_focus_out_event"/>
+                            <signal name="focus_in_event" handler="on_searchentry_focus_in_event"/>
+                            <signal name="event" handler="on_searchentry_event"/>
+                            <signal name="key_press_event" handler="on_searchentry_key_press_event"/>
+                          </widget>
+                          <packing>
+                            <property name="position">2</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <widget class="GtkButton" id="clear_search">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">True</property>
+                            <property name="relief">GTK_RELIEF_NONE</property>
+                            <property name="focus_on_click">False</property>
+                            <property name="xalign">0</property>
+                            <property name="yalign">0</property>
+                            <property name="response_id">0</property>
+                            <signal name="clicked" handler="on_clear_search_clicked"/>
+                            <child>
+                              <widget class="GtkImage" id="clear_image">
+                                <property name="visible">True</property>
+                                <property name="stock">gtk-missing-image</property>
+                              </widget>
+                            </child>
+                          </widget>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">False</property>
+                            <property name="position">3</property>
                           </packing>
                         </child>
                       </widget>
@@ -523,63 +596,31 @@
                       </packing>
                     </child>
                     <child>
-                      <widget class="GtkHBox" id="hbox5">
+                      <widget class="GtkHBox" id="hbox16">
                         <property name="visible">True</property>
-                        <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+                        <property name="spacing">6</property>
                         <child>
-                          <widget class="GtkLabel" id="label3">
+                          <widget class="GtkLabel" id="label1">
                             <property name="visible">True</property>
                             <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                            <property name="label" translatable="yes">Se_arch:</property>
+                            <property name="xalign">1</property>
+                            <property name="yalign">0.60000002384185791</property>
+                            <property name="label" translatable="yes">&lt;i&gt;_Repository:&lt;/i&gt;</property>
+                            <property name="use_markup">True</property>
                             <property name="use_underline">True</property>
-                            <property name="mnemonic_widget">searchentry</property>
+                            <property name="justify">GTK_JUSTIFY_RIGHT</property>
+                            <property name="mnemonic_widget">repositorycombobox</property>
                           </widget>
-                          <packing>
-                            <property name="padding">6</property>
-                          </packing>
                         </child>
                         <child>
-                          <widget class="GtkEntry" id="searchentry">
-                            <property name="width_request">177</property>
+                          <widget class="GtkComboBox" id="repositorycombobox">
+                            <property name="width_request">210</property>
                             <property name="visible">True</property>
-                            <property name="can_focus">True</property>
                             <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                            <property name="tooltip" translatable="yes">Type text to search name and description of the package.</property>
-                            <accessibility>
-                              <atkproperty name="AtkObject::accessible_name" translatable="yes">Search</atkproperty>
-                            </accessibility>
-                            <signal name="changed" handler="on_searchentry_changed"/>
-                            <signal name="focus_out_event" handler="on_searchentry_focus_out_event"/>
-                            <signal name="focus_in_event" handler="on_searchentry_focus_in_event"/>
-                            <signal name="event" handler="on_searchentry_event"/>
-                            <signal name="key_press_event" handler="on_searchentry_key_press_event"/>
+                            <signal name="changed" handler="on_repositorycombobox_changed"/>
                           </widget>
                           <packing>
                             <property name="position">1</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <widget class="GtkButton" id="clear_search">
-                            <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="receives_default">True</property>
-                            <property name="relief">GTK_RELIEF_NONE</property>
-                            <property name="focus_on_click">False</property>
-                            <property name="xalign">0</property>
-                            <property name="yalign">0</property>
-                            <property name="response_id">0</property>
-                            <signal name="clicked" handler="on_clear_search_clicked"/>
-                            <child>
-                              <widget class="GtkImage" id="clear_image">
-                                <property name="visible">True</property>
-                                <property name="stock">gtk-missing-image</property>
-                              </widget>
-                            </child>
-                          </widget>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">False</property>
-                            <property name="position">2</property>
                           </packing>
                         </child>
                       </widget>
@@ -3040,7 +3081,7 @@ when the system is rebooted.
                 <property name="response_id">-3</property>
                 <signal name="clicked" handler="on_ua_proceed_button_clicked"/>
                 <child>
-                  <widget class="GtkHBox" id="hbox23">
+                  <widget class="GtkHBox" id="hbox3">
                     <property name="visible">True</property>
                     <child>
                       <widget class="GtkAlignment" id="alignment18">
@@ -3234,7 +3275,7 @@ when the system is rebooted.
                 <property name="response_id">0</property>
                 <signal name="clicked" handler="on_proceed_button_clicked"/>
                 <child>
-                  <widget class="GtkHBox" id="hbox3">
+                  <widget class="GtkHBox" id="hbox19">
                     <property name="visible">True</property>
                     <child>
                       <widget class="GtkAlignment" id="alignment4">
@@ -3528,7 +3569,7 @@ buttons to provide their location.</property>
                   </widget>
                 </child>
                 <child>
-                  <widget class="GtkHBox" id="hbox19">
+                  <widget class="GtkHBox" id="hbox7">
                     <property name="visible">True</property>
                     <child>
                       <widget class="GtkAlignment" id="alignment7">
