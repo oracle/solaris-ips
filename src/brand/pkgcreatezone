@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -109,16 +109,22 @@ fail_zonepath_in_rootds $ZONEPATH_DS
 # mountpoint, since these could already exist from some other BE.
 #
 
-/usr/sbin/zfs create -o mountpoint=legacy -o zoned=on $ZONEPATH_DS/ROOT
+/usr/sbin/zfs list -H -o name $ZONEPATH_DS/ROOT >/dev/null 2>&1 
+if (( $? != 0 )); then
+	/usr/sbin/zfs create -o mountpoint=legacy -o zoned=on $ZONEPATH_DS/ROOT
+	if (( $? != 0 )); then
+		fail_fatal "$f_zfs_create"
+	fi
+fi
 
 BENAME=zbe
 BENUM=0
 # Try 100 different names before giving up.
 while [ $BENUM -lt 100 ]; do
-        /usr/sbin/zfs create -o $PROP_ACTIVE=on -o $PROP_PARENT=$CURRENT_GZBE \
-	    -o canmount=noauto $ZONEPATH_DS/ROOT/$BENAME
-        if [ $? = 0 ]; then
-                break
+       	/usr/sbin/zfs create -o $PROP_ACTIVE=on -o $PROP_PARENT=$CURRENT_GZBE \
+	    -o canmount=noauto $ZONEPATH_DS/ROOT/$BENAME >/dev/null 2>&1
+	if (( $? == 0 )); then
+		break
 	fi
         BENUM=`expr $BENUM + 1`
 	BENAME="zbe-$BENUM"
