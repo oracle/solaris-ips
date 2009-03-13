@@ -27,9 +27,13 @@ import os
 import sys
 try:
         import gobject
+        import gnome
         import gtk
 except ImportError:
         sys.exit(1)
+
+def get_client_api_version():
+        return 12 # CLIENT_API_VERSION Used by PM, UM and WebInstall
 
 def get_app_pixbuf(application_dir, icon_name):
         return get_pixbuf_from_path(application_dir +
@@ -62,3 +66,13 @@ def get_pixbuf_from_path(path, icon_name):
                             detail = None)
                         # XXX Could return image-we don't want to show ugly icon.
                         return None
+def display_help(application_dir="", id=None):
+                props = { gnome.PARAM_APP_DATADIR : application_dir + \
+                            '/usr/share/package-manager/help' }
+                gnome.program_init('package-manager', '0.1', properties=props)
+                if id != None:
+                        gnome.help_display_with_doc_id('package-manager', link_id=id)
+                else:
+                        gnome.help_display('package-manager')
+                        
+

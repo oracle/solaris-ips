@@ -43,6 +43,7 @@ import pkg.client.publisher as publisher
 import pkg.client.api_errors as api_errors
 import pkg.misc as misc
 import pkg.gui.enumerations as enumerations
+import pkg.gui.misc as gui_misc
 
 ERROR_FORMAT = "<span color = \"red\">%s</span>"
 
@@ -211,6 +212,8 @@ class Repository:
                                     self.__on_repositoryname_changed,
                                 "on_repositorytreeview_button_release_event": \
                                     self.__on_repositorytreeview_button_release_event,
+                                "on_repositoryhelp_clicked": \
+                                    self.__on_repositoryhelp_clicked,                                                                        
                             }
                         dic_conf = \
                             {
@@ -799,6 +802,9 @@ class Repository:
                 
         def __on_repository_delete_event(self, widget, event):
                 self.__on_repositoryclose_clicked(widget)
+
+        def __on_repositoryhelp_clicked(self, widget):
+                gui_misc.display_help(self.parent.application_dir)
 
         def __on_repositoryclose_clicked(self, widget):
                 # if the number is greater then 1 it means that we did something

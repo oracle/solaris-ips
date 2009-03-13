@@ -23,7 +23,6 @@
 # Use is subject to license terms.
 #
 
-CLIENT_API_VERSION = 11
 PKG_CLIENT_NAME = "packagemanager"
 
 import locale
@@ -47,6 +46,8 @@ import pkg.gui.repository as repository
 from pkg.client import global_settings
 import pkg.client.publisher as publisher
         
+CLIENT_API_VERSION = gui_misc.get_client_api_version()
+
 debug = False
 
 class Webinstall:

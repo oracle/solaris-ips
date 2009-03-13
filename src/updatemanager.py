@@ -62,7 +62,8 @@ __builtin__._ = gettext.gettext
 
 IMAGE_DIRECTORY_DEFAULT = "/"   # Image default directory
 IMAGE_DIR_COMMAND = "svcprop -p update/image_dir svc:/application/pkg/update"
-CLIENT_API_VERSION = 12          # API version
+CLIENT_API_VERSION = gui_misc.get_client_api_version()
+
 PKG_CLIENT_NAME = "updatemanager" # API client name
 SELECTION_CHANGE_LIMIT = 0.5    # Time limit in seconds to cancel selection updates
 IND_DELAY = 0.05                # Time delay for printing index progress
@@ -304,7 +305,6 @@ class Updatemanager:
                 # UM Dialog
                 w_xmltree_um = gtk.glade.XML(self.gladefile, "um_dialog")
                 self.w_um_dialog = w_xmltree_um.get_widget("um_dialog")
-                
                 self.w_um_dialog.connect("destroy", self.__on_um_dialog_close)
                 self.w_um_intro_label = w_xmltree_um.get_widget("um_intro_label")
                 self.w_um_install_button = w_xmltree_um.get_widget("um_install_button")
@@ -361,6 +361,7 @@ class Updatemanager:
                 self.api_obj = None
  
                 self.w_um_dialog.show_all()
+                self.w_um_dialog.resize(620,500)
 
         def __set_cancel_state(self, status):
                 if self.install_error:
@@ -729,19 +730,15 @@ class Updatemanager:
                 return None
                 
         def __display_noupdates(self):
-                self.w_um_scrolledwindow.set_policy(gtk.POLICY_NEVER,
-                    gtk.POLICY_AUTOMATIC)
-                self.w_um_expander.set_expanded(True)
-                infobuffer = self.w_um_textview.get_buffer()
-                textiter = infobuffer.get_end_iter()
-                infobuffer.insert_with_tags_by_name(textiter,
-                    _("\nNo Updates available"), "bold")
-
+                self.w_um_intro_label.set_markup(_("<b>No Updates available.</b>"))
+                self.w_um_treeview.hide()
+                self.w_um_expander.hide()
                 self.w_um_install_button.set_sensitive(False)
                 self.w_um_updateall_button.set_sensitive(False)
                 self.w_select_checkbox.set_active(False)
                 self.w_select_checkbox.set_sensitive(False)
                 self.w_um_dialog.present()
+                self.w_um_dialog.resize(420,100)
                 
         def __get_info_from_name(self, name, local):
                 if self.fmri_description != name:
@@ -777,7 +774,12 @@ class Updatemanager:
                         if len(info.category_info_list) > 1:
                                 for ci in info.category_info_list[1:]:
                                         categories += ", " + ci.__str__(verbose)
-                installed_ver = "%s-%s" % (local_info.version, local_info.branch)
+                try:
+                        installed_ver = "%s-%s" % (local_info.version, local_info.branch)
+                except AttributeError:
+                        installed_ver = ""
+                        pass # Ignore if we can't get the installed version info
+
                 ver = "%s-%s" % (info.version, info.branch)
                 summary = _("None")
                 if info.summary:
@@ -877,14 +879,15 @@ class Updatemanager:
                         infobuffer.set_text("")
                         textiter = infobuffer.get_end_iter()
                         infobuffer.insert_with_tags_by_name(textiter,
-                            "\n%s\n" % fmri, "bold")
+                            "\n%s" % fmri, "bold")
                         infobuffer.insert(textiter, details)
                 elif self.fmri_description == fmri and details == None:
                         infobuffer = self.w_um_textview.get_buffer()
                         infobuffer.set_text("")
                         textiter = infobuffer.get_end_iter()
-                        infobuffer.insert_with_tags_by_name(textiter,
-                            _("\nNo details available"), "bold")
+                        if textiter != None: #Gtk race condition seems to cause this
+                                infobuffer.insert_with_tags_by_name(textiter,
+                                        _("\nNo details available"), "bold")
 
         def __on_um_dialog_close(self, widget):
                 self.__exit_app()
@@ -1002,7 +1005,7 @@ class Updatemanager:
                             "\nUpdate All finished successfully in < 1 min\n\n")
 
                 info_str += _(
-                    "Please reboot after reviewing the release notes posted at:\n\n"
+                    "Review the posted release notes before rebooting your system:\n\n"
                     "http://opensolaris.org/os/project/indiana/resources/"
                     "relnotes/200811/x86/")
 
@@ -1180,10 +1183,10 @@ class Updatemanager:
                     buttons = gtk.BUTTONS_OK_CANCEL, flags = gtk.DIALOG_MODAL,
                     type = gtk.MESSAGE_ERROR,
                     message_format = _(
-                    "Not enough disc space: the Update All action cannot "
+                    "Not enough disc space, the Update All action cannot "
                     "be performed.\n\n"
-                    "Click OK to launch BE Management to manage your "
-                    "existing BE's and free up disc space."))
+                    "Click OK to manage your existing BEs and free up disk space or "
+                    "Cancel to cancel Update All."))
                 msgbox.set_title(_("Not Enough Disc Space"))
                 result = msgbox.run()
                 msgbox.destroy()

@@ -34,6 +34,7 @@ from threading import Thread
 try:
         import gobject
         gobject.threads_init()
+        import gnome
         import gtk
         import gtk.glade
         import pygtk
@@ -135,6 +136,8 @@ class Beadmin:
                                     self.__on_cancel_be_clicked,
                                 "on_ok_be_clicked": \
                                     self.__on_ok_be_clicked,
+                                "on_help_bebutton_clicked": \
+                                    self.__on_help_bebutton_clicked,
                             }
                         dic_conf = \
                             {
@@ -234,6 +237,12 @@ class Beadmin:
                 column.set_expand(False)
                 self.w_be_treeview.append_column(column)
 
+        def __on_help_bebutton_clicked(self, widget):
+                if self.parent != None:
+                        gui_misc.display_help(self.parent.application_dir)
+                else:
+                        gui_misc.display_help()
+                
         def __on_ok_be_clicked(self, widget):
                 self.w_progress_dialog.set_title(_("Applying changes"))
                 self.w_progressinfo_label.set_text(
@@ -246,6 +255,7 @@ class Beadmin:
                 
         def __on_cancel_be_clicked(self, widget):
                 self.__on_beadmin_delete_event(None, None)
+                return False
 
         def __on_beconfirmationdialog_delete_event(self, widget, event):
                 self.__on_cancel_be_conf_clicked(widget)
@@ -259,8 +269,8 @@ class Beadmin:
                 self.progress_stop_thread = False
                 Thread(target = self.__on_progressdialog_progress).start()
                 Thread(target = self.__delete_activate_be).start()
-
-        def __on_beadmin_delete_event(self, widget, event):
+                
+        def __on_beadmin_delete_event(self, widget, event, stub=None):
                 self.w_beadmin_dialog.destroy()
                 return True
 
@@ -379,7 +389,7 @@ class Beadmin:
                                             not_renamed.get(orig))                                
                         gobject.idle_add(self.__error_occured, msg)
                         return
-                gobject.idle_add(self.__on_beadmin_delete_event, None, None)
+                gobject.idle_add(self.__on_cancel_be_clicked, None)
                                 
         def __rename_cell(self, model, itr, new_name):
                 model.set_value(itr, BE_NAME, new_name)

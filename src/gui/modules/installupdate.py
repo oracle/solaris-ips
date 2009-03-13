@@ -118,7 +118,6 @@ class InstallUpdate(progress.ProgressTracker):
                     w_tree_removeconfirm.get_widget("removeconfirmation")
                 w_removeproceed_button = w_tree_removeconfirm.get_widget("remove_proceed")
                 w_remove_treeview = w_tree_removeconfirm.get_widget("removetreeview")
-                w_remove_summary = w_tree_removeconfirm.get_widget("summarylabel")
                 w_stage2 = w_tree_dialog.get_widget("stage2")
                 self.w_stages_box = w_tree_dialog.get_widget("stages_box")
                 self.w_stage1_label = w_tree_dialog.get_widget("label_stage1")
@@ -174,6 +173,8 @@ class InstallUpdate(progress.ProgressTracker):
                                 self.__on_ua_proceed_button_clicked,
                                 "on_ua_be_name_entry_changed": \
                                 self.__on_ua_be_name_entry_changed,
+                                "on_ua_help_button_clicked": \
+                                self.__on_ua_help_button_clicked,                                
                             }
                         dic_removeconfirm = \
                             {
@@ -209,12 +210,10 @@ class InstallUpdate(progress.ProgressTracker):
                         remove_column.add_attribute(cell, 'text', 0)
                         w_remove_treeview.append_column(remove_column)
 
-                        treestore = gtk.TreeStore(str)
+                        liststore = gtk.ListStore(str)
                         for sel_pkg in list_of_packages:
-                                treestore.append(None, [sel_pkg])
-                        w_remove_summary.set_label("Packages Selected For Removal: %d" % 
-                            len(list_of_packages))
-                        w_remove_treeview.set_model(treestore)
+                                liststore.append([sel_pkg])
+                        w_remove_treeview.set_model(liststore)
                         w_remove_treeview.expand_all()
                         self.w_removeconfirm_dialog.show()
 
@@ -265,6 +264,9 @@ class InstallUpdate(progress.ProgressTracker):
                                 return
                         gobject.idle_add(self.parent.update_package_list, None)
 
+        def __on_ua_help_button_clicked(self, widget):
+                gui_misc.display_help(self.parent.application_dir)
+                
         def __on_ua_cancel_button_clicked(self, widget):
                 self.w_ua_dialog.hide()
                 if self.web_install:
@@ -728,10 +730,10 @@ class InstallUpdate(progress.ProgressTracker):
                     buttons = gtk.BUTTONS_OK_CANCEL, flags = gtk.DIALOG_MODAL,
                     type = gtk.MESSAGE_ERROR, 
                     message_format = _(
-                    "Not enough disk space: selected action cannot " +
+                    "Not enough disk space, the selected action cannot " +
                     "be performed.\n\n" +
-                    "You may click OK to launch BE Management to manage your " +
-                    "existing BE's and free up disk space."))
+                    "Click OK to manage your existing BEs and free up disk space or " +
+                    "Cancel to cancel the action."))
                 msgbox.set_title(_("Not Enough Disk Space"))
                 result = msgbox.run()
                 msgbox.destroy()

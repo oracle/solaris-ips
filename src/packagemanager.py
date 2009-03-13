@@ -50,7 +50,6 @@ CATEGORIES_STATUS_COLUMN_INDEX = 0   # Index of Status Column in Categories Tree
 
 STATUS_COLUMN_INDEX = 2   # Index of Status Column in Application TreeView
 
-CLIENT_API_VERSION = 12
 PKG_CLIENT_NAME = "packagemanager"
 
 # Load Start Page from lang dir if available
@@ -125,6 +124,8 @@ __builtin__._ = gettext.gettext
 DISPLAY_LINK,
 CLICK_LINK,
 ) = range(2)
+
+CLIENT_API_VERSION = gui_misc.get_client_api_version()
 
 class PackageManager:
         def __init__(self):
@@ -1225,7 +1226,7 @@ class PackageManager:
                 self.w_preferencesdialog.hide()
                 
         def __on_preferenceshelp_clicked(self, widget):
-                self.__on_help_help(widget)
+                gui_misc.display_help(self.application_dir)
                 
         def __on_startpage_checkbutton_toggled(self, widget):
                 self.show_startpage = self.w_startpage_checkbutton.get_active()
@@ -1539,10 +1540,7 @@ class PackageManager:
                 aboutdialog.run()
 
         def __on_help_help(self, widget):
-                props = { gnome.PARAM_APP_DATADIR : self.application_dir + \
-                            '/usr/share/package-manager/help' }
-                gnome.program_init('package-manager', '0.1', properties=props)
-                gnome.help_display('package-manager') 
+                gui_misc.display_help(self.application_dir)
 
         def __on_remove(self, widget):
                 self.api_o.reset()
@@ -2863,9 +2861,9 @@ class PackageManager:
                 msgbox = gtk.MessageDialog(parent = self.w_main_window,
                     buttons = gtk.BUTTONS_OK,
                     flags = gtk.DIALOG_MODAL, type = gtk.MESSAGE_INFO,
-                    message_format = _("Update All has completed and Package " \
-                    "Manager will now exit.\n\nPlease reboot after reviewing the "
-                    "release notes posted at:\n\n"
+                    message_format = _("The Update All action is now complete and "
+                    "Package Manager will close.\n\nReview the posted release notes "
+                    "before rebooting your system:\n\n"
                     "http://opensolaris.org/os/project/indiana/resources/"
                     "relnotes/200811/x86/"))
                 msgbox.set_title(_("Update All"))
