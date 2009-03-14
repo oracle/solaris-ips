@@ -279,8 +279,14 @@ class package(object):
 
                 # handle insertion/modification case
                 for f in o:
-                        a = actions.fromstr(("%s path=%s %s" %
-                            (self.convert_type(f.type), fname, line)).rstrip())
+                        # create attribute dictionary from line
+                        new_type = self.convert_type(f.type)
+                        new_attrs = actions._fromstr("%s %s" % 
+                            (new_type, line.rstrip()))[2]
+                        # get path if we're not changing it 
+                        if "path" not in new_attrs:
+                                new_attrs["path"] = fname
+                        a = actions.types[new_type](**new_attrs)
                         if show_debug:
                                 print "Updating attributes on " + \
                                     "'%s' in '%s' with '%s'" % \
@@ -375,10 +381,15 @@ class package(object):
                                 print "Updating attributes on " + \
                                     "'%s' in '%s' with '%s'" % \
                                     (fname, curpkg.name, chattr_line)
-                        s = "%s path=%s %s" % (self.convert_type(f.type), \
-                           fname, chattr_line)
-                        a = actions.fromstr(s)
 
+                        # create attribute dictionary from line
+                        new_type = self.convert_type(f.type)
+                        new_attrs = actions._fromstr("%s %s" % 
+                            (new_type, chattr_line.rstrip()))[2]
+                        # get path if we're not changing it 
+                        if "path" not in new_attrs:
+                                new_attrs["path"] = fname
+                        a = actions.types[new_type](**new_attrs)
                         # each chattr produces a dictionary of actions
                         # including a path=xxxx and whatever modifications
                         # are made.  Note that the path value may be a list in
