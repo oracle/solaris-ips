@@ -309,7 +309,7 @@ class PackageManager:
                 self.w_clear_search_button.set_sensitive(False)
                 clear_search_image = w_tree_main.get_widget("clear_image")
                 clear_search_image.set_from_stock(gtk.STOCK_CLEAR, gtk.ICON_SIZE_MENU)
-                self.saved_filter_combobox_active = enumerations.FILTER_ALL
+                self.saved_filter_combobox_active = self.initial_show_filter
                 self.search_image = w_tree_main.get_widget("search_image")
                 self.search_button = w_tree_main.get_widget("set_search")
                 self.a11y_search_button = self.search_button.get_accessible()                
@@ -487,6 +487,7 @@ class PackageManager:
                         self.repositories_list.remove(
                             self.repositories_list.get_iter_first())
                 self.w_repository_combobox.set_model(self.repositories_list)
+                self.visible_repository = None
 
         def __update_gui_for_search(self, is_remote):
                 self.is_remote_search = is_remote
@@ -531,7 +532,6 @@ class PackageManager:
                                     self.saved_selected_application_path)
                                 self.saved_selected_application_path = None
                         self.__set_main_view_package_list()
-
 
         def __link_load_blank(self):
                 self.document.clear()
@@ -1299,7 +1299,8 @@ class PackageManager:
                                         err += "v: %d return_type: %d" % \
                                             (v, return_type)
                                         gobject.idle_add(self.w_progress_dialog.hide)
-                                        gobject.idle_add(self.error_occured, err)
+                                        gobject.idle_add(self.error_occured, err, None,
+                                            gtk.MESSAGE_INFO)
                                         self.__process_after_search_failure()
                                         return
                                 self.pylintstub = query_num
@@ -1307,7 +1308,7 @@ class PackageManager:
                         err_str = str(ex)
                         gobject.idle_add(self.w_progress_dialog.hide)
                         gobject.idle_add(self.error_occured, 
-                            err_str, gtk.MESSAGE_INFO)
+                            err_str, None, gtk.MESSAGE_INFO)
                         if len(result_tuple) == 0:
                                 self.__process_after_search_failure()
                                 return
@@ -1340,8 +1341,9 @@ class PackageManager:
                         times -= 1
                 self.in_setup = True
                 application_list = self.__get_list_from_search(result)
-                gobject.idle_add(self.__init_tree_views, application_list, None, None)
+                gobject.idle_add(self.__set_empty_details_panel)
                 gobject.idle_add(self.__set_main_view_package_list)
+                gobject.idle_add(self.__init_tree_views, application_list, None, None)
 
         def __get_list_from_search(self, search_result):
                 application_list = self.__get_new_application_liststore()
@@ -1368,7 +1370,7 @@ class PackageManager:
                         # This can happen if load_catalogs has not been run
                         err = _("Unable to get status for search results.\n"
                             "The catalogs have not been loaded.\n"
-                            "Please try after Update All button is enabled.\n")
+                            "Please try after few seconds.\n")
                         gobject.idle_add(self.w_progress_dialog.hide)
                         gobject.idle_add(self.error_occured, err)
                         return
@@ -1625,11 +1627,11 @@ class PackageManager:
                 '''This function is for handling category double click activations'''
                 self.w_filter_combobox.set_active(self.saved_filter_combobox_active)
                 self.w_searchentry_dialog.delete_text(0, -1)
-                if self.w_main_view_notebook.get_current_page() != NOTEBOOK_START_PAGE \
-                    and not self.is_remote_search:
-                        return
                 if self.is_remote_search:
                         self.__unset_remote_search(True)
+                        if self.selected == 0:
+                                gobject.idle_add(self.__enable_disable_install_remove)
+                        return
                 self.__set_main_view_package_list()
                 self.set_busy_cursor()
                 self.__refilter_on_idle()
@@ -1648,7 +1650,7 @@ class PackageManager:
                         return
                 if self.changing_search_option or self.is_remote_search:
                         return
-                self.w_filter_combobox.set_active(self.saved_filter_combobox_active)
+                self.w_filter_combobox.set_active(self.saved_filter_combobox_active, )
                 self.w_searchentry_dialog.delete_text(0, -1)
                 self.__set_main_view_package_list()
                 model, itr = selection.get_selected()
@@ -1867,11 +1869,11 @@ class PackageManager:
                             enumerations.REPOSITORY_NAME)
 
         def __setup_publisher(self, publishers=[]):
+                self.saved_filter_combobox_active = self.initial_show_filter
                 application_list, category_list , section_list = \
                     self.__get_application_categories_lists(publishers)
                 gobject.idle_add(self.__init_tree_views, application_list,
                     category_list, section_list)
-                gobject.idle_add(self.__set_main_view_package_list)
 
         def __get_application_categories_lists(self, publishers=[]):
                 if not self.visible_repository:
@@ -1907,9 +1909,10 @@ class PackageManager:
                                     True, None])
                         if self.application_list and self.category_list and \
                             not self.visible_repository_uptodate:
-                                self.__dump_datamodels(self.visible_repository, 
-                                    self.application_list, self.category_list,
-                                    self.section_list)
+                                if self.visible_repository:
+                                        self.__dump_datamodels(self.visible_repository,
+                                            self.application_list, self.category_list,
+                                            self.section_list)
                         self.visible_repository = self.__get_active_publisher()
                         self.visible_repository_uptodate = uptodate
                 return application_list, category_list, section_list
@@ -1993,6 +1996,7 @@ class PackageManager:
                         self.cancelled = True
                 if self.is_remote_search:
                         self.__unset_remote_search(False)
+                self.__set_empty_details_panel()
                 self.in_setup = True
                 self.visible_repository = None
                 self.w_progress_dialog.set_title(_("Refreshing catalogs"))
@@ -2000,6 +2004,7 @@ class PackageManager:
                 self.progress_stop_timer_thread = False
                 Thread(target = self.__progressdialog_progress_pulse).start()
                 self.w_progress_dialog.show()
+                self.w_progress_cancel.hide()
                 self.__disconnect_models()
                 Thread(target = self.__catalog_refresh).start()
 
@@ -2008,6 +2013,7 @@ class PackageManager:
                 #Let the progress_pulse finish. This should be done other way, but at
                 #The moment this works fine
                 time.sleep(0.2)
+                gobject.idle_add(self.w_progress_cancel.show)
                 gobject.idle_add(self.process_package_list_start,
                     self.image_directory)
 
@@ -2379,7 +2385,8 @@ class PackageManager:
                 try:
                         info = self.api_o.info([self.selected_pkgstem],
                             True, frozenset([api.PackageInfo.LICENSES]))
-                except (misc.TransportFailures, retrieve.ManifestRetrievalError):
+                except (misc.TransportFailures, retrieve.ManifestRetrievalError,
+                    retrieve.DatastreamRetrievalError):
                         pass
                 if license_id != self.show_licenses_id:
                         return
@@ -2388,7 +2395,8 @@ class PackageManager:
                         # Get license from remote
                                 info = self.api_o.info([self.selected_pkgstem],
                                     False, frozenset([api.PackageInfo.LICENSES]))
-                        except (misc.TransportFailures, retrieve.ManifestRetrievalError):
+                        except (misc.TransportFailures, retrieve.ManifestRetrievalError,
+                            retrieve.DatastreamRetrievalError):
                                 pass
                 if license_id != self.show_licenses_id:
                         return
@@ -2414,7 +2422,8 @@ class PackageManager:
                         info = self.api_o.info([pkg_stem], local,
                             api.PackageInfo.ALL_OPTIONS -
                             frozenset([api.PackageInfo.LICENSES]))
-                except (misc.TransportFailures, retrieve.ManifestRetrievalError):
+                except (misc.TransportFailures, retrieve.ManifestRetrievalError,
+                    retrieve.DatastreamRetrievalError):
                         return info
                 pkgs_info = None
                 package_info = None
@@ -3353,6 +3362,8 @@ class PackageManager:
 #-----------------------------------------------------------------------------#
         def fill_with_fake_data(self):
                 '''test data for gui'''
+                save_selected = _("Save selected...")
+                save_selected_pkgs = _("Save selected packages...")
                 self.application_list = self.__get_new_application_liststore()
                 self.category_list = self.__get_new_category_liststore()
                 self.section_list = self.__get_new_section_liststore()
