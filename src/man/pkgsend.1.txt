@@ -7,6 +7,7 @@ NAME
 SYNOPSIS
      /usr/bin/pkgsend [options] command [cmd_options] [operands]
 
+     /usr/bin/pkgsend create-repository
      /usr/bin/pkgsend open [-en] pkg_fmri
      /usr/bin/pkgsend add action arguments
      /usr/bin/pkgsend import [-T pattern] bundlefile ...
@@ -15,19 +16,28 @@ SYNOPSIS
 
 DESCRIPTION
      pkgsend allows the publication of new packages and new package
-     versions to an image packaging depot server.  Each publication is
+     versions to an image packaging repository.  Each publication is
      structured as a transaction; multiple invocations of pkgsend
      through a transaction allow the addition of resources and the
      transaction submission.
 
 OPTIONS
-     The following options alter the default behavior:
+     The following options are supported:
 
-     -s repo_url    The URL prefix of the depot server.  The default
-                    value is "http://localhost:10000/"
+     -s repo_uri    A URI representing the location of the target
+                    repository.  The default value is
+                    http://localhost:10000/.
+
+     --help or -?
+          Displays a usage message.
 
 SUBCOMMANDS
      The following subcommands are supported:
+
+     create-repository
+          Creates a new repository at the provided location if it does
+          not already exist.  Only supported for 'file://' repository
+          locations at this time.
 
      open [-en] pkg_fmri
           Begin a transaction on the package and version specified by
@@ -173,6 +183,11 @@ EXAMPLES
      $ pkgsend add file example mode=0555 owner=root group=bin \
          path=/usr/bin/example
      $ pkgsend close
+
+     Example 2:  Create a new repository suitable for use with pkgsend
+         or with a pkg(5) depot server.
+
+     $ pkgsend -s file:///tmp/example_repo create-repository
 
 EXIT STATUS
      The following exit values are returned:

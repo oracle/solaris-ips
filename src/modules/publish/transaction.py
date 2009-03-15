@@ -46,7 +46,8 @@ class TransactionError(Exception):
 
         def __init__(self, *args, **kwargs):
                 Exception.__init__(self, *args)
-                self.data = args[0]
+                if args:
+                        self.data = args[0]
                 self.args = kwargs
 
         def __str__(self):
@@ -100,6 +101,17 @@ class TransactionOperationError(TransactionError):
                 return _("Unable to initiate transaction:\n%s") % \
                     self.args.get("msg", "")
 
+
+class UnsupportedRepoTypeOperationError(TransactionError):
+        """Used to indicate that a requested operation is not supported for the
+        type of repository being operated on (http, file, etc.)."""
+
+        def __str__(self):
+                return _("Unsupported operation '%(op)s' for the specified "
+                    "repository type '%(type)s'.") % { "op": self.data,
+                    "type": self.args.get("type", "") }
+
+
 class FileTransaction(object):
         """Provides a publishing interface for file-based repositories."""
 
@@ -107,7 +119,8 @@ class FileTransaction(object):
         # successive transactions.
         __repo_cache = {}
 
-        def __init__(self, origin_url, pkg_name=None, trans_id=None):
+        def __init__(self, origin_url, create_repo=False, pkg_name=None,
+            trans_id=None):
                 scheme, netloc, path, params, query, fragment = \
                     urlparse.urlparse(origin_url, "file", allow_fragments=0)
 
@@ -118,7 +131,8 @@ class FileTransaction(object):
                             msg=_("Not an absolute path."))
 
                 if origin_url not in repo_cache:
-                        scfg = config.SvrConfig(path, None, None)
+                        scfg = config.SvrConfig(path, None, None,
+                            auto_create=create_repo)
                         try:
                                 scfg.init_dirs()
                         except (config.SvrConfigError, EnvironmentError), e:
@@ -223,7 +237,16 @@ class FileTransaction(object):
 class HTTPTransaction(object):
         """Provides a publishing interface for HTTP(S)-based repositories."""
 
-        def __init__(self, origin_url, pkg_name=None, trans_id=None):
+        def __init__(self, origin_url, create_repo=False, pkg_name=None,
+            trans_id=None):
+
+                if create_repo:
+                        scheme, netloc, path, params, query, fragment = \
+                            urlparse.urlparse(origin_url, "http",
+                            allow_fragments=0)
+                        raise UnsupportedRepoTypeOperationError("create_repo",
+                            type=scheme)
+
                 self.origin_url = origin_url
                 self.pkg_name = pkg_name
                 self.trans_id = trans_id
@@ -426,7 +449,9 @@ class NullTransaction(object):
         """Provides a simulated publishing interface suitable for testing
         purposes."""
 
-        def __init__(self, origin_url, pkg_name=None, trans_id=None):
+        def __init__(self, origin_url, create_repo=False, pkg_name=None,
+            trans_id=None):
+                self.create_repo = create_repo
                 self.origin_url = origin_url
                 self.pkg_name = pkg_name
                 self.trans_id = trans_id
@@ -502,8 +527,8 @@ class Transaction(object):
             "null": NullTransaction,
         }
 
-        def __new__(cls, origin_url, pkg_name=None, trans_id=None,
-            noexecute=False):
+        def __new__(cls, origin_url, create_repo=False, pkg_name=None,
+            trans_id=None, noexecute=False):
                 scheme, netloc, path, params, query, fragment = \
                     urlparse.urlparse(origin_url, "http", allow_fragments=0)
                 scheme = scheme.lower()
@@ -521,4 +546,6 @@ class Transaction(object):
                 origin_url = urlparse.urlunparse((scheme, netloc, path, params,
                     query, fragment))
 
-                return cls.__schemes[scheme](origin_url, pkg_name, trans_id)
+                return cls.__schemes[scheme](origin_url,
+                    create_repo=create_repo, pkg_name=pkg_name,
+                    trans_id=trans_id)

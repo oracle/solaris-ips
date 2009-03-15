@@ -49,12 +49,16 @@ import pkg.bundle
 import pkg.publish.transaction as trans
 from pkg.misc import msg, emsg, PipeError
 
-def error(text):
+def error(text, cmd=None):
         """Emit an error message prefixed by the command name """
 
-        # If we get passed something like an Exception, we can convert it
-        # down to a string.
-        text = str(text)
+        if cmd:
+                text = "%s: %s" % (cmd, text)
+        else:
+                # If we get passed something like an Exception, we can convert
+                # it down to a string.
+                text = str(text)
+
         # If the message starts with whitespace, assume that it should come
         # *before* the command-name prefix.
         text_nows = text.lstrip()
@@ -64,18 +68,19 @@ def error(text):
         # program name on all platforms.
         emsg(ws + "pkgsend: " + text_nows)
 
-def usage(usage_error=None):
+def usage(usage_error=None, cmd=None, retcode=2):
         """Emit a usage message and optionally prefix it with a more specific
         error message.  Causes program to exit."""
 
         if usage_error:
-                error(usage_error)
+                error(usage_error, cmd=cmd)
 
         print _("""\
 Usage:
         pkgsend [options] command [cmd_options] [operands]
 
 Packager subcommands:
+        pkgsend create-repository
         pkgsend open [-en] pkg_fmri
         pkgsend add action arguments
         pkgsend import [-T file_pattern] bundlefile ...
@@ -85,13 +90,28 @@ Packager subcommands:
         pkgsend rename src_fmri dest_fmri
 
 Options:
-        -s repo_url     destination repository server URL prefix
+        -s repo_uri     target repository URI
+        --help or -?    display usage message
 
 Environment:
         PKG_REPO""")
-        sys.exit(2)
+        sys.exit(retcode)
 
-def trans_open(repo_url, args):
+def trans_create_repository(repo_uri, args):
+        """Creates a new repository at the location indicated by repo_uri."""
+
+        if args:
+                usage(_("command does not take operands"),
+                    cmd="create-repository")
+
+        try:
+                trans.Transaction(repo_uri, create_repo=True)
+        except trans.TransactionError, e:
+                error(e, cmd="create-repository")
+                return 1
+        return 0
+
+def trans_open(repo_uri, args):
 
         opts, pargs = getopt.getopt(args, "en")
 
@@ -105,12 +125,12 @@ def trans_open(repo_url, args):
                         eval_form = False
 
         if "-e" in parsed and "-n" in parsed:
-                usage(_("only -e or -n may be specified"))
+                usage(_("only -e or -n may be specified"), cmd="open")
 
         if len(pargs) != 1:
-                usage(_("open requires one package name"))
+                usage(_("open requires one package name"), cmd="open")
 
-        t = trans.Transaction(repo_url, pkg_name=pargs[0])
+        t = trans.Transaction(repo_uri, pkg_name=pargs[0])
         if eval_form:
                 msg("export PKG_TRANS_ID=%s" % t.open())
         else:
@@ -118,7 +138,7 @@ def trans_open(repo_url, args):
 
         return 0
 
-def trans_close(repo_url, args):
+def trans_close(repo_uri, args):
         abandon = False
         trans_id = None
 
@@ -135,23 +155,24 @@ def trans_close(repo_url, args):
                         trans_id = os.environ["PKG_TRANS_ID"]
                 except KeyError:
                         usage(_("No transaction ID specified using -t or in "
-                            "$PKG_TRANS_ID."))
+                            "$PKG_TRANS_ID."), cmd="close")
 
-        t = trans.Transaction(repo_url, trans_id=trans_id)
+        t = trans.Transaction(repo_uri, trans_id=trans_id)
         pkg_state, pkg_fmri = t.close(abandon)
         for val in (pkg_state, pkg_fmri):
                 if val is not None:
                         msg(val)
         return 0
 
-def trans_add(repo_url, args):
+def trans_add(repo_uri, args):
         try:
                 trans_id = os.environ["PKG_TRANS_ID"]
         except KeyError:
-                usage(_("No transaction ID specified in $PKG_TRANS_ID"))
+                usage(_("No transaction ID specified in $PKG_TRANS_ID"),
+                    cmd="add")
 
         if not args:
-                usage(_("No arguments specified for subcommand."))
+                usage(_("No arguments specified for subcommand."), cmd="add")
         elif args[0] in ("file", "license"):
                 if len(args) < 2:
                         raise RuntimeError, _("A filename must be provided "
@@ -161,7 +182,7 @@ def trans_add(repo_url, args):
                         action = pkg.actions.fromlist(args[0], args[2:],
                             data=args[1])
                 except ValueError, e:
-                        error(e[0])
+                        error(e[0], cmd="add")
                         return 1
 
                 if "pkg.size" not in action.attrs:
@@ -171,22 +192,22 @@ def trans_add(repo_url, args):
                 try:
                         action = pkg.actions.fromlist(args[0], args[1:])
                 except ValueError, e:
-                        error(e[0])
+                        error(e[0], cmd="add")
                         return 1
 
-        t = trans.Transaction(repo_url, trans_id=trans_id)
+        t = trans.Transaction(repo_uri, trans_id=trans_id)
         t.add(action)
         return 0
 
-def trans_rename(repo_url, args):
+def trans_rename(repo_uri, args):
         if not args:
-                usage(_("No arguments specified for subcommand."))
+                usage(_("No arguments specified for subcommand."), cmd="rename")
 
-        t = trans.Transaction(repo_url)
+        t = trans.Transaction(repo_uri)
         t.rename(args[0], args[1])
         return 0
 
-def trans_include(repo_url, fargs):
+def trans_include(repo_uri, fargs):
 
         basedir = None
 
@@ -198,12 +219,14 @@ def trans_include(repo_url, fargs):
         try:
                 trans_id = os.environ["PKG_TRANS_ID"]
         except KeyError:
-                usage(_("No transaction ID specified in $PKG_TRANS_ID"))
+                usage(_("No transaction ID specified in $PKG_TRANS_ID"),
+                    cmd="include")
 
         if not fargs:
-                usage(_("No arguments specified for subcommand."))
+                usage(_("No arguments specified for subcommand."),
+                    cmd="include")
 
-        t = trans.Transaction(repo_url, trans_id=trans_id)
+        t = trans.Transaction(repo_uri, trans_id=trans_id)
         for filename in pargs:
                 f = file(filename)
                 for line in f:
@@ -226,13 +249,13 @@ def trans_include(repo_url, fargs):
                                         action = pkg.actions.fromstr(line,
                                             data=fullpath)
                                 except ValueError, e:
-                                        usage(e[0])
+                                        error(e[0], cmd="include")
                                         return 1
                         else:
                                 try:
                                         action = pkg.actions.fromstr(line)
                                 except ValueError, e:
-                                        error(e[0])
+                                        error(e[0], cmd="include")
                                         return 1
 
                         # cleanup any leading / in path to prevent problems
@@ -243,7 +266,7 @@ def trans_include(repo_url, fargs):
                         t.add(action)
         return 0
 
-def trans_import(repo_url, args):
+def trans_import(repo_uri, args):
         try:
                 trans_id = os.environ["PKG_TRANS_ID"]
         except KeyError:
@@ -260,11 +283,12 @@ def trans_import(repo_url, args):
                         timestamp_files.append(arg)
 
         if not args:
-                usage(_("No arguments specified for subcommand."))
+                usage(_("No arguments specified for subcommand."),
+                    cmd="import")
 
         for filename in pargs:
                 bundle = pkg.bundle.make_bundle(filename)
-                t = trans.Transaction(repo_url, trans_id=trans_id)
+                t = trans.Transaction(repo_uri, trans_id=trans_id)
 
                 for action in bundle:
                         if action.name == "file":
@@ -286,39 +310,48 @@ def main_func():
         gettext.install("pkgsend", "/usr/lib/locale")
 
         try:
-                repo_url = os.environ["PKG_REPO"]
+                repo_uri = os.environ["PKG_REPO"]
         except KeyError:
-                repo_url = "http://localhost:10000"
+                repo_uri = "http://localhost:10000"
 
+        show_usage = False
         try:
-                opts, pargs = getopt.getopt(sys.argv[1:], "s:")
+                opts, pargs = getopt.getopt(sys.argv[1:], "s:?", ["help"])
                 for opt, arg in opts:
                         if opt == "-s":
-                                repo_url = arg
-
+                                repo_uri = arg
+                        elif opt in ("--help", "-?"):
+                                show_usage = True
         except getopt.GetoptError, e:
                 usage(_("pkgsend: illegal global option -- %s") % e.opt)
 
-        if pargs is None or len(pargs) == 0:
-                usage()
+        subcommand = None
+        if pargs:
+                subcommand = pargs.pop(0)
+                if subcommand == "help":
+                        show_usage = True
 
-        subcommand = pargs[0]
-        del pargs[0]
+        if show_usage:
+                usage(retcode=0)
+        elif not subcommand:
+                usage()
 
         ret = 0
         try:
-                if subcommand == "open":
-                        ret = trans_open(repo_url, pargs)
+                if subcommand == "create-repository":
+                        ret = trans_create_repository(repo_uri, pargs)
+                elif subcommand == "open":
+                        ret = trans_open(repo_uri, pargs)
                 elif subcommand == "close":
-                        ret = trans_close(repo_url, pargs)
+                        ret = trans_close(repo_uri, pargs)
                 elif subcommand == "add":
-                        ret = trans_add(repo_url, pargs)
+                        ret = trans_add(repo_uri, pargs)
                 elif subcommand == "import":
-                        ret = trans_import(repo_url, pargs)
+                        ret = trans_import(repo_uri, pargs)
                 elif subcommand == "include":
-                        ret = trans_include(repo_url, pargs)
+                        ret = trans_include(repo_uri, pargs)
                 elif subcommand == "rename":
-                        ret = trans_rename(repo_url, pargs)
+                        ret = trans_rename(repo_uri, pargs)
                 else:
                         usage(_("unknown subcommand '%s'") % subcommand)
         except getopt.GetoptError, e:

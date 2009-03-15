@@ -28,11 +28,11 @@ if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 
 import os
+import shutil
 import unittest
 
 class TestPkgsendBasics(testutils.SingleDepotTestCase):
-        # Only start/stop the depot once (instead of for every test)
-        persistent_depot = True
+        persistent_depot = False
 
         def test_0_pkgsend_bad_opts(self):
                 """Verify that non-existent or invalid option combinations
@@ -173,6 +173,46 @@ class TestPkgsendBasics(testutils.SingleDepotTestCase):
 
                         # Should fail because an invalid fmri was specified.
                         self.pkgsend(url, "open foo@1.a", exit=1)
+
+                # Should fail because repository does not exist.
+                self.pkgsend(dfurl + "junk", "open foo@1.a", exit=1)
+
+        def test_6_help(self):
+                """Verify that help works as expected."""
+
+                self.pkgsend(command="-?")
+                self.pkgsend(command="--help")
+
+                self.pkgsend(command="-? bobcat")
+                self.pkgsend(command="--help bobcat")
+
+                # Specifying no commands should result in usage error.
+                self.pkgsend(exit=2)
+
+        def test_7_create_repo(self):
+                """Verify that create-repository works as expected."""
+
+                self.dc.stop()
+                rpath = os.path.join(self.get_test_prefix(), "example_repo")
+                self.pkgsend("file://%s" % rpath, "create-repository")
+
+                # Now verify that the repository was created by starting the
+                # depot server in readonly mode using the target repository.
+                # If it wasn't, restart_depots should fail with an exception
+                # since the depot process will exit with a non-zero return
+                # code.
+                self.dc.set_repodir(rpath)
+                self.dc.set_readonly()
+                self.dc.start()
+
+                # Now verify that creation of a repository is rejected for all
+                # schemes execpt file://.
+                self.pkgsend("http://invalid.test1", "create-repository", exit=1)
+                self.pkgsend("https://invalid.test2", "create-repository", exit=1)
+
+                # Finally, verify that specifying extra operands to
+                # create-repository fails as expected.
+                self.pkgsend("https://invalid.test2", "create-repository bobcat", exit=2)
 
 class TestPkgsendRename(testutils.SingleDepotTestCase):
 

@@ -453,8 +453,8 @@ def end_package(pkg):
 def publish_pkg(pkg):
 
         new_pkg_name = "%s@%s" % (pkg.name, pkg.version)
-        t = trans.Transaction(def_repo, pkg_name=new_pkg_name,
-            noexecute=nopublish)
+        t = trans.Transaction(def_repo, create_repo=create_repo,
+            pkg_name=new_pkg_name, noexecute=nopublish)
 
         print "    open %s" % new_pkg_name
         transaction_id = t.open()
@@ -889,6 +889,7 @@ def get_branch(name):
 def_vers = "0.5.11"
 def_branch = ""
 def_wos_path = ["/net/netinstall.eng/export/nv/x/latest/Solaris_11/Product"]
+create_repo = False
 nopublish = False
 show_debug = False
 def_repo = "http://localhost:10000"
@@ -946,6 +947,10 @@ for opt, arg in _opts:
                 g_proto_area = os.path.realpath(arg)
         elif  opt == "-s":
                 def_repo = arg
+                if def_repo.startswith("file://"):
+                        # When publishing to file:// repositories, automatically
+                        # create the target repository if needed.
+                        create_repo = True
         elif opt == "-v":
                 def_vers = arg
         elif opt == "-w":

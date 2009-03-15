@@ -405,14 +405,22 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
 
                 return retcode
 
-        def pkgsend(self, depot_url, command, exit = 0, comment = ""):
+        def pkgsend(self, depot_url="", command="", exit=0, comment=""):
 
                 wrapper = ""
                 if os.environ.has_key("PKGCOVERAGE"):
                         wrapper = "figleaf"
 
-                cmdline = "%s %s/usr/bin/pkgsend -s %s %s" % (wrapper,
-                    g_proto_area, depot_url, command)
+                args = []
+                if depot_url:
+                        depot_url = "-s " + depot_url
+                        args.append(depot_url)
+
+                if command:
+                        args.append(command)
+
+                cmdline = "%s %s/usr/bin/pkgsend %s" % (wrapper, g_proto_area,
+                    " ".join(args))
                 self.debugcmd(cmdline)
 
                 # XXX may need to be smarter.
