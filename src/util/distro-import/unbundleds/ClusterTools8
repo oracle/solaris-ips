@@ -8,6 +8,7 @@ classification "Development/High Performance Computing"
 version 8.1
 import SUNWompi
 import SUNWompiat
+import SUNWompil
 import SUNWompimn
 import SUNWompir
 import SUNWomsc
