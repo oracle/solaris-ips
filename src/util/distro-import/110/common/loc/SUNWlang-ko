@@ -1,0 +1,5 @@
+package SUNWlang-ko
+classification "System/Localizations"
+import SUNWlang-ko
+depend SUNWlang-common
+end package

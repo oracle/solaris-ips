@@ -1,0 +1,5 @@
+package SUNWlang-zhCN
+classification "System/Localizations"
+import SUNWlang-zhCN
+depend SUNWlang-common
+end package

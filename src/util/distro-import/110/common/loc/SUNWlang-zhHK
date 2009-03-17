@@ -1,0 +1,5 @@
+package SUNWlang-zhHK
+classification "System/Localizations"
+import SUNWlang-zhHK
+depend SUNWlang-common
+end package

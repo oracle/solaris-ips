@@ -1,0 +1,5 @@
+package SUNWlang-frFR
+classification "System/Localizations"
+import SUNWlang-frFR
+depend SUNWlang-common
+end package

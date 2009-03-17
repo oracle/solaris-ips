@@ -1,0 +1,5 @@
+package SUNWlang-ptBR
+classification "System/Localizations"
+import SUNWlang-ptBR
+depend SUNWlang-common
+end package

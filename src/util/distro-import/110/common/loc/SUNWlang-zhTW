@@ -1,0 +1,5 @@
+package SUNWlang-zhTW
+classification "System/Localizations"
+import SUNWlang-zhTW
+depend SUNWlang-common
+end package

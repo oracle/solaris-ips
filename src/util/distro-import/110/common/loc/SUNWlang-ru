@@ -1,0 +1,5 @@
+package SUNWlang-ru
+classification "System/Localizations"
+import SUNWlang-ru
+depend SUNWlang-common
+end package

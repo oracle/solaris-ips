@@ -1,0 +1,5 @@
+package SUNWlang-vi
+classification "System/Localizations"
+import SUNWlang-vi
+depend SUNWlang-common
+end package

@@ -1,0 +1,5 @@
+package SUNWlang-sk
+classification "System/Localizations"
+import SUNWlang-sk
+depend SUNWlang-common
+end package

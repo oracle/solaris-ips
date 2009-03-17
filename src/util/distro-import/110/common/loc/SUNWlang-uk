@@ -1,0 +1,5 @@
+package SUNWlang-uk
+classification "System/Localizations"
+import SUNWlang-uk
+depend SUNWlang-common
+end package
