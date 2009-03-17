@@ -83,4 +83,5 @@ end import
 from SUNWftpr import
 etc/ftpd/ftpusers
 end import
+depend SUNWperl584core
 end package

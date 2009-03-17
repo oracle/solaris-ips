@@ -1,0 +1,5 @@
+package SUNWlibpigment
+classification "System/Multimedia Libraries"
+import SUNWlibpigment
+import SUNWlibpigment-devel
+end package

@@ -1,0 +1,6 @@
+package SUNWcompiz-fusion-main
+classification "Applications/Plug-ins and Run-times"
+import SUNWcompiz-fusion-main
+import SUNWcompiz-fusion-main-devel
+import SUNWcompiz-fusion-main-root
+end package

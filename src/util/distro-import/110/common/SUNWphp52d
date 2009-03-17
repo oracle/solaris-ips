@@ -1,0 +1,5 @@
+package SUNWphp52d
+classification "Development/PHP"
+import SUNWphp52d
+version 5.2.9
+end package

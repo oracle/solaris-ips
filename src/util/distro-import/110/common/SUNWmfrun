@@ -1,0 +1,35 @@
+package SUNWmfrun
+classification "System/X11"
+import SUNWmfrun exclude \
+	usr/dt/lib/$(ARCH64)/libtt.so \
+	usr/dt/lib/$(ARCH64)/libtt.so.2
+import SUNWmfdev
+import SUNWmfman
+from SUNWdtma import
+usr/dt/share/man/man1/uil.1x
+end import
+# replace links previously found in SUNWxwhl & SUNWxwrtl
+from SUNWxwhl import
+usr/include/Mrm
+usr/include/Xm
+usr/include/uil
+end import
+from SUNWxwrtl import
+$(sparc_ONLY)usr/lib/$(ARCH64)/libMrm.so
+$(sparc_ONLY)usr/lib/$(ARCH64)/libMrm.so.4
+$(sparc_ONLY)usr/lib/$(ARCH64)/libUil.so
+$(sparc_ONLY)usr/lib/$(ARCH64)/libUil.so.3
+usr/lib/$(ARCH64)/libXm.so
+usr/lib/$(ARCH64)/libXm.so.4
+usr/lib/libMrm.so
+usr/lib/libMrm.so.1.2
+usr/lib/libMrm.so.3
+usr/lib/libMrm.so.4
+usr/lib/libUil.so
+usr/lib/libUil.so.3
+usr/lib/libXm.so
+usr/lib/libXm.so.1.2
+usr/lib/libXm.so.3
+usr/lib/libXm.so.4
+end import
+end package

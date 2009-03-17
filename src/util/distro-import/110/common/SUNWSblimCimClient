@@ -1,0 +1,5 @@
+package SUNWSblimCimClient
+classification "System/Enterprise Management"
+import SUNWSblimCimClient
+version 1.3.7
+end package

@@ -1,0 +1,5 @@
+package SUNWlua
+classification "Development/Other Languages"
+import SUNWlua
+version 5.1.4
+end package

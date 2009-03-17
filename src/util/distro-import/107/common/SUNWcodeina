@@ -6,6 +6,7 @@ depend SUNWgnome-python-extras
 depend SUNWgnome-python-libs
 depend SUNWgst-python
 depend SUNWpython-notify
+depend SUNWpython-pyopenssl
 depend SUNWpython-twisted
 depend SUNWpython-xdg
 depend SUNWpyyaml24

@@ -1,0 +1,44 @@
+package SUNWtltk
+classification "System/Libraries"
+import SUNWtltk exclude usr/openwin usr/openwin/share usr/openwin/share/include
+import SUNWtltkd exclude usr/openwin usr/openwin/share usr/openwin/share/include
+import SUNWtltkm exclude usr/openwin usr/openwin/share
+from SUNWdtdmr import
+lib
+lib/svc
+lib/svc/method
+lib/svc/method/rpc-ttdbserverd
+var
+var/svc
+var/svc/manifest
+var/svc/manifest/network
+var/svc/manifest/network/rpc
+var/svc/manifest/network/rpc/cde-ttdbserverd.xml
+end import
+
+chattr_glob * edit path usr/dt/bin usr/X11/bin
+chattr_glob * edit target ../../openwin/bin ../../dt/bin
+chattr_glob * edit path usr/openwin/bin usr/dt/bin
+
+drop usr/dt/lib/libtt.so.2
+drop usr/dt/lib/libtt.so
+chattr_glob * edit path usr/openwin/lib usr/dt/lib
+add link path=usr/X11/lib/libtt.so target=../../dt/lib/libtt.so.2
+add link path=usr/X11/lib/libtt.so.1 target=../../dt/lib/libtt.so.2
+add link path=usr/X11/lib/libtt.so.2 target=../../dt/lib/libtt.so.2
+
+drop usr/dt/share/include/Tt/tt_c.h
+drop usr/dt/share/include/Tt/tttk.h
+chattr_glob * edit path usr/openwin/share/include/desktop \
+	usr/dt/share/include/Tt
+add link path=usr/X11/share/include/desktop/tt_c.h \
+	target=../../../../dt/share/include/Tt/tt_c.h
+add link path=usr/X11/share/include/desktop/ttdnd.h \
+	target=../../../../dt/share/include/Tt/ttdnd.h
+add link path=usr/X11/share/include/desktop/tttk.h \
+	target=../../../../dt/share/include/Tt/tttk.h
+
+chattr_glob * edit path usr/openwin/share/man usr/dt/share/man
+
+chattr_glob * edit path usr/openwin/share/src usr/dt/share/examples
+end package

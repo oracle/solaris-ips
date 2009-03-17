@@ -1,0 +1,4 @@
+package SUNWpython24-ctypes
+classification "Development/Python"
+import SUNWpython24-ctypes
+end package

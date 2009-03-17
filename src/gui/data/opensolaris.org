@@ -94,6 +94,9 @@ category = Python
 [SUNWPython26-extra]
 category = Python
 
+[SUNWSblimCimClient]
+category = Enterprise Management
+
 [SUNWTcl]
 category = Other Languages
 
@@ -135,15 +138,6 @@ category = Administration and Configuration
 
 [SUNWadpu320]
 category = Ports
-
-[SUNWafb]
-category = Display
-
-[SUNWafbcf]
-category = Display
-
-[SUNWafbw]
-category = Display
 
 [SUNWafe]
 category = Networking
@@ -266,7 +260,10 @@ category = Media
 category = Administration and Configuration
 
 [SUNWauto-install]
-category = Core
+category = Administration and Configuration
+
+[SUNWauto-install-common]
+category = Administration and Configuration
 
 [SUNWautoef]
 category = Text Tools
@@ -664,6 +661,9 @@ category = Core
 [SUNWdsd]
 category = Services
 
+[SUNWdtbas]
+category = X11 (System)
+
 [SUNWdtrc]
 category = System
 
@@ -762,15 +762,6 @@ category = Services
 
 [SUNWfetchmail]
 category = Internet
-
-[SUNWffb]
-category = Display
-
-[SUNWffbcf]
-category = Display
-
-[SUNWffbw]
-category = Display
 
 [SUNWffilters]
 category = Printing
@@ -963,15 +954,6 @@ category = Localizations (System)
 
 [SUNWgetting-started-l10n-zhTW]
 category = Localizations (System)
-
-[SUNWgfb]
-category = Display
-
-[SUNWgfbcf]
-category = Display
-
-[SUNWgfbw]
-category = Display
 
 [SUNWgftp]
 category = System Utilities
@@ -1624,15 +1606,6 @@ category = Internationalization
 [SUNWidnu]
 category = Internationalization
 
-[SUNWifb]
-category = Display
-
-[SUNWifbcf]
-category = Display
-
-[SUNWifbw]
-category = Display
-
 [SUNWigb]
 category = Networking
 
@@ -1833,15 +1806,6 @@ category = Java
 
 [SUNWjdoc]
 category = Text Tools
-
-[SUNWjfb]
-category = Display
-
-[SUNWjfbcf]
-category = Display
-
-[SUNWjfbw]
-category = Display
 
 [SUNWjhrt]
 category = Documentation
@@ -2269,6 +2233,9 @@ category = Libraries
 [SUNWlibm]
 category = Libraries (System)
 
+[SUNWlibmcrypt]
+category = Libraries (System)
+
 [SUNWlibmemcached]
 category = Libraries (System)
 
@@ -2386,6 +2353,9 @@ category = Storage
 [SUNWltdl]
 category = GNU
 
+[SUNWlua]
+category = Other Languages
+
 [SUNWluxd]
 category = Storage
 
@@ -2412,15 +2382,6 @@ category = Internationalization
 
 [SUNWm17n-contrib]
 category = Internationalization
-
-[SUNWm64]
-category = Display
-
-[SUNWm64cf]
-category = Display
-
-[SUNWm64w]
-category = Display
 
 [SUNWman]
 category = Text Tools
@@ -2457,6 +2418,9 @@ category = Java
 
 [SUNWmercurial]
 category = Source Code Management
+
+[SUNWmfrun]
+category = X11 (System)
 
 [SUNWmibii]
 category = Enterprise Management
@@ -2800,9 +2764,6 @@ category = Core
 [SUNWpoold]
 category = Core
 
-[SUNWpostgr]
-category = Databases (System)
-
 [SUNWpostgr-82-client]
 category = Databases (System)
 
@@ -2860,26 +2821,8 @@ category = Databases (System)
 [SUNWpostgr-83-tcl]
 category = Databases
 
-[SUNWpostgr-contrib]
-category = Databases (System)
-
-[SUNWpostgr-docs]
-category = Databases (System)
-
 [SUNWpostgr-jdbc]
 category = Databases (System)
-
-[SUNWpostgr-libs]
-category = Databases (System)
-
-[SUNWpostgr-pl]
-category = Databases
-
-[SUNWpostgr-server]
-category = Databases (System)
-
-[SUNWpostgr-tcl]
-category = Databases
 
 [SUNWpostgr-upgrade]
 category = Databases (System)
@@ -2974,6 +2917,9 @@ category = Python
 [SUNWpython-notify]
 category = Python
 
+[SUNWpython-ply]
+category = Python
+
 [SUNWpython-pyopenssl]
 category = Python
 
@@ -2993,6 +2939,9 @@ category = Python
 category = Python
 
 [SUNWpython24-cssutils]
+category = Python
+
+[SUNWpython24-ctypes]
 category = Python
 
 [SUNWpython24-simplejson]
@@ -3131,6 +3080,9 @@ category = Libraries (System)
 category = Graphics and Imaging
 
 [SUNWsasnm]
+category = Enterprise Management
+
+[SUNWsblimwbemcli]
 category = Enterprise Management
 
 [SUNWsbp2]
@@ -3547,6 +3499,9 @@ category = Security
 [SUNWtlsu]
 category = Security
 
+[SUNWtltk]
+category = Libraries (System)
+
 [SUNWtnetc]
 category = System Utilities
 
@@ -3590,6 +3545,9 @@ category = Fonts
 category = Fonts
 
 [SUNWttf-arphic-uming]
+category = Fonts
+
+[SUNWttf-google-droid]
 category = Fonts
 
 [SUNWttf-hanyang-ko]
@@ -3934,23 +3892,8 @@ category = Core
 [SUNWzsh]
 category = Shells
 
-[SUNWzulu]
-category = Display
-
-[SUNWzuluc]
-category = Display
-
-[SUNWzuluw]
-category = Display
-
 [SUNWzyd]
 category = Networking
-
-[TSIpgx]
-category = Display
-
-[TSIpgxw]
-category = Display
 
 [amp]
 category = Application and Web Servers

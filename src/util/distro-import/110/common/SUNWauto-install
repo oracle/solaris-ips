@@ -1,0 +1,5 @@
+package SUNWauto-install
+classification "System/Administration and Configuration"
+import SUNWauto-install
+depend SUNWauto-install-common
+end package
