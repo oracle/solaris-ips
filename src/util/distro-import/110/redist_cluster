@@ -600,7 +600,6 @@ include common/SUNWpng
 include common/SUNWpolkit
 include common/SUNWpool
 include common/SUNWpoold
-include common/SUNWpostgr
 include common/SUNWpostgr-82-client
 include common/SUNWpostgr-82-contrib
 include common/SUNWpostgr-82-devel
@@ -834,7 +833,6 @@ include common/SUNWvim
 include common/SUNWvinagre
 include common/SUNWvncviewer
 include common/SUNWvscan
-include common/SUNWvscankr
 include common/SUNWvts
 include common/SUNWvtsmn
 include common/SUNWvtss
@@ -873,6 +871,7 @@ include common/SUNWxsane
 include common/SUNWxscreensaver-hacks
 include common/SUNWxscreensaver-hacks-gl
 include common/SUNWxvnc
+include common/SUNWxwacx
 include common/SUNWxwdem
 include common/SUNWxwdv
 include common/SUNWxwfsw
@@ -1366,6 +1365,7 @@ $(i386_ONLY)include common/SUNWpl5m
 $(i386_ONLY)include common/SUNWpl5p
 $(i386_ONLY)include common/SUNWpl5u
 $(i386_ONLY)include common/SUNWpl5v
+include common/SUNWpostgr
 $(i386_ONLY)include common/SUNWpostgr-82-server-data-root
 include common/SUNWpostgr-contrib
 include common/SUNWpostgr-docs
@@ -1390,6 +1390,7 @@ $(i386_ONLY)include common/SUNWtiu8
 $(i386_ONLY)include common/SUNWulcf
 $(i386_ONLY)include common/SUNWupdatemgr
 $(i386_ONLY)include common/SUNWuxlcf
+include common/SUNWvscankr
 $(i386_ONLY)include common/SUNWxi18n
 include common/SUNWxorg-doc
 $(i386_ONLY)include common/SUNWxsun-keytables
@@ -2470,7 +2471,6 @@ depend SUNWpng
 depend SUNWpolkit
 depend SUNWpool
 depend SUNWpoold
-depend SUNWpostgr
 depend SUNWpostgr-82-client
 depend SUNWpostgr-82-contrib
 depend SUNWpostgr-82-devel
@@ -2772,7 +2772,6 @@ $(i386_ONLY)depend SUNWvirt-manager
 $(i386_ONLY)depend SUNWvirtinst
 depend SUNWvncviewer
 depend SUNWvscan
-depend SUNWvscankr
 depend SUNWvts
 depend SUNWvtsmn
 depend SUNWvtss
@@ -2820,6 +2819,7 @@ $(i386_ONLY)depend SUNWxvmdom
 $(i386_ONLY)depend SUNWxvmipa
 $(i386_ONLY)depend SUNWxvmpv
 depend SUNWxvnc
+depend SUNWxwacx
 depend SUNWxwdem
 depend SUNWxwdv
 depend SUNWxwfsw
@@ -2969,6 +2969,7 @@ $(i386_ONLY)depend SUNWpl5m
 $(i386_ONLY)depend SUNWpl5p
 $(i386_ONLY)depend SUNWpl5u
 $(i386_ONLY)depend SUNWpl5v
+depend SUNWpostgr
 $(i386_ONLY)depend SUNWpostgr-82-server-data-root
 depend SUNWpostgr-contrib
 depend SUNWpostgr-docs
@@ -2982,6 +2983,7 @@ depend SUNWpostgr-tcl
 depend SUNWpostgr-upgrade
 $(i386_ONLY)depend SUNWsolaris-devel-docs
 $(i386_ONLY)depend SUNWsrh
+depend SUNWvscankr
 depend SUNWxorg-doc
 $(sparc_ONLY)depend SUNWzulu
 $(sparc_ONLY)depend SUNWzuluc
