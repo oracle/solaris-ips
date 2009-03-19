@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -38,21 +38,20 @@ import pkg.fmri
 import pkg.pkgtarfile as ptf
 import pkg.catalog as catalog
 import pkg.actions as actions
-from pkg.misc import versioned_urlopen, gunzip_from_stream, msg, PipeError
+from pkg.misc import versioned_urlopen, gunzip_from_stream, msg, emsg, PipeError
 from pkg.client import global_settings
 
 def usage(usage_error = None):
         """ Emit a usage message and optionally prefix it with a more
             specific error message.  Causes program to exit. """
 
-        pname = os.path.basename(sys.argv[0])
         if usage_error:
-                print >> sys.stderr, pname + ": " + usage_error
+                error(usage_error)
 
-        print >> sys.stderr, _("""\
+        emsg(_("""\
 Usage:
         pkgrecv -s server [-d dir] pkgfmri ...
-        pkgrecv -s server -n""")
+        pkgrecv -s server -n"""))
 
         sys.exit(2)
 
@@ -60,8 +59,9 @@ Usage:
 def error(error):
         """ Emit an error message prefixed by the command name """
 
-        pname = os.path.basename(sys.argv[0])
-        print >> sys.stderr, pname + ": " + error
+        # The prgram name has to be a constant value as we can't reliably 
+        # get our actual program name on all platforms.
+        emsg("pkgrecv: " + error)
 
 def hashes_from_mfst(manifest):
         """Given a path to a manifest, open the file and read through the
