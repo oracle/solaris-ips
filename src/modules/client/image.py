@@ -294,6 +294,9 @@ class Image(object):
                         except api_errors.PermissionsException:
                                 pass
 
+                manifest.CachedManifest.initialize(os.path.join(self.imgdir,
+                    "pkg"), self.get_preferred_publisher())
+
         def save_config(self):
                 self.cfg_cache.write(self.imgdir)
 
@@ -762,22 +765,40 @@ class Image(object):
                 return False
 
         def __fetch_manifest_with_retries(self, fmri, excludes=EmptyI):
-                """Wrapper function around __fetch_manifest to handle some
-                exceptions and keep track of additional state."""
+                """go get the manifest we want - retry if needed"""
 
-                m = None
                 retry_count = global_settings.PKG_TIMEOUT_MAX
                 failures = TransportFailures()
 
-                while not m:
+                while retry_count > 0:
                         try:
-                                m = self.__fetch_manifest(fmri, excludes)
+                                mcontent = retrieve.get_manifest(self, fmri)
+                                m = manifest.CachedManifest(fmri, excludes,
+                                    mcontent)
+
+                                # What is the client currently processing?
+                                targets = self.state.get_targets()
+                                
+                                intent = None
+                                for entry in targets:
+                                        target, reason = entry
+
+                                        # Ignore the publisher for comparison.
+                                        np_target = target.get_fmri(anarchy=True)
+                                        np_fmri = fmri.get_fmri(anarchy=True)
+                                        if np_target == np_fmri:
+                                                intent = reason
+
+                                # If no intent could be found, assume INTENT_INFO.
+                                self.__set_touched_manifest(fmri, 
+                                    max(intent, imagestate.INTENT_INFO))
+
+                                return m
+
                         except TransportException, e:
                                 retry_count -= 1
                                 failures.append(e)
 
-                                if retry_count <= 0:
-                                        raise failures
                         except MalformedActionError, e:
                                 retry_count -= 1
                                 pub = fmri.get_publisher()
@@ -786,10 +807,7 @@ class Image(object):
                                     reason=str(e))
                                 failures.append(te)
 
-                                if retry_count <= 0:
-                                        raise failures
-
-                return m
+                raise failures
 
         def __get_touched_manifest(self, fmri, intent):
                 """Returns whether intent information has been provided for the
@@ -872,141 +890,48 @@ class Image(object):
                                 retrieve.touch_manifest(self, fmri)
                                 self.__set_touched_manifest(fmri, intent)
 
-        def __fetch_manifest(self, fmri, excludes=EmptyI):
-                """Perform steps necessary to get manifest from remote host
-                and write resulting contents to disk.  Helper routine for
-                get_manifest. On-disk manifest is as delivered, returned
-                manifest contains result of applying excludes"""
-
-                m = manifest.Manifest()
-                m.set_fmri(self, fmri)
-
-                fmri_dir_path = os.path.join(self.imgdir, "pkg",
-                    fmri.get_dir_path())
-                mpath = os.path.join(fmri_dir_path, "manifest")
-
-                # Get manifest as a string from the remote host, then build
-                # it up into an in-memory manifest, then write the finished
-                # representation to disk.  Note that this may throw a
-                # TransportException of some sort; we let upper layers
-                # handle that.
-                mcontent = retrieve.get_manifest(self, fmri)
-                m.set_content(mcontent)
-
-                # Write the originating publisher into the manifest.
-                # Manifests prior to this change won't contain this information.
-                # In that case, the client attempts to re-download the manifest
-                # from the depot.
-                if not fmri.has_publisher():
-                        m["publisher"] = self.get_preferred_publisher()
-                else:
-                        m["publisher"] = fmri.get_publisher()
-
-                try:
-                        m.store(mpath)
-                except EnvironmentError, e:
-                        if e.errno not in (errno.EROFS, errno.EACCES):
-                                raise
-
-                # What is the client currently processing?
-                targets = self.state.get_targets()
-
-                intent = None
-                for entry in targets:
-                        target, reason = entry
-
-                        # Ignore the publisher for comparison.
-                        np_target = target.get_fmri(anarchy=True)
-                        np_fmri = fmri.get_fmri(anarchy=True)
-                        if np_target == np_fmri:
-                                intent = reason
-
-                # If no intent could be found, assume INTENT_INFO.
-                self.__set_touched_manifest(fmri, max(intent,
-                    imagestate.INTENT_INFO))
-
-                # if we were passed actual excludes, reset in-memory
-                # in-memory content to reflect that.
-                if excludes:
-                        m.set_content(mcontent, excludes)
-                return m
-
-        def _valid_manifest(self, fmri, m):
-                """Check publisher attached to manifest.  Make sure
-                it matches publisher specified in FMRI."""
-
-                pub = fmri.get_publisher()
-                if not pub:
-                        pub = self.get_preferred_publisher()
-
-                try:
-                        if m["publisher"] != pub:
-                                return False
-                except KeyError:
-                        return False
-                return True
-
         def get_manifest_path(self, fmri):
-                """Find on-disk manifest and create in-memory Manifest
-                object, applying appropriate filters as needed."""
+                """Return path to on-disk manifest"""
                 mpath = os.path.join(self.imgdir, "pkg",
                     fmri.get_dir_path(), "manifest")
                 return mpath
 
         def __get_manifest(self, fmri, excludes=EmptyI):
                 """Find on-disk manifest and create in-memory Manifest
-                object."""
-
-                m = None
-                mpath = os.path.join(self.imgdir, "pkg", fmri.get_dir_path(),
-                    "manifest")
-                if os.path.exists(mpath):
-                        # If the manifest already exists, load it from storage.
-                        m = manifest.Manifest()
-                        mcontent = file(mpath).read()
-                        m.set_fmri(self, fmri)
-                        m.set_content(mcontent, excludes)
+                object.... grab from server if needed"""
 
                 try:
-                        # If the manifest didn't already exist, or isn't from
-                        # the correct publisher, or no publisher is attached
-                        # to the manifest, attempt to download a new one.
-                        if not m or not self._valid_manifest(fmri, m):
-                                m = self.__fetch_manifest_with_retries(fmri,
-                                    excludes)
-                except (retrieve.ManifestRetrievalError,
-                    retrieve.DatastreamRetrievalError):
-                        # In this case, the client has failed to download a new
-                        # manifest or re-download an existing one with the same
-                        # name.
-                        if not m:
-                                # Since an older copy doesn't exist, give up.
-                                raise
+                        return manifest.CachedManifest(fmri, excludes)                        
+                except KeyError:
+                        return self.__fetch_manifest_with_retries(fmri,
+                            excludes)
 
-                        # Since the old manifest exists, keep it, and drive on.
+        def get_manifest(self, fmri, add_to_cache=True, all_arch=False):
+                """return manifest; uses cached version if available.
+                all_arch controls whether manifest contains actions
+                for all architectures"""
 
-                return m
-
-        def get_manifest(self, fmri, add_to_cache=True):
-                """return manifest; uses cached version if available"""
-
-                # always elide variants for other architectures;
-                # this prevents doubling manifest size
-                v = variant.Variants({"variant.arch": self.get_arch()})
+                # Normally elide other arch variants
+                if all_arch:
+                        add_to_cache=False
+                        v = EmptyI
+                else:
+                        arch = {"variant.arch": self.get_arch()}
+                        v = [variant.Variants(arch).allow_action]
 
                 # XXX This is a temporary workaround so that GUI api consumsers
                 # are not negatively impacted by manifest caching.  This should
                 # be removed by bug 4231 whenever a better way to handle caching
                 # is found.
-                if global_settings.client_name == "pkg":
+                if global_settings.client_name == "pkg" and not all_arch:
                         if fmri in self.__manifest_cache:
                                 m = self.__manifest_cache[fmri]
                         else:
-                                m = self.__get_manifest(fmri, [v.allow_action])
+                                m = self.__get_manifest(fmri, v)
                                 if add_to_cache:
                                         self.__manifest_cache[fmri] = m
                 else:
-                        m = self.__get_manifest(fmri, [v.allow_action])
+                        m = self.__get_manifest(fmri, v)
 
                 self.__touch_manifest(fmri)
                 return m
@@ -1015,27 +940,16 @@ class Image(object):
                 """Find the pkg's installed file named by filepath.
                 Return the publisher that installed this package."""
 
-                read_only = False
-
+                read_only = True
+                f = file(filepath)
                 try:
-                        f = file(filepath, "r+")
-                except IOError, e:
-                        if e.errno == errno.EACCES or e.errno == errno.EROFS:
-                                read_only = True
-                        else:
-                                raise
-                if read_only:
-                        f = file(filepath, "r")
-
-                flines = f.readlines()
-                newpub = None
-
-                try:
+                        flines = f.readlines()
                         version, pub = flines
                         version = version.strip()
                         pub = pub.strip()
+                        f.close()
                 except ValueError:
-                        # If we get a ValueError, we've encoutered an
+                        # If we get a ValueError, we've encountered an
                         # installed file of a previous format.  If we want
                         # upgrade to work in this situation, it's necessary
                         # to assume that the package was installed from
@@ -1050,24 +964,24 @@ class Image(object):
                                 newpub = "%s_%s" % (pkg.fmri.PREF_PUB_PFX,
                                     self.get_preferred_publisher())
 
-                        # Exception handler is only part of this code that
-                        # sets newpub
                         pub = newpub
 
-                if newpub and not read_only:
-                        # This is where we actually update the installed
-                        # file with the new publisher.
-                        f.seek(0)
-                        f.writelines(["VERSION_1\n", newpub, "\n"])
-
-                f.close()
-
+                        try:
+                                f = file(filepath, "w")
+                                f.writelines(["VERSION_1\n", newpub, "\n"])
+                                f.close()
+                        except IOError, e:
+                                if e.errno == errno.EACCES or e.errno == errno.EROFS:
+                                        pass
+                                else:
+                                        raise
                 assert pub
 
                 return pub
 
         def _install_file(self, fmri):
                 """Returns the path to the "installed" file for a given fmri."""
+
                 return "%s/pkg/%s/installed" % (self.imgdir,
                     fmri.get_dir_path())
 
@@ -1209,6 +1123,7 @@ class Image(object):
         def get_version_installed(self, pfmri):
                 """Returns an fmri of the installed package matching the
                 package stem of the given fmri or None if no match is found."""
+
                 for f in self.gen_installed_pkgs():
                         if self.fmri_is_same_pkg(f, pfmri):
                                 return f
@@ -1338,6 +1253,7 @@ class Image(object):
                 new_variants are specified.  The callables take a single action
                 argument.  Variants, facets and filters will be handled in
                 this fashion."""
+
                 # XXX simple for now; facets and filters need impl.
                 if new_variants:
                         new_vars = self.cfg_cache.variants.copy()
@@ -1349,6 +1265,7 @@ class Image(object):
         def __build_dependents(self, progtrack):
                 """Build a dictionary mapping packages to the list of packages
                 that have required dependencies on them."""
+
                 self.__req_dependents = {}
 
                 for fmri in self.gen_installed_pkgs():
@@ -1879,7 +1796,6 @@ class Image(object):
 
         def load_constraints(self, progtrack):
                 """Load constraints for all install pkgs"""
-
                 for fmri in self.gen_installed_pkgs():
                         # skip loading if already done
                         if self.constraints.start_loading(fmri):
@@ -2248,19 +2164,6 @@ class Image(object):
                 fd, name = tempfile.mkstemp(dir=tempdir)
                 os.close(fd)
                 return name
-
-        @staticmethod
-        def expanddirs(dirs):
-                """given a set of directories, return expanded set that includes
-                all components"""
-                out = set()
-                for d in dirs:
-                        p = d
-                        while p != "":
-                                out.add(p)
-                                p = os.path.dirname(p)
-                return out
-
 
         def make_install_plan(self, pkg_list, progtrack, check_cancelation,
             noexecute, filters = None, verbose=False):

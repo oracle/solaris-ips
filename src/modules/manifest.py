@@ -28,31 +28,10 @@
 import os
 import errno
 from itertools import groupby, chain, repeat
-from pkg.misc import EmptyI
+from pkg.misc import EmptyI, expanddirs
 
 import pkg.actions as actions
 from pkg.actions.attribute import AttributeAction
-
-# The type member is used for the ordering of actions.
-ACTION_DIR = 10
-ACTION_FILE = 20
-ACTION_LINK = 50
-ACTION_HARDLINK = 55
-ACTION_DEVICE = 100
-ACTION_USER = 200
-ACTION_GROUP = 210
-ACTION_SERVICE = 300
-ACTION_RESTART = 310
-ACTION_DEPEND = 400
-
-DEPEND_REQUIRE = 0
-DEPEND_OPTIONAL = 1
-DEPEND_INCORPORATE = 10
-
-depend_str = { DEPEND_REQUIRE : "require",
-                DEPEND_OPTIONAL : "optional",
-                DEPEND_INCORPORATE : "incorporate"
-}
 
 class Manifest(object):
         """A Manifest is the representation of the actions composing a specific
@@ -104,7 +83,7 @@ class Manifest(object):
 
         def __str__(self):
                 r = ""
-                if self.fmri != None:
+                if "fmri" not in self.attributes and self.fmri != None:
                         r += "set name=fmri value=%s\n" % self.fmri
 
                 for act in sorted(self.actions):
@@ -113,7 +92,7 @@ class Manifest(object):
 
         def tostr_unsorted(self):
                 r = ""
-                if self.fmri != None:
+                if "fmri" not in self.attributes and self.fmri != None:
                         r += "set name=fmri value=%s\n" % self.fmri
 
                 for act in self.actions:
@@ -340,14 +319,7 @@ class Manifest(object):
                                 self.actions_bytype[action.name].append(action)
                         # add any set actions to attributes
                         if action.name == "set":
-                                try:
-                                        keyvalue = action.attrs["name"]
-                                        if keyvalue not in self.attributes:
-                                                self.attributes[keyvalue] = \
-                                                    action.attrs["value"]
-                                except KeyError: # ignore broken set actions
-                                        pass
-
+                                self.fill_attributes(action)
                         # append any variants and facets to manifest dict
                         v_list, f_list = action.get_varcet_keys()
 
@@ -360,6 +332,17 @@ class Manifest(object):
                                                 d[v].add(action.attrs[v])
                 return
 
+        def fill_attributes(self, action):
+                """Fill attribute array w/ set action contents."""
+                try:
+                        keyvalue = action.attrs["name"]
+                        if keyvalue not in self.attributes:
+                                self.attributes[keyvalue] = \
+                                    action.attrs["value"]
+                except KeyError: # ignore broken set actions
+                        pass
+
+                
         @staticmethod
         def search_dict(file_path, excludes, return_line=False):
                 file_handle = file(file_path)
@@ -463,3 +446,294 @@ class Manifest(object):
                 return key in self.attributes
 
 null = Manifest()
+
+class CachedManifest(Manifest):
+        """This class handles a cache of manifests for the client;
+        it partitions the manifest into multiple files (one per
+        action type) and also builds an on-disk cache of the 
+        directories explictly and implicitly referenced by the 
+        manifest, tagging each one w/ the appropriate variants/facets."""
+
+        __pkgdir = None
+        __pub = None
+
+        @staticmethod
+        def initialize(pkgdir, default_publisher):
+                """get location for manifests, default publisher
+                of this image"""
+                CachedManifest.__pkgdir = pkgdir
+                CachedManifest.__pub = default_publisher
+
+        def __file_path(self, file):
+                return os.path.join(self.__pkgdir,
+                    self.fmri.get_dir_path(), file)
+
+        def __init__(self, fmri, excludes=EmptyI, contents=None):
+                """Raises KeyError exception if cached manifest
+                is not present and contents are None; delays
+                reading of manifest until required if cache file
+                is present"""
+
+                Manifest.__init__(self)
+                assert self.__pub
+                self.loaded = False
+                self.set_fmri(None, fmri)
+                self.excludes = excludes
+
+                mpath = self.__file_path("manifest")
+
+                # Do we have a cached copy?
+                if not os.path.exists(mpath): 
+                        if not contents:
+                                raise KeyError, fmri
+                        # we have no cached copy; save one
+                        # don't specify excludes so on-disk copy has
+                        # all variants
+                        self.set_content(contents) 
+                        self.__finiload()
+                        self.__storeback()
+                        if excludes:
+                                self.set_content(contents, excludes)
+                        return
+
+                # we have a cached copy of the manifest
+                mdpath = self.__file_path("manifest.dircache")
+                
+                # have we computed the dircache?
+                if not os.path.exists(mdpath): # we're adding cache
+                        self.excludes = EmptyI # to existing manifest
+                        self.__load()
+                        self.__storeback()
+                        if excludes:
+                                self.excludes = excludes
+                                self.__load()
+
+        def __load(self):
+                """Load all manifest contents from on-disk copy of manifest"""
+                f = file(self.__file_path("manifest"))
+                data = f.read()
+                f.close()
+                self.set_content(data, self.excludes)
+                self.__finiload()
+
+        def __finiload(self):
+                """Finish loading.... this part of initialization is common 
+                to multiple code paths"""
+                self.loaded = True
+                # this needs to change; we should not modify on-disk manifest
+                if "publisher" not in self.attributes:
+                        if not self.fmri.has_publisher():
+                                pub = self.__pub
+                        else:
+                                pub = self.fmri.get_publisher()
+                        Manifest.__setitem__(self, "publisher", pub)
+
+        def __storeback(self):
+                """ store the current action set; also create per-type
+                caches"""
+                assert self.loaded
+                try:
+                        self.store(self.__file_path("manifest"))
+                        self.__storebytype()
+
+                except  EnvironmentError, e:
+                        # this allows us to try to cache new manifests
+                        # when non-root w/o failures
+                        if e.errno not in (errno.EROFS, errno.EACCES):
+                                raise
+
+        def __storebytype(self):
+                """ create manifest.<typename> files to accelerate partial
+                parsing of manifests.  Separate from __storeback code to 
+                allow upgrade to reuse existing on disk manifests"""
+
+                assert self.loaded
+
+                # create per-action type cache; use rename to avoid
+                # corrupt files if ^C'd in the middle 
+                # XXX consider use of per-process tmp file names
+                for n in self.actions_bytype.keys():
+                        f = file(self.__file_path("manifest.%s.tmp" % n), 
+                            "w")
+                        for a in self.actions_bytype[n]:
+                                f.write("%s\n" % a)
+                        f.close()
+                        os.rename(self.__file_path("manifest.%s.tmp" % n),
+                            self.__file_path("manifest.%s" % n))
+                # create dircache
+                f = file(self.__file_path("manifest.dircache.tmp"), "w")
+                dirs = self.__actions_to_dirs()
+
+                for s in self.__gen_dirs_to_str(dirs):
+                        f.write(s)
+
+                f.close()
+                os.rename(self.__file_path("manifest.dircache.tmp"),
+                    self.__file_path("manifest.dircache"))
+
+        def __gen_dirs_to_str(self, dirs):
+                """ from a dictionary of paths, generate contents of dircache 
+                file"""
+                for d in dirs:                        
+                        for v in dirs[d]:
+                                yield "dir path=%s %s\n" % \
+                                    (d, " ".join("%s=%s" % t \
+                                    for t in v.iteritems()))
+        
+        def __actions_to_dirs(self):
+                """ create dictionary of all directories referenced 
+                by actions explicitly or implicitly from self.actions...  
+                include variants as values; collapse variants where possible"""
+                assert self.loaded
+                        
+                dirs = {}
+                # build a dictionary containing all directories tagged w/ 
+                # variants
+                for a in self.actions:
+                        v, f = a.get_varcet_keys()
+                        variants = dict((name, a.attrs[name]) for name in v + f)
+                        for d in expanddirs(a.directory_references()): 
+                                if d not in dirs:
+                                        dirs[d] = [variants]
+                                elif variants not in dirs[d]:
+                                        dirs[d].append(variants)
+
+                # remove any tags if any entries are always installed (NULL)
+                for d in dirs:
+                        if {} in dirs[d]:
+                                dirs[d] = [{}]
+                                continue
+                        # could collapse dirs where all variants are present
+                return dirs
+                
+        def get_directories(self, excludes):
+                """ return a list of directories implicitly or
+                explicitly referenced by this object"""
+                
+                mpath = self.__file_path("manifest.dircache")
+
+                if not os.path.exists(mpath):
+                        # no cached copy
+                        if not self.loaded:
+                                # need to load from disk
+                                self.__load()
+                        # generate actions that contain directories
+                        alist = [
+                                actions.fromstr(s) 
+                                for s in self.__gen_dirs_to_str(
+                                    self.__actions_to_dirs(self))
+                                ]
+                else: 
+                        # we have cached copy on disk; use it
+                        f = file(mpath)
+                        alist = [actions.fromstr(s.strip()) for s in f]
+                        f.close()
+                s = set([
+                         a.attrs["path"] 
+                         for a in alist 
+                         if a.include_this(excludes)
+                         ])
+                return list(s)
+
+        def gen_actions_by_type(self, atype, excludes=EmptyI):
+                """ generate actions of the specified type;
+                use already in-memory stuff if already loaded,
+                otherwise use per-action types files"""
+
+                if self.loaded: #if already loaded, use in-memory cached version
+                        # invoke subclass method to generate action by action
+                        for a in Manifest.gen_actions_by_type(self, atype, 
+                            excludes):
+                                yield a
+                        return
+
+                mpath = self.__file_path("manifest.dircache")
+
+                if not os.path.exists(mpath):
+                        # no cached copy :-(
+                        if not self.loaded:
+                                # get manifest from disk
+                                self.__load()
+                        # invoke subclass method to generate action by action
+                        for a in Manifest.gen_actions_by_type(self, atype, 
+                            excludes):
+                                yield a
+                else:
+                        # we have a cached copy - use it
+                        mpath = self.__file_path("manifest.%s" % atype)
+
+                        if not os.path.exists(mpath):
+                                return # no such action in this manifest
+
+                        f = file(mpath)
+                        for l in f:
+                                a = actions.fromstr(l.strip())
+                                if a.include_this(excludes):
+                                        yield a
+                        f.close()
+
+        def __load_attributes(self):
+                """Load attributes dictionary from cached set actions;
+                this speeds up pkg info a lot"""
+
+                mpath = self.__file_path("manifest.set")
+                if not os.path.exists(mpath):
+                        return False
+                f = file(mpath)
+                for l in f:
+                        a = actions.fromstr(l.strip())
+                        if a.include_this(self.excludes):
+                                self.fill_attributes(a)
+                f.close()
+                return True                
+                
+        def __getitem__(self, key):
+                if not self.loaded and not self.__load_attributes():
+                        self.__load()
+                return Manifest.__getitem__(self, key)
+                
+        def __setitem__(self, key, value):
+                """No assignments to cached manifests allowed."""
+                assert "CachedManifests are not dicts"
+
+        def __contains__(self, key):
+                if not self.loaded and not self.__load_attributes():
+                        self.__load()
+                return Manifest.__contains__(self, key)
+
+        def get(self, key, default):
+                try:
+                        return self[key]
+                except KeyError:
+                        return default
+
+        def get_variants(self, name):
+                if not self.loaded and not self.__load_attributes():
+                        self.__load()
+                return Manifest.get_variants(self, name)
+
+        @staticmethod
+        def search_dict(file_path, excludes, return_line=False):
+                if not self.loaded:
+                        self.__load()
+                return Manifest.search_dict(file_path, excludes,
+                    return_line=return_line)
+
+        def gen_actions(self, excludes=EmptyI):
+                if not self.loaded:
+                        self.__load()
+                return Manifest.gen_actions(self, excludes=excludes)
+
+        def duplicates(self, excludes=EmptyI):
+                if not self.loaded:
+                        self.__load()
+                return Manifest.duplicates(self, excludes=excludes)
+
+        def difference(self, origin, origin_exclude=EmptyI, self_exclude=EmptyI):
+                if not self.loaded:
+                        self.__load()
+                return Manifest.difference(self, origin, 
+                    origin_exclude=origin_exclude, 
+                    self_exclude=self_exclude)
+
+                

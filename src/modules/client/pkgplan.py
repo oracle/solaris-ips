@@ -33,6 +33,7 @@ import pkg.actions.directory as directory
 from pkg.misc import msg
 from pkg.misc import get_pkg_otw_size
 from pkg.misc import EmptyI
+from pkg.misc import expanddirs
 
 class PkgPlan(object):
         """A package plan takes two package FMRIs and an Image, and produces the
@@ -152,14 +153,14 @@ class PkgPlan(object):
                 for a in self.__origin_mfst.gen_actions(old_excludes):
                         tmpset.update(a.directory_references())
 
-                absent_dirs = self.image.expanddirs(tmpset)
+                absent_dirs = expanddirs(tmpset)
 
                 tmpset = set()
 
                 for a in self.__destination_mfst.gen_actions(new_excludes):
                         tmpset.update(a.directory_references())
 
-                absent_dirs.difference_update(self.image.expanddirs(tmpset))
+                absent_dirs.difference_update(expanddirs(tmpset))
 
                 for a in absent_dirs:
                         self.actions[2].append(

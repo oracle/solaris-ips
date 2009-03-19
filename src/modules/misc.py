@@ -73,6 +73,16 @@ def copyfile(src_path, dst_path):
         except OSError, e:
                 if e.errno != errno.EPERM:
                         raise
+def expanddirs(dirs):
+        """given a set of directories, return expanded set that includes
+        all components"""
+        out = set()
+        for d in dirs:
+                p = d
+                while p != "":
+                        out.add(p)
+                        p = os.path.dirname(p)
+        return out
 
 def hash_file_name(f):
         """Return the two-level path fragment for the given filename, which is

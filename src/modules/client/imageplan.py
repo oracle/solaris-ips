@@ -27,6 +27,7 @@
 
 import os
 import errno
+
 import pkg.client.api_errors as api_errors
 import pkg.client.imagestate as imagestate
 import pkg.client.pkgplan as pkgplan
@@ -120,11 +121,13 @@ class ImagePlan(object):
                                 s = s + "-%s\n" % t
                         return s
 
-                s = ""
+                s = "Package changes:\n"
                 for pp in self.pkg_plans:
                         s = s + "%s\n" % pp
 
                 s = s + "Actuators:\n%s" % self.actuators
+                
+                s = s + "Variants: %s -> %s\n" % (self.old_excludes, self.new_excludes)
                 return s
 
         def get_plan(self, full=True):
@@ -245,15 +248,15 @@ class ImagePlan(object):
                 # always consider var and var/pkg fixed in image....
                 # XXX should be fixed for user images
                 if self.__directories == None:
-                        dirs = set(["var/pkg", "var/sadm/install"])
-                        dirs.update(
-                            [
-                                os.path.normpath(d)
-                                for act in self.gen_new_installed_actions()
-                                for d in act.directory_references()
-                        ])
-                        self.__directories = self.image.expanddirs(dirs)
-
+                        dirs = set(["var",  
+                                    "var/pkg", 
+                                    "var/sadm", 
+                                    "var/sadm/install"])
+                        for fmri in self.gen_new_installed_pkgs():
+                                m = self.image.get_manifest(fmri)
+                                for d in m.get_directories(self.new_excludes):
+                                        dirs.add(os.path.normpath(d))
+                        self.__directories = dirs
                 return self.__directories
 
         def get_link_actions(self):
