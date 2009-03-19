@@ -2,4 +2,5 @@ package SUNWkonkretcmpi
 classification "Development/C"
 import SUNWkonkretcmpi
 version 0.8.7
+depend SUNWcimserver
 end package
