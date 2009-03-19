@@ -7,7 +7,6 @@ d none usr/share/package-manager/data/startpagebase 755 root bin
 d none usr/share/package-manager/data/startpagebase/C 755 root bin
 f none usr/share/package-manager/data/startpagebase/C/opensolaris.png 444 root bin
 f none usr/share/package-manager/data/startpagebase/C/startpage.html 444 root bin
-f none usr/share/package-manager/data/startpagebase/C/startpage_ignite.png 444 root bin
 f none usr/share/package-manager/data/startpagebase/C/startpage_learn.png 444 root bin
 f none usr/share/package-manager/data/startpagebase/C/startpage_share.png 444 root bin
 f none usr/share/package-manager/data/startpagebase/C/startpage_star.png 444 root bin

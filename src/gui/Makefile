@@ -143,7 +143,6 @@ STATICSPFILES = \
 	$(SP_LOCALES:%=data/startpagebase/%/startpage_learn.png) \
 	$(SP_LOCALES:%=data/startpagebase/%/startpage_use.png) \
 	$(SP_LOCALES:%=data/startpagebase/%/startpage_share.png) \
-	$(SP_LOCALES:%=data/startpagebase/%/startpage_ignite.png) \
 	$(SP_LOCALES:%=data/startpagebase/%/stub_test.html)
 
 #

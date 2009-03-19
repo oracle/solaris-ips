@@ -33,7 +33,7 @@
       <applyto>/apps/packagemanager/preferences/show_startpage</applyto>
       <owner>packagemanager</owner>
       <type>bool</type>
-      <default>False</default>
+      <default>True</default>
       <locale name="C">
          <short>Show Start Page  on startup</short>
          <long>
@@ -53,6 +53,19 @@
          <long>
           A boolean which determines if the search is executed dynamically as user types
           or only when user hits the return key.
+         </long>
+      </locale>
+    </schema>
+    <schema>
+      <key>/schemas/apps/packagemanager/preferences/startpage_url</key>
+      <applyto>/apps/packagemanager/preferences/startpage_url</applyto>
+      <owner>packagemanager</owner>
+      <type>string</type>
+      <default>"http://opensolaris.org/os/project/indiana/resources/packagemanager/startpagebase"</default>
+      <locale name="C">
+         <short>Start Page Update URL</short>
+         <long>
+          The location from which to fetch updates to the Package Manager Start Page.
          </long>
       </locale>
     </schema>

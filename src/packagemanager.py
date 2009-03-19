@@ -56,6 +56,7 @@ STATUS_COLUMN_INDEX = 2   # Index of Status Column in Application TreeView
 PKG_CLIENT_NAME = "packagemanager"
 
 # Load Start Page from lang dir if available
+START_PAGE_CACHE_LANG_BASE = "var/pkg/gui_cache/startpagebase/%s/%s"
 START_PAGE_LANG_BASE = "usr/share/package-manager/data/startpagebase/%s/%s"
 START_PAGE_HOME = "startpage.html" # Default page
 
@@ -580,23 +581,34 @@ class PackageManager:
                 pass
 
         def __load_startpage(self):
+                self.cache_start_page_url = self.application_dir + \
+                    START_PAGE_CACHE_LANG_BASE % (self.lang, START_PAGE_HOME)                   
                 self.start_page_url = self.application_dir + \
                     START_PAGE_LANG_BASE % (self.lang, START_PAGE_HOME)
-                if not self.__load_uri(self.document, self.start_page_url):
-                        self.start_page_url = self.application_dir + \
-                            START_PAGE_LANG_BASE % ("C", START_PAGE_HOME)
-                        if not self.__load_uri(self.document, self.start_page_url):
-                                self.document.open_stream('text/html')
-                                self.document.write_stream(_(
-                                    "<html><head></head><body><H2>Welcome to \
-                                    PackageManager!</H2><br>\
-                                    <font color='#0000FF'>Warning: Unable to load \
-                                    Start Page:<br>%s</font></body></html>"
-                                    % (self.start_page_url)))
-                                self.document.close_stream()
-                                self.w_main_view_notebook.set_current_page(
-                                    NOTEBOOK_PACKAGE_LIST_PAGE)
+                # Load from Cache
+                if not self.__load_uri(self.document, self.cache_start_page_url):
+                        self.cache_start_page_url = self.application_dir + \
+                            START_PAGE_CACHE_LANG_BASE % ("C", START_PAGE_HOME)                   
+                        if not self.__load_uri(self.document, self.cache_start_page_url):
+                                # Load from Install
+                                if not self.__load_uri(self.document,
+                                    self.start_page_url):
+                                        self.start_page_url = self.application_dir + \
+                                            START_PAGE_LANG_BASE % ("C", START_PAGE_HOME)
+                                        if not self.__load_uri(self.document,
+                                            self.start_page_url):
+                                                self.__handle_startpage_load_error()
 
+        def __handle_startpage_load_error(self):
+                self.document.open_stream('text/html')
+                self.document.write_stream(_(
+                    "<html><head></head><body><H2>Welcome to"
+                    "PackageManager!</H2><br>"
+                    "<font color='#0000FF'>Warning: Unable to "
+                    "load Start Page:<br>%s</font></body></html>"
+                    % (self.start_page_url)))
+                self.document.close_stream()
+               
         def __on_url(self, view, link):
                 # Handle mouse over events on links and reset when not on link
                 if link == None or link == "":
