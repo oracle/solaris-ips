@@ -19,7 +19,7 @@
 # CDDL HEADER END
 #
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -41,12 +41,16 @@ f_no_active_ds=$(gettext "Error: no active dataset.")
 f_zfs_mount=$(gettext "Unable to mount the zone's ZFS dataset.")
 
 fail_incomplete() {
-	print "$1"
+	printf "ERROR: " 1>&2
+	printf "$@" 1>&2
+	printf "\n" 1>&2
 	exit $ZONE_SUBPROC_INCOMPLETE
 }
 
 fail_fatal() {
-	print "$1"
+	printf "ERROR: " 1>&2
+	printf "$@" 1>&2
+	printf "\n" 1>&2
 	exit $ZONE_SUBPROC_FATAL
 }
 

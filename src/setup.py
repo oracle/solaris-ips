@@ -113,7 +113,10 @@ sys.stderr = os.fdopen(sys.stderr.fileno(), "w", 0)
 
 dist_dir = os.path.normpath(os.path.join(pwd, os.pardir, "proto", "dist_" + arch))
 build_dir = os.path.normpath(os.path.join(pwd, os.pardir, "proto", "build_" + arch))
-root_dir = os.path.normpath(os.path.join(pwd, os.pardir, "proto", "root_" + arch))
+if "ROOT" in os.environ and os.environ["ROOT"] != "":
+        root_dir = os.environ["ROOT"]
+else:
+        root_dir = os.path.normpath(os.path.join(pwd, os.pardir, "proto", "root_" + arch))
 pkgs_dir = os.path.normpath(os.path.join(pwd, os.pardir, "packages", arch))
 
 py_install_dir = 'usr/lib/python2.4/vendor-packages'
@@ -224,6 +227,14 @@ brand_files = [
         'brand/config.xml',
         'brand/platform.xml',
         'brand/pkgcreatezone',
+        'brand/attach',
+        'brand/clone',
+        'brand/detach',
+        'brand/prestate',
+        'brand/poststate',
+        'brand/query',
+        'brand/uninstall',
+        'brand/common.ksh',
         ]
 smf_files = [
         'pkg-server.xml',
