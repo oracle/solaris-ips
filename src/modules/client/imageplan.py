@@ -788,7 +788,7 @@ class ImagePlan(object):
                             excludes=self.new_excludes)
                         try:
                                 ind.client_update_index((self.filters,
-                                    plan_info))
+                                    plan_info), self.image)
                         except (KeyboardInterrupt,
                             se.ProblematicPermissionsIndexException):
                                 # ProblematicPermissionsIndexException is

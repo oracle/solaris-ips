@@ -557,7 +557,7 @@ class Indexer(object):
                 finally:
                         self._data_main_dict.close_file_handle()
                 
-        def client_update_index(self, pkgplan_list, tmp_index_dir = None):
+        def client_update_index(self, pkgplan_list, image, tmp_index_dir = None):
                 """ This version of update index is designed to work with the
                 client side of things. Specifically, it expects a pkg plan
                 list with added and removed FMRIs/manifests. Note: if
@@ -568,7 +568,7 @@ class Indexer(object):
                 assert self._progtrack is not None
 
                 self._generic_update_index(pkgplan_list, IDX_INPUT_TYPE_PKG,
-                    tmp_index_dir)
+                    tmp_index_dir=tmp_index_dir, image=image)
 
         def server_update_index(self, fmris, tmp_index_dir = None):
                 """ This version of update index is designed to work with the

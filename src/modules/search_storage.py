@@ -165,7 +165,6 @@ class IndexStoreBase(object):
                 if self._file_handle:
                         self._file_handle.close()
                         self._file_handle = None
-                        self._file_path = None
 
         def _protected_write_dict_file(self, path, version_num, iterable):
                 """Writes the dictionary in the expected format.
@@ -668,16 +667,19 @@ class IndexStoreSetHash(IndexStoreBase):
         def read_dict_file(self):
                 """Process a dictionary file written using the above method
                 """
-                assert self._file_handle
-                res = 0
-                for res, line in enumerate(self._file_handle):
-                        assert res < 1
-                        self.hash_val = line.rstrip()
-                return res
+                if self.should_reread():
+                        sp = self._file_handle.tell()
+                        res = 0
+                        for res, line in enumerate(self._file_handle):
+                                assert res < 1
+                                self.hash_val = line.rstrip()
+                        self._file_handle.seek(sp)
+                        return res
 
         def check_against_file(self, vals):
                 """Check the hash value of vals against the value stored
                 in the file for this object."""
+                self.read_dict_file()
                 incoming_hash = self.calc_hash(vals)
                 if self.hash_val != incoming_hash:
                         raise search_errors.IncorrectIndexFileHash(
