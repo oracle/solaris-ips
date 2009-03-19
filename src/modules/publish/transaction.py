@@ -123,6 +123,7 @@ class FileTransaction(object):
             trans_id=None):
                 scheme, netloc, path, params, query, fragment = \
                     urlparse.urlparse(origin_url, "file", allow_fragments=0)
+                path = urllib.url2pathname(path)
 
                 repo_cache = self.__class__.__repo_cache
 
