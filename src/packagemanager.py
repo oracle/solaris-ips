@@ -49,6 +49,7 @@ INITIAL_SHOW_FILTER_PREFERENCES = "/apps/packagemanager/preferences/initial_show
 INITIAL_SECTION_PREFERENCES = "/apps/packagemanager/preferences/initial_section"
 SHOW_STARTPAGE_PREFERENCES = "/apps/packagemanager/preferences/show_startpage"
 TYPEAHEAD_SEARCH_PREFERENCES = "/apps/packagemanager/preferences/typeahead_search"
+REMOTE_SEARCH_ERROR_PREFERENCES = "/apps/packagemanager/preferences/remote_search_error"
 CATEGORIES_STATUS_COLUMN_INDEX = 0   # Index of Status Column in Categories TreeView
 
 STATUS_COLUMN_INDEX = 2   # Index of Status Column in Application TreeView
@@ -144,6 +145,10 @@ class PackageManager:
                 self.initial_section = self.client.get_int(INITIAL_SECTION_PREFERENCES)
                 self.show_startpage = self.client.get_bool(SHOW_STARTPAGE_PREFERENCES)
                 self.typeahead_search = self.client.get_bool(TYPEAHEAD_SEARCH_PREFERENCES)
+                self.gconf_not_show_repos = \
+                    self.client.get_string(REMOTE_SEARCH_ERROR_PREFERENCES)
+                if not self.gconf_not_show_repos:
+                        self.gconf_not_show_repos = ""
                 self.set_show_filter = 0
                 self.set_section = 0
                 self.current_search_option = 0
@@ -184,6 +189,7 @@ class PackageManager:
                 self.ua_be_name = None
                 self.application_path = None
                 self.default_publisher = None
+                self.current_not_show_repos = []
                 self.first_run = True
                 self.in_search = False
                 self.selected_pkgstem = None
@@ -233,13 +239,20 @@ class PackageManager:
                 w_tree_main = gtk.glade.XML(self.gladefile, "mainwindow")
                 w_tree_progress = gtk.glade.XML(self.gladefile, "progressdialog")
                 w_tree_preferences = gtk.glade.XML(self.gladefile, "preferencesdialog")
+                w_tree_remote_search_error = gtk.glade.XML(self.gladefile,
+                    "remote_search_error")
                 self.w_preferencesdialog = \
                     w_tree_preferences.get_widget("preferencesdialog")
                 self.w_startpage_checkbutton = \
-                    w_tree_preferences .get_widget("startpage_checkbutton")
+                    w_tree_preferences.get_widget("startpage_checkbutton")
                 self.w_typeaheadsearch_checkbutton = \
-                    w_tree_preferences .get_widget("typeaheadsearch_checkbutton")
-
+                    w_tree_preferences.get_widget("typeaheadsearch_checkbutton")
+                self.remote_search_error_dialog = \
+                    w_tree_remote_search_error.get_widget("remote_search_error")
+                self.remote_search_error_text = \
+                    w_tree_remote_search_error.get_widget("remote_search_error_text")
+                self.remote_search_checkbox = \
+                    w_tree_remote_search_error.get_widget("remote_search_checkbox")
                 self.w_main_window = w_tree_main.get_widget("mainwindow")
                 self.w_application_treeview = \
                     w_tree_main.get_widget("applicationtreeview")
@@ -269,7 +282,7 @@ class PackageManager:
                     gtk.gdk.color_parse("white"))
 
                 self.w_main_statusbar = w_tree_main.get_widget("statusbar")
-
+                self.w_infosearch_frame = w_tree_main.get_widget("infosearch_frame")
                 
                 self.w_main_view_notebook = \
                     w_tree_main.get_widget("main_view_notebook")
@@ -403,6 +416,8 @@ class PackageManager:
                                 "on_help_start_page_activate":self.__on_startpage,
                                 "on_details_notebook_switch_page": \
                                     self.__on_notebook_change,
+                                "on_infosearch_button_clicked": \
+                                    self.__on_infosearch_button_clicked,
                             }
                         dic_progress = \
                             {
@@ -420,9 +435,20 @@ class PackageManager:
                                 "on_preferencesclose_clicked": \
                                     self.__on_preferencesclose_clicked,
                             }
+                        dic_remote_search_error = \
+                            {
+                                "on_remote_search_checkbox_toggled": \
+                                    self.__on_remote_search_checkbox_toggled,
+                                "on_remote_search_button_clicked": \
+                                    self.__on_remote_search_button_clicked,
+                                "on_remote_search_error_delete_event": \
+                                    self.__on_remote_search_error_delete_event,
+                            }
                         w_tree_main.signal_autoconnect(dic_mainwindow)
                         w_tree_progress.signal_autoconnect(dic_progress)
                         w_tree_preferences.signal_autoconnect(dic_preferences)
+                        w_tree_remote_search_error.signal_autoconnect(
+                            dic_remote_search_error)
                 except AttributeError, error:
                         print _(
                             "GUI will not respond to any event! %s." 
@@ -451,6 +477,7 @@ class PackageManager:
                 else:
                         self.w_main_view_notebook.set_current_page(
                             NOTEBOOK_PACKAGE_LIST_PAGE)
+                self.remote_search_error_dialog.set_transient_for(self.w_main_window)
 
         def __register_iconsets(self, icon_info):
                 factory = gtk.IconFactory()
@@ -493,6 +520,8 @@ class PackageManager:
         def __update_gui_for_search(self, is_remote):
                 self.is_remote_search = is_remote
                 self.__on_clear_search(None)
+                self.current_not_show_repos = []
+                self.w_infosearch_frame.hide()
                 if is_remote:
                         self.need_descriptions = False
                         self.saved_sections_combobox_active = \
@@ -608,6 +637,40 @@ class PackageManager:
                     "load Start Page:<br>%s</font></body></html>"
                     % (self.start_page_url)))
                 self.document.close_stream()
+
+        def __parse_remote_search_error(self, error):
+                self.current_not_show_repos = []
+                if "failed_servers" in error.__dict__ and len(error.failed_servers) > 0:
+                        # the error msg in the misc.py is not translated
+                        rem_str = " doesn't speak a known version of search operation"
+                        repos = []
+                        for err in error.failed_servers:
+                                err_str = str(err[1])
+                                if rem_str in err_str:
+                                        repo = err_str.replace(rem_str,"")
+                                        self.current_not_show_repos.append(repo)
+        
+        def __on_infosearch_button_clicked(self, widget):
+                self.__handle_remote_search_error(True)
+
+        def __handle_remote_search_error(self, show_all=False):
+                if len(self.current_not_show_repos) == 0:
+                        self.w_infosearch_frame.hide()
+                        return
+                else:
+                        self.w_infosearch_frame.show()
+                err_msg = ""
+                for url in self.current_not_show_repos:
+                        if show_all:
+                                err_msg += url + "\n"
+                        elif url not in self.gconf_not_show_repos:
+                                err_msg += url + "\n"
+                if len(err_msg) == 0:
+                        return
+                self.remote_search_checkbox.set_active(False)
+                textbuffer = self.remote_search_error_text.get_buffer()
+                textbuffer.set_text(err_msg)
+                self.remote_search_error_dialog.show()
                
         def __on_url(self, view, link):
                 # Handle mouse over events on links and reset when not on link
@@ -1215,6 +1278,12 @@ class PackageManager:
                 else:
                         self.__main_application_quit()
 
+        def __on_remote_search_error_delete_event(self, widget, event):
+                self.__on_remote_search_button_clicked(None)
+
+        def __on_remote_search_button_clicked(self, widget):
+                self.remote_search_error_dialog.hide()
+
         def __on_file_quit_activate(self, widget):
                 ''' handler for quit menu event '''
                 self.__on_mainwindow_delete_event(None, None)
@@ -1237,6 +1306,8 @@ class PackageManager:
                         self.__do_search()
                 elif self.is_remote_search and not self.changing_search_option:
                         if self.w_searchentry_dialog.get_text() == "":
+                                self.current_not_show_repos = []
+                                self.w_infosearch_frame.hide()
                                 self.__link_load_blank()
                                 self.w_main_view_notebook.set_current_page(
                                     NOTEBOOK_START_PAGE)
@@ -1306,29 +1377,21 @@ class PackageManager:
                                         if len(result_tuple) == SEARCH_LIMIT:
                                                 break
                                 else:
-                                        err = _("The search failed with "
-                                            "unexpected results:\n")
-                                        err += "v: %d return_type: %d" % \
-                                            (v, return_type)
+                                        # We are not interested in this error
                                         gobject.idle_add(self.w_progress_dialog.hide)
-                                        gobject.idle_add(self.error_occured, err, None,
-                                            gtk.MESSAGE_INFO)
                                         self.__process_after_search_failure()
                                         return
                                 self.pylintstub = query_num
                 except api_errors.ProblematicSearchServers, ex:
-                        err_str = str(ex)
+                        self.__parse_remote_search_error(ex)
                         gobject.idle_add(self.w_progress_dialog.hide)
-                        gobject.idle_add(self.error_occured, 
-                            err_str, None, gtk.MESSAGE_INFO)
+                        gobject.idle_add(self.__handle_remote_search_error)
                         if len(result_tuple) == 0:
                                 self.__process_after_search_failure()
                                 return
                 except Exception, ex:
-                        err = _("Error occured while getting search results\n")
-                        err += str(ex)
+                        # We are not interested in this error
                         gobject.idle_add(self.w_progress_dialog.hide)
-                        gobject.idle_add(self.error_occured, err)
                         self.__process_after_search_failure()
                         return
                 if debug:
@@ -1595,6 +1658,21 @@ class PackageManager:
                 self.typeahead_search = self.w_typeaheadsearch_checkbutton.get_active()
                 self.client.set_bool(TYPEAHEAD_SEARCH_PREFERENCES, self.typeahead_search)
 
+        def __on_remote_search_checkbox_toggled(self, widget):
+                active = self.remote_search_checkbox.get_active()
+                if len(self.current_not_show_repos) > 0:
+                        if active:
+                                for url in self.current_not_show_repos:
+                                        if url not in self.gconf_not_show_repos:
+                                                self.gconf_not_show_repos += url + ","
+                        else:
+                                for url in self.current_not_show_repos:
+                                        self.gconf_not_show_repos = \
+                                            self.gconf_not_show_repos.replace(
+                                            url + ",", "")
+                        self.client.set_string(REMOTE_SEARCH_ERROR_PREFERENCES, 
+                            self.gconf_not_show_repos)
+
         def __on_searchentry_focus_in(self, widget, event):
                 self.w_paste_menuitem.set_sensitive(True)
 
@@ -1794,6 +1872,8 @@ class PackageManager:
                         list_store[0][1] = all_cat_text
 
         def __unset_remote_search(self, same_repo):
+                self.current_not_show_repos = []
+                self.w_infosearch_frame.hide()
                 self.changing_search_option = True
                 self.current_search_option = 0
                 visible_repository = self.__get_visible_repository_name()
@@ -3249,6 +3329,7 @@ class PackageManager:
         def update_statusbar_for_search(self):
                 status_str = self.search_options[self.current_search_option][3]
                 self.search_message_id = self.w_main_statusbar.push(0, status_str)
+
         def update_statusbar_for_searching(self):
                 if self.search_message_id > 0:
                         self.w_main_statusbar.remove(0, self.search_message_id)
