@@ -49,8 +49,8 @@ class PkgPlan(object):
                 self.actions = []
                 self.__repair_actions = []
 
-                self.__origin_mfst = manifest.null
-                self.__destination_mfst = manifest.null
+                self.__origin_mfst = manifest.NullCachedManifest
+                self.__destination_mfst = manifest.NullCachedManifest
                 self.__legacy_info = {}
 
                 self.image = image
@@ -148,19 +148,11 @@ class PkgPlan(object):
                 # do anything unless no pkgs reference that directory in
                 # new state....
 
-                tmpset = set()
-
-                for a in self.__origin_mfst.gen_actions(old_excludes):
-                        tmpset.update(a.directory_references())
-
-                absent_dirs = expanddirs(tmpset)
-
-                tmpset = set()
-
-                for a in self.__destination_mfst.gen_actions(new_excludes):
-                        tmpset.update(a.directory_references())
-
-                absent_dirs.difference_update(expanddirs(tmpset))
+                absent_dirs = \
+                    expanddirs(
+                    self.__origin_mfst.get_directories(old_excludes)) - \
+                    expanddirs(
+                    self.__destination_mfst.get_directories(new_excludes))
 
                 for a in absent_dirs:
                         self.actions[2].append(
@@ -175,11 +167,14 @@ class PkgPlan(object):
 
                 #
                 # We cross a point of no return here, and throw away the origin
-                # and destination manifests.  This is really important for
-                # memory footprint.
-                #
+                # and destination manifests; we also delete them from the 
+                # image cache.
                 self.__origin_mfst = None
                 self.__destination_mfst = None
+                if self.origin_fmri:
+                        self.image.uncache_manifest(self.origin_fmri)
+                if self.destination_fmri:
+                        self.image.uncache_manifest(self.destination_fmri)
 
         def get_legacy_info(self):
                 """ Returns information needed by the legacy action to

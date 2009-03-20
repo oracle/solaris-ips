@@ -619,9 +619,9 @@ class CachedManifest(Manifest):
                                 self.__load()
                         # generate actions that contain directories
                         alist = [
-                                actions.fromstr(s) 
+                                actions.fromstr(s.strip()) 
                                 for s in self.__gen_dirs_to_str(
-                                    self.__actions_to_dirs(self))
+                                    self.__actions_to_dirs())
                                 ]
                 else: 
                         # we have cached copy on disk; use it
@@ -737,3 +737,15 @@ class CachedManifest(Manifest):
                     self_exclude=self_exclude)
 
                 
+class EmptyCachedManifest(Manifest):
+        """Special class for pkgplan's need for a empty manifest;
+        the regular null manifest doesn't support get_directories
+        and making the cached manifest code handle this case is
+        too ugly..."""
+        def __init__(self):
+                Manifest.__init__(self)
+
+        def get_directories(self, excludes):
+                return []
+
+NullCachedManifest = EmptyCachedManifest()

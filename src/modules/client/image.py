@@ -936,6 +936,12 @@ class Image(object):
                 self.__touch_manifest(fmri)
                 return m
 
+        def uncache_manifest(self, fmri):
+                """Remove specified FMRI from manifest cache."""
+
+                if fmri in self.__manifest_cache:
+                        del self.__manifest_cache[fmri]
+
         def installed_file_publisher(self, filepath):
                 """Find the pkg's installed file named by filepath.
                 Return the publisher that installed this package."""
