@@ -47,6 +47,12 @@ AUTH_DEFAULT = "opensolaris.org"
 REPO_PATH_DEFAULT = "/var/pkg/repo"
 # The default path for static and other web content.
 CONTENT_PATH_DEFAULT = "/usr/share/lib/pkg"
+# cherrypy has a max_request_body_size parameter that determines whether the
+# server should abort requests with REQUEST_ENTITY_TOO_LARGE when the request
+# body is larger than the specified size (in bytes).  The maximum size supported
+# by cherrypy is 2048 * 1024 * 1024 - 1 (just short of 2048MB), but the default
+# here is purposefully conservative.
+MAX_REQUEST_BODY_SIZE = 128 * 1024 * 1024
 # The default port(s) to serve data from.
 PORT_DEFAULT = 80
 SSL_PORT_DEFAULT = 443
@@ -497,6 +503,7 @@ if __name__ == "__main__":
             "checker.on": True,
             "environment": "production",
             "log.screen": False,
+            "server.max_request_body_size": MAX_REQUEST_BODY_SIZE,
             "server.shutdown_timeout": 0,
             "server.socket_host": "0.0.0.0",
             "server.socket_port": port,
