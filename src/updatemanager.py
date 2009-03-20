@@ -793,10 +793,11 @@ class Updatemanager:
                     '\nInstalled Version:\t%s'
                     '\nPackaging Date:\t%s'
                     '\nFMRI:       \t\t\t%s'
+                    '\nRepository:       \t\t%s'
                     '\n') \
                     % (summary, misc.bytes_to_str(info.size), 
                     categories, ver, installed_ver,
-                    info.packaging_date, info.fmri)
+                    info.packaging_date, info.fmri, info.publisher)
                 self.details_cache[name] = str_details
                 return str_details
 

@@ -2335,6 +2335,7 @@ class PackageManager:
                 labs["lat"] = ("Latest Version:\t")
                 labs["pkg_date"] = _("Packaging Date:\t")
                 labs["fmri"] = _("FMRI:\t\t\t")
+                labs["repository"] = _("Repository:\t\t")
                 max_len = 0
                 for lab in labs:
                         if len(labs[lab]) > max_len:
@@ -2361,6 +2362,7 @@ class PackageManager:
                     remote_info.build_release, remote_info.branch)
                 info_str += "\n  %s %s" % (labs["pkg_date"], local_info.packaging_date)
                 info_str += "\n  %s %s" % (labs["fmri"], local_info.fmri)
+                info_str += "\n  %s %s" % (labs["repository"], local_info.publisher)
                 infobuffer.set_text(info_str)
                 instbuffer.set_text(inst_str)
                 depbuffer.set_text(dep_str)
