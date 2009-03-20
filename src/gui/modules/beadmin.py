@@ -276,8 +276,8 @@ class Beadmin:
 
         def __activate(self):
                 active_text = _("Active on reboot:\n")
-                delete_text = _("Delete BEs:\n")
-                rename_text = _("Rename BEs:\n")
+                delete_text = _("Delete boot environments:\n")
+                rename_text = _("Rename boot environments:\n")
                 active = ""
                 delete = ""
                 rename = {}
