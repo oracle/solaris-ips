@@ -491,8 +491,9 @@ class CachedManifest(Manifest):
                         # all variants
                         self.set_content(contents) 
                         self.__finiload()
-                        self.__storeback()
-                        if excludes:
+                        if self.__storeback():
+                                self.__unload()
+                        elif excludes:
                                 self.set_content(contents, excludes)
                         return
 
@@ -503,8 +504,9 @@ class CachedManifest(Manifest):
                 if not os.path.exists(mdpath): # we're adding cache
                         self.excludes = EmptyI # to existing manifest
                         self.__load()
-                        self.__storeback()
-                        if excludes:
+                        if self.__storeback():
+                                self.__unload()
+                        elif excludes:
                                 self.excludes = excludes
                                 self.__load()
 
@@ -516,6 +518,17 @@ class CachedManifest(Manifest):
                 self.set_content(data, self.excludes)
                 self.__finiload()
 
+        def __unload(self):
+                """Unload manifest; used to reduce peak memory comsumption
+                when downloading new manifests"""
+                self.size = 0
+                self.actions = []
+                self.actions_bytype = {}
+                self.variants = {}   
+                self.facets = {}     
+                self.attributes = {} 
+                self.loaded = False
+                
         def __finiload(self):
                 """Finish loading.... this part of initialization is common 
                 to multiple code paths"""
@@ -530,17 +543,19 @@ class CachedManifest(Manifest):
 
         def __storeback(self):
                 """ store the current action set; also create per-type
-                caches"""
+                caches.  Return True if data was saved, False if not"""
                 assert self.loaded
                 try:
                         self.store(self.__file_path("manifest"))
                         self.__storebytype()
+                        return True
 
                 except  EnvironmentError, e:
                         # this allows us to try to cache new manifests
                         # when non-root w/o failures
                         if e.errno not in (errno.EROFS, errno.EACCES):
                                 raise
+                        return False
 
         def __storebytype(self):
                 """ create manifest.<typename> files to accelerate partial
