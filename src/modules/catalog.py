@@ -148,7 +148,12 @@ class Catalog(object):
                 self.attrs["npkgs"] = 0
 
                 if not os.path.exists(cat_root):
-                        os.makedirs(cat_root)
+                        try:
+                                os.makedirs(cat_root)
+                        except EnvironmentError, e:
+                                if e.errno in (errno.EACCES, errno.EROFS):
+                                        return
+                                raise
 
                 # Rebuild catalog, if we're the depot and it's necessary.
                 if pkg_root is not None and rebuild:
