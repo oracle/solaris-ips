@@ -103,6 +103,7 @@ try:
         import pygtk
         pygtk.require("2.0")
         import gtkhtml2
+        import pango
 except ImportError:
         sys.exit(1)
 import pkg.misc as misc
@@ -249,10 +250,15 @@ class PackageManager:
                     w_tree_preferences.get_widget("typeaheadsearch_checkbutton")
                 self.remote_search_error_dialog = \
                     w_tree_remote_search_error.get_widget("remote_search_error")
-                self.remote_search_error_text = \
+                self.remote_search_error_textview = \
                     w_tree_remote_search_error.get_widget("remote_search_error_text")
                 self.remote_search_checkbox = \
                     w_tree_remote_search_error.get_widget("remote_search_checkbox")
+                self.remote_search_button = \
+                    w_tree_remote_search_error.get_widget("remote_search_button")
+                infobuffer = self.remote_search_error_textview.get_buffer()
+                infobuffer.create_tag("bold", weight=pango.WEIGHT_BOLD)
+                
                 self.w_main_window = w_tree_main.get_widget("mainwindow")
                 self.w_application_treeview = \
                     w_tree_main.get_widget("applicationtreeview")
@@ -283,6 +289,7 @@ class PackageManager:
 
                 self.w_main_statusbar = w_tree_main.get_widget("statusbar")
                 self.w_infosearch_frame = w_tree_main.get_widget("infosearch_frame")
+                self.w_infosearch_button = w_tree_main.get_widget("infosearch_button")
                 
                 self.w_main_view_notebook = \
                     w_tree_main.get_widget("main_view_notebook")
@@ -658,20 +665,38 @@ class PackageManager:
                         self.w_infosearch_frame.hide()
                         return
                 else:
+                        self.w_infosearch_button.set_size_request(26, 22)
                         self.w_infosearch_frame.show()
-                err_msg = ""
+
+                repo_pubs = self.__get_repo_publishers()
+                repo_count = 0
                 for url in self.current_not_show_repos:
-                        if show_all:
-                                err_msg += url + "\n"
-                        elif url not in self.gconf_not_show_repos:
-                                err_msg += url + "\n"
-                if len(err_msg) == 0:
+                        if show_all or (url not in self.gconf_not_show_repos):
+                                repo_count += 1
+                if repo_count == 0:
                         return
+
+                infobuffer = self.remote_search_error_textview.get_buffer()
+                infobuffer.set_text("")                
+                textiter = infobuffer.get_end_iter()
+                for url in self.current_not_show_repos:
+                        if show_all or (url not in self.gconf_not_show_repos):
+                                infobuffer.insert_with_tags_by_name(textiter,
+                                        _("%s") % repo_pubs[url], "bold")
+                                infobuffer.insert(textiter, _(" (%s)\n") % url)
                 self.remote_search_checkbox.set_active(False)
-                textbuffer = self.remote_search_error_text.get_buffer()
-                textbuffer.set_text(err_msg)
                 self.remote_search_error_dialog.show()
+                self.remote_search_button.grab_focus()
                
+        def __get_repo_publishers(self):
+                repo_pub_dict = {}
+                pubs = self.api_o.get_publishers()
+                for pub in pubs:
+                        repo = pub.selected_repository
+                        origin = repo.origins[0]
+                        repo_pub_dict[origin.uri] = pub.prefix
+                return repo_pub_dict
+                
         def __on_url(self, view, link):
                 # Handle mouse over events on links and reset when not on link
                 if link == None or link == "":
@@ -1337,6 +1362,7 @@ class PackageManager:
                                 section_row = self.section_list[selected_section]
                                 section_row[enumerations.SECTION_SUBCATEGORY] = cat_path
                                 selection.unselect_all()
+                        self.w_infosearch_frame.hide()
                         self.update_statusbar_for_searching()
                         Thread(target = self.__do_remote_search,
                             args = ()).start()

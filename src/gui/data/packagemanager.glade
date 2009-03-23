@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.4.5 on Fri Mar 13 10:53:38 2009 -->
+<!--Generated with glade3 3.4.5 on Mon Mar 23 14:46:09 2009 -->
 <glade-interface>
   <widget class="GtkWindow" id="mainwindow">
     <property name="width_request">750</property>
@@ -952,6 +952,7 @@
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
+                    <property name="tooltip" translatable="yes">Search All Repositories Error</property>
                     <property name="relief">GTK_RELIEF_NONE</property>
                     <property name="focus_on_click">False</property>
                     <property name="xalign">0</property>
@@ -4100,7 +4101,8 @@ buttons to provide their location.</property>
                     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                     <property name="xalign">0</property>
                     <property name="yalign">0</property>
-                    <property name="label" translatable="yes">&lt;b&gt;Search All Repositories cannot be performed on the following repositories:&lt;/b&gt;</property>
+                    <property name="label" translatable="yes">Search All Repositories cannot be performed on the following
+repositories:</property>
                     <property name="use_markup">True</property>
                     <property name="wrap">True</property>
                   </widget>

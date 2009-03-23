@@ -315,7 +315,8 @@ class Repository:
                 self.w_repositorymodify_dialog.set_transient_for(parent)
                 self.w_repositorymodify_title_label.set_markup(
                     _("<b>New Repository</b>"))
-
+                self.w_mirror_add_button.set_sensitive(False)
+                
                 if scheme != "https" and registration_url == None:
                         self.__on_repositorymodifyok_clicked(None)
                         return
