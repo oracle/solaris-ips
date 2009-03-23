@@ -80,7 +80,7 @@ from pkg.client.history import (RESULT_CANCELED, RESULT_FAILED_BAD_REQUEST,
 from pkg.client.filelist import FileListRetrievalError
 from pkg.client.retrieve import (CatalogRetrievalError,
     DatastreamRetrievalError, ManifestRetrievalError)
-from pkg.misc import msg, emsg, PipeError
+from pkg.misc import EmptyI, msg, emsg, PipeError
 
 CLIENT_API_VERSION = 12
 PKG_CLIENT_NAME = "pkg"
@@ -1443,11 +1443,21 @@ def list_contents(img, args):
                 else:
                         sort_attrs = attrs[:1]
 
-        manifests = ( img.get_manifest(f) for f in fmris )
+        # if we want a raw display (contents -m), disable the automatic
+        # variant filtering that normally limits working set.
 
-        actionlist = [ (m, a)
-                    for m in manifests
-                    for a in m.gen_actions(img.list_excludes()) ]
+        if display_raw:
+                excludes = EmptyI
+        else:
+                excludes = img.list_excludes()
+
+        manifests = ( img.get_manifest(f, all_arch=display_raw) for f in fmris )
+
+        actionlist = [ 
+            (m, a)
+            for m in manifests
+            for a in m.gen_actions(excludes) 
+        ]
 
         if fmris:
                 display_contents_results(actionlist, attrs, sort_attrs,
