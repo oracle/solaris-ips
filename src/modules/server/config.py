@@ -34,16 +34,7 @@ import pkg.server.catalog as catalog
 import pkg.server.transaction as trans
 import pkg.updatelog as updatelog
 
-class SvrConfigError(Exception):
-        """Base exception class for all Transaction exceptions."""
-
-        def __init__(self, *args):
-                Exception.__init__(self, *args)
-                self.data = args[0]
-
-        def __str__(self):
-                return str(self.data)
-
+from pkg.server.errors import SvrConfigError
 
 # depot Server Configuration
 class SvrConfig(object):
@@ -56,9 +47,16 @@ class SvrConfig(object):
         location specified by 'repo_root' if one does not already exist."""
 
         def __init__(self, repo_root, content_root, publisher,
-            auto_create=False, fork_allowed=False):
+            auto_create=False, fork_allowed=False, writable_root=None):
                 self.set_repo_root(repo_root)
                 self.set_content_root(content_root)
+                self.has_writable_root = False
+                if writable_root:
+                        self.set_writable_root(writable_root)
+
+                self.required_dirs = [self.trans_root, self.file_root,
+                    self.pkg_root, self.cat_root, self.update_root]
+                self.optional_dirs = [self.index_root]
 
                 self.auto_create = auto_create
                 self.publisher = publisher
@@ -116,11 +114,7 @@ class SvrConfig(object):
                 self.cat_root = os.path.join(self.repo_root, "catalog")
                 self.update_root = os.path.join(self.repo_root, "updatelog")
                 self.index_root = os.path.join(self.repo_root, "index")
-
-                self.required_dirs = [self.trans_root, self.file_root,
-                    self.pkg_root, self.cat_root, self.update_root]
-
-                self.optional_dirs = [self.index_root]
+                self.feed_cache_root = self.repo_root
 
         def set_content_root(self, root):
                 if root:
@@ -130,6 +124,12 @@ class SvrConfig(object):
                         self.content_root = None
                         self.web_root = None
 
+        def set_writable_root(self, root):
+                root = os.path.abspath(root)
+                self.index_root = os.path.join(root, "index")
+                self.feed_cache_root = root
+                self.has_writable_root = True
+
         def set_read_only(self):
                 self.read_only = True
 
@@ -138,6 +138,9 @@ class SvrConfig(object):
 
         def is_read_only(self):
                 return self.read_only
+
+        def feed_cache_read_only(self):
+                return self.read_only and not self.has_writable_root
 
         def is_mirror(self):
                 return self.mirror
@@ -169,7 +172,8 @@ class SvrConfig(object):
                     pkg_root=self.pkg_root, read_only=self.read_only,
                     index_root=self.index_root, repo_root=self.repo_root,
                     rebuild=rebuild, verbose=verbose,
-                    fork_allowed=self.fork_allowed)
+                    fork_allowed=self.fork_allowed,
+                    has_writable_root=self.has_writable_root)
 
                 # UpdateLog allows server to issue incremental catalog updates
                 self.updatelog = updatelog.UpdateLog(self.update_root,

@@ -59,6 +59,7 @@ class DepotController(object):
                 self.__output = None
                 self.__depot_handle = None
                 self.__cfg_file = None
+                self.__writable_root = None
                 self.__state = self.HALTED
                 self.__debug_features = {}
                 return
@@ -126,9 +127,15 @@ class DepotController(object):
 
         def get_cfg_file(self):
                 return self.__cfg_file
-        
+
         def get_depot_url(self):
                 return "http://localhost:%d" % self.__port
+
+        def set_writable_root(self, wr):
+                self.__writable_root = wr
+
+        def get_writable_root(self):
+                return self.__writable_root
 
         def set_debug_feature(self, feature):
                 self.__debug_features[feature] = True
@@ -195,6 +202,8 @@ class DepotController(object):
                 if self.__debug_features:
                         args.append("--debug=%s" % ",".join(
                             self.__debug_features))
+                if self.__writable_root:
+                        args.append("--writable-root=%s" % self.__writable_root)
                 return args
 
         def __initial_start(self):

@@ -9,7 +9,7 @@ SYNOPSIS
          [-t socket_timeout] [--cfg-file] [--content-root] [--debug]
          [--log-access] [--log-errors] [--mirror] [--proxy-base url]
          [--readonly] [--rebuild] [--ssl-cert-file] [--ssl-dialog]
-         [--ssl-key-file]
+         [--ssl-key-file] [--writable-root]
 
 DESCRIPTION
      pkg.depotd is the depot server for the image packaging system.
@@ -121,6 +121,12 @@ DESCRIPTION
                                 be started to serve requests.  The default
                                 value is 10.
 
+     pkg/writable_root          (astring) The file system path to a directory
+                                to which the program has write access.  Used
+                                with --readonly to allow server to create
+                                needed files, such as search indices, without
+                                needing write access to the package information.
+
      pkg_secure/ssl_key_passphrase      (astring) The password to use to
                                         decrypt the pkg/ssl_key_file.  This
                                         value is read-authorization
@@ -179,6 +185,9 @@ OPTIONS
 
      --ssl-key-file source      Overrides pkg/ssl_key_file with the value
                                 given by source.
+
+     --writable-root path       Overrides pkg/writable_root with the value
+                                given by path.
 
 EXAMPLES
      Example 1:  Enabling the depot server.

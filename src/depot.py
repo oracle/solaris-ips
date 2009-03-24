@@ -106,6 +106,7 @@ import pkg.search_errors as search_errors
 import pkg.server.config as config
 import pkg.server.depot as depot
 import pkg.server.depotresponse as dr
+import pkg.server.errors as errors
 import pkg.server.repositoryconfig as rc
 
 class LogSink(object):
@@ -129,7 +130,7 @@ Usage: /usr/lib/pkg.depotd [-d repo_dir] [-p port] [-s threads]
            [-t socket_timeout] [--cfg-file] [--content-root] [--debug]
            [--log-access dest] [--log-errors dest] [--mirror] [--proxy-base url]
            [--readonly] [--rebuild] [--ssl-cert-file] [--ssl-dialog]
-           [--ssl-key-file]
+           [--ssl-key-file] [--writable-root dir]
 
         --cfg-file      The pathname of the file from which to read and to
                         write configuration information.
@@ -171,6 +172,10 @@ Usage: /usr/lib/pkg.depotd [-d repo_dir] [-p port] [-s threads]
                         This option must be used with --ssl-cert-file.  Usage of
                         this option will cause the depot to only respond to SSL
                         requests on the provided port.
+        --writable-root The path to a directory to which the program has write
+                        access.  Used with --readonly to allow server to
+                        create needed files, such as search indices, without
+                        needing write access to the package information.
 """
         sys.exit(2)
 
@@ -201,6 +206,7 @@ if __name__ == "__main__":
         ssl_cert_file = None
         ssl_key_file = None
         ssl_dialog = "builtin"
+        writable_root = None
 
         if "PKG_REPO" in os.environ:
                 repo_path = os.environ["PKG_REPO"]
@@ -233,7 +239,8 @@ if __name__ == "__main__":
         try:
                 long_opts = ["cfg-file=", "content-root=", "debug=", "mirror",
                     "proxy-base=", "readonly", "rebuild", "refresh-index",
-                    "ssl-cert-file=", "ssl-dialog=", "ssl-key-file="]
+                    "ssl-cert-file=", "ssl-dialog=", "ssl-key-file=",
+                    "writable-root="]
                 for opt in log_opts:
                         long_opts.append("%s=" % opt.lstrip('--'))
                 opts, pargs = getopt.getopt(sys.argv[1:], "d:np:s:t:",
@@ -390,6 +397,11 @@ if __name__ == "__main__":
                                         f = "exec:%s" % f
 
                                 ssl_dialog = f
+                        elif opt == "--writable-root":
+                                if arg == "":
+                                        raise OptionError, "You must specify " \
+                                            "a directory path."
+                                writable_root = arg
         except getopt.GetoptError, _e:
                 usage("pkg.depotd: %s" % _e.msg)
         except OptionError, _e:
@@ -430,7 +442,8 @@ if __name__ == "__main__":
         fork_allowed = not reindex
                 
         scfg = config.SvrConfig(repo_path, content_root, AUTH_DEFAULT,
-            auto_create=not readonly, fork_allowed=fork_allowed)
+            auto_create=not readonly, fork_allowed=fork_allowed,
+            writable_root=writable_root)
 
         if readonly:
                 scfg.set_read_only()
@@ -440,7 +453,7 @@ if __name__ == "__main__":
 
         try:
                 scfg.init_dirs()
-        except (config.SvrConfigError, EnvironmentError), _e:
+        except (errors.SvrConfigError, EnvironmentError), _e:
                 print "pkg.depotd: an error occurred while trying to " \
                     "initialize the depot repository directory " \
                     "structures:\n%s" % _e
@@ -565,7 +578,9 @@ if __name__ == "__main__":
         if reindex:
                 try:
                         scfg.acquire_catalog(rebuild=False, verbose=True)
-                except search_errors.IndexingException, e:
+                except (search_errors.IndexingException,
+                    catalog.CatalogPermissionsException,
+                    errors.SvrConfigError), e:
                         cherrypy.log(str(e), "INDEX")
                         sys.exit(1)
                 sys.exit(0)
@@ -606,7 +621,7 @@ if __name__ == "__main__":
         scfg.acquire_in_flight()
         try:
                 scfg.acquire_catalog(rebuild=rebuild, verbose=True)
-        except catalog.CatalogPermissionsException, _e:
+        except (catalog.CatalogPermissionsException, errors.SvrConfigError), _e:
                 emsg("pkg.depotd: %s" % _e)
                 sys.exit(1)
 

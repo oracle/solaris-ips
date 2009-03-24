@@ -28,6 +28,7 @@ except ImportError:
         # Optional dependency.
         pass
 
+import errno
 import os
 import signal
 import sys
@@ -41,13 +42,15 @@ import pkg.pkgsubprocess as subprocess
 import pkg.server.query_parser as query_p
 
 from pkg.misc import EmptyI
+from pkg.server.errors import SvrConfigError
 
 class ServerCatalog(catalog.Catalog):
         """The catalog information which is only needed by the server."""
 
         def __init__(self, cat_root, publisher=None, pkg_root=None,
             read_only=False, index_root=None, repo_root=None,
-            rebuild=False, verbose=False, fork_allowed=False):
+            rebuild=False, verbose=False, fork_allowed=False,
+            has_writable_root=False):
 
                 self.fork_allowed = fork_allowed
                 self.index_root = index_root
@@ -93,8 +96,22 @@ class ServerCatalog(catalog.Catalog):
                 except OSError:
                         pass
 
-                if not read_only:
-                        self.refresh_index()
+                if not read_only or has_writable_root:
+                        try:
+                                self.refresh_index()
+                        except EnvironmentError, e:
+                                if e.errno == errno.EACCES:
+                                        if has_writable_root:
+                                                raise SvrConfigError(
+                                                    _("writable root not "
+                                                    "writable by current user "
+                                                    "id or group."))
+                                        else:
+                                                raise SvrConfigError(
+                                                    _("unable to write to "
+                                                    "index directory."))
+                                        
+                                raise
                 else:
                         self._check_search()
 
@@ -144,6 +161,14 @@ class ServerCatalog(catalog.Catalog):
                                         args = (sys.executable, cmd,
                                             "--refresh-index", "-d",
                                             self.repo_root)
+                                        if os.path.normpath(
+                                            self.index_root) != \
+                                            os.path.normpath(os.path.join(
+                                            self.repo_root, "index")):
+                                                writ, t = os.path.split(
+                                                    self.index_root)
+                                                args += ("--writable-root",
+                                                    writ)
                                         try:
                                                 self.searchdb_update_handle = \
                                                     subprocess.Popen(args,

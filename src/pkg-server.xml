@@ -117,6 +117,7 @@
 		<propval name='ssl_cert_file' type='astring' value='none' />
 		<propval name='ssl_dialog' type='astring' value='smf' />
 		<propval name='ssl_key_file' type='astring' value='none' />
+		<propval name='writable_root' type='astring' value=''/>
 	</property_group>
 
 	<property_group name='pkg_secure' type='application'>

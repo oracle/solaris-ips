@@ -97,7 +97,7 @@ def init(scfg, rcfg):
         for feeds to work correctly.
         """
 
-        if not scfg.is_read_only():
+        if not scfg.feed_cache_read_only():
                 # RSS/Atom feeds require a unique identifier, so
                 # generate one if isn't defined already.  This
                 # needs to be a persistent value, so we only
@@ -281,7 +281,7 @@ def add_transaction(request, scfg, rcfg, doc, feed, txn, fmris):
 
 def update(request, scfg, rcfg, t, cf):
         """Generate new Atom document for current updates.  The cached feed
-        file is written to scfg.repo_root/CACHE_FILENAME.
+        file is written to scfg.feed_cache_root/CACHE_FILENAME.
         """
 
         # Our configuration is stored in hours, convert it to seconds.
@@ -315,10 +315,10 @@ def update(request, scfg, rcfg, t, cf):
         d.writexml(cf)
 
 def __get_cache_pathname(scfg):
-        return os.path.join(scfg.repo_root, CACHE_FILENAME)
+        return os.path.join(scfg.feed_cache_root, CACHE_FILENAME)
 
 def __clear_cache(scfg):
-        if scfg.is_read_only():
+        if scfg.feed_cache_read_only():
                 # Ignore the request due to server configuration.
                 return
 
@@ -403,7 +403,7 @@ def handle(scfg, rcfg, request, response):
                 if last is None:
                         last = time.time()
 
-                if scfg.is_read_only():
+                if scfg.feed_cache_read_only():
                         # If the server is operating in readonly mode, the
                         # feed will have to be generated every time.
                         cf = cStringIO.StringIO()

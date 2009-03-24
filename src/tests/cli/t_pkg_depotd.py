@@ -319,6 +319,52 @@ class TestDepotController(testutils.CliTestCase):
 
                 self.__dc.start()
 
+        def test_writable_root(self):
+                """Tests whether the index and feed cache file are written to
+                the writable root parameter."""
+                for p in TestPkgDepot.misc_files:
+                        f = open(p, "w")
+                        # write the name of the file into the file, so that
+                        # all files have differing contents
+                        f.write(p)
+                        f.close()
+                        self.debug("wrote %s" % p)
+                
+                writable_root = os.path.join(self.get_test_prefix(),
+                    "writ_root")
+                index_dir = os.path.join(writable_root, "index")
+                feed = os.path.join(writable_root, "feed.xml")
+                base_dir = os.path.join(self.get_test_prefix(), "depot")
+                o_index_dir = os.path.join(base_dir, "index")
+                o_feed = os.path.join(base_dir, "feed.xml")
+
+                def check_state(check_feed):
+                        self.assert_(not os.path.exists(o_index_dir))
+                        self.assert_(not os.path.exists(o_feed))
+                        self.assert_(os.path.isdir(index_dir))
+                        if check_feed:
+                                self.assert_(os.path.isfile(feed))
+                self.__dc.set_port(12000)
+                self.__dc.set_writable_root(writable_root)
+                self.__dc.start()
+                durl = self.__dc.get_depot_url()
+                check_state(False)
+                self.pkgsend_bulk(durl, TestPkgDepot.quux10)
+                urllib2.urlopen("%s/feed" % durl)
+                check_state(True)
+
+                self.image_create(durl)
+                self.pkg("search -r cat")
+                self.__dc.stop()
+                self.__dc.set_readonly()
+                shutil.rmtree(writable_root)
+                self.__dc.start()
+                urllib2.urlopen("%s/feed" % durl)
+                check_state(True)
+                self.pkg("search -r cat")
+                for p in TestPkgDepot.misc_files:
+                        os.remove(p)
+
         def testBadArgs(self):
                 self.__dc.set_port(12000)
                 self.__dc.set_readonly()
