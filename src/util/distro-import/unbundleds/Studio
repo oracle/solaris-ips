@@ -1,12 +1,12 @@
 package sunstudio
-version 0.2008.11
+version 0.2009.3
 depend sunstudioexpress
 end package
 
 package sunstudioexpress
 classification "Development/Integrated Development Environments"
 description "Sun Studio Express - C, C++, & Fortran compilers and Tools"
-version 0.2008.11
+version 0.2009.3
 import sunstudioexpress
 depend SUNWarc
 depend SUNWcpp
