@@ -49,6 +49,7 @@ class package(object):
                 self.name = name
                 self.files = []
                 self.depend = []
+                self.file_depend = []
                 self.idepend = []     #svr4 pkg deps, if any
                 self.undepend = []
                 self.extra = []
@@ -653,6 +654,18 @@ def publish_pkg(pkg):
                                 undeps |= set(u)
                                 os.unlink(tmp)
 
+        # process any dependencies on files
+        for f in pkg.file_depend:
+                f = f.lstrip("/") # remove any leading /                
+                if f in usedlist:
+                        pkg.depend += [ "%s@%s" %
+                            (usedlist[f][1].name,
+                             usedlist[f][1].version) 
+                        ]
+                else:
+                        print "Warning: pkg %s: depend_path %s not satisfied" \
+                            % (pkg.name, f)
+                        undeps.add(f)
         # Publish dependencies
 
         missing_cnt = 0
@@ -1183,6 +1196,9 @@ def SolarisParse(mf):
 
                 elif token == "depend":
                         curpkg.depend.append(lexer.get_token())
+
+                elif token == "depend_path":
+                        curpkg.file_depend.append(lexer.get_token())
 
                 elif token == "cluster":
                         curpkg.add_svr4_src(lexer.get_token())
