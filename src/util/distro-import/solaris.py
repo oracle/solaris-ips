@@ -115,8 +115,12 @@ class package(object):
                                         svr4pkgpaths[usedlist[o.pathname][0]])
                                 print s
                                 raise RuntimeError(s)
+                        elif o.type == "i" and o.pathname == "copyright":
+                                # Fake up a unique path for each license.
+                                o.pathname = "//license/%s" % imppkg
+                                usedlist[o.pathname] = (imppkg, self)
+                                self.files.append(o)
                         elif o.type != "i":
-
                                 if o.type in "dx" and imppkg not in hollow_pkgs:
                                         self.nonhollow_dirs[o.pathname] = True
 
@@ -542,7 +546,7 @@ def publish_pkg(pkg):
         def fn(key):
                 return usedlist[key.pathname][0]
         groups = {}
-        for k, g in groupby((f for f in pkg.files if f.type in "fev"), fn):
+        for k, g in groupby((f for f in pkg.files if f.type in "fevi"), fn):
                 if k in groups:
                         groups[k].extend(g)
                 else:
@@ -582,6 +586,8 @@ def publish_pkg(pkg):
                                 # The "path" attribute is confusing and
                                 # unnecessary for licenses.
                                 del f.attrs["path"]
+                                print "    %s add license %s" % \
+                                    (pkg.name, f.attrs["license"])
                                 t.add(f)
                         elif f.attrs["path"] in pathdict:
                                 if pkgname in hollow_pkgs:
