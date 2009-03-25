@@ -2049,6 +2049,9 @@ repository, and then click Modify to add additional information.</property>
                             <property name="width_request">320</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
+                            <accessibility>
+                              <atkproperty name="AtkObject::accessible_name">repositoryname</atkproperty>
+                            </accessibility>
                             <signal name="changed" handler="on_repositoryname_changed"/>
                           </widget>
                           <packing>
@@ -2087,6 +2090,9 @@ repository, and then click Modify to add additional information.</property>
                             <property name="width_request">320</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
+                            <accessibility>
+                              <atkproperty name="AtkObject::accessible_name">repositoryurl</atkproperty>
+                            </accessibility>
                             <signal name="changed" handler="on_repositoryurl_changed"/>
                           </widget>
                           <packing>
@@ -2489,6 +2495,9 @@ repository, and then click Modify to add additional information.</property>
                                 <property name="width_request">320</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
+                                <accessibility>
+                                  <atkproperty name="AtkObject::accessible_name">repositorymodifyname</atkproperty>
+                                </accessibility>
                               </widget>
                               <packing>
                                 <property name="expand">False</property>
@@ -2521,6 +2530,9 @@ repository, and then click Modify to add additional information.</property>
                                 <property name="width_request">320</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
+                                <accessibility>
+                                  <atkproperty name="AtkObject::accessible_name">repositorymodifyurl</atkproperty>
+                                </accessibility>
                                 <signal name="changed" handler="on_repositorymodifyurl_changed"/>
                               </widget>
                               <packing>
@@ -2704,6 +2716,9 @@ repository, and then click Modify to add additional information.</property>
                                   <widget class="GtkEntry" id="modkeyentry">
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
+                                    <accessibility>
+                                      <atkproperty name="AtkObject::accessible_name">modkeyentry</atkproperty>
+                                    </accessibility>
                                     <signal name="changed" handler="on_modkeyentry_changed"/>
                                   </widget>
                                 </child>
@@ -2711,6 +2726,9 @@ repository, and then click Modify to add additional information.</property>
                                   <widget class="GtkEntry" id="modcertentry">
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
+                                    <accessibility>
+                                      <atkproperty name="AtkObject::accessible_name">modcertentry</atkproperty>
+                                    </accessibility>
                                     <signal name="changed" handler="on_modcertentry_changed"/>
                                   </widget>
                                   <packing>
@@ -2837,6 +2855,9 @@ repository, and then click Modify to add additional information.</property>
                                   <widget class="GtkEntry" id="addmirror_entry">
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
+                                    <accessibility>
+                                      <atkproperty name="AtkObject::accessible_name">addmirror_entry</atkproperty>
+                                    </accessibility>
                                     <signal name="changed" handler="on_addmirror_entry_changed"/>
                                   </widget>
                                   <packing>
@@ -3038,6 +3059,9 @@ when the system is rebooted.
                   <widget class="GtkEntry" id="ua_be_name_entry">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
+                    <accessibility>
+                      <atkproperty name="AtkObject::accessible_name">ua_be_name_entry</atkproperty>
+                    </accessibility>
                     <signal name="changed" handler="on_ua_be_name_entry_changed"/>
                   </widget>
                   <packing>
@@ -3443,6 +3467,9 @@ buttons to provide their location.</property>
                     <property name="width_request">300</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
+                    <accessibility>
+                      <atkproperty name="AtkObject::accessible_name">keyentry</atkproperty>
+                    </accessibility>
                     <signal name="changed" handler="on_keyentry_changed"/>
                   </widget>
                   <packing>
@@ -3500,6 +3527,9 @@ buttons to provide their location.</property>
                     <property name="width_request">300</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
+                    <accessibility>
+                      <atkproperty name="AtkObject::accessible_name">certentry</atkproperty>
+                    </accessibility>
                     <signal name="changed" handler="on_certentry_changed"/>
                   </widget>
                   <packing>
