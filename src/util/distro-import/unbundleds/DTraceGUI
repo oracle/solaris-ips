@@ -1,7 +1,7 @@
 package dtrace-gui-plugin
 classification "Development/System"
 description "NetBeans DTrace GUI Plug-in"
-version 0.4
+version 1.0
 import SUNWdtrace-gui
 depend netbeans-ide
 end package
