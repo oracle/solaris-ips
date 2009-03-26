@@ -1,5 +1,19 @@
 package SUNWad810
 classification "Drivers/Media"
 import SUNWad810
-add driver name=audio810 alias=pci1022,7445 alias=pci1022,746d alias=pci8086,2485 alias=pci8086,24c5 alias=pci8086,24d5 alias=pci8086,266e alias=pci8086,27de alias=pci10de,6a alias=pci10de,da alias=pci10de,ea alias=pci10de,59 alias=pci10de,3a alias=pci10de,26b
+add driver name=audio810 \
+	alias=pci1022,7445 \
+	alias=pci1022,746d \
+	alias=pci8086,2485 \
+	alias=pci8086,24c5 \
+	alias=pci8086,24d5 \
+	alias=pci8086,266e \
+	alias=pci8086,27de \
+	alias=pci10de,6a \
+	alias=pci10de,da \
+	alias=pci10de,ea \
+	alias=pci10de,59 \
+	alias=pci10de,3a \
+	alias=pci10de,26b
+add set name=info.keyword value=audioi810
 end package
