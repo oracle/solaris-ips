@@ -124,7 +124,7 @@ case "$1" in
 		    "$option_ops" != *'--ssl-key-file=none'* ]]; then
 			need_forkexec="true"
 		fi
-		if [[ "$option_ops" =~ (--writable-root=)+ ]]; then
+		if [[ "$option_ops" == *'--writable-root='* ]]; then
 			need_forkexec="true"
 		fi
 
