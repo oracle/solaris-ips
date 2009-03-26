@@ -439,6 +439,13 @@ class Indexer(object):
                                 if new_toks_available and next_new_tok == tok:
                                         self.__splice(existing_entries,
                                             new_tok_info)
+                                        try:
+                                                next_new_tok, new_tok_info = \
+                                                    new_toks_it.next()
+                                        except StopIteration:
+                                                new_toks_available = False
+                                                del next_new_tok
+                                                del new_tok_info
                                 # If this token has any packages still
                                 # associated with it, write them to the file.
                                 if existing_entries:

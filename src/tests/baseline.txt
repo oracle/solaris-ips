@@ -216,6 +216,7 @@ cli.t_api_search.py TestApiSearchBasics.test_bug_3046|pass
 cli.t_api_search.py TestApiSearchBasics.test_bug_4048_1|pass
 cli.t_api_search.py TestApiSearchBasics.test_bug_4048_2|pass
 cli.t_api_search.py TestApiSearchBasics.test_bug_4239|pass
+cli.t_api_search.py TestApiSearchBasics.test_bug_7628|pass
 cli.t_api_search.py TestApiSearchBasics.test_bug_983|pass
 cli.t_api_search.py TestApiSearchBasics.test_degraded_local|pass
 cli.t_api_search.py TestApiSearchBasics.test_local_0|pass

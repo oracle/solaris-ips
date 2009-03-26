@@ -1181,6 +1181,36 @@ close
                 _run_cat2_tests(self, remote)
                 _run_cat3_tests(self, remote)
 
+        def test_bug_7628(self):
+                """Checks whether incremental update generates wrong
+                additional lines."""
+                durl = self.dc.get_depot_url()
+                depotpath = self.dc.get_repodir()
+                ind_dir = os.path.join(depotpath, "index")
+                tok_file = os.path.join(ind_dir, ss.BYTE_OFFSET_FILE)
+                main_file = os.path.join(ind_dir, ss.MAIN_FILE)
+                self.pkgsend_bulk(durl, self.example_pkg10)
+                time.sleep(1)
+                fh = open(tok_file)
+                tok_1 = fh.readlines()
+                tok_len = len(tok_1)
+                fh.close()
+                fh = open(main_file)
+                main_1 = fh.readlines()
+                main_len = len(main_1)
+                self.pkgsend_bulk(durl, self.example_pkg10)
+                time.sleep(1)
+                fh = open(tok_file)
+                tok_2 = fh.readlines()
+                new_tok_len = len(tok_2)
+                fh.close()
+                fh = open(main_file)
+                main_2 = fh.readlines()
+                new_main_len = len(main_2)
+                fh.close()
+                self.assert_(new_tok_len == tok_len)
+                self.assert_(new_main_len == main_len)
+
 
 class TestApiSearchMulti(testutils.ManyDepotTestCase):
 
