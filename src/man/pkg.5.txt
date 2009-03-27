@@ -70,6 +70,10 @@ DESCRIPTION
      indeed, the standard sets are easily augmented to incorporate future
      developments.
 
+     Certain action attributes cause additional operations to be
+     executed outside of the packaging context.  These are documented
+     below, under the topic "Actuators".
+
   File Actions
      The 'file' action is perhaps the most common action, and represents an
      'ordinary file'.  It references a payload, and has four standard
@@ -121,14 +125,14 @@ DESCRIPTION
 
      original_name This attribute is used to handle editable files moving
                    from package to package or from place to place, or both.
-                   The form this takes is the name of the originating package, 
-		   followed by a colon and the original path to the file.
-		   Any file being deleted is recorded either with its 
-		   package and path, or with the value of the original_name
-		   attribute if specified.  Any editable file being installed
-		   that has the original_name attribute set will use the
-		   file of that name if it is deleted as part of the same
-		   packaging operation.
+                   The form this takes is the name of the originating package,
+                   followed by a colon and the original path to the file.
+                   Any file being deleted is recorded either with its
+                   package and path, or with the value of the original_name
+                   attribute if specified.  Any editable file being installed
+                   that has the original_name attribute set will use the
+                   file of that name if it is deleted as part of the same
+                   packaging operation.
 
   Directory Actions
      The 'directory' action is like the file action in that it represents a
@@ -344,6 +348,48 @@ DESCRIPTION
      flag        set to empty. See shadow(4).
 
 
+  Actuators
+
+     In certain contexts, additional operations may be appropriate to
+     execute in preparation for or following the introduction of a
+     particular action.  These additional operations are generally
+     needed only on a live system image, and are operating
+     system-specific.  When multiple actions involved in a package
+     installation or removal have identical actuators, then the
+     operation corresponding to actuator presence is executed once for
+     that installation or removal.
+
+     Incorrectly specified actuators may result in package installation
+     failure, if the actuator cannot determine a means of making
+     safe installation progress.
+
+     The following actuators are defined:
+
+     reboot_on_update  Can be set to "true" or "false".  If an action
+                 with this actuator set to "true" is installed or
+                 updated during a package installation, then the
+                 packaging transaction can be advertised as requiring a
+                 reboot.  Certain client implementations may take
+                 additional steps, such as performing the entire package
+                 operation using a clone of the image, in the case that
+                 the image is the live system image.
+
+     disable_fmri
+     refresh_fmri
+     restart_fmri
+     suspend_fmri  Each of these actuators take the value of an FMRI of
+                 a service instance to operate upon during the package
+                 installation or removal.  disable_fmri causes the
+                 mentioned FMRI to be disabled prior to action removal, per
+                 the disable subcommand to svcadm(1M).  refresh_fmri and
+                 restart_fmri cause the given FMRI to be refreshed or
+                 restarted after action installation or update, per the
+                 respective subcommands of svcadm(1M).  Finally,
+                 suspend_fmri causes the given FMRI to be disabled
+                 temporarily prior to the action install phase, and then
+                 enabled after the completion of that phase.
+
+
   Constraints and Freezing
      TBD
 
@@ -383,7 +429,8 @@ ATTRIBUTES
     |_____________________________|_____________________________|
 
 SEE ALSO
-     pkg(1), pkgsend(1), pkg.depotd(1M), pkginfo(4), attributes(5)
+     pkg(1), pkgsend(1), pkg.depotd(1M), svcadm(1M), pkginfo(4),
+     attributes(5)
 
 NOTES
      The image packaging system is an under-development feature.

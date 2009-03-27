@@ -106,9 +106,11 @@ ACTIONS
      order.  An action must always have a key attribute; however, some
      actions may require additional attributes to work correctly.
      Arbitrary attributes, beyond those defined for a given action, may
-     be included in the action .  Such attributes are expected to follow
+     be included in the action.  Such attributes are expected to follow
      defined conventions such that they carry appropriate meaning or
-     avoid collision with attributes from other action providers.
+     avoid collision with attributes from other action providers;
+     specific attributes that cause additional operations, known as
+     "actuators", are documented in pkg(5).
 
      depend type=<depend_type> fmri=<pkg_fmri> [ property_list ]
           Make this package version dependent on the give package FMRI.
