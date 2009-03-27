@@ -474,8 +474,16 @@ class InstallUpdate(progress.ProgressTracker):
                         self.__g_error_stage(msg)
                         return
                 except Exception, uex:
-                        if "args" in uex.__dict__ and uex.args and \
-                            (uex.args[0] == errno.EDQUOT or uex.args[0] == errno.ENOSPC):
+                        # We do want to prompt user to load BE admin if there is
+                        # not enough disk space. This error can either come as an
+                        # error within API exception, see bug #7642 or as a standalone
+                        # error, that is why we need to check for both situations.
+                        if ("error" in uex.__dict__ and isinstance(uex.error, OSError)
+                            and ("args" in uex.error.__dict__ and uex.error.args and \
+                            (uex.error.args[0] == errno.EDQUOT or 
+                            uex.error.args[0] == errno.ENOSPC))) \
+                            or ("args" in uex.__dict__ and uex.args and (uex.args[0] ==
+                            errno.EDQUOT or uex.args[0] == errno.ENOSPC)):
                                 gobject.idle_add(self.__prompt_to_load_beadm)
                                 gobject.idle_add(self.w_dialog.hide)
                                 self.stop_bouncing_progress = True
