@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.4.5 on Thu Mar 12 12:06:59 2009 -->
+<!--Generated with glade3 3.4.5 on Fri Mar 27 11:51:52 2009 -->
 <glade-interface>
   <widget class="GtkDialog" id="progressdialog">
     <property name="width_request">450</property>
@@ -436,15 +436,29 @@ Select the packages you want to update and click Install.</property>
             <property name="visible">True</property>
             <property name="layout_style">GTK_BUTTONBOX_END</property>
             <child>
+              <widget class="GtkButton" id="help_button">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="label" translatable="yes">gtk-help</property>
+                <property name="use_stock">True</property>
+                <property name="response_id">-11</property>
+                <signal name="clicked" handler="on_help_button_clicked"/>
+              </widget>
+            </child>
+            <child>
               <widget class="GtkButton" id="cancel_button">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <property name="label" translatable="yes">_Cancel</property>
-                <property name="use_underline">True</property>
-                <property name="response_id">0</property>
+                <property name="label" translatable="yes">gtk-cancel</property>
+                <property name="use_stock">True</property>
+                <property name="response_id">-2</property>
                 <signal name="clicked" handler="on_cancel_button_clicked"/>
               </widget>
+              <packing>
+                <property name="position">1</property>
+              </packing>
             </child>
             <child>
               <widget class="GtkButton" id="um_updateall_button">
@@ -453,11 +467,11 @@ Select the packages you want to update and click Install.</property>
                 <property name="receives_default">True</property>
                 <property name="label" translatable="yes">_Update All</property>
                 <property name="use_underline">True</property>
-                <property name="response_id">0</property>
+                <property name="response_id">-3</property>
                 <signal name="clicked" handler="on_um_updateall_button_clicked"/>
               </widget>
               <packing>
-                <property name="position">1</property>
+                <property name="position">2</property>
               </packing>
             </child>
             <child>
@@ -467,11 +481,25 @@ Select the packages you want to update and click Install.</property>
                 <property name="receives_default">True</property>
                 <property name="label" translatable="yes">_Install Updates</property>
                 <property name="use_underline">True</property>
-                <property name="response_id">0</property>
+                <property name="response_id">-4</property>
                 <signal name="clicked" handler="on_install_button_clicked"/>
               </widget>
               <packing>
-                <property name="position">2</property>
+                <property name="position">3</property>
+              </packing>
+            </child>
+            <child>
+              <widget class="GtkButton" id="close_button">
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="no_show_all">True</property>
+                <property name="label" translatable="yes">gtk-close</property>
+                <property name="use_stock">True</property>
+                <property name="response_id">-5</property>
+                <signal name="clicked" handler="on_cancel_button_clicked"/>
+              </widget>
+              <packing>
+                <property name="position">4</property>
               </packing>
             </child>
           </widget>

@@ -45,6 +45,12 @@ TYPE_AHEAD_DELAY = 600    # The last type in search box after which search is pe
 SEARCH_STR_FORMAT = "<::description:*%s* OR ::fmri:*%s*>"
 SEARCH_LIMIT = 100                        # Maximum number of results shown for
                                           # remote search
+MIN_APP_WIDTH = 750                       # Minimum application width
+MIN_APP_HEIGHT = 500                     # Minimum application height
+INITIAL_APP_WIDTH_PREFERENCES = "/apps/packagemanager/preferences/initial_app_width"
+INITIAL_APP_HEIGHT_PREFERENCES = "/apps/packagemanager/preferences/initial_app_height"
+INITIAL_APP_HPOS_PREFERENCES = "/apps/packagemanager/preferences/initial_app_hposition"
+INITIAL_APP_VPOS_PREFERENCES = "/apps/packagemanager/preferences/initial_app_vposition"
 INITIAL_SHOW_FILTER_PREFERENCES = "/apps/packagemanager/preferences/initial_show_filter"
 INITIAL_SECTION_PREFERENCES = "/apps/packagemanager/preferences/initial_section"
 SHOW_STARTPAGE_PREFERENCES = "/apps/packagemanager/preferences/show_startpage"
@@ -153,7 +159,16 @@ class PackageManager:
                 self.set_show_filter = 0
                 self.set_section = 0
                 self.current_search_option = 0
-                
+
+                self.initial_app_width = \
+                    self.client.get_int(INITIAL_APP_WIDTH_PREFERENCES)
+                self.initial_app_height = \
+                    self.client.get_int(INITIAL_APP_HEIGHT_PREFERENCES)
+                self.initial_app_hpos = \
+                    self.client.get_int(INITIAL_APP_HPOS_PREFERENCES)
+                self.initial_app_vpos = \
+                    self.client.get_int(INITIAL_APP_VPOS_PREFERENCES)
+
                 socket.setdefaulttimeout(
                     int(os.environ.get("PKG_CLIENT_TIMEOUT", "30"))) # in seconds
 
@@ -260,6 +275,11 @@ class PackageManager:
                 infobuffer.create_tag("bold", weight=pango.WEIGHT_BOLD)
                 
                 self.w_main_window = w_tree_main.get_widget("mainwindow")
+                self.w_main_hpaned = \
+                    w_tree_main.get_widget("main_hpaned")
+                self.w_main_vpaned = \
+                    w_tree_main.get_widget("main_vpaned")
+                   
                 self.w_application_treeview = \
                     w_tree_main.get_widget("applicationtreeview")
                 self.w_categories_treeview = w_tree_main.get_widget("categoriestreeview")
@@ -471,6 +491,14 @@ class PackageManager:
                 self.show_info_id = 0 
                 self.show_licenses_id = 0 
                 self.in_setup = True
+                if self.initial_app_width >= MIN_APP_WIDTH and \
+                        self.initial_app_height >= MIN_APP_HEIGHT:
+                        self.w_main_window.resize(self.initial_app_width, 
+                            self.initial_app_height)
+                if self.initial_app_hpos > 0:
+                        self.w_main_hpaned.set_position(self.initial_app_hpos)
+                if self.initial_app_vpos > 0:
+                        self.w_main_vpaned.set_position(self.initial_app_vpos)
                 self.w_main_window.show_all()
                 gdk_win = self.w_main_window.get_window()
                 self.gdk_window = gtk.gdk.Window(gdk_win, gtk.gdk.screen_width(), 
@@ -1674,7 +1702,7 @@ class PackageManager:
                 self.w_preferencesdialog.hide()
                 
         def __on_preferenceshelp_clicked(self, widget):
-                gui_misc.display_help(self.application_dir)
+                gui_misc.display_help(self.application_dir, "pm_win")
                 
         def __on_startpage_checkbutton_toggled(self, widget):
                 self.show_startpage = self.w_startpage_checkbutton.get_active()
@@ -2157,6 +2185,15 @@ class PackageManager:
                         self.__dump_datamodels(visible_repository, 
                                 self.application_list, self.category_list, 
                                 self.section_list)
+                
+                width, height = self.w_main_window.get_size()
+                hpos = self.w_main_hpaned.get_position()
+                vpos = self.w_main_vpaned.get_position()
+                self.client.set_int(INITIAL_APP_WIDTH_PREFERENCES, width)
+                self.client.set_int(INITIAL_APP_HEIGHT_PREFERENCES, height)
+                self.client.set_int(INITIAL_APP_HPOS_PREFERENCES, hpos)
+                self.client.set_int(INITIAL_APP_VPOS_PREFERENCES, vpos)
+                
                 self.w_main_window.hide()
                 while gtk.events_pending():
                         gtk.main_iteration(False)

@@ -265,7 +265,7 @@ class InstallUpdate(progress.ProgressTracker):
                         gobject.idle_add(self.parent.update_package_list, None)
 
         def __on_ua_help_button_clicked(self, widget):
-                gui_misc.display_help(self.parent.application_dir)
+                gui_misc.display_help(self.parent.application_dir, "update_all")
                 
         def __on_ua_cancel_button_clicked(self, widget):
                 self.w_ua_dialog.hide()
@@ -539,7 +539,7 @@ class InstallUpdate(progress.ProgressTracker):
                                 msg = _("Selected package(s) cannot be updated on "
                                 "their own.\nClick Update All to update all packages.")
                         elif self.action == enumerations.IMAGE_UPDATE:
-                                msg = _("Your system have been already updated.")
+                                msg = _("Your system has already been updated.")
                         self.__g_error_stage(msg)
 
         def __start_stage_one(self):

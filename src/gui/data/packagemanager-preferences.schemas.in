@@ -1,6 +1,64 @@
 <gconfschemafile>
   <schemalist>
     <schema>
+      <key>/schemas/apps/packagemanager/preferences/initial_app_width</key>
+      <applyto>/apps/packagemanager/preferences/initial_app_width</applyto>
+      <owner>packagemanager</owner>
+      <type>int</type>
+      <default>800</default>
+      <locale name="C">
+         <short>Initial application width</short>
+         <long>
+          An integer which specifies the initial width of the application
+          main window, overridden if there is not enough screen available.
+         </long>
+      </locale>
+    </schema>
+    <schema>
+      <key>/schemas/apps/packagemanager/preferences/initial_app_height</key>
+      <applyto>/apps/packagemanager/preferences/initial_app_height</applyto>
+      <owner>packagemanager</owner>
+      <type>int</type>
+      <default>600</default>
+      <locale name="C">
+         <short>Initial application height</short>
+         <long>
+          An integer which specifies the initial height of the application
+          main window, overridden if there is not enough screen available.
+         </long>
+      </locale>
+    </schema>
+    <schema>
+      <key>/schemas/apps/packagemanager/preferences/initial_app_hposition</key>
+      <applyto>/apps/packagemanager/preferences/initial_app_hposition</applyto>
+      <owner>packagemanager</owner>
+      <type>int</type>
+      <default>200</default>
+      <locale name="C">
+         <short>Initial application horizonatal divider position</short>
+         <long>
+          An integer which specifies the initial horizonatal divider position
+          of the application, which separates the category panel from the
+          list panel.
+         </long>
+      </locale>
+    </schema>
+    <schema>
+      <key>/schemas/apps/packagemanager/preferences/initial_app_vposition</key>
+      <applyto>/apps/packagemanager/preferences/initial_app_vposition</applyto>
+      <owner>packagemanager</owner>
+      <type>int</type>
+      <default>423</default>
+      <locale name="C">
+         <short>Initial application vertical divider position</short>
+         <long>
+          An integer which specifies the initial vertical divider position
+          of the application, which separates the details panel from the
+          list panel.
+         </long>
+      </locale>
+    </schema>
+    <schema>
       <key>/schemas/apps/packagemanager/preferences/initial_section</key>
       <applyto>/apps/packagemanager/preferences/initial_section</applyto>
       <owner>packagemanager</owner>

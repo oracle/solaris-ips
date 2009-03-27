@@ -239,7 +239,7 @@ class Beadmin:
 
         def __on_help_bebutton_clicked(self, widget):
                 if self.parent != None:
-                        gui_misc.display_help(self.parent.application_dir)
+                        gui_misc.display_help(self.parent.application_dir, "manage_be")
                 else:
                         gui_misc.display_help()
                 

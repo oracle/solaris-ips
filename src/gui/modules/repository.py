@@ -837,7 +837,7 @@ class Repository:
                 self.__on_repositoryclose_clicked(widget)
 
         def __on_repositoryhelp_clicked(self, widget):
-                gui_misc.display_help(self.parent.application_dir)
+                gui_misc.display_help(self.parent.application_dir, "manage_repo")
 
         def __on_repositoryclose_clicked(self, widget):
                 # if the number is greater then 1 it means that we did something

@@ -321,7 +321,8 @@ class Updatemanager:
                 infobuffer = self.w_um_textview.get_buffer()
                 infobuffer.create_tag("bold", weight=pango.WEIGHT_BOLD)
                 self.w_select_checkbox = w_xmltree_um.get_widget("selectall_checkbutton")
-                self.w_delete_button = w_xmltree_um.get_widget("cancel_button")
+                self.w_um_cancel_button = w_xmltree_um.get_widget("cancel_button")
+                self.w_um_close_button = w_xmltree_um.get_widget("close_button")
                 
                 self.details_cache = {}
                 
@@ -332,6 +333,10 @@ class Updatemanager:
                                     self.__on_um_dialog_close,
                                 "on_cancel_button_clicked": \
                                     self.__on_cancel_button_clicked,
+                                "on_close_button_clicked": \
+                                    self.__on_cancel_button_clicked,
+                                "on_help_button_clicked": \
+                                    self.__on_help_button_clicked,
                                 "on_install_button_clicked": \
                                     self.__on_install_button_clicked,
                                 "on_um_updateall_button_clicked": \
@@ -734,7 +739,9 @@ class Updatemanager:
                 self.w_um_treeview.hide()
                 self.w_um_expander.hide()
                 self.w_um_install_button.set_sensitive(False)
-                self.w_um_updateall_button.set_sensitive(False)
+                self.w_um_updateall_button.hide()
+                self.w_um_cancel_button.hide()
+                self.w_um_close_button.show()
                 self.w_select_checkbox.set_active(False)
                 self.w_select_checkbox.set_sensitive(False)
                 self.w_um_dialog.present()
@@ -895,6 +902,9 @@ class Updatemanager:
 
         def __on_cancel_button_clicked(self, widget):
                 self.__exit_app()
+                
+        def __on_help_button_clicked(self, widget):
+                gui_misc.display_help(self.application_dir, "um_info")
 
         def __exit_app(self, be_name = None):
                 self.cancelled = True

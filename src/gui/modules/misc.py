@@ -71,7 +71,7 @@ def display_help(application_dir="", id=None):
                             '/usr/share/package-manager/help' }
                 gnome.program_init('package-manager', '0.1', properties=props)
                 if id != None:
-                        gnome.help_display_with_doc_id('package-manager', link_id=id)
+                        gnome.help_display('package-manager', link_id=id)
                 else:
                         gnome.help_display('package-manager')
                         
