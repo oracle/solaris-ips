@@ -16,7 +16,7 @@ SYNOPSIS
      /usr/bin/pkg contents [-Hmr] [-o attribute ...] [-s sort_key]
          [-t action_type ... ] [pkg_fmri_pattern ...]
      /usr/bin/pkg list [-aHsuvf] [pkg_fmri_pattern ...]
-     /usr/bin/pkg search [-lrI] [-s server] query
+     /usr/bin/pkg search [-alprI] [-s server] query
 
      /usr/bin/pkg refresh [--full] [publisher ...]
 
@@ -217,21 +217,29 @@ SUBCOMMANDS
                                 the package containing the action, such
                                 as "opensolaris.org"
 
-     search [-lrI] [-s server] query
+     search [-alprI] [-s server] query
           Search for matches to the query, and display the results.  
           Which tokens are indexed are action-dependent, but may
           include content hashes and pathnames.
 
+          By default, and with -a, perform the search and display information 
+          about the matching actions.  
+
+          With -l, search the image's installed packages.
+
+          With -p, perform the search and display the packages  which contain 
+          at least one action which matched the query.  This is equivalent to 
+          enclosing the entire query with '<>'.  (For a description of the 
+          '<>' operator, please see below.)
+
           By default, and with -r, search the repositories corresponding 
           to the image's publishers.
 
-          With -l, search the image's installed packages.
+	  With -I, use a case-sensitive search.
 
           With -s, search the identified server, which is expected to be
           a pkg(5) repository, at the given URI.  This may be specified
           multiple times.
-
-	  With -I, use a case-sensitive search.
 
           Both -l and -r (or -s) may be specified together, in which case both
           local and remote searches will be performed.

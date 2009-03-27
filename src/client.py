@@ -129,7 +129,7 @@ Basic subcommands:
 
 Advanced subcommands:
         pkg info [-lr] [--license] [pkg_fmri_pattern ...]
-        pkg search [-lrI] [-s server] query
+        pkg search [-alprI] [-s server] query
         pkg verify [-Hqv] [pkg_fmri_pattern ...]
         pkg fix [pkg_fmri_pattern ...]
         pkg contents [-Hmr] [-o attribute ...] [-s sort_key]
