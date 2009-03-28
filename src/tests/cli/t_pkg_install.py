@@ -98,7 +98,7 @@ class TestPkgInstallBasics(testutils.SingleDepotTestCase):
             open bar@1.2,5.11-0
             add depend type=require fmri=pkg:/foo@1.0
             add dir mode=0755 owner=root group=bin path=/bin
-            add file /tmp/cat mode=0555 owner=root group=bin path=/bin/cat 
+            add file /tmp/cat mode=0555 owner=root group=bin path=/bin/cat
             close """
 
         baz10 = """
@@ -114,7 +114,7 @@ class TestPkgInstallBasics(testutils.SingleDepotTestCase):
             add dir mode=0755 owner=root group=bin path=/bin
             add file /tmp/cat mode=0555 owner=root group=bin path=/bin/cat
             close """
-        
+
         xdeep10 = """
             open xdeep@1.0,5.11-0
             add depend type=require fmri=pkg:/xbar@1.0
@@ -335,17 +335,17 @@ class TestPkgInstallBasics(testutils.SingleDepotTestCase):
 
         def test_bug_1338(self):
                 """ Add bar@1.1, dependent on foo@1.2, install bar@1.1. """
-                
+
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.bar11)
                 self.image_create(durl)
 
                 self.pkg("install bar@1.1", exit = 1)
-                
+
         def test_bug_1338_2(self):
                 """ Add bar@1.1, dependent on foo@1.2, and baz@1.0, dependent
                     on foo@1.0, install baz@1.0 and bar@1.1. """
-                
+
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.bar11)
                 self.pkgsend_bulk(durl, self.baz10)
@@ -356,7 +356,7 @@ class TestPkgInstallBasics(testutils.SingleDepotTestCase):
         def test_bug_1338_3(self):
                 """ Add xdeep@1.0, xbar@1.0. xDeep@1.0 depends on xbar@1.0 which
                     depends on xfoo@1.0, install xdeep@1.0. """
-                
+
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.xbar10)
                 self.pkgsend_bulk(durl, self.xdeep10)
@@ -367,7 +367,7 @@ class TestPkgInstallBasics(testutils.SingleDepotTestCase):
         def test_bug_1338_4(self):
                 """ Add ydeep@1.0. yDeep@1.0 depends on ybar@1.0 which depends
                 on xfoo@1.0, install ydeep@1.0. """
-                
+
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.ydeep10)
                 self.image_create(durl)
@@ -390,7 +390,7 @@ class TestPkgInstallBasics(testutils.SingleDepotTestCase):
                 self.pkg("install foo@1.2 foo@1.1")
                 self.pkg("list foo@1.1", exit = 1)
                 self.pkg("list foo@1.2")
-                
+
 
         def test_install_matching(self):
                 """ Try to [un]install packages matching a pattern """
@@ -627,7 +627,7 @@ class TestPkgInstallCircularDependencies(testutils.SingleDepotTestCase):
                 self.pkg("list")
                 self.pkg("verify -v")
 
-                        
+
 class TestPkgInstallUpgrade(testutils.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
         persistent_depot = True
@@ -733,7 +733,7 @@ class TestPkgInstallUpgrade(testutils.SingleDepotTestCase):
             add license /tmp/copyright3 license=copyright
             add file /tmp/bronzeA2 mode=0444 owner=root group=bin path=/A1/B2/C3/D4/E5/F6/bronzeA2
             add depend fmri=pkg:/amber@2.0 type=require
-            close 
+            close
         """
 
         bronze30 = """
@@ -749,7 +749,7 @@ class TestPkgInstallUpgrade(testutils.SingleDepotTestCase):
             add license /tmp/copyright3 license=copyright
             add file /tmp/bronzeA2 mode=0444 owner=root group=bin path=/A1/B2/C3/D4/E5/F6/bronzeA2
             add depend fmri=pkg:/amber@2.0 type=require
-            close 
+            close
         """
 
 
@@ -827,7 +827,7 @@ class TestPkgInstallUpgrade(testutils.SingleDepotTestCase):
                         f.write(p)
                         f.close()
                         self.debug("wrote %s" % p)
-                
+
         def tearDown(self):
                 testutils.SingleDepotTestCase.tearDown(self)
                 for p in self.misc_files:
@@ -881,7 +881,7 @@ class TestPkgInstallUpgrade(testutils.SingleDepotTestCase):
                 self.pkg("list amber@2.0 bronze@2.0")
                 self.pkg("verify -v")
                 # make sure old implicit directories for bronzeA1 were removed
-                self.assert_(not os.path.isdir(os.path.join(self.get_img_path(), "A")))                
+                self.assert_(not os.path.isdir(os.path.join(self.get_img_path(), "A")))
                 # Remove packages
                 self.pkg("uninstall amber bronze")
                 self.pkg("verify -v")
@@ -895,7 +895,6 @@ class TestPkgInstallUpgrade(testutils.SingleDepotTestCase):
                         2) install package w/ dependencies that violate incorps
                         3) install incorp that violates existing incorp
                         4) install incorp that would force package backwards
-                        5) 
                         """
 
                 # Send all pkgs
@@ -947,14 +946,14 @@ class TestPkgInstallUpgrade(testutils.SingleDepotTestCase):
                 self.pkgsend_bulk(durl, self.gold10)
                 self.pkgsend_bulk(durl, self.gold20)
                 self.pkgsend_bulk(durl, self.gold30)
-              
+
                 self.image_create(durl)
 
                 # first test - move an editable file between packages
-                
+
                 self.pkg("install gold@1.0 silver@1.0")
                 self.pkg("verify -v")
-                
+
                 # modify config file
 
                 str = "this file has been modified 1"
@@ -968,7 +967,7 @@ class TestPkgInstallUpgrade(testutils.SingleDepotTestCase):
 
                 self.pkg("install gold@3.0 silver@2.0")
                 self.pkg("verify -v")
-                
+
                 # make sure /etc/config1 contains still correct string
                 self.file_contains(file_path, str)
 
@@ -978,12 +977,12 @@ class TestPkgInstallUpgrade(testutils.SingleDepotTestCase):
 
                 self.pkg("install gold@1.0")
                 self.pkg("verify -v")
-                
+
                 # modify config file
-                str = "this file has been modified test 2"                
+                str = "this file has been modified test 2"
                 file_path = "etc/config1"
                 self.file_append(file_path, str)
-                        
+
                 self.pkg("install gold@2.0")
                 self.pkg("verify -v")
 
@@ -996,7 +995,7 @@ class TestPkgInstallUpgrade(testutils.SingleDepotTestCase):
                 self.pkg("verify -v")
 
                 # test movement in filesystem and across packages
-                
+
                 self.pkg("install gold@1.0 silver@1.0")
                 self.pkg("verify -v")
 
@@ -1016,19 +1015,19 @@ class TestPkgInstallUpgrade(testutils.SingleDepotTestCase):
 
         def test_upgrade4(self):
                 """ test to make sure hardlinks are correctly restored when file they point to is updated """
-       
+
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.iron10)
                 self.pkgsend_bulk(durl, self.iron20)
-              
+
                 self.image_create(durl)
-                
+
                 self.pkg("install iron@1.0")
                 self.pkg("verify -v")
-           
+
                 self.pkg("install iron@2.0")
                 self.pkg("verify -v")
-           
+
 
         def file_append(self, path, string):
                 file_path = os.path.join(self.get_img_path(), path)
@@ -1085,7 +1084,7 @@ adm:NP:6445::::::
 """
 
         cat_data = " "
-        
+
         foo10 = """
             open foo@1.0,5.11-0
             close """
@@ -1146,9 +1145,9 @@ adm:NP:6445::::::
             close """
 
         empty_data = ""
-        
+
         misc_files = [ "empty", "ftpusers", "group", "passwd", "shadow", "cat" ]
- 
+
         testdata_dir = None
 
         pkg_name_valid_chars = {
@@ -1170,12 +1169,12 @@ adm:NP:6445::::::
                     open only_file@1.0,5.11-0
                     add file """ + self.testdata_dir + """/cat mode=0555 owner=root group=bin path=/cat
                     close """
-                    
+
                 self.only_license10 = """
                     open only_license@1.0,5.11-0
                     add license """ + self.testdata_dir + """/cat license=copyright
                     close """
-                
+
                 self.basics0 = """
                     open basics@1.0,5.11-0
                     add file """ + self.testdata_dir + """/passwd mode=0644 owner=root group=sys path=etc/passwd preserve=true
@@ -1292,7 +1291,7 @@ adm:NP:6445::::::
                 testutils.SingleDepotTestCase.tearDown(self)
                 if self.testdata_dir:
                         shutil.rmtree(self.testdata_dir)
-        
+
         def test_basics_0(self):
                 """Send basic infrastructure, install and uninstall."""
 
@@ -1584,7 +1583,7 @@ adm:NP:6445::::::
                 # driver actions are not valid except on OpenSolaris
                 if portable.util.get_canonical_os_name() == 'sunos':
                         pkg_list += [self.only_driver10]
-                
+
                 for p in pkg_list:
                         self.pkgsend_bulk(durl, p)
                 self.pkgsend_bulk(durl, self.devicebase)
@@ -1736,7 +1735,7 @@ class TestDependencies(testutils.SingleDepotTestCase):
 
                 self.pkg("uninstall pkg2")
                 self.pkg("list pkg2", exit=1)
-                # this should install pkg2@1.1 because of the optional 
+                # this should install pkg2@1.1 because of the optional
                 # dependency in pkg1
                 self.pkg("install pkg2@1.0")
                 self.pkg("list pkg2@1.1")
@@ -1753,7 +1752,7 @@ class TestDependencies(testutils.SingleDepotTestCase):
                 # policy setting
                 self.pkg("list pkg2@1.1")
 
-class TestTwoDepots(testutils.ManyDepotTestCase):
+class TestMultipleDepots(testutils.ManyDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
         persistent_depot = True
 
@@ -1816,29 +1815,23 @@ class TestTwoDepots(testutils.ManyDepotTestCase):
 
         def setUp(self):
                 """ Start two depots.
-                    depot 1 gets foo and moo, depot 2 gets foo and bar
+                    depot 1 gets foo and moo, depot 2 gets foo and bar,
+                    depot 3 is empty
                     depot1 is mapped to publisher test1 (preferred)
-                    depot2 is mapped to publisher test2 """
+                    depot2 is mapped to publisher test2
+                    depot3 is not mapped to a publisher"""
 
-                testutils.ManyDepotTestCase.setUp(self, 2)
+                testutils.ManyDepotTestCase.setUp(self, 3)
 
                 durl1 = self.dcs[1].get_depot_url()
-                self.pkgsend_bulk(durl1, self.foo10)
-                self.pkgsend_bulk(durl1, self.moo10)
-                self.pkgsend_bulk(durl1, self.quux10)
-                self.pkgsend_bulk(durl1, self.optional10)
-                self.pkgsend_bulk(durl1, self.upgrade_p10)
-                self.pkgsend_bulk(durl1, self.upgrade_np11)
-                self.pkgsend_bulk(durl1, self.incorp_p10)
-                self.pkgsend_bulk(durl1, self.incorp_p11)
-                self.pkgsend_bulk(durl1, self.incorp_np10)
-                self.pkgsend_bulk(durl1, self.incorp_np11)
+                self.pkgsend_bulk(durl1, self.foo10 + self.moo10 + \
+                    self.quux10 + self.optional10 + self.upgrade_p10 + \
+                    self.upgrade_np11 + self.incorp_p10 + self.incorp_p11 + \
+                    self.incorp_np10 + self.incorp_np11)
 
                 durl2 = self.dcs[2].get_depot_url()
-                self.pkgsend_bulk(durl2, self.foo10)
-                self.pkgsend_bulk(durl2, self.bar10)
-                self.pkgsend_bulk(durl2, self.upgrade_p11)
-                self.pkgsend_bulk(durl2, self.upgrade_np10)
+                self.pkgsend_bulk(durl2, self.foo10 + self.bar10 + \
+                    self.upgrade_p11 + self.upgrade_np10)
 
                 # Create image and hence primary publisher
                 self.image_create(durl1, prefix="test1")
@@ -1941,15 +1934,53 @@ class TestTwoDepots(testutils.ManyDepotTestCase):
         def test_yyy_install_after_publisher_removal(self):
                 """Install a package from a publisher that has an optional
                 dependency; then change the preferred publisher and remove the
-                original publisher and attempt to uninstall the package."""
+                original publisher and then verify that installing the package
+                again succeeds since it is essentially a no-op."""
                 self.pkg("install quux@1.0")
                 self.pkg("set-publisher -P test2")
                 self.pkg("unset-publisher test1")
-                # 
-                # 
+
+                # Attempting to install an already installed package should
+                # be a no-op even if the corresponding publisher no longer
+                # exists.
                 self.pkg("install quux@1.0")
+
                 # Image update should work if we don't see the optional dependency
-                self.pkg("image-update") 
+                self.pkg("image-update")
+
+                # Add back the installed package's publisher, but using a
+                # a repository with an empty catalog.  After that, attempt to
+                # install the package again, which should succeed even though
+                # the fmri is no longer in the publisher's catalog.
+                self.pkg("set-publisher -O %s test1" % \
+                    self.dcs[3].get_depot_url())
+                self.pkg("install quux@1.0")
+                self.pkg("unset-publisher test1")
+
+                # Add a new publisher, using the installed package publisher's
+                # repository and add back the installed package's publisher, but
+                # using a repository with an empty catalog.  After that, attempt
+                # to install the package again, which should succeed even though
+                # the package's installed publisher is known, but doesn't have
+                # the package's fmri in its catalog, but the package's fmri is
+                # in a different publisher's catalog.
+                self.pkg("set-publisher -O %s test3" % \
+                    self.dcs[1].get_depot_url())
+                self.pkg("set-publisher -O %s test1" % \
+                    self.dcs[3].get_depot_url())
+                self.pkg("install quux@1.0")
+                self.pkg("unset-publisher test1")
+                self.pkg("unset-publisher test3")
+
+                # Add a new publisher, using the installed package publisher's
+                # repository.  After that, attempt to install the package again,
+                # which should succeed even though the fmri is only in a
+                # different publisher's catalog.
+                self.pkg("set-publisher -O %s test3" % \
+                    self.dcs[1].get_depot_url())
+                self.pkg("install quux@1.0")
+                self.pkg("unset-publisher test3")
+
                 # Change the image metadata back to where it was, in preparation
                 # for subsequent tests.
                 self.pkg("set-publisher -O %s -P test1" % \
@@ -1965,13 +1996,59 @@ class TestTwoDepots(testutils.ManyDepotTestCase):
                 # for the next test.
                 self.pkg("set-publisher -P test1")
 
-        def test_zzz_uninstall_after_preferred_publisher_removal(self):
+        def test_zzz_uninstall_after_publisher_removal(self):
                 """Install a package from the preferred publisher, remove the
-                preferred publisher, and attempt to remove the package."""
+                preferred publisher, and then evaluate whether an uninstall
+                would succeed regardless of whether its publisher still exists
+                or another publisher has the same fmri in its catalog."""
                 self.pkg("install foo@1.0")
                 self.pkg("set-publisher -P test2")
                 self.pkg("unset-publisher test1")
-                self.pkg("uninstall foo")
+
+                # Attempting to uninstall should work even if the corresponding
+                # publisher no longer exists.
+                self.pkg("uninstall -nv foo")
+
+                # Add back the installed package's publisher, but using a
+                # a repository with an empty catalog.  After that, attempt to
+                # uninstall the package again, which should succeed even though
+                # the fmri is no longer in the publisher's catalog.
+                self.pkg("set-publisher -O %s test1" % \
+                    self.dcs[3].get_depot_url())
+                self.pkg("uninstall -nv foo")
+                self.pkg("unset-publisher test1")
+
+                # Add a new publisher, using the installed package publisher's
+                # repository; then add back the installed package's publisher
+                # using a repository with an empty catalog.  After that, attempt
+                # to uninstall the package again, which should succeed even
+                # though the package's installed publisher is known, but doesn't
+                # have the package's fmri in its catalog, but the package's fmri
+                # is in a different publisher's catalog.
+                self.pkg("set-publisher -O %s test3" % \
+                    self.dcs[1].get_depot_url())
+                self.pkg("set-publisher -O %s test1" % \
+                    self.dcs[3].get_depot_url())
+                self.pkg("uninstall -nv foo")
+                self.pkg("unset-publisher test1")
+                self.pkg("unset-publisher test3")
+
+                # Add a new publisher, using the installed package publisher's
+                # repository.  After that, attempt to uninstall the package
+                # again, which should succeed even though the fmri is only in a
+                # different publisher's catalog.
+                self.pkg("set-publisher -O %s test3" % \
+                    self.dcs[1].get_depot_url())
+                self.pkg("uninstall -nv foo")
+                self.pkg("unset-publisher test3")
+
+                # Finally, actually remove the package.
+                self.pkg("uninstall -v foo")
+
+                # Change the image metadata back to where it was, in preparation
+                # for subsequent tests.
+                self.pkg("set-publisher -O %s -P test1" % \
+                    self.dcs[1].get_depot_url())
 
 
 class TestImageCreateCorruptImage(testutils.SingleDepotTestCaseCorruptImage):
@@ -2000,7 +2077,7 @@ class TestImageCreateCorruptImage(testutils.SingleDepotTestCaseCorruptImage):
         misc_files = [ "/tmp/libc.so.1" ]
 
         PREFIX = "unset PKG_IMAGE; cd %s"
-        
+
         def setUp(self):
                 testutils.SingleDepotTestCaseCorruptImage.setUp(self)
                 for p in self.misc_files:
@@ -2017,9 +2094,9 @@ class TestImageCreateCorruptImage(testutils.SingleDepotTestCaseCorruptImage):
                         os.remove(p)
 
         def pkg(self, command, exit=0, comment=""):
-                testutils.SingleDepotTestCaseCorruptImage.pkg(self, command, 
+                testutils.SingleDepotTestCaseCorruptImage.pkg(self, command,
                     exit=exit, comment=comment, prefix=self.PREFIX % self.dir)
-                        
+
         # For each test:
         # A good image is created at $basedir/image
         # A corrupted image is created at $basedir/image/bad (called bad_dir

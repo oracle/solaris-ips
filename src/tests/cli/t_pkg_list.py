@@ -64,7 +64,7 @@ class TestPkgList(testutils.ManyDepotTestCase):
             close """
 
         def setUp(self):
-                testutils.ManyDepotTestCase.setUp(self, 2)
+                testutils.ManyDepotTestCase.setUp(self, 3)
 
                 durl1 = self.dcs[1].get_depot_url()
                 self.pkgsend_bulk(durl1, self.foo1)
@@ -86,6 +86,9 @@ class TestPkgList(testutils.ManyDepotTestCase):
                 shutil.rmtree(d2dir)
                 shutil.copytree(d1dir, d2dir)
                 self.dcs[2].start()
+
+                # The third repository should remain empty and not be
+                # published to.
 
                 self.image_create(durl1, prefix = "test1")
 
@@ -229,6 +232,65 @@ class TestPkgList(testutils.ManyDepotTestCase):
                 output = self.reduceSpaces(self.output)
                 expected = self.reduceSpaces(expected)
                 self.assertEqualDiff(expected, output)
+
+        def test_list_8_after_pub_update_removal(self):
+                """Install a package from a publisher which is also offered by
+                another publisher.  Then alter or remove the installed package's
+                publisher, and verify that list still shows the package
+                as installed."""
+
+                durl1 = self.dcs[1].get_depot_url()
+                durl2 = self.dcs[2].get_depot_url()
+                durl3 = self.dcs[3].get_depot_url()
+
+                # Install a package from the second publisher.
+                self.pkg("install pkg://test2/foo@1.0")
+
+                # Change the origin of the publisher of an installed package to
+                # that of an empty repository.  The package should still be
+                # shown as known for test1 and installed for test2.
+                self.pkg("set-publisher -O %s test2" % durl3)
+                self.pkg("list -aH foo@1.0")
+                expected = \
+                    "foo 1.0-0 known u---\n" + \
+                    "foo (test2) 1.0-0 installed u---\n"
+                output = self.reduceSpaces(self.output)
+                self.assertEqualDiff(expected, output)
+                self.pkg("set-publisher -O %s test2" % durl2)
+
+                # Remove the publisher of an installed package, then add the
+                # publisher back, but with an empty repository.  The package
+                # should still be shown as known for test1 and installed
+                # for test2.
+                self.pkg("unset-publisher test2")
+                self.pkg("set-publisher -O %s test2" % durl3)
+                self.pkg("list -aH foo@1.0")
+                expected = \
+                    "foo 1.0-0 known u---\n" + \
+                    "foo (test2) 1.0-0 installed u---\n"
+                output = self.reduceSpaces(self.output)
+                self.assertEqualDiff(expected, output)
+                self.pkg("set-publisher -O %s test2" % durl2)
+
+                # With the publisher of an installed package unknown, add a new
+                # publisher using the repository the package was originally
+                # installed from.  The should be shown as known for test1,
+                # installed for test2, and known for test3.
+                self.pkg("unset-publisher test2")
+                self.pkg("set-publisher -O %s test3" % durl2)
+                self.pkg("list -aH foo@1.0")
+                expected = \
+                    "foo 1.0-0 known u---\n" + \
+                    "foo (test2) 1.0-0 installed u---\n" + \
+                    "foo (test3) 1.0-0 known u---\n"
+                output = self.reduceSpaces(self.output)
+                self.assertEqualDiff(expected, output)
+                self.pkg("unset-publisher test3")
+                self.pkg("set-publisher -O %s test2" % durl2)
+
+                # Uninstall the package so any remaining tests won't be
+                # impacted.
+                self.pkg("uninstall pkg://test2/foo@1.0")
 
         def test_list_matching(self):
                 """List all versions of package foo, regardless of publisher."""

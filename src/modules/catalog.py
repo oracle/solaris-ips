@@ -273,20 +273,31 @@ class Catalog(object):
                 return ts
 
         @staticmethod
-        def cache_fmri(d, pfmri, pub):
+        def cache_fmri(d, pfmri, pub, known=True):
                 """Store the fmri in a data structure 'd' for fast lookup.
 
                 'd' is a dict that maps each package name to another dictionary,
-                itself mapping each version string to a tuple of the fmri object
-                and a list of publishers from which the package version is
-                available, as well as a special key, "versions", which maps to a
-                list of version objects, kept in sorted order.
+                itself mapping:
+                
+                        * each version string, which maps to a tuple of:
+                          -- the fmri object
+                          -- a dict of publisher prefixes with each value
+                             indicating catalog presence
 
+                        * "versions", which maps to a list of version objects,
+                          kept in sorted order
+
+                The structure is as follows:
                     pkg_name1: {
-                        "versions": [ <version1>, <version2>, <version3>, ... ],
-                        "version1": ( <fmri1>, [ "pub1", "pub2", ... ],
-                        "version2": ( <fmri2>, [ "pub1", "pub2", ... ],
-                        "version3": ( <fmri3>, [ "pub1", "pub2", ... ],
+                        "versions": [<version1>, <version2>, ... ],
+                        "version1": (
+                            <fmri1>,
+                            { "pub1": known, "pub2": known, ... },
+                        ),
+                        "version2": (
+                            <fmri2>,
+                            { "pub1": known, "pub2": known, ... },
+                        ),
                         ...
                     },
                     pkg_name2: {
@@ -295,7 +306,7 @@ class Catalog(object):
                     ...
 
                 (where names in quotes are strings, names in angle brackets are
-                objects, and the rest of the syntax is Pythonic.
+                objects, and the rest of the syntax is Pythonic).
 
                 The fmri is expected not to have an embedded publisher.  If it
                 does, it will be ignored."""
@@ -305,15 +316,16 @@ class Catalog(object):
                         # This is the simplest representation of the cache data
                         # structure.
                         d[pfmri.pkg_name] = {
-                            "versions": [ pfmri.version ],
-                            pversion: (pfmri, [ pub ])
+                            "versions": [pfmri.version],
+                            pversion: (pfmri, { pub: known })
                         }
+
                 elif pversion not in d[pfmri.pkg_name]:
-                        d[pfmri.pkg_name][pversion] = (pfmri, [ pub ])
-                        bisect.insort(
-                            d[pfmri.pkg_name]["versions"], pfmri.version)
+                        d[pfmri.pkg_name][pversion] = (pfmri, { pub: known })
+                        bisect.insort(d[pfmri.pkg_name]["versions"],
+                            pfmri.version)
                 else:
-                        d[pfmri.pkg_name][pversion][1].append(pub)
+                        d[pfmri.pkg_name][pversion][1][pub] = known
 
         @staticmethod
         def read_catalog(catalog, path, pub=None):

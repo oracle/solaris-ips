@@ -135,27 +135,26 @@ class PlanCreationException(ApiException):
                 res = []
                 if self.unfound_fmris:
                         s = _("""\
-pkg: The following pattern(s) did not match any packages in the current
-catalog. Try relaxing the pattern, refreshing and/or examining the catalogs""")
+The following pattern(s) did not match any packages in the current catalog.
+Try relaxing the pattern, refreshing and/or examining the catalogs:""")
                         res += [s]
                         res += ["\t%s" % p for p in self.unfound_fmris]
 
                 if self.multiple_matches:
-                        s = _("pkg: '%s' matches multiple packages")
+                        s = _("'%s' matches multiple packages")
                         for p, lst in self.multiple_matches:
                                 res.append(s % p)
                                 for pfmri in lst:
                                         res.append("\t%s" % pfmri)
 
-                s = _("pkg: '%s' matches no installed packages")
+                s = _("'%s' matches no installed packages")
                 res += [ s % p for p in self.missing_matches ]
 
-                s = _("pkg: '%s' is an illegal fmri")
+                s = _("'%s' is an illegal fmri")
                 res += [ s % p for p in self.illegal ]
 
                 if self.constraint_violations:
-                        s = _("pkg: the following package(s) violated "
-                            "constraints:")
+                        s = _("The following package(s) violated constraints:")
                         res += [s] 
                         res += ["\t%s" % p for p in self.constraint_violations]
 

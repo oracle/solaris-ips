@@ -26,7 +26,6 @@
 #
 
 import cPickle
-import copy
 import errno
 import os
 import platform
@@ -61,7 +60,6 @@ from pkg.client.imagetypes import IMG_USER, IMG_ENTIRE
 from pkg.misc import CfgCacheError
 from pkg.misc import EmptyI, EmptyDict
 from pkg.misc import msg, emsg
-from pkg.misc import versioned_urlopen
 from pkg.misc import TransportException
 from pkg.misc import TransportFailures
 
@@ -363,7 +361,7 @@ class Image(object):
                 # If we reached this point, the refresh succeeded.  Add the
                 # publisher to the cfg_cache and save the config.
                 self.cfg_cache.publishers[prefix] = newpub
-                self.cfg_cache.preferred_publisher = prefix 
+                self.cfg_cache.preferred_publisher = prefix
 
                 self.cfg_cache.variants["variant.arch"] = \
                     variants.get("variant.arch", platform.processor())
@@ -600,8 +598,7 @@ class Image(object):
                 return self.cfg_cache.publishers
 
         def get_publisher(self, prefix=None, alias=None, origin=None):
-                publishers = [p for p in self.get_publishers().values()]
-                for pub in publishers:
+                for pub in self.get_publishers().values():
                         if prefix and prefix == pub.prefix:
                                 return pub
                         elif alias and alias == pub.alias:
@@ -614,7 +611,7 @@ class Image(object):
         def get_publisher_last_update_time(self, prefix, cached=True):
                 """Returns a datetime object (or 'None') representing the last
                 time the catalog for a publisher was updated.
-                
+
                 If the catalog has already been loaded, this reflects the
                 in-memory state of the catalog.
 
@@ -630,7 +627,8 @@ class Image(object):
                         else:
                                 update_dt = cat.last_modified()
                                 if update_dt:
-                                        update_dt = catalog.ts_to_datetime(update_dt)
+                                        update_dt = catalog.ts_to_datetime(
+                                            update_dt)
                                 return update_dt
 
                 # Temporarily retrieve the catalog object, but don't
@@ -778,19 +776,21 @@ class Image(object):
 
                                 # What is the client currently processing?
                                 targets = self.state.get_targets()
-                                
+
                                 intent = None
                                 for entry in targets:
                                         target, reason = entry
 
                                         # Ignore the publisher for comparison.
-                                        np_target = target.get_fmri(anarchy=True)
+                                        np_target = target.get_fmri(
+                                            anarchy=True)
                                         np_fmri = fmri.get_fmri(anarchy=True)
                                         if np_target == np_fmri:
                                                 intent = reason
 
-                                # If no intent could be found, assume INTENT_INFO.
-                                self.__set_touched_manifest(fmri, 
+                                # If no intent could be found, assume
+                                # INTENT_INFO.
+                                self.__set_touched_manifest(fmri,
                                     max(intent, imagestate.INTENT_INFO))
 
                                 return m
@@ -901,7 +901,7 @@ class Image(object):
                 object.... grab from server if needed"""
 
                 try:
-                        return manifest.CachedManifest(fmri, excludes)                        
+                        return manifest.CachedManifest(fmri, excludes)
                 except KeyError:
                         return self.__fetch_manifest_with_retries(fmri,
                             excludes)
@@ -913,7 +913,7 @@ class Image(object):
 
                 # Normally elide other arch variants
                 if all_arch:
-                        add_to_cache=False
+                        add_to_cache = False
                         v = EmptyI
                 else:
                         arch = {"variant.arch": self.get_arch()}
@@ -946,7 +946,6 @@ class Image(object):
                 """Find the pkg's installed file named by filepath.
                 Return the publisher that installed this package."""
 
-                read_only = True
                 f = file(filepath)
                 try:
                         flines = f.readlines()
@@ -977,9 +976,7 @@ class Image(object):
                                 f.writelines(["VERSION_1\n", newpub, "\n"])
                                 f.close()
                         except IOError, e:
-                                if e.errno == errno.EACCES or e.errno == errno.EROFS:
-                                        pass
-                                else:
+                                if e.errno not in (errno.EACCES, errno.EROFS):
                                         raise
                 assert pub
 
@@ -1129,7 +1126,6 @@ class Image(object):
         def get_version_installed(self, pfmri):
                 """Returns an fmri of the installed package matching the
                 package stem of the given fmri or None if no match is found."""
-
                 for f in self.gen_installed_pkgs():
                         if self.fmri_is_same_pkg(f, pfmri):
                                 return f
@@ -1514,7 +1510,7 @@ class Image(object):
                         raise api_errors.CatalogRefreshException(failed, total,
                             succeeded)
 
-        CATALOG_CACHE_VERSION = 2
+        CATALOG_CACHE_VERSION = 3
 
         def cache_catalogs(self, pubs=None):
                 """Read in all the catalogs and cache the data."""
@@ -1636,12 +1632,28 @@ class Image(object):
                 for state, f in self.pkg_states.values():
                         if state != PKG_STATE_INSTALLED:
                                 continue
-                        pub, name, vers = f.tuple()
 
-                        if name not in self._catalog or \
-                            vers not in self._catalog[name]["versions"]:
-                                catalog.Catalog.cache_fmri(self._catalog, f,
-                                    f.get_publisher())
+                        # cache_fmri will automatically determine whether the
+                        # fmri is in the catalog and then cache if needed.  The
+                        # fmri (or its version or publisher information) could
+                        # be missing for a number of reasons:
+                        #   * the package's publisher was removed, and no other
+                        #     publisher has a matching catalog entry
+                        #   * the fmri does not exist in the catalogs of any
+                        #     existing publisher, even though the publisher
+                        #     of the installed package has a catalog
+                        #   * the package's publisher was removed or does not
+                        #     exist in the installed package publisher's
+                        #     catalog, but another publisher has a matching
+                        #     catalog entry, so the fmri has been cached with
+                        #     the other publisher's information, and the
+                        #     installed publisher's information is missing
+                        #
+                        # The state of the package itself may be installed, but
+                        # the package is unknown to the publisher (not in its
+                        # catalog).
+                        catalog.Catalog.cache_fmri(self._catalog, f,
+                            f.get_publisher(), known=False)
 
         def destroy_catalog_cache(self):
                 pickle_file = os.path.join(self.imgdir, "catalog/catalog.pkl")
@@ -1802,6 +1814,7 @@ class Image(object):
 
         def load_constraints(self, progtrack):
                 """Load constraints for all install pkgs"""
+
                 for fmri in self.gen_installed_pkgs():
                         # skip loading if already done
                         if self.constraints.start_loading(fmri):
@@ -1965,11 +1978,12 @@ class Image(object):
 
                                 # Like the version skipping above, do the same
                                 # for publishers.
-                                publist = set(self._catalog[name][str(ver)][1])
+                                pubstate = self._catalog[name][str(ver)][1]
+
                                 nomatch = []
                                 for i, match in enumerate(vmatches):
                                         if match[3] and \
-                                            match[3] not in publist:
+                                            match[3] not in pubstate:
                                                 nomatch.append(i)
 
                                 pmatches = [
@@ -1983,18 +1997,20 @@ class Image(object):
 
                                 # If no patterns were specified or any still-
                                 # matching pattern specified no publisher, we
-                                # use the entire publist for this version.
-                                # Otherwise, we use the intersection of publist
-                                # and the pubs in the patterns.
+                                # use the entire list of publishers for this
+                                # version.  Otherwise, we use the intersection
+                                # of the list of publishers in pubstate, and
+                                # the publishers in the patterns.
                                 aset = set(i[3] for i in pmatches)
                                 if aset and None not in aset:
                                         publist = set(
                                             m[3:5]
                                             for m in pmatches
-                                            if m[3] in publist
+                                            if m[3] in pubstate
                                         )
                                 else:
-                                        publist = zip(publist, publist)
+                                        publist = zip(pubstate.keys(),
+                                            pubstate.keys())
 
                                 pfmri = self._catalog[name][str(ver)][0]
 
@@ -2026,6 +2042,7 @@ class Image(object):
                                                 else:
                                                         st["state"] = \
                                                             PKG_STATE_KNOWN
+                                                st["in_catalog"] = pubstate[pub]
                                                 yield nfmri, st
                                                 yielded = True
                                 elif inst_state == PKG_STATE_INSTALLED:
@@ -2033,6 +2050,7 @@ class Image(object):
                                         nfmri.set_publisher(inst_pub,
                                             inst_pub == ppub)
                                         state["state"] = inst_state
+                                        state["in_catalog"] = pubstate[inst_pub]
                                         yield nfmri, state
                                         yielded = True
 
@@ -2050,7 +2068,8 @@ class Image(object):
                             notfound=nonmatchingpats)
 
         def inventory(self, *args, **kwargs):
-                """Enumerate the package FMRIs in the image's catalog.
+                """Enumerate the package FMRIs in the image's catalog, yielding
+                a list of tuples of the format (fmri, pkg state dict).
 
                 If "patterns" is None (the default) or an empty sequence, all
                 package names will match.  Otherwise, it is a list of patterns
@@ -2171,6 +2190,73 @@ class Image(object):
                 os.close(fd)
                 return name
 
+        def __filter_install_matches(self, matches, names):
+                """Attempts to eliminate redundant matches found during
+                packaging operations:
+
+                    * First, stems of installed packages for publishers that
+                      are now unknown (no longer present in the image
+                      configuration) are dropped.
+
+                    * Second, if multiple matches are still present, stems of
+                      of installed packages, that are not presently in the
+                      corresponding publisher's catalog, are dropped.
+
+                    * Finally, if multiple matches are still present, all
+                      stems except for those in state PKG_STATE_INSTALLED are
+                      dropped.
+
+                Returns a list of the filtered matches, along with a dict of
+                their unique names and a dict containing package state
+                information."""
+
+                olist = []
+                onames = {}
+                # First eliminate any duplicate matches that are for unknown
+                # publishers (publishers which have been removed from the image
+                # configuration).
+                publist = [p.prefix for p in self.get_publishers().values()]
+
+                for m in matches:
+                        if m.get_publisher() in publist:
+                                stem = m.get_pkg_stem()
+                                onames[stem] = names[stem]
+                                olist.append(m)
+
+                # Next, if there are still multiple matches, eliminate fmris
+                # belonging to publishers that no longer have the fmri in their
+                # catalog.
+                found_state = False
+                if len(onames) > 1:
+                        mlist = []
+                        mnames = {}
+                        for m in olist:
+                                stem = m.get_pkg_stem()
+                                st = onames[stem]
+                                if st["in_catalog"]:
+                                        if st["state"] == PKG_STATE_INSTALLED:
+                                                found_state = True
+                                        mnames[stem] = onames[stem]
+                                        mlist.append(m)
+                        olist = mlist
+                        onames = mnames
+
+                # Finally, if there are still multiple matches, and a known stem
+                # has been found in the provided state, then eliminate any stems
+                # that do not have the specified state.
+                if found_state and len(onames) > 1:
+                        mlist = []
+                        mnames = {}
+                        for m in olist:
+                                stem = m.get_pkg_stem()
+                                if onames[stem]["state"] == PKG_STATE_INSTALLED:
+                                        mnames[stem] = onames[stem]
+                                        mlist.append(m)
+                        olist = mlist
+                        onames = mnames
+
+                return olist, onames
+
         def make_install_plan(self, pkg_list, progtrack, check_cancelation,
             noexecute, filters = None, verbose=False):
                 """Take a list of packages, specified in pkg_list, and attempt
@@ -2245,7 +2331,8 @@ class Image(object):
                         # inventory() will override if globbing characters are
                         # used.
                         matcher = None
-                        if isinstance(p, pkg.fmri.PkgFmri) or p.startswith("pkg:/"):
+                        if isinstance(p, pkg.fmri.PkgFmri) or \
+                            p.startswith("pkg:/"):
                                 matcher = pkg.fmri.exact_name_match
 
                         try:
@@ -2265,26 +2352,36 @@ class Image(object):
                         pmatch = []
                         npnames = {}
                         npmatch = []
-                        for m, state in matches:
+                        for m, st in matches:
                                 if m.preferred_publisher():
-                                        pnames[m.get_pkg_stem()] = 1
+                                        pnames[m.get_pkg_stem()] = st
                                         pmatch.append(m)
                                 else:
-                                        npnames[m.get_pkg_stem()] = 1
+                                        npnames[m.get_pkg_stem()] = st
                                         npmatch.append(m)
 
-                        if len(pnames.keys()) > 1:
+                        if len(pnames) > 1:
+                                # There can only be one preferred publisher, so
+                                # filtering is pointless and these are truly
+                                # ambiguous matches.
                                 multiple_matches.append((p, pnames.keys()))
                                 error = 1
                                 continue
-                        elif len(pnames.keys()) < 1 and len(npnames.keys()) > 1:
-                                multiple_matches.append((p, pnames.keys()))
-                                error = 1
-                                continue
+                        elif not pnames and len(npnames) > 1:
+                                npmatch, npnames = \
+                                    self.__filter_install_matches(npmatch,
+                                    npnames)
+                                if len(npnames) > 1:
+                                        # If there are still multiple matches
+                                        # after filtering, fail.
+                                        multiple_matches.append((p,
+                                            npnames.keys()))
+                                        error = 1
+                                        continue
 
                         # matches is a list reverse sorted by version, so take
                         # the first; i.e., the latest.
-                        if len(pmatch) > 0:
+                        if pmatch:
                                 ip.propose_fmri(pmatch[0])
                         else:
                                 ip.propose_fmri(npmatch[0])
