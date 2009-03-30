@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 import testutils
@@ -46,6 +46,23 @@ class TestCommandLine(testutils.SingleDepotTestCase):
                 self.pkg("uninstall", exit=2)
                 self.pkg("uninstall foo@x.y", exit=1)
                 self.pkg("uninstall pkg:/foo@bar.baz", exit=1)
+
+        foo12 = """
+            open foo@1.2,5.11-0
+            add dir path=/tmp mode=0755 owner=root group=bin
+            close """
+
+        def test_rmdir_cwd(self):
+                """Remove a package containing a directory that's our cwd."""
+
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.foo12)
+                self.image_create(durl)
+
+                self.pkg("install foo")
+                os.chdir(os.path.join(self.get_img_path(), "tmp"))
+                self.pkg("uninstall foo")
+
 
 if __name__ == "__main__":
         unittest.main()

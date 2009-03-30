@@ -312,6 +312,14 @@ class Image(object):
                         self.img_prefix = img_user_prefix
                 else:
                         self.img_prefix = img_root_prefix
+
+                # Change directory to the root of the image so that we can
+                # remove any directories beneath us.  If we're changing the
+                # image, don't chdir, as we're likely changing to a new BE
+                # and want to be able to unmount it later.
+                if not self.imgdir:
+                        os.chdir(root)
+
                 self.imgdir = os.path.join(self.root, self.img_prefix)
                 self.history.root_dir = self.imgdir
 
