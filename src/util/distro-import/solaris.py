@@ -53,6 +53,7 @@ class package(object):
                 self.idepend = []     #svr4 pkg deps, if any
                 self.undepend = []
                 self.extra = []
+                self.dropped_licenses = []
                 self.nonhollow_dirs = {}
                 self.srcpkgs = []
                 self.classification = ""
@@ -579,6 +580,8 @@ def publish_pkg(pkg):
                 pathdict = dict((f.pathname, f) for f in g)
                 for f in bundle:
                         if f.name == "license":
+                                if f.attrs["license"] in pkg.dropped_licenses:
+                                        continue
                                 # add transaction id so that every version
                                 # of a pkg will have a unique license to prevent
                                 # license from disappearing on upgrade
@@ -703,6 +706,13 @@ def publish_pkg(pkg):
         for a in pkg.extra:
                 print "    %s add %s" % (pkg.name, a)
                 action = actions.fromstr(a)
+                if hasattr(action, "hash"):
+                        fname, fd = sourcehook(action.hash)
+                        fd.close()
+                        action.data = lambda: file(fname, "rb")
+                        action.attrs["pkg.size"] = str(os.stat(fname).st_size)
+                        if action.name == "license":
+                                action.attrs["transaction_id"] = transaction_id
                 #
                 # fmris may not be completely specified; enhance them to current
                 # version if this is the case
@@ -1233,6 +1243,9 @@ def SolarisParse(mf):
                                 # file, just the last seen.  This probably
                                 # doesn't matter much.
                                 del usedlist[f]
+
+                elif token == "drop_license":
+                        curpkg.dropped_licenses.append(lexer.get_token())
 
                 elif token == "chattr":
                         fname = lexer.get_token()
