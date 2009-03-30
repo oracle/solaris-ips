@@ -33,6 +33,7 @@ import time
 import pango
 import datetime
 import traceback
+import string
 from threading import Thread
 from urllib2 import URLError
 try:
@@ -292,6 +293,42 @@ class InstallUpdate(progress.ProgressTracker):
                 elif error_code == None:
                         self.be_list = be_list
 
+                # Now set proposed name in entry field.
+                active_name = None
+                for bee in self.be_list:
+                        name = bee.get("orig_be_name")
+                        if name:
+                                if bee.get("active"):
+                                        active_name = name
+                                        break
+                if active_name != None:
+                        proposed_name = None
+                        list = string.rsplit(active_name, '-', 1)
+                        if len(list) == 1:
+                                proposed_name = self.__construct_be_name(
+                                    active_name, 0)
+                        else:
+                                try:
+                                        i = int(list[1])
+                                        proposed_name = self.__construct_be_name(
+                                            list[0], i)
+                                except ValueError:
+                                        proposed_name = self.__construct_be_name(
+                                            active_name, 0)
+
+                        if proposed_name != None:
+                                self.w_ua_be_name_entry.set_text(proposed_name)
+
+                        
+        def __construct_be_name(self, name, i):
+                in_use = True
+                proposed_name = None
+                while in_use:
+                        i += 1
+                        proposed_name = name + '-'  + str(i)
+                        in_use = self.__is_be_name_in_use(proposed_name)
+                return proposed_name
+            
         def __is_be_name_in_use(self, name):
                 in_use = False
                 if name == "":
