@@ -82,6 +82,8 @@ class Webinstall:
                         w_xmltree_webinstall.get_widget("proceed_button")
                 self.w_webinstall_cancel = \
                         w_xmltree_webinstall.get_widget("cancel_button")
+                self.w_webinstall_close = \
+                        w_xmltree_webinstall.get_widget("close_button")
                 self.w_webinstall_proceed_label = \
                         w_xmltree_webinstall.get_widget("proceed_new_repo_label")
                 self.w_webinstall_info_label = \
@@ -99,6 +101,8 @@ class Webinstall:
                                     self.__on_webinstall_dialog_close,
                                 "on_cancel_button_clicked": \
                                     self.__on_cancel_button_clicked,
+                                "on_help_button_clicked": \
+                                    self.__on_help_button_clicked,
                                 "on_proceed_button_clicked": \
                                     self.__on_proceed_button_clicked,
                             }
@@ -126,6 +130,10 @@ class Webinstall:
                 self.__output_pub_tasks(infobuffer, textiter, self.pub_new_tasks)
 
         def __nothing_todo(self, infobuffer, textiter):
+                self.w_webinstall_proceed.hide()
+                self.w_webinstall_cancel.hide()
+                self.w_webinstall_close.show()
+
                 infobuffer.insert(textiter,
                     _("\n All specified repositories and packages are already on the "
                     "system.\n"))
@@ -205,6 +213,9 @@ class Webinstall:
 
         def __on_cancel_button_clicked(self, widget):
                 self.__exit_app()
+
+        def __on_help_button_clicked(self, widget):
+                gui_misc.display_help(self.application_dir) # Need target , "webinstall")
 
         def __exit_app(self, be_name = None):
                 self.w_webinstall_dialog.destroy()
