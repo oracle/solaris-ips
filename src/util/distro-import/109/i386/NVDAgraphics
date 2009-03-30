@@ -237,23 +237,24 @@ add driver name=nvidia perms="* 0666 root root" \
 	alias=pci10de,863 \
 	alias=pci10de,87a \
 	alias=pci10de,87f
-add link path=dev/nvidia0 target=fbs/nvidia0
-add link path=dev/nvidia1 target=fbs/nvidia1
-add link path=dev/nvidia2 target=fbs/nvidia2
-add link path=dev/nvidia3 target=fbs/nvidia3
-add link path=dev/nvidia4 target=fbs/nvidia4
-add link path=dev/nvidia5 target=fbs/nvidia5
-add link path=dev/nvidia6 target=fbs/nvidia6
-add link path=dev/nvidia7 target=fbs/nvidia7
-add link path=dev/nvidia8 target=fbs/nvidia8
-add link path=dev/nvidia9 target=fbs/nvidia9
-add link path=dev/nvidia10 target=fbs/nvidia10
-add link path=dev/nvidia11 target=fbs/nvidia11
-add link path=dev/nvidia12 target=fbs/nvidia12
-add link path=dev/nvidia13 target=fbs/nvidia13
-add link path=dev/nvidia14 target=fbs/nvidia14
-add link path=dev/nvidia15 target=fbs/nvidia15
-add link path=dev/nvidiactl target=../devices/pseudo/nvidia@255:nvidiactl
+add link path=dev/nvidia0 target=fbs/nvidia0 variant.opensolaris.zone=global
+add link path=dev/nvidia1 target=fbs/nvidia1 variant.opensolaris.zone=global
+add link path=dev/nvidia2 target=fbs/nvidia2 variant.opensolaris.zone=global
+add link path=dev/nvidia3 target=fbs/nvidia3 variant.opensolaris.zone=global
+add link path=dev/nvidia4 target=fbs/nvidia4 variant.opensolaris.zone=global
+add link path=dev/nvidia5 target=fbs/nvidia5 variant.opensolaris.zone=global
+add link path=dev/nvidia6 target=fbs/nvidia6 variant.opensolaris.zone=global
+add link path=dev/nvidia7 target=fbs/nvidia7 variant.opensolaris.zone=global
+add link path=dev/nvidia8 target=fbs/nvidia8 variant.opensolaris.zone=global
+add link path=dev/nvidia9 target=fbs/nvidia9 variant.opensolaris.zone=global
+add link path=dev/nvidia10 target=fbs/nvidia10 variant.opensolaris.zone=global
+add link path=dev/nvidia11 target=fbs/nvidia11 variant.opensolaris.zone=global
+add link path=dev/nvidia12 target=fbs/nvidia12 variant.opensolaris.zone=global
+add link path=dev/nvidia13 target=fbs/nvidia13 variant.opensolaris.zone=global
+add link path=dev/nvidia14 target=fbs/nvidia14 variant.opensolaris.zone=global
+add link path=dev/nvidia15 target=fbs/nvidia15 variant.opensolaris.zone=global
+add link path=dev/nvidiactl target=../devices/pseudo/nvidia@255:nvidiactl \
+	variant.opensolaris.zone=global
 version 0.180.29
 # Depends on ogl-select service from SUNWxwplr to create links at boot
 depend SUNWxwplr

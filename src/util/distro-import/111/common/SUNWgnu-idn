@@ -1,0 +1,6 @@
+package SUNWgnu-idn
+classification "System/Libraries"
+import SUNWgnu-idn
+chattr usr/lib/pkgconfig/libidn.pc group=bin
+version 1.9
+end package

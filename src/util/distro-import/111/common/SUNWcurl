@@ -1,0 +1,5 @@
+package SUNWcurl
+classification "System/Libraries"
+import SUNWcurl
+version 7.19.4
+end package

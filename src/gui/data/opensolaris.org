@@ -184,6 +184,9 @@ category = Application and Web Servers
 [SUNWapch22m-security]
 category = Application and Web Servers
 
+[SUNWapch22m-sed]
+category = Application and Web Servers
+
 [SUNWapchd]
 category = Application and Web Servers
 
@@ -1444,6 +1447,9 @@ category = High Performance Computing
 [SUNWgnu-mpfr]
 category = High Performance Computing
 
+[SUNWgnu-nano]
+category = Text Tools
+
 [SUNWgnu-which]
 category = System Utilities
 
@@ -2365,6 +2371,9 @@ category = Storage
 [SUNWluxop]
 category = Enterprise Management
 
+[SUNWluxopr]
+category = Enterprise Management
+
 [SUNWlx]
 category = System Utilities
 
@@ -2518,6 +2527,15 @@ category = Databases
 [SUNWmysql5]
 category = Databases (System)
 
+[SUNWmysql51]
+category = Databases (System)
+
+[SUNWmysql51lib]
+category = Databases (System)
+
+[SUNWmysql51test]
+category = Databases
+
 [SUNWmysql5jdbc]
 category = Databases (System)
 
@@ -2628,6 +2646,9 @@ category = Text Tools
 
 [SUNWopenssl]
 category = Security
+
+[SUNWopenwsman]
+category = Application and Web Servers
 
 [SUNWos86r]
 category = Core

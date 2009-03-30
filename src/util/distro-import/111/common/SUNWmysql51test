@@ -1,0 +1,7 @@
+package SUNWmysql51test
+classification "Development/Databases"
+import SUNWmysql51test
+depend SUNWmysql51
+depend SUNWperl584core
+version 5.1.30
+end package

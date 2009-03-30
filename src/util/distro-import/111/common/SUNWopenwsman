@@ -1,0 +1,6 @@
+package SUNWopenwsman
+classification "Web Services/Application and Web Servers"
+import SUNWopenwsmanr
+import SUNWopenwsmanu
+version 2.1.0
+end package
