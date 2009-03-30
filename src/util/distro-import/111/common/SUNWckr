@@ -28,7 +28,7 @@ add driver name=tl perms="* 0666 root sys" \
 add driver name=vnic perms="* 0666 root sys" \
 	clone_perms="0666 root sys" \
 	policy="read_priv_set=net_rawaccess write_priv_set=net_rawaccess"
-add driver name=acpi_drv perms="* 0666 root sys"
+$(i386_ONLY)add driver name=acpi_drv perms="* 0666 root sys"
 add driver name=scsi_vhci perms="* 0666 root sys" \
 	class=scsi-self-identifying policy="devctl write_priv_set=sys_devices"
 add driver name=aggr perms="* 0666 root sys" \

@@ -749,7 +749,7 @@ category = Ports
 category = Hardware
 
 [SUNWfcp]
-category = Ports
+category = Storage
 
 [SUNWfcprt]
 category = Hardware
@@ -758,7 +758,7 @@ category = Hardware
 category = Storage
 
 [SUNWfctl]
-category = Ports
+category = Storage
 
 [SUNWfdhcm]
 category = Services

@@ -1,5 +1,5 @@
 package SUNWfctl
-classification "Drivers/Ports"
+classification "Drivers/Storage"
 import SUNWfctl
-add driver name=fp perm="* 0600 root sys"
+add driver name=fp perms="* 0600 root sys"
 end package

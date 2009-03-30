@@ -1,7 +1,7 @@
 package SUNWemlxs
 classification "Drivers/Storage"
 import SUNWemlxs
-add driver name=emlxs perms="* 0600 root sys'" class=fibre-channel \
+add driver name=emlxs perms="* 0600 root sys" class=fibre-channel \
 	alias=pci10df,fc00 \
 	alias=pci10df,f800 \
 	alias=pci10df,f900 \
