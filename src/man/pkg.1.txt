@@ -15,7 +15,7 @@ SYNOPSIS
      /usr/bin/pkg info [-lr] [--license] [pkg_fmri_pattern ...]
      /usr/bin/pkg contents [-Hmr] [-o attribute ...] [-s sort_key]
          [-t action_type ... ] [pkg_fmri_pattern ...]
-     /usr/bin/pkg list [-aHsuvf] [pkg_fmri_pattern ...]
+     /usr/bin/pkg list [-Hafsuv] [--no-refresh] [pkg_fmri_pattern ...]
      /usr/bin/pkg search [-alprI] [-s server] query
 
      /usr/bin/pkg refresh [--full] [publisher ...]
@@ -101,13 +101,14 @@ SUBCOMMANDS
           If the image is to be run within nonglobal zone context, then
           the -z (--zone) option can be used to set an appropriate filter.
 
-          With --no-refresh, do not attempt to contact the image's publisher
-          to retrieve its catalog.
-
           With -f (--force), force the creation of an image over an existing
           image.  This option should be used with care.
 
-     image-update [-fnvq] [--be-name name] [--no-refresh] [--no-index]
+          With --no-refresh, do not attempt to contact the repositories for
+          the image's publishers to retrieve publisher metadata (e.g.
+          catalogs).
+
+     image-update [-fnvq] [--be-name name] [--no-index] [--no-refresh]
           Update all installed packages in the current image to the
           latest available version.
 
@@ -119,21 +120,26 @@ SUBCOMMANDS
           With the -v option, issue verbose progress messages during the
           requested operation.  With the -q option, be completely silent.
 
-          With  --no-refresh, do not attempt to contact the image's publishers
-          to retrieve their catalogs.  With --no-index do not update the
-          search indices after the operation has completed successfully.
-
           With --be-name, rename the newly created boot environment to be the
           argument given.  This option is only valid if a new boot environment
           is created during image update. See also beadm(1m).
 
-     refresh [--full] [publisher ...]
-          Retrieve updates to the catalogs for each publisher specified.
-          When given no arguments, retrieves updates for each publisher
-          registered within the image. With --full, retrieve the full
-          catalogs.
+          With --no-index, do not update the search indices after the operation
+          has completed successfully.
 
-     install [-nvq] [--no-refresh] [--no-index] pkg_fmri ...
+          With --no-refresh, do not attempt to contact the repositories for
+          the image's publishers to retrieve publisher metadata (e.g.
+          catalogs).
+
+     refresh [--full] [publisher ...]
+          Retrieve updates to the metadata (e.g. catalogs) for each publisher
+          specified.  When given no arguments, retrieves updates for each
+          publisher registered within the image.
+
+          With --full, retrieve all publisher metadata instead of attempting an
+          incremental update.
+
+     install [-nvq] [--no-index] [--no-refresh] pkg_fmri ...
      uninstall [-nrvq] [--no-index] pkg_fmri ...
           Install or remove the package specified by pkg_fmri or
           matching pkg_fmri as a substring.  With the -n option, execute
@@ -146,9 +152,12 @@ SUBCOMMANDS
           uninstall any packages which are dependent on the initial
           package.
 
-          With --no-refresh, do not attempt to contact the image's publishers
-          to retrieve their catalogs. With --no-index do not update the
-          search indices after the operation has completed successfully.
+          With --no-index, do not update the search indices after the operation
+          has completed successfully.
+
+          With --no-refresh, do not attempt to contact the repositories for
+          the image's publishers to retrieve publisher metadata (e.g.
+          catalogs).
 
      info [-lr] [--license] [pkg_fmri_pattern ...]
           Display information about packages in a human-readable form.
@@ -263,15 +272,29 @@ SUBCOMMANDS
           '<token>' results in a list of packages containing actions which
           matched token.
 
-     list [-aHsuvf] [pkg_fmri_pattern ...]
-          Report on the state of packages in the current image.  With
-          -a, report on all packages known, whether installed or not;
+     list [-Hafsuv] [--no-refresh] [pkg_fmri_pattern ...]
+          Display a list of packages in the current image, including state
+          and other information.
+
+          With -H, omit the headers from the listing.
+
+          With -a, report on all packages known, whether installed or not;
           without -a, report only based on installed packages in the
-          image.  With -s, display a one-line short-form giving the
-          package name and description.  With -u, report only packages
-          with newer versions available.  With -v, report full package
-          FMRIs.  With -f, report all versions of packages, without -f
-          report only the installed and newest version of a package.
+          image.
+
+          With -f, report all versions of packages; without -f report only the
+          installed and newest version of a package.
+
+          With -s, display a one-line short-form giving the package name and
+          description.
+
+          With -u, report only packages with newer versions available.
+
+          With -v, report full package FMRIs.
+
+          With --no-refresh, do not attempt to contact the repositories for
+          the image's publishers to retrieve publisher metadata (e.g.
+          catalogs).
 
      verify [-Hqv] [pkg_fmri_pattern ...]
           Validate the installation of packages in the current image.
@@ -314,7 +337,7 @@ SUBCOMMANDS
           With -O, set the origin URI for the publisher packaging repository.
 
           With --no-refresh, do not attempt to contact the publisher
-          specified to retrieve its catalog.
+          specified to retrieve its metadata (e.g. catalog).
 
           With --reset-uuid, choose a new unique identifier that identifies
           this image to its publisher.

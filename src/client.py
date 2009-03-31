@@ -70,13 +70,11 @@ import pkg.client.progress as progress
 import pkg.client.publisher as publisher
 import pkg.fmri as fmri
 import pkg.misc as misc
-import pkg.search_errors as search_errors
 
 from pkg.client import global_settings
 from pkg.client.debugvalues import DebugValues
 from pkg.client.history import (RESULT_CANCELED, RESULT_FAILED_BAD_REQUEST,
-    RESULT_FAILED_CONFIGURATION, RESULT_FAILED_SEARCH, RESULT_FAILED_STORAGE,
-    RESULT_FAILED_TRANSPORT, RESULT_FAILED_UNKNOWN, RESULT_SUCCEEDED)
+    RESULT_FAILED_CONFIGURATION, RESULT_FAILED_TRANSPORT, RESULT_FAILED_UNKNOWN)
 from pkg.client.filelist import FileListRetrievalError
 from pkg.client.retrieve import (CatalogRetrievalError,
     DatastreamRetrievalError, ManifestRetrievalError)
@@ -122,7 +120,7 @@ Usage:
 Basic subcommands:
         pkg install [-nvq] [--no-refresh] [--no-index] package...
         pkg uninstall [-nrvq] [--no-index] package...
-        pkg list [-aHsuvf] [package...]
+        pkg list [-Hafsuv] [--no-refresh] [package...]
         pkg image-update [-fnvq] [--be-name name] [--no-refresh] [--no-index]
         pkg refresh [--full] [publisher ...]
         pkg version
@@ -189,14 +187,17 @@ def check_fmri_args(args):
         return ret
 
 def list_inventory(img, args):
+        """List packages."""
+
         all_known = False
+        all_versions = True
         display_headers = True
+        refresh_catalogs = True
+        summary = False
         upgradable_only = False
         verbose = False
-        summary = False
-        all_versions = True
 
-        opts, pargs = getopt.getopt(args, "aHsuvf")
+        opts, pargs = getopt.getopt(args, "Hafsuv", ["no-refresh"])
 
         for opt, arg in opts:
                 if opt == "-a":
@@ -211,6 +212,8 @@ def list_inventory(img, args):
                         verbose = True
                 elif opt == "-f":
                         all_versions = False
+                elif opt == "--no-refresh":
+                        refresh_catalogs = False
 
         if summary and verbose:
                 usage(_("-s and -v may not be combined"))
@@ -231,6 +234,26 @@ def list_inventory(img, args):
         seen_one_pkg = False
         found = False
         try:
+                if all_known and refresh_catalogs:
+                        # If the user requested all known packages, ensure that
+                        # a publisher metadata refresh is performed if needed
+                        # since the catalog may be out of date or invalid as
+                        # a result of publisher information changing (such as
+                        # an origin uri, etc.).
+                        tracker = get_tracker(quiet=not display_headers)
+                        try:
+                                img.refresh_publishers(progtrack=tracker)
+                        except api_errors.PermissionsException, e:
+                                # Ignore the above error and just use what
+                                # already exists.
+                                pass
+                        except api_errors.CatalogRefreshException, e:
+                                # Ensure messages are displayed after the
+                                # spinner.
+                                emsg("\n")
+                                display_catalog_failures(e)
+                                return 1
+
                 res = misc.get_inventory_list(img, pargs,
                     all_known, all_versions)
                 prev_pfmri_str = ""
@@ -1065,7 +1088,7 @@ def info(img_dir, args):
         err = 0
 
         api_inst = api.ImageInterface(img_dir, CLIENT_API_VERSION,
-            progress.NullProgressTracker(), None, PKG_CLIENT_NAME)
+            progress.QuietProgressTracker(), None, PKG_CLIENT_NAME)
 
         try:
                 info_needed = api.PackageInfo.ALL_OPTIONS
@@ -1347,7 +1370,7 @@ def list_contents(img, args):
                         usage(_("Invalid attribute '%s'") % a)
 
         img.history.operation_name = "contents"
-        img.load_catalogs(progress.NullProgressTracker())
+        img.load_catalogs(progress.QuietProgressTracker())
 
         err = 0
 
@@ -1487,7 +1510,13 @@ examining the catalogs:"""))
 def display_catalog_failures(cre):
         total = cre.total
         succeeded = cre.succeeded
-        msg(_("pkg: %s/%s catalogs successfully updated:") % (succeeded, total))
+
+        txt = _("pkg: %s/%s catalogs successfully updated:") % (succeeded, total)
+        if cre.failed:
+                # This ensures that the text gets printed before the errors.
+                emsg(txt)
+        else:
+                msg(txt)
 
         for pub, err in cre.failed:
                 if isinstance(err, urllib2.HTTPError):
@@ -1528,8 +1557,8 @@ def display_catalog_failures(cre):
 
         return succeeded
 
-def catalog_refresh(img_dir, args):
-        """Update image's catalogs."""
+def publisher_refresh(img_dir, args):
+        """Update metadata for the image's publishers."""
 
         # XXX will need to show available content series for each package
         full_refresh = False
@@ -1548,7 +1577,10 @@ def catalog_refresh(img_dir, args):
                 return 1
 
         try:
-                api_inst.refresh(full_refresh, pargs)
+                # The user explicitly requested this refresh, so set the
+                # refresh to occur immediately.
+                api_inst.refresh(full_refresh=full_refresh, immediate=True,
+                    pubs=pargs)
         except api_errors.PublisherError, e:
                 error(e)
                 error(_("'pkg publisher' will show a list of publishers."))
@@ -2141,24 +2173,34 @@ def image_create(img, args):
                 error(_("To override, use the -f (force) option."))
                 return 1
 
+        progresstracker = get_tracker()
+
         try:
                 img.set_attrs(imgtype, image_dir, is_zone, pub_name, pub_url,
                     ssl_key=ssl_key, ssl_cert=ssl_cert, variants=variants,
-                    refresh_allowed=refresh_catalogs)
+                    refresh_allowed=refresh_catalogs, progtrack=progresstracker)
         except OSError, e:
+                # Ensure messages are displayed after the spinner.
+                emsg("\n")
                 error(_("cannot create image at %s: %s") % \
                     (image_dir, e.args[1]))
                 return 1
         except api_errors.PermissionsException, e:
+                # Ensure messages are displayed after the spinner.
+                emsg("\n")
                 cmd_error("image-create", e)
                 return 1
         except api_errors.InvalidDepotResponseException, e:
+                # Ensure messages are displayed after the spinner.
+                emsg("\n")
                 error(_("The URI '%s' does not appear to point to a "
                     "valid pkg server.\nPlease check the server's "
                     "address and client's network configuration."
                     "\nAdditional details:\n\n%s" % (pub_url, e)))
                 return 1
         except api_errors.CatalogRefreshException, cre:
+                # Ensure messages are displayed after the spinner.
+                emsg("\n")
                 if display_catalog_failures(cre) == 0:
                         return 1
                 else:
@@ -2415,7 +2457,7 @@ def main_func():
 
         try:
                 if subcommand == "refresh":
-                        return catalog_refresh(mydir, pargs)
+                        return publisher_refresh(mydir, pargs)
                 elif subcommand == "list":
                         return list_inventory(img, pargs)
                 elif subcommand == "image-update":

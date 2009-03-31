@@ -85,6 +85,13 @@ default_policies = {
     SEND_UUID: False,
 }
 
+# The name of the directory where publisher metadata should be stored.
+PUB_META_DIR = "catalog"
+
+# Assume the repository metadata should be checked no more than once every
+# 4 hours.
+REPO_REFRESH_SECONDS_DEFAULT = 4 * 60 * 60
+
 # names of image configuration files managed by this module
 CFG_FILE = "cfg_cache"
 DA_FILE = "disabled_auth"
@@ -141,9 +148,12 @@ class ImageConfig(object):
 
                 assert r[0] == ccfile
 
+                # The root directory for publisher metadata.
+                pmroot = os.path.join(path, PUB_META_DIR)
+
                 for s in cp.sections():
                         if re.match("authority_.*", s):
-                                k, a = self.read_publisher(cp, s)
+                                k, a = self.read_publisher(pmroot, cp, s)
                                 ms = []
 
                                 self.publishers[k] = a
@@ -203,7 +213,8 @@ class ImageConfig(object):
                                     "configuration from %s" % dafile)
                         for s in cp.sections():
                                 if re.match("authority_.*", s):
-                                        k, a = self.read_publisher(cp, s)
+                                        k, a = self.read_publisher(pmroot, cp,
+                                            s)
                                         self.publishers[k] = a
                                         # status objects are not created for
                                         # disabled publishers
@@ -318,7 +329,7 @@ class ImageConfig(object):
 
                 return lst
 
-        def read_publisher(self, cp, s):
+        def read_publisher(self, meta_root, cp, s):
                 # publisher block has alias, prefix, origin, and mirrors
                 try:
                         alias = cp.get(s, "alias")
@@ -412,6 +423,10 @@ class ImageConfig(object):
                                 # Assume default value for attr.
                                 del repo_data[attr]
 
+                if repo_data["refresh_seconds"] is None:
+                        repo_data["refresh_seconds"] = \
+                            REPO_REFRESH_SECONDS_DEFAULT
+
                 # Guard against invalid configuration for ssl information. If
                 # this isn't done, the user won't be able to load the client
                 # to fix the problem.
@@ -439,8 +454,12 @@ class ImageConfig(object):
                 r.add_origin(origin, ssl_cert=ssl_cert, ssl_key=ssl_key)
                 for m in mirrors:
                         r.add_mirror(m, ssl_cert=ssl_cert, ssl_key=ssl_key)
+
+                # Root directory for this publisher's metadata.
+                pmroot = os.path.join(meta_root, prefix)
+
                 pub = publisher.Publisher(prefix, alias=alias,
                     client_uuid=client_uuid, disabled=disabled,
-                    repositories=[r])
+                    meta_root=pmroot, repositories=[r])
 
                 return prefix, pub

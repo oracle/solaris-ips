@@ -363,7 +363,7 @@ class TestPkgIntent(testutils.SingleDepotTestCase):
 
                 plist.extend(self.pkgsend_bulk(durl, self.foo12 + self.bar11))
 
-                api_obj.refresh(False)
+                api_obj.refresh(immediate=True)
 
                 api_obj.reset()
                 api_obj.plan_update_all(sys.argv[0])

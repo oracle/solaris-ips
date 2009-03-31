@@ -252,14 +252,14 @@ class TestApiInfo(testutils.SingleDepotTestCase):
                     api_obj.info, ["jade"], local, set('a'))
 
                 # Test as part of bug 4886.
-                # Makes sure that the catalog.pkl files is reread when
+                # Makes sure that the catalog.pkl file is reread when
                 # necessary.
                 self.pkgsend_bulk(durl, pkg3)
                 time.sleep(1)
                 api_obj2 = api.ImageInterface(self.get_img_path(), API_VERSION,
                     progress.NullProgressTracker(), lambda x: False,
                     PKG_CLIENT_NAME)
-                api_obj2.refresh(False)
+                api_obj2.refresh(immediate=True)
 
                 info_needed = api.PackageInfo.ALL_OPTIONS - \
                     (frozenset([api.PackageInfo.LICENSES]) |

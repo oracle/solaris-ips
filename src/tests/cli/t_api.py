@@ -56,7 +56,7 @@ class TestPkgApi(testutils.SingleDepotTestCase):
             open foo@1.2,5.11-0
             add file $test_prefix/libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.so.1
             close """
-        
+
         bar10 = """
             open bar@1.0,5.11-0
             close """
@@ -122,7 +122,7 @@ class TestPkgApi(testutils.SingleDepotTestCase):
 
                 self.assertRaises(api_errors.PlanExistsException,
                     api_obj.plan_install,["foo"], [])
-                
+
                 self.assertRaises(api_errors.PlanExistsException,
                     api_obj.plan_uninstall,["foo"], False)
                 self.assertRaises(api_errors.PlanExistsException,
@@ -139,25 +139,25 @@ class TestPkgApi(testutils.SingleDepotTestCase):
 
                 self.assertRaises(api_errors.PrematureExecutionException,
                     api_obj.execute_plan)
-                
+
                 api_obj.prepare()
                 self.__try_bad_installs(api_obj)
 
                 self.assertRaises(api_errors.AlreadyPreparedException,
                     api_obj.prepare)
-                
+
                 api_obj.execute_plan()
                 self.__try_bad_installs(api_obj)
                 self.assertRaises(api_errors.AlreadyPreparedException,
                     api_obj.prepare)
                 self.assertRaises(api_errors.AlreadyExecutedException,
                     api_obj.execute_plan)
-                        
+
         def test_bad_orderings(self):
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.foo10)
                 self.image_create(durl)
-                
+
                 progresstracker = progress.NullProgressTracker()
                 api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
                     progresstracker, lambda x: False, PKG_CLIENT_NAME)
@@ -177,7 +177,7 @@ class TestPkgApi(testutils.SingleDepotTestCase):
                 self.assert_(api_obj.describe() is None)
 
                 self.pkgsend_bulk(durl, self.foo12)
-                api_obj.refresh(False)
+                api_obj.refresh(immediate=True)
 
                 api_obj.plan_update_all(sys.argv[0])
                 self.__try_bad_combinations_and_complete(api_obj)
@@ -194,7 +194,7 @@ class TestPkgApi(testutils.SingleDepotTestCase):
                 self.assertRaises(api_errors.PlanMissingException,
                     api_obj.prepare)
                 self.assert_(api_obj.describe() is None)
-                        
+
         def test_reset(self):
                 """ Send empty package foo@1.0, install and uninstall """
 
@@ -208,7 +208,7 @@ class TestPkgApi(testutils.SingleDepotTestCase):
 
                 recursive_removal = False
                 filters = []
-                
+
                 api_obj.plan_install(["foo"], filters)
                 self.assert_(api_obj.describe() is not None)
                 api_obj.reset()
@@ -229,8 +229,8 @@ class TestPkgApi(testutils.SingleDepotTestCase):
                 self.pkg("verify")
 
                 self.pkgsend_bulk(durl, self.foo12)
-                api_obj.refresh(False)
-                
+                api_obj.refresh(immediate=True)
+
                 api_obj.plan_update_all(sys.argv[0])
                 self.assert_(api_obj.describe() is not None)
                 api_obj.reset()
@@ -249,7 +249,7 @@ class TestPkgApi(testutils.SingleDepotTestCase):
 
                 self.pkg("list")
                 self.pkg("verify")
-                
+
                 api_obj.plan_uninstall(["foo"], recursive_removal)
                 self.assert_(api_obj.describe() is not None)
                 api_obj.reset()
@@ -271,7 +271,7 @@ class TestPkgApi(testutils.SingleDepotTestCase):
 
         def test_publisher_apis(self):
                 """Verify that the publisher api methods work as expected.
-                
+
                 Note that not all methods are tested here as this would be
                 redundant since other tests for the client will use those
                 methods indirectly."""

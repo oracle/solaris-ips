@@ -274,6 +274,7 @@ class TestPkgInstallBasics(testutils.SingleDepotTestCase):
 
                 self.pkgsend_bulk(durl, self.foo12)
                 self.pkgsend_bulk(durl, self.bar11)
+                self.pkg("refresh")
 
                 self.pkg("contents -H")
                 self.pkg("list")
@@ -509,6 +510,7 @@ class TestPkgInstallAmbiguousPatterns(testutils.SingleDepotTestCase):
                 self.pkg("install foo")
 
                 self.pkgsend_bulk(durl, self.anotherfoo11)
+                self.pkg("refresh")
                 self.pkg("image-update -v")
 
         def test_ambiguous_pattern_depend(self):
@@ -525,6 +527,7 @@ class TestPkgInstallAmbiguousPatterns(testutils.SingleDepotTestCase):
                 self.pkgsend_bulk(durl, self.foo11)
                 self.pkgsend_bulk(durl, self.anotherfoo11)
                 self.pkgsend_bulk(durl, self.depender11)
+                self.pkg("refresh")
 
                 self.pkg("install depender")
 
@@ -547,6 +550,7 @@ class TestPkgInstallAmbiguousPatterns(testutils.SingleDepotTestCase):
 
                 # Create ambiguity
                 self.pkgsend_bulk(durl, self.foo11)
+                self.pkg("refresh")
 
                 # This is unambiguous, should succeed
                 self.pkg("install pkg:/foo")
@@ -1584,11 +1588,8 @@ adm:NP:6445::::::
                 if portable.util.get_canonical_os_name() == 'sunos':
                         pkg_list += [self.only_driver10]
 
-                for p in pkg_list:
-                        self.pkgsend_bulk(durl, p)
-                self.pkgsend_bulk(durl, self.devicebase)
-                self.pkgsend_bulk(durl, self.basics0)
-                self.pkgsend_bulk(durl, self.basics1)
+                self.pkgsend_bulk(durl, "".join(pkg_list) + self.devicebase + \
+                    self.basics0 + self.basics1)
 
                 self.image_create(durl)
 
@@ -1635,12 +1636,14 @@ adm:NP:6445::::::
 
                 for p in pkg_list:
                         self.pkgsend_bulk(durl, p)
-                self.pkgsend_bulk(durl, self.devicebase)
-                self.pkgsend_bulk(durl, self.basics0)
-                self.pkgsend_bulk(durl, self.basics1)
+                self.pkgsend_bulk(durl, self.devicebase + self.basics0 + \
+                    self.basics1)
 
                 self.pkg("image-update --no-refresh", su_wrap=True)
+                self.pkg("refresh")
                 self.pkg("image-update", su_wrap=True, exit=1)
+                # Should fail since user doesn't have permission to refresh
+                # publisher metadata.
                 self.pkg("refresh", su_wrap=True, exit=1)
                 self.pkg("refresh")
                 self.pkg("image-update --no-refresh", su_wrap=True,

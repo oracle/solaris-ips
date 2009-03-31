@@ -34,11 +34,16 @@
 # the client version number and compatible_versions specifier found in
 # modules/client/api.py:__init__.
 #
+import calendar
 import copy
+import datetime as dt
+import errno
 import os
 import pkg.client.api_errors as api_errors
-import pkg.misc
+import pkg.misc as misc
+import pkg.portable as portable
 import pkg.Uuid25
+import time
 import urlparse
 
 # The "core" type indicates that a repository contains all of the dependencies
@@ -173,14 +178,14 @@ class RepositoryURI(object):
 
                 # XXX valid_pub_url's check isn't quite right and could prevent
                 # usage of IDNs (international domain names).
-                if not netloc or not pkg.misc.valid_pub_url(uri):
+                if not netloc or not misc.valid_pub_url(uri):
                         raise api_errors.BadRepositoryURI(uri)
 
                 # Normalize URI scheme.
                 uri = uri.replace(scheme, scheme.lower(), 1)
 
                 if self.__trailing_slash:
-                        uri = pkg.misc.url_affix_trailing_slash(uri)
+                        uri = misc.url_affix_trailing_slash(uri)
 
                 if scheme.lower() not in SSL_SCHEMES:
                         self.__ssl_cert = None
@@ -352,7 +357,7 @@ class Repository(object):
                                 u = RepositoryURI(u,
                                     trailing_slash=trailing_slash)
                         elif trailing_slash:
-                                u.uri = pkg.misc.url_affix_trailing_slash(u.uri)
+                                u.uri = misc.url_affix_trailing_slash(u.uri)
                         uris.append(u)
                 uris.sort(key=URI_SORT_POLICIES[self.__sort_policy])
                 return uris
@@ -456,7 +461,7 @@ class Repository(object):
                 'mirror' can be a RepositoryURI object or a URI string."""
 
                 if not isinstance(mirror, RepositoryURI):
-                        mirror = pkg.misc.url_affix_trailing_slash(mirror)
+                        mirror = misc.url_affix_trailing_slash(mirror)
                 for m in self.mirrors:
                         if mirror == m.uri:
                                 return m
@@ -469,7 +474,7 @@ class Repository(object):
                 'origin' can be a RepositoryURI object or a URI string."""
 
                 if not isinstance(origin, RepositoryURI):
-                        origin = pkg.misc.url_affix_trailing_slash(origin)
+                        origin = misc.url_affix_trailing_slash(origin)
                 for o in self.origins:
                         if origin == o.uri:
                                 return o
@@ -482,7 +487,7 @@ class Repository(object):
                 'mirror' can be a RepositoryURI object or a URI string."""
 
                 if not isinstance(mirror, RepositoryURI):
-                        mirror = pkg.misc.url_affix_trailing_slash(mirror)
+                        mirror = misc.url_affix_trailing_slash(mirror)
                 return mirror in self.mirrors
 
         def has_origin(self, origin):
@@ -492,7 +497,7 @@ class Repository(object):
                 'origin' can be a RepositoryURI object or a URI string."""
 
                 if not isinstance(origin, RepositoryURI):
-                        origin = pkg.misc.url_affix_trailing_slash(origin)
+                        origin = misc.url_affix_trailing_slash(origin)
                 return origin in self.origins
 
         def remove_legal_uri(self, uri):
@@ -514,7 +519,7 @@ class Repository(object):
                 'mirror' can be a RepositoryURI object or a URI string."""
 
                 if not isinstance(mirror, RepositoryURI):
-                        mirror = pkg.misc.url_affix_trailing_slash(mirror)
+                        mirror = misc.url_affix_trailing_slash(mirror)
                 for i, m in enumerate(self.mirrors):
                         if mirror == m.uri:
                                 # Immediate return as the index into the array
@@ -529,7 +534,7 @@ class Repository(object):
                 'origin' can be a RepositoryURI object or a URI string."""
 
                 if not isinstance(origin, RepositoryURI):
-                        origin = pkg.misc.url_affix_trailing_slash(origin)
+                        origin = misc.url_affix_trailing_slash(origin)
                 for i, o in enumerate(self.origins):
                         if origin == o.uri:
                                 # Immediate return as the index into the array
@@ -671,6 +676,7 @@ class Publisher(object):
         __alias = None
         __client_uuid = None
         __disabled = False
+        __meta_root = None
         __prefix = None
         __selected_repository = None
         __repositories = []
@@ -680,7 +686,7 @@ class Publisher(object):
         _source_object_id = None
 
         def __init__(self, prefix, alias=None, client_uuid=None, disabled=False,
-            repositories=None, selected_repository=None):
+            meta_root=None, repositories=None, selected_repository=None):
                 """Initialize a new publisher object."""
 
                 if client_uuid is None:
@@ -696,6 +702,7 @@ class Publisher(object):
                 # the class definition.
                 self.alias = alias
                 self.disabled = disabled
+                self.meta_root = meta_root
                 self.prefix = prefix
 
                 if repositories:
@@ -728,8 +735,8 @@ class Publisher(object):
                                 selected = repo
                         repositories.append(repo)
                 pub = Publisher(self.__prefix, client_uuid=self.__client_uuid,
-                    disabled=self.__disabled, repositories=repositories,
-                    selected_repository=selected)
+                    disabled=self.__disabled, meta_root=self.meta_root,
+                    repositories=repositories, selected_repository=selected)
                 pub._source_object_id = id(self)
                 return pub
 
@@ -767,6 +774,19 @@ class Publisher(object):
                                 return None
                         return repo.origins[0].ssl_key
 
+        def __get_last_refreshed(self):
+                if not self.meta_root:
+                        return None
+
+                lcfile = os.path.join(self.meta_root, "last_refreshed")
+                try:
+                        mod_time = os.stat(lcfile).st_mtime
+                except EnvironmentError, e:
+                        if e.errno == errno.ENOENT:
+                                return None
+                        raise
+                return dt.datetime.utcfromtimestamp(mod_time)
+
         def __ne__(self, other):
                 if isinstance(other, Publisher):
                         return self.prefix != other.prefix
@@ -783,8 +803,73 @@ class Publisher(object):
                 else:
                         self.__disabled = False
 
+        def __set_last_refreshed(self, value):
+                if not self.meta_root:
+                        return
+
+                if value is not None and not isinstance(value, dt.datetime):
+                        raise api_errors.BadRepositoryAttributeValue(
+                            "last_refreshed", value=value)
+
+                lcfile = os.path.join(self.meta_root, "last_refreshed")
+                if not value:
+                        # If no value was provided, attempt to remove the
+                        # tracking file.
+                        try:
+                                portable.remove(lcfile)
+                        except EnvironmentError, e:
+                                # If the file can't be removed due to
+                                # permissions, a read-only filesystem, or
+                                # because it doesn't exist, continue on.
+                                if e.errno not in (errno.ENOENT, errno.EACCES,
+                                    errno.EROFS):
+                                        raise
+                        return
+
+                def create_tracker():
+                        try:
+                                f = open(lcfile, "wb")
+                                f.write("%s\n" % misc.time_to_timestamp(
+                                    calendar.timegm(value.utctimetuple())))
+                                f.close()
+                        except EnvironmentError, e:
+                                # If the file can't be written due to
+                                # permissions or because the filesystem is
+                                # read-only, continue on.
+                                if e.errno not in (errno.EACCES, errno.EROFS):
+                                        raise
+
+                try:
+                        # If a time was provided, write out a special file that
+                        # can be used to track the information with the actual
+                        # time (in UTC) contained within.
+                        create_tracker()
+                except EnvironmentError, e:
+                        if e.errno != errno.ENOENT:
+                                raise
+
+                        # Assume meta_root doesn't exist and create it.
+                        try:
+                                os.makedirs(self.meta_root)
+                        except EnvironmentError, e:
+                                # If the directory can't be created
+                                # due to permissions, a read-only
+                                # filesystem, or because it already
+                                # exists, move on.
+                                if e.errno not in (errno.EACCES,
+                                    errno.EEXIST, errno.EROFS):
+                                        raise
+                        else:
+                                # Try one last time.
+                                create_tracker()
+
+        def __set_meta_root(self, pathname):
+                if pathname:
+                        pathname = os.path.abspath(pathname)
+                self.__meta_root = pathname
+
         def __set_prefix(self, prefix):
-                if not pkg.misc.valid_pub_prefix(prefix):
+                if not misc.valid_pub_prefix(prefix):
                         raise api_errors.BadPublisherPrefix(prefix)
                 self.__prefix = prefix
 
@@ -833,6 +918,46 @@ class Publisher(object):
                 origin = self.selected_repository.origins[0]
                 return (origin.ssl_key, origin.ssl_cert)
 
+        @property
+        def needs_refresh(self):
+                """A boolean value indicating whether the publisher's
+                metadata for the currently selected repository needs to be
+                refreshed."""
+
+                if not self.selected_repository or not self.meta_root:
+                        # Nowhere to obtain metadata from; this should rarely
+                        # occur except during publisher initialization.
+                        return False
+
+                cfile = os.path.join(self.meta_root, "catalog")
+                if not os.path.exists(cfile):
+                        # If metadata is missing, a refresh is needed.
+                        return True
+
+                lc = self.last_refreshed
+                if not lc:
+                        # There is no record of when the publisher metadata was
+                        # last refreshed, so assume it should be refreshed now.
+                        return True
+
+                ts_now = time.time()
+                ts_last = calendar.timegm(lc.utctimetuple())
+
+                rs = self.selected_repository.refresh_seconds
+                if not rs:
+                        # There is no indicator of how often often publisher
+                        # metadata should be refreshed, so assume it should be
+                        # now.
+                        return True
+
+                if (ts_now - ts_last) >= rs:
+                        # The number of seconds that has elapsed since the
+                        # publisher metadata was last refreshed exceeds or
+                        # equals the specified interval.
+                        return True
+
+                return False
+
         def remove_repository(self, name=None, origin=None):
                 """Removes the repository object matching the name or that has
                 a matching origin URI from the publisher."""
@@ -879,6 +1004,16 @@ class Publisher(object):
         disabled = property(lambda self: self.__disabled, __set_disabled,
             doc="A boolean value indicating whether the publisher should be "
             "used for packaging operations.")
+
+        last_refreshed = property(__get_last_refreshed, __set_last_refreshed,
+            doc="A datetime object representing the time (in UTC) the "
+                "publisher's selected repository was last refreshed for new "
+                "metadata (such as catalog updates).  'None' if the publisher "
+                "hasn't been refreshed yet or the time is not available.")
+
+        meta_root = property(lambda self: self.__meta_root, __set_meta_root,
+            doc="The absolute pathname of the directory where the publisher's "
+                "metadata should be written to and read from.")
 
         prefix = property(lambda self: self.__prefix, __set_prefix,
             doc="The name of the publisher.")

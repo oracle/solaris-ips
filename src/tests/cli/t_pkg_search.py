@@ -801,6 +801,7 @@ close
 
                 self.pkgsend_bulk(durl, self.example_pkg11)
 
+                self.pkg("refresh")
                 self.pkg("image-update")
 
                 self._run_local_tests_example11_installed()
@@ -1083,6 +1084,7 @@ close
                 self.pkg("install example_pkg")
                 self._run_local_tests()
                 self.pkgsend_bulk(durl, self.example_pkg11)
+                self.pkg("refresh")
                 self.pkg("image-update --no-index")
                 # Running empty test because search will notice the index
                 # does not match the installed packages and complain.

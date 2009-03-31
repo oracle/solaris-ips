@@ -40,7 +40,7 @@ class TestROption(testutils.SingleDepotTestCase):
 	def test_bad_cli_options(self):
 		durl = self.dc.get_depot_url()
 		self.image_create(durl)
-	
+
 		self.pkg("-@", exit=2)
 		self.pkg("-s status", exit=2)
                 self.pkg("-R status", exit=2)
@@ -48,7 +48,7 @@ class TestROption(testutils.SingleDepotTestCase):
         def test_1(self):
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.foo10)
-                
+
                 self.image_create(durl)
 
                 imgpath = self.img_path
@@ -56,7 +56,7 @@ class TestROption(testutils.SingleDepotTestCase):
 
                 self.pkg("-R %s list" % badpath, exit=1)
                 self.pkg("-R %s list" % imgpath, exit=1)
-                
+
                 self.pkg("-R %s install foo" % badpath, exit=1)
                 self.pkg("-R %s install foo" % imgpath)
 
@@ -64,7 +64,8 @@ class TestROption(testutils.SingleDepotTestCase):
                 self.pkg("-R %s list" % imgpath)
 
                 self.pkgsend_bulk(durl, self.foo10)
-                
+                self.pkg("-R %s refresh" % imgpath)
+
                 self.pkg("-R %s image-update" % badpath, exit=1)
                 self.pkg("-R %s image-update --be-name NEWBENAME" % imgpath, exit=1)
                 self.pkg("-R %s image-update" % imgpath)

@@ -311,7 +311,7 @@ class TestPkgApiInstall(testutils.SingleDepotTestCase):
 
                 self.pkg("contents -H")
                 self.pkg("list")
-                api_obj.refresh(False)
+                api_obj.refresh(immediate=True)
 
                 self.pkg("list")
                 self.pkg("verify")
@@ -518,7 +518,7 @@ class TestPkgApiInstall(testutils.SingleDepotTestCase):
 
                 self.pkgsend_bulk(durl, self.foo10)
 
-                api_obj.refresh(False)
+                api_obj.refresh(immediate=True)
                 self.__eval_assert_raises(api_errors.PlanCreationException,
                     check_missing, api_obj.plan_uninstall, ["foo"], [])
 

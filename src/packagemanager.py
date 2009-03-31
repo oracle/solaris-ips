@@ -178,7 +178,7 @@ class PackageManager:
                     global_settings.PKG_TIMEOUT_MAX))
 
                 global_settings.client_name = PKG_CLIENT_NAME
-                    
+
                 try:
                         self.application_dir = os.environ["PACKAGE_MANAGER_ROOT"]
                 except KeyError:
@@ -248,7 +248,7 @@ class PackageManager:
                 self.repositories_list = None
                 self.pr = progress.NullProgressTracker()
                 self.pylintstub = None
-                
+
                 # Create Widgets and show gui
                 self.gladefile = self.application_dir + \
                     "/usr/share/package-manager/packagemanager.glade"
@@ -273,13 +273,13 @@ class PackageManager:
                     w_tree_remote_search_error.get_widget("remote_search_button")
                 infobuffer = self.remote_search_error_textview.get_buffer()
                 infobuffer.create_tag("bold", weight=pango.WEIGHT_BOLD)
-                
+
                 self.w_main_window = w_tree_main.get_widget("mainwindow")
                 self.w_main_hpaned = \
                     w_tree_main.get_widget("main_hpaned")
                 self.w_main_vpaned = \
                     w_tree_main.get_widget("main_vpaned")
-                   
+
                 self.w_application_treeview = \
                     w_tree_main.get_widget("applicationtreeview")
                 self.w_categories_treeview = w_tree_main.get_widget("categoriestreeview")
@@ -310,7 +310,7 @@ class PackageManager:
                 self.w_main_statusbar = w_tree_main.get_widget("statusbar")
                 self.w_infosearch_frame = w_tree_main.get_widget("infosearch_frame")
                 self.w_infosearch_button = w_tree_main.get_widget("infosearch_button")
-                
+
                 self.w_main_view_notebook = \
                     w_tree_main.get_widget("main_view_notebook")
                 self.w_searchentry_dialog = w_tree_main.get_widget("searchentry")
@@ -353,7 +353,7 @@ class PackageManager:
                 self.saved_filter_combobox_active = self.initial_show_filter
                 self.search_image = w_tree_main.get_widget("search_image")
                 self.search_button = w_tree_main.get_widget("set_search")
-                self.a11y_search_button = self.search_button.get_accessible()                
+                self.a11y_search_button = self.search_button.get_accessible()
                 self.is_remote_search = False
                 self.need_descriptions = True
                 self.searchmenu = gtk.Menu()
@@ -361,7 +361,7 @@ class PackageManager:
                 self.a11y_search_button.set_description(self.search_options[0][3])
                 for stock_id, pixbuf, label, description in self.search_options:
                         action = gtk.Action(stock_id, label, None, stock_id)
-                        action.connect('activate', 
+                        action.connect('activate',
                             self.__search_menu_item_activate)
                         menu_item = action.create_menu_item()
                         self.searchmenu.append(menu_item)
@@ -479,22 +479,22 @@ class PackageManager:
                             dic_remote_search_error)
                 except AttributeError, error:
                         print _(
-                            "GUI will not respond to any event! %s." 
+                            "GUI will not respond to any event! %s."
                             "Check declare_signals()") \
                             % error
-                            
+
                 self.package_selection = None
                 self.category_list_filter = None
                 self.application_list_filter = None
                 self.application_list_sort = None
-                self.application_refilter_id = 0 
-                self.application_refilter_idle_id = 0 
-                self.show_info_id = 0 
-                self.show_licenses_id = 0 
+                self.application_refilter_id = 0
+                self.application_refilter_idle_id = 0
+                self.show_info_id = 0
+                self.show_licenses_id = 0
                 self.in_setup = True
                 if self.initial_app_width >= MIN_APP_WIDTH and \
                         self.initial_app_height >= MIN_APP_HEIGHT:
-                        self.w_main_window.resize(self.initial_app_width, 
+                        self.w_main_window.resize(self.initial_app_width,
                             self.initial_app_height)
                 if self.initial_app_hpos > 0:
                         self.w_main_hpaned.set_position(self.initial_app_hpos)
@@ -502,7 +502,7 @@ class PackageManager:
                         self.w_main_vpaned.set_position(self.initial_app_vpos)
                 self.w_main_window.show_all()
                 gdk_win = self.w_main_window.get_window()
-                self.gdk_window = gtk.gdk.Window(gdk_win, gtk.gdk.screen_width(), 
+                self.gdk_window = gtk.gdk.Window(gdk_win, gtk.gdk.screen_width(),
                     gtk.gdk.screen_height(), gtk.gdk.WINDOW_CHILD, 0, gtk.gdk.INPUT_ONLY)
                 gdk_cursor = gtk.gdk.Cursor(gtk.gdk.WATCH)
                 self.gdk_window.set_cursor(gdk_cursor)
@@ -523,7 +523,7 @@ class PackageManager:
                         self.pylintstub = name
                         self.pylintstub = description
                 factory.add_default()
-    
+
         def __set_search_option(self, i):
                 # The value i is the index in the table search_options
                 # of the current choice.
@@ -575,7 +575,7 @@ class PackageManager:
                         self.w_filter_combobox.set_active(0)
                         self.w_sections_combobox.set_active(0)
                         category_list = self.__get_new_category_liststore()
-                        category_list.prepend([-1, _('All'), None, None, False, 
+                        category_list.prepend([-1, _('All'), None, None, False,
                             True, None])
                         self.category_list = category_list
                         self.__init_tree_views(None, category_list, None)
@@ -589,7 +589,7 @@ class PackageManager:
                             self.saved_repository_combobox_active)
                         self.set_section = self.saved_sections_combobox_active
                         self.set_show_filter = self.saved_filter_combobox_active
-                        self.__init_tree_views(self.saved_application_list, 
+                        self.__init_tree_views(self.saved_application_list,
                             self.saved_category_list, self.saved_section_list)
                         self.need_descriptions = True
                         self.process_package_list_end()
@@ -609,7 +609,7 @@ class PackageManager:
         def __search_menu_item_activate(self, widget):
                 name = widget.get_name()
                 i = 0
-                for stock_id, pixbuf, label, description in self.search_options: 
+                for stock_id, pixbuf, label, description in self.search_options:
                         if stock_id == name:
                                 self.__set_search_option(i)
                                 self.search_image.set_from_pixbuf(pixbuf)
@@ -647,13 +647,13 @@ class PackageManager:
 
         def __load_startpage(self):
                 self.cache_start_page_url = self.application_dir + \
-                    START_PAGE_CACHE_LANG_BASE % (self.lang, START_PAGE_HOME)                   
+                    START_PAGE_CACHE_LANG_BASE % (self.lang, START_PAGE_HOME)
                 self.start_page_url = self.application_dir + \
                     START_PAGE_LANG_BASE % (self.lang, START_PAGE_HOME)
                 # Load from Cache
                 if not self.__load_uri(self.document, self.cache_start_page_url):
                         self.cache_start_page_url = self.application_dir + \
-                            START_PAGE_CACHE_LANG_BASE % ("C", START_PAGE_HOME)                   
+                            START_PAGE_CACHE_LANG_BASE % ("C", START_PAGE_HOME)
                         if not self.__load_uri(self.document, self.cache_start_page_url):
                                 # Load from Install
                                 if not self.__load_uri(self.document,
@@ -685,7 +685,7 @@ class PackageManager:
                                 if rem_str in err_str:
                                         repo = err_str.replace(rem_str,"")
                                         self.current_not_show_repos.append(repo)
-        
+
         def __on_infosearch_button_clicked(self, widget):
                 self.__handle_remote_search_error(True)
 
@@ -706,7 +706,7 @@ class PackageManager:
                         return
 
                 infobuffer = self.remote_search_error_textview.get_buffer()
-                infobuffer.set_text("")                
+                infobuffer.set_text("")
                 textiter = infobuffer.get_end_iter()
                 for url in self.current_not_show_repos:
                         if show_all or (url not in self.gconf_not_show_repos):
@@ -716,7 +716,7 @@ class PackageManager:
                 self.remote_search_checkbox.set_active(False)
                 self.remote_search_error_dialog.show()
                 self.remote_search_button.grab_focus()
-               
+
         def __get_repo_publishers(self):
                 repo_pub_dict = {}
                 pubs = self.api_o.get_publishers()
@@ -725,7 +725,7 @@ class PackageManager:
                         origin = repo.origins[0]
                         repo_pub_dict[origin.uri] = pub.prefix
                 return repo_pub_dict
-                
+
         def __on_url(self, view, link):
                 # Handle mouse over events on links and reset when not on link
                 if link == None or link == "":
@@ -736,14 +736,14 @@ class PackageManager:
                                 self.w_main_statusbar.push(0, display_link)
                         else:
                                 self.update_statusbar()
-        
+
         @staticmethod
         def __is_relative_to_server(url):
                 parts = urlparse.urlparse(url)
                 if parts[0] or parts[1]:
                         return 0
                 return 1
-                
+
         def __open_url(self, url):
                 uri = self.__resolve_uri(url)
                 return self.opener.open(uri)
@@ -796,10 +796,10 @@ class PackageManager:
                     <IMG SRC = 'startpage_star.png' \
                     style='border-style: none'></a> <br><br>\
                     <h2><font color='#0000FF'>Warning: Unable to \
-                    load URL</font></h2><br>%s</body></html>" 
+                    load URL</font></h2><br>%s</body></html>"
                     % (PM_ACTION, START_PAGE_HOME, link)))
                 self.document.close_stream()
- 
+
         def __handle_link(self, document, link, handle_what = CLICK_LINK):
                 query_dict = self.__urlparse_qs(link)
 
@@ -810,7 +810,7 @@ class PackageManager:
                         return link
                 ext_uri = ""
                 protocol = None
-                
+
                 # Internal Browse
                 if action == ACTION_INTERNAL:
                         if query_dict.has_key(INTERNAL_URI):
@@ -838,7 +838,7 @@ class PackageManager:
                         else:
                                 protocol = DEFAULT_PROTOCOL
 
-                        if handle_what == DISPLAY_LINK:  
+                        if handle_what == DISPLAY_LINK:
                                 return protocol + "://" + ext_uri
                         try:
                                 gnome.url_show(protocol + "://" + ext_uri)
@@ -854,11 +854,11 @@ class PackageManager:
                 # Handle empty and unsupported actions
                 elif action == "":
                         self.__link_load_error(_("Empty Action not supported"
-                            % action)) 
+                            % action))
                         return
                 elif action != None:
                         self.__link_load_error(_("Action not supported: %s"
-                            % action)) 
+                            % action))
                         return
 
         @staticmethod
@@ -870,7 +870,7 @@ class PackageManager:
                             "querystring %s, fragment %s"
                             % (scheme, netloc, url, params, querystring, fragment))
                 return parseqs.parse_qs(querystring)
-                
+
         @staticmethod
         def __get_new_application_liststore():
                 return gtk.ListStore(
@@ -908,7 +908,7 @@ class PackageManager:
                         gobject.TYPE_BOOLEAN,     # enumerations.SECTION_ENABLED
                         )
 
-        @staticmethod                    
+        @staticmethod
         def __get_new_filter_liststore():
                 return gtk.ListStore(
                         gobject.TYPE_INT,         # enumerations.FILTER_ID
@@ -938,7 +938,7 @@ class PackageManager:
                 column.set_sort_column_id(enumerations.MARK_COLUMN)
                 column.set_sort_indicator(True)
                 column.set_cell_data_func(toggle_renderer, self.cell_data_function, None)
-                column.connect_after('clicked', 
+                column.connect_after('clicked',
                     self.__application_treeview_column_sorted, None)
                 self.w_application_treeview.append_column(column)
                 name_renderer = gtk.CellRendererText()
@@ -949,24 +949,24 @@ class PackageManager:
                 column.set_sort_indicator(True)
                 column.set_min_width(200)
                 column.set_cell_data_func(name_renderer, self.cell_data_function, None)
-                column.connect_after('clicked', 
+                column.connect_after('clicked',
                     self.__application_treeview_column_sorted, None)
                 self.w_application_treeview.append_column(column)
-                column = self.__create_icon_column(_("Status"), True, 
+                column = self.__create_icon_column(_("Status"), True,
                     enumerations.STATUS_ICON_COLUMN, True)
                 column.set_sort_column_id(enumerations.STATUS_ICON_COLUMN)
                 column.set_sort_indicator(True)
-                column.connect_after('clicked', 
+                column.connect_after('clicked',
                     self.__application_treeview_column_sorted, None)
                 self.w_application_treeview.append_column(column)
                 description_renderer = gtk.CellRendererText()
                 if self.is_remote_search:
-                        column = gtk.TreeViewColumn(_('Repository'), 
+                        column = gtk.TreeViewColumn(_('Repository'),
                             description_renderer,
                             text = enumerations.AUTHORITY_COLUMN)
                         column.set_sort_column_id(enumerations.AUTHORITY_COLUMN)
                 else:
-                        column = gtk.TreeViewColumn(_('Description'), 
+                        column = gtk.TreeViewColumn(_('Description'),
                             description_renderer,
                             text = enumerations.DESCRIPTION_COLUMN)
                         column.set_sort_column_id(enumerations.DESCRIPTION_COLUMN)
@@ -974,7 +974,7 @@ class PackageManager:
                 column.set_sort_indicator(True)
                 column.set_cell_data_func(description_renderer,
                     self.cell_data_function, None)
-                column.connect_after('clicked', 
+                column.connect_after('clicked',
                     self.__application_treeview_column_sorted, None)
                 self.w_application_treeview.append_column(column)
                 #Added selection listener
@@ -1015,21 +1015,21 @@ class PackageManager:
                         self.__init_application_tree_view(application_list)
 
                 if self.first_run:
-                        # When vadj changes we need to set image descriptions 
+                        # When vadj changes we need to set image descriptions
                         # on visible status icons. This catches moving the scroll bars
                         # and scrolling up and down using keyboard.
                         vadj = self.w_application_treeview.get_vadjustment()
-                        vadj.connect('value-changed', 
+                        vadj.connect('value-changed',
                             self.__application_treeview_vadjustment_changed, None)
                         vadj = self.w_categories_treeview.get_vadjustment()
-                        vadj.connect('value-changed', 
+                        vadj.connect('value-changed',
                             self.__categories_treeview_vadjustment_changed, None)
 
                         # When the size of the application_treeview changes
                         # we need to set image descriptions on visible status icons.
-                        self.w_application_treeview.connect('size-allocate', 
+                        self.w_application_treeview.connect('size-allocate',
                             self.__application_treeview_size_allocate, None)
-                        self.w_categories_treeview.connect('size-allocate', 
+                        self.w_categories_treeview.connect('size-allocate',
                             self.__categories_treeview_size_allocate, None)
 
                 if category_list != None:
@@ -1123,7 +1123,7 @@ class PackageManager:
 
         def __categories_treeview_vadjustment_changed(self, widget, user_data):
                 self.__set_accessible_categories_visible_status()
- 
+
         def __set_accessible_categories_status(self, model, itr):
                 status = model.get_value(itr, enumerations.CATEGORY_ICON)
                 if status != None:
@@ -1132,8 +1132,8 @@ class PackageManager:
                         desc = None
                 if desc != None:
                         obj = self.a11y_categories_treeview.ref_at(
-                            int(model.get_string_from_iter(itr)), 
-                            CATEGORIES_STATUS_COLUMN_INDEX) 
+                            int(model.get_string_from_iter(itr)),
+                            CATEGORIES_STATUS_COLUMN_INDEX)
                         obj.set_image_description(desc)
 
         def __set_accessible_categories_visible_status(self):
@@ -1159,7 +1159,7 @@ class PackageManager:
                         if start < old_end:
                                 if end < old_end:
                                         if end >= old_start:
-                                                end = old_start 
+                                                end = old_start
                                 else:
                                         start = old_end
                 self.categories_treeview_range = visible_range
@@ -1189,7 +1189,7 @@ class PackageManager:
 
         def __application_treeview_vadjustment_changed(self, widget, user_data):
                 self.__set_accessible_visible_status()
- 
+
         def __set_accessible_status(self, model, itr):
                 status = model.get_value(itr, enumerations.STATUS_COLUMN)
                 if status == enumerations.INSTALLED:
@@ -1202,8 +1202,8 @@ class PackageManager:
                         desc = None
                 if desc != None:
                         obj = self.a11y_application_treeview.ref_at(
-                            int(model.get_string_from_iter(itr)), 
-                            STATUS_COLUMN_INDEX) 
+                            int(model.get_string_from_iter(itr)),
+                            STATUS_COLUMN_INDEX)
                         obj.set_image_description(desc)
 
         def __set_accessible_visible_status(self, check_range = True):
@@ -1230,7 +1230,7 @@ class PackageManager:
                                 if start < old_end:
                                         if end < old_end:
                                                 if end >= old_start:
-                                                        end = old_start 
+                                                        end = old_start
                                         else:
                                                 start = old_end
                 self.application_treeview_range = visible_range
@@ -1254,7 +1254,7 @@ class PackageManager:
                         column.set_cell_data_func(render_pixbuf,
                             self.cell_data_function, None)
                 return column
-                
+
         def __disconnect_models(self):
                 self.w_application_treeview.set_model(None)
                 self.w_categories_treeview.set_model(None)
@@ -1284,7 +1284,7 @@ class PackageManager:
                 Category. It sets active section combobox entry "All"'''
                 cat_path = None
                 enabled = True
-                # We enable only first section and later we might enable the rest, 
+                # We enable only first section and later we might enable the rest,
                 # depending if there are some packages connected with them
                 section_list.append([0, _('All Categories'), cat_path, enabled ])
                 section_list.append([-1, "", cat_path, enabled ])
@@ -1304,7 +1304,7 @@ class PackageManager:
                     _('Installed Packages'), ])
                 self.filter_list.append([enumerations.FILTER_UPDATES,
                     _('Updates'), ])
-                self.filter_list.append([enumerations.FILTER_NOT_INSTALLED, 
+                self.filter_list.append([enumerations.FILTER_NOT_INSTALLED,
                     _('Non-installed Packages'), ])
                 self.filter_list.append([-1, "", ])
                 self.filter_list.append([enumerations.FILTER_SELECTED,
@@ -1518,7 +1518,7 @@ class PackageManager:
                             gobject.idle_add(self.__application_refilter)
                 else:
                         self.application_refilter_id = \
-                            gobject.timeout_add(TYPE_AHEAD_DELAY, 
+                            gobject.timeout_add(TYPE_AHEAD_DELAY,
                             self.__application_refilter)
                 self.in_search = False
 
@@ -1607,7 +1607,7 @@ class PackageManager:
                                 gobject.source_remove(self.show_licenses_id)
                                 self.show_licenses_id = 0
                         self.show_licenses_id = \
-                            gobject.timeout_add(TYPE_AHEAD_DELAY, 
+                            gobject.timeout_add(TYPE_AHEAD_DELAY,
                                 self.__show_licenses)
 
         def __on_select_all(self, widget):
@@ -1705,10 +1705,10 @@ class PackageManager:
 
         def __on_preferencesclose_clicked(self, widget):
                 self.w_preferencesdialog.hide()
-                
+
         def __on_preferenceshelp_clicked(self, widget):
                 gui_misc.display_help(self.application_dir, "pm_win")
-                
+
         def __on_startpage_checkbutton_toggled(self, widget):
                 self.show_startpage = self.w_startpage_checkbutton.get_active()
                 self.client.set_bool(SHOW_STARTPAGE_PREFERENCES, self.show_startpage)
@@ -1729,7 +1729,7 @@ class PackageManager:
                                         self.gconf_not_show_repos = \
                                             self.gconf_not_show_repos.replace(
                                             url + ",", "")
-                        self.client.set_string(REMOTE_SEARCH_ERROR_PREFERENCES, 
+                        self.client.set_string(REMOTE_SEARCH_ERROR_PREFERENCES,
                             self.gconf_not_show_repos)
 
         def __on_searchentry_focus_in(self, widget, event):
@@ -1828,7 +1828,7 @@ class PackageManager:
                         pkg = model.get_value(itr, enumerations.FMRI_COLUMN)
                         gobject.idle_add(self.__show_fetching_package_info, pkg)
                         self.show_info_id = \
-                            gobject.timeout_add(TYPE_AHEAD_DELAY, 
+                            gobject.timeout_add(TYPE_AHEAD_DELAY,
                                 self.__show_info, model, model.get_path(itr))
                         if self.w_info_notebook.get_current_page() == 3:
                                 self.__on_notebook_change(None, None, 3)
@@ -1987,7 +1987,7 @@ class PackageManager:
                 # Add... case and immediately coming back to the
                 # previously selected repository.
                         return
-                # Checking for Add... is fine enough, as the repository 
+                # Checking for Add... is fine enough, as the repository
                 # name cannot contain "..." in the name.
                 if active_publisher == _("Add..."):
                         index = -1
@@ -2039,7 +2039,7 @@ class PackageManager:
                                 uptodate = self.__check_if_cache_uptodate(publisher)
                                 if uptodate:
                                         self.__add_pkgs_to_lists_from_cache(publisher,
-                                            application_list, category_list, 
+                                            application_list, category_list,
                                             section_list)
                         except (UnpicklingError, EOFError, IOError):
                                 #Most likely cache is corrupted, silently load list
@@ -2056,7 +2056,7 @@ class PackageManager:
                                 self.catalog_loaded = True
                                 self.__add_pkgs_to_lists_from_api(publisher,
                                     application_list, category_list, section_list)
-                                category_list.prepend([0, _('All'), None, None, False, 
+                                category_list.prepend([0, _('All'), None, None, False,
                                     True, None])
                         if self.application_list and self.category_list and \
                             not self.visible_repository_uptodate:
@@ -2112,7 +2112,7 @@ class PackageManager:
                 return
 
         def __on_help_about(self, widget):
-                wTreePlan = gtk.glade.XML(self.gladefile, "aboutdialog") 
+                wTreePlan = gtk.glade.XML(self.gladefile, "aboutdialog")
                 aboutdialog = wTreePlan.get_widget("aboutdialog")
                 aboutdialog.connect("response", lambda x = None, \
                     y = None: aboutdialog.destroy())
@@ -2177,20 +2177,20 @@ class PackageManager:
                 self.cancelled = True
                 if self.in_setup:
                         return
-                        
+
                 if be_name:
                         if self.image_dir_arg:
                                 gobject.spawn_async([self.application_path, "-R",
                                     self.image_dir_arg, "-U", be_name])
                         else:
-                                gobject.spawn_async([self.application_path, 
+                                gobject.spawn_async([self.application_path,
                                     "-U", be_name])
-                elif not self.is_remote_search: 
+                elif not self.is_remote_search:
                         visible_repository = self.__get_visible_repository_name()
-                        self.__dump_datamodels(visible_repository, 
-                                self.application_list, self.category_list, 
+                        self.__dump_datamodels(visible_repository,
+                                self.application_list, self.category_list,
                                 self.section_list)
-                
+
                 width, height = self.w_main_window.get_size()
                 hpos = self.w_main_hpaned.get_position()
                 vpos = self.w_main_vpaned.get_position()
@@ -2198,7 +2198,7 @@ class PackageManager:
                 self.client.set_int(INITIAL_APP_HEIGHT_PREFERENCES, height)
                 self.client.set_int(INITIAL_APP_HPOS_PREFERENCES, hpos)
                 self.client.set_int(INITIAL_APP_VPOS_PREFERENCES, vpos)
-                
+
                 self.w_main_window.hide()
                 while gtk.events_pending():
                         gtk.main_iteration(False)
@@ -2235,7 +2235,7 @@ class PackageManager:
                         repositories_list.append([i, prefix, ])
                         enabled_repos.append(prefix)
                         i = i + 1
-                repositories_list.append([-1, "", ])                
+                repositories_list.append([-1, "", ])
                 repositories_list.append([-1, _("Add..."), ])
                 pkgs_to_remove = []
                 for repo_name in selected_repos:
@@ -2318,7 +2318,7 @@ class PackageManager:
                 if not to_install:
                         to_install = _("Select packages by marking checkbox\n"+
                             "and click to Install/Update.")
-                self.w_installupdate_button.set_tooltip(self.install_button_tooltip, 
+                self.w_installupdate_button.set_tooltip(self.install_button_tooltip,
                     to_install)
                 if not to_remove:
                         to_remove = _("Select packages by marking checkbox\n"+
@@ -2382,10 +2382,10 @@ class PackageManager:
                 self.w_packagename_label.set_markup("<b>" + pkg_name + "</b>")
                 self.w_general_info_label.set_markup("<b>" + pkg_name + "</b>")
 
-                pkg_stem = pkg.get_pkg_stem()                
+                pkg_stem = pkg.get_pkg_stem()
                 if self.__setting_from_cache(pkg_stem):
                         return
-                        
+
                 self.w_shortdescription_label.set_text(
                     _("Fetching description..."))
                 instbuffer = self.w_installedfiles_textview.get_buffer()
@@ -2396,7 +2396,7 @@ class PackageManager:
                 depbuffer.set_text(fetching_text)
                 infobuffer.set_text(fetching_text)
                 return
-                
+
         def __setting_from_cache(self, pkg_stem):
                 if len(self.info_cache) > MAX_INFO_CACHE_LIMIT:
                         self.info_cache = {}
@@ -2413,7 +2413,7 @@ class PackageManager:
                         return True
                 else:
                         return False
-                
+
         def __update_package_info(self, pkg, local_info, remote_info):
                 pkg_name = pkg.get_name()
                 pkg_stem = pkg.get_pkg_stem()
@@ -2500,7 +2500,7 @@ class PackageManager:
                 if local_info.summary:
                         summary = local_info.summary
                 info_str += "  %s %s" % (labs["sum"], summary)
-                info_str += "\n  %s %s" % (labs["size"], 
+                info_str += "\n  %s %s" % (labs["size"],
                     misc.bytes_to_str(local_info.size))
                 info_str += "\n  %s %s" % (labs["cat"], categories)
                 if installed:
@@ -2516,7 +2516,7 @@ class PackageManager:
                 depbuffer.set_text(dep_str)
                 self.info_cache[pkg_stem] = \
                     (description, info_str, inst_str, dep_str)
-                
+
         def __update_package_license(self, licenses):
                 lic = ""
                 lic_u = ""
@@ -2536,7 +2536,7 @@ class PackageManager:
         def __show_licenses(self):
                 if self.catalog_loaded == False:
                         return
-                Thread(target = self.__show_package_licenses, 
+                Thread(target = self.__show_package_licenses,
                     args = (self.show_licenses_id,)).start()
 
         def __show_package_licenses(self, license_id):
@@ -2618,16 +2618,16 @@ class PackageManager:
                 self.api_o.log_operation_start("info")
                 local_info = None
                 remote_info = None
-                if show_id == self.show_info_id and (pkg_status == 
+                if show_id == self.show_info_id and (pkg_status ==
                     enumerations.INSTALLED or pkg_status ==
                     enumerations.UPDATABLE):
                         local_info = self.__get_pkg_info(pkg_stem, True)
-                if show_id == self.show_info_id and (pkg_status == 
+                if show_id == self.show_info_id and (pkg_status ==
                     enumerations.NOT_INSTALLED or pkg_status ==
                     enumerations.UPDATABLE):
                         remote_info = self.__get_pkg_info(pkg_stem, False)
                 if show_id == self.show_info_id:
-                        gobject.idle_add(self.__update_package_info, pkg, 
+                        gobject.idle_add(self.__update_package_info, pkg,
                             local_info, remote_info)
                 self.api_o.log_operation_end()
                 return
@@ -2641,7 +2641,7 @@ class PackageManager:
                     (_(action.name), action.attrs.get(action.key_attr, "???"))
 
         def __application_filter(self, model, itr):
-                '''This function is used to filter content in the main 
+                '''This function is used to filter content in the main
                 application view'''
                 if self.in_setup or self.cancelled:
                         return False
@@ -2660,7 +2660,7 @@ class PackageManager:
                 filter_id = self.w_filter_combobox.get_active()
                 if filter_id == enumerations.FILTER_SELECTED:
                         return model.get_value(itr, enumerations.MARK_COLUMN)
-                # XXX Show filter, chenge text to integers 
+                # XXX Show filter, chenge text to integers
                 selected_category = 0
                 category_selection = self.w_categories_treeview.get_selection()
                 category_model, category_iter = category_selection.get_selected()
@@ -2687,7 +2687,7 @@ class PackageManager:
                 if (model.get_value(itr, enumerations.IS_VISIBLE_COLUMN) == False):
                         return False
                 if search_text == "":
-                        return (category & 
+                        return (category &
                             self.__is_package_filtered(model, itr, filter_id))
                 else:
                         return False
@@ -2815,7 +2815,7 @@ class PackageManager:
                 update_available = self.__check_if_updates_available()
                 gobject.idle_add(self.__g_enable_disable_update_all, update_available)
                 self.show_info_id = -1
-                gobject.idle_add(self.__show_package_info, 
+                gobject.idle_add(self.__show_package_info,
                     self.selected_model, self.selected_path, -1)
                 gobject.idle_add(self.__show_licenses)
                 return False
@@ -2833,9 +2833,9 @@ class PackageManager:
                             all_known, all_versions)
                         for pfmri, state in res:
                                 if state["upgradable"]:
-                                        self.pylintstub = pfmri    
+                                        self.pylintstub = pfmri
                                         return True
-                                        
+
                 except api_errors.InventoryException:
                         return False
                 return False
@@ -2856,9 +2856,10 @@ class PackageManager:
         def __catalog_refresh(self, reload_gui=True):
                 """Update image's catalogs."""
                 try:
-                        self.api_o.refresh(True)
-                        self.catalog_loaded = False
-                        self.api_o.img.load_catalogs(self.pr)
+                        # Since the user requested the refresh, perform it
+                        # immediately for all publishers.
+                        self.api_o.refresh(immediate=True)
+                        # Refresh will load the catalogs.
                         self.catalog_loaded = True
                 except api_errors.PublisherError:
                         # In current implementation, this will never happen
@@ -2866,7 +2867,7 @@ class PackageManager:
                         self.__catalog_refresh_done()
                         raise
                 except api_errors.PermissionsException:
-                        #Error will already have been reported in 
+                        #Error will already have been reported in
                         #Manage Repository dialog
                         self.__catalog_refresh_done()
                         return -1
@@ -2875,8 +2876,8 @@ class PackageManager:
                         succeeded = cre.succeeded
                         ermsg = _("Network problem.\n\n")
                         ermsg += _("Details:\n")
-                        ermsg += "%s/%s" % (succeeded, total) 
-                        ermsg += _(" catalogs successfully updated:\n") 
+                        ermsg += "%s/%s" % (succeeded, total)
+                        ermsg += _(" catalogs successfully updated:\n")
                         for pub, err in cre.failed:
                                 if isinstance(err, HTTPError):
                                         ermsg += "   %s: %s - %s\n" % \
@@ -2922,10 +2923,10 @@ class PackageManager:
                         self.__catalog_refresh_done()
                 return 0
 
-        def __add_pkgs_to_lists_from_cache(self, publisher, application_list, 
+        def __add_pkgs_to_lists_from_cache(self, publisher, application_list,
             category_list, section_list):
                 if self.cache_o:
-                        self.cache_o.load_application_list(publisher, application_list, 
+                        self.cache_o.load_application_list(publisher, application_list,
                             self.selected_pkgs)
                         self.cache_o.load_category_list(publisher, category_list)
                         self.cache_o.load_section_list(publisher, section_list)
@@ -2933,11 +2934,11 @@ class PackageManager:
         def __add_pkgs_to_lists_from_api(self, publisher, application_list,
             category_list, section_list):
                 """ This method set up image from the given directory and
-                returns the image object or None"""                
+                returns the image object or None"""
                 pargs = []
                 pargs.append("pkg://" + publisher + "/*")
                 try:
-                        pkgs_known = misc.get_inventory_list(self.api_o.img, pargs, 
+                        pkgs_known = misc.get_inventory_list(self.api_o.img, pargs,
                             True, True)
                 except api_errors.InventoryException:
                         # Can't happen when all_known is true and no args,
@@ -2945,7 +2946,7 @@ class PackageManager:
                         err = _("Selected repository does not contain any packages."
                                 "\nPlease reload the list of package.")
                         gobject.idle_add(self.w_progress_dialog.hide)
-                        gobject.idle_add(self.error_occured, err, None, 
+                        gobject.idle_add(self.error_occured, err, None,
                             gtk.MESSAGE_INFO)
                         self.unset_busy_cursor()
                         return
@@ -3012,7 +3013,7 @@ class PackageManager:
                             state["state"] == "installed":
                                 pass
                         elif next_app != None:
-                                self.__add_package_to_list(next_app, 
+                                self.__add_package_to_list(next_app,
                                     application_list,
                                     pkg_add, pkg_name,
                                     category_icon,
@@ -3057,7 +3058,7 @@ class PackageManager:
                             ]
                         pkg_count += 1
 
-                self.__add_package_to_list(next_app, application_list, pkg_add, 
+                self.__add_package_to_list(next_app, application_list, pkg_add,
                     pkg_name, category_icon, categories, category_list, pkg_publisher)
                 pkg_add += 1
                 if category_list != None:
@@ -3073,7 +3074,7 @@ class PackageManager:
                                 for category in sections[publisher][section].split(","):
                                         self.__add_category_to_section(_(category),
                                             _(section), category_list, section_list)
- 
+
                 #1915 Sort the Categories into alphabetical order and prepend All Category
                 if len(category_list) > 0:
                         rows = [tuple(r) + (i,) for i, r in enumerate(category_list)]
@@ -3082,7 +3083,7 @@ class PackageManager:
                         category_list.reorder([r[-1] for r in rows])
                 return
 
-        def __add_package_to_list(self, app, application_list, pkg_add, 
+        def __add_package_to_list(self, app, application_list, pkg_add,
             pkg_name, category_icon, categories, category_list, publisher):
                 row_iter = application_list.insert(pkg_add, app)
                 if category_list == None:
@@ -3091,8 +3092,8 @@ class PackageManager:
                 if pkg_name in cat_pub:
                         pkg_categories = cat_pub.get(pkg_name)
                         for pcat in pkg_categories.split(","):
-                                self.__add_package_to_category(_(pcat), None, 
-                                    category_icon, row_iter, application_list, 
+                                self.__add_package_to_category(_(pcat), None,
+                                    category_icon, row_iter, application_list,
                                     category_list)
 
         @staticmethod
@@ -3117,8 +3118,8 @@ class PackageManager:
                                 break
                 if not category_id:                       # Category not exists
                         category_id = len(category_list) + 1
-                        category_list.append([category_id, category_name, 
-                            category_description, category_icon, icon_visible, 
+                        category_list.append([category_id, category_name,
+                            category_description, category_icon, icon_visible,
                             True, None])
                 if application_list.get_value(package,
                     enumerations.CATEGORY_LIST_COLUMN):
@@ -3132,9 +3133,9 @@ class PackageManager:
                             enumerations.CATEGORY_LIST_COLUMN, category_list)
 
         @staticmethod
-        def __add_category_to_section(category_name, section_name, category_list, 
+        def __add_category_to_section(category_name, section_name, category_list,
             section_list):
-                '''Adds the section to section list in category. If there is no such 
+                '''Adds the section to section list in category. If there is no such
                 section, than it is not added. If there was already section than it
                 is skipped. Sections must be case sensitive'''
                 if not category_name:
@@ -3165,14 +3166,14 @@ class PackageManager:
                         time.sleep(0.1)
                 gobject.idle_add(self.w_progress_dialog.hide)
                 self.progress_stop_timer_thread = False
-                
+
         # For initial setup before loading package entries allow 5% of progress bar
         # update it on a time base as we have no other way to judge progress at this point
         def __progressdialog_progress_time(self):
                 while not self.progress_stop_timer_thread and \
                         self.progress_fraction_time_count <= \
                             INITIAL_PROGRESS_TOTAL_PERCENTAGE:
-                                
+
                         gobject.idle_add(self.w_progressbar.set_fraction,
                             self.progress_fraction_time_count)
                         self.progress_fraction_time_count += \
@@ -3208,16 +3209,16 @@ class PackageManager:
 #-----------------------------------------------------------------------------#
 
         #@staticmethod
-        #def N_(message): 
+        #def N_(message):
         #        return message
 
         @staticmethod
         def __sort(a, b):
                 return cmp(a[1], b[1])
-                
+
         @staticmethod
         def cell_data_function(column, renderer, model, itr, data):
-                '''Function which sets the background colour to black if package is 
+                '''Function which sets the background colour to black if package is
                 selected'''
                 if itr:
                         if model.get_value(itr, enumerations.MARK_COLUMN):
@@ -3266,7 +3267,7 @@ class PackageManager:
                         manifest = img.get_manifest(package)
                 except OSError:
                         # XXX It is possible here that the user doesn't have network con,
-                        # XXX proper permissions to save manifest, should we do something 
+                        # XXX proper permissions to save manifest, should we do something
                         # XXX and popup information dialog?
                         pass
                 except (retrieve.ManifestRetrievalError,
@@ -3307,7 +3308,7 @@ class PackageManager:
 
         def set_busy_cursor(self):
                 self.gdk_window.show()
-    
+
         def unset_busy_cursor(self):
                 self.gdk_window.hide()
 
@@ -3355,7 +3356,7 @@ class PackageManager:
                     self.set_show_filter != enumerations.FILTER_ALL:
                         self.__application_refilter()
                 self.unset_busy_cursor()
-                Thread(target = self.__enable_disable_update_all).start()                
+                Thread(target = self.__enable_disable_update_all).start()
                 if self.need_descriptions:
                         self.__get_manifests_thread()
 
@@ -3370,7 +3371,7 @@ class PackageManager:
         def get_manifests_for_packages(self):
                 ''' Function, which get's manifest for packages. If the manifest is not
                 locally tries to retrieve it. For installed packages gets manifest
-                for the particular version (local operation only), if the package is 
+                for the particular version (local operation only), if the package is
                 not installed than the newest one'''
                 time.sleep(2)
                 count = 0
@@ -3393,7 +3394,7 @@ class PackageManager:
                 self.api_o.log_operation_start("info")
                 self.api_o.log_operation_end()
                 self.description_thread_running = False
-                
+
         def update_statusbar_for_search(self):
                 status_str = self.search_options[self.current_search_option][3]
                 self.search_message_id = self.w_main_statusbar.push(0, status_str)
@@ -3437,7 +3438,7 @@ class PackageManager:
                 listed_str = _('%d listed') % len(self.application_list)
                 sel_str = _('%d selected') % sel
                 inst_str = _('%d installed') % installed
-                status_str = _("%s: %s , %s, %s.") % (visible_repository, listed_str, 
+                status_str = _("%s: %s , %s, %s.") % (visible_repository, listed_str,
                         inst_str, sel_str)
                 self.w_main_statusbar.push(0, status_str)
 
@@ -3451,7 +3452,7 @@ class PackageManager:
                 self.catalog_loaded = False
                 img.load_catalogs(self.pr)
                 self.catalog_loaded = True
-                installed_icon = gui_misc.get_icon_pixbuf(self.application_dir, 
+                installed_icon = gui_misc.get_icon_pixbuf(self.application_dir,
                     "status_installed")
                 visible_list = update_list.get(visible_repository)
                 if visible_list:
@@ -3478,7 +3479,7 @@ class PackageManager:
                                                 row[enumerations.STATUS_ICON_COLUMN] = \
                                                     None
                                         row[enumerations.MARK_COLUMN] = False
-                        self.__dump_datamodels(visible_repository, 
+                        self.__dump_datamodels(visible_repository,
                                 self.application_list, self.category_list,
                                 self.section_list)
                 for publisher in update_list:
@@ -3504,7 +3505,7 @@ class PackageManager:
         def restart_after_ips_update(self, be_name):
                 self.__main_application_quit(be_name)
 
-        def shutdown_after_image_update(self):    
+        def shutdown_after_image_update(self):
 
                 msgbox = gtk.MessageDialog(parent = self.w_main_window,
                     buttons = gtk.BUTTONS_OK,
@@ -3537,7 +3538,7 @@ class PackageManager:
                     gui_misc.get_icon_pixbuf(self.application_dir, "None"), \
                     "acc", None, None, None, 4, "desc6", \
                     "Object Name1", None, True, None]
-                app2 = [False, gui_misc.get_icon_pixbuf(self.application_dir, 
+                app2 = [False, gui_misc.get_icon_pixbuf(self.application_dir,
                     "update_available"), \
                     gui_misc.get_icon_pixbuf(self.application_dir, \
                      _('All')), "acc_gam", \
@@ -3547,12 +3548,12 @@ class PackageManager:
                     gui_misc.get_icon_pixbuf(self.application_dir, "Other"), \
                     "gam_grap", "2.3", None, None, 4, \
                     "desc8", "Object Name3", None, True, None]
-                app4 = [False, gui_misc.get_icon_pixbuf(self.application_dir, 
+                app4 = [False, gui_misc.get_icon_pixbuf(self.application_dir,
                     "update_locked"), \
                     gui_misc.get_icon_pixbuf(self.application_dir, "Office"), \
                     "grap_gam", "2.3", None, "2.8", 4, \
                     "desc9", "Object Name2", None, True, None]
-                app5 = [False, gui_misc.get_icon_pixbuf(self.application_dir, 
+                app5 = [False, gui_misc.get_icon_pixbuf(self.application_dir,
                     "update_available"), \
                     gui_misc.get_icon_pixbuf(self.application_dir, "None"), \
                     "grap", "2.3", None, "2.8", 4, \
@@ -3590,7 +3591,7 @@ class PackageManager:
                 #       self.__add_category_to_section (entry.getName (),
                 #   _('Applications Desktop'))
 
-                self.__add_category_to_section(_("Accessories"), 
+                self.__add_category_to_section(_("Accessories"),
                     _('Applications Desktop'), self.category_list)
                 self.__add_category_to_section(_("Games"),
                     _('Applications Desktop'), self.category_list)
@@ -3651,7 +3652,7 @@ if __name__ == '__main__':
 
         if os.path.isabs(sys.argv[0]):
                 app_path = sys.argv[0]
-        else: 
+        else:
                 cmd = os.path.join(os.getcwd(), sys.argv[0])
                 app_path = os.path.realpath(cmd)
 
@@ -3681,21 +3682,21 @@ Use -U (--update-all) to proceed with Update All"""
                 except KeyError:
                         image_dir = os.getcwd()
 
-        
+
         # Setup webinstall
         if info_install or (len(sys.argv) == 2 and sys.argv[1].endswith(PKGINFO_SUFFIX)):
                 webinstall = webinstall.Webinstall(image_dir)
                 webinstall.process_param(sys.argv[1])
-                main() 
+                main()
                 sys.exit(0)
-        
+
         # Setup packagemanager
         packagemanager = PackageManager()
         packagemanager.application_path = app_path
         packagemanager.image_dir_arg = image_dir
         packagemanager.update_all_proceed = update_all_proceed
         packagemanager.ua_be_name = ua_be_name
-        
+
         while gtk.events_pending():
                 gtk.main_iteration(False)
 

@@ -19,19 +19,20 @@
 #
 # CDDL HEADER END
 #
+
+#
 # Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
+#
 
 import copy
 import errno
 import httplib
-import threading
-import urllib
-import urllib2
-import socket
 import os
+import socket
 import simplejson as json
 import threading
+import urllib
 import urllib2
 
 import pkg.client.api_errors as api_errors
@@ -160,20 +161,18 @@ class ImageInterface(object):
                                         self.log_operation_end(error=e)
                                         raise
 
-                                self.img.load_catalogs(self.progresstracker)
-
                                 exception_caught = None
                                 if refresh_catalogs:
                                         try:
-                                                self.img.retrieve_catalogs(
+                                                self.img.refresh_publishers(
                                                     progtrack=self.progresstracker)
                                         except api_errors.CatalogRefreshException, e:
                                                 if not e.succeeded:
                                                         raise
                                                 exception_caught = e
-
-                                        # Reload catalog. This picks up the
-                                        # update from retrieve_catalogs.
+                                else:
+                                        # If refresh wasn't called, the catalogs
+                                        # have to be manually loaded.
                                         self.img.load_catalogs(
                                             self.progresstracker)
 
@@ -212,7 +211,6 @@ class ImageInterface(object):
                         self.__activity_lock.release()
 
                 return res, exception_caught
-
 
         def plan_uninstall(self, pkg_list, recursive_removal, noexecute=False,
             verbose=False, update_index=True):
@@ -331,19 +329,17 @@ class ImageInterface(object):
                                         self.log_operation_end(error=e)
                                         raise
 
-                                self.img.load_catalogs(self.progresstracker)
-
                                 if refresh_catalogs:
                                         try:
-                                                self.img.retrieve_catalogs(
+                                                self.img.refresh_publishers(
                                                     progtrack=self.progresstracker)
                                         except api_errors.CatalogRefreshException, e:
                                                 if not e.succeeded:
                                                         raise
                                                 exception_caught = e
-
-                                        # Reload catalog. This picks up the
-                                        # update from retrieve_catalogs.
+                                else:
+                                        # If refresh wasn't called, the catalogs
+                                        # have to be manually loaded.
                                         self.img.load_catalogs(
                                             self.progresstracker)
 
@@ -361,19 +357,18 @@ class ImageInterface(object):
 
                                 if opensolaris_image and not force:
                                         try:
-                                                if not \
-                                                    self.img.ipkg_is_up_to_date(
+                                                if not self.img.ipkg_is_up_to_date(
                                                     actual_cmd,
                                                     self.__check_cancelation,
                                                     noexecute,
-                                                    refresh_catalogs,
-                                                    self.progresstracker):
+                                                    refresh_allowed=refresh_catalogs,
+                                                    progtrack=self.progresstracker):
                                                         self.img.history.operation_result = \
                                                             history.RESULT_FAILED_CONSTRAINED
                                                         raise api_errors.IpkgOutOfDateException()
                                         except api_errors.ImageNotFoundException:
-                                                # We can't answer in this case,
-                                                # so we proceed
+                                                # Can't do anything in this
+                                                # case; so proceed.
                                                 pass
 
                                 pkg_list = [
@@ -576,59 +571,37 @@ class ImageInterface(object):
                         self.__activity_lock.release()
 
 
-        def refresh(self, full_refresh, pubs=None):
-                """Refreshes the metadata for a publisher (e.g. catalog).
+        def refresh(self, full_refresh=False, pubs=None, immediate=False):
+                """Refreshes the metadata (e.g. catalog) for one or more
+                publishers.
 
-                'full_refresh' is a boolean value indicating whether a full
-                retrieval of the catalog or only an update to the existing
-                catalog should be performed.
+                'full_refresh' is an optional boolean value indicating whether
+                a full retrieval of publisher metadata (e.g. catalogs) or only
+                an update to the existing metadata should be performed.  When
+                True, 'immediate' is also set to True.
 
-                'pubs' is a list of prefixes of publishers to refresh.  Passing
-                an empty list or using the default value means all known
-                publishers will be refreshed.
+                'pubs' is a list of publisher prefixes or publisher objects
+                to refresh.  Passing an empty list or using the default value
+                implies all publishers.
+
+                'immediate' is an optional boolean value indicating whether the
+                a refresh should occur now.  If False, a publisher's selected
+                repository will only be checked for updates if the update
+                interval period recorded in the image configuration has been
+                exceeded; ignored when 'full_refresh' is True.
 
                 Currently returns an image object, allowing existing code to
                 work while the rest of the API is put into place."""
 
-                self.log_operation_start("refresh-publisher")
                 self.__activity_lock.acquire()
                 self.__set_can_be_canceled(False)
                 try:
-                        # Verify validity of certificates before attempting
-                        # network operations.
-                        try:
-                                self.img.check_cert_validity()
-                        except api_errors.ExpiringCertificate, e:
-                                misc.emsg(e)
-
-                        pubs_to_refresh = []
-
-                        if not pubs:
-                                # Omit disabled publishers.
-                                pubs = [p for p in self.img.gen_publishers()]
-                        for pub in pubs:
-                                p = pub
-                                if not isinstance(p, publisher.Publisher):
-                                        p = self.img.get_publisher(prefix=pub)
-                                if p.disabled:
-                                        raise api_errors.DisabledPublisher(pub)
-                                pubs_to_refresh.append(p)
-
-                        # Ensure Image directory structure is valid.
-                        self.img.mkdirs()
-
-                        # Loading catalogs allows us to perform incremental
-                        # update
-                        self.img.load_catalogs(self.progresstracker)
-
-                        self.img.retrieve_catalogs(full_refresh,
-                            pubs_to_refresh)
-
+                        self.img.refresh_publishers(full_refresh=full_refresh,
+                            immediate=immediate, pubs=pubs,
+                            progtrack=self.progresstracker)
                         return self.img
-
                 finally:
                         self.__activity_lock.release()
-                        self.log_operation_end()
 
         def __licenses(self, mfst, local):
                 """Private function. Returns the license info from the
@@ -640,8 +613,7 @@ class ImageInterface(object):
                                 s = misc.FilelikeString()
                                 hash_val = misc.gunzip_from_stream(
                                     lic.get_remote_opener(self.img,
-                                        mfst.fmri)(),
-                                    s)
+                                    mfst.fmri)(), s)
                                 text = s.buf
                         else:
                                 text = lic.get_local_opener(self.img,
@@ -765,7 +737,7 @@ class ImageInterface(object):
                             PackageInfo.ACTION_OPTIONS) & info_needed:
                                 mfst = self.img.get_manifest(f)
                                 if PackageInfo.SIZE in info_needed:
-                                        size=mfst.size
+                                        size = mfst.size
                                 if PackageInfo.LICENSES in info_needed:
                                         licenses = self.__licenses(mfst, local)
                                 if PackageInfo.SUMMARY in info_needed:
@@ -958,19 +930,19 @@ class ImageInterface(object):
         def remote_search(self, query_str_and_args_lst, servers=None):
                 failed = []
                 invalid = []
-                
+
                 if not servers:
                         servers = self.img.gen_publishers()
 
                 single = True
-                
+
                 if not len(query_str_and_args_lst) == 1:
                         single = False
 
                 allow_version_zero = single
 
                 version_list = [1]
-                
+
                 if single:
                         method = "GET"
                         q = query_str_and_args_lst[0]
@@ -987,7 +959,7 @@ class ImageInterface(object):
                         if query.allow_version(0):
                                 version_list.append(0)
                                 qs.append(urllib.quote(q.ver_0(), safe=''))
-                        
+
                 else:
                         method = "POST"
                         qs = None
@@ -1022,7 +994,8 @@ class ImageInterface(object):
                                 origin = origin.uri
                         if ssl_cert:
                                 try:
-                                        misc.validate_ssl_cert(ssl_cert, prefix=prefix, uri=origin)
+                                        misc.validate_ssl_cert(ssl_cert,
+                                            prefix=prefix, uri=origin)
                                 except api_errors.CertificateError, e:
                                         failed.append((pub, e))
                                         continue
@@ -1048,13 +1021,15 @@ class ImageInterface(object):
                         try:
                                 if v == 0:
                                         for line in res:
-                                                yield self.__parse_v_0(line, pub, v)
+                                                yield self.__parse_v_0(line,
+                                                    pub, v)
                                 else:
                                         if not self.validate_response(res, v):
                                                 invalid.append(pub)
                                                 continue
                                         for line in res:
-                                                yield self.__parse_v_1(line, pub, v)
+                                                yield self.__parse_v_1(line,
+                                                    pub, v)
                         except socket.timeout, e:
                                 failed.append((pub, e))
                                 continue
@@ -1096,7 +1071,7 @@ class ImageInterface(object):
                         self.img.history.operation_result = RESULT_SUCCEEDED
 
 
-                
+
         @staticmethod
         def validate_response(res, v):
                 try:
@@ -1108,7 +1083,8 @@ class ImageInterface(object):
         def add_publisher(self, pub, refresh_allowed=True):
                 """Add the provided publisher object to the image
                 configuration."""
-                self.img.add_publisher(pub, refresh_allowed=refresh_allowed)
+                self.img.add_publisher(pub, refresh_allowed=refresh_allowed,
+                    progtrack=self.progresstracker)
 
         def get_preferred_publisher(self):
                 """Returns the preferred publisher object for the image."""
@@ -1204,9 +1180,6 @@ class ImageInterface(object):
                         raise api_errors.SetPreferredPublisherDisabled(
                             pub.prefix)
 
-                refresh_catalog = False
-                purge_catalog = False
-
                 def need_refresh(oldo, newo):
                         if oldo.disabled and not newo.disabled:
                                 # The publisher has been re-enabled, so
@@ -1233,14 +1206,13 @@ class ImageInterface(object):
                                 return True
                         return False
 
+                refresh_catalog = False
                 updated = False
                 publishers = self.img.get_publishers()
                 for key, old in publishers.iteritems():
                         if pub._source_object_id == id(old):
                                 if need_refresh(old, pub):
                                         refresh_catalog = True
-                                elif pub.disabled:
-                                        purge_catalog = True
                                 del publishers[key]
                                 publishers[pub.prefix] = pub
                                 updated = True
@@ -1253,27 +1225,36 @@ class ImageInterface(object):
                         self.log_operation_end(e)
                         raise e
 
-                if refresh_allowed and not refresh_catalog:
-                        # If the publisher's catalog is missing, retrieve it.
-                        refresh_catalog = not self.img.has_catalog(pub.prefix)
-
-                if refresh_catalog or purge_catalog:
+                if pub.disabled:
+                        # The catalog only needs to be purged in the event that
+                        # a publisher is disabled; in any other case (the origin
+                        # changing, etc.), self.refresh() will do the right
+                        # thing.
                         try:
-                                self.img.destroy_catalog(pub)
+                                self.img.destroy_catalog(pub.prefix)
                                 self.img.destroy_catalog_cache()
                         except EnvironmentError, e:
                                 if e.errno == errno.EACCES:
                                         raise api_errors.PermissionsException(
                                             e.filename)
                                 raise
+                        self.img.cache_catalogs()
+                elif not refresh_catalog:
+                        refresh_catalog = pub.needs_refresh
 
-                        if purge_catalog:
-                                self.img.cache_catalogs()
-                        elif refresh_allowed:
-                                self.refresh(True, pubs=[pub])
+                if refresh_catalog:
+                        if refresh_allowed:
+                                self.refresh(pubs=[pub], immediate=True)
+                        else:
+                                # Something has changed (such as a repository
+                                # origin) for the publisher, so a refresh should
+                                # occur, but isn't currently allowed.  As such,
+                                # clear the last_refreshed time so that the next
+                                # time the client checks to see if a refresh is
+                                # needed, and is allowed, one will be performed.
+                                pub.last_refreshed = None
 
-                # Successful refresh or purge has happened, so save
-                # final configuration.
+                # Successful; so save configuration.
                 self.img.save_config()
                 self.log_operation_end()
                 return

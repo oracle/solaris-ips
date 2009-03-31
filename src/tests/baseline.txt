@@ -274,7 +274,7 @@ cli.t_pkg_help.py TestPkgHelp.test_help|pass
 cli.t_pkg_history.py TestPkgHistory.test_1_history_options|pass
 cli.t_pkg_history.py TestPkgHistory.test_2_history_record|pass
 cli.t_pkg_history.py TestPkgHistory.test_3_purge_history|pass
-cli.t_pkg_history.py TestPkgHistory.test_4_bug_4369|pass
+cli.t_pkg_history.py TestPkgHistory.test_4_bug_4639|pass
 cli.t_pkg_history.py TestPkgHistory.test_5_bug_5024|pass
 cli.t_pkg_history.py TestPkgHistory.test_6_bug_3540|pass
 cli.t_pkg_history.py TestPkgHistory.test_7_bug_5153|pass

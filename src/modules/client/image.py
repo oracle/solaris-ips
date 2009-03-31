@@ -26,6 +26,7 @@
 #
 
 import cPickle
+import datetime as dt
 import errno
 import os
 import platform
@@ -335,7 +336,7 @@ class Image(object):
 
         def set_attrs(self, imgtype, root, is_zone, prefix, pub_url,
             ssl_key=None, ssl_cert=None, variants=EmptyDict,
-            refresh_allowed=True):
+            refresh_allowed=True, progtrack=None):
 
                 self.__set_dirs(imgtype=imgtype, root=root)
 
@@ -359,14 +360,16 @@ class Image(object):
 
                 repo = publisher.Repository()
                 repo.add_origin(pub_url, ssl_cert=ssl_cert, ssl_key=ssl_key)
-                newpub = publisher.Publisher(prefix, repositories=[repo])
+                newpub = publisher.Publisher(prefix,
+                    meta_root=self._get_publisher_meta_root(prefix),
+                    repositories=[repo])
 
-                # Refresh catalog for new server, if allowed.
+                # Retrieve metadata for new repository, if allowed.
                 if refresh_allowed:
                         self.retrieve_catalogs(full_refresh=True,
-                            pubs=[newpub])
+                            pubs=[newpub], progtrack=progtrack)
 
-                # If we reached this point, the refresh succeeded.  Add the
+                # If we reached this point, the refresh succeeded; add the
                 # publisher to the cfg_cache and save the config.
                 self.cfg_cache.publishers[prefix] = newpub
                 self.cfg_cache.preferred_publisher = prefix
@@ -394,8 +397,6 @@ class Image(object):
         def gen_publishers(self, inc_disabled=False):
                 if not self.cfg_cache:
                         raise CfgCacheError, "empty ImageConfig"
-                if not self.cfg_cache.publishers:
-                        raise CfgCacheError, "no defined publishers"
                 for p in self.cfg_cache.publishers:
                         pub = self.cfg_cache.publishers[p]
                         if inc_disabled or not pub.disabled:
@@ -606,7 +607,8 @@ class Image(object):
                 return self.cfg_cache.publishers
 
         def get_publisher(self, prefix=None, alias=None, origin=None):
-                for pub in self.get_publishers().values():
+                publishers = [p for p in self.get_publishers().values()]
+                for pub in publishers:
                         if prefix and prefix == pub.prefix:
                                 return pub
                         elif alias and alias == pub.alias:
@@ -694,7 +696,7 @@ class Image(object):
                 for p in self.cfg_cache.properties:
                         yield p
 
-        def add_publisher(self, pub, refresh_allowed=True):
+        def add_publisher(self, pub, refresh_allowed=True, progtrack=None):
                 """Adds the provided publisher object to the image
                 configuration."""
                 self.history.log_operation_start("add-publisher")
@@ -706,15 +708,17 @@ class Image(object):
 
                 try:
                         self.destroy_catalog(pub.prefix)
-                        self.destroy_catalog_cache()
                 except EnvironmentError, e:
                         if e.errno == errno.EACCES:
                                 raise api_errors.PermissionsException(
                                     e.filename)
                         raise
 
+                pub.meta_root = self._get_publisher_meta_root(pub.prefix)
+
                 if refresh_allowed:
-                        self.retrieve_catalogs(full_refresh=True, pubs=[pub])
+                        self.retrieve_catalogs(full_refresh=True, pubs=[pub],
+                            progtrack=progtrack)
 
                 # Only after success should the new publisher be added to the
                 # configuration.
@@ -1134,6 +1138,7 @@ class Image(object):
         def get_version_installed(self, pfmri):
                 """Returns an fmri of the installed package matching the
                 package stem of the given fmri or None if no match is found."""
+
                 for f in self.gen_installed_pkgs():
                         if self.fmri_is_same_pkg(f, pfmri):
                                 return f
@@ -1438,24 +1443,108 @@ class Image(object):
                                 if retry_count <= 0:
                                         raise failures
 
-        def retrieve_catalogs(self, full_refresh = False,
-            pubs = None, progtrack = None):
+        def refresh_publishers(self, full_refresh=False, immediate=False,
+            pubs=None, progtrack=None):
+                """Refreshes the metadata (e.g. catalog) for one or more
+                publishers.
+
+                'full_refresh' is an optional boolean value indicating whether
+                a full retrieval of publisher metadata (e.g. catalogs) or only
+                an update to the existing metadata should be performed.  When
+                True, 'immediate' is also set to True.
+
+                'immediate' is an optional boolean value indicating whether the
+                a refresh should occur now.  If False, a publisher's selected
+                repository will only be checked for updates if the update
+                interval period recorded in the image configuration has been
+                exceeded; ignored when 'full_refresh' is True.
+
+                'pubs' is a list of publisher prefixes or publisher objects
+                to refresh.  Passing an empty list or using the default value
+                implies all publishers."""
+
+                if full_refresh:
+                        immediate = True
+
+                if not progtrack:
+                        progtrack = progress.QuietProgressTracker()
+
+                self.history.log_operation_start("refresh-publisher")
+
+                # Verify validity of certificates before attempting network
+                # operations.
+                try:
+                        self.check_cert_validity()
+                except api_errors.ExpiringCertificate, e:
+                        # XXX need client messaging framework
+                        misc.emsg(e)
+
+                pubs_to_refresh = []
+
+                if not pubs:
+                        # Omit disabled publishers.
+                        pubs = [p for p in self.gen_publishers()]
+                for pub in pubs:
+                        p = pub
+                        if not isinstance(p, publisher.Publisher):
+                                p = self.get_publisher(prefix=p)
+                        if p.disabled:
+                                e = api_errors.DisabledPublisher(p)
+                                self.history.log_operation_end(error=e)
+                                raise e
+                        if immediate or p.needs_refresh:
+                                pubs_to_refresh.append(p)
+
+                if not pubs_to_refresh:
+                        # Trigger a load of the catalogs if they haven't been
+                        # loaded yet for the sake of our caller.
+                        if not self.catalogs:
+                                self.load_catalogs(progtrack)
+                        self.history.log_operation_end()
+                        return
+
+                try:
+                        reload = self.retrieve_catalogs(full_refresh=full_refresh,
+                            pubs=pubs_to_refresh, progtrack=progtrack)
+                except (api_errors.ApiException, catalog.CatalogException), e:
+                        # Reload catalogs; this picks up any updates and
+                        # ensures the catalog is loaded for callers.
+                        self.load_catalogs(progtrack)
+                        self.history.log_operation_end(error=e)
+                        raise
+                self.history.log_operation_end()
+
+        def retrieve_catalogs(self, full_refresh=False, pubs=None,
+            progtrack=None):
+                """Retrieves the catalogs for the specified publishers
+                performing full or incremental updates as needed or indicated.
+
+                'full_refresh' is a boolean value indicating whether a full
+                update should be forced for the specified publishers.
+
+                'pubs' is an optional list of publisher objects to refresh the
+                metadata for.  If not provided or 'None', all publishers will be
+                refreshed.  Disabled publishers are always ignored regardless of
+                whether this list is provided.
+
+                'progtrack' is an optional ProgressTracker object."""
+
+                if not progtrack:
+                        progtrack = progress.QuietProgressTracker()
+
                 failed = []
                 total = 0
-                succeeded = 0
-                cat = None
-                ts = 0
 
                 # XXX The publisher validation checks depend upon the
-                # assumption that callers who pass a list of puborties
+                # assumption that callers who pass a list of publishers
                 # have newly created the publishers in question and want
                 # to specifically refresh their catalogs and verify that they
                 # are indeed reachable.
                 if not pubs:
                         # If no pubs were passed into this routine, we're
                         # performing a refresh of all catalogs.  In that case,
-                        # it's best to simply check that we're
-                        # not connected to a captive portal.
+                        # it's best to simply check that we're not connected
+                        # to a captive portal.
                         self.captive_portal_test()
                         publist = list(self.gen_publishers())
                 else:
@@ -1469,33 +1558,61 @@ class Image(object):
                             if self.valid_publisher_test(pub)
                         ]
 
-                if progtrack:
-                        progtrack.refresh_start(len(publist))
+                try:
+                        # Ensure Image directory structure is valid.
+                        self.mkdirs()
 
+                        # Loading catalogs allows incremental update.
+                        self.load_catalogs(progtrack)
+                except EnvironmentError, e:
+                        self.history.log_operation_end(error=e)
+                        raise
+
+                progtrack.refresh_start(len(publist))
+
+                def catalog_changed(prefix, old_ts, old_size):
+                        if not old_ts or not old_size:
+                                # It didn't exist before.
+                                return True
+
+                        croot = "%s/catalog/%s" % (self.imgdir, prefix)
+                        c = catalog.Catalog(croot, publisher=pub.prefix)
+                        if c.last_modified() != old_ts:
+                                return True
+                        if c.size() != old_size:
+                                return True
+                        return False
+
+                updated = 0
+                succeeded = 0
                 for pub in publist:
                         if pub.disabled:
                                 continue
 
                         total += 1
-                        if progtrack:
-                                progtrack.refresh_progress(pub.prefix)
+                        progtrack.refresh_progress(pub.prefix)
 
                         full_refresh_this_pub = False
 
+                        cat = None
+                        ts = 0
+                        size = 0
                         if pub.prefix in self.catalogs:
                                 cat = self.catalogs[pub.prefix]
                                 ts = cat.last_modified()
+                                size = cat.size()
 
                                 # Although we may have a catalog with a
                                 # timestamp, the user may have changed the
                                 # origin URL for the publisher.  If this has
                                 # occurred, we need to perform a full refresh.
-                                if cat.origin() != pub["origin"]:
+                                repo = pub.selected_repository
+                                if cat.origin() not in repo.origins:
                                         full_refresh_this_pub = True
 
                         if ts and not full_refresh and \
                             not full_refresh_this_pub:
-                                hdr = {'If-Modified-Since': ts}
+                                hdr = {"If-Modified-Since": ts}
                         else:
                                 hdr = {}
 
@@ -1506,17 +1623,23 @@ class Image(object):
                         except TransportFailures, e:
                                 failed.append((pub, e))
                         else:
+                                if catalog_changed(pub.prefix, ts, size):
+                                        updated += 1
+                                pub.last_refreshed = dt.datetime.utcnow()
                                 succeeded += 1
 
-                self.cache_catalogs(pubs)
-                self.update_installed_pkgs()
+                if updated > 0:
+                        self.cache_catalogs(pubs)
+                        self.update_installed_pkgs()
+                        self.load_catalogs(progtrack)
 
-                if progtrack:
-                        progtrack.refresh_done()
+                progtrack.refresh_done()
 
                 if failed:
                         raise api_errors.CatalogRefreshException(failed, total,
                             succeeded)
+
+                return updated > 0
 
         CATALOG_CACHE_VERSION = 3
 
@@ -1574,7 +1697,7 @@ class Image(object):
                         portable.rename(ptmp, pickle_file)
                 except (cPickle.PickleError, EnvironmentError):
                         try:
-                                os.remove(ptmp)
+                                portable.remove(ptmp)
                         except EnvironmentError:
                                 pass
 
@@ -1611,6 +1734,9 @@ class Image(object):
                                 raise RuntimeError
 
         def load_catalogs(self, progresstracker):
+
+                assert progresstracker
+
                 for pub in self.gen_publishers():
                         croot = "%s/catalog/%s" % (self.imgdir, pub.prefix)
                         progresstracker.catalog_start(pub.prefix)
@@ -1671,9 +1797,12 @@ class Image(object):
                         if e.errno != errno.ENOENT:
                                 raise
 
+        def _get_publisher_meta_root(self, prefix):
+                return os.path.join(self.imgdir, "catalog", prefix)
+
         def has_catalog(self, prefix):
-                return os.path.exists(os.path.join(self.imgdir, "catalog",
-                    prefix, "catalog"))
+                return os.path.exists(os.path.join(
+                    self._get_publisher_meta_root(prefix), "catalog"))
 
         def destroy_catalog(self, prefix):
                 try:
@@ -1822,7 +1951,6 @@ class Image(object):
 
         def load_constraints(self, progtrack):
                 """Load constraints for all install pkgs"""
-
                 for fmri in self.gen_installed_pkgs():
                         # skip loading if already done
                         if self.constraints.start_loading(fmri):
@@ -2486,7 +2614,7 @@ class Image(object):
                         ip.display()
 
         def ipkg_is_up_to_date(self, actual_cmd, check_cancelation, noexecute,
-            refresh_catalogs, progtrack=None):
+            refresh_allowed=True, progtrack=None):
                 """ Test whether SUNWipkg is updated to the latest version
                     known to be available for this image """
                 #
@@ -2529,21 +2657,24 @@ class Image(object):
                         newimg.find_root(cmddir)
                         newimg.load_config()
 
-                        if refresh_catalogs:
-                                # Refresh the catalog, so that we can discover
-                                # if a new SUNWipkg is available.
+                        if refresh_allowed:
+                                # If refreshing publisher metadata is allowed,
+                                # then perform a refresh so that a new SUNWipkg
+                                # can be discovered.
                                 try:
-                                        newimg.retrieve_catalogs()
+                                        newimg.refresh_publishers(
+                                            progtrack=progtrack)
                                 except api_errors.CatalogRefreshException, cre:
                                         cre.message = \
                                             _("SUNWipkg update check failed.")
                                         raise
-
-                        # Load catalog.
-                        newimg.load_catalogs(progtrack)
+                        else:
+                                # If refresh wasn't called, the catalogs have to
+                                # be manually loaded.
+                                newimg.load_catalogs(progtrack)
                         img = newimg
 
-                # XXX call to progress tracker that SUNWipkg is being checked
+                # XXX call to progress tracker that SUNWipkg is being refreshed
 
                 img.make_install_plan(["SUNWipkg"], progtrack,
                     check_cancelation, noexecute, filters = [])

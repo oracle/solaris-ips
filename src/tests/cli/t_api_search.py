@@ -735,6 +735,7 @@ close
                 self._do_install(api_obj, ["example_pkg"])
 
                 self.pkgsend_bulk(durl, self.example_pkg11)
+                api_obj.refresh(immediate=True)
 
                 self._do_image_update(api_obj)
 
@@ -1000,6 +1001,7 @@ close
                 time.sleep(1)
                 
                 self.pkgsend_bulk(durl, self.space_pkg10)
+                api_obj.refresh(immediate=True)
 
                 self.pkg("refresh")
                 self._do_install(api_obj, ["space_pkg"])
@@ -1054,6 +1056,7 @@ close
                 self._do_install(api_obj, ["example_pkg"])
                 self._run_local_tests(api_obj)
                 self.pkgsend_bulk(durl, self.example_pkg11)
+                api_obj.refresh(immediate=True)
                 self._do_image_update(api_obj, update_index=False)
                 # Running empty test because search will notice the index
                 # does not match the installed packages and complain.

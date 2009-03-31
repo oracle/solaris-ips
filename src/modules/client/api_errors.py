@@ -614,8 +614,8 @@ class SetPreferredPublisherDisabled(PublisherError):
         preferred publisher was made."""
 
         def __str__(self):
-                return _("Publisher '%(pub)s' is disabled and cannot be set as "
-                    "the preferred publisher.") % self.data
+                return _("Publisher '%s' is disabled and cannot be set as the "
+                    "preferred publisher.") % self.data
 
 
 class UnknownLegalURI(PublisherError):

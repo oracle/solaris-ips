@@ -52,7 +52,6 @@ class TestPkgHistory(testutils.ManyDepotTestCase):
             add depend type=incorporate fmri=pkg:/foo@1
             close """
 
-        
         def setUp(self):
                 testutils.ManyDepotTestCase.setUp(self, 2)
 
@@ -147,7 +146,7 @@ class TestPkgHistory(testutils.ManyDepotTestCase):
                 self.assert_(
                     re.search("purge-history", o.splitlines()[0]) != None)
 
-        def test_4_bug_4369(self):
+        def test_4_bug_4639(self):
                 """Test that install and uninstall of non-existent packages
                 both make the same history entry.
                 """
@@ -163,7 +162,8 @@ class TestPkgHistory(testutils.ManyDepotTestCase):
                         if tmp[1] == "install" or tmp[1] == "uninstall":
                                 self.assert_(res == "Failed (Bad Request)")
                         else:
-                                self.assert_(tmp[1] == "purge-history")
+                                self.assert_(tmp[1] in ("purge-history",
+                                    "refresh-publisher"))
 
         def test_5_bug_5024(self):
                 """Test that install and uninstall of non-existent packages
@@ -171,9 +171,11 @@ class TestPkgHistory(testutils.ManyDepotTestCase):
                 """
                 durl1 = self.dcs[1].get_depot_url()
                 self.pkgsend_bulk(durl1, self.bar1)
+                self.pkg("refresh")
                 self.pkg("install bar")
                 self.pkg("install foo")
                 self.pkgsend_bulk(durl1, self.foo2)
+                self.pkg("refresh")
                 self.pkg("purge-history")
                 self.pkg("install foo@2", exit=1)
                 self.pkg("history -H")
@@ -184,7 +186,8 @@ class TestPkgHistory(testutils.ManyDepotTestCase):
                         if tmp[1] == "install":
                                 self.assert_(res == "Failed (Constrained)")
                         else:
-                                self.assert_(tmp[1] == "purge-history")
+                                self.assert_(tmp[1] in ("purge-history",
+                                    "refresh-publisher"))
 
         def test_6_bug_3540(self):
                 """Verify that corrupt history entries won't cause the client to

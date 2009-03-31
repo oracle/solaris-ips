@@ -112,8 +112,19 @@ class TestPkgRefreshMulti(testutils.ManyDepotTestCase):
                 self.pkg("set-publisher -O " + self.durl2 + " test2")
                 self.pkgsend_bulk(self.durl1, self.foo10)
                 self.pkgsend_bulk(self.durl2, self.foo12)
-                self.pkg("refresh")
+
+                # This should fail as the publisher was just updated seconds
+                # ago, and not enough time has passed yet for the client to
+                # contact the repository to check for updates.
+                self.pkg("list -aH pkg:/foo", exit=1)
+
+                # This should succeed as a full refresh was requested, which
+                # ignores the update check interval the client normally uses
+                # to determine whether or not to contact the repository to
+                # check for updates.
+                self.pkg("refresh --full")
                 self.pkg("list -aH pkg:/foo")
+
                 expected = \
                     "foo 1.0-0 known u---\n" + \
                     "foo (test2) 1.2-0 known ----\n"
@@ -124,11 +135,23 @@ class TestPkgRefreshMulti(testutils.ManyDepotTestCase):
                 self.pkg("set-publisher -O " + self.durl2 + " test2")
                 self.pkgsend_bulk(self.durl1, self.foo10)
                 self.pkgsend_bulk(self.durl2, self.foo12)
+
+                # This should fail since only a few seconds have passed since
+                # the publisher's metadata was last checked, and so the catalog
+                # will not yet reflect the last published package.
+                self.pkg("list -aH pkg:/foo@1,5.11-0", exit=1)
+
+                # This should succeed since a refresh is explicitly performed,
+                # and so the catalog will reflect the last published package.
                 self.pkg("refresh test1")
                 self.pkg("list -aH pkg:/foo@1,5.11-0")
+
                 expected = \
                     "foo 1.0-0 known ----\n"
                 self.checkAnswer(expected, self.output)
+
+                # This should succeed since a refresh is explicitly performed,
+                # and so the catalog will reflect the last published package.
                 self.pkg("refresh test2")
                 self.pkg("list -aH pkg:/foo")
                 expected = \
@@ -143,6 +166,9 @@ class TestPkgRefreshMulti(testutils.ManyDepotTestCase):
                     "foo 1.2-0 known ----\n"
                 self.pkgsend_bulk(self.durl1, self.foo11)
                 self.pkgsend_bulk(self.durl2, self.foo11)
+
+                # This should succeed since an explicit refresh is performed,
+                # and so the catalog will reflect the last published package.
                 self.pkg("refresh test1 test2")
                 self.pkg("list -aHf pkg:/foo")
                 expected = \
@@ -151,7 +177,6 @@ class TestPkgRefreshMulti(testutils.ManyDepotTestCase):
                     "foo 1.1-0 known u---\n" + \
                     "foo 1.2-0 known ----\n"
                 self.checkAnswer(expected, self.output)
-
 
         def test_set_publisher_induces_full_refresh(self):
                 self.pkgsend_bulk(self.durl2, self.foo11)
@@ -163,7 +188,12 @@ class TestPkgRefreshMulti(testutils.ManyDepotTestCase):
                 self.checkAnswer(expected, self.output)
                 self.pkg("set-publisher --no-refresh -O " +
                     self.durl2 + " test1")
-                self.pkg("list -aH pkg:/foo", exit=1)
+
+                # If a privileged user requests this, it should succeed since
+                # publisher metadata will automatically be refreshed when asking
+                # for all known packages and foo@1.1 exists in the new catalog.
+                self.pkg("list -aH pkg:/foo@1.1")
+
                 self.pkg("set-publisher -O " + self.durl2 + " test1")
                 self.pkg("list -aH pkg:/foo")
                 expected = \
@@ -185,10 +215,21 @@ class TestPkgRefreshMulti(testutils.ManyDepotTestCase):
                 self.checkAnswer(expected, self.output)
                 self.dcs[2].stop()
                 self.pkg("set-publisher --no-refresh -O " + self.durl2 + " test1")
-                self.pkg("list -aH pkg:/foo", exit=1)
                 self.dcs[2].start()
-                self.pkg("refresh test1")
-                self.pkg("list -aH pkg:/foo")
+
+                # This should fail when listing all known packages, and running
+                # as an unprivileged user since the publisher's metadata can't
+                # be updated.
+                self.pkg("list -aH pkg:/foo@1.1", su_wrap=True, exit=1)
+
+                # This should fail when listing all known packages, and running
+                # as a privileged user since --no-refresh was specified.
+                self.pkg("list -aH --no-refresh pkg:/foo@1.1", exit=1)
+
+                # This should succeed when listing all known packages, and
+                # running as a privileged user since the publisher's metadata
+                # will automatically be updated.
+                self.pkg("list -aH pkg:/foo@1.1")
                 expected = \
                     "foo 1.1-0 known ----\n"
                 self.checkAnswer(expected, self.output)

@@ -1,3 +1,54 @@
+Version 13:
+Compatible with clients using version 12.
+Changes:
+    By default, publisher repositories will be checked for new metadata no more
+    than once every four hours unless otherwise requested.  Each time a
+    publisher's selected repository is checked for updates, the client will
+    store a timestamp (in UTC) marking when the refresh was performed.
+
+    ImageInterface.refresh() has changed as follows:
+        * Changed 'full_refresh' to an optional keyword argument that defaults
+          to False.
+
+        * Added optional boolean keyword 'immediate' that allows the client to
+          request that a publisher be checked for updates even if a check is
+          not yet needed.
+
+        * Changed to properly use progress tracker for refreshing of publisher
+          metadata.
+
+        * Now only refreshes publisher metadata based on the update interval
+          specified by the refresh_seconds property on the publisher's
+          selected_repository.
+
+    ImageInterface.update_publisher() has changed as follows:
+        * When updating a publisher with 'refresh_allowed' set to False, its
+          catalog will no longer be removed.  Instead, it is marked as needing
+          refresh, and the next time the client can do so, it will.
+
+    pkg.client.publisher.Publisher has changed as follows:
+        * New property 'last_refreshed':
+                A datetime object representing the time (in UTC) the
+                publisher's selected repository was last refreshed for new
+                metadata (such as catalog updates).  'None' if the publisher
+                hasn't been refreshed yet or the time is not available.
+
+          The above property will be automatically set by the api as needed
+          although api consumers are free to retrieve its value.  Manually
+          setting this value is not recommended.
+
+        * New property 'meta_root':
+                The absolute pathname of the directory where the publisher's
+                metadata should be written to and read from.
+
+          The above property will be automatically set by the api as needed
+          although api consumers are free to retrieve its value.  Manually
+          setting this value is not recommended.
+
+        * New property 'needs_refresh':
+                A boolean value indicating whether the publisher's metadata for
+                the currently selected repository needs to be refreshed.
+
 Version 12:
 Incompatible with clients using versions 1-12
 Changes:
@@ -5,7 +56,7 @@ Changes:
     those functions from pkg.client.image.
 
 Version 11:
-Incompatible with clients using versions 1-10:
+Incompatible with clients using versions 1-10
 Changes:
    This version changes all parameter names and property names from 'authority'
    to 'publisher'.  For example, parameters named 'auths' were changed to
@@ -120,7 +171,7 @@ Changes:
                 (excluding those disabled) will be output."""
 
 Version 10:
-Incompatible with clients using versions 1-9:
+Incompatible with clients using versions 1-9
 Changes:
     This version changes the interface to info. It removes the action info
     and licenses flag and replaces them with a set of options to allow
