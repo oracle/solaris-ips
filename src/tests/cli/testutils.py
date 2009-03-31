@@ -245,6 +245,7 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
         def setUp(self):
                 self.image_dir = None
                 self.pid = os.getpid()
+                self.pwd = os.getcwd()
 
                 self.__test_prefix = os.path.join(tempfile.gettempdir(),
                     "ips.test.%d" % self.pid)
@@ -330,6 +331,7 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
 
         def image_destroy(self):
                 self.debug("image_destroy")
+                os.chdir(self.pwd)
                 if os.path.exists(self.img_path):
                         shutil.rmtree(self.img_path)
 

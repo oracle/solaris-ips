@@ -318,7 +318,7 @@ class Image(object):
                 # remove any directories beneath us.  If we're changing the
                 # image, don't chdir, as we're likely changing to a new BE
                 # and want to be able to unmount it later.
-                if not self.imgdir:
+                if not self.imgdir and os.path.isdir(root):
                         os.chdir(root)
 
                 self.imgdir = os.path.join(self.root, self.img_prefix)
