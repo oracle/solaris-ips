@@ -503,6 +503,10 @@ class InstallUpdate(progress.ProgressTracker):
                         msg = _("Invalid BE Name: %s.\n") % self.proposed_be_name
                         self.__g_error_stage(msg)
                         return
+                except api_errors.PermissionsException, pex:
+                        msg = str(pex)
+                        self.__g_error_stage(msg)
+                        return
                 except (api_errors.UnableToCopyBE, 
                     api_errors.UnableToMountBE,
                     api_errors.BENameGivenOnDeadBE,
