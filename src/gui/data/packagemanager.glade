@@ -389,6 +389,7 @@
                             <property name="xalign">0</property>
                             <property name="yalign">0</property>
                             <property name="response_id">0</property>
+                            <signal name="clicked" handler="on_set_search_clicked"/>
                             <signal name="button_press_event" handler="on_set_search_button_press_event"/>
                             <child>
                               <widget class="GtkHBox" id="hbox23">

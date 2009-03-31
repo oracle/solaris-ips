@@ -424,6 +424,7 @@ class PackageManager:
                                 "on_edit_clear_activate":self.__on_clear_paste,
                                 "on_edit_copy_activate":self.__on_copy,
                                 "on_edit_cut_activate":self.__on_cut,
+                                "on_set_search_clicked":self.__on_set_search_clicked,
                                 "on_set_search_button_press_event":self.__on_set_search,
                                 "on_clear_search_clicked":self.__on_clear_search,
                                 "on_edit_select_all_activate":self.__on_select_all,
@@ -1576,13 +1577,17 @@ class PackageManager:
                 alloc = self.search_button.get_allocation()
                 return (root[0] + alloc.x, root[1] + alloc.y + alloc.height, False)
 
-
         def __on_set_search(self, widget, event):
                 if  event.type == gtk.gdk.BUTTON_PRESS:
                         self.searchmenu.popup(None, None, self.__popup_position_func,
                             event.button, event.time)
                         return True
                 return False
+
+        def __on_set_search_clicked(self, widget):
+                self.searchmenu.popup(None, None, self.__popup_position_func,
+                    0, 0)
+                return True
 
         def __on_clear_search(self, widget):
                 self.w_searchentry_dialog.delete_text(0, -1)
