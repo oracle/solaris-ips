@@ -256,6 +256,7 @@ class Updatemanager:
                 self.show_install_updates_only = False
                 self.do_refresh = False
                 self.ua_start = 0
+                self.pylintstub = None
                 
                 # Progress Dialog
                 self.gladefile = self.application_dir + \
@@ -366,7 +367,7 @@ class Updatemanager:
                 self.api_obj = None
  
                 self.w_um_dialog.show_all()
-                self.w_um_dialog.resize(620,500)
+                self.w_um_dialog.resize(620, 500)
 
         def __set_cancel_state(self, status):
                 if self.install_error:
@@ -745,7 +746,7 @@ class Updatemanager:
                 self.w_select_checkbox.set_active(False)
                 self.w_select_checkbox.set_sensitive(False)
                 self.w_um_dialog.present()
-                self.w_um_dialog.resize(420,100)
+                self.w_um_dialog.resize(420, 100)
                 
         def __get_info_from_name(self, name, local):
                 if self.fmri_description != name:
@@ -785,7 +786,6 @@ class Updatemanager:
                         installed_ver = "%s-%s" % (local_info.version, local_info.branch)
                 except AttributeError:
                         installed_ver = ""
-                        pass # Ignore if we can't get the installed version info
 
                 ver = "%s-%s" % (info.version, info.branch)
                 summary = _("None")
@@ -1439,6 +1439,10 @@ class Updatemanager:
                         infobuffer.insert(textiter, "%s\n" % str_out)
                 self.w_progressinfo_textview.scroll_to_iter(textiter, 0.0)
                 
+        def update_package_list(self, update_list):
+                self.pylintstub = update_list
+                return
+
         def shutdown_after_image_update(self):
                 self.__display_update_image_success()
 
