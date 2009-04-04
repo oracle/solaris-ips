@@ -66,7 +66,7 @@ class LegacyAction(generic.Action):
                         svr4attrs = {
                             "pkg": self.attrs["pkg"],
                             "name": legacy_info["description"],
-                            "arch": "i386",
+                            "arch": pkgplan.image.get_arch(),
                             "version": legacy_info["version"],
                             "category": "system",
                             "vendor": None, 

@@ -74,6 +74,7 @@ class PkgPlan(object):
         def propose_repair(self, fmri, mfst, actions):
                 self.destination_fmri = fmri
                 self.__destination_mfst = mfst
+                self.__legacy_info["version"] = self.destination_fmri.version
                 self.origin_fmri = None
                 self.__origin_mfst = mfst
 
