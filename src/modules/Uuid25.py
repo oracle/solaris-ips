@@ -392,14 +392,14 @@ def _netbios_getnode():
 # If ctypes is available, use it to find system routines for UUID generation.
 _uuid_generate_random = _uuid_generate_time = _UuidCreate = None
 try:
-    import ctypes, ctypes.util
+    import ctypes
     _buffer = ctypes.create_string_buffer(16)
 
     # The uuid_generate_* routines are provided by libuuid on at least
     # Linux and FreeBSD, and provided by libc on Mac OS X.
-    for libname in ['uuid', 'c']:
+    for libname in ['/usr/lib/libuuid.so', '/usr/lib/libc.so']:
         try:
-            lib = ctypes.CDLL(ctypes.util.find_library(libname))
+            lib = ctypes.CDLL(libname)
         except:
             continue
         if hasattr(lib, 'uuid_generate_random'):
