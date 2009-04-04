@@ -67,6 +67,6 @@ add driver name=dlpistub
 # filelist.ramdisk in order to drop the ZFS cache file out of the boot
 # archive upon update.
 #
-$(i386_ONLY)add file path=etc/boot/solaris/filelist.ramdisk mode=0644 \
-$(i386_ONLY)	owner=root group=sys
+$(i386_ONLY)add file /dev/null path=etc/boot/solaris/filelist.ramdisk \
+$(i386_ONLY)	mode=0644 owner=root group=sys
 end package

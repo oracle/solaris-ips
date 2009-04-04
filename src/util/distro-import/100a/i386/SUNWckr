@@ -56,5 +56,6 @@ add driver name=amd_iommu perms="* 0644 root sys" alias=pci1022,11ff
 # filelist.ramdisk in order to drop the ZFS cache file out of the boot
 # archive upon update.
 #
-add file path=etc/boot/solaris/filelist.ramdisk mode=0644 owner=root group=sys
+add file /dev/null path=etc/boot/solaris/filelist.ramdisk mode=0644 \
+	owner=root group=sys
 end package

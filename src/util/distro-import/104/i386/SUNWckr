@@ -65,5 +65,6 @@ add driver name=nulldriver
 # filelist.ramdisk in order to drop the ZFS cache file out of the boot
 # archive upon update.
 #
-add file path=etc/boot/solaris/filelist.ramdisk mode=0644 owner=root group=sys
+add file /dev/null path=etc/boot/solaris/filelist.ramdisk mode=0644 \
+	owner=root group=sys
 end package
