@@ -132,12 +132,17 @@ class _Pkg5TestResult(unittest._TextTestResult):
 
         def addError(self, test, err):
                 unittest.TestResult.addError(self, test, err)
+                bresult = self.baseline.handleresult(str(test), "error")
                 if self.output == OUTPUT_VERBOSE or \
                     self.output == OUTPUT_PARSEABLE:
                         self.stream.writeln("ERROR")
+                        if self.output == OUTPUT_VERBOSE:
+                                self.stream.writeln("%s" % self.errors[-1][1])
                 elif self.output == OUTPUT_DOTS:
-                        self.stream.write('E')
-                bresult = self.baseline.handleresult(str(test), "error")
+                        if bresult:
+                                self.stream.write('e')
+                        else:
+                                self.stream.write('E')
 
         def addFailure(self, test, err):
                 unittest.TestResult.addFailure(self, test, err)
@@ -150,8 +155,13 @@ class _Pkg5TestResult(unittest._TextTestResult):
                         else:
                                 res = "FAIL"
                         self.stream.writeln(res)
+                        if self.output == OUTPUT_VERBOSE:
+                                self.stream.writeln("%s" % self.failures[-1][1])
                 elif self.output == OUTPUT_DOTS:
-                        self.stream.write('F')
+                        if bresult:
+                                self.stream.write('f')
+                        else:
+                                self.stream.write('F')
 
         def getDescription(self, test):
                 return str(test)
@@ -163,7 +173,7 @@ class _Pkg5TestResult(unittest._TextTestResult):
                             string.ljust(self.getDescription(test), 60))
                 if self.output == OUTPUT_VERBOSE:
                         self.stream.write("   ")
-                if self.output == OUTPUT_PARSEABLE:
+                elif self.output == OUTPUT_PARSEABLE:
                         self.stream.write(" | ")
                 self.stream.flush()
 
@@ -206,8 +216,9 @@ class Pkg5TestRunner(unittest.TextTestRunner):
                 test(result)
                 stopTime = time.time()
                 timeTaken = stopTime - startTime
-                result.printErrors()
-                self.stream.writeln(result.separator2)
+                if self.output != OUTPUT_VERBOSE:
+                        result.printErrors()
+                        self.stream.writeln(result.separator2)
                 run = result.testsRun
                 self.stream.writeln("Ran %d test%s in %.3fs" %
                     (run, run != 1 and "s" or "", timeTaken))
