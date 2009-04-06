@@ -1297,6 +1297,21 @@ close
                 remote = False
                 self._search_op(remote, "'*'", self.res_local_fat10_sparc_star)
 
+        def test_bug_7660(self):
+                """Test that installing a package doesn't prevent searching on
+                package names from working on previously installed packages."""
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.example_pkg10)
+                self.pkgsend_bulk(durl, self.fat_pkg10)
+                self.image_create(durl)
+                tmp_dir = os.path.join(self.img_path, "var", "pkg", "index",
+                    "TMP")
+                self.pkg("install example_pkg")
+                self.pkg("rebuild-index")
+                self.pkg("install fat")
+                self.assert_(not os.path.exists(tmp_dir))
+                self._run_local_tests()
+
 
 class TestPkgSearchMulti(testutils.ManyDepotTestCase):
 

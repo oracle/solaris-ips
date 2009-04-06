@@ -512,7 +512,7 @@ class Indexer(object):
                                 else:
                                         raise
                         inputs = list(inputs)
-                        skip = False
+                        fast_update = False
 
                         if input_type == IDX_INPUT_TYPE_PKG:
                                 assert image
@@ -521,7 +521,7 @@ class Indexer(object):
                                             "Indexing Packages",
                                             len(inputs[1]))
                                 self._fast_update(inputs)
-                                skip = True
+                                fast_update = True
                                 if len(self._data_fast_add._set) > \
                                     MAX_ADDED_NUMBER_PACKAGES:
                                         self._data_main_dict.close_file_handle()
@@ -558,7 +558,8 @@ class Indexer(object):
                         # Move all files from the tmp directory into the index
                         # dir. Note: the need for consistent_open is that
                         # migrate is not an atomic action.
-                        self._migrate(source_dir = tmp_index_dir, skip=skip)
+                        self._migrate(source_dir = tmp_index_dir,
+                            fast_update=fast_update)
 
                         if self._progtrack is not None:
                                 self._progtrack.index_done()
@@ -682,7 +683,7 @@ class Indexer(object):
                 finally:
                         data.close_file_handle()
 
-        def _migrate(self, source_dir=None, dest_dir=None, skip=False):
+        def _migrate(self, source_dir=None, dest_dir=None, fast_update=False):
                 """ Moves the indexes from a temporary directory to the
                 permanent one.
                 """
@@ -691,30 +692,34 @@ class Indexer(object):
                 if not dest_dir:
                         dest_dir = self._index_dir
                 assert not (source_dir == dest_dir)
-                try:
-                        shutil.rmtree(os.path.join(dest_dir, "pkg"))
-                except EnvironmentError, e:
-                        if e.errno not in (errno.ENOENT, errno.ESRCH):
-                                raise
-                
-                shutil.move(os.path.join(source_dir, "pkg"),
-                    os.path.join(dest_dir, "pkg"))
-                
+
                 for d in self._data_dict.values():
-                        if skip and (d == self._data_main_dict or
+                        if fast_update and (d == self._data_main_dict or
                             d == self._data_token_offset):
                                 continue
                         else:
                                 shutil.move(os.path.join(source_dir,
                                     d.get_file_name()),
                                     os.path.join(dest_dir, d.get_file_name()))
-                for at, fh in self.at_fh.items():
-                        fh.close()
-                        shutil.move(os.path.join(source_dir, "__at_" + at),
+                if not fast_update:
+                        try:
+                                shutil.rmtree(os.path.join(dest_dir, "pkg"))
+                        except EnvironmentError, e:
+                                if e.errno not in (errno.ENOENT, errno.ESRCH):
+                                        raise
+
+                        shutil.move(os.path.join(source_dir, "pkg"),
+                            os.path.join(dest_dir, "pkg"))
+
+                        for at, fh in self.at_fh.items():
+                                fh.close()
+                                shutil.move(
+                                    os.path.join(source_dir, "__at_" + at),
                                     os.path.join(dest_dir, "__at_" + at))
 
-                for st, fh in self.st_fh.items():
-                        fh.close()
-                        shutil.move(os.path.join(source_dir, "__st_" + st),
+                        for st, fh in self.st_fh.items():
+                                fh.close()
+                                shutil.move(
+                                    os.path.join(source_dir, "__st_" + st),
                                     os.path.join(dest_dir, "__st_" + st))
                 shutil.rmtree(source_dir)
