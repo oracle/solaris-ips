@@ -110,6 +110,7 @@ try:
         pygtk.require("2.0")
         import gtkhtml2
         import pango
+        from glib import GError
 except ImportError:
         sys.exit(1)
 import pkg.misc as misc
@@ -147,27 +148,43 @@ class PackageManager:
                 self.api_o = None
                 self.cache_o = None
                 self.client = gconf.client_get_default()
-                self.initial_show_filter = \
-                    self.client.get_int(INITIAL_SHOW_FILTER_PREFERENCES)
-                self.initial_section = self.client.get_int(INITIAL_SECTION_PREFERENCES)
-                self.show_startpage = self.client.get_bool(SHOW_STARTPAGE_PREFERENCES)
-                self.typeahead_search = self.client.get_bool(TYPEAHEAD_SEARCH_PREFERENCES)
-                self.gconf_not_show_repos = \
-                    self.client.get_string(REMOTE_SEARCH_ERROR_PREFERENCES)
+                try:
+                        self.initial_show_filter = \
+                            self.client.get_int(INITIAL_SHOW_FILTER_PREFERENCES)
+                        self.initial_section = \
+                            self.client.get_int(INITIAL_SECTION_PREFERENCES)
+                        self.show_startpage = \
+                            self.client.get_bool(SHOW_STARTPAGE_PREFERENCES)
+                        self.typeahead_search = \
+                            self.client.get_bool(TYPEAHEAD_SEARCH_PREFERENCES)
+                        self.gconf_not_show_repos = \
+                            self.client.get_string(REMOTE_SEARCH_ERROR_PREFERENCES)
+                        self.initial_app_width = \
+                            self.client.get_int(INITIAL_APP_WIDTH_PREFERENCES)
+                        self.initial_app_height = \
+                            self.client.get_int(INITIAL_APP_HEIGHT_PREFERENCES)
+                        self.initial_app_hpos = \
+                            self.client.get_int(INITIAL_APP_HPOS_PREFERENCES)
+                        self.initial_app_vpos = \
+                            self.client.get_int(INITIAL_APP_VPOS_PREFERENCES)
+                except GError:
+                        # Default values - the same as in the 
+                        # packagemanager-preferences.schemas
+                        self.initial_show_filter = 0
+                        self.initial_section = 3
+                        self.show_startpage = True
+                        self.typeahead_search = False
+                        self.gconf_not_show_repos = ""
+                        self.initial_app_width = 800
+                        self.initial_app_height = 600
+                        self.initial_app_hpos = 200
+                        self.initial_app_vpos = 423
+
                 if not self.gconf_not_show_repos:
                         self.gconf_not_show_repos = ""
                 self.set_show_filter = 0
                 self.set_section = 0
                 self.current_search_option = 0
-
-                self.initial_app_width = \
-                    self.client.get_int(INITIAL_APP_WIDTH_PREFERENCES)
-                self.initial_app_height = \
-                    self.client.get_int(INITIAL_APP_HEIGHT_PREFERENCES)
-                self.initial_app_hpos = \
-                    self.client.get_int(INITIAL_APP_HPOS_PREFERENCES)
-                self.initial_app_vpos = \
-                    self.client.get_int(INITIAL_APP_VPOS_PREFERENCES)
 
                 socket.setdefaulttimeout(
                     int(os.environ.get("PKG_CLIENT_TIMEOUT", "30"))) # in seconds
@@ -1715,11 +1732,19 @@ class PackageManager:
 
         def __on_startpage_checkbutton_toggled(self, widget):
                 self.show_startpage = self.w_startpage_checkbutton.get_active()
-                self.client.set_bool(SHOW_STARTPAGE_PREFERENCES, self.show_startpage)
+                try:
+                        self.client.set_bool(SHOW_STARTPAGE_PREFERENCES,
+                            self.show_startpage)
+                except GError:
+                        pass
 
         def __on_typeaheadsearch_checkbutton_toggled(self, widget):
                 self.typeahead_search = self.w_typeaheadsearch_checkbutton.get_active()
-                self.client.set_bool(TYPEAHEAD_SEARCH_PREFERENCES, self.typeahead_search)
+                try:
+                        self.client.set_bool(TYPEAHEAD_SEARCH_PREFERENCES,
+                            self.typeahead_search)
+                except GError:
+                        pass
 
         def __on_remote_search_checkbox_toggled(self, widget):
                 active = self.remote_search_checkbox.get_active()
@@ -1733,8 +1758,11 @@ class PackageManager:
                                         self.gconf_not_show_repos = \
                                             self.gconf_not_show_repos.replace(
                                             url + ",", "")
-                        self.client.set_string(REMOTE_SEARCH_ERROR_PREFERENCES,
-                            self.gconf_not_show_repos)
+                        try:
+                                self.client.set_string(REMOTE_SEARCH_ERROR_PREFERENCES,
+                                    self.gconf_not_show_repos)
+                        except GError:
+                                pass
 
         def __on_searchentry_focus_in(self, widget, event):
                 self.w_paste_menuitem.set_sensitive(True)
@@ -2198,10 +2226,13 @@ class PackageManager:
                 width, height = self.w_main_window.get_size()
                 hpos = self.w_main_hpaned.get_position()
                 vpos = self.w_main_vpaned.get_position()
-                self.client.set_int(INITIAL_APP_WIDTH_PREFERENCES, width)
-                self.client.set_int(INITIAL_APP_HEIGHT_PREFERENCES, height)
-                self.client.set_int(INITIAL_APP_HPOS_PREFERENCES, hpos)
-                self.client.set_int(INITIAL_APP_VPOS_PREFERENCES, vpos)
+                try:
+                        self.client.set_int(INITIAL_APP_WIDTH_PREFERENCES, width)
+                        self.client.set_int(INITIAL_APP_HEIGHT_PREFERENCES, height)
+                        self.client.set_int(INITIAL_APP_HPOS_PREFERENCES, hpos)
+                        self.client.set_int(INITIAL_APP_VPOS_PREFERENCES, vpos)
+                except GError:
+                        pass
 
                 self.w_main_window.hide()
                 while gtk.events_pending():
