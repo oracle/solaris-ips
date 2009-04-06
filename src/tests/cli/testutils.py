@@ -751,7 +751,15 @@ class SingleDepotTestCaseCorruptImage(SingleDepotTestCase):
                 os.mkdir(cmd_path)
                 return cmd_path
 
-
+def eval_assert_raises(ex_type, eval_ex_func, func, *args):
+        try:
+                func(*args)
+        except ex_type, e:
+                print str(e)
+                if not eval_ex_func(e):
+                        raise
+        else:
+                raise RuntimeError("Function did not raise exception.")
 
 
 if __name__ == "__main__":

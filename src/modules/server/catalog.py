@@ -30,6 +30,7 @@ except ImportError:
 
 import errno
 import os
+import shutil
 import signal
 import sys
 import threading
@@ -39,6 +40,7 @@ import pkg.fmri as fmri
 import pkg.indexer as indexer
 import pkg.manifest as manifest
 import pkg.pkgsubprocess as subprocess
+import pkg.search_errors as se
 import pkg.server.query_parser as query_p
 
 from pkg.misc import EmptyI
@@ -98,7 +100,21 @@ class ServerCatalog(catalog.Catalog):
 
                 if not read_only or has_writable_root:
                         try:
-                                self.refresh_index()
+                                try:
+                                        self.refresh_index()
+                                except se.InconsistentIndexException, e:
+                                        s = _("Index corrupted or out of date. "
+                                            "Removing old index directory (%s) "
+                                            " and rebuilding search "
+                                            "indexes.") % e.cause
+                                        self.__log(s, "INDEX")
+                                        shutil.rmtree(self.index_root)
+                                        try:
+                                                self.refresh_index()
+                                        except se.IndexingException, e:
+                                                self.__log(str(e), "INDEX")
+                                except se.IndexingException, e:
+                                        self.__log(str(e), "INDEX")
                         except EnvironmentError, e:
                                 if e.errno == errno.EACCES:
                                         if has_writable_root:
@@ -110,7 +126,6 @@ class ServerCatalog(catalog.Catalog):
                                                 raise SvrConfigError(
                                                     _("unable to write to "
                                                     "index directory."))
-                                        
                                 raise
                 else:
                         self._check_search()

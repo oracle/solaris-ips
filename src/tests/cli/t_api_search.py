@@ -1184,6 +1184,83 @@ close
                 _run_cat2_tests(self, remote)
                 _run_cat3_tests(self, remote)
 
+        def __corrupt_depot(self, ind_dir):
+                self.dc.stop()
+                if os.path.exists(os.path.join(ind_dir, ss.MAIN_FILE)):
+                        shutil.move(os.path.join(ind_dir, ss.MAIN_FILE),
+                            os.path.join(ind_dir, "main_dict.ascii.v1"))
+                self.dc.start()
+
+        def __wait_for_indexing(self, d):
+                init_time = time.time()
+                there = True
+                while there and ((time.time() - init_time) < 10):
+                        there = os.path.exists(d)
+                self.assert_(not there)
+                time.sleep(1)
+
+        def test_bug_7358_1(self):
+                """Move files so that an inconsistent index is created and
+                check that the server rebuilds the index when possible, and
+                doesn't stack trace when it can't write to the directory."""
+
+                durl = self.dc.get_depot_url()
+                depotpath = self.dc.get_repodir()
+                ind_dir = os.path.join(depotpath, "index")
+                self.image_create(durl)
+                progresstracker = progress.NullProgressTracker()
+                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
+                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
+                # Check when depot is empty.
+                self.__corrupt_depot(ind_dir)
+                self.__wait_for_indexing(os.path.join(ind_dir, "TMP"))
+                # Since the depot is empty, should return no results but
+                # not error.
+                self._search_op(api_obj, True, 'e*', set())
+
+                self.pkgsend_bulk(durl, self.example_pkg10)
+                self.__wait_for_indexing(os.path.join(ind_dir, "TMP"))
+
+                # Check when depot contains a package.
+                self.__corrupt_depot(ind_dir)
+                self.__wait_for_indexing(os.path.join(ind_dir, "TMP"))
+                self._run_remote_tests(api_obj)
+
+        def test_bug_7358_2(self):
+                """Does same check as 7358_1 except it checks for interactions
+                with writable root."""
+
+                durl = self.dc.get_depot_url()
+                depotpath = self.dc.get_repodir()
+                ind_dir = os.path.join(depotpath, "index")
+                shutil.rmtree(ind_dir)
+                writable_root = os.path.join(self.get_test_prefix(),
+                    "writ_root")
+                writ_dir = os.path.join(writable_root, "index")
+                self.dc.set_writable_root(writable_root)
+                
+                self.image_create(durl)
+                progresstracker = progress.NullProgressTracker()
+                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
+                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
+
+                # Check when depot is empty.
+                self.__corrupt_depot(writ_dir)
+                # Since the depot is empty, should return no results but
+                # not error.
+                self.assert_(not os.path.isdir(ind_dir))
+                self.__wait_for_indexing(os.path.join(writ_dir, "TMP"))
+                self._search_op(api_obj, True, 'e*', set())
+
+                self.pkgsend_bulk(durl, self.example_pkg10)
+                self.__wait_for_indexing(os.path.join(writ_dir, "TMP"))
+                
+                # Check when depot contains a package.
+                self.__corrupt_depot(writ_dir)
+                self.__wait_for_indexing(os.path.join(writ_dir, "TMP"))
+                self.assert_(not os.path.isdir(ind_dir))
+                self._run_remote_tests(api_obj)
+
         def test_bug_7628(self):
                 """Checks whether incremental update generates wrong
                 additional lines."""
