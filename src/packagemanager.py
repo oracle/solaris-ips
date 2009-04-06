@@ -424,6 +424,7 @@ class PackageManager:
                                 "on_edit_clear_activate":self.__on_clear_paste,
                                 "on_edit_copy_activate":self.__on_copy,
                                 "on_edit_cut_activate":self.__on_cut,
+                                "on_edit_search_activate":self.__on_edit_search_clicked,
                                 "on_set_search_clicked":self.__on_set_search_clicked,
                                 "on_set_search_button_press_event":self.__on_set_search,
                                 "on_clear_search_clicked":self.__on_clear_search,
@@ -1589,6 +1590,9 @@ class PackageManager:
                     0, 0)
                 return True
 
+        def __on_edit_search_clicked(self, widget):
+                self.w_searchentry_dialog.grab_focus()
+
         def __on_clear_search(self, widget):
                 self.w_searchentry_dialog.delete_text(0, -1)
                 self.__do_search()
@@ -2480,7 +2484,7 @@ class PackageManager:
                 labs["size"] = _("Size:\t\t\t")
                 labs["cat"] = _("Category:\t\t")
                 labs["ins"] = _("Installed Version:\t")
-                labs["lat"] = ("Latest Version:\t")
+                labs["lat"] = _("Latest Version:\t")
                 labs["pkg_date"] = _("Packaging Date:\t")
                 labs["fmri"] = _("FMRI:\t\t\t")
                 labs["repository"] = _("Repository:\t\t")
@@ -3528,6 +3532,8 @@ class PackageManager:
                 '''test data for gui'''
                 save_selected = _("Save selected...")
                 save_selected_pkgs = _("Save selected packages...")
+                reboot_needed = _("The installed package(s) require a reboot before "
+                    "installation can be completed.")
                 self.application_list = self.__get_new_application_liststore()
                 self.category_list = self.__get_new_category_liststore()
                 self.section_list = self.__get_new_section_liststore()

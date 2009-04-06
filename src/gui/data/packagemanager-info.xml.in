@@ -28,7 +28,7 @@
 
 <mime-info xmlns='http://www.freedesktop.org/standards/shared-mime-info'>
 <mime-type type="application/vnd.pkg5.info">
-<comment>IPS info files</comment>
+<comment>pkg(5) info file</comment>
 <glob pattern="*.p5i"/>
 </mime-type>
 </mime-info>

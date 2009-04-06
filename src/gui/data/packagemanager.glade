@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.4.5 on Fri Mar 27 17:19:38 2009 -->
+<!--Generated with glade3 3.4.5 on Thu Apr  2 09:29:20 2009 -->
 <glade-interface>
   <widget class="GtkWindow" id="mainwindow">
     <property name="width_request">750</property>
@@ -135,6 +135,7 @@
                         <property name="label" translatable="yes">Select _All</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="on_edit_select_all_activate"/>
+                        <accelerator key="A" modifiers="GDK_CONTROL_MASK" signal="activate"/>
                       </widget>
                     </child>
                     <child>
@@ -152,13 +153,29 @@
                         <property name="visible">True</property>
                         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                         <property name="tooltip" translatable="yes">Deselect selected packages</property>
-                        <property name="label" translatable="yes">_Deselect</property>
+                        <property name="label" translatable="yes">_Deselect All</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="on_edit_deselect_activate"/>
+                        <accelerator key="A" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK" signal="activate"/>
                       </widget>
                     </child>
                     <child>
                       <widget class="GtkSeparatorMenuItem" id="separatormenuitem2">
+                        <property name="visible">True</property>
+                      </widget>
+                    </child>
+                    <child>
+                      <widget class="GtkMenuItem" id="search">
+                        <property name="visible">True</property>
+                        <property name="tooltip" translatable="yes">Search</property>
+                        <property name="label" translatable="yes">_Search</property>
+                        <property name="use_underline">True</property>
+                        <signal name="activate" handler="on_edit_search_activate"/>
+                        <accelerator key="F" modifiers="GDK_CONTROL_MASK" signal="activate"/>
+                      </widget>
+                    </child>
+                    <child>
+                      <widget class="GtkSeparatorMenuItem" id="separatormenuitem3">
                         <property name="visible">True</property>
                       </widget>
                     </child>
@@ -169,6 +186,28 @@
                         <property name="label" translatable="yes">Pre_ferences</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="on_edit_preferences_activate"/>
+                      </widget>
+                    </child>
+                  </widget>
+                </child>
+              </widget>
+            </child>
+            <child>
+              <widget class="GtkMenuItem" id="view">
+                <property name="visible">True</property>
+                <property name="label" translatable="yes">_View</property>
+                <property name="use_underline">True</property>
+                <child>
+                  <widget class="GtkMenu" id="menu4">
+                    <property name="visible">True</property>
+                    <child>
+                      <widget class="GtkMenuItem" id="start_page">
+                        <property name="visible">True</property>
+                        <property name="tooltip" translatable="yes">Start Page</property>
+                        <property name="label" translatable="yes">Start _Page</property>
+                        <property name="use_underline">True</property>
+                        <signal name="activate" handler="on_help_start_page_activate"/>
+                        <accelerator key="Home" modifiers="GDK_MOD1_MASK" signal="activate"/>
                       </widget>
                     </child>
                   </widget>
@@ -240,25 +279,17 @@
                     <child>
                       <widget class="GtkMenuItem" id="online_help">
                         <property name="visible">True</property>
-                        <property name="tooltip" translatable="yes">Online Help</property>
-                        <property name="label" translatable="yes">Online _Help</property>
+                        <property name="tooltip" translatable="yes">Help</property>
+                        <property name="label" translatable="yes">_Contents</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="on_help_help_activate"/>
+                        <accelerator key="F1" modifiers="" signal="activate"/>
                       </widget>
                     </child>
                     <child>
                       <widget class="GtkSeparatorMenuItem" id="help_separator">
                         <property name="visible">True</property>
                         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                      </widget>
-                    </child>
-                    <child>
-                      <widget class="GtkMenuItem" id="start_page">
-                        <property name="visible">True</property>
-                        <property name="tooltip" translatable="yes">Start Page</property>
-                        <property name="label" translatable="yes">Start _Page</property>
-                        <property name="use_underline">True</property>
-                        <signal name="activate" handler="on_help_start_page_activate"/>
                       </widget>
                     </child>
                     <child>
@@ -389,8 +420,8 @@
                             <property name="xalign">0</property>
                             <property name="yalign">0</property>
                             <property name="response_id">0</property>
-                            <signal name="clicked" handler="on_set_search_clicked"/>
                             <signal name="button_press_event" handler="on_set_search_button_press_event"/>
+                            <signal name="clicked" handler="on_set_search_clicked"/>
                             <child>
                               <widget class="GtkHBox" id="hbox23">
                                 <property name="visible">True</property>
