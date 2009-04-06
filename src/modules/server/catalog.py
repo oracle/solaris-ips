@@ -136,6 +136,9 @@ class ServerCatalog(catalog.Catalog):
                         # XXX generic logging mechanism needed
                         cherrypy.log(msg, context)
 
+        def __index_log(self, msg):
+                self.__log(msg, "INDEX")
+
         def refresh_index(self):
                 """ This function refreshes the search indexes if there any new
                 packages. It starts a subprocess which results in a call to
@@ -187,10 +190,10 @@ class ServerCatalog(catalog.Catalog):
                                 # a change in status of the server.
                                 ind = indexer.Indexer(self.index_root,
                                     self.get_server_manifest,
-                                    self.get_manifest_path)
+                                    self.get_manifest_path, log=self.__index_log)
                                 ind.setup()
                                 if not self._search_available:
-                                        self.__log("Search Available", "INDEX")
+                                        self.__index_log("Search Available")
                                 self._search_available = True
                 finally:
                         self.searchdb_update_handle_lock.release()
@@ -209,19 +212,21 @@ class ServerCatalog(catalog.Catalog):
                     fmris_to_index)
 
                 if fmris_to_index:
-                        self.__log("Updating search indices", "INDEX")
+                        self.__index_log("Updating search indices")
                         self.__update_searchdb_unlocked(fmris_to_index)
                 else:
                         ind = indexer.Indexer(self.index_root,
-                            self.get_server_manifest, self.get_manifest_path)
+                            self.get_server_manifest, self.get_manifest_path,
+                            log=self.__index_log)
                         ind.setup()
 
         def _check_search(self):
                 ind = indexer.Indexer(self.index_root,
-                    self.get_server_manifest, self.get_manifest_path)
+                    self.get_server_manifest, self.get_manifest_path,
+                    log=self.__index_log)
                 if ind.check_index_existence():
                         self._search_available = True
-                        self.__log("Search Available", "INDEX")
+                        self.__index_log("Search Available")
 
         def build_catalog(self):
                 """ Creates an Indexer instance and after building the
@@ -257,8 +262,8 @@ class ServerCatalog(catalog.Catalog):
 
                 if rc == 0:
                         self._search_available = True
-                        self.__log("Search indexes updated and available.",
-                            "INDEX")
+                        self.__index_log(
+                            "Search indexes updated and available.")
                         # Need to acquire this lock to prevent the possibility
                         # of a race condition with refresh_index where a needed
                         # refresh is dropped. It is possible that an extra
@@ -274,8 +279,8 @@ class ServerCatalog(catalog.Catalog):
                 elif rc > 0:
                         # If the refresh of the index failed, defensively
                         # declare that search is unavailable.
-                        self.__log("ERROR building search database, exit code: "
-                            "%s" % rc, "INDEX")
+                        self.__index_log("ERROR building search database, exit "
+                            "code: %s" % rc)
                         try:
                                 self.__log(
                                     self.searchdb_update_handle.stderr.read())
@@ -296,7 +301,8 @@ class ServerCatalog(catalog.Catalog):
 
                 if fmris:
                         index_inst = indexer.Indexer(self.index_root,
-                            self.get_server_manifest, self.get_manifest_path)
+                            self.get_server_manifest, self.get_manifest_path,
+                            log=self.__index_log)
                         index_inst.server_update_index(fmris)
 
         def get_manifest_path(self, f):

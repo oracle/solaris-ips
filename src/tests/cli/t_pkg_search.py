@@ -39,6 +39,7 @@ import time
 import pkg.depotcontroller as dc
 
 import pkg.client.query_parser as query_parser
+import pkg.fmri as fmri
 import pkg.portable as portable
 import pkg.search_storage as ss
 
@@ -119,6 +120,15 @@ add set name=variant.arch value=sparc value=i386
 add set name=description value="i386 variant" variant.arch=i386
 add set name=description value="sparc variant" variant.arch=sparc
 close """
+
+        bogus_pkg10 = """
+set name=fmri value=pkg:/bogus_pkg@1.0,5.11-0:20090326T233451Z
+set name=description value=""validation with simple chains of constraints ""
+set name=pkg.description value="pseudo-hashes as arrays tied to a "type" (list of fields)"
+depend fmri=XML-Atom-Entry
+set name=com.sun.service.incorporated_changes value="6556919 6627937"
+"""
+        bogus_fmri = fmri.PkgFmri("bogus_pkg@1.0,5.11-0:20090326T233451Z")
 
         headers = "INDEX      ACTION    VALUE                     PACKAGE\n"
         pkg_headers = "PACKAGE\n"
@@ -339,6 +349,16 @@ close """
             "publisher  set       test                      pkg:/fat@1.0-0\n",
             "fmri       set       fat                       pkg:/fat@1.0-0\n"
         ]))
+
+        res_bogus_name_result = set([
+            headers,
+            'fmri       set       bogus_pkg                 pkg:/bogus_pkg@1.0-0\n'
+        ])
+
+        res_bogus_number_result = set([
+            headers,
+            'com.sun.service.incorporated_changes set       6627937                   pkg:/bogus_pkg@1.0-0\n'
+        ])
 
         misc_files = ['/tmp/example_file']
 
@@ -906,6 +926,56 @@ close
                 shutil.rmtree(index_dir)
                 self._run_local_tests()
 
+        def test_bug_1873(self):
+                """Test to see if malformed actions cause tracebacks during
+                indexing for client or server."""
+                durl = self.dc.get_depot_url()
+                depotpath = self.dc.get_repodir()
+                server_manifest_path = os.path.join(depotpath, "pkg",
+                    self.bogus_fmri.get_dir_path())
+                os.makedirs(os.path.dirname(server_manifest_path))
+                tmp_ind_dir = os.path.join(depotpath, "index", "TMP")
+
+                fh = open(server_manifest_path, "wb")
+                fh.write(self.bogus_pkg10)
+                fh.close()
+
+                self.image_create(durl)
+                self.dc.stop()
+                self.dc.set_rebuild()
+                self.dc.start()
+
+                self._search_op(True, "*bogus*",
+                    set(self.res_bogus_name_result))
+                self._search_op(True, "6627937",
+                    set(self.res_bogus_number_result))
+                self.pkg("install bogus_pkg", exit=1)
+
+                client_pkg_dir = os.path.join(self.img_path, "var", "pkg",
+                    "pkg", self.bogus_fmri.get_dir_path())
+                os.makedirs(client_pkg_dir)
+                client_manifest_file = os.path.join(client_pkg_dir, "manifest")
+                installed_file_1 = os.path.join(client_pkg_dir, "installed")
+                state_dir = os.path.join(self.img_path, "var", "pkg", "state",
+                    "installed")
+                installed_file_2 = os.path.join(state_dir,
+                    self.bogus_fmri.get_fmri(include_scheme=False))
+                fh = open(client_manifest_file, "wb")
+                fh.write(self.bogus_pkg10)
+                fh.close()
+                fh = open(installed_file_1, "wb")
+                fh.write("VERSION_1\n_PRE_%s\n" % "test")
+                fh.close()
+                fh = open(installed_file_2, "wb")
+                fh.write('\n')
+                fh.close()
+
+                self.pkg("rebuild-index")
+                self._search_op(False, "*bogus*",
+                    set(self.res_bogus_name_result))
+                self._search_op(False, "6627937",
+                    set(self.res_bogus_number_result))
+                
         def test_bug_2989_1(self):
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.example_pkg10)

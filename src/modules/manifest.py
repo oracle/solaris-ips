@@ -344,7 +344,21 @@ class Manifest(object):
 
                 
         @staticmethod
-        def search_dict(file_path, excludes, return_line=False):
+        def search_dict(file_path, excludes, return_line=False,
+            log=None):
+                """Produces the search dictionary for a specific manifest.
+                A dictionary is constructed which maps a tuple of token,
+                action type, key, and the value that matched the token to
+                the byte offset into the manifest file. file_path is the
+                path to the manifest file. excludes is the variants which
+                should be allowed in this image. return_line is a debugging
+                flag which makes the function map the information to the
+                string of the line, rather than the byte offset to allow
+                easier debugging."""
+
+                if log is None:
+                        log = lambda x: None
+                
                 file_handle = file(file_path)
                 cur_pos = 0
                 line = file_handle.readline()
@@ -377,16 +391,37 @@ class Manifest(object):
                 while line:
                         l = line.strip()
                         if l and l[0] != "#":
-                                action = actions.fromstr(l)
-                                if action.include_this(excludes):
-                                        if action.attrs.has_key("path"):
-                                                np = action.attrs["path"].lstrip(os.path.sep)
-                                                action.attrs["path"] = np
-                                        arg = cur_pos
-                                        if return_line:
-                                                arg = l
-                                        __handle_list(action.generate_indices(),
-                                            arg)
+                                try:
+                                        action = actions.fromstr(l)
+                                except actions.MalformedActionError, e:
+                                        log((_("%(fp)s:\n%(e)s") %
+                                            { "fp": file_path, "e": e }))
+                                else:
+                                        if action.include_this(excludes):
+                                                if action.attrs.has_key("path"):
+                                                        np = action.attrs["path"].lstrip(os.path.sep)
+                                                        action.attrs["path"] = \
+                                                            np
+                                                try:
+                                                        inds = action.generate_indices()
+                                                except KeyError, k:
+                                                        log(_("%(fp)s contains "
+                                                            "an action which is"
+                                                            " missing the "
+                                                            "expected attribute"
+                                                            ": %(at)s.\nThe "
+                                                            "action is:"
+                                                            "%(act)s") %
+                                                            {
+                                                                "fp": file_path,
+                                                                "at": k.args[0],
+                                                                "act":l
+                                                            })
+                                                else:
+                                                        arg = cur_pos
+                                                        if return_line:
+                                                                arg = l
+                                                        __handle_list(inds, arg)
                         cur_pos = file_handle.tell()
                         line = file_handle.readline()
                 file_handle.close()

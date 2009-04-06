@@ -60,13 +60,14 @@ class Indexer(object):
         file_version_string = "VERSION: "
 
         def __init__(self, index_dir, get_manifest_func, get_manifest_path_func,
-            progtrack=None, excludes=EmptyI):
+            progtrack=None, excludes=EmptyI, log=None):
                 self._num_keys = 0
                 self._num_manifests = 0
                 self._num_entries = 0
                 self.get_manifest_func = get_manifest_func
                 self.get_manifest_path_func = get_manifest_path_func
                 self.excludes = excludes
+                self.__log = log
                 
                 # This structure was used to gather all index files into one
                 # location. If a new index structure is needed, the files can
@@ -232,7 +233,7 @@ class Indexer(object):
                             added_fmri.get_fmri(anarchy=True))
                         new_dict = manifest.Manifest.search_dict(
                             self.get_manifest_path_func(added_fmri),
-                            self.excludes)
+                            self.excludes, log=self.__log)
                         self._add_terms(added_fmri, new_dict)
 
                         if self._progtrack is not None:
