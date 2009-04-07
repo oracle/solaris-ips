@@ -33,6 +33,7 @@ import os
 import pkg.misc as misc
 import shutil
 import tempfile
+import time
 import urllib
 import urllib2
 
@@ -338,19 +339,44 @@ class TestDepotController(testutils.CliTestCase):
                 o_index_dir = os.path.join(base_dir, "index")
                 o_feed = os.path.join(base_dir, "feed.xml")
 
+                timeout = 10
+                
                 def check_state(check_feed):
+                        found = not os.path.exists(o_index_dir) and \
+                            not os.path.exists(o_feed) and \
+                            os.path.isdir(index_dir) and \
+                            (not check_feed or os.path.isfile(feed))
+                        start_time = time.time()
+                        while not found and time.time() - start_time < timeout:
+                                time.sleep(1)
+                                found = not os.path.exists(o_index_dir) and \
+                                    not os.path.exists(o_feed) and \
+                                    os.path.isdir(index_dir) and \
+                                    (not check_feed or os.path.isfile(feed))
+
                         self.assert_(not os.path.exists(o_index_dir))
                         self.assert_(not os.path.exists(o_feed))
                         self.assert_(os.path.isdir(index_dir))
                         if check_feed:
                                 self.assert_(os.path.isfile(feed))
+                def get_feed(durl):
+                        start_time = time.time()
+                        got = False
+                        while not got and (time.time() - start_time) < timeout:
+                                try:
+                                        urllib2.urlopen("%s/feed" % durl)
+                                        got = True
+                                except urllib2.HTTPError:
+                                        time.sleep(1)
+                        self.assert_(got)
+                        
                 self.__dc.set_port(12000)
                 self.__dc.set_writable_root(writable_root)
                 self.__dc.start()
                 durl = self.__dc.get_depot_url()
                 check_state(False)
                 self.pkgsend_bulk(durl, TestPkgDepot.quux10)
-                urllib2.urlopen("%s/feed" % durl)
+                get_feed(durl)
                 check_state(True)
 
                 self.image_create(durl)
@@ -359,7 +385,18 @@ class TestDepotController(testutils.CliTestCase):
                 self.__dc.set_readonly()
                 shutil.rmtree(writable_root)
                 self.__dc.start()
-                urllib2.urlopen("%s/feed" % durl)
+                get_feed(durl)
+                check_state(True)
+                self.pkg("search -r cat")
+                self.__dc.stop()
+                self.__dc.set_refresh_index()
+                shutil.rmtree(writable_root)
+                self.__dc.start()
+                check_state(False)
+                self.__dc.stop()
+                self.__dc.set_norefresh_index()
+                self.__dc.start()
+                get_feed(durl)
                 check_state(True)
                 self.pkg("search -r cat")
                 for p in TestPkgDepot.misc_files:

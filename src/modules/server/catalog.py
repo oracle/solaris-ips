@@ -187,6 +187,8 @@ class ServerCatalog(catalog.Catalog):
                                                     self.index_root)
                                                 args += ("--writable-root",
                                                     writ)
+                                        if self.read_only:
+                                                args += ("--readonly",)
                                         try:
                                                 self.searchdb_update_handle = \
                                                     subprocess.Popen(args,

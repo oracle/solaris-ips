@@ -414,9 +414,11 @@ if __name__ == "__main__":
                 usage("--refresh-index cannot be used with --rebuild")
         if rebuild and (readonly or mirror):
                 usage("--readonly and --mirror cannot be used with --rebuild")
-        if reindex and (readonly or mirror):
-                usage("--readonly and --mirror cannot be used with " \
-                    "--refresh-index")
+        if reindex and mirror:
+                usage("--mirror cannot be used with --refresh-index")
+        if reindex and readonly and not writable_root:
+                usage("--readonly can only be used with --refresh-index if "
+                    "--writable-root is used")
 
         if (ssl_cert_file and not ssl_key_file) or (ssl_key_file and not
             ssl_cert_file):
