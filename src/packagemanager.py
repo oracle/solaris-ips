@@ -400,6 +400,7 @@ class PackageManager:
                 self.__update_reload_button()
                 self.w_main_clipboard.request_text(self.__clipboard_text_received)
                 self.w_main_window.set_title(main_window_title)
+                self.w_searchentry_dialog.grab_focus()
 
                 # Setup Start Page
                 self.document = None
@@ -507,8 +508,11 @@ class PackageManager:
                 self.application_list_sort = None
                 self.application_refilter_id = 0
                 self.application_refilter_idle_id = 0
+                self.last_show_info_id = 0
                 self.show_info_id = 0
+                self.last_show_licenses_id = 0
                 self.show_licenses_id = 0
+                self.showing_empty_details = False
                 self.in_setup = True
                 if self.initial_app_width >= MIN_APP_WIDTH and \
                         self.initial_app_height >= MIN_APP_HEIGHT:
@@ -1411,6 +1415,7 @@ class PackageManager:
                                 selection.unselect_all()
                         self.w_infosearch_frame.hide()
                         self.update_statusbar_for_searching()
+                        self.in_search = True
                         Thread(target = self.__do_remote_search,
                             args = ()).start()
 
@@ -1531,14 +1536,14 @@ class PackageManager:
                 if self.application_refilter_id != 0:
                         gobject.source_remove(self.application_refilter_id)
                         self.application_refilter_id = 0
-                if self.w_searchentry_dialog.get_text() == "":
+                if self.w_searchentry_dialog.get_text() == "" or \
+                    not self.typeahead_search:
                         self.application_refilter_id = \
                             gobject.idle_add(self.__application_refilter)
                 else:
                         self.application_refilter_id = \
                             gobject.timeout_add(TYPE_AHEAD_DELAY,
                             self.__application_refilter)
-                self.in_search = False
 
         def __application_refilter(self):
                 ''' Disconnecting the model from the treeview improves
@@ -1552,9 +1557,9 @@ class PackageManager:
                         self.w_application_treeview.set_model(None)
                         self.application_list_filter.refilter()
                         self.w_application_treeview.set_model(model)
+                gobject.idle_add(self.__set_empty_details_panel)
                 gobject.idle_add(self.__enable_disable_selection_menus)
                 gobject.idle_add(self.__enable_disable_install_remove)
-                gobject.idle_add(self.__set_empty_details_panel)
                 self.application_treeview_initialized = True
                 self.application_treeview_range = None
                 if self.visible_status_id == 0:
@@ -1620,14 +1625,14 @@ class PackageManager:
                 self.w_main_view_notebook.set_current_page(NOTEBOOK_START_PAGE)
 
         def __on_notebook_change(self, widget, event, pagenum):
-                if pagenum == 3:
+                if pagenum == 3 and not self.showing_empty_details:
                         licbuffer = self.w_license_textview.get_buffer()
                         leg_txt = _("Fetching legal information...")
                         licbuffer.set_text(leg_txt)
                         if self.show_licenses_id != 0:
                                 gobject.source_remove(self.show_licenses_id)
                                 self.show_licenses_id = 0
-                        self.show_licenses_id = \
+                        self.last_show_licenses_id = self.show_licenses_id = \
                             gobject.timeout_add(TYPE_AHEAD_DELAY,
                                 self.__show_licenses)
 
@@ -1850,20 +1855,25 @@ class PackageManager:
 
         def __process_package_selection(self):
                 model, itr = self.package_selection.get_selected()
+                if self.show_info_id != 0:
+                        gobject.source_remove(self.show_info_id)
+                        self.show_info_id = 0
                 if itr:
                         self.__enable_disable_install_remove()
                         self.selected_pkgstem = \
                                model.get_value(itr, enumerations.STEM_COLUMN)
-                        if self.show_info_id != 0:
-                                gobject.source_remove(self.show_info_id)
-                                self.show_info_id = 0
                         pkg = model.get_value(itr, enumerations.FMRI_COLUMN)
                         gobject.idle_add(self.__show_fetching_package_info, pkg)
-                        self.show_info_id = \
+                        self.showing_empty_details = False
+                        self.last_show_info_id = self.show_info_id = \
                             gobject.timeout_add(TYPE_AHEAD_DELAY,
                                 self.__show_info, model, model.get_path(itr))
                         if self.w_info_notebook.get_current_page() == 3:
                                 self.__on_notebook_change(None, None, 3)
+                else:
+                        self.selected_model = None
+                        self.selected_path = None
+                        self.selected_pkgstem = None
 
         def __on_package_selection_changed(self, selection, widget):
                 '''This function is for handling package selection changes'''
@@ -2397,6 +2407,7 @@ class PackageManager:
                         self.__remove_pkg_stem_from_list(pkg_stem)
 
         def __set_empty_details_panel(self):
+                self.showing_empty_details = True
                 if self.show_info_id != 0:
                         gobject.source_remove(self.show_info_id)
                         self.show_info_id = 0
@@ -2449,7 +2460,10 @@ class PackageManager:
                 else:
                         return False
 
-        def __update_package_info(self, pkg, local_info, remote_info):
+        def __update_package_info(self, pkg, local_info, remote_info, info_id):
+                if self.showing_empty_details or (info_id != 
+                    self.last_show_info_id):
+                        return
                 pkg_name = pkg.get_name()
                 pkg_stem = pkg.get_pkg_stem()
                 self.w_packagename_label.set_markup("<b>" + pkg_name + "</b>")
@@ -2552,7 +2566,10 @@ class PackageManager:
                 self.info_cache[pkg_stem] = \
                     (description, info_str, inst_str, dep_str)
 
-        def __update_package_license(self, licenses):
+        def __update_package_license(self, licenses, license_id):
+                if self.showing_empty_details or (license_id !=
+                    self.last_show_licenses_id):
+                        return
                 lic = ""
                 lic_u = ""
                 if licenses == None:
@@ -2569,14 +2586,16 @@ class PackageManager:
                 licbuffer.set_text(lic_u)
 
         def __show_licenses(self):
+                self.show_licenses_id = 0
                 if self.catalog_loaded == False:
                         return
                 Thread(target = self.__show_package_licenses,
-                    args = (self.show_licenses_id,)).start()
+                    args = (self.last_show_licenses_id,)).start()
 
         def __show_package_licenses(self, license_id):
                 if self.selected_pkgstem == None:
-                        gobject.idle_add(self.__update_package_license, None)
+                        gobject.idle_add(self.__update_package_license, None,
+                            self.last_show_licenses_id)
                         return
                 info = None
                 try:
@@ -2585,7 +2604,8 @@ class PackageManager:
                 except (misc.TransportFailures, retrieve.ManifestRetrievalError,
                     retrieve.DatastreamRetrievalError):
                         pass
-                if license_id != self.show_licenses_id:
+                if self.showing_empty_details or (license_id != 
+                    self.last_show_licenses_id):
                         return
                 if not info or (info and len(info.get(0)) == 0):
                         try:
@@ -2595,7 +2615,8 @@ class PackageManager:
                         except (misc.TransportFailures, retrieve.ManifestRetrievalError,
                             retrieve.DatastreamRetrievalError):
                                 pass
-                if license_id != self.show_licenses_id:
+                if self.showing_empty_details or (license_id != 
+                    self.last_show_licenses_id):
                         return
                 pkgs_info = None
                 package_info = None
@@ -2607,11 +2628,12 @@ class PackageManager:
                 if package_info:
                         no_licenses = len(package_info.licenses)
                 if no_licenses == 0:
-                        gobject.idle_add(self.__update_package_license, None)
+                        gobject.idle_add(self.__update_package_license, None, 
+                            license_id)
                         return
                 else:
                         gobject.idle_add(self.__update_package_license,
-                            package_info.licenses)
+                            package_info.licenses, license_id)
 
         def __get_pkg_info(self, pkg_stem, local):
                 info = None
@@ -2634,36 +2656,51 @@ class PackageManager:
                         return None
 
         def __show_info(self, model, path):
+                self.show_info_id = 0
                 if self.catalog_loaded == False:
                         self.selected_model = model
                         self.selected_path = path
                         return
-                Thread(target = self.__show_package_info,
-                    args = (model, path, self.show_info_id)).start()
-
-        def __show_package_info(self, model, path, show_id):
                 if not (model and path):
                         return
+                if self.selected_model != None:
+                        if (self.selected_model != model or
+                            self.selected_path != path):
+                        # This can happen after catalogs are loaded in
+                        # enable_disable_update_all and a different
+                        # package is selected before enable_disable_update_all
+                        # calls __show_info. We set these variable to None
+                        # so that when __show_info is called it does nothing.
+                                self.selected_model = None
+                                self.selected_path = None
+
                 itr = model.get_iter(path)
                 pkg = model.get_value(itr, enumerations.FMRI_COLUMN)
                 pkg_stem = model.get_value(itr, enumerations.STEM_COLUMN)
                 pkg_status = model.get_value(itr, enumerations.STATUS_COLUMN)
                 if self.info_cache.has_key(pkg_stem):
                         return
+                Thread(target = self.__show_package_info,
+                    args = (pkg, pkg_stem, pkg_status, self.last_show_info_id)).start()
+
+        def __show_package_info(self, pkg, pkg_stem, pkg_status, info_id):
                 self.api_o.log_operation_start("info")
                 local_info = None
                 remote_info = None
-                if show_id == self.show_info_id and (pkg_status ==
+                if not self.showing_empty_details and (info_id ==
+                    self.last_show_info_id) and (pkg_status ==
                     enumerations.INSTALLED or pkg_status ==
                     enumerations.UPDATABLE):
                         local_info = self.__get_pkg_info(pkg_stem, True)
-                if show_id == self.show_info_id and (pkg_status ==
+                if not self.showing_empty_details and (info_id ==
+                    self.last_show_info_id) and (pkg_status ==
                     enumerations.NOT_INSTALLED or pkg_status ==
                     enumerations.UPDATABLE):
                         remote_info = self.__get_pkg_info(pkg_stem, False)
-                if show_id == self.show_info_id:
+                if not self.showing_empty_details and (info_id ==
+                    self.last_show_info_id):
                         gobject.idle_add(self.__update_package_info, pkg,
-                            local_info, remote_info)
+                            local_info, remote_info, info_id)
                 self.api_o.log_operation_end()
                 return
 
@@ -2771,10 +2808,14 @@ class PackageManager:
         def __enable_disable_select_all(self):
                 if self.in_setup:
                         return
+                was_in_search = self.in_search
+                self.in_search = False
                 if len(self.w_application_treeview.get_model()) > 0:
                         for row in self.w_application_treeview.get_model():
                                 if not row[enumerations.MARK_COLUMN]:
                                         self.w_selectall_menuitem.set_sensitive(True)
+                                        if was_in_search:
+                                                self.w_application_treeview.grab_focus()
                                         return
                         self.w_selectall_menuitem.set_sensitive(False)
                 else:
@@ -2849,11 +2890,15 @@ class PackageManager:
                 gobject.idle_add(self.w_updateall_menuitem.set_sensitive, False)
                 update_available = self.__check_if_updates_available()
                 gobject.idle_add(self.__g_enable_disable_update_all, update_available)
-                self.show_info_id = -1
-                gobject.idle_add(self.__show_package_info,
-                    self.selected_model, self.selected_path, -1)
-                gobject.idle_add(self.__show_licenses)
+                gobject.idle_add(self.__show_info_after_catalog_load)
                 return False
+
+        def __show_info_after_catalog_load(self):
+                self.__show_info(self.selected_model, self.selected_path)
+                self.selected_model = None
+                self.selected_path = None
+                self.__show_licenses()
+                self.selected_pkgstem = None
 
         def __check_if_updates_available(self):
                 try:
@@ -2872,6 +2917,7 @@ class PackageManager:
                                         return True
 
                 except api_errors.InventoryException:
+                        gobject.idle_add(self.__set_empty_details_panel)
                         return False
                 return False
 
