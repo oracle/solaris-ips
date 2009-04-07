@@ -1,0 +1,85 @@
+User Commands                                  pm-updatemanager(1)
+
+
+NAME
+     pm-updatemanager - GUI to update packages.
+
+SYNOPSIS
+     /usr/bin/pm-updatemanager [options]
+
+     /usr/bin/pm-updatemanager [-hrRU]  [--help] [--refresh] [--image-dir dir]
+        [--update-all be_name]
+
+DESCRIPTION
+     pm-updatemanager is a program which you can use to update the installed
+     packages on your system.
+
+
+OPTIONS
+     The following options are supported:
+
+     --help or -h
+          Displays a usage message.
+
+     ---refresh or -r
+           Force a refresh before checking for updaters. By default, a
+           refresh is not done before checking for updates.
+
+     ---image-dir or -R dir
+          Operate on the image rooted at dir, rather than the one discovered
+          automatically.
+
+     ---update-all or -U be_name
+          Update all packages in specified boot environment. When the user
+          chooses Update All option in pm-updatemanager and the packages
+          containing pkg or pm-updatemanager need to be updated before
+          doing image update, pm-updatemanager is called with this option
+          after the packages have been updated.
+
+
+EXAMPLES
+     Example 1:  Invoke pm-updatemanager on the current image.
+
+     $ pm-updatemanager
+
+     Example 2:  Invoke pm-updatemanager on image stored at /aux0/example_root.
+
+     $ pm-updatemanager -R /aux0/example_root 
+
+
+EXIT STATUS
+     The following exit values are returned:
+
+     0     Everything worked.
+
+     1     Something bad happened.
+
+     2     Invalid command line options were specified.
+
+FILES
+     None
+
+ATTRIBUTES
+     See attributes(5) for descriptions of the  following  attri-
+     butes:
+     ____________________________________________________________
+    |       ATTRIBUTE TYPE        |       ATTRIBUTE VALUE       |
+    |_____________________________|_____________________________|
+    | Availability                | SUNWipkg-um                 |
+    | Interface Stability         | None / Under Development    |
+    |_____________________________|_____________________________|
+
+SEE ALSO
+     packagemanager(1), pkg(1), attributes(5), pkg(5)
+
+NOTES
+     The image packaging system is an under-development feature.
+     Command names, invocation, formats, and operations are all subject
+     to change.  Development is hosted in the OpenSolaris community
+     at:
+
+     http://opensolaris.org/os/project/pkg/
+
+     pm-updatemanager needs to be invoked with enough privilege to operate
+     on an image you do not own. You will normally invoke pm-updatemanager
+     using pexec.

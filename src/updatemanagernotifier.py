@@ -63,7 +63,7 @@ IMAGE_DIR_COMMAND = "svcprop -p update/image_dir svc:/application/pkg/update"
 
 NOTIFY_ICON_PATH = "/usr/share/icons/update-manager/notify_update.png"
 GKSU_PATH = "/usr/bin/gksu"
-UPDATEMANAGER = "updatemanager"
+UPDATEMANAGER = "pm-updatemanager"
 
 UPDATEMANAGER_PREFERENCES = "/apps/updatemanager/preferences"
 START_DELAY_PREFERENCES = "/apps/updatemanager/preferences/start_delay"

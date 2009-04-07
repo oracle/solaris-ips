@@ -59,6 +59,9 @@ f none usr/share/icons/package-manager/search_all.png 444 root other
 f none usr/share/icons/package-manager/status_checkmark.png 444 root other
 f none usr/share/icons/package-manager/status_installed.png 444 root other
 f none usr/share/icons/package-manager/status_newupdate.png 444 root other
+d none usr/share/man 755 root bin
+d none usr/share/man/cat1 755 root bin
+f none usr/share/man/cat1/packagemanager.1 444 root bin
 d none usr/share/mime 755 root root
 d none usr/share/mime/packages 755 root root
 f none usr/share/mime/packages/packagemanager-info.xml 644 root bin

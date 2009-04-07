@@ -3637,113 +3637,6 @@ class PackageManager:
 
 ###############################################################################
 #-----------------------------------------------------------------------------#
-# Test functions
-#-----------------------------------------------------------------------------#
-        def fill_with_fake_data(self):
-                '''test data for gui'''
-                save_selected = _("Save selected...")
-                save_selected_pkgs = _("Save selected packages...")
-                reboot_needed = _("The installed package(s) require a reboot before "
-                    "installation can be completed.")
-                self.application_list = self.__get_new_application_liststore()
-                self.category_list = self.__get_new_category_liststore()
-                self.section_list = self.__get_new_section_liststore()
-                self.filter_list = self.__get_new_filter_liststore()
-                self.repositories_list = self.__get_new_repositories_liststore()
-
-                app1 = [False, gui_misc.get_icon_pixbuf(self.application_dir, "locked"), \
-                    gui_misc.get_icon_pixbuf(self.application_dir, "None"), \
-                    "acc", None, None, None, 4, "desc6", \
-                    "Object Name1", None, True, None]
-                app2 = [False, gui_misc.get_icon_pixbuf(self.application_dir,
-                    "update_available"), \
-                    gui_misc.get_icon_pixbuf(self.application_dir, \
-                     _('All')), "acc_gam", \
-                    "2.3", None, "2.8", \
-                    4, "desc7", "Object Name2", None, True, None]
-                app3 = [False, gui_misc.get_icon_pixbuf(self.application_dir, "None"), \
-                    gui_misc.get_icon_pixbuf(self.application_dir, "Other"), \
-                    "gam_grap", "2.3", None, None, 4, \
-                    "desc8", "Object Name3", None, True, None]
-                app4 = [False, gui_misc.get_icon_pixbuf(self.application_dir,
-                    "update_locked"), \
-                    gui_misc.get_icon_pixbuf(self.application_dir, "Office"), \
-                    "grap_gam", "2.3", None, "2.8", 4, \
-                    "desc9", "Object Name2", None, True, None]
-                app5 = [False, gui_misc.get_icon_pixbuf(self.application_dir,
-                    "update_available"), \
-                    gui_misc.get_icon_pixbuf(self.application_dir, "None"), \
-                    "grap", "2.3", None, "2.8", 4, \
-                    "desc0", "Object Name3", None, True, None]
-                itr1 = self.application_list.append(app1)
-                itr2 = self.application_list.append(app2)
-                itr3 = self.application_list.append(app3)
-                itr4 = self.application_list.append(app4)
-                itr5 = self.application_list.append(app5)
-                #      self.__add_package_to_category(_("All"),None,None,None);
-                self.__add_package_to_category(_("Accessories"), \
-                    None, None, itr1, self.application_list, self.category_list)
-                self.__add_package_to_category(_("Accessories"), None, None, itr2,
-                    self.application_list, self.category_list)
-                self.__add_package_to_category(_("Games"), None, None, itr3,
-                    self.application_list, self.category_list)
-                self.__add_package_to_category(_("Graphics"), None, None, itr3,
-                    self.application_list, self.category_list)
-                self.__add_package_to_category(_("Games"), None, None, itr2,
-                    self.application_list, self.category_list)
-                self.__add_package_to_category(_("Graphics"), None, None, itr4,
-                    self.application_list, self.category_list)
-                self.__add_package_to_category(_("Games"), None, None, itr4,
-                    self.application_list, self.category_list)
-                self.__add_package_to_category(_("Graphics"), None, None, itr5,
-                    self.application_list, self.category_list)
-
-                #     Category names until xdg is imported.
-                #     from xdg.DesktopEntry import *
-                #     entry = DesktopEntry ()
-                #     directory = '/usr/share/desktop-directories'
-                #     for root, dirs, files in os.walk (directory):
-                #       for name in files:
-                #       entry.parse (os.path.join (root, name))
-                #       self.__add_category_to_section (entry.getName (),
-                #   _('Applications Desktop'))
-
-                self.__add_category_to_section(_("Accessories"),
-                    _('Applications Desktop'), self.category_list)
-                self.__add_category_to_section(_("Games"),
-                    _('Applications Desktop'), self.category_list)
-                self.__add_category_to_section(_("Graphics"),
-                    _('Applications Desktop'), self.category_list)
-                self.__add_category_to_section(_("Internet"),
-                    _('Applications Desktop'), self.category_list)
-                self.__add_category_to_section(_("Office"),
-                    _('Applications Desktop'), self.category_list)
-                self.__add_category_to_section(_("Sound & Video"),
-                    _('Applications Desktop'), self.category_list)
-                self.__add_category_to_section(_("System Tools"),
-                    _('Applications Desktop'), self.category_list)
-                self.__add_category_to_section(_("Universal Access"),
-                    _('Applications Desktop'), self.category_list)
-                self.__add_category_to_section(_("Developer Tools"),
-                    _('Applications Desktop'), self.category_list)
-                self.__add_category_to_section(_("Core"),
-                    _('Operating System'), self.category_list)
-                self.__add_category_to_section(_("Graphics"),
-                    _('Operating System'), self.category_list)
-                self.__add_category_to_section(_("Media"),
-                    _('Operating System'), self.category_list)
-                #Can be twice :)
-                self.__add_category_to_section(_("Developer Tools"),
-                    _('Operating System'), self.category_list)
-                self.__add_category_to_section(_("Office"), "Progs",
-                    self.category_list)
-                self.__add_category_to_section(_("Office2"), "Progs",
-                    self.category_list)
-                self.__setup_repositories_combobox(self.api_o)
-                self.in_setup = False
-
-###############################################################################
-#-----------------------------------------------------------------------------#
 # Main
 #-----------------------------------------------------------------------------#
 
@@ -3753,16 +3646,19 @@ def main():
 
 if __name__ == '__main__':
         debug = False
-        passed_test_arg = False
         update_all_proceed = False
         ua_be_name = None
         app_path = None
         image_dir = None
-        info_install = False
+        info_install_arg = None
+        save_selected = _("Save selected...")
+        save_selected_pkgs = _("Save selected packages...")
+        reboot_needed = _("The installed package(s) require a reboot before "
+            "installation can be completed.")
 
         try:
-                opts, args = getopt.getopt(sys.argv[1:], "htR:U:i", \
-                    ["help", "test-gui", "image-dir=", "update-all=", "info-install"])
+                opts, args = getopt.getopt(sys.argv[1:], "hR:U:i", \
+                    ["help", "image-dir=", "update-all=", "info-install="])
         except getopt.error, msg:
                 print "%s, for help use --help" % msg
                 sys.exit(2)
@@ -3777,22 +3673,16 @@ if __name__ == '__main__':
                 if option in ("-h", "--help"):
                         print """\
 Use -R (--image-dir) to specify image directory.
-Use -t (--test-gui) to work on fake data.
 Use -U (--update-all) to proceed with Update All"""
                         sys.exit(0)
-                if option in ("-t", "--test-gui"):
-                        passed_test_arg = True
                 if option in ("-R", "--image-dir"):
                         image_dir = argument
                 if option in ("-U", "--update-all"):
                         update_all_proceed = True
                         ua_be_name = argument
                 if option in ("-i", "--info-install"):
-                        info_install = True
+                        info_install_arg = argument
 
-        if passed_test_arg and image_dir != None:
-                print "Options -R and -t can not be used together."
-                sys.exit(2)
         if image_dir == None:
                 try:
                         image_dir = os.environ["PKG_IMAGE"]
@@ -3801,9 +3691,12 @@ Use -U (--update-all) to proceed with Update All"""
 
 
         # Setup webinstall
-        if info_install or (len(sys.argv) == 2 and sys.argv[1].endswith(PKGINFO_SUFFIX)):
+        if info_install_arg or (len(sys.argv) == 2 and \
+            sys.argv[1].endswith(PKGINFO_SUFFIX)):
                 webinstall = webinstall.Webinstall(image_dir)
-                webinstall.process_param(sys.argv[1])
+                if len(sys.argv) == 2:
+                        info_install_arg = sys.argv[1]
+                webinstall.process_param(info_install_arg)
                 main()
                 sys.exit(0)
 
@@ -3819,9 +3712,6 @@ Use -U (--update-all) to proceed with Update All"""
 
         packagemanager.init_show_filter()
 
-        if not passed_test_arg:
-                packagemanager.process_package_list_start(image_dir)
-        else:
-                packagemanager.fill_with_fake_data()
+        packagemanager.process_package_list_start(image_dir)
 
         main()

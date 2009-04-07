@@ -2,7 +2,7 @@
 _Name=Update Manager
 _GenericName=Update Manager
 _Comment=Install available updates
-Exec=gksu /usr/bin/updatemanager -r
+Exec=gksu /usr/bin/pm-updatemanager -r
 Icon=updatemanager
 Terminal=false
 MultipleArgs=false

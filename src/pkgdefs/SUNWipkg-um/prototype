@@ -13,7 +13,7 @@ d none lib/svc/method 755 root bin
 f none lib/svc/method/pkg-update 755 root bin
 d none usr 755 root sys
 d none usr/bin 755 root bin
-f none usr/bin/updatemanager 755 root bin
+f none usr/bin/pm-updatemanager 755 root bin
 d none usr/lib 755 root bin
 d none usr/lib/update-manager 755 root bin
 f none usr/lib/update-manager/update-refresh.sh 755 root bin
@@ -30,6 +30,9 @@ d none usr/share/icons/update-manager 755 root other
 f none usr/share/icons/update-manager/notify_update.png 444 root other
 f none usr/share/icons/update-manager/status_blank.png 444 root other
 f none usr/share/icons/update-manager/status_checkmark.png 444 root other
+d none usr/share/man 755 root bin
+d none usr/share/man/cat1 755 root bin
+f none usr/share/man/cat1/pm-updatemanager.1 444 root bin
 d none usr/share/update-manager 755 root bin
 f none usr/share/update-manager/PM_app_48x.png 444 root bin
 f none usr/share/update-manager/PM_package_36x.png 444 root bin

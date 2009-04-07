@@ -658,9 +658,6 @@ class Updatemanager:
                 if self.image_dir_arg != None:
                         return self.image_dir_arg
 
-                if local_image_dir != None:
-                        return local_image_dir
-                        
                 image_directory = os.popen(IMAGE_DIR_COMMAND).readline().rstrip()
                 if len(image_directory) == 0:
                         image_directory = IMAGE_DIRECTORY_DEFAULT
@@ -1488,12 +1485,12 @@ if __name__ == "__main__":
         debug = False
         show_all_opts = False
         show_install_updates_only = False
-        local_image_dir = None
         do_refresh = False
 
         try:
-                opts, args = getopt.getopt(sys.argv[1:], "hdualirR:U:",
-                    ["help", "debug","uninstalled"])
+                opts, args = getopt.getopt(sys.argv[1:], "huairR:U:",
+                    ["help", "uninstalled", "all", "install_updates", 
+                    "refresh", "image-dir=", "update-all="])
         except getopt.error, msg:
                 print "%s, for help use --help" % msg
                 sys.exit(2)
@@ -1507,20 +1504,16 @@ if __name__ == "__main__":
         for option, argument in opts:
                 if option in ("-h", "--help"):
                         print """\
-Use -d (--debug) to run in debug mode.
+Use -r (--refresh) to force a refresh before checking for updates.
 Use -R (--image-dir) to specify image directory.
 Use -U (--update-all) to proceed with Update All"""
                         sys.exit(0)
-                if option in ("-d", "--debug"):
-                        debug = True
                 if option in ("-u", "--uninstalled"):
                         list_uninstalled = True
                 if option in ("-a", "--all"):
                         show_all_opts = True
                 if option in ("-i", "--install_updates"):
                         show_install_updates_only = True
-                if option in ("-l", "--local_image"):
-                        local_image_dir = os.getcwd()
                 # Refresh catalogs during plan_install and plan_update_all
                 if option in ("-r", "--refresh"):
                         do_refresh = True

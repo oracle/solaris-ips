@@ -139,7 +139,7 @@ scripts_sunos = {
                 ['publish.py', 'pkgsend'],
                 ['pull.py', 'pkgrecv'],
                 ['packagemanager.py', 'packagemanager'],
-                ['updatemanager.py', 'updatemanager'],
+                ['updatemanager.py', 'pm-updatemanager'],
                 ],
         lib_dir: [
                 ['depot.py', 'pkg.depotd'],
@@ -190,9 +190,11 @@ scripts = {
         }
 
 man1_files = [
+        'man/packagemanager.1',
         'man/pkg.1',
         'man/pkgsend.1',
         'man/pkgrecv.1',
+        'man/pm-updatemanager.1',
         ]
 man1m_files = [
         'man/pkg.depotd.1m'
