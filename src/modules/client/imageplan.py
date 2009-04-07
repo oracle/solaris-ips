@@ -604,16 +604,7 @@ class ImagePlan(object):
                                     self.image.get_manifest_path,
                                     progtrack=self.progtrack,
                                     excludes=self.old_excludes)
-                                if not ind.check_index_existence():
-                                        # XXX Once we have a framework for
-                                        # emitting a message to the user in
-                                        # this spot in the code, we should tell
-                                        # them something has gone wrong so that
-                                        # we continue to get feedback to
-                                        # allow us to debug the code.
-                                        ind.rebuild_index_from_scratch(
-                                            self.image.gen_installed_pkgs())
-                                else:
+                                if ind.check_index_existence():
                                         try:
                                                 ind.check_index_has_exactly_fmris(
                                                         self.image.gen_installed_pkg_names())
@@ -700,6 +691,10 @@ class ImagePlan(object):
                         self.state = EXECUTED_OK
                         return
 
+                # It's necessary to do this check here because the state of the
+                # image before the current operation is performed is desired.
+                empty_image = self.is_image_empty()
+                
                 self.actuators.exec_prep(self.image)
 
                 self.actuators.exec_pre_actuators(self.image)
@@ -787,24 +782,29 @@ class ImagePlan(object):
                             progtrack=self.progtrack,
                             excludes=self.new_excludes)
                         try:
-                                ind.client_update_index((self.filters,
-                                    plan_info), self.image)
+                                if empty_image:
+                                        ind.setup()
+                                if empty_image or ind.check_index_existence():
+                                        ind.client_update_index((self.filters,
+                                            plan_info), self.image)
                         except (KeyboardInterrupt,
                             se.ProblematicPermissionsIndexException):
-                                # ProblematicPermissionsIndexException is
-                                # included here as there's little chance that
-                                # trying again will fix this problem.
+                                # ProblematicPermissionsIndexException
+                                # is included here as there's little
+                                # chance that trying again will fix this
+                                # problem.
                                 raise
                         except Exception, e:
-                                # It's important to delete and rebuild from
-                                # scratch rather than using the existing
-                                # indexer because otherwise the state will
-                                # become confused.
+                                # It's important to delete and rebuild
+                                # from scratch rather than using the
+                                # existing indexer because otherwise the
+                                # state will become confused.
                                 del(ind)
-                                # XXX Once we have a framework for emitting a
-                                # message to the user in this spot in the code,
-                                # we should tell them something has gone wrong
-                                # so that we continue to get feedback to allow
+                                # XXX Once we have a framework for
+                                # emitting a message to the user in this
+                                # spot in the code, we should tell them
+                                # something has gone wrong so that we
+                                # continue to get feedback to allow
                                 # us to debug the code.
                                 ind = indexer.Indexer(self.image,
                                     self.image.get_manifest,
@@ -813,3 +813,10 @@ class ImagePlan(object):
                                     excludes=self.new_excludes)
                                 ind.rebuild_index_from_scratch(
                                     self.image.gen_installed_pkgs())
+
+        def is_image_empty(self):
+                try:
+                        self.image.gen_installed_pkg_names().next()
+                        return False
+                except StopIteration:
+                        return True

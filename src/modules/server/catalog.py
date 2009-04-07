@@ -239,7 +239,12 @@ class ServerCatalog(catalog.Catalog):
                 ind = indexer.Indexer(self.index_root,
                     self.get_server_manifest, self.get_manifest_path,
                     log=self.__index_log)
-                if ind.check_index_existence():
+                cie = False
+                try:
+                        cie = ind.check_index_existence()
+                except se.InconsistentIndexException:
+                        pass
+                if cie:
                         self._search_available = True
                         self.__index_log("Search Available")
 

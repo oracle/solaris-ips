@@ -975,7 +975,7 @@ close
                     set(self.res_bogus_name_result))
                 self._search_op(False, "6627937",
                     set(self.res_bogus_number_result))
-                
+
         def test_bug_2989_1(self):
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.example_pkg10)
@@ -1311,6 +1311,31 @@ close
                 self.pkg("install fat")
                 self.assert_(not os.path.exists(tmp_dir))
                 self._run_local_tests()
+
+        def test_bug_7835(self):
+                """Check that installing a package without in a non-empty
+                image without an index doesn't build an index."""
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.fat_pkg10)
+                self.pkgsend_bulk(durl, self.example_pkg10)
+                
+                self.image_create(durl)
+
+                self.pkg("install fat")
+
+                id, tid = self._get_index_dirs()
+                self.assert_(len(os.listdir(id)) > 0)
+                shutil.rmtree(id)
+                os.makedirs(id)
+                self.pkg("install example_pkg")
+                self.assert_(len(os.listdir(id)) == 0)
+                self.pkg("uninstall fat")
+                self.assert_(len(os.listdir(id)) == 0)
+                self._run_local_tests()
+                self.pkgsend_bulk(durl, self.example_pkg10)
+                self.pkg("refresh")
+                self.pkg("image-update")
+                self.assert_(len(os.listdir(id)) == 0)
 
 
 class TestPkgSearchMulti(testutils.ManyDepotTestCase):

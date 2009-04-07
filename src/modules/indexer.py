@@ -594,16 +594,17 @@ class Indexer(object):
 
         def check_index_existence(self):
                 """ Returns a boolean value indicating whether a consistent
-                index exists.
+                index exists. If an index exists but is inconsistent, an
+                exception is raised."""
 
-                """
                 try:
                         try:
                                 res = \
                                     ss.consistent_open(self._data_dict.values(),
                                         self._index_dir,
                                         self._file_timeout_secs)
-                        except KeyboardInterrupt:
+                        except (KeyboardInterrupt,
+                            search_errors.InconsistentIndexException):
                                 raise
                         except Exception:
                                 return False
