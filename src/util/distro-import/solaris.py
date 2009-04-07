@@ -790,7 +790,7 @@ def process_link_dependencies(path, target):
 
 def process_dependencies(fname, path):
         if not elf.is_elf_object(fname):
-                return [], []
+                return process_non_elf_dependencies(fname, path)
 
         ei = elf.get_info(fname)
         try:
@@ -897,6 +897,35 @@ def process_dependencies(fname, path):
                 print "%s makes %s depend on %s" % \
                     (path, usedlist[path][1].name, depend_list)
 
+        return dep_pkgs, undeps
+
+def process_non_elf_dependencies(localpath, path):
+        # localpath is path to actual file
+        # path is path in installed image
+        # take 1
+        dep_pkgs = []
+        undeps = []
+
+        f = file(localpath)
+        l = f.readline()
+        f.close()
+
+        # add #!/ dependency
+        if l.startswith("#!/"):
+                # usedlist omits leading /
+                p = (l[2:].split()[0]) # first part of string is path (removes options)
+                # we don't handle dependencies through links, so fix up the common one
+                if p.startswith("/bin"):
+                        p = "/usr" + p
+                if p[1:] in usedlist:
+                        dep_pkgs += [ "%s@%s" % (
+                            usedlist[p[1:]][1].name,
+                            usedlist[p[1:]][1].version) 
+                        ]    
+                        print "Added dependency on %s because of %s" % (usedlist[p[1:]][1].name, p)
+                else:
+                        undeps = [ p ]
+                        
         return dep_pkgs, undeps
 
 def zap_strings(instr, strings):
