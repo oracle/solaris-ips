@@ -61,6 +61,8 @@ RESULT_FAILED_SEARCH = ["Failed", "Search"]
 RESULT_FAILED_STORAGE = ["Failed", "Storage"]
 # Indicates that a transport error caused the operation to fail.
 RESULT_FAILED_TRANSPORT = ["Failed", "Transport"]
+# Indicates that the operation failed due to an actuator problem
+RESULT_FAILED_ACTUATOR = ["Failed", "Actuator"]
 # Indicates that the operation failed for an unknown reason.
 RESULT_FAILED_UNKNOWN = ["Failed", "Unknown"]
 

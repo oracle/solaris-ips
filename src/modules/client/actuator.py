@@ -90,8 +90,6 @@ from pkg.client.debugvalues import DebugValues
 svcprop_path = "/usr/bin/svcprop"
 svcadm_path  = "/usr/sbin/svcadm"
 
-
-
 class NonzeroExitException(Exception):
         def __init__(self, cmd, return_code, output):
                 self.cmd = cmd
@@ -166,14 +164,14 @@ class Actuator(GenericActuator):
                 self.suspend_fmris = suspend_fmris
                 self.tmp_suspend_fmris = tmp_suspend_fmris
 
-                args = (svcadm_path, "disable", "-t")
+                args = (svcadm_path, "disable", "-st")
 
                 params = tuple(suspend_fmris | tmp_suspend_fmris)
 
                 if params:
                         self.__call(args + params)
 
-                args = (svcadm_path, "disable")
+                args = (svcadm_path, "disable",  "-s")
                 params = tuple(disable_fmris)
 
                 if params:

@@ -305,7 +305,7 @@ exit $PKG_SVCADM_EXIT_CODE
                 cmdstr = "--debug actuator_cmds_dir=%s" % self.testdata_dir
                 self.pkg(cmdstr + " install basics@1.4")
                 self.pkg("verify")
-                self.file_contains(svcadm_output, "svcadm disable -t svc:system/test_suspend_svc")
+                self.file_contains(svcadm_output, "svcadm disable -st svc:system/test_suspend_svc")
                 self.file_contains(svcadm_output, "svcadm enable svc:system/test_suspend_svc")
                 os.unlink(svcadm_output)
 
@@ -315,7 +315,7 @@ exit $PKG_SVCADM_EXIT_CODE
                 cmdstr = "--debug actuator_cmds_dir=%s" % self.testdata_dir
                 self.pkg(cmdstr + " install basics@1.5")
                 self.pkg("verify")
-                self.file_contains(svcadm_output, "svcadm disable -t svc:system/test_suspend_svc")
+                self.file_contains(svcadm_output, "svcadm disable -st svc:system/test_suspend_svc")
                 self.file_contains(svcadm_output, "svcadm enable -t svc:system/test_suspend_svc")
                 os.unlink(svcadm_output)
 
@@ -323,7 +323,7 @@ exit $PKG_SVCADM_EXIT_CODE
                 cmdstr = "--debug actuator_cmds_dir=%s" % self.testdata_dir
                 self.pkg(cmdstr + " uninstall basics")
                 self.pkg("verify")
-                self.file_contains(svcadm_output, "svcadm disable svc:system/test_disable_svc")
+                self.file_contains(svcadm_output, "svcadm disable -s svc:system/test_disable_svc")
  
         def file_does_not_exist(self, path):
                 file_path = os.path.join(self.get_img_path(), path)

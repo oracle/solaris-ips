@@ -35,6 +35,7 @@ import threading
 import urllib
 import urllib2
 
+import pkg.client.actuator as actuator
 import pkg.client.api_errors as api_errors
 import pkg.client.bootenv as bootenv
 import pkg.client.history as history
@@ -544,6 +545,14 @@ class ImageInterface(object):
                                     history.RESULT_FAILED_STORAGE
                                 self.img.cleanup_downloads()
                                 raise api_errors.MainDictParsingException(e)
+                        except actuator.NonzeroExitException, e:
+                                self.img.history.operation_result = \
+                                    history.RESULT_FAILED_ACTUATOR
+                                # won't happen during image-update
+                                be.restore_install_uninstall()
+                                self.img.cleanup_downloads()
+                                raise api_errors.ActuatorException(e)
+
                         except Exception, e:
                                 self.img.history.operation_result = \
                                     history.RESULT_FAILED_UNKNOWN

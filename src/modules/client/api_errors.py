@@ -63,6 +63,14 @@ class PlanExistsException(ApiException):
                 ApiException.__init__(self)
                 self.plan_type = plan_type
 
+class ActuatorException(ApiException):
+        def __init__(self, e):
+                ApiException.__init__(self)
+                self.exception = e
+
+        def __str__(self):
+                return str(self.exception)
+
 class PrematureExecutionException(ApiException):
         pass
 
