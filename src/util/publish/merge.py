@@ -389,9 +389,10 @@ def merge_fmris(server_list, fmri_list, variant_list, variant, basedir, basename
         allactions.sort()
                                                               
         m = manifest.Manifest()
-        m.actions=allactions
-
-        basedir = os.path.join(basedir, basename)
+        m.actions = allactions
+        
+        # urlquote to avoid problems w/ fmris w/ '/' character in name
+        basedir = os.path.join(basedir, urllib.quote(basename, ""))
         if not os.path.exists(basedir):
                 os.makedirs(basedir)
                 
@@ -401,7 +402,7 @@ def merge_fmris(server_list, fmri_list, variant_list, variant, basedir, basename
 
         for f in fmri_list:
                 if f:
-                        fmri= str(f).rsplit(":", 1)[0]
+                        fmri = str(f).rsplit(":", 1)[0]
                         break
         f_file = file(os.path.join(basedir, "fmri"), "w")
         f_file.write(fmri)
