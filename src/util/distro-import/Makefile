@@ -281,6 +281,7 @@ UNBUNDLED_TARGETS=		\
 	ClusterTools8.import	\
 	DTraceGUI.import	\
 	Eclipse.import		\
+	ExuberantCTags.import	\
 	GlassFishV2.import	\
 	MessageQueue41.import	\
 	NetBeans.import		\

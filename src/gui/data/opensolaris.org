@@ -3931,6 +3931,9 @@ category = High Performance Computing
 [clustertools_8.1]
 category = High Performance Computing
 
+[developer/tool/exuberant-ctags]
+category = Editors
+
 [dtrace-gui-plugin]
 category = System
 

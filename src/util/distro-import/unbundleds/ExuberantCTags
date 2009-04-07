@@ -1,0 +1,5 @@
+package developer/tool/exuberant-ctags
+classification "Development/Editors"
+import SUNWexctags
+version 5.7
+end package
