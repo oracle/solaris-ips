@@ -36,6 +36,7 @@ from threading import Thread
 from threading import Timer
 
 try:
+        import gnome
         import gobject
         gobject.threads_init()        
         import gtk
@@ -257,7 +258,8 @@ class Updatemanager:
                 self.do_refresh = False
                 self.ua_start = 0
                 self.pylintstub = None
-                
+                self.release_notes_url = "http://www.opensolaris.org"
+
                 # Progress Dialog
                 self.gladefile = self.application_dir + \
                     "/usr/share/update-manager/updatemanager.glade"
@@ -324,7 +326,20 @@ class Updatemanager:
                 self.w_select_checkbox = w_xmltree_um.get_widget("selectall_checkbutton")
                 self.w_um_cancel_button = w_xmltree_um.get_widget("cancel_button")
                 self.w_um_close_button = w_xmltree_um.get_widget("close_button")
-                
+
+                # UM Completed Dialog
+                w_xmltree_um_completed = gtk.glade.XML(self.gladefile, 
+                    "um_completed_dialog")
+                self.w_um_completed_dialog = w_xmltree_um_completed.get_widget(
+                    "um_completed_dialog")
+                self.w_um_completed_dialog .connect("destroy", self.__on_um_dialog_close)
+                self.w_um_completed_time_label = w_xmltree_um_completed.get_widget(
+                    "um_completed_time_label")
+                self.w_um_completed_release_label = w_xmltree_um_completed.get_widget(
+                    "um_completed_release_label")
+                self.w_um_completed_linkbutton = w_xmltree_um_completed.get_widget(
+                    "um_completed_linkbutton")
+
                 self.details_cache = {}
                 
                 try:
@@ -358,6 +373,15 @@ class Updatemanager:
                             }
                         w_xmltree_progress.signal_autoconnect(dic_progress)
 
+                        dic_completed = \
+                            {
+                                "on_um_complete_close_button_clicked": \
+                                     self.__on_um_dialog_close,
+                                "on_um_completed_linkbutton_clicked": \
+                                     self.__on_um_completed_linkbutton_clicked,
+                                     
+                            }
+                        w_xmltree_um_completed.signal_autoconnect(dic_completed)
 
                 except AttributeError, error:
                         print _("GUI will not respond to any event! %s. "
@@ -897,6 +921,13 @@ class Updatemanager:
                                 infobuffer.insert_with_tags_by_name(textiter,
                                         _("\nNo details available"), "bold")
 
+        def __on_um_completed_linkbutton_clicked(self, widget):
+                try:
+                        gnome.url_show(self.release_notes_url)
+                except gobject.GError:
+                        self.__error_occurred(_("Unable to navigate to:\n\t%s") % 
+                            self.release_notes_url, title=_("Update Manager"))
+
         def __on_um_dialog_close(self, widget):
                 self.__exit_app()
 
@@ -1014,21 +1045,21 @@ class Updatemanager:
                         info_str = \
                             _(
                             "\nUpdate All finished successfully in < 1 min\n\n")
+                self.w_um_completed_time_label.set_text(info_str.strip('\n'))
 
-                info_str += _(
+                info_str = _(
                     "Review the posted release notes before rebooting your system:\n\n"
-                    "http://opensolaris.org/os/project/indiana/resources/"
-                    "relnotes/200811/x86/")
+                    )
+                self.w_um_completed_release_label.set_text(info_str.strip('\n'))
 
+                info_str = misc.get_release_notes_url()
+                self.w_um_completed_linkbutton.set_uri(info_str)
+                self.w_um_completed_linkbutton.set_label(info_str)
+                self.release_notes_url = info_str
+                
                 self.w_um_dialog.hide()
-                msgbox = gtk.MessageDialog(parent = self.w_um_dialog,
-                    buttons = gtk.BUTTONS_CLOSE, flags = gtk.DIALOG_MODAL,
-                    type = gtk.MESSAGE_INFO,
-                    message_format = info_str)
-                msgbox.set_title(_("Update All Completed"))
-                msgbox.run()
-                msgbox.destroy()                        
-                self.__exit_app()
+                self.w_um_completed_dialog.set_title(_("Update All Completed"))
+                self.w_um_completed_dialog.show()
                 
         def __handle_cancel_exception(self):
                 gobject.idle_add(self.w_progress_dialog.hide)
@@ -1499,7 +1530,7 @@ Use -U (--update-all) to proceed with Update All"""
                         um.update_all_proceed = True
                         um.ua_be_name = argument
 
-                        
+
         um.show_all_opts = show_all_opts
         um.show_install_updates_only = show_install_updates_only
         um.do_refresh = do_refresh

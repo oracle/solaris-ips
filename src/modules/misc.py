@@ -54,6 +54,21 @@ from pkg import VERSION
 # Minimum number of days to issue warning before a certificate expires
 MIN_WARN_DAYS = datetime.timedelta(days=30)
 
+def get_release_notes_url():
+        """Return a release note URL pointing to the correct release notes
+           for this version"""
+
+        # TBD: replace with a call to api.info() that can return a "release"
+        # attribute of form YYYYMM against the SUNWsolnm package
+        release_str = \
+                "http://opensolaris.org/os/project/indiana/resources/relnotes/200906/"
+        if platform.processor() == 'sparc':
+                release_str += 'sparc/'
+        else:
+                release_str += 'x86/'
+
+        return release_str
+
 def time_to_timestamp(t):
         """convert seconds since epoch to %Y%m%dT%H%M%SZ format"""
         # XXX optimize?

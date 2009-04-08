@@ -645,9 +645,8 @@ def image_update(img_dir, args):
 
         if ret_code == 0 and opensolaris_image:
                 msg("\n" + "-" * 75)
-                msg(_("NOTE: Please review release notes posted at:\n" \
-                    "   http://opensolaris.org/os/project/indiana/" \
-                    "resources/relnotes/200811/x86/"))
+                msg(_("NOTE: Please review release notes posted at:\n" ))
+                msg(misc.get_release_notes_url())
                 msg("-" * 75 + "\n")
 
         if bool(os.environ.get("PKG_MIRROR_STATS", False)):

@@ -265,6 +265,7 @@ class PackageManager:
                 self.repositories_list = None
                 self.pr = progress.NullProgressTracker()
                 self.pylintstub = None
+                self.release_notes_url = "http://www.opensolaris.org"
 
                 # Create Widgets and show gui
                 self.gladefile = self.application_dir + \
@@ -402,6 +403,18 @@ class PackageManager:
                 self.w_main_window.set_title(main_window_title)
                 self.w_searchentry_dialog.grab_focus()
 
+                # Update All Completed Dialog
+                w_xmltree_ua_completed = gtk.glade.XML(self.gladefile,
+                    "ua_completed_dialog")
+                self.w_ua_completed_dialog = w_xmltree_ua_completed.get_widget(
+                    "ua_completed_dialog")
+                self.w_ua_completed_dialog .connect("destroy",
+                    self.__on_ua_completed_close)
+                self.w_ua_completed_release_label = w_xmltree_ua_completed.get_widget(
+                    "ua_completed_release_label")
+                self.w_ua_completed_linkbutton = w_xmltree_ua_completed.get_widget(
+                    "ua_completed_linkbutton")
+
                 # Setup Start Page
                 self.document = None
                 self.view = None
@@ -491,6 +504,16 @@ class PackageManager:
                                 "on_remote_search_error_delete_event": \
                                     self.__on_remote_search_error_delete_event,
                             }
+                        dic_completed = \
+                            {
+                                "on_ua_complete_close_button_clicked": \
+                                     self.__on_ua_completed_close,
+                                "on_ua_completed_linkbutton_clicked": \
+                                     self.__on_ua_completed_linkbutton_clicked,                                     
+                            }
+                        w_xmltree_ua_completed.signal_autoconnect(dic_completed)
+        
+                            
                         w_tree_main.signal_autoconnect(dic_mainwindow)
                         w_tree_progress.signal_autoconnect(dic_progress)
                         w_tree_preferences.signal_autoconnect(dic_preferences)
@@ -1364,6 +1387,10 @@ class PackageManager:
                 ''' handler for quit menu event '''
                 self.__on_mainwindow_delete_event(None, None)
 
+        def __on_ua_completed_close(self, widget):
+                self.w_ua_completed_dialog.hide()
+                self.__on_mainwindow_delete_event(None, None)
+
         def __on_edit_repositories_activate(self, widget):
                 ''' handler for repository menu event '''
                 repository.Repository(self)
@@ -2152,6 +2179,13 @@ class PackageManager:
                     pkg_list = ["SUNWipkg", "SUNWipkg-gui"],
                     main_window = self.w_main_window)
                 return
+
+        def __on_ua_completed_linkbutton_clicked(self, widget):
+                try:
+                        gnome.url_show(self.release_notes_url)
+                except gobject.GError:
+                        self.__error_occurred(_("Unable to navigate to:\n\t%s") % 
+                            self.release_notes_url, title=_("Package Manager"))
 
         def __on_help_about(self, widget):
                 wTreePlan = gtk.glade.XML(self.gladefile, "aboutdialog")
@@ -3587,19 +3621,19 @@ class PackageManager:
                 self.__main_application_quit(be_name)
 
         def shutdown_after_image_update(self):
-
-                msgbox = gtk.MessageDialog(parent = self.w_main_window,
-                    buttons = gtk.BUTTONS_OK,
-                    flags = gtk.DIALOG_MODAL, type = gtk.MESSAGE_INFO,
-                    message_format = _("The Update All action is now complete and "
+                info_str = _("The Update All action is now complete and "
                     "Package Manager will close.\n\nReview the posted release notes "
                     "before rebooting your system:\n\n"
-                    "http://opensolaris.org/os/project/indiana/resources/"
-                    "relnotes/200811/x86/"))
-                msgbox.set_title(_("Update All"))
-                msgbox.run()
-                msgbox.destroy()
-                self.__main_application_quit()
+                    )
+                self.w_ua_completed_release_label.set_text(info_str.strip('\n'))
+
+                info_str = misc.get_release_notes_url()
+                self.w_ua_completed_linkbutton.set_uri(info_str)
+                self.w_ua_completed_linkbutton.set_label(info_str)
+                self.release_notes_url = info_str
+                
+                self.w_ua_completed_dialog.set_title(_("Update All"))
+                self.w_ua_completed_dialog.show()
 
 ###############################################################################
 #-----------------------------------------------------------------------------#
