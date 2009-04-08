@@ -26,10 +26,10 @@
 # Indexer is a class designed to index a set of manifests or pkg plans
 # and provide a compact representation on disk which is quickly searchable.
 
-import os
-import urllib
-import shutil
 import errno
+import os
+import shutil
+import urllib
 
 import pkg.version
 
@@ -37,7 +37,7 @@ import pkg.fmri as fmri
 import pkg.manifest as manifest
 import pkg.search_storage as ss
 import pkg.search_errors as search_errors
-from pkg.misc import EmptyI
+from pkg.misc import EmptyI, PKG_FILE_BUFSIZ
 
 # Constants for indicating whether pkgplans or fmri-manifest path pairs are
 # used as arguments.
@@ -114,6 +114,8 @@ class Indexer(object):
                 self.at_fh = {}
                 self.st_fh = {}
 
+                self.old_out_token = None
+
         @staticmethod
         def _build_version(vers):
                 """ Private method for building versions from a string. """
@@ -159,15 +161,22 @@ class Indexer(object):
                         self._progtrack.index_done()
 
         def __close_sort_fh(self):
+                """Utility fuction used to close and sort the temporary
+                files used to produce a sorted main_dict file."""
+
                 self._sort_fh.close()
                 tmp_file_name = os.path.join(self._tmp_dir,
                     SORT_FILE_PREFIX + str(self._sort_file_num - 1))
-                tmp_fh = file(tmp_file_name, "rb")
-                l = tmp_fh.readlines()
+                tmp_fh = file(tmp_file_name, "rb", buffering=PKG_FILE_BUFSIZ)
+                l = [
+                    (ss.IndexStoreMainDict.parse_main_dict_line_for_token(line),
+                    line)
+                    for line in tmp_fh
+                ]
                 tmp_fh.close()
                 l.sort()
-                tmp_fh = file(tmp_file_name, "wb")
-                tmp_fh.writelines(l)
+                tmp_fh = file(tmp_file_name, "wb", buffering=PKG_FILE_BUFSIZ)
+                tmp_fh.writelines((line for tok, line in l))
                 tmp_fh.close()
 
         def _add_terms(self, pfmri, new_dict):
@@ -242,9 +251,26 @@ class Indexer(object):
 
         def _write_main_dict_line(self, file_handle, token,
             fv_fmri_pos_list_list, out_dir):
-                """ Writes out the new main dictionary file and also adds the
-                token offsets to _data_token_offset.
-                """
+                """Writes out the new main dictionary file and also adds the
+                token offsets to _data_token_offset. file_handle is the file
+                handle for the output main dictionary file. token is the token
+                to add to the file. fv_fmri_pos_list_list is a structure of
+                lists inside of lists several layers deep. The top layer is a
+                list of action types. The second layer contains the keys for
+                the action type it's a sublist for. The third layer contains
+                the values which matched the token for the action and key it's
+                contained in. The fourth layer is the fmris which contain those
+                matches. The fifth layer is the offset into the manifest of
+                each fmri for each matching value. out_dir points to the
+                base directory to use to write a file for each package which
+                contains the offsets into the main dictionary for the tokens
+                this package matches."""
+
+                if self.old_out_token is not None and \
+                    self.old_out_token >= token:
+                        raise RuntimeError("In writing dict line, token:%s, "
+                            "old_out_token:%s" % (token, self.old_out_token))
+                self.old_out_token = token
 
                 cur_location = str(file_handle.tell())
                 self._data_token_offset.write_entity(token, cur_location)
@@ -301,16 +327,26 @@ class Indexer(object):
                 ret_list.extend(tmp_res)
 
         def _gen_new_toks_from_files(self):
+                """Produces a stream of ordered tokens and the associated
+                information for those tokens from the sorted temporary files
+                produced by _add_terms. In short, this is the merge part of the
+                merge sort being done on the tokens to be indexed."""
+
                 def get_line(fh):
                         try:
-                                return ss.IndexStoreMainDict.parse_main_dict_line(fh.next())
+                                return \
+                                        ss.IndexStoreMainDict.parse_main_dict_line(
+                                        fh.next())
                         except StopIteration:
                                 return None
+                
                 fh_dict = dict([
-                    (i, file(os.path.join(self._tmp_dir,
-                    SORT_FILE_PREFIX + str(i))))
+                    (i, open(os.path.join(self._tmp_dir,
+                    SORT_FILE_PREFIX + str(i)), "rb", 
+                    buffering=PKG_FILE_BUFSIZ))
                     for i in range(self._sort_file_num)
                 ])
+
                 cur_toks = {}
                 for i in fh_dict.keys():
                         line = get_line(fh_dict[i])
@@ -318,6 +354,8 @@ class Indexer(object):
                                 del fh_dict[i]
                         else:
                                 cur_toks[i] = line
+
+                old_min_token = None
                 while cur_toks:
                         min_token = None
                         matches = []
@@ -341,7 +379,8 @@ class Indexer(object):
                                                 if res is None:
                                                         res = new_info
                                                 else:
-                                                        self.__splice(res, new_info)
+                                                        self.__splice(res,
+                                                            new_info)
                                                 new_tok, new_info = \
                                                     ss.IndexStoreMainDict.parse_main_dict_line(fh_dict[i].next())
                                         cur_toks[i] = new_tok, new_info
@@ -350,6 +389,12 @@ class Indexer(object):
                                         del fh_dict[i]
                                         del cur_toks[i]
                         assert res is not None
+                        if old_min_token is not None and \
+                            old_min_token >= min_token:
+                                raise RuntimeError("Got min token:%s greater "
+                                    "than old_min_token:%s" %
+                                    (min_token, old_min_token))
+                        old_min_token = min_token
                         yield min_token, res
                 return
                 
@@ -377,7 +422,7 @@ class Indexer(object):
                 out_main_dict_handle = \
                     open(os.path.join(out_dir,
                         self._data_main_dict.get_file_name()), "ab",
-                        buffering=131072)
+                        buffering=PKG_FILE_BUFSIZ)
 
                 self._data_token_offset.open_out_file(out_dir,
                     self.file_version_number)

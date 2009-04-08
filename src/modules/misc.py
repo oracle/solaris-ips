@@ -847,3 +847,6 @@ def validate_ssl_cert(ssl_cert, prefix=None, uri=None):
 
 EmptyDict = ImmutableDict()
 
+# Setting the python file buffer size to 128k gives substantial performance
+# gains on certain files.
+PKG_FILE_BUFSIZ = 128 * 1024

@@ -34,6 +34,7 @@ import urllib
 import pkg.fmri as fmri
 import pkg.search_errors as search_errors
 import pkg.portable as portable
+from pkg.misc import PKG_FILE_BUFSIZ
 
 FAST_ADD = 'fast_add.v1'
 FAST_REMOVE = 'fast_remove.v1'
@@ -278,6 +279,17 @@ class IndexStoreMainDict(IndexStoreBase):
                 return IndexStoreMainDict.__parse_main_dict_line_help(
                     [" ", "!", "@", "#", ","],
                     [True, False, False, True, False, False], line)
+
+        @staticmethod
+        def parse_main_dict_line_for_token(line):
+                """Pulls the token out of a line from a main dictionary file.
+                Changes to this function must be paired with changes to
+                write_main_dict_line below.
+                """
+
+                line = line.rstrip("\n")
+                lst = line.split(" ", 1)
+                return urllib.unquote(lst[0])
 
         @staticmethod
         def __write_main_dict_line_help(file_handle, sep_chars, quote, entries):
@@ -619,7 +631,7 @@ class IndexStoreDictMutable(IndexStoreBase):
                 """
                 self.write_dict_file(use_dir, version_num)
                 self._file_handle = open(os.path.join(use_dir, self._name),
-                    'ab', buffering=131072)
+                    'ab', buffering=PKG_FILE_BUFSIZ)
 
         def write_entity(self, entity, my_id):
                 """Writes the entity out to the file with my_id """
