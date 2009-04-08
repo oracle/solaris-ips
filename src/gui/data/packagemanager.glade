@@ -549,6 +549,9 @@
                         <property name="can_focus">True</property>
                         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                         <property name="headers_visible">False</property>
+                        <accessibility>
+                          <atkproperty name="AtkObject::accessible_name">Categories</atkproperty>
+                        </accessibility>
                       </widget>
                     </child>
                   </widget>
@@ -694,6 +697,9 @@
                                 <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                                 <property name="rules_hint">True</property>
                                 <property name="enable_search">False</property>
+                                <accessibility>
+                                  <atkproperty name="AtkObject::accessible_name">Packages</atkproperty>
+                                </accessibility>
                               </widget>
                             </child>
                           </widget>
@@ -1891,6 +1897,9 @@ Padraig O'Briain &lt;Padraig.Obriain@Sun.Com&gt;</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="enable_search">False</property>
+                    <accessibility>
+                      <atkproperty name="AtkObject::accessible_name">Bes</atkproperty>
+                    </accessibility>
                   </widget>
                 </child>
               </widget>
@@ -2234,6 +2243,9 @@ repository, and then click Modify to add additional information.</property>
                               <widget class="GtkTreeView" id="repositorytreeview">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
+                                <accessibility>
+                                  <atkproperty name="AtkObject::accessible_name">Repositories</atkproperty>
+                                </accessibility>
                                 <signal name="move_cursor" handler="on_repositorytreeview_move_cursor"/>
                                 <signal name="button_release_event" handler="on_repositorytreeview_button_release_event"/>
                               </widget>
