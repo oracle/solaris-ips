@@ -23,7 +23,6 @@
 # Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
-import sys
 import os
 import tempfile
 
@@ -37,8 +36,8 @@ from pkg.misc import msg, emsg
 try:
         import libbe as be
 except ImportError:
-        # All recovery actions are disabled when libbe can't be imported. 
-        pass        
+        # All recovery actions are disabled when libbe can't be imported.
+        pass
 
 class BootEnv(object):
 
@@ -48,7 +47,7 @@ class BootEnv(object):
 
         Recovery is only enabled for ZFS filesystems. Any operation
         attempted on UFS will not be handled by BootEnv.
-        
+
         This class makes use of usr/lib/python*/vendor-packages/libbe.so
         as the python wrapper for interfacing with usr/lib/libbe. Both
         libraries are delivered by the SUNWinstall-libs package. This
@@ -61,6 +60,7 @@ class BootEnv(object):
                 self.dataset = None
                 self.be_name_clone = None
                 self.clone_dir = None
+                self.img = None
                 self.is_live_BE = False
                 self.is_valid = False
                 self.snapshot_name = None
@@ -134,12 +134,52 @@ class BootEnv(object):
                                 raise RuntimeError, "recoveryDisabled"
                         self.is_valid = True
                         break
-                        
+
                 else:
                         # We will get here if we don't find find any BE's. e.g
                         # if were are on UFS.
                         raise RuntimeError, "recoveryDisabled"
-                               
+
+        def __store_image_state(self):
+                """Internal function used to preserve current image information
+                and history state to be restored later with __reset_image_state
+                if needed."""
+
+                # Preserve the current history information and state so that if
+                # boot environment operations fail, they can be written to the
+                # original image root, etc.
+                self.img.history.create_snapshot()
+
+        def __reset_image_state(self, failure=False):
+                """Internal function intended to be used to reset the image
+                state, if needed, after the failure or success of boot
+                environment operations."""
+
+                if not self.img:
+                        # Nothing to restore.
+                        return
+
+                if self.root != self.img.root:
+                        if failure:
+                                # Since the image root changed and the operation
+                                # was not successful, restore the original
+                                # history and state information so that it can
+                                # be recorded in the original image root.  This
+                                # needs to be done before the image root is
+                                # reset since it might fail.
+                                self.img.history.restore_snapshot()
+
+                        self.img.history.discard_snapshot()
+
+                        # After the completion of an operation that has changed
+                        # the image root, it needs to be reset back to its
+                        # original value so that the client will read and write
+                        # information using the correct location (this is
+                        # especially important for bootenv operations).
+                        self.img.find_root(self.root)
+                else:
+                        self.img.history.discard_snapshot()
+
         def exists(self):
 
                 """Return true if this object represents a valid BE."""
@@ -149,10 +189,11 @@ class BootEnv(object):
         @staticmethod
         def check_be_name(be_name):
                 try:
-                        return be_name is None or be.beVerifyBEName(be_name) == 0
+                        return be_name is None or \
+                            be.beVerifyBEName(be_name) == 0
                 except AttributeError:
                         raise api_errors.BENamingNotSupported(be_name)
-        
+
         def init_image_recovery(self, img, be_name=None):
 
                 """Initialize for an image-update.
@@ -162,13 +203,15 @@ class BootEnv(object):
                         If we're operating on a non-live BE we use
                         the already created snapshot"""
 
+                self.img = img
+
                 if self.is_live_BE:
                         # Create a clone of the live BE and mount it.
                         self.destroy_snapshot()
 
                         if not self.check_be_name(be_name):
                                 raise api_errors.InvalidBENameException(be_name)
-                        
+
                         # Do nothing with the returned snapshot name
                         # that is taken of the clone during beCopy.
                         ret, self.be_name_clone, not_used = be.beCopy()
@@ -185,7 +228,7 @@ class BootEnv(object):
                                 raise api_errors.UnableToMountBE(
                                     self.be_name_clone, self.clone_dir)
 
-                        # Set the image to our new mounted BE. 
+                        # Set the image to our new mounted BE.
                         img.find_root(self.clone_dir)
                 elif be_name is not None:
                         raise api_errors.BENameGivenOnDeadBE(be_name)
@@ -196,19 +239,14 @@ class BootEnv(object):
                         If were operating on a non-live BE then
                         destroy the snapshot."""
 
-                cmd = [ "/sbin/bootadm", "update-archive", "-R" ]
-                ret = 0
-     
-                if self.is_live_BE:
-
-                        cmd += [self.clone_dir]
-                        # Activate the clone.
+                def exec_cmd(cmd):
+                        ret = 0
                         try:
                                 ret = subprocess.call(cmd,
                                     stdout = file("/dev/null"),
                                     stderr = subprocess.STDOUT)
                         except OSError, e:
-                                 emsg(_("pkg: A system error %s was caught "
+                                emsg(_("pkg: A system error %s was caught "
                                     "executing %s") % (e, " ".join(cmd)))
 
                         if ret != 0:
@@ -216,18 +254,29 @@ class BootEnv(object):
                                     "of %d.") % (" ".join(cmd), ret))
                                 return
 
+                def activate_live_be(cmd):
+                        cmd += [self.clone_dir]
+
+                        # Activate the clone.
+                        exec_cmd(cmd)
+
                         if be.beActivate(self.be_name_clone) != 0:
                                 emsg(_("pkg: unable to activate %s") \
                                     % self.be_name_clone)
                                 return
 
+                        # Consider the last operation a success, and log it as
+                        # ending here so that it will be recorded in the new
+                        # image's history.
+                        self.img.history.log_operation_end()
+
                         if be.beUnmount(self.be_name_clone) != 0:
                                 emsg(_("pkg: unable to unmount %s") \
                                     % self.clone_dir)
                                 return
-                                    
+
                         os.rmdir(self.clone_dir)
-                        
+
                         msg(_("""
 A clone of %s exists and has been updated and activated.
 On the next boot the Boot Environment %s will be mounted on '/'.
@@ -235,33 +284,41 @@ Reboot when ready to switch to this updated BE.
 """) % \
                             (self.be_name, self.be_name_clone))
 
-                else:                        
+                def activate_be(cmd):
                         # Delete the snapshot that was taken before we
                         # updated the image and update the the boot archive.
 
                         cmd += [self.root]
-                        try:
-                                ret = subprocess.call(cmd, \
-                                    stdout = file("/dev/null"), \
-                                    stderr = subprocess.STDOUT)
-                        except OSError, e:
-                                emsg(_("pkg: The system error %s was caught "
-                                    "executing %s") % (e, " ".join(cmd)))
+                        exec_cmd(cmd)
 
-                        if ret != 0:
-                                emsg(_("pkg: '%s' failed \nwith a return code "
-                                    "of %d.") % (" ".join(cmd), ret))
-                                return
-                                
                         msg(_("%s has been updated successfully") % \
                                 (self.be_name))
-                                
+
                         os.rmdir(self.clone_dir)
                         self.destroy_snapshot()
-                
+
+                self.__store_image_state()
+
+                caught_exception = None
+                cmd = [ "/sbin/bootadm", "update-archive", "-R" ]
+                try:
+                        if self.is_live_BE:
+                                activate_live_be(cmd)
+                        else:
+                                activate_be(cmd)
+                except Exception, e:
+                        caught_exception = e
+
+                self.__reset_image_state(failure=caught_exception)
+                if caught_exception:
+                        self.img.history.log_operation_error(error=e)
+                        raise caught_exception
+
         def restore_image(self):
 
                 """Restore a failed image-update attempt."""
+
+                self.__reset_image_state(failure=True)
 
                 # Leave the clone around for debugging purposes if we're
                 # operating on the live BE.
@@ -273,12 +330,17 @@ Reboot when ready to switch to this updated BE.
 
                 else:
                         # Rollback and destroy the snapshot.
-                        if be.beRollback(self.be_name, self.snapshot_name) != 0:
-                                emsg(_("pkg: unable to rollback BE %s and "
-                                    "restore image") % self.be_name)
+                        try:
+                                if be.beRollback(self.be_name,
+                                    self.snapshot_name) != 0:
+                                        emsg(_("pkg: unable to rollback BE %s "
+                                            "and restore image") % self.be_name)
 
-                        self.destroy_snapshot()
-                        os.rmdir(self.clone_dir)
+                                self.destroy_snapshot()
+                                os.rmdir(self.clone_dir)
+                        except Exception, e:
+                                self.img.history.log_operation_error(error=e)
+                                raise e
 
                         msg(_("%s failed to be updated. No changes have been "
                             "made to %s.") % (self.be_name, self.be_name))
@@ -329,7 +391,7 @@ Reboot when ready to switch to this updated BE.
                                 emsg(_("pkg: unable to mount BE %s on %s") % \
                                     (self.be_name_clone, self.clone_dir))
                                 return
-                                
+
                         emsg(_("The Boot Environment %s failed to be updated. "
                             "A snapshot was taken before the failed attempt "
                             "and is mounted here %s. Use 'beadm unmount %s' "
@@ -338,24 +400,22 @@ Reboot when ready to switch to this updated BE.
                             self.be_name_clone, self.be_name_clone))
                 else:
                         if be.beRollback(self.be_name, self.snapshot_name) != 0:
-                                 emsg("pkg: unable to rollback BE %s" % \
+                                emsg("pkg: unable to rollback BE %s" % \
                                     self.be_name)
-                                    
+
                         self.destroy_snapshot()
 
                         emsg(_("The Boot Environment %s failed to be updated. "
                           "A snapshot was taken before the failed attempt "
                           "and has been restored so no changes have been "
                           "made to %s.") % (self.be_name, self.be_name))
-                        
-
 
         def activate_install_uninstall(self):
                 """Activate an install/uninstall attempt. Which just means
                         destroy the snapshot for the live and non-live case."""
 
                 self.destroy_snapshot()
-                
+
 class BootEnvNull(object):
 
         """BootEnvNull is a class that gets used when libbe doesn't exist."""
@@ -378,13 +438,13 @@ class BootEnvNull(object):
 
         def activate_image(self):
                 pass
-                
+
         def restore_image(self):
                 pass
 
         def destroy_snapshot(self):
                 pass
-                
+
         def restore_install_uninstall(self):
                 pass
 

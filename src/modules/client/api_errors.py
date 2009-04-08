@@ -163,13 +163,13 @@ Try relaxing the pattern, refreshing and/or examining the catalogs:""")
 
                 if self.constraint_violations:
                         s = _("The following package(s) violated constraints:")
-                        res += [s] 
+                        res += [s]
                         res += ["\t%s" % p for p in self.constraint_violations]
 
                 if self.badarch:
                         s = _("'%s' supports the following architectures: %s")
                         a = _("Image architecture is defined as: %s")
-                        res += [ s % (self.badarch[0], 
+                        res += [ s % (self.badarch[0],
                             ", ".join(self.badarch[1]))]
                         res += [ a % (self.badarch[2])]
 
@@ -206,15 +206,24 @@ class InventoryException(ApiException):
 
                 return outstr
 
-class IndexingException(ApiException):
+
+class SearchException(ApiException):
+        """Based class used for all search-related api exceptions."""
+        pass
+
+
+class IndexingException(SearchException):
         """ The base class for all exceptions that can occur while indexing. """
+
         def __init__(self, private_exception):
-                ApiException.__init__(self)
+                SearchException.__init__(self)
                 self.cause = private_exception.cause
+
 
 class CorruptedIndexException(IndexingException):
         """This is used when the index is not in a correct state."""
         pass
+
 
 class ProblematicPermissionsIndexException(IndexingException):
         """ This is used when the indexer is unable to create, move, or remove
@@ -226,19 +235,19 @@ class ProblematicPermissionsIndexException(IndexingException):
                     "rebuild the index." % self.cause
 
 
-class MainDictParsingException(ApiException):
+class MainDictParsingException(SearchException):
         """This is used when the main dictionary could not parse a line."""
         def __init__(self, e):
-                ApiException.__init__(self)
+                SearchException.__init__(self)
                 self.e = e
 
         def __str__(self):
-                return str(e)
-        
+                return str(self.e)
+
 
 class NonLeafPackageException(ApiException):
         """Removal of a package which satisfies dependencies has been attempted.
-        
+
         The first argument to the constructor is the FMRI which we tried to
         remove, and is available as the "fmri" member of the exception.  The
         second argument is the list of dependent packages that prevent the
@@ -411,7 +420,7 @@ class UnrecognizedOptionsToInfo(ApiException):
                 return s
 
 
-class ProblematicSearchServers(ApiException):
+class ProblematicSearchServers(SearchException):
         def __init__(self, failed, invalid):
                 self.failed_servers = failed
                 self.invalid_servers  = invalid
@@ -449,7 +458,7 @@ class IncorrectIndexFileHash(ApiException):
         pass
 
 
-class InconsistentIndexException(ApiException):
+class InconsistentIndexException(IndexingException):
         """This is used when the existing index is found to have inconsistent
         versions."""
         def __init__(self, e):
@@ -459,7 +468,7 @@ class InconsistentIndexException(ApiException):
                 return str(self.exception)
 
 
-class SlowSearchUsed(ApiException):
+class SlowSearchUsed(SearchException):
         def __str__(self):
                 return _("Search capabilities and performance are degraded.\n"
                     "To improve, run 'pkg rebuild-index'.")
@@ -838,4 +847,4 @@ class ServerReturnError(ApiException):
                 self.line = line
 
         def __str__(self):
-                return _("Gave a bad response:%s") % line
+                return _("Gave a bad response:%s") % self.line

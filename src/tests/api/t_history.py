@@ -79,7 +79,7 @@ class TestHistory(pkg5unittest.Pkg5TestCase):
                 if self.__scratch_dir:
                         shutil.rmtree(self.__scratch_dir, ignore_errors=True)
 
-        def test_0_valid_operation(self):
+        def test_00_valid_operation(self):
                 """Verify that operation information can be stored and
                 retrieved.
                 """
@@ -87,7 +87,7 @@ class TestHistory(pkg5unittest.Pkg5TestCase):
                 self.assertEqual(os.path.join(self.__scratch_dir, "history"),
                     h.path)
 
-                h.operation_name = "install"
+                h.log_operation_start("install")
                 self.__class__.__filename = os.path.basename(h.pathname)
 
                 # Verify that a valid start time was set.
@@ -106,9 +106,9 @@ class TestHistory(pkg5unittest.Pkg5TestCase):
                 h.operation_errors.extend(self.__errors)
                 self.assertEqual(self.__errors, h.operation_errors)
 
-                h.operation_result = history.RESULT_SUCCEEDED
+                h.log_operation_end()
 
-        def test_1_client_info(self):
+        def test_01_client_info(self):
                 """Verify that the client information can be retrieved.
                 """
                 h = self.__h
@@ -119,7 +119,7 @@ class TestHistory(pkg5unittest.Pkg5TestCase):
                 # should be something returned.
                 self.assertTrue(h.client_args)
 
-        def test_2_clear(self):
+        def test_02_clear(self):
                 """Verify that clear actually resets all transient values.
                 """
                 h = self.__h
@@ -138,7 +138,7 @@ class TestHistory(pkg5unittest.Pkg5TestCase):
                 self.assertEqual(None, h.operation_errors)
                 self.assertEqual(None, h.pathname)
 
-        def test_3_client_load(self):
+        def test_03_client_load(self):
                 """Verify that the saved history can be retrieved properly.
                 """
                 h = history.History(root_dir=self.__scratch_dir,
@@ -155,7 +155,7 @@ class TestHistory(pkg5unittest.Pkg5TestCase):
                 self.assertEqual(self.__errors, h.operation_errors)
                 self.assertEqual(history.RESULT_SUCCEEDED, h.operation_result)
 
-        def test_4_stacked_operations(self):
+        def test_04_stacked_operations(self):
                 """Verify that multiple operations can be stacked properly (in
                 other words, that storage and retrieval works as expected).
                 """
@@ -181,13 +181,13 @@ class TestHistory(pkg5unittest.Pkg5TestCase):
                 h.client_name = "pkg-test"
 
                 for op_name in sorted(op_stack.keys()):
-                        h.operation_name = op_name
+                        h.log_operation_start(op_name)
 
                 for op_name in sorted(op_stack.keys(), reverse=True):
                         op_data = op_stack[op_name]
                         h.operation_start_state = op_data["start_state"]
                         h.operation_end_state = op_data["end_state"]
-                        h.operation_result = op_data["result"]
+                        h.log_operation_end(result=op_data["result"])
 
                 # Now load all operation data that's been saved during testing
                 # for comparison.
@@ -210,7 +210,7 @@ class TestHistory(pkg5unittest.Pkg5TestCase):
                         loaded_data = loaded_ops[op_name]
                         self.assertEqual(op_data, loaded_data)
 
-        def test_5_discarded_operations(self):
+        def test_05_discarded_operations(self):
                 """Verify that discarded operations are not saved.
                 """
 
@@ -218,8 +218,8 @@ class TestHistory(pkg5unittest.Pkg5TestCase):
                 h.client_name = "pkg-test"
 
                 for op_name in sorted(history.DISCARDED_OPERATIONS):
-                        h.operation_name = op_name
-                        h.operation_result = history.RESULT_NOTHING_TO_DO
+                        h.log_operation_start(op_name)
+                        h.log_operation_end(history.RESULT_NOTHING_TO_DO)
 
                 # Now load all operation data that's been saved during testing
                 # for comparison.
@@ -235,7 +235,7 @@ class TestHistory(pkg5unittest.Pkg5TestCase):
                 for op_name in sorted(history.DISCARDED_OPERATIONS):
                         self.assert_(op_name not in loaded_ops)
 
-        def test_6_purge_history(self):
+        def test_06_purge_history(self):
                 """Verify that purge() removes all history and creates a new
                 history entry.
                 """
@@ -257,14 +257,14 @@ class TestHistory(pkg5unittest.Pkg5TestCase):
 
                 self.assert_(loaded_ops == expected_ops)
 
-        def test_7_aborted_operations(self):
+        def test_07_aborted_operations(self):
                 """Verify that aborted operations are saved properly."""
 
                 h = self.__h
                 h.client_name = "pkg-test"
 
                 for i in range(1, 4):
-                        h.operation_name = "operation-%d" % i
+                        h.log_operation_start("operation-%d" % i)
 
                 h.abort(history.RESULT_FAILED_BAD_REQUEST)
 
@@ -291,7 +291,7 @@ class TestHistory(pkg5unittest.Pkg5TestCase):
                         self.assertEqual(op_result,
                             history.RESULT_FAILED_BAD_REQUEST)
 
-        def test_8_bug_3540(self):
+        def test_08_bug_3540(self):
                 """Ensure that corrupt History files raise a
                 HistoryLoadException with parse_failure set to True.
                 """
@@ -311,13 +311,60 @@ class TestHistory(pkg5unittest.Pkg5TestCase):
                                 raise
                         pass
 
-        def test_9_bug_5153(self):
+        def test_09_bug_5153(self):
                 """Verify that purge will not raise an exception if the History
-                directory doesn't already exist as it will re-create it anyway.
+                directory doesn't already exist as it will be re-created anyway.
                 """
                 h = self.__h
                 shutil.rmtree(h.path)
                 h.purge()
+
+        def test_10_snapshots(self):
+                """Verify that snapshot methods work as expected."""
+
+                h = self.__h
+                h.client_name = "Schrodinger"
+                h.log_operation_start("start-bobcat-experiment")
+                h.operation_start_state = "bobcat-alive-plus-poison-in-box"
+
+                # Brought to you by Mr. Fusion.
+                h.create_snapshot()
+
+                # Is it alive, dead, or both after this error?  Only quantum
+                # mechanics knows the answer for certain, but let us assume the
+                # outcome isn't good.
+                h.log_operation_error("radiation-detected")
+                h.operation_end_state = "bobcat-dead"
+
+                self.assertEqual(h.operation_start_state,
+                    "bobcat-alive-plus-poison-in-box")
+                self.assertEqual(h.operation_errors, ["radiation-detected"])
+                self.assertEqual(h.operation_end_state, "bobcat-dead")
+
+                # No animals were permanently harmed during this experiment.
+                h.restore_snapshot()
+
+                self.assertEqual(h.operation_start_state,
+                    "bobcat-alive-plus-poison-in-box")
+
+                # Mysteriously, no radiation was detected...
+                self.assertEqual(h.operation_errors, [])
+
+                # The experiment isn't over yet.
+                self.assertEqual(h.operation_end_state, None)
+
+                # Success!
+                h.operation_end_state = "bobcat-alive"
+
+                # Discard our last snapshot.
+                h.discard_snapshot()
+
+                # Attempt to restore, which should have no effect.
+                h.restore_snapshot()
+                self.assertEqual(h.operation_end_state, "bobcat-alive")
+
+                h.log_operation_end()
+
 
 if __name__ == "__main__":
         unittest.main()

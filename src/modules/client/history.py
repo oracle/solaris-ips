@@ -25,6 +25,7 @@
 # Use is subject to license terms.
 #
 
+import copy
 import errno
 import os
 import shutil
@@ -72,10 +73,20 @@ DISCARDED_OPERATIONS = ["contents", "info", "list"]
 # Cross-reference table for errors and results.  Entries should be ordered
 # most-specific to least-specific.
 error_results = {
+    api_errors.BENamingNotSupported: RESULT_FAILED_BAD_REQUEST,
+    api_errors.InvalidBENameException: RESULT_FAILED_BAD_REQUEST,
     api_errors.CertificateError: RESULT_FAILED_CONFIGURATION,
     api_errors.PublisherError: RESULT_FAILED_BAD_REQUEST,
     api_errors.CanceledException: RESULT_CANCELED,
+    api_errors.ImageUpdateOnLiveImageException: RESULT_FAILED_BAD_REQUEST,
+    api_errors.ProblematicPermissionsIndexException: RESULT_FAILED_STORAGE,
+    api_errors.PermissionsException: RESULT_FAILED_STORAGE,
+    api_errors.MainDictParsingException: RESULT_FAILED_STORAGE,
+    api_errors.SearchException: RESULT_FAILED_SEARCH,
+    api_errors.NonLeafPackageException: RESULT_FAILED_CONSTRAINED,
+    api_errors.IpkgOutOfDateException: RESULT_FAILED_CONSTRAINED,
     fmri.IllegalFmri: RESULT_FAILED_BAD_REQUEST,
+    KeyboardInterrupt: RESULT_CANCELED,
 }
 
 class _HistoryException(Exception):
@@ -126,6 +137,14 @@ class _HistoryOperation(object):
         manipulated as they are set or retrieved.
         """
 
+        def __copy__(self):
+                h = _HistoryOperation()
+                for attr in ("name", "start_time", "end_time", "start_state",
+                    "end_state", "username", "userid", "result"):
+                        setattr(h, attr, getattr(self, attr))
+                h.errors = [copy.copy(e) for e in self.errors]
+                return h
+
         def __setattr__(self, name, value):
                 if name not in ("result", "errors"):
                         # Force all other attribute values to be a string
@@ -172,6 +191,7 @@ Operation User: %s (%s)
         def __init__(self):
                 self.errors = []
 
+
 class History(object):
         """A History object is a representation of data about a pkg(5) client
         and about operations that the client is executing or has executed.  It
@@ -192,6 +212,10 @@ class History(object):
         # A stack where operation data will actually be stored.
         __operations = None
 
+        # A private property used by preserve() and restore() to store snapshots
+        # of history and operation state information.
+        __snapshot = None
+
         # These attributes exist to fake access to the operations stack.
         operation_name = None
         operation_username = None
@@ -202,6 +226,17 @@ class History(object):
         operation_end_state = None
         operation_errors = None
         operation_result = None
+
+        def __copy__(self):
+                h = History()
+                for attr in ("root_dir", "client_name", "client_version"):
+                        setattr(h, attr, getattr(self, attr))
+                object.__setattr__(self, "client_args",
+                    [copy.copy(a) for a in self.client_args])
+                # A deepcopy has to be performed here since this a list of dicts
+                # and not just History operation objects.
+                h.__operations = [copy.deepcopy(o) for o in self.__operations]
+                return h
 
         def __getattribute__(self, name):
                 if name == "client_args":
@@ -614,6 +649,9 @@ class History(object):
                 for the current operation.  If 'result' and 'error' is not
                 provided, success is assumed."""
 
+                if error:
+                        self.log_operation_error(error)
+
                 if error and not result:
                         try:
                                 # Attempt get an exact error match first.
@@ -639,3 +677,38 @@ class History(object):
                 history for the current opreation."""
                 if self.operation_name:
                         self.operation_errors.append(error)
+
+        def create_snapshot(self):
+                """Stores a snapshot of the current history and operation state
+                information in memory so that it can be restored in the event of
+                client failure (such as inability to store history information
+                or the failure of a boot environment operation).  Each call to
+                this function will overwrite the previous snapshot."""
+
+                attrs = self.__snapshot = {}
+                for attr in ("root_dir", "client_name", "client_version"):
+                        attrs[attr] = getattr(self, attr)
+                attrs["client_args"] = [copy.copy(a) for a in self.client_args]
+                # A deepcopy has to be performed here since this a list of dicts
+                # and not just History operation objects.
+                attrs["__operations"] = \
+                    [copy.deepcopy(o) for o in self.__operations]
+
+        def discard_snapshot(self):
+                """Discards the current history and operation state information
+                snapshot."""
+                self.__snapshot = None
+
+        def restore_snapshot(self):
+                """Restores the last snapshot taken of history and operation
+                state information completely discarding the existing history and
+                operation state information.  If nothing exists to restore, this
+                this function will silently return."""
+
+                if not self.__snapshot:
+                        return
+
+                for name, val in self.__snapshot.iteritems():
+                        if not name.startswith("__"):
+                                object.__setattr__(self, name, val)
+                self.__operations = self.__snapshot["__operations"]

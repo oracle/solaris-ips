@@ -50,11 +50,7 @@ import pkg.search_errors as search_errors
 
 from pkg.client.imageplan import EXECUTED_OK
 from pkg.client import global_settings
-
 from pkg.misc import versioned_urlopen
-from pkg.client.history import RESULT_SUCCEEDED
-from pkg.client.history import RESULT_FAILED_STORAGE
-
 from pkg.query_parser import BooleanQueryException
 
 CURRENT_API_VERSION = 12
@@ -252,32 +248,16 @@ class ImageInterface(object):
                                 self.plan_desc = PlanDescription(
                                     self.img.imageplan)
                                 if noexecute:
-                                        self.img.history.operation_result = \
-                                            history.RESULT_NOTHING_TO_DO
+                                        self.log_operation_end(
+                                            result=history.RESULT_NOTHING_TO_DO)
                                 self.img.imageplan.update_index = update_index
                                 res = not self.img.imageplan.nothingtodo()
-                        except api_errors.CanceledException:
-                                self.img.history.operation_result = \
-                                    history.RESULT_CANCELED
-                                self.__reset_unlock()
-                                raise
-                        except api_errors.NonLeafPackageException, e:
-                                self.img.history.operation_result = \
-                                    history.RESULT_FAILED_CONSTRAINED
-                                self.__reset_unlock()
-                                raise
                         except api_errors.PlanCreationException, e:
                                 self.__set_history_PlanCreationException(e)
                                 self.__reset_unlock()
                                 raise
-                        except fmri.IllegalFmri:
-                                self.img.history.operation_result = \
-                                    history.RESULT_FAILED_BAD_REQUEST
-                                self.__reset_unlock()
-                                raise
-                        except Exception:
-                                self.img.history.operation_result = \
-                                    history.RESULT_FAILED_UNKNOWN
+                        except Exception, e:
+                                self.log_operation_end(error=e)
                                 self.__reset_unlock()
                                 raise
                 finally:
@@ -364,9 +344,9 @@ class ImageInterface(object):
                                                     noexecute,
                                                     refresh_allowed=refresh_catalogs,
                                                     progtrack=self.progresstracker):
-                                                        self.img.history.operation_result = \
-                                                            history.RESULT_FAILED_CONSTRAINED
-                                                        raise api_errors.IpkgOutOfDateException()
+                                                        error = api_errors.IpkgOutOfDateException()
+                                                        self.log_operation_end(error=error)
+                                                        raise error
                                         except api_errors.ImageNotFoundException:
                                                 # Can't do anything in this
                                                 # case; so proceed.
@@ -397,21 +377,10 @@ class ImageInterface(object):
 
                                 if self.img.imageplan.nothingtodo() or \
                                     noexecute:
-                                        self.img.history.operation_result = \
-                                            history.RESULT_NOTHING_TO_DO
+                                        self.log_operation_end(
+                                            result=history.RESULT_NOTHING_TO_DO)
                                 self.img.imageplan.update_index = update_index
                                 res = not self.img.imageplan.nothingtodo()
-                        except (api_errors.BENamingNotSupported,
-                            api_errors.InvalidBENameException):
-                                self.__reset_unlock()
-                                self.img.history.operation_result = \
-                                    history.RESULT_FAILED_BAD_REQUEST
-                                raise
-                        except api_errors.CanceledException:
-                                self.img.history.operation_result = \
-                                    history.RESULT_CANCELED
-                                self.__reset_unlock()
-                                raise
                         except api_errors.PlanCreationException, e:
                                 self.__set_history_PlanCreationException(e)
                                 self.__reset_unlock()
@@ -419,9 +388,8 @@ class ImageInterface(object):
                         except api_errors.IpkgOutOfDateException:
                                 self.__reset_unlock()
                                 raise
-                        except Exception:
-                                self.img.history.operation_result = \
-                                    history.RESULT_FAILED_UNKNOWN
+                        except Exception, e:
+                                self.log_operation_end(error=e)
                                 self.__reset_unlock()
                                 raise
                 finally:
@@ -468,10 +436,11 @@ class ImageInterface(object):
                                         self.img.cleanup_downloads()
                                         raise api_errors.CanceledException()
                                 self.prepared = True
-                        except Exception:
-                                if self.img.history.operation_result:
-                                        self.img.history.operation_result = \
-                                            history.RESULT_FAILED_UNKNOWN
+                        except Exception, e:
+                                if self.img.history.operation_name:
+                                        # If an operation is in progress, log
+                                        # the error and mark its end.
+                                        self.log_operation_end(error=e)
                                 raise
                 finally:
                         self.__set_can_be_canceled(False)
@@ -479,7 +448,7 @@ class ImageInterface(object):
 
         def execute_plan(self):
                 """Executes the plan. This is uncancelable one it begins. It
-                can raise  CorruptedIndexException,
+                can raise CorruptedIndexException,
                 ProblematicPermissionsIndexException, ImageplanStateException,
                 ImageUpdateOnLiveImageException, and PlanMissingException.
                 Should only be called after the prepare method has been
@@ -500,17 +469,23 @@ class ImageInterface(object):
                         assert self.plan_type == self.__INSTALL or \
                             self.plan_type == self.__UNINSTALL or \
                             self.plan_type == self.__IMAGE_UPDATE
+
                         try:
                                 be = bootenv.BootEnv(self.img.get_root())
                         except RuntimeError:
                                 be = bootenv.BootEnvNull(self.img.get_root())
 
                         if self.plan_type is self.__IMAGE_UPDATE:
-                                be.init_image_recovery(self.img, self.be_name)
+                                try:
+                                        be.init_image_recovery(self.img, self.be_name)
+                                except Exception, e:
+                                        self.log_operation_end(error=e)
+                                        raise
+
                                 if self.img.is_liveroot():
-                                        self.img.history.operation_result = \
-                                            history.RESULT_FAILED_BAD_REQUEST
-                                        raise api_errors.ImageUpdateOnLiveImageException()
+                                        e = api_errors.ImageUpdateOnLiveImageException()
+                                        self.log_operation_end(error=e)
+                                        raise e
 
                         try:
                                 self.img.imageplan.execute()
@@ -521,45 +496,44 @@ class ImageInterface(object):
                                         be.activate_install_uninstall()
                                 ret_code = 0
                         except RuntimeError, e:
-                                self.img.history.operation_result = \
-                                    history.RESULT_FAILED_UNKNOWN
                                 if self.plan_type is self.__IMAGE_UPDATE:
                                         be.restore_image()
                                 else:
                                         be.restore_install_uninstall()
+                                # Must be done after bootenv restore.
+                                self.log_operation_end(error=e)
                                 self.img.cleanup_downloads()
                                 raise
                         except search_errors.ProblematicPermissionsIndexException, e:
-                                self.img.history.operation_result = \
-                                    history.RESULT_FAILED_STORAGE
+                                error = api_errors.ProblematicPermissionsIndexException(e)
+                                self.log_operation_end(error=error)
                                 self.img.cleanup_downloads()
-                                raise api_errors.ProblematicPermissionsIndexException(e)
+                                raise error
                         except (search_errors.InconsistentIndexException,
                                 search_errors.PartialIndexingException), e:
-                                self.img.history.operation_result = \
-                                    history.RESULT_FAILED_SEARCH
+                                error = api_errors.CorruptedIndexException(e)
+                                self.log_operation_end(error=error)
                                 self.img.cleanup_downloads()
-                                raise api_errors.CorruptedIndexException(e)
+                                raise error
                         except search_errors.MainDictParsingException, e:
-                                self.img.history.operation_result = \
-                                    history.RESULT_FAILED_STORAGE
+                                error = api_errors.MainDictParsingException(e)
+                                self.log_operation_end(error=error)
                                 self.img.cleanup_downloads()
-                                raise api_errors.MainDictParsingException(e)
+                                raise error
                         except actuator.NonzeroExitException, e:
-                                self.img.history.operation_result = \
-                                    history.RESULT_FAILED_ACTUATOR
-                                # won't happen during image-update
+                                # Won't happen during image-update
                                 be.restore_install_uninstall()
+                                error = api_errors.ActuatorException(e)
                                 self.img.cleanup_downloads()
-                                raise api_errors.ActuatorException(e)
-
+                                self.log_operation_end(error=error)
+                                raise error
                         except Exception, e:
-                                self.img.history.operation_result = \
-                                    history.RESULT_FAILED_UNKNOWN
                                 if self.plan_type is self.__IMAGE_UPDATE:
                                         be.restore_image()
                                 else:
                                         be.restore_install_uninstall()
+                                # Must be done after bootenv restore.
+                                self.log_operation_end(error=e)
                                 self.img.cleanup_downloads()
                                 raise
 
@@ -568,17 +542,24 @@ class ImageInterface(object):
                                         be.restore_image()
                                 else:
                                         be.restore_install_uninstall()
-                                raise api_errors.ImageplanStateException(
+
+                                error = api_errors.ImageplanStateException(
                                     self.img.imageplan.state)
+                                # Must be done after bootenv restore.
+                                self.log_operation_end(error=error)
+                                raise error
 
                         self.img.cleanup_downloads()
                         self.img.cleanup_cached_content()
-                        self.img.history.operation_result = \
-                            history.RESULT_SUCCEEDED
+
+                        # If the end of the operation wasn't already logged
+                        # by one of the above operations, then log it as
+                        # ending now.
+                        if self.img.history.operation_name:
+                                self.log_operation_end()
                         self.executed = True
                 finally:
                         self.__activity_lock.release()
-
 
         def refresh(self, full_refresh=False, pubs=None, immediate=False):
                 """Refreshes the metadata (e.g. catalog) for one or more
@@ -654,8 +635,8 @@ class ImageInterface(object):
                         fmris, notfound, illegals = \
                             self.img.installed_fmris_from_args(fmri_strings)
                         if not fmris and not notfound and not illegals:
-                                self.img.history.operation_result = \
-                                    history.RESULT_NOTHING_TO_DO
+                                self.log_operation_end(
+                                    result=history.RESULT_NOTHING_TO_DO)
                                 raise api_errors.NoPackagesInstalledException()
                 else:
                         # Verify validity of certificates before attempting
@@ -795,14 +776,13 @@ class ImageInterface(object):
                             links=links, hardlinks=hardlinks, files=files,
                             dirs=dirs, dependencies=dependencies))
                 if pis:
-                        self.img.history.operation_result = \
-                            history.RESULT_SUCCEEDED
+                        self.log_operation_end()
                 elif illegals or multiple_matches:
-                        self.img.history.operation_result = \
-                            history.RESULT_FAILED_BAD_REQUEST
+                        self.log_operation_end(
+                            result=history.RESULT_FAILED_BAD_REQUEST)
                 else:
-                        self.img.history.operation_result = \
-                            history.RESULT_NOTHING_TO_DO
+                        self.log_operation_end(
+                            result=history.RESULT_NOTHING_TO_DO)
                 return {
                     self.INFO_FOUND: pis,
                     self.INFO_MISSING: notfound,
@@ -1056,7 +1036,7 @@ class ImageInterface(object):
                 This is useful for times when the index for the client has
                 been corrupted."""
                 self.img.update_index_dir()
-                self.img.history.operation_name = "rebuild-index"
+                self.log_operation_start("rebuild-index")
                 if not os.path.isdir(self.img.index_dir):
                         self.img.mkdirs()
                 try:
@@ -1068,18 +1048,16 @@ class ImageInterface(object):
                         ind.rebuild_index_from_scratch(
                             self.img.gen_installed_pkgs())
                 except search_errors.ProblematicPermissionsIndexException, e:
-                        self.img.history.operation_result = \
-                            RESULT_FAILED_STORAGE
-                        raise api_errors.ProblematicPermissionsIndexException(e)
+                        error = api_errors.ProblematicPermissionsIndexException(e)
+                        self.log_operation_end(error=error)
+                        raise error
                 except search_errors.MainDictParsingException, e:
-                        self.img.history.operation_result = \
-                            history.RESULT_FAILED_STORAGE
+                        error = api_errors.MainDictParsingException(e)
+                        self.log_operation_end(error=error)
                         self.img.cleanup_downloads()
-                        raise api_errors.MainDictParsingException(e)
+                        raise error
                 else:
-                        self.img.history.operation_result = RESULT_SUCCEEDED
-
-
+                        self.log_operation_end()
 
         @staticmethod
         def validate_response(res, v):
