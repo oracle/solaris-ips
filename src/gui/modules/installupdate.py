@@ -779,10 +779,10 @@ class InstallUpdate(progress.ProgressTracker):
                     buttons = gtk.BUTTONS_OK_CANCEL, flags = gtk.DIALOG_MODAL,
                     type = gtk.MESSAGE_ERROR, 
                     message_format = _(
-                    "Not enough disk space, the selected action cannot " +
-                    "be performed.\n\n" +
-                    "Click OK to manage your existing BEs and free up disk space or " +
-                    "Cancel to cancel the action."))
+                        "Not enough disk space, the selected action cannot "
+                        "be performed.\n\n"
+                        "Click OK to manage your existing BEs and free up disk space or "
+                        "Cancel to cancel the action."))
                 msgbox.set_title(_("Not Enough Disk Space"))
                 result = msgbox.run()
                 msgbox.destroy()
