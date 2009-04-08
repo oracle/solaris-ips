@@ -269,6 +269,7 @@ cli.t_pkg_depotd.py TestPkgDepot.test_bug_3365|pass
 cli.t_pkg_depotd.py TestPkgDepot.test_bug_3739|pass
 cli.t_pkg_depotd.py TestPkgDepot.test_bug_4489|pass
 cli.t_pkg_depotd.py TestPkgDepot.test_bug_5366|pass
+cli.t_pkg_depotd.py TestPkgDepot.test_bug_8010|pass
 cli.t_pkg_depotd.py TestPkgDepot.test_depot_ping|pass
 cli.t_pkg_depotd.py TestPkgDepot.test_face_root|pass
 cli.t_pkg_depotd.py TestPkgDepot.test_repo_create|pass

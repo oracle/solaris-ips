@@ -1644,8 +1644,8 @@ adm:NP:6445::::::
                 self.pkg("image-update", su_wrap=True, exit=1)
                 # Should fail since user doesn't have permission to refresh
                 # publisher metadata.
-                self.pkg("refresh", su_wrap=True, exit=1)
-                self.pkg("refresh")
+                self.pkg("refresh --full", su_wrap=True, exit=1)
+                self.pkg("refresh --full")
                 self.pkg("image-update --no-refresh", su_wrap=True,
                     exit=1)
                 self.pkg("image-update")

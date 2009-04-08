@@ -54,6 +54,14 @@ class TestPkgDepot(testutils.SingleDepotTestCase):
             open info@1.0,5.11-0
             close """
 
+        update10 = """
+            open update@1.0,5.11-0
+            close """
+
+        update11 = """
+            open update@1.1,5.11-0
+            close """
+
         system10 = """
             open system/libc@1.0,5.11-0
             add set name="description" value="Package to test package names with slashes"
@@ -199,6 +207,43 @@ class TestPkgDepot(testutils.SingleDepotTestCase):
                     urllib.quote(plist[0]))
                 misc.versioned_urlopen(depot_url, "manifest", [0],
                     urllib.quote(plist[0]))
+
+        def test_bug_8010(self):
+                """Publish stuff to the depot, get a full version of the
+                catalog.  Extract the Last-Modified timestamp from the
+                catalog and request an incremental update with the Last-Modified
+                timestamp.  Server should return a HTTP 304.  Fail if this
+                is not the case."""
+
+                depot_url = self.dc.get_depot_url()
+                self.pkgsend_bulk(depot_url, self.update10)
+                c, v = misc.versioned_urlopen(depot_url, "catalog", [0])
+                lm = c.info().getheader("Last-Modified", None)
+                self.assert_(lm)
+                hdr = {"If-Modified-Since": lm}
+                got304 = False
+
+                try:
+                        c, v = misc.versioned_urlopen(depot_url, "catalog",
+                            [0], headers=hdr)
+                except urllib2.HTTPError, e:
+                        # Server returns NOT_MODIFIED if catalog is up
+                        # to date
+                        if e.code == httplib.NOT_MODIFIED:
+                                got304 = True
+                        else:
+                                raise
+                # 200 OK won't raise an exception, but it's still a failure.
+                self.assert_(got304)
+
+                # Now send another package and verify that we get an
+                # incremental update
+                self.pkgsend_bulk(depot_url, self.update11)
+                c, v = misc.versioned_urlopen(depot_url, "catalog",
+                    [0], headers=hdr)
+
+                update_type = c.info().getheader("X-Catalog-Type", None)
+                self.assert_(update_type == "incremental")
 
         def test_face_root(self):
                 """Verify that files outside of the package content web root

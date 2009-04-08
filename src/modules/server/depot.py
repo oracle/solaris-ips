@@ -319,6 +319,12 @@ class DepotHTTP(object):
                 catalog, as appropriate, to the requesting client."""
 
                 request = cherrypy.request
+
+                response = cherrypy.response
+                response.headers["Content-type"] = "text/plain"
+                response.headers["Last-Modified"] = \
+                    self.scfg.catalog.last_modified()
+
                 lm = request.headers.get("If-Modified-Since", None)
                 if lm is not None:
                         try:
@@ -330,11 +336,9 @@ class DepotHTTP(object):
                                         # Ignore incremental requests if there
                                         # isn't enough history to provide one.
                                         lm = None
-
-                response = cherrypy.response
-                response.headers["Content-type"] = "text/plain"
-                response.headers["Last-Modified"] = \
-                    self.scfg.catalog.last_modified()
+                                elif self.scfg.updatelog.up_to_date(lm):
+                                        response.status = httplib.NOT_MODIFIED
+                                        return
 
                 if lm:
                         # If a last modified date and time was provided, then an
@@ -349,9 +353,6 @@ class DepotHTTP(object):
                         try:
                                 for l in self.__repo.catalog(lm):
                                         yield l
-                        except repo.RepositoryCatalogNoUpdatesError:
-                                response.status = httplib.NOT_MODIFIED
-                                return
                         except repo.RepositoryError, e:
                                 # Can't do anything in a streaming generator
                                 # except log the error and return.
