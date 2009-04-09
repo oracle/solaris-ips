@@ -26,7 +26,8 @@
 
 #set default
 ARCH=i386
-PROTO_AREA=../../../proto/root_`uname -p`
+NATIVE_ARCH:sh = uname -p
+PROTO_AREA=../../../proto/root_$(NATIVE_ARCH)
 
 #
 # Needs to point to filesystem on Solaris install dvd
@@ -554,14 +555,14 @@ $(UNBUNDLED_TARGETS:%=$(BUILDS)/%) $(UNBUNDLED_CLUSTERS:%=$(BUILDS)/%):
 $(UNBUNDLED_TARGETS): unbundleds/$$(@:%.import=%)
 	rm -f redist_cluster; ln -s $(BUILDID)/redist_cluster redist_cluster
 	$(SOLARIS.PY) -s $(REPO) $(ALL_PKGS:%=-w %) $(ELIDED_FILES:%=-D %) \
-		`./package_names.py unbundleds/$(@:%.import=%)` \
+		`$(SOLARIS.PY) -N $(INCLUDE_PATH_$(BUILDID):%=-I %) unbundleds/$(@:%.import=%)` \
 		$(INCLUDE_PATH_$(BUILDID):%=-I %) unbundleds/$(@:%.import=%) \
 		redist_cluster
 
 $(UNBUNDLED_CLUSTERS): unbundleds/$$(@:%.import=%)
 	rm -f redist_cluster; ln -s $(BUILDID)/redist_cluster redist_cluster
 	$(SOLARIS.PY) -s $(REPO) $(ALL_PKGS:%=-w %) $(ELIDED_FILES:%=-D %) \
-		`./package_names.py unbundleds/$(@:%.import=%)` \
+		`$(SOLARIS.PY) -N $(INCLUDE_PATH_$(BUILDID):%=-I %) unbundleds/$(@:%.import=%)` \
 		$(INCLUDE_PATH_$(BUILDID):%=-I %) unbundleds/$(@:%.import=%) \
 		$(UNBUNDLED_TARGETS:%.import=unbundleds/%) redist_cluster
 

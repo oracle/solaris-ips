@@ -950,6 +950,7 @@ def_wos_path = ["/net/netinstall.eng/export/nv/x/latest/Solaris_11/Product"]
 create_repo = False
 nopublish = False
 show_debug = False
+print_pkg_names = False
 def_repo = "http://localhost:10000"
 wos_path = []
 include_path = []
@@ -979,7 +980,7 @@ global_includes = []
 macro_definitions = {}
 
 try:
-        _opts, _args = getopt.getopt(sys.argv[1:], "B:D:I:G:T:b:dj:m:ns:v:w:p:")
+        _opts, _args = getopt.getopt(sys.argv[1:], "B:D:I:G:NT:b:dj:m:ns:v:w:p:")
 except getopt.GetoptError, _e:
         print "unknown option", _e.opt
         sys.exit(1)
@@ -1027,6 +1028,8 @@ for opt, arg in _opts:
                 branch_file.close()
         elif opt == "-G": #another file of global includes
                 global_includes.append(arg)
+        elif opt == "-N":
+                print_pkg_names = True
         elif opt == "-T":
                 timestamp_files.append(arg)
 
@@ -1092,8 +1095,6 @@ hollow_pkgs = {}
 
 reuse_err = \
     "Conflict in path %s: IPS %s SVR4 %s from %s with IPS %s SVR4 %s from %s"
-
-print "First pass:", datetime.now()
 
 
 # First pass: don't actually publish anything, because we're not collecting
@@ -1171,8 +1172,6 @@ def SolarisParse(mf):
         lexer.source = "include"
         lexer.sourcehook = sourcehook
 
-        print "Processing %s" % lexer.infile
-
         while True:
                 token = lexer.get_token()
 
@@ -1182,9 +1181,16 @@ def SolarisParse(mf):
                 if token == "package":
                         curpkg = start_package(lexer.get_token())
 
+                        if print_pkg_names:
+                                print "-j %s" % curpkg.name
+
                 elif token == "end":
                         endarg = lexer.get_token()
                         if endarg == "package":
+                                if print_pkg_names:
+                                        curpkg = None
+                                        continue
+
                                 for filename in global_includes:
                                         for i in include_path:
                                                 f = os.path.join(i, filename)
@@ -1216,16 +1222,18 @@ def SolarisParse(mf):
                         else:
                                 line = read_full_line(lexer)
 
-                        curpkg.import_pkg(package_name, line)
+                        if not print_pkg_names:
+                                curpkg.import_pkg(package_name, line)
 
                 elif token == "from":
                         pkgspec = lexer.get_token()
-                        p = SolarisPackage(pkg_path(pkgspec))
-                        curpkg.imppkg = p
-                        spkgname = p.pkginfo["PKG.PLAT"]
-                        svr4pkgpaths[spkgname] = pkg_path(pkgspec)
-                        svr4pkgsseen[spkgname] = p
-                        curpkg.add_svr4_src(spkgname)
+                        if not print_pkg_names:
+                                p = SolarisPackage(pkg_path(pkgspec))
+                                curpkg.imppkg = p
+                                spkgname = p.pkginfo["PKG.PLAT"]
+                                svr4pkgpaths[spkgname] = pkg_path(pkgspec)
+                                svr4pkgsseen[spkgname] = p
+                                curpkg.add_svr4_src(spkgname)
 
                         junk = lexer.get_token()
                         assert junk == "import"
@@ -1259,6 +1267,8 @@ def SolarisParse(mf):
 
                 elif token == "drop":
                         f = lexer.get_token()
+                        if print_pkg_names:
+                                continue
                         l = [o for o in curpkg.files if o.pathname == f]
                         if not l:
                                 print "Cannot drop '%s' from '%s': not " \
@@ -1279,6 +1289,8 @@ def SolarisParse(mf):
                 elif token == "chattr":
                         fname = lexer.get_token()
                         line = read_full_line(lexer)
+                        if print_pkg_names:
+                                continue
                         try:
                                 curpkg.chattr(fname, line)
                         except Exception, e:
@@ -1289,6 +1301,8 @@ def SolarisParse(mf):
                 elif token == "chattr_glob":
                         glob = lexer.get_token()
                         line = read_full_line(lexer)
+                        if print_pkg_names:
+                                continue
                         try:
                                 curpkg.chattr_glob(glob, line)
                         except Exception, e:
@@ -1316,6 +1330,14 @@ def SolarisParse(mf):
                 else:
                         raise RuntimeError("Error: unknown token '%s' "
                             "(%s:%s)" % (token, lexer.infile, lexer.lineno))
+
+if print_pkg_names:
+        for _mf in filelist:
+                SolarisParse(_mf)
+        sys.exit(0)
+
+
+print "First pass:", datetime.now()
 
 for _mf in filelist:
         SolarisParse(_mf)
