@@ -133,8 +133,12 @@ PYCMODS = $(PYMODS:%.py=%.pyc)
 
 STATICHELPFILES = \
 	$(HELP_LOCALES:%=help/%/legal.xml) \
+	$(HELP_LOCALES:%=help/%/other-trademarks.xml) \
+	$(HELP_LOCALES:%=help/%/sun-trademarks.xml) \
 	$(C_ONLY_HELP_LOCALES:%=help/%/figures/update_all.png) \
-	$(C_ONLY_HELP_LOCALES:%=help/%/figures/package_manager.png)
+	$(C_ONLY_HELP_LOCALES:%=help/%/figures/pm_pkglist.png) \
+	$(C_ONLY_HELP_LOCALES:%=help/%/figures/pm_store.png) \
+	$(C_ONLY_HELP_LOCALES:%=help/%/figures/wi_start.png)
 
 STATICSPFILES = \
 	$(SP_LOCALES:%=data/startpagebase/%/startpage_star.png) \

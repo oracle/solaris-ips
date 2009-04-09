@@ -42,9 +42,13 @@ d none usr/share/gnome/help/package-manager 755 root bin
 d none usr/share/gnome/help/package-manager/C 755 root bin
 f none usr/share/gnome/help/package-manager/C/package-manager.xml 444 root bin
 f none usr/share/gnome/help/package-manager/C/legal.xml 444 root bin
+f none usr/share/gnome/help/package-manager/C/other-trademarks.xml 444 root bin
+f none usr/share/gnome/help/package-manager/C/sun-trademarks.xml 444 root bin
 d none usr/share/gnome/help/package-manager/C/figures 755 root bin
-f none usr/share/gnome/help/package-manager/C/figures/package_manager.png 444 root bin
+f none usr/share/gnome/help/package-manager/C/figures/pm_pkglist.png 444 root bin
+f none usr/share/gnome/help/package-manager/C/figures/pm_store.png 444 root bin
 f none usr/share/gnome/help/package-manager/C/figures/update_all.png 444 root bin
+f none usr/share/gnome/help/package-manager/C/figures/wi_start.png 444 root bin
 d none usr/share/icons 755 root other
 d none usr/share/icons/hicolor 755 root other
 d none usr/share/icons/hicolor/48x48 755 root other
