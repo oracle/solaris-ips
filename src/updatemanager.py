@@ -79,7 +79,7 @@ UM_NAME,
 UM_REBOOT,
 UM_LATEST_VER,
 UM_SIZE,
-UM_FMRI,
+UM_STEM,
 ) = range(8)
 
 #UPDATE STEPS
@@ -231,7 +231,7 @@ class Updatemanager:
                         gtk.gdk.Pixbuf,           # UM_REBOOT
                         gobject.TYPE_STRING,      # UM_LATEST_VER
                         gobject.TYPE_STRING,      # UM_SIZE
-                        gobject.TYPE_STRING,      # UM_FMRI                        
+                        gobject.TYPE_STRING,      # UM_STEM                        
                         )
                 self.progress_stop_thread = False
                 self.initial_active = 0
@@ -676,7 +676,7 @@ class Updatemanager:
                         gtk.gdk.Pixbuf,           # UM_REBOOT
                         gobject.TYPE_STRING,      # UM_LATEST_VER
                         gobject.TYPE_STRING,      # UM_SIZE
-                        gobject.TYPE_STRING,      # UM_FMRI                        
+                        gobject.TYPE_STRING,      # UM_STEM                        
                         )
 
                 image_obj = self.__get_image_obj_from_directory(self.__get_image_path())
@@ -708,10 +708,10 @@ class Updatemanager:
                                 #        incState = _("Inc")
                                 #else:
                                 #        incState = "--"
-                                
+                                pkg_name = gui_misc.get_pkg_name(pkg.get_name())
                                 um_list.insert(count, [count, False, None,
-                                    pkg.get_name(), None, pkg.get_version(), None,
-                                    pkg.get_fmri()])
+                                    pkg_name, None, pkg.get_version(), None,
+                                    pkg.get_pkg_stem()])
                                 
                 if debug:
                         print _("count: %d") % count
@@ -869,7 +869,8 @@ class Updatemanager:
                 '''This function is for handling package selection changes'''
                 model, itr = selection.get_selected()
                 if itr:                        
-                        fmri = model.get_value(itr, UM_NAME) 
+                        fmri = model.get_value(itr, UM_STEM)
+                        pkg_name =  model.get_value(itr, UM_NAME)
                         delta = time.time() - self.last_select_time
                         if delta < SELECTION_CHANGE_LIMIT:
                                 if self.selection_timer is not None:
@@ -887,28 +888,28 @@ class Updatemanager:
                                 infobuffer.set_text("")
                                 textiter = infobuffer.get_end_iter()
                                 infobuffer.insert_with_tags_by_name(textiter,
-                                    "\n%s\n" % fmri, "bold")
+                                    "\n%s" % pkg_name, "bold")
                                 infobuffer.insert(textiter, self.details_cache[fmri])
                         else:
                                 infobuffer = self.w_um_textview.get_buffer()
                                 infobuffer.set_text(
-                                    _("\nFetching details for %s ...") % fmri)
+                                    _("\nFetching details for %s ...") % pkg_name)
                                 self.selection_timer = Timer(SELECTION_CHANGE_LIMIT,
                                     self.__show_package_info_thread,
-                                    args=(fmri, )).start()
+                                    args=(fmri, pkg_name )).start()
 
-        def __show_package_info_thread(self, fmri):
+        def __show_package_info_thread(self, fmri, pkg_name):
                 Thread(target = self.__show_package_info,
-                    args = (fmri, )).start()
+                    args = (fmri, pkg_name)).start()
 
-        def __show_package_info(self, fmri):
+        def __show_package_info(self, fmri, pkg_name):
                 details = self.__get_details_from_name(fmri)
                 if self.fmri_description == fmri and details != None:
                         infobuffer = self.w_um_textview.get_buffer()
                         infobuffer.set_text("")
                         textiter = infobuffer.get_end_iter()
                         infobuffer.insert_with_tags_by_name(textiter,
-                            "\n%s" % fmri, "bold")
+                            "\n%s" % pkg_name, "bold")
                         infobuffer.insert(textiter, details)
                 elif self.fmri_description == fmri and details == None:
                         infobuffer = self.w_um_textview.get_buffer()

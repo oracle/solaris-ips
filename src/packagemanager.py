@@ -3156,6 +3156,7 @@ class PackageManager:
                         status_icon = None
                         category_icon = None
                         pkg_name = pkg.get_name()
+                        pkg_name = gui_misc.get_pkg_name(pkg_name)
                         pkg_stem = pkg.get_pkg_stem()
                         pkg_publisher = pkg.get_publisher()
                         pkg_state = enumerations.NOT_INSTALLED

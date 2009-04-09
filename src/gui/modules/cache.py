@@ -30,7 +30,7 @@ import pkg.catalog as catalog
 import pkg.gui.enumerations as enumerations
 import pkg.gui.misc as gui_misc
 
-CACHE_VERSION=4
+CACHE_VERSION=5
 INDEX_HASH_LENGTH=41
 
 class CacheListStores:

@@ -23,6 +23,11 @@
 # Use is subject to license terms.
 #
 
+SPECIAL_CATEGORIES = ["locale", "plugin"] # We should cut all, but last part of the
+                                          # new name scheme as part of fix for #7037.
+                                          # However we need to have an exception rule
+                                          # where we will cut all but three last parts.
+
 import os
 import sys
 try:
@@ -74,5 +79,33 @@ def display_help(application_dir="", id=None):
                         gnome.help_display('package-manager', link_id=id)
                 else:
                         gnome.help_display('package-manager')
-                        
+
+def get_pkg_name(pkg_name):
+        index = -1
+        try:
+                index = pkg_name.rindex("/")
+        except ValueError:
+                # Package Name without "/"
+                return pkg_name
+        pkg_name_bk = pkg_name
+        test_name = pkg_name[index:]
+        pkg_name = pkg_name[:index]
+        try:
+                index = pkg_name.rindex("/")
+        except ValueError:
+                # Package Name with only one "/"
+                return pkg_name_bk
+        if pkg_name[index:].strip("/") not in SPECIAL_CATEGORIES:
+                return test_name.strip("/")
+        else:
+                # The package name contains special category
+                converted_name = pkg_name[index:] + test_name
+                pkg_name = pkg_name[:index]
+                try:
+                        index = pkg_name.rindex("/")
+                except ValueError:
+                        # Only three parts "part1/special/part2"
+                        return pkg_name + converted_name
+                return pkg_name[index:].strip("/") + converted_name
+        return pkg_name_bk
 
