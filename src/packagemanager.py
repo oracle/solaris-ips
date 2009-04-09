@@ -85,6 +85,7 @@ DEFAULT_PROTOCOL = 'http'
 PKGINFO_SUFFIX   = '.p5i'      # Mime type file extension
 
 import getopt
+import pwd
 import os
 import sys
 import time
@@ -145,6 +146,12 @@ CLIENT_API_VERSION = gui_misc.get_client_api_version()
 class PackageManager:
         def __init__(self):
                 signal.signal(signal.SIGINT, self.__main_application_quit)
+                # We reset the HOME directory in case the user called us
+                # with gksu and had NFS mounted home directory in which
+                # case dbus called from gconf cannot write to the directory.
+                if os.getuid() == 0:
+                        dir = self.__find_root_home_dir()
+                        os.putenv('HOME', dir)
                 self.api_o = None
                 self.cache_o = None
                 self.client = gconf.client_get_default()
@@ -3616,6 +3623,23 @@ class PackageManager:
                 self.__enable_disable_install_remove()
                 self.update_statusbar()
                 Thread(target = self.__enable_disable_update_all).start()
+
+        @staticmethod
+        def __find_root_home_dir():
+                return_str = '/var/tmp'
+                 
+                try:
+                        lines = pwd.getpwnam('root')
+                except KeyError:
+                        if debug:
+                                print "Error getting passwd database entry for root"
+                        return return_str
+                try:
+                        return_str = lines[5]
+                except IndexError:
+                        if debug:
+                                print "Error getting home directory for root"
+                return return_str
 
         def restart_after_ips_update(self, be_name):
                 self.__main_application_quit(be_name)
