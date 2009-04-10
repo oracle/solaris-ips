@@ -2432,6 +2432,7 @@ depend SUNWo3read
 depend SUNWobby
 depend SUNWocaml
 depend SUNWogg-vorbis
+depend SUNWonbld
 depend SUNWopenexr
 depend SUNWopenjade
 depend SUNWopenldap
@@ -2869,6 +2870,7 @@ $(i386_ONLY)depend SUNWzyd
 depend amp
 depend avs
 depend babel_install
+depend developer/opensolaris/osnet
 depend gcc-dev
 depend lang-support-albanian
 depend lang-support-all
@@ -3683,3 +3685,4 @@ include common/LangSupport
 include common/StorageNAS
 include common/StorageServer
 include common/TrustedExtensions
+include common/osnet-dev
