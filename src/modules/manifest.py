@@ -489,29 +489,20 @@ class CachedManifest(Manifest):
         directories explictly and implicitly referenced by the 
         manifest, tagging each one w/ the appropriate variants/facets."""
 
-        __pkgdir = None
-        __pub = None
-
-        @staticmethod
-        def initialize(pkgdir, default_publisher):
-                """get location for manifests, default publisher
-                of this image"""
-                CachedManifest.__pkgdir = pkgdir
-                CachedManifest.__pub = default_publisher
-
         def __file_path(self, file):
                 return os.path.join(self.__pkgdir,
                     self.fmri.get_dir_path(), file)
 
-        def __init__(self, fmri, excludes=EmptyI, contents=None):
+        def __init__(self, fmri, pkgdir, preferred_pub, excludes=EmptyI, contents=None):
                 """Raises KeyError exception if cached manifest
                 is not present and contents are None; delays
                 reading of manifest until required if cache file
                 is present"""
 
                 Manifest.__init__(self)
-                assert self.__pub
-                self.loaded = False
+                self.__pkgdir = pkgdir
+                self.__pub    = preferred_pub
+                self.loaded   = False
                 self.set_fmri(None, fmri)
                 self.excludes = excludes
 

@@ -151,6 +151,7 @@ class Image(object):
                 self.root = None
                 self.history = history.History()
                 self.imgdir = None
+                self.pkgdir = None
                 self.img_prefix = None
                 self.index_dir = None
                 self.repo_uris = []
@@ -293,9 +294,6 @@ class Image(object):
                         except api_errors.PermissionsException:
                                 pass
 
-                manifest.CachedManifest.initialize(os.path.join(self.imgdir,
-                    "pkg"), self.get_preferred_publisher())
-
         def save_config(self):
                 self.cfg_cache.write(self.imgdir)
 
@@ -322,6 +320,7 @@ class Image(object):
                         os.chdir(root)
 
                 self.imgdir = os.path.join(self.root, self.img_prefix)
+                self.pkgdir = os.path.join(self.imgdir, "pkg")
                 self.history.root_dir = self.imgdir
 
                 if "PKG_CACHEDIR" in os.environ:
@@ -783,8 +782,10 @@ class Image(object):
                 while retry_count > 0:
                         try:
                                 mcontent = retrieve.get_manifest(self, fmri)
-                                m = manifest.CachedManifest(fmri, excludes,
-                                    mcontent)
+                                
+                                m = manifest.CachedManifest(fmri, self.pkgdir, 
+                                    self.cfg_cache.preferred_publisher,
+                                    excludes, mcontent)
 
                                 # What is the client currently processing?
                                 targets = self.state.get_targets()
@@ -913,7 +914,9 @@ class Image(object):
                 object.... grab from server if needed"""
 
                 try:
-                        return manifest.CachedManifest(fmri, excludes)
+                        return manifest.CachedManifest(fmri, self.pkgdir, 
+                            self.cfg_cache.preferred_publisher,
+                            excludes)
                 except KeyError:
                         return self.__fetch_manifest_with_retries(fmri,
                             excludes)
