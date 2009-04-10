@@ -388,6 +388,7 @@ cli.t_pkg_list.py TestPkgList.test_list_5|pass
 cli.t_pkg_list.py TestPkgList.test_list_6|pass
 cli.t_pkg_list.py TestPkgList.test_list_7|pass
 cli.t_pkg_list.py TestPkgList.test_list_8_after_pub_update_removal|pass
+cli.t_pkg_list.py TestPkgList.test_list_9_needs_refresh|pass
 cli.t_pkg_list.py TestPkgList.test_list_matching|pass
 cli.t_pkg_list.py TestPkgList.test_list_multi_name|pass
 cli.t_pkg_list.py TestPkgList.test_list_z_empty_image|pass

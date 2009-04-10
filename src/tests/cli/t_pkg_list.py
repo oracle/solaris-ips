@@ -63,16 +63,16 @@ class TestPkgList(testutils.ManyDepotTestCase):
             open food@1.2,5.11-0
             close """
 
+        newpkg10 = """
+            open newpkg@1.0
+            close """
+
         def setUp(self):
                 testutils.ManyDepotTestCase.setUp(self, 3)
 
                 durl1 = self.dcs[1].get_depot_url()
-                self.pkgsend_bulk(durl1, self.foo1)
-                self.pkgsend_bulk(durl1, self.foo10)
-                self.pkgsend_bulk(durl1, self.foo11)
-                self.pkgsend_bulk(durl1, self.foo12)
-                self.pkgsend_bulk(durl1, self.foo121)
-                self.pkgsend_bulk(durl1, self.food12)
+                self.pkgsend_bulk(durl1, self.foo1 + self.foo10 + self.foo11 + \
+                    self.foo12 + self.foo121 + self.food12)
 
                 durl2 = self.dcs[2].get_depot_url()
 
@@ -291,6 +291,53 @@ class TestPkgList(testutils.ManyDepotTestCase):
                 # Uninstall the package so any remaining tests won't be
                 # impacted.
                 self.pkg("uninstall pkg://test2/foo@1.0")
+
+        def test_list_9_needs_refresh(self):
+                """Verify that a list operation performed when a publisher's
+                metadata needs refresh works as expected."""
+
+                durl1 = self.dcs[1].get_depot_url()
+
+                # Package should not exist as an unprivileged user or as a
+                # privileged user since it hasn't been published yet.
+                self.pkg("list -a | grep newpkg", su_wrap=True, exit=1)
+                self.pkg("list -a | grep newpkg", exit=1)
+
+                self.pkgsend_bulk(durl1, self.newpkg10)
+
+                # Package should not exist as an unprivileged user or as a
+                # privileged user since the publisher doesn't need a refresh
+                # yet.
+                self.pkg("list -a | grep newpkg", su_wrap=True, exit=1)
+                self.pkg("list -a | grep newpkg", exit=1)
+
+                # Remove the last_refreshed file for one of the publishers so
+                # that it will be seen as needing refresh.
+                pkg_path = os.path.join(self.get_img_path(), "var", "pkg")
+                if not os.path.exists(pkg_path):
+                        pkg_path = os.path.join(self.get_img_path(),
+                            ".org.opensolaris,pkg")
+                        self.assertTrue(os.path.exists(pkg_path))
+
+                os.remove(os.path.join(pkg_path, "catalog", "test1",
+                    "last_refreshed"))
+
+                # Package should not exist as an unprivileged user since the
+                # metadata for the publisher has not yet been refreshed and
+                # cannot be.
+                self.pkg("list -a | grep newpkg", su_wrap=True, exit=1)
+
+                # pkg list should work as an unprivileged user even though one
+                # or more publishers need their metadata refreshed.
+                self.pkg("list -a", su_wrap=True)
+
+                # Package should exist as a privileged user since the metadata
+                # for the publisher needs to be refreshed and can be.
+                self.pkg("list -a | grep newpkg")
+
+                # Package should now exist for unprivileged user since the
+                # metadata has been refreshed.
+                self.pkg("list -a | grep newpkg", su_wrap=True)
 
         def test_list_matching(self):
                 """List all versions of package foo, regardless of publisher."""

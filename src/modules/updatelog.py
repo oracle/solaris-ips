@@ -24,6 +24,7 @@
 #
 
 import datetime
+import errno
 import httplib
 import os
 try:
@@ -34,8 +35,9 @@ except AttributeError:
 import re
 import time
 
-import pkg.fmri as fmri
 import pkg.catalog as catalog
+import pkg.client.api_errors as api_errors
+import pkg.fmri as fmri
 from pkg.misc import TruncatedTransferException
 
 class UpdateLogException(Exception):
@@ -244,11 +246,17 @@ class UpdateLog(object):
 
                 cl_size = int(c.info().getheader("Content-Length", "-1"))
 
-                if update_type == 'incremental':
-                        UpdateLog._recv_updates(c, path, ts, cl_size)
-                else:
-                        catalog.recv(c, path, pub, cl_size)
-
+                try:
+                        if update_type == "incremental":
+                                UpdateLog._recv_updates(c, path, ts, cl_size)
+                        else:
+                                catalog.recv(c, path, pub, cl_size)
+                except EnvironmentError, e:
+                        if isinstance(e, EnvironmentError):
+                                if e.errno == errno.EACCES:
+                                        raise api_errors.PermissionsException(
+                                            e.filename)
+                        raise
 
         @staticmethod
         def _recv_updates(filep, path, cts, content_size=-1):
