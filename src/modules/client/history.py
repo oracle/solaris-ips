@@ -65,6 +65,8 @@ RESULT_FAILED_STORAGE = ["Failed", "Storage"]
 RESULT_FAILED_TRANSPORT = ["Failed", "Transport"]
 # Indicates that the operation failed due to an actuator problem
 RESULT_FAILED_ACTUATOR = ["Failed", "Actuator"]
+# Indicates that the operation failed due to not enough memory
+RESULT_FAILED_OUTOFMEMORY = ["Failed", "Out of Memory"]
 # Indicates that the operation failed for an unknown reason.
 RESULT_FAILED_UNKNOWN = ["Failed", "Unknown"]
 
@@ -88,6 +90,7 @@ error_results = {
     api_errors.IpkgOutOfDateException: RESULT_FAILED_CONSTRAINED,
     fmri.IllegalFmri: RESULT_FAILED_BAD_REQUEST,
     KeyboardInterrupt: RESULT_CANCELED,
+    MemoryError: RESULT_FAILED_OUTOFMEMORY,
 }
 
 class _HistoryException(Exception):

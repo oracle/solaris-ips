@@ -40,6 +40,7 @@ import re
 import sha
 import shutil
 import socket
+import struct
 import sys
 import time
 import urllib
@@ -431,9 +432,11 @@ def port_available(host, port):
 
                 return False, text
 
-def bytes_to_str(bytes):
+def bytes_to_str(bytes, format=None):
         """Returns a human-formatted string representing the number of bytes
-        in the largest unit possible."""
+        in the largest unit possible.  If provided, 'format' should be a string
+        which can be formatted with a dictionary containing a float 'num' and
+        string 'unit'."""
 
         units = [
             (_("B"), 2**10),
@@ -452,8 +455,12 @@ def bytes_to_str(bytes):
                         # unit of measure's range.
                         continue
                 else:
-                        return "%.2f %s" % (round(bytes / float(
-                            limit / 2**10), 2), uom)
+                        if not format:
+                                format = "%(num).2f %(unit)s"
+                        return format % {
+                            "num": round(bytes / float(limit / 2**10), 2),
+                            "unit": uom
+                        }
 
 def get_rel_path(request, uri):
         # Calculate the depth of the current request path relative to our base
@@ -557,6 +564,46 @@ def get_data_digest(data, length=None, return_content=False):
         f.close()
 
         return fhash.hexdigest(), content.read()
+
+def __getvmusage():
+        """Return the amount of virtual memory in bytes currently in use."""
+
+        # This works only on Solaris, in 32-bit mode.  It may not work on older
+        # or newer versions than 5.11.  Ideally, we would use libproc, or check
+        # sbrk(0), but this is expedient.  In most cases (there's a small chance
+        # the file will decode, but incorrectly), failure will raise an
+        # exception, and we'll fail safe.
+        try:
+                # Read just the psinfo_t, not the tacked-on lwpsinfo_t
+                psinfo_arr = file("/proc/self/psinfo").read(232)
+                psinfo = struct.unpack("6i5I4LHH6L16s80siiIIc3x7i", psinfo_arr)
+                vsz = psinfo[11] * 1024
+        except Exception:
+                vsz = None
+
+        return vsz
+
+def out_of_memory():
+        """Return an out of memory message, for use in a MemoryError handler."""
+
+        vsz = bytes_to_str(__getvmusage(), format="%(num).0f%(unit)s")
+
+        if vsz is not None:
+                error = """\
+There is not enough memory to complete the requested operation.  At least
+%(vsz)s of virtual memory was in use by this command before it ran out of memory.
+You must add more memory (swap or physical) or allow the system to access more
+existing memory, or quit other programs that may be consuming memory, and try
+the operation again."""
+        else:
+                error = """\
+There is not enough memory to complete the requested operation.  You must
+add more memory (swap or physical) or allow the system to access more existing
+memory, or quit other programs that may be consuming memory, and try the
+operation again."""
+
+        return _(error) % locals()
+
 
 class CfgCacheError(Exception):
         """Thrown when there are errors with the cfg cache."""

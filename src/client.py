@@ -74,7 +74,8 @@ import pkg.misc as misc
 from pkg.client import global_settings
 from pkg.client.debugvalues import DebugValues
 from pkg.client.history import (RESULT_CANCELED, RESULT_FAILED_BAD_REQUEST,
-    RESULT_FAILED_CONFIGURATION, RESULT_FAILED_TRANSPORT, RESULT_FAILED_UNKNOWN)
+    RESULT_FAILED_CONFIGURATION, RESULT_FAILED_TRANSPORT, RESULT_FAILED_UNKNOWN,
+    RESULT_FAILED_OUTOFMEMORY)
 from pkg.client.filelist import FileListRetrievalError
 from pkg.client.retrieve import (CatalogRetrievalError,
     DatastreamRetrievalError, ManifestRetrievalError)
@@ -2513,7 +2514,20 @@ def main_func():
 #
 if __name__ == "__main__":
         try:
-                __ret = main_func()
+                # Out of memory errors can be raised as EnvironmentErrors with
+                # an errno of ENOMEM, so in order to handle those exceptions
+                # with other errnos, we nest this try block and have the outer
+                # one handle the other instances.
+                try:
+                        __ret = main_func()
+                except (MemoryError, EnvironmentError), __e:
+                        if isinstance(__e, EnvironmentError) and \
+                            __e.errno != errno.ENOMEM:
+                                        raise
+                        if __img:
+                                __img.history.abort(RESULT_FAILED_OUTOFMEMORY)
+                        error("\n" + misc.out_of_memory())
+                        __ret = 1
         except SystemExit, __e:
                 if __img:
                         __img.history.abort(RESULT_FAILED_UNKNOWN)
