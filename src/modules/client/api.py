@@ -31,6 +31,7 @@ import httplib
 import os
 import socket
 import simplejson as json
+import sys
 import threading
 import urllib
 import urllib2
@@ -260,6 +261,15 @@ class ImageInterface(object):
                                 self.log_operation_end(error=e)
                                 self.__reset_unlock()
                                 raise
+                        except:
+                                # Handle exceptions that are not subclasses of
+                                # Exception.
+                                exc_type, exc_value, exc_traceback = \
+                                    sys.exc_info()
+
+                                self.log_operation_end(error=exc_type)
+                                self.__reset_unlock()
+                                raise
                 finally:
                         self.__activity_lock.release()
 
@@ -392,6 +402,15 @@ class ImageInterface(object):
                                 self.log_operation_end(error=e)
                                 self.__reset_unlock()
                                 raise
+                        except:
+                                # Handle exceptions that are not subclasses of
+                                # Exception.
+                                exc_type, exc_value, exc_traceback = \
+                                    sys.exc_info()
+
+                                self.log_operation_end(error=exc_type)
+                                self.__reset_unlock()
+                                raise
                 finally:
                         self.__activity_lock.release()
 
@@ -428,7 +447,7 @@ class ImageInterface(object):
                                 except search_errors.ProblematicPermissionsIndexException, e:
                                         self.img.cleanup_downloads()
                                         raise api_errors.ProblematicPermissionsIndexException(e)
-                                except Exception, e:
+                                except:
                                         self.img.cleanup_downloads()
                                         raise
 
@@ -441,6 +460,16 @@ class ImageInterface(object):
                                         # If an operation is in progress, log
                                         # the error and mark its end.
                                         self.log_operation_end(error=e)
+                                raise
+                        except:
+                                # Handle exceptions that are not subclasses of
+                                # Exception.
+                                if self.img.history.operation_name:
+                                        # If an operation is in progress, log
+                                        # the error and mark its end.
+                                        exc_type, exc_value, exc_traceback = \
+                                            sys.exc_info()
+                                        self.log_operation_end(error=exc_type)
                                 raise
                 finally:
                         self.__set_can_be_canceled(False)
@@ -480,6 +509,13 @@ class ImageInterface(object):
                                         be.init_image_recovery(self.img, self.be_name)
                                 except Exception, e:
                                         self.log_operation_end(error=e)
+                                        raise
+                                except:
+                                        # Handle exceptions that are not subclasses of
+                                        # Exception.
+                                        exc_type, exc_value, exc_traceback = \
+                                            sys.exc_info()
+                                        self.log_operation_end(error=exc_type)
                                         raise
 
                                 if self.img.is_liveroot():
@@ -534,6 +570,20 @@ class ImageInterface(object):
                                         be.restore_install_uninstall()
                                 # Must be done after bootenv restore.
                                 self.log_operation_end(error=e)
+                                self.img.cleanup_downloads()
+                                raise
+                        except:
+                                # Handle exceptions that are not subclasses of
+                                # Exception.
+                                exc_type, exc_value, exc_traceback = \
+                                    sys.exc_info()
+
+                                if self.plan_type is self.__IMAGE_UPDATE:
+                                        be.restore_image()
+                                else:
+                                        be.restore_install_uninstall()
+                                # Must be done after bootenv restore.
+                                self.log_operation_end(error=exc_type)
                                 self.img.cleanup_downloads()
                                 raise
 
@@ -1126,10 +1176,7 @@ class ImageInterface(object):
                         try:
                                 dt = self.img.get_publisher_last_update_time(
                                     prefix)
-                        except api_errors.CanceledException:
-                                self.__reset_unlock()
-                                raise
-                        except Exception:
+                        except:
                                 self.__reset_unlock()
                                 raise
                 finally:

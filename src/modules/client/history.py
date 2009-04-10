@@ -30,6 +30,7 @@ import errno
 import os
 import shutil
 import sys
+import traceback
 import xml.dom.minidom as xmini
 import xml.parsers.expat as expat
 
@@ -381,7 +382,12 @@ class History(object):
                 else:
                         ca = object.__getattribute__(self, "client_args")
                         for cnode in args.getElementsByTagName("arg"):
-                                ca.append(cnode.childNodes[0].wholeText)
+                                try:
+                                        ca.append(cnode.childNodes[0].wholeText)
+                                except (AttributeError, IndexError):
+                                        # There may be no childNodes, or
+                                        # wholeText may not be defined.
+                                        pass
 
         @staticmethod
         def __load_operation_data(node):
@@ -396,33 +402,28 @@ class History(object):
                 op.userid = node.getAttribute("userid")
                 op.result = node.getAttribute("result").split(", ")
 
-                state = None
-                try:
-                        state = node.getElementsByTagName("start_state")[0]
-                except IndexError:
-                        # The element might not exist.
-                        pass
-                else:
-                        op.start_state = state.childNodes[0].wholeText
+                def get_node_values(parent_name, child_name=None):
+                        try:
+                                parent = node.getElementsByTagName(parent_name)[0]
+                                if child_name:
+                                        cnodes = parent.getElementsByTagName(
+                                            child_name)
+                                        return [
+                                            cnode.childNodes[0].wholeText
+                                            for cnode in cnodes
+                                        ]
+                                return parent.childNodes[0].wholeText
+                        except (AttributeError, IndexError):
+                                # Assume no values are present for the node.
+                                pass
+                        if child_name:
+                                return []
+                        return
 
-                try:
-                        state = node.getElementsByTagName("end_state")[0]
-                except IndexError:
-                        # The element might not exist.
-                        pass
-                else:
-                        op.end_state = state.childNodes[0].wholeText
-
-                errors = None
-                try:
-                        errors = node.getElementsByTagName("errors")[0]
-                except IndexError:
-                        # The element might not exist.
-                        pass
-                else:
-                        for cnode in errors.getElementsByTagName("error"):
-                                op.errors.append(
-                                    cnode.childNodes[0].wholeText)
+                op.start_state = get_node_values("start_state")
+                op.end_state = get_node_values("end_state")
+                op.errors.extend(get_node_values("errors", child_name="error"))
+                        
                 return op
 
         def __load(self, filename):
@@ -674,9 +675,35 @@ class History(object):
 
         def log_operation_error(self, error):
                 """Adds an error to the list of errors to be recorded in image
-                history for the current opreation."""
+                history for the current operation."""
+
                 if self.operation_name:
-                        self.operation_errors.append(error)
+                        out_stack = None
+                        out_err = None
+                        if isinstance(error, Exception):
+                                # Assume the exception being logged is the last
+                                # one that occurred and get its traceback.
+                                output = traceback.format_exc()
+                        else:
+                                # Assume the current stack is more useful if
+                                # the error doesn't inherit from Exception.
+                                out_stack = "".join(traceback.format_stack())
+
+                                if error:
+                                        # This may result in the text
+                                        # of the error itself being written
+                                        # twice, but that is necessary in case
+                                        # it is not contained within the
+                                        # output of format_exc().
+                                        out_err = str(error)
+                                        if not out_err:
+                                                out_err = error.__class__.__name__
+
+                                output = "".join([
+                                    item for item in [out_stack, out_err]
+                                    if item
+                                ])
+                        self.operation_errors.append(output.strip())
 
         def create_snapshot(self):
                 """Stores a snapshot of the current history and operation state

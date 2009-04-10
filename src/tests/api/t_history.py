@@ -57,6 +57,7 @@ class TestHistory(pkg5unittest.Pkg5TestCase):
         __errors = [
             "Error 1",
             "Error 2",
+            "Error 3"
         ]
 
         # Used to store the name of a history file across tests.
@@ -338,7 +339,12 @@ class TestHistory(pkg5unittest.Pkg5TestCase):
 
                 self.assertEqual(h.operation_start_state,
                     "bobcat-alive-plus-poison-in-box")
-                self.assertEqual(h.operation_errors, ["radiation-detected"])
+
+                # Since log_operation_error will automatically combine the error
+                # with a stacktrace, the last line of the logged error has to be
+                # checked for the error text instead.
+                error = ("".join(h.operation_errors[0])).splitlines()
+                self.assertEqual(error[-1], "radiation-detected")
                 self.assertEqual(h.operation_end_state, "bobcat-dead")
 
                 # No animals were permanently harmed during this experiment.
@@ -365,6 +371,42 @@ class TestHistory(pkg5unittest.Pkg5TestCase):
 
                 h.log_operation_end()
 
+        def test_11_bug_8072(self):
+                """Verify that a history file with unexpected start state, end
+                state, and error data won't cause an exception."""
+
+                bad_hist = """<?xml version="1.0" encoding="ascii"?>
+<history>
+  <client name="pkg" version="e827313523d8+">
+    <args>
+      <arg><![CDATA[/usr/bin/pkg]]></arg>
+      <arg><![CDATA[-R]]></arg>
+      <arg><![CDATA[/tmp/image]]></arg>
+      <arg><![CDATA[install]]></arg>
+      <arg><![CDATA[Django]]></arg>
+    </args>
+  </client>
+  <operation end_time="20090409T165520Z" name="install"
+      result="Failed, Out of Memory" start_time="20090409T165520Z" userid="101"
+      username="username">
+    <start_state></start_state>
+    <end_state></end_state>
+    <errors>
+      <error></error>
+    </errors>
+  </operation>
+</history>"""
+
+                (fd1, path1) = tempfile.mkstemp(dir=self.__scratch_dir)
+                os.write(fd1, bad_hist)
+
+                # Load the history entry.
+                he = history.History(root_dir=self.__scratch_dir,
+                    filename=path1)
+
+                self.assertEqual(he.operation_start_state, "None")
+                self.assertEqual(he.operation_end_state, "None")
+                self.assertEqual(he.operation_errors, [])
 
 if __name__ == "__main__":
         unittest.main()
