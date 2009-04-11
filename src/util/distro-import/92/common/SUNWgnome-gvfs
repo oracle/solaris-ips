@@ -1,4 +1,5 @@
 package SUNWgnome-gvfs
 classification "Desktop (GNOME)/Libraries"
 import SUNWgnome-gvfs
+depend_path /usr/bin/less
 end package

@@ -3,4 +3,8 @@ classification "Applications/System Utilities"
 import SUNWdesktop-search
 import SUNWdesktop-search-devel
 import SUNWdesktop-search-root
+depend SUNWgnome-pdf-viewer
+depend SUNWlxsl
+depend SUNWunzip
+depend SUNWw3m
 end package

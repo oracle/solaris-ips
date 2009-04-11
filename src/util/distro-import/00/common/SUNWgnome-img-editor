@@ -3,4 +3,5 @@ classification "Applications/Graphics and Imaging"
 import SUNWgnome-img-editor
 import SUNWgnome-img-editor-devel
 import SUNWgnome-img-editor-root
+depend SUNWgnome-python-libs
 end package

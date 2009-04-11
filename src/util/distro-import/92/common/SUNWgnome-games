@@ -3,4 +3,5 @@ classification "Applications/Games"
 import SUNWgnome-games
 import SUNWgnome-games-devel
 import SUNWgnome-games-root
+depend SUNWgnome-python-desktop
 end package

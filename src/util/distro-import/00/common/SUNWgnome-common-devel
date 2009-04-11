@@ -1,4 +1,6 @@
 package SUNWgnome-common-devel
 classification "Development/GNOME and GTK+"
 import SUNWgnome-common-devel
+depend_path /usr/bin/openjade
+depend_path /usr/bin/xsltproc
 end package

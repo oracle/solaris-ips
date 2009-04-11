@@ -12,4 +12,5 @@ usr/share/applications/shares.desktop
 end import
 import SUNWgnome-system-tools-devel
 import SUNWgnome-system-tools-root
+depend SUNWperl-authen-pam
 end package

@@ -2,4 +2,5 @@ package SUNWgnome-themes
 classification "Desktop (GNOME)/Theming"
 import SUNWgnome-themes
 import SUNWgnome-themes-devel
+depend SUNWperl-xml-parser
 end package

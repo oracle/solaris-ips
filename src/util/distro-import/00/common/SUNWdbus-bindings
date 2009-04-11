@@ -2,4 +2,5 @@ package SUNWdbus-bindings
 classification "System/Libraries"
 import SUNWdbus-bindings
 import SUNWdbus-bindings-devel
+depend_path /usr/lib/pkgconfig/dbus-1.pc
 end package

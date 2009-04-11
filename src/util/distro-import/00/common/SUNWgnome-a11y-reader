@@ -1,4 +1,5 @@
 package SUNWgnome-a11y-reader
 classification "Applications/Universal Access"
 import SUNWgnome-a11y-reader
+depend SUNWgnome-python-libs
 end package
