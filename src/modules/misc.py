@@ -544,7 +544,7 @@ def get_data_digest(data, length=None, return_content=False):
                 f = data
 
         if length is None:
-                length = os.lstat(data).st_size
+                length = os.stat(data).st_size
 
         # Read the data in chunks and compute the SHA1 hash as it comes in.  A
         # large read on some platforms (e.g. Windows XP) may fail.

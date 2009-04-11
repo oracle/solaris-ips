@@ -173,27 +173,24 @@ def trans_add(repo_uri, args):
 
         if not args:
                 usage(_("No arguments specified for subcommand."), cmd="add")
-        elif args[0] in ("file", "license"):
+
+        atype = args[0]
+        data = None
+        if atype in ("file", "license"):
                 if len(args) < 2:
                         raise RuntimeError, _("A filename must be provided "
                             "for this action.")
 
-                try:
-                        action = pkg.actions.fromlist(args[0], args[2:],
-                            data=args[1])
-                except ValueError, e:
-                        error(e[0], cmd="add")
-                        return 1
-
-                if "pkg.size" not in action.attrs:
-                        fs = os.lstat(args[1])
-                        action.attrs["pkg.size"] = str(fs.st_size)
+                aargs = args[2:]
+                data = args[1]
         else:
-                try:
-                        action = pkg.actions.fromlist(args[0], args[1:])
-                except ValueError, e:
-                        error(e[0], cmd="add")
-                        return 1
+                aargs = args[1:]
+
+        try:
+                action = pkg.actions.fromlist(atype, aargs, data=data)
+        except ValueError, e:
+                error(e[0], cmd="add")
+                return 1
 
         t = trans.Transaction(repo_uri, trans_id=trans_id)
         t.add(action)

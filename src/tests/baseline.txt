@@ -455,6 +455,7 @@ cli.t_pkgsend.py TestPkgsendBasics.test_4_bad_actions|pass
 cli.t_pkgsend.py TestPkgsendBasics.test_5_bad_open|pass
 cli.t_pkgsend.py TestPkgsendBasics.test_6_help|pass
 cli.t_pkgsend.py TestPkgsendBasics.test_7_create_repo|pass
+cli.t_pkgsend.py TestPkgsendBasics.test_8_bug_7908|pass
 cli.t_pkgsend.py TestPkgsendRename.test_rename1|pass
 cli.t_pkgsend.py TestPkgsendRename.test_rename2|pass
 cli.t_pkgsend.py TestPkgsendRename.test_rename3|pass

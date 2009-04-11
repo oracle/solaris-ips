@@ -129,7 +129,7 @@ class Action(object):
                         self.data = file_opener
                         if "pkg.size" not in self.attrs:
                                 try:
-                                        fs = os.lstat(data)
+                                        fs = os.stat(data)
                                         self.attrs["pkg.size"] = str(fs.st_size)
                                 except EnvironmentError, e:
                                         raise \

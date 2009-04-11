@@ -29,6 +29,7 @@ if __name__ == "__main__":
 
 import os
 import shutil
+import tempfile
 import unittest
 
 class TestPkgsendBasics(testutils.SingleDepotTestCase):
@@ -213,6 +214,37 @@ class TestPkgsendBasics(testutils.SingleDepotTestCase):
                 # Finally, verify that specifying extra operands to
                 # create-repository fails as expected.
                 self.pkgsend("https://invalid.test2", "create-repository bobcat", exit=2)
+
+        def test_8_bug_7908(self):
+                """Verify that when provided the name of a symbolic link to a
+                file, that publishing will still work as expected."""
+
+                # First create our dummy data file.
+                fd, fpath = tempfile.mkstemp(dir=self.get_test_prefix())
+                fp = os.fdopen(fd, "wb")
+                fp.write("foo")
+                fp.close()
+
+                # Then, create a link to it.
+                lpath = os.path.join(self.get_test_prefix(), "test_8_foo")
+                os.symlink(fpath, lpath)
+
+                # Next, publish it using both the real path and the linked path
+                # but using different names.
+                dhurl = self.dc.get_depot_url()
+                self.pkgsend_bulk(dhurl,
+                    """open testlinkedfile@1.0
+                    add file %s mode=0755 owner=root group=bin path=/tmp/f.foo
+                    add file %s mode=0755 owner=root group=bin path=/tmp/l.foo
+                    close""" % (fpath, lpath))
+
+                # Finally, verify that both files were published.
+                self.image_create(dhurl)
+                self.pkg("contents -r -H -o action.raw -t file testlinkedfile |"
+                   " grep 'f.foo.*pkg.size=3'")
+                self.pkg("contents -r -H -o action.raw -t file testlinkedfile |"
+                   " grep 'l.foo.*pkg.size=3'")
+                self.image_destroy()
 
 class TestPkgsendRename(testutils.SingleDepotTestCase):
 
