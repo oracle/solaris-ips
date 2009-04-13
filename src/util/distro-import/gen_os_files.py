@@ -199,6 +199,9 @@ class GenOSFiles:
 
                 self.save_entry(pathname, category, sub_category)
 
+            elif line.startswith("end package"):
+                classification_found = False
+
         if self.package_name and not classification_found:
             self.save_entry(pathname, None, None)
 
