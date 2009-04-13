@@ -3931,20 +3931,17 @@ category = High Performance Computing
 [clustertools_8.1]
 category = High Performance Computing
 
+[developer/netbeans/plugin/nb-dtrace]
+category = System
+
 [developer/tool/exuberant-ctags]
 category = Editors
-
-[dtrace-gui-plugin]
-category = System
 
 [eclipse]
 category = Integrated Development Environments
 
 [gcc-dev]
 category = Integrated Development Environments
-
-[glassfishv2]
-category = Application and Web Servers
 
 [hpc-dev]
 category = High Performance Computing
@@ -4156,9 +4153,6 @@ category = Integrated Development Environments
 [libnb-xml]
 category = Integrated Development Environments
 
-[mq41]
-category = Services
-
 [netbeans]
 category = Integrated Development Environments
 
@@ -4240,6 +4234,9 @@ category = Localizations (Desktop)
 [ruby-dev]
 category = Ruby
 
+[service/network/message-queue-41]
+category = Communications
+
 [ss-dev]
 category = Integrated Development Environments
 
@@ -4255,7 +4252,10 @@ category = Integrated Development Environments
 [trusted-extensions]
 category = Trusted Extensions
 
-[webstackui]
+[web/glassfish-2]
+category = Application and Web Servers
+
+[web/webstack-ui]
 category = Application and Web Servers
 
 [xvm]

@@ -1,4 +1,4 @@
-package glassfishv2
+package web/glassfish-2
 classification "Web Services/Application and Web Servers"
 description "GlassFish Java EE 5 Application Server"
 import SUNWasac
@@ -18,5 +18,15 @@ depend SUNWj6man
 depend SUNWj6rt
 depend SUNWj6rtx
 depend SUNWjavadb
-depend mq41
+depend service/network/message-queue-41
+end package
+
+#
+# As there isn't currently a way to rename packages on upgrade, create an
+# empty package which will cause the previous contents of the package to
+# be deleted when the empty version is installed and declare a dependency
+# on the package with the new name.
+#
+package glassfishv2
+depend web/glassfish-2
 end package

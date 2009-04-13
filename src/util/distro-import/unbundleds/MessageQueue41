@@ -1,6 +1,6 @@
-package mq41
+package service/network/message-queue-41
 version 4.1
-classification "System/Services"
+classification "Web Services/Communications"
 description "Message Queue 4.1"
 import SUNWiqdoc
 import SUNWiqfs
@@ -9,4 +9,15 @@ import SUNWiqr
 import SUNWiqu
 import SUNWiquc
 import SUNWiqum
+end package
+
+#
+# As there isn't currently a way to rename packages on upgrade, create an
+# empty package which will cause the previous contents of the package to
+# be deleted when the empty version is installed and declare a dependency
+# on the package with the new name.
+#
+package mq41
+depend service/network/message-queue-41
+version 4.1
 end package

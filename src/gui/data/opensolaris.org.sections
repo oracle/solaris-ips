@@ -17,5 +17,5 @@ category = Display,Media,Networking,Other Peripherals,Ports,Storage
 category = Administration and Configuration,Core,Databases (System),Enterprise Management,File System,Fonts,Hardware,Internationalization,Libraries (System),Localizations (System),Media,Multimedia Libraries,Packaging,Printing,Security,Services,Shells,Software Management,Text Tools,Trusted,Virtualization,X11 (System)
 
 [Web Services]
-category = Application and Web Servers
+category = Application and Web Servers,Communications
 
