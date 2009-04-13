@@ -1,4 +1,5 @@
 package SUNWlynx
 classification "Applications/Internet"
 import SUNWlynx
+import SUNWlynx-root
 end package
