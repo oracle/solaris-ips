@@ -215,7 +215,7 @@ class Webinstall:
                 self.__exit_app()
 
         def __on_help_button_clicked(self, widget):
-                gui_misc.display_help(self.application_dir) # Need target , "webinstall")
+                gui_misc.display_help(self.application_dir, "webinstall")
 
         def __exit_app(self, be_name = None):
                 self.w_webinstall_dialog.destroy()
@@ -369,6 +369,7 @@ class Webinstall:
                 '''<path to mimetype file|origin_url>
                    returns list of publisher and package list tuples'''
                 p5i_info = None
+                file_obj = None
                 if self.param.endswith(".p5i"):                
                         try:
                                 file_obj = open(self.param)
@@ -386,7 +387,8 @@ class Webinstall:
                                 file_obj.close()
                                 return None
                         except IOError:
-                                file_obj.close()
+                                if file_obj != None:
+                                        file_obj.close()
                                 self.w_webinstall_proceed.set_sensitive(False)
                                 msg = _("Error reading the p5i file.")
                                 self.__error_occurred(
