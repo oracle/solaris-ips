@@ -41,6 +41,7 @@ MAX_DESC_LEN = 60                         # Max length of the description
 MAX_INFO_CACHE_LIMIT = 100                # Max number of package descriptions to cache
 NOTEBOOK_PACKAGE_LIST_PAGE = 0            # Main Package List page index
 NOTEBOOK_START_PAGE = 1                   # Main View Start page index
+INFO_NOTEBOOK_LICENSE_PAGE = 3            # License Tab index
 TYPE_AHEAD_DELAY = 600    # The last type in search box after which search is performed
 SEARCH_STR_FORMAT = "<::description:*%s* OR ::fmri:*%s*>"
 SEARCH_LIMIT = 100                        # Maximum number of results shown for
@@ -1659,7 +1660,8 @@ class PackageManager:
                 self.w_main_view_notebook.set_current_page(NOTEBOOK_START_PAGE)
 
         def __on_notebook_change(self, widget, event, pagenum):
-                if pagenum == 3 and not self.showing_empty_details:
+                if (pagenum == INFO_NOTEBOOK_LICENSE_PAGE and 
+                    not self.showing_empty_details):
                         licbuffer = self.w_license_textview.get_buffer()
                         leg_txt = _("Fetching legal information...")
                         licbuffer.set_text(leg_txt)
@@ -1902,8 +1904,10 @@ class PackageManager:
                         self.last_show_info_id = self.show_info_id = \
                             gobject.timeout_add(TYPE_AHEAD_DELAY,
                                 self.__show_info, model, model.get_path(itr))
-                        if self.w_info_notebook.get_current_page() == 3:
-                                self.__on_notebook_change(None, None, 3)
+                        if (self.w_info_notebook.get_current_page() == 
+                            INFO_NOTEBOOK_LICENSE_PAGE):
+                                self.__on_notebook_change(None, None, 
+                                    INFO_NOTEBOOK_LICENSE_PAGE)
                 else:
                         self.selected_model = None
                         self.selected_path = None
@@ -2631,16 +2635,16 @@ class PackageManager:
                 if self.catalog_loaded == False:
                         return
                 Thread(target = self.__show_package_licenses,
-                    args = (self.last_show_licenses_id,)).start()
+                    args = (self.selected_pkgstem, self.last_show_licenses_id,)).start()
 
-        def __show_package_licenses(self, license_id):
-                if self.selected_pkgstem == None:
+        def __show_package_licenses(self, selected_pkgstem, license_id):
+                if selected_pkgstem == None:
                         gobject.idle_add(self.__update_package_license, None,
                             self.last_show_licenses_id)
                         return
                 info = None
                 try:
-                        info = self.api_o.info([self.selected_pkgstem],
+                        info = self.api_o.info([selected_pkgstem],
                             True, frozenset([api.PackageInfo.LICENSES]))
                 except (misc.TransportFailures, retrieve.ManifestRetrievalError,
                     retrieve.DatastreamRetrievalError):
@@ -2651,7 +2655,7 @@ class PackageManager:
                 if not info or (info and len(info.get(0)) == 0):
                         try:
                         # Get license from remote
-                                info = self.api_o.info([self.selected_pkgstem],
+                                info = self.api_o.info([selected_pkgstem],
                                     False, frozenset([api.PackageInfo.LICENSES]))
                         except (misc.TransportFailures, retrieve.ManifestRetrievalError,
                             retrieve.DatastreamRetrievalError):
@@ -2938,8 +2942,10 @@ class PackageManager:
                 self.__show_info(self.selected_model, self.selected_path)
                 self.selected_model = None
                 self.selected_path = None
-                self.__show_licenses()
-                self.selected_pkgstem = None
+                if (self.w_info_notebook.get_current_page() == 
+                    INFO_NOTEBOOK_LICENSE_PAGE and
+                    not self.showing_empty_details):
+                        self.__show_licenses()
 
         def __check_if_updates_available(self):
                 try:
