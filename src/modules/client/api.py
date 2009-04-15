@@ -776,15 +776,15 @@ class ImageInterface(object):
                             PackageInfo.SUMMARY, PackageInfo.CATEGORIES]) |
                             PackageInfo.ACTION_OPTIONS) & info_needed:
                                 mfst = self.img.get_manifest(f)
+                                excludes = self.img.list_excludes()
                                 if PackageInfo.SIZE in info_needed:
-                                        size = mfst.size
+                                        size = mfst.get_size(excludes=excludes)
                                 if PackageInfo.LICENSES in info_needed:
                                         licenses = self.__licenses(mfst, local)
                                 if PackageInfo.SUMMARY in info_needed:
                                         summary = mfst.get("description", "")
 
                                 if PackageInfo.ACTION_OPTIONS & info_needed:
-                                        excludes = self.img.list_excludes()
                                         if PackageInfo.LINKS in info_needed:
                                                 links = list(
                                                     mfst.gen_key_attribute_value_by_type(

@@ -185,7 +185,10 @@ class TestApiInfo(testutils.SingleDepotTestCase):
                 self.assert_(res.build_release is not None)
                 self.assert_(res.branch is not None)
                 self.assert_(res.packaging_date is not None)
-                self.assert_(res.size is not None)
+                total_size = 0
+                for p in misc_files:
+                        total_size += len(p)
+                self.assertEqual(res.size, total_size)
                 self.assert_(res.licenses is not None)
                 self.assert_(res.links is not None)
                 self.assert_(res.hardlinks is not None)

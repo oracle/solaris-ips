@@ -74,7 +74,6 @@ class Manifest(object):
                 self.img = None
                 self.fmri = None
 
-                self.size = 0
                 self.actions = []
                 self.actions_bytype = {}
                 self.variants = {}   # variants seen in package
@@ -272,7 +271,6 @@ class Manifest(object):
 
         def set_content(self, content, excludes=EmptyI):
                 """content is the text representation of the manifest"""
-                self.size = 0
                 self.actions = []
                 self.actions_bytype = {}
                 self.variants = {}
@@ -310,7 +308,6 @@ class Manifest(object):
                         if not action.include_this(excludes):
                                 continue
 
-                        self.size += int(action.attrs.get("pkg.size", "0"))
                         self.actions.append(action)
 
                         if action.name not in self.actions_bytype:
@@ -462,6 +459,20 @@ class Manifest(object):
                 except KeyError:
                         return default
 
+        def get_size(self, excludes=EmptyI):
+                """Returns an integer representing the total size, in bytes, of
+                the Manifest's data payload.
+
+                'excludes' is a list of variants which should be allowed when
+                calculating the total.
+                """
+
+                size = 0
+                for a in self.gen_actions(excludes):
+                        size += int(a.attrs.get("pkg.size", "0"))
+
+                return size
+
         def __getitem__(self, key):
                 """Return the value for the package attribute 'key'."""
                 return self.attributes[key]
@@ -547,7 +558,6 @@ class CachedManifest(Manifest):
         def __unload(self):
                 """Unload manifest; used to reduce peak memory comsumption
                 when downloading new manifests"""
-                self.size = 0
                 self.actions = []
                 self.actions_bytype = {}
                 self.variants = {}   
