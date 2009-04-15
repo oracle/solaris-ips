@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -28,20 +28,23 @@
 def N_(message): return message
 
 l10n_categories = [
+  N_("AMP Stack"),
   N_("Accessories"),
   N_("Administration and Configuration"),
-  N_("Applets"),
   N_("Application and Web Servers"),
+  N_("Builds"),
   N_("C"),
   N_("C++"),
+  N_("Communications"),
   N_("Configuration and Preferences"),
   N_("Core"),
   N_("Databases"),
   N_("Databases (System)"),
-  N_("Desktop"),
+  N_("Developer Tools"),
   N_("Display"),
   N_("Distribution Tools"),
   N_("Documentation"),
+  N_("Editors"),
   N_("Enterprise Management"),
   N_("File Managers"),
   N_("File System"),
@@ -61,17 +64,21 @@ l10n_categories = [
   N_("Localizations (Desktop)"),
   N_("Localizations (System)"),
   N_("Media"),
+  N_("Multimedia Libraries"),
   N_("Networking"),
   N_("Office"),
+  N_("Office Tools"),
   N_("Other Languages"),
   N_("Other Peripherals"),
   N_("PHP"),
   N_("Packaging"),
+  N_("Panels and Applets"),
   N_("Perl"),
   N_("Plug-ins and Run-times"),
   N_("Ports"),
   N_("Printing"),
   N_("Python"),
+  N_("Releases"),
   N_("Ruby"),
   N_("Scripts"),
   N_("Security"),
@@ -85,7 +92,9 @@ l10n_categories = [
   N_("System"),
   N_("System Utilities"),
   N_("Text Tools"),
+  N_("Theming"),
   N_("Trusted"),
+  N_("Trusted Extensions"),
   N_("Universal Access"),
   N_("Virtualization"),
   N_("Window Managers"),

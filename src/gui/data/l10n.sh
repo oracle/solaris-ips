@@ -19,12 +19,12 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
-# This script generates l10n.py from opensolaris.org
-CATEGORY_FILE=opensolaris.org
+# This script generates l10n.py from opensolaris.org.sections
+CATEGORY_FILE=opensolaris.org.sections
 OUTPUT_FILE=l10n.py
 LANG=C
 
@@ -42,7 +42,7 @@ l10n_categories = [" \
 >> $OUTPUT_FILE
 
 cat $CATEGORY_FILE | grep "^category[ ]*=" |\
-  sed -e "s|category[ ]*=[ ]*\(.*\)|\1|" | sort | uniq |\
+  sed -e "s|category[ ]*=[ ]*\(.*\)|\1|" | tr "," "\n" | sort | uniq |\
   awk '{printf ("  N_(\"%s\"),\n", $0)}' \
 >> $OUTPUT_FILE
 
