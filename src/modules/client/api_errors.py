@@ -25,6 +25,7 @@
 # Use is subject to license terms.
 #
 
+import httplib
 import os
 import socket
 import urllib2
@@ -466,24 +467,43 @@ class ProblematicSearchServers(SearchException):
         def __str__(self):
                 s = _("Some servers failed to respond appropriately:\n")
                 for pub, err in self.failed_servers:
+                        # The messages and structure for these error
+                        # messages was often lifted from retrieve.py.
                         if isinstance(err, urllib2.HTTPError):
-                                s += _("    %(o)s: %(msg)s (%(code)d)\n" % \
-                                    { 'o':pub["origin"], 'msg':err.msg,
-                                    'code':err.code })
+                                s += _("    %(o)s: %(msg)s (%(code)d)\n") % \
+                                    { "o": pub["origin"], "msg": err.msg,
+                                    "code": err.code }
                         elif isinstance(err, urllib2.URLError):
                                 if isinstance(err.args[0], socket.timeout):
-                                        s += _("    %(o)s: %(to)s\n" % \
-                                            { 'o':pub["origin"],
-                                            'to':"timeout" })
+                                        s += _("    %s: timeout\n") % \
+                                            (pub["origin"],)
                                 else:
-                                        s += _("    %(o)s: %(other)s\n" % \
-                                            { 'o':pub["origin"],
-                                            'other':err.args[0][1] })
+                                        s += _("    %(o)s: %(other)s\n") % \
+                                            { "o": pub["origin"],
+                                            "other": err.args[0][1] }
+                        elif isinstance(err, httplib.BadStatusLine):
+                                s += _("    %(o)s: Unable to read status of "
+                                    "HTTP response:%(l)s\n        This is "
+                                    "most likely not a pkg(5) depot.  Please "
+                                    "check the URL and the \n        port "
+                                    "number.") % \
+                                    { "o": pub["origin"], "l": err.line}
+                        elif isinstance(err,
+                            (httplib.IncompleteRead, ValueError)):
+                                s += _("    %s: Incomplete read from "
+                                       "host") % pub["origin"]
                         elif isinstance(err, RuntimeError):
-                                s += _("    %(o)s: %(msg)s\n" % \
-                                    { 'o':pub["origin"], 'msg':str(err)})
+                                s += _("    %(o)s: %(msg)s\n") % \
+                                    { "o": pub["origin"], "msg": err}
+                        elif isinstance(err, socket.timeout):
+                                s += _("    %s: Socket timeout") % pub["origin"]
+                        elif isinstance(err, socket.error):
+                                s += _("    %(o)s: Socket error, reason: "
+                                    "%(msg)s") % { "o": pub["origin"],
+                                    "msg": err }
                         else:
-                                s += "FOO" + str(err)
+                                s += _("    %(o)s: %(msg)s") % \
+                                    { "o": pub["origin"], "msg": err}
                 for pub in self.invalid_servers:
                         s += _("%s appears not to be a valid package depot.\n" \
                             % pub['origin'])

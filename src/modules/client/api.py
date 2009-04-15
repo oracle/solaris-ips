@@ -1050,11 +1050,16 @@ class ImageInterface(object):
                                     e.code != httplib.NO_CONTENT:
                                         failed.append((pub, e))
                                 continue
-                        except urllib2.URLError, e:
+                        except (urllib2.URLError, httplib.BadStatusLine,
+                            httplib.IncompleteRead, RuntimeError,
+                            ValueError), e:
                                 failed.append((pub, e))
                                 continue
-                        except RuntimeError, e:
-                                failed.append((pub, e))
+                        except KeyboardInterrupt:
+                                raise
+                        except Exception, e:
+                                failed.append((pub, "Could not perform search."
+                                    "\nException: str:%s repr:%r" % (e, e)))
                                 continue
 
                         try:
@@ -1069,10 +1074,9 @@ class ImageInterface(object):
                                         for line in res:
                                                 yield self.__parse_v_1(line,
                                                     pub, v)
-                        except socket.timeout, e:
-                                failed.append((pub, e))
-                                continue
-                        except api_errors.ServerReturnError, e:
+                        except (socket.timeout, socket.error, ValueError,
+                            httplib.IncompleteRead,
+                            api_errors.ServerReturnError), e:
                                 failed.append((pub, e))
                                 continue
                 if failed or invalid:
