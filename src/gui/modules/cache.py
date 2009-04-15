@@ -30,7 +30,7 @@ import pkg.catalog as catalog
 import pkg.gui.enumerations as enumerations
 import pkg.gui.misc as gui_misc
 
-CACHE_VERSION=5
+CACHE_VERSION=6
 INDEX_HASH_LENGTH=41
 
 class CacheListStores:
@@ -79,17 +79,11 @@ class CacheListStores:
 
         def __get_index_hash(self):
                 img = self.api_o.img
-                index_path = "%s/index/full_fmri_list.hash" % (img.imgdir)
-                index_hash = None
+                index_path = "%s/state/installed" % (img.imgdir)
                 try:
-                        file_handler = open(index_path)
-                        for line in file_handler:
-                                if len(line) == INDEX_HASH_LENGTH:
-                                        index_hash = line
-                        file_handler.close()
+                        return os.path.getmtime(index_path)
                 except (OSError, IOError):
-                        return index_hash
-                return index_hash
+                        return None
 
         def __get_publisher_timestamp(self, publisher):
                 dt = self.api_o.get_publisher_last_update_time(prefix=publisher)
