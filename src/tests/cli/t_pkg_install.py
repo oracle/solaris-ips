@@ -1283,6 +1283,26 @@ adm:NP:6445::::::
                     close
                 """
 
+                self.badhardlink1 = """
+                    open badhardlink1@1.0,5.11-0
+                    add hardlink path=foo target=bar
+                    close
+                """
+
+                self.badhardlink2 = """
+                    open badhardlink2@1.0,5.11-0
+                    add file """ + self.testdata_dir + """/cat mode=0555 owner=root group=bin path=/etc/motd
+                    add hardlink path=foo target=/etc/motd
+                    close
+                """
+
+                self.dirshouldbelink = """
+                    open dirshouldbelink@1.0,5.11-0
+                    add dir mode=0755 owner=root group=bin path=foo
+                    add link path=foo target=bar
+                    close
+                """
+
                 for f in self.misc_files:
                         filename = os.path.join(self.testdata_dir, f)
                         file_handle = open(filename, 'wb')
@@ -1684,6 +1704,33 @@ adm:NP:6445::::::
                                 os.utime(fname, (0, 0))
                                 self.pkg("uninstall %s" % pname)
                                 self.pkg("verify")
+
+        def test_bad_hardlinks(self):
+                """A couple of bogus hard link target tests."""
+
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.badhardlink1)
+                self.pkgsend_bulk(durl, self.badhardlink2)
+                self.image_create(durl)
+
+                # A package which tries to install a hard link to a target that
+                # doesn't exist shouldn't stack trace, but exit sanely.
+                self.pkg("install badhardlink1", exit=1)
+
+                # A package which tries to install a hard link to a target
+                # specified as an absolute path should install that link
+                # relative to the image root.
+                self.pkg("install badhardlink2")
+                ino1 = os.stat(os.path.join(self.get_img_path(), "foo")).st_ino
+                ino2 = os.stat(os.path.join(self.get_img_path(), "etc/motd")).st_ino
+                self.assert_(ino1 == ino2)
+
+        def test_bad_links(self):
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.dirshouldbelink)
+                self.image_create(durl)
+
+                self.pkg("install dirshouldbelink", exit=1)
 
 class TestDependencies(testutils.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)

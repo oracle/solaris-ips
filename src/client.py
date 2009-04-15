@@ -795,6 +795,8 @@ def install(img_dir, args):
                 ret_code = 1
         except KeyboardInterrupt:
                 raise
+        except api_errors.ActionExecutionError:
+                ret_code = 1
         except Exception, e:
                 error(_("An unexpected error happened during " \
                     "installation: %s") % e)

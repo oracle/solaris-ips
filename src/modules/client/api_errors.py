@@ -25,6 +25,7 @@
 # Use is subject to license terms.
 #
 
+import os
 import socket
 import urllib2
 import urlparse
@@ -174,6 +175,43 @@ Try relaxing the pattern, refreshing and/or examining the catalogs:""")
                         res += [ a % (self.badarch[2])]
 
                 return '\n'.join(res)
+
+class ActionExecutionError(ApiException):
+        """An error was encountered executing an action.
+
+        In particular, this exception indicates that something went wrong in the
+        application (or unapplication) of the action to the system, not an error
+        in the pkg(5) code.
+
+        The 'msg' argument can provide a more specific message than what would
+        be returned from, and 'ignoreerrno' can be set to True to indicate that
+        the sterror() text is misleading, and shouldn't be displayed.
+        """
+
+        def __init__(self, action, exception, msg=None, ignoreerrno=False):
+                self.action = action
+                self.exception = exception
+                self.msg = msg
+                self.ignoreerrno = ignoreerrno
+
+        def __str__(self):
+                errno = ""
+                if not self.ignoreerrno and hasattr(self.exception, "errno"):
+                        errno = "[errno %d: %s]" % (self.exception.errno,
+                            os.strerror(self.exception.errno))
+
+                msg = self.msg or ""
+
+                # Fall back on the wrapped exception if we don't have anything
+                # useful.
+                if not errno and not msg:
+                        return str(self.exception)
+
+                if errno and msg:
+                        return "%s: %s" % (errno, msg)
+
+                # If we only have one of the two, no need for the colon.
+                return "%s%s" % (errno, msg)
 
 class CatalogRefreshException(ApiException):
         def __init__(self, failed, total, succeeded, message=None):

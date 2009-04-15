@@ -336,6 +336,8 @@ cli.t_pkg_install.py TestMultipleDepots.test_yyy_install_after_publisher_removal
 cli.t_pkg_install.py TestMultipleDepots.test_zzz_uninstall_after_preferred_publisher_change|pass
 cli.t_pkg_install.py TestMultipleDepots.test_zzz_uninstall_after_preferred_publisher_removal|pass
 cli.t_pkg_install.py TestMultipleDepots.test_zzz_uninstall_after_publisher_removal|pass
+cli.t_pkg_install.py TestPkgInstallActions.test_bad_hardlinks|pass
+cli.t_pkg_install.py TestPkgInstallActions.test_bad_links|pass
 cli.t_pkg_install.py TestPkgInstallActions.test_basics_0|pass
 cli.t_pkg_install.py TestPkgInstallActions.test_bug_3222|pass
 cli.t_pkg_install.py TestPkgInstallActions.test_devlink|pass

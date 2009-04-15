@@ -30,8 +30,11 @@
 This module contains the HardLinkAction class, which represents a hardlink-type
 packaging object."""
 
+import errno
 import os
 from stat import *
+
+from pkg.client.api_errors import ActionExecutionError
 import link
 
 class HardLinkAction(link.LinkAction):
@@ -74,10 +77,17 @@ class HardLinkAction(link.LinkAction):
                 elif os.path.exists(path):
                         os.unlink(path)
 
-                target = os.path.normpath(os.path.sep.join(
+                fulltarget = os.path.normpath(os.path.sep.join(
                     (pkgplan.image.get_root(), target)))
 
-                os.link(target, path)
+                try:
+                        os.link(fulltarget, path)
+                except EnvironmentError, e:
+                        if e.errno == errno.ENOENT:
+                                raise ActionExecutionError(self, e,
+                                    "missing hard link target '%s'" % target)
+                        else:
+                                raise ActionExecutionError(self, e)
 
         def verify(self, img, **args):
                 path = self.attrs["path"]

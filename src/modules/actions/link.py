@@ -35,6 +35,7 @@ import errno
 
 import generic
 import pkg.actions
+from pkg.client.api_errors import ActionExecutionError
 
 class LinkAction(generic.Action):
         """Class representing a link-type packaging object."""
@@ -54,8 +55,6 @@ class LinkAction(generic.Action):
 
         def install(self, pkgplan, orig):
                 """Client-side method that installs a link."""
-                # XXX The exists-unlink-symlink path appears to be as safe as it
-                # gets with the current symlink(2) interface.
 
                 path = self.attrs["path"]
                 target = self.attrs["target"]
@@ -66,8 +65,23 @@ class LinkAction(generic.Action):
                 if not os.path.exists(os.path.dirname(path)):
                         self.makedirs(os.path.dirname(path), mode=0755)
 
+                # XXX The exists-unlink-symlink path appears to be as safe as it
+                # gets to modify a link with the current symlink(2) interface.
                 if os.path.lexists(path):
-                        os.unlink(path)
+                        try:
+                                os.unlink(path)
+                        except EnvironmentError, e:
+                                if e.errno == errno.EPERM:
+                                        # Unlinking a directory gives EPERM,
+                                        # which is confusing, so ignore errno
+                                        # and give a good message.
+                                        path = self.attrs["path"]
+                                        raise ActionExecutionError(self, e,
+                                            "attempted to remove link '%s' but "
+                                            "found a directory" % path,
+                                            ignoreerrno=True)
+                                else:
+                                        raise ActionExecutionError(self, e)
 
                 os.symlink(target, path)
 

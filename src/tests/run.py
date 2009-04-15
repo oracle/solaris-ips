@@ -172,6 +172,13 @@ if __name__ == "__main__":
         if not pkg.portable.is_admin():
                 print >> sys.stderr, "WARNING: You don't seem to be root." \
                     " Some tests may fail."
+        else:
+                # One of the tests actually calls unlink() on a directory, and
+                # expects it to fail as it does on ZFS, but on tmpfs it scarily
+                # succeeds.
+                subprocess.call([
+                    "/usr/bin/ppriv", "-s", "A-sys_linkdir", str(os.getpid())
+                ])
 
         api_suite = find_tests("api", onlyval)
         cli_suite = find_tests("cli", onlyval)
