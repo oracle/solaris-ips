@@ -105,10 +105,19 @@ class Manifest(object):
                 destination actions.  The first list contains the pairs
                 representing additions, the second list contains the pairs
                 representing updates, and the third list contains the pairs
-                represnting removals.  All three lists are in the order in which
-                they should be executed."""
+                representing removals.  All three lists are in the order in
+                which they should be executed."""
                 # XXX Do we need to find some way to assert that the keys are
                 # all unique?
+
+                if isinstance(origin, EmptyCachedManifest):
+                        # No origin was provided, so nothing has been changed or
+                        # removed; only added.  In addition, this doesn't need
+                        # to be sorted since the caller likely already does
+                        # (such as pkgplan/imageplan).
+                        return (
+                            [(None, a) for a in self.gen_actions(self_exclude)],
+                            [], [])
 
                 sdict = dict(
                     ((a.name, a.attrs.get(a.key_attr, id(a))), a)
@@ -795,6 +804,21 @@ class EmptyCachedManifest(Manifest):
         too ugly..."""
         def __init__(self):
                 Manifest.__init__(self)
+
+        def difference(self, origin, origin_exclude=EmptyI,
+            self_exclude=EmptyI):
+                """Return three lists of action pairs representing origin and
+                destination actions.  The first list contains the pairs
+                representing additions, the second list contains the pairs
+                representing updates, and the third list contains the pairs
+                representing removals.  All three lists are in the order in
+                which they should be executed."""
+
+                # The difference for this case is simply everything in the
+                # origin has been removed.  This is an optimization for
+                # uninstall.
+                return ([], [],
+                    [(a, None) for a in origin.gen_actions(self_exclude)])
 
         def get_directories(self, excludes):
                 return []

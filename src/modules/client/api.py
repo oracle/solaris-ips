@@ -704,7 +704,7 @@ class ImageInterface(object):
                         for p in fmri_strings:
                                 try:
                                         matches = list(self.img.inventory([ p ],
-                                            all_known = True))
+                                            all_known=True, ordered=False))
                                 except api_errors.InventoryException, e:
                                         assert(len(e.notfound) == 1 or \
                                             len(e.illegal) == 1)

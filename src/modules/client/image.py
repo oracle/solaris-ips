@@ -2036,7 +2036,7 @@ class Image(object):
                 ]
 
         def __inventory(self, patterns=None, all_known=False, matcher=None,
-            constraint=pkg.version.CONSTRAINT_AUTO):
+            constraint=pkg.version.CONSTRAINT_AUTO, ordered=True):
                 """Private method providing the back-end for inventory()."""
 
                 if not matcher:
@@ -2080,7 +2080,12 @@ class Image(object):
 
                 # XXX Perhaps we shouldn't sort here, but in the caller, to save
                 # memory?
-                for name in sorted(self._catalog.keys()):
+                if ordered:
+                        entries = sorted(self._catalog.keys())
+                else:
+                        entries = self._catalog.keys()
+
+                for name in entries:
                         # Eliminate all patterns not matching "name".  If there
                         # are no patterns left, go on to the next name, but only
                         # if there were any to start with.
@@ -2225,7 +2230,12 @@ class Image(object):
 
                 The "constraint" parameter defines how a version specified in a
                 pattern matches a version in the catalog.  By default, a natural
-                "subsetting" constraint is used."""
+                "subsetting" constraint is used.
+
+                The "ordered" parameter is a boolean value that indicates
+                whether the returned list should first be sorted by name before
+                being sorted by version (descending).  By default, this is True.
+                """
 
                 # "preferred" and "first_only" are private arguments that are
                 # currently only used in evaluate_fmri(), but could be made more
@@ -2476,7 +2486,8 @@ class Image(object):
 
                         try:
                                 matches = list(self.inventory([conp],
-                                    all_known=True, matcher=matcher))
+                                    all_known=True, matcher=matcher,
+                                    ordered=False))
                         except api_errors.InventoryException, e:
                                 assert(not (e.notfound and e.illegal))
                                 assert(e.notfound or e.illegal)
@@ -2572,13 +2583,15 @@ class Image(object):
                 for ppat in fmri_list:
                         progresstracker.evaluate_progress()
                         try:
-                                matches = list(self.inventory([ppat]))
+                                matches = list(self.inventory([ppat],
+                                    ordered=False))
                         except api_errors.InventoryException, e:
                                 assert(not (e.notfound and e.illegal))
                                 if e.notfound:
                                         try:
                                                 list(self.inventory([ppat],
-                                                    all_known=True))
+                                                    all_known=True,
+                                                    ordered=False))
                                                 missing_matches.append(ppat)
                                         except api_errors.InventoryException:
                                                 unfound_fmris.append(ppat)
@@ -2693,7 +2706,7 @@ class Image(object):
                 notfound = []
                 illegals = []
                 try:
-                        for m in self.inventory(args):
+                        for m in self.inventory(args, ordered=False):
                                 found.append(m[0])
                 except api_errors.InventoryException, e:
                         illegals = e.illegal

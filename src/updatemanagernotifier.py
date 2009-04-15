@@ -273,7 +273,8 @@ class UpdateManagerNotifier:
                 image_obj = self.__get_image_obj_from_directory(image_directory)
                 
                 pkg_upgradeable = None
-                for pkg, state in image_obj.inventory(all_known = True):
+                for pkg, state in image_obj.inventory(all_known=True,
+                    ordered=False):
                         if state["upgradable"] and state["state"] == "installed":
                                 pkg_upgradeable = pkg
                                 break

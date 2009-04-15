@@ -149,15 +149,20 @@ class PkgPlan(object):
                 # do anything unless no pkgs reference that directory in
                 # new state....
 
-                absent_dirs = \
-                    expanddirs(
-                    self.__origin_mfst.get_directories(old_excludes)) - \
-                    expanddirs(
-                    self.__destination_mfst.get_directories(new_excludes))
+                # Retrieving origin_dirs first and then checking it for any
+                # entries allows avoiding an unnecessary expanddirs for the
+                # destination manifest when it isn't needed.
+                origin_dirs = expanddirs(self.__origin_mfst.get_directories(
+                    old_excludes))
 
-                for a in absent_dirs:
-                        self.actions[2].append(
-			    [directory.DirectoryAction(path=a), None])
+                if origin_dirs:
+                        absent_dirs = origin_dirs - \
+                            expanddirs(self.__destination_mfst.get_directories(
+                            new_excludes))
+
+                        for a in absent_dirs:
+                                self.actions[2].append(
+                                    [directory.DirectoryAction(path=a), None])
 
                 # Stash information needed by legacy actions.
                 self.__legacy_info["description"] = \

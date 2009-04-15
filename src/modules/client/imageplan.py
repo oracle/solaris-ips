@@ -332,7 +332,7 @@ class ImagePlan(object):
                         # specified in dependencies are treated as exact.
                         cf = self.image.inventory([ cf ], all_known=True,
                             matcher=fmri.exact_name_match, preferred=True,
-                            first_only=True).next()[0]
+                            first_only=True, ordered=False).next()[0]
 
                         # XXX LOG "adding dependency %s" % pfmri
 
