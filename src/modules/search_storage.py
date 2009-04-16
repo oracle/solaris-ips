@@ -43,6 +43,7 @@ FULL_FMRI_FILE = 'full_fmri_list'
 MAIN_FILE = 'main_dict.ascii.v2'
 BYTE_OFFSET_FILE = 'token_byte_offset.v1'
 FULL_FMRI_HASH_FILE = 'full_fmri_list.hash'
+FMRI_OFFSETS_FILE = 'fmri_offsets.v1'
 
 def consistent_open(data_list, directory, timeout = 1):
         """Opens all data holders in data_list and ensures that the
@@ -246,9 +247,11 @@ class IndexStoreMainDict(IndexStoreBase):
         def __parse_main_dict_line_help(split_chars, unquote_list, line):
                 if not split_chars:
                         if not line:
-                                raise se.EmptyMainDictLine(split_chars, unquote_list)
+                                raise search_errors.EmptyMainDictLine(
+                                    split_chars, unquote_list)
                         elif not unquote_list:
-                                raise se.EmptyUnquoteList(split_chars, line)
+                                raise search_errors.EmptyUnquoteList(
+                                    split_chars, line)
                         else:
                                 assert len(unquote_list) == 1
                                 if unquote_list[0]:
@@ -394,12 +397,14 @@ class IndexStoreListDict(IndexStoreBase):
         line in the file format and '' in the internal list.
         """
 
-        def __init__(self, file_name, build_function=None):
+        def __init__(self, file_name, build_function=lambda x: x,
+            decode_function=lambda x: x):
                 IndexStoreBase.__init__(self, file_name)
                 self._list = []
                 self._dict = {}
                 self._next_id = 0
                 self._list_of_empties = []
+                self._decode_func = decode_function
                 self._build_func = build_function
                 self._line_cnt = 0
 
@@ -491,9 +496,7 @@ class IndexStoreListDict(IndexStoreBase):
                 """Passes self._list to the parent class to write to a file.
                 """
                 IndexStoreBase._protected_write_dict_file(self, path,
-                                                          version_num,
-                                                          self._list)
-
+                    version_num, (self._decode_func(l) for l in self._list))
         def read_dict_file(self):
                 """Reads in a dictionary previously stored using the above
                 call
@@ -504,12 +507,10 @@ class IndexStoreListDict(IndexStoreBase):
                         self._list = []
                         for i, line in enumerate(self._file_handle):
                                 # A blank line means that id can be reused.
-                                tmp = line.rstrip('\n')
+                                tmp = self._build_func(line.rstrip('\n'))
                                 if line == '\n':
                                         self._list_of_empties.append(i)
                                 else:
-                                        if self._build_func:
-                                                tmp = self._build_func(tmp)
                                         self._dict[tmp] = i
                                 self._list.append(tmp)
                                 self._line_cnt = i + 1
@@ -761,3 +762,115 @@ class IndexStoreSet(IndexStoreBase):
                 """Returns the number of entries removed during a second phase
                 of indexing."""
                 return len(self._set)
+
+
+class InvertedDict(IndexStoreBase):
+        """Class used to store and process fmri to offset mappings.  It does
+        delta compression and deduplication of shared offset sets when writing
+        to a file."""
+
+        def __init__(self, file_name, p_id_trans):
+                """file_name is the name of the file to write to or read from.
+                p_id_trans is an object which has a get entity method which,
+                when given a package id number returns the PkgFmri object
+                for that id number."""
+                
+                IndexStoreBase.__init__(self, file_name)
+                self._p_id_trans = p_id_trans
+                self._dict = {}
+                self._fmri_offsets = {}
+
+        def __copy__(self):
+                return self.__class__(self._name, self._p_id_trans)
+
+        def add_pair(self, p_id, offset):
+                """Adds a package id number and an associated offset to the
+                existing dictionary."""
+
+                try:
+                        self._fmri_offsets[p_id].append(offset)
+                except KeyError:
+                        self._fmri_offsets[p_id] = [offset]
+                
+        def invert_id_to_offsets_dict(self):
+                """Does delta encoding of offsets to reduce space by only
+                storing the difference between the current offset and the
+                previous offset.  It also performs deduplication so that all
+                packages with the same set of offsets share a common bucket."""
+
+                inv = {}
+                for p_id in self._fmri_offsets.keys():
+                        old_o = 0
+                        bucket = []
+                        for o in sorted(set(self._fmri_offsets[p_id])):
+                                bucket.append(o - old_o)
+                                old_o = o
+                        h = " ".join([str(o) for o in bucket])
+                        del self._fmri_offsets[p_id]
+                        if h not in inv:
+                                inv[h] = []
+                        inv[h].append(p_id)
+                return inv
+
+        @staticmethod
+        def __make_line(offset_str, p_ids, trans):
+                """For a given offset string, a list of package id numbers,
+                and a translator from package id numbers to PkgFmris, returns
+                the string which represents that information. Its format is
+                space separated package fmris, followed by a !, followed by
+                space separated offsets which have had delta compression
+                performed."""
+
+                return " ".join([
+                    trans.get_entity(p_id).get_fmri(anarchy=True,
+                        include_scheme=False)
+                    for p_id in p_ids
+                    ]) + "!" + offset_str
+                        
+        def write_dict_file(self, path, version_num):
+                """Write the mapping of package fmris to offset sets out
+                to the file."""
+
+                inv = self.invert_id_to_offsets_dict()
+                IndexStoreBase._protected_write_dict_file(self, path,
+                    version_num, (
+                        self.__make_line(o, inv[o], self._p_id_trans)
+                        for o in inv
+                    ))
+
+        def read_dict_file(self):
+                """Read a file written by the above function and store the
+                information in a dictionary."""
+
+                assert self._file_handle
+                if self.should_reread():
+                        for l in self._file_handle:
+                                fmris, offs = l.split("!")
+                                self._dict[fmris] = offs
+
+        @staticmethod
+        def de_delta(offs):
+                """For a list of strings of offsets, undo the delta compression
+                that has been performed."""
+
+                old_o = 0
+                ret = []
+                for o in offs:
+                        o = int(o) + old_o
+                        ret.append(o)
+                        old_o = o
+                return ret
+                        
+        def get_offsets(self, match_func):
+                """For a given function which returns true if it matches the
+                desired fmri, return the offsets which are associated with the
+                fmris which match."""
+
+                offs = []
+                for fmris in self._dict.keys():
+                        for p in fmris.split():
+                                if match_func(p):
+                                        offs.extend(self.de_delta(
+                                            self._dict[fmris].split()))
+                                        break
+                return set(offs)

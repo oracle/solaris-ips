@@ -81,7 +81,9 @@ class Indexer(object):
                         "fast_remove":
                             ss.IndexStoreSet(ss.FAST_REMOVE),
                         "manf":
-                            ss.IndexStoreListDict(ss.MANIFEST_LIST),
+                            ss.IndexStoreListDict(ss.MANIFEST_LIST,
+                                build_function=self.__build_fmri,
+                                decode_function=self.__decode_fmri),
                         "full_fmri": ss.IndexStoreSet(ss.FULL_FMRI_FILE),
                         "main_dict": ss.IndexStoreMainDict(ss.MAIN_FILE),
                         "token_byte_offset":
@@ -94,6 +96,12 @@ class Indexer(object):
                 self._data_full_fmri = self._data_dict["full_fmri"]
                 self._data_main_dict = self._data_dict["main_dict"]
                 self._data_token_offset = self._data_dict["token_byte_offset"]
+
+                # This is added to the dictionary after the others because it
+                # needs one of the other mappings as an input.
+                self._data_dict["fmri_offsets"] = \
+                    ss.InvertedDict(ss.FMRI_OFFSETS_FILE, self._data_manf)
+                self._data_fmri_offsets = self._data_dict["fmri_offsets"]
                 
                 self._index_dir = index_dir
                 self._tmp_dir = os.path.join(self._index_dir, "TMP")
@@ -116,6 +124,19 @@ class Indexer(object):
 
                 self.old_out_token = None
 
+        @staticmethod
+        def __decode_fmri(pfmri):
+                """Turn fmris into strings correctly while writing out
+                the fmri offsets file."""
+
+                return pfmri.get_fmri(anarchy=True, include_scheme=False)
+
+        @staticmethod
+        def __build_fmri(s):
+                """Build fmris while reading the fmri offset information."""
+
+                return fmri.PkgFmri(s)
+                
         @staticmethod
         def _build_version(vers):
                 """ Private method for building versions from a string. """
@@ -165,6 +186,7 @@ class Indexer(object):
                 files used to produce a sorted main_dict file."""
 
                 self._sort_fh.close()
+                self._sort_file_bytes = 0
                 tmp_file_name = os.path.join(self._tmp_dir,
                     SORT_FILE_PREFIX + str(self._sort_file_num - 1))
                 tmp_fh = file(tmp_file_name, "rb", buffering=PKG_FILE_BUFSIZ)
@@ -180,7 +202,11 @@ class Indexer(object):
                 tmp_fh.close()
 
         def _add_terms(self, pfmri, new_dict):
-                pfmri = pfmri.get_fmri(anarchy=True, include_scheme=False)
+                """Adds tokens and the actions generating them to the current
+                temporary sort file.  pfmri is the fmri the information is
+                coming from.  new_dict maps tokens to the information about
+                the action."""
+
                 p_id = self._data_manf.get_id_and_add(pfmri)
                 pfmri = p_id
                 
@@ -190,13 +216,15 @@ class Indexer(object):
                             list(new_dict[tok_tup]))])])])]
                         s = ss.IndexStoreMainDict.transform_main_dict_line(tok,
                             lst)
-                        if len(s) + self._sort_fh.tell() >= SORT_FILE_MAX_SIZE:
+                        if len(s) + self._sort_file_bytes >= SORT_FILE_MAX_SIZE:
                                 self.__close_sort_fh()
-                                self._sort_fh = file(os.path.join(self._tmp_dir,
+                                self._sort_fh = open(os.path.join(self._tmp_dir,
                                     SORT_FILE_PREFIX +
-                                    str(self._sort_file_num)), "wb")
+                                    str(self._sort_file_num)), "wb",
+                                    buffering=PKG_FILE_BUFSIZ)
                                 self._sort_file_num += 1
                         self._sort_fh.write(s)
+                        self._sort_file_bytes += len(s)
                 return
 
         def _fast_update(self, filters_pkgplan_list):
@@ -272,42 +300,27 @@ class Indexer(object):
                             "old_out_token:%s" % (token, self.old_out_token))
                 self.old_out_token = token
 
-                cur_location = str(file_handle.tell())
+                cur_location_int = file_handle.tell()
+                cur_location = str(cur_location_int)
                 self._data_token_offset.write_entity(token, cur_location)
 
                 for at, st_list in fv_fmri_pos_list_list:
                         if at not in self.at_fh:
                                 self.at_fh[at] = file(os.path.join(out_dir,
                                     "__at_" + at), "wb")
-                        self.at_fh[at].write(cur_location)
-                        self.at_fh[at].write("\n")
+                        self.at_fh[at].write(cur_location + "\n")
                         for st, fv_list in st_list:
                                 if st not in self.st_fh:
                                         self.st_fh[st] = \
                                             file(os.path.join(out_dir,
                                             "__st_" + st), "wb")
-                                self.st_fh[st].write(cur_location)
-                                self.st_fh[st].write("\n")
+                                self.st_fh[st].write(cur_location + "\n")
                                 for fv, p_list in fv_list:
                                         for p_id, m_off_set in p_list:
                                                 p_id = int(p_id)
-                                                pfmri = self._data_manf.get_entity(p_id)
-                                                pfmri = fmri.PkgFmri(pfmri)
-                                                dir = os.path.join(out_dir,
-                                                    "pkg",
-                                                    pfmri.get_pkg_stem(
-                                                    anarchy=True,
-                                                    include_scheme=False))
-                                                if not os.path.exists(dir):
-                                                        os.makedirs(dir)
-                                                path = os.path.join(dir,
-                                                    str(pfmri.version))
-                                                fh = open(path, "ab")
-                                                fh.write(cur_location)
-                                                fh.write("\n")
-                                                fh.close()
+                                                self._data_fmri_offsets.add_pair(
+                                                    p_id, cur_location_int)
 
-                
                 self._data_main_dict.write_main_dict_line(file_handle,
                     token, fv_fmri_pos_list_list)
 
@@ -339,7 +352,7 @@ class Indexer(object):
                                         fh.next())
                         except StopIteration:
                                 return None
-                
+
                 fh_dict = dict([
                     (i, open(os.path.join(self._tmp_dir,
                     SORT_FILE_PREFIX + str(i)), "rb", 
@@ -550,7 +563,6 @@ class Indexer(object):
                         # running. In either case, throw an exception.
                         try:
                                 os.makedirs(os.path.join(tmp_index_dir))
-                                os.makedirs(os.path.join(tmp_index_dir, "pkg"))
                         except OSError, e:
                                 if e.errno == errno.EEXIST:
                                         raise search_errors.PartialIndexingException(tmp_index_dir)
@@ -686,8 +698,8 @@ class Indexer(object):
                 absent = False
                 present = False
 
-                if not os.path.exists(os.path.join(self._index_dir, "pkg")):
-                        os.makedirs(os.path.join(self._index_dir, "pkg"))
+                if not os.path.exists(self._index_dir):
+                        os.makedirs(self._index_dir)
                 
                 for d in self._data_dict.values():
                         file_path = os.path.join(self._index_dir,
@@ -741,21 +753,22 @@ class Indexer(object):
 
                 for d in self._data_dict.values():
                         if fast_update and (d == self._data_main_dict or
-                            d == self._data_token_offset):
+                            d == self._data_token_offset or
+                            d == self._data_fmri_offsets):
                                 continue
                         else:
                                 shutil.move(os.path.join(source_dir,
                                     d.get_file_name()),
                                     os.path.join(dest_dir, d.get_file_name()))
                 if not fast_update:
+                        # Remove legacy index/pkg/ directory which is obsoleted
+                        # by the fmri_offsets.v1 file.
                         try:
                                 shutil.rmtree(os.path.join(dest_dir, "pkg"))
-                        except EnvironmentError, e:
-                                if e.errno not in (errno.ENOENT, errno.ESRCH):
-                                        raise
-
-                        shutil.move(os.path.join(source_dir, "pkg"),
-                            os.path.join(dest_dir, "pkg"))
+                        except KeyboardInterrupt:
+                                raise
+                        except Exception:
+                                pass
 
                         for at, fh in self.at_fh.items():
                                 fh.close()

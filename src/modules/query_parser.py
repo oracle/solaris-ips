@@ -575,10 +575,12 @@ class TermQuery(object):
         fmris = None
         
         _global_data_dict = {
-            'manf':
+            "manf":
                     ss.IndexStoreDict(ss.MANIFEST_LIST),
-            'token_byte_offset':
+            "token_byte_offset":
                     ss.IndexStoreDictMutable(ss.BYTE_OFFSET_FILE),
+            "fmri_offsets":
+                    ss.InvertedDict(ss.FMRI_OFFSETS_FILE, None)
         }
         
         def __init__(self, term):
@@ -624,10 +626,28 @@ class TermQuery(object):
                 try:
                         self._data_main_dict = \
                             ss.IndexStoreMainDict(ss.MAIN_FILE)
+                        if "fmri_offsets" not in TermQuery._global_data_dict:
+                                TermQuery._global_data_dict["fmri_offsets"] = \
+                                    ss.InvertedDict(ss.FMRI_OFFSETS_FILE, None)
                         tmp = TermQuery._global_data_dict.values()
                         tmp.append(self._data_main_dict)
-                        ret = ss.consistent_open(tmp, self._dir_path,
-                            self._file_timeout_secs)
+                        try:
+                                # Try to open the index files assuming they
+                                # were made after the conversion to using the
+                                # fmri_offsets.v1 file.
+                                ret = ss.consistent_open(tmp, self._dir_path,
+                                    self._file_timeout_secs)
+                        except search_errors.InconsistentIndexException:
+                                # If opening the index fails, try falling
+                                # back to the index prior to the conversion
+                                # to using the fmri_offsets.v1 file.
+                                del TermQuery._global_data_dict[
+                                    "fmri_offsets"]
+                                tmp = TermQuery._global_data_dict.values()
+                                tmp.append(self._data_main_dict)
+                                ret = ss.consistent_open(tmp, self._dir_path,
+                                    self._file_timeout_secs)
+
                         if ret == None:
                                 raise search_errors.NoIndexException(
                                     self._dir_path)
@@ -664,11 +684,16 @@ class TermQuery(object):
                         finally:
                                 for d in TermQuery._global_data_dict.values():
                                         d.close_file_handle()
-                        self._data_manf = TermQuery._global_data_dict['manf']
+                        self._data_manf = TermQuery._global_data_dict["manf"]
 
                         self._data_token_offset = \
-                            TermQuery._global_data_dict['token_byte_offset']
+                            TermQuery._global_data_dict["token_byte_offset"]
 
+                        try:
+                                self._data_fmri_offsets = \
+                                    TermQuery._global_data_dict["fmri_offsets"]
+                        except KeyError:
+                                self._data_fmri_offsets = None
                 finally:
                         TermQuery.dict_lock.release()
 
@@ -720,15 +745,43 @@ class TermQuery(object):
                         md_fh.seek(o)
                         yield md_fh.readline()
 
+        def _read_pkg_dirs(self, fmris):
+                """Legacy function used to search indexes which have a pkg
+                directory with fmri offset information instead of the
+                fmri_offsets.v1 file."""
+
+                if not os.path.isdir(os.path.join(self._dir_path, "pkg")):
+                        raise search_errors.InconsistentIndexException(
+                            self._dir_path)
+
+                if TermQuery.fmris is None and not self.pkg_name_wildcard:
+                        TermQuery.fmris = list(fmris())
+                pkg_offsets = set()
+                for matching_pfmri in (
+                    p
+                    for p in TermQuery.fmris
+                    if self.pkg_name_match(
+                        p.get_fmri(anarchy=True, include_scheme=False))
+                ):
+                        try:
+                                fh = open(os.path.join(
+                                    self._dir_path, "pkg",
+                                    matching_pfmri.get_name(),
+                                    str(matching_pfmri.version)), "rb")
+                        except EnvironmentError, e:
+                                if e.errno != errno.ENOENT:
+                                        raise
+                                continue
+                        for l in fh:
+                                pkg_offsets.add(int(l))
+                return pkg_offsets
+
         def _search_internal(self, fmris):
                 """Searches the indexes in dir_path for any matches of query
                 and the results in self.res. The method assumes the dictionaries
                 have already been loaded and read appropriately.
                 """
                 assert self._data_main_dict.get_file_handle() is not None
-
-                if TermQuery.fmris is None and not self.pkg_name_wildcard:
-                        TermQuery.fmris = list(fmris())
 
                 glob = self._glob
                 term = self._term
@@ -750,29 +803,16 @@ class TermQuery(object):
                         offsets = set([
                             self._data_token_offset.get_id(term)])
                 if not self.pkg_name_wildcard:
-                        pkg_offsets = set()
-                        for matching_pfmri in (
-                            p
-                            for p in TermQuery.fmris
-                            if self.pkg_name_match(
-                                p.get_fmri(anarchy=True, include_scheme=False))
-                        ):
-                                try:
-                                        fh = open(os.path.join(
-                                            self._dir_path, "pkg",
-                                            matching_pfmri.get_name(),
-                                            str(matching_pfmri.version)), "rb")
-                                except EnvironmentError, e:
-                                        if e.errno != errno.ENOENT:
-                                                raise
-                                        continue
-                                for l in fh:
-                                        pkg_offsets.add(int(l))
+                        try:
+                                pkg_offsets = \
+                                    self._data_fmri_offsets.get_offsets(
+                                        self.pkg_name_match)
+                        except AttributeError:
+                                pkg_offsets = self._read_pkg_dirs(fmris)
                         if offsets is None:
                                 offsets = pkg_offsets
                         else:
                                 offsets &= pkg_offsets
-
                 if not self.action_type_wildcard:
                         tmp_set = set()
                         try:

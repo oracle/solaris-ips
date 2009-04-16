@@ -794,7 +794,8 @@ close
                         dest_path = os.path.join(index_dir, dest_fn)
                         portable.rename(orig_path, dest_path)
                         self.assertRaises(api_errors.InconsistentIndexException,
-                            self._search_op, api_obj, False, "example_pkg", [])
+                            self._search_op, api_obj, False,
+                            "exam:::example_pkg", [])
                         portable.rename(dest_path, orig_path)
                         self._search_op(api_obj, False, "example_pkg",
                             self.res_local_pkg)
@@ -821,7 +822,8 @@ close
                         self._overwrite_version_number(orig_path)
                         api_obj.reset()
                         self.assertRaises(api_errors.InconsistentIndexException,
-                            self._search_op, api_obj, False, "example_pkg", [])
+                            self._search_op, api_obj, False,
+                            "exam:::example_pkg", [])
                         portable.rename(dest_path, orig_path)
                         self._search_op(api_obj, False, "example_pkg",
                             self.res_local_pkg)

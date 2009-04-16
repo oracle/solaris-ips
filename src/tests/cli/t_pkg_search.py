@@ -870,7 +870,7 @@ close
                         dest_fn = orig_fn + "TMP"
                         dest_path = os.path.join(index_dir, dest_fn)
                         portable.rename(orig_path, dest_path)
-                        self.pkg("search -l example_pkg", exit=1)
+                        self.pkg("search -l 'exam:::example_pkg'", exit=1)
                         portable.rename(dest_path, orig_path)
                         self.pkg("search -l example_pkg")
                         
@@ -892,7 +892,7 @@ close
                         dest_path = os.path.join(index_dir, dest_fn)
                         shutil.copy(orig_path, dest_path)
                         self._overwrite_version_number(orig_path)
-                        self.pkg("search -l example_pkg", exit=1)
+                        self.pkg("search -l 'exam:::example_pkg'", exit=1)
                         portable.rename(dest_path, orig_path)
                         self.pkg("search -l example_pkg")
                         self._overwrite_version_number(orig_path)

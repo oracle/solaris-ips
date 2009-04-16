@@ -244,3 +244,14 @@ class TermQuery(qp.TermQuery):
                                 for at, st, fv, fmri_str, line_list in sub_list:
                                         for l in line_list:
                                                 yield at, st, fmri_str, fv, l
+
+        def _read_pkg_dirs(self, fmris):
+                """Legacy function used to search indexes which have a pkg
+                directory with fmri offset information instead of the
+                fmri_offsets.v1 file.  This function is in this subclass to
+                translate the error from a search_error to an api_error."""
+
+                try:
+                        return qp.TermQuery._read_pkg_dirs(self, fmris)
+                except se.InconsistentIndexException, e:
+                        raise api_errors.InconsistentIndexException(e)
