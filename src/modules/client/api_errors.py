@@ -533,21 +533,20 @@ class SlowSearchUsed(SearchException):
 
 
 class BooleanQueryException(ApiException):
-        def __init__(self, ac, pc):
+        def __init__(self, e):
                 ApiException.__init__(self)
-                self.action_child = ac
-                self.package_child = pc
+                self.e = e
 
         def __str__(self):
-                ac_s = _("This expression produces action results:\n")
-                ac_q = "%s\n" % self.action_child
-                pc_s = _("This expression produces package results:\n")
-                pc_q = "%s\n" % self.package_child
-                s = _("%(ac_s)s%(ac_q)s%(pc_s)s%(pc_q)s'AND' and 'OR' require "
-                    "those expressions to produce the same type of results.") \
-                    % { "ac_s" : ac_s, "ac_q" : ac_q, "pc_s" : pc_s,
-                    "pc_q" : pc_q }
-                return s
+                return str(self.e)
+
+class ParseError(ApiException):
+        def __init__(self, e):
+                ApiException.__init__(self)
+                self.e = e
+
+        def __str__(self):
+                return str(self.e)
 
 
 class PublisherError(ApiException):

@@ -57,7 +57,7 @@ import pkg.misc as misc
 import pkg.server.face as face
 import pkg.server.repository as repo
 
-from pkg.server.query_parser import Query
+from pkg.server.query_parser import Query, ParseError, BooleanQueryException
 
 class Dummy(object):
         """Dummy object used for dispatch method mapping."""
@@ -274,6 +274,8 @@ class DepotHTTP(object):
 
                 try:
                         res_list = self.__repo.search(query_str_lst)
+                except (ParseError, BooleanQueryException), e:
+                        raise cherrypy.HTTPError(httplib.BAD_REQUEST, str(e))
                 except repo.RepositorySearchUnavailableError, e:
                         raise cherrypy.HTTPError(httplib.SERVICE_UNAVAILABLE,
                             str(e))

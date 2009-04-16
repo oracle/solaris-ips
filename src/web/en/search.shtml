@@ -24,7 +24,7 @@
 ##
 <%!
         import urllib
-
+        import pkg.query_parser as query_p
         fmri_ops = {
             'info': "Info",
             'manifest': "Manifest"
@@ -83,8 +83,13 @@ matching characters use '[' and ']':<br/>
         results = None
         result_count = 0
         max_results = 100
+        query_error = None
         if searched:
-                results = catalog.search(token_val)
+                try:
+                        results = catalog.search(token_val)
+                except query_p.QueryException, e:
+                        results = None
+                        query_error = e.html()
 %>\
 %       if searched and results:
 %               for v, return_type, vals in results:
@@ -132,7 +137,17 @@ query and try again.</td>
                 </table>
 %               endfor
 %       endif
-%       if searched and rclass is None:
+%       if searched and query_error:
+                <p>Your search - <b>${token_val | h}</b> - is not a valid query.</p>
+                <p>Suggestions:</p>
+                <ul>
+                        <li>Remove special characters ('(', ')', '&lt;', '&gt;') from your tokens. Replace them with '*' or '?'.</li>
+                        <li>Ensure that each branch of your boolean query is returning the same kind of information. 'foo AND &lt; bar &gt;' will not work.</li>
+                </ul>
+                <p>Details:</p>
+		${query_error}
+%       endif
+%       if searched and rclass is None and not query_error:
                 <p>Your search - <b>${token_val | h}</b> - did not match any packages.</p>
                 <p>Suggestions:</p>
                 <ul>

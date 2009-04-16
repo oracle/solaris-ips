@@ -430,6 +430,7 @@ cli.t_pkg_search.py TestPkgSearchBasics.test_bug_6712_i386|pass
 cli.t_pkg_search.py TestPkgSearchBasics.test_bug_6712_sparc|pass
 cli.t_pkg_search.py TestPkgSearchBasics.test_bug_7660|pass
 cli.t_pkg_search.py TestPkgSearchBasics.test_bug_7835|pass
+cli.t_pkg_search.py TestPkgSearchBasics.test_bug_8098|pass
 cli.t_pkg_search.py TestPkgSearchBasics.test_bug_983|pass
 cli.t_pkg_search.py TestPkgSearchBasics.test_degraded_search|pass
 cli.t_pkg_search.py TestPkgSearchBasics.test_local_0|pass

@@ -35,6 +35,7 @@ import shutil
 import copy
 import sys
 import time
+import urllib2
 
 import pkg.depotcontroller as dc
 
@@ -1336,6 +1337,34 @@ close
                 self.pkg("refresh")
                 self.pkg("image-update")
                 self.assert_(len(os.listdir(id)) == 0)
+
+        def test_bug_8098(self):
+                """Check that parse errors don't cause tracebacks in the client
+                or the server."""
+
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.example_pkg10)
+                
+                self.image_create(durl)
+
+                self.pkg("install example_pkg")
+
+                self.pkg("search -l 'Intel(R)'", exit=1)
+                self.pkg("search -l 'foo AND <bar>'", exit=1)
+                self.pkg("search -r 'Intel(R)'", exit=1)
+                self.pkg("search -r 'foo AND <bar>'", exit=1)
+
+                urllib2.urlopen("%s/en/search.shtml?token=foo+AND+<bar>&"
+                    "action=Search" % durl)
+                urllib2.urlopen("%s/en/search.shtml?token=Intel(R)&"
+                    "action=Search" % durl)
+
+                testutils.eval_assert_raises(urllib2.HTTPError,
+                    lambda x: x.code == 400, urllib2.urlopen,
+                    "%s/search/1/False_2_None_None_Intel%%28R%%29" % durl)
+                testutils.eval_assert_raises(urllib2.HTTPError,
+                    lambda x: x.code == 400, urllib2.urlopen,
+                    "%s/search/1/False_2_None_None_foo%%20%%3Cbar%%3E" % durl)
 
 
 class TestPkgSearchMulti(testutils.ManyDepotTestCase):

@@ -27,6 +27,7 @@
 
 import sys
 import pkg.query_parser as qp
+from pkg.query_parser import BooleanQueryException, ParseError
 
 class QueryLexer(qp.QueryLexer):
         pass

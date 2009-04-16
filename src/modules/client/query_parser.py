@@ -32,6 +32,7 @@ import pkg.fmri as fmri
 from pkg.choose import choose
 
 import pkg.query_parser as qp
+from pkg.query_parser import BooleanQueryException, ParseError
 import itertools
 
 class QueryLexer(qp.QueryLexer):
@@ -46,6 +47,7 @@ class QueryParser(qp.QueryParser):
                         assert hasattr(mod, class_name)
                         tmp[class_name] = getattr(mod, class_name)
                 self.query_objs = tmp
+
 
 class Query(qp.Query):
         pass

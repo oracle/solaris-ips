@@ -1077,14 +1077,14 @@ def search(img_dir, args):
                 bad_res = True
         except api_errors.SlowSearchUsed, e:
                 error(e)
-        except api_errors.BooleanQueryException, e:
-                error(e)
-                return 1
         except (api_errors.IncorrectIndexFileHash,
             api_errors.InconsistentIndexException):
                 error(_("The search index appears corrupted.  Please "
                     "rebuild the index with 'pkg rebuild-index'."))
-                return 1  
+                return 1
+        except api_errors.ApiException, e:
+                error(e)
+                return 1
         if good_res and bad_res:
                 retcode = 4
         elif bad_res:

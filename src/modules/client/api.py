@@ -52,7 +52,6 @@ import pkg.search_errors as search_errors
 from pkg.client.imageplan import EXECUTED_OK
 from pkg.client import global_settings
 from pkg.misc import versioned_urlopen
-from pkg.query_parser import BooleanQueryException
 
 CURRENT_API_VERSION = 12
 CURRENT_P5I_VERSION = 1
@@ -921,9 +920,10 @@ class ImageInterface(object):
                         qp = query_p.QueryParser(l)
                         try:
                                 query = qp.parse(q.encoded_text())
-                        except BooleanQueryException, e:
-                                raise api_errors.BooleanQueryException(e.ac,
-                                    e.pc)
+                        except query_p.BooleanQueryException, e:
+                                raise api_errors.BooleanQueryException(e)
+                        except query_p.ParseError, e:
+                                raise api_errors.ParseError(e)
                         self.img.update_index_dir()
                         assert self.img.index_dir
                         try:
@@ -992,9 +992,10 @@ class ImageInterface(object):
                         qp = query_p.QueryParser(l)
                         try:
                                 query = qp.parse(q.encoded_text())
-                        except BooleanQueryException, e:
-                                raise api_errors.BooleanQueryException(e.ac,
-                                    e.pc)
+                        except query_p.BooleanQueryException, e:
+                                raise api_errors.BooleanQueryException(e)
+                        except query_p.ParseError, e:
+                                raise api_errors.ParseError(e)
                         if query.allow_version(0):
                                 version_list.append(0)
                                 qs.append(urllib.quote(q.ver_0(), safe=''))

@@ -33,6 +33,7 @@ import threading
 import copy
 import itertools
 import errno
+import cgi
 
 import ply.lex as lex
 import ply.yacc as yacc
@@ -105,6 +106,12 @@ class QueryLexer(object):
                 
         def token(self):
                 return self.lexer.token()
+
+        def get_pos(self):
+                return self.lexer.lexpos
+
+        def get_string(self):
+                return self.lexer.lexdata
                 
         def test(self, data):
                 self.lexer.input(data)
@@ -204,7 +211,8 @@ class QueryParser(object):
                 p[0] = self.query_objs["OrQuery"](p[1], p[3])
 
         def p_error(self, p):
-                raise RuntimeError("Died in parsing, current p is:%s" % (p))
+                raise ParseError(p, self.lexer.get_pos(),
+                    self.lexer.get_string())
                         
         def __init__(self, lexer):
                 self.lexer = lexer
@@ -223,6 +231,32 @@ class QueryParser(object):
                 self.lexer.set_input(input)
                 return self.parser.parse(lexer=self.lexer)
 
+class QueryException(Exception):
+        pass
+        
+class ParseError(QueryException):
+        def __init__(self, parse_object, string_position, input_string):
+                QueryException.__init__(self)
+                self.p = parse_object
+                self.pos = string_position
+                self.str = input_string
+
+        def __str__(self, html=False):
+                line_break = "\n"
+                pre_tab = ""
+                end_pre_tab = ""
+                if html:
+                        line_break = "<br>"
+                        pre_tab = "<pre>"
+                        end_pre_tab = "</pre>"
+                return line_break.join([_("Could not parse query."),
+                    _("Problem occurred with: %s") % self.p,
+                    "%s%s" % (pre_tab, cgi.escape(self.str)),
+                    "%s%s" % (" " * max(self.pos - 1, 0) + "^", end_pre_tab)])
+
+        def html(self):
+                return self.__str__(html=True)
+        
 class Query(object):
         RETURN_EITHER = 0
         RETURN_PACKAGES = 1
@@ -286,11 +320,30 @@ class UnknownFieldTypeException(Exception):
                 self.field_kind = field_kind
                 self.field_value = field_value
         
-class BooleanQueryException(Exception):
+class BooleanQueryException(QueryException):
         def __init__(self, ac, pc):
-                Exception.__init__(self)
+                QueryException.__init__(self)
                 self.ac = ac
                 self.pc = pc
+
+        def __str__(self, html=False):
+                line_break = "\n"
+                pre_tab = ""
+                end_pre_tab = ""
+                if html:
+                        line_break = "<br>"
+                        pre_tab = "<pre>"
+                        end_pre_tab = "</pre>"
+                ac_s = _("This expression produces action results:")
+                ac_q = "%s%s%s" % (pre_tab, self.ac, end_pre_tab)
+                pc_s = _("This expression produces package results:")
+                pc_q = "%s%s%s" % (pre_tab, self.pc, end_pre_tab)
+                return line_break.join([ac_s, ac_q, pc_s, pc_q,
+                    _("'AND' and 'OR' require those expressions to produce "
+                    "the same type of results.")])
+
+        def html(self):
+                return self.__str__(html=True)
         
 class BooleanQuery(object):
         def __init__(self, left_query, right_query):
