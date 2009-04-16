@@ -3585,6 +3585,11 @@ class PackageManager:
                     "status_installed")
                 visible_list = update_list.get(visible_repository)
                 if visible_list:
+                        i = 0
+                        while i < len(visible_list):
+                                visible_list[i] = gui_misc.get_pkg_name(
+                                    visible_list[i])
+                                i +=  1
                         for row in self.application_list:
                                 if row[enumerations.NAME_COLUMN] in visible_list:
                                         pkg = row[enumerations.FMRI_COLUMN]

@@ -842,10 +842,11 @@ class InstallUpdate(progress.ProgressTracker):
                 version_pref += "%d%s" % (s_ver[l_ver],"-")
                 l_ver = 0
                 version_suf = ""
-                while l_ver < len(s_bran) -1:
-                        version_suf += "%d%s" % (s_bran[l_ver],".")
-                        l_ver += 1
-                version_suf += "%d" % s_bran[l_ver]
+                if s_bran != None:
+                        while l_ver < len(s_bran) -1:
+                                version_suf += "%d%s" % (s_bran[l_ver],".")
+                                l_ver += 1
+                        version_suf += "%d" % s_bran[l_ver]
                 pkg_version = version_pref + version_suf + dt_str
                 return pkg_name + "@" + pkg_version  
 
