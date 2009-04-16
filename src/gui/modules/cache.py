@@ -30,7 +30,14 @@ import pkg.catalog as catalog
 import pkg.gui.enumerations as enumerations
 import pkg.gui.misc as gui_misc
 
-CACHE_VERSION=6
+nobe = False
+
+try:
+        import libbe as be
+except ImportError:
+        nobe = True
+
+CACHE_VERSION=7
 INDEX_HASH_LENGTH=41
 
 class CacheListStores:
@@ -54,9 +61,13 @@ class CacheListStores:
                                     cache_last_modified != image_last_modified:
                                         return False
                                 cache_index_hash = info.get("index_hash")
-                                file_index_hash = self.__get_index_hash()
+                                file_index_hash = self.get_index_timestamp()
                                 if not cache_index_hash or \
                                     cache_index_hash != file_index_hash:
+                                        return False
+                                be_name = info.get("be_name")
+                                if be_name == None or \
+                                    be_name != self.__get_active_be_name():
                                         return False
                         else:
                                 return False
@@ -77,7 +88,7 @@ class CacheListStores:
                 if not os.path.isdir(directory_path):
                         os.makedirs(directory_path)
 
-        def __get_index_hash(self):
+        def get_index_timestamp(self):
                 img = self.api_o.img
                 index_path = "%s/state/installed" % (img.imgdir)
                 try:
@@ -91,6 +102,24 @@ class CacheListStores:
                         return dt.ctime()
                 return dt
 
+        def remove_datamodel(self, publisher):
+                cache_dir = self.__get_cache_dir()
+                if not cache_dir:
+                        return
+                dump_info = {}
+                dump_info["version"] = CACHE_VERSION
+                dump_info["date"] = None
+                dump_info["publisher"] = publisher
+                dump_info["index_hash"] = None
+                dump_info["be_name"] = None
+
+                try:
+                        self.__dump_cache_file(cache_dir + publisher+".cpl", dump_info)
+                except IOError:
+                        #Silently return, as probably user doesn't have permissions or
+                        #other error which simply doesn't affect the GUI work
+                        return
+
         def dump_datamodels(self, publisher, application_list, category_list, 
             section_list):
                 cache_dir = self.__get_cache_dir()
@@ -100,7 +129,9 @@ class CacheListStores:
                 dump_info["version"] = CACHE_VERSION
                 dump_info["date"] = self.__get_publisher_timestamp(publisher)
                 dump_info["publisher"] = publisher
-                dump_info["index_hash"] = self.__get_index_hash()
+                dump_info["index_hash"] = self.get_index_timestamp()
+                dump_info["be_name"] = self.__get_active_be_name()
+
                 try:
                         self.__dump_cache_file(cache_dir + publisher+".cpl", dump_info)
                         self.__dump_category_list(publisher, category_list)
@@ -251,6 +282,29 @@ class CacheListStores:
                             ]
                         section_list.insert(sec_count, section)
                         sec_count += 1
+
+        @staticmethod
+        def __get_active_be_name():
+                if nobe:
+                        return None
+                be_list = be.beList()
+                error_code = None
+                be_list_loop = None
+                if len(be_list) > 1 and type(be_list[0]) == type(-1):
+                        error_code = be_list[0]
+                if error_code != None and error_code == 0:
+                        be_list_loop = be_list[1]
+                elif error_code != None and error_code != 0:
+                        return None
+                else:
+                        be_list_loop = be_list
+                for bee in be_list_loop:
+                        if bee.get("orig_be_name"):
+                                name = bee.get("orig_be_name")
+                                active = bee.get("active")                        
+                                if active:
+                                        return name
+                return None
 
         def __read_cache_file(self, file_path):
                 fh = open(file_path, 'r')

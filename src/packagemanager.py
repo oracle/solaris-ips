@@ -155,6 +155,7 @@ class PackageManager:
                         os.putenv('HOME', dir)
                 self.api_o = None
                 self.cache_o = None
+                self.img_timestamp = None
                 self.client = gconf.client_get_default()
                 try:
                         self.initial_show_filter = \
@@ -2132,6 +2133,7 @@ class PackageManager:
                                         first_loop = False
                                         gobject.idle_add(self.setup_progressdialog_show)
                                 self.catalog_loaded = False
+                                self.api_o.img.clear_pkg_state()
                                 self.api_o.img.load_catalogs(self.pr)
                                 self.catalog_loaded = True
                                 self.__add_pkgs_to_lists_from_api(publisher,
@@ -2156,9 +2158,21 @@ class PackageManager:
         def __dump_datamodels(self, publisher, application_list, category_list,
             section_list):
                 if self.cache_o:
-                        Thread(target = self.cache_o.dump_datamodels,
-                            args = (publisher, application_list, category_list,
-                            section_list)).start()
+                        if self.img_timestamp == \
+                            self.cache_o.get_index_timestamp():
+                                Thread(target = self.cache_o.dump_datamodels,
+                                    args = (publisher, application_list, category_list,
+                                    section_list)).start()
+                        else:
+                                self.__remove_cache()
+
+        def __remove_cache(self):
+                model = self.w_repository_combobox.get_model()
+                for publisher in model:
+                        pub_name = publisher[1]
+                        if pub_name and pub_name != _("Add..."):
+                                Thread(target = self.cache_o.remove_datamodel,
+                                    args = [publisher[1]]).start()
 
         def __on_install_update(self, widget):
                 self.api_o.reset()
@@ -2177,6 +2191,11 @@ class PackageManager:
                                         if status == enumerations.NOT_INSTALLED or \
                                             status == enumerations.UPDATABLE:
                                                 install_update.append(pkg_stem)
+
+                if self.img_timestamp != self.cache_o.get_index_timestamp():
+                        self.img_timestamp = None
+                        self.__remove_cache()
+
                 installupdate.InstallUpdate(install_update, self, \
                     self.api_o, ips_update = False, \
                     action = enumerations.INSTALL_UPDATE)
@@ -2225,6 +2244,11 @@ class PackageManager:
                                         if status == enumerations.INSTALLED or \
                                             status == enumerations.UPDATABLE:
                                                 remove_list.append(pkg_stem)
+
+                if self.img_timestamp != self.cache_o.get_index_timestamp():
+                        self.img_timestamp = None
+                        self.__remove_cache()
+
                 installupdate.InstallUpdate(remove_list, self,
                     self.api_o, ips_update = False,
                     action = enumerations.REMOVE)
@@ -2237,6 +2261,8 @@ class PackageManager:
                 self.__set_empty_details_panel()
                 self.in_setup = True
                 self.visible_repository = None
+                if widget != None:
+                        self.__remove_cache()
                 self.w_progress_dialog.set_title(_("Refreshing catalogs"))
                 self.w_progressinfo_label.set_text(_("Refreshing catalogs..."))
                 self.progress_stop_timer_thread = False
@@ -3447,6 +3473,7 @@ class PackageManager:
                         self.api_o = self.__get_api_object(image_directory, self.pr)
                         self.cache_o = self.__get_cache_obj(self.application_dir,
                             self.api_o)
+                        self.img_timestamp = self.cache_o.get_index_timestamp()
                 self.repositories_list = self.__get_new_repositories_liststore()
                 self.__setup_repositories_combobox(self.api_o, self.repositories_list)
 
@@ -3574,7 +3601,7 @@ class PackageManager:
                 self.w_main_statusbar.push(0, status_str)
 
         def update_package_list(self, update_list):
-                if update_list == None:
+                if update_list == None and self.img_timestamp:
                         return
                 img = self.api_o.img
                 visible_repository = self.__get_visible_repository_name()
@@ -3583,6 +3610,11 @@ class PackageManager:
                 self.catalog_loaded = False
                 img.load_catalogs(self.pr)
                 self.catalog_loaded = True
+                if not self.img_timestamp:
+                        self.img_timestamp = self.cache_o.get_index_timestamp()
+                        self.__on_reload(None)
+                        return
+                self.img_timestamp = self.cache_o.get_index_timestamp()
                 installed_icon = gui_misc.get_icon_pixbuf(self.application_dir,
                     "status_installed")
                 visible_list = update_list.get(visible_repository)
