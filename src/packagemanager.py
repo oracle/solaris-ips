@@ -3553,6 +3553,8 @@ class PackageManager:
                 installed = 0
                 self.selected = 0
                 sel = 0
+                if self.application_list == None:
+                        return
                 visible_repository = self.__get_visible_repository_name()
                 pkgs = self.selected_pkgs.get(visible_repository)
                 if pkgs:
