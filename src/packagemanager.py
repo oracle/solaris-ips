@@ -250,12 +250,12 @@ class PackageManager:
                 self.search_options = [
                     ('ips-search',
                     gui_misc.get_icon_pixbuf(self.application_dir, 'search'),
-                    _("_Current Repository"),
-                    _("Search Current Repository")),
+                    _("_Current Repository (Name and Description)"),
+                    _("Search Current Repository (Name and Description)")),
                     ('ips-search-all',
                     gui_misc.get_icon_pixbuf(self.application_dir, 'search_all'),
-                    _("_All Repositories"),
-                    _("Search All Repositories"))
+                    _("_All Repositories (Description Only)"),
+                    _("Search All Repositories (Description Only)"))
                     ]
                 self.__register_iconsets(self.search_options)
 
