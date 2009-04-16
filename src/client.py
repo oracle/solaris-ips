@@ -932,12 +932,18 @@ def unfreeze(img, args):
         return 0
 
 def process_v_0_search(tup, first):
-        index, mfmri, action, value = tup
+        try:
+                index, mfmri, action, value = tup
+        except ValueError:
+                error(_("The server returned a malformed result.\n"
+                    "The problematic structure: %r") % (tup,))
+                return False
         if first:
                 msg("%-10s %-9s %-25s %s" %
                     ("INDEX", "ACTION", "VALUE", "PACKAGE"))
         msg("%-10s %-9s %-25s %s" % (index, action, value,
             fmri.PkgFmri(str(mfmri)).get_short_fmri()))
+        return True
 
 def __convert_output(a_str, match):
         a = actions.fromstr(a_str.rstrip())
@@ -947,11 +953,22 @@ def __convert_output(a_str, match):
 
 def process_v_1_search(tup, first, return_type, pub):
         if return_type == api.Query.RETURN_ACTIONS:
-                pfmri, match, action = tup
+                try:
+                        pfmri, match, action = tup
+                except ValueError:
+                        error(_("The server returned a malformed result.\n"
+                            "The problematic structure:%r") % (tup,))
+                        return False
                 if first:
                         msg("%-10s %-9s %-25s %s" %
                             ("INDEX", "ACTION", "VALUE", "PACKAGE"))
-                out1, out2, out3 = __convert_output(action, match)
+                try:
+                        out1, out2, out3 = __convert_output(action, match)
+                except (actions.UnknownActionError,
+                    actions.MalformedActionError), e:
+                        error(_("The server returned a malformed action.\n%s") %
+                            e)
+                        return False
                 msg("%-10s %-9s %-25s %s" %
                     (out1, out2, out3,
                     fmri.PkgFmri(str(pfmri)).get_short_fmri()))
@@ -964,6 +981,7 @@ def process_v_1_search(tup, first, return_type, pub):
                         pub_name = " (%s)" % pub.prefix
                 msg("%s%s" %
                     (fmri.PkgFmri(str(pfmri)).get_short_fmri(), pub_name))
+        return True
 
 def search(img_dir, args):
         """Search for the given token."""
@@ -1017,6 +1035,10 @@ def search(img_dir, args):
         except api_errors.BooleanQueryException, e:
                 error(e)
                 return 1
+
+        first = True
+        good_res = False
+        bad_res = False
         
         try:
                 if local:
@@ -1028,25 +1050,31 @@ def search(img_dir, args):
                 # By default assume we don't find anything.
                 retcode = 1
 
-                first = True
-                for query_num, pub, (v, return_type, tmp) in \
-                    itertools.chain(*searches):
+                for raw_value in itertools.chain(*searches):
+                        try:
+                                query_num, pub, (v, return_type, tmp) = \
+                                    raw_value
+                        except ValueError, e:
+                                error(_("The server returned a malformed "
+                                    "result:%r") % (raw_value,))
+                                bad_res = True
+                                continue
                         if v == 0:
-                                process_v_0_search(tmp, first)
-                                retcode = 0
-                                first = False
+                                ret = process_v_0_search(tmp, first)
                         else:
-                                process_v_1_search(tmp, first, return_type, pub)
-                                retcode = 0
-                                first = False
+                                ret = process_v_1_search(tmp, first,
+                                    return_type, pub)
+                        good_res |= ret
+                        bad_res |= not ret
+                        first = False
         except (api_errors.IncorrectIndexFileHash,
             api_errors.InconsistentIndexException):
-                error("The search index appears corrupted.  Please "
-                    "rebuild the index with 'pkg rebuild-index'.")
+                error(_("The search index appears corrupted.  Please "
+                    "rebuild the index with 'pkg rebuild-index'."))
                 return 1
         except api_errors.ProblematicSearchServers, e:
                 error(e)
-                retcode = 4
+                bad_res = True
         except api_errors.SlowSearchUsed, e:
                 error(e)
         except api_errors.BooleanQueryException, e:
@@ -1054,9 +1082,15 @@ def search(img_dir, args):
                 return 1
         except (api_errors.IncorrectIndexFileHash,
             api_errors.InconsistentIndexException):
-                error("The search index appears corrupted.  Please "
-                    "rebuild the index with 'pkg rebuild-index'.")
-                return 1
+                error(_("The search index appears corrupted.  Please "
+                    "rebuild the index with 'pkg rebuild-index'."))
+                return 1  
+        if good_res and bad_res:
+                retcode = 4
+        elif bad_res:
+                retcode = 1
+        elif not first:
+                retcode = 0      
         return retcode
 
 def info(img_dir, args):
