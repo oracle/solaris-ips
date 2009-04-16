@@ -6,6 +6,9 @@ gui/data/l10n.py
 gui/data/addmoresoftware.desktop.in
 gui/data/packagemanager.desktop.in
 gui/data/packagemanager.glade
+gui/data/packagemanager-info.xml.in
+gui/data/packagemanager-preferences.schemas.in
+gui/modules/webinstall.py
 gui/modules/beadmin.py
 gui/modules/installupdate.py
 gui/modules/repository.py

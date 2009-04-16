@@ -1,21 +1,39 @@
-# Copyright (C) 2008 Sun Microsystems, Inc
-# This file is distributed under the same license as the packagemanager package.
 #
-# Desktop Discuss <desktop-discuss@opensolaris.org>
+# CDDL HEADER START
+#
+# The contents of this file are subject to the terms of the
+# Common Development and Distribution License (the "License").  
+# You may not use this file except in compliance with the License.
+#
+# You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+# or http://www.opensolaris.org/os/licensing.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+#
+# When distributing Covered Code, include this CDDL HEADER in each
+# file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+# If applicable, add the following below this CDDL HEADER, with the
+# fields enclosed by brackets "[]" replaced with your own identifying
+# information: Portions Copyright [yyyy] [name of copyright owner]
+#
+# CDDL HEADER END
+#
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Use is subject to license terms.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: packagemanager HEAD\n"
+"Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-05-29 17:42+0900\n"
-"PO-Revision-Date: 2008-05-13 22:01+0900\n"
-"Last-Translator: desktop-discuss@opensolaris.org\n"
-"Language-Team: desktop-discuss@opensolaris.org\n"
+"POT-Creation-Date: 2009-03-27 13:28+0900\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../client.py:109
+#: ../client.py:118
 msgid ""
 "Usage:\n"
 "        pkg [options] command [cmd_options] [operands]\n"
@@ -24,39 +42,41 @@ msgid ""
 "        pkg install [-nvq] [--no-refresh] [--no-index] package...\n"
 "        pkg uninstall [-nrvq] [--no-index] package...\n"
 "        pkg list [-aHsuvf] [package...]\n"
-"        pkg image-update [-fnvq] [--no-refresh] [--no-index]\n"
-"        pkg refresh [--full] [authority ...]\n"
+"        pkg image-update [-fnvq] [--be-name name] [--no-refresh] [--no-"
+"index]\n"
+"        pkg refresh [--full] [publisher ...]\n"
 "        pkg version\n"
-"        pkg help\n"
 "\n"
 "Advanced subcommands:\n"
 "        pkg info [-lr] [--license] [pkg_fmri_pattern ...]\n"
-"        pkg search [-lrI] [-s server] token\n"
+"        pkg search [-lrI] [-s server] query\n"
 "        pkg verify [-Hqv] [pkg_fmri_pattern ...]\n"
 "        pkg fix [pkg_fmri_pattern ...]\n"
 "        pkg contents [-Hmr] [-o attribute ...] [-s sort_key]\n"
 "            [-t action_type ... ] [pkg_fmri_pattern ...]\n"
 "        pkg image-create [-fFPUz] [--force] [--full|--partial|--user] [--"
 "zone]\n"
-"            [-k ssl_key] [-c ssl_cert] [--no-refresh] -a <prefix>=<url> dir\n"
+"            [-k ssl_key] [-c ssl_cert] [--no-refresh] \n"
+"            [--variant <variant_spec>=<instance>]\n"
+"            (-p|--publisher) name=uri dir\n"
 "\n"
 "        pkg set-property propname propvalue\n"
 "        pkg unset-property propname ...\n"
 "        pkg property [-H] [propname ...]\n"
 "\n"
-"        pkg set-authority [-P] [-k ssl_key] [-c ssl_cert] [--reset-uuid]\n"
-"            [-O origin_url] [-m mirror_to_add | --add-mirror=mirror_to_add]\n"
+"        pkg set-publisher [-Ped] [-k ssl_key] [-c ssl_cert]\n"
+"            [-O origin_uri] [-m mirror_to_add | --add-mirror=mirror_to_add]\n"
 "            [-M mirror_to_remove | --remove-mirror=mirror_to_remove]\n"
-"            [--no-refresh] authority\n"
-"        pkg unset-authority authority ...\n"
-"        pkg authority [-HP] [authority ...]\n"
+"            [--enable] [--disable] [--no-refresh] [--reset-uuid] publisher\n"
+"        pkg unset-publisher publisher ...\n"
+"        pkg publisher [-HPa] [publisher ...]\n"
 "        pkg history [-Hl]\n"
 "        pkg purge-history\n"
 "        pkg rebuild-index\n"
 "\n"
 "Options:\n"
 "        -R dir\n"
-"        -D/--debug name=value\n"
+"        --help or -?\n"
 "\n"
 "Environment:\n"
 "        PKG_IMAGE"
@@ -68,69 +88,76 @@ msgstr ""
 "        pkg install [-nvq] [--no-refresh] [--no-index] 套裝軟體...\n"
 "        pkg uninstall [-nrvq] [--no-index] 套裝軟體...\n"
 "        pkg list [-aHsuvf] [套裝軟體...]\n"
-"        pkg image-update [-fnvq] [--no-refresh] [--no-index]\n"
-"        pkg refresh [--full] [authority ...]\n"
+"        pkg image-update [-fnvq] [--be-name 名稱] [--no-refresh] [--no-"
+"index]\n"
+"        pkg refresh [--full] [發佈者 ...]\n"
 "        pkg version\n"
-"        pkg help\n"
 "\n"
 "進階子指令：\n"
 "        pkg info [-lr] [--license] [pkg_fmri_pattern ...]\n"
-"        pkg search [-lrI] [-s 伺服器] 記號\n"
+"        pkg search [-lrI] [-s 伺服器] 查詢\n"
 "        pkg verify [-Hqv] [pkg_fmri_pattern ...]\n"
 "        pkg fix [pkg_fmri_pattern ...]\n"
 "        pkg contents [-Hmr] [-o 屬性 ...] [-s sort_key]\n"
 "            [-t action_type ... ] [pkg_fmri_pattern ...]\n"
 "        pkg image-create [-fFPUz] [--force] [--full|--partial|--user] [--"
 "zone]\n"
-"            [-k ssl_key] [-c ssl_cert] [--no-refresh] -a <前綴>=<url> 目錄\n"
+"            [-k ssl_key] [-c ssl_cert] [--no-refresh] \n"
+"            [--variant <variant_spec>=<實例>]\n"
+"            (-p|--publisher) 名稱=uri 目錄\n"
 "\n"
 "        pkg set-property 特性名稱 特性值\n"
 "        pkg unset-property 特性名稱 ...\n"
 "        pkg property [-H] [特性名稱 ...]\n"
 "\n"
-"        pkg set-authority [-P] [-k ssl_key] [-c ssl_cert] [--reset-uuid]\n"
-"            [-O origin_url] [-m mirror_to_add | --add-mirror=mirror_to_add]\n"
+"        pkg set-publisher [-Ped] [-k ssl_key] [-c ssl_cert]\n"
+"            [-O origin_uri] [-m mirror_to_add | --add-mirror=mirror_to_add]\n"
 "            [-M mirror_to_remove | --remove-mirror=mirror_to_remove]\n"
-"            [--no-refresh] 授權\n"
-"        pkg unset-authority 授權 ...\n"
-"        pkg authority [-HP] [授權 ...]\n"
+"            [--enable] [--disable] [--no-refresh] [--reset-uuid] 發佈者\n"
+"        pkg unset-publisher 發佈者 ...\n"
+"        pkg publisher [-HPa] [發佈者 ...]\n"
 "        pkg history [-Hl]\n"
 "        pkg purge-history\n"
 "        pkg rebuild-index\n"
 "\n"
 "選項：\n"
 "        -R 目錄\n"
-"        -D/--debug name=value\n"
+"        --help or -?\n"
 "\n"
 "環境：\n"
 "        PKG_IMAGE"
 
-#: ../client.py:203
+#: ../client.py:216
 msgid "-s and -v may not be combined"
 msgstr "不能合併 -s 和 -v"
 
-#: ../client.py:317 ../client.py:930 ../client.py:1190
+#: ../client.py:292 ../client.py:1089 ../client.py:1366
 msgid "no packages installed"
 msgstr "未安裝套裝軟體"
 
-#: ../client.py:324
+#: ../client.py:299
 msgid "No specified packages have available updates"
 msgstr "指定的套裝軟體沒有可用的更新"
 
-#: ../client.py:327
+#: ../client.py:302
 msgid "No installed packages have available updates"
 msgstr "安裝的套裝軟體沒有可用的更新"
 
-#: ../client.py:353
+#: ../client.py:328
 #, python-format
 msgid "no packages matching '%s' %s"
 msgstr "沒有符合「%s」%s 的套裝軟體"
 
-#: ../client.py:387
+#: ../client.py:371
+#, python-format
+msgid "Created ZFS snapshot: %s"
+msgstr "已建立的 ZFS 快照：%s"
+
+#: ../client.py:401
 msgid "verify: -v and -q may not be combined"
 msgstr "verify：不能合併 -v 和 -q"
 
-#: ../client.py:442
+#: ../client.py:456
 msgid ""
 "pkg: no packages matching the following patterns you specified are\n"
 "installed on the system.\n"
@@ -138,7 +165,7 @@ msgstr ""
 "pkg：系統上沒有安裝符合您指定之下列樣式的\n"
 "套裝軟體。\n"
 
-#: ../client.py:452
+#: ../client.py:466
 #, python-format
 msgid ""
 "\n"
@@ -147,25 +174,25 @@ msgstr ""
 "\n"
 "所有其他樣式都符合安裝的套裝軟體。%s"
 
-#: ../client.py:487
+#: ../client.py:507
 msgid "image-update: -v and -q may not be combined"
 msgstr "image-update：不能合併 -v 和 -q"
 
-#: ../client.py:490
+#: ../client.py:510
 #, python-format
 msgid "image-update: command does not take operands ('%s')"
 msgstr "image-update：指令沒有運算元 (「%s」)"
 
-#: ../client.py:500 ../client.py:533
+#: ../client.py:520 ../client.py:563
 #, python-format
 msgid "No image rooted at '%s'"
 msgstr "沒有影像的根目錄位於「%s」"
 
-#: ../client.py:513 ../updatemanager.py:1008
+#: ../client.py:534 ../client.py:703
 msgid "No updates available for this image."
 msgstr "此影像沒有可用的更新。"
 
-#: ../client.py:559
+#: ../client.py:537
 #, python-format
 msgid ""
 "image-update failed (inventory exception):\n"
@@ -174,7 +201,7 @@ msgstr ""
 "執行 image-update 失敗 (資產管理異常)：\n"
 "%s"
 
-#: ../client.py:527
+#: ../client.py:557
 msgid ""
 "WARNING: pkg(5) appears to be out of date, and should be updated before\n"
 "running image-update.\n"
@@ -182,7 +209,7 @@ msgstr ""
 "警告：pkg(5) 可能已過期，應在執行 image-update 前\n"
 "更新。\n"
 
-#: ../client.py:529
+#: ../client.py:559
 msgid ""
 "Please update pkg(5) using 'pfexec pkg install SUNWipkg' and then retry\n"
 "the image-update."
@@ -190,7 +217,7 @@ msgstr ""
 "請使用「pfexec pkg install SUNWipkg」更新 pkg(5)，然後重試 \n"
 "image-update。"
 
-#: ../client.py:552
+#: ../client.py:587
 msgid ""
 "\n"
 "An unexpected error happened while preparing for image-update:"
@@ -198,16 +225,16 @@ msgstr ""
 "\n"
 "準備執行 image-update 時，發生未預期的錯誤："
 
-#: ../client.py:559
+#: ../client.py:594
 #, python-format
 msgid "image-update failed: %s"
 msgstr "執行 image-update 失敗：%s"
 
-#: ../client.py:562
+#: ../client.py:597
 msgid "image-update cannot be done on live image"
 msgstr "無法在即時影像上執行 image-update"
 
-#: ../client.py:573
+#: ../client.py:619
 #, python-format
 msgid ""
 "\n"
@@ -216,7 +243,7 @@ msgstr ""
 "\n"
 "執行 image-update 期間，發生未預期的錯誤：%s"
 
-#: ../client.py:579
+#: ../client.py:625
 msgid ""
 "NOTE: Please review release notes posted at:\n"
 "   http://opensolaris.org/os/project/indiana/resources/relnotes/200811/x86/"
@@ -224,24 +251,21 @@ msgstr ""
 "注意：請檢閱以下網址公佈的版本說明：\n"
 "   http://opensolaris.org/os/project/indiana/resources/relnotes/200811/x86/"
 
-#: ../client.py:612
+#: ../client.py:672
 msgid "install: at least one package name required"
 msgstr "install：至少需要一個套裝軟體名稱"
 
-#: ../client.py:615
+#: ../client.py:675
 msgid "install: -v and -q may not be combined"
 msgstr "install：不能合併 -v 和 -q"
 
-#: ../client.py:630 ../client.py:731 ../client.py:1346 ../updatemanager.py:746
+#: ../client.py:690 ../client.py:824 ../client.py:987 ../client.py:1547
+#: ../client.py:1629 ../client.py:1753 ../client.py:1807 ../client.py:2183
 #, python-format
 msgid "'%s' is not an install image"
 msgstr "「%s」不是安裝影像"
 
-#: ../client.py:636
-msgid "Nothing to install in this image (is this package already installed?)"
-msgstr "沒有要在此影像中安裝任何項目 (是否已安裝此套裝軟體？)"
-
-#: ../client.py:646
+#: ../client.py:722
 #, python-format
 msgid ""
 "install failed (inventory exception):\n"
@@ -250,7 +274,7 @@ msgstr ""
 "執行 install 失敗 (資產管理異常)：\n"
 "%s"
 
-#: ../client.py:669 ../client.py:766
+#: ../client.py:748 ../client.py:865
 msgid ""
 "\n"
 "An unexpected error happened while preparing for install:"
@@ -258,25 +282,25 @@ msgstr ""
 "\n"
 "準備執行 install 時，發生未預期的錯誤："
 
-#: ../client.py:678
+#: ../client.py:757
 #, python-format
 msgid "installation failed: %s"
 msgstr "安裝失敗：%s"
 
-#: ../client.py:689
+#: ../client.py:776
 #, python-format
 msgid "An unexpected error happened during installation: %s"
 msgstr "安裝期間發生未預期的錯誤：%s"
 
-#: ../client.py:713
+#: ../client.py:806
 msgid "uninstall: at least one package name required"
 msgstr "uninstall：至少需要一個套裝軟體名稱"
 
-#: ../client.py:716
+#: ../client.py:809
 msgid "uninstall: -v and -q may not be combined"
 msgstr "uninstall：不能合併 -v 和 -q"
 
-#: ../client.py:822
+#: ../client.py:832
 #, python-format
 msgid ""
 "uninstall failed (inventory exception):\n"
@@ -285,33 +309,84 @@ msgstr ""
 "執行 uninstall 失敗 (資產管理異常)：\n"
 "%s"
 
-#: ../client.py:775
+#: ../client.py:874
 #, python-format
 msgid "uninstallation failed: %s"
 msgstr "解除安裝失敗：%s"
 
-#: ../client.py:786
+#: ../client.py:893
 #, python-format
 msgid "An unexpected error happened during uninstallation: %s"
 msgstr "解除安裝期間發生未預期的錯誤：%s"
 
-#: ../client.py:909
+#: ../client.py:965
+#, python-format
+msgid "%s is not a valid server URL."
+msgstr "%s 不是有效的伺服器 URL。"
+
+#: ../client.py:1057
 msgid "info: -l and -r may not be combined"
 msgstr "info：不能合併 -l 和 -r"
 
-#: ../client.py:912
+#: ../client.py:1060
 msgid "info: must request remote info for specific packages"
 msgstr "info：必須要求特定套裝軟體的遠端資訊"
 
-#: ../client.py:943
+#: ../client.py:1106 ../gui/data/packagemanager.glade.h:49
+#: ../packagemanager.py:1167
 msgid "Installed"
 msgstr "已安裝"
 
-#: ../client.py:945
+#: ../client.py:1108
 msgid "Not installed"
 msgstr "未安裝"
 
-#: ../client.py:969 ../client.py:1284
+#: ../client.py:1112
+msgid "          Name:"
+msgstr "            名稱："
+
+#: ../client.py:1114
+msgid "       Summary:"
+msgstr "            摘要："
+
+#: ../client.py:1117
+msgid "      Category:"
+msgstr "            類別："
+
+#: ../client.py:1124
+msgid "         State:"
+msgstr "            狀態："
+
+#. XXX even more info on the publisher would be nice?
+#: ../client.py:1127
+msgid "     Publisher:"
+msgstr "     發佈者:"
+
+#: ../client.py:1128
+msgid "       Version:"
+msgstr "            版本："
+
+#: ../client.py:1129
+msgid " Build Release:"
+msgstr "建置發行版本："
+
+#: ../client.py:1130
+msgid "        Branch:"
+msgstr "            分支："
+
+#: ../client.py:1131
+msgid "Packaging Date:"
+msgstr "      封裝日期："
+
+#: ../client.py:1132
+msgid "          Size:"
+msgstr "            大小："
+
+#: ../client.py:1133
+msgid "          FMRI:"
+msgstr "          FMRI："
+
+#: ../client.py:1141 ../client.py:1471
 msgid ""
 "pkg: no packages matching the following patterns you specified are\n"
 "installed on the system.  Try specifying -r to query remotely:"
@@ -319,7 +394,7 @@ msgstr ""
 "pkg：系統上沒有安裝符合您指定之下列樣式的套裝軟體。\n"
 "請嘗試指定 -r 以進行遠端查詢："
 
-#: ../client.py:973 ../client.py:1288
+#: ../client.py:1145 ../client.py:1475
 msgid ""
 "pkg: no packages matching the following patterns you specified were\n"
 "found in the catalog.  Try relaxing the patterns, refreshing, and/or\n"
@@ -329,237 +404,346 @@ msgstr ""
 "請嘗試放寬樣式、重新整理和/或\n"
 "檢查分類："
 
-#: ../client.py:989
+#: ../client.py:1161
 #, python-format
 msgid "'%s' matches multiple packages"
 msgstr "「%s」符合多個套裝軟體"
 
-#: ../client.py:1146
+#: ../client.py:1167
+msgid "no license information could be found for the following packages:"
+msgstr "找不到下列套裝軟體的授權資訊："
+
+#: ../client.py:1322
 msgid "contents: -l and -r may not be combined"
 msgstr "contents：不能合併 -l 和 -r"
 
-#: ../client.py:1149
+#: ../client.py:1325
 msgid "contents: must request remote contents for specific packages"
 msgstr "contents：必須要求特定套裝軟體的遠端內容"
 
-#: ../client.py:1163
+#: ../client.py:1339
 #, python-format
 msgid "contents: -m and %s may not be specified at the same time"
 msgstr "contents：不能同時指定 -m 和 %s"
 
-#: ../client.py:1168 ../client.py:1171
+#: ../client.py:1344 ../client.py:1347
 #, python-format
 msgid "Invalid attribute '%s'"
 msgstr "無效的屬性「%s」"
 
-#: ../client.py:1229 ../client.py:1235 ../modules/client/api_errors.py:106
+#: ../client.py:1407 ../client.py:1413 ../modules/client/api_errors.py:144
 #, python-format
 msgid "pkg: '%s' matches multiple packages"
 msgstr "pkg：「%s」符合多個套裝軟體"
 
-#: ../client.py:1303
+#: ../client.py:1490
 #, python-format
 msgid "pkg: %s/%s catalogs successfully updated:"
 msgstr "pkg：已成功更新 %s 個分類 (共 %s 個)："
 
-#: ../client.py:1352
+#: ../client.py:1513
+#, python-format
+msgid "Could not update catalog for '%s' due to insufficient permissions."
+msgstr "由於權限不足，無法更新「%s」的目錄。"
+
+#: ../client.py:1517
+msgid "Could not update a catalog due to insufficient permissions."
+msgstr "由於權限不足，無法更新目錄。"
+
+#: ../client.py:1520
+msgid ""
+"Please try the command again using pfexec, or otherwise increase \n"
+"    your permissions."
+msgstr ""
+"請使用 pfexec 再次嘗試指令，或增加\n"
+"    權限。"
+
+#: ../client.py:1554
+msgid "'pkg publisher' will show a list of publishers."
+msgstr "「pkg publisher」將顯示發佈者的清單。"
+
+#: ../client.py:1612
+msgid "requires a publisher name"
+msgstr "需要一個發佈者名稱"
+
+#: ../client.py:1614
+msgid "only one publisher name may be specified"
+msgstr "只能指定一個發佈者名稱"
+
+#: ../client.py:1620
+msgid "the -p and -d options may not be combined"
+msgstr "不能合併 -p 和 -d 選項"
+
+#: ../client.py:1644
+msgid ""
+"publisher does not exist. Use -O to define origin URI for new publisher."
+msgstr ""
+"發佈者不存在。請使用 -O 為新發佈者定義原始 URI。"
+
+#: ../client.py:1726
 #, python-format
 msgid ""
-"%s is not a recognized authority to refresh. \n"
-"'pkg authority' will show a list of authorities."
+"The origin URIs for '%s' do not appear to point to a valid pkg server.\n"
+"Please check the server's address and client's network configuration.\n"
+"Additional details:\n"
+"\n"
+"%s"
 msgstr ""
-"%s 不是要重新整理的已識別授權。\n"
-"「pkg authority」將會顯示授權清單。"
+"「%s」的原始 URI 似乎未指向有效的 pkg 伺服器。\n"
+"請檢查伺服器的位址和用戶端的網路配置。\n"
+"其他詳細資訊：\n"
+"\n"
+"%s"
 
-#: ../client.py:1402
-msgid "pkg: set-authority: one and only one authority may be set"
-msgstr "pkg：set-authority：只能設定一個授權"
-
-#: ../client.py:1402
-msgid "set-authority: one and only one authority may be set"
-msgstr "set-authority：只能設定一個授權"
-
-#: ../client.py:1410
+#: ../client.py:1779
 #, python-format
-msgid "set-authority: SSL key file '%s' does not exist"
-msgstr "set-authority：SSL 金鑰檔案「%s」不存在"
+msgid "Removal failed for '%(pub)s': %(msg)s"
+msgstr "「%(pub)s」的移除失敗：%(msg)s"
 
-#: ../client.py:1417
-#, python-format
-msgid "set-authority: SSL key cert '%s' does not exist"
-msgstr "set-authority：SSL 金鑰憑證「%s」不存在"
+#: ../client.py:1851
+msgid "PUBLISHER"
+msgstr "發佈者"
 
-#: ../client.py:1423
-msgid ""
-"set-authority: authority does not exist. Use -O to define origin URL for new "
-"authority"
-msgstr ""
-"set-authority：授權不存在。請使用 -O 為新授權定義"
-"原始 URL。"
+#: ../client.py:1851
+msgid "TYPE"
+msgstr "類型"
 
-#: ../client.py:1428
-msgid "set-authority: authority name has invalid characters"
-msgstr "set-authority：授權名稱有無效的字元"
+#: ../client.py:1851
+msgid "STATUS"
+msgstr "狀態"
 
-#: ../client.py:1432
-msgid "set-authority: authority URL is invalid"
-msgstr "set-authority：授權 URL 無效"
+#: ../client.py:1852
+msgid "URI"
+msgstr "URI"
 
-#: ../client.py:1444
-#, python-format
-msgid "set-authority failed: %s"
-msgstr "執行 set-authority 失敗：%s"
+#: ../client.py:1867
+msgid "(preferred)"
+msgstr "(喜好的)"
 
-#: ../client.py:1454
-msgid "set-authority: added mirror's URL is invalid"
-msgstr "set-authority：增加之鏡像的 URL 無效"
+#: ../client.py:1869
+msgid "(disabled)"
+msgstr "(停用)"
 
-#: ../client.py:1458
-msgid "set-authority: mirror already exists"
-msgstr "set-authority：鏡像已存在"
+#. XXX get the real origin status
+#: ../client.py:1876
+msgid "origin"
+msgstr "原始"
 
-#: ../client.py:1466
-msgid "set-authority: removed mirror has bad URL"
-msgstr "set-authority：移除之鏡像具有錯誤的 URL"
+#. XXX get the real mirror status
+#: ../client.py:1880
+msgid "mirror"
+msgstr "鏡像"
 
-#: ../client.py:1470
-msgid "set-authority: mirror does not exist"
-msgstr "set-authority：鏡像不存在"
+#: ../client.py:1886
+msgid "              SSL Key:"
+msgstr "              SSL 金鑰："
 
-#: ../client.py:1492
-#, python-format
-msgid "unset-authority: no such authority: %s"
-msgstr "unset-authority：沒有這類授權：%s"
+#: ../client.py:1887
+msgid "             SSL Cert:"
+msgstr "             SSL 憑證："
 
-#: ../client.py:1497
-msgid "unset-authority: removal of preferred authority not allowed."
-msgstr "unset-authority：無法移除喜好的授權。"
+#: ../client.py:1899
+msgid " Cert. Effective Date:"
+msgstr "憑證生效日期："
 
-#: ../client.py:1540
-#, python-format
-msgid "authority: no such authority: %s"
-msgstr "authority：沒有這類授權：%s"
+#: ../client.py:1901
+msgid "Cert. Expiration Date:"
+msgstr "憑證過期日期："
 
-#: ../client.py:1556
-#, python-format
-msgid "SSL certificate for %sis invalid or non-existent."
-msgstr "%sis 的 SSL 憑證無效或不存在。"
+#: ../client.py:1908
+msgid "           Origin URI:"
+msgstr "           原始 URI："
 
-#: ../client.py:1559
-#, python-format
-msgid "Please check file at %s"
-msgstr "請檢查 %s 處的檔案"
+#: ../client.py:1914
+msgid "           Mirror URI:"
+msgstr "           鏡像 URI："
 
-#: ../client.py:1598
-msgid "pkg: set-property: requires a property name and value"
-msgstr "pkg：set-property：需要特性名稱和特性值"
+#: ../client.py:1928
+msgid "            Publisher:"
+msgstr "發佈者:"
 
-#: ../client.py:1598
+#: ../client.py:1929
+msgid "                Alias:"
+msgstr "                別名："
+
+#: ../client.py:1939
+msgid "          Client UUID:"
+msgstr "          用戶端 UUID："
+
+#: ../client.py:1940
+msgid "      Catalog Updated:"
+msgstr "      已更新的目錄："
+
+#: ../client.py:1942 ../client.py:1944
+msgid "              Enabled:"
+msgstr "              已啟用："
+
+#: ../client.py:1942
+msgid "No"
+msgstr "否"
+
+#: ../client.py:1944
+msgid "Yes"
+msgstr "是"
+
+#: ../client.py:1955
 msgid "set-property: requires a property name and value"
 msgstr "set-property：需要特性名稱和特性值"
 
-#: ../client.py:1603
-#, python-format
-msgid "set-property failed: %s"
-msgstr "執行 set-property 失敗：%s"
+#: ../client.py:1958
+msgid ""
+"set-property: set-publisher must be used to change the preferred publisher"
+msgstr ""
+"set-property：必須使用 set-publisher 才能變更喜好的發佈者"
 
-#: ../client.py:1618
-msgid "pkg: unset-property requires at least one property name"
-msgstr "pkg：unset-property 至少需要一個特性名稱"
-
-#: ../client.py:1618
+#: ../client.py:1982
 msgid "unset-property: requires at least one property name"
 msgstr "unset-property：至少需要一個特性名稱"
 
-#: ../client.py:1624
+#: ../client.py:1986
+msgid ""
+"unset-property: set-publisher must be used to change the preferred publisher"
+msgstr ""
+"unset-property：必須使用 set-publisher 才能變更喜好的發佈者"
+
+#: ../client.py:1993
 #, python-format
 msgid "unset-property: no such property: %s"
 msgstr "unset-property：沒有這類特性：%s"
 
-#: ../client.py:1640
+#: ../client.py:2014
 #, python-format
 msgid "property: no such property: %s"
 msgstr "property：沒有這類特性：%s"
 
-#: ../client.py:1695 ../client.py:1720
+#: ../client.py:2077 ../client.py:2112
 msgid ""
-"image-create requires authority argument to be of the form '<prefix>=<url>'."
+"image-create requires publisher argument to be of the form '<prefix>=<url>'."
 msgstr ""
-"image-create 的授權引數格式必須為「<prefix>=<url>」。"
+"image-create 的發佈者引數格式必須為「<前綴>=<url>」。"
 
-#: ../client.py:1700
+#: ../client.py:2086
+msgid ""
+"image-create requires variant arguments to be of the form '<name>=<value>'."
+msgstr ""
+"image-create 的變數引數格式必須為「<名稱>=<值>」。"
+
+#: ../client.py:2092
 msgid "image-create requires a single image directory path"
 msgstr "image-create 需要單一影像目錄路徑"
 
-#: ../client.py:1705
+#: ../client.py:2097
 #, python-format
-msgid "pkg: set-authority: SSL key file '%s' does not exist"
-msgstr "pkg：set-authority：SSL 金鑰檔案「%s」不存在"
+msgid "pkg: set-publisher: SSL key file '%s' does not exist"
+msgstr "pkg：set-publisher：SSL 金鑰檔案「%s」不存在"
 
-#: ../client.py:1712
+#: ../client.py:2104
 #, python-format
-msgid "pkg: set-authority: SSL key cert '%s' does not exist"
-msgstr "pkg：set-authority：SSL 金鑰憑證「%s」不存在"
+msgid "pkg: set-publisher: SSL key cert '%s' does not exist"
+msgstr "pkg：set-publisher：SSL 金鑰憑證「%s」不存在"
 
-#: ../client.py:1724
+#: ../client.py:2109
+msgid "image-create requires a publisher argument"
+msgstr "image-create 需要發佈者引數"
+
+#: ../client.py:2116
 #, python-format
 msgid "image-create requires that a prefix not match: %s"
 msgstr "image-create 需要不符合 %s 的前綴"
 
-#: ../client.py:1729
-msgid "image-create: authority prefix has invalid characters"
-msgstr "image-create：授權前綴有無效的字元"
+#: ../client.py:2121
+msgid "image-create: publisher prefix has invalid characters"
+msgstr "image-create：發佈者前綴有無效的字元"
 
-#: ../client.py:1734
-msgid "image-create: authority URL is invalid"
-msgstr "image-create：授權 URL 無效"
+#: ../client.py:2126
+msgid "image-create: publisher URI is invalid"
+msgstr "image-create：發佈者 URI 無效"
 
-#: ../client.py:1741
+#: ../client.py:2133
+#, python-format
+msgid "there is already an image at: %s"
+msgstr "下列位置已有影像：%s"
+
+#: ../client.py:2134 ../client.py:2141
+msgid "To override, use the -f (force) option."
+msgstr "若要置換，請使用 -f (強制) 選項。"
+
+#: ../client.py:2140
+#, python-format
+msgid "Non-empty directory: %s"
+msgstr "非空目錄：%s"
+
+#: ../client.py:2149
 #, python-format
 msgid "cannot create image at %s: %s"
 msgstr "無法於 %s 建立影像：%s"
 
-#: ../client.py:1764
+#: ../client.py:2156
+#, python-format
+msgid ""
+"The URI '%s' does not appear to point to a valid pkg server.\n"
+"Please check the server's address and client's network configuration.\n"
+"Additional details:\n"
+"\n"
+"%s"
+msgstr ""
+"URI「%s」似乎未指向有效的 pkg 伺服器。\n"
+"請檢查伺服器的位址和用戶端的網路配置。\n"
+"其他詳細資訊：\n"
+"\n"
+"%s"
+
+#: ../client.py:2177
 #, python-format
 msgid "rebuild-index: command does not take operands ('%s')"
 msgstr "rebuild-index：指令沒有運算元 (「%s」)"
 
-#: ../client.py:1797
+#: ../client.py:2215
 msgid "history: -H and -l may not be combined"
 msgstr "history：不能合併 -H 和 -l"
 
-#: ../client.py:1801
+#: ../client.py:2219
 msgid "TIME"
 msgstr "時間"
 
-#: ../client.py:1802
+#: ../client.py:2220
 msgid "OPERATION"
 msgstr "作業"
 
-#: ../client.py:1802
+#: ../client.py:2220
 msgid "CLIENT"
 msgstr "用戶端"
 
-#: ../client.py:1802
+#: ../client.py:2220
 msgid "OUTCOME"
 msgstr "結果"
 
-#: ../client.py:1879
+#: ../client.py:2313
 #, python-format
 msgid "illegal global option -- %s"
 msgstr "非法全域選項 -- %s"
 
-#: ../client.py:1899 ../client.py:2005
+#: ../client.py:2321
+#, python-format
+msgid "%(opt)s takes argument of form name=value, not %(arg)s"
+msgstr "%(opt)s 採用「名稱=值」格式而非 %(arg)s 格式的引數"
+
+#: ../client.py:2355 ../client.py:2365
+#, python-format
+msgid "-R not allowed for %s subcommand"
+msgstr "%s 子指令不允許使用 -R"
+
+#: ../client.py:2360 ../client.py:2466 ../publish.py:358
 #, python-format
 msgid "illegal %s option -- %s"
 msgstr "非法 %s 選項 -- %s"
 
-#: ../client.py:1904
+#: ../client.py:2368
 #, python-format
 msgid "version: command does not take operands ('%s')"
 msgstr "version：指令沒有運算元 (「%s」)"
 
-#: ../client.py:1938
+#: ../client.py:2393
 msgid ""
 "Could not find image.  Use the -R option or set $PKG_IMAGE to point\n"
 "to an image, or change the working directory to one inside the image."
@@ -567,31 +751,36 @@ msgstr ""
 "找不到影像。使用 -R 選項或設定 $PKG_IMAGE 來指向影像，\n"
 "或將工作目錄變更為影像內的目錄。"
 
-#: ../client.py:1952
+#: ../client.py:2407
 msgid "No image found."
 msgstr "找不到影像。"
 
-#: ../client.py:1997
+#: ../client.py:2413
+#, python-format
+msgid "client configuration error: %s"
+msgstr "用戶端配置錯誤：%s"
+
+#: ../client.py:2458
 msgid "History purged."
 msgstr "已清除歷程記錄。"
 
-#: ../client.py:2002
+#: ../client.py:2463 ../publish.py:356
 #, python-format
 msgid "unknown subcommand '%s'"
 msgstr "不明的子指令「%s」"
 
-#: ../client.py:2028
+#: ../client.py:2499
 #, python-format
 msgid ""
 "\n"
-"Maximum (%d) network retries exceeded during download. Details follow:\n"
+"Maximum number of network retries exceeded during download. Details follow:\n"
 "%s"
 msgstr ""
 "\n"
-"下載期間已超過網路重試次數上限 (%d)。詳細資訊請參考：\n"
+"下載期間已超過網路重試次數上限。詳細資訊請參考：\n"
 "%s"
 
-#: ../client.py:2036
+#: ../client.py:2506
 msgid ""
 "An error was encountered while attempting to retrieve package or file data "
 "for the requested operation."
@@ -599,7 +788,34 @@ msgstr ""
 "嘗試為要求的作業擷取套裝軟體或檔案資料時"
 "發生錯誤。"
 
-#: ../client.py:2045
+#: ../client.py:2513
+msgid ""
+"\n"
+"Unable to contact a valid package depot. This may be due to a problem with "
+"the server, network misconfiguration, or an incorrect pkg client "
+"configuration.  Please check your network settings and attempt to contact "
+"the server using a web browser."
+msgstr ""
+"\n"
+"無法連絡有效的套裝軟體庫房。這可能是因為"
+"伺服器發生問題、網路錯誤配置或不正確的 pkg 用戶端"
+"配置。請檢查您的網路設定，並嘗試使用"
+"Web 瀏覽器與伺服器進行通訊。"
+
+#: ../client.py:2518
+#, python-format
+msgid ""
+"\n"
+"Additional details:\n"
+"\n"
+"%s"
+msgstr ""
+"\n"
+"其他詳細資訊：\n"
+"\n"
+"%s"
+
+#: ../client.py:2525
 msgid ""
 "An error was encountered while attempting to load history information\n"
 "about past client operations."
@@ -607,7 +823,7 @@ msgstr ""
 "嘗試載入過去用戶端作業的相關歷程記錄資訊時\n"
 "發生錯誤。"
 
-#: ../client.py:2054
+#: ../client.py:2534
 msgid ""
 "An error was encountered while attempting to store information about the\n"
 "current operation in client history."
@@ -615,816 +831,2115 @@ msgstr ""
 "嘗試儲存用戶端歷程記錄中目前作業的相關資訊時\n"
 "發生錯誤。"
 
-#: ../client.py:2064
+#: ../client.py:2544
 msgid "An error was encountered while attempting to purge client history."
 msgstr "嘗試清除用戶端歷程記錄時發生錯誤。"
 
-#: ../client.py:2073
+#: ../client.py:2551
+#, python-format
+msgid ""
+"The pkg command appears out of sync with the libraries provided \n"
+"by SUNWipkg. The client version is %(client)s while the library API version "
+"is %(api)s"
+msgstr ""
+"pkg 指令似乎與 SUNWipkg 提供的程式庫不同步。\n"
+"用戶端版本是 %(client)s，"
+"而程式庫 API 版本為 %(api)s"
+
+#: ../client.py:2563 ../publish.py:382
 #, python-format
 msgid ""
 "\n"
 "\n"
 "This is an internal error.  Please let the developers know about this\n"
-"problem by filing a bug athttp://defect.opensolaris.org and including the\n"
-"abovetraceback and this message.  The version of pkg(5) is '%s'."
+"problem by filing a bug at http://defect.opensolaris.org and including the\n"
+"above traceback and this message.  The version of pkg(5) is '%s'."
 msgstr ""
 "\n"
 "\n"
-"這是內部錯誤。請在 http://defect.opensolaris.org 將此錯誤歸檔，\n"
-"並包含以上追蹤訊息和本訊息，\n"
+"此為內部錯誤。請在 http://defect.opensolaris.org 將此錯誤歸檔，\n"
+"並附上以上追蹤訊息和本訊息，\n"
 "讓開發人員知道此問題。pkg(5) 的版本是「%s」。"
 
-#: ../gui/data/l10n.py:6
-msgid "Communication"
-msgstr "通訊"
+#. self.__add_package_to_category(_("All"),None,None,None);
+#. Category names until xdg is imported.
+#. from xdg.DesktopEntry import *
+#. entry = DesktopEntry ()
+#. directory = '/usr/share/desktop-directories'
+#. for root, dirs, files in os.walk (directory):
+#. for name in files:
+#. entry.parse (os.path.join (root, name))
+#. self.__add_category_to_section (entry.getName (),
+#. _('Applications Desktop'))
+#: ../gui/data/l10n.py:31 ../packagemanager.py:3524 ../packagemanager.py:3526
+#: ../packagemanager.py:3551
+msgid "Accessories"
+msgstr "附屬應用程式"
 
-#: ../gui/data/l10n.py:7
-msgid "Mail"
-msgstr "郵件"
+#: ../gui/data/l10n.py:32
+msgid "Administration and Configuration"
+msgstr "管理與配置"
 
-#: ../gui/data/l10n.py:8
-msgid "Localization"
-msgstr "本土化"
+#: ../gui/data/l10n.py:33
+msgid "Applets"
+msgstr "Applet"
 
-#: ../gui/data/l10n.py:9
-msgid "Social Software"
-msgstr "社會性軟體"
+#: ../gui/data/l10n.py:34
+msgid "Application and Web Servers"
+msgstr "應用程式與 Web 伺服器"
 
-#: ../gui/data/l10n.py:10
-msgid "Viewer"
-msgstr "檢視器"
+#: ../gui/data/l10n.py:35
+msgid "C"
+msgstr "C"
 
-#: ../gui/data/l10n.py:11
-msgid "RasterGraphics"
-msgstr "光柵圖形"
+#: ../gui/data/l10n.py:36
+msgid "C++"
+msgstr "C++"
 
-#: ../gui/data/l10n.py:12
-msgid "2DGraphics"
-msgstr "2D 圖形"
+#: ../gui/data/l10n.py:37
+msgid "Configuration and Preferences"
+msgstr "配置與喜好設定"
 
-#: ../gui/data/l10n.py:13
-msgid "Photography"
-msgstr "攝影"
+#: ../gui/data/l10n.py:38 ../packagemanager.py:3569
+msgid "Core"
+msgstr "核心"
 
-#: ../gui/data/l10n.py:14
-msgid "CLI tools"
-msgstr "CLI 工具"
+#: ../gui/data/l10n.py:39
+msgid "Databases"
+msgstr "資料庫"
 
-#: ../gui/data/l10n.py:15
-msgid "Print"
-msgstr "列印"
+#: ../gui/data/l10n.py:40
+msgid "Databases (System)"
+msgstr "資料庫 (系統)"
 
+#: ../gui/data/l10n.py:41
+msgid "Desktop"
+msgstr "桌面"
+
+#: ../gui/data/l10n.py:42
+msgid "Display"
+msgstr "顯示"
+
+#: ../gui/data/l10n.py:43
+msgid "Distribution Tools"
+msgstr "發行工具"
+
+#: ../gui/data/l10n.py:44
+msgid "Documentation"
+msgstr "文件"
+
+#: ../gui/data/l10n.py:45
+msgid "Enterprise Management"
+msgstr "企業管理"
+
+#: ../gui/data/l10n.py:46
+msgid "File Managers"
+msgstr "檔案管理員"
+
+#: ../gui/data/l10n.py:47
+msgid "File System"
+msgstr "檔案系統"
+
+#: ../gui/data/l10n.py:48
+msgid "Fonts"
+msgstr "字型"
+
+#: ../gui/data/l10n.py:49
+msgid "GNOME and GTK+"
+msgstr "GNOME 與 GTK+"
+
+#: ../gui/data/l10n.py:50
+msgid "GNU"
+msgstr "GNU"
+
+#: ../gui/data/l10n.py:51 ../packagemanager.py:3528 ../packagemanager.py:3532
+#: ../packagemanager.py:3536 ../packagemanager.py:3553
+msgid "Games"
+msgstr "遊戲"
+
+#: ../gui/data/l10n.py:52
+msgid "Graphics and Imaging"
+msgstr "圖形與成像"
+
+#: ../gui/data/l10n.py:53
+msgid "Hardware"
+msgstr "硬體"
+
+#: ../gui/data/l10n.py:54
+msgid "High Performance Computing"
+msgstr "高效能運算"
+
+#: ../gui/data/l10n.py:55
+msgid "Integrated Development Environments"
+msgstr "整合開發環境"
+
+#: ../gui/data/l10n.py:56
+msgid "Internationalization"
+msgstr "國際化"
+
+#: ../gui/data/l10n.py:57 ../packagemanager.py:3557
+msgid "Internet"
+msgstr "網際網路"
+
+#: ../gui/data/l10n.py:58
+msgid "Java"
+msgstr "Java"
+
+#: ../gui/data/l10n.py:59
+msgid "Libraries"
+msgstr "程式庫"
+
+#: ../gui/data/l10n.py:60
+msgid "Libraries (System)"
+msgstr "程式庫 (系統)"
+
+#: ../gui/data/l10n.py:61
+msgid "Localizations (Desktop)"
+msgstr "本土化 (桌面)"
+
+#: ../gui/data/l10n.py:62
+msgid "Localizations (System)"
+msgstr "本土化 (系統)"
+
+#: ../gui/data/l10n.py:63 ../packagemanager.py:3573
+msgid "Media"
+msgstr "媒體"
+
+#: ../gui/data/l10n.py:64
+msgid "Networking"
+msgstr "網路"
+
+#: ../gui/data/l10n.py:65 ../packagemanager.py:3559 ../packagemanager.py:3578
+msgid "Office"
+msgstr "辦公室套裝軟體"
+
+#: ../gui/data/l10n.py:66
+msgid "Other Languages"
+msgstr "其他語言"
+
+#: ../gui/data/l10n.py:67
+msgid "Other Peripherals"
+msgstr "其他週邊裝置"
+
+#: ../gui/data/l10n.py:68
+msgid "PHP"
+msgstr "PHP"
+
+#: ../gui/data/l10n.py:69
+msgid "Packaging"
+msgstr "封裝"
+
+#: ../gui/data/l10n.py:70
+msgid "Perl"
+msgstr "Perl"
+
+#: ../gui/data/l10n.py:71
+msgid "Plug-ins and Run-times"
+msgstr "外掛程式與執行階段"
+
+#: ../gui/data/l10n.py:72
+msgid "Ports"
+msgstr "連接埠"
+
+#: ../gui/data/l10n.py:73
+msgid "Printing"
+msgstr "正在列印"
+
+#: ../gui/data/l10n.py:74
+msgid "Python"
+msgstr "Python"
+
+#: ../gui/data/l10n.py:75
+msgid "Ruby"
+msgstr "Ruby"
+
+#: ../gui/data/l10n.py:76
+msgid "Scripts"
+msgstr "程序檔"
+
+#: ../gui/data/l10n.py:77
+msgid "Security"
+msgstr "安全性"
+
+#: ../gui/data/l10n.py:78
+msgid "Services"
+msgstr "服務"
+
+#: ../gui/data/l10n.py:79
+msgid "Sessions"
+msgstr "階段作業"
+
+#: ../gui/data/l10n.py:80
+msgid "Shells"
+msgstr "Shell"
+
+#: ../gui/data/l10n.py:81
+msgid "Software Management"
+msgstr "軟體管理"
+
+#: ../gui/data/l10n.py:82
+msgid "Sound and Video"
+msgstr "影音"
+
+#: ../gui/data/l10n.py:83
+msgid "Source Code Management"
+msgstr "原始碼管理"
+
+#: ../gui/data/l10n.py:84
+msgid "Storage"
+msgstr "儲存裝置"
+
+#: ../gui/data/l10n.py:85 ../packagemanager.py:1269
+msgid "System"
+msgstr "系統"
+
+#: ../gui/data/l10n.py:86
+msgid "System Utilities"
+msgstr "系統公用程式"
+
+#: ../gui/data/l10n.py:87
+msgid "Text Tools"
+msgstr "文字工具"
+
+#: ../gui/data/l10n.py:88
+msgid "Trusted"
+msgstr "可信任的"
+
+#: ../gui/data/l10n.py:89 ../packagemanager.py:3565
+msgid "Universal Access"
+msgstr "通用存取"
+
+#: ../gui/data/l10n.py:90
+msgid "Virtualization"
+msgstr "虛擬"
+
+#: ../gui/data/l10n.py:91
+msgid "Window Managers"
+msgstr "視窗管理員"
+
+#: ../gui/data/l10n.py:92
+msgid "X11"
+msgstr "X11"
+
+#: ../gui/data/l10n.py:93
+msgid "X11 (System)"
+msgstr "X11 (系統)"
+
+#: ../gui/data/addmoresoftware.desktop.in.h:1
+msgid "Add More Software"
+msgstr "增加更多軟體"
+
+#: ../gui/data/addmoresoftware.desktop.in.h:2
 #: ../gui/data/packagemanager.desktop.in.h:1
 msgid "Install, update and remove software packages"
 msgstr "安裝、更新與移除套裝軟體"
 
+#. XXX Remove and use _() where self._ and self.parent._ are being used
 #: ../gui/data/packagemanager.desktop.in.h:2
-#: ../gui/data/packagemanager.glade.h:67 ../packagemanager.py:102
+#: ../gui/data/packagemanager.glade.h:59 ../gui/modules/webinstall.py:304
+#: ../packagemanager.py:177 ../packagemanager.py:2076
+#: ../packagemanager.py:3159
 msgid "Package Manager"
 msgstr "套裝軟體管理員"
 
 #: ../gui/data/packagemanager.glade.h:1
-msgid "\n"
-msgstr "\n"
+msgid "<b>Add new repositories and manage existing ones.</b>"
+msgstr "<b>新增儲存庫並管理現有的儲存庫。</b>"
+
+#: ../gui/data/packagemanager.glade.h:2
+msgid "<b>Apply the following changes:</b>"
+msgstr "<b>套用以下變更：</b>"
 
 #: ../gui/data/packagemanager.glade.h:3
 msgid ""
-"- Delete old Boot Environments to free up disk space.\n"
-"- Set the Active BE for next reboot."
-msgstr ""
-"- 刪除舊啟動環境以釋放磁碟空間。\n"
-"- 設定使用中的 BE，以供下次重新開機時使用。"
-
-#: ../gui/data/packagemanager.glade.h:5
-msgid ""
-"6 packages will be installed\n"
-"28 packages will be updated\n"
+"<b>Create New Boot Environment</b>\n"
 "\n"
-"20.1 MB will be downloaded"
+"Update All creates a new boot environment (BE) as a means of archiving the\n"
+"current BE. The new BE consists of the updated packages and is the default "
+"BE\n"
+"when the system is rebooted.\n"
 msgstr ""
-"將安裝 6 個套裝軟體\n"
-"將更新 28 個套裝軟體\n"
+"<b>建立新的啟動環境</b>\n"
 "\n"
-"將下載 20.1 MB"
+"「全部更新」會建立新的啟動環境 (BE)，以作為歸檔目前 BE 的一種\n"
+"方法。新的 BE 包括更新的套裝軟體，而且是"
+"系統\n"
+"重新啟動時的預設 BE。\n"
 
 #: ../gui/data/packagemanager.glade.h:9
-msgid "<b>Active Boot Environment changed to:</b>"
-msgstr "<b>使用中的啟動環境已變更為：</b>"
+msgid "<b>Delete, rename and activate boot environments.</b>"
+msgstr "<b>刪除、重新命名並啟動啟動環境。</b>"
 
 #: ../gui/data/packagemanager.glade.h:10
-msgid "<b>Boot Environments to be deleted:</b>"
-msgstr "<b>要刪除的啟動環境：</b>"
+msgid "<b>Modify Repository URL</b>"
+msgstr "<b>修改儲存庫 URL</b>"
 
 #: ../gui/data/packagemanager.glade.h:11
-msgid "<b>Can't establish a connection to the repository</b>"
-msgstr "<b>無法建立與儲存庫的連線</b>"
-
-#: ../gui/data/packagemanager.glade.h:12
-msgid "<b>Edit Repositories</b>"
-msgstr "<b>編輯儲存庫</b>"
-
-#: ../gui/data/packagemanager.glade.h:13
-msgid "<b>Manage Your Boot Environments</b>"
-msgstr "<b>管理您的啟動環境</b>"
-
-#: ../gui/data/packagemanager.glade.h:14
-msgid "<b>Modify Repository</b>"
-msgstr "<b>修改儲存庫</b>"
-
-#: ../gui/data/packagemanager.glade.h:15
 msgid "<b>PACKAGE NAME</b>"
 msgstr "<b>套裝軟體名稱</b>"
 
+#: ../gui/data/packagemanager.glade.h:12
+msgid "<b>Package Name</b>"
+msgstr "<b>套裝軟體名稱</b>"
+
+#: ../gui/data/packagemanager.glade.h:13
+msgid "<b>Review the packages to be removed:</b>"
+msgstr "<b>檢查要移除的套裝軟體：</b>"
+
+#: ../gui/data/packagemanager.glade.h:14
+msgid "<b>Search</b>"
+msgstr "<b>搜尋</b>"
+
+#: ../gui/data/packagemanager.glade.h:15
+msgid "<b>Startup</b>"
+msgstr "<b>啟動</b>"
+
 #: ../gui/data/packagemanager.glade.h:16
-msgid "<b>Summary</b>"
-msgstr "<b>摘要</b>"
+msgid "<b>_Mirrors</b>"
+msgstr "<b>鏡像(_M)</b>"
 
 #: ../gui/data/packagemanager.glade.h:17
-msgid "<i>Repository:</i>"
-msgstr "<i>儲存庫：</i>"
+msgid "<b>_SSL Key and Certificate</b>"
+msgstr "<b>SSL 金鑰和憑證(_S)</b>"
 
 #: ../gui/data/packagemanager.glade.h:18
+msgid "<big><b>Package Manager Web Installer</b></big>"
+msgstr "<big><b>套裝軟體管理員 Web 安裝程式</b></big>"
+
+#: ../gui/data/packagemanager.glade.h:19
+msgid "<i>_Repository:</i>"
+msgstr "<i>儲存庫(_R)：</i>"
+
+#: ../gui/data/packagemanager.glade.h:20
 msgid "About"
 msgstr "關於"
 
-#: ../gui/data/packagemanager.glade.h:19
+#: ../gui/data/packagemanager.glade.h:21
 msgid "About Glade"
 msgstr "關於 Glade"
 
-#: ../gui/data/packagemanager.glade.h:20
-msgid "Architecture (CPU):"
-msgstr "架構 (CPU)："
-
-#: ../gui/data/packagemanager.glade.h:21
-msgid "BE Management Changes Confirmation"
-msgstr "BE 管理變更確認"
-
 #: ../gui/data/packagemanager.glade.h:22
-msgid "Boot Environment Management"
-msgstr "啟動環境管理"
+msgid "B_rowse"
+msgstr "瀏覽(_R)"
 
 #: ../gui/data/packagemanager.glade.h:23
-msgid "Build type:"
-msgstr "建置類型："
+msgid "Boot Environment Confirmation"
+msgstr "啟動環境確認"
 
 #: ../gui/data/packagemanager.glade.h:24
-msgid "By managing Boot Environments you may:"
-msgstr "藉由管理啟動環境，您可以："
+msgid "Br_owse"
+msgstr "瀏覽(_O)"
 
 #: ../gui/data/packagemanager.glade.h:25
-msgid "Cancel"
-msgstr "取消"
+msgid "Browse for SSL Certificate"
+msgstr "瀏覽 SSL 憑證"
 
-#: ../gui/data/packagemanager.glade.h:26 ../um/data/updatemanager.glade.h:11
+#: ../gui/data/packagemanager.glade.h:26
+msgid "Browse for SSL Key"
+msgstr "瀏覽 SSL 金鑰"
+
+#: ../gui/data/packagemanager.glade.h:27 ../um/data/updatemanager.glade.h:4
 msgid "Checking for latest SUNWipkg and SUNWipkg-gui, please wait..."
 msgstr "正在檢查最新的 SUNWipkg 和 SUNWipkg-gui，請稍候..."
 
-#: ../gui/data/packagemanager.glade.h:27 ../gui/modules/installupdate.py:188
+#: ../gui/data/packagemanager.glade.h:28
 msgid "Checking package dependencies..."
 msgstr "正在檢查套裝軟體相依性..."
 
-#: ../gui/data/packagemanager.glade.h:28
+#: ../gui/data/packagemanager.glade.h:29
 msgid "Clear"
 msgstr "清除"
 
-#: ../gui/data/packagemanager.glade.h:29 ../gui/modules/installupdate.py:590
-msgid "Close"
-msgstr "關閉"
-
 #: ../gui/data/packagemanager.glade.h:30
+msgid "Click to get list of newest packages."
+msgstr "按一下以取得最新的套裝軟體。"
+
+#: ../gui/data/packagemanager.glade.h:31
+msgid "Click to update all installed packages."
+msgstr "按一下以更新所有已安裝的套裝軟體。"
+
+#: ../gui/data/packagemanager.glade.h:32
 msgid "Copy"
 msgstr "複製"
 
-#: ../gui/data/packagemanager.glade.h:31
+#: ../gui/data/packagemanager.glade.h:33
 msgid ""
-"Copyright 2008 Sun Microsystems, Inc.  \n"
+"Copyright 2009 Sun Microsystems, Inc.  \n"
 "All rights reserved.\n"
 "Use is subject to license terms."
 msgstr ""
-"Copyright 2008 Sun Microsystems, Inc.  \n"
+"Copyright 2009 Sun Microsystems, Inc.  \n"
 "版權所有。\n"
 "必須依據授權規定使用。"
 
-#: ../gui/data/packagemanager.glade.h:34
-msgid "Currently Active Boot Environment"
-msgstr "目前使用中的啟動環境"
-
-#: ../gui/data/packagemanager.glade.h:35
-msgid "Custom Package Options"
-msgstr "自訂套裝軟體選項"
-
 #: ../gui/data/packagemanager.glade.h:36
-msgid "Cut"
-msgstr "剪下"
+msgid "Cu_t"
+msgstr "剪下(_T)"
 
 #: ../gui/data/packagemanager.glade.h:37
-msgid "Cut action"
-msgstr "剪下動作"
+msgid "Currently active boot environment"
+msgstr "目前使用中的啟動環境"
 
 #: ../gui/data/packagemanager.glade.h:38
-msgid "Debug"
-msgstr "除錯"
+msgid "Cut action"
+msgstr "剪下動作"
 
 #: ../gui/data/packagemanager.glade.h:39
 msgid "Dependencies"
 msgstr "相依性"
 
 #: ../gui/data/packagemanager.glade.h:40
-msgid "Deselect"
-msgstr "取消選取"
-
-#: ../gui/data/packagemanager.glade.h:41
 msgid "Deselect selected packages"
 msgstr "取消選取所選套裝軟體"
 
-#: ../gui/data/packagemanager.glade.h:42
-msgid "Downloading Packages"
-msgstr "正在下載套裝軟體"
+#: ../gui/data/packagemanager.glade.h:41
+msgid "Details"
+msgstr "詳細資訊"
 
-#: ../gui/data/packagemanager.glade.h:43
-msgid "Downloading files..."
-msgstr "正在下載檔案..."
+#: ../gui/data/packagemanager.glade.h:42
+msgid "Do not notify me about these repositories again."
+msgstr "請不要再通知我有關這些儲存庫的資訊。"
+
+#: ../gui/data/packagemanager.glade.h:43 ../gui/modules/installupdate.py:100
+#: ../um/data/updatemanager.glade.h:6 ../updatemanager.py:174
+#: ../updatemanager.py:397 ../updatemanager.py:404 ../updatemanager.py:411
+#: ../updatemanager.py:418 ../updatemanager.py:425
+msgid "Download"
+msgstr "下載"
 
 #: ../gui/data/packagemanager.glade.h:44
-msgid "Edit Repositories"
-msgstr "編輯儲存庫"
+msgid "Files"
+msgstr "檔案"
 
-#: ../gui/data/packagemanager.glade.h:45
-msgid "Edit Repositories..."
-msgstr "編輯儲存庫..."
+#: ../gui/data/packagemanager.glade.h:45 ../gui/modules/installupdate.py:101
+#: ../updatemanager.py:190 ../updatemanager.py:398 ../updatemanager.py:405
+#: ../updatemanager.py:412 ../updatemanager.py:419 ../updatemanager.py:426
+msgid "Install"
+msgstr "安裝"
 
 #: ../gui/data/packagemanager.glade.h:46
-msgid ""
-"Enter the repository name and URL you want to add as a new package source. \n"
-"Select from the list to modify or remove existing repositories."
-msgstr ""
-"輸入您要增加為新的套裝軟體來源的儲存庫名稱和 URL。\n"
-"從清單中選取以修改或移除現有的儲存庫。"
-
-#: ../gui/data/packagemanager.glade.h:48
-msgid "Files Details"
-msgstr "檔案詳細資訊"
-
-#: ../gui/data/packagemanager.glade.h:49
-msgid "General Info"
-msgstr "一般資訊"
-
-#: ../gui/data/packagemanager.glade.h:50
-msgid ""
-"In some cases, when Update action is performed, a new Boot Environment is "
-"created."
-msgstr ""
-"在某些情況下，執行更新作業時，會同時建立新的"
-"啟動環境。"
-
-#: ../gui/data/packagemanager.glade.h:51
-msgid "Install / Update"
-msgstr "安裝/更新"
-
-#: ../gui/data/packagemanager.glade.h:52
-msgid "Install / Update Confirmation"
-msgstr "安裝/更新確認"
-
-#: ../gui/data/packagemanager.glade.h:53
 msgid "Install or Update selected packages"
 msgstr "安裝或更新選取的套裝軟體"
 
-#: ../gui/data/packagemanager.glade.h:54
+#: ../gui/data/packagemanager.glade.h:47 ../gui/modules/installupdate.py:237
 msgid "Install/Update"
 msgstr "安裝/更新"
 
-#: ../gui/data/packagemanager.glade.h:55
+#: ../gui/data/packagemanager.glade.h:48
 msgid "Install/Upgrade Check"
 msgstr "安裝/升級檢查"
 
-#: ../gui/data/packagemanager.glade.h:56
-msgid "Installing Packages"
-msgstr "正在安裝套裝軟體"
+#: ../gui/data/packagemanager.glade.h:50
+msgid "Legend:"
+msgstr "圖例："
 
-#: ../gui/data/packagemanager.glade.h:57 ../gui/modules/installupdate.py:456
-msgid "Installing Packages..."
-msgstr "正在安裝套裝軟體..."
-
-#: ../gui/data/packagemanager.glade.h:58 ../packagemanager.py:1014
-msgid "Licenses"
+#: ../gui/data/packagemanager.glade.h:51
+msgid "License"
 msgstr "授權"
 
-#: ../gui/data/packagemanager.glade.h:59
+#: ../gui/data/packagemanager.glade.h:52
+msgid "M_irror:"
+msgstr "鏡像(_I)："
+
+#: ../gui/data/packagemanager.glade.h:53
+msgid "Manage Boot Environments"
+msgstr "管理啟動環境"
+
+#: ../gui/data/packagemanager.glade.h:54
+msgid "Manage Repositories"
+msgstr "管理儲存庫"
+
+#: ../gui/data/packagemanager.glade.h:55
+msgid "Manage _Boot Environments..."
+msgstr "管理啟動環境(_B)..."
+
+#: ../gui/data/packagemanager.glade.h:56
 msgid "Modify Repository"
 msgstr "修改儲存庫"
 
-#: ../gui/data/packagemanager.glade.h:60
-msgid "Network Problem"
-msgstr "網路問題"
-
-#: ../gui/data/packagemanager.glade.h:61
-msgid "Next"
-msgstr "下一步"
-
-#: ../gui/data/packagemanager.glade.h:62
-msgid "Non-Debug"
-msgstr "非除錯"
-
-#: ../gui/data/packagemanager.glade.h:63
-msgid "OK"
-msgstr "確定"
-
-#: ../gui/data/packagemanager.glade.h:64
-msgid "Ok"
-msgstr "確定"
-
-#: ../gui/data/packagemanager.glade.h:65
+#: ../gui/data/packagemanager.glade.h:57
 msgid "Online Help"
 msgstr "線上說明"
 
-#: ../gui/data/packagemanager.glade.h:66
-msgid "Package Download Preferences"
-msgstr "套裝軟體下載喜好設定"
+#: ../gui/data/packagemanager.glade.h:58
+msgid "Online _Help"
+msgstr "線上說明(_H)"
 
-#: ../gui/data/packagemanager.glade.h:68
+#: ../gui/data/packagemanager.glade.h:60
+msgid "Package Manager Preferences"
+msgstr "套裝軟體管理員喜好設定"
+
+#: ../gui/data/packagemanager.glade.h:61
 msgid "Paste"
 msgstr "貼上"
 
-#: ../gui/data/packagemanager.glade.h:69
-msgid "Please check your Internet settings."
-msgstr "請檢查您的網際網路設定。"
+#: ../gui/data/packagemanager.glade.h:62
+msgid "Pre_ferences"
+msgstr "喜好設定(_F)"
 
-#: ../gui/data/packagemanager.glade.h:70 ../um/data/updatemanager.glade.h:16
+#: ../gui/data/packagemanager.glade.h:63
+msgid "Preferences"
+msgstr "喜好設定"
+
+#: ../gui/data/packagemanager.glade.h:64 ../gui/modules/installupdate.py:99
+msgid "Preparation"
+msgstr "準備"
+
+#: ../gui/data/packagemanager.glade.h:65 ../gui/modules/webinstall.py:198
+msgid "Proceed only if you trust this new repository "
+msgstr "只會在您信任此新儲存庫時繼續"
+
+#: ../gui/data/packagemanager.glade.h:66 ../um/data/updatemanager.glade.h:9
 msgid "Processing"
 msgstr "處理中"
 
-#: ../gui/data/packagemanager.glade.h:71
-msgid "Quit"
-msgstr "退出"
-
-#: ../gui/data/packagemanager.glade.h:72
+#: ../gui/data/packagemanager.glade.h:67
 msgid "Quit application"
 msgstr "退出應用程式"
 
-#: ../gui/data/packagemanager.glade.h:73
+#: ../gui/data/packagemanager.glade.h:68
 msgid "Reload"
 msgstr "重新載入"
 
-#: ../gui/data/packagemanager.glade.h:74
+#: ../gui/data/packagemanager.glade.h:69
+msgid "Remote search error"
+msgstr "遠端搜尋錯誤"
+
+#: ../gui/data/packagemanager.glade.h:70 ../gui/modules/installupdate.py:202
+#: ../gui/modules/installupdate.py:205
 msgid "Remove"
 msgstr "移除"
 
-#: ../gui/data/packagemanager.glade.h:75 ../gui/modules/installupdate.py:146
-msgid "Remove Check"
-msgstr "移除檢查"
-
-#: ../gui/data/packagemanager.glade.h:76 ../gui/modules/installupdate.py:138
-#: ../gui/modules/installupdate.py:584
+#: ../gui/data/packagemanager.glade.h:71
 msgid "Remove Confirmation"
 msgstr "移除確認"
 
-#: ../gui/data/packagemanager.glade.h:77
+#: ../gui/data/packagemanager.glade.h:72
 msgid "Remove selected packages"
 msgstr "移除選取的套裝軟體"
 
-#: ../gui/data/packagemanager.glade.h:78 ../gui/modules/installupdate.py:144
-msgid "Removing Packages"
-msgstr "正在移除套裝軟體"
+#: ../gui/data/packagemanager.glade.h:73
+msgid "SSL C_ertificate: "
+msgstr "SSL 憑證(_E)："
 
-#: ../gui/data/packagemanager.glade.h:79 ../gui/modules/installupdate.py:148
-msgid "Removing Packages..."
-msgstr "正在移除套裝軟體..."
+#: ../gui/data/packagemanager.glade.h:74
+msgid "SSL Key and Certificate"
+msgstr "SSL 金鑰和憑證"
+
+#: ../gui/data/packagemanager.glade.h:75
+msgid "SSL _Certificate:"
+msgstr "SSL 憑證(_C)："
+
+#: ../gui/data/packagemanager.glade.h:76
+msgid "SSL _Key:"
+msgstr "SSL 金鑰(_K)："
+
+#: ../gui/data/packagemanager.glade.h:77
+msgid "SSL _Key: "
+msgstr "SSL 金鑰(_K)："
+
+#: ../gui/data/packagemanager.glade.h:78
+msgid "Se_arch:"
+msgstr "搜尋(_A)："
+
+#: ../gui/data/packagemanager.glade.h:79
+msgid "Search"
+msgstr "搜尋"
 
 #: ../gui/data/packagemanager.glade.h:80
-msgid "Reset"
-msgstr "重設"
+msgid "Search All Repositories Error"
+msgstr "搜尋所有儲存庫錯誤"
 
 #: ../gui/data/packagemanager.glade.h:81
 msgid ""
-"Review the Boot Environments to change\n"
-"Click OK to proceed"
+"Search All Repositories cannot be performed on the following\n"
+"repositories:"
 msgstr ""
-"檢閱要變更的啟動環境\n"
-"按一下 [確定] 以繼續"
+"無法在下列儲存庫上執行「搜尋所有\n"
+"儲存庫」："
 
 #: ../gui/data/packagemanager.glade.h:83
-msgid "SPARC"
-msgstr "SPARC"
-
-#: ../gui/data/packagemanager.glade.h:84
-msgid "Search:"
-msgstr "搜尋："
-
-#: ../gui/data/packagemanager.glade.h:85
-msgid "Select All"
-msgstr "全選"
-
-#: ../gui/data/packagemanager.glade.h:86
 msgid "Select All Items"
 msgstr "選取所有項目"
 
-#: ../gui/data/packagemanager.glade.h:87
+#: ../gui/data/packagemanager.glade.h:84
 msgid "Select Updates"
 msgstr "選取更新"
 
+#: ../gui/data/packagemanager.glade.h:85
+msgid "Select _All"
+msgstr "全選(_A)"
+
+#: ../gui/data/packagemanager.glade.h:86
+msgid "Select _Updates"
+msgstr "選取更新(_U)"
+
+#: ../gui/data/packagemanager.glade.h:87
+msgid "Select from the list to modify or remove existing repositories."
+msgstr "從清單中選取，以修改或移除現有的儲存庫。"
+
 #: ../gui/data/packagemanager.glade.h:88
-msgid ""
-"Select default download preferences for all packages.\n"
-"Click Reset to reset download preferences to the initial settings."
-msgstr ""
-"選取所有套裝軟體的預設下載喜好設定。\n"
-"按一下 [重設] 將下載喜好設定重設為初始設定。"
+msgid "Select packages by marking the checkbox and click to Install/Update."
+msgstr "勾選核取方塊以選取套裝軟體，並按一下 [安裝/更新] 以進行安裝/更新。"
+
+#: ../gui/data/packagemanager.glade.h:89
+msgid "Select packages by marking the checkbox and click to Remove selected."
+msgstr "勾選核取方塊以選取套裝軟體，並按一下 [移除] 以移除所選項目。"
 
 #: ../gui/data/packagemanager.glade.h:90
+msgid "Sho_w:"
+msgstr "顯示(_W)："
+
+#: ../gui/data/packagemanager.glade.h:91
 msgid "Short description"
 msgstr "簡短說明"
 
-#: ../gui/data/packagemanager.glade.h:91
-msgid "Show Details"
-msgstr "顯示詳細資訊"
-
 #: ../gui/data/packagemanager.glade.h:92
-msgid "Show:"
-msgstr "顯示："
+msgid "Start Page"
+msgstr "起始頁面"
 
 #: ../gui/data/packagemanager.glade.h:93
-msgid ""
-"This action affects other packages.\n"
-"Review the packages to be installed or updated.\n"
-"Click Next to continue."
-msgstr ""
-"此動作會影響其他套裝軟體。\n"
-"請檢視要安裝或更新的套裝軟體。\n"
-"按 [下一步] 繼續進行。"
+msgid "Start _Page"
+msgstr "起始頁面(_P)"
+
+#: ../gui/data/packagemanager.glade.h:94
+msgid "The folllowing will be added to your system"
+msgstr "下列項目將增加到您的系統"
+
+#: ../gui/data/packagemanager.glade.h:95
+msgid "This is a secure repository. Refer to the posted"
+msgstr "這是一個安全的儲存庫。請參閱已發佈的資訊"
 
 #: ../gui/data/packagemanager.glade.h:96
 msgid ""
-"This action affects other packages.\n"
-"Review the packages to be removed.\n"
-"Click Next to continue."
+"This repository requires a SSL Key and certificate.\n"
+"Enter the location of these files in the spaces provided, or use the "
+"Browse \n"
+"buttons to provide their location."
 msgstr ""
-"此動作會影響其他套裝軟體。\n"
-"請檢視要移除的套裝軟體。\n"
-"按 [下一步] 繼續進行。"
+"此儲存庫需要 SSL 金鑰和憑證。\n"
+"請在提供的空白處輸入這些檔案的位置，或使用 "
+"[瀏覽] \n"
+"按鈕來提供檔案位置。"
 
-#. Load the catalogs from the repository, its a long
-#. running tasks so need a progress dialog
-#: ../gui/data/packagemanager.glade.h:99 ../packagemanager.py:178
-#: ../packagemanager.py:726 ../packagemanager.py:749 ../packagemanager.py:765
-#: ../packagemanager.py:1981 ../packagemanager.py:1995
-#: ../um/data/updatemanager.glade.h:17 ../updatemanager.py:928
-#: ../updatemanager.py:1045 ../updatemanager.py:1222
+#: ../gui/data/packagemanager.glade.h:99
+msgid "Type text to search name and description of the package."
+msgstr "鍵入文字以搜尋套裝軟體的名稱及說明。"
+
+#: ../gui/data/packagemanager.glade.h:100 ../gui/modules/installupdate.py:221
+#: ../packagemanager.py:321 ../packagemanager.py:3475
 msgid "Update All"
 msgstr "全部更新"
 
-#: ../gui/data/packagemanager.glade.h:100
+#: ../gui/data/packagemanager.glade.h:101
 msgid "Update all packages"
 msgstr "更新所有套裝軟體"
 
-#: ../gui/data/packagemanager.glade.h:101
-msgid "X86"
-msgstr "X86"
+#: ../gui/data/packagemanager.glade.h:102 ../packagemanager.py:1277
+msgid "Updates"
+msgstr "更新"
 
-#: ../gui/data/packagemanager.glade.h:102
+#: ../gui/data/packagemanager.glade.h:103
+msgid "_About"
+msgstr "關於(_A)"
+
+#: ../gui/data/packagemanager.glade.h:104
 msgid "_Add"
 msgstr "增加(_A)"
 
-#: ../gui/data/packagemanager.glade.h:103 ../um/data/updatemanager.glade.h:21
-msgid "_Cancel"
-msgstr "取消(_C)"
-
-#: ../gui/data/packagemanager.glade.h:104
-msgid "_Close"
-msgstr "關閉(_C)"
-
 #: ../gui/data/packagemanager.glade.h:105
+msgid "_Browse"
+msgstr "瀏覽(_B)"
+
+#: ../gui/data/packagemanager.glade.h:106
+msgid "_Clear"
+msgstr "清除(_C)"
+
+#: ../gui/data/packagemanager.glade.h:107
+msgid "_Copy"
+msgstr "複製(_C)"
+
+#: ../gui/data/packagemanager.glade.h:108
+msgid "_Deselect"
+msgstr "取消選取(_D)"
+
+#: ../gui/data/packagemanager.glade.h:109
 msgid "_Edit"
 msgstr "編輯(_E)"
 
-#: ../gui/data/packagemanager.glade.h:106
+#: ../gui/data/packagemanager.glade.h:110
+msgid "_Enable type ahead search (slow on large repositories)"
+msgstr "啟用隨打即搜尋(_E) (在大型儲存庫上較慢)"
+
+#: ../gui/data/packagemanager.glade.h:111
 msgid "_File"
 msgstr "檔案(_F)"
 
-#: ../gui/data/packagemanager.glade.h:107
+#: ../gui/data/packagemanager.glade.h:112
 msgid "_Help"
 msgstr "說明(_H)"
 
-#: ../gui/data/packagemanager.glade.h:108
+#: ../gui/data/packagemanager.glade.h:113
+msgid "_Install / Update"
+msgstr "安裝 / 更新(_I)"
+
+#: ../gui/data/packagemanager.glade.h:114
+msgid "_Instructions"
+msgstr "指令(_I)"
+
+#: ../gui/data/packagemanager.glade.h:115
+msgid "_Manage Repositories..."
+msgstr "管理儲存庫(_M)..."
+
+#: ../gui/data/packagemanager.glade.h:116
 msgid "_Modify..."
 msgstr "修改(_M)..."
 
-#: ../gui/data/packagemanager.glade.h:109
+#: ../gui/data/packagemanager.glade.h:117
 msgid "_Name: "
-msgstr "名稱(_N)： "
+msgstr "名稱(_N)："
 
-#: ../gui/data/packagemanager.glade.h:110 ../um/data/updatemanager.glade.h:23
-msgid "_OK"
-msgstr "確定(_O)"
-
-#: ../gui/data/packagemanager.glade.h:111
+#: ../gui/data/packagemanager.glade.h:118
 msgid "_Package"
 msgstr "套裝軟體(_P)"
 
-#: ../gui/data/packagemanager.glade.h:112
+#: ../gui/data/packagemanager.glade.h:119
+msgid "_Paste"
+msgstr "貼上(_P)"
+
+#: ../gui/data/packagemanager.glade.h:120
+msgid "_Proceed"
+msgstr "繼續(_P)"
+
+#: ../gui/data/packagemanager.glade.h:121
+msgid "_Quit"
+msgstr "結束(_Q)"
+
+#: ../gui/data/packagemanager.glade.h:122
 msgid "_Remove"
 msgstr "移除(_R)"
 
-#: ../gui/data/packagemanager.glade.h:113
-msgid "_Settings"
-msgstr "設定(_S)"
+#: ../gui/data/packagemanager.glade.h:123
+msgid "_Show Start Page on startup     "
+msgstr "啟動時顯示起始頁面(_S)"
 
-#: ../gui/data/packagemanager.glade.h:114
+#: ../gui/data/packagemanager.glade.h:124
 msgid "_URL: "
-msgstr "URL(_U)： "
+msgstr "URL(_U)："
 
-#: ../gui/modules/beadmin.py:69
-msgid "The <b>libbe</b> library was not "
-msgstr "<b>libbe</b> 程式庫不是 "
+#: ../gui/data/packagemanager.glade.h:125 ../um/data/updatemanager.glade.h:17
+msgid "_Update All"
+msgstr "全部更新(_U)"
 
-#: ../gui/modules/beadmin.py:77
+#: ../gui/data/packagemanager.glade.h:126
+msgid "gtk-cancel"
+msgstr "gtk-cancel"
+
+#: ../gui/data/packagemanager.glade.h:127
+msgid "gtk-close"
+msgstr "gtk-close"
+
+#: ../gui/data/packagemanager.glade.h:128
+msgid "gtk-help"
+msgstr "gtk-help"
+
+#: ../gui/data/packagemanager.glade.h:129
+msgid "gtk-ok"
+msgstr "gtk-ok"
+
+#: ../gui/data/packagemanager.glade.h:130
+msgid ""
+"lf the repository requires a SSL key and certificate, or if it has mirrors, "
+"add the new\n"
+"repository, and then click Modify to add additional information."
+msgstr ""
+"如果儲存庫需要 SSL 金鑰和憑證，或者它有鏡像，"
+"請新增\n"
+"儲存庫，然後按一下 [修改] 以增加其他資訊。"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:1
+msgid ""
+"A boolean which determines if the Start Page should be shown on startup or "
+"the initial list view."
+msgstr ""
+"用於判斷啟動時是顯示 [起始頁面] 還是初始清單檢視"
+"的布林值。"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:2
+msgid ""
+"A boolean which determines if the search is executed dynamically as user "
+"types or only when user hits the return key."
+msgstr ""
+"用於判斷是在使用者鍵入時動態執行搜尋，"
+"還是僅在使用者按 Return 鍵時執行搜尋的布林值。"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:3
+msgid ""
+"A string which determines if the remote search repository is shown or not in "
+"the error dialog."
+msgstr ""
+"用於判斷是否在錯誤對話方塊中顯示遠端搜尋儲存庫"
+"的字串。"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:4
+msgid ""
+"An integer which identifies the initial show filter value to be displayed "
+"when packagemanager starts. 0 corresponds to All Packages."
+msgstr ""
+"用於要在套裝軟體管理員啟動時識別顯示之"
+"初始顯示篩選值的整數。0 對應於「所有套裝軟體」。"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:5
+msgid ""
+"An integer which identifies the initial toplevel value to be displayed when "
+"packagemanager starts. 0 corresponds to All Categories."
+msgstr ""
+"用於要在套裝軟體管理員啟動時識別顯示之"
+"初始最上層值的整數。0 對應於「所有類別」。"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:6
+msgid ""
+"Comma separated list of repositories which we do show if they doesn't "
+"support remote search"
+msgstr ""
+"用於在儲存庫不支援遠端搜尋時顯示之"
+"以逗號分隔的儲存庫清單"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:7
+msgid "Enable type ahead search"
+msgstr "啟用隨打即搜尋"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:8
+msgid "Initial section value"
+msgstr "初始區段值"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:9
+msgid "Initial show filter value"
+msgstr "初始顯示篩選值"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:10
+msgid "Show Start Page on startup"
+msgstr "啟動時顯示起始頁面"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:11
+msgid "Start Page Update URL"
+msgstr "起始頁面更新 URL"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:12
+msgid ""
+"The location from which to fetch updates to the Package Manager Start Page."
+msgstr ""
+"從中將更新擷取到 [套裝軟體管理員] 起始頁面的位置。"
+
+#: ../gui/modules/webinstall.py:109
+#, python-format
+msgid "GUI will not respond to any event! %s. Check webinstall.py signals"
+msgstr "GUI 將不會對任何事件作出回應！%s。請檢查 webinstall.py 訊號"
+
+#: ../gui/modules/webinstall.py:122
+msgid ""
+"\n"
+" Add New Repository\n"
+msgstr ""
+"\n"
+"新增儲存庫\n"
+
+#: ../gui/modules/webinstall.py:125
+msgid ""
+"\n"
+" Add New Repositories\n"
+msgstr ""
+"\n"
+"新增儲存庫\n"
+
+#: ../gui/modules/webinstall.py:130
+msgid ""
+"\n"
+" All specified repositories and packages are already on the system.\n"
+msgstr ""
+"\n"
+"所有指定的儲存庫和套裝軟體都已位於系統上。\n"
+
+#: ../gui/modules/webinstall.py:139
+#, python-format
+msgid "\t%s "
+msgstr "\t%s "
+
+#: ../gui/modules/webinstall.py:143 ../packagemanager.py:686
+#, python-format
+msgid " (%s)\n"
+msgstr " (%s)\n"
+
+#: ../gui/modules/webinstall.py:148
+msgid ""
+"\n"
+" Install Packages\n"
+msgstr ""
+"\n"
+"安裝套裝軟體\n"
+
+#: ../gui/modules/webinstall.py:156
+#, python-format
+msgid "\t%s: "
+msgstr "\t%s："
+
+#: ../gui/modules/webinstall.py:159 ../gui/modules/installupdate.py:807
+#: ../gui/modules/installupdate.py:857 ../updatemanager.py:992
+#, python-format
+msgid "%s\n"
+msgstr "%s\n"
+
+#: ../gui/modules/webinstall.py:201
+msgid "Proceed only if you trust these new repositories"
+msgstr "只會在您信任這些新儲存庫時繼續"
+
+#: ../gui/modules/webinstall.py:247 ../gui/modules/webinstall.py:374
+#: ../gui/modules/webinstall.py:383
+msgid "Repository Error"
+msgstr "儲存庫錯誤"
+
+#: ../gui/modules/webinstall.py:335
+msgid "API Error"
+msgstr "API 錯誤"
+
+#: ../gui/modules/webinstall.py:352
+msgid "Error"
+msgstr "錯誤"
+
+#: ../gui/modules/webinstall.py:380
+msgid "Error reading the p5i file."
+msgstr "讀取 p5i 檔案時發生錯誤。"
+
+#: ../gui/modules/beadmin.py:73
+msgid ""
+"The <b>libbe</b> library was not found on your system.\n"
+"All functions for managing Boot Environments are disabled"
+msgstr ""
+"系統中找不到 <b>libbe</b> 程式庫。\n"
+"管理啟動環境的所有功能全數停用"
+
+#: ../gui/modules/beadmin.py:81
 msgid "BE management"
 msgstr "BE 管理"
 
-#: ../gui/modules/beadmin.py:150
+#: ../gui/modules/beadmin.py:154
 #, python-format
-msgid ""
-"GUI will not respond to any event! %s.                             Check "
-"beadmin.py signals"
-msgstr ""
-"GUI 將不會對任何事件作出回應！%s。                             請檢查 "
-"beadmin.py 訊號"
+msgid "GUI will not respond to any event! %s. Check beadmin.py signals"
+msgstr "GUI 將不會對任何事件作出回應！%s。請檢查 beadmin.py 訊號"
 
-#: ../gui/modules/beadmin.py:162
+#: ../gui/modules/beadmin.py:164
 msgid "Loading Boot Environment Information"
 msgstr "正在載入啟動環境資訊"
 
-#: ../gui/modules/beadmin.py:164
+#: ../gui/modules/beadmin.py:166
 msgid "Fetching BE entries..."
 msgstr "正在擷取 BE 項目..."
 
-#: ../gui/modules/beadmin.py:192
+#: ../gui/modules/beadmin.py:193
 msgid "Boot Environment"
 msgstr "啟動環境"
 
-#: ../gui/modules/beadmin.py:200
+#: ../gui/modules/beadmin.py:204
 msgid "Created"
 msgstr "已建立"
 
-#: ../gui/modules/beadmin.py:209
+#: ../gui/modules/beadmin.py:213
 msgid "Size"
 msgstr "大小"
 
-#: ../gui/modules/beadmin.py:217
+#: ../gui/modules/beadmin.py:221
 msgid "Active on Reboot"
 msgstr "重新開機時為使用中狀態"
 
-#: ../gui/modules/beadmin.py:228
+#: ../gui/modules/beadmin.py:232
 msgid "Delete"
 msgstr "刪除"
 
-#: ../gui/modules/beadmin.py:245 ../gui/modules/repository.py:286
-#: ../gui/modules/repository.py:302 ../gui/modules/repository.py:332
+#: ../gui/modules/beadmin.py:247 ../gui/modules/repository.py:470
+#: ../gui/modules/repository.py:539 ../gui/modules/repository.py:727
+#: ../gui/modules/repository.py:746 ../gui/modules/repository.py:867
 msgid "Applying changes"
 msgstr "正在套用變更"
 
-#: ../gui/modules/beadmin.py:247 ../gui/modules/repository.py:287
-#: ../gui/modules/repository.py:303 ../gui/modules/repository.py:333
+#: ../gui/modules/beadmin.py:249 ../gui/modules/repository.py:471
+#: ../gui/modules/repository.py:540 ../gui/modules/repository.py:728
+#: ../gui/modules/repository.py:747 ../gui/modules/repository.py:868
 msgid "Applying changes, please wait ..."
 msgstr "正在套用變更，請稍候..."
 
-#: ../gui/modules/beadmin.py:287
-msgid "No change"
-msgstr "沒有變更"
+#: ../gui/modules/beadmin.py:278
+msgid "Active on reboot:\n"
+msgstr "重新啟動時處於使用中狀態：\n"
 
-#: ../gui/modules/beadmin.py:291
+#: ../gui/modules/beadmin.py:279
+msgid "Delete boot environments:\n"
+msgstr "刪除啟動環境：\n"
+
+#: ../gui/modules/beadmin.py:280
+msgid "Rename boot environments:\n"
+msgstr "重新命名啟動環境：\n"
+
+#: ../gui/modules/beadmin.py:319
+msgid " to "
+msgstr "命名為"
+
+#: ../gui/modules/beadmin.py:373
+msgid "<b>Couldn't change Active Boot Environment to:</b>\n"
+msgstr "<b>使用中啟動環境無法變更為：</b>\n"
+
+#: ../gui/modules/beadmin.py:378
+msgid "<b>Couldn't delete Boot Environments:</b>\n"
+msgstr "<b>無法刪除啟動環境：</b>\n"
+
+#: ../gui/modules/beadmin.py:385
+msgid "<b>Couldn't rename Boot Environments:</b>\n"
+msgstr "<b>無法重新命名啟動環境：</b>\n"
+
+#: ../gui/modules/beadmin.py:388
 #, python-format
-msgid "%d BE's will be deleted"
-msgstr "將刪除 %d BE"
+msgid "%s <b>to</b> %s\n"
+msgstr "%s <b>變更為</b> %s\n"
 
-#: ../gui/modules/beadmin.py:299
-msgid "The Active BE will be changed upon reboot"
-msgstr "重新開機時將變更使用中的 BE"
+#: ../gui/modules/beadmin.py:407
+msgid "BE error"
+msgstr "BE 錯誤"
 
-#: ../gui/modules/beadmin.py:303
-msgid "No change\n"
-msgstr "沒有變更\n"
+#: ../gui/modules/beadmin.py:492
+msgid ""
+"The <b>libbe</b> library couldn't  prepare list of Boot Environments.\n"
+"All functions for managing Boot Environments are disabled"
+msgstr ""
+"<b>libbe</b> 程式庫無法準備啟動環境清單。\n"
+"管理啟動環境的所有功能全數停用"
 
-#: ../gui/modules/beadmin.py:339
-msgid "<b>Couldn't change Active "
-msgstr "<b>無法變更使用中 "
-
-#: ../gui/modules/beadmin.py:344
-msgid "<b>Couldn't delete Boot "
-msgstr "<b>無法刪除啟動 "
-
-#: ../gui/modules/beadmin.py:410
-msgid "The <b>libbe</b> library couldn't  "
-msgstr "<b>libbe</b> 程式庫無法  "
-
-#: ../gui/modules/beadmin.py:434
-msgid "%a %b %d %H:%M %Y"
-msgstr "%x %A %H:%M"
-
-#: ../gui/modules/beadmin.py:441 ../gui/modules/beadmin.py:451
+#: ../gui/modules/beadmin.py:522 ../gui/modules/beadmin.py:541
 msgid "%m/%d/%y %H:%M"
 msgstr "%y-%m-%d %H:%M"
 
-#: ../gui/modules/installupdate.py:72
-msgid "The version of the API is not correct.\n"
-msgstr "API 的版本不正確。\n"
-
-#: ../gui/modules/installupdate.py:77
-msgid "The image was not found."
-msgstr "找不到影像。"
-
-#: ../gui/modules/installupdate.py:140
-msgid "This action affects other packages.\n"
-msgstr "此動作會影響到其他套裝軟體。\n"
-
-#: ../gui/modules/installupdate.py:177
+#: ../gui/modules/beadmin.py:527 ../gui/modules/beadmin.py:546
 #, python-format
-msgid ""
-"GUI will not respond to any event! %s.                             Check "
-"installupdate.py signals"
-msgstr ""
-"GUI 將不會對任何事件作出回應！%s。                             請檢查 "
-"installupdate.py 訊號"
+msgid "Error conversion from UTF-8 to %s."
+msgstr "從 UTF-8 轉換成 %s 時發生錯誤。"
 
-#: ../gui/modules/installupdate.py:198 ../gui/modules/installupdate.py:223
+#: ../gui/modules/beadmin.py:563
+#, python-format
+msgid "Error conversion from %s to UTF-8."
+msgstr "從 %s 轉換成 UTF-8 時發生錯誤。"
+
+#: ../gui/modules/installupdate.py:99
+msgid "Preparing..."
+msgstr "正在準備..."
+
+#: ../gui/modules/installupdate.py:100 ../gui/modules/installupdate.py:495
+msgid "Downloading..."
+msgstr "正在下載..."
+
+#: ../gui/modules/installupdate.py:101
+msgid "Installing..."
+msgstr "正在安裝..."
+
+#: ../gui/modules/installupdate.py:190
+#, python-format
+msgid "GUI will not respond to any event! %s. Check installupdate.py signals"
+msgstr "GUI 將不會對任何事件作出回應！%s。請檢查 installupdate.py 訊號"
+
+#. We are not showing the download stage in the main stage list
+#: ../gui/modules/installupdate.py:202
+msgid "Removing..."
+msgstr "正在移除..."
+
+#: ../gui/modules/installupdate.py:251
 msgid "Canceling..."
 msgstr "取消中..."
 
-#: ../gui/modules/installupdate.py:282
-msgid "Evaluation started.\n"
-msgstr "已開始估算。\n"
+#: ../gui/modules/installupdate.py:319
+msgid "BE name is in use"
+msgstr "BE 名稱正在使用中"
 
-#: ../gui/modules/installupdate.py:292
-msgid "Invalid repository certificate."
-msgstr "無效的儲存庫憑證。"
+#: ../gui/modules/installupdate.py:321
+msgid "BE name is invalid"
+msgstr "BE 名稱無效"
 
-#: ../gui/modules/installupdate.py:309
-msgid "Install failed.\n"
-msgstr "安裝失敗。\n"
+#: ../gui/modules/installupdate.py:355
+#, python-format
+msgid "Ensuring %s is up to date..."
+msgstr "正在確認 %s 是否為最新狀態..."
 
-#: ../gui/modules/installupdate.py:321 ../gui/modules/installupdate.py:394
-msgid "Please check the network "
-msgstr "請檢查網路 "
+#: ../gui/modules/installupdate.py:376
+msgid ""
+"Accessing this restricted repository failed.\n"
+"You either need to register to access this repository,\n"
+"the certificate expired, or you need to accept the repository\n"
+"certificate."
+msgstr ""
+"存取此受限制的儲存庫失敗。\n"
+"您必須註冊才能存取此儲存庫，\n"
+"或者憑證已過期，您需要接受儲存庫\n"
+"憑證。"
 
-#: ../gui/modules/installupdate.py:416
-msgid "Preparing to download packages, please wait..."
-msgstr "正在準備下載套裝軟體，請稍候..."
+#: ../gui/modules/installupdate.py:386
+msgid "Inventory exception:\n"
+msgstr "資產管理異常：\n"
 
-#: ../gui/modules/installupdate.py:464 ../gui/modules/installupdate.py:478
+#: ../gui/modules/installupdate.py:393
+msgid ""
+"Please check the network connection.\n"
+"Is the repository accessible?"
+msgstr ""
+"請檢查網路連線。\n"
+"可否存取儲存庫？"
+
+#: ../gui/modules/installupdate.py:403
+#, python-format
+msgid ""
+"Please check the network connection.\n"
+"Is the repository accessible?\n"
+"\n"
+"%s"
+msgstr ""
+"請檢查網路連線。\n"
+"可否存取儲存庫？\n"
+"\n"
+"%s"
+
+#: ../gui/modules/installupdate.py:409
+msgid ""
+"pkg(5) appears to be out of date and should be\n"
+"updated before running Update All.\n"
+"Please update SUNWipkg package"
+msgstr ""
+"pkg(5) 似乎已過期，\n"
+"而且應在執行 [全部更新] 之前先予更新。\n"
+"請更新 SUNWipkg 套裝軟體"
+
+#: ../gui/modules/installupdate.py:415
+#, python-format
+msgid ""
+"Cannot remove:\n"
+"\t%s\n"
+"Due to the following packages that depend on it:\n"
+msgstr ""
+"無法移除：\n"
+"\t%s\n"
+"因為下列套裝軟體依賴它：\n"
+
+#: ../gui/modules/installupdate.py:424
+#, python-format
+msgid ""
+"\n"
+"Failure of consistent use of pfexec or gksu when running\n"
+"%s is often a source of this problem."
+msgstr ""
+"\n"
+"此問題的根源通常是執行 %s 時，對\n"
+" pfexec 或 gksu 使用不一致。"
+
+#: ../gui/modules/installupdate.py:427
+msgid ""
+"\n"
+"To rebuild index, please use the terminal command:"
+msgstr ""
+"\n"
+"若要重建索引，請使用終端機指令："
+
+#: ../gui/modules/installupdate.py:428
+msgid ""
+"\n"
+"\tpfexec pkg rebuild-index"
+msgstr ""
+"\n"
+"\tpfexec pkg rebuild-index"
+
+#: ../gui/modules/installupdate.py:432
+msgid ""
+"There was an error during installation. The search\n"
+"index is corrupted. You might want try to fix this\n"
+"problem by running command:\n"
+"\tpfexec pkg rebuild-index"
+msgstr ""
+"安裝期間曾發生錯誤。搜尋\n"
+"索引已毀壞。您可執行下列指令，\n"
+"嘗試修復此問題：\n"
+"\tpfexec pkg rebuild-index"
+
+#: ../gui/modules/installupdate.py:439
+msgid ""
+"This is an Live Image. The install\n"
+"operation can't be performed."
+msgstr ""
+"此為「即時影像」。\n"
+"無法執行安裝作業。"
+
+#: ../gui/modules/installupdate.py:444
+#, python-format
+msgid ""
+"There was an error during installation.\n"
+"The Plan of the operation is missing and the operation\n"
+"can't be finished. You might want try to fix this\n"
+"problem by restarting %s\n"
+msgstr ""
+"安裝期間曾發生錯誤。\n"
+"遺失作業的規劃，而且作業\n"
+"無法完成。您可能要重新啟動 %s，\n"
+"嘗試修復此問題\n"
+
+#: ../gui/modules/installupdate.py:451
+#, python-format
+msgid ""
+"There was an error during installation.\n"
+"The State of the image is incorrect and the operation\n"
+"can't be finished. You might want try to fix this\n"
+"problem by restarting %s\n"
+msgstr ""
+"安裝期間曾發生錯誤。\n"
+"影像的狀態不正確，而且作業\n"
+"無法完成。您可能要重新啟動 %s，\n"
+"嘗試修復此問題\n"
+
+#: ../gui/modules/installupdate.py:462
+msgid "Specifying BE Name not supported.\n"
+msgstr "不支援「指定 BE 名稱」。\n"
+
+#: ../gui/modules/installupdate.py:466
+#, python-format
+msgid "Invalid BE Name: %s.\n"
+msgstr "無效的 BE 名稱：%s\。\n"
+
 #: ../gui/modules/installupdate.py:491
-msgid "There was an error during installation."
-msgstr "安裝期間發生錯誤。"
-
-#: ../gui/modules/installupdate.py:545
 #, python-format
-msgid "Evaluating: %s\n"
-msgstr "正在估算：%s\n"
+msgid "Updating %s"
+msgstr "正在更新 %s"
 
-#: ../gui/modules/installupdate.py:559
-#, python-format
-msgid "%d packages will be updated\n"
-msgstr "將更新 %d 個套裝軟體\n"
+#: ../gui/modules/installupdate.py:497
+msgid "Executing..."
+msgstr "正在執行..."
 
-#: ../gui/modules/installupdate.py:562
-#, python-format
-msgid "%d package will be updated\n"
-msgstr "將更新 %d 個套裝軟體\n"
+#: ../gui/modules/installupdate.py:504
+msgid "Gathering packages information, please wait..."
+msgstr "正在收集套裝軟體資訊，請稍候..."
 
-#: ../gui/modules/installupdate.py:565
+#: ../gui/modules/installupdate.py:526
+msgid "All packages already installed."
+msgstr "已安裝所有套裝軟體。"
+
+#: ../gui/modules/installupdate.py:531
+msgid ""
+"Selected package(s) cannot be updated on their own.\n"
+"Click Update All to update all packages."
+msgstr ""
+"選取的套裝軟體無法自行更新。\n"
+"請按一下 [全部更新] 以更新所有套裝軟體。"
+
+#: ../gui/modules/installupdate.py:534
+msgid "Your system have been already updated."
+msgstr "您的系統已更新。"
+
+#: ../gui/modules/installupdate.py:572 ../gui/modules/installupdate.py:607
+msgid "No futher information available"
+msgstr "未提供其他資訊"
+
+#: ../gui/modules/installupdate.py:575 ../gui/modules/installupdate.py:598
+msgid ""
+"\n"
+"Error:\n"
+msgstr ""
+"\n"
+"錯誤：\n"
+
+#: ../gui/modules/installupdate.py:578 ../gui/modules/installupdate.py:588
+msgid " - Failed </b>"
+msgstr "- 失敗</b>"
+
+#: ../gui/modules/installupdate.py:592
 #, python-format
 msgid ""
-"%d packages will be installed\n"
-"\n"
+"An unknown error occured in the %s stage.\n"
+"Please let the developers know about this problem\n"
+"by filing a bug together with exception value at:\n"
 msgstr ""
-"將安裝 %d 個套裝軟體\n"
-"\n"
+"%s 階段發生了不明錯誤。\n"
+"請到下列網址提報此錯誤與異常值，\n"
+"讓開發人員知道此問題：\n"
 
-#: ../gui/modules/installupdate.py:568
-#, python-format
+#: ../gui/modules/installupdate.py:596
 msgid ""
-"%d package will be installed\n"
+"http://defect.opensolaris.org\n"
 "\n"
 msgstr ""
-"將安裝 %d 個套裝軟體\n"
+"http://defect.opensolaris.org\n"
 "\n"
 
-#: ../gui/modules/installupdate.py:571
+#: ../gui/modules/installupdate.py:597
+msgid "Exception value:\n"
+msgstr "異常值：\n"
+
+#: ../gui/modules/installupdate.py:602
+msgid "Exception traceback:\n"
+msgstr "異常追蹤訊息：\n"
+
+#: ../gui/modules/installupdate.py:659
 #, python-format
-msgid ""
-"%d packages will be removed\n"
-"\n"
-msgstr ""
-"將移除 %d 個套裝軟體\n"
-"\n"
+msgid "Downloaded %(current)s of %(total)s"
+msgstr "已下載 %(current)s 個 (共 %(total)s 個)"
 
-#: ../gui/modules/installupdate.py:574
+#: ../gui/modules/installupdate.py:679
+msgid "Catalog refresh failed during install."
+msgstr "安裝期間目錄更新失敗。"
+
+#: ../gui/modules/installupdate.py:694
+msgid "Catalog refresh failed during Update All."
+msgstr "全部更新期間目錄更新失敗。"
+
+#: ../gui/modules/installupdate.py:698
+msgid "Installation completed successfully."
+msgstr "安裝已成功完成。"
+
+#: ../gui/modules/installupdate.py:700
+msgid "Packages removed successfully."
+msgstr "套裝軟體已成功移除。"
+
+#: ../gui/modules/installupdate.py:702
+msgid "Packages updated successfully."
+msgstr "套裝軟體已成功更新。"
+
+#: ../gui/modules/installupdate.py:733
+msgid "Not enough disk space, the selected action cannot "
+msgstr "Not enough disk space, the selected action cannot "
+
+#: ../gui/modules/installupdate.py:737
+msgid "Not Enough Disk Space"
+msgstr "磁碟空間不足"
+
+#: ../gui/modules/installupdate.py:755
+msgid "Packages To Be Updated:\n"
+msgstr "要更新的套裝軟體：\n"
+
+#: ../gui/modules/installupdate.py:762
+msgid "Packages To Be Installed:\n"
+msgstr "要安裝的套裝軟體：\n"
+
+#: ../gui/modules/installupdate.py:769
+msgid "Packages To Be Removed:\n"
+msgstr "要移除的套裝軟體：\n"
+
+#: ../gui/modules/installupdate.py:827
 #, python-format
-msgid ""
-"%d package will be removed\n"
-"\n"
-msgstr ""
-"將移除 %d 個套裝軟體\n"
-"\n"
+msgid "Package %d of %d: %s\n"
+msgstr "%d 個套裝軟體 (共 %d 個)：%s\n"
 
-#: ../gui/modules/installupdate.py:579
+#: ../gui/modules/installupdate.py:846
 #, python-format
-msgid "%s will be downloaded"
-msgstr "將會下載 %s"
+msgid "Evaluating: %s"
+msgstr "正在計算：%s"
 
-#: ../gui/modules/installupdate.py:586
-msgid "This action couldn't be finished.\n"
-msgstr "無法完成此動作。\n"
-
-#: ../gui/modules/installupdate.py:598
-msgid "None of the packages will be removed"
-msgstr "將不會移除任何套裝軟體"
-
-#: ../gui/modules/installupdate.py:678
-msgid "Downloading: "
-msgstr "下載中： "
-
-#: ../gui/modules/installupdate.py:701
-msgid "Creating packages index..."
-msgstr "正在建立套裝軟體索引..."
-
-#: ../gui/modules/repository.py:137
+#: ../gui/modules/repository.py:266
 #, python-format
-msgid ""
-"GUI will not respond to any event! %s.                             Check "
-"repository.py signals"
-msgstr ""
-"GUI 將不會對任何事件作出回應！%s。                             請檢查 "
-"repository.py 訊號"
+msgid "GUI will not respond to any event! %s. Check repository.py signals"
+msgstr "GUI 將不會對任何事件作出回應！%s。請檢查 repository.py 訊號"
 
-#: ../gui/modules/repository.py:150
+#: ../gui/modules/repository.py:309
+msgid "Add New Repository"
+msgstr "新增儲存庫"
+
+#: ../gui/modules/repository.py:317
+msgid "<b>New Repository</b>"
+msgstr "<b>新儲存庫</b>"
+
+#: ../gui/modules/repository.py:363
 msgid "Repository Name"
 msgstr "儲存庫名稱"
 
-#: ../gui/modules/repository.py:155
+#: ../gui/modules/repository.py:372
 msgid "Preferred"
 msgstr "喜好的"
 
-#: ../gui/modules/repository.py:223
-msgid "Couldn't change"
-msgstr "無法變更"
+#: ../gui/modules/repository.py:384
+msgid "Enabled"
+msgstr "已啟用"
 
-#: ../gui/modules/repository.py:377 ../gui/modules/repository.py:391
+#: ../gui/modules/repository.py:505
 #, python-format
-msgid "Failed to modify %s."
-msgstr "無法修改 %s。"
+msgid "Failed to disable %s.\n"
+msgstr "無法停用 %s。\n"
 
-#: ../gui/modules/repository.py:419
+#: ../gui/modules/repository.py:507
+#, python-format
+msgid "Failed to enable %s.\n"
+msgstr "無法啟用 %s。\n"
+
+#: ../gui/modules/repository.py:513 ../gui/modules/repository.py:521
+#: ../gui/modules/repository.py:531
+#, python-format
+msgid "Failed to disable %s."
+msgstr "無法停用 %s。"
+
+#: ../gui/modules/repository.py:515 ../gui/modules/repository.py:523
+#: ../gui/modules/repository.py:533
+#, python-format
+msgid "Failed to enable %s."
+msgstr "無法啟用 %s。"
+
+#: ../gui/modules/repository.py:516 ../gui/modules/repository.py:985
+#: ../gui/modules/repository.py:1013
+msgid ""
+"\n"
+"Please check your permissions."
+msgstr ""
+"\n"
+"請檢查權限。"
+
+#: ../gui/modules/repository.py:525 ../gui/modules/repository.py:995
+msgid ""
+"\n"
+"Please check the network connection or URL.\n"
+"Is the repository accessible?"
+msgstr ""
+"\n"
+"請檢查網路連線或 URL。\n"
+"可否存取儲存庫？"
+
+#: ../gui/modules/repository.py:534
+msgid ""
+"\n"
+"Unexpected error.\n"
+msgstr ""
+"\n"
+"未預期的錯誤。\n"
+
+#: ../gui/modules/repository.py:577
+msgid ""
+"Couldn't change the preferred publisher.\n"
+"Please check your permissions."
+msgstr ""
+"無法變更喜好的發佈者。\n"
+"請檢查權限。"
+
+#: ../gui/modules/repository.py:641
+msgid "Name contains invalid characters"
+msgstr "名稱內含無效的字元"
+
+#: ../gui/modules/repository.py:648
+msgid "Name already in use"
+msgstr "名稱已在使用中"
+
+#: ../gui/modules/repository.py:669
+msgid "URL is not valid"
+msgstr "URL 無效"
+
+#: ../gui/modules/repository.py:855
 #, python-format
 msgid ""
-"Invalid URL:\n"
-"%s"
+"Unable to navigate to:\n"
+"\t%s"
 msgstr ""
-"無效的 URL：\n"
-"%s"
+"無法瀏覽至：\n"
+"\t%s"
 
-#: ../gui/modules/repository.py:435 ../gui/modules/repository.py:448
+#: ../gui/modules/repository.py:856
+msgid "Registration"
+msgstr "註冊"
+
+#: ../gui/modules/repository.py:863
+msgid "Adding New Repository"
+msgstr "新增儲存庫"
+
+#: ../gui/modules/repository.py:864
+#, python-format
+msgid ""
+"Adding:\n"
+"\t%s (%s)..."
+msgstr ""
+"正在增加：\n"
+"\t%s (%s)..."
+
+#: ../gui/modules/repository.py:969
+#, python-format
+msgid ""
+"Failed to add repository: %s\n"
+"\n"
+msgstr ""
+"無法增加儲存庫：%s\n"
+"\n"
+
+#: ../gui/modules/repository.py:976
+#, python-format
+msgid "Failed to add %s.\n"
+msgstr "無法增加 %s。\n"
+
+#: ../gui/modules/repository.py:984 ../gui/modules/repository.py:993
 #, python-format
 msgid "Failed to add %s."
 msgstr "無法增加 %s。"
 
-#: ../gui/modules/repository.py:469
+#: ../gui/modules/repository.py:1012
 #, python-format
 msgid "Failed to delete %s."
 msgstr "無法刪除 %s。"
 
-#: ../modules/client/api_errors.py:100
+#: ../gui/modules/repository.py:1120 ../gui/modules/repository.py:1155
+msgid "Specify SSL Key File"
+msgstr "指定 SSL 金鑰檔案"
+
+#: ../gui/modules/repository.py:1140 ../gui/modules/repository.py:1175
+msgid "Specify SSL Certificate File"
+msgstr "指定 SSL 憑證檔案"
+
+#. More Generic for WebInstall
+#: ../gui/modules/repository.py:1212
+msgid "Repository error"
+msgstr "儲存庫錯誤"
+
+#: ../modules/actions/__init__.py:89
 #, python-format
 msgid ""
-"        pkg: no package matching '%s' could be found in current catalog\n"
-"        suggest relaxing pattern, refreshing and/or examining catalogs"
+"unknown action type '%(type)s' in package '%(fmri)s' in action '%(action)s'"
 msgstr ""
-"        pkg：目前分類中找不到符合「%s」的套裝軟體\n"
-"        建議您放寬樣式、重新整理和/或檢查分類"
+"動作「%3$(action)s」中的套裝軟體「%2$(fmri)s」出現不明的動作類型「%1$(type)s」"
 
-#: ../modules/client/bootenv.py:130
+#: ../modules/actions/__init__.py:93
+#, python-format
+msgid "unknown action type '%(type)s' in action '%(action)s'"
+msgstr "動作「%2$(action)s」中出現不明的動作類型「%1$(type)s」"
+
+#: ../modules/actions/__init__.py:106
+#, python-format
+msgid ""
+"Malformed action in package '%(fmri)s' at position: %(pos)d:\n"
+"    %(action)s\n"
+"%(marker)s"
+msgstr ""
+"位置 %2$(pos)d 中的套裝軟體「%1$(fmri)s」出現異常的動作：\n"
+"    %3$(action)s\n"
+"%4$(marker)s"
+
+#: ../modules/actions/__init__.py:111
+#, python-format
+msgid ""
+"Malformed action at position: %(pos)d:\n"
+"    %(action)s\n"
+"%(marker)s"
+msgstr ""
+"位置 %(pos)d 出現異常的動作：\n"
+"    %(action)s\n"
+"%(marker)s"
+
+#: ../modules/actions/__init__.py:137
+#, python-format
+msgid "invalid action in package %(fmri)s: %(action)s: %(error)s"
+msgstr "套裝軟體 %(fmri)s 中出現無效的動作：%(action)s：%(error)s"
+
+#: ../modules/actions/__init__.py:140
+#, python-format
+msgid "invalid action, '%(action)s': %(error)s"
+msgstr "無效的動作「%(action)s」：%(error)s"
+
+#: ../modules/actions/__init__.py:164
+#, python-format
+msgid "required attribute '%s' was not provided."
+msgstr "未提供所需的屬性「%s」。"
+
+#: ../modules/actions/__init__.py:221
+#, python-format
+msgid "required attribute, '%s', was not provided."
+msgstr "未提供所需的屬性「%s」。"
+
+#: ../modules/client/api_errors.py:102
+#, python-format
+msgid ""
+"Could not operate on %s\n"
+"because of insufficient permissions. Please try the command again using "
+"pfexec\n"
+"or otherwise increase your privileges."
+msgstr ""
+"無法在 %s 上運作，\n"
+"因為權限不足。請使用 pfexec 再次嘗試"
+"指令，\n"
+"或增加權限。"
+
+#: ../modules/client/api_errors.py:107
+msgid ""
+"\n"
+"Could not complete the operation because of insufficient permissions. "
+"Please\n"
+"try the command again using pfexec or otherwise increase your privileges.\n"
+msgstr ""
+"\n"
+"無法完成作業，因為權限不足。"
+"請\n"
+"使用 pfexec 再次嘗試指令，或增加權限。\n"
+
+#: ../modules/client/api_errors.py:118
+#, python-format
+msgid ""
+"Could not operate on %s\n"
+"because the file is in use. Please stop using the file and try the\n"
+"operation again."
+msgstr ""
+"無法在 %s 上運作，\n"
+"因為檔案正在使用中。請停止使用該檔案，並再次\n"
+"嘗試作業。"
+
+#: ../modules/client/api_errors.py:137
+msgid ""
+"pkg: The following pattern(s) did not match any packages in the current\n"
+"catalog. Try relaxing the pattern, refreshing and/or examining the catalogs"
+msgstr ""
+"pkg：下列樣式不符合目前目錄中任何的套裝軟體。\n"
+"請嘗試放寬樣式，重新整理及/或檢查目錄"
+
+#: ../modules/client/api_errors.py:150
+#, python-format
+msgid "pkg: '%s' matches no installed packages"
+msgstr "pkg：「%s」不符合已安裝的套裝軟體"
+
+#: ../modules/client/api_errors.py:153
+#, python-format
+msgid "pkg: '%s' is an illegal fmri"
+msgstr "pkg：「%s」是非法的 fmri"
+
+#: ../modules/client/api_errors.py:157
+msgid "pkg: the following package(s) violated constraints:"
+msgstr "pkg：下列套裝軟體違反限制："
+
+#: ../modules/client/api_errors.py:163
+#, python-format
+msgid "'%s' supports the following architectures: %s"
+msgstr "「%s」支援下列架構：%s"
+
+#: ../modules/client/api_errors.py:164
+#, python-format
+msgid "Image architecture is defined as: %s"
+msgstr "影像架構定義為：%s"
+
+#: ../modules/client/api_errors.py:193
+msgid ""
+"No matching package could be found for the following FMRIs in any of the "
+"catalogs for the current publishers:\n"
+msgstr ""
+"在目前發佈者的任何目錄中，都無法為下列 FMIR 找到"
+"相符的套裝軟體：\n"
+
+#: ../modules/client/api_errors.py:282
+#, python-format
+msgid ""
+"The specified file is in an unrecognized format or does not contain valid "
+"publisher information: %s"
+msgstr ""
+"指定之檔案的格式無法辨識，或未包含有效的"
+"發佈者資訊：%s"
+
+#: ../modules/client/api_errors.py:285
+msgid ""
+"The specified file is in an unrecognized format or does not contain valid "
+"publisher information."
+msgstr ""
+"指定之檔案的格式無法辨識，或未包含有效的"
+"發佈者資訊。"
+
+#: ../modules/client/api_errors.py:294
+msgid "Unsupported pkg(5) publisher information data format."
+msgstr "不受支援的 pkg(5) 發佈者資訊資料格式。"
+
+#: ../modules/client/api_errors.py:320
+#, python-format
+msgid ""
+"Error encountered while retrieving data from '%s':\n"
+"%s"
+msgstr ""
+"從「%s」擷取資料時發生錯誤：\n"
+"%s"
+
+#: ../modules/client/api_errors.py:322
+#, python-format
+msgid "Error encountered while retrieving data from: %s"
+msgstr "從下列位置擷取資料時發生錯誤：%s"
+
+#: ../modules/client/api_errors.py:330
+#, python-format
+msgid "'%s' is not a valid location."
+msgstr "「%s」不是有效的位置。"
+
+#: ../modules/client/api_errors.py:342
+#, python-format
+msgid "'%s' is not a valid boot envirnment name."
+msgstr "「%s」不是有效的啟動環境名稱。"
+
+#: ../modules/client/api_errors.py:351
+msgid ""
+"Boot environment naming during package install is not supported on this\n"
+"version of OpenSolaris. Please image-update without the --be-name option."
+msgstr ""
+"此版本的 OpenSolaris 不支援在套裝軟體安裝期間\n"
+"命名啟動環境。請在不使用 --be-name 選項的情況下執行 image-update。"
+
+#: ../modules/client/api_errors.py:357
+msgid "Unable to clone the current boot environment."
+msgstr "無法複製目前的啟動環境。"
+
+#: ../modules/client/api_errors.py:370
+#, python-format
+msgid ""
+"A problem occurred while attempting to rename the boot environment\n"
+"currently named %(orig)s to %(dest)s."
+msgstr ""
+"嘗試將目前名稱為 %(orig)s 的啟動環境\n"
+"重新命名為 %(dest)s 時發生問題。"
+
+#: ../modules/client/api_errors.py:381
+#, python-format
+msgid "Unable to mount %(name)s at %(mt)s"
+msgstr "無法將 %(name)s 掛載於 %(mt)s"
+
+#: ../modules/client/api_errors.py:390
+msgid ""
+"Naming a boot environment when operating on a non-live image is\n"
+"not allowed."
+msgstr ""
+"不允許在操作非實況影像時命名\n"
+"啟動環境。"
+
+#: ../modules/client/api_errors.py:401
+msgid "Info does not recognize the following options:"
+msgstr "「資訊」無法辨識下列選項："
+
+#: ../modules/client/api_errors.py:403
+msgid " '"
+msgstr " '"
+
+#: ../modules/client/api_errors.py:403
+msgid "'"
+msgstr "'"
+
+#: ../modules/client/api_errors.py:413
+msgid "Some servers failed to respond appropriately:\n"
+msgstr "某些伺服器無法正確地回應：\n"
+
+#: ../modules/client/api_errors.py:416
+#, python-format
+msgid "    %(o)s: %(msg)s (%(code)d)\n"
+msgstr "    %(o)s：%(msg)s (%(code)d)\n"
+
+#: ../modules/client/api_errors.py:421
+#, python-format
+msgid "    %(o)s: %(to)s\n"
+msgstr "    %(o)s：%(to)s\n"
+
+#: ../modules/client/api_errors.py:425
+#, python-format
+msgid "    %(o)s: %(other)s\n"
+msgstr "    %(o)s：%(other)s\n"
+
+#: ../modules/client/api_errors.py:429
+#, python-format
+msgid "    %(o)s: %(msg)s\n"
+msgstr "    %(o)s：%(msg)s\n"
+
+#: ../modules/client/api_errors.py:434
+#, python-format
+msgid "%s appears not to be a valid package depot.\n"
+msgstr "%s 似乎不是有效的套裝軟體庫房。\n"
+
+#: ../modules/client/api_errors.py:457
+msgid ""
+"Search capabilities and performance are degraded.\n"
+"To improve, run 'pkg rebuild-index'."
+msgstr ""
+"搜尋功能和效能已降級。\n"
+"若要改善，請執行「pkg rebuild-index」。"
+
+#: ../modules/client/api_errors.py:468
+msgid "This expression produces action results:\n"
+msgstr "此表示式會產生動作結果：\n"
+
+#: ../modules/client/api_errors.py:470
+msgid "This expression produces package results:\n"
+msgstr "此表示式會產生套裝軟體結果：\n"
+
+#: ../modules/client/api_errors.py:472
+#, python-format
+msgid ""
+"%(ac_s)s%(ac_q)s%(pc_s)s%(pc_q)s'AND' and 'OR' require those expressions to "
+"produce the same type of results."
+msgstr ""
+"%(ac_s)s%(ac_q)s%(pc_s)s%(pc_q)s「AND」和「OR」需要使用這些表示式"
+"以產生相同類型的結果。"
+
+#: ../modules/client/api_errors.py:498
+#, python-format
+msgid "'%s' is not a valid publisher name."
+msgstr "「%s」不是有效的發佈者名稱。"
+
+#: ../modules/client/api_errors.py:506
+#, python-format
+msgid ""
+"'%(value)s' is not a valid value for repository attribute '%(attribute)s'."
+msgstr ""
+"「%(value)s」不是儲存庫屬性「%(attribute)s」的有效值。"
+
+#: ../modules/client/api_errors.py:519
+#, python-format
+msgid "'%s' is not a valid repository collection type."
+msgstr "「%s」不是有效的儲存庫集合類型。"
+
+#: ../modules/client/api_errors.py:527
+#, python-format
+msgid "'%s' is not a valid URI."
+msgstr "「%s」不是有效的 URI。"
+
+#: ../modules/client/api_errors.py:535
+#, python-format
+msgid "'%s' is not a valid URI priority; integer value expected."
+msgstr "「%s」不是有效的 URI 優先權；預期為整數值。"
+
+#: ../modules/client/api_errors.py:547
+#, python-format
+msgid "'%s' is not a valid repository URI sort policy."
+msgstr "「%s」不是有效的儲存庫 URI 排序策略。"
+
+#: ../modules/client/api_errors.py:556
+#, python-format
+msgid "Publisher '%s' is disabled and cannot be used for packaging operations."
+msgstr "發佈者「%s」已停用，且無法用於封裝作業。"
+
+#: ../modules/client/api_errors.py:565
+#, python-format
+msgid "A publisher with the same name or alias as '%s' already exists."
+msgstr "與「%s」具有相同名稱或別名的發佈者已存在。"
+
+#: ../modules/client/api_errors.py:574
+#, python-format
+msgid ""
+"A repository with the same name or origin URIs already exists for publisher "
+"'%s'."
+msgstr ""
+"發佈者「%s」已存在相同名稱或原始 URI 的"
+"儲存庫。"
+
+#: ../modules/client/api_errors.py:583
+#, python-format
+msgid "Mirror '%s' already exists for the specified repository."
+msgstr "指定的儲存庫已存在鏡像「%s」。"
+
+#: ../modules/client/api_errors.py:592
+#, python-format
+msgid "Origin '%s' already exists for the specified repository."
+msgstr "指定的儲存庫已存在原始「%s」。"
+
+#: ../modules/client/api_errors.py:601
+msgid "The preferred publisher cannot be removed."
+msgstr "無法移除喜好的發佈者。"
+
+#: ../modules/client/api_errors.py:609
+msgid "Cannot remove the selected repository for a publisher."
+msgstr "無法移除發佈者選取的儲存庫。"
+
+#: ../modules/client/api_errors.py:618
+#, python-format
+msgid ""
+"Publisher '%(pub)s' is disabled and cannot be set as the preferred publisher."
+msgstr ""
+"發佈者「%(pub)s」已停用，且無法設定為喜好的發佈者。"
+
+#: ../modules/client/api_errors.py:627
+#, python-format
+msgid "Unknown legal URI '%s'."
+msgstr "不明的合法 URI「%s」。"
+
+#: ../modules/client/api_errors.py:635
+#, python-format
+msgid "Unknown publisher '%s'."
+msgstr "不明的發佈者「%s」。"
+
+#: ../modules/client/api_errors.py:643
+#, python-format
+msgid "Unknown related URI '%s'."
+msgstr "不明的相關 URI「%s」。"
+
+#: ../modules/client/api_errors.py:651
+#, python-format
+msgid "Unknown repository '%s'."
+msgstr "不明的儲存庫「%s」。"
+
+#: ../modules/client/api_errors.py:659
+#, python-format
+msgid "Unknown repository mirror '%s'."
+msgstr "不明的儲存庫鏡像「%s」。"
+
+#: ../modules/client/api_errors.py:667
+#, python-format
+msgid "Unknown repository origin '%s'"
+msgstr "不明的儲存庫原始「%s」"
+
+#: ../modules/client/api_errors.py:678
+#, python-format
+msgid "The URI '%(uri)s' contains an unsupported scheme '%(scheme)s'."
+msgstr "URI「%(uri)s」包含不受支援的方案「%(scheme)s」。"
+
+#: ../modules/client/api_errors.py:681
+msgid "The specified URI contains an unsupported scheme."
+msgstr "指定的 URI 包含不受支援的方案。"
+
+#: ../modules/client/api_errors.py:689
+#, python-format
+msgid "'%(attr)s' is not supported for '%(scheme)s'."
+msgstr "「%2$(scheme)s」不支援「%1$(attr)s」。"
+
+#: ../modules/client/api_errors.py:716
+#, python-format
+msgid ""
+"Certificate '%(cert)s' for publisher '%(pub)s' needed to access '%(uri)s', "
+"has expired.  Please install a valid certificate."
+msgstr ""
+"存取「%3$(uri)s」所需之發佈者「%2$(pub)s」的憑證「%1$(cert)s」"
+"已過期。請安裝有效的憑證。"
+
+#: ../modules/client/api_errors.py:721
+#, python-format
+msgid ""
+"Certificate '%(cert)s' for publisher '%(pub)s', has expired.  Please install "
+"a valid certificate."
+msgstr ""
+"發佈者「%2$(pub)s」的憑證「%1$(cert)s」已過期。請安裝"
+"有效的憑證。"
+
+#: ../modules/client/api_errors.py:726
+#, python-format
+msgid ""
+"Certificate '%(cert)s', needed to access '%(uri)s', has expired.  Please "
+"install a valid certificate."
+msgstr ""
+"存取「%2$(uri)s」所需的憑證「%1$(cert)s」已過期。請"
+"安裝有效的憑證。"
+
+#: ../modules/client/api_errors.py:729
+#, python-format
+msgid "Certificate '%s' has expired.  Please install a valid certificate."
+msgstr "憑證「%s」已過期。請安裝有效的憑證。"
+
+#: ../modules/client/api_errors.py:742
+#, python-format
+msgid ""
+"Certificate '%(cert)s' for publisher '%(pub)s', needed to access '%(uri)s', "
+"will expire in '%(days)s' days."
+msgstr ""
+"存取「%3$(uri)s」所需之發佈者「%2$(pub)s」的憑證「%1$(cert)s」將於"
+"「%4$(days)s」天後到期。"
+
+#: ../modules/client/api_errors.py:747
+#, python-format
+msgid ""
+"Certificate '%(cert)s' for publisher '%(pub)s' will expire in '%(days)s' "
+"days."
+msgstr ""
+"發佈者「%2$(pub)s」的憑證「%1$(cert)s」將於「%3$(days)s」天後"
+"到期。"
+
+#: ../modules/client/api_errors.py:751
+#, python-format
+msgid ""
+"Certificate '%(cert)s', needed to access '%(uri)s', will expire in '%(days)"
+"s' days."
+msgstr ""
+"存取「%2$(uri)s」所需的憑證「%1$(cert)s」將於「%3$(days)"
+"s」天後到期。"
+
+#: ../modules/client/api_errors.py:754
+#, python-format
+msgid "Certificate '%(cert)s' will expire in '%(days)s' days."
+msgstr "憑證「%(cert)s」將於「%(days)s」天後到期。"
+
+#: ../modules/client/api_errors.py:766
+#, python-format
+msgid ""
+"Certificate '%(cert)s' for publisher '%(pub)s', needed to access '%(uri)s', "
+"is invalid."
+msgstr ""
+"存取「%3$(uri)s」所需之發佈者「%2$(pub)s」的憑證「%1$(cert)s」"
+"無效。"
+
+#: ../modules/client/api_errors.py:770
+#, python-format
+msgid "Certificate '%(cert)s' for publisher '%(pub)s' is invalid."
+msgstr "發佈者「%2$(pub)s」的憑證「%1$(cert)s」無效。"
+
+#: ../modules/client/api_errors.py:774
+#, python-format
+msgid "Certificate '%(cert)s' needed to access '%(uri)s' is invalid."
+msgstr "存取「%2$(uri)s」所需的憑證「%1$(cert)s」無效。"
+
+#: ../modules/client/api_errors.py:777
+#, python-format
+msgid "Invalid certificate '%s'."
+msgstr "無效的憑證「%s」。"
+
+#: ../modules/client/api_errors.py:788
+#, python-format
+msgid ""
+"Unable to locate certificate '%(cert)s' for publisher '%(pub)s' needed to "
+"access '%(uri)s'."
+msgstr ""
+"找不到存取「%3$(uri)s」所需之發佈者「%2$(pub)s」的憑證「%1$(cert)s」。"
+
+#: ../modules/client/api_errors.py:793
+#, python-format
+msgid "Unable to locate certificate '%(cert)s' for publisher '%(pub)s'."
+msgstr "找不到發佈者「%2$(pub)s」的憑證「%1$(cert)s」。"
+
+#: ../modules/client/api_errors.py:797
+#, python-format
+msgid "Unable to locate certificate '%(cert)s' needed to access '%(uri)s'."
+msgstr "找不到存取「%2$(uri)s」所需的憑證「%1$(cert)s」。"
+
+#: ../modules/client/api_errors.py:800
+#, python-format
+msgid "Unable to locate certificate '%s'."
+msgstr "找不到憑證「%s」。"
+
+#: ../modules/client/api_errors.py:812
+#, python-format
+msgid ""
+"Certificate '%(cert)s' for publisher '%(pub)s', needed to access '%(uri)s', "
+"has a future effective date."
+msgstr ""
+"存取「%3$(uri)s」所需之發佈者「%2$(pub)s」的憑證「%1%(cert)s」"
+"具有未來生效日期。"
+
+#: ../modules/client/api_errors.py:817
+#, python-format
+msgid ""
+"Certificate '%(cert)s' for publisher '%(pub)s' has a future effective date."
+msgstr ""
+"發佈者「%2$(pub)s」的憑證「%1$(cert)s」具有未來生效日期。"
+
+#: ../modules/client/api_errors.py:821
+#, python-format
+msgid ""
+"Certificate '%(cert)s' needed to access '%(uri)s' has a future effective "
+"date."
+msgstr ""
+"存取「%2$(uri)s」所需的憑證「%1$(cert)s」具有未來生效"
+"日期。"
+
+#: ../modules/client/api_errors.py:824
+#, python-format
+msgid "Certificate '%s' has a future effective date."
+msgstr "憑證「%s」具有未來生效日期。"
+
+#: ../modules/client/api_errors.py:834
+#, python-format
+msgid "Gave a bad response:%s"
+msgstr "提供的回應錯誤：%s"
+
+#: ../modules/client/bootenv.py:132
 msgid "pkg: unable to create an auto snapshot. pkg recovery is disabled."
 msgstr "pkg：無法建立自動快照。已停用 pkg 回復。"
 
-#: ../modules/client/bootenv.py:165 ../modules/client/bootenv.py:308
+#: ../modules/client/bootenv.py:211
 #, python-format
-msgid "pkg: unable to create BE %s"
-msgstr "pkg：無法建立 BE %s"
+msgid "pkg: A system error %s was caught executing %s"
+msgstr "pkg：執行 %2$s 時發生系統錯誤 %1$s"
 
-#: ../modules/client/bootenv.py:170
-#, python-format
-msgid "pkg: attempt to mount %s failed."
-msgstr "pkg：嘗試掛載 %s 失敗。"
-
-#: ../modules/client/bootenv.py:195
-#, python-format
-#msgid "pkg: A system error %s was caught executing %s"
-#msgstr "pkg：執行 %2$s 時發生系統錯誤 %1$s"
-
-#: ../modules/client/bootenv.py:195
-#, python-format
-msgid "pkg: A system error %(e)s was caught executing %(join_cmd)s"
-msgstr "pkg：執行 %(join_cmd)s 時發生系統錯誤 %(e)s"
-
-#: ../modules/client/bootenv.py:199
+#: ../modules/client/bootenv.py:215
 #, python-format
 msgid ""
 "pkg: '%s' failed. \n"
@@ -1433,38 +2948,35 @@ msgstr ""
 "pkg：「%s」失敗。\n"
 "回覆碼為 %d。"
 
-#: ../modules/client/bootenv.py:204
+#: ../modules/client/bootenv.py:220
 #, python-format
 msgid "pkg: unable to activate %s"
 msgstr "pkg：無法啟動 %s"
 
-#: ../modules/client/bootenv.py:209
+#: ../modules/client/bootenv.py:225
 #, python-format
 msgid "pkg: unable to unmount %s"
 msgstr "pkg：無法卸載 %s"
 
-#: ../modules/client/bootenv.py:215
+#: ../modules/client/bootenv.py:231
 #, python-format
 msgid ""
-"A clone of %s exists and has been updated and activated. On next boot the "
-"Boot Environment %s will be mounted on '/'. Reboot when ready to switch to "
-"this updated BE."
+"\n"
+"A clone of %s exists and has been updated and activated.\n"
+"On the next boot the Boot Environment %s will be mounted on '/'.\n"
+"Reboot when ready to switch to this updated BE.\n"
 msgstr ""
-"複製的 %s 已存在，並且已更新和啟動。下次啟動時，"
-"啟動環境 %s 將會掛載於「/」上。"
-"當準備好可以切換到此更新的 BE 時重新開機。"
+"\n"
+"複製的 %s 已存在，並且已更新及啟動。\n"
+"啟動環境 %s 下次啟動時，會掛載於「/」上。\n"
+"準備好可切換至此更新版 BE 時，請重新開機。\n"
 
-#: ../modules/client/bootenv.py:232
+#: ../modules/client/bootenv.py:248
 #, python-format
-#msgid "pkg: The system error %s was caught executing %s"
-#msgstr "pkg：執行 %2$s 時發生系統錯誤 %1$s"
+msgid "pkg: The system error %s was caught executing %s"
+msgstr "pkg：執行 %2$s 時發生系統錯誤 %1$s"
 
-#: ../modules/client/bootenv.py:232
-#, python-format
-msgid "pkg: The system error %(e)s was caught executing %(join_cmd)s"
-msgstr "pkg：執行 %(join_cmd)s 時發生系統錯誤 %(e)s"
-
-#: ../modules/client/bootenv.py:236
+#: ../modules/client/bootenv.py:252
 #, python-format
 msgid ""
 "pkg: '%s' failed \n"
@@ -1473,12 +2985,12 @@ msgstr ""
 "pkg：「%s」失敗\n"
 "回覆碼為 %d。"
 
-#: ../modules/client/bootenv.py:240
+#: ../modules/client/bootenv.py:256
 #, python-format
 msgid "%s has been updated successfully"
 msgstr "%s 已成功更新"
 
-#: ../modules/client/bootenv.py:253
+#: ../modules/client/bootenv.py:269
 #, python-format
 msgid ""
 " The running system has not been modified. Modifications were only made to a "
@@ -1489,27 +3001,32 @@ msgstr ""
 "執行中系統。如果您要檢視此複製，"
 "它掛載於 %s。"
 
-#: ../modules/client/bootenv.py:261
+#: ../modules/client/bootenv.py:277
 #, python-format
 msgid "pkg: unable to rollback BE %s and restore image"
 msgstr "pkg：無法回復 BE %s 和復原影像"
 
-#: ../modules/client/bootenv.py:267
+#: ../modules/client/bootenv.py:283
 #, python-format
 msgid "%s failed to be updated. No changes have been made to %s."
 msgstr "%s 無法更新。未對 %s 進行任何變更。"
 
-#: ../modules/client/bootenv.py:279
+#: ../modules/client/bootenv.py:295
 #, python-format
 msgid "pkg: unable to destroy snapshot %s"
 msgstr "pkg：無法銷毀快照 %s"
 
-#: ../modules/client/bootenv.py:313
+#: ../modules/client/bootenv.py:324
+#, python-format
+msgid "pkg: unable to create BE %s"
+msgstr "pkg：無法建立 BE %s"
+
+#: ../modules/client/bootenv.py:329
 #, python-format
 msgid "pkg: unable to mount BE %s on %s"
 msgstr "pkg：無法將 BE %s 掛載於 %s"
 
-#: ../modules/client/bootenv.py:317
+#: ../modules/client/bootenv.py:333
 #, python-format
 msgid ""
 "The Boot Environment %s failed to be updated. A snapshot was taken before "
@@ -1520,7 +3037,7 @@ msgstr ""
 "如果您要啟動至此 BE，則請使用「beadm unmount %s」，"
 "再使用「beadm activate %s」。"
 
-#: ../modules/client/bootenv.py:330
+#: ../modules/client/bootenv.py:346
 #, python-format
 msgid ""
 "The Boot Environment %s failed to be updated. A snapshot was taken before "
@@ -1529,96 +3046,75 @@ msgstr ""
 "無法更新啟動環境 %s。系統在嘗試失敗前已拍下快照，"
 "且已進行復原，因此未對 %s 進行任何變更。"
 
-#: ../modules/client/image.py:475
-#, python-format
-msgid "Certificate for authority %s not found"
-msgstr "找不到授權 %s 的憑證"
+#: ../modules/client/image.py:1370
+msgid "This server is not a valid package depot."
+msgstr "此伺服器不是有效的套裝軟體庫房。"
 
-#: ../modules/client/image.py:477
-#, python-format
-msgid "File was supposed to exist at  path %s"
-msgstr "檔案應該存在路徑 %s 中"
-
-#: ../modules/client/image.py:484
-#, python-format
-msgid "Certificate for authority %s at %s has an invalid format."
-msgstr "授權 %s (位於 %s) 的憑證格式無效。"
-
-#: ../modules/client/image.py:518
-#, python-format
-msgid ""
-"Certificate for authority %(pfx)s at %(ssl_cert)s has an invalid format."
-msgstr "授權 %(pfx)s (位於 %(ssl_cert)s) 的憑證格式無效。"
-
-#: ../modules/client/image.py:490
-#, python-format
-msgid "Certificate for authority %s has expired"
-msgstr "授權 %s 的憑證已過期"
-
-#: ../modules/client/image.py:492
-msgid "Please install a valid certificate"
-msgstr "請安裝有效的憑證"
-
-#: ../modules/client/image.py:505
-#, python-format
-msgid "Certificate for authority %s is invalid"
-msgstr "授權 %s 的憑證無效"
-
-#: ../modules/client/image.py:507
-msgid "Certificate effective date is in the future"
-msgstr "憑證有效日期是未來時間"
-
-#: ../modules/client/image.py:519
-#, python-format
-msgid "Certificate for authority %s will expire in %d days"
-msgstr "授權 %s 的憑證將於 %d 日內到期"
-
-#: ../modules/client/image.py:2106 ../modules/client/image.py:2161
+#: ../modules/client/image.py:2298 ../modules/client/image.py:2371
 msgid "Before evaluation:"
 msgstr "估算前："
 
-#: ../modules/client/image.py:2122 ../modules/client/image.py:2170
+#: ../modules/client/image.py:2319 ../modules/client/image.py:2380
 msgid "After evaluation:"
 msgstr "估算後："
 
-#: ../modules/client/image.py:2224
+#: ../modules/client/image.py:2434
 msgid "SUNWipkg update check failed."
 msgstr "SUNWipkg 更新檢查失敗。"
 
-#: ../modules/misc.py:384
+#: ../modules/misc.py:424
 msgid "B"
 msgstr "B"
 
-#: ../modules/misc.py:385
+#: ../modules/misc.py:425
 msgid "kB"
 msgstr "kB"
 
-#: ../modules/misc.py:386
+#: ../modules/misc.py:426
 msgid "MB"
 msgstr "MB"
 
-#: ../modules/misc.py:387
+#: ../modules/misc.py:427
 msgid "GB"
 msgstr "GB"
 
-#: ../modules/misc.py:388
+#: ../modules/misc.py:428
 msgid "TB"
 msgstr "TB"
 
-#: ../modules/misc.py:389
+#: ../modules/misc.py:429
 msgid "PB"
 msgstr "PB"
 
-#: ../modules/misc.py:390
+#: ../modules/misc.py:430 ../modules/misc.py:434
 msgid "EB"
 msgstr "EB"
 
-#: ../modules/server/catalog.py:227
-#, python-format
-msgid "ERROR building search database, rc: %s"
-msgstr "建立搜尋資料庫時發生錯誤，rc：%s"
+#: ../modules/server/catalog.py:106
+msgid "writable root not writable by current user id or group."
+msgstr "可寫入的根無法以目前使用者 ID 或群組寫入。"
 
-#: ../packagemanager.py:181
+#: ../modules/server/catalog.py:111
+msgid "unable to write to index directory."
+msgstr "無法寫入索引目錄。"
+
+#: ../packagemanager.py:212
+msgid "_Current Repository"
+msgstr "目前的儲存庫(_C)"
+
+#: ../packagemanager.py:213
+msgid "Search Current Repository"
+msgstr "搜尋目前的儲存庫"
+
+#: ../packagemanager.py:216
+msgid "_All Repositories"
+msgstr "所有的儲存庫(_A)"
+
+#: ../packagemanager.py:217
+msgid "Search All Repositories"
+msgstr "搜尋所有的儲存庫"
+
+#: ../packagemanager.py:324
 msgid ""
 "Checking SUNWipkg and SUNWipkg-gui versions\n"
 "\n"
@@ -1628,355 +3124,425 @@ msgstr ""
 "\n"
 "請稍候..."
 
-#: ../packagemanager.py:250
+#: ../packagemanager.py:461
 #, python-format
-msgid "GUI will not respond to any event! %s."
-msgstr "GUI 將不會對任何事件作出回應！%s。"
+msgid "GUI will not respond to any event! %s.Check declare_signals()"
+msgstr "GUI 將不回應任何事件！%s。檢查 declare_signals()"
 
-#: ../packagemanager.py:338 ../packagemanager.py:390 ../updatemanager.py:620
-msgid "Name"
-msgstr "名稱"
+#: ../packagemanager.py:520
+msgid "All Repositories Search Results"
+msgstr "所有的儲存庫搜尋結果"
 
-#: ../packagemanager.py:345
-msgid "Status"
-msgstr "狀態"
-
-#: ../packagemanager.py:356
-msgid "Installed Version"
-msgstr "已安裝的版本"
-
-#: ../packagemanager.py:364 ../updatemanager.py:635
-msgid "Latest Version"
-msgstr "最新版本"
-
-#: ../packagemanager.py:372
-msgid "Rating"
-msgstr "評等"
-
-#: ../packagemanager.py:376
-msgid "Description"
-msgstr "說明"
-
-#: ../packagemanager.py:465 ../packagemanager.py:1568
-#: ../packagemanager.py:1577 ../packagemanager.py:2016
+#: ../packagemanager.py:549 ../packagemanager.py:1892
+#: ../packagemanager.py:2026 ../packagemanager.py:3059
+#: ../packagemanager.py:3501
 msgid "All"
 msgstr "全部"
 
-#: ../packagemanager.py:467
+#: ../packagemanager.py:577
+msgid "<html><head></head><body></body></html>"
+msgstr "<html><head></head><body></body></html>"
+
+#: ../packagemanager.py:641
+#, python-format
+msgid ""
+"<html><head></head><body><H2>Welcome toPackageManager!</H2><br><font "
+"color='#0000FF'>Warning: Unable to load Start Page:<br>%s</font></body></"
+"html>"
+msgstr ""
+"<html><head></head><body><H2>歡迎使用套裝軟體管理員！</H2><br><font "
+"color='#0000FF'>警告：無法載入「起始頁面」：<br>%s</font></body></"
+"html>"
+
+#: ../packagemanager.py:685
+#, python-format
+msgid "%s"
+msgstr "%s"
+
+#: ../packagemanager.py:737
+msgid "Loading... "
+msgstr "正在載入..."
+
+#: ../packagemanager.py:743
+msgid "Stopped"
+msgstr "已停止"
+
+#: ../packagemanager.py:757
+msgid "Done"
+msgstr "完成"
+
+#: ../packagemanager.py:764
+#, python-format
+msgid ""
+"<html><head></head><body><font color='#000000'>                    <a "
+"href='stub'></a></font>                    <a href='pm?%s=internal&uri=%"
+"s'>                    <IMG SRC = 'startpage_star.png'                     "
+"style='border-style: none'></a> <br><br>                    <h2><font "
+"color='#0000FF'>Warning: Unable to                     load URL</font></"
+"h2><br>%s</body></html>"
+msgstr ""
+"<html><head></head><body><font color='#000000'>                    <a "
+"href='stub'></a></font>                    <a href='pm?%s=internal&uri=%"
+"s'>                    <IMG SRC = 'startpage_star.png'                     "
+"style='border-style: none'></a> <br><br>                    <h2><font "
+"color='#0000FF'>警告：無法載入 URL</font></"
+"h2><br>%s</body></html>"
+
+#: ../packagemanager.py:793 ../packagemanager.py:805
+msgid "No URI specified"
+msgstr "未指定 URI"
+
+#: ../packagemanager.py:827
+msgid "Empty Action not supported"
+msgstr "不支援空動作"
+
+#: ../packagemanager.py:831
+#, python-format
+msgid "Action not supported: %s"
+msgstr "不支援的動作：%s"
+
+#: ../packagemanager.py:916 ../packagemanager.py:1014 ../updatemanager.py:584
+msgid "Name"
+msgstr "名稱"
+
+#: ../packagemanager.py:926
+msgid "Status"
+msgstr "狀態"
+
+#: ../packagemanager.py:935
+msgid "Repository"
+msgstr "儲存庫"
+
+#: ../packagemanager.py:940
+msgid "Description"
+msgstr "說明"
+
+#: ../packagemanager.py:1101 ../packagemanager.py:1171
+msgid "Updates Available"
+msgstr "可用更新"
+
+#: ../packagemanager.py:1169
+msgid "Not Installed"
+msgstr "未安裝"
+
+#. We enable only first section and later we might enable the rest,
+#. depending if there are some packages connected with them
+#: ../packagemanager.py:1260
+msgid "All Categories"
+msgstr "所有類別"
+
+#: ../packagemanager.py:1263
 msgid "Meta Packages"
 msgstr "中介套裝軟體"
 
-#: ../packagemanager.py:468 ../packagemanager.py:2062
-#: ../packagemanager.py:2064 ../packagemanager.py:2066
-#: ../packagemanager.py:2068 ../packagemanager.py:2070
-#: ../packagemanager.py:2072 ../packagemanager.py:2074
-#: ../packagemanager.py:2076 ../packagemanager.py:2078
-msgid "Applications Desktop"
-msgstr "應用程式桌面"
+#: ../packagemanager.py:1264
+msgid "Applications"
+msgstr "應用程式"
 
-#: ../packagemanager.py:469
-msgid "Applications Web-Based"
-msgstr "網路型應用程式"
+#: ../packagemanager.py:1265
+msgid "Desktop (GNOME)"
+msgstr "桌面 (GNOME)"
 
-#: ../packagemanager.py:470 ../packagemanager.py:2080
-#: ../packagemanager.py:2082 ../packagemanager.py:2084
-#: ../packagemanager.py:2087
-msgid "Operating System"
-msgstr "作業系統"
+#: ../packagemanager.py:1266
+msgid "Development"
+msgstr "開發"
 
-#: ../packagemanager.py:471
-msgid "User Environment"
-msgstr "使用者環境"
+#: ../packagemanager.py:1267
+msgid "Distributions"
+msgstr "發行軟體"
 
-#: ../packagemanager.py:472
-msgid "Web Infrastructure"
-msgstr "Web 基礎架構"
+#: ../packagemanager.py:1268
+msgid "Drivers"
+msgstr "驅動程式"
 
-#: ../packagemanager.py:475
+#: ../packagemanager.py:1270
+msgid "Web Services"
+msgstr "Web 服務"
+
+#: ../packagemanager.py:1273
 msgid "All Packages"
 msgstr "所有套裝軟體"
 
-#: ../packagemanager.py:477
+#: ../packagemanager.py:1275
 msgid "Installed Packages"
 msgstr "已安裝的套裝軟體"
 
-#: ../packagemanager.py:478
-msgid "Updates"
-msgstr "更新"
-
-#: ../packagemanager.py:479
+#: ../packagemanager.py:1279
 msgid "Non-installed Packages"
 msgstr "未安裝的套裝軟體"
 
-#. self.filter_list.append([self._('Locked Packages'), ])
-#. self.filter_list.append(["", ])
-#: ../packagemanager.py:483
+#: ../packagemanager.py:1282
 msgid "Selected Packages"
 msgstr "選取的套裝軟體"
 
-#: ../packagemanager.py:728
-msgid "Checking SUNWipkg and SUNWipkg-gui versions\n"
-msgstr "正在檢查 SUNWipkg 和 SUNWipkg-gui 版本\n"
+#. This can happen if load_catalogs has not been run
+#: ../packagemanager.py:1472
+msgid ""
+"Unable to get status for search results.\n"
+"The catalogs have not been loaded.\n"
+"Please try after few seconds.\n"
+msgstr ""
+"無法取得搜尋結果的狀態。\n"
+"目錄尚未載入。\n"
+"請在幾秒鐘後重試。\n"
 
-#. Prompt user
-#: ../packagemanager.py:745
-msgid "Newer versions of SUNWipkg and "
-msgstr "較新版本的 SUNWipkg 和 "
+#: ../packagemanager.py:1571
+msgid "Fetching legal information..."
+msgstr "正在擷取合法資訊..."
 
-#: ../packagemanager.py:762
-msgid "Update All was not "
-msgstr "[全部更新] 沒有 "
+#. Checking for Add... is fine enough, as the repository
+#. name cannot contain "..." in the name.
+#: ../packagemanager.py:1939 ../packagemanager.py:1959
+#: ../packagemanager.py:2197
+msgid "Add..."
+msgstr "增加..."
 
-#: ../packagemanager.py:801
+#: ../packagemanager.py:2120
 msgid "Refreshing catalogs"
 msgstr "正在重新整理分類"
 
-#: ../packagemanager.py:802
+#: ../packagemanager.py:2121
 msgid "Refreshing catalogs..."
 msgstr "正在重新整理分類..."
 
-#: ../packagemanager.py:941
+#: ../packagemanager.py:2265
+msgid "Selected for Removal:"
+msgstr "已選取要移除的項目："
+
+#: ../packagemanager.py:2273
+msgid "Selected for Install/Update:"
+msgstr "已選取要安裝/更新的項目："
+
+#: ../packagemanager.py:2277 ../packagemanager.py:2282
+msgid "Select packages by marking checkbox\n"
+msgstr "標記核取方塊以選取套裝軟體\n"
+
+#: ../packagemanager.py:2329
+msgid "Package Name"
+msgstr "套裝軟體名稱"
+
+#: ../packagemanager.py:2348
 msgid "Fetching description..."
 msgstr "正在擷取說明..."
 
-#: ../packagemanager.py:942 ../packagemanager.py:943 ../packagemanager.py:944
+#: ../packagemanager.py:2352
 msgid "Fetching information..."
 msgstr "正在擷取資訊..."
 
-#: ../packagemanager.py:948
+#: ../packagemanager.py:2391
+msgid ""
+"\n"
+"This might be caused by network problem while accessing the repository."
+msgstr ""
+"\n"
+"這可能是由存取儲存庫時發生的網路問題所造成的。"
+
+#: ../packagemanager.py:2394
 msgid "Description not available for this package..."
 msgstr "未提供此套裝軟體的說明..."
 
-#: ../packagemanager.py:950
+#: ../packagemanager.py:2397
 msgid "Files Details not available for this package..."
 msgstr "未提供此套裝軟體的檔案詳細資訊..."
 
-#: ../packagemanager.py:952
+#: ../packagemanager.py:2400
 msgid "Dependencies info not available for this package..."
 msgstr "未提供此套裝軟體的相依性資訊..."
 
-#: ../packagemanager.py:954
+#: ../packagemanager.py:2403
 msgid "Information not available for this package..."
 msgstr "未提供此套裝軟體的資訊..."
 
-#: ../packagemanager.py:957
+#: ../packagemanager.py:2421
 #, python-format
 msgid "Root: %s\n"
 msgstr "根：%s\n"
 
-#: ../packagemanager.py:958
+#: ../packagemanager.py:2422
 msgid "Dependencies:\n"
 msgstr "相依性：\n"
 
-#: ../packagemanager.py:961
+#: ../packagemanager.py:2437
+msgid "Summary:\t\t"
+msgstr "摘要：\t\t"
+
+#: ../packagemanager.py:2438
+msgid "Size:\t\t\t"
+msgstr "大小：\t\t\t"
+
+#: ../packagemanager.py:2439
+msgid "Category:\t\t"
+msgstr "類別：\t\t"
+
+#: ../packagemanager.py:2440
+msgid "Installed Version:\t"
+msgstr "已安裝的版本：\t"
+
+#: ../packagemanager.py:2442
+msgid "Packaging Date:\t"
+msgstr "封裝日期：\t"
+
+#: ../packagemanager.py:2443
+msgid "FMRI:\t\t\t"
+msgstr "FMRI：\t\t\t"
+
+#: ../packagemanager.py:2444
+msgid "Repository:\t\t"
+msgstr "儲存庫：\t\t"
+
+#: ../packagemanager.py:2449 ../packagemanager.py:2457 ../updatemanager.py:769
+#: ../updatemanager.py:784
+msgid "None"
+msgstr "無"
+
+#: ../packagemanager.py:2482
+msgid "Not available"
+msgstr "不可用"
+
+#: ../packagemanager.py:2834
 msgid ""
-"Information for installed package:\n"
+"Network problem.\n"
 "\n"
 msgstr ""
-"已安裝的套裝軟體相關資訊：\n"
+"網路問題。\n"
 "\n"
 
-#: ../packagemanager.py:964
-msgid ""
-"Information for latest available package:\n"
-"\n"
-msgstr ""
-"最新可用的套裝軟體相關資訊：\n"
-"\n"
+#: ../packagemanager.py:2835
+msgid "Details:\n"
+msgstr "詳細資訊：\n"
 
-#: ../packagemanager.py:976
-msgid "depend"
-msgstr "相依性"
-
-#: ../packagemanager.py:980
-msgid "dir"
-msgstr "目錄"
-
-#: ../packagemanager.py:983
-msgid "file"
-msgstr "檔案"
-
-#: ../packagemanager.py:986
-msgid "hardlink"
-msgstr "強制連結"
-
-#: ../packagemanager.py:989
-msgid "link"
-msgstr "連結"
-
-#: ../packagemanager.py:992
-msgid "legacy"
-msgstr "舊有"
-
-#: ../packagemanager.py:993
-msgid "pkg"
-msgstr "套裝軟體"
-
-#: ../packagemanager.py:995
-msgid "desc"
-msgstr "說明"
-
-#: ../packagemanager.py:997
-#, python-format
-msgid "  Description:\t%s\n"
-msgstr "  說明：\t%s\n"
-
-#: ../packagemanager.py:1000
-#, python-format
-msgid "  Name:\t\t%s\n"
-msgstr "  名稱：\t\t%s\n"
-
-#: ../packagemanager.py:1001
-#, python-format
-msgid "  FMRI:\t\t%s\n"
-msgstr "  FMRI：\t\t%s\n"
-
-#: ../packagemanager.py:1002
-#, python-format
-msgid "  Version:\t\t%s\n"
-msgstr "  版本：\t\t%s\n"
-
-#: ../packagemanager.py:1004
-#, python-format
-msgid "  Packaged:\t%s\n"
-msgstr "  封裝：\t%s\n"
-
-#: ../packagemanager.py:1330
+#: ../packagemanager.py:2837
 msgid " catalogs successfully updated:\n"
-msgstr " 個分類已成功更新：\n"
+msgstr "個分類已成功更新：\n"
 
-#: ../packagemanager.py:1351
+#: ../packagemanager.py:2860
 msgid "Unknown error"
 msgstr "不明的錯誤"
 
-#: ../packagemanager.py:1368
-#, python-format
-msgid "%s is not a valid root image, return None"
-msgstr "%s 不是有效的根影像，傳回「無」"
-
 #. Can't happen when all_known is true and no args,
 #. but here for completeness.
-#: ../packagemanager.py:1391
-msgid "Error occured while getting list of packages"
-msgstr "取得套裝軟體清單時發生錯誤"
+#: ../packagemanager.py:2903
+msgid ""
+"Selected repository does not contain any packages.\n"
+"Please reload the list of package."
+msgstr ""
+"選取的儲存庫不包含任何套裝軟體。\n"
+"請重新載入套裝軟體清單。"
 
-#: ../packagemanager.py:1684
+#: ../packagemanager.py:3144
 #, python-format
 msgid "Processing package entries: %d of %d"
 msgstr "正在處理套裝軟體項目：%d 個 (共 %d 個)"
 
-#: ../packagemanager.py:1695
-msgid "Packagemanager error"
-msgstr "套裝軟體管理員錯誤"
-
-#: ../packagemanager.py:1802
+#: ../packagemanager.py:3247
 msgid "Loading Repository Information"
 msgstr "正在載入儲存庫資訊"
 
-#: ../packagemanager.py:1804
+#: ../packagemanager.py:3249
 msgid "Fetching package entries ..."
 msgstr "正在擷取套裝軟體項目..."
 
-#: ../packagemanager.py:1923
-#, python-format
-msgid "%d packages listed"
-msgstr "列出 %d 個套裝軟體"
+#: ../packagemanager.py:3363
+msgid "Searching..."
+msgstr "正在搜尋..."
 
-#: ../packagemanager.py:1924
+#: ../packagemanager.py:3374
 #, python-format
-msgid "%d installed"
-msgstr "已安裝 %d 個"
+msgid "%s: first %d found"
+msgstr "%s：找到前 %d 個"
 
-#: ../packagemanager.py:1925
+#: ../packagemanager.py:3376
+#, python-format
+msgid "%s: %d found"
+msgstr "%s：已找到 %d 個"
+
+#: ../packagemanager.py:3395
+#, python-format
+msgid "%d listed"
+msgstr "已列出 %d 個"
+
+#: ../packagemanager.py:3396
 #, python-format
 msgid "%d selected"
 msgstr "已選取 %d 個"
 
-#: ../packagemanager.py:1926
+#: ../packagemanager.py:3397
 #, python-format
-msgid "%d broken"
-msgstr "已中斷 %d 個"
+msgid "%d installed"
+msgstr "已安裝 %d 個"
 
-#. 2790: As IPS and IPS-GUI have been updated the IPS GUI must be shutdown
-#. and restarted
-#: ../packagemanager.py:1978
-msgid "SUNWipkg and SUNWipkg-gui have been "
-msgstr "SUNWipkg 和 SUNWipkg-gui 已 "
+#: ../packagemanager.py:3398
+#, python-format
+msgid "%s: %s , %s, %s."
+msgstr "%s：%s、%s、%s。"
 
-#: ../packagemanager.py:1991
-msgid "Update All has completed and Package "
-msgstr "已完成 [全部更新] 且套裝軟體 "
+#: ../packagemanager.py:3470
+msgid ""
+"The Update All action is now complete and Package Manager will close.\n"
+"\n"
+"Review the posted release notes before rebooting your system:\n"
+"\n"
+"http://opensolaris.org/os/project/indiana/resources/relnotes/200811/x86/"
+msgstr ""
+"現在已完成「全部更新」動作，「套裝軟體管理員」將會關閉。\n"
+"\n"
+"重新啟動系統之前，請先檢閱以下網址公佈的版本說明：\n"
+"\n"
+"http://opensolaris.org/os/project/indiana/resources/relnotes/200811/x86/"
 
-#. self.__add_package_to_category(_("All"),None,None,None);
-#. Category names until xdg is imported.
-#. from xdg.DesktopEntry import *
-#. entry = DesktopEntry ()
-#. directory = '/usr/share/desktop-directories'
-#. for root, dirs, files in os.walk (directory):
-#. for name in files:
-#. entry.parse (os.path.join (root, name))
-#. self.__add_category_to_section (entry.getName (), #. self._('Applications Desktop'))
-#: ../packagemanager.py:2034 ../packagemanager.py:2036
-#: ../packagemanager.py:2061
-msgid "Accessories"
-msgstr "附屬應用程式"
+#: ../packagemanager.py:3486
+msgid "Save selected..."
+msgstr "儲存選取的項目..."
 
-#: ../packagemanager.py:2038 ../packagemanager.py:2042
-#: ../packagemanager.py:2046 ../packagemanager.py:2063
-msgid "Games"
-msgstr "遊戲"
+#: ../packagemanager.py:3487
+msgid "Save selected packages..."
+msgstr "儲存選取的套裝軟體..."
 
-#: ../packagemanager.py:2040 ../packagemanager.py:2044
-#: ../packagemanager.py:2048 ../packagemanager.py:2065
-#: ../packagemanager.py:2081
+#: ../packagemanager.py:3530 ../packagemanager.py:3534
+#: ../packagemanager.py:3538 ../packagemanager.py:3555
+#: ../packagemanager.py:3571
 msgid "Graphics"
 msgstr "圖形"
 
-#: ../packagemanager.py:2067
-msgid "Internet"
-msgstr "網際網路"
+#: ../packagemanager.py:3552 ../packagemanager.py:3554
+#: ../packagemanager.py:3556 ../packagemanager.py:3558
+#: ../packagemanager.py:3560 ../packagemanager.py:3562
+#: ../packagemanager.py:3564 ../packagemanager.py:3566
+#: ../packagemanager.py:3568
+msgid "Applications Desktop"
+msgstr "應用程式桌面"
 
-#: ../packagemanager.py:2069 ../packagemanager.py:2088
-msgid "Office"
-msgstr "辦公室套裝軟體"
-
-#: ../packagemanager.py:2071
+#: ../packagemanager.py:3561
 msgid "Sound & Video"
 msgstr "影音"
 
-#: ../packagemanager.py:2073
+#: ../packagemanager.py:3563
 msgid "System Tools"
 msgstr "系統工具"
 
-#: ../packagemanager.py:2075
-msgid "Universal Access"
-msgstr "通用存取"
-
 #. Can be twice :)
-#: ../packagemanager.py:2077 ../packagemanager.py:2086
+#: ../packagemanager.py:3567 ../packagemanager.py:3576
 msgid "Developer Tools"
 msgstr "開發者工具"
 
-#: ../packagemanager.py:2079
-msgid "Core"
-msgstr "核心"
+#: ../packagemanager.py:3570 ../packagemanager.py:3572
+#: ../packagemanager.py:3574 ../packagemanager.py:3577
+msgid "Operating System"
+msgstr "作業系統"
 
-#: ../packagemanager.py:2083
-msgid "Media"
-msgstr "媒體"
-
-#: ../packagemanager.py:2090
+#: ../packagemanager.py:3580
 msgid "Office2"
 msgstr "辦公室套裝軟體 2"
 
-#: ../publish.py:56
+#: ../publish.py:78
 msgid ""
 "Usage:\n"
 "        pkgsend [options] command [cmd_options] [operands]\n"
 "\n"
 "Packager subcommands:\n"
+"        pkgsend create-repository\n"
 "        pkgsend open [-en] pkg_fmri\n"
-"        pkgsend add action arguments \n"
+"        pkgsend add action arguments\n"
 "        pkgsend import [-T file_pattern] bundlefile ...\n"
 "        pkgsend include [-d basedir] manifest ...\n"
 "        pkgsend close [-A]\n"
@@ -1984,7 +3550,8 @@ msgid ""
 "        pkgsend rename src_fmri dest_fmri\n"
 "\n"
 "Options:\n"
-"        -s repo_url     destination repository server URL prefix\n"
+"        -s repo_uri     target repository URI\n"
+"        --help or -?    display usage message\n"
 "\n"
 "Environment:\n"
 "        PKG_REPO"
@@ -1993,8 +3560,9 @@ msgstr ""
 "        pkgsend [選項] 指令 [cmd 選項] [運算元]\n"
 "\n"
 "套裝軟體程式子指令：\n"
+"        pkgsend create-repository\n"
 "        pkgsend open [-en] pkg_fmri\n"
-"        pkgsend add 動作引數 \n"
+"        pkgsend add 動作引數\n"
 "        pkgsend import [-T 檔案樣式] 束檔案 ...\n"
 "        pkgsend include [-d 基底目錄] 清單 ...\n"
 "        pkgsend close [-A]\n"
@@ -2002,46 +3570,44 @@ msgstr ""
 "        pkgsend rename src_fmri dest_fmri\n"
 "\n"
 "選項：\n"
-"        -s repo_url     目標儲存庫伺服器 URL 前綴\n"
+"        -s repo_uri     目標儲存庫 URI\n"
+"        --help or -?    顯示用法訊息\n"
 "\n"
 "環境：\n"
 "        PKG_REPO"
 
-#: ../publish.py:83
-#, python-format
-msgid "pkgsend: %s failed (status %s)%s"
-msgstr "pkgsend：%s 失敗 (狀態 %s)%s"
+#: ../publish.py:104
+msgid "command does not take operands"
+msgstr "指令沒有運算元"
 
-#: ../publish.py:99
-msgid "pkgsend: open requires one package name"
-msgstr "pkgsend：執行 open 指令需要一個套裝軟體名稱"
+#: ../publish.py:128
+msgid "only -e or -n may be specified"
+msgstr "只可以指定 -e 或 -n"
 
-#: ../publish.py:109
-msgid "pkgsend: no transaction ID provided in response"
-msgstr "pkgsend：回應中沒有提供作業事件 ID"
+#: ../publish.py:131
+msgid "open requires one package name"
+msgstr "執行 open 指令需要一個套裝軟體名稱"
 
-#: ../publish.py:135
-msgid "No transaction ID specified"
-msgstr "沒有指定作業事件 ID"
+#: ../publish.py:157
+msgid "No transaction ID specified using -t or in $PKG_TRANS_ID."
+msgstr "使用 -t 時或在 $PKG_TRANS_ID 中沒有指定作業事件 ID。"
 
-#: ../publish.py:155 ../publish.py:197 ../publish.py:248
+#: ../publish.py:171 ../publish.py:222 ../publish.py:274
 msgid "No transaction ID specified in $PKG_TRANS_ID"
 msgstr "$PKG_TRANS_ID 中沒有指定作業事件 ID"
 
-#: ../publish.py:306
+#: ../publish.py:175 ../publish.py:204 ../publish.py:226 ../publish.py:286
+msgid "No arguments specified for subcommand."
+msgstr "未為子指令指定引數。"
+
+#: ../publish.py:178
+msgid "A filename must be provided for this action."
+msgstr "必須為此動作提供檔案名稱。"
+
+#: ../publish.py:326
 #, python-format
 msgid "pkgsend: illegal global option -- %s"
 msgstr "pkgsend：非法全域選項 -- %s"
-
-#: ../publish.py:332
-#, python-format
-msgid "pkgsend: unknown subcommand '%s'"
-msgstr "pkgsend：不明的子指令「%s」"
-
-#: ../publish.py:336
-#, python-format
-msgid "pkgsend: illegal %s option -- %s"
-msgstr "pkgsend：非法 %s 選項 -- %s"
 
 #: ../pull.py:51
 msgid ""
@@ -2053,84 +3619,79 @@ msgstr ""
 "        pkgrecv -s 伺服器 [-d 目錄] pkgfmri ...\n"
 "        pkgrecv -s 伺服器 -n"
 
-#: ../pull.py:74
+#: ../pull.py:75
 #, python-format
 msgid "Unable to open manifest: %s"
 msgstr "無法開啟清單：%s"
 
-#: ../pull.py:110
+#: ../pull.py:111
 #, python-format
 msgid "Unable to download files from: %s"
 msgstr "無法從下列位置下載檔案：%s"
 
-#: ../pull.py:119 ../pull.py:164
+#: ../pull.py:120 ../pull.py:165
 #, python-format
 msgid "Unable to create directory: %s"
 msgstr "無法建立目錄：%s"
 
-#: ../pull.py:137
+#: ../pull.py:138
 #, python-format
 msgid "Unable to extract file: %s"
 msgstr "無法擷取檔案：%s"
 
-#: ../pull.py:152
+#: ../pull.py:153
 #, python-format
-#msgid "Unable to download manifest %s from %s"
-#msgstr "無法從 %2$s下載清單 %1$s"
+msgid "Unable to download manifest %s from %s"
+msgstr "無法從 %2$s下載清單 %1$s"
 
-#: ../pull.py:152
-#, python-format
-msgid "Unable to download manifest %(get_url_path)s from %(server_url)s"
-msgstr "無法從 %(server_url)s下載清單 %(get_url_path)s"
-
-#: ../pull.py:172
+#: ../pull.py:173
 #, python-format
 msgid "Unable to open file: %s"
 msgstr "無法開啟檔案：%s"
 
-#: ../pull.py:179
+#: ../pull.py:180
 #, python-format
 msgid "Error occurred while reading from: %s"
 msgstr "從下列位置讀取時發生錯誤：%s"
 
-#: ../pull.py:185
+#: ../pull.py:186
 #, python-format
 msgid "Error occurred while writing to: %s"
 msgstr "寫入下列位置時發生錯誤：%s"
 
-#: ../pull.py:224
+#: ../pull.py:225
 #, python-format
 msgid "Unable to download catalog from: %s"
 msgstr "無法從下列位置下載分類：%s"
 
-#: ../pull.py:234
+#: ../pull.py:235
 #, python-format
 msgid "Error while reading from: %s"
 msgstr "從下列位置讀取時發生錯誤：%s"
 
-#: ../pull.py:259
+#: ../pull.py:262
 #, python-format
 msgid "Illegal option -- %s"
 msgstr "非法選項 -- %s"
 
-#: ../pull.py:272
+#: ../pull.py:275
 msgid "must specify a server"
 msgstr "必須指定伺服器"
 
-#: ../pull.py:279
+#: ../pull.py:282
 msgid "-n takes no options"
 msgstr "-n 沒有選項"
 
-#: ../pull.py:287
+#: ../pull.py:290
 msgid "must specify at least one pkgfmri"
 msgstr "必須至少指定一個 pkgfmri"
 
-#: ../pull.py:299
+#: ../pull.py:302
 #, python-format
-msgid "pkgfmri %s needs a version string"
-msgstr "pkgfmri %s 需要版本字串"
+msgid "%(fmri)s is an illegal fmri: %(error)s"
+msgstr "%(fmri)s 是非法的 fmri：%(error)s"
 
-#: ../pull.py:311
+#: ../pull.py:315
 msgid "No files to retrieve."
 msgstr "沒有要擷取的檔案。"
 
@@ -2171,73 +3732,61 @@ msgstr ""
 "更新管理員通知程式應等待的秒數。"
 
 #: ../um/data/updatemanager-preferences.schemas.in.h:7
+msgid ""
+"The updatemanagernotifier program terminates after the user activates the "
+"icon in the notification area if set to true."
+msgstr ""
+"如果設為 True，則在使用者啟動通知區域中的圖示"
+"之後，更新管理員通知程式會終止。"
+
+#: ../um/data/updatemanager-preferences.schemas.in.h:8
 msgid "Whether to always display the icon on startup"
 msgstr "是否在啟動時一律顯示圖示"
 
-#: ../um/data/updatemanager-preferences.schemas.in.h:8
+#: ../um/data/updatemanager-preferences.schemas.in.h:9
 msgid "Whether to display text message when updates are available"
 msgstr "是否在有更新可用時顯示文字訊息"
+
+#: ../um/data/updatemanager-preferences.schemas.in.h:10
+msgid "Whether to terminate updatemanagernotiifer after icon activation."
+msgstr "是否在圖示啟動之後終止更新管理員通知程式。"
 
 #: ../um/data/updatemanager.desktop.in.h:1
 msgid "Install available updates"
 msgstr "安裝可用的更新"
 
-#: ../um/data/updatemanager.desktop.in.h:2 ../um/data/updatemanager.glade.h:18
-#: ../updatemanagernotifier.py:266
+#: ../um/data/updatemanager.desktop.in.h:2 ../um/data/updatemanager.glade.h:10
+#: ../updatemanager.py:953 ../updatemanagernotifier.py:350
 msgid "Update Manager"
 msgstr "更新管理員"
 
 #: ../um/data/updatemanager.glade.h:1
-msgid "<b>Boot Environment Name: </b>"
-msgstr "<b>啟動環境名稱：</b>"
-
-#: ../um/data/updatemanager.glade.h:2
-msgid ""
-"<b>Create New Boot Environment</b>\n"
-"\n"
-"Update All will create a new boot environment (BE) as a means\n"
-"of archiving older software and sets it to be the default BE when\n"
-"rebooting.\n"
-"\n"
-"An updated clone of the active BE is about to be created."
-msgstr ""
-"<b>建立新的啟動環境</b>\n"
-"\n"
-"執行 [全部更新] 時將會建立新的啟動環境 (BE)，\n"
-"做為歸檔較舊軟體的工具，並將其設為重新開機\n"
-"時的預設 BE。\n"
-"\n"
-"將為使用中的 BE 建立更新的複製。"
-
-#: ../um/data/updatemanager.glade.h:9
 msgid "<b>Evaluate</b>"
 msgstr "<b>估算</b>"
 
-#: ../um/data/updatemanager.glade.h:10
+#: ../um/data/updatemanager.glade.h:2
+msgid "<b>Latest Version _Details</b>"
+msgstr "<b>最新版本詳細資訊(_D)</b>"
+
+#: ../um/data/updatemanager.glade.h:3
 msgid "<b>_Details</b>"
 msgstr "<b>詳細資訊(_D)</b>"
 
-#: ../um/data/updatemanager.glade.h:12
+#: ../um/data/updatemanager.glade.h:5
 msgid "Close dialog when _finished"
 msgstr "完成時關閉對話方塊(_F)"
 
-#: ../um/data/updatemanager.glade.h:13 ../updatemanager.py:168
-#: ../updatemanager.py:408 ../updatemanager.py:415 ../updatemanager.py:422
-#: ../updatemanager.py:429 ../updatemanager.py:436
-msgid "Download"
-msgstr "下載"
-
-#: ../um/data/updatemanager.glade.h:14 ../updatemanager.py:200
-#: ../updatemanager.py:410 ../updatemanager.py:417 ../updatemanager.py:424
-#: ../updatemanager.py:431 ../updatemanager.py:438
+#: ../um/data/updatemanager.glade.h:7 ../updatemanager.py:206
+#: ../updatemanager.py:399 ../updatemanager.py:406 ../updatemanager.py:413
+#: ../updatemanager.py:420 ../updatemanager.py:427
 msgid "Index"
 msgstr "索引"
 
-#: ../um/data/updatemanager.glade.h:15
+#: ../um/data/updatemanager.glade.h:8
 msgid "Install Update"
 msgstr "安裝更新"
 
-#: ../um/data/updatemanager.glade.h:19 ../updatemanager.py:599
+#: ../um/data/updatemanager.glade.h:11 ../updatemanager.py:564
 msgid ""
 "Updates are available for the following packages.\n"
 "Select the packages you want to update and click Install."
@@ -2245,21 +3794,21 @@ msgstr ""
 "下列套裝軟體有更新可用。\n"
 "選取您要更新的套裝軟體，然後按一下 [安裝]。"
 
-#: ../um/data/updatemanager.glade.h:22
+#: ../um/data/updatemanager.glade.h:13
+msgid "_Cancel"
+msgstr "取消(_C)"
+
+#: ../um/data/updatemanager.glade.h:14
 msgid "_Install Updates"
 msgstr "安裝更新(_I)"
 
-#: ../um/data/updatemanager.glade.h:24
-msgid "_Proceed"
-msgstr "繼續(_P)"
+#: ../um/data/updatemanager.glade.h:15
+msgid "_OK"
+msgstr "確定(_O)"
 
-#: ../um/data/updatemanager.glade.h:25
+#: ../um/data/updatemanager.glade.h:16
 msgid "_Select all Updates"
 msgstr "選取所有更新(_S)"
-
-#: ../um/data/updatemanager.glade.h:26
-msgid "_Update All"
-msgstr "全部更新(_U)"
 
 #: ../um/data/updatemanagernotifier.desktop.in.h:1
 msgid "Notify user when updates are available"
@@ -2269,80 +3818,71 @@ msgstr "有更新可用時通知使用者"
 msgid "Update Manager Notifier"
 msgstr "更新管理員通知程式"
 
-#: ../updatemanager.py:116
+#: ../updatemanager.py:122
 #, python-format
 msgid "Fetching catalog: '%s' ..."
 msgstr "正在擷取分類：「%s」..."
 
-#: ../updatemanager.py:120
+#: ../updatemanager.py:126
 msgid "Fetching catalog"
 msgstr "正在擷取分類"
 
-#: ../updatemanager.py:123
+#: ../updatemanager.py:129
 msgid "Creating Plan ... "
-msgstr "正在建立計劃... "
+msgstr "正在建立計劃..."
 
-#: ../updatemanager.py:134
+#: ../updatemanager.py:140
 msgid "Creating Plan"
 msgstr "正在建立計劃"
 
-#: ../updatemanager.py:145
+#: ../updatemanager.py:151
 #, python-format
 msgid "Verifying: %s ..."
 msgstr "正在驗證：%s ..."
 
-#: ../updatemanager.py:152
+#: ../updatemanager.py:158
 msgid "Verifying"
 msgstr "驗證中"
 
-#: ../updatemanager.py:166
+#: ../updatemanager.py:172
 msgid "Completed"
 msgstr "已完成"
 
-#: ../updatemanager.py:184 ../updatemanager.py:409 ../updatemanager.py:416
-#: ../updatemanager.py:423 ../updatemanager.py:430 ../updatemanager.py:437
-msgid "Install"
-msgstr "安裝"
-
-#: ../updatemanager.py:368
+#: ../updatemanager.py:357
 #, python-format
-msgid ""
-"GUI will not respond to any event! %s.                             Check "
-"updatemanager.py signals"
-msgstr ""
-"GUI 將不會對任何事件作出回應！%s。                             請檢查 "
-"updatemanager.py 訊號"
+msgid "GUI will not respond to any event! %s. Check updatemanager.py signals"
+msgstr "GUI 將不會對任何事件作出回應！%s。請檢查 updatemanager.py 訊號"
 
-#: ../updatemanager.py:407 ../updatemanager.py:414 ../updatemanager.py:421
-#: ../updatemanager.py:428 ../updatemanager.py:435
+#: ../updatemanager.py:396 ../updatemanager.py:403 ../updatemanager.py:410
+#: ../updatemanager.py:417 ../updatemanager.py:424
 msgid "Evaluate"
 msgstr "估算"
 
-#: ../updatemanager.py:443
+#: ../updatemanager.py:432
 msgid "Evaluate - canceling..."
 msgstr "估算 - 取消中..."
 
-#: ../updatemanager.py:447
+#: ../updatemanager.py:436
 msgid "Download - canceling..."
 msgstr "下載 - 取消中..."
 
-#: ../updatemanager.py:452
+#: ../updatemanager.py:441
 msgid "Evaluate - failed"
 msgstr "估算 - 失敗"
 
-#: ../updatemanager.py:456
+#: ../updatemanager.py:445
 msgid "Download - failed"
 msgstr "下載 - 失敗"
 
-#: ../updatemanager.py:460
+#: ../updatemanager.py:449
 msgid "Install - failed"
 msgstr "安裝 - 失敗"
 
-#: ../updatemanager.py:464
+#: ../updatemanager.py:453
 msgid "Index - failed"
 msgstr "索引 - 失敗"
 
-#: ../updatemanager.py:606
+#: ../updatemanager.py:571
 msgid ""
 "Updates are available for the following packages.\n"
 "Click Update All to create a new boot environment and install all packages "
@@ -2352,61 +3892,71 @@ msgstr ""
 "按一下 [全部更新] 可以建立新的啟動環境並於該處安裝"
 "所有套裝軟體。"
 
-#: ../updatemanager.py:644
+#: ../updatemanager.py:599
+msgid "Latest Version"
+msgstr "最新版本"
+
+#: ../updatemanager.py:608
 msgid "Size (Meg)"
 msgstr "大小 (MB)"
 
-#: ../updatemanager.py:725
+#: ../updatemanager.py:690
 #, python-format
 msgid "count: %d"
 msgstr "計數：%d"
 
-#: ../updatemanager.py:744 ../updatemanager.py:752
+#: ../updatemanager.py:715 ../updatemanager.py:725
 msgid "Error\n"
 msgstr "錯誤\n"
 
-#: ../updatemanager.py:761
+#: ../updatemanager.py:718
 #, python-format
 msgid "'%s' is not an install image\n"
 msgstr "「%s」不是安裝影像\n"
 
-#: ../updatemanager.py:755
+#: ../updatemanager.py:728
 #, python-format
 msgid "Version mismatch: expected %s received %s\n"
 msgstr "版本不相符：預期為 %s，卻收到 %s\n"
 
-#: ../updatemanager.py:766
-msgid ""
-"\n"
-"No Updates available"
-msgstr ""
-"\n"
-"沒有可用的更新"
+#: ../updatemanager.py:733
+msgid "<b>No Updates available.</b>"
+msgstr "<b>沒有可用的更新。</b>"
 
-#: ../updatemanager.py:797
+#: ../updatemanager.py:789
 #, python-format
 msgid ""
 "\n"
-"Description: \t%s\n"
-"Name:        \t%s\n"
-"FMRI:        "
+"Summary:\t\t\t%s\n"
+"Size:       \t\t\t%s\n"
+"Category:\t\t\t%s\n"
+"Latest Version:\t\t%s\n"
+"Installed Version:\t%s\n"
+"Packaging Date:\t%s\n"
+"FMRI:       \t\t\t%s\n"
+"Repository:       \t\t%s\n"
 msgstr ""
 "\n"
-"說明：\t%s\n"
-"名稱：        \t%s\n"
-"FMRI：        "
+"摘要：\t\t\t%s\n"
+"大小：       \t\t\t%s\n"
+"類別：\t\t\t%s\n"
+"最新版本：\t\t%s\n"
+"已安裝的版本：\t%s\n"
+"封裝日期：\t%s\n"
+"FMRI：       \t\t\t%s\n"
+"儲存庫：       \t\t%s\n"
 
-#: ../updatemanager.py:819 ../updatemanagernotifier.py:227
+#: ../updatemanager.py:819 ../updatemanagernotifier.py:309
 #, python-format
 msgid "%s is not valid image, trying root image"
 msgstr "%s 不是有效的影像，正在嘗試根影像"
 
-#: ../updatemanager.py:829 ../updatemanagernotifier.py:237
+#: ../updatemanager.py:829 ../updatemanagernotifier.py:319
 #, python-format
 msgid "%s is not valid root image, return None"
 msgstr "%s 不是有效的根影像，傳回「無」"
 
-#: ../updatemanager.py:863
+#: ../updatemanager.py:867
 #, python-format
 msgid ""
 "\n"
@@ -2415,7 +3965,7 @@ msgstr ""
 "\n"
 "正在擷取 %s 的詳細資訊..."
 
-#: ../updatemanager.py:879
+#: ../updatemanager.py:891
 msgid ""
 "\n"
 "No details available"
@@ -2423,7 +3973,7 @@ msgstr ""
 "\n"
 "沒有提供詳細資訊"
 
-#: ../updatemanager.py:908
+#: ../updatemanager.py:932
 msgid ""
 "\n"
 "Canceling update, please wait ..."
@@ -2431,7 +3981,7 @@ msgstr ""
 "\n"
 "正在取消更新，請稍候..."
 
-#: ../updatemanager.py:913
+#: ../updatemanager.py:937
 msgid ""
 "\n"
 "Unable to cancel at this time."
@@ -2439,23 +3989,23 @@ msgstr ""
 "\n"
 "此時無法取消。"
 
-#: ../updatemanager.py:916
+#: ../updatemanager.py:940
 msgid "Installing Updates"
 msgstr "正在安裝更新"
 
-#: ../updatemanager.py:948
+#: ../updatemanager.py:963
 msgid "ERROR"
 msgstr "錯誤"
 
-#: ../updatemanager.py:950
+#: ../updatemanager.py:965
 msgid "Following Incorporated package(s) cannot be updated:"
 msgstr "無法更新下列加入的套裝軟體："
 
-#: ../updatemanager.py:954
+#: ../updatemanager.py:969
 msgid "Update using: Update All\n"
 msgstr "更新時使用 [全部更新]\n"
 
-#: ../updatemanager.py:971 ../updatemanager.py:1163 ../updatemanager.py:1194
+#: ../updatemanager.py:986 ../updatemanager.py:1116 ../updatemanager.py:1151
 msgid ""
 "\n"
 "ERROR"
@@ -2463,7 +4013,7 @@ msgstr ""
 "\n"
 "錯誤"
 
-#: ../updatemanager.py:974
+#: ../updatemanager.py:989
 #, python-format
 msgid ""
 "%s\n"
@@ -2472,48 +4022,7 @@ msgstr ""
 "%s\n"
 "%s"
 
-#: ../updatemanager.py:977
-#, python-format
-msgid "%s\n"
-msgstr "%s\n"
-
-#: ../updatemanager.py:988 ../updatemanager.py:1103
-msgid ""
-"\n"
-"Evaluate\n"
-msgstr ""
-"\n"
-"估算\n"
-
-#: ../updatemanager.py:997 ../updatemanager.py:1016
-msgid "Update All failed during catalog refresh\n"
-msgstr "重新整理分類期間 [全部更新] 失敗\n"
-
-#: ../updatemanager.py:1003
-msgid "This is not an opensolaris image\n"
-msgstr "這不是 OpenSolaris 影像\n"
-
-#: ../updatemanager.py:1021
-msgid "Update All failure in plan creation:"
-msgstr "建立計劃時 [全部更新] 失敗："
-
-#: ../updatemanager.py:1027
-msgid "pkg(5) appears to be out of date and should be\n"
-msgstr "pkg(5) 可能已過期且應\n"
-
-#: ../updatemanager.py:1036
-msgid "Update All API failure in evaluation:"
-msgstr "估算時 [全部更新] API 失敗："
-
-#: ../updatemanager.py:1041
-msgid "Update All unexpected error in evaluation:"
-msgstr "估算時 [全部更新] 發生未預期的錯誤："
-
-#: ../updatemanager.py:1046
-msgid "Update All finished successfully.\n"
-msgstr "已成功完成 [全部更新]。\n"
-
-#: ../updatemanager.py:1064
+#: ../updatemanager.py:1001
 #, python-format
 msgid ""
 "\n"
@@ -2524,7 +4033,7 @@ msgstr ""
 "已於 %1.f 分鐘內成功完成 [全部更新]\n"
 "\n"
 
-#: ../updatemanager.py:1069
+#: ../updatemanager.py:1006
 msgid ""
 "\n"
 "Update All finished successfully in < 1 min\n"
@@ -2534,39 +4043,61 @@ msgstr ""
 "已於不超過 1 分鐘的時間成功完成 [全部更新]\n"
 "\n"
 
-#: ../updatemanager.py:1073
-msgid "Please reboot after reviewing the release notes posted at:\n"
-msgstr "請在檢閱以下網址公佈的版本說明後重新開機：\n"
+#: ../updatemanager.py:1009
+msgid ""
+"Review the posted release notes before rebooting your system:\n"
+"\n"
+"http://opensolaris.org/os/project/indiana/resources/relnotes/200811/x86/"
+msgstr ""
+"重新啟動系統之前，請先檢閱以下網址公佈的版本說明：\n"
+"\n"
+"http://opensolaris.org/os/project/indiana/resources/relnotes/200811/x86/"
 
-#: ../updatemanager.py:1093
+#: ../updatemanager.py:1018
+msgid "Update All Completed"
+msgstr "[全部更新] 完成"
+
+#: ../updatemanager.py:1035
 msgid "Nothing selected to update."
 msgstr "未選擇任何要更新的項目。"
 
-#: ../updatemanager.py:1097
+#: ../updatemanager.py:1042
 msgid "Updating ..."
 msgstr "更新中..."
 
-#: ../updatemanager.py:1111
+#: ../updatemanager.py:1048
+msgid ""
+"\n"
+"Evaluate\n"
+msgstr ""
+"\n"
+"估算\n"
+
+#: ../updatemanager.py:1054
+msgid "Update error in plan install:"
+msgstr "安裝計劃時出現更新錯誤："
+
+#: ../updatemanager.py:1064
 msgid "Update unexpected API error:"
 msgstr "更新未預期的 API 錯誤："
 
-#: ../updatemanager.py:1116
+#: ../updatemanager.py:1069
 msgid "Update unexpected error:"
 msgstr "更新未預期的錯誤："
 
-#: ../updatemanager.py:1139
+#: ../updatemanager.py:1092
 msgid "Packages to be installed:"
 msgstr "要安裝的套裝軟體："
 
-#: ../updatemanager.py:1143
+#: ../updatemanager.py:1096
 msgid "Update"
 msgstr "更新"
 
-#: ../updatemanager.py:1144
+#: ../updatemanager.py:1097
 msgid "Update finished successfully."
 msgstr "已成功完成更新。"
 
-#: ../updatemanager.py:1165
+#: ../updatemanager.py:1118
 #, python-format
 msgid ""
 "%s Download failed:\n"
@@ -2575,17 +4106,18 @@ msgstr ""
 "%s 下載失敗：\n"
 "%s"
 
-#: ../updatemanager.py:1172
+#: ../updatemanager.py:1125 ../updatemanager.py:1160
 #, python-format
-msgid "%s exceded available disc quota"
-msgstr "%s 已超過可用的磁碟配額"
+msgid "%s exceded available disc space"
+msgstr "%s 已超過可用的磁碟空間"
 
-#: ../updatemanager.py:1177 ../updatemanager.py:1201
+#: ../updatemanager.py:1130 ../updatemanager.py:1135 ../updatemanager.py:1165
+#: ../updatemanager.py:1170
 #, python-format
 msgid "%s unexpected error:"
 msgstr "%s 發生未預期的錯誤："
 
-#: ../updatemanager.py:1196
+#: ../updatemanager.py:1153
 #, python-format
 msgid ""
 "%s Execute plan failed:\n"
@@ -2594,11 +4126,23 @@ msgstr ""
 "%s 執行計劃失敗：\n"
 "%s"
 
-#: ../updatemanager.py:1218
-msgid "Not enough disc space: the Update All action cannot "
-msgstr "磁碟空間不足：[全部更新] 無法 "
+#: ../updatemanager.py:1187
+msgid ""
+"Not enough disc space, the Update All action cannot be performed.\n"
+"\n"
+"Click OK to manage your existing BEs and free up disk space or Cancel to "
+"cancel Update All."
+msgstr ""
+"沒有足夠的磁碟空間，無法執行「全部更新」動作。\n"
+"\n"
+"按一下 [確定] 管理您現有的 BE 並釋放磁碟空間，或按一下 [取消]"
+"以取消「全部更新」。"
 
-#: ../updatemanager.py:1390
+#: ../updatemanager.py:1191
+msgid "Not Enough Disc Space"
+msgstr "磁碟空間不足"
+
+#: ../updatemanager.py:1359
 msgid ""
 "\n"
 "Download\n"
@@ -2606,12 +4150,12 @@ msgstr ""
 "\n"
 "下載\n"
 
-#: ../updatemanager.py:1397
+#: ../updatemanager.py:1366
 #, python-format
 msgid "\tpkg %d/%d: \tfiles %d/%d \txfer %.2f/%.2f(meg)"
 msgstr "\tpkg %d/%d：\t檔案 %d/%d \txfer %.2f/%.2f(MB)"
 
-#: ../updatemanager.py:1414
+#: ../updatemanager.py:1383
 msgid ""
 "\n"
 "Install\n"
@@ -2619,29 +4163,29 @@ msgstr ""
 "\n"
 "安裝\n"
 
-#: ../updatemanager.py:1416 ../updatemanager.py:1420
+#: ../updatemanager.py:1385 ../updatemanager.py:1389
 #, python-format
 msgid "\t%s\t%d/%d actions"
 msgstr "\t%s\t%d/%d 個動作"
 
-#: ../updatemanager.py:1436
+#: ../updatemanager.py:1407
 msgid "Index\n"
 msgstr "索引\n"
 
-#: ../updatemanager.py:1437 ../updatemanager.py:1441
+#: ../updatemanager.py:1408 ../updatemanager.py:1412
 #, python-format
 msgid "\t%-25s\t%d/%d actions"
 msgstr "\t%-25s\t%d/%d 個動作"
 
-#: ../updatemanager.py:1505
+#: ../updatemanager.py:1494
 msgid "Checking for new software"
 msgstr "正在檢查新軟體"
 
-#: ../updatemanagernotifier.py:247
+#: ../updatemanagernotifier.py:329
 msgid "Updates are available"
 msgstr "有更新可用"
 
-#: ../updatemanagernotifier.py:267
+#: ../updatemanagernotifier.py:351
 msgid ""
 "Updates available\n"
 "Please click on icon to update."
@@ -2649,947 +4193,6 @@ msgstr ""
 "有更新可用\n"
 "請按一下圖示以更新。"
 
-#: ../updatemanagernotifier.py:331
+#: ../updatemanagernotifier.py:426
 msgid "Another instance of UpdateManagerNotify is running"
 msgstr "正在執行 UpdateManagerNotify 的其他實例"
-
-#: ../client.py:402
-#, python-format
-msgid "Created ZFS snapshot: %s"
-msgstr "已建立的 ZFS 快照：%s"
-
-#: ../client.py:1039
-msgid "          Name:"
-msgstr "            名稱："
-
-#: ../client.py:1040
-msgid "       Summary:"
-msgstr "            摘要："
-
-#: ../client.py:1047
-msgid "      Category:"
-msgstr "            類別："
-
-#: ../client.py:1041
-msgid "         State:"
-msgstr "            狀態："
-
-#. XXX even more info on the authority would be nice?
-#: ../client.py:1044
-msgid "     Authority:"
-msgstr "            授權："
-
-#: ../client.py:1045
-msgid "       Version:"
-msgstr "            版本："
-
-#: ../client.py:1046
-msgid " Build Release:"
-msgstr " 建置發行版本："
-
-#: ../client.py:1047
-msgid "        Branch:"
-msgstr "            分支："
-
-#: ../client.py:1048
-msgid "Packaging Date:"
-msgstr "      封裝日期："
-
-#: ../client.py:1049
-msgid "          Size:"
-msgstr "            大小："
-
-#: ../client.py:1050
-msgid "          FMRI:"
-msgstr "          FMRI："
-
-#: ../client.py:1811
-msgid "image-create requires an authority argument"
-msgstr "image-create 需有授權引數"
-
-#: ../client.py:1835
-#, python-format
-msgid "there is already an image at: %s"
-msgstr "下列位置已有影像：%s"
-
-#: ../client.py:1836 ../client.py:1843
-msgid "To override, use the -f (force) option."
-msgstr "若要置換，請使用 -f (強制) 選項。"
-
-#: ../client.py:1842
-#, python-format
-msgid "Non-empty directory: %s"
-msgstr "非空目錄：%s"
-
-#: ../client.py:1996
-#, python-format
-msgid "%s takes argument of form name=value, not %s"
-msgstr "%s 採用「名稱=值」形式而非 %s 形式的引數"
-
-#: ../client.py:2018 ../client.py:2028
-#, python-format
-msgid "-R not allowed for %s subcommand"
-msgstr "%s 子指令不允許使用 -R"
-
-#: ../client.py:2196
-#, python-format
-msgid ""
-"The pkg command appears out of sync with the libraries provided \n"
-"by SUNWipkg. The client version is %(client)s while the library API version "
-"is %(api)s"
-msgstr ""
-"pkg 指令似乎與 SUNWipkg 提供的程式庫不同步。\n"
-"用戶端版本是 %(client)s，"
-"而程式庫 API 版本為 %(api)s"
-
-#: ../client.py:2208
-#, python-format
-msgid ""
-"\n"
-"\n"
-"This is an internal error.  Please let the developers know about this\n"
-"problem by filing a bug at http://defect.opensolaris.org and including the\n"
-"above traceback and this message.  The version of pkg(5) is '%s'."
-msgstr ""
-"\n"
-"\n"
-"此為內部錯誤。請在 http://defect.opensolaris.org 將此錯誤歸檔，\n"
-"並附上以上追蹤訊息和本訊息，\n"
-"讓開發人員知道此問題。pkg(5) 的版本是「%s」。"
-
-#: ../gui/data/l10n.py:32
-msgid "Administration and Configuration"
-msgstr "管理與配置"
-
-#: ../gui/data/l10n.py:33
-msgid "Applets"
-msgstr "Applet"
-
-#: ../gui/data/l10n.py:34
-msgid "Application and Web Servers"
-msgstr "應用程式與 Web 伺服器"
-
-#: ../gui/data/l10n.py:35
-msgid "C"
-msgstr "C"
-
-#: ../gui/data/l10n.py:36
-msgid "C++"
-msgstr "C++"
-
-#: ../gui/data/l10n.py:37
-msgid "Configuration and Preferences"
-msgstr "配置與喜好設定"
-
-#: ../gui/data/l10n.py:39
-msgid "Databases"
-msgstr "資料庫"
-
-#: ../gui/data/l10n.py:40
-msgid "Databases (System)"
-msgstr "資料庫 (系統)"
-
-#: ../gui/data/l10n.py:40
-msgid "Desktop"
-msgstr "桌面"
-
-#: ../gui/data/l10n.py:41
-msgid "Display"
-msgstr "顯示"
-
-#: ../gui/data/l10n.py:42
-msgid "Distribution Tools"
-msgstr "發行工具"
-
-#: ../gui/data/l10n.py:43
-msgid "Documentation"
-msgstr "文件"
-
-#: ../gui/data/l10n.py:44
-msgid "Enterprise Management"
-msgstr "企業管理"
-
-#: ../gui/data/l10n.py:45
-msgid "File Managers"
-msgstr "檔案管理員"
-
-#: ../gui/data/l10n.py:46
-msgid "File System"
-msgstr "檔案系統"
-
-#: ../gui/data/l10n.py:47
-msgid "Fonts"
-msgstr "字型"
-
-#: ../gui/data/l10n.py:48
-msgid "GNOME and GTK+"
-msgstr "GNOME 與 GTK+"
-
-#: ../gui/data/l10n.py:49
-msgid "GNU"
-msgstr "GNU"
-
-#: ../gui/data/l10n.py:51
-msgid "Graphics and Imaging"
-msgstr "圖形與成像"
-
-#: ../gui/data/l10n.py:52
-msgid "Hardware"
-msgstr "硬體"
-
-#: ../gui/data/l10n.py:53
-msgid "High Performance Computing"
-msgstr "高效能運算"
-
-#: ../gui/data/l10n.py:54
-msgid "Integrated Development Environments"
-msgstr "整合開發環境"
-
-#: ../gui/data/l10n.py:55
-msgid "Internationalization"
-msgstr "國際化"
-
-#: ../gui/data/l10n.py:57
-msgid "Java"
-msgstr "Java"
-
-#: ../gui/data/l10n.py:58
-msgid "Libraries"
-msgstr "程式庫"
-
-#: ../gui/data/l10n.py:59
-msgid "Libraries (System)"
-msgstr "程式庫 (系統)"
-
-#: ../gui/data/l10n.py:60
-msgid "Localizations (Desktop)"
-msgstr "本土化 (桌面)"
-
-#: ../gui/data/l10n.py:61
-msgid "Localizations (System)"
-msgstr "本土化 (系統)"
-
-#: ../gui/data/l10n.py:63
-msgid "Networking"
-msgstr "網路"
-
-#: ../gui/data/l10n.py:65
-msgid "Other Languages"
-msgstr "其他語言"
-
-#: ../gui/data/l10n.py:66
-msgid "Other Peripherals"
-msgstr "其他週邊裝置"
-
-#: ../gui/data/l10n.py:67
-msgid "PHP"
-msgstr "PHP"
-
-#: ../gui/data/l10n.py:68
-msgid "Packaging"
-msgstr "封裝"
-
-#: ../gui/data/l10n.py:69
-msgid "Perl"
-msgstr "Perl"
-
-#: ../gui/data/l10n.py:70
-msgid "Plug-ins and Run-times"
-msgstr "外掛程式與執行階段"
-
-#: ../gui/data/l10n.py:71
-msgid "Ports"
-msgstr "連接埠"
-
-#: ../gui/data/l10n.py:72
-msgid "Printing"
-msgstr "正在列印"
-
-#: ../gui/data/l10n.py:73
-msgid "Python"
-msgstr "Python"
-
-#: ../gui/data/l10n.py:74
-msgid "Ruby"
-msgstr "Ruby"
-
-#: ../gui/data/l10n.py:75
-msgid "Scripts"
-msgstr "程序檔"
-
-#: ../gui/data/l10n.py:76
-msgid "Security"
-msgstr "安全性"
-
-#: ../gui/data/l10n.py:77
-msgid "Services"
-msgstr "服務"
-
-#: ../gui/data/l10n.py:78
-msgid "Sessions"
-msgstr "階段作業"
-
-#: ../gui/data/l10n.py:79
-msgid "Shells"
-msgstr "Shell"
-
-#: ../gui/data/l10n.py:80
-msgid "Software Management"
-msgstr "軟體管理"
-
-#: ../gui/data/l10n.py:81
-msgid "Sound and Video"
-msgstr "影音"
-
-#: ../gui/data/l10n.py:82
-msgid "Source Code Management"
-msgstr "原始碼管理"
-
-#: ../gui/data/l10n.py:83
-msgid "Storage"
-msgstr "儲存裝置"
-
-#: ../gui/data/l10n.py:84 ../packagemanager.py:507
-msgid "System"
-msgstr "系統"
-
-#: ../gui/data/l10n.py:85
-msgid "System U"
-msgstr "系統公用程式"
-
-#: ../gui/data/l10n.py:86
-msgid "System Utilities"
-msgstr "系統公用程式"
-
-#: ../gui/data/l10n.py:87
-msgid "Text Tools"
-msgstr "文字工具"
-
-#: ../gui/data/l10n.py:88
-msgid "Trusted"
-msgstr "可信任的"
-
-#: ../gui/data/l10n.py:89
-msgid "Trusted Extensions"
-msgstr "Trusted Extensions"
-
-#: ../gui/data/l10n.py:90
-msgid "Virtualization"
-msgstr "虛擬"
-
-#: ../gui/data/l10n.py:91
-msgid "Window Managers"
-msgstr "視窗管理員"
-
-#: ../gui/data/l10n.py:92
-msgid "X11"
-msgstr "X11"
-
-#: ../gui/data/l10n.py:94
-msgid "X11 (System)"
-msgstr "X11 (系統)"
-
-#: ../gui/data/addmoresoftware.desktop.in.h:1
-msgid "Add More Software"
-msgstr "增加更多軟體"
-
-#: ../gui/data/packagemanager.glade.h:3
-msgid "1. Delete old and unused BEs to free up disk space."
-msgstr "1. 刪除舊的及未使用的 BE，釋放磁碟空間。"
-
-#: ../gui/data/packagemanager.glade.h:4
-msgid "2. Change the default BE on your system."
-msgstr "2. 變更系統的預設 BE。"
-
-#: ../gui/data/packagemanager.glade.h:20
-msgid "<b>Manage your BEs to:</b>"
-msgstr "<b>管理 BE 以：</b>"
-
-#: ../gui/data/packagemanager.glade.h:33
-msgid "Click to get list of newest packages."
-msgstr "按一下以取得最新的套裝軟體。"
-
-#: ../gui/data/packagemanager.glade.h:34
-msgid "Click to update all installed packages."
-msgstr "按一下以更新所有已安裝的套裝軟體。"
-
-#: ../gui/data/packagemanager.glade.h:57
-msgid "Legal"
-msgstr "合法的"
-
-#: ../gui/data/packagemanager.glade.h:58
-msgid "Manage Repositories"
-msgstr "管理儲存庫"
-
-#: ../gui/data/packagemanager.glade.h:59
-msgid "Manage Repositories..."
-msgstr "管理儲存庫..."
-
-#: ../gui/data/packagemanager.glade.h:63
-msgid ""
-"Note: The current active BE cannot be deleted. \n"
-"To delete this BE, boot into another BE, then return here."
-msgstr ""
-"備註：無法刪除目前使用中的 BE。\n"
-"若要刪除此 BE，請以其他 BE 啟動，再返回此處。"
-
-#: ../gui/data/packagemanager.glade.h:70
-msgid "Plan creation error."
-msgstr "建立計劃錯誤。"
-
-#: ../gui/data/packagemanager.glade.h:79
-msgid ""
-"Review the information below.\n"
-"Click OK to proceed.\n"
-"Click Cancel to return to the Boot Environment\n"
-"Management panel.\n"
-"\n"
-"Note: Changes will occur upon reboot."
-msgstr ""
-"請審閱以下資訊。\n"
-"按一下 [確定] 繼續。\n"
-"按一下 [取消] 返回 [啟動環境管理] \n"
-"面板。\n"
-"\n"
-"備註：變更會在重新開機時生效。"
-
-#: ../gui/data/packagemanager.glade.h:89
-msgid "Select from the list to modify or remove existing repositories."
-msgstr "從清單中選取，以修改或移除現有的儲存庫。"
-
-#: ../gui/data/packagemanager.glade.h:90
-msgid "Select packages by marking the checkbox and click to Install/Update."
-msgstr "勾選核取方塊以選取套裝軟體，並按一下 [安裝/更新] 以進行安裝/更新。"
-
-#: ../gui/data/packagemanager.glade.h:91
-msgid "Select packages by marking the checkbox and click to Remove selected."
-msgstr "勾選核取方塊以選取套裝軟體，並按一下 [移除] 以移除所選項目。"
-
-#: ../gui/data/packagemanager.glade.h:95
-msgid "The following BEs are available on your system:"
-msgstr "您的系統可使用下列 BE："
-
-#: ../gui/data/packagemanager.glade.h:99
-msgid "Type text to search name and description of the package."
-msgstr "鍵入文字以搜尋套裝軟體的名稱及說明。"
-
-#: ../gui/data/packagemanager.glade.h:100
-msgid ""
-"Type the repository name and URL you want to add as a new package source."
-msgstr ""
-"鍵入要增加為新的套裝軟體來源之儲存庫名稱及 URL。"
-
-#: ../gui/data/packagemanager.glade.h:102 ../gui/modules/installupdate.py:424
-msgid "Update All failure in plan creation."
-msgstr "建立計劃時 [全部更新] 失敗。"
-
-#: ../gui/data/packagemanager.glade.h:118
-msgid "gtk-close"
-msgstr "gtk-close"
-
-#: ../gui/modules/beadmin.py:69
-msgid ""
-"The <b>libbe</b> library was not found on your system.\n"
-"All functions for managing Boot Environments are disabled"
-msgstr ""
-"系統中找不到 <b>libbe</b> 程式庫。\n"
-"管理啟動環境的所有功能全數停用"
-
-#: ../gui/modules/beadmin.py:339
-msgid "<b>Couldn't change Active Boot Environment to:</b>\n"
-msgstr "<b>使用中啟動環境無法變更為：</b>\n"
-
-#: ../gui/modules/beadmin.py:344
-msgid "<b>Couldn't delete Boot Environments:</b>\n"
-msgstr "<b>無法刪除啟動環境：</b>\n"
-
-#: ../gui/modules/beadmin.py:410
-msgid ""
-"The <b>libbe</b> library couldn't  prepare list of Boot Environments.\n"
-"All functions for managing Boot Environments are disabled"
-msgstr ""
-"<b>libbe</b> 程式庫無法準備啟動環境清單。\n"
-"管理啟動環境的所有功能全數停用"
-
-#: ../gui/modules/beadmin.py:445 ../gui/modules/beadmin.py:464
-#, python-format
-msgid "Error conversion from UTF-8 to %s."
-msgstr "從 UTF-8 轉換成 %s 時發生錯誤。"
-
-#: ../gui/modules/beadmin.py:481
-#, python-format
-msgid "Error conversion from %s to UTF-8."
-msgstr "從 %s 轉換成 UTF-8 時發生錯誤。"
-
-#: ../gui/modules/installupdate.py:150
-msgid "Proceed"
-msgstr "繼續"
-
-#: ../gui/modules/installupdate.py:302
-msgid ""
-"An unknown error occured while preparing the\n"
-"list of packages\n"
-"\n"
-"Please let the developers know about this problem by filing\n"
-"a bug at http://defect.opensolaris.org"
-msgstr ""
-"準備套裝軟體清單時，\n"
-"發生不明的錯誤\n"
-"\n"
-"請將錯誤歸檔至 http://defect.opensolaris.org，\n"
-"讓開發人員知道此問題"
-
-#: ../gui/modules/installupdate.py:306 ../gui/modules/installupdate.py:473
-#: ../gui/modules/installupdate.py:521
-msgid ""
-"\n"
-"\n"
-"Exception value: "
-msgstr ""
-"\n"
-"\n"
-"異常值： "
-
-#: ../gui/modules/installupdate.py:314
-msgid ""
-"Evaluation started.\n"
-"Gathering packages information, please wait...\n"
-msgstr ""
-"評估已開始。\n"
-"正在收集套裝軟體資訊，請稍候...\n"
-
-#: ../gui/modules/installupdate.py:324
-msgid ""
-"Unexpected failure with\n"
-"catalog refresh during install while \n"
-"determining what to update."
-msgstr ""
-"安裝期間\n"
-"在決定更新內容時，\n"
-"目錄重新整理發生未預期的失敗。"
-
-#: ../gui/modules/installupdate.py:332
-msgid ""
-"Invalid repository certificate.\n"
-"You can not install packages from the\n"
-"repopsitory, which doesn't have\n"
-"appropriate certificate."
-msgstr ""
-"無效的儲存庫憑證。\n"
-"您無法安裝儲存庫中的套裝軟體，\n"
-"它沒有\n"
-"適用的憑證。"
-
-#: ../gui/modules/installupdate.py:341
-msgid "Install/Update failure in plan creation."
-msgstr "建立計劃時 [安裝/更新] 失敗。"
-
-#: ../gui/modules/installupdate.py:350
-msgid ""
-"Install failed.\n"
-"The inventory is not correct."
-msgstr ""
-"安裝失敗。\n"
-"資產管理不正確。"
-
-#: ../gui/modules/installupdate.py:362 ../gui/modules/installupdate.py:437
-msgid ""
-"Please check the network connection.\n"
-"Is the repository accessible?"
-msgstr ""
-"請檢查網路連線。\n"
-"可否存取儲存庫？"
-
-#: ../gui/modules/installupdate.py:375
-msgid "Remove failure in plan creation."
-msgstr "建立計劃時 [移除] 失敗。"
-
-#: ../gui/modules/installupdate.py:401
-msgid ""
-"Unexpected failure with\n"
-"catalog refresh during image-update while \n"
-"determining what to update."
-msgstr ""
-"執行 image-update 期間\n"
-"在決定更新內容時，\n"
-"目錄重新整理發生未預期的失敗。"
-
-#: ../gui/modules/installupdate.py:416
-msgid ""
-"pkg(5) appears to be out of date and should be\n"
-" updated before running Update All.\n"
-"Please update SUNWipkg package"
-msgstr ""
-"pkg(5) 似乎已過期，\n"
-"而且應在執行 [全部更新] 之前先予更新。\n"
-"請更新 SUNWipkg 套裝軟體"
-
-#: ../gui/modules/installupdate.py:446
-msgid ""
-"Selected packages for update can\n"
-"only be updated using Update All."
-msgstr ""
-"為更新所選取的套裝軟體，\n"
-"只能使用 [全部更新] 加以更新。"
-
-#: ../gui/modules/installupdate.py:448
-msgid "Unable to update"
-msgstr "無法更新"
-
-#: ../gui/modules/installupdate.py:453
-msgid "The action for selected packages could not be completed."
-msgstr "無法完成對所選套裝軟體執行的動作。"
-
-#: ../gui/modules/installupdate.py:455
-msgid "Unable to perform action"
-msgstr "無法執行動作"
-
-#: ../gui/modules/installupdate.py:468
-msgid ""
-"An unknown error occured while downloading the files\n"
-"\n"
-"Please let the developers know about this problem by filing\n"
-"a bug at http://defect.opensolaris.org"
-msgstr ""
-"下載檔案時發生不明的錯誤\n"
-"\n"
-"請將錯誤歸檔至 http://defect.opensolaris.org，\n"
-"讓開發人員知道此問題"
-
-#: ../gui/modules/installupdate.py:488
-msgid ""
-"An error occured while downloading the files\n"
-"Please check your permissions and\n"
-"network connection."
-msgstr ""
-"下載檔案時發生錯誤\n"
-"請檢查權限及\n"
-"網路連線。"
-
-#: ../gui/modules/installupdate.py:515
-msgid ""
-"An unknown error occured while installing\n"
-"updating or removing packages\n"
-"\n"
-"Please let the developers know about this problem by filing\n"
-"a bug at http://defect.opensolaris.org"
-msgstr ""
-"安裝、更新或移除套裝軟體時，\n"
-"發生不明的錯誤\n"
-"\n"
-"請將錯誤歸檔至 http://defect.opensolaris.org，\n"
-"讓開發人員知道此問題"
-
-#: ../gui/modules/installupdate.py:536
-msgid ""
-"There was an error during installation.\n"
-"The index is corrupted. You might wan't try to fix\n"
-"this problem by running command:\n"
-"pfexec pkg rebuild-index"
-msgstr ""
-"安裝期間曾發生錯誤。\n"
-"索引已毀壞。您可執行下列指令，\n"
-"嘗試修復此問題：\n"
-"pfexec pkg rebuild-index"
-
-#: ../gui/modules/installupdate.py:544
-msgid ""
-"An error occured while installing the files\n"
-"Please check your permissions"
-msgstr ""
-"安裝檔案時發生錯誤\n"
-"請檢查權限"
-
-#: ../gui/modules/installupdate.py:550
-msgid ""
-"There was an error during installation.\n"
-"The State of the image is incorrect and the operation\n"
-"can't be finished."
-msgstr ""
-"安裝期間曾發生錯誤。\n"
-"影像狀態不正確，\n"
-"作業無法完成。"
-
-#: ../gui/modules/installupdate.py:557
-msgid ""
-"This is an Live Image. The install\n"
-"operation can't be performed."
-msgstr ""
-"此為「即時影像」。\n"
-"無法執行安裝作業。"
-
-#: ../gui/modules/installupdate.py:563
-msgid ""
-"There was an error during installation.\n"
-"The Plan of the operation is missing and the operation\n"
-"can't be finished."
-msgstr ""
-"安裝期間曾發生錯誤。\n"
-"作業計劃遺失，\n"
-"作業無法完成。"
-
-#: ../gui/modules/installupdate.py:607
-msgid "Not enough disc space: selected action cannot "
-msgstr "磁碟空間不足：選取的動作無法 "
-
-#: ../gui/modules/installupdate.py:611 ../updatemanager.py:1269
-msgid "Not Enough Disc Space"
-msgstr "磁碟空間不足"
-
-#: ../gui/modules/installupdate.py:644
-msgid "Evaluating package "
-msgstr "正在評估套裝軟體 "
-
-#: ../gui/modules/installupdate.py:687
-msgid ""
-"This action couldn't be finished.\n"
-"Some of the selected packages depends on other.\n"
-"Please review the dependencies."
-msgstr ""
-"此動作無法完成。\n"
-"有些選取的套裝軟體依賴其他套裝軟體。\n"
-"請審閱相依性。"
-
-#: ../gui/modules/repository.py:223
-msgid ""
-"Couldn't change the preffered authority.\n"
-"Please check your permissions."
-msgstr ""
-"無法變更慣用的授權。\n"
-"請檢查權限。"
-
-#: ../gui/modules/repository.py:223
-msgid ""
-"Couldn't change the preferred authority.\n"
-"Please check your permissions."
-msgstr ""
-"無法變更慣用的授權。\n"
-"請檢查權限。"
-
-#: ../gui/modules/repository.py:381 ../gui/modules/repository.py:439
-#: ../gui/modules/repository.py:473
-msgid ""
-"\n"
-"Please check your permissions."
-msgstr ""
-"\n"
-"請檢查權限。"
-
-#: ../gui/modules/repository.py:395 ../gui/modules/repository.py:452
-msgid ""
-"\n"
-"Please check the network connection or URL.\n"
-"Is the repository accessible?"
-msgstr ""
-"\n"
-"請檢查網路連線或 URL。\n"
-"可否存取儲存庫？"
-
-#: ../modules/client/api_errors.py:108
-msgid ""
-"pkg: The following pattern(s) did not match any packages in the current\n"
-"catalog. Try relaxing the pattern, refreshing and/or examining the catalogs"
-msgstr ""
-"pkg：下列樣式不符合目前目錄中任何的套裝軟體。\n"
-"請嘗試放寬樣式，重新整理及/或檢查目錄"
-
-#: ../modules/client/api_errors.py:121
-#, python-format
-msgid "pkg: '%s' matches no installed packages"
-msgstr "pkg：「%s」不符合已安裝的套裝軟體"
-
-#: ../modules/client/api_errors.py:124
-#, python-format
-msgid "pkg: '%s' is an illegal fmri"
-msgstr "pkg：「%s」是非法的 fmri"
-
-#: ../modules/client/api_errors.py:128
-msgid "pkg: the following package(s) violated constraints:"
-msgstr "pkg：下列套裝軟體違反限制："
-
-#: ../modules/client/api_errors.py:162
-msgid ""
-"No matching package could be found for the following FMRIs in any of the "
-"catalogs for the current authorities:\n"
-msgstr ""
-"在目前權限的任何目錄中，"
-"都無法為下列 FMRI 找到相符的套裝軟體：\n"
-
-#: ../modules/client/bootenv.py:215
-#, python-format
-msgid ""
-"\n"
-"A clone of %s exists and has been updated and activated.\n"
-"On the next boot the Boot Environment %s will be mounted on '/'.\n"
-"Reboot when ready to switch to this updated BE.\n"
-msgstr ""
-"\n"
-"複製的 %s 已存在，並且已更新及啟動。\n"
-"啟動環境 %s 下次啟動時，會掛載於「/」上。\n"
-"準備好可切換至此更新版 BE 時，請重新開機。\n"
-
-#: ../packagemanager.py:502
-msgid "Applications"
-msgstr "應用程式"
-
-#: ../packagemanager.py:503
-msgid "Desktop (GNOME)"
-msgstr "桌面 (GNOME)"
-
-#: ../packagemanager.py:504
-msgid "Development"
-msgstr "開發"
-
-#: ../packagemanager.py:505
-msgid "Distributions"
-msgstr "發行軟體"
-
-#: ../packagemanager.py:506
-msgid "Drivers"
-msgstr "驅動程式"
-
-#: ../packagemanager.py:508
-msgid "Web Services"
-msgstr "Web 服務"
-
-#: ../packagemanager.py:584
-msgid "Fetching legal information..."
-msgstr "正在擷取合法資訊..."
-
-#. Prompt user
-#: ../packagemanager.py:791
-msgid "Newer versions of SUNWipkg and SUNWipkg-gui\n"
-msgstr "較新版 SUNWipkg 及 SUNWipkg-gui\n"
-
-#: ../packagemanager.py:809
-msgid ""
-"Update All was not run.\n"
-"\n"
-"It can not be run until SUNWipkg and SUNWipkg-gui have been updated."
-msgstr ""
-"未執行 [全部更新]。\n"
-"\n"
-"必須更新 SUNWipkg 及 SUNWipkg-gui 後，才可執行。"
-
-#: ../packagemanager.py:1096
-msgid "Not available"
-msgstr "不可用"
-
-#: ../packagemanager.py:1430
-msgid ""
-"Network problem.\n"
-"\n"
-msgstr ""
-"網路問題。\n"
-"\n"
-
-#: ../packagemanager.py:1431
-msgid "Details:\n"
-msgstr "詳細資訊：\n"
-
-#. 2790: As IPS and IPS-GUI have been updated the IPS GUI must be shutdown
-#. and restarted
-#: ../packagemanager.py:2080
-msgid ""
-"SUNWipkg and SUNWipkg-gui have been updated and Package Manager will now be "
-"restarted.\n"
-"\n"
-"After restart select Update All to continue."
-msgstr ""
-"SUNWipkg 及 SUNWipkg-gui 已更新，"
-"「套裝軟體管理員」即將重新啟動。\n"
-"\n"
-"請在重新啟動後，選取 [全部更新] 繼續作業。"
-
-#: ../packagemanager.py:2093
-msgid ""
-"Update All has completed and Package Manager will now exit.\n"
-"\n"
-"Please reboot after reviewing the release notes posted at:\n"
-"\n"
-"http://opensolaris.org/os/project/indiana/resources/relnotes/200811/x86/"
-msgstr ""
-"[全部更新] 已完成，「套裝軟體管理員」即將結束。\n"
-"\n"
-"審閱發佈在下列位置上的版本說明之後，請重新開機：\n"
-"\n"
-"http://opensolaris.org/os/project/indiana/resources/relnotes/200811/x86/"
-
-#: ../updatemanager.py:815
-#, python-format
-msgid ""
-"\n"
-"Description:\t\t%s\n"
-"FMRI:       \t\t%s"
-msgstr ""
-"\n"
-"說明：\t\t%s\n"
-"FMRI：       \t\t%s"
-
-#: ../updatemanager.py:1029 ../updatemanager.py:1048
-msgid ""
-"Update All failed during catalog refresh\n"
-"while determining what to update:"
-msgstr ""
-"重新整理目錄期間在決定更新內容時，\n"
-"[全部更新] 失敗："
-
-#: ../updatemanager.py:1097
-msgid ""
-"Please reboot after reviewing the release notes posted at:\n"
-"\n"
-"http://opensolaris.org/os/project/indiana/resources/relnotes/200811/x86/"
-msgstr ""
-"審閱發佈在下列位置上的版本說明之後，請重新開機：\n"
-"\n"
-"http://opensolaris.org/os/project/indiana/resources/relnotes/200811/x86/"
-
-#: ../updatemanager.py:1106
-msgid "Update All Completed"
-msgstr "[全部更新] 完成"
-
-#: ../updatemanager.py:1142
-msgid "Update error in plan install:"
-msgstr "安裝計劃時出現更新錯誤："
-
-#: ../updatemanager.py:1213 ../updatemanager.py:1243
-#, python-format
-msgid "%s exceded available disc space"
-msgstr "%s 已超過可用的磁碟空間"
-
-#: ../updatemanager.py:1265
-msgid ""
-"Not enough disc space: the Update All action cannot be performed.\n"
-"\n"
-"Click OK to launch BE Management to manage your existing BE's and free up "
-"disc space."
-msgstr ""
-"磁碟空間不足：無法執行 [全部更新] 動作。\n"
-"\n"
-"按一下 [確定] 啟動 [BE 管理]，"
-"以管理現有的 BE 並釋放磁碟空間。"
-
-#, python-format
-msgid ""
-"Accessing this restricted repository failed."
-"\nYou either need to register to access this repository,"
-"\nthe certificate expired, or you need to accept the repository"
-"\ncertificate."
-msgstr ""
-"存取此受限制的儲存庫失敗。"
-"\n您必須註冊以存取此儲存庫，"
-"\n或者憑證已過期，您必須接受儲存庫"
-"\n憑證。"
-
-#, python-format
-msgid ""
-"An error occured while "
-"downloading the files\nPlease check your permissions."
-msgstr ""
-"下載檔案時"
-"發生錯誤\n請檢查權限。"
-
-#, python-format
-msgid "Download failure."
-msgstr "下載失敗。"
-

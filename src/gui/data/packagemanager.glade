@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.4.5 on Thu Apr  2 09:29:20 2009 -->
+<!--Generated with glade3 3.4.5 on Thu Apr 16 16:36:35 2009 -->
 <glade-interface>
   <widget class="GtkWindow" id="mainwindow">
     <property name="width_request">750</property>
@@ -2005,7 +2005,6 @@ Padraig O'Briain &lt;Padraig.Obriain@Sun.Com&gt;</property>
     <property name="height_request">400</property>
     <property name="border_width">5</property>
     <property name="title" translatable="yes">Manage Repositories</property>
-    <property name="resizable">False</property>
     <property name="modal">True</property>
     <property name="window_position">GTK_WIN_POS_CENTER_ON_PARENT</property>
     <property name="icon">PM_app_48x.png</property>
@@ -2022,7 +2021,7 @@ Padraig O'Briain &lt;Padraig.Obriain@Sun.Com&gt;</property>
             <property name="visible">True</property>
             <property name="xalign">1</property>
             <property name="top_padding">5</property>
-            <property name="right_padding">5</property>
+            <property name="right_padding">4</property>
             <child>
               <widget class="GtkVBox" id="vbox17">
                 <property name="visible">True</property>
@@ -2050,18 +2049,20 @@ Padraig O'Briain &lt;Padraig.Obriain@Sun.Com&gt;</property>
                       </widget>
                     </child>
                     <child>
-                      <widget class="GtkAlignment" id="alignment36">
+                      <widget class="GtkLabel" id="label14">
+                        <property name="width_request">500</property>
                         <property name="visible">True</property>
-                        <property name="left_padding">5</property>
-                        <child>
-                          <widget class="GtkLabel" id="label6">
-                            <property name="visible">True</property>
-                            <property name="label" translatable="yes">lf the repository requires a SSL key and certificate, or if it has mirrors, add the new
+                        <property name="xalign">0</property>
+                        <property name="yalign">0</property>
+                        <property name="xpad">10</property>
+                        <property name="ypad">4</property>
+                        <property name="label" translatable="yes">lf the repository requires a SSL key and certificate, or if it has mirrors, add the new
 repository, and then click Modify to add additional information.</property>
-                          </widget>
-                        </child>
+                        <property name="wrap">True</property>
                       </widget>
                       <packing>
+                        <property name="expand">False</property>
+                        <property name="padding">10</property>
                         <property name="position">1</property>
                       </packing>
                     </child>
@@ -2143,9 +2144,8 @@ repository, and then click Modify to add additional information.</property>
                           </packing>
                         </child>
                         <child>
-                          <widget class="GtkAlignment" id="alignment33">
+                          <widget class="GtkVButtonBox" id="vbuttonbox2">
                             <property name="visible">True</property>
-                            <property name="left_padding">4</property>
                             <child>
                               <widget class="GtkButton" id="repositoryadd">
                                 <property name="visible">True</property>
@@ -2159,6 +2159,8 @@ repository, and then click Modify to add additional information.</property>
                             </child>
                           </widget>
                           <packing>
+                            <property name="expand">False</property>
+                            <property name="padding">4</property>
                             <property name="position">2</property>
                           </packing>
                         </child>
@@ -2209,19 +2211,27 @@ repository, and then click Modify to add additional information.</property>
                   </packing>
                 </child>
                 <child>
-                  <widget class="GtkLabel" id="label26">
-                    <property name="width_request">500</property>
+                  <widget class="GtkAlignment" id="alignment33">
                     <property name="visible">True</property>
                     <property name="xalign">0</property>
-                    <property name="yalign">0</property>
-                    <property name="xpad">10</property>
-                    <property name="ypad">4</property>
-                    <property name="label" translatable="yes">Select from the list to modify or remove existing repositories.</property>
-                    <property name="wrap">True</property>
+                    <property name="xscale">0</property>
+                    <property name="right_padding">10</property>
+                    <child>
+                      <widget class="GtkLabel" id="label26">
+                        <property name="width_request">500</property>
+                        <property name="visible">True</property>
+                        <property name="xalign">0</property>
+                        <property name="yalign">0</property>
+                        <property name="xpad">10</property>
+                        <property name="ypad">4</property>
+                        <property name="label" translatable="yes">Select from the list to modify or remove existing repositories.</property>
+                        <property name="wrap">True</property>
+                      </widget>
+                    </child>
                   </widget>
                   <packing>
                     <property name="expand">False</property>
-                    <property name="padding">10</property>
+                    <property name="fill">False</property>
                     <property name="position">2</property>
                   </packing>
                 </child>

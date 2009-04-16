@@ -522,12 +522,9 @@ class Beadmin:
                                                             _("%m/%d/%y %H:%M"),
                                                             "utf-8").encode(
                                                             locale.getpreferredencoding())
-                                                except (UnicodeError, LookupError):
-                                                        print _(
-                                                        "Error conversion from UTF-8 " \
-                                                        "to %s.") \
-                                                        % locale.getpreferredencoding()
-                                                date_format = "%F %H:%M"
+                                                except (UnicodeError, LookupError,
+                                                    locale.Error):
+                                                        date_format = "%F %H:%M"
                                                 date_time = \
                                                     date_tmp2.strftime(date_format)
                                                 i += 1
@@ -541,11 +538,8 @@ class Beadmin:
                                                         _("%m/%d/%y %H:%M"),
                                                         "utf-8").encode(
                                                         locale.getpreferredencoding())
-                                        except (UnicodeError, LookupError):
-                                                print _(
-                                                "Error conversion from UTF-8 to %s.") \
-                                                % locale.getpreferredencoding()
-                                        date_format = "%F %H:%M"
+                                        except (UnicodeError, LookupError, locale.Error):
+                                                date_format = "%F %H:%M"
                                         date_time = \
                                             time.strftime(date_format, date_tmp)
                                 if active:
@@ -558,10 +552,8 @@ class Beadmin:
                                                 date_time = unicode(date_time,
                                                 locale.getpreferredencoding()).encode(
                                                         "utf-8")
-                                        except (UnicodeError, LookupError):
-                                                print _(
-                                                "Error conversion from %s to UTF-8.") \
-                                                % locale.getpreferredencoding()
+                                        except (UnicodeError, LookupError, locale.Error):
+                                                pass 
                                 self.be_list.insert(j, [j, False,
                                     name, name,
                                     date_time, active_img,

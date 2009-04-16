@@ -1,20 +1,1118 @@
-# Copyright (C) 2008 Sun Microsystems, Inc
-# This file is distributed under the same license as the packagemanager package.
 #
-# Desktop Discuss <desktop-discuss@opensolaris.org>
-# Róbert Malovec <Robert.Malovec@Sun.COM>
+# CDDL HEADER START
+#
+# The contents of this file are subject to the terms of the
+# Common Development and Distribution License (the "License").  
+# You may not use this file except in compliance with the License.
+#
+# You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+# or http://www.opensolaris.org/os/licensing.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+#
+# When distributing Covered Code, include this CDDL HEADER in each
+# file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+# If applicable, add the following below this CDDL HEADER, with the
+# fields enclosed by brackets "[]" replaced with your own identifying
+# information: Portions Copyright [yyyy] [name of copyright owner]
+#
+# CDDL HEADER END
+#
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Use is subject to license terms.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: packagemanager HEAD\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-11-12 19:00+0900\n"
-"PO-Revision-Date: 2008-05-13 22:01+0900\n"
-"Last-Translator: desktop-discuss@opensolaris.org\n"
-"Language-Team: desktop-discuss@opensolaris.org\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
+       "Project-Id-Version: Arabic\n"
+       "Report-Msgid-Bugs-To: \n"
+       "POT-Creation-Date: 2009-03-16 15:30+0900\n"
+       "PO-Revision-Date: 2009-03-27 HO:MI+ZONE\n"
+       "Last-Translator: Hosam Al Ali <a.hosam@gmail.com>\n"
+       "Language-Team: Arabic <g11n-ar-discuss@opensolaris.org>\n"
+       "MIME-Version: 1.0\n"
+       "Content-Type: text/plain; charset=UTF-8\n"
+       "Content-Transfer-Encoding: 8bit\n"
+
+#: ../client.py:118
+msgid ""
+"Usage:\n"
+"        pkg [options] command [cmd_options] [operands]\n"
+"\n"
+"Basic subcommands:\n"
+"        pkg install [-nvq] [--no-refresh] [--no-index] package...\n"
+"        pkg uninstall [-nrvq] [--no-index] package...\n"
+"        pkg list [-aHsuvf] [package...]\n"
+"        pkg image-update [-fnvq] [--be-name name] [--no-refresh] [--no-"
+"index]\n"
+"        pkg refresh [--full] [publisher ...]\n"
+"        pkg version\n"
+"\n"
+"Advanced subcommands:\n"
+"        pkg info [-lr] [--license] [pkg_fmri_pattern ...]\n"
+"        pkg search [-lrI] [-s server] query\n"
+"        pkg verify [-Hqv] [pkg_fmri_pattern ...]\n"
+"        pkg fix [pkg_fmri_pattern ...]\n"
+"        pkg contents [-Hmr] [-o attribute ...] [-s sort_key]\n"
+"            [-t action_type ... ] [pkg_fmri_pattern ...]\n"
+"        pkg image-create [-fFPUz] [--force] [--full|--partial|--user] [--"
+"zone]\n"
+"            [-k ssl_key] [-c ssl_cert] [--no-refresh] \n"
+"            [--variant <variant_spec>=<instance>]\n"
+"            (-p|--publisher) name=uri dir\n"
+"\n"
+"        pkg set-property propname propvalue\n"
+"        pkg unset-property propname ...\n"
+"        pkg property [-H] [propname ...]\n"
+"\n"
+"        pkg set-publisher [-Ped] [-k ssl_key] [-c ssl_cert]\n"
+"            [-O origin_uri] [-m mirror_to_add | --add-mirror=mirror_to_add]\n"
+"            [-M mirror_to_remove | --remove-mirror=mirror_to_remove]\n"
+"            [--enable] [--disable] [--no-refresh] [--reset-uuid] publisher\n"
+"        pkg unset-publisher publisher ...\n"
+"        pkg publisher [-HPa] [publisher ...]\n"
+"        pkg history [-Hl]\n"
+"        pkg purge-history\n"
+"        pkg rebuild-index\n"
+"\n"
+"Options:\n"
+"        -R dir\n"
+"        --help or -?\n"
+"\n"
+"Environment:\n"
+"        PKG_IMAGE"
+msgstr ""
+       "Usage:\n"
+       "        pkg [options] command [cmd_options] [operands]\n"
+       "\n"
+       "Basic subcommands:\n"
+       "        pkg install [-nvq] [--no-refresh] [--no-index] package...\n"
+       "        pkg uninstall [-nrvq] [--no-index] package...\n"
+       "        pkg list [-aHsuvf] [package...]\n"
+       "        pkg image-update [-fnvq] [--be-name name] [--no-refresh] [--no-"
+       "index]\n"
+       "        pkg refresh [--full] [publisher ...]\n"
+       "        pkg version\n"
+       "\n"
+       "Advanced subcommands:\n"
+       "        pkg info [-lr] [--license] [pkg_fmri_pattern ...]\n"
+       "        pkg search [-lrI] [-s server] query\n"
+       "        pkg verify [-Hqv] [pkg_fmri_pattern ...]\n"
+       "        pkg fix [pkg_fmri_pattern ...]\n"
+       "        pkg contents [-Hmr] [-o attribute ...] [-s sort_key]\n"
+       "            [-t action_type ... ] [pkg_fmri_pattern ...]\n"
+       "        pkg image-create [-fFPUz] [--force] [--full|--partial|--user] [--"
+       "zone]\n"
+       "            [-k ssl_key] [-c ssl_cert] [--no-refresh] \n"
+       "            [--variant <variant_spec>=<instance>]\n"
+       "            (-p|--publisher) name=uri dir\n"
+       "\n"
+       "        pkg set-property propname propvalue\n"
+       "        pkg unset-property propname ...\n"
+       "        pkg property [-H] [propname ...]\n"
+       "\n"
+       "        pkg set-publisher [-Ped] [-k ssl_key] [-c ssl_cert]\n"
+       "            [-O origin_uri] [-m mirror_to_add | --add-mirror=mirror_to_add]\n"
+       "            [-M mirror_to_remove | --remove-mirror=mirror_to_remove]\n"
+       "            [--enable] [--disable] [--no-refresh] [--reset-uuid] publisher\n"
+       "        pkg unset-publisher publisher ...\n"
+       "        pkg publisher [-HPa] [publisher ...]\n"
+       "        pkg history [-Hl]\n"
+       "        pkg purge-history\n"
+       "        pkg rebuild-index\n"
+       "\n"
+       "Options:\n"
+       "        -R dir\n"
+       "        --help or -?\n"
+       "\n"
+       "Environment:\n"
+       "        PKG_IMAGE"
+
+#: ../client.py:216
+msgid "-s and -v may not be combined"
+msgstr "-s and -v لا يمكن ضمهم"
+
+#: ../client.py:292 ../client.py:1089 ../client.py:1366
+msgid "no packages installed"
+msgstr "لايوجد حزم منصبة "
+
+#: ../client.py:299
+msgid "No specified packages have available updates"
+msgstr "الحزم المختارة لايوجد لها أي تحديثات "
+
+#: ../client.py:302
+msgid "No installed packages have available updates"
+msgstr "الحزم المنصبة لايوجد لها أي تحديثات "
+
+#: ../client.py:328
+#, python-format
+msgid "no packages matching '%s' %s"
+msgstr "لايوجد حزم متوافقة '%s' %s"
+
+#: ../client.py:371
+#, python-format
+msgid "Created ZFS snapshot: %s"
+msgstr "إنشاء لقظة او صورة عن ZFS: %s "
+
+#: ../client.py:401
+msgid "verify: -v and -q may not be combined"
+msgstr "تحقق : -v and -q لايمكن جمعهم "
+
+#: ../client.py:456
+msgid ""
+"pkg: no packages matching the following patterns you specified are\n"
+"installed on the system.\n"
+msgstr ""
+       "pkg: لاتوجد حزم متوافقة مع النموذج المختار  \n المنصبة ضمن النظام \n "
+
+#: ../client.py:466
+#, python-format
+msgid ""
+"\n"
+"All other patterns matched installed packages.  %s"
+msgstr ""
+       "\n "
+       "كل النماذج توافق الحزم المنصبة . %s"
+
+#: ../client.py:507
+msgid "image-update: -v and -q may not be combined"
+msgstr "image-update: -v and -q لامكن جمعهم "
+
+#: ../client.py:510
+#, python-format
+msgid "image-update: command does not take operands ('%s')"
+msgstr "امر image-update: لا يأخد عملية حسابية  ('%s')"
+
+#: ../client.py:520 ../client.py:563
+#, python-format
+msgid "No image rooted at '%s'"
+msgstr "لايوجد صورة ترسخ على '%s'"
+
+#: ../client.py:534 ../client.py:703
+msgid "No updates available for this image."
+msgstr "لايوجد ترقية متوقرة للصورة الأن "
+
+#: ../client.py:537
+#, python-format
+msgid ""
+"image-update failed (inventory exception):\n"
+"%s"
+msgstr ""
+       "فشل image-update  (inventory exception):\n"
+       "%s"
+
+#: ../client.py:557
+msgid ""
+"WARNING: pkg(5) appears to be out of date, and should be updated before\n"
+"running image-update.\n"
+msgstr ""
+       "تحذير : pkg(5) يظهر انه خارج مدة الصلاحية , ويجب عليك الترقية قبل "
+       " \n running image-update.\n"
+
+#: ../client.py:559
+msgid ""
+"Please update pkg(5) using 'pfexec pkg install SUNWipkg' and then retry\n"
+"the image-update."
+msgstr ""
+       "رجاء ترقية pkg(5) بإستعمال 'pfexec pkg install SUNWipkg' ثم حاول "
+       "\n the image-update."
+
+#: ../client.py:587
+msgid ""
+"\n"
+"An unexpected error happened while preparing for image-update:"
+msgstr ""
+       "\n "
+       "حدث خطأ غير متوقع في الوقت الذي تستعد من أجل ترقية الصورة "
+
+#: ../client.py:594
+#, python-format
+msgid "image-update failed: %s"
+msgstr "فشل image-update : %s"
+
+#: ../client.py:597
+msgid "image-update cannot be done on live image"
+msgstr "image-update لايمكن أن ينجح على الصورة المباشرة "
+
+#: ../client.py:619
+#, python-format
+msgid ""
+"\n"
+"An unexpected error happened during image-update: %s"
+msgstr ""
+       "\n "
+       "حدث خطأ غير متوقع من  خلال ترقية الصورة : %s"
+
+#: ../client.py:625
+msgid ""
+"NOTE: Please review release notes posted at:\n"
+"   http://opensolaris.org/os/project/indiana/resources/relnotes/200811/x86/"
+msgstr ""
+       "ملاحظة : يرجى مراجعة ملاحظات الإصدار المسجلة على : "
+       "\n http://opensolaris.org/os/project/indiana/resources/relnotes/200811/x86/"
+
+#: ../client.py:672
+msgid "install: at least one package name required"
+msgstr "تثبيت : حزمة واحدة على الأقل من اسم المطلوب"
+
+#: ../client.py:675
+msgid "install: -v and -q may not be combined"
+msgstr "التنصيب : -v and -q لايمكن جمعهم "
+
+#: ../client.py:690 ../client.py:824 ../client.py:987 ../client.py:1537
+#: ../client.py:1619 ../client.py:1743 ../client.py:1797 ../client.py:2173
+#, python-format
+msgid "'%s' is not an install image"
+msgstr "'%s' هي ليست صورة للتنصيب "
+
+#: ../client.py:722
+#, python-format
+msgid ""
+"install failed (inventory exception):\n"
+"%s"
+msgstr ""
+       "فضل التنصيب (inventory exception): \n %s"
+
+#: ../client.py:748 ../client.py:865
+msgid ""
+"\n"
+"An unexpected error happened while preparing for install:"
+msgstr ""
+       "\n "
+       "حدث خطأ غير متوقع من خلال التحضير لعملية التنصيب : "
+
+#: ../client.py:757
+#, python-format
+msgid "installation failed: %s"
+msgstr "فضل التنصيب : %s"
+
+#: ../client.py:776
+#, python-format
+msgid "An unexpected error happened during installation: %s"
+msgstr "حدث خطأ غير متوقع من خلال التنصيب: %s"
+
+#: ../client.py:806
+msgid "uninstall: at least one package name required"
+msgstr "إلغاء التثبيت : إسم حزمة واحد مطلوب "
+
+#: ../client.py:809
+msgid "uninstall: -v and -q may not be combined"
+msgstr "إلغاء التثبيت : -v and -q لايمكن جمعهم "
+
+#: ../client.py:832
+#, python-format
+msgid ""
+"uninstall failed (inventory exception):\n"
+"%s"
+msgstr ""
+       "فشل إلغاء التثبيت (inventory exception): \n %s"
+
+#: ../client.py:874
+#, python-format
+msgid "uninstallation failed: %s"
+msgstr "فشل عملية إلغاء التثبيت: %s"
+
+#: ../client.py:893
+#, python-format
+msgid "An unexpected error happened during uninstallation: %s"
+msgstr "حدث خطأ غير متوقع من خلال عملية إلغاء التثبيت : %s"
+
+#: ../client.py:965
+#, python-format
+msgid "%s is not a valid server URL."
+msgstr "%s ليس عنوان مخدم صحيح  "
+
+#: ../client.py:1057
+msgid "info: -l and -r may not be combined"
+msgstr "معلومات : -l and -r لايمكن جمعهم "
+
+#: ../client.py:1060
+msgid "info: must request remote info for specific packages"
+msgstr "معلومات : يجب عليك طلبب المساعدة البعيدة للحزم المعينة "
+
+#: ../client.py:1106 ../gui/data/packagemanager.glade.h:47
+#: ../packagemanager.py:1067
+msgid "Installed"
+msgstr "منصب "
+
+#: ../client.py:1108
+msgid "Not installed"
+msgstr "غير منصب "
+
+#: ../client.py:1112
+msgid "          Name:"
+msgstr "          إسم : "
+
+#: ../client.py:1114
+msgid "       Summary:"
+msgstr "       ملخص : "
+
+#: ../client.py:1117
+msgid "      Category:"
+msgstr "      فئة : "
+
+#: ../client.py:1124
+msgid "         State:"
+msgstr "         ولاية : "
+
+#. XXX even more info on the publisher would be nice?
+#: ../client.py:1127
+msgid "     Publisher:"
+msgstr "     الناشر : "
+
+#: ../client.py:1128
+msgid "       Version:"
+msgstr "       الإصدار : "
+
+#: ../client.py:1129
+msgid " Build Release:"
+msgstr " بناء الإصدار : "
+
+#: ../client.py:1130
+msgid "        Branch:"
+msgstr "        فرعي : "
+
+#: ../client.py:1131
+msgid "Packaging Date:"
+msgstr "تاريخ الحزمة :"
+
+#: ../client.py:1132
+msgid "          Size:"
+msgstr "          الحجم : "
+
+#: ../client.py:1133
+msgid "          FMRI:"
+msgstr "          FMRI : "
+
+#: ../client.py:1141 ../client.py:1461
+msgid ""
+"pkg: no packages matching the following patterns you specified are\n"
+"installed on the system.  Try specifying -r to query remotely:"
+msgstr ""
+       "pkg : لايوجد حزم متطابقة مع النموذج المعين \n"
+       "المنصب على النظام . حاول التعديل -r لأمر بعيد : "
+
+#: ../client.py:1145 ../client.py:1465
+msgid ""
+"pkg: no packages matching the following patterns you specified were\n"
+"found in the catalog.  Try relaxing the patterns, refreshing, and/or\n"
+"examining the catalogs:"
+msgstr ""
+       "pkg : لايوجد حزم متطابقة مع النموذج المعين \n"
+       "الموجود ضمن الكاتالوج . حاول إعادة تعين النموذج, إعادة تحديث \n "
+       "بحث ضمن الكاتولجات : "
+
+#: ../client.py:1161
+#, python-format
+msgid "'%s' matches multiple packages"
+msgstr "'%s' تطابق عدد من الحزم "
+
+#: ../client.py:1167
+msgid "no license information could be found for the following packages:"
+msgstr "لايوجد معلوامت ضمن الإتفاقية لهذه الحزم "
+
+#: ../client.py:1322
+msgid "contents: -l and -r may not be combined"
+msgstr "المحتويات : -l and -r لايمكن جمعهم "
+
+#: ../client.py:1325
+msgid "contents: must request remote contents for specific packages"
+msgstr "المحتويات : يجب طلب محتويات من بعيد للحزم المطلوبة "
+
+#: ../client.py:1339
+#, python-format
+msgid "contents: -m and %s may not be specified at the same time"
+msgstr "المحتويات : -m and %s لايمكن تعينهم بنفس الوقت "
+
+#: ../client.py:1344 ../client.py:1347
+#, python-format
+msgid "Invalid attribute '%s'"
+msgstr "السمات خاطئة '%s'"
+
+#: ../client.py:1407 ../client.py:1413 ../modules/client/api_errors.py:144
+#, python-format
+msgid "pkg: '%s' matches multiple packages"
+msgstr "pkg : '%s' تطابق عدة حزم "
+
+#: ../client.py:1480
+#, python-format
+msgid "pkg: %s/%s catalogs successfully updated:"
+msgstr "pkg : %s%s النجاح بتحديث الكاتالوج :"
+
+#: ../client.py:1503
+#, python-format
+msgid "Could not update catalog for '%s' due to insufficient permissions."
+msgstr "لا يستطيع تحديث الكاتالوج ل '%s' لاتوجد صلاحيات كافية "
+
+#: ../client.py:1507
+msgid "Could not update a catalog due to insufficient permissions."
+msgstr "لا يستطيع تحديث الكاتالوج لاتوجد صلاحيات كافية "
+
+#: ../client.py:1510
+msgid ""
+"Please try the command again using pfexec, or otherwise increase \n"
+"    your permissions."
+msgstr ""
+       "رجاء اعد إستعمال الأمر pfexec, أو على خلاف ذلك بزيادة \n صلاحياتك "
+
+#: ../client.py:1544
+msgid "'pkg publisher' will show a list of publishers."
+msgstr "'pkg publisher' سوف يظهر قائمة الناشر . "
+
+#: ../client.py:1602
+msgid "requires a publisher name"
+msgstr "مطلوب إسم الناشر "
+
+#: ../client.py:1604
+msgid "only one publisher name may be specified"
+msgstr "إسم ناشر واحد فقط يمكن ان يعني "
+
+#: ../client.py:1610
+msgid "the -p and -d options may not be combined"
+msgstr "خيارات -p and -d  لايمكن جمعهم "
+
+#: ../client.py:1634
+msgid ""
+"publisher does not exist. Use -O to define origin URI for new publisher."
+msgstr ""
+       "الناشر غير موجود, إستعمل -O لتحديد العنوان الأساسي للناشر الجديد "
+
+#: ../client.py:1716
+#, python-format
+msgid ""
+"The origin URIs for '%s' do not appear to point to a valid pkg server.\n"
+"Please check the server's address and client's network configuration.\n"
+"Additional details:\n"
+"\n"
+"%s"
+msgstr ""
+       "العنوان (URL) الأساسي ل '%s' لايبدو أنه يشير الى مخدم الحزم الصحيح .\n "
+       "رجاء تحقق من عنوان رقم IP للمخدم وإعدادات شبكة العميل \n"
+       "معلومات إضافية \n "
+"%s"
+
+#: ../client.py:1769
+#, python-format
+msgid "Removal failed for '%(pub)s': %(msg)s"
+msgstr "فضل بالحذف ل '%(pub)s': %(msg)s"
+
+#: ../client.py:1841
+msgid "PUBLISHER"
+msgstr "الناشر "
+
+#: ../client.py:1841
+msgid "TYPE"
+msgstr "نوع "
+
+#: ../client.py:1841
+msgid "STATUS"
+msgstr "حالة "
+
+#: ../client.py:1842
+msgid "URI"
+msgstr "URL عنوان "
+
+#: ../client.py:1857
+msgid "(preferred)"
+msgstr "(مفضل)"
+
+#: ../client.py:1859
+msgid "(disabled)"
+msgstr "(غير مفعل)"
+
+#. XXX get the real origin status
+#: ../client.py:1866
+msgid "origin"
+msgstr "الأصل "
+
+#. XXX get the real mirror status
+#: ../client.py:1870
+msgid "mirror"
+msgstr "mirror"
+
+#: ../client.py:1876
+msgid "              SSL Key:"
+msgstr "              SSL Key:"
+
+#: ../client.py:1877
+msgid "             SSL Cert:"
+msgstr "             SSL Cert:"
+
+#: ../client.py:1889
+msgid " Cert. Effective Date:"
+msgstr " Cert. تاريخ التأثير:"
+
+#: ../client.py:1891
+msgid "Cert. Expiration Date:"
+msgstr "Cert.  تاريخ الإنتهاء:"
+
+#: ../client.py:1898
+msgid "           Origin URI:"
+msgstr "           Origin عنوان(URI):"
+
+#: ../client.py:1904
+msgid "           Mirror URI:"
+msgstr "           Mirror عنوان(URL):"
+
+#: ../client.py:1918
+msgid "            Publisher:"
+msgstr "                الناشر:"
+
+#: ../client.py:1919
+msgid "                Alias:"
+msgstr "                إسم مستعار:"
+
+#: ../client.py:1929
+msgid "          Client UUID:"
+msgstr "          عميل UUID:"
+
+#: ../client.py:1930
+msgid "      Catalog Updated:"
+msgstr "      تحديث الكاتالوج:"
+
+#: ../client.py:1932 ../client.py:1934
+msgid "              Enabled:"
+msgstr "             مفعل :"
+
+#: ../client.py:1932
+msgid "No"
+msgstr "لا"
+
+#: ../client.py:1934
+msgid "Yes"
+msgstr "نعم"
+
+#: ../client.py:1945
+msgid "set-property: requires a property name and value"
+msgstr "عين-الخاصية : يتطلب خاصية الإسم والقيمة "
+
+#: ../client.py:1948
+msgid ""
+"set-property: set-publisher must be used to change the preferred publisher"
+msgstr ""
+       "عين-الخاصية : عين-الناشر  يجب عليك الإستعمال لتغير الناشر المفضل "
+
+#: ../client.py:1972
+msgid "unset-property: requires at least one property name"
+msgstr "عدم تعين-الخاصية : على الأقل مطلوب خاصية واحدة بالإسم "
+
+#: ../client.py:1976
+msgid ""
+"unset-property: set-publisher must be used to change the preferred publisher"
+msgstr ""
+       "عدم تعين-الخاصية : يجب عليك الإستعمال لتغير الناشر المفضل "
+
+#: ../client.py:1983
+#, python-format
+msgid "unset-property: no such property: %s"
+msgstr "عدم تعين-الخاصية : لايوجد أي خاصية: %s"
+
+#: ../client.py:2004
+#, python-format
+msgid "property: no such property: %s"
+msgstr "الخاصية : لايوجد خاصية : %s "
+
+#: ../client.py:2067 ../client.py:2102
+msgid ""
+"image-create requires publisher argument to be of the form '<prefix>=<url>'."
+msgstr ""
+       "image-create  يتطلب حجة من الناشر لكي تكون على شكل '<prefix>=<url>'."
+
+#: ../client.py:2076
+msgid ""
+"image-create requires variant arguments to be of the form '<name>=<value>'."
+msgstr ""
+       "image-create يتطلب حجة مختلفة لكي تكون على شكل '<name>=<value>'."
+
+#: ../client.py:2082
+msgid "image-create requires a single image directory path"
+msgstr "image-create يتطلب مسار مجلد صورة نظام مفردة "
+
+#: ../client.py:2087
+#, python-format
+msgid "pkg: set-publisher: SSL key file '%s' does not exist"
+msgstr "pkg: تعين الناشر : SSL key ملف '%s' غير موجود "
+
+#: ../client.py:2094
+#, python-format
+msgid "pkg: set-publisher: SSL key cert '%s' does not exist"
+msgstr "pkg: تعين الناشر : SSL key شهادة '%s' غير موجود "
+
+#: ../client.py:2099
+msgid "image-create requires a publisher argument"
+msgstr "image-create بتطلب حجة الناشر "
+
+#: ../client.py:2106
+#, python-format
+msgid "image-create requires that a prefix not match: %s"
+msgstr "image-create يتطلب بادئة غير متطابقة : %s"
+
+#: ../client.py:2111
+msgid "image-create: publisher prefix has invalid characters"
+msgstr "image-create: خطأ بمحارف بادئة الناشر"
+
+#: ../client.py:2116
+msgid "image-create: publisher URI is invalid"
+msgstr "image-create:خطأ بعنوان (URL) الناشر "
+
+#: ../client.py:2123
+#, python-format
+msgid "there is already an image at: %s"
+msgstr "هناك بالفعل صورة عن النظام : %s"
+
+#: ../client.py:2124 ../client.py:2131
+msgid "To override, use the -f (force) option."
+msgstr "للكتابة فوقه , إستعمل -f (force) خيار "
+
+#: ../client.py:2130
+#, python-format
+msgid "Non-empty directory: %s"
+msgstr "مجلد غير-فارغ : %s"
+
+#: ../client.py:2139
+#, python-format
+msgid "cannot create image at %s: %s"
+msgstr "لا يستطيع إنشاء الصورة على %s: %s"
+
+#: ../client.py:2146
+#, python-format
+msgid ""
+"The URI '%s' does not appear to point to a valid pkg server.\n"
+"Please check the server's address and client's network configuration.\n"
+"Additional details:\n"
+"\n"
+"%s"
+msgstr ""
+       "العنوان (URL) '%s' لايبدو أنه أي نقظة لمخدم الحزم الصحيح.\n "
+       "الرجاء تفحص عنوان رقم المخدم وإعدادات الشبكة للعميل . \n"
+       "معلومات إضافية : \n"
+"%s"
+
+#: ../client.py:2167
+#, python-format
+msgid "rebuild-index: command does not take operands ('%s')"
+msgstr "امر rebuild-index: لايأخذ عملية حسابية ('%s')"
+
+#: ../client.py:2205
+msgid "history: -H and -l may not be combined"
+msgstr "history: -H and -l لايمكن جمعهم "
+
+#: ../client.py:2209
+msgid "TIME"
+msgstr "الوقت "
+
+#: ../client.py:2210
+msgid "OPERATION"
+msgstr "عملية "
+
+#: ../client.py:2210
+msgid "CLIENT"
+msgstr "عميل "
+
+#: ../client.py:2210
+msgid "OUTCOME"
+msgstr "نتيجة "
+
+#: ../client.py:2303
+#, python-format
+msgid "illegal global option -- %s"
+msgstr "خيار عام غير مشروع --%s"
+
+#: ../client.py:2311
+#, python-format
+msgid "%(opt)s takes argument of form name=value, not %(arg)s"
+msgstr "%(opt)s تأخد الحجة من الشكل الإسم=قيمة, ليست %(arg)s"
+
+#: ../client.py:2345 ../client.py:2355
+#, python-format
+msgid "-R not allowed for %s subcommand"
+msgstr "-R لايسمح له من أحل %s كأمر داخلي "
+
+#: ../client.py:2350 ../client.py:2456 ../publish.py:358
+#, python-format
+msgid "illegal %s option -- %s"
+msgstr "غير شرعي %s خيار -- 5 %s "
+
+#: ../client.py:2358
+#, python-format
+msgid "version: command does not take operands ('%s')"
+msgstr "الأصدار : الأمر لايأخذ عملية حسابية ('%s')"
+
+#: ../client.py:2383
+msgid ""
+"Could not find image.  Use the -R option or set $PKG_IMAGE to point\n"
+"to an image, or change the working directory to one inside the image."
+msgstr ""
+       "لايمكن إيجاد الصورة, إستعمل خيار -R أو عين $PKG_IMAGEلنقظة \n"
+       "لصورة , أو غير مجلد العمل لواحد داخل الصورة "
+
+#: ../client.py:2397
+msgid "No image found."
+msgstr "لايوجد صورة "
+
+#: ../client.py:2403
+#, python-format
+msgid "client configuration error: %s"
+msgstr "خطأ بإعدادات العميل : %s "
+
+#: ../client.py:2448
+msgid "History purged."
+msgstr "حذف التاريخ "
+
+#: ../client.py:2453 ../publish.py:356
+#, python-format
+msgid "unknown subcommand '%s'"
+msgstr "أمر داخلي غير معرف '%s' "
+
+#: ../client.py:2489
+#, python-format
+msgid ""
+"\n"
+"Maximum number of network retries exceeded during download. Details follow:\n"
+"%s"
+msgstr ""
+       "\n"
+       "الرقم الأكبر من محالات الشبكة تجاوزت خلال التحميل . التفاصيل تتبع : \n"
+       "%s"
+
+#: ../client.py:2496
+msgid ""
+"An error was encountered while attempting to retrieve package or file data "
+"for the requested operation."
+msgstr " خطأ قد حدث أثناء محاولة لاسترجاع ملف أو حزمة البيانات"
+       "وطلبت لتشغيل"
+
+#: ../client.py:2503
+msgid ""
+"\n"
+"Unable to contact a valid package depot. This may be due to a problem with "
+"the server, network misconfiguration, or an incorrect pkg client "
+"configuration.  Please check your network settings and attempt to contact "
+"the server using a web browser."
+msgstr ""
+       "\n "
+       "غير قادر بالإتصال بمستودع الحزم . ممكن ان تكون هذه مشكلة من المخدم , خطأ بإعدادات الشبكة , أو خطأ بأمر pkg من قبل العميل "
+
+#: ../client.py:2508
+#, python-format
+msgid ""
+"\n"
+"Additional details:\n"
+"\n"
+"%s"
+msgstr ""
+       "\n "
+       "معلومات إضافية : \n"
+       "\n"
+"%s"
+
+#: ../client.py:2515
+msgid ""
+"An error was encountered while attempting to load history information\n"
+"about past client operations."
+msgstr ""
+       "خطأ قد حدث أثناء محاولةتحميل التاريخ المعلومات حول تشغيل العميل في الماضي "
+
+#: ../client.py:2524
+msgid ""
+"An error was encountered while attempting to store information about the\n"
+"current operation in client history."
+msgstr ""
+       "خطأ قد حدث أثناء محاولة لحفظ معلومات حول \n"
+       "التشغيل الحالي ضمن تاريخ العميل "
+
+#: ../client.py:2534
+msgid "An error was encountered while attempting to purge client history."
+msgstr "خطأ قد حدث أثناء محاولة لحذف تاريخ العميل "
+
+#: ../client.py:2541
+#, python-format
+msgid ""
+"The pkg command appears out of sync with the libraries provided \n"
+"by SUNWipkg. The client version is %(client)s while the library API version "
+"is %(api)s"
+msgstr ""
+       "أمر pkg يظهر أنه خارج التزامن مع المكتبة المتاحة \n "
+       "من قبل SUNWipkg. إصدار العميل %(العميل ) s عندما إصدار مكتبة API تكون "
+       "%(api)s"
+
+#: ../client.py:2553 ../publish.py:382
+#, python-format
+msgid ""
+"\n"
+"\n"
+"This is an internal error.  Please let the developers know about this\n"
+"problem by filing a bug at http://defect.opensolaris.org and including the\n"
+"above traceback and this message.  The version of pkg(5) is '%s'."
+msgstr ""
+       "\n"
+       "\n"
+       "هذه تكون مشكلة داخلية . الرجاء دع المطورون أن يعلموا بهذه \n"
+       "المشكلة من خلال فلترةالمشاكلhttp://defect.opensolaris.org and يحوي the\n"
+       "وسبق هذه الرسالة traceback . هذا الإصدار من Pkg(5) '%s'"
+
+#. self.__add_package_to_category(_("All"),None,None,None);
+#. Category names until xdg is imported.
+#. from xdg.DesktopEntry import *
+#. entry = DesktopEntry ()
+#. directory = '/usr/share/desktop-directories'
+#. for root, dirs, files in os.walk (directory):
+#. for name in files:
+#. entry.parse (os.path.join (root, name))
+#. self.__add_category_to_section (entry.getName (),
+#. _('Applications Desktop'))
+#: ../gui/data/l10n.py:31 ../packagemanager.py:3403 ../packagemanager.py:3405
+#: ../packagemanager.py:3430
+msgid "Accessories"
+msgstr "ملحقات "
+
+#: ../gui/data/l10n.py:32
+msgid "Administration and Configuration"
+msgstr "الإدارة والتهيئة"
+
+#: ../gui/data/l10n.py:33
+msgid "Applets"
+msgstr "بريمجات"
+
+#: ../gui/data/l10n.py:34
+msgid "Application and Web Servers"
+msgstr "وتطبيق خوادم الإنترنت"
+
+#: ../gui/data/l10n.py:35
+msgid "C"
+msgstr "C"
+
+#: ../gui/data/l10n.py:36
+msgid "C++"
+msgstr "C++"
+
+#: ../gui/data/l10n.py:37
+msgid "Configuration and Preferences"
+msgstr "التكوين وتفضيلات"
+
+#: ../gui/data/l10n.py:38 ../packagemanager.py:3448
+msgid "Core"
+msgstr "جوهر "
+
+#: ../gui/data/l10n.py:39
+msgid "Databases"
+msgstr "قواعد بيانات "
+
+#: ../gui/data/l10n.py:40
+msgid "Databases (System)"
+msgstr "قواعد بيانات (نظام)"
+
+#: ../gui/data/l10n.py:41
+msgid "Desktop"
+msgstr "سطح المكتب "
+
+#: ../gui/data/l10n.py:42
+msgid "Display"
+msgstr "العرض "
+
+#: ../gui/data/l10n.py:43
+msgid "Distribution Tools"
+msgstr "أدوات التوزيع "
+
+#: ../gui/data/l10n.py:44
+msgid "Documentation"
+msgstr "وثائق "
+
+#: ../gui/data/l10n.py:45
+msgid "Enterprise Management"
+msgstr "إدارة متقدمة "
+
+#: ../gui/data/l10n.py:46
+msgid "File Managers"
+msgstr "مدير الملفات "
+
+#: ../gui/data/l10n.py:47
+msgid "File System"
+msgstr "نظام الملفات "
+
+#: ../gui/data/l10n.py:48
+msgid "Fonts"
+msgstr "الخطوط "
+
+#: ../gui/data/l10n.py:49
+msgid "GNOME and GTK+"
+msgstr "GNOME and GTK+"
+
+#: ../gui/data/l10n.py:50
+msgid "GNU"
+msgstr "GNU"
+
+#: ../gui/data/l10n.py:51 ../packagemanager.py:3407 ../packagemanager.py:3411
+#: ../packagemanager.py:3415 ../packagemanager.py:3432
+msgid "Games"
+msgstr "ألعاب"
+
+#: ../gui/data/l10n.py:52
+msgid "Graphics and Imaging"
+msgstr "الرسوم والتصوير"
+
+#: ../gui/data/l10n.py:53
+msgid "Hardware"
+msgstr "الأجهزة"
+
+#: ../gui/data/l10n.py:54
+msgid "High Performance Computing"
+msgstr "عالية الأداء"
+
+#: ../gui/data/l10n.py:55
+msgid "Integrated Development Environments"
+msgstr "بيئة التنمية المتكاملة "
+
+#: ../gui/data/l10n.py:56
+msgid "Internationalization"
+msgstr "تدويل "
+
+#: ../gui/data/l10n.py:57 ../packagemanager.py:3436
+msgid "Internet"
+msgstr "إنترنت "
+
+#: ../gui/data/l10n.py:58
+msgid "Java"
+msgstr "Java"
+
+#: ../gui/data/l10n.py:59
+msgid "Libraries"
+msgstr "مكتبات "
+
+#: ../gui/data/l10n.py:60
+msgid "Libraries (System)"
+msgstr "مكتبات (نظام)"
+
+#: ../gui/data/l10n.py:61
+msgid "Localizations (Desktop)"
+msgstr "الموضع (سطح المكتب )"
+
+#: ../gui/data/l10n.py:62
+msgid "Localizations (System)"
+msgstr "الموضع (النظام )"
+
+#: ../gui/data/l10n.py:63 ../packagemanager.py:3452
+msgid "Media"
+msgstr "وسائل الاعلام"
+
+#: ../gui/data/l10n.py:64
+msgid "Networking"
+msgstr "شبكات "
+
+#: ../gui/data/l10n.py:65 ../packagemanager.py:3438 ../packagemanager.py:3457
+msgid "Office"
+msgstr "مكتب "
+
+#: ../gui/data/l10n.py:66
+msgid "Other Languages"
+msgstr "لغات أخرى "
+
+#: ../gui/data/l10n.py:67
+msgid "Other Peripherals"
+msgstr "أجهزة طرفية أخرى "
+
+#: ../gui/data/l10n.py:68
+msgid "PHP"
+msgstr "PHP"
+
+#: ../gui/data/l10n.py:69
+msgid "Packaging"
+msgstr "تحزيم "
+
+#: ../gui/data/l10n.py:70
+msgid "Perl"
+msgstr "Perl"
+
+#: ../gui/data/l10n.py:71
+msgid "Plug-ins and Run-times"
+msgstr "مكونات إضافية وتوقيت التشغيل "
+
+#: ../gui/data/l10n.py:72
+msgid "Ports"
+msgstr "منافذ "
+
+#: ../gui/data/l10n.py:73
+msgid "Printing"
+msgstr "الطباعة "
+
+#: ../gui/data/l10n.py:74
+msgid "Python"
+msgstr "Python"
+
+#: ../gui/data/l10n.py:75
+msgid "Ruby"
+msgstr "Ruby"
+
+#: ../gui/data/l10n.py:76
+msgid "Scripts"
+msgstr "Scripts"
+
+#: ../gui/data/l10n.py:77
+msgid "Security"
+msgstr "أمن "
+
+#: ../gui/data/l10n.py:78
+msgid "Services"
+msgstr "خدمات "
+
+#: ../gui/data/l10n.py:79
+msgid "Sessions"
+msgstr "جلسات "
+
+#: ../gui/data/l10n.py:80
+msgid "Shells"
+msgstr "Shells"
+
+#: ../gui/data/l10n.py:81
+msgid "Software Management"
+msgstr "إدارة البرامج "
+
+#: ../gui/data/l10n.py:82
+msgid "Sound and Video"
+msgstr "الصوت والفيديو "
+
+#: ../gui/data/l10n.py:83
+msgid "Source Code Management"
+msgstr "إدارة الكود المصدري "
+
+#: ../gui/data/l10n.py:84
+msgid "Storage"
+msgstr "وحدة تخزين"
+
+#: ../gui/data/l10n.py:85 ../packagemanager.py:1169
+msgid "System"
+msgstr "نظام "
+
+#: ../gui/data/l10n.py:86
+msgid "System Utilities"
+msgstr "ادوات النظام "
+
+#: ../gui/data/l10n.py:87
+msgid "Text Tools"
+msgstr "الأدوات النصية "
+
+#: ../gui/data/l10n.py:88
+msgid "Trusted"
+msgstr "Trusted"
+
+#: ../gui/data/l10n.py:89 ../packagemanager.py:3444
+msgid "Universal Access"
+msgstr "وصول للجميع "
+
+#: ../gui/data/l10n.py:90
+msgid "Virtualization"
+msgstr "Virtualization"
+
+#: ../gui/data/l10n.py:91
+msgid "Window Managers"
+msgstr "مدير النوافذ "
+
+#: ../gui/data/l10n.py:92
+msgid "X11"
+msgstr "X11"
+
+#: ../gui/data/l10n.py:93
+msgid "X11 (System)"
+msgstr "X11 (نظام)"
 
 #: ../gui/data/addmoresoftware.desktop.in.h:1
 msgid "Add More Software"
@@ -25,20 +1123,2603 @@ msgstr "أضف المزيد من البرمجيات"
 msgid "Install, update and remove software packages"
 msgstr "نصّب، طوّر وأزل حزم البرمجيات"
 
+#. XXX Remove and use _() where self._ and self.parent._ are being used
 #: ../gui/data/packagemanager.desktop.in.h:2
-#: ../gui/data/packagemanager.glade.h:68 ../packagemanager.py:107
-#: ../packagemanager.py:1794
+#: ../gui/data/packagemanager.glade.h:58 ../gui/modules/webinstall.py:304
+#: ../packagemanager.py:170 ../packagemanager.py:1958
+#: ../packagemanager.py:3039
 msgid "Package Manager"
 msgstr "مدير الحزم"
+
+#: ../gui/data/packagemanager.glade.h:1
+msgid "<b>Add new repositories and manage existing ones.</b>"
+msgstr "<b> أضف مستودعات وإدارة واحدة موجودة مسبقا</b>}"
+
+#: ../gui/data/packagemanager.glade.h:2
+msgid "<b>Apply the following changes:</b>"
+msgstr "<b>التأكيد على التغيرات التالية :</b>"
+
+#: ../gui/data/packagemanager.glade.h:3
+msgid ""
+"<b>Create New Boot Environment</b>\n"
+"\n"
+"Update All creates a new boot environment (BE) as a means of archiving the\n"
+"current BE. The new BE consists of the updated packages and is the default "
+"BE\n"
+"when the system is rebooted.\n"
+msgstr ""
+       "<b>إنشاء بيئة إقلاع جديدة</b>\n"
+       "\n"
+       "ترقية الكل وإنشاء بيئة إقلاع جديدة (BE) تعرف كأرشيف \n"
+       "الحالي BE. BE الجديد يحوي ترقية كاملة لكل الحزم والBE الإفتراضي  "
+       "عندما يعاد تشغيل النظام .\n"
+
+#: ../gui/data/packagemanager.glade.h:9
+msgid "<b>Delete, rename and activate boot environments.</b>"
+msgstr "<b>حذف, إعادة تسمية  تفعيل بيئة الإقلاع .</b>"
+
+#: ../gui/data/packagemanager.glade.h:10
+msgid "<b>Modify Repository URL</b>"
+msgstr "<b>تعديل عناوين (URL) للمستودعات </b>"
+
+#: ../gui/data/packagemanager.glade.h:11
+msgid "<b>PACKAGE NAME</b>"
+msgstr "<b>إسم الحزم</b>"
+
+#: ../gui/data/packagemanager.glade.h:12
+msgid "<b>Package Name</b>"
+msgstr "<b>إسم الحزم</b>"
+
+#: ../gui/data/packagemanager.glade.h:13
+msgid "<b>Review the packages to be removed:</b>"
+msgstr "<b>عرض الحزم التي سوف تحذف:</b>"
+
+#: ../gui/data/packagemanager.glade.h:14
+msgid "<b>Search</b>"
+msgstr "<b>بحث</b>"
+
+#: ../gui/data/packagemanager.glade.h:15
+msgid "<b>Startup</b>"
+msgstr "<b>إقلاع</b>"
+
+#: ../gui/data/packagemanager.glade.h:16
+msgid "<b>_Mirrors</b>"
+msgstr "<b>_Mirrors</b>"
+
+#: ../gui/data/packagemanager.glade.h:17
+msgid "<b>_SSL Key and Certificate</b>"
+msgstr "<b>_SSL Key and شهادة</b>"
+
+#: ../gui/data/packagemanager.glade.h:18
+msgid "<big><b>Package Manager Web Installer</b></big>"
+msgstr "<big><b>مدير الحزم تنصيب من الويب</b></big>"
+
+#: ../gui/data/packagemanager.glade.h:19
+msgid "<i>_Repository:</i>"
+msgstr "<i>_مستودع:</i>"
+
+#: ../gui/data/packagemanager.glade.h:20
+msgid "About"
+msgstr "حول"
+
+#: ../gui/data/packagemanager.glade.h:21
+msgid "About Glade"
+msgstr "حول الفسحة "
+
+#: ../gui/data/packagemanager.glade.h:22
+msgid "B_rowse"
+msgstr "B_rowse"
+
+#: ../gui/data/packagemanager.glade.h:23
+msgid "Br_owse"
+msgstr "Br_owse"
+
+#: ../gui/data/packagemanager.glade.h:24
+msgid "Browse for SSL Certificate"
+msgstr "تصفح من أجل شهادة SSL "
+
+#: ../gui/data/packagemanager.glade.h:25
+msgid "Browse for SSL Key"
+msgstr "تصفح من أجل SSL key"
+
+#: ../gui/data/packagemanager.glade.h:26 ../um/data/updatemanager.glade.h:4
+msgid "Checking for latest SUNWipkg and SUNWipkg-gui, please wait..."
+msgstr "التحقق من أخر إصدار من SUNWipkg and SUNWipkg-gui, الرجاء الإنتظار..."
+
+#: ../gui/data/packagemanager.glade.h:27
+msgid "Checking package dependencies..."
+msgstr "الحقق من تبعية الحزم"
+
+#: ../gui/data/packagemanager.glade.h:28
+msgid "Clear"
+msgstr "مسح "
+
+#: ../gui/data/packagemanager.glade.h:29
+msgid "Click to get list of newest packages."
+msgstr "إضغط للحصول على قائمة بأجدد الحزم . "
+
+#: ../gui/data/packagemanager.glade.h:30
+msgid "Click to update all installed packages."
+msgstr "إضغط لترقية كل الحزم المنصبة"
+
+#: ../gui/data/packagemanager.glade.h:31
+msgid "Copy"
+msgstr "نسخ "
+
+#: ../gui/data/packagemanager.glade.h:32
+msgid ""
+"Copyright 2009 Sun Microsystems, Inc.  \n"
+"All rights reserved.\n"
+"Use is subject to license terms."
+msgstr ""
+       "Copyright 2009 Sun Microsystems, Inc.  \n"
+       "All rights reserved.\n"
+       "Use is subject to license terms."
+
+#: ../gui/data/packagemanager.glade.h:35
+msgid "Cu_t"
+msgstr "Cu_t"
+
+#: ../gui/data/packagemanager.glade.h:36
+msgid "Currently active boot environment"
+msgstr "بيئة الإقلاع المفعلة الحالية "
+
+#: ../gui/data/packagemanager.glade.h:37
+msgid "Cut action"
+msgstr "قطع العمل"
+
+#: ../gui/data/packagemanager.glade.h:38
+msgid "Dependencies"
+msgstr "التبعية"
+
+#: ../gui/data/packagemanager.glade.h:39
+msgid "Deselect selected packages"
+msgstr "إلغاء أختيار الحزم المختارة "
+
+#: ../gui/data/packagemanager.glade.h:40
+msgid "Details"
+msgstr "تفاصيل"
+
+#: ../gui/data/packagemanager.glade.h:41 ../gui/modules/installupdate.py:100
+#: ../um/data/updatemanager.glade.h:6 ../updatemanager.py:174
+#: ../updatemanager.py:397 ../updatemanager.py:404 ../updatemanager.py:411
+#: ../updatemanager.py:418 ../updatemanager.py:425
+msgid "Download"
+msgstr "تحميل "
+
+#: ../gui/data/packagemanager.glade.h:42
+msgid "Files"
+msgstr "ملفات "
+
+#: ../gui/data/packagemanager.glade.h:43 ../gui/modules/installupdate.py:101
+#: ../updatemanager.py:190 ../updatemanager.py:398 ../updatemanager.py:405
+#: ../updatemanager.py:412 ../updatemanager.py:419 ../updatemanager.py:426
+msgid "Install"
+msgstr "تنصيب "
+
+#: ../gui/data/packagemanager.glade.h:44
+msgid "Install or Update selected packages"
+msgstr "تنصيب أو ترقية الحزم المختارة "
+
+#: ../gui/data/packagemanager.glade.h:45 ../gui/modules/installupdate.py:237
+msgid "Install/Update"
+msgstr "تنصيب\ترقية"
+
+#: ../gui/data/packagemanager.glade.h:46
+msgid "Install/Upgrade Check"
+msgstr "تحقق من تنصيب\ترقية"
+
+#: ../gui/data/packagemanager.glade.h:48
+msgid "Legend:"
+msgstr "إسطورة : "
+
+#: ../gui/data/packagemanager.glade.h:49
+msgid "License"
+msgstr "إتفاقية "
+
+#: ../gui/data/packagemanager.glade.h:50
+msgid "M_irror:"
+msgstr "M_irror:"
+
+#: ../gui/data/packagemanager.glade.h:51
+msgid "Manage BEs Changes Confirmation"
+msgstr "إدارة BEs وتغير التاكيد "
+
+#: ../gui/data/packagemanager.glade.h:52
+msgid "Manage Boot Environments"
+msgstr "إدارة بيئة الإقلاع "
+
+#: ../gui/data/packagemanager.glade.h:53
+msgid "Manage Repositories"
+msgstr "إدارة المستودعات "
+
+#: ../gui/data/packagemanager.glade.h:54
+msgid "Manage _Boot Environments..."
+msgstr "إدارة _ بيئة الإقلاع..."
+
+#: ../gui/data/packagemanager.glade.h:55
+msgid "Modify Repository"
+msgstr "تعديل المستودع "
+
+#: ../gui/data/packagemanager.glade.h:56
+msgid "Online Help"
+msgstr "مساعدة على الانترنت"
+
+#: ../gui/data/packagemanager.glade.h:57
+msgid "Online _Help"
+msgstr "مساعدة_ على الانترنت"
+
+#: ../gui/data/packagemanager.glade.h:59
+msgid "Package Manager Preferences"
+msgstr "تفضيلات مدير الحزم "
+
+#: ../gui/data/packagemanager.glade.h:60
+msgid "Paste"
+msgstr "لصق "
+
+#: ../gui/data/packagemanager.glade.h:61
+msgid "Pre_ferences"
+msgstr "Pre_ferences"
+
+#: ../gui/data/packagemanager.glade.h:62
+msgid "Preferences"
+msgstr "تفضيلات"
+
+#: ../gui/data/packagemanager.glade.h:63 ../gui/modules/installupdate.py:99
+msgid "Preparation"
+msgstr "خصائص "
+
+#: ../gui/data/packagemanager.glade.h:64 ../gui/modules/webinstall.py:198
+msgid "Proceed only if you trust this new repository "
+msgstr "نفذ فقط إذا كنت على ثقة هذا المستودع الجديد "
+
+#: ../gui/data/packagemanager.glade.h:65 ../um/data/updatemanager.glade.h:9
+msgid "Processing"
+msgstr "معالجة "
+
+#: ../gui/data/packagemanager.glade.h:66
+msgid "Quit application"
+msgstr "خروج التطبيق "
+
+#: ../gui/data/packagemanager.glade.h:67
+msgid "Reload"
+msgstr "إعادة تحميل "
+
+#: ../gui/data/packagemanager.glade.h:68 ../gui/modules/installupdate.py:202
+#: ../gui/modules/installupdate.py:205
+msgid "Remove"
+msgstr "إزالة"
+
+#: ../gui/data/packagemanager.glade.h:69
+msgid "Remove Confirmation"
+msgstr "إزالة التأكيد "
+
+#: ../gui/data/packagemanager.glade.h:70
+msgid "Remove selected packages"
+msgstr "إزالة الحزم المختارة "
+
+#: ../gui/data/packagemanager.glade.h:71
+msgid "SSL C_ertificate: "
+msgstr "SSL C_ertificate: "
+
+#: ../gui/data/packagemanager.glade.h:72
+msgid "SSL Key and Certificate"
+msgstr "SSL Key and شهادة"
+
+#: ../gui/data/packagemanager.glade.h:73
+msgid "SSL _Certificate:"
+msgstr "SSL _شهادة:"
+
+#: ../gui/data/packagemanager.glade.h:74
+msgid "SSL _Key:"
+msgstr "SSL _Key:"
+
+#: ../gui/data/packagemanager.glade.h:75
+msgid "SSL _Key: "
+msgstr "SSL _Key: "
+
+#: ../gui/data/packagemanager.glade.h:76
+msgid "Se_arch:"
+msgstr "Se_arch:"
+
+#: ../gui/data/packagemanager.glade.h:77
+msgid "Search"
+msgstr "بحث "
+
+#: ../gui/data/packagemanager.glade.h:78
+msgid "Select All Items"
+msgstr "إختر كل العناصر "
+
+#: ../gui/data/packagemanager.glade.h:79
+msgid "Select Updates"
+msgstr "إختر تحديث "
+
+#: ../gui/data/packagemanager.glade.h:80
+msgid "Select _All"
+msgstr "إختر _الكل"
+
+#: ../gui/data/packagemanager.glade.h:81
+msgid "Select _Updates"
+msgstr "إختر _تحديث"
+
+#: ../gui/data/packagemanager.glade.h:82
+msgid "Select from the list to modify or remove existing repositories."
+msgstr "إختر من القائمة لتعديل أو لإزالة المستودعات الموجودة سابقا"
+
+#: ../gui/data/packagemanager.glade.h:83
+msgid "Select packages by marking the checkbox and click to Install/Update."
+msgstr "إختر الحزم بإشارة ضمن المربع ثم إضغط على تنصيب\ترقية"
+
+#: ../gui/data/packagemanager.glade.h:84
+msgid "Select packages by marking the checkbox and click to Remove selected."
+msgstr "إختر الحزم بإشارة ضمن المربع ثم إضغط إزالة "
+
+#: ../gui/data/packagemanager.glade.h:85
+msgid "Sho_w:"
+msgstr "Sho_w:"
+
+#: ../gui/data/packagemanager.glade.h:86
+msgid "Short description"
+msgstr "تفصيل قصير "
+
+#: ../gui/data/packagemanager.glade.h:87
+msgid "Start Page"
+msgstr "صفجة البدأ "
+
+#: ../gui/data/packagemanager.glade.h:88
+msgid "Start _Page"
+msgstr "صفجة _البدأ "
+
+#: ../gui/data/packagemanager.glade.h:89
+msgid "The folllowing will be added to your system"
+msgstr "التالي سوف تضاف الى نظامك "
+
+#: ../gui/data/packagemanager.glade.h:90
+msgid "This is a secure repository. Refer to the posted"
+msgstr "هذا المستودع الأمن , الرجوع الى الموقع"
+
+#: ../gui/data/packagemanager.glade.h:91
+msgid ""
+"This repository requires a SSL Key and certificate.\n"
+"Enter the location of these files in the spaces provided, or use the "
+"Browse \n"
+"buttons to provide their location."
+msgstr ""
+       "هذا المستودع يتطلب SSL Key و شهادة .\n"
+       "أدخل مسار الملف ضمن المساحة المتاحة , أو إستعمل المتصفح \n"
+
+#: ../gui/data/packagemanager.glade.h:94
+msgid "Type text to search name and description of the package."
+msgstr "أدخل النص للبحث على الإسم وتفصيل الحزمة "
+
+#: ../gui/data/packagemanager.glade.h:95 ../gui/modules/installupdate.py:221
+#: ../packagemanager.py:300 ../packagemanager.py:3354
+msgid "Update All"
+msgstr "ترقية الكل "
+
+#: ../gui/data/packagemanager.glade.h:96
+msgid "Update all packages"
+msgstr "ترقية كل الحزم "
+
+#: ../gui/data/packagemanager.glade.h:97 ../packagemanager.py:1177
+msgid "Updates"
+msgstr "الترقية "
+
+#: ../gui/data/packagemanager.glade.h:98
+msgid "_About"
+msgstr "_عن"
+
+#: ../gui/data/packagemanager.glade.h:99
+msgid "_Add"
+msgstr "_إضافة"
+
+#: ../gui/data/packagemanager.glade.h:100
+msgid "_Browse"
+msgstr "_تصفح"
+
+#: ../gui/data/packagemanager.glade.h:101
+msgid "_Clear"
+msgstr "_مسح"
+
+#: ../gui/data/packagemanager.glade.h:102
+msgid "_Copy"
+msgstr "_نسخ"
+
+#: ../gui/data/packagemanager.glade.h:103
+msgid "_Deselect"
+msgstr "_تفاصيل "
+
+#: ../gui/data/packagemanager.glade.h:104
+msgid "_Edit"
+msgstr "_تحرير"
+
+#: ../gui/data/packagemanager.glade.h:105
+msgid "_Enable type ahead search (slow on large repositories)"
+msgstr "_تفعيل النوع قبل البحث (بظئ على المستودعات الكبيرة)"
+
+#: ../gui/data/packagemanager.glade.h:106
+msgid "_File"
+msgstr "_ملف"
+
+#: ../gui/data/packagemanager.glade.h:107
+msgid "_Help"
+msgstr "_مساعدة "
+
+#: ../gui/data/packagemanager.glade.h:108
+msgid "_Install / Update"
+msgstr "_تنصيب\ترقية "
+
+#: ../gui/data/packagemanager.glade.h:109
+msgid "_Instructions"
+msgstr "_تعليمات "
+
+#: ../gui/data/packagemanager.glade.h:110
+msgid "_Manage Repositories..."
+msgstr "_إدارة المستودعات"
+
+#: ../gui/data/packagemanager.glade.h:111
+msgid "_Modify..."
+msgstr "_تعديل "
+
+#: ../gui/data/packagemanager.glade.h:112
+msgid "_Name: "
+msgstr "_إسم: "
+
+#: ../gui/data/packagemanager.glade.h:113
+msgid "_Package"
+msgstr "_الحزمة"
+
+#: ../gui/data/packagemanager.glade.h:114
+msgid "_Paste"
+msgstr "_لصق"
+
+#: ../gui/data/packagemanager.glade.h:115
+msgid "_Proceed"
+msgstr "_تنفيذ"
+
+#: ../gui/data/packagemanager.glade.h:116
+msgid "_Quit"
+msgstr "_خروج"
+
+#: ../gui/data/packagemanager.glade.h:117
+msgid "_Remove"
+msgstr "_إزالة "
+
+#: ../gui/data/packagemanager.glade.h:118
+msgid "_Show Start Page on startup     "
+msgstr "_أظهر نافذة البدأ عند الإقلاع     "
+
+#: ../gui/data/packagemanager.glade.h:119
+msgid "_URL: "
+msgstr "_عنوان (URL): "
+
+#: ../gui/data/packagemanager.glade.h:120 ../um/data/updatemanager.glade.h:17
+msgid "_Update All"
+msgstr "_ترقية الكل "
+
+#: ../gui/data/packagemanager.glade.h:121
+msgid "gtk-cancel"
+msgstr "gtk-cancel"
+
+#: ../gui/data/packagemanager.glade.h:122
+msgid "gtk-close"
+msgstr "gtk-close"
+
+#: ../gui/data/packagemanager.glade.h:123
+msgid "gtk-help"
+msgstr "gtk-help"
+
+#: ../gui/data/packagemanager.glade.h:124
+msgid "gtk-ok"
+msgstr "gtk-ok"
+
+#: ../gui/data/packagemanager.glade.h:125
+msgid ""
+"lf the repository requires a SSL key and certificate, or if it has mirrors, "
+"add the new\n"
+"repository, and then click Modify to add additional information."
+msgstr ""
+       "إذا المستودع يطلب SSL Key وشهادة , او إذا كان Mirror أضف جديد \n"
+       "مستودع , ثم إضغط على تعديل وأضف تفصيل أخرى "
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:1
+msgid ""
+"A boolean which determines if the Start Page should be shown on startup or "
+"the initial list view."
+msgstr ""
+       "أمر boolean يتحقق إذا ماكان ضفحة البدأ يجب أن تكون عند الإقلاع أو تحقق من قائمة العرض "
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:2
+msgid ""
+"A boolean which determines if the search is executed dynamically as user "
+"types or only when user hits the return key."
+msgstr ""
+       "أمر boolean يتحقق إذا البحث ينفذ بشكل أتوماتيكي عند كتابة المستخدم "
+       "او فقط عندما يضغط المستخدم على زر إدخال "
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:3
+msgid ""
+"An integer which identifies the initial show filter value to be displayed "
+"when packagemanager starts. 0 corresponds to All Packages."
+msgstr ""
+       "العنصر المحدد الذي يتحقق ليظهر فلتر عندما مدير الحزم يبدأ. "
+       "0 يقابل كل الحزم "
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:4
+msgid ""
+"An integer which identifies the initial toplevel value to be displayed when "
+"packagemanager starts. 0 corresponds to All Categories."
+msgstr ""
+       "العنصر المحدد الذي يتحقق الستوى الأعلى من القيمة ليظهر عندمامدير الحزم يبدأ. "
+       "0 يقابل كل الحزم"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:5
+msgid "Enable type ahead search"
+msgstr "تفعيل النوع قبل البحث "
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:6
+msgid "Initial section value"
+msgstr "التحقق قيمة القسم "
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:7
+msgid "Initial show filter value"
+msgstr "تحقق يظهر قيمة الفلتر "
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:8
+msgid "Show Start Page on startup"
+msgstr "أظهر صفحة البدأ عند بدأ التشغيل "
+
+#: ../gui/modules/webinstall.py:109
+#, python-format
+msgid "GUI will not respond to any event! %s. Check webinstall.py signals"
+msgstr "GUI لايوجدإستجابة لأي حدث ! %s تحقق من webinstall.py إشارة"
+
+#: ../gui/modules/webinstall.py:122
+msgid ""
+"\n"
+" Add New Repository\n"
+msgstr ""
+       "\n"
+       "إضافة مستودع جديد \n"
+
+#: ../gui/modules/webinstall.py:125
+msgid ""
+"\n"
+" Add New Repositories\n"
+msgstr ""
+       "\n "
+       "إضافة مستودعات جديدة \n"
+
+#: ../gui/modules/webinstall.py:130
+msgid ""
+"\n"
+" All specified repositories and packages are already on the system.\n"
+msgstr ""
+       "\n "
+       "كل المستودعات المحددة والحزم موجود ضمن النظام مسبقا . \n"
+
+#: ../gui/modules/webinstall.py:139
+#, python-format
+msgid "\t%s "
+msgstr "\t%s "
+
+#: ../gui/modules/webinstall.py:143
+#, python-format
+msgid " (%s)\n"
+msgstr " (%s)\n"
+
+#: ../gui/modules/webinstall.py:148
+msgid ""
+"\n"
+" Install Packages\n"
+msgstr ""
+       "\n"
+       "تنصيب الحزم \n"
+
+#: ../gui/modules/webinstall.py:156
+#, python-format
+msgid "\t%s: "
+msgstr "\t%s: "
+
+#: ../gui/modules/webinstall.py:159 ../gui/modules/installupdate.py:807
+#: ../gui/modules/installupdate.py:857 ../updatemanager.py:991
+#, python-format
+msgid "%s\n"
+msgstr "%s\n"
+
+#: ../gui/modules/webinstall.py:201
+msgid "Proceed only if you trust these new repositories"
+msgstr "تنفيذ فقط عندما توجد| الئقة من هذه  المستودعات "
+
+#: ../gui/modules/webinstall.py:247 ../gui/modules/webinstall.py:374
+#: ../gui/modules/webinstall.py:383
+msgid "Repository Error"
+msgstr "خطأ المستودع "
+
+#: ../gui/modules/webinstall.py:335
+msgid "API Error"
+msgstr "خطأ API"
+
+#: ../gui/modules/webinstall.py:352
+msgid "Error"
+msgstr "خطأ "
+
+#: ../gui/modules/webinstall.py:380
+msgid "Error reading the p5i file."
+msgstr "خطأ بقراءة P5i ملف "
+
+#: ../gui/modules/beadmin.py:73
+msgid ""
+"The <b>libbe</b> library was not found on your system.\n"
+"All functions for managing Boot Environments are disabled"
+msgstr ""
+       "The <b>libbe</b> المكتبة غير موجودة ضمن النظام m.\n"
+       "كل الخيارات لإدارة بيئة الإقلاع غير مفعلة d"
+
+#: ../gui/modules/beadmin.py:81
+msgid "BE management"
+msgstr "BE إدارة "
+
+#: ../gui/modules/beadmin.py:154
+#, python-format
+msgid "GUI will not respond to any event! %s. Check beadmin.py signals"
+msgstr "GUI لايوجدإستجابة لأي حدث ! %s تحقق من webinstall.py إشارة"
+
+#: ../gui/modules/beadmin.py:164
+msgid "Loading Boot Environment Information"
+msgstr "تحميل معلومات بيئة الإقلاع "
+
+#: ../gui/modules/beadmin.py:166
+msgid "Fetching BE entries..."
+msgstr "جلب مدخلات BE"
+
+#: ../gui/modules/beadmin.py:193
+msgid "Boot Environment"
+msgstr "بيئة الإقلاع "
+
+#: ../gui/modules/beadmin.py:204
+msgid "Created"
+msgstr "أنشأ "
+
+#: ../gui/modules/beadmin.py:213
+msgid "Size"
+msgstr "الحجم "
+
+#: ../gui/modules/beadmin.py:221
+msgid "Active on Reboot"
+msgstr "مفعل عند أعادة التشغيل "
+
+#: ../gui/modules/beadmin.py:232
+msgid "Delete"
+msgstr "حذف "
+
+#: ../gui/modules/beadmin.py:247 ../gui/modules/repository.py:469
+#: ../gui/modules/repository.py:538 ../gui/modules/repository.py:726
+#: ../gui/modules/repository.py:745 ../gui/modules/repository.py:866
+msgid "Applying changes"
+msgstr "تطبيق التغيرات "
+
+#: ../gui/modules/beadmin.py:249 ../gui/modules/repository.py:470
+#: ../gui/modules/repository.py:539 ../gui/modules/repository.py:727
+#: ../gui/modules/repository.py:746 ../gui/modules/repository.py:867
+msgid "Applying changes, please wait ..."
+msgstr "تطبيق التغيرات , الرجاء الإنتظار ...."
+
+#: ../gui/modules/beadmin.py:278
+msgid "Active on reboot:\n"
+msgstr "مفعل عند أعادة التشغيل : \n"
+
+#: ../gui/modules/beadmin.py:279
+msgid "Delete BEs:\n"
+msgstr "حذف BEs: \n"
+
+#: ../gui/modules/beadmin.py:280
+msgid "Rename BEs:\n"
+msgstr "إزالة BEs: \n"
+
+#: ../gui/modules/beadmin.py:319
+msgid " to "
+msgstr " الى "
+
+#: ../gui/modules/beadmin.py:373
+msgid "<b>Couldn't change Active Boot Environment to:</b>\n"
+msgstr "<b>لا أستطيع تغير تفعيل بيئة الإقلاع الى :</b>\n"
+
+#: ../gui/modules/beadmin.py:378
+msgid "<b>Couldn't delete Boot Environments:</b>\n"
+msgstr "<b>لا أستطيع حذف بيئةالإقلاع :</b>\n"
+
+#: ../gui/modules/beadmin.py:385
+msgid "<b>Couldn't rename Boot Environments:</b>\n"
+msgstr "<b>لا أستطيع تغير إسم بيئة الإقلاع :</b>\n"
+
+#: ../gui/modules/beadmin.py:388
+#, python-format
+msgid "%s <b>to</b> %s\n"
+msgstr "%s <b>to</b> %s\n"
+
+#: ../gui/modules/beadmin.py:407
+msgid "BE error"
+msgstr "خطأ BE"
+
+#: ../gui/modules/beadmin.py:492
+msgid ""
+"The <b>libbe</b> library couldn't  prepare list of Boot Environments.\n"
+"All functions for managing Boot Environments are disabled"
+msgstr ""
+       "The <b>libbe</b> المكتبة لا تستطيع تحضير قائمة بيئات الإقلاع.\n"
+       "كل الخيارات لتعديل بيئات الإقلاع غير مفعلة "
+
+#: ../gui/modules/beadmin.py:522 ../gui/modules/beadmin.py:541
+msgid "%m/%d/%y %H:%M"
+msgstr "%m/%d/%y %H:%M"
+
+#: ../gui/modules/beadmin.py:527 ../gui/modules/beadmin.py:546
+#, python-format
+msgid "Error conversion from UTF-8 to %s."
+msgstr "خطأ بالتحويل من UTF-8 to %s."
+
+#: ../gui/modules/beadmin.py:563
+#, python-format
+msgid "Error conversion from %s to UTF-8."
+msgstr "خطأ بالتحويل من %s to UTF-8."
+
+#: ../gui/modules/installupdate.py:99
+msgid "Preparing..."
+msgstr "التحضير ...."
+
+#: ../gui/modules/installupdate.py:100 ../gui/modules/installupdate.py:495
+msgid "Downloading..."
+msgstr "تحميل ...."
+
+#: ../gui/modules/installupdate.py:101
+msgid "Installing..."
+msgstr "تنصيب ...."
+
+#: ../gui/modules/installupdate.py:190
+#, python-format
+msgid "GUI will not respond to any event! %s. Check installupdate.py signals"
+msgstr "GUI لايوجدإستجابة لأي حدث ! %s تحقق من webinstall.py إشارة"
+
+#. We are not showing the download stage in the main stage list
+#: ../gui/modules/installupdate.py:202
+msgid "Removing..."
+msgstr "إزالة ...."
+
+#: ../gui/modules/installupdate.py:251
+msgid "Canceling..."
+msgstr "إلغاء ...."
+
+#: ../gui/modules/installupdate.py:319
+msgid "BE name is in use"
+msgstr "BE الإسم مستخدم "
+
+#: ../gui/modules/installupdate.py:321
+msgid "BE name is invalid"
+msgstr "BE خطأ بالإسم "
+
+#: ../gui/modules/installupdate.py:355
+#, python-format
+msgid "Ensuring %s is up to date..."
+msgstr "التحقق من %s محدث "
+
+#: ../gui/modules/installupdate.py:376
+msgid ""
+"Accessing this restricted repository failed.\n"
+"You either need to register to access this repository,\n"
+"the certificate expired, or you need to accept the repository\n"
+"certificate."
+msgstr ""
+       "الفشل بالدخول الى المستودع المقيد . \n"
+       "يجب عليك أن تسجل من أجل الدخول الى المستودع \n"
+       "إنتهت صلاحية الشهادة , أو أنت تحتاج لأن توافق على شهادة المستودع ."
+
+#: ../gui/modules/installupdate.py:386
+msgid "Inventory exception:\n"
+msgstr "Inventory exception:\n"
+
+#: ../gui/modules/installupdate.py:393
+msgid ""
+"Please check the network connection.\n"
+"Is the repository accessible?"
+msgstr ""
+       "الرجاء التحقق من إتصال الشبكة .\n"
+       "إذا كان المستودع قابل للدخول عليه "
+
+#: ../gui/modules/installupdate.py:403
+#, python-format
+msgid ""
+"Please check the network connection.\n"
+"Is the repository accessible?\n"
+"\n"
+"%s"
+msgstr ""
+       "الرجاء التحقق من إتصال الشبكة .\n"
+       "إذا كان المستودع قابل للدخول عليه "
+       "\n"
+       "%s"
+
+#: ../gui/modules/installupdate.py:409
+msgid ""
+"pkg(5) appears to be out of date and should be\n"
+"updated before running Update All.\n"
+"Please update SUNWipkg package"
+msgstr ""
+       "pkg(5) يظهر على انه خارج التحديث ويجب \n"
+       "تحديث قبل تشغيل الترقية الكلية \n"
+       "الرجاء تحديث SUNWipkg حزمة"
+
+#: ../gui/modules/installupdate.py:415
+#, python-format
+msgid ""
+"Cannot remove:\n"
+"\t%s\n"
+"Due to the following packages that depend on it:\n"
+msgstr ""
+       "لايمكن إزالة :\n"
+       "\t%s\n"
+       "بسبب أن الحزم التالية لها تبعية على :\n "
+
+#: ../gui/modules/installupdate.py:424
+#, python-format
+msgid ""
+"\n"
+"Failure of consistent use of pfexec or gksu when running\n"
+"%s is often a source of this problem."
+msgstr ""
+       "\n "
+       "فشل التناغم إستعمل أمر pfexec or gksu عند التشغيل \n"
+       "%s غالبا تكون مصدر المشكلة "
+
+#: ../gui/modules/installupdate.py:427
+msgid ""
+"\n"
+"To rebuild index, please use the terminal command:"
+msgstr ""
+       "\n"
+       "لإعادة بناء الفهرس , الرجاء إستعمل terminal command:"
+
+#: ../gui/modules/installupdate.py:428
+msgid ""
+"\n"
+"\tpfexec pkg rebuild-index"
+msgstr ""
+       "\n"
+       "\tpfexec pkg rebuild-index"
+
+#: ../gui/modules/installupdate.py:432
+msgid ""
+"There was an error during installation. The search\n"
+"index is corrupted. You might want try to fix this\n"
+"problem by running command:\n"
+"\tpfexec pkg rebuild-index"
+msgstr ""
+       "حدث خطأ أثناء التنصيب , البحث \n"
+       "الفهرس قد دمر , يجب عليك أو تحاول حل المشكلة ,\n"
+       "بواسطة تشغيل الأمر : \n"
+       "\tpfexec pkg rebuild-index"
+
+#: ../gui/modules/installupdate.py:439
+msgid ""
+"This is an Live Image. The install\n"
+"operation can't be performed."
+msgstr ""
+       "هذه صورة مباشرة .عملية التنصيب لايمكن أو تنفذ "
+
+#: ../gui/modules/installupdate.py:444
+#, python-format
+msgid ""
+"There was an error during installation.\n"
+"The Plan of the operation is missing and the operation\n"
+"can't be finished. You might want try to fix this\n"
+"problem by restarting %s\n"
+msgstr ""
+       "حدث خطأ أثناء التنصيب \n"
+       "الخطة للعملية أنها فشلت والعملية \n"
+       "لا يمكن إنهاؤها . يجب عليك محاولة حل المشكلة \n"
+       "بعملية إعادة التشغيل %s\n"
+
+#: ../gui/modules/installupdate.py:451
+#, python-format
+msgid ""
+"There was an error during installation.\n"
+"The State of the image is incorrect and the operation\n"
+"can't be finished. You might want try to fix this\n"
+"problem by restarting %s\n"
+msgstr ""
+       "حدث خطأ أثناء التنصيب \n "
+       "حالة الصورة يكون فيها خطأ والعملية \n"
+       "لايمكن إنهاؤها . يجب عليك| كل المشكلة \n"
+       "بعملية إعادة التشعيل %s\n"
+
+#: ../gui/modules/installupdate.py:462
+msgid "Specifying BE Name not supported.\n"
+msgstr "تعيين BE الإسم غير مدعوم \n"
+
+#: ../gui/modules/installupdate.py:466
+#, python-format
+msgid "Invalid BE Name: %s.\n"
+msgstr "خطأ بإسم BE : %s \n"
+
+#: ../gui/modules/installupdate.py:491
+#, python-format
+msgid "Updating %s"
+msgstr "ترقية %s"
+
+#: ../gui/modules/installupdate.py:497
+msgid "Executing..."
+msgstr "تنفيذ ...."
+
+#: ../gui/modules/installupdate.py:504
+msgid "Gathering packages information, please wait..."
+msgstr "تجميع معلومات الحزم , الرجاء الإنتظار ...."
+
+#: ../gui/modules/installupdate.py:526
+msgid "All packages already installed."
+msgstr "كل الحزم منصبة مسبقا "
+
+#: ../gui/modules/installupdate.py:531
+msgid ""
+"Selected package(s) cannot be updated on their own.\n"
+"Click Update All to update all packages."
+msgstr ""
+       "إختيار الحزم  (5)لايمكن تحديثها حيث هي إضغط على ترقية الكل لترقية كل الحزم"
+
+#: ../gui/modules/installupdate.py:534
+msgid "Your system have been already updated."
+msgstr "إن نظامك يملك الترقية بشكل كامل "
+
+#: ../gui/modules/installupdate.py:572 ../gui/modules/installupdate.py:607
+msgid "No futher information available"
+msgstr "لا يوجد معلومات إضافية متوفرة "
+
+#: ../gui/modules/installupdate.py:575 ../gui/modules/installupdate.py:598
+msgid ""
+"\n"
+"Error:\n"
+msgstr ""
+       "\n"
+       "خطأ:\n"
+
+#: ../gui/modules/installupdate.py:578 ../gui/modules/installupdate.py:588
+msgid " - Failed </b>"
+msgstr " - فشل </b>"
+
+#: ../gui/modules/installupdate.py:592
+#, python-format
+msgid ""
+"An unknown error occured in the %s stage.\n"
+"Please let the developers know about this problem\n"
+"by filing a bug together with exception value at:\n"
+msgstr ""
+       "حدث خطأ غير متوقع ضمن %sالمرحلة \n"
+       "الرجاء إعلام المطورون حول هذه المشكلة بفلترة المشاكل بإستثناء القيم على : \n"
+
+#: ../gui/modules/installupdate.py:596
+msgid ""
+"http://defect.opensolaris.org\n"
+"\n"
+msgstr ""
+       "http://defect.opensolaris.org\n"
+       "\n"
+
+#: ../gui/modules/installupdate.py:597
+msgid "Exception value:\n"
+msgstr "إستثناء القيم:\n"
+
+#: ../gui/modules/installupdate.py:602
+msgid "Exception traceback:\n"
+msgstr "إستثناءtraceback:\n"
+
+#: ../gui/modules/installupdate.py:659
+#, python-format
+msgid "Downloaded %(current)s of %(total)s"
+msgstr "تحميل  %(current)s of %(total)s"
+
+#: ../gui/modules/installupdate.py:679
+msgid "Catalog refresh failed during install."
+msgstr "فشل تحديث الكاتالوج أثناء التنصيب"
+
+#: ../gui/modules/installupdate.py:694
+msgid "Catalog refresh failed during Update All."
+msgstr "فشل تحديث الكاتالوج أثناء ترقية الكل "
+
+#: ../gui/modules/installupdate.py:698
+msgid "Installation completed successfully."
+msgstr "نجاح عملية التنصيب "
+
+#: ../gui/modules/installupdate.py:700
+msgid "Packages removed successfully."
+msgstr "نجاح إزالة الحزم "
+
+#: ../gui/modules/installupdate.py:702
+msgid "Packages updated successfully."
+msgstr "نجاح ترقية الحزم "
+
+#: ../gui/modules/installupdate.py:733
+msgid "Not enough disk space, the selected action cannot "
+msgstr "لاتوجد مساحة كافية على القرص . خيار التفيذ لن يتم "
+
+#: ../gui/modules/installupdate.py:737
+msgid "Not Enough Disk Space"
+msgstr "لاتوجد مساحة كافية على القرص"
+
+#: ../gui/modules/installupdate.py:755
+msgid "Packages To Be Updated:\n"
+msgstr "الحزم للترقية : \n "
+
+#: ../gui/modules/installupdate.py:762
+msgid "Packages To Be Installed:\n"
+msgstr "الحزم للتنصيب : \n "
+
+#: ../gui/modules/installupdate.py:769
+msgid "Packages To Be Removed:\n"
+msgstr "الحزم للإزالة : \n "
+
+#: ../gui/modules/installupdate.py:827
+#, python-format
+msgid "Package %d of %d: %s\n"
+msgstr "الحزمة  %d of %d: %s\n"
+
+#: ../gui/modules/installupdate.py:846
+#, python-format
+msgid "Evaluating: %s"
+msgstr "تقييم : %s"
+
+#: ../gui/modules/repository.py:266
+#, python-format
+msgid "GUI will not respond to any event! %s. Check repository.py signals"
+msgstr "GUI لن ترد على أي حال ! %s .تحقق إشارة repository.py "
+
+#: ../gui/modules/repository.py:309
+msgid "Add New Repository"
+msgstr "أضافة مستودع جديد "
+
+#: ../gui/modules/repository.py:317
+msgid "<b>New Repository</b>"
+msgstr "<b>مستودع جديدy</b>"
+
+#: ../gui/modules/repository.py:362
+msgid "Repository Name"
+msgstr "إسم المستودع "
+
+#: ../gui/modules/repository.py:371
+msgid "Preferred"
+msgstr "المفضل "
+
+#: ../gui/modules/repository.py:383
+msgid "Enabled"
+msgstr "تفعيل "
+
+#: ../gui/modules/repository.py:504
+#, python-format
+msgid "Failed to disable %s.\n"
+msgstr "فشل بإلغاء التفعيل %s \n"
+
+#: ../gui/modules/repository.py:506
+#, python-format
+msgid "Failed to enable %s.\n"
+msgstr "فشل بالتفعيل %s \n"
+
+#: ../gui/modules/repository.py:512 ../gui/modules/repository.py:520
+#: ../gui/modules/repository.py:530
+#, python-format
+msgid "Failed to disable %s."
+msgstr "فشل بإلغاء التفعيل %s"
+
+#: ../gui/modules/repository.py:514 ../gui/modules/repository.py:522
+#: ../gui/modules/repository.py:532
+#, python-format
+msgid "Failed to enable %s."
+msgstr "فشل بالتفعيل %s"
+
+#: ../gui/modules/repository.py:515 ../gui/modules/repository.py:984
+#: ../gui/modules/repository.py:1012
+msgid ""
+"\n"
+"Please check your permissions."
+msgstr ""
+       "\n "
+       "الرجاء إفحص صلاحياتك "
+
+#: ../gui/modules/repository.py:524 ../gui/modules/repository.py:994
+msgid ""
+"\n"
+"Please check the network connection or URL.\n"
+"Is the repository accessible?"
+msgstr ""
+       "\n "
+       "الرجاء التحقق من إتصال الشبكة أو العنوان (URL) \n"
+       "إذا المستودع قابل للدخول عليه "
+
+#: ../gui/modules/repository.py:533
+msgid ""
+"\n"
+"Unexpected error.\n"
+msgstr ""
+       "\n"
+       "خطأ غير متوقع \n"
+
+#: ../gui/modules/repository.py:576
+msgid ""
+"Couldn't change the preferred publisher.\n"
+"Please check your permissions."
+msgstr ""
+       "لا يمكن تغير الناشر المفضل \n"
+       "الرجاء التحقق من صلاحياتك "
+
+#: ../gui/modules/repository.py:640
+msgid "Name contains invalid characters"
+msgstr "الإسم يحوي أحرف خاطئة "
+
+#: ../gui/modules/repository.py:647
+msgid "Name already in use"
+msgstr "الإسم مستعمل من قبل "
+
+#: ../gui/modules/repository.py:668
+msgid "URL is not valid"
+msgstr "URL العنوان غير صحيح "
+
+#: ../gui/modules/repository.py:854
+#, python-format
+msgid ""
+"Unable to navigate to:\n"
+"\t%s"
+msgstr ""
+       "لايمكن الوصول الى : \n"
+       "\t%s "
+
+#: ../gui/modules/repository.py:855
+msgid "Registration"
+msgstr "التسجيل "
+
+#: ../gui/modules/repository.py:862
+msgid "Adding New Repository"
+msgstr "إضافة مستودع جديد "
+
+#: ../gui/modules/repository.py:863
+#, python-format
+msgid ""
+"Adding:\n"
+"\t%s (%s)..."
+msgstr ""
+       "إضافة : \n"
+       "\t%s (%s)...."
+
+#: ../gui/modules/repository.py:968
+#, python-format
+msgid ""
+"Failed to add repository: %s\n"
+"\n"
+msgstr ""
+       "الفشل بإضافة مستودع جديد : %s\n"
+       "\n"
+
+#: ../gui/modules/repository.py:975
+#, python-format
+msgid "Failed to add %s.\n"
+msgstr "الفشل بالإضافة %s.\n"
+
+#: ../gui/modules/repository.py:983 ../gui/modules/repository.py:992
+#, python-format
+msgid "Failed to add %s."
+msgstr "الفشل بالإضافة %s."
+
+#: ../gui/modules/repository.py:1011
+#, python-format
+msgid "Failed to delete %s."
+msgstr "الفشل بالحذف %s."
+
+#: ../gui/modules/repository.py:1119 ../gui/modules/repository.py:1154
+msgid "Specify SSL Key File"
+msgstr "تعين ملف SSL key "
+
+#: ../gui/modules/repository.py:1139 ../gui/modules/repository.py:1174
+msgid "Specify SSL Certificate File"
+msgstr "تعين ملف شهادة SSL"
+
+#. More Generic for WebInstall
+#: ../gui/modules/repository.py:1211
+msgid "Repository error"
+msgstr "خطأ بالمستودع "
+
+#: ../modules/actions/__init__.py:89
+#, python-format
+msgid ""
+"unknown action type '%(type)s' in package '%(fmri)s' in action '%(action)s'"
+msgstr ""
+       "نوع الخطأ غير معروف '%(type)s'بالحزمة '%(fmri)s' بالتنفيذ '%(action)s'"
+
+#: ../modules/actions/__init__.py:93
+#, python-format
+msgid "unknown action type '%(type)s' in action '%(action)s'"
+msgstr "نوع الخطأ غير معروف '%(type)s' بالتنفيذ  '%(action)s'"
+
+#: ../modules/actions/__init__.py:106
+#, python-format
+msgid ""
+"Malformed action in package '%(fmri)s' at position: %(pos)d:\n"
+"    %(action)s\n"
+"%(marker)s"
+msgstr ""
+       "تشوه التنفيذ ضمن الحزمة: '%(fmri)s' ضمن القسم: %(pos)d:\n"
+       "    %(action)s\n"
+       "%(marker)s"
+
+#: ../modules/actions/__init__.py:111
+#, python-format
+msgid ""
+"Malformed action at position: %(pos)d:\n"
+"    %(action)s\n"
+"%(marker)s"
+msgstr ""
+       "تشوه التنفيذ ضمن القسم:  %(pos)d:\n"
+       "    %(action)s\n"
+       "%(marker)s"
+
+#: ../modules/actions/__init__.py:137
+#, python-format
+msgid "invalid action in package %(fmri)s: %(action)s: %(error)s"
+msgstr "خطأ بالتنفيذ ضمن الحزمة %(fmri)s: %(action)s: %(error)s"
+
+#: ../modules/actions/__init__.py:140
+#, python-format
+msgid "invalid action, '%(action)s': %(error)s"
+msgstr "خطأ بالتنفيذ  '%(action)s': %(error)s"
+
+#: ../modules/actions/__init__.py:164
+#, python-format
+msgid "required attribute '%s' was not provided."
+msgstr "مطلوب خاصية '%s' غير مسموح بها "
+
+#: ../modules/actions/__init__.py:221
+#, python-format
+msgid "required attribute, '%s', was not provided."
+msgstr "مطلوب خاصية '%s' غير مسموح بها "
+
+#: ../modules/client/api_errors.py:102
+#, python-format
+msgid ""
+"Could not operate on %s\n"
+"because of insufficient permissions. Please try the command again using "
+"pfexec\n"
+"or otherwise increase your privileges."
+msgstr ""
+       "لايمكن تنفيذ على %s \n"
+       "لأنه لايوجد صلاحيات كافية , الرجاء جرب الأمر مرة أخرى بإستعمال "
+       "pfexec \n"
+       "او حاول الحصول على صلاحيات"
+
+#: ../modules/client/api_errors.py:107
+msgid ""
+"\n"
+"Could not complete the operation because of insufficient permissions. "
+"Please\n"
+"try the command again using pfexec or otherwise increase your privileges.\n"
+msgstr ""
+       "\n"
+       "لايمكن إكمال العملية لأنه لايوجد صلاحيات كافية الرجاء جرب الأمر مرة أخرى بإستعمال "
+       "pfexec \n"
+       "او حاول الحصول على صلاحيات"
+
+#: ../modules/client/api_errors.py:118
+#, python-format
+msgid ""
+"Could not operate on %s\n"
+"because the file is in use. Please stop using the file and try the\n"
+"operation again."
+msgstr ""
+       "لايمكن تنفيذ على %s \n"
+       "لانه الملف مستعمل . الرجاء الوقوف عن إستعمال الملف ثم حاول مرة أخرى "
+       "لتنفيذ العملية "
+
+#: ../modules/client/api_errors.py:137
+msgid ""
+"pkg: The following pattern(s) did not match any packages in the current\n"
+"catalog. Try relaxing the pattern, refreshing and/or examining the catalogs"
+msgstr ""
+       "pkg : النموذج التالي (s) لايتوافق مع أي من الحزم ضمن نفس الكاتالوج "
+       "إعادة تعين الكاتالوج , إعادة تحديث والبحث ضمنه "
+
+#: ../modules/client/api_errors.py:150
+#, python-format
+msgid "pkg: '%s' matches no installed packages"
+msgstr "pkg : '%s' الحزم المنصبة غير متوافقة "
+
+#: ../modules/client/api_errors.py:153
+#, python-format
+msgid "pkg: '%s' is an illegal fmri"
+msgstr "pkg : '%s' غير شرعية fmri"
+
+#: ../modules/client/api_errors.py:157
+msgid "pkg: the following package(s) violated constraints:"
+msgstr "pkg : الحزم التالية (s) تنتهك القيود :"
+
+#: ../modules/client/api_errors.py:163
+#, python-format
+msgid "'%s' supports the following architectures: %s"
+msgstr "'%s' تدعم البنية التالية : %s"
+
+#: ../modules/client/api_errors.py:164
+#, python-format
+msgid "Image architecture is defined as: %s"
+msgstr "صورة البنية تعين : %s"
+
+#: ../modules/client/api_errors.py:193
+msgid ""
+"No matching package could be found for the following FMRIs in any of the "
+"catalogs for the current publishers:\n"
+msgstr ""
+       "لايستطيع إيجاد الحزم المتوافقة مع FMRI ضمن أني كاتالوج ضمن الناشر الحالي :\n"
+
+#: ../modules/client/api_errors.py:282
+#, python-format
+msgid ""
+"The specified file is in an unrecognized format or does not contain valid "
+"publisher information: %s"
+msgstr ""
+       "الملف المعين غير معرف أو لا يحوي معلومات صحيحة عن الناشر : %s"
+
+#: ../modules/client/api_errors.py:285
+msgid ""
+"The specified file is in an unrecognized format or does not contain valid "
+"publisher information."
+msgstr ""
+       "الملف المعين غير معرف أو لا يحوي معلومات صحيحة عن الناشر : "
+
+#: ../modules/client/api_errors.py:294
+msgid "Unsupported pkg(5) publisher information data format."
+msgstr "لا يدعم أمر pkg(5) نوع معلومات الناشر "
+
+#: ../modules/client/api_errors.py:320
+#, python-format
+msgid ""
+"Error encountered while retrieving data from '%s':\n"
+"%s"
+msgstr ""
+       "خطأ يحدث عند محاولة الحصول على البيانات من '%s':\n"
+       "%s"
+
+#: ../modules/client/api_errors.py:322
+#, python-format
+msgid "Error encountered while retrieving data from: %s"
+msgstr "خطأ يحدث عند محاولة الحصول على البيانات من : %s "
+
+#: ../modules/client/api_errors.py:330
+#, python-format
+msgid "'%s' is not a valid location."
+msgstr "'%s' مسار غير صحيح "
+
+#: ../modules/client/api_errors.py:342
+#, python-format
+msgid "'%s' is not a valid boot envirnment name."
+msgstr "'%s' إسم غير صحيح لبيئة الإقلاع  "
+
+#: ../modules/client/api_errors.py:351
+msgid ""
+"Boot environment naming during package install is not supported on this\n"
+"version of OpenSolaris. Please image-update without the --be-name option."
+msgstr ""
+       "تسمية بيئة الإقلاع خلال عملية التنصيب غير مدعومة على هذه \n"
+       "الإصدار من OpenSolaris. الرجاء image-update بدون  --be-name خيار "
+
+#: ../modules/client/api_errors.py:357
+msgid "Unable to clone the current boot environment."
+msgstr "لا يمكن إستنساخ نسخة من بيئة الإقلاع الحالية "
+
+#: ../modules/client/api_errors.py:370
+#, python-format
+msgid ""
+"A problem occurred while attempting to rename the boot environment\n"
+"currently named %(orig)s to %(dest)s."
+msgstr ""
+       "مشكلة حدثت بمحاولة إعادة تغير إسم بيئة الإقلاع \n"
+       "الإسم الحالي %(orig)s الى %(dest)s."
+
+#: ../modules/client/api_errors.py:381
+#, python-format
+msgid "Unable to mount %(name)s at %(mt)s"
+msgstr "لاأستطيع التحميل %(إسم)s at %(mt)s"
+
+#: ../modules/client/api_errors.py:390
+msgid ""
+"Naming a boot environment when operating on a non-live image is\n"
+"not allowed."
+msgstr ""
+       "تسمية بيئة الإقلاع عندما الإقلاع لايكون من ضمن الصورة \n"
+       "لايسمح به"
+
+#: ../modules/client/api_errors.py:401
+msgid "Info does not recognize the following options:"
+msgstr "المعلومات لا تعرف الخيارات التالية : "
+
+#: ../modules/client/api_errors.py:403
+msgid " '"
+msgstr " '"
+
+#: ../modules/client/api_errors.py:403
+msgid "'"
+msgstr "'"
+
+#: ../modules/client/api_errors.py:413
+msgid "Some servers failed to respond appropriately:\n"
+msgstr "فشل بعض الخوادم بالحصول على النتيجة الملائمة :\n"
+
+#: ../modules/client/api_errors.py:416
+#, python-format
+msgid "    %(o)s: %(msg)s (%(code)d)\n"
+msgstr "    %(o)s: %(msg)s (%(code)d)\n"
+
+#: ../modules/client/api_errors.py:421
+#, python-format
+msgid "    %(o)s: %(to)s\n"
+msgstr "    %(o)s: %(to)s\n"
+
+#: ../modules/client/api_errors.py:425
+#, python-format
+msgid "    %(o)s: %(other)s\n"
+msgstr "    %(o)s: %(other)s\n"
+
+#: ../modules/client/api_errors.py:429
+#, python-format
+msgid "    %(o)s: %(msg)s\n"
+msgstr "    %(o)s: %(msg)s\n"
+
+#: ../modules/client/api_errors.py:434
+#, python-format
+msgid "%s appears not to be a valid package depot.\n"
+msgstr "%s تظهر أنه يوجد خطأ بمستودع الحزم"
+
+#: ../modules/client/api_errors.py:457
+msgid ""
+"Search capabilities and performance are degraded.\n"
+"To improve, run 'pkg rebuild-index'."
+msgstr ""
+       "البحث عن القدرات والأداء  المبتذلة \n"
+       "للتنفيذ , p'kg rebuild-index'"
+
+#: ../modules/client/api_errors.py:468
+msgid "This expression produces action results:\n"
+msgstr "نتائج العمل تنتج هذه العبارة : \n"
+
+#: ../modules/client/api_errors.py:470
+msgid "This expression produces package results:\n"
+msgstr "نتائج العمل تنتج هذه العبارة : \n"
+
+#: ../modules/client/api_errors.py:472
+#, python-format
+msgid ""
+"%(ac_s)s%(ac_q)s%(pc_s)s%(pc_q)s'AND' and 'OR' require those expressions to "
+"produce the same type of results."
+msgstr ""
+       "%(ac_s)s%(ac_q)s%(pc_s)s%(pc_q)s'و' and 'أو' تحتاج لهذه العبارة ولنفس نوع النتائج"
+
+#: ../modules/client/api_errors.py:498
+#, python-format
+msgid "'%s' is not a valid publisher name."
+msgstr "'%s' إسم غير صحيح للناشر "
+
+#: ../modules/client/api_errors.py:506
+#, python-format
+msgid ""
+"'%(value)s' is not a valid value for repository attribute '%(attribute)s'."
+msgstr ""
+       "'%(value)s' قيمة غير صحيحة لسمات المستودعات '%(attribute)s'."
+
+#: ../modules/client/api_errors.py:519
+#, python-format
+msgid "'%s' is not a valid repository collection type."
+msgstr "'%s' نوع غير صحيح لمجموعة المستودعات "
+
+#: ../modules/client/api_errors.py:527
+#, python-format
+msgid "'%s' is not a valid URI."
+msgstr "'%s' عنوان غير صحيح URL"
+
+#: ../modules/client/api_errors.py:535
+#, python-format
+msgid "'%s' is not a valid URI priority; integer value expected."
+msgstr "'%s' خطأ بأولوية عنوان URL : قيمة غير متوقعة "
+
+#: ../modules/client/api_errors.py:547
+#, python-format
+msgid "'%s' is not a valid repository URI sort policy."
+msgstr "'%s' خطأ بتصنيف سياسة عنوان المستودع "
+
+#: ../modules/client/api_errors.py:556
+#, python-format
+msgid "Publisher '%s' is disabled and cannot be used for packaging operations."
+msgstr "الناشر '%s' غير فعال ولا يمكن إستعماله لعميلة الحزم "
+
+#: ../modules/client/api_errors.py:565
+#, python-format
+msgid "A publisher with the same name or alias as '%s' already exists."
+msgstr "الناشر بنفس الإسم أو إسم الشهرة '%s' بالأساس موجود"
+
+#: ../modules/client/api_errors.py:574
+#, python-format
+msgid ""
+"A repository with the same name or origin URIs already exists for publisher "
+"'%s'."
+msgstr ""
+       "المستودع بنفس الإسم او العنوان الأصلي URL موجود مسبقا للناشر '%s'"
+
+#: ../modules/client/api_errors.py:583
+#, python-format
+msgid "Mirror '%s' already exists for the specified repository."
+msgstr "Mirror '%s' موجود مسبقا للمستودع المعين "
+
+#: ../modules/client/api_errors.py:592
+#, python-format
+msgid "Origin '%s' already exists for the specified repository."
+msgstr "الأصل '%s' موجود مسبقا للمستودع المعين "
+
+#: ../modules/client/api_errors.py:601
+msgid "The preferred publisher cannot be removed."
+msgstr "الناشر المفضل لايمكن إزالته "
+
+#: ../modules/client/api_errors.py:609
+msgid "Cannot remove the selected repository for a publisher."
+msgstr "لايمكن إزالة المستودع المعلم كناشر "
+
+#: ../modules/client/api_errors.py:618
+#, python-format
+msgid ""
+"Publisher '%(pub)s' is disabled and cannot be set as the preferred publisher."
+msgstr ""
+       "الناشر '%(pub)s' غير فعال ولايمكن ليكون ناشر مفضل "
+
+#: ../modules/client/api_errors.py:627
+#, python-format
+msgid "Unknown legal URI '%s'."
+msgstr "عنوان URL شرعي غير معروف '%s'"
+
+#: ../modules/client/api_errors.py:635
+#, python-format
+msgid "Unknown publisher '%s'."
+msgstr "ناشر غير معروف '%s'"
+
+#: ../modules/client/api_errors.py:643
+#, python-format
+msgid "Unknown related URI '%s'."
+msgstr "عنوان URL له صلة غير معروف '%s'"
+
+#: ../modules/client/api_errors.py:651
+#, python-format
+msgid "Unknown repository '%s'."
+msgstr "مستودع غير معروف '%s'"
+
+#: ../modules/client/api_errors.py:659
+#, python-format
+msgid "Unknown repository mirror '%s'."
+msgstr "mirror مستودع غير معروف '%s'"
+
+#: ../modules/client/api_errors.py:667
+#, python-format
+msgid "Unknown repository origin '%s'"
+msgstr "اصل المستودع غير معروف '%s'"
+
+#: ../modules/client/api_errors.py:678
+#, python-format
+msgid "The URI '%(uri)s' contains an unsupported scheme '%(scheme)s'."
+msgstr "العنوان URL  '%(uri)s' يحوي مخطط غير مدعوم '%(scheme)s'."
+
+#: ../modules/client/api_errors.py:681
+msgid "The specified URI contains an unsupported scheme."
+msgstr "العنوان URL المعين يحوي مخطط غير مدعوم "
+
+#: ../modules/client/api_errors.py:689
+#, python-format
+msgid "'%(attr)s' is not supported for '%(scheme)s'."
+msgstr "'%(attr)s' غير مدعوم  '%(scheme)s'."
+
+#: ../modules/client/api_errors.py:716
+#, python-format
+msgid ""
+"Certificate '%(cert)s' for publisher '%(pub)s' needed to access '%(uri)s', "
+"has expired.  Please install a valid certificate."
+msgstr ""
+       "الشهادة '%(cert)s' للناشر '%(pub)s' '%(uri)s', يطلب الدخول "
+       "إنتهت صلاحية . الرجاء الشهادة "
+
+#: ../modules/client/api_errors.py:721
+#, python-format
+msgid ""
+"Certificate '%(cert)s' for publisher '%(pub)s', has expired.  Please install "
+"a valid certificate."
+msgstr ""
+       "الشهادة  '%(cert)s' للناشر  '%(pub)s', إنتهت الصلاحية الرجاء تنصيب شهادة صحيحة"
+
+#: ../modules/client/api_errors.py:726
+#, python-format
+msgid ""
+"Certificate '%(cert)s', needed to access '%(uri)s', has expired.  Please "
+"install a valid certificate."
+msgstr ""
+       "الشهادة  '%(cert)s',مطلوب للدخول '%(uri)s', إنتهت الصلاحية الرجاء تنصيب شهادة صحيحة "
+
+#: ../modules/client/api_errors.py:729
+#, python-format
+msgid "Certificate '%s' has expired.  Please install a valid certificate."
+msgstr "الشهادة '%s' إنتهت الصلاحية الرجاء تنصيب شهادة صحيحة "
+
+#: ../modules/client/api_errors.py:742
+#, python-format
+msgid ""
+"Certificate '%(cert)s' for publisher '%(pub)s', needed to access '%(uri)s', "
+"will expire in '%(days)s' days."
+msgstr ""
+       "الشهادة '%(cert)s' للناشر '%(pub)s', مطلوب الدخول '%(uri)s', "
+       "ستنتهي الصلاحية في '%(days)s' يوم "
+
+#: ../modules/client/api_errors.py:747
+#, python-format
+msgid ""
+"Certificate '%(cert)s' for publisher '%(pub)s' will expire in '%(days)s' "
+"days."
+msgstr ""
+       "الشهادة '%(cert)s' للناشر '%(pub)s' سينتهي في '%(days)s' يوم "
+
+#: ../modules/client/api_errors.py:751
+#, python-format
+msgid ""
+"Certificate '%(cert)s', needed to access '%(uri)s', will expire in '%(days)"
+"s' days."
+msgstr ""
+       "الشهادة '%(cert)s', يحتاج الدخول '%(uri)s',سينتهي في '%(days)"
+       "s' ايام"
+
+#: ../modules/client/api_errors.py:754
+#, python-format
+msgid "Certificate '%(cert)s' will expire in '%(days)s' days."
+msgstr "الشهادة '%(cert)s' ستنتهي  '%(days)s' أيام"
+
+#: ../modules/client/api_errors.py:766
+#, python-format
+msgid ""
+"Certificate '%(cert)s' for publisher '%(pub)s', needed to access '%(uri)s', "
+"is invalid."
+msgstr ""
+       "شهادة '%(cert)s' للناشر '%(pub)s', يحتاج الدخول '%(uri)s', "
+       "غير صحيح."
+
+#: ../modules/client/api_errors.py:770
+#, python-format
+msgid "Certificate '%(cert)s' for publisher '%(pub)s' is invalid."
+msgstr "الشهادة '%(cert)s' للناشر '%(pub)s' غير صحيح"
+
+#: ../modules/client/api_errors.py:774
+#, python-format
+msgid "Certificate '%(cert)s' needed to access '%(uri)s' is invalid."
+msgstr "الشهادة '%(cert)s' يحتاج للدخول '%(uri)s' غير صحيح"
+
+#: ../modules/client/api_errors.py:777
+#, python-format
+msgid "Invalid certificate '%s'."
+msgstr "خطأ بالشهادة '%s'"
+
+#: ../modules/client/api_errors.py:788
+#, python-format
+msgid ""
+"Unable to locate certificate '%(cert)s' for publisher '%(pub)s' needed to "
+"access '%(uri)s'."
+msgstr ""
+       "لايمكن معرفة مكان الشهادة '%(cert)s' للناشر '%(pub)s' تحتاج للدخول '%(uri)s'."
+
+#: ../modules/client/api_errors.py:793
+#, python-format
+msgid "Unable to locate certificate '%(cert)s' for publisher '%(pub)s'."
+msgstr "لايمكن معرفة مكان الشهادة '%(cert)s'للناشر '%(pub)s'."
+
+#: ../modules/client/api_errors.py:797
+#, python-format
+msgid "Unable to locate certificate '%(cert)s' needed to access '%(uri)s'."
+msgstr "لايمكن معرفة مكان الشهادة '%(cert)s'للناشر '%(uri)s'."
+
+#: ../modules/client/api_errors.py:800
+#, python-format
+msgid "Unable to locate certificate '%s'."
+msgstr "لايمكن معرفة مكان الشهادة '%s'"
+
+#: ../modules/client/api_errors.py:812
+#, python-format
+msgid ""
+"Certificate '%(cert)s' for publisher '%(pub)s', needed to access '%(uri)s', "
+"has a future effective date."
+msgstr ""
+       "الشهادة '%(cert)s' للناشر '%(pub)s', يحتاج الدخول '%(uri)s', "
+       "تاريخ تأثير الخيارات ."
+
+#: ../modules/client/api_errors.py:817
+#, python-format
+msgid ""
+"Certificate '%(cert)s' for publisher '%(pub)s' has a future effective date."
+msgstr ""
+       "الشهادة '%(cert)s' للناشر  '%(pub)s' تاريخ تأثير الخيارات."
+
+#: ../modules/client/api_errors.py:821
+#, python-format
+msgid ""
+"Certificate '%(cert)s' needed to access '%(uri)s' has a future effective "
+"date."
+msgstr ""
+       "الشهادة '%(cert)s' للناشر '%(uri)s' تاريخ تأثير الخيارات."
+
+#: ../modules/client/api_errors.py:824
+#, python-format
+msgid "Certificate '%s' has a future effective date."
+msgstr "الشهادة '%s' تاريخ تأثير الخيارات"
+
+#: ../modules/client/api_errors.py:834
+#, python-format
+msgid "Gave a bad response:%s"
+msgstr "إستلام رد خاطئ :%s"
+
+#: ../modules/client/bootenv.py:132
+msgid "pkg: unable to create an auto snapshot. pkg recovery is disabled."
+msgstr "pkg : لايمكن إنشاء snapshot بشكل أتوماتيكي "
+
+#: ../modules/client/bootenv.py:211
+#, python-format
+msgid "pkg: A system error %s was caught executing %s"
+msgstr "pkg : خطأ نظام %s تم الحصول على المفذ %s"
+
+#: ../modules/client/bootenv.py:215
+#, python-format
+msgid ""
+"pkg: '%s' failed. \n"
+"with a return code of %d."
+msgstr ""
+       "pkg: '%s' failed. \n"
+       "بأعادة الكود  %d."
+
+#: ../modules/client/bootenv.py:220
+#, python-format
+msgid "pkg: unable to activate %s"
+msgstr "pkg : لايمكن التفعيل %s"
+
+#: ../modules/client/bootenv.py:225
+#, python-format
+msgid "pkg: unable to unmount %s"
+msgstr "pkg : لايمكن العدم التحميل %s"
+
+#: ../modules/client/bootenv.py:231
+#, python-format
+msgid ""
+"\n"
+"A clone of %s exists and has been updated and activated.\n"
+"On the next boot the Boot Environment %s will be mounted on '/'.\n"
+"Reboot when ready to switch to this updated BE.\n"
+msgstr ""
+       "\n"
+       "إستنساخ نسخة من %s من النسخة الموجودة قد تم التحديث وتفعل \n"
+       "على الإقلاع التالي بيئة الإقلاع %s سوف تحمل \n"
+       "إعادة التشغيل سيكون جاهز للتبديل مع الترقية BE.\n"
+
+#: ../modules/client/bootenv.py:248
+#, python-format
+msgid "pkg: The system error %s was caught executing %s"
+msgstr "pkg : خطأ بالنظام %s الحصول على الخطا %s"
+
+#: ../modules/client/bootenv.py:252
+#, python-format
+msgid ""
+"pkg: '%s' failed \n"
+"with a return code of %d."
+msgstr ""
+       "pkg: '%s' failed \n"
+       "بإعادة الكود  %d."
+
+#: ../modules/client/bootenv.py:256
+#, python-format
+msgid "%s has been updated successfully"
+msgstr "%s تمت عملية الترقية بنجاح "
+
+#: ../modules/client/bootenv.py:269
+#, python-format
+msgid ""
+" The running system has not been modified. Modifications were only made to a "
+"clone of the running system.  This clone is mounted at %s should you wish to "
+"inspect it."
+msgstr ""
+       " تشغيل النظام المعين. والتعديلات التي سوف تنسخ حالة النظام المشغل ."
+       "هذه النسخةتحمل %s يجب أن تكون تفحص "
+
+#: ../modules/client/bootenv.py:277
+#, python-format
+msgid "pkg: unable to rollback BE %s and restore image"
+msgstr "pkg : لايمكن إعادة BE %s وإستعادة صورة النظام "
+
+#: ../modules/client/bootenv.py:283
+#, python-format
+msgid "%s failed to be updated. No changes have been made to %s."
+msgstr "%s الفشل بالترقية . لم تطرأ أية تغييرات على %s."
+
+#: ../modules/client/bootenv.py:295
+#, python-format
+msgid "pkg: unable to destroy snapshot %s"
+msgstr "pkg : لايستطيع تدمير snapshot %s"
+
+#: ../modules/client/bootenv.py:324
+#, python-format
+msgid "pkg: unable to create BE %s"
+msgstr "pkg : لايستطيع إنشاء BE %s"
+
+#: ../modules/client/bootenv.py:329
+#, python-format
+msgid "pkg: unable to mount BE %s on %s"
+msgstr "pkg : لا يستطيع تحميل BE %s على %s"
+
+#: ../modules/client/bootenv.py:333
+#, python-format
+msgid ""
+"The Boot Environment %s failed to be updated. A snapshot was taken before "
+"the failed attempt and is mounted here %s. Use 'beadm unmount %s' and then "
+"'beadm activate %s' if you wish to boot to this BE."
+msgstr ""
+       "فشل بيئة %sالإقلاع بالترقية . A snapshot تؤخد قبل فشل محاولة وتحمل %s"
+       "إستعمل beadm unmount %s ثم beadm activate %s إذا أردت الإقلاع على هذه BE"
+
+#: ../modules/client/bootenv.py:346
+#, python-format
+msgid ""
+"The Boot Environment %s failed to be updated. A snapshot was taken before "
+"the failed attempt and has been restored so no changes have been made to %s."
+msgstr ""
+       "فشل بيئة %sالإقلاع بالترقية . A snapshot توخذ قبل فشل محاولة وتعادتحميلها لذى لايوجد أي تغيرات قد حدثت %s"
+
+#: ../modules/client/image.py:1447
+msgid "This server is not a valid package depot."
+msgstr "هذا المخدم مستودع غير صحيح للحزم "
+
+#: ../modules/client/image.py:2389 ../modules/client/image.py:2462
+msgid "Before evaluation:"
+msgstr "قبل التقييم :"
+
+#: ../modules/client/image.py:2410 ../modules/client/image.py:2471
+msgid "After evaluation:"
+msgstr "بعد التقييم : "
+
+#: ../modules/client/image.py:2525
+msgid "SUNWipkg update check failed."
+msgstr "SUNWipkg فشل بالتحقق من الترقية "
+
+#: ../modules/misc.py:414
+msgid "B"
+msgstr "B"
+
+#: ../modules/misc.py:415
+msgid "kB"
+msgstr "kB"
+
+#: ../modules/misc.py:416
+msgid "MB"
+msgstr "MB"
+
+#: ../modules/misc.py:417
+msgid "GB"
+msgstr "GB"
+
+#: ../modules/misc.py:418
+msgid "TB"
+msgstr "TB"
+
+#: ../modules/misc.py:419
+msgid "PB"
+msgstr "PB"
+
+#: ../modules/misc.py:420 ../modules/misc.py:424
+msgid "EB"
+msgstr "EB"
+
+#: ../packagemanager.py:204
+msgid "_Current Repository"
+msgstr "_المستودع الحالي "
+
+#: ../packagemanager.py:205
+msgid "Search Current Repository"
+msgstr "البحث المستودع الحالي "
+
+#: ../packagemanager.py:208
+msgid "_All Repositories"
+msgstr "_كل المستودعات "
+
+#: ../packagemanager.py:209
+msgid "Search All Repositories"
+msgstr "البحث لكل المستودعات "
+
+#: ../packagemanager.py:303
+msgid ""
+"Checking SUNWipkg and SUNWipkg-gui versions\n"
+"\n"
+"Please wait ..."
+msgstr ""
+       "البحث SUNWipkg and SUNWipkg-gui \n"
+       "\n"
+       "الرجاء الإنتظار ...."
+
+#: ../packagemanager.py:427
+#, python-format
+msgid "GUI will not respond to any event! %s.Check declare_signals()"
+msgstr "GUI لا تستجيب لأي حدث ! %s تحقق من declare_signals() "
+
+#: ../packagemanager.py:485
+msgid "All Repositories Search Results"
+msgstr "نتائج بحث كل المستودعات "
+
+#: ../packagemanager.py:512 ../packagemanager.py:1776
+#: ../packagemanager.py:1908 ../packagemanager.py:2939
+#: ../packagemanager.py:3380
+msgid "All"
+msgstr "الكل "
+
+#: ../packagemanager.py:540
+msgid "<html><head></head><body></body></html>"
+msgstr "<html><head></head><body></body></html>"
+
+#: ../packagemanager.py:591
+#, python-format
+msgid ""
+"<html><head></head><body><H2>Welcome to                                     "
+"PackageManager!</H2><br>                                    <font "
+"color='#0000FF'>Warning: Unable to load                                     "
+"Start Page:<br>%s</font></body></html>"
+msgstr ""
+       "<html><head></head><body><H2>Welcome to                                     "
+       "PackageManager!</H2><br>                                    <font "
+       "color='#0000FF'>Warning: Unable to load                                     "
+       "Start Page:<br>%s</font></body></html>"
+
+#: ../packagemanager.py:637
+msgid "Loading... "
+msgstr "تحميل .... "
+
+#: ../packagemanager.py:643
+msgid "Stopped"
+msgstr "توقف "
+
+#: ../packagemanager.py:657
+msgid "Done"
+msgstr "تم "
+
+#: ../packagemanager.py:664
+#, python-format
+msgid ""
+"<html><head></head><body><font color='#000000'>                    <a "
+"href='stub'></a></font>                    <a href='pm?%s=internal&uri=%"
+"s'>                    <IMG SRC = 'startpage_star.png'                     "
+"style='border-style: none'></a> <br><br>                    <h2><font "
+"color='#0000FF'>Warning: Unable to                     load URL</font></"
+"h2><br>%s</body></html>"
+msgstr ""
+       "<html><head></head><body><font color='#000000'>                    <a "
+       "href='stub'></a></font>                    <a href='pm?%s=internal&uri=%"
+       "s'>                    <IMG SRC = 'startpage_star.png'                     "
+       "style='border-style: none'></a> <br><br>                    <h2><font "
+       "color='#0000FF'>Warning: Unable to                     load URL</font></"
+       "h2><br>%s</body></html>"
+
+#: ../packagemanager.py:693 ../packagemanager.py:705
+msgid "No URI specified"
+msgstr "لايوجد عنوان معرف (URL)"
+
+#: ../packagemanager.py:727
+msgid "Empty Action not supported"
+msgstr "فارغة لاتؤيد العمل "
+
+#: ../packagemanager.py:731
+#, python-format
+msgid "Action not supported: %s"
+msgstr "لاتؤيد العمل : %s"
+
+#: ../packagemanager.py:816 ../packagemanager.py:914 ../updatemanager.py:584
+msgid "Name"
+msgstr "الإسم "
+
+#: ../packagemanager.py:826
+msgid "Status"
+msgstr "الحالة "
+
+#: ../packagemanager.py:835
+msgid "Repository"
+msgstr "المستودع "
+
+#: ../packagemanager.py:840
+msgid "Description"
+msgstr "التفاصيل "
+
+#: ../packagemanager.py:1001 ../packagemanager.py:1071
+msgid "Updates Available"
+msgstr "الترقية متوفرة "
+
+#: ../packagemanager.py:1069
+msgid "Not Installed"
+msgstr "ليست منصبة "
+
+#. We enable only first section and later we might enable the rest,
+#. depending if there are some packages connected with them
+#: ../packagemanager.py:1160
+msgid "All Categories"
+msgstr "كل الفئات "
+
+#: ../packagemanager.py:1163
+msgid "Meta Packages"
+msgstr "meta الحزم "
+
+#: ../packagemanager.py:1164
+msgid "Applications"
+msgstr "التطبيقات "
+
+#: ../packagemanager.py:1165
+msgid "Desktop (GNOME)"
+msgstr "سطح المكتب (GNOME)"
+
+#: ../packagemanager.py:1166
+msgid "Development"
+msgstr "تطوير "
+
+#: ../packagemanager.py:1167
+msgid "Distributions"
+msgstr "تفاصيل "
+
+#: ../packagemanager.py:1168
+msgid "Drivers"
+msgstr "تعريفات "
+
+#: ../packagemanager.py:1170
+msgid "Web Services"
+msgstr "خدمة الويب "
+
+#: ../packagemanager.py:1173
+msgid "All Packages"
+msgstr "كل الحزم "
+
+#: ../packagemanager.py:1175
+msgid "Installed Packages"
+msgstr "الحزم المنصبة "
+
+#: ../packagemanager.py:1179
+msgid "Non-installed Packages"
+msgstr "حزم غير منصبة "
+
+#: ../packagemanager.py:1182
+msgid "Selected Packages"
+msgstr "الحزم المختارة "
+
+#: ../packagemanager.py:1297
+msgid "The search failed with unexpected results:\n"
+msgstr "فشل البحث ونتيجة غير متوقعة : \n"
+
+#: ../packagemanager.py:1316
+msgid "Error occured while getting search results\n"
+msgstr "خطأ حدث عند الحصول على نتائج البحث \n"
+
+#. This can happen if load_catalogs has not been run
+#: ../packagemanager.py:1371
+msgid ""
+"Unable to get status for search results.\n"
+"The catalogs have not been loaded.\n"
+"Please try after few seconds.\n"
+msgstr ""
+       "لايمكن من الحصول على حالة نتائج البحث \n"
+       "الكاتالوجات لم تحمل \n"
+       "الرجاء المحاولة بعد عدة ثواني \n"
+
+#: ../packagemanager.py:1470
+msgid "Fetching legal information..."
+msgstr "جلب معلومات شرعية ...."
+
+#. Checking for Add... is fine enough, as the repository
+#. name cannot contain "..." in the name.
+#: ../packagemanager.py:1821 ../packagemanager.py:1841
+#: ../packagemanager.py:2079
+msgid "Add..."
+msgstr "أضف...."
+
+#: ../packagemanager.py:2002
+msgid "Refreshing catalogs"
+msgstr "إعادة تحديث الكاتالوج "
+
+#: ../packagemanager.py:2003
+msgid "Refreshing catalogs..."
+msgstr "إعادة تحديث الكاتالوج ...."
+
+#: ../packagemanager.py:2147
+msgid "Selected for Removal:"
+msgstr "مختار من أجل إزالة :"
+
+#: ../packagemanager.py:2155
+msgid "Selected for Install/Update:"
+msgstr "إختر للتنصيب\الترقية : "
+
+#: ../packagemanager.py:2159 ../packagemanager.py:2164
+msgid "Select packages by marking checkbox\n"
+msgstr "إختر الحزم بوضع إشارة ضمن المربع "
+
+#: ../packagemanager.py:2211
+msgid "Package Name"
+msgstr "إسم الحزمة "
+
+#: ../packagemanager.py:2230
+msgid "Fetching description..."
+msgstr "جلب التفاصيل ...."
+
+#: ../packagemanager.py:2234
+msgid "Fetching information..."
+msgstr "جلب المعلومات ...."
+
+#: ../packagemanager.py:2273
+msgid ""
+"\n"
+"This might be caused by network problem while accessing the repository."
+msgstr ""
+       "\n"
+       "هذه ممكن أن تكون بسبب مشكلة ضمن الشبكة عند الدخول الى المستودع "
+
+#: ../packagemanager.py:2276
+msgid "Description not available for this package..."
+msgstr "التفاصيل غير متوفرة لهذه الحزمة ...."
+
+#: ../packagemanager.py:2279
+msgid "Files Details not available for this package..."
+msgstr "تفاصيل الملف غير متوفرة لهذه الحزمة ...."
+
+#: ../packagemanager.py:2282
+msgid "Dependencies info not available for this package..."
+msgstr "معلومات التبعية غير متوفرة لهذه الحزمة ...."
+
+#: ../packagemanager.py:2285
+msgid "Information not available for this package..."
+msgstr "المعلومات غير متوفرة لهذه الحزمة ...."
+
+#: ../packagemanager.py:2303
+#, python-format
+msgid "Root: %s\n"
+msgstr "Root: %s\n"
+
+#: ../packagemanager.py:2304
+msgid "Dependencies:\n"
+msgstr "التبعيات:\n"
+
+#: ../packagemanager.py:2319
+msgid "Summary:\t\t"
+msgstr "ملخص :\t\t"
+
+#: ../packagemanager.py:2320
+msgid "Size:\t\t\t"
+msgstr "حجم:\t\t\t"
+
+#: ../packagemanager.py:2321
+msgid "Category:\t\t"
+msgstr "فئة:\t\t"
+
+#: ../packagemanager.py:2322
+msgid "Installed Version:\t"
+msgstr "الإصدار المنصب:\t"
+
+#: ../packagemanager.py:2324
+msgid "Packaging Date:\t"
+msgstr "تاريخ الحزمة :\t"
+
+#: ../packagemanager.py:2325
+msgid "FMRI:\t\t\t"
+msgstr "FMRI:\t\t\t"
+
+#: ../packagemanager.py:2330 ../packagemanager.py:2338 ../updatemanager.py:769
+#: ../updatemanager.py:784
+msgid "None"
+msgstr "لا شئ"
+
+#: ../packagemanager.py:2362
+msgid "Not available"
+msgstr "غير متوفر "
+
+#: ../packagemanager.py:2714
+msgid ""
+"Network problem.\n"
+"\n"
+msgstr ""
+       "مشكلة شبكة.\n"
+       "\n"
+
+#: ../packagemanager.py:2715
+msgid "Details:\n"
+msgstr "تفاضيل :\n"
+
+#: ../packagemanager.py:2717
+msgid " catalogs successfully updated:\n"
+msgstr " نجاح ترقية الكاتالوجات :\n"
+
+#: ../packagemanager.py:2740
+msgid "Unknown error"
+msgstr "خطأ غير معروف"
+
+#. Can't happen when all_known is true and no args,
+#. but here for completeness.
+#: ../packagemanager.py:2783
+msgid ""
+"Selected repository does not contain any packages.\n"
+"Please reload the list of package."
+msgstr ""
+       "المستودع المختار لا يحوي على أي حزم \n"
+       "الرجاء اعد تحميل قائمة الحزم "
+
+#: ../packagemanager.py:3024
+#, python-format
+msgid "Processing package entries: %d of %d"
+msgstr "معالجة مدخلات الحزم : %d of %d"
+
+#: ../packagemanager.py:3127
+msgid "Loading Repository Information"
+msgstr "تحميل معلومات المستودع"
+
+#: ../packagemanager.py:3129
+msgid "Fetching package entries ..."
+msgstr "جلب مدخلات الحزم ...."
+
+#: ../packagemanager.py:3242
+msgid "Searching..."
+msgstr "بحث ...."
+
+#: ../packagemanager.py:3253
+#, python-format
+msgid "%s: first %d found"
+msgstr "%s: الأول %d وجد"
+
+#: ../packagemanager.py:3255
+#, python-format
+msgid "%s: %d found"
+msgstr "%s: %d وجد"
+
+#: ../packagemanager.py:3274
+#, python-format
+msgid "%d listed"
+msgstr "%d مسجل "
+
+#: ../packagemanager.py:3275
+#, python-format
+msgid "%d selected"
+msgstr "%d مختار"
+
+#: ../packagemanager.py:3276
+#, python-format
+msgid "%d installed"
+msgstr "%d منصب "
+
+#: ../packagemanager.py:3277
+#, python-format
+msgid "%s: %s , %s, %s."
+msgstr "%s: %s , %s, %s."
+
+#: ../packagemanager.py:3349
+msgid ""
+"The Update All action is now complete and Package Manager will close.\n"
+"\n"
+"Review the posted release notes before rebooting your system:\n"
+"\n"
+"http://opensolaris.org/os/project/indiana/resources/relnotes/200811/x86/"
+msgstr ""
+       "عملية ترقية الكل إكتملت ومدير الحزم سوف يغلق \n"
+       "\n"
+       "أعرض ملاحظات الإصدار قبل إعادة تشغي النظام : \n"
+       "\n"
+
+#: ../packagemanager.py:3365
+msgid "Save selected..."
+msgstr "حفظ المختار ...."
+
+#: ../packagemanager.py:3366
+msgid "Save selected packages..."
+msgstr "حفظ الحزم المختارة ...."
+
+#: ../packagemanager.py:3409 ../packagemanager.py:3413
+#: ../packagemanager.py:3417 ../packagemanager.py:3434
+#: ../packagemanager.py:3450
+msgid "Graphics"
+msgstr "رسوميات "
+
+#: ../packagemanager.py:3431 ../packagemanager.py:3433
+#: ../packagemanager.py:3435 ../packagemanager.py:3437
+#: ../packagemanager.py:3439 ../packagemanager.py:3441
+#: ../packagemanager.py:3443 ../packagemanager.py:3445
+#: ../packagemanager.py:3447
+msgid "Applications Desktop"
+msgstr "تطبيقات الكمبيوتر "
+
+#: ../packagemanager.py:3440
+msgid "Sound & Video"
+msgstr "صوت و فيديو "
+
+#: ../packagemanager.py:3442
+msgid "System Tools"
+msgstr "أدوات النظام "
+
+#. Can be twice :)
+#: ../packagemanager.py:3446 ../packagemanager.py:3455
+msgid "Developer Tools"
+msgstr "أدوات التطوير "
+
+#: ../packagemanager.py:3449 ../packagemanager.py:3451
+#: ../packagemanager.py:3453 ../packagemanager.py:3456
+msgid "Operating System"
+msgstr "نظام التشغيل "
+
+#: ../packagemanager.py:3459
+msgid "Office2"
+msgstr "Office2"
+
+#: ../publish.py:78
+msgid ""
+"Usage:\n"
+"        pkgsend [options] command [cmd_options] [operands]\n"
+"\n"
+"Packager subcommands:\n"
+"        pkgsend create-repository\n"
+"        pkgsend open [-en] pkg_fmri\n"
+"        pkgsend add action arguments\n"
+"        pkgsend import [-T file_pattern] bundlefile ...\n"
+"        pkgsend include [-d basedir] manifest ...\n"
+"        pkgsend close [-A]\n"
+"\n"
+"        pkgsend rename src_fmri dest_fmri\n"
+"\n"
+"Options:\n"
+"        -s repo_uri     target repository URI\n"
+"        --help or -?    display usage message\n"
+"\n"
+"Environment:\n"
+"        PKG_REPO"
+msgstr ""
+       "Usage:\n"
+       "        pkgsend [options] command [cmd_options] [operands]\n"
+       "\n"
+       "Packager subcommands:\n"
+       "        pkgsend create-repository\n"
+       "        pkgsend open [-en] pkg_fmri\n"
+       "        pkgsend add action arguments\n"
+       "        pkgsend import [-T file_pattern] bundlefile ...\n"
+       "        pkgsend include [-d basedir] manifest ...\n"
+       "        pkgsend close [-A]\n"
+       "\n"
+       "        pkgsend rename src_fmri dest_fmri\n"
+       "\n"
+       "Options:\n"
+       "        -s repo_uri     target repository URI\n"
+       "        --help or -?    display usage message\n"
+       "\n"
+       "Environment:\n"
+       "        PKG_REPO"
+
+#: ../publish.py:104
+msgid "command does not take operands"
+msgstr "الأمر لم يأخذ عملية حسابية "
+
+#: ../publish.py:128
+msgid "only -e or -n may be specified"
+msgstr "فقط -e or -n يمكن تعينهم "
+
+#: ../publish.py:131
+msgid "open requires one package name"
+msgstr "فتح المتطلبات إسم حزمة واحدة "
+
+#: ../publish.py:157
+msgid "No transaction ID specified using -t or in $PKG_TRANS_ID."
+msgstr "ولا أجراء ID يعين -t or in $PKG_TRANS_ID."
+
+#: ../publish.py:171 ../publish.py:222 ../publish.py:274
+msgid "No transaction ID specified in $PKG_TRANS_ID"
+msgstr "ولا أجراء ID يعين $PKG_TRANS_ID"
+
+#: ../publish.py:175 ../publish.py:204 ../publish.py:226 ../publish.py:286
+msgid "No arguments specified for subcommand."
+msgstr "ولا براهين تعين للأوامر الداخلية "
+
+#: ../publish.py:178
+msgid "A filename must be provided for this action."
+msgstr "إسم الملف يجب يتوفر لهذا التنفيذ"
+
+#: ../publish.py:326
+#, python-format
+msgid "pkgsend: illegal global option -- %s"
+msgstr "pkgsend: خيار عام غير شرعي  -- %s"
+
+#: ../pull.py:52
+msgid ""
+"Usage:\n"
+"        pkgrecv -s server [-d dir] pkgfmri ...\n"
+"        pkgrecv -s server -n"
+msgstr ""
+       "Usage:\n"
+       "        pkgrecv -s server [-d dir] pkgfmri ...\n"
+       "        pkgrecv -s server -n"
+
+#: ../pull.py:75
+#, python-format
+msgid "Unable to open manifest: %s"
+msgstr "لايمكن فتح بشكل واضح : %s"
+
+#: ../pull.py:111
+#, python-format
+msgid "Unable to download files from: %s"
+msgstr "لايمكن تحميل الملف من : %s"
+
+#: ../pull.py:120 ../pull.py:165
+#, python-format
+msgid "Unable to create directory: %s"
+msgstr "لايمكن إنشاء المجلد : %s"
+
+#: ../pull.py:138
+#, python-format
+msgid "Unable to extract file: %s"
+msgstr "لا يمكن فك ضغط الملف : %s"
+
+#: ../pull.py:153
+#, python-format
+msgid "Unable to download manifest %s from %s"
+msgstr "لا يمكن تحميل بشكل ظاهر %s من %s"
+
+#: ../pull.py:173
+#, python-format
+msgid "Unable to open file: %s"
+msgstr "لا يستطيع فتح الملف : %s"
+
+#: ../pull.py:180
+#, python-format
+msgid "Error occurred while reading from: %s"
+msgstr "خطأ حدث أثناء القراءة من : %s"
+
+#: ../pull.py:186
+#, python-format
+msgid "Error occurred while writing to: %s"
+msgstr "خطأ حدث أثناء الكتابة الى : %s"
+
+#: ../pull.py:225
+#, python-format
+msgid "Unable to download catalog from: %s"
+msgstr "لايمكن تحميل الكاتالوج من : %s"
+
+#: ../pull.py:235
+#, python-format
+msgid "Error while reading from: %s"
+msgstr "خطأ حدث خلال القراءة من : %s"
+
+#: ../pull.py:262
+#, python-format
+msgid "Illegal option -- %s"
+msgstr "خيار غير شرعي : %s"
+
+#: ../pull.py:275
+msgid "must specify a server"
+msgstr "يجب تعين مخدم "
+
+#: ../pull.py:282
+msgid "-n takes no options"
+msgstr "-n لا تأخذ أي خيار "
+
+#: ../pull.py:290
+msgid "must specify at least one pkgfmri"
+msgstr "يجب عليك على الأقل إختيار واحد pkgfmri "
+
+#: ../pull.py:302
+#, python-format
+msgid "%(fmri)s is an illegal fmri: %(error)s"
+msgstr "%(fmri)s غير شرعي fmri: %(error)s"
+
+#: ../pull.py:315
+msgid "No files to retrieve."
+msgstr "لاتوجد ملفات للإستلام "
+
+#: ../um/data/updatemanager-preferences.schemas.in.h:1
+msgid ""
+"A text message describing the updates is displayed near the panel's "
+"Notification Area when updates become available if set to true."
+msgstr ""
+       "الرسالة النصية تشرح الترقية التي تظهر بجانب لوحة منطقة التنبيه "
+       "عندما الترقية تصبح متاحة وتعين لتكون بإشارة صحيحة "
+
+#: ../um/data/updatemanager-preferences.schemas.in.h:2
+msgid "How often to check for updates"
+msgstr "كيف بالغالب تتحقق من الترقيات "
+
+#: ../um/data/updatemanager-preferences.schemas.in.h:3
+msgid ""
+"How often to check for updates. The valid values are Daily, Weekly, Monthly, "
+"Never"
+msgstr ""
+       "كيف بالغالب تتحقق من الترقيات . القيمة الصالحة يومي , شهري ,أبدأ"
+
+#: ../um/data/updatemanager-preferences.schemas.in.h:4
+msgid "Start delay"
+msgstr "بداية تأخير "
+
+#: ../um/data/updatemanager-preferences.schemas.in.h:5
+msgid "The notify icon is displayed on startup if set to true."
+msgstr "أيقونة التنبيه تظهر عند الإقلاع وتعين لتوكن بإشارة صحيحة"
+
+#: ../um/data/updatemanager-preferences.schemas.in.h:6
+msgid ""
+"The time, in seconds, that the updatemanagernotifier should wait, after "
+"starting, before checking for updates."
+msgstr ""
+       "التوقيت , ثواني ,updatemanagernotifier يجب أن ينتظر , بعد الإقلاع , قبل التحقق من الترقية "
+
+#: ../um/data/updatemanager-preferences.schemas.in.h:7
+msgid ""
+"The updatemanagernotifier program terminates after the user activates the "
+"icon in the notification area if set to true."
+msgstr ""
+       "برنامج updatemanagernotifier يوقف عن العمل بعد تفعيل المستخدم لأيقونة التنبيه التي تعين لتكون بإشاءة صحيحة"
+
+#: ../um/data/updatemanager-preferences.schemas.in.h:8
+msgid "Whether to always display the icon on startup"
+msgstr "على كل حال لإظهار الأيقونة عند الإقلاع "
+
+#: ../um/data/updatemanager-preferences.schemas.in.h:9
+msgid "Whether to display text message when updates are available"
+msgstr "على كل حال الرسالة النصية تظهر عند توفر الترقية "
+
+#: ../um/data/updatemanager-preferences.schemas.in.h:10
+msgid "Whether to terminate updatemanagernotiifer after icon activation."
+msgstr "على كل حال يتوقف عمل برنامج updatemanagernotiifer بعد أن تصبح الأيقونة فعالة "
 
 #: ../um/data/updatemanager.desktop.in.h:1
 msgid "Install available updates"
 msgstr "نصّب التطويرات المتوفرة"
 
-#: ../um/data/updatemanager.desktop.in.h:2 ../um/data/updatemanager.glade.h:18
-#: ../updatemanagernotifier.py:298
+#: ../um/data/updatemanager.desktop.in.h:2 ../um/data/updatemanager.glade.h:10
+#: ../updatemanager.py:952 ../updatemanagernotifier.py:350
 msgid "Update Manager"
 msgstr "مدير التطوير"
+
+#: ../um/data/updatemanager.glade.h:1
+msgid "<b>Evaluate</b>"
+msgstr "<b>التقييم</b>"
+
+#: ../um/data/updatemanager.glade.h:2
+msgid "<b>Latest Version _Details</b>"
+msgstr "<b>أخر تفاصيل_ الإصدارات </b>"
+
+#: ../um/data/updatemanager.glade.h:3
+msgid "<b>_Details</b>"
+msgstr "<b>_تفاصيل </b>"
+
+#: ../um/data/updatemanager.glade.h:5
+msgid "Close dialog when _finished"
+msgstr "أغلق المربع عند _الإنتهاء "
+
+#: ../um/data/updatemanager.glade.h:7 ../updatemanager.py:206
+#: ../updatemanager.py:399 ../updatemanager.py:406 ../updatemanager.py:413
+#: ../updatemanager.py:420 ../updatemanager.py:427
+msgid "Index"
+msgstr "فهرسة "
+
+#: ../um/data/updatemanager.glade.h:8
+msgid "Install Update"
+msgstr "تنصيب الترقية "
+
+#: ../um/data/updatemanager.glade.h:11 ../updatemanager.py:564
+msgid ""
+"Updates are available for the following packages.\n"
+"Select the packages you want to update and click Install."
+msgstr ""
+       "الترقية متوفرة للحزم التالية \n"
+       "أختر الحزم المراد للترقية ثم إضغط على تنصيب "
+
+#: ../um/data/updatemanager.glade.h:13
+msgid "_Cancel"
+msgstr "_إلغاء"
+
+#: ../um/data/updatemanager.glade.h:14
+msgid "_Install Updates"
+msgstr "_تنصيب الترقية "
+
+#: ../um/data/updatemanager.glade.h:15
+msgid "_OK"
+msgstr "_موافق"
+
+#: ../um/data/updatemanager.glade.h:16
+msgid "_Select all Updates"
+msgstr "_إختر ترقية الكل "
 
 #: ../um/data/updatemanagernotifier.desktop.in.h:1
 msgid "Notify user when updates are available"
@@ -47,3 +3728,378 @@ msgstr "أبلغ المستخدم عند توفر التطويرات"
 #: ../um/data/updatemanagernotifier.desktop.in.h:2
 msgid "Update Manager Notifier"
 msgstr "مبلّغ مدير التطويرات"
+
+#: ../updatemanager.py:122
+#, python-format
+msgid "Fetching catalog: '%s' ..."
+msgstr "جلب الكاتالوج: '%s' ...."
+
+#: ../updatemanager.py:126
+msgid "Fetching catalog"
+msgstr "جلب الكاتالوج"
+
+#: ../updatemanager.py:129
+msgid "Creating Plan ... "
+msgstr "إنشاء الخطة .... "
+
+#: ../updatemanager.py:140
+msgid "Creating Plan"
+msgstr "إنشاء الخطة"
+
+#: ../updatemanager.py:151
+#, python-format
+msgid "Verifying: %s ..."
+msgstr "تحقق : %s ...."
+
+#: ../updatemanager.py:158
+msgid "Verifying"
+msgstr "تحقق "
+
+#: ../updatemanager.py:172
+msgid "Completed"
+msgstr "إكمال "
+
+#: ../updatemanager.py:357
+#, python-format
+msgid "GUI will not respond to any event! %s. Check updatemanager.py signals"
+msgstr "GUI لاتوجد إستجابة لأي من الأحداث !%s تحقق من updatemanager.py إشارة"
+
+#: ../updatemanager.py:396 ../updatemanager.py:403 ../updatemanager.py:410
+#: ../updatemanager.py:417 ../updatemanager.py:424
+msgid "Evaluate"
+msgstr "التقييم "
+
+#: ../updatemanager.py:432
+msgid "Evaluate - canceling..."
+msgstr "التقييم - إلغاء ...."
+
+#: ../updatemanager.py:436
+msgid "Download - canceling..."
+msgstr "التحميل - إلغاء ...."
+
+#: ../updatemanager.py:441
+msgid "Evaluate - failed"
+msgstr "التقييم - فشل "
+
+#: ../updatemanager.py:445
+msgid "Download - failed"
+msgstr "التحميل - فشل "
+
+#: ../updatemanager.py:449
+msgid "Install - failed"
+msgstr "التنصيب - فشل "
+
+#: ../updatemanager.py:453
+msgid "Index - failed"
+msgstr "الفهرسة - فشل "
+
+#: ../updatemanager.py:571
+msgid ""
+"Updates are available for the following packages.\n"
+"Click Update All to create a new boot environment and install all packages "
+"into it."
+msgstr ""
+       "الترقية متوفرة للحزم التالية \n"
+       "إضغط على ترقية الكل لإنشاء بيئة إقلاع جديدة وتنصيب كل الحزم بداخله ."
+
+#: ../updatemanager.py:599
+msgid "Latest Version"
+msgstr "أخر إصدار "
+
+#: ../updatemanager.py:608
+msgid "Size (Meg)"
+msgstr "الحجم (Meg)"
+
+#: ../updatemanager.py:690
+#, python-format
+msgid "count: %d"
+msgstr "عدد : %d"
+
+#: ../updatemanager.py:715 ../updatemanager.py:725
+msgid "Error\n"
+msgstr "خطأ \n"
+
+#: ../updatemanager.py:718
+#, python-format
+msgid "'%s' is not an install image\n"
+msgstr "'%s'الصورة لم تنصب \n"
+
+#: ../updatemanager.py:728
+#, python-format
+msgid "Version mismatch: expected %s received %s\n"
+msgstr "الإصدار غير متاوفق : متوقع %s إستلام %s\n"
+
+#: ../updatemanager.py:733
+msgid "<b>No Updates available.</b>"
+msgstr "<b>لاتوجد ترقية متوفرة .</b>"
+
+#: ../updatemanager.py:789
+#, python-format
+msgid ""
+"\n"
+"Summary:\t\t\t%s\n"
+"Size:       \t\t\t%s\n"
+"Category:\t\t\t%s\n"
+"Latest Version:\t\t%s\n"
+"Installed Version:\t%s\n"
+"Packaging Date:\t%s\n"
+"FMRI:       \t\t\t%s\n"
+msgstr ""
+       "\n"
+       "ملخص:\t\t\t%s\n"
+       "حجم:       \t\t\t%s\n"
+       "فئة:\t\t\t%s\n"
+       "أخر إصدار:\t\t%s\n"
+       "الإصدار المنصب:\t%s\n"
+       "تاريخ الحزم :\t%s\n"
+       "FMRI:       \t\t\t%s\n"
+
+#: ../updatemanager.py:818 ../updatemanagernotifier.py:309
+#, python-format
+msgid "%s is not valid image, trying root image"
+msgstr "%s ليست صورة صحيحة للنظام ,حاول بصورة حاصة بالroot"
+
+#: ../updatemanager.py:828 ../updatemanagernotifier.py:319
+#, python-format
+msgid "%s is not valid root image, return None"
+msgstr "%s ليست صورة صحيحة للroot , المقابل لا شي "
+
+#: ../updatemanager.py:866
+#, python-format
+msgid ""
+"\n"
+"Fetching details for %s ..."
+msgstr ""
+       "\n"
+       "جلب تفاضيل من أجل  %s ...."
+
+#: ../updatemanager.py:890
+msgid ""
+"\n"
+"No details available"
+msgstr ""
+       "\n"
+       "لاتوجد تفاصيل متوفرة "
+
+#: ../updatemanager.py:931
+msgid ""
+"\n"
+"Canceling update, please wait ..."
+msgstr ""
+       "\n"
+       "إلغاء الترقية , الرجاء الإنتظار ...."
+
+#: ../updatemanager.py:936
+msgid ""
+"\n"
+"Unable to cancel at this time."
+msgstr ""
+       "\n"
+       "لايمكن الإلغاء الأن "
+
+#: ../updatemanager.py:939
+msgid "Installing Updates"
+msgstr "تنصيب الترقية "
+
+#: ../updatemanager.py:962
+msgid "ERROR"
+msgstr "خطأ "
+
+#: ../updatemanager.py:964
+msgid "Following Incorporated package(s) cannot be updated:"
+msgstr "الحزم المدرجة التالية (s) لايمكن ترقيتها :"
+
+#: ../updatemanager.py:968
+msgid "Update using: Update All\n"
+msgstr "الترقية بإستخدام : ترقية الكل \n"
+
+#: ../updatemanager.py:985 ../updatemanager.py:1115 ../updatemanager.py:1150
+msgid ""
+"\n"
+"ERROR"
+msgstr ""
+       "\n"
+       "خطأ "
+
+#: ../updatemanager.py:988
+#, python-format
+msgid ""
+"%s\n"
+"%s"
+msgstr ""
+       "%s\n"
+       "%s"
+
+#: ../updatemanager.py:1000
+#, python-format
+msgid ""
+"\n"
+"Update All finished successfully in %1.f mins\n"
+"\n"
+msgstr ""
+       "\n"
+       "ترقية الكل تمت بنجاح ب  %1.f mins\n"
+       "\n"
+
+#: ../updatemanager.py:1005
+msgid ""
+"\n"
+"Update All finished successfully in < 1 min\n"
+"\n"
+msgstr ""
+       "\n"
+       "ترقية الكل تمت بنجاح ب < 1 min\n"
+       "\n"
+
+#: ../updatemanager.py:1008
+msgid ""
+"Review the posted release notes before rebooting your system:\n"
+"\n"
+"http://opensolaris.org/os/project/indiana/resources/relnotes/200811/x86/"
+msgstr ""
+       "عرض ملاحظات الإصدار قبل إعادة تشغيل النظام:\n"
+       "\n"
+       "http://opensolaris.org/os/project/indiana/resources/relnotes/200811/x86/"
+
+#: ../updatemanager.py:1017
+msgid "Update All Completed"
+msgstr "إنتهاء ترقية الكل "
+
+#: ../updatemanager.py:1034
+msgid "Nothing selected to update."
+msgstr "لا إختيار للترقية "
+
+#: ../updatemanager.py:1041
+msgid "Updating ..."
+msgstr "الترقية ...."
+
+#: ../updatemanager.py:1047
+msgid ""
+"\n"
+"Evaluate\n"
+msgstr ""
+       "\n"
+       "التقييم\n"
+
+#: ../updatemanager.py:1053
+msgid "Update error in plan install:"
+msgstr "خطا الترقية بخطة التنصيب : "
+
+#: ../updatemanager.py:1063
+msgid "Update unexpected API error:"
+msgstr "ترقية خطأ الغير متوقع API"
+
+#: ../updatemanager.py:1068
+msgid "Update unexpected error:"
+msgstr "ترقية خطأ غير متوقع "
+
+#: ../updatemanager.py:1091
+msgid "Packages to be installed:"
+msgstr "الحزم للتنصيب "
+
+#: ../updatemanager.py:1095
+msgid "Update"
+msgstr "ترقية "
+
+#: ../updatemanager.py:1096
+msgid "Update finished successfully."
+msgstr "إنتهاء عملية الترقية بنجاح "
+
+#: ../updatemanager.py:1117
+#, python-format
+msgid ""
+"%s Download failed:\n"
+"%s"
+msgstr ""
+       "%s فشل التحميل:\n"
+       "%s"
+
+#: ../updatemanager.py:1124 ../updatemanager.py:1159
+#, python-format
+msgid "%s exceded available disc space"
+msgstr "%s تجاوز مساحة القرص المتوفرة "
+
+#: ../updatemanager.py:1129 ../updatemanager.py:1134 ../updatemanager.py:1164
+#: ../updatemanager.py:1169
+#, python-format
+msgid "%s unexpected error:"
+msgstr "%s خطأ غير متوقع :"
+
+#: ../updatemanager.py:1152
+#, python-format
+msgid ""
+"%s Execute plan failed:\n"
+"%s"
+msgstr ""
+       "%s فشل خطة التنفيذ:\n"
+       "%s"
+
+#: ../updatemanager.py:1186
+msgid ""
+"Not enough disc space, the Update All action cannot be performed.\n"
+"\n"
+"Click OK to manage your existing BEs and free up disk space or Cancel to "
+"cancel Update All."
+msgstr ""
+       "لاتوجد مساحة كافية على القرص إن عملية الترقية الكل لن تنفذ \n"
+       "\n"
+       "إضغط على موافق لإدارة BEs الموجودة  ولتوفير مساحة على القرص أو إلغاء لإلغاء عملية الترقية للكل "
+
+#: ../updatemanager.py:1190
+msgid "Not Enough Disc Space"
+msgstr "لاتوجد مساحة كافية على القرص "
+
+#: ../updatemanager.py:1358
+msgid ""
+"\n"
+"Download\n"
+msgstr ""
+       "\n "
+       "تحميل\n"
+
+#: ../updatemanager.py:1365
+#, python-format
+msgid "\tpkg %d/%d: \tfiles %d/%d \txfer %.2f/%.2f(meg)"
+msgstr "\tpkg %d/%d: \tfiles %d/%d \txfer %.2f/%.2f(meg)"
+
+#: ../updatemanager.py:1382
+msgid ""
+"\n"
+"Install\n"
+msgstr ""
+       "\n"
+       "تنصيب\n"
+
+#: ../updatemanager.py:1384 ../updatemanager.py:1388
+#, python-format
+msgid "\t%s\t%d/%d actions"
+msgstr "\t%s\t%d/%d تنفيذ"
+
+#: ../updatemanager.py:1406
+msgid "Index\n"
+msgstr "فهرس \n"
+
+#: ../updatemanager.py:1407 ../updatemanager.py:1411
+#, python-format
+msgid "\t%-25s\t%d/%d actions"
+msgstr "\t%-25s\t%d/%d تنفيذ"
+
+#: ../updatemanager.py:1493
+msgid "Checking for new software"
+msgstr "التحقق من البرامج الجديدة "
+
+#: ../updatemanagernotifier.py:329
+msgid "Updates are available"
+msgstr "الترقية متوفرة "
+
+#: ../updatemanagernotifier.py:351
+msgid ""
+"Updates available\n"
+"Please click on icon to update."
+msgstr ""
+       "الترقية متوفرة \n"
+       "الرجاء إضغط على أيقونة الترقية "
+
+#: ../updatemanagernotifier.py:426
+msgid "Another instance of UpdateManagerNotify is running"
+msgstr "نسخة إضافية من برنامج UpdateManagerNotify تعمل "

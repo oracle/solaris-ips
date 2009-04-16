@@ -86,6 +86,9 @@ f none usr/share/locale/he/LC_MESSAGES/pkg.mo 444 root other
 d none usr/share/locale/hu 755 root other
 d none usr/share/locale/hu/LC_MESSAGES 755 root other
 f none usr/share/locale/hu/LC_MESSAGES/pkg.mo 444 root other
+d none usr/share/locale/id 755 root other
+d none usr/share/locale/id/LC_MESSAGES 755 root other
+f none usr/share/locale/id/LC_MESSAGES/pkg.mo 444 root other
 d none usr/share/locale/it 755 root other
 d none usr/share/locale/it/LC_MESSAGES 755 root other
 f none usr/share/locale/it/LC_MESSAGES/pkg.mo 444 root other
@@ -95,6 +98,12 @@ f none usr/share/locale/ja/LC_MESSAGES/pkg.mo 444 root other
 d none usr/share/locale/ko 755 root other
 d none usr/share/locale/ko/LC_MESSAGES 755 root other
 f none usr/share/locale/ko/LC_MESSAGES/pkg.mo 444 root other
+d none usr/share/locale/nl 755 root other
+d none usr/share/locale/nl/LC_MESSAGES 755 root other
+f none usr/share/locale/nl/LC_MESSAGES/pkg.mo 444 root other
+d none usr/share/locale/pl 755 root other
+d none usr/share/locale/pl/LC_MESSAGES 755 root other
+f none usr/share/locale/pl/LC_MESSAGES/pkg.mo 444 root other
 d none usr/share/locale/pt_BR 755 root other
 d none usr/share/locale/pt_BR/LC_MESSAGES 755 root other
 f none usr/share/locale/pt_BR/LC_MESSAGES/pkg.mo 444 root other
