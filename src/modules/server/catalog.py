@@ -70,7 +70,7 @@ class ServerCatalog(catalog.Catalog):
                 # time.
                 self.searchdb_update_handle_lock = threading.Lock()
 
-                if os.name == 'posix':
+                if os.name == "posix" and self.fork_allowed:
                         try:
                                 signal.signal(signal.SIGCHLD,
                                     self.child_handler)
