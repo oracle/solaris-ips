@@ -150,8 +150,8 @@ def fetch_manifest(server_url, fmri, basedir):
                 m, v = versioned_urlopen(server_url, "manifest", [0],
                     fmri.get_url_path())
         except:
-                error(_("Unable to download manifest %s from %s") %
-                    (fmri.get_url_path(), server_url))
+                error(_("Unable to download manifest %(name)s from %(url)s") %
+                    { "name": fmri.get_url_path(), "url": server_url} )
                 sys.exit(1)
 
         # join pkgname onto basedir.  Manifest goes here

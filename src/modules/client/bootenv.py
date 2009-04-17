@@ -246,12 +246,14 @@ class BootEnv(object):
                                     stdout = file("/dev/null"),
                                     stderr = subprocess.STDOUT)
                         except OSError, e:
-                                emsg(_("pkg: A system error %s was caught "
-                                    "executing %s") % (e, " ".join(cmd)))
+                                emsg(_("pkg: A system error %(e)s was caught "
+                                    "executing %(cmd)s") %
+                                    { "e": e, "cmd": " ".join(cmd) })
 
                         if ret != 0:
-                                emsg(_("pkg: '%s' failed. \nwith a return code "
-                                    "of %d.") % (" ".join(cmd), ret))
+                                emsg(_("pkg: '%(cmd)s' failed. \nwith a "
+                                    "return code of %(ret)d.") %
+                                    { "cmd": " ".join(cmd), "ret": ret })
                                 return
 
                 def activate_live_be(cmd):
@@ -388,16 +390,21 @@ Reboot when ready to switch to this updated BE.
                                         return
 
                         if be.beMount(self.be_name_clone, self.clone_dir) != 0:
-                                emsg(_("pkg: unable to mount BE %s on %s") % \
-                                    (self.be_name_clone, self.clone_dir))
+                                emsg(_("pkg: unable to mount BE %(name)s "
+                                    "on %(clone_dir)s") %
+                                    { "name": self.be_name_clone,
+                                      "clone_dir": self.clone_dir })
                                 return
 
-                        emsg(_("The Boot Environment %s failed to be updated. "
-                            "A snapshot was taken before the failed attempt "
-                            "and is mounted here %s. Use 'beadm unmount %s' "
-                            "and then 'beadm activate %s' if you wish to boot "
-                            "to this BE.") % (self.be_name, self.clone_dir,
-                            self.be_name_clone, self.be_name_clone))
+                        emsg(_("The Boot Environment %(name)s failed to be "
+                            "updated. A snapshot was taken before the failed "
+                            "attempt and is mounted here %(clone_dir)s. Use "
+                            "'beadm unmount %(clone_name)s' and then 'beadm "
+                            "activate %(clone_name)s' if you wish to boot "
+                            "to this BE.") %
+                            { "name": self.be_name,
+                              "clone_dir": self.clone_dir,
+                              "clone_name": self.be_name_clone })
                 else:
                         if be.beRollback(self.be_name, self.snapshot_name) != 0:
                                 emsg("pkg: unable to rollback BE %s" % \

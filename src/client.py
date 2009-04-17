@@ -349,7 +349,9 @@ def list_inventory(img, args):
                 else:
                         state = image.PKG_STATE_INSTALLED
                 for pat in e.notfound:
-                        error(_("no packages matching '%s' %s") % (pat, state))
+                        error(_("no packages matching "
+                            "'%(pattern)s' %(state)s") %
+                            { "pattern": pat, "state": state })
                 img.history.operation_result = history.RESULT_NOTHING_TO_DO
                 return 1
 
@@ -1791,10 +1793,11 @@ def publisher_set(img_dir, args):
                 error(_(text) % pub)
                 return 1
         except api_errors.InvalidDepotResponseException, e:
-                error(_("The origin URIs for '%s' do not appear to point to a "
-                    "valid pkg server.\nPlease check the server's address and "
-                    "client's network configuration."
-                    "\nAdditional details:\n\n%s" % (pub.prefix, e)))
+                error(_("The origin URIs for '%(pubname)s' do not appear to "
+                    "point to a valid pkg server.\nPlease check the server's "
+                    "address and client's network configuration."
+                    "\nAdditional details:\n\n%(details)s") %
+                    { "pubname": pub.prefix, "details": e })
                 return 1
         except api_errors.PermissionsException, e:
                 # Prepend a newline because otherwise the exception will
@@ -2218,8 +2221,8 @@ def image_create(img, args):
         except OSError, e:
                 # Ensure messages are displayed after the spinner.
                 emsg("\n")
-                error(_("cannot create image at %s: %s") % \
-                    (image_dir, e.args[1]))
+                error(_("cannot create image at %(image_dir)s: %(reason)s") %
+                    { "image_dir": image_dir, "reason": e.args[1] })
                 return 1
         except api_errors.PermissionsException, e:
                 # Ensure messages are displayed after the spinner.
@@ -2229,10 +2232,11 @@ def image_create(img, args):
         except api_errors.InvalidDepotResponseException, e:
                 # Ensure messages are displayed after the spinner.
                 emsg("\n")
-                error(_("The URI '%s' does not appear to point to a "
+                error(_("The URI '%(pub_url)s' does not appear to point to a "
                     "valid pkg server.\nPlease check the server's "
                     "address and client's network configuration."
-                    "\nAdditional details:\n\n%s" % (pub_url, e)))
+                    "\nAdditional details:\n\n%(error)s") %
+                    { "pub_url": pub_url, "error": e })
                 return 1
         except api_errors.CatalogRefreshException, cre:
                 # Ensure messages are displayed after the spinner.
@@ -2541,7 +2545,8 @@ def main_func():
                         usage(_("unknown subcommand '%s'") % subcommand)
 
         except getopt.GetoptError, e:
-                usage(_("illegal %s option -- %s") % (subcommand, e.opt))
+                usage(_("illegal %(cmd)s option -- %(error)s") %
+                    { "cmd": subcommand, "error": e.opt })
 
 
 #
