@@ -31,6 +31,7 @@ from itertools import groupby, chain, repeat
 from pkg.misc import EmptyI, expanddirs
 
 import pkg.actions as actions
+import pkg.portable as portable
 from pkg.actions.attribute import AttributeAction
 
 class Manifest(object):
@@ -436,15 +437,16 @@ class Manifest(object):
         def store(self, mfst_path):
                 """Store the manifest contents to disk."""
 
+                tmp_path = mfst_path + ".tmp"
                 try:
-                        mfile = file(mfst_path, "w")
+                        mfile = file(tmp_path, "w")
                 except IOError:
                         try:
                                 os.makedirs(os.path.dirname(mfst_path))
                         except OSError, e:
                                 if e.errno != errno.EEXIST:
                                         raise
-                        mfile = file(mfst_path, "w")
+                        mfile = file(tmp_path, "w")
 
                 #
                 # We specifically avoid sorting manifests before writing
@@ -453,6 +455,7 @@ class Manifest(object):
                 #
                 mfile.write(self.tostr_unsorted())
                 mfile.close()
+                portable.rename(tmp_path, mfst_path)
 
         def get_variants(self, name):
                 if name not in self.attributes:
@@ -618,7 +621,7 @@ class CachedManifest(Manifest):
                         for a in self.actions_bytype[n]:
                                 f.write("%s\n" % a)
                         f.close()
-                        os.rename(self.__file_path("manifest.%s.tmp" % n),
+                        portable.rename(self.__file_path("manifest.%s.tmp" % n),
                             self.__file_path("manifest.%s" % n))
                 # create dircache
                 f = file(self.__file_path("manifest.dircache.tmp"), "w")
@@ -628,7 +631,7 @@ class CachedManifest(Manifest):
                         f.write(s)
 
                 f.close()
-                os.rename(self.__file_path("manifest.dircache.tmp"),
+                portable.rename(self.__file_path("manifest.dircache.tmp"),
                     self.__file_path("manifest.dircache"))
 
         def __gen_dirs_to_str(self, dirs):

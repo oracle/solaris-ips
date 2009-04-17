@@ -227,10 +227,42 @@ class Catalog(object):
                 else:
                         pkgstr = "V %s\n" % pfmri.get_fmri(anarchy = True)
 
-                tmp_num, tmpfile = tempfile.mkstemp(dir=self.catalog_root)
 
                 self.catalog_lock.acquire()
-                tfile = os.fdopen(tmp_num, 'w')
+                try:
+                        self.__append_to_catalog(pkgstr)
+
+                        # Catalog size has changed, force recalculation on
+                        # next send()
+                        self.__size = -1
+
+                        self.attrs["npkgs"] += 1
+
+                        ts = datetime.datetime.now()
+                        self.set_time(ts)
+                finally:
+                        self.catalog_lock.release()
+
+                return ts
+
+        def __append_to_catalog(self, pkgstr):
+                """Write string named pkgstr to the catalog.  This
+                routine handles moving the catalog to a temporary file,
+                appending the new string, and renaming the temporary file
+                on top of the existing catalog."""
+
+                # Create tempfile
+                tmp_num, tmpfile = tempfile.mkstemp(dir=self.catalog_root)
+
+                try:
+                        # use fdopen since we already have a filehandle
+                        tfile = os.fdopen(tmp_num, "w")
+                except OSError:
+                        portable.remove(tmpfile)
+                        raise
+
+                # Try to open catalog file.  If it doesn't exist,
+                # create an empty catalog file, and then open it read only.
                 try:
                         pfile = file(self.catalog_file, "rb")
                 except IOError, e:
@@ -239,38 +271,41 @@ class Catalog(object):
                                 file(self.catalog_file, "wb").close()
                                 pfile = file(self.catalog_file, "rb")
                         else:
+                                portable.remove(tmpfile)
                                 raise
+
+                # Make sure we're at the start of the file
                 pfile.seek(0)
 
+                # Write all of the existing entries in the catalog
+                # into the tempfile.  Then append the new lines at the
+                # end.
                 try:
                         for entry in pfile:
                                 if entry == pkgstr:
-                                        self.catalog_lock.release()
                                         raise CatalogException(
-                                            "Package %s is already in the "
-                                            "catalog" % pfmri)
+                                            "Package %s is already in " 
+                                            "the catalog" % pfmri)
                                 else:
                                         tfile.write(entry)
                         tfile.write(pkgstr)
-                finally:
-                        pfile.close()
-                        tfile.close()
+                except Exception:
+                        portable.remove(tmpfile)
+                        raise
 
-                os.chmod(tmpfile, self.file_mode)
-                portable.rename(tmpfile, self.catalog_file)
+                # Close our open files
+                pfile.close()
+                tfile.close()
 
-                # Catalog size has changed, force recalculation on
-                # next send()
-                self.__size = -1
-
-                self.catalog_lock.release()
-
-                self.attrs["npkgs"] += 1
-
-                ts = datetime.datetime.now()
-                self.set_time(ts)
-
-                return ts
+                # Set the permissions on the tempfile correctly.
+                # Mkstemp creates files as 600.  Rename the new
+                # cataog on top of the old one.
+                try:
+                        os.chmod(tmpfile, self.file_mode)
+                        portable.rename(tmpfile, self.catalog_file)
+                except EnvironmentError:
+                        portable.remove(tmpfile)
+                        raise
 
         @staticmethod
         def cache_fmri(d, pfmri, pub, known=True):
@@ -746,19 +781,23 @@ class Catalog(object):
                             "Can't rename %s. Causes cycle in rename graph." \
                             % rr.srcname
 
-                pathstr = os.path.normpath(os.path.join(self.catalog_root,
-                    "catalog"))
-                pfile = file(pathstr, "a+")
-                pfile.write("%s\n" % rr)
-                pfile.close()
+                pkgstr = "%s\n" % rr
 
-                # Recalculate size on next send()
-                self.__size = -1
+                self.catalog_lock.acquire()
 
-                self.renamed.append(rr)
+                try:
+                        self.__append_to_catalog(pkgstr)
 
-                ts = datetime.datetime.now()
-                self.set_time(ts)
+                        # Recalculate size on next send()
+                        self.__size = -1
+
+                        self.renamed.append(rr)
+
+                        ts = datetime.datetime.now()
+                        self.set_time(ts)
+
+                finally:
+                        self.catalog_lock.release()
 
                 return (ts, rr)
 
@@ -838,27 +877,39 @@ class Catalog(object):
                 """Save attributes from the in-memory catalog to a file
                 specified by filenm."""
 
+                tmpfile = None
                 assert not self.read_only
 
+                finalpath = os.path.normpath(
+                    os.path.join(self.catalog_root, filenm))
+
                 try:
-                        afile = file(os.path.normpath(
-                            os.path.join(self.catalog_root, filenm)), "wb+")
-                except IOError, e:
+                        tmp_num, tmpfile = tempfile.mkstemp(
+                            dir=self.catalog_root)
+
+                        tfile = os.fdopen(tmp_num, "w")
+
+                        for a in self.attrs.keys():
+                                s = "S %s: %s\n" % (a, self.attrs[a])
+                                tfile.write(s)
+
+                        tfile.close()
+                        os.chmod(tmpfile, self.file_mode)
+                        portable.rename(tmpfile, finalpath)
+
+                except EnvironmentError, e:
                         # This may get called in a situation where
                         # the user does not have write access to the attrs
                         # file.
+                        if tmpfile:
+                                portable.remove(tmpfile)
                         if e.errno == errno.EACCES:
                                 return
                         else:
                                 raise
 
-                for a in self.attrs.keys():
-                        s = "S %s: %s\n" % (a, self.attrs[a])
-                        afile.write(s)
-
                 # Recalculate size on next send()
                 self.__size = -1
-                afile.close()
 
         def send(self, filep, rspobj=None):
                 """Send the contents of this catalog out to the filep

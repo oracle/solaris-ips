@@ -1354,7 +1354,7 @@ def list_contents(img, args):
 
         valid_special_attrs = [ "action.name", "action.key", "action.raw",
             "pkg.name", "pkg.fmri", "pkg.shortfmri", "pkg.publisher",
-            "pkg.size" ]
+            "pkg.size", "pkg.csize" ]
 
         display_headers = True
         display_raw = False

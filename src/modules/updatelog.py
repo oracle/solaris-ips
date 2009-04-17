@@ -34,10 +34,13 @@ except AttributeError:
         os.SEEK_SET, os.SEEK_CUR, os.SEEK_END = range(3)
 import re
 import time
+import tempfile
+import threading
 
 import pkg.catalog as catalog
 import pkg.client.api_errors as api_errors
 import pkg.fmri as fmri
+import pkg.portable as portable
 from pkg.misc import TruncatedTransferException
 
 class UpdateLogException(Exception):
@@ -77,63 +80,48 @@ class UpdateLog(object):
                 14 days worth of log history."""
 
                 self.rootdir = update_root
-                self.logfd = None
-                self.log_filename = None
                 self.maxfiles = maxfiles
                 self.catalog = cat
-                self.close_time = None
                 self.first_update = None
                 self.last_update = None
                 self.curfiles = 0
                 self.logfiles = []
                 self.logfile_size = {}
+                self.updatelog_lock = threading.Lock()
 
                 if not os.path.exists(update_root):
                         os.makedirs(update_root)
 
                 self._setup_logfiles()
 
-        def __del__(self):
-                """Perform any last minute cleanup."""
-
-                if self.logfd:
-                        try:
-                                self.logfd.close()
-                        except EnvironmentError:
-                                pass
-
-                        self.logfd = None
-
         def add_package(self, pfmri, critical = False):
                 """Record that the catalog has added "pfmri"."""
 
-                # First add FMRI to catalog
-                ts = self.catalog.add_fmri(pfmri, critical)
+                self.updatelog_lock.acquire()
+                try:
+                        # First add FMRI to catalog
+                        ts = self.catalog.add_fmri(pfmri, critical)
 
-                # Now add update to updatelog
-                self._check_logs()
+                        # Now add update to updatelog
+                        self._check_logs()
 
-                if not self.logfd:
-                        self._begin_log()
+                        if critical:
+                                entry_type = "C"
+                        else:
+                                entry_type = "V"
 
-                if critical:
-                        entry_type = "C"
-                else:
-                        entry_type = "V"
+                        # The format for catalog C and V records is described
+                        # in the docstrings for the Catalog class.
 
-                # The format for catalog C and V records is described
-                # in the docstrings for the Catalog class.
+                        logstr = "+ %s %s %s\n" % \
+                            (ts.isoformat(), entry_type,
+                            pfmri.get_fmri(anarchy=True))
 
-                logstr = "+ %s %s %s\n" % \
-                    (ts.isoformat(), entry_type, pfmri.get_fmri(anarchy=True))
+                        self.__append_to_log(logstr)
 
-                self.logfd.write(logstr)
-                self.logfd.flush()
-
-                if self.log_filename in self.logfile_size:
-                        self.logfile_size[self.log_filename] = self.logfd.tell()
-
-                self.last_update = ts
+                        self.last_update = ts
+                finally:
+                        self.updatelog_lock.release()
 
                 return ts
 
@@ -141,34 +129,30 @@ class UpdateLog(object):
                 """Record that package oldname has been renamed to newname,
                 effective as of version vers."""
 
-                # Record rename in catalog
-                ts, rr = self.catalog.rename_package(srcname, srcvers,
-                     destname, destvers)
+                self.updatelog_lock.acquire()
 
-                # Now add rename record to updatelog
-                self._check_logs()
+                try:
+                        # Record rename in catalog
+                        ts, rr = self.catalog.rename_package(srcname, srcvers,
+                             destname, destvers)
 
-                if not self.logfd:
-                        self._begin_log()
+                        # Now add rename record to updatelog
+                        self._check_logs()
 
-                # The format for a catalog rename record is described
-                # in the docstring for the RenameRecord class.
+                        # The format for a catalog rename record is described
+                        # in the docstring for the RenameRecord class.
 
-                logstr = "+ %s %s\n" % (ts.isoformat(), rr)
+                        logstr = "+ %s %s\n" % (ts.isoformat(), rr)
 
-                self.logfd.write(logstr)
-                self.logfd.flush()
-
-                if self.log_filename in self.logfile_size:
-                        self.logfile_size[self.log_filename] = self.logfd.tell()
-
-                self.last_update = ts
+                        self.__append_to_log(logstr)
+                finally:
+                        self.updatelog_lock.release()
 
                 return ts
 
         def _begin_log(self):
-                """Open a log-file so that the UpdateLog can write updates
-                into it."""
+                """Return the path to a logfile.  If we haven't written
+                any updates yet, do some additional bookkeeping."""
 
                 filenm = time.strftime("%Y%m%d%H")
 
@@ -176,10 +160,7 @@ class UpdateLog(object):
                     *time.strptime(filenm, "%Y%m%d%H")[0:6])
                 delta = datetime.timedelta(hours=1)
 
-                self.close_time = ftime + delta
-
-                self.log_filename = filenm
-                self.logfd = file(os.path.join(self.rootdir, filenm), "ab")
+                path = os.path.join(self.rootdir, filenm)
 
                 if filenm not in self.logfiles:
                         self.logfiles.append(filenm)
@@ -188,16 +169,12 @@ class UpdateLog(object):
                 if not self.first_update:
                         self.first_update = ftime
 
+                return path, filenm
+
         def _check_logs(self):
                 """Check to see if maximum number of logfiles has been
                 exceeded. If so, rotate the logs.  Also, if a log is
                 open, check to see if it needs to be closed."""
-
-                if self.logfd and self.close_time < datetime.datetime.now():
-                        self.logfd.close()
-                        self.logfd = None
-                        self.log_filename = None
-                        self.close_time = 0
 
                 if self.curfiles < self.maxfiles:
                         return
@@ -217,6 +194,71 @@ class UpdateLog(object):
 
                 self.first_update = datetime.datetime(*time.strptime(
                     self.logfiles[0], "%Y%m%d%H")[0:6])
+
+        def __append_to_log(self, logstr):
+                """Write the string logstr into the proper update log.
+                This routine copies the existing contents of the log into
+                a temporary file, and then renames the new logfile into
+                place."""
+
+                # Get the path to the logfile, as well as its name
+                logpath, logfile = self._begin_log()
+
+                # Create a temporary file for new data
+                tmp_num, tmpfile = tempfile.mkstemp(dir=self.rootdir)
+
+                # Use fdopen since mkstemp gives us a filehandle
+                try:
+                        tfile = os.fdopen(tmp_num, "w")
+                except OSError:
+                        portable.remove(tmpfile)
+                        raise
+
+                # Try to open logfile readonly.  If it doesn't exist,
+                # create a new one, and then re-open it readonly.
+                try:
+                        lfile = file(logpath, "rb")
+                except IOError, e:
+                        if e.errno == errno.ENOENT:
+                                # Creating an empty file
+                                file(logpath, "wb").close()
+                                lfile = file(logpath, "rb")
+                        else:
+                                portable.remove(tmpfile)
+                                raise
+
+                # Make sure we're at the start of the file
+                lfile.seek(0)
+
+                # Write existing lines in old file into new file.
+                # Then append the new line.
+                try:
+                        for entry in lfile:
+                               tfile.write(entry)
+                        tfile.write(logstr)
+                except Exception:
+                        portable.remove(tmpfile)
+                        raise
+
+                # If this routine is updating a logfile that already
+                # has size information, replace the size information 
+                # with the size of the new file.  Use tell to grab the
+                # offset at the end of the file, instead of stat.
+                # (At least in this case)
+                if logfile in self.logfile_size:
+                        self.logfile_size[logfile] = tfile.tell()
+                lfile.close()
+                tfile.close()
+
+                # Change the permissions on the tempfile, since
+                # mkstemp uses mode 600.  Rename the tempfile into
+                # place as the new logfile.
+                try:
+                        os.chmod(tmpfile, catalog.Catalog.file_mode)
+                        portable.rename(tmpfile, logpath)
+                except EnvironmentError:
+                        portable.remove(tmpfile)
+                        raise
 
         def enough_history(self, ts):
                 """Returns true if the timestamp is so far behind the
@@ -355,24 +397,46 @@ class UpdateLog(object):
                         raise bad_fmri
 
                 # Verify that they aren't already in the catalog
-                catf = file(os.path.normpath(
-                    os.path.join(path, "catalog")), "a+")
-                catf.seek(0)
-                for c in catf:
+                catpath = os.path.normpath(os.path.join(path, "catalog"))
+                
+                tmp_num, tmpfile = tempfile.mkstemp(dir=path)
+                tfile = os.fdopen(tmp_num, 'w')
+
+                try:
+                        pfile = file(catpath, "rb")
+                except IOError, e:
+                        if e.errno == errno.ENOENT:
+                                # Creating an empty file
+                                file(catpath, "wb").close()
+                                pfile = file(self.catalog_file, "rb")
+                        else:
+                                tfile.close()
+                                portable.remove(tmpfile)
+                                raise
+                pfile.seek(0)
+
+                for c in pfile:
                         if c[0] in tuple("CV"):
                                 npkgs += 1
                         if c in add_lines:
-                                catf.close()
+                                pfile.close()
+                                tfile.close()
+                                portable.remove(tmpfile)
                                 raise UpdateLogException, \
                                     "Package %s is already in the catalog" % \
                                         c
+                        tfile.write(c)
 
                 # Write the new entries to the catalog
-                catf.seek(0, os.SEEK_END)
-                catf.writelines(add_lines)
+                tfile.seek(0, os.SEEK_END)
+                tfile.writelines(add_lines)
                 if len(unknown_lines) > 0:
-                        catf.writelines(unknown_lines)
-                catf.close()
+                        tfile.writelines(unknown_lines)
+                tfile.close()
+                pfile.close()
+
+                os.chmod(tmpfile, catalog.Catalog.file_mode)
+                portable.rename(tmpfile, catpath)
 
                 # Now re-write npkgs and Last-Modified in attributes file
                 afile = file(os.path.normpath(os.path.join(path, "attrs")),
@@ -391,13 +455,17 @@ class UpdateLog(object):
                 attrs["Last-Modified"] = mts.isoformat()
 
                 # Write attributes back out
-                afile = file(os.path.normpath(os.path.join(path, "attrs")),
-                    "w")
+                apath = os.path.normpath(os.path.join(path, "attrs"))
+                tmp_num, tmpfile = tempfile.mkstemp(dir=path)
+                tfile = os.fdopen(tmp_num, 'w')
+
                 for a in attrs.keys():
                         s = "S %s: %s\n" % (a, attrs[a])
-                        afile.write(s)
+                        tfile.write(s)
 
-                afile.close()
+                tfile.close()
+                os.chmod(tmpfile, catalog.Catalog.file_mode)
+                portable.rename(tmpfile, apath)
 
                 return True
 
@@ -557,12 +625,6 @@ class UpdateLog(object):
 
                                 if lf in self.logfile_size:
                                         size += self.logfile_size[lf]
-                                elif lf == self.log_filename:
-                                        # os.stat doesn't work on an open file
-                                        # on Windows Vista, so use tell
-                                        entsz = self.logfd.tell()
-                                        self.logfile_size[lf] = entsz
-                                        size += entsz
                                 else:
                                         stat_logf = os.stat(os.path.join(
                                             self.rootdir, lf))

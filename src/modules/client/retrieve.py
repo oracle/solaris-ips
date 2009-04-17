@@ -156,6 +156,10 @@ def get_catalog(img, pub, hdr, ts):
                 raise CatalogRetrievalError("Could not retrieve catalog"
                     " from '%s'\nUnable to parse FMRI. Details follow:\n%s"
                     % (prefix, e))
+        except updatelog.UpdateLogException, e:
+                raise CatalogRetrievalError("Could not retrieve catalog"
+                    " from '%s'\nUnable to process update log."
+                    " Details follow:\n%s" % (prefix, e.args))
         except EnvironmentError, e:
                 raise CatalogRetrievalError("Could not retrieve catalog "
                     "from '%s'\nException: str:%s repr:%r" % (prefix,
