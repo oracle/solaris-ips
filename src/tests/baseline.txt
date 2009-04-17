@@ -444,6 +444,7 @@ cli.t_pkg_search.py TestPkgSearchBasics.test_remote|pass
 cli.t_pkg_search.py TestPkgSearchBasics.test_repeated_install_uninstall|pass
 cli.t_pkg_search.py TestPkgSearchBasics.test_weird_patterns|pass
 cli.t_pkg_search.py TestPkgSearchMulti.test_bug_2955|pass
+cli.t_pkg_uninstall.py TestCommandLine.test_dependencies|pass
 cli.t_pkg_uninstall.py TestCommandLine.test_pkg_bogus_opts|pass
 cli.t_pkg_uninstall.py TestCommandLine.test_rmdir_cwd|pass
 cli.t_pkg_verify.py TestPkgVerify.test_pkg_verify_bad_opts|pass

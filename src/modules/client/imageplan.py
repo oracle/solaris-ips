@@ -370,13 +370,12 @@ class ImagePlan(object):
 
                 self.progtrack.evaluate_progress(pfmri)
 
-                dependents = self.image.get_dependents(pfmri, self.progtrack)
+                dependents = set(self.image.get_dependents(pfmri, 
+                    self.progtrack))
 
                 # Don't consider those dependencies already being removed in
                 # this imageplan transaction.
-                for i, d in enumerate(dependents):
-                        if d in self.target_rem_fmris:
-                                del dependents[i]
+                dependents = dependents.difference(self.target_rem_fmris)
 
                 if dependents and not self.recursive_removal:
                         raise api_errors.NonLeafPackageException(pfmri,

@@ -63,6 +63,36 @@ class TestCommandLine(testutils.SingleDepotTestCase):
                 os.chdir(os.path.join(self.get_img_path(), "tmp"))
                 self.pkg("uninstall foo")
 
+        foob20 = """
+            open foob@2.0,5.11-0
+            add depend type=require fmri=barb@2.0
+            close """
+
+        barb20 = """
+            open barb@2.0,5.11-0
+            add depend type=require fmri=foob@2.0
+            close """
+
+        bazb20 = """
+            open bazb@2.0,5.11-0
+            add depend type=require fmri=foob@2.0
+            close """
+
+        def test_dependencies(self):
+                """This code tests for:
+                  1) uninstall is blocked if dependencies are found
+                  2) packages w/ circular dependencies can be uninstalled
+                  3) if all dependencies are to be deleted, uninstall works."""
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.foob20)
+                self.pkgsend_bulk(durl, self.barb20)
+                self.pkgsend_bulk(durl, self.bazb20)
+                self.image_create(durl)
+                self.pkg("install bazb")
+                self.pkg("verify")
+                self.pkg("uninstall foob", exit=1)
+                self.pkg("uninstall bazb foob barb")
+                self.pkg("verify")
 
 if __name__ == "__main__":
         unittest.main()
