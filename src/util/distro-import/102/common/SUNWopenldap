@@ -1,6 +1,7 @@
 package SUNWopenldap
 classification "System/Libraries"
 import SUNWopenldapr
+drop var/run/openldap
 import SUNWopenldapu
 version 2.4.11
 add group groupname=openldap gid=75

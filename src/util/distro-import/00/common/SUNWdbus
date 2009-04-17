@@ -1,6 +1,5 @@
 package SUNWdbus
-classification "System/Libraries"
+classification "System/Services"
 import SUNWdbus
-import SUNWdbus-devel
 import SUNWdbus-root
 end package

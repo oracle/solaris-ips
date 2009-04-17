@@ -1,0 +1,5 @@
+package OSOLvpanels-sharemgr
+classification "Applications/Configuration and Preferences"
+import OSOLvpin-sharemgr exclude usr/lib/libshare_jni.so.1
+depend OSOLvpanels
+end package

@@ -1,0 +1,8 @@
+package SUNWsmbfs
+classification "System/File System"
+import SUNWsmbfsu
+import SUNWsmbfsr
+import SUNWsmbfskr
+add driver name=nsmb perms="* 0666 root sys" \
+	devlink="type=ddi_pseudo;name=nsmb\t\D"
+end package

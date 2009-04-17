@@ -24,12 +24,10 @@
 # Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
-# ident	"@(#)vp-shares	1.1	08/04/04 SMI"
-#
 
 JAVALIB=/usr/share/lib/java
 if [[ -f $JAVALIB/vpanels-panels-sharemgr.jar ]]; then
-	exec java -client -jar $JAVALIB/vpanels-client.jar sharemgr
+	exec java -client -jar $JAVALIB/vpanels-client.jar -Dvpanels.ui.navbar sharemgr
 else
 	exec shares-admin
 fi

@@ -1,0 +1,5 @@
+package SUNWgnu-idn
+classification "System/Libraries"
+import SUNWgnu-idn
+version 1.9
+end package

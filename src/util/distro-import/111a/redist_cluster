@@ -14,7 +14,9 @@ include common/FSWxorg-fonts-jiskan
 include common/FSWxorg-fonts-syriac
 include common/FSWxorg-fonts-vera
 include common/OSOLvpanels
+include common/OSOLvpanels-apache
 include common/OSOLvpanels-mysql
+include common/OSOLvpanels-sharemgr
 include common/OSOLvpanels-sysid
 include common/SUNW1394
 include common/SUNW1394h
@@ -132,7 +134,7 @@ include common/SUNWdbus-libs
 include common/SUNWdcaf
 include common/SUNWdcraw
 include common/SUNWddu
-$(i386_ONLY)include common/SUNWddu-l10n
+include common/SUNWddu-l10n
 include common/SUNWdesktop-cache
 include common/SUNWdesktop-search
 include common/SUNWdesktop-search-firefox
@@ -742,7 +744,6 @@ include common/SUNWsmagt
 include common/SUNWsmapi
 include common/SUNWsmba
 include common/SUNWsmbfs
-include common/SUNWsmbfskr
 include common/SUNWsmbs
 include common/SUNWsmbskr
 include common/SUNWsmcmd
@@ -775,7 +776,6 @@ include common/SUNWsvn-java
 include common/SUNWsvn-perl
 include common/SUNWsvn-python
 include common/SUNWswig
-include common/SUNWswmt
 include common/SUNWswt
 include common/SUNWtavor
 include common/SUNWtcat
@@ -1391,8 +1391,10 @@ $(i386_ONLY)include common/SUNWscn-base
 $(i386_ONLY)include common/SUNWscnprm
 $(i386_ONLY)include common/SUNWscnsom
 $(i386_ONLY)include common/SUNWsensor
+include common/SUNWsmbfskr
 $(i386_ONLY)include common/SUNWsolaris-devel-docs
 $(i386_ONLY)include common/SUNWsrh
+include common/SUNWswmt
 $(i386_ONLY)include common/SUNWtiu8
 $(i386_ONLY)include common/SUNWulcf
 $(i386_ONLY)include common/SUNWupdatemgr
@@ -1577,7 +1579,9 @@ depend FSWxorg-fonts-vera
 $(i386_ONLY)depend NVDAcg
 $(i386_ONLY)depend NVDAgraphics
 depend OSOLvpanels
+depend OSOLvpanels-apache
 depend OSOLvpanels-mysql
+depend OSOLvpanels-sharemgr
 depend OSOLvpanels-sysid
 depend SUNW1394
 depend SUNW1394h
@@ -1734,7 +1738,7 @@ depend SUNWdcraw
 $(sparc_ONLY)depend SUNWdcs
 depend SUNWddhcm
 depend SUNWddu
-$(i386_ONLY)depend SUNWddu-l10n
+depend SUNWddu-l10n
 depend SUNWdeos
 depend SUNWdesktop-cache
 depend SUNWdesktop-other-l10n-cs
@@ -2640,7 +2644,6 @@ depend SUNWsmagt
 depend SUNWsmapi
 depend SUNWsmba
 depend SUNWsmbfs
-depend SUNWsmbfskr
 depend SUNWsmbs
 depend SUNWsmbskr
 depend SUNWsmcmd
@@ -2678,7 +2681,6 @@ depend SUNWsvn-python
 depend SUNWsvos
 depend SUNWsvxwsvr
 depend SUNWswig
-depend SUNWswmt
 depend SUNWswt
 depend SUNWtavor
 depend SUNWtcat
@@ -2870,11 +2872,11 @@ $(i386_ONLY)depend SUNWzyd
 depend amp
 depend avs
 depend babel_install
-depend developer/opensolaris/osnet
 depend gcc-dev
 depend lang-support-albanian
 depend lang-support-all
 depend lang-support-arabic
+depend lang-support-belarusian
 depend lang-support-bulgarian
 depend lang-support-catalan
 depend lang-support-chinese-CN
@@ -2889,6 +2891,7 @@ depend lang-support-english
 depend lang-support-estonian
 depend lang-support-finnish
 depend lang-support-french
+depend lang-support-georgian
 depend lang-support-german
 depend lang-support-greek
 depend lang-support-hebrew
@@ -2915,7 +2918,7 @@ depend lang-support-romanian
 depend lang-support-russian
 depend lang-support-serbian
 depend lang-support-serbo-croatian
-depend lang-support-slovakian
+depend lang-support-slovak
 depend lang-support-slovenian
 depend lang-support-spanish
 depend lang-support-swedish
@@ -2997,8 +3000,10 @@ depend SUNWpostgr-server
 $(i386_ONLY)depend SUNWpostgr-server-data
 depend SUNWpostgr-tcl
 depend SUNWpostgr-upgrade
+depend SUNWsmbfskr
 $(i386_ONLY)depend SUNWsolaris-devel-docs
 $(i386_ONLY)depend SUNWsrh
+depend SUNWswmt
 depend SUNWvscankr
 depend SUNWxorg-doc
 $(sparc_ONLY)depend SUNWzulu
@@ -3006,6 +3011,7 @@ $(sparc_ONLY)depend SUNWzuluc
 $(sparc_ONLY)depend SUNWzuluw
 $(sparc_ONLY)depend TSIpgx
 $(sparc_ONLY)depend TSIpgxw
+depend lang-support-slovakian
 end package
 package slim_install
 cluster slim_install
@@ -3088,7 +3094,7 @@ $(i386_ONLY)depend SUNWdcopy
 depend SUNWdcraw
 $(sparc_ONLY)depend SUNWdcs
 depend SUNWddu
-$(i386_ONLY)depend SUNWddu-l10n
+depend SUNWddu-l10n
 depend SUNWdesktop-cache
 depend SUNWdistro-license-copyright
 depend SUNWdmfe
@@ -3104,6 +3110,7 @@ $(sparc_ONLY)depend SUNWefb
 $(sparc_ONLY)depend SUNWefbcf
 $(sparc_ONLY)depend SUNWefbw
 $(sparc_ONLY)depend SUNWefc
+depend SUNWemlxs
 $(sparc_ONLY)depend SUNWerid
 depend SUNWespeak
 depend SUNWesu
@@ -3427,6 +3434,7 @@ depend SUNWpcser
 depend SUNWpcwl
 depend SUNWpd
 depend SUNWperl-authen-pam
+depend SUNWperl-xml-parser
 depend SUNWperl584core
 depend SUNWperl584man
 depend SUNWperl584usr
@@ -3504,7 +3512,6 @@ depend SUNWslocate
 depend SUNWsmagt
 depend SUNWsmapi
 depend SUNWsmbfs
-depend SUNWsmbfskr
 depend SUNWsmedia
 depend SUNWsmpd
 depend SUNWsndm
@@ -3519,7 +3526,6 @@ depend SUNWsshd
 $(sparc_ONLY)depend SUNWstc
 depend SUNWstosreg
 depend SUNWsudo
-depend SUNWswmt
 depend SUNWtavor
 depend SUNWtcpd
 depend SUNWtecla

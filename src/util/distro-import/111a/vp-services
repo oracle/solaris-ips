@@ -24,12 +24,10 @@
 # Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
-# ident	"@(#)vp-services	1.1	08/04/04 SMI"
-#
 
 JAVALIB=/usr/share/lib/java
 if [[ -f $JAVALIB/vpanels-panels-smf.jar ]]; then
-	exec java -client -jar $JAVALIB/vpanels-client.jar smf
+	exec java -client -jar $JAVALIB/vpanels-client.jar -Dvpanels.ui.navbar smf
 else
 	exec services-admin
 fi

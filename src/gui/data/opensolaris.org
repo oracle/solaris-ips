@@ -55,7 +55,13 @@ category = Display
 [OSOLvpanels]
 category = Configuration and Preferences
 
+[OSOLvpanels-apache]
+category = Configuration and Preferences
+
 [OSOLvpanels-mysql]
+category = Configuration and Preferences
+
+[OSOLvpanels-sharemgr]
 category = Configuration and Preferences
 
 [OSOLvpanels-sysid]
@@ -500,7 +506,7 @@ category = Source Code Management
 category = X11 (System)
 
 [SUNWdbus]
-category = Libraries (System)
+category = Services
 
 [SUNWdbus-bindings]
 category = Libraries (System)
@@ -3253,9 +3259,6 @@ category = File System
 [SUNWsmbfs]
 category = File System
 
-[SUNWsmbfskr]
-category = File System
-
 [SUNWsmbs]
 category = File System
 
@@ -3369,9 +3372,6 @@ category = X11 (System)
 
 [SUNWswig]
 category = Other Languages
-
-[SUNWswmt]
-category = Administration and Configuration
 
 [SUNWswt]
 category = Libraries
@@ -3934,6 +3934,9 @@ category = High Performance Computing
 [developer/netbeans/plugin/nb-dtrace]
 category = System
 
+[developer/opensolaris/osnet]
+category = Distribution Tools
+
 [developer/tool/exuberant-ctags]
 category = Editors
 
@@ -3956,6 +3959,9 @@ category = Localizations (System)
 category = Localizations (System)
 
 [lang-support-arabic]
+category = Localizations (System)
+
+[lang-support-belarusian]
 category = Localizations (System)
 
 [lang-support-bulgarian]
@@ -3998,6 +4004,9 @@ category = Localizations (System)
 category = Localizations (System)
 
 [lang-support-french]
+category = Localizations (System)
+
+[lang-support-georgian]
 category = Localizations (System)
 
 [lang-support-german]
@@ -4078,7 +4087,7 @@ category = Localizations (System)
 [lang-support-serbo-croatian]
 category = Localizations (System)
 
-[lang-support-slovakian]
+[lang-support-slovak]
 category = Localizations (System)
 
 [lang-support-slovenian]
@@ -4248,6 +4257,9 @@ category = Storage
 
 [sunstudioexpress]
 category = Integrated Development Environments
+
+[system/ldoms/ldomsmanager]
+category = Virtualization
 
 [trusted-extensions]
 category = Trusted Extensions

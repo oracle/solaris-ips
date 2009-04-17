@@ -50,7 +50,7 @@ include common/SUNWdbus-bindings
 include common/SUNWdbus-libs
 include common/SUNWdcraw
 include common/SUNWddu
-$(i386_ONLY)include common/SUNWddu-l10n
+include common/SUNWddu-l10n
 include common/SUNWdesktop-cache
 include common/SUNWdistro-license-copyright
 include common/SUNWdmfe
@@ -58,6 +58,7 @@ include common/SUNWdoc
 include common/SUNWdsd
 include common/SUNWdtrc
 include common/SUNWdtrp
+include common/SUNWemlxs
 include common/SUNWespeak
 include common/SUNWesu
 include common/SUNWevolution
@@ -295,6 +296,7 @@ include common/SUNWpcser
 include common/SUNWpcwl
 include common/SUNWpd
 include common/SUNWperl-authen-pam
+include common/SUNWperl-xml-parser
 include common/SUNWperl584core
 include common/SUNWperl584man
 include common/SUNWperl584usr
@@ -359,7 +361,6 @@ include common/SUNWslocate
 include common/SUNWsmagt
 include common/SUNWsmapi
 include common/SUNWsmbfs
-include common/SUNWsmbfskr
 include common/SUNWsmedia
 include common/SUNWsmpd
 include common/SUNWsndm
@@ -372,7 +373,6 @@ include common/SUNWsshcu
 include common/SUNWsshd
 include common/SUNWstosreg
 include common/SUNWsudo
-include common/SUNWswmt
 include common/SUNWtavor
 include common/SUNWtcpd
 include common/SUNWtecla
@@ -738,7 +738,7 @@ $(i386_ONLY)depend SUNWdcopy
 depend SUNWdcraw
 $(sparc_ONLY)depend SUNWdcs
 depend SUNWddu
-$(i386_ONLY)depend SUNWddu-l10n
+depend SUNWddu-l10n
 depend SUNWdesktop-cache
 depend SUNWdistro-license-copyright
 depend SUNWdmfe
@@ -754,6 +754,7 @@ $(sparc_ONLY)depend SUNWefb
 $(sparc_ONLY)depend SUNWefbcf
 $(sparc_ONLY)depend SUNWefbw
 $(sparc_ONLY)depend SUNWefc
+depend SUNWemlxs
 $(sparc_ONLY)depend SUNWerid
 depend SUNWespeak
 depend SUNWesu
@@ -1077,6 +1078,7 @@ depend SUNWpcser
 depend SUNWpcwl
 depend SUNWpd
 depend SUNWperl-authen-pam
+depend SUNWperl-xml-parser
 depend SUNWperl584core
 depend SUNWperl584man
 depend SUNWperl584usr
@@ -1154,7 +1156,6 @@ depend SUNWslocate
 depend SUNWsmagt
 depend SUNWsmapi
 depend SUNWsmbfs
-depend SUNWsmbfskr
 depend SUNWsmedia
 depend SUNWsmpd
 depend SUNWsndm
@@ -1169,7 +1170,6 @@ depend SUNWsshd
 $(sparc_ONLY)depend SUNWstc
 depend SUNWstosreg
 depend SUNWsudo
-depend SUNWswmt
 depend SUNWtavor
 depend SUNWtcpd
 depend SUNWtecla

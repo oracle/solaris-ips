@@ -6,7 +6,7 @@ depend SUNWapch22
 depend SUNWapch22d
 depend SUNWapch22m-php52
 depend SUNWj6rt
-depend SUNWmysql5
+depend SUNWmysql51
 depend SUNWphp52
 depend SUNWphp52-mysql
 depend SUNWphp52d
@@ -26,7 +26,7 @@ depend SUNWapch22m-security
 depend SUNWcvs
 depend SUNWmemcached
 depend SUNWmercurial
-depend SUNWmysql5
+depend SUNWmysql51
 depend SUNWphp52
 depend SUNWphp52-mysql
 depend SUNWphp52-pear

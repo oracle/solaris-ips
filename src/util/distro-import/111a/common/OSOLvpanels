@@ -1,0 +1,9 @@
+package OSOLvpanels
+classification "Applications/Configuration and Preferences"
+import OSOLvpin
+depend SUNWcacaort
+depend SUNWcacaowsvr
+depend SUNWgnome-base-libs-java
+depend SUNWjdmk-base
+depend SUNWjhrt
+end package
