@@ -48,7 +48,7 @@
       <applyto>/apps/packagemanager/preferences/initial_app_vposition</applyto>
       <owner>packagemanager</owner>
       <type>int</type>
-      <default>423</default>
+      <default>320</default>
       <locale name="C">
          <short>Initial application vertical divider position</short>
          <long>

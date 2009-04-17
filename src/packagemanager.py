@@ -187,7 +187,7 @@ class PackageManager:
                         self.initial_app_width = 800
                         self.initial_app_height = 600
                         self.initial_app_hpos = 200
-                        self.initial_app_vpos = 423
+                        self.initial_app_vpos = 320
 
                 if not self.gconf_not_show_repos:
                         self.gconf_not_show_repos = ""
