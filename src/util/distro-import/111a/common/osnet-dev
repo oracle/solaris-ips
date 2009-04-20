@@ -9,6 +9,7 @@ depend SUNWbison
 depend SUNWdtbas
 depend SUNWflexlex
 depend SUNWgcc
+depend SUNWgnu-gettext
 depend SUNWhea
 depend SUNWj6dev
 depend SUNWjsnmp
