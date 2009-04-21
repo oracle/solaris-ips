@@ -27,13 +27,13 @@
 
 import testutils
 if __name__ == "__main__":
-	testutils.setup_environment("../../../proto")
+        testutils.setup_environment("../../../proto")
 
-import unittest
+import difflib
 import os
 import re
 import shutil
-import difflib
+import unittest
 
 class TestPkgList(testutils.ManyDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
@@ -108,13 +108,13 @@ class TestPkgList(testutils.ManyDepotTestCase):
         def tearDown(self):
                 testutils.ManyDepotTestCase.tearDown(self)
 
-	def test_pkg_list_cli_opts(self):
+        def test_pkg_list_cli_opts(self):
 
                 self.pkg("list -@", exit=2)
                 self.pkg("list -v -s", exit=2)
 
 
-        def test_list_1(self):
+        def test_list_01(self):
                 """List all "foo@1.0" from auth "test1"."""
                 self.pkg("list -aH pkg://test1/foo@1.0,5.11-0")
                 expected = \
@@ -122,7 +122,7 @@ class TestPkgList(testutils.ManyDepotTestCase):
                 output = self.reduceSpaces(self.output)
                 self.assertEqualDiff(expected, output)
 
-        def test_list_2(self):
+        def test_list_02(self):
                 """List all "foo@1.0", regardless of publisher, with "pkg:/"
                 prefix."""
                 self.pkg("list -aH pkg:/foo@1.0,5.11-0")
@@ -132,7 +132,7 @@ class TestPkgList(testutils.ManyDepotTestCase):
                 output = self.reduceSpaces(self.output)
                 self.assertEqualDiff(expected, output)
 
-        def test_list_3(self):
+        def test_list_03(self):
                 """List all "foo@1.0", regardless of publisher, without "pkg:/"
                 prefix."""
                 self.pkg("list -aH pkg:/foo@1.0,5.11-0")
@@ -143,7 +143,7 @@ class TestPkgList(testutils.ManyDepotTestCase):
                 expected = self.reduceSpaces(expected)
                 self.assertEqualDiff(expected, output)
 
-        def test_list_4(self):
+        def test_list_04(self):
                 """List all versions of package foo, regardless of publisher."""
                 self.pkg("list -aHf foo")
                 expected = \
@@ -170,7 +170,7 @@ class TestPkgList(testutils.ManyDepotTestCase):
                 self.assertEqualDiff(expected, output)
 
                 
-        def test_list_5(self):
+        def test_list_05(self):
                 """Show foo@1.0 from both depots, but 1.1 only from test2."""
                 self.pkg("list -aHf foo@1.0-0 pkg://test2/foo@1.1-0")
                 expected = \
@@ -189,7 +189,7 @@ class TestPkgList(testutils.ManyDepotTestCase):
                 expected = self.reduceSpaces(expected)
                 self.assertEqualDiff(expected, output)
                 
-        def test_list_6(self):
+        def test_list_06(self):
                 """Show versions 1.0 and 1.1 of foo only from publisher test2."""
                 self.pkg("list -aHf pkg://test2/foo")
                 expected = \
@@ -209,7 +209,7 @@ class TestPkgList(testutils.ManyDepotTestCase):
                 expected = self.reduceSpaces(expected)
                 self.assertEqualDiff(expected, output)
 
-        def test_list_7(self):
+        def test_list_07(self):
                 """List all foo@1 from test1, but all foo@1.2(.x), and only list
                 the latter once."""
                 self.pkg("list -aHf pkg://test1/foo@1 pkg:/foo@1.2")
@@ -233,7 +233,7 @@ class TestPkgList(testutils.ManyDepotTestCase):
                 expected = self.reduceSpaces(expected)
                 self.assertEqualDiff(expected, output)
 
-        def test_list_8_after_pub_update_removal(self):
+        def test_list_08_after_pub_update_removal(self):
                 """Install a package from a publisher which is also offered by
                 another publisher.  Then alter or remove the installed package's
                 publisher, and verify that list still shows the package
@@ -292,7 +292,7 @@ class TestPkgList(testutils.ManyDepotTestCase):
                 # impacted.
                 self.pkg("uninstall pkg://test2/foo@1.0")
 
-        def test_list_9_needs_refresh(self):
+        def test_list_09_needs_refresh(self):
                 """Verify that a list operation performed when a publisher's
                 metadata needs refresh works as expected."""
 
@@ -338,6 +338,130 @@ class TestPkgList(testutils.ManyDepotTestCase):
                 # Package should now exist for unprivileged user since the
                 # metadata has been refreshed.
                 self.pkg("list -a | grep newpkg", su_wrap=True)
+
+        def test_list_10_cache(self):
+                """Verify that various alterations or states of the catalog
+                cache won't impair pkg operations such as pkg list."""
+
+                def test_for_expected(expected, su_wrap=False):
+                        self.pkg("list -aHf foo*", su_wrap=su_wrap)
+                        output = self.reduceSpaces(self.output)
+                        self.assertEqualDiff(expected, output)
+
+                def get_file_data(pathname):
+                        f = file(pathname, "rb")
+                        data = f.read()
+                        f.close()
+                        return data
+
+                pkg_list = self.reduceSpaces( 
+                    "foo         1.2.1-0 known ----\n" \
+                    "foo (test2) 1.2.1-0 known ----\n" \
+                    "foo         1.2-0   known u---\n" \
+                    "foo (test2) 1.2-0   known u---\n" \
+                    "foo         1.1-0   known u---\n" \
+                    "foo (test2) 1.1-0   known u---\n" \
+                    "foo         1.0-0   known u---\n" \
+                    "foo (test2) 1.0-0   known u---\n" \
+                    "foo         1-0     known u---\n" \
+                    "foo (test2) 1-0     known u---\n" \
+                    "food        1.2-0   known ----\n" \
+                    "food (test2) 1.2-0  known ----\n")
+
+                # Verify the known list of packages first before abusing the
+                # cache.
+                test_for_expected(pkg_list)
+
+                # Obtain the size of the cache file for later comparison.
+                cache_file = os.path.join(self.get_img_path(), "var", "pkg",
+                    "catalog", "catalog_cache")
+                cache_data = get_file_data(cache_file)
+
+                # Now remove the cache and verify that an unprivileged user can
+                # still get the same results (the unprivileged is important as
+                # they won't have permissions to write a new catalog cache).
+                os.unlink(cache_file)
+                test_for_expected(pkg_list, su_wrap=True)
+
+                # Next, write a cache file with an invalid version and verify
+                # that an unprivileged user does not receive an error.
+                f = file(cache_file, "wb")
+                f.write("INVALID_VERSION")
+                f.close()
+                test_for_expected(pkg_list, su_wrap=True)
+
+                # Next, verify that performing the same operation as a
+                # privileged user will cause the cache to be rewritten correctly
+                # and still produce the expected results.
+                test_for_expected(pkg_list)
+                self.assertEqual(get_file_data(cache_file), cache_data)
+
+                # Next, truncate the cache file after the first line, and then
+                # add invalid publisher data and verify the user does not
+                # receive an error.
+                f = file(cache_file, "wb")
+                f.truncate(1)
+                f.write("\npub1!pub2!pub3\n")
+                f.close()
+                test_for_expected(pkg_list ,su_wrap=True)
+
+                # Next, verify that performing the same operation as a
+                # privileged user will cause the cache to be rewritten correctly
+                # and still produce the expected results.
+                test_for_expected(pkg_list)
+                self.assertEqual(get_file_data(cache_file), cache_data)
+
+                lines = cache_data.splitlines(True)
+                # Next, truncate the cache file after the second line, and then
+                # add invalid fmri data and verify the user does not receive an
+                # error.
+                f = file(cache_file, "wb")
+                # Only the write the first two lines.
+                f.writelines(lines[0:2])
+                # Then write an invalid fmri.
+                f.write("^not_Avalid1.0afmri@a.b.c|test1!test2\n")
+                f.close()
+                test_for_expected(pkg_list, su_wrap=True)
+
+                # Next, verify that performing the same operation as a
+                # privileged user will cause the cache to be rewritten correctly
+                # and still produce the expected results.
+                test_for_expected(pkg_list)
+                self.assertEqual(get_file_data(cache_file), cache_data)
+
+                # Next, truncate the cache file after the second line, and then
+                # write partial fmris without including a full one and verify
+                # that the user does not receive an error.
+                f = file(cache_file, "wb")
+                # Only the write the first two lines.
+                f.writelines(lines[0:2])
+                # Then write a partial fmri.
+                f.write("@1.0|test1!test2")
+                f.close()
+                test_for_expected(pkg_list, su_wrap=True)
+
+                # Next, verify that performing the same operation as a
+                # privileged user will cause the cache to be rewritten correctly
+                # and still produce the expected results.
+                test_for_expected(pkg_list)
+                self.assertEqual(get_file_data(cache_file), cache_data)
+
+                # Next, truncate the cache file after the second line, and then
+                # write newlines and verify that the user does not receive an
+                # error.
+                f = file(cache_file, "wb")
+                # Only the write the first two lines.
+                f.writelines(lines[0:2])
+                # Then write a few newlines.
+                f.writelines(("\n", "\n", "\n"))
+                f.close()
+                test_for_expected(pkg_list, su_wrap=True)
+
+                # Finally, verify that performing the same operation as a
+                # privileged user will cause the cache to be rewritten correctly
+                # and still produce the expected results.
+                test_for_expected(pkg_list)
+                self.assertEqual(get_file_data(cache_file), cache_data)
 
         def test_list_matching(self):
                 """List all versions of package foo, regardless of publisher."""

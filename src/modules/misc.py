@@ -484,7 +484,7 @@ def get_pkg_otw_size(action):
 def get_inventory_list(image, pargs, all_known, all_versions):
         most_recent = {}
         installed = []
-        res = image.inventory(pargs, all_known)
+        res = image.inventory(pargs, all_known, ordered=not all_versions)
         # All_Versions reduces the output so that only the most recent
         # version and installed version of packages appear.
         if all_versions:

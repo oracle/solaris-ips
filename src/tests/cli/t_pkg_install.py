@@ -483,7 +483,7 @@ class TestPkgInstallAmbiguousPatterns(testutils.SingleDepotTestCase):
                 shutil.copy(os.path.join(state_dir, "a%2Ffoo@" + old_ver),
                     os.path.join(state_dir, "a%2Ffoo@" + new_ver))
                 cat_file = os.path.join(self.img_path, "var", "pkg", "catalog",
-                    "catalog.pkl")
+                    "catalog_cache")
                 os.unlink(cat_file)
                 # Installing bar seems necessary to cause uninstall foo to fail.
                 self.pkg("install bar")

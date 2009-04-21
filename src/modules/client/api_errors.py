@@ -177,6 +177,7 @@ Try relaxing the pattern, refreshing and/or examining the catalogs:""")
 
                 return '\n'.join(res)
 
+
 class ActionExecutionError(ApiException):
         """An error was encountered executing an action.
 
@@ -214,6 +215,46 @@ class ActionExecutionError(ApiException):
                 # If we only have one of the two, no need for the colon.
                 return "%s%s" % (errno, msg)
 
+
+class CatalogCacheError(ApiException):
+        """Base class used for all catalog cache errors."""
+
+        def __init__(self, *args, **kwargs):
+                ApiException.__init__(self, *args)
+                if args:
+                        self.data = args[0]
+                else:
+                        self.data = None
+                self.args = kwargs
+
+
+class CatalogCacheBadVersion(CatalogCacheError):
+        """Used to indicate that the catalog cache is invalid or is not of a
+        supported version."""
+
+        def __str__(self):
+                return _("Unsupported catalog cache Version: '%(found)s'; "
+                    "expected: '%(expected)s'") % { "found": self.data,
+                    "expected": self.args["expected"] }
+
+
+class CatalogCacheInvalid(CatalogCacheError):
+        """Used to indicate that the catalog cache is corrupt or otherwise
+        unparseable."""
+
+        def __str__(self):
+                return _("Catalog cache is corrupt or invalid; error "
+                    "encountered while reading:\nline %(lnum)d: '%(data)s'") % {
+                    "lnum": self.args["line_number"], "data": self.data }
+
+
+class CatalogCacheMissing(CatalogCacheError):
+        """Used to indicate that the catalog cache is missing."""
+
+        def __str__(self):
+                return _("Catalog cache is missing.")
+
+
 class CatalogRefreshException(ApiException):
         def __init__(self, failed, total, succeeded, message=None):
                 ApiException.__init__(self)
@@ -221,6 +262,7 @@ class CatalogRefreshException(ApiException):
                 self.total = total
                 self.succeeded = succeeded
                 self.message = message
+
 
 class InventoryException(ApiException):
         def __init__(self, notfound=EmptyI, illegal=EmptyI):

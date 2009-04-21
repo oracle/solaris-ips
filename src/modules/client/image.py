@@ -25,7 +25,6 @@
 # Use is subject to license terms.
 #
 
-import cPickle
 import datetime as dt
 import errno
 import os
@@ -64,6 +63,7 @@ from pkg.misc import msg, emsg
 from pkg.misc import TransportException
 from pkg.misc import TransportFailures
 
+CATALOG_CACHE_FILE = "catalog_cache"
 img_user_prefix = ".org.opensolaris,pkg"
 img_root_prefix = "var/pkg"
 
@@ -782,8 +782,8 @@ class Image(object):
                 while retry_count > 0:
                         try:
                                 mcontent = retrieve.get_manifest(self, fmri)
-                                
-                                m = manifest.CachedManifest(fmri, self.pkgdir, 
+
+                                m = manifest.CachedManifest(fmri, self.pkgdir,
                                     self.cfg_cache.preferred_publisher,
                                     excludes, mcontent)
 
@@ -914,7 +914,7 @@ class Image(object):
                 object.... grab from server if needed"""
 
                 try:
-                        return manifest.CachedManifest(fmri, self.pkgdir, 
+                        return manifest.CachedManifest(fmri, self.pkgdir,
                             self.cfg_cache.preferred_publisher,
                             excludes)
                 except KeyError:
@@ -1390,7 +1390,8 @@ class Image(object):
                             "Unable to contact any configured publishers. "
                             "This is likely a network configuration problem.")
 
-        def _valid_versions_test(self, versdict):
+        @staticmethod
+        def _valid_versions_test(versdict):
                 """Check that the versions information contained in
                 versdict contains valid version specifications.
 
@@ -1507,7 +1508,7 @@ class Image(object):
                         return
 
                 try:
-                        reload = self.retrieve_catalogs(full_refresh=full_refresh,
+                        self.retrieve_catalogs(full_refresh=full_refresh,
                             pubs=pubs_to_refresh, progtrack=progtrack)
                 except (api_errors.ApiException, catalog.CatalogException), e:
                         # Reload catalogs; this picks up any updates and
@@ -1644,15 +1645,21 @@ class Image(object):
 
                 return updated > 0
 
-        CATALOG_CACHE_VERSION = 3
+        CATALOG_CACHE_VERSION = 4
 
         def cache_catalogs(self, pubs=None):
-                """Read in all the catalogs and cache the data."""
+                """Read in all the catalogs and cache the data.
+
+                'pubs' is a list of publisher objects to include when caching
+                the image's configured publisher metadata.
+                """
                 cache = {}
                 publist = []
 
                 try:
-                        publist = list(self.gen_publishers())
+                        publist = dict(
+                            (p.prefix, p) for p in self.gen_publishers()
+                        )
                 except CfgCacheError:
                         # No publishers defined.  If the caller hasn't
                         # supplied publishers to cache, raise the error
@@ -1661,16 +1668,16 @@ class Image(object):
 
                 if pubs:
                         # If caller passed publishers, include this in
-                        # the list of publishers to cache.
-                        publist.extend(pubs)
+                        # the list of publishers to cache.  These might
+                        # be publisher objects that haven't been added
+                        # to the image configuration yet.
+                        for p in pubs:
+                                publist[p.prefix] = p
 
-                for pub in publist:
-                        croot = "%s/catalog/%s" % (self.imgdir, pub.prefix)
-                        # XXX Should I be removing pkg_names.pkl now that we're
-                        # not using it anymore?
+                for pub in publist.itervalues():
                         try:
                                 catalog.Catalog.read_catalog(cache,
-                                    croot, pub = pub.prefix)
+                                    pub.meta_root, pub=pub.prefix)
                         except EnvironmentError, e:
                                 # If a catalog file is just missing, ignore it.
                                 # If there's a worse error, make sure the user
@@ -1679,37 +1686,183 @@ class Image(object):
                                         pass
                                 else:
                                         raise
-
                 self._catalog = cache
 
-                pickle_file = os.path.join(self.imgdir, "catalog/catalog.pkl")
+                # Remove old catalog cache files.
+                croot = os.path.join(self.imgdir, "catalog")
+                for fname in ("pkg_names.pkl", "catalog.pkl"):
+                        fpath = os.path.join(croot, fname)
+                        try:
+                                portable.remove(fpath)
+                        except KeyboardInterrupt:
+                                raise
+                        except:
+                                # If for any reason, the file can't be removed,
+                                # it doesn't matter.
+                                pass
 
                 try:
-                        pfd, ptmp = \
-                            tempfile.mkstemp(dir=os.path.dirname(pickle_file))
+                        cfd, ctmp = tempfile.mkstemp(dir=croot)
+                        cf = os.fdopen(cfd, "wb")
                 except EnvironmentError:
+                        # If the cache can't be written, it doesn't matter.
                         return
 
-                try:
-                        pf = os.fdopen(pfd, "wb")
-                        # Version the dump file
-                        cPickle.dump((self.CATALOG_CACHE_VERSION, cache), pf,
-                            protocol = cPickle.HIGHEST_PROTOCOL)
-                        pf.close()
-                        os.chmod(ptmp, 0644)
-                        portable.rename(ptmp, pickle_file)
-                except (cPickle.PickleError, EnvironmentError):
+                def cleanup():
                         try:
-                                portable.remove(ptmp)
+                                if cf:
+                                        cf.close()
                         except EnvironmentError:
                                 pass
+
+                        try:
+                                portable.remove(ctmp)
+                        except EnvironmentError:
+                                pass
+
+                # First, the list of all publishers is built assigning each
+                # one a sequentially incremented integer as they are discovered.
+                # This number is used as a mapping code for publishers to reduce
+                # the size of the catalog cache.
+                pubs = {}
+                for pkg_name in cache:
+                        vers = cache[pkg_name]
+                        for k, v in vers.iteritems():
+                                if k == "versions":
+                                        continue
+                                for p in v[1]:
+                                        if p not in pubs:
+                                                pubs[p] = str(len(pubs))
+
+                # '|' is used to separate fields of information (such
+                # as fmri name and each version).
+                # '!' is used to separate items within a field (such as
+                # information about a version).
+                # '^' is used to separate item values (such as a publisher and
+                # its index number).
+
+                # First line of file is the version of the catalog cache.
+                try:
+                        cf.write("%s\n" % self.CATALOG_CACHE_VERSION)
+                except EnvironmentError:
+                        cleanup()
+                        return
+                except:
+                        cleanup()
+                        raise
+
+                # Second line of the file is the list of publisher prefixes
+                # and their index number used to decode the fmri entries.
+                publine = "!".join([
+                    "^".join((p, pubs[p])) for p in pubs
+                ])
+
+                try:
+                        cf.write("%s\n" % publine)
+                except EnvironmentError:
+                        cleanup()
+                        return
+                except:
+                        cleanup()
+                        raise
+
+                # All lines after the first two are made up of a package's
+                # version-specific fmri and the list of publishers that have
+                # it in their catalog, or where it was installed from.
+                for pkg_name in sorted(cache.keys()):
+                        vers = cache[pkg_name]
+
+                        # Iteration has to be performed over versions to retain
+                        # sort order.
+                        first = True
+                        release = None
+                        build_release = None
+                        branch = None
+                        for v in vers["versions"]:
+                                f, fpubs = vers[str(v)]
+                                known = "^".join(
+                                    pubs[p] for p in fpubs
+                                    if fpubs[p]
+                                )
+
+                                unknown = "^".join(
+                                    pubs[p] for p in fpubs
+                                    if not fpubs[p]
+                                )
+
+                                if first:
+                                        # When writing the first entry for a
+                                        # package, write its full fmri.
+                                        first = False
+                                        release = f.version.release
+                                        build_release = f.version.build_release
+                                        branch = f.version.branch
+                                        sfmri = f.get_fmri(anarchy=True,
+                                            include_scheme=False)
+                                else:
+                                        # For successive entries, write only
+                                        # what is not shared by the previous
+                                        # entry.
+                                        rmatch = f.version.release == release
+                                        brmatch = f.version.build_release == \
+                                            build_release
+                                        bmatch = f.version.branch == branch
+
+                                        sver = str(f.version)
+                                        if rmatch and brmatch and bmatch:
+                                                # If release, build_release, and
+                                                # branch match the last entry,
+                                                # they can be omitted.
+                                                sfmri = ":" + sver.split(":")[1]
+                                        elif rmatch and brmatch:
+                                                # If release and build_release
+                                                # match the last entry, they can
+                                                # be omitted.
+                                                sfmri = "-" + sver.split("-")[1]
+                                        elif rmatch:
+                                                # If release matches the last
+                                                # entry, it can be omitted.
+                                                sfmri = "," + sver.split(",")[1]
+                                        else:
+                                                # Nothing matched the previous
+                                                # entry except the name, so the
+                                                # full version must be written.
+                                                sfmri = "@" + sver
+
+                                        release = f.version.release
+                                        build_release = f.version.build_release
+                                        branch = f.version.branch
+
+                                line = sfmri + "|" + known + "!" + unknown
+                                try:
+                                        cf.write(line + "\n")
+                                except EnvironmentError:
+                                        cleanup()
+                                        return
+                                except:
+                                        cleanup()
+                                        raise
+
+                cfpath = os.path.join(croot, CATALOG_CACHE_FILE)
+                try:
+                        cf.close()
+                        cf = None
+                        os.chmod(ctmp, 0644)
+                        portable.rename(ctmp, cfpath)
+                except EnvironmentError:
+                        cleanup()
+                        return
+                except:
+                        cleanup()
+                        raise
 
         def load_catalog_cache(self):
                 """Read in the cached catalog data."""
 
                 self.__load_pkg_states()
 
-                cache_file = os.path.join(self.imgdir, "catalog/catalog.pkl")
+                croot = os.path.join(self.imgdir, "catalog")
+                cache_file = os.path.join(croot, CATALOG_CACHE_FILE)
                 try:
                         mod_time = os.stat(cache_file).st_mtime
                 except EnvironmentError, e:
@@ -1720,21 +1873,133 @@ class Image(object):
 
                 if not self._catalog or \
                     mod_time != self._catalog_cache_mod_time:
-
                         try:
-                                version, self._catalog = \
-                                    cPickle.load(file(cache_file, "rb"))
-                        except (cPickle.PickleError, EnvironmentError,
-                            EOFError):
+                                cf = file(cache_file, "rb")
+                        except EnvironmentError, e:
                                 self._catalog = {}
                                 self._catalog_cache_mod_time = None
-                                raise RuntimeError
+                                if e.errno == errno.EACCES:
+                                        raise api_errors.PermissionsException(
+                                            e.filename)
+                                if e.errno == errno.ENOENT:
+                                        raise api_errors.CatalogCacheMissing()
+                                raise
 
-                        self._catalog_cache_mod_time = mod_time
+                        # First line should be version.
+                        try:
+                                ver = cf.readline().strip()
+                                ver = int(ver)
+                        except ValueError:
+                                ver = None
 
                         # If we don't recognize the version, complain.
-                        if version != self.CATALOG_CACHE_VERSION:
-                                raise RuntimeError
+                        if ver != self.CATALOG_CACHE_VERSION:
+                                raise api_errors.CatalogCacheBadVersion(
+                                    ver, expected=self.CATALOG_CACHE_VERSION)
+
+                        # Second line should be the list of publishers.
+                        publine = cf.readline().strip()
+                        if not publine:
+                                publine = ""
+
+                        pubidx = {}
+                        for e in publine.split("!"):
+                                try:
+                                        p, idx = e.split("^")
+                                except ValueError:
+                                        raise api_errors.CatalogCacheInvalid(
+                                            publine, line_number=2)
+                                pubidx[idx] = p
+
+                        if not pubidx:
+                                raise api_errors.CatalogCacheInvalid(
+                                    publine, line_number=2)
+
+                        self._catalog = {}
+
+                        # Read until EOF.
+                        pkg_name = None
+                        for lnum, line in ((i + 3, l.strip())
+                            for i, l in enumerate(cf)):
+                                # The first of these line for each package is of
+                                # the format:
+                                # fmri|pub1_known^pub2...!pub1_unknown^pub2...
+                                #
+                                # Successive versions of the same package are of
+                                # the format:
+                                # @ver|pub1_known^pub2...!pub1_unknown^pub2...
+                                try:
+                                        sfmri, spubs = line.split("|", 1)
+                                        sfmri = sfmri.strip()
+                                except (AttributeError, ValueError):
+                                        raise api_errors.CatalogCacheInvalid(
+                                            line, line_number=lnum)
+
+                                if sfmri[0] in (":", "-", ",", "@") and \
+                                    not pkg_name:
+                                        # The previous line should have been a
+                                        # full fmri or provided enough info
+                                        # to construct one for this entry.
+                                        raise api_errors.CatalogCacheInvalid(
+                                            line, line_number=lnum)
+                                elif sfmri[0] == ":":
+                                        # Everything but the timestamp is the
+                                        # same as the previous entry.
+                                        sfmri = "%s@%s%s" % (pkg_name,
+                                            sver.split(":")[0], sfmri)
+                                elif sfmri[0] == "-":
+                                        # Everything but the branch is the same
+                                        # as the previous entry.
+                                        sfmri = "%s@%s%s" % (pkg_name,
+                                            sver.split("-")[0], sfmri)
+                                elif sfmri[0] == ",":
+                                        # Everything but the release is the same
+                                        # as the previous entry.
+                                        sfmri = "%s@%s%s" % (pkg_name,
+                                            sver.split(",")[0], sfmri)
+                                elif sfmri[0] == "@":
+                                        # If the entry starts with this, then
+                                        # only the package name is shared.
+                                        sfmri = pkg_name + sfmri
+
+                                known, unknown = spubs.split("!")
+
+                                # Transform the publisher index numbers into
+                                # their equivalent prefixes.
+                                pubs = {}
+                                for k in known.split("^"):
+                                        if k in pubidx:
+                                                pubs[pubidx[k]] = True
+                                for u in unknown.split("^"):
+                                        if u in pubidx:
+                                                pubs[pubidx[u]] = False
+
+                                if not pubs:
+                                        raise api_errors.CatalogCacheInvalid(
+                                            line, line_number=lnum)
+
+                                # Build the FMRI from the provided string and
+                                # cache the result using the publisher info.
+                                try:
+                                        pfmri = pkg.fmri.PkgFmri(sfmri)
+                                        pkg_name = pfmri.pkg_name
+                                        sver = sfmri.split("@", 1)[1]
+                                except (pkg.fmri.FmriError, IndexError), e:
+                                        raise api_errors.CatalogCacheInvalid(
+                                            line, line_number=lnum)
+                                catalog.Catalog.fast_cache_fmri(self._catalog,
+                                    pfmri, sver, pubs)
+
+                        # Now that all of the data has been loaded, set the
+                        # modification time.
+                        self._catalog_cache_mod_time = mod_time
+
+                        try:
+                                cf.close()
+                        except EnvironmentError:
+                                # All of the data was retrieved, so this error
+                                # doesn't matter.
+                                pass
 
         def load_catalogs(self, progresstracker):
 
@@ -1754,13 +2019,18 @@ class Image(object):
                         self.catalogs[pub.prefix] = c
                         progresstracker.catalog_done()
 
-                # Try to load the catalog cache file.  If that fails, load the
-                # data from the canonical text copies of the catalogs from each
-                # publisher.  Try to save it, to spare the time in the future.
+                # Try to load the catalog cache file.  If that fails, call
+                # cache_catalogs so that the data from the canonical text copies
+                # of the catalogs from each publisher will be loaded and the
+                # data cached.
+                #
                 # XXX Given that this is a read operation, should we be writing?
                 try:
                         self.load_catalog_cache()
-                except RuntimeError:
+                except api_errors.CatalogCacheError:
+                        # If the load failed because of a bad version,
+                        # corruption, or because it was missing, just try to
+                        # rebuild it automatically.
                         self.cache_catalogs()
 
                 # Add the packages which are installed, but not in the catalog.
@@ -1793,12 +2063,20 @@ class Image(object):
                             f.get_publisher(), known=False)
 
         def destroy_catalog_cache(self):
-                pickle_file = os.path.join(self.imgdir, "catalog/catalog.pkl")
-                try:
-                        portable.remove(pickle_file)
-                except OSError, e:
-                        if e.errno != errno.ENOENT:
+                croot = os.path.join(self.imgdir, "catalog")
+
+                # Remove catalog cache files (including old ones).
+                croot = os.path.join(self.imgdir, "catalog")
+                for fname in ("pkg_names.pkl", "catalog.pkl", "catalog_cache"):
+                        fpath = os.path.join(croot, fname)
+                        try:
+                                portable.remove(fpath)
+                        except KeyboardInterrupt:
                                 raise
+                        except:
+                                # If for any reason, the file can't be removed,
+                                # it doesn't matter as it will be overwritten.
+                                pass
 
         def _get_publisher_meta_root(self, prefix):
                 return os.path.join(self.imgdir, "catalog", prefix)
@@ -2078,8 +2356,6 @@ class Image(object):
                 # to match -- based on name, version, or publisher.
                 matchingpats = set()
 
-                # XXX Perhaps we shouldn't sort here, but in the caller, to save
-                # memory?
                 if ordered:
                         entries = sorted(self._catalog.keys())
                 else:

@@ -96,11 +96,7 @@ class Catalog(object):
         ...
 
         In order to improve the time to search the catalog, a cached list
-        of package names is kept in the catalog instance.  In an effort
-        to prevent the catalog from having to generate this list every time
-        it is constructed, the array that contains the names is pickled and
-        saved and pkg_names.pkl.
-        """
+        of package names is kept in the catalog instance."""
 
         # The file mode to be used for all catalog files.
         file_mode = stat.S_IRUSR|stat.S_IWUSR|stat.S_IRGRP|stat.S_IROTH
@@ -306,6 +302,39 @@ class Catalog(object):
                 except EnvironmentError:
                         portable.remove(tmpfile)
                         raise
+
+        @staticmethod
+        def fast_cache_fmri(d, pfmri, sversion, pubs):
+                """Store the fmri in a data structure 'd' for fast lookup, but
+                requires the caller to provide all the data pre-sorted and
+                processed.
+
+                'd' is a dict that maps each package name to another dictionary
+
+                'pfmri' is the fmri object to be cached.
+
+                'sversion' is the string representation of pfmri.version.
+
+                'pubs' is a dict of publisher name and boolean value pairs
+                indicating catalog presence.
+
+                The fmri is expected not to have an embedded publisher.  If it
+                does, it will be ignored.
+
+                See cache_fmri() for data structure details."""
+
+                if pfmri.pkg_name not in d:
+                        # This is the simplest representation of the cache data
+                        # structure.
+                        d[pfmri.pkg_name] = {
+                            "versions": [pfmri.version],
+                            sversion: (pfmri, pubs)
+                        }
+                else:
+                        # It's assumed the caller will provide these in
+                        # the correct order for performance reasons.
+                        d[pfmri.pkg_name][sversion] = (pfmri, pubs)
+                        d[pfmri.pkg_name]["versions"].append(pfmri.version)
 
         @staticmethod
         def cache_fmri(d, pfmri, pub, known=True):
