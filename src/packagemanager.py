@@ -2214,8 +2214,8 @@ class PackageManager:
                 try:
                         gnome.url_show(self.release_notes_url)
                 except gobject.GError:
-                        self.__error_occurred(_("Unable to navigate to:\n\t%s") % 
-                            self.release_notes_url, title=_("Package Manager"))
+                        self.error_occured(_("Unable to navigate to:\n\t%s") % 
+                            self.release_notes_url, msg_title=_("Package Manager"))
 
         def __on_help_about(self, widget):
                 wTreePlan = gtk.glade.XML(self.gladefile, "aboutdialog")
@@ -3349,7 +3349,7 @@ class PackageManager:
                     flags = gtk.DIALOG_MODAL,
                     type = msg_type,
                     message_format = None)
-                msgbox.set_markup(error_msg)
+                msgbox.set_property('text', error_msg)
                 title = None
                 if msg_title:
                         title = msg_title

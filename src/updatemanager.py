@@ -924,7 +924,7 @@ class Updatemanager:
                         gnome.url_show(self.release_notes_url)
                 except gobject.GError:
                         self.__error_occurred(_("Unable to navigate to:\n\t%s") % 
-                            self.release_notes_url, title=_("Update Manager"))
+                            self.release_notes_url)
 
         def __on_um_dialog_close(self, widget):
                 self.__exit_app()
@@ -1474,6 +1474,23 @@ class Updatemanager:
 
         def shutdown_after_image_update(self):
                 self.__display_update_image_success()
+
+        def __error_occurred(self, error_msg, msg_title=None, msg_type=gtk.MESSAGE_ERROR):
+                msgbox = gtk.MessageDialog(parent =
+                    self.w_um_dialog,
+                    buttons = gtk.BUTTONS_CLOSE,
+                    flags = gtk.DIALOG_MODAL,
+                    type = msg_type,
+                    message_format = None)
+                msgbox.set_property('text', error_msg)
+                title = None
+                if msg_title:
+                        title = msg_title
+                else:
+                        title = _("Update Manager")
+                msgbox.set_title(title)
+                msgbox.run()
+                msgbox.destroy()
 
 #-------------------- remove those
 def main():

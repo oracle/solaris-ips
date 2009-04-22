@@ -356,7 +356,7 @@ class Webinstall:
                     flags = gtk.DIALOG_MODAL,
                     type = msg_type,
                     message_format = None)
-                msgbox.set_markup(error_msg)
+                msgbox.set_property('text', error_msg)
                 if title != None:
                         msgbox.set_title(title)
                 else:
