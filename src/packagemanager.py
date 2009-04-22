@@ -43,7 +43,7 @@ NOTEBOOK_PACKAGE_LIST_PAGE = 0            # Main Package List page index
 NOTEBOOK_START_PAGE = 1                   # Main View Start page index
 INFO_NOTEBOOK_LICENSE_PAGE = 3            # License Tab index
 TYPE_AHEAD_DELAY = 600    # The last type in search box after which search is performed
-SEARCH_STR_FORMAT = "<::description:*%s*>"
+SEARCH_STR_FORMAT = "<%s>"
 SEARCH_LIMIT = 100                        # Maximum number of results shown for
                                           # remote search
 MIN_APP_WIDTH = 750                       # Minimum application width
@@ -254,8 +254,8 @@ class PackageManager:
                     _("Search Current Repository (Name and Description)")),
                     ('ips-search-all',
                     gui_misc.get_icon_pixbuf(self.application_dir, 'search_all'),
-                    _("_All Repositories (Description Only)"),
-                    _("Search All Repositories (Description Only)"))
+                    _("_All Repositories (Exact Match)"),
+                    _("Search All Repositories (Exact Match)"))
                     ]
                 self.__register_iconsets(self.search_options)
 
@@ -1501,7 +1501,7 @@ class PackageManager:
                         gobject.idle_add(self.w_progress_dialog.hide)
                         gobject.idle_add(self.__handle_remote_search_error)
                         if len(result_tuple) == 0:
-                                self.__process_after_search_failure()
+                                self.__process_after_search_with_zero_results()
                                 return
                 except Exception, ex:
                         # We are not interested in this error
@@ -1516,7 +1516,7 @@ class PackageManager:
                 if len(result) == 0:
                         if debug:
                                 print "No search results"
-                        self.__process_after_search_failure()
+                        self.__process_after_search_with_zero_results()
                         return
                 result.reverse()
                 # We cannot get status of the packages if catalogs have not
@@ -1533,6 +1533,13 @@ class PackageManager:
                 gobject.idle_add(self.__set_empty_details_panel)
                 gobject.idle_add(self.__set_main_view_package_list)
                 gobject.idle_add(self.__init_tree_views, application_list, None, None)
+
+        def __process_after_search_with_zero_results(self):
+                        self.in_setup = True
+                        application_list = self.__get_new_application_liststore()
+                        gobject.idle_add(self.__set_empty_details_panel)
+                        gobject.idle_add(self.__set_main_view_package_list)
+                        gobject.idle_add(self.__init_tree_views, application_list, None, None)
 
         def __get_list_from_search(self, search_result):
                 application_list = self.__get_new_application_liststore()

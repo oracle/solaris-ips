@@ -206,15 +206,22 @@
 </itemizedlist>
 </listitem>
 <listitem><para><emphasis role="strong">Search all repositories</emphasis> – Select the multi-repository icon in the <literal>Search</literal> box to search for the package across all configured or registered repositories.</para>
-<note><para>The multi-repository search currently supports search based on the package description only.</para>
-</note>
-<para>Type a description of the package in the box. For example, the <filename>SUNWdiveintopython</filename> package is a book on Python programming. The description of the package contains <emphasis>book</emphasis>. To search for this package, you might then type one of the following terms:</para>
+<para>Note the following important considerations when using the multi-repository search.</para>
+<itemizedlist><listitem><para>The multi-repository search currently supports a search based on the package contents including its description, classification, and the files contained within the package. However, the correct results are displayed only if the term used for searching is an <emphasis role="strong">exact</emphasis> match.</para>
+</listitem>
+<listitem><para><emphasis role="strong">The multi-repository search does not search the package name</emphasis>.</para>
+</listitem>
+<listitem><para>Wild card searching is supported by using the asterisk wild card, <literal>*</literal>, in the search term. Search using the wild card can be slower than an exact match search.</para>
+</listitem>
+</itemizedlist>
+<para></para>
+<para>Type a description of the package in the box. For example, the <filename>SUNWdiveintopython</filename> package is a book on Python programming. The description of the package contains the string <emphasis>book</emphasis>. To search for this package, you might then type one of the following terms:</para>
 <itemizedlist><listitem><para>python</para>
 </listitem>
 <listitem><para>book</para>
 </listitem>
 </itemizedlist>
-<note><para>If you searched for the term <emphasis>dive</emphasis> in the multi-repository search, the <filename>SUNWdiveintopython</filename> package will not be displayed as the term is not present in the package description.</para>
+<note><para>If you searched for the term <emphasis>diveinto</emphasis> in the multi-repository search, the <filename>SUNWdiveintopython</filename> package will not be displayed as the term <emphasis>diveinto</emphasis> is not present as an independent, complete word in the package contents. However you will find the package using the <literal>*</literal> wild card. Hence, searching for the term <literal>diveinto*</literal> will display the <filename>SUNWdiveintopython</filename> package.</para>
 </note>
 </listitem>
 </itemizedlist>
