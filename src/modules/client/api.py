@@ -31,6 +31,7 @@ import httplib
 import os
 import socket
 import simplejson as json
+import StringIO
 import sys
 import threading
 import urllib
@@ -649,11 +650,12 @@ class ImageInterface(object):
                 license_lst = []
                 for lic in mfst.gen_actions_by_type("license"):
                         if not local:
-                                s = misc.FilelikeString()
+                                s = StringIO.StringIO()
                                 hash_val = misc.gunzip_from_stream(
                                     lic.get_remote_opener(self.img,
                                     mfst.fmri)(), s)
-                                text = s.buf
+                                text = s.getvalue()
+                                s.close()
                         else:
                                 text = lic.get_local_opener(self.img,
                                     mfst.fmri)().read()[:-1]

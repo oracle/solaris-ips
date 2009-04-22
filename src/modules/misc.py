@@ -238,13 +238,6 @@ def valid_pub_url(url):
 
         return False
 
-class FilelikeString(object):
-        def __init__(self):
-                self.buf = ""
-
-        def write(self, o):
-                self.buf += o
-
 def gunzip_from_stream(gz, outfile):
         """Decompress a gzipped input stream into an output stream.
 
