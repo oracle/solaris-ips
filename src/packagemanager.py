@@ -43,7 +43,7 @@ NOTEBOOK_PACKAGE_LIST_PAGE = 0            # Main Package List page index
 NOTEBOOK_START_PAGE = 1                   # Main View Start page index
 INFO_NOTEBOOK_LICENSE_PAGE = 3            # License Tab index
 TYPE_AHEAD_DELAY = 600    # The last type in search box after which search is performed
-SEARCH_STR_FORMAT = "<::description:*%s* OR ::fmri:*%s*>"
+SEARCH_STR_FORMAT = "<::description:*%s*>"
 SEARCH_LIMIT = 100                        # Maximum number of results shown for
                                           # remote search
 MIN_APP_WIDTH = 750                       # Minimum application width
@@ -1468,7 +1468,7 @@ class PackageManager:
                 servers = []
                 result = []
                 pargs = []
-                search_str = SEARCH_STR_FORMAT % (text, text)
+                search_str = SEARCH_STR_FORMAT % text
                 pargs.append(search_str)
                 if debug:
                         print "pargs:", pargs
