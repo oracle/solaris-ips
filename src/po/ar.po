@@ -162,7 +162,8 @@ msgid ""
 "pkg: no packages matching the following patterns you specified are\n"
 "installed on the system.\n"
 msgstr ""
-       "pkg: لاتوجد حزم متوافقة مع النموذج المختار  \n المنصبة ضمن النظام \n "
+       "pkg: لاتوجد حزم متوافقة مع النموذج المختار  \n"
+       "المنصبة ضمن النظام \n"
 
 #: ../client.py:466
 #, python-format
@@ -831,8 +832,8 @@ msgid ""
 "by SUNWipkg. The client version is %(client)s while the library API version "
 "is %(api)s"
 msgstr ""
-       "أمر pkg يظهر أنه خارج التزامن مع المكتبة المتاحة \n "
-       "من قبل SUNWipkg. إصدار العميل %(العميل ) s عندما إصدار مكتبة API تكون "
+       "أمر pkg يظهر أنه خارج التزامن مع المكتبة المتاحة \n"
+       "من قبل SUNWipkg. إصدار العميل %(client)s عندما إصدار مكتبة API تكون "
        "%(api)s"
 
 #: ../client.py:2553 ../publish.py:382
@@ -1143,14 +1144,13 @@ msgstr "<b>التأكيد على التغيرات التالية :</b>"
 msgid ""
 "<b>Create New Boot Environment</b>\n"
 "\n"
-"Update All creates a new boot environment (BE) as a means of archiving the\n"
+"Update All creates a new boot environment (BE) as a means of archiving the "
 "current BE. The new BE consists of the updated packages and is the default "
-"BE\n"
-"when the system is rebooted.\n"
+"BE when the system is rebooted.\n"
 msgstr ""
        "<b>إنشاء بيئة إقلاع جديدة</b>\n"
        "\n"
-       "ترقية الكل وإنشاء بيئة إقلاع جديدة (BE) تعرف كأرشيف \n"
+       "ترقية الكل وإنشاء بيئة إقلاع جديدة (BE) تعرف كأرشيف "
        "الحالي BE. BE الجديد يحوي ترقية كاملة لكل الحزم والBE الإفتراضي  "
        "عندما يعاد تشغيل النظام .\n"
 
@@ -1303,11 +1303,11 @@ msgstr "تنصيب أو ترقية الحزم المختارة "
 
 #: ../gui/data/packagemanager.glade.h:45 ../gui/modules/installupdate.py:237
 msgid "Install/Update"
-msgstr "تنصيب\ترقية"
+msgstr "تنصيب\\ترقية"
 
 #: ../gui/data/packagemanager.glade.h:46
 msgid "Install/Upgrade Check"
-msgstr "تحقق من تنصيب\ترقية"
+msgstr "تحقق من تنصيب\\ترقية"
 
 #: ../gui/data/packagemanager.glade.h:48
 msgid "Legend:"
@@ -1448,7 +1448,7 @@ msgstr "إختر من القائمة لتعديل أو لإزالة المستو
 
 #: ../gui/data/packagemanager.glade.h:83
 msgid "Select packages by marking the checkbox and click to Install/Update."
-msgstr "إختر الحزم بإشارة ضمن المربع ثم إضغط على تنصيب\ترقية"
+msgstr "إختر الحزم بإشارة ضمن المربع ثم إضغط على تنصيب\\ترقية"
 
 #: ../gui/data/packagemanager.glade.h:84
 msgid "Select packages by marking the checkbox and click to Remove selected."
@@ -1486,7 +1486,8 @@ msgid ""
 "buttons to provide their location."
 msgstr ""
        "هذا المستودع يتطلب SSL Key و شهادة .\n"
-       "أدخل مسار الملف ضمن المساحة المتاحة , أو إستعمل المتصفح \n"
+       "أدخل مسار الملف ضمن المساحة المتاحة ,\n"
+       "أو إستعمل المتصفح"
 
 #: ../gui/data/packagemanager.glade.h:94
 msgid "Type text to search name and description of the package."
@@ -1547,7 +1548,7 @@ msgstr "_مساعدة "
 
 #: ../gui/data/packagemanager.glade.h:108
 msgid "_Install / Update"
-msgstr "_تنصيب\ترقية "
+msgstr "_تنصيب\\ترقية "
 
 #: ../gui/data/packagemanager.glade.h:109
 msgid "_Instructions"
@@ -1958,7 +1959,7 @@ msgid ""
 msgstr ""
        "لايمكن إزالة :\n"
        "\t%s\n"
-       "بسبب أن الحزم التالية لها تبعية على :\n "
+       "بسبب أن الحزم التالية لها تبعية على :\n"
 
 #: ../gui/modules/installupdate.py:424
 #, python-format
@@ -2146,15 +2147,15 @@ msgstr "لاتوجد مساحة كافية على القرص"
 
 #: ../gui/modules/installupdate.py:755
 msgid "Packages To Be Updated:\n"
-msgstr "الحزم للترقية : \n "
+msgstr "الحزم للترقية : \n"
 
 #: ../gui/modules/installupdate.py:762
 msgid "Packages To Be Installed:\n"
-msgstr "الحزم للتنصيب : \n "
+msgstr "الحزم للتنصيب : \n"
 
 #: ../gui/modules/installupdate.py:769
 msgid "Packages To Be Removed:\n"
-msgstr "الحزم للإزالة : \n "
+msgstr "الحزم للإزالة : \n"
 
 #: ../gui/modules/installupdate.py:827
 #, python-format
@@ -2400,7 +2401,7 @@ msgstr ""
        "\n"
        "لايمكن إكمال العملية لأنه لايوجد صلاحيات كافية الرجاء جرب الأمر مرة أخرى بإستعمال "
        "pfexec \n"
-       "او حاول الحصول على صلاحيات"
+       "او حاول الحصول على صلاحيات\n"
 
 #: ../modules/client/api_errors.py:118
 #, python-format
@@ -2519,7 +2520,7 @@ msgstr ""
 #: ../modules/client/api_errors.py:381
 #, python-format
 msgid "Unable to mount %(name)s at %(mt)s"
-msgstr "لاأستطيع التحميل %(إسم)s at %(mt)s"
+msgstr "لاأستطيع التحميل %(name)s at %(mt)s"
 
 #: ../modules/client/api_errors.py:390
 msgid ""
@@ -2568,7 +2569,7 @@ msgstr "    %(o)s: %(msg)s\n"
 #: ../modules/client/api_errors.py:434
 #, python-format
 msgid "%s appears not to be a valid package depot.\n"
-msgstr "%s تظهر أنه يوجد خطأ بمستودع الحزم"
+msgstr "%s تظهر أنه يوجد خطأ بمستودع الحزم\n"
 
 #: ../modules/client/api_errors.py:457
 msgid ""
@@ -3230,11 +3231,11 @@ msgstr "مختار من أجل إزالة :"
 
 #: ../packagemanager.py:2155
 msgid "Selected for Install/Update:"
-msgstr "إختر للتنصيب\الترقية : "
+msgstr "إختر للتنصيب\\الترقية : "
 
 #: ../packagemanager.py:2159 ../packagemanager.py:2164
 msgid "Select packages by marking checkbox\n"
-msgstr "إختر الحزم بوضع إشارة ضمن المربع "
+msgstr "إختر الحزم بوضع إشارة ضمن المربع\n"
 
 #: ../packagemanager.py:2211
 msgid "Package Name"
@@ -3403,6 +3404,7 @@ msgstr ""
        "\n"
        "أعرض ملاحظات الإصدار قبل إعادة تشغي النظام : \n"
        "\n"
+       "http://opensolaris.org/os/project/indiana/resources/relnotes/200811/x86/"
 
 #: ../packagemanager.py:3365
 msgid "Save selected..."
