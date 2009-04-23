@@ -143,10 +143,10 @@ class LegacyAction(generic.Action):
                         if os.path.isfile(linkfile):
                                 os.unlink(linkfile)
 
-                                # do this conditionally to be kinder
-                                # to installations done w/ older versions
-                                if link_count == 2: # last one
-                                        os.unlink(pkginfo)
+                        # do this conditionally to be kinder
+                        # to installations done w/ older versions
+                        if link_count <= 2: # last one
+                                os.unlink(pkginfo)
 
         def generate_indices(self):
                 return [("legacy", "legacy_pkg", self.attrs["pkg"], None)]
