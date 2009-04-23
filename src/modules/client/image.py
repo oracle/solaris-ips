@@ -1029,7 +1029,10 @@ class Image(object):
                                 if e.errno == errno.EACCES:
                                         raise api_errors.PermissionsException(
                                             e.filename)
-                                raise
+                                if e.errno != errno.EEXIST and \
+                                    not os.path.isdir(e.filename):
+                                        raise
+
                         f = file(self._install_file(fmri), "w")
 
                 f.writelines(["VERSION_1\n", fmri.get_publisher_str(), "\n"])
