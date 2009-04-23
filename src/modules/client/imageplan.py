@@ -703,7 +703,7 @@ class ImagePlan(object):
 
                                 # execute removals
 
-                                self.progtrack.actions_set_goal("Removal Phase",
+                                self.progtrack.actions_set_goal(_("Removal Phase"),
                                     len(self.removal_actions))
                                 for p, src, dest in self.removal_actions:
                                         p.execute_removal(src, dest)
@@ -712,7 +712,7 @@ class ImagePlan(object):
 
                                 # execute installs
 
-                                self.progtrack.actions_set_goal("Install Phase",
+                                self.progtrack.actions_set_goal(_("Install Phase"),
                                     len(self.install_actions))
 
                                 for p, src, dest in self.install_actions:
@@ -722,7 +722,7 @@ class ImagePlan(object):
 
                                 # execute updates
 
-                                self.progtrack.actions_set_goal("Update Phase",
+                                self.progtrack.actions_set_goal(_("Update Phase"),
                                     len(self.update_actions))
 
                                 for p, src, dest in self.update_actions:
@@ -772,7 +772,7 @@ class ImagePlan(object):
                             in self.pkg_plans
                         ]
                         del self.pkg_plans
-                        self.progtrack.actions_set_goal("Index Phase",
+                        self.progtrack.actions_set_goal(_("Index Phase"),
                             len(plan_info))
                         self.image.update_index_dir()
                         ind = indexer.Indexer(self.image,

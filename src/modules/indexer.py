@@ -152,7 +152,7 @@ class Indexer(object):
                     self._file_timeout_secs)
                 if self._progtrack is not None:
                         self._progtrack.index_set_goal(
-                            "Reading Existing Index", len(self._data_dict))
+                            _("Reading Existing Index"), len(self._data_dict))
                 if res == None:
                         self.file_version_number = INITIAL_VERSION_NUMBER
                         self.empty_index = True
@@ -575,7 +575,7 @@ class Indexer(object):
                                 assert image
                                 if self._progtrack is not None:
                                         self._progtrack.index_set_goal(
-                                            "Indexing Packages",
+                                            _("Indexing Packages"),
                                             len(inputs[1]))
                                 self._fast_update(inputs)
                                 fast_update = True
@@ -597,7 +597,7 @@ class Indexer(object):
 
                                 if self._progtrack is not None:
                                         self._progtrack.index_set_goal(
-                                            "Indexing Packages",
+                                            _("Indexing Packages"),
                                             len(inputs))
                                 dicts = self._process_fmris(inputs)
                                 # Update the main dictionary file
