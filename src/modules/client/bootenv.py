@@ -189,8 +189,23 @@ class BootEnv(object):
         @staticmethod
         def check_be_name(be_name):
                 try:
-                        return be_name is None or \
-                            be.beVerifyBEName(be_name) == 0
+                        if be_name is None or \
+                            be.beVerifyBEName(be_name) != 0:
+                                raise api_errors.InvalidBENameException(be_name)
+
+                        # Check for the old beList() API since pkg(1) can be
+                        # back published and live on a system without the 
+                        # latest libbe.
+                        beVals = be.beList()
+                        if isinstance(beVals[0], int):
+                                rc, beList = beVals
+                        else:
+                                beList = beVals
+
+                        # If there is already a BE with the same name as
+                        # be_name, then raise an exception.
+                        if be_name in (be.get("orig_be_name") for be in beList):
+                                raise api_errors.DuplicateBEName(be_name)
                 except AttributeError:
                         raise api_errors.BENamingNotSupported(be_name)
 

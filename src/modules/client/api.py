@@ -121,7 +121,7 @@ class ImageInterface(object):
 
         @staticmethod
         def check_be_name(be_name):
-                return bootenv.BootEnv.check_be_name(be_name)
+                bootenv.BootEnv.check_be_name(be_name)
 
         def plan_install(self, pkg_list, filters, refresh_catalogs=True,
             noexecute=False, verbose=False, update_index=True):
@@ -305,9 +305,7 @@ class ImageInterface(object):
                         try:
                                 self.log_operation_start("image-update")
                                 exception_caught = None
-                                if not self.check_be_name(be_name):
-                                        raise api_errors.InvalidBENameException(
-                                            be_name)
+                                self.check_be_name(be_name)
                                 self.be_name = be_name
 
                                 # Verify validity of certificates before

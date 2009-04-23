@@ -436,8 +436,20 @@ class InvalidBENameException(BEException):
                 self.be_name = be_name
 
         def __str__(self):
-                return _("'%s' is not a valid boot envirnment name." %
-                    self.be_name)
+                return _("'%s' is not a valid boot environment name.") % \
+                    self.be_name
+
+class DuplicateBEName(BEException):
+        """Used to indicate that there is an existing boot environment 
+        with this name"""
+
+        def __init__(self, be_name):
+                BEException.__init__(self)
+                self.be_name = be_name
+
+        def __str__(self):
+                return _("The boot environment '%s' already exists.") % \
+                    self.be_name
 
 class BENamingNotSupported(BEException):
         def __init__(self, be_name):
