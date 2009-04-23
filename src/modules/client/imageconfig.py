@@ -82,7 +82,7 @@ default_policies = {
     PURSUE_LATEST: True,
     DISPLAY_COPYRIGHTS: True,
     FLUSH_CONTENT_CACHE: False,
-    SEND_UUID: False,
+    SEND_UUID: True
 }
 
 # The name of the directory where publisher metadata should be stored.
