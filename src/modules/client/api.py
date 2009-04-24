@@ -122,6 +122,7 @@ class ImageInterface(object):
         @staticmethod
         def check_be_name(be_name):
                 bootenv.BootEnv.check_be_name(be_name)
+                return True
 
         def plan_install(self, pkg_list, filters, refresh_catalogs=True,
             noexecute=False, verbose=False, update_index=True):

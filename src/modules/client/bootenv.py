@@ -189,8 +189,10 @@ class BootEnv(object):
         @staticmethod
         def check_be_name(be_name):
                 try:
-                        if be_name is None or \
-                            be.beVerifyBEName(be_name) != 0:
+                        if be_name is None:
+                                return
+
+                        if be.beVerifyBEName(be_name) != 0:
                                 raise api_errors.InvalidBENameException(be_name)
 
                         # Check for the old beList() API since pkg(1) can be
@@ -224,8 +226,7 @@ class BootEnv(object):
                         # Create a clone of the live BE and mount it.
                         self.destroy_snapshot()
 
-                        if not self.check_be_name(be_name):
-                                raise api_errors.InvalidBENameException(be_name)
+                        self.check_be_name(be_name)
 
                         # Do nothing with the returned snapshot name
                         # that is taken of the clone during beCopy.
@@ -450,9 +451,8 @@ class BootEnvNull(object):
 
         @staticmethod
         def check_be_name(be_name):
-                if be_name is None:
-                        return True
-                raise api_errors.BENamingNotSupported(be_name)
+                if be_name:
+                        raise api_errors.BENamingNotSupported(be_name)
 
         def init_image_recovery(self, img, be_name=None):
                 if be_name is not None:
