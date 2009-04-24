@@ -403,7 +403,7 @@ class Beadmin:
                     buttons = gtk.BUTTONS_CLOSE,
                     flags = gtk.DIALOG_MODAL, type = gtk.MESSAGE_ERROR,
                     message_format = None)
-                msgbox.set_property('text', msg)
+                msgbox.set_markup(msg)
                 msgbox.set_title(_("BE error"))
                 msgbox.run()
                 msgbox.destroy()
