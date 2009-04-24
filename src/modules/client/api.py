@@ -1018,15 +1018,15 @@ class ImageInterface(object):
                                             origin=origin)
                                 except api_errors.UnknownPublisher:
                                         pass
-                                else:
-                                        repo = pub.selected_repository
-                                        origin = repo.get_origin(origin)
-                                        prefix = pub.prefix
-                                        uuid = pub.client_uuid
-                        else:
+                        # This cannot be an else statment to the previous if
+                        # clause because it needs to work on the value of pub
+                        # after it has been set by self.img.get_publisher.
+                        if isinstance(pub, publisher.Publisher):
+                                repo = pub.selected_repository
                                 origin = pub.selected_repository.origins[0]
+                                prefix = pub.prefix
+                                uuid = pub.client_uuid
 
-                        uuid = None
                         ssl_key = None
                         ssl_cert = None
                         if isinstance(origin, publisher.RepositoryURI):

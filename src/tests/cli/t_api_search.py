@@ -310,7 +310,8 @@ close
                         # all files have differing contents.
                         f.write(p + "\n")
                         f.close()
-                testutils.SingleDepotTestCase.setUp(self)
+                testutils.SingleDepotTestCase.setUp(self,
+                    debug_features=["headers"])
                 tp = self.get_test_prefix()
                 self.testdata_dir = os.path.join(tp, "search_results")
                 os.mkdir(self.testdata_dir)
@@ -356,10 +357,11 @@ close
                         
         def _search_op(self, api_obj, remote, token, test_value,
             case_sensitive=False, return_actions=True, num_to_return=None,
-            start_point=None):
+            start_point=None, servers=None):
                 search_func = api_obj.local_search
                 if remote:
-                        search_func = api_obj.remote_search
+                        search_func = lambda x: api_obj.remote_search(x,
+                            servers=servers)
                 query = api.Query(token, case_sensitive, return_actions,
                     num_to_return, start_point)
                 res = set(self._extract_action_from_res(search_func([query])))
@@ -1292,7 +1294,39 @@ close
                 fh.close()
                 self.assert_(new_tok_len == tok_len)
                 self.assert_(new_main_len == main_len)
-
+                
+        def test_bug_8318(self):
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.example_pkg10)
+                self.image_create(durl)
+                progresstracker = progress.NullProgressTracker()
+                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
+                    progresstracker, lambda x: True, PKG_CLIENT_NAME)
+                uuids = []
+                for p in api_obj.img.gen_publishers():
+                        uuids.append(p.client_uuid)
+                
+                self._search_op(api_obj, True, "example_path",
+                    self.res_remote_path)
+                self._search_op(api_obj, True, "example_path",
+                    self.res_remote_path, servers=[{"origin": durl}])
+                lfh = file(self.dc.get_logpath(), "rb")
+                found = 0
+                num_expected = 2
+                for line in lfh:
+                        if "X-IPKG-UUID:" in line:
+                                tmp = line.split()
+                                s_uuid = tmp[1]
+                                if s_uuid not in uuids:
+                                        raise RuntimeError("Uuid found:%s not "
+                                            "found in list of possible "
+                                            "uuids:%s" % (s_uuid, uuids))
+                                found += 1
+                if found != num_expected:
+                        raise RuntimeError(("Found %s instances of a "
+                            "client uuid, expected to find %s.") %
+                            (found, num_expected))
+                   
 
 class TestApiSearchMulti(testutils.ManyDepotTestCase):
 
@@ -1301,14 +1335,53 @@ class TestApiSearchMulti(testutils.ManyDepotTestCase):
             close """
 
         def setUp(self):
-                testutils.ManyDepotTestCase.setUp(self, 2)
+                testutils.ManyDepotTestCase.setUp(self, 3,
+                    debug_features=["headers"])
 
-                durl1 = self.dcs[1].get_depot_url()
-                durl2 = self.dcs[2].get_depot_url()
-                self.pkgsend_bulk(durl2, self.example_pkg10)
+                self.durl1 = self.dcs[1].get_depot_url()
+                self.durl2 = self.dcs[2].get_depot_url()
+                self.durl3 = self.dcs[3].get_depot_url()
+                self.pkgsend_bulk(self.durl2, self.example_pkg10)
 
-                self.image_create(durl1, prefix = "test1")
-                self.pkg("set-publisher -O " + durl2 + " test2")
+                self.image_create(self.durl1, prefix = "test1")
+                self.pkg("set-publisher -O " + self.durl2 + " test2")
+
+        def _check(self, proposed_answer, correct_answer):
+                if correct_answer == proposed_answer:
+                        return True
+                else:
+                        self.debug("Proposed Answer: " + str(proposed_answer))
+                        self.debug("Correct Answer : " + str(correct_answer))
+                        if isinstance(correct_answer, set) and \
+                            isinstance(proposed_answer, set):
+                                print >> sys.stderr, "Missing: " + \
+                                    str(correct_answer - proposed_answer)
+                                print >> sys.stderr, "Extra  : " + \
+                                    str(proposed_answer - correct_answer)
+                        self.assert_(correct_answer == proposed_answer)
+
+        @staticmethod
+        def _extract_action_from_res(it):
+                return (
+                    (fmri.PkgFmri(str(pkg_name)).get_short_fmri(), piece,
+                    TestApiSearchBasics._replace_act(act))
+                    for query_num, auth, (version, return_type,
+                    (pkg_name, piece, act))
+                    in it
+                )
+                        
+        def _search_op(self, api_obj, remote, token, test_value,
+            case_sensitive=False, return_actions=True, num_to_return=None,
+            start_point=None, servers=None):
+                search_func = api_obj.local_search
+                if remote:
+                        search_func = api_obj.remote_search
+                query = api.Query(token, case_sensitive, return_actions,
+                    num_to_return, start_point)
+                res = set(self._extract_action_from_res(search_func([query],
+                    servers=servers)))
+                self._check(set(res), test_value)
+
 
         def test_bug_2955(self):
                 """See http://defect.opensolaris.org/bz/show_bug.cgi?id=2955"""
@@ -1318,6 +1391,44 @@ class TestApiSearchMulti(testutils.ManyDepotTestCase):
                 TestApiSearchBasics._do_install(api_obj, ["example_pkg"])
                 api_obj.rebuild_search_index()
                 TestApiSearchBasics._do_uninstall(api_obj, ["example_pkg"])
+
+        def test_bug_8318(self):
+                progresstracker = progress.NullProgressTracker()
+                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
+                    progresstracker, lambda x: True, PKG_CLIENT_NAME)
+                
+                self._search_op(api_obj, True,
+                    "this_should_not_match_any_token", set())
+                self._search_op(api_obj, True, "example_path",
+                    set(), servers=[{"origin": self.durl1}])
+                self._search_op(api_obj, True, "example_path",
+                    set(), servers=[{"origin": self.durl3}])
+                num_expected = { 1: 2, 2: 1, 3:0 }
+                for d in range(1,(len(self.dcs) + 1)):
+                        try:
+                                pub = api_obj.img.get_publisher(
+                                    origin=self.dcs[d].get_depot_url())
+                                c_uuid = pub.client_uuid
+                        except api_errors.UnknownPublisher:
+                                c_uuid = None
+                        lfh = file(self.dcs[d].get_logpath(), "rb")
+                        found = 0
+                        for line in lfh:
+                                if "X-IPKG-UUID:" in line:
+                                        tmp = line.split()
+                                        s_uuid = tmp[1]
+                                        if s_uuid != c_uuid:
+                                                raise RuntimeError(
+                                                    "Found uuid:%s doesn't "
+                                                    "match expected uuid:%s, "
+                                                    "d:%s, durl:%s" %
+                                                    (s_uuid, c_uuid, d,
+                                                    self.dcs[d].get_depot_url()))
+                                        found += 1
+                        if found != num_expected[d]:
+                                raise RuntimeError("d:%s, found %s instances of"
+                                    " a client uuid, expected to find %s." %
+                                    (d, found, num_expected[d]))
 
 if __name__ == "__main__":
         unittest.main()
