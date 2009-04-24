@@ -769,7 +769,7 @@ class InstallUpdate(progress.ProgressTracker):
                                 self.web_updates_list = self.update_list
                 if self.ips_update:
                         self.w_dialog.hide()
-                        self.parent.restart_after_ips_update("be_name")
+                        self.parent.restart_after_ips_update(self.proposed_be_name)
                 elif self.action == enumerations.IMAGE_UPDATE:
                         self.w_dialog.hide()
                         self.parent.shutdown_after_image_update()
