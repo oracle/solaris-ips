@@ -16,7 +16,7 @@ SYNOPSIS
      /usr/bin/pkg contents [-Hmr] [-o attribute ...] [-s sort_key]
          [-t action_type ... ] [pkg_fmri_pattern ...]
      /usr/bin/pkg list [-Hafsuv] [--no-refresh] [pkg_fmri_pattern ...]
-     /usr/bin/pkg search [-alprI] [-s server] query
+     /usr/bin/pkg search [-alprI] [-s repo_uri] query
 
      /usr/bin/pkg refresh [--full] [publisher ...]
 
@@ -167,8 +167,9 @@ SUBCOMMANDS
           With -l, use the data available from locally installed packages.
           This is the default.
 
-          With -r, retrieve the data from the servers.  Note that you must
-          specify one or more package patterns in this case.
+          With -r, retrieve the data from the repositories of the image's
+          configured publishers.  Note that you must specify one or more
+          package patterns in this case.
 
           With --license, print out the license text(s) for the package.
           This may be combined with -l or -r.
@@ -191,8 +192,9 @@ SUBCOMMANDS
 
           The -H option causes the headers to be omitted.
 
-          The -r option retrieves the requested data from the server, for
-          use in cases when the package is not already installed.
+          The -r option retrieves the requested data from the repositories
+          of the image's configured publishers.  This option is intended
+          to be used when the named packages are not already installed.
 
           With no arguments, the output includes all installed packages.
           Alternatively, multiple FMRI patterns may be specified, which
@@ -226,7 +228,7 @@ SUBCOMMANDS
                                 the package containing the action, such
                                 as "opensolaris.org"
 
-     search [-alprI] [-s server] query
+     search [-alprI] [-s repo_uri] query
           Search for matches to the query, and display the results.  
           Which tokens are indexed are action-dependent, but may
           include content hashes and pathnames.
@@ -246,9 +248,8 @@ SUBCOMMANDS
 
 	  With -I, use a case-sensitive search.
 
-          With -s, search the identified server, which is expected to be
-          a pkg(5) repository, at the given URI.  This may be specified
-          multiple times.
+          With -s, search the pkg(5) repository located at the given URI.
+          This may be specified multiple times.
 
           Both -l and -r (or -s) may be specified together, in which case both
           local and remote searches will be performed.

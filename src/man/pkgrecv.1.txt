@@ -5,23 +5,23 @@ NAME
      pkgrecv - image packaging system content retrieval utility
 
 SYNOPSIS
-     /usr/bin/pkgrecv [-k] [-d directory] -s server pkg...
+     /usr/bin/pkgrecv [-k] [-d directory] -s repo_uri pkg...
 
-     /usr/bin/pkgrecv -s server -n
+     /usr/bin/pkgrecv -s repo_uri -n
 
 DESCRIPTION
      pkgrecv allows the user to download the contents of a package
-     from a server.  With the default options, the contents are
-     retrieved in a format that can easily be input to pkgsend(1) when
-     used with the 'include' subcommand.  As a result, pkgrecv(1) and
-     pkgsend(1) can be used to conveniently modify and republish
+     from a pkg(5) repository.  With the default options, the contents
+     are retrieved in a format that can easily be input to pkgsend(1)
+     when used with the 'include' subcommand.  As a result, pkgrecv(1)
+     and pkgsend(1) can be used to conveniently modify and republish
      packages, perhaps by correcting file contents or providing
      additional package tags.
 
 OPTIONS
      The following options are supported:
 
-     -s repo_url    The URL prefix of the server.
+     -s repo_uri    The location of the pkg(5) repository.
 
      -k             Keep the individual package contents compressed.
 
@@ -30,11 +30,12 @@ OPTIONS
                     directory.
 
      -n             Instead of downloading package contents, list the
-                    most recent versions of the packages available at
-                    the specified server.
+                    most recent versions of the packages available from
+                    the specified repository.
 
 EXAMPLES
-     Example 1:  List newest packages available from server test
+     Example 1:  List newest packages available from the repository on
+     the system named 'test'.
 
      $ pkgrecv -s http://test -n
      pkg:/SUNWlibC@0.5.11,5.11-0.79:20080221T125720Z
