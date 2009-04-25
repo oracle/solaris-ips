@@ -26,7 +26,6 @@
 #
 
 import copy
-import errno
 import httplib
 import os
 import socket
@@ -54,7 +53,7 @@ from pkg.client.imageplan import EXECUTED_OK
 from pkg.client import global_settings
 from pkg.misc import versioned_urlopen
 
-CURRENT_API_VERSION = 12
+CURRENT_API_VERSION = 14
 CURRENT_P5I_VERSION = 1
 
 class ImageInterface(object):
@@ -90,7 +89,7 @@ class ImageInterface(object):
                 canceled changes. It can raise VersionException and
                 ImageNotFoundException."""
 
-                compatible_versions = set([12])
+                compatible_versions = set([12, 13, 14])
 
                 if version_id not in compatible_versions:
                         raise api_errors.VersionException(CURRENT_API_VERSION,
@@ -169,11 +168,6 @@ class ImageInterface(object):
                                                 if not e.succeeded:
                                                         raise
                                                 exception_caught = e
-                                else:
-                                        # If refresh wasn't called, the catalogs
-                                        # have to be manually loaded.
-                                        self.img.load_catalogs(
-                                            self.progresstracker)
 
                                 self.img.make_install_plan(pkg_list,
                                     self.progresstracker,
@@ -231,8 +225,6 @@ class ImageInterface(object):
                                     self.plan_type)
                         try:
                                 self.log_operation_start("uninstall")
-                                self.img.load_catalogs(self.progresstracker)
-
                                 self.img.make_uninstall_plan(pkg_list,
                                     recursive_removal, self.progresstracker,
                                     self.__check_cancelation, noexecute,
@@ -1197,7 +1189,8 @@ class ImageInterface(object):
         def remove_publisher(self, prefix=None, alias=None):
                 """Removes a publisher object matching the provided prefix
                 (name) or alias."""
-                self.img.remove_publisher(prefix=prefix, alias=alias)
+                self.img.remove_publisher(prefix=prefix, alias=alias,
+                    progtrack=self.progresstracker)
 
         def set_preferred_publisher(self, prefix=None, alias=None):
                 """Sets the preferred publisher for the image."""
@@ -1221,6 +1214,11 @@ class ImageInterface(object):
                             pub.prefix)
 
                 def need_refresh(oldo, newo):
+                        if newo.disabled:
+                                # The publisher is disabled, so no refresh
+                                # should be performed.
+                                return False
+
                         if oldo.disabled and not newo.disabled:
                                 # The publisher has been re-enabled, so
                                 # retrieve the catalog.
@@ -1248,14 +1246,30 @@ class ImageInterface(object):
 
                 refresh_catalog = False
                 updated = False
+                disable = False
+                orig_pub = None
                 publishers = self.img.get_publishers()
                 for key, old in publishers.iteritems():
                         if pub._source_object_id == id(old):
                                 if need_refresh(old, pub):
                                         refresh_catalog = True
-                                del publishers[key]
-                                publishers[pub.prefix] = pub
+                                if not old.disabled and pub.disabled:
+                                        disable = True
+
+                                # Store the new publisher's id and the old
+                                # publisher object so it can be restored if the
+                                # update operation fails.
+                                orig_pub = (id(pub), publishers[key])
+
+                                # Now remove the old publisher object using the
+                                # iterator key since the prefix might be
+                                # different for the new publisher object.
                                 updated = True
+                                del publishers[key]
+
+                                # Finally, add the new publisher object.
+                                publishers[pub.prefix] = pub
+                                break
 
                 if not updated:
                         # If a matching publisher couldn't be found and
@@ -1265,34 +1279,47 @@ class ImageInterface(object):
                         self.log_operation_end(e)
                         raise e
 
-                if pub.disabled:
-                        # The catalog only needs to be purged in the event that
-                        # a publisher is disabled; in any other case (the origin
-                        # changing, etc.), self.refresh() will do the right
-                        # thing.
-                        try:
-                                self.img.destroy_catalog(pub.prefix)
-                                self.img.destroy_catalog_cache()
-                        except EnvironmentError, e:
-                                if e.errno == errno.EACCES:
-                                        raise api_errors.PermissionsException(
-                                            e.filename)
-                                raise
-                        self.img.cache_catalogs()
-                elif not refresh_catalog:
-                        refresh_catalog = pub.needs_refresh
+                try:
+                        if disable:
+                                # Remove the publisher's metadata (such as
+                                # catalogs, etc.).  This only needs to be done
+                                # in the event that a publisher is disabled; in
+                                # any other case (the origin changing, etc.),
+                                # self.refresh() will do the right thing.
+                                self.img.remove_publisher_metadata(pub)
 
-                if refresh_catalog:
-                        if refresh_allowed:
-                                self.refresh(pubs=[pub], immediate=True)
-                        else:
-                                # Something has changed (such as a repository
-                                # origin) for the publisher, so a refresh should
-                                # occur, but isn't currently allowed.  As such,
-                                # clear the last_refreshed time so that the next
-                                # time the client checks to see if a refresh is
-                                # needed, and is allowed, one will be performed.
-                                pub.last_refreshed = None
+                                # Now reload the catalogs so that in-memory and
+                                # on-disk state will reflect the removal.
+                                self.img.load_catalogs(self.progresstracker,
+                                    force=True)
+                        elif not pub.disabled and not refresh_catalog:
+                                refresh_catalog = pub.needs_refresh
+
+                        if refresh_catalog:
+                                if refresh_allowed:
+                                        self.refresh(pubs=[pub], immediate=True)
+                                else:
+                                        # Something has changed (such as a
+                                        # repository origin) for the publisher,
+                                        # so a refresh should occur, but isn't
+                                        # currently allowed.  As such, clear the
+                                        # last_refreshed time so that the next
+                                        # time the client checks to see if a
+                                        # refresh is needed and is allowed, one
+                                        # will be performed.
+                                        pub.last_refreshed = None
+                except:
+                        # If any of the above fails, the original publisher
+                        # information needs to be restored so that state is
+                        # consistent.
+                        publishers = self.img.get_publishers()
+                        new_id, old_pub = orig_pub
+                        for new_pfx, new_pub in publishers.iteritems():
+                                if id(new_pub) == new_id:
+                                        del publishers[new_pfx]
+                                        publishers[old_pub.prefix] = old_pub
+                                        break
+                        raise
 
                 # Successful; so save configuration.
                 self.img.save_config()

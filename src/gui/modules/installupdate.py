@@ -868,6 +868,18 @@ class InstallUpdate(progress.ProgressTracker):
         def cat_output_done(self): 
                 return
 
+        def cache_cats_output_start(self):
+                return
+
+        def cache_cats_output_done(self):
+                return
+
+        def load_cat_cache_output_start(self):
+                return
+
+        def load_cat_cache_output_done(self):
+                return
+
         def dl_output(self):
                 gobject.idle_add(self.__update_download_progress, \
                     self.dl_cur_nbytes, self.dl_goal_nbytes)

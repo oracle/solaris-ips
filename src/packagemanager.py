@@ -2140,7 +2140,6 @@ class PackageManager:
                                         first_loop = False
                                         gobject.idle_add(self.setup_progressdialog_show)
                                 self.catalog_loaded = False
-                                self.api_o.img.clear_pkg_state()
                                 self.api_o.img.load_catalogs(self.pr)
                                 self.catalog_loaded = True
                                 self.__add_pkgs_to_lists_from_api(publisher,
@@ -3129,23 +3128,23 @@ class PackageManager:
                 #Imageinfo for categories
                 imginfo = imageinfo.ImageInfo()
                 sectioninfo = imageinfo.ImageInfo()
-                catalogs = self.api_o.img.catalogs
+                pubs = [p.prefix for p in self.api_o.get_publishers()]
                 categories = {}
                 sections = {}
                 share_path = "/usr/share/package-manager/data/"
-                for cat in catalogs:
+                for pub in pubs:
                         category = imginfo.read(self.application_dir +
-                            share_path + cat)
+                            share_path + pub)
                         if len(category) == 0:
                                 category = imginfo.read(self.application_dir +
                                     share_path + "opensolaris.org")
-                        categories[cat] = category
+                        categories[pub] = category
                         section = sectioninfo.read(self.application_dir +
-                            share_path + cat + ".sections")
+                            share_path + pub + ".sections")
                         if len(section) == 0:
                                 section = sectioninfo.read(self.application_dir +
                                     share_path + "opensolaris.org.sections")
-                        sections[cat] = section
+                        sections[pub] = section
                 pkg_count = 0
                 pkg_add = 0
                 progress_percent = INITIAL_PROGRESS_TOTAL_PERCENTAGE
@@ -3613,7 +3612,6 @@ class PackageManager:
                 img = self.api_o.img
                 visible_repository = self.__get_visible_repository_name()
                 default_publisher = self.default_publisher
-                img.clear_pkg_state()
                 self.catalog_loaded = False
                 img.load_catalogs(self.pr)
                 self.catalog_loaded = True

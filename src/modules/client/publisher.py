@@ -43,6 +43,7 @@ import pkg.client.api_errors as api_errors
 import pkg.misc as misc
 import pkg.portable as portable
 import pkg.Uuid25
+import shutil
 import time
 import urlparse
 
@@ -850,14 +851,15 @@ class Publisher(object):
 
                         # Assume meta_root doesn't exist and create it.
                         try:
-                                os.makedirs(self.meta_root)
+                                self.create_meta_root()
+                        except api_errors.PermissionsException:
+                                # If the directory can't be created due to
+                                # permissions, move on.
+                                pass
                         except EnvironmentError, e:
-                                # If the directory can't be created
-                                # due to permissions, a read-only
-                                # filesystem, or because it already
-                                # exists, move on.
-                                if e.errno not in (errno.EACCES,
-                                    errno.EEXIST, errno.EROFS):
+                                # If the directory can't be created due to a
+                                # read-only filesystem, move on.
+                                if e.errno != errno.EROFS:
                                         raise
                         else:
                                 # Try one last time.
@@ -900,6 +902,24 @@ class Publisher(object):
                 self.__repositories.append(repository)
                 if len(self.__repositories) == 1:
                         self.selected_repository = repository
+
+        def create_meta_root(self):
+                """Create the publisher's meta_root."""
+
+                if not self.meta_root:
+                        raise api_errors.BadPublisherMetaRoot(self.meta_root,
+                            operation="create_meta_root")
+
+                try:
+                        os.makedirs(self.meta_root)
+                except EnvironmentError, e:
+                        if e.errno == errno.EACCES:
+                                raise api_errors.PermissionsException(
+                                    e.filename)
+                        elif e.errno != errno.EEXIST:
+                                # If the meta_root already exists, move on.
+                                # Otherwise, raise the exception.
+                                raise
 
         def get_repository(self, name=None, origin=None):
                 """Returns the repository object matching the name or that has
@@ -957,6 +977,22 @@ class Publisher(object):
                         return True
 
                 return False
+
+        def remove_meta_root(self):
+                """Removes the publisher's meta_root."""
+
+                if not self.meta_root:
+                        raise api_errors.BadPublisherMetaRoot(self.meta_root,
+                            operation="remove_meta_root")
+
+                try:
+                        shutil.rmtree(self.meta_root)
+                except EnvironmentError, e:
+                        if e.errno == errno.EACCES:
+                                raise api_errors.PermissionsException(
+                                    e.filename)
+                        if e.errno not in (errno.ENOENT, errno.ESRCH):
+                                raise
 
         def remove_repository(self, name=None, origin=None):
                 """Removes the repository object matching the name or that has

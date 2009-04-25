@@ -81,7 +81,7 @@ from pkg.client.retrieve import (CatalogRetrievalError,
     DatastreamRetrievalError, ManifestRetrievalError)
 from pkg.misc import EmptyI, msg, emsg, PipeError
 
-CLIENT_API_VERSION = 12
+CLIENT_API_VERSION = 14
 PKG_CLIENT_NAME = "pkg"
 
 def error(text, cmd=None):
@@ -98,7 +98,6 @@ def error(text, cmd=None):
         # *before* the command-name prefix.
         text_nows = text.lstrip()
         ws = text[:len(text) - len(text_nows)]
-
 
         # This has to be a constant value as we can't reliably get our actual
         # program name on all platforms.
@@ -352,7 +351,7 @@ def list_inventory(img, args):
                 img.history.operation_result = history.RESULT_NOTHING_TO_DO
                 return 1
 
-def get_tracker(quiet = False):
+def get_tracker(quiet=False):
         if quiet:
                 progresstracker = progress.QuietProgressTracker()
         else:
@@ -1018,13 +1017,11 @@ def search(img_dir, args):
         if not pargs:
                 usage()
 
-        progresstracker = get_tracker(False)
-
         searches = []
 
         try:
                 api_inst = api.ImageInterface(img_dir, CLIENT_API_VERSION,
-                    progresstracker, None, PKG_CLIENT_NAME)
+                    get_tracker(), None, PKG_CLIENT_NAME)
         except api_errors.ImageNotFoundException, e:
                 error(_("'%s' is not an install image") % e.user_dir)
                 return 1
@@ -1123,7 +1120,7 @@ def info(img_dir, args):
         err = 0
 
         api_inst = api.ImageInterface(img_dir, CLIENT_API_VERSION,
-            progress.QuietProgressTracker(), None, PKG_CLIENT_NAME)
+            get_tracker(quiet=True), None, PKG_CLIENT_NAME)
 
         try:
                 info_needed = api.PackageInfo.ALL_OPTIONS
@@ -1546,7 +1543,8 @@ def display_catalog_failures(cre):
         total = cre.total
         succeeded = cre.succeeded
 
-        txt = _("pkg: %s/%s catalogs successfully updated:") % (succeeded, total)
+        txt = _("pkg: %s/%s catalogs successfully updated:") % (succeeded,
+            total)
         if cre.failed:
                 # This ensures that the text gets printed before the errors.
                 emsg(txt)
@@ -1602,11 +1600,9 @@ def publisher_refresh(img_dir, args):
                 if opt == "--full":
                         full_refresh = True
 
-        progresstracker = get_tracker(True)
-
         try:
                 api_inst = api.ImageInterface(img_dir, CLIENT_API_VERSION,
-                    progresstracker, None, PKG_CLIENT_NAME)
+                    get_tracker(quiet=True), None, PKG_CLIENT_NAME)
         except api_errors.ImageNotFoundException, e:
                 error(_("'%s' is not an install image") % e.user_dir)
                 return 1
@@ -1687,10 +1683,9 @@ def publisher_set(img_dir, args):
                 usage(_("the -p and -d options may not be combined"),
                     cmd="set-publisher")
 
-        progresstracker = get_tracker(True)
         try:
                 api_inst = api.ImageInterface(img_dir, CLIENT_API_VERSION,
-                    progresstracker, None, PKG_CLIENT_NAME)
+                    get_tracker(), None, PKG_CLIENT_NAME)
         except api_errors.ImageNotFoundException, e:
                 error(_("'%s' is not an install image") % e.user_dir,
                     cmd="set-publisher")
@@ -1813,10 +1808,9 @@ def publisher_unset(img_dir, args):
         if len(args) == 0:
                 usage()
 
-        progresstracker = get_tracker(True)
         try:
                 api_inst = api.ImageInterface(img_dir, CLIENT_API_VERSION,
-                    progresstracker, None, PKG_CLIENT_NAME)
+                    get_tracker(), None, PKG_CLIENT_NAME)
         except api_errors.ImageNotFoundException, e:
                 error(_("'%s' is not an install image") % e.user_dir)
                 return 1
@@ -1841,13 +1835,13 @@ def publisher_unset(img_dir, args):
                         # occurred.
                         retcode = 3
 
-                msg = ""
+                txt = ""
                 for name, err in errors:
-                        msg += "\n"
-                        msg += _("Removal failed for '%(pub)s': %(msg)s") % {
+                        txt += "\n"
+                        txt += _("Removal failed for '%(pub)s': %(msg)s") % {
                             "pub": name, "msg": err }
-                        msg += "\n"
-                error(msg, cmd="unset-publisher")
+                        txt += "\n"
+                error(txt, cmd="unset-publisher")
 
         return retcode
 
@@ -2205,20 +2199,17 @@ def image_create(img, args):
                 error(_("To override, use the -f (force) option."))
                 return 1
 
-        progresstracker = get_tracker()
-
         try:
                 img.set_attrs(imgtype, image_dir, is_zone, pub_name, pub_url,
                     ssl_key=ssl_key, ssl_cert=ssl_cert, variants=variants,
-                    refresh_allowed=refresh_catalogs, progtrack=progresstracker)
+                    refresh_allowed=refresh_catalogs, progtrack=get_tracker())
         except OSError, e:
                 # Ensure messages are displayed after the spinner.
                 emsg("\n")
                 error(_("cannot create image at %(image_dir)s: %(reason)s") %
-                    { "image_dir": image_dir, "reason": e.args[1] },
-                    cmd="image-create")
+                    { "image_dir": image_dir, "reason": e.args[1] })
                 return 1
-        except (api_errors.PublisherError, api_errors.PermissionsException), e:
+        except api_errors.PermissionsException, e:
                 # Ensure messages are displayed after the spinner.
                 emsg("")
                 error(e, cmd="image-create")
@@ -2555,7 +2546,7 @@ if __name__ == "__main__":
                 except (MemoryError, EnvironmentError), __e:
                         if isinstance(__e, EnvironmentError) and \
                             __e.errno != errno.ENOMEM:
-                                        raise
+                                raise
                         if __img:
                                 __img.history.abort(RESULT_FAILED_OUTOFMEMORY)
                         error("\n" + misc.out_of_memory())

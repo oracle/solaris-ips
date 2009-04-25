@@ -44,7 +44,7 @@ import pkg.fmri as fmri
 import pkg.portable as portable
 import pkg.search_storage as ss
 
-API_VERSION = 12
+API_VERSION = 14
 PKG_CLIENT_NAME = "pkg"
 
 class TestApiSearchBasics(testutils.SingleDepotTestCase):
@@ -1403,7 +1403,7 @@ class TestApiSearchMulti(testutils.ManyDepotTestCase):
                     set(), servers=[{"origin": self.durl1}])
                 self._search_op(api_obj, True, "example_path",
                     set(), servers=[{"origin": self.durl3}])
-                num_expected = { 1: 2, 2: 1, 3:0 }
+                num_expected = { 1: 2, 2: 3, 3:0 }
                 for d in range(1,(len(self.dcs) + 1)):
                         try:
                                 pub = api_obj.img.get_publisher(

@@ -618,6 +618,16 @@ class PublisherError(ApiException):
                 return str(self.data)
 
 
+class BadPublisherMetaRoot(PublisherError):
+        """Used to indicate an operation on the publisher's meta_root failed
+        because the meta_root is invalid."""
+
+        def __str__(self):
+                return _("Publisher meta_root '%(root)s' is invalid; unable "
+                    "to complete operation: '%(op)s'.") % { "root": self.data,
+                    "op": self.args.get("operation", None) }
+
+
 class BadPublisherPrefix(PublisherError):
         """Used to indicate that a publisher name is not valid."""
 

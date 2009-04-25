@@ -38,7 +38,10 @@ except ImportError:
         sys.exit(1)
 
 def get_client_api_version():
-        return 12 # CLIENT_API_VERSION Used by PM, UM and WebInstall
+        """Return the current version of the Client API the PM, UM and
+        WebInstall GUIs have been tested against and are known to work
+        with.""" 
+        return 14 # CLIENT_API_VERSION Used by PM, UM and WebInstall
 
 def get_app_pixbuf(application_dir, icon_name):
         return get_pixbuf_from_path(application_dir +

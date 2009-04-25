@@ -70,7 +70,7 @@ class ProgressTracker(object):
                 self.eval_goal_install_npkgs = 0
                 self.eval_goal_update_npkgs = 0
                 self.eval_goal_remove_npkgs = 0
-                
+
                 self.dl_goal_nfiles = 0
                 self.dl_cur_nfiles = 0
                 self.dl_goal_nbytes = 0
@@ -88,15 +88,27 @@ class ProgressTracker(object):
                 self.ind_goal_nitems = 0
                 self.ind_phase = "None"
                 self.ind_phase_last = "None"
-                
+
                 self.last_printed = 0 # when did we last emit status?
-                
+
         def catalog_start(self, catalog):
                 self.cat_cur_catalog = catalog
                 self.cat_output_start()
 
         def catalog_done(self):
                 self.cat_output_done()
+
+        def cache_catalogs_start(self):
+                self.cache_cats_output_start()
+
+        def cache_catalogs_done(self):
+                self.cache_cats_output_done()
+
+        def load_catalog_cache_start(self):
+                self.load_cat_cache_output_start()
+
+        def load_catalog_cache_done(self):
+                self.load_cat_cache_output_done()
 
         def refresh_start(self, pub_cnt):
                 self.refresh_pub_cnt = pub_cnt
@@ -124,7 +136,7 @@ class ProgressTracker(object):
             update_npkgs=-1, remove_npkgs=-1):
                 self.eval_goal_install_npkgs = install_npkgs
                 self.eval_goal_update_npkgs = update_npkgs
-                self.eval_goal_remove_npkgs = remove_npkgs             
+                self.eval_goal_remove_npkgs = remove_npkgs
                 self.eval_output_done()
 
         def verify_add_progress(self, fmri):
@@ -219,6 +231,22 @@ class ProgressTracker(object):
                 raise NotImplementedError("cat_output_done() not implemented "
                     "in superclass")
 
+        def cache_cats_output_start(self):
+                raise NotImplementedError("cache_cats_output_start() not "
+                    "implemented in superclass")
+
+        def cache_cats_output_done(self):
+                raise NotImplementedError("cache_cats_output_done() not "
+                    "implemented in superclass")
+
+        def load_cat_cache_output_start(self):
+                raise NotImplementedError("load_cat_cache_output_start() not "
+                    "implemented in superclass")
+
+        def load_cat_cache_output_done(self):
+                raise NotImplementedError("load_cat_cache_output_done() not "
+                    "implemented in superclass")
+
         def refresh_output_start(self):
                 return
 
@@ -297,6 +325,18 @@ class QuietProgressTracker(ProgressTracker):
         def cat_output_done(self):
                 return
 
+        def cache_cats_output_start(self):
+                return
+
+        def cache_cats_output_done(self):
+                return
+
+        def load_cat_cache_output_start(self):
+                return
+
+        def load_cat_cache_output_done(self):
+                return
+
         def eval_output_start(self):
                 return
 
@@ -355,6 +395,18 @@ class CommandLineProgressTracker(ProgressTracker):
                 return
 
         def cat_output_done(self):
+                return
+
+        def cache_cats_output_start(self):
+                return
+
+        def cache_cats_output_done(self):
+                return
+
+        def load_cat_cache_output_start(self):
+                return
+
+        def load_cat_cache_output_done(self):
                 return
 
         def eval_output_start(self):
@@ -469,50 +521,63 @@ class FancyUNIXProgressTracker(ProgressTracker):
                 self.dl_started = False
                 self.spinner = 0
                 self.spinner_chars = "/-\|"
-                self.cat_curstrlen = 0
+                self.curstrlen = 0
+
+        def __generic_start(self, msg):
+                # Ensure the last message displayed is flushed in case the
+                # corresponding operation did not complete successfully.
+                self.__generic_done()
+                self.curstrlen = len(msg)
+                try:
+                        print "%s" % msg,
+                        sys.stdout.flush()
+                except IOError, e:
+                        if e.errno == errno.EPIPE:
+                                raise PipeError, e
+                        raise
+
+        def __generic_done(self):
+                try:
+                        print self.cr,
+                        print " " * self.curstrlen,
+                        print self.cr,
+                        sys.stdout.flush()
+                except IOError, e:
+                        if e.errno == errno.EPIPE:
+                                raise PipeError, e
+                        raise
 
         def cat_output_start(self):
-                catstr = "Fetching catalog '%s'..." % (self.cat_cur_catalog)
-                self.cat_curstrlen = len(catstr)
-                try:
-                        print "%s" % catstr,
-                        sys.stdout.flush()
-                except IOError, e:
-                        if e.errno == errno.EPIPE:
-                                raise PipeError, e
-                        raise
+                self.__generic_start(_("Retrieving catalog '%s'...") % \
+                    self.cat_cur_catalog)
 
         def cat_output_done(self):
-                try:
-                        print self.cr,
-                        print ("%" + str(self.cat_curstrlen) + "s") % "",
-                        print self.cr,
-                        sys.stdout.flush()
-                except IOError, e:
-                        if e.errno == errno.EPIPE:
-                                raise PipeError, e
-                        raise
+                self.__generic_done()
+
+        def cache_cats_output_start(self):
+                self.__generic_start(_("Caching catalogs ..."))
+
+        def cache_cats_output_done(self):
+                self.__generic_done()
+
+        def load_cat_cache_output_start(self):
+                self.__generic_start(_("Loading catalog cache ..."))
+
+        def load_cat_cache_output_done(self):
+                self.__generic_done()
 
         def refresh_output_start(self):
-                s = "Refreshing Catalog"
-                self.cat_curstrlen = len(s)
-                try:
-                        print "%s" % s,
-                        sys.stdout.flush()
-                except IOError, e:
-                        if e.errno == errno.EPIPE:
-                                raise PipeError, e
-                        raise
+                self.__generic_start(_("Refreshing catalog"))
 
         def refresh_output_progress(self):
                 try:
                         print self.cr,
-                        print " " * self.cat_curstrlen,
+                        print " " * self.curstrlen,
                         print self.cr,
-                        s = "Refreshing Catalog %d/%d %s" % \
+                        s = "Refreshing catalog %d/%d %s" % \
                             (self.refresh_cur_pub_cnt, self.refresh_pub_cnt,
                             self.refresh_cur_pub)
-                        self.cat_curstrlen = len(s)
+                        self.curstrlen = len(s)
                         print "%s" % s,
                         sys.stdout.flush()
                 except IOError, e:
@@ -521,19 +586,15 @@ class FancyUNIXProgressTracker(ProgressTracker):
                         raise
 
         def refresh_output_done(self):
-                try:
-                        print self.cr,
-                        print " " * self.cat_curstrlen,
-                        print self.cr,
-                        sys.stdout.flush()
-                except IOError, e:
-                        if e.errno == errno.EPIPE:
-                                raise PipeError, e
-                        raise
+                self.__generic_done()
 
         def eval_output_start(self):
+                # Ensure the last message displayed is flushed in case the
+                # corresponding operation did not complete successfully.
+                self.__generic_done()
+
                 s = "Creating Plan"
-                self.cat_curstrlen = len(s)
+                self.curstrlen = len(s)
                 try:
                         print "%s" % s,
                         sys.stdout.flush()
@@ -554,7 +615,7 @@ class FancyUNIXProgressTracker(ProgressTracker):
                         print self.cr,
                         s = "Creating Plan %c" % self.spinner_chars[
                             self.spinner]
-                        self.cat_curstrlen = len(s)
+                        self.curstrlen = len(s)
                         print "%s" % s,
                         sys.stdout.flush()
                 except IOError, e:
@@ -563,15 +624,7 @@ class FancyUNIXProgressTracker(ProgressTracker):
                         raise
 
         def eval_output_done(self):
-                try:
-                        print self.cr,
-                        print ("%" + str(self.cat_curstrlen) + "s") % "",
-                        print self.cr,
-                        sys.stdout.flush()
-                except IOError, e:
-                        if e.errno == errno.EPIPE:
-                                raise PipeError, e
-                        raise
+                self.__generic_done()
                 self.last_print_time = 0
 
         def ver_output(self):
@@ -600,7 +653,7 @@ class FancyUNIXProgressTracker(ProgressTracker):
                                 # in effect.  sys.stdout.softspace isn't set
                                 # here because more output may happen after
                                 # this.
-                                print "%80s" % "", self.cr,
+                                print " " * 80, self.cr,
                                 sys.stdout.flush()
                                 self.last_print_time = 0
                 except IOError, e:
@@ -612,8 +665,7 @@ class FancyUNIXProgressTracker(ProgressTracker):
                 # for now we just get the "Verifying" progress
                 # thingy out of the way.
                 try:
-                        print "%40s" % "",
-                        print self.cr,
+                        print " " * 40, self.cr,
                         sys.stdout.flush()
                 except IOError, e:
                         if e.errno == errno.EPIPE:
@@ -695,9 +747,14 @@ class FancyUNIXProgressTracker(ProgressTracker):
                 self.ind_output_done()
                 self.ind_started = False
                 self.last_print_time = 0
-                print "Optimizing Index..."
-                sys.stdout.flush()
-                
+                try:
+                        print "Optimizing Index..."
+                        sys.stdout.flush()
+                except IOError, e:
+                        if e.errno == errno.EPIPE:
+                                raise PipeError, e
+                        raise
+
         def ind_output(self, force=False):
                 if force or (time.time() - self.last_print_time) >= IND_DELAY:
                         self.last_print_time = time.time()

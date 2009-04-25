@@ -1,3 +1,14 @@
+Version 14:
+Compatible with clients using versions 12-14.
+Changes:
+   The following methods were added to pkg.client.publisher.Publisher:
+
+        def create_meta_root(self):
+                """Create the publisher's meta_root."""
+
+        def remove_meta_root(self):
+                """Removes the publisher's meta_root."""
+
 Version 13:
 Compatible with clients using version 12.
 Changes:
