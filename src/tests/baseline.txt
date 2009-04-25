@@ -373,6 +373,7 @@ cli.t_pkg_install.py TestPkgInstallBasics.test_nonrecursive_dependent_uninstall|
 cli.t_pkg_install.py TestPkgInstallBasics.test_recursive_uninstall|pass
 cli.t_pkg_install.py TestPkgInstallCircularDependencies.test_anchored_circular_dependencies|pass
 cli.t_pkg_install.py TestPkgInstallCircularDependencies.test_unanchored_circular_dependencies|pass
+cli.t_pkg_install.py TestPkgInstallUpgrade.test_incorp_install|pass
 cli.t_pkg_install.py TestPkgInstallUpgrade.test_upgrade1|pass
 cli.t_pkg_install.py TestPkgInstallUpgrade.test_upgrade2|pass
 cli.t_pkg_install.py TestPkgInstallUpgrade.test_upgrade3|pass
@@ -473,4 +474,5 @@ cli.t_pkgsend.py TestPkgsendRenameFile.test_rename3|pass
 cli.t_pkgsend.py TestPkgsendRenameFile.test_rename4|fail
 cli.t_setUp.py TestSetUp.test_first_depot_start|pass
 cli.t_setUp.py TestSetUp.test_second_depot_start|pass
+cli.t_variants.py TestPkgVariants.test_old_zones_pkgs|pass
 cli.t_variants.py TestPkgVariants.test_variant_1|pass

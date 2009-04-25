@@ -148,12 +148,15 @@ class ConstraintSet(object):
                         return mc.combine(constraint)
                 return None
 
-        def apply_constraints_to_fmri(self, fmri):
+        def apply_constraints_to_fmri(self, fmri, auto=False):
                 """ treats fmri as min required version; apply any 
                 constraints and if fmri is more specific, return 
                 original fmri, otherwise return more constrained
                 version... remap exception for better error handling"""
-                ic = Constraint.reqfmri2constraint(fmri, "")
+                if not auto:
+                        ic = Constraint.reqfmri2constraint(fmri, "")
+                else:
+                        ic = Constraint.autofmri2constraint(fmri, "")
                 try:
                         nc = self.apply_constraints(ic)
                 except ConstraintException, e:
@@ -204,7 +207,12 @@ class Constraint(object):
                     self.presence == other.presence and \
                     self.min_ver  == other.min_ver and \
                     self.max_ver  == other.max_ver
-        
+
+        @staticmethod
+        def autofmri2constraint(fmri, source_name):
+                return Constraint(fmri.get_name(), fmri.version, 
+                    fmri.version, Constraint.ALWAYS, source_name)
+               
         @staticmethod
         def reqfmri2constraint(fmri, source_name):
                 return Constraint(fmri.get_name(), fmri.version, 

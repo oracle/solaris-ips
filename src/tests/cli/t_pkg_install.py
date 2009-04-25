@@ -837,6 +837,29 @@ class TestPkgInstallUpgrade(testutils.SingleDepotTestCase):
                 for p in self.misc_files:
                         os.remove(p)
 
+        def test_incorp_install(self):
+                """Make sure we don't round up packages we specify on
+                install"""
+                durl = self.dc.get_depot_url()
+
+                self.pkgsend_bulk(durl, self.incorp20)
+                self.pkgsend_bulk(durl, self.amber10)
+                self.pkgsend_bulk(durl, self.bronze10)
+                self.pkgsend_bulk(durl, self.amber20)
+                first_bronze = self.pkgsend_bulk(durl, self.bronze20)
+                self.pkgsend_bulk(durl, self.bronze20)
+
+                # create image 
+                self.image_create(durl)
+                # install incorp2
+                self.pkg("install incorp@2.0")
+                # try to install version 1
+                self.pkg("install bronze@1.0", exit=1)
+                # install earliest version bronze@2.0
+                self.pkg("install %s" % first_bronze[0])
+                self.pkg("list -v %s" % first_bronze[0])
+                self.pkg("install bronze@2.0")
+
         def test_upgrade1(self):
 
                 """ Upgrade torture test.
@@ -1779,16 +1802,16 @@ class TestDependencies(testutils.SingleDepotTestCase):
 
                 self.pkg("install pkg2@1.0")
 
-                # this should install pkg1 and upgrade pkg2 to pkg2@1.1
+                # this should install pkg1@1.1 and upgrade pkg2 to pkg2@1.1
                 self.pkg("install pkg1")
                 self.pkg("list pkg2@1.1")
 
                 self.pkg("uninstall pkg2")
                 self.pkg("list pkg2", exit=1)
-                # this should install pkg2@1.1 because of the optional
+                # this should not install pkg2@1.0 because of the optional
                 # dependency in pkg1
-                self.pkg("install pkg2@1.0")
-                self.pkg("list pkg2@1.1")
+                self.pkg("list pkg1@1.1")
+                self.pkg("install pkg2@1.0", exit=1)
 
         def test_require_optional(self):
                 """ check that the require optional policy is working

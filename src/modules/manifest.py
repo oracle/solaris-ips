@@ -305,6 +305,12 @@ class Manifest(object):
                                 # Add the FMRI to the exception and re-raise
                                 e.fmri = self.fmri
                                 raise
+                        # XXX handle legacy transition issues; not needed after
+                        # 2009.06 release & republication are complete.
+                        if "opensolaris.zone" in action.attrs and \
+                            "variant.opensolaris.zone" not in action.attrs:
+                                action.attrs["variant.opensolaris.zone"] = \
+                                    action.attrs["opensolaris.zone"]
 
                         if action.name == "set" and \
                             action.attrs["name"] == "authority":

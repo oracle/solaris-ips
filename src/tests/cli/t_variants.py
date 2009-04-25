@@ -96,9 +96,14 @@ class TestPkgVariants(testutils.SingleDepotTestCase):
                         os.remove(p)
 
         def test_variant_1(self):
+                self.__test_common("no-change", "no-change")
+        def test_old_zones_pkgs(self):
+                self.__test_common("variant.opensolaris.zone", "opensolaris.zone")
+
+        def __test_common(self, orig, new):
                 depot = self.dc.get_depot_url()
-                self.pkgsend_bulk(depot, self.bronze10)
-                self.pkgsend_bulk(depot, self.silver10)
+                self.pkgsend_bulk(depot, self.bronze10.replace(orig, new))
+                self.pkgsend_bulk(depot, self.silver10.replace(orig, new))
 
                 self.__vtest(depot, "sparc", "global")
                 self.__vtest(depot, "i386", "global")
@@ -110,7 +115,7 @@ class TestPkgVariants(testutils.SingleDepotTestCase):
                 self.image_create(depot, 
                     additional_args="--variant variant.arch=%s" % "sparc")
                 self.pkg("install silver", exit=1)
-                    
+
         def __vtest(self, depot, arch, zone):
                 """ test if install works for spec'd arch"""
                 self.image_create(depot, additional_args="--variant variant.arch=%s --variant variant.opensolaris.zone=%s" % (arch, zone))

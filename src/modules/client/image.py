@@ -2746,7 +2746,7 @@ class Image(object):
                         try:
                                 conp = \
                                     self.constraints.apply_constraints_to_fmri(
-                                    conp)
+                                    conp, auto=True)
                         except constraint.ConstraintException, e:
                                 error = 1
                                 constraint_violations.extend(str(e).split("\n"))
