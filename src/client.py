@@ -84,35 +84,32 @@ from pkg.misc import EmptyI, msg, emsg, PipeError
 CLIENT_API_VERSION = 12
 PKG_CLIENT_NAME = "pkg"
 
-def error(text):
+def error(text, cmd=None):
         """Emit an error message prefixed by the command name """
 
-        # If we get passed something like an Exception, we can convert it
-        # down to a string.
-        text = str(text)
+        if cmd:
+                text = "%s: %s" % (cmd, text)
+        else:
+                # If we get passed something like an Exception, we can convert
+                # it down to a string.
+                text = str(text)
+
         # If the message starts with whitespace, assume that it should come
         # *before* the command-name prefix.
         text_nows = text.lstrip()
         ws = text[:len(text) - len(text_nows)]
 
+
         # This has to be a constant value as we can't reliably get our actual
         # program name on all platforms.
         emsg(ws + "pkg: " + text_nows)
 
-def cmd_error(cmd, text):
-        error("%s: %s" % (cmd, text))
-
-def cmd_usage(cmd, usage_error=None):
-        if usage_error:
-                return usage("%s: %s" % (cmd, usage_error))
-        return usage()
-
-def usage(usage_error = None):
+def usage(usage_error=None, cmd=None, retcode=2):
         """Emit a usage message and optionally prefix it with a more
             specific error message.  Causes program to exit. """
 
         if usage_error:
-                error(usage_error)
+                error(usage_error, cmd=cmd)
 
         emsg(_("""\
 Usage:
@@ -158,7 +155,7 @@ Options:
 
 Environment:
         PKG_IMAGE"""))
-        sys.exit(2)
+        sys.exit(retcode)
 
 # XXX Subcommands to implement:
 #        pkg image-set name value
@@ -1679,24 +1676,24 @@ def publisher_set(img_dir, args):
                         disable = True
 
         if len(pargs) == 0:
-                cmd_usage("set-publisher", _("requires a publisher name"))
+                usage(_("requires a publisher name"), cmd="set-publisher")
         elif len(pargs) > 1:
-                cmd_usage("set-publisher", _("only one publisher name may be "
-                        "specified"))
+                usage( _("only one publisher name may be specified"),
+                    cmd="set-publisher",)
 
         name = pargs[0]
 
         if preferred and disable:
-                cmd_usage("set-publisher", _("the -p and -d options may not be "
-                    "combined"))
+                usage(_("the -p and -d options may not be combined"),
+                    cmd="set-publisher")
 
         progresstracker = get_tracker(True)
         try:
                 api_inst = api.ImageInterface(img_dir, CLIENT_API_VERSION,
                     progresstracker, None, PKG_CLIENT_NAME)
         except api_errors.ImageNotFoundException, e:
-                cmd_error("set-publisher",
-                    _("'%s' is not an install image") % e.user_dir)
+                error(_("'%s' is not an install image") % e.user_dir,
+                    cmd="set-publisher")
                 return 1
 
         new_pub = False
@@ -1707,13 +1704,13 @@ def publisher_set(img_dir, args):
                         pub.reset_client_uuid()
                 repo = pub.selected_repository
         except api_errors.PermissionsException, e:
-                cmd_error("set-publisher", e)
+                error(e, cmd="set-publisher")
                 return 1
         except api_errors.UnknownPublisher:
                 if not origin_url:
-                        cmd_error("set-publisher", _("publisher does not "
-                            "exist. Use -O to define origin URI for new "
-                            "publisher."))
+                        error(_("publisher does not exist. Use -O to define "
+                            "origin URI for new publisher."),
+                            cmd="set-publisher")
                         return 1
                 # No pre-existing, so create a new one.
                 repo = publisher.Repository()
@@ -1738,7 +1735,7 @@ def publisher_set(img_dir, args):
                         # information at the uri level, ssl info should be set
                         # here.
                 except api_errors.PublisherError, e:
-                        cmd_error("set-publisher", e)
+                        error(e, cmd="set-publisher")
                         return 1
 
         if add_mirror:
@@ -1749,14 +1746,14 @@ def publisher_set(img_dir, args):
                         repo.add_mirror(add_mirror)
                 except (api_errors.PublisherError,
                     api_errors.CertificateError), e:
-                        cmd_error("set-publisher", e)
+                        error(e, cmd="set-publisher")
                         return 1
 
         if remove_mirror:
                 try:
                         repo.remove_mirror(remove_mirror)
                 except api_errors.PublisherError, e:
-                        cmd_error("set-publisher", e)
+                        error(e, cmd="set-publisher")
                         return 1
 
         # None is checked for here so that a client can unset a ssl_cert or
@@ -1778,7 +1775,7 @@ def publisher_set(img_dir, args):
                                         uri.ssl_key = ssl_key
                 except (api_errors.PublisherError,
                     api_errors.CertificateError), e:
-                        cmd_error("set-publisher", e)
+                        error(e, cmd="set-publisher")
                         return 1
 
         try:
@@ -1850,7 +1847,7 @@ def publisher_unset(img_dir, args):
                         msg += _("Removal failed for '%(pub)s': %(msg)s") % {
                             "pub": name, "msg": err }
                         msg += "\n"
-                cmd_error("unset-publisher", msg)
+                error(msg, cmd="unset-publisher")
 
         return retcode
 
@@ -2193,10 +2190,6 @@ def image_create(img, args):
                     "characters"))
                 return 1
 
-        if not misc.valid_pub_url(pub_url):
-                error(_("image-create: publisher URI is invalid"))
-                return 1
-
         image_dir = pargs[0]
 
         # Bail if there is already an image there
@@ -2222,12 +2215,13 @@ def image_create(img, args):
                 # Ensure messages are displayed after the spinner.
                 emsg("\n")
                 error(_("cannot create image at %(image_dir)s: %(reason)s") %
-                    { "image_dir": image_dir, "reason": e.args[1] })
+                    { "image_dir": image_dir, "reason": e.args[1] },
+                    cmd="image-create")
                 return 1
-        except api_errors.PermissionsException, e:
+        except (api_errors.PublisherError, api_errors.PermissionsException), e:
                 # Ensure messages are displayed after the spinner.
-                emsg("\n")
-                cmd_error("image-create", e)
+                emsg("")
+                error(e, cmd="image-create")
                 return 1
         except api_errors.InvalidDepotResponseException, e:
                 # Ensure messages are displayed after the spinner.
@@ -2236,11 +2230,12 @@ def image_create(img, args):
                     "valid pkg server.\nPlease check the server's "
                     "address and client's network configuration."
                     "\nAdditional details:\n\n%(error)s") %
-                    { "pub_url": pub_url, "error": e })
+                    { "pub_url": pub_url, "error": e },
+                    cmd="image-create")
                 return 1
         except api_errors.CatalogRefreshException, cre:
                 # Ensure messages are displayed after the spinner.
-                emsg("\n")
+                error("", cmd="image-create")
                 if display_catalog_failures(cre) == 0:
                         return 1
                 else:
@@ -2311,7 +2306,7 @@ def history_list(img, args):
                         he = history.History(root_dir=img.history.root_dir,
                             filename=entry)
                 except api_errors.PermissionsException, e:
-                        cmd_error("history", e)
+                        error(e, cmd="history")
                         return 1
                 except history.HistoryLoadException, e:
                         if e.parse_failure:
@@ -2411,18 +2406,14 @@ def main_func():
 
         subcommand = None
         if pargs:
-                subcommand = pargs[0]
-                pargs.pop(0)
+                subcommand = pargs.pop(0)
                 if subcommand == "help":
                         show_usage = True
 
-        if not subcommand or show_usage:
-                try:
-                        usage()
-                except SystemExit:
-                        if show_usage:
-                                return 0
-                        return 2
+        if show_usage:
+                usage(retcode=0)
+        elif not subcommand:
+                usage()
 
         socket.setdefaulttimeout(
             int(os.environ.get("PKG_CLIENT_TIMEOUT", "30"))) # in seconds

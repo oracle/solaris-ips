@@ -339,14 +339,23 @@ class Image(object):
 
                 self.__set_dirs(imgtype=imgtype, root=root)
 
+                # Create the publisher object before creating the image...
+                repo = publisher.Repository()
+                repo.add_origin(pub_url, ssl_cert=ssl_cert, ssl_key=ssl_key)
+                newpub = publisher.Publisher(prefix,
+                    meta_root=self._get_publisher_meta_root(prefix),
+                    repositories=[repo])
+
+                # ...so that if creation of the Publisher object fails, an
+                # empty, useless image won't be left behind.
                 if not os.path.exists(os.path.join(self.imgdir,
                     imageconfig.CFG_FILE)):
                         self.history.operation_name = "image-create"
                 else:
                         self.history.operation_name = "image-set-attributes"
 
+                # Now create the image directories.
                 self.mkdirs()
-
                 self.cfg_cache = imageconfig.ImageConfig()
 
                 if is_zone:
@@ -356,12 +365,6 @@ class Image(object):
                 else:
                         self.cfg_cache.variants[
                             "variant.opensolaris.zone"] = "global"
-
-                repo = publisher.Repository()
-                repo.add_origin(pub_url, ssl_cert=ssl_cert, ssl_key=ssl_key)
-                newpub = publisher.Publisher(prefix,
-                    meta_root=self._get_publisher_meta_root(prefix),
-                    repositories=[repo])
 
                 # Retrieve metadata for new repository, if allowed.
                 if refresh_allowed:

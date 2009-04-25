@@ -105,6 +105,15 @@ class TestPkgImageCreateBasics(testutils.SingleDepotTestCase):
                             img_path))
                         shutil.rmtree(img_path)
 
+        def test_5_bad_values_no_image(self):
+                """Verify that an invalid publisher URI or other piece of
+                information provided to image-create will not result in an
+                empty image being created despite failure."""
+
+                p = os.path.join(self.get_img_path(), "test_5_image")
+                self.pkg("image-create -p test=InvalidURI %s" % p, exit=1)
+                self.assertFalse(os.path.exists(p))
+
 
 class TestImageCreateNoDepot(testutils.CliTestCase):
         persistent_depot = True
