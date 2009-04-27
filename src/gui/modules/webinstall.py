@@ -278,7 +278,15 @@ class Webinstall:
                         print("\tURL: %s" % repo.origins[0].uri)
                         
                 repo_gui = repository.Repository(self, True)
-                repo_gui.webinstall_new_pub(self.w_webinstall_dialog, pub)
+                repo = pub.selected_repository
+                if repo and len(repo.origins) > 0:
+                        repo_gui.webinstall_new_pub(self.w_webinstall_dialog, pub)
+                else:
+                        msg = _("Failed to add %s.\n") % pub
+                        msg += _("No URI specified")
+                        self.__error_occurred( 
+                                    self.w_webinstall_dialog,
+                                    msg, gtk.MESSAGE_ERROR, _("Repository Error"))
 
         # Publisher Callback - invoked at end of adding publisher
         def reload_packages(self):
