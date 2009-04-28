@@ -23,7 +23,7 @@ depend SUNWprd
 depend SUNWsfwhea
 depend SUNWtlsd
 depend SUNWtltk
-depend SUNWtss
+$(i386_ONLY)depend SUNWtss
 depend SUNWwbapi
 depend SUNWwbcou
 depend SUNWwbdev
