@@ -12,6 +12,7 @@ f none usr/lib/brand/ipkg/clone 755 root bin
 f none usr/lib/brand/ipkg/common.ksh 444 root bin
 f none usr/lib/brand/ipkg/config.xml 444 root bin
 f none usr/lib/brand/ipkg/detach 755 root bin
+f none usr/lib/brand/ipkg/fmri_compare 755 root bin
 f none usr/lib/brand/ipkg/pkgcreatezone 755 root bin
 f none usr/lib/brand/ipkg/platform.xml 444 root bin
 f none usr/lib/brand/ipkg/poststate 755 root bin

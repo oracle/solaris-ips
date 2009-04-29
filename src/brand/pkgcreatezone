@@ -38,7 +38,7 @@ f_no_entire_in_pref=$(gettext "Unable to locate the incorporation '%s' in the pr
 
 m_publisher=$(gettext   "   Publisher: Using %s (%s).")
 m_cache=$(gettext       "       Cache: Using %s.")
-m_image=$(gettext       "       Image: Preparing at %s ...")
+m_image=$(gettext       "       Image: Preparing at %s.")
 m_incorp=$(gettext      "Sanity Check: Looking for 'entire' incorporation.\n")
 m_core=$(gettext        "  Installing: Core System (output follows)\n")
 m_more=$(gettext        "  Installing: Additional Packages (output follows)\n")
@@ -136,9 +136,6 @@ fi
 raw_entire_fmri=$($PKG list -Hv entire | nawk '{print $1}')
 entire_fmri=$(echo $raw_entire_fmri | sed 's@^pkg://[^/]*/@@')
 entire_fmri=$(echo $entire_fmri | sed 's@^pkg:/@@')
-if [[ $raw_entire_fmri == "pkg://"* ]]; then
-	entire_fmri_pub=$(echo $raw_entire_fmri | sed 's@^pkg://\([^/]*\)/.*@\1@')
-fi
 
 if [[ -z $entire_fmri ]]; then
 	fail_incomplete "$f_no_entire"
@@ -203,10 +200,9 @@ fi
 # Done setting up the zone's datasets.
 #
 printf "$m_publisher" $publisher $publisherurl
-printf "\n$m_image" $zoneroot
+printf "\n$m_image\n" $zoneroot
 $PKG image-create --zone --full -p "$pub_and_url" $zoneroot || \
 	fail_incomplete "$f_img"
-printf "$m_done\n"
 
 
 PKG_IMAGE="$zoneroot"
@@ -294,12 +290,9 @@ pkglist="$pkglist $extra_packages"
 
 #
 # Do the install; we just refreshed on image-create, so skip that.  We
-# also skip indexing again here, because, due to the above --no-index
-# operations, pkg(1) will decide that, before doing anything else, it must
-# build the index.  Then it'll do work, and build the index again.
+# also skip indexing here, as that is also what the LiveCD does.
 #
 $PKG install --no-index --no-refresh $pkglist || fail_fatal "$f_pkg"
-$PKG rebuild-index
 
 printf "\n$m_mannote\n"
 

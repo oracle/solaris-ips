@@ -53,6 +53,7 @@ ROOTFILES = \
 	$(ROOTBRANDPKG)/clone \
 	$(ROOTBRANDPKG)/common.ksh \
 	$(ROOTBRANDPKG)/detach \
+	$(ROOTBRANDPKG)/fmri_compare \
 	$(ROOTBRANDPKG)/pkgcreatezone \
 	$(ROOTBRANDPKG)/poststate \
 	$(ROOTBRANDPKG)/prestate \
@@ -63,15 +64,21 @@ all := TARGET = all
 link := TARGET = link
 link-clean := TARGET = link-clean
 
-all:
+fmri_compare: fmri_compare.py
+	cp $@.py $@
+	chmod 755 $@
+
+all: fmri_compare
 
 clean:
+	rm -f fmri_compare
 
 clobber: clean
 	rm -f $(ROOTFILES)
 	rm -fr $(ROOTBRAND)
 
 install: $(ROOTFILES)
+
 
 # XXX link is a developer target to connect the local machine to the current
 # repository's working copy's versions of the commands and modules.

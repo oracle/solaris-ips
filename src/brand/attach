@@ -20,18 +20,26 @@
 # CDDL HEADER END
 #
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
-m_cache=$(gettext  "                     Cache: Using %s.")
 m_installing=$(gettext "Installing...")
 m_usage=$(gettext  "ipkg brand attach arguments [-a archive] [-d dataset] [-n] [-r zfs-recv] [-u]\n\tThe -a archive option specifies a tar file or cpio archive.\n\tThe -d dataset option specifies an existing dataset.\n\tThe -r zfs-recv option receives the output of a 'zfs send' command\n\tof an existing zone root dataset.\n\tThe -u option indicates that the software should be updated to match\n\tthe current host.")
-m_gzinc=$(gettext "       Global zone version: %s")
-m_zinc=$(gettext "       Non-Global zone version: %s")
-m_insync=$(gettext "%s is in sync with global zone (%s)")
-m_complete=$(gettext "attach complete.")
-m_updating=$(gettext "  Updating non-global zone: Output follows")
+m_gzinc=$( gettext "       Global zone version: %s")
+m_zinc=$(  gettext "   Non-Global zone version: %s")
+m_insync=$(gettext "                Evaluation: Packages in %s are in sync with global zone.")
+m_uprev=$(gettext  "                Evaluation: %s is newer than the global zone.")
+m_dnrev=$(gettext  "                Evaluation: %s is downrev of the global zone.")
+m_resetpub=$(gettext  "           Publisher Check: Zone preferred publisher does not contain")
+m_resetpub2=$(gettext "                            %s.")
+m_resetpub3=$(gettext "           Publisher Reset: Copying preferred publisher from global zone.")
+m_pubfine=$(gettext   "           Publisher Check: Looks good.")
+m_cache=$(gettext     "                     Cache: Using %s.")
+m_updating=$(gettext  "  Updating non-global zone: (Stage 1).  Output follows")
+m_updating2=$(gettext  "  Updating non-global zone: (Stage 2).  Output follows")
+m_sync_done=$(gettext "  Updating non-global zone: Zone updated to %s")
+m_complete=$(gettext "Attach complete.")
 
 f_option_no_ds=$(gettext "The -a, -d or -r option is required when there is no active root dataset.")
 f_option_ds=$(gettext "The -a, -d or -r option is invalid when there is already an active root dataset.")
@@ -40,12 +48,27 @@ f_unpack=$(gettext "Unable to install the archive.")
 f_bad_dataset=$(gettext "Non-existent or invalid zone root dataset.")
 f_nogzinc=$(gettext "Could not find 'entire' incorporation for global zone.")
 f_nozinc=$(gettext "Could not find 'entire' incorporation for attaching zone.")
-f_downrev=$(gettext "ERROR: Zone is downrev of global zone.  Specify -u to update it.")
+f_downrev=$(gettext "Zone is downrev of global zone.  Specify -u to update it.")
+f_uprev=$(gettext "Zone is uprev of global zone.  Global zone will need to be updated before attach can proceed.")
 f_update=$(gettext "Could not update attaching zone")
+f_bad_publisher=$(gettext "Syntax error in publisher information.\n")
+f_gz_entire=$(gettext "Could not find 'entire' incorporation for global zone.")
+f_zone_entire=$(gettext "Could not find 'entire' incorporation for non-global zone.")
+f_fmri_compare=$(gettext "Failed to compare 'entire' FMRIs")
+f_reset_pub=$(gettext "Failed to reset publisher to %s %s")
+f_no_pref_publisher=$(gettext "Unable to get preferred publisher information for zone '%s'.")
+f_pkg_list=$(gettext "Unable to get zone package list.")
+
 
 #set -o xtrace
 
 . /usr/lib/brand/ipkg/common.ksh
+
+# Setup i18n output
+TEXTDOMAIN="SUNW_OST_OSCMD"
+export TEXTDOMAIN
+
+PKG="LC_ALL=C /usr/bin/pkg"
 
 aarg=0
 darg=0
@@ -382,58 +405,140 @@ else
 	fi
 fi
 
+
 /usr/sbin/mount -F zfs $ACTIVE_DS $zoneroot || fail_fatal "$f_zfs_mount"
+#
+# unmount the zoneroot and clean up our temp files if anything goes wrong
+#
+trap "/usr/sbin/umount $zoneroot > /dev/null 2>&1" EXIT
 
-# XXX the rest is a hack for now
+#
+# Look for the 'entire' incorporation's FMRI in the current image; due to users
+# doing weird machinations with their publishers, we strip off the publisher
+# from the FMRI if it is present.
+#
+gz_entire_fmri=$(get_entire_incorp) || fail_fatal "$f_gz_entire"
 
-gz_entire=`pkg -R / list -Hv entire| nawk '{print $1}'`
-if [ $? -ne 0 ]; then
-	/usr/sbin/umount $zoneroot
-	fail_fatal $f_nogzinc
+#
+# Get publisher information for global zone.
+# If we were not able to get the zone's preferred publisher, complain.
+#
+get_preferred_publisher | IFS=" " read gz_publisher gz_publisher_url
+
+[[ -z $gz_publisher ]] && fail_usage "$f_no_pref_publisher" "global"
+[[ -z $gz_publisher_url ]] && fail_usage "$f_no_pref_publisher" "global"
+
+PKG_IMAGE="$zoneroot"
+export PKG_IMAGE
+
+#
+# Get publisher information for non global zone.
+# If we were not able to get the zone's preferred publisher, complain.
+#
+get_preferred_publisher | IFS=" " read zone_publisher zone_publisher_url
+
+[[ -z $zone_publisher ]] && fail_usage "$f_no_pref_publisher" $zonename
+[[ -z $zone_publisher_url ]] && fail_usage "$f_no_pref_publisher" $zonename
+
+#
+# Get entire incorp for non-global zone
+#
+zone_entire_fmri=$(get_entire_incorp) || fail_fatal "$f_zone_entire"
+
+printf "$m_gzinc\n" $gz_entire_fmri
+printf "$m_zinc\n" $zone_entire_fmri
+# 
+# if the zone entire and the gz entire match, we're good.
+#
+comp=$(/usr/lib/brand/ipkg/fmri_compare $zone_entire_fmri $gz_entire_fmri)
+if [[ $? -ne 0 ]]; then
+	fail_fatal "$f_fmri_compare"
 fi
-printf "$m_gzinc\n" $gz_entire
-
-ngz_entire=`pkg -R $zoneroot list -Hv entire| nawk '{print $1}'`
-if [ $? -ne 0 ]; then
-	/usr/sbin/umount $zoneroot
-	fail_fatal $f_nozinc
-fi
-printf "$m_zinc\n" $ngz_entire
-
-if [ "$gz_entire" = "$ngz_entire" ]; then
-	printf "$m_insync\n" $zonename $gz_entire
+if [[ $comp = "=" ]]; then
+	printf "$m_insync\n" $zonename
 	echo $m_complete
-	/usr/sbin/umount $zoneroot || fail_fatal "$f_umount"
 	exit $ZONE_SUBPROC_OK
+fi
+if [[ $comp = ">" ]]; then
+	printf "$m_uprev\n" $zonename
+	fail_fatal "$f_uprev"
 fi
 
 #
-# XXX later we need to check that gz_entire is uprev of ngz_entire.
-# But implementing that in ksh right now will be too much effort--
-# the way to do that is with some python code which can compare FMRI
-# versions to each other.
+# If we're here, the zone is downrev of the global zone
 #
 if [ -z $allow_update ]; then
 	# zone is downrev
-	/usr/sbin/umount $zoneroot
+	printf "$m_dnrev\n" $zonename
 	fail_fatal "$f_downrev"
 fi
 
-echo $m_updating
+#
+# See if the zone knows about the gz entire fmri in question.  If yes,
+# we'll try using that.
+#
+$PKG list --no-refresh -a $gz_entire_fmri > /dev/null 2>&1
+
+#
+# If this doesn't exist, then we reset the preferred pub for
+# the zone to that of the global zone on attach, and try again.
+#
+if [[ $? -ne 0 ]]; then
+	printf "$m_resetpub\n"
+	printf "$m_resetpub2\n" $gz_entire_fmri
+	printf "$m_resetpub3\n"
+
+	# Note that we do cause a refresh here-- at some point we need the
+	# catalog to be updated.
+	pkg -R $zoneroot set-publisher -P -O $gz_publisher_url $gz_publisher
+	if [[ $? -ne 0 ]]; then
+		fail_fatal "$f_reset_pub"
+	fi
+	zone_publisher=$gz_publisher
+	zone_publisher_url=$gz_publisher_url
+else
+	printf "$m_pubfine\n"
+fi
 
 if [ -d /var/pkg/download ]; then
-        PKG_CACHEDIR=/var/pkg/download
-        export PKG_CACHEDIR
-        printf "$m_cache\n" $PKG_CACHEDIR
+	PKG_CACHEDIR=/var/pkg/download
+	export PKG_CACHEDIR
+	printf "$m_cache\n" $PKG_CACHEDIR
 fi
 
-pkg -R $zoneroot install $gz_entire
+printf "$m_updating\n"
+
+#
+# Updating 'entire' is likely to do us a lot of good, but it can miss
+# some updates-- particularly on a respin of a package (say, where only
+# the datestamps change).
+#
+$PKG install $gz_entire_fmri
 if [ $? -ne 0 ]; then
-	/usr/sbin/umount $zoneroot
 	fail_fatal "$f_update"
 fi
-echo $ngz_entire
 
-/usr/sbin/umount $zoneroot || fail_fatal "$f_umount"
+printf "$m_updating2\n"
+#
+# So to get around the aforementioned problem, a hack we can apply is
+# to force all packages to the latest available against the incorporation.
+# This could allow the zone to get slightly ahead of the global zone.
+#
+# First, list all the packages for the preferred publisher, then
+# do an 'install' on those.
+#
+zone_pkgs=$($PKG list --no-refresh -H "pkg://$zone_publisher/*" | \
+    awk '{print $1}' | egrep -v '^entire$')
+if [[ $? -ne 0 ]]; then
+	fail_fatal "$f_pkg_list"
+fi
+
+$PKG install $zone_pkgs
+if [ $? -ne 0 ]; then
+	fail_fatal "$f_update"
+fi
+
+printf "$m_sync_done\n" $gz_entire_fmri
+printf "$m_complete\n"
 
 exit $ZONE_SUBPROC_OK

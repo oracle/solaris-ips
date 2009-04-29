@@ -130,3 +130,27 @@ fail_zonepath_in_rootds() {
 			;;
 	esac
 }
+
+#
+# Emits to stdout the entire incorporation for this image,
+# stripped of publisher name and other junk.
+#
+get_entire_incorp() {
+	typeset entire_fmri
+	entire_fmri=$($PKG list -Hv entire | nawk '{print $1}')
+	if [[ $? -ne 0 ]]; then
+		return 1
+	fi
+	entire_fmri=$(echo $entire_fmri | sed 's@^pkg://[^/]*/@@')
+	entire_fmri=$(echo $entire_fmri | sed 's@^pkg:/@@')
+	echo $entire_fmri
+	return 0
+}
+
+#
+# Emits to stdout the preferred publisher and its URL.
+#
+get_preferred_publisher() {
+	$PKG publisher -PH | nawk '$2 == "origin" && $3 == "online" \
+	    {printf "%s %s\n", $1, $4; exit 0;}'
+}
