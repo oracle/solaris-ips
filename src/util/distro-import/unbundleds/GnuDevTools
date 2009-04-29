@@ -1,0 +1,34 @@
+package developer/gcc/gcc-432
+classification "Development/C"
+version 4.3.2
+import SUNWgcc432
+$(sparc_ONLY)import SUNWscgfss432
+depend SUNWarc
+depend SUNWbinutils
+depend developer/gcc/gcc-runtime-432
+depend SUNWhea
+end package
+
+package developer/gcc/gcc-runtime-432
+classification "Development/C"
+version 4.3.2
+import SUNWgccruntime432
+end package
+
+package developer/gcc/gcc-dev-4
+classification "Development/Suites"
+description "GNU Compiler Collection 4.3.2 Development cluster" 
+depend SUNWaconf
+depend SUNWbison
+depend SUNWcvs
+depend SUNWflexlex
+depend developer/gcc/gcc-432
+depend SUNWgdb
+depend SUNWgmake
+depend SUNWgnu-automake-110
+depend SUNWgnu-automake-19
+depend SUNWlibtool
+depend SUNWmercurial
+depend SUNWsprot
+depend SUNWsvn
+end package

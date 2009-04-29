@@ -3931,6 +3931,15 @@ category = High Performance Computing
 [clustertools_8.1]
 category = High Performance Computing
 
+[developer/gcc/gcc-432]
+category = C
+
+[developer/gcc/gcc-dev-4]
+category = Suites
+
+[developer/gcc/gcc-runtime-432]
+category = C
+
 [developer/netbeans/plugin/nb-dtrace]
 category = System
 
@@ -3944,7 +3953,7 @@ category = Editors
 category = Integrated Development Environments
 
 [gcc-dev]
-category = Integrated Development Environments
+category = Suites
 
 [hpc-dev]
 category = High Performance Computing

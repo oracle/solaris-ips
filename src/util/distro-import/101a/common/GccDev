@@ -1,5 +1,5 @@
 package gcc-dev
-classification "Development/Integrated Development Environments"
+classification "Development/Suites"
 description "GNU Tools Development cluster"
 depend SUNWaconf
 depend SUNWbison

@@ -288,6 +288,7 @@ UNBUNDLED_TARGETS=		\
 	Eclipse.import		\
 	ExuberantCTags.import	\
 	GlassFishV2.import	\
+	GnuDevTools.import	\
 	LDomsManager.import	\
 	MessageQueue41.import	\
 	NetBeans.import		\
