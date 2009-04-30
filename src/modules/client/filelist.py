@@ -61,24 +61,28 @@ class FileList(object):
         the appropriate opener and closer for the actions that it processed.  By
         downloading files in a group, it is possible to achieve better
         performance.  This is because the FileList asks for the files to be
-        sent in groups, instead of individual HTTP GET's.
-
-        The caller may limit the maximum number of bytes of content in a
-        FileList by specifying maxbytes when the object is constructed.
-        If the caller sets maxbytes to 0, the size of the list is assumed
-        to be infinite."""
+        sent in groups, instead of individual HTTP GET's."""
 
         #
-        # This value can be tuned by external callers to adjust the
-        # default "maxbytes" value for a file list.  This value should be
-        # tuned to the lowest value which provides "good enough" performance;
-        # tuning beyond 1MB has not in our experiments thus far yielded more
-        # than a token speedup-- at the expense of interactivity.
+        # This value should be left at the lowest value that provides "good
+        # enough" performance; tuning beyond 1MB has not in our experiments
+        # yielded more than a token speedup-- at the expense of interactivity.
         #
         maxbytes_default = 1024 * 1024
 
-        def __init__(self, image, fmri, progtrack, check_cancelation,
-            maxbytes=None):
+        #
+        # A limit is placed on the maximum number of files to prevent
+        # the request size from growing too large.  Some HTTP implementations
+        # choke on POST requests that are 128k or larger.  By setting
+        # maxfiles to 1,500, this will prevent requests using sha1 or sha256
+        # from exceeeding the size limit.
+        #
+        # XXX This will need to be adjusted for the sha512 hash, or any hash
+        # with equivalent length.
+        #
+        maxnfiles_default = 1500
+
+        def __init__(self, image, fmri, progtrack, check_cancelation):
                 """
                 Create a FileList object for the specified image and pkgplan.
                 """
@@ -88,10 +92,8 @@ class FileList(object):
                 self.progtrack = progtrack
                 self.fhash = { }
 
-                if maxbytes is None:
-                        self.maxbytes = FileList.maxbytes_default
-                else:
-                        self.maxbytes = maxbytes
+                self.maxbytes = FileList.maxbytes_default
+                self.maxnfiles = FileList.maxnfiles_default
 
                 self.actual_bytes = 0
                 self.actual_nfiles = 0
@@ -464,7 +466,8 @@ class FileList(object):
                 """Returns true if the FileList object has filled its
                 allocated slots and can no longer accept new actions."""
 
-                if self.maxbytes > 0 and self.actual_bytes >= self.maxbytes:
+                if self.actual_bytes >= self.maxbytes or \
+                    self.actual_nfiles >= self.maxnfiles:
                         return True
 
                 return False

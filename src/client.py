@@ -501,7 +501,7 @@ def image_update(img_dir, args):
         # XXX Are filters appropriate for an image update?
         # XXX Leaf package refinements.
 
-        opts, pargs = getopt.getopt(args, "b:fnvq", ["be-name=", "no-refresh",
+        opts, pargs = getopt.getopt(args, "fnvq", ["be-name=", "no-refresh",
             "no-index"])
 
         force = quiet = noexecute = verbose = False
@@ -512,8 +512,6 @@ def image_update(img_dir, args):
                         noexecute = True
                 elif opt == "-v":
                         verbose = True
-                elif opt == "-b":
-                        filelist.FileList.maxbytes_default = int(arg)
                 elif opt == "-q":
                         quiet = True
                 elif opt == "-f":
@@ -668,7 +666,7 @@ def install(img_dir, args):
 
         # XXX Publisher-catalog issues.
 
-        opts, pargs = getopt.getopt(args, "nvb:f:q", ["no-refresh", "no-index"])
+        opts, pargs = getopt.getopt(args, "nvf:q", ["no-refresh", "no-index"])
 
         quiet = noexecute = verbose = False
         refresh_catalogs = update_index = True
@@ -678,8 +676,6 @@ def install(img_dir, args):
                         noexecute = True
                 elif opt == "-v":
                         verbose = True
-                elif opt == "-b":
-                        filelist.FileList.maxbytes_default = int(arg)
                 elif opt == "-f":
                         filters += [ arg ]
                 elif opt == "-q":
