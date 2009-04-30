@@ -401,6 +401,8 @@ class PackageManager:
                 self.saved_repository_combobox_active = -1
                 self.saved_sections_combobox_active = 0
                 self.saved_application_list = None
+                self.saved_application_list_filter = None
+                self.saved_application_list_sort = None
                 self.saved_category_list = None
                 self.saved_section_list = None
                 self.saved_selected_application_path = None
@@ -622,6 +624,10 @@ class PackageManager:
                         self.saved_filter_combobox_active = \
                             self.w_filter_combobox.get_active()
                         self.saved_application_list = self.application_list
+                        self.saved_application_list_filter = \
+                            self.application_list_filter
+                        self.saved_application_list_sort = \
+                            self.application_list_sort
                         self.saved_category_list = self.category_list
                         self.saved_section_list = self.section_list
                         model, itr = self.package_selection.get_selected()
@@ -642,13 +648,16 @@ class PackageManager:
                         self.update_statusbar_for_search()
                         self.w_searchentry_dialog.grab_focus()
                 else:
+                        self.set_busy_cursor()
                         self.w_repository_combobox.set_active(
                             self.saved_repository_combobox_active)
                         self.set_section = self.saved_sections_combobox_active
                         self.set_show_filter = self.saved_filter_combobox_active
                         self.need_descriptions = True
                         self.__init_tree_views(self.saved_application_list,
-                            self.saved_category_list, self.saved_section_list)
+                            self.saved_category_list, self.saved_section_list,
+                            self.saved_application_list_filter,
+                            self.saved_application_list_sort)
                         if self.saved_selected_application_path != None:
                                 self.package_selection.select_path(
                                     self.saved_selected_application_path)
@@ -978,15 +987,18 @@ class PackageManager:
                         gobject.TYPE_STRING,      # enumerations.REPOSITORY_NAME
                         )
 
-        def __init_application_tree_view(self, application_list):
+        def __init_application_tree_view(self, application_list,
+            application_list_filter, application_list_sort):
                 ##APPLICATION MAIN TREEVIEW
-                application_list_filter = application_list.filter_new()
-                application_list_sort = \
-                    gtk.TreeModelSort(application_list_filter)
-                application_list_sort.set_sort_column_id(\
-                    enumerations.NAME_COLUMN, gtk.SORT_ASCENDING)
-                application_list_sort.set_sort_func(\
-                    enumerations.STATUS_ICON_COLUMN, self.__status_sort_func)
+                if application_list_filter == None:
+                        application_list_filter = application_list.filter_new()
+                if application_list_sort == None:
+                        application_list_sort = \
+                            gtk.TreeModelSort(application_list_filter)
+                        application_list_sort.set_sort_column_id(
+                            enumerations.NAME_COLUMN, gtk.SORT_ASCENDING)
+                        application_list_sort.set_sort_func(
+                            enumerations.STATUS_ICON_COLUMN, self.__status_sort_func)
                 toggle_renderer = gtk.CellRendererToggle()
 
                 column = gtk.TreeViewColumn("", toggle_renderer, \
@@ -1041,7 +1053,9 @@ class PackageManager:
                 toggle_renderer.connect('toggled', self.__active_pane_toggle,
                     application_list_sort)
 
-        def __init_tree_views(self, application_list, category_list, section_list):
+        def __init_tree_views(self, application_list, category_list, 
+            section_list, application_list_filter = None, 
+            application_list_sort = None):
                 '''This function connects treeviews with their models and also applies
                 filters'''
                 if category_list == None:
@@ -1068,7 +1082,8 @@ class PackageManager:
                                 self.set_section = 0
 
                 if application_list != None:
-                        self.__init_application_tree_view(application_list)
+                        self.__init_application_tree_view(application_list,
+                            application_list_filter, application_list_sort)
 
                 if self.first_run:
                         # When vadj changes we need to set image descriptions
@@ -1144,8 +1159,9 @@ class PackageManager:
                         self.w_application_treeview.set_model(
                                 self.application_list_sort)
                         if not self.is_remote_search:
-                                self.application_list_filter.set_visible_func(
-                                    self.__application_filter)
+                                if application_list_filter == None:
+                                        self.application_list_filter.set_visible_func(
+                                            self.__application_filter)
 
                 category_selection = self.w_categories_treeview.get_selection()
                 category_model, category_iter = category_selection.get_selected()
@@ -3745,7 +3761,7 @@ if __name__ == '__main__':
             "installation can be completed.")
 
         try:
-                opts, args = getopt.getopt(sys.argv[1:], "hR:U:i", \
+                opts, args = getopt.getopt(sys.argv[1:], "hR:U:i:", \
                     ["help", "image-dir=", "update-all=", "info-install="])
         except getopt.error, msg:
                 print "%s, for help use --help" % msg

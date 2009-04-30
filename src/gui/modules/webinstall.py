@@ -376,34 +376,18 @@ class Webinstall:
         def api_parse_publisher_info(self, param=None):
                 '''<path to mimetype file|origin_url>
                    returns list of publisher and package list tuples'''
-                p5i_info = None
-                file_obj = None
-                if self.param.endswith(".p5i"):                
-                        try:
-                                file_obj = open(self.param)
-                                p5i_info = self.api_o.parse_p5i(file_obj)
-                                file_obj.close()
-                        except (api_errors.InvalidP5IFile, 
-                                api_errors.InvalidResourceLocation,
-                                api_errors.RetrievalError,
-                                api_errors.UnsupportedP5IFile,
-                                api_errors.PublisherError), ex:
-                                self.w_webinstall_proceed.set_sensitive(False)
-                                self.__error_occurred( 
-                                    self.w_webinstall_dialog,
-                                    str(ex), gtk.MESSAGE_ERROR, _("Repository Error"))
-                                file_obj.close()
-                                return None
-                        except IOError:
-                                if file_obj != None:
-                                        file_obj.close()
-                                self.w_webinstall_proceed.set_sensitive(False)
-                                msg = _("Error reading the p5i file.")
-                                self.__error_occurred(
-                                    self.w_webinstall_dialog,
-                                    msg, gtk.MESSAGE_ERROR, _("Repository Error"))                        
-                                return None
-                else:
+                if not self.param:
                         self.w_webinstall_proceed.set_sensitive(False)
                         return None
-                return p5i_info
+                try:
+                        return self.api_o.parse_p5i(location=self.param)
+                except (api_errors.InvalidP5IFile, 
+                        api_errors.InvalidResourceLocation,
+                        api_errors.RetrievalError,
+                        api_errors.UnsupportedP5IFile,
+                        api_errors.PublisherError), ex:
+                        self.w_webinstall_proceed.set_sensitive(False)
+                        self.__error_occurred( 
+                            self.w_webinstall_dialog,
+                            str(ex), gtk.MESSAGE_ERROR, _("Repository Error"))
+                        return None
