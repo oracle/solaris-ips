@@ -98,6 +98,7 @@ import socket
 import gettext
 import signal
 from threading import Thread
+from threading import Lock
 from urllib2 import HTTPError, URLError
 from cPickle import UnpicklingError
 
@@ -233,6 +234,7 @@ class PackageManager:
                 self.default_publisher = None
                 self.current_not_show_repos = []
                 self.first_run = True
+                self.in_reload = False
                 self.in_search = False
                 self.selected_pkgstem = None
                 self.selected_model = None
@@ -275,6 +277,7 @@ class PackageManager:
                 self.pr = progress.NullProgressTracker()
                 self.pylintstub = None
                 self.release_notes_url = "http://www.opensolaris.org"
+                self.__image_activity_lock = Lock()
 
                 # Create Widgets and show gui
                 self.gladefile = self.application_dir + \
@@ -643,10 +646,9 @@ class PackageManager:
                             self.saved_repository_combobox_active)
                         self.set_section = self.saved_sections_combobox_active
                         self.set_show_filter = self.saved_filter_combobox_active
+                        self.need_descriptions = True
                         self.__init_tree_views(self.saved_application_list,
                             self.saved_category_list, self.saved_section_list)
-                        self.need_descriptions = True
-                        self.process_package_list_end()
                         if self.saved_selected_application_path != None:
                                 self.package_selection.select_path(
                                     self.saved_selected_application_path)
@@ -1165,7 +1167,6 @@ class PackageManager:
 
                 self.a11y_application_treeview = \
                     self.w_application_treeview.get_accessible()
-                self.first_run = False
                 self.process_package_list_end()
 
         def __categories_treeview_size_allocate(self, widget, allocation, user_data):
@@ -1560,7 +1561,7 @@ class PackageManager:
                 if debug:
                         print "pargs:", pargs
                 try:
-                        pkgs_known = misc.get_inventory_list(self.api_o.img, pargs,
+                        pkgs_known = self.__get_inventory_list(pargs,
                             True, True)
                 except api_errors.InventoryException:
                         # This can happen if load_catalogs has not been run
@@ -2139,9 +2140,7 @@ class PackageManager:
                                 if first_loop == True:
                                         first_loop = False
                                         gobject.idle_add(self.setup_progressdialog_show)
-                                self.catalog_loaded = False
-                                self.api_o.img.load_catalogs(self.pr)
-                                self.catalog_loaded = True
+                                self.__load_catalogs()
                                 self.__add_pkgs_to_lists_from_api(publisher,
                                     application_list, category_list, section_list)
                                 category_list.prepend([0, _('All'), None, None, False,
@@ -2276,6 +2275,7 @@ class PackageManager:
                 self.w_progress_dialog.show()
                 self.w_progress_cancel.hide()
                 self.__disconnect_models()
+                self.in_reload = True
                 Thread(target = self.__catalog_refresh).start()
 
         def __catalog_refresh_done(self):
@@ -2960,6 +2960,24 @@ class PackageManager:
                 self.w_selectupdates_menuitem.set_sensitive(False)
                 return
 
+        def __get_inventory_list(self, pargs, all_known, all_versions):
+                self.__image_activity_lock.acquire()
+                try:
+                        res = misc.get_inventory_list(self.api_o.img, 
+                            pargs, all_known, all_versions)
+                finally:
+                        self.__image_activity_lock.release()
+                return res
+
+        def __load_catalogs(self):
+                self.__image_activity_lock.acquire()
+                try:
+                        self.catalog_loaded = False
+                        self.api_o.img.load_catalogs(self.pr)
+                        self.catalog_loaded = True
+                finally:
+                        self.__image_activity_lock.release()
+
         def __enable_disable_update_all(self):
                 #XXX Api to provide fast information if there are some updates
                 #available within image
@@ -2981,15 +2999,8 @@ class PackageManager:
 
         def __check_if_updates_available(self):
                 try:
-                        img = self.api_o.img
-                        self.catalog_loaded = False
-                        img.load_catalogs(self.pr)
-                        self.catalog_loaded = True
-                        pargs = []
-                        all_known = False
-                        all_versions = False
-                        res = misc.get_inventory_list(img, pargs,
-                            all_known, all_versions)
+                        self.__load_catalogs()
+                        res = self.__get_inventory_list([], False, False)
                         for pfmri, state in res:
                                 if state["upgradable"]:
                                         self.pylintstub = pfmri
@@ -3098,7 +3109,7 @@ class PackageManager:
                 pargs = []
                 pargs.append("pkg://" + publisher + "/*")
                 try:
-                        pkgs_known = misc.get_inventory_list(self.api_o.img, pargs,
+                        pkgs_known = self.__get_inventory_list(pargs,
                             True, True)
                 except api_errors.InventoryException:
                         # Can't happen when all_known is true and no args,
@@ -3517,8 +3528,13 @@ class PackageManager:
                 if self.set_section != 0 or \
                     self.set_show_filter != enumerations.FILTER_ALL:
                         self.__application_refilter()
-                self.unset_busy_cursor()
-                Thread(target = self.__enable_disable_update_all).start()
+                else:
+                        self.unset_busy_cursor()
+                
+                if self.first_run or self.in_reload:
+                        Thread(target = self.__enable_disable_update_all).start()
+                self.first_run = False
+                self.in_reload = False
                 if self.need_descriptions:
                         self.__get_manifests_thread()
 
@@ -3609,12 +3625,9 @@ class PackageManager:
         def update_package_list(self, update_list):
                 if update_list == None and self.img_timestamp:
                         return
-                img = self.api_o.img
                 visible_repository = self.__get_visible_repository_name()
                 default_publisher = self.default_publisher
-                self.catalog_loaded = False
-                img.load_catalogs(self.pr)
-                self.catalog_loaded = True
+                self.__load_catalogs()
                 if not self.img_timestamp:
                         self.img_timestamp = self.cache_o.get_index_timestamp()
                         self.__on_reload(None)
