@@ -222,7 +222,6 @@ class PackageManager:
                 self.image_directory = None
                 self.description_thread_running = False   # For background processes
                 gtk.rc_parse('~/.gtkrc-1.2-gnome2')       # Load gtk theme
-                self.main_clipboard_text = None
                 self.progress_stop_timer_thread = False
                 self.progress_fraction_time_count = 0
                 self.progress_canceled = False
@@ -365,8 +364,6 @@ class PackageManager:
                 self.w_selectupdates_menuitem = \
                     w_tree_main.get_widget("edit_select_updates")
                 self.w_deselect_menuitem = w_tree_main.get_widget("edit_deselect")
-                self.w_main_clipboard = gtk.clipboard_get(gtk.gdk.SELECTION_CLIPBOARD)
-
                 self.w_progress_dialog = w_tree_progress.get_widget("progressdialog")
                 self.w_progress_dialog.set_title(_("Update All"))
                 self.w_progressinfo_label = w_tree_progress.get_widget("progressinfo")
@@ -413,7 +410,6 @@ class PackageManager:
                 self.install_button_tooltip = gtk.Tooltips()
                 self.remove_button_tooltip = gtk.Tooltips()
                 self.__update_reload_button()
-                self.w_main_clipboard.request_text(self.__clipboard_text_received)
                 self.w_main_window.set_title(main_window_title)
                 self.w_searchentry_dialog.grab_focus()
 
@@ -1642,8 +1638,7 @@ class PackageManager:
                 return False
 
         def __on_edit_paste(self, widget):
-                self.w_searchentry_dialog.insert_text(self.main_clipboard_text, \
-                    self.w_searchentry_dialog.get_position())
+                self.w_searchentry_dialog.paste_clipboard()
 
         def __on_clear_paste(self, widget):
                 bounds = self.w_searchentry_dialog.get_selection_bounds()
@@ -1651,17 +1646,10 @@ class PackageManager:
                 return
 
         def __on_copy(self, widget):
-                bounds = self.w_searchentry_dialog.get_selection_bounds()
-                text = self.w_searchentry_dialog.get_chars(bounds[0], bounds[1])
-                self.w_main_clipboard.set_text(text)
-                return
+                self.w_searchentry_dialog.copy_clipboard()
 
         def __on_cut(self, widget):
-                bounds = self.w_searchentry_dialog.get_selection_bounds()
-                text = self.w_searchentry_dialog.get_chars(bounds[0], bounds[1])
-                self.w_searchentry_dialog.delete_text(bounds[0], bounds[1])
-                self.w_main_clipboard.set_text(text)
-                return
+                self.w_searchentry_dialog.cut_clipboard()
 
         def __popup_position_func(self, menu):
                 ''' Position popup menu immediately below search button'''
@@ -1857,7 +1845,6 @@ class PackageManager:
                 return False
 
         def __on_searchentry_event(self, widget, event):
-                self.w_main_clipboard.request_text(self.__clipboard_text_received)
                 if widget.get_selection_bounds():
                         #enable selection functions
                         self.w_cut_menuitem.set_sensitive(True)
@@ -2311,10 +2298,6 @@ class PackageManager:
                 gobject.idle_add(self.w_progress_cancel.show)
                 gobject.idle_add(self.process_package_list_start,
                     self.image_directory)
-
-        def __clipboard_text_received(self, clipboard, text, data):
-                self.main_clipboard_text = text
-                return
 
         def __main_application_quit(self, be_name = None):
                 '''quits the main gtk loop'''
